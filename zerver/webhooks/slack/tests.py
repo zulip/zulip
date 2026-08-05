@@ -255,6 +255,13 @@ class SlackWebhookTests(WebhookTestCase):
         )
 
     @mock_slack_api_calls
+    def test_message_with_inaccessible_file(self) -> None:
+        message_body = """Message with a file shared from a Slack Connect channel
+*Slack file F12345678*"""
+        expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
+        self.check_webhook("message_with_inaccessible_file", EXPECTED_TOPIC, expected_message)
+
+    @mock_slack_api_calls
     def test_message_with_inline_code(self) -> None:
         message_body = "`asdasda this is a code block`"
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)

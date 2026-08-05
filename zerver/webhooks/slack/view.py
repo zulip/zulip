@@ -28,6 +28,7 @@ from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_web
 from zerver.models import UserProfile
 
 FILE_LINK_TEMPLATE = "\n*[{file_name}]({file_link})*"
+FILE_ID_TEMPLATE = "\n*Slack file {file_id}*"
 ZULIP_MESSAGE_TEMPLATE = "**{sender}**: {text}"
 VALID_OPTIONS = {"SHOULD_NOT_BE_MAPPED": "0", "SHOULD_BE_MAPPED": "1"}
 
@@ -117,10 +118,13 @@ def convert_to_zulip_markdown(text: str, slack_app_token: str) -> str:
 
 
 def convert_raw_file_data(file_dict: WildValue) -> SlackFileListT:
+    # Files uploaded to Slack Connect channels arrive without their
+    # metadata. See https://docs.slack.dev/reference/objects/file-object/#slack_connect_files.
     files = [
         {
-            "file_link": file.get("permalink").tame(check_string),
-            "file_name": file.get("title").tame(check_string),
+            "file_link": file.get("permalink").tame(check_none_or(check_string)) or "",
+            "file_name": file.get("title").tame(check_none_or(check_string)) or "",
+            "file_id": file["id"].tame(check_string),
         }
         for file in file_dict
     ]
@@ -130,7 +134,8 @@ def convert_raw_file_data(file_dict: WildValue) -> SlackFileListT:
 def get_message_body(text: str, sender: str, files: SlackFileListT) -> str:
     body = ZULIP_MESSAGE_TEMPLATE.format(sender=sender, text=text)
     for file in files:
-        body += FILE_LINK_TEMPLATE.format(**file)
+        file_template = FILE_LINK_TEMPLATE if file["file_link"] else FILE_ID_TEMPLATE
+        body += file_template.format(**file)
     return body
 
 
