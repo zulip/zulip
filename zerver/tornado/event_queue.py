@@ -1503,7 +1503,7 @@ def process_message_update_event(
     online_push_user_ids = set(event_template.pop("online_push_user_ids", []))
     stream_name = event_template.get("stream_name")
     message_id = event_template["message_id"]
-    rendering_only_update = event_template["rendering_only"]
+    content_edited = "orig_content" in event_template
 
     # TODO/compatibility: We need to set `push_device_registered_user_ids` to None
     # for update_message events prior to the introduction of `push_device_registered_user_ids`
@@ -1523,15 +1523,11 @@ def process_message_update_event(
             if key != "id":
                 user_event[key] = user_data[key]
 
-        # Events where `rendering_only_update` is True come from the
-        # do_update_embedded_data code path, and represent rendering
-        # previews; there should be no real content changes.
-        # Therefore, we know only events where `rendering_only_update`
-        # is False possibly send notifications.
-        if not rendering_only_update:
-            # The user we'll get here will be the sender if the message's
-            # content was edited, and the editor for topic edits. That's
-            # the correct "acting_user" for both cases.
+        # Only events where content edit is involved possibly send notifications.
+        # Skip it for topic and/or channel edit or when a message's content
+        # has a rendering update.
+        if content_edited:
+            # Message's sender is the acting user here, because only they can edit content.
             acting_user_id = event_template["user_id"]
 
             flags: Collection[str] = user_event["flags"]
