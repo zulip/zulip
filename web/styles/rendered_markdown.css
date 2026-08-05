@@ -791,7 +791,8 @@
         grid-template-columns:
             [thumbnail-start] var(--length-message-preview-embeds)
             [thumbnail-end fader-start data-container-start] minmax(0, 1fr)
-            [data-container-end fader-end];
+            [data-container-end fader-end remove-start] auto
+            [remove-end];
         grid-template-rows:
             [border-start thumbnail-start data-container-start] calc(
                 var(--length-message-preview-embeds) - 10%
@@ -854,6 +855,111 @@
 
         .data-container {
             grid-area: data-container;
+        }
+
+        /* Own column, so the X never overlaps the title/description. */
+        .remove-preview-container {
+            grid-column: remove-start / remove-end;
+            grid-row: border-start / border-end;
+            align-self: start;
+        }
+    }
+
+    .message_embed,
+    .message-media-preview-image,
+    .message-media-preview-video {
+        position: relative;
+    }
+
+    /* Revealed on hover, only for messages the viewer can edit. */
+    .message_row:has(.edit_content.can-edit-content) & {
+        :is(
+            .message_embed,
+            .message-media-preview-image,
+            .message-media-preview-video
+        ) {
+            &:hover .remove-preview-container {
+                visibility: visible;
+            }
+
+            /* Dim the preview when hovering the remove button. */
+            &:has(.remove-preview-button:hover) .remove-preview-overlay {
+                visibility: visible;
+            }
+        }
+    }
+
+    .remove-preview-container {
+        visibility: hidden;
+        /* Keep above the dim overlay (z-index: 1). */
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Media previews have no room for a column, so the X overlaps them. */
+    .message-media-preview-image,
+    .message-media-preview-video {
+        .remove-preview-container {
+            position: absolute;
+            top: 0.25em;
+            inset-inline-end: 0.25em;
+        }
+    }
+
+    .remove-preview-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* Reset the native button chrome. */
+        appearance: none;
+        border: none;
+        background: none;
+        /* 11.9px at 14px/1em */
+        font-size: 0.85em;
+        /* 3px at 11.9px (0.85 * 14px) */
+        padding: 0.25em;
+        cursor: pointer;
+        color: var(--color-remove-preview-button);
+        opacity: 0.9;
+        transition: opacity 0.2s ease;
+
+        /* Hovering the X dims the preview behind it, so flip the icon to
+           white to stay legible over the dim (both themes). */
+        &:hover {
+            opacity: 1;
+            color: var(--color-remove-preview-button-hover);
+        }
+    }
+
+    .remove-preview-overlay {
+        position: absolute;
+        inset: 0;
+        background: var(--color-background-remove-preview-overlay);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        visibility: hidden;
+        z-index: 1;
+        /* Clip a label longer than the preview. Size containment is safe
+           here: the overlay is sized by `inset`, not by its contents. */
+        overflow: hidden;
+        container: remove-preview-overlay / size;
+    }
+
+    .remove-preview-overlay-text {
+        color: var(--color-text-remove-preview-overlay);
+        text-align: center;
+        /* Reserve the button's corner on both sides, so that a longer
+           translated label still cannot run under it. */
+        max-width: calc(100% - 5em);
+        text-shadow: var(--text-shadow-remove-preview-overlay-text);
+        font-weight: 500;
+
+        /* Previews can be as small as a 4em square, where the label would
+           wrap and collide with the button; its tooltip names the action. */
+        @container remove-preview-overlay (width < 12em) or (height < 6em) {
+            display: none;
         }
     }
 
