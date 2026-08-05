@@ -68,6 +68,7 @@ exports.test_streams = {
         is_recently_active: true,
         default_push_notifications: false,
         subscriber_count: 10,
+        can_access_stream_topics_group: 14,
     },
     test: {
         is_archived: false,
@@ -96,6 +97,7 @@ exports.test_streams = {
         is_recently_active: true,
         default_push_notifications: false,
         subscriber_count: 2,
+        can_access_stream_topics_group: 14,
     },
 };
 
@@ -212,8 +214,10 @@ exports.fixtures = {
             {
                 id: 1,
                 name: "teams",
+                rendered_name: "",
                 type: 1,
                 hint: "",
+                rendered_hint: "",
                 field_data: "",
                 order: 1,
                 display_in_profile_summary: false,
@@ -223,8 +227,10 @@ exports.fixtures = {
             {
                 id: 2,
                 name: "hobbies",
+                rendered_name: "",
                 type: 1,
                 hint: "",
+                rendered_hint: "",
                 field_data: "",
                 order: 2,
                 display_in_profile_summary: false,

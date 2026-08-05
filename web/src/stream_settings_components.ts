@@ -524,6 +524,7 @@ const new_stream_group_setting_widget_map = new Map<string, GroupSettingPillCont
     ["can_remove_subscribers_group", null],
     ["can_resolve_topics_group", null],
     ["can_send_message_group", null],
+    ["can_access_stream_topics_group", null],
 ]);
 
 export function get_group_setting_widget_for_new_stream(

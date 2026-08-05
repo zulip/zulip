@@ -101,6 +101,15 @@ exports.server_supported_permission_settings = {
             default_for_system_groups: null,
             allowed_system_groups: [],
         },
+        can_access_stream_topics_group: {
+            require_system_group: false,
+            allow_internet_group: false,
+            allow_nobody_group: false,
+            allow_everyone_group: true,
+            default_group_name: "role:everyone",
+            default_for_system_groups: null,
+            allowed_system_groups: [],
+        },
     },
     realm: {
         can_access_all_users_group: {

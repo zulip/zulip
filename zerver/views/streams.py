@@ -91,8 +91,10 @@ from zerver.lib.streams import (
 )
 from zerver.lib.subscription_info import gather_subscriptions
 from zerver.lib.topic import (
+    check_access_based_on_can_access_stream_topics_group,
     get_topic_history_for_public_stream,
     get_topic_history_for_stream,
+    get_topic_history_for_support_stream,
     maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
 )
@@ -291,6 +293,7 @@ def update_stream_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
+    can_access_stream_topics_group: Json[GroupSettingChangeRequest] | None = None,
     can_add_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_create_topic_group: Json[GroupSettingChangeRequest] | None = None,
     can_administer_channel_group: Json[GroupSettingChangeRequest] | None = None,
@@ -688,6 +691,7 @@ def create_channel(
     user_profile: UserProfile,
     *,
     announce: Json[bool] = False,
+    can_access_stream_topics_group: Json[int | UserGroupMembersData] | None = None,
     can_add_subscribers_group: Json[int | UserGroupMembersData] | None = None,
     can_create_topic_group: Json[int | UserGroupMembersData] | None = None,
     can_delete_any_message_group: Json[int | UserGroupMembersData] | None = None,
@@ -780,6 +784,7 @@ def create_channel(
         can_remove_subscribers_group=group_settings_map["can_remove_subscribers_group"],
         can_subscribe_group=group_settings_map["can_subscribe_group"],
         can_resolve_topics_group=group_settings_map["can_resolve_topics_group"],
+        can_access_stream_topics_group=group_settings_map["can_access_stream_topics_group"],
         folder=folder,
         topics_policy=topics_policy_value,
     )
@@ -826,6 +831,7 @@ def add_subscriptions_backend(
     *,
     announce: Json[bool] = False,
     authorization_errors_fatal: Json[bool] = True,
+    can_access_stream_topics_group: Json[int | UserGroupMembersData] | None = None,
     can_add_subscribers_group: Json[int | UserGroupMembersData] | None = None,
     can_delete_any_message_group: Json[int | UserGroupMembersData] | None = None,
     can_delete_own_message_group: Json[int | UserGroupMembersData] | None = None,
@@ -1234,12 +1240,23 @@ def get_topics_backend(
         (stream, _sub) = access_stream_by_id(user_profile, stream_id, require_active_channel=False)
 
         assert stream.recipient_id is not None
-        result = get_topic_history_for_stream(
-            user_profile=user_profile,
-            recipient_id=stream.recipient_id,
-            public_history=stream.is_history_public_to_subscribers(),
-            allow_empty_topic_name=allow_empty_topic_name,
-        )
+
+        if stream.is_support_stream() and not check_access_based_on_can_access_stream_topics_group(
+            user_profile, stream
+        ):
+            result = get_topic_history_for_support_stream(
+                user_profile=user_profile,
+                recipient_id=stream.recipient_id,
+                allow_empty_topic_name=allow_empty_topic_name,
+            )
+
+        else:
+            result = get_topic_history_for_stream(
+                user_profile=user_profile,
+                recipient_id=stream.recipient_id,
+                public_history=stream.is_history_public_to_subscribers(),
+                allow_empty_topic_name=allow_empty_topic_name,
+            )
 
     return json_success(request, data=dict(topics=result))
 

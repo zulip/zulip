@@ -574,7 +574,12 @@ def update_message_content(
     info = get_recipient_info(
         realm_id=realm.id,
         recipient=target_message.recipient,
-        sender_id=target_message.sender_id,
+        # The message's own sender, not the user editing it: this is used for
+        # muting and stream-mute decisions that are about the sender.
+        message_sender=target_message.sender,
+        # Topic access restrictions are enforced when the message is sent, and
+        # editing content cannot move a message into another topic.
+        stream=None,
         stream_topic=stream_topic,
         possible_topic_wildcard_mention=mention_data.message_has_topic_wildcards(),
         possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
