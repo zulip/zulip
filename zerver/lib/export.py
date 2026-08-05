@@ -208,6 +208,7 @@ ALL_ZULIP_TABLES = {
     "zerver_subscription",
     "zerver_useractivity",
     "zerver_useractivityinterval",
+    "zerver_userapikey",
     "zerver_usergroup",
     "zerver_usergroupmembership",
     "zerver_usermessage",
@@ -251,6 +252,8 @@ NON_EXPORTED_TABLES = {
     # We don't use these generated Django tables
     "zerver_userprofile_groups",
     "zerver_userprofile_user_permissions",
+    # We don't export API keys for security reasons.
+    "zerver_userapikey",
     # These is used for scheduling future activity; it could make
     # sense to export, but is relatively low value.
     "zerver_scheduledemail",
@@ -1325,10 +1328,9 @@ def add_user_profile_child_configs(user_profile_config: Config) -> None:
 
 
 # We exclude these fields for the following reasons:
-# * api_key is a secret.
 # * password is a secret.
 # * uuid is unlikely to be useful if the domain changes.
-EXCLUDED_USER_PROFILE_FIELDS = ["api_key", "password", "uuid"]
+EXCLUDED_USER_PROFILE_FIELDS = ["password", "uuid"]
 
 
 def get_randomized_exported_user_dummy_email_address(realm: Realm) -> str:

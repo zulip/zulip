@@ -85,7 +85,7 @@ from zerver.actions.user_groups import (
 from zerver.actions.user_settings import (
     do_change_full_name,
     do_change_user_delivery_email,
-    do_regenerate_api_key,
+    do_regenerate_all_api_keys,
 )
 from zerver.actions.users import do_change_user_role, do_deactivate_user
 from zerver.lib.avatar import avatar_url, is_avatar_new
@@ -3860,7 +3860,7 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
             user_profile.id,
         )
         delete_user_sessions(user_profile)
-        do_regenerate_api_key(user_profile, user_profile)
+        do_regenerate_all_api_keys(user_profile, user_profile)
 
         return cast(
             HttpResponseProtocol, HttpResponseRedirect(url)

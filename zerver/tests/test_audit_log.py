@@ -81,7 +81,7 @@ from zerver.actions.user_settings import (
     do_change_user_date_joined,
     do_change_user_delivery_email,
     do_change_user_setting,
-    do_regenerate_api_key,
+    do_regenerate_all_api_keys,
 )
 from zerver.actions.users import do_change_is_imported_stub, do_change_user_role, do_deactivate_user
 from zerver.lib.emoji import get_emoji_file_name
@@ -101,6 +101,7 @@ from zerver.models import (
     RealmPlayground,
     Recipient,
     Subscription,
+    UserAPIKey,
     UserProfile,
 )
 from zerver.models.groups import SystemGroups
@@ -410,14 +411,15 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_regenerate_api_key(self) -> None:
         now = timezone_now()
         user = self.example_user("hamlet")
-        do_regenerate_api_key(user, user)
+        do_regenerate_all_api_keys(user, user)
         self.assertEqual(
             RealmAuditLog.objects.filter(
                 event_type=AuditLogEventType.USER_API_KEY_CHANGED, event_time__gte=now
             ).count(),
             1,
         )
-        self.assertTrue(user.api_key)
+        api_keys = UserAPIKey.objects.filter(user=user, is_revoked=False).first()
+        self.assertTrue(api_keys)
 
     def test_get_streams_traffic(self) -> None:
         realm = get_realm("zulip")

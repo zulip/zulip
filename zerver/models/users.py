@@ -20,6 +20,7 @@ from zerver.lib.cache import (
     bot_dicts_in_realm_cache_key,
     bot_profile_cache_key,
     cache_with_key,
+    flush_bot_api_key,
     flush_user_profile,
     realm_user_dict_fields,
     realm_user_dicts_cache_key,
@@ -529,7 +530,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # fully created on servers that do not have a configured ToS.
     TOS_VERSION_BEFORE_FIRST_LOGIN = "-1"
     tos_version = models.CharField(null=True, max_length=10)
-    api_key = models.CharField(max_length=API_KEY_LENGTH, default=generate_api_key, unique=True)
 
     # A UUID generated on user creation. Introduced primarily to
     # provide a unique key for a user for the mobile push
@@ -979,6 +979,18 @@ class PasswordTooWeakError(Exception):
     pass
 
 
+class UserAPIKey(models.Model):
+    LEGACY_API_KEY_DESCRIPTION = "Legacy API key"
+
+    user = models.ForeignKey(UserProfile, on_delete=CASCADE, db_index=True)
+    description = models.CharField(max_length=100)
+    api_key = models.CharField(
+        max_length=UserProfile.API_KEY_LENGTH, default=generate_api_key, unique=True
+    )
+    is_revoked = models.BooleanField(default=False)
+    date_created = models.DateTimeField(default=timezone_now)
+
+
 def remote_user_to_email(remote_user: str) -> str:
     if settings.SSO_APPEND_DOMAIN is not None:
         return Address(username=remote_user, domain=settings.SSO_APPEND_DOMAIN).addr_spec
@@ -988,6 +1000,7 @@ def remote_user_to_email(remote_user: str) -> str:
 # Make sure we flush the UserProfile object from our remote cache
 # whenever we save it.
 post_save.connect(flush_user_profile, sender=UserProfile)
+post_save.connect(flush_bot_api_key, sender=UserAPIKey)
 
 
 def base_bulk_get_user_queryset() -> QuerySet[UserProfile]:
@@ -1038,14 +1051,15 @@ def get_user_profile_by_email(email: str) -> UserProfile:
 
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600 * 24 * 7)
 def maybe_get_user_profile_by_api_key(api_key: str) -> UserProfile | None:
-    try:
-        return base_get_user_queryset().get(api_key=api_key)
-    except UserProfile.DoesNotExist:
-        # We will cache failed lookups with None.  The
-        # use case here is that broken API clients may
-        # continually ask for the same wrong API key, and
-        # we want to handle that as quickly as possible.
+    # Cache None for failed lookups to handle broken API clients
+    # that continually ask for the same wrong API key.
+    user_api_key = (
+        UserAPIKey.objects.select_related("user").filter(api_key=api_key, is_revoked=False).first()
+    )
+    if user_api_key is None:
         return None
+
+    return user_api_key.user
 
 
 def get_user_profile_by_api_key(api_key: str) -> UserProfile:

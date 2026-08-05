@@ -9,7 +9,7 @@ from zerver.lib.i18n import get_default_language_for_new_user
 from zerver.lib.onboarding_steps import copy_onboarding_steps
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.upload import copy_avatar
-from zerver.models import Realm, RealmUserDefault, Stream, UserBaseSettings, UserProfile
+from zerver.models import Realm, RealmUserDefault, Stream, UserAPIKey, UserBaseSettings, UserProfile
 from zerver.models.realms import get_fake_email_domain
 
 
@@ -147,6 +147,12 @@ def create_user_profile(
     return user_profile
 
 
+def create_user_api_key(user_profile: UserProfile, description: str) -> UserAPIKey:
+    api_key = UserAPIKey(user=user_profile, description=description)
+    api_key.save()
+    return api_key
+
+
 def create_user(
     email: str,
     password: str | None,
@@ -169,6 +175,7 @@ def create_user(
     force_date_joined: datetime | None = None,
     enable_marketing_emails: bool | None = None,
     email_address_visibility: int | None = None,
+    description: str | None = None,
 ) -> UserProfile:
     realm_user_default = RealmUserDefault.objects.get(realm=realm)
     if bot_type is None:
@@ -241,4 +248,7 @@ def create_user(
         user_profile.email = get_display_email_address(user_profile)
         user_profile.save(update_fields=["email"])
 
+    description = description if description is not None else UserAPIKey.LEGACY_API_KEY_DESCRIPTION
+
+    create_user_api_key(user_profile, description)
     return user_profile

@@ -91,6 +91,7 @@ from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_mes
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.upload import upload_message_attachment_from_request
 from zerver.lib.user_groups import get_system_user_group_for_user
+from zerver.lib.users import get_api_key
 from zerver.lib.webhooks.common import (
     call_fixture_to_headers,
     check_send_webhook_message,
@@ -1078,14 +1079,14 @@ Output:
 
     def encode_user(self, user: UserProfile) -> str:
         email = user.delivery_email
-        api_key = user.api_key
+        api_key = get_api_key(user)
         return self.encode_credentials(email, api_key)
 
     def encode_email(self, email: str, realm: str = "zulip") -> str:
         # TODO: use encode_user where possible
         assert "@" in email
         user = get_user_by_delivery_email(email, get_realm(realm))
-        api_key = user.api_key
+        api_key = get_api_key(user)
 
         return self.encode_credentials(email, api_key)
 
@@ -2738,7 +2739,7 @@ one or more new messages.
     def build_webhook_url(self, *args: str, legacy_name: str | None = None, **kwargs: str) -> str:
         url = self.url_template
         assert url.find("api_key") >= 0
-        api_key = self.test_user.api_key
+        api_key = get_api_key(self.test_user)
         url = self.url_template.format(
             webhook_dir_name=self.webhook_dir_name if legacy_name is None else legacy_name,
             api_key=api_key,

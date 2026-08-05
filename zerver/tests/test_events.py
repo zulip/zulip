@@ -154,7 +154,7 @@ from zerver.actions.user_settings import (
     do_change_user_date_joined,
     do_change_user_delivery_email,
     do_change_user_setting,
-    do_regenerate_api_key,
+    do_regenerate_all_api_keys,
 )
 from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
@@ -3536,7 +3536,7 @@ class NormalActionsTest(BaseAction):
     def test_regenerate_bot_api_key(self) -> None:
         bot = self.create_bot("test")
         with self.verify_action(num_events=0, state_change_expected=False):
-            do_regenerate_api_key(bot, self.user_profile)
+            do_regenerate_all_api_keys(bot, self.user_profile)
 
     def test_change_bot_avatar_source(self) -> None:
         bot = self.create_bot("test")
