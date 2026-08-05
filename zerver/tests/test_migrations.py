@@ -22,45 +22,99 @@ from zerver.lib.test_classes import MigrationsTestCase
 #   "zerver_subscription" because it has pending trigger events
 
 
-class FixDeletedUserEmail(MigrationsTestCase):
-    migrate_from = "0804_backfill_user_created_audit_logs"
-    migrate_to = "0805_fix_deleteduser_email"
+class StripControlCharactersFromAttachments(MigrationsTestCase):
+    migrate_from = "0806_stream_default_push_notifications"
+    migrate_to = "0807_strip_control_characters_from_attachments"
+
+    # The migration reports what it repaired, which test-backend
+    # otherwise rejects as unexpected console output; pin the counts
+    # here, which also verifies that it touches only the dirty rows.
+    expected_console_output = """
+Stripped control characters from 5 Attachment rows.
+
+Stripped control characters from 1 ArchivedAttachment rows.
+"""
 
     @override
     def setUpBeforeMigration(self, apps: StateApps) -> None:
-        UserProfile = apps.get_model("zerver", "UserProfile")
+        Attachment = apps.get_model("zerver", "Attachment")
+        hamlet = self.example_user("hamlet")
+        self.attachment_ids: list[int] = []
 
-        # Simulate a user deleted before the fix in 208c0c303405,
-        # after 0439_fix_deleteduser_email repaired delivery_email.
-        deleted_user = self.example_user("hamlet")
-        UserProfile.objects.filter(id=deleted_user.id).update(
-            is_active=False,
-            email=f"deleteduser{deleted_user.id}@https://zulip.testserver",
-            delivery_email=f"deleteduser{deleted_user.id}@zulip.testserver",
+        def create_attachment(path_id: str, file_name: str, content_type: str | None) -> int:
+            attachment_id = Attachment.objects.create(
+                file_name=file_name,
+                path_id=path_id,
+                owner_id=hamlet.id,
+                realm_id=hamlet.realm_id,
+                size=6,
+                content_type=content_type,
+            ).id
+            self.attachment_ids.append(attachment_id)
+            return attachment_id
+
+        # A trailing newline in either column is the case that makes
+        # serve_local() raise BadHeaderError.
+        self.bad_file_name_id = create_attachment("1/aa/bb/one.txt", "one.txt\n", "text/plain")
+        self.bad_content_type_id = create_attachment("1/aa/bb/two.png", "two.png", "image/png\n")
+        # Other control characters are escaped correctly on the way
+        # out, but should still be cleaned up.
+        self.other_control_id = create_attachment(
+            "1/aa/bb/three.txt", "th\x01ree.txt", "text/plain"
         )
-        self.deleted_user_id = deleted_user.id
+        # A NULL content_type must survive the regexp_replace.
+        self.null_content_type_id = create_attachment("1/aa/bb/four.txt", "four.txt\n", None)
+        # Values which stripping empties get what a new upload would
+        # have stored, rather than an empty string.
+        self.all_control_id = create_attachment("1/aa/bb/uploaded-file", "\x01.\x02", "\x01")
+        # A clean row, as a control.
+        self.clean_id = create_attachment("1/aa/bb/five.txt", "five.txt", "text/plain")
 
-        # A normal active user, as a control.
-        control_user = self.example_user("cordelia")
-        self.control_user_id = control_user.id
-        self.control_user_email = control_user.email
+        # ArchivedAttachment rows get repaired too, since they can be
+        # restored into Attachment.
+        ArchivedAttachment = apps.get_model("zerver", "ArchivedAttachment")
+        self.archived_id = ArchivedAttachment.objects.create(
+            file_name="six.txt\n",
+            path_id="1/aa/bb/six.txt",
+            owner_id=hamlet.id,
+            realm_id=hamlet.realm_id,
+            size=6,
+            content_type="text/plain\n",
+        ).id
 
-        # A deactivated user with a valid email, as a control for the
-        # is_active=False part of the migration's filter.
-        deactivated_user = self.example_user("othello")
-        UserProfile.objects.filter(id=deactivated_user.id).update(is_active=False)
-        self.deactivated_user_id = deactivated_user.id
-        self.deactivated_user_email = deactivated_user.email
+    @override
+    def tearDown(self) -> None:
+        # MigrationsTestCase commits its changes, and its base class
+        # asserts that a test leaves the set of rows unchanged, so
+        # these have to go before that check runs.
+        Attachment = self.apps.get_model("zerver", "Attachment")
+        Attachment.objects.filter(id__in=self.attachment_ids).delete()
+        ArchivedAttachment = self.apps.get_model("zerver", "ArchivedAttachment")
+        ArchivedAttachment.objects.filter(id=self.archived_id).delete()
+        super().tearDown()
 
-    def test_deleted_user_email_fixed(self) -> None:
-        UserProfile = self.apps.get_model("zerver", "UserProfile")
+    def test_control_characters_stripped(self) -> None:
+        Attachment = self.apps.get_model("zerver", "Attachment")
 
-        deleted_user = UserProfile.objects.get(id=self.deleted_user_id)
-        self.assertEqual(deleted_user.email, f"deleteduser{deleted_user.id}@zulip.testserver")
-        self.assertEqual(deleted_user.email, deleted_user.delivery_email)
+        self.assertEqual(Attachment.objects.get(id=self.bad_file_name_id).file_name, "one.txt")
+        self.assertEqual(
+            Attachment.objects.get(id=self.bad_content_type_id).content_type, "image/png"
+        )
+        self.assertEqual(Attachment.objects.get(id=self.other_control_id).file_name, "three.txt")
 
-        control_user = UserProfile.objects.get(id=self.control_user_id)
-        self.assertEqual(control_user.email, self.control_user_email)
+        null_content_type_row = Attachment.objects.get(id=self.null_content_type_id)
+        self.assertEqual(null_content_type_row.file_name, "four.txt")
+        self.assertIsNone(null_content_type_row.content_type)
 
-        deactivated_user = UserProfile.objects.get(id=self.deactivated_user_id)
-        self.assertEqual(deactivated_user.email, self.deactivated_user_email)
+        all_control_row = Attachment.objects.get(id=self.all_control_id)
+        self.assertEqual(all_control_row.file_name, "uploaded-file")
+        self.assertIsNone(all_control_row.content_type)
+
+        clean_row = Attachment.objects.get(id=self.clean_id)
+        self.assertEqual(clean_row.file_name, "five.txt")
+        self.assertEqual(clean_row.content_type, "text/plain")
+
+        ArchivedAttachment = self.apps.get_model("zerver", "ArchivedAttachment")
+        archived_row = ArchivedAttachment.objects.get(id=self.archived_id)
+        self.assertEqual(archived_row.file_name, "six.txt")
+        self.assertEqual(archived_row.content_type, "text/plain")
