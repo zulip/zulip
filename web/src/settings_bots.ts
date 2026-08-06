@@ -629,7 +629,7 @@ function create_all_bots_table(
     $container: JQuery,
     widget_name: string,
 ): void {
-    loading.make_indicator($container.find("loading-indicator"), {
+    loading.make_indicator($container.find(".loading-indicator"), {
         text: $t({defaultMessage: "Loading…"}),
     });
     const $all_bots_table = $container.find(".bot-table");
@@ -663,7 +663,7 @@ function create_all_bots_table(
     });
     settings_users.set_text_search_value($all_bots_table, section.filters.text_search);
 
-    loading.destroy_indicator($container.find("loading-indicator"));
+    loading.destroy_indicator($container.find(".loading-indicator"));
     $all_bots_table.show();
 }
 
@@ -672,7 +672,7 @@ function create_your_bots_table(
     $container: JQuery,
     widget_name: string,
 ): void {
-    loading.make_indicator($container.find("loading-indicator"), {
+    loading.make_indicator($container.find(".loading-indicator"), {
         text: $t({defaultMessage: "Loading…"}),
     });
     const $your_bots_table = $container.find(".bot-table");
@@ -705,7 +705,7 @@ function create_your_bots_table(
     });
     settings_users.set_text_search_value($your_bots_table, section.filters.text_search);
 
-    loading.destroy_indicator($container.find("loading-indicator"));
+    loading.destroy_indicator($container.find(".loading-indicator"));
     $your_bots_table.show();
 }
 
