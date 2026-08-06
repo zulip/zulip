@@ -162,7 +162,7 @@ export type MessageCleanReaction = {
     local_id: string;
     reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     user_ids: number[];
-    vote_text: string;
+    vote_text: string[];
 };
 
 export type Message = (
