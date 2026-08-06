@@ -956,6 +956,34 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             if field_dict["id"] == field.id:
                 self.assertEqual(field_dict["value"], "foobar")
 
+    def test_update_profile_data_query_count(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        fields: list[tuple[str, str | list[int]]] = [
+            ("Phone number", "*short* text data"),
+            ("Biography", "~~short~~ **long** text data"),
+            ("Favorite food", "long short text data"),
+            ("Favorite editor", "0"),
+            ("Birthday", "1909-03-05"),
+            ("Favorite website", "https://zulip.com"),
+            ("Mentor", [self.example_user("cordelia").id]),
+            ("GitHub username", "zulip-mobile"),
+            ("Pronouns", "he/him"),
+        ]
+
+        data: list[ProfileDataElementUpdateDict] = []
+        for name, value in fields:
+            field = CustomProfileField.objects.get(name=name, realm=realm)
+            data.append({"id": field.id, "value": value})
+
+        # Deliberately wrong count to get the real number from the failure output.
+        with self.assert_database_query_count(14):
+            result = self.client_patch(
+                "/json/users/me/profile_data",
+                {"data": orjson.dumps(data).decode()},
+            )
+        self.assert_json_success(result)
+
     def test_update_invalid_dropdown_field(self) -> None:
         field_name = "Favorite editor"
         self.assert_error_update_invalid_value(
