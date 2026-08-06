@@ -140,11 +140,46 @@
 }
 
 .typeahead.dropdown-menu {
+    /* The color the bottom scroll fade blends into. The search typeahead
+       has its own background and overrides this (see search.css). */
+    --typeahead-fade-color: var(--color-background-dropdown-widget);
+
     .typeahead-menu {
+        position: relative;
         list-style: none;
         margin: 4px 0;
         max-height: min(248px, 95vh);
         overflow-y: auto;
+
+        &::after {
+            /* Bottom fade hinting that the list can be scrolled.
+               bootstrap_typeahead.ts adds `has-scroll-fade` only while there
+               is more to scroll, so it stays hidden on short lists and at the
+               end of the list. */
+            content: "";
+            position: absolute;
+            inset-inline: 0;
+            bottom: 0;
+            height: 1.5em;
+            pointer-events: none;
+            background: linear-gradient(
+                to bottom,
+                transparent,
+                var(--typeahead-fade-color)
+            );
+            opacity: 0;
+            transition: opacity 180ms ease-out;
+        }
+
+        /* The fade is already in place when the typeahead opens; only later
+           changes, like scrolling to the end of the list, animate. */
+        &.no-scroll-fade-transition::after {
+            transition: none;
+        }
+
+        &.has-scroll-fade::after {
+            opacity: 1;
+        }
     }
 
     .typeahead-footer {
