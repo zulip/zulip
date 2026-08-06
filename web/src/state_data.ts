@@ -1,3 +1,4 @@
+import Handlebars from "handlebars/runtime.js";
 import * as z from "zod/mini";
 
 import {server_add_bot_schema} from "./bot_types.ts";
@@ -169,18 +170,27 @@ export const narrow_term_schema = z.union([
 ]);
 export type NarrowTerm = z.output<typeof narrow_term_schema>;
 
-export const custom_profile_field_schema = z.object({
-    display_in_profile_summary: z.optional(z.boolean()),
-    editable_by_user: z.boolean(),
-    field_data: z.string(),
-    hint: z.string(),
-    id: z.number(),
-    name: z.string(),
-    order: z.number(),
-    required: z.boolean(),
-    type: z.number(),
-    use_for_user_matching: z.optional(z.boolean()),
-});
+export const custom_profile_field_schema = z.pipe(
+    z.object({
+        display_in_profile_summary: z.optional(z.boolean()),
+        editable_by_user: z.boolean(),
+        field_data: z.string(),
+        hint: z.string(),
+        rendered_hint: z._default(z.string(), ""),
+        id: z.number(),
+        name: z.string(),
+        rendered_name: z._default(z.string(), ""),
+        order: z.number(),
+        required: z.boolean(),
+        type: z.number(),
+        use_for_user_matching: z.optional(z.boolean()),
+    }),
+    z.transform((field) => ({
+        ...field,
+        rendered_name: field.rendered_name || Handlebars.Utils.escapeExpression(field.name),
+        rendered_hint: field.rendered_hint || Handlebars.Utils.escapeExpression(field.hint),
+    })),
+);
 
 export type CustomProfileField = z.output<typeof custom_profile_field_schema>;
 

@@ -7,6 +7,7 @@ from django.utils.translation import gettext as _
 from zerver.actions.message_send import send_user_profile_update_notification
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
+from zerver.lib.markdown import render_inline_markdown
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.streams import render_stream_description
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData, UserProfileChangeDict
@@ -44,6 +45,8 @@ def try_add_realm_default_custom_profile_field(
         editable_by_user=editable_by_user,
         use_for_user_matching=use_for_user_matching,
     )
+    custom_profile_field.rendered_name = render_inline_markdown(str(field_data.name), realm)
+    custom_profile_field.rendered_hint = render_inline_markdown(field_data.hint, realm)
     custom_profile_field.save()
     custom_profile_field.order = custom_profile_field.id
     custom_profile_field.save(update_fields=["order"])
@@ -79,6 +82,8 @@ def try_add_realm_custom_profile_field(
     ):
         custom_profile_field.field_data = orjson.dumps(field_data or {}).decode()
 
+    custom_profile_field.rendered_name = render_inline_markdown(name, realm)
+    custom_profile_field.rendered_hint = render_inline_markdown(hint, realm)
     custom_profile_field.save()
     custom_profile_field.order = custom_profile_field.id
     custom_profile_field.save(update_fields=["order"])
@@ -144,8 +149,10 @@ def try_update_realm_custom_profile_field(
 ) -> None:
     if name is not None:
         field.name = name
+        field.rendered_name = render_inline_markdown(name, realm)
     if hint is not None:
         field.hint = hint
+        field.rendered_hint = render_inline_markdown(hint, realm)
     if required is not None:
         field.required = required
     if editable_by_user is not None:

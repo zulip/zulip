@@ -14,6 +14,7 @@ from urllib.parse import parse_qs, parse_qsl, urlencode, urljoin, urlsplit, urlu
 from xml.etree.ElementTree import Element, SubElement
 
 import ahocorasick
+import lxml.html
 import markdown
 import markdown.blockprocessors
 import markdown.inlinepatterns
@@ -2744,6 +2745,41 @@ def markdown_convert(
     )
     markdown_stats_finish()
     return ret
+
+
+def render_inline_markdown(
+    text: str,
+    realm: Realm,
+    mention_data: MentionData | None = None,
+) -> str:
+    """Render Markdown for a short text field, keeping only inline formatting.
+
+    Block elements and entity references (mentions, channel links, timestamps,
+    emoji) are stripped to plain text, so the result is safe to display inline
+    in contexts such as custom profile field labels.
+    """
+    if not text:
+        return ""
+
+    rendered = markdown_convert(
+        text,
+        message_realm=realm,
+        mention_data=mention_data,
+        no_previews=True,
+    ).rendered_content
+
+    tree = lxml.html.fragment_fromstring(rendered, create_parent="div")
+    allowed_tags = {"p", "strong", "em", "del", "code", "a"}
+    for element in list(tree.iterdescendants()):
+        is_internal_link = element.tag == "a" and element.get("class") is not None
+        if element.tag not in allowed_tags or is_internal_link:
+            element.drop_tag()
+
+    if not tree.text_content().strip():
+        return ""
+
+    serialized = lxml.html.tostring(tree, encoding="unicode")
+    return serialized[len("<div>") : -len("</div>")]
 
 
 def render_message_markdown(
