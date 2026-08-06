@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any
 
+import orjson
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q, QuerySet
@@ -102,6 +103,7 @@ from zerver.models import (
     UserTopic,
 )
 from zerver.models.groups import get_realm_system_groups_name_dict
+from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream_by_id_in_realm
 from zerver.models.users import ResolvedTopicNoticeAutoReadPolicyEnum, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
@@ -1854,6 +1856,52 @@ def check_update_message(
             notify_stream_is_recently_active_update(new_stream, is_stream_active)
 
     return updated_message_result
+
+
+@transaction.atomic(durable=True)
+def do_delete_message_edit_history(
+    message: Message,
+    acting_user: UserProfile,
+) -> None:
+    """Strip prev_content from all content-edit entries and record who deleted
+    them and when. Move-only entries are left untouched."""
+    if message.edit_history is None:  # nocoverage
+        return
+
+    deletion_timestamp = datetime_to_timestamp(timezone_now())
+    edit_history: list[EditHistoryEvent] = orjson.loads(message.edit_history)
+
+    for entry in edit_history:
+        if "prev_content" not in entry:
+            continue
+        entry.pop("prev_content")
+        entry.pop("prev_rendered_content", None)
+        entry.pop("prev_rendered_content_version", None)
+        entry["revision_deleted_by"] = acting_user.id
+        entry["revision_deleted_at"] = deletion_timestamp
+
+    message.edit_history = orjson.dumps(edit_history).decode()
+    message.save(update_fields=["edit_history"])
+
+    # Only notify users who are allowed to view edit history. Since
+    # message_edit_history_visibility_policy is realm-wide, a single check
+    # determines whether any event should be sent at all.
+    if (
+        acting_user.realm.message_edit_history_visibility_policy
+        == MessageEditHistoryVisibilityPolicyEnum.none.value
+    ):
+        return  # nocoverage
+
+    event: dict[str, object] = {
+        "type": "message_edit_history",
+        "op": "delete",
+        "message_id": message.id,
+        "scope": "all_content_revisions",
+        "user_id": acting_user.id,
+        "timestamp": deletion_timestamp,
+    }
+    user_ids = event_recipient_ids_for_action_on_messages([message.id], message.is_channel_message)
+    send_event_on_commit(acting_user.realm, event, list(user_ids))
 
 
 @transaction.atomic(durable=True)
