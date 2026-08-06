@@ -1,0 +1,42 @@
+{
+    "object_kind": "deployment",
+    "status": "blocked",
+    "status_changed_at": "2026-08-02T07:59:54.000+00:00",
+    "deployment_id": 1503204389,
+    "deployable_id": 15663409982,
+    "deployable_url": "https://gitlab.com/pritesh-30-group/deployment-webhook-test/-/jobs/15663409982",
+    "environment": "production",
+    "environment_tier": "production",
+    "environment_slug": "production",
+    "environment_external_url": null,
+    "project": {
+        "id": 85038800,
+        "name": "deployment-webhook-test",
+        "description": null,
+        "web_url": "https://gitlab.com/pritesh-30-group/deployment-webhook-test",
+        "avatar_url": null,
+        "git_ssh_url": "git@gitlab.com:pritesh-30-group/deployment-webhook-test.git",
+        "git_http_url": "https://gitlab.com/pritesh-30-group/deployment-webhook-test.git",
+        "namespace": "Pritesh-30-group",
+        "visibility_level": 0,
+        "path_with_namespace": "pritesh-30-group/deployment-webhook-test",
+        "default_branch": "main",
+        "ci_config_path": "",
+        "homepage": "https://gitlab.com/pritesh-30-group/deployment-webhook-test",
+        "url": "git@gitlab.com:pritesh-30-group/deployment-webhook-test.git",
+        "ssh_url": "git@gitlab.com:pritesh-30-group/deployment-webhook-test.git",
+        "http_url": "https://gitlab.com/pritesh-30-group/deployment-webhook-test.git"
+    },
+    "short_sha": "2166d75e",
+    "user": {
+        "id": 32548944,
+        "name": "Pritesh-30",
+        "username": "Pritesh-30",
+        "avatar_url": "https://secure.gravatar.com/avatar/ebe8e7ec7c6cc50451c04e29b9c8b0bf7c439b71fb4c19b778b64e35fa66165e?s=80&d=identicon",
+        "email": "[REDACTED]"
+    },
+    "user_url": "https://gitlab.com/Pritesh-30",
+    "commit_url": "https://gitlab.com/pritesh-30-group/deployment-webhook-test/-/commit/2166d75e44d9b13be5d7fc739fd40e7ba8a8eece",
+    "commit_title": "Edit .gitlab-ci.yml",
+    "ref": "main"
+}
