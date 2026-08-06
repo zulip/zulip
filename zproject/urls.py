@@ -70,6 +70,7 @@ from zerver.views.invite import (
     revoke_user_invite,
 )
 from zerver.views.llms_txt import llms_txt
+from zerver.views.mcp import mcp_endpoint
 from zerver.views.message_edit import (
     delete_message_backend,
     get_message_edit_history,
@@ -774,6 +775,13 @@ urls: list[URLPattern | URLResolver] = list(i18n_urls)
 urls += [
     path("api/v1/", include(v1_api_and_json_patterns)),
     path("json/", include(v1_api_and_json_patterns)),
+]
+
+# The native MCP (Model Context Protocol) endpoint for AI agents. It
+# speaks JSON-RPC 2.0 rather than REST, so it lives outside /api/v1;
+# it is authenticated via an API key bearer token.
+urls += [
+    path("mcp", mcp_endpoint),
 ]
 
 # user_uploads -> zerver.views.upload.serve_file_backend
