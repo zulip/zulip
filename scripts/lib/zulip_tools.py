@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --no-sync --only-group=install --script  # -*-python-*-
 import argparse
 import configparser
 import functools
