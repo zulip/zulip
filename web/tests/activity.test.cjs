@@ -22,8 +22,12 @@ const _document = {
     hasFocus() {
         return true;
     },
+    to_$() {
+        return $("document-stub");
+    },
 };
 
+const browser_idle_detection = mock_esm("../src/browser_idle_detection");
 const buddy_list_presence = mock_esm("../src/buddy_list_presence");
 const keydown_util = mock_esm("../src/keydown_util", {handle() {}});
 const padded_widget = mock_esm("../src/padded_widget");
@@ -656,4 +660,80 @@ test("check_should_redraw_new_user", ({override}) => {
     override(realm, "realm_presence_disabled", false);
     // A new user that didn't have presence info should not be redrawn.
     assert.equal(activity_ui.check_should_redraw_new_user(99999), false);
+});
+
+test("browser_idle_detection", ({override, override_rewire}) => {
+    override(browser_idle_detection, "supported", () => false);
+    activity.setup_idle_handler();
+    blueslip.expect("log", "Browser idle detector not supported");
+
+    override(browser_idle_detection, "supported", () => true);
+
+    // Avoid real presence requests when exercising mark_client_active.
+    let presence_update_count = 0;
+    override_rewire(activity, "send_presence_to_server", () => {
+        presence_update_count += 1;
+    });
+
+    // Spy on the debounce cancel (calling through, so we can still tidy
+    // up the timer afterwards). Once the IdleDetector starts, it owns
+    // idle tracking, so we cancel the debounce exactly once.
+    let cancel_count = 0;
+    const real_cancel = activity.mark_client_idle_later.cancel.bind(
+        activity.mark_client_idle_later,
+    );
+    override(activity.mark_client_idle_later, "cancel", () => {
+        cancel_count += 1;
+        real_cancel();
+    });
+
+    let on_granted;
+    override(browser_idle_detection, "init", () => ({
+        // eslint-disable-next-line unicorn/no-thenable
+        then(cb) {
+            on_granted = cb;
+        },
+    }));
+    override(browser_idle_detection, "on_permission_change", (cb) => cb());
+
+    activity.reset_idle_handler_for_testing();
+    activity.setup_idle_handler();
+    // Cover the idempotency guard.
+    activity.setup_idle_handler();
+
+    blueslip.expect("info", "Browser IdleDetector started");
+    on_granted("started");
+    assert.equal(cancel_count, 1);
+
+    // After handoff, DOM-event activity defers to the IdleDetector: it
+    // neither re-marks the client active nor re-arms the idle timer.
+    activity.clear_for_testing();
+    presence_update_count = 0;
+    activity.mark_client_active();
+    assert.equal(activity.client_is_active, false);
+    assert.equal(presence_update_count, 0);
+
+    // An AbortError means a newer detector superseded this one; it is
+    // silent and leaves idle tracking with the IdleDetector.
+    on_granted({name: "AbortError"});
+    assert.equal(cancel_count, 1);
+    activity.mark_client_active();
+    assert.equal(activity.client_is_active, false);
+
+    // A NotAllowedError (permission not yet granted) is also silent.
+    on_granted({name: "NotAllowedError"});
+    assert.equal(cancel_count, 1);
+
+    // A genuine failure is logged and falls back to the DOM-event
+    // heuristic, so mark_client_active resumes tracking activity.
+    blueslip.expect("error", "Browser IdleDetector failed to start: error message");
+    on_granted({name: "SomeOtherError", message: "error message"});
+    activity.clear_for_testing();
+    presence_update_count = 0;
+    activity.mark_client_active();
+    assert.equal(activity.client_is_active, true);
+    assert.equal(presence_update_count, 1);
+
+    // Cancel the idle timer armed above so it doesn't outlive the test.
+    real_cancel();
 });
