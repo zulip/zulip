@@ -86,7 +86,8 @@ def validate_use_for_user_matching_field(field_type: int, use_for_user_matching:
 def is_default_external_field(field_type: int, field_data: ProfileFieldData) -> bool:
     if field_type != CustomProfileField.EXTERNAL_ACCOUNT:
         return False
-    if field_data["subtype"] == "custom":
+    subtype = field_data.get("subtype")
+    if not isinstance(subtype, str) or subtype == "custom":
         return False
     return True
 
@@ -201,6 +202,7 @@ def create_realm_custom_profile_field(
     )
     try:
         if is_default_external_field(field_type, field_data):
+            # is_default_external_field guarantees subtype is a non-empty string.
             field_subtype = field_data["subtype"]
             assert isinstance(field_subtype, str)
             field = try_add_realm_default_custom_profile_field(
