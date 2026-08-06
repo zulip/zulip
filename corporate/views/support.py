@@ -51,6 +51,7 @@ from zerver.lib.typed_endpoint import (
     typed_endpoint,
     typed_endpoint_without_parameters,
 )
+from zerver.lib.users import check_group_permission_updates_for_deactivating_user
 from zerver.lib.validator import check_date
 from zerver.models import (
     MultiuseInvite,
@@ -583,7 +584,18 @@ def support(
             user_profile_for_deletion = get_user_profile_by_id(delete_user_by_id)
             user_email = user_profile_for_deletion.delivery_email
             assert user_profile_for_deletion.realm == realm
-            do_delete_user_preserving_messages(user_profile_for_deletion, acting_user=acting_user)
+            # Deletion via the support panel always succeeds; any permission
+            # setting left with no one is reset to its replacement group
+            # instead of blocking the deletion.
+            group_setting_updates = check_group_permission_updates_for_deactivating_user(
+                user_profile_for_deletion, ignore_objections=True
+            )
+            do_delete_user_preserving_messages(
+                user_profile_for_deletion,
+                group_setting_updates=group_setting_updates,
+                acting_user=acting_user,
+                ignore_objections=True,
+            )
             context["success_message"] = f"{user_email} in {realm.subdomain} deleted."
 
         if support_view_request is not None:

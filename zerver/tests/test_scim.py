@@ -8,13 +8,14 @@ import orjson
 from django.conf import settings
 from typing_extensions import override
 
+from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.user_groups import check_add_user_group, do_deactivate_user_group
 from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_groups import get_user_group_direct_member_ids
 from zerver.models import UserProfile
 from zerver.models.custom_profile_fields import CustomProfileField, CustomProfileFieldValue
-from zerver.models.groups import NamedUserGroup
+from zerver.models.groups import NamedUserGroup, SystemGroups
 from zerver.models.realms import get_realm
 
 if TYPE_CHECKING:
@@ -694,11 +695,27 @@ class TestSCIMUser(SCIMTestCase):
             "userName": hamlet.delivery_email,
             "active": False,
         }
+
+        # hamlet is the only member of the anonymous group used for
+        # can_manage_all_groups, a setting that cannot be set to the "Nobody"
+        # group. SCIM deactivation still succeeds, resetting the setting to
+        # its replacement group ("role:owners").
+        setting_group = self.create_or_update_anonymous_group_for_setting([hamlet], [])
+        do_change_realm_permission_group_setting(
+            hamlet.realm, "can_manage_all_groups", setting_group, acting_user=None
+        )
+        owners_group = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm_for_sharding=hamlet.realm, is_system_group=True
+        )
         result = self.json_put(f"/scim/v2/Users/{hamlet.id}", payload, **self.scim_headers())
         self.assertEqual(result.status_code, 200)
 
         hamlet.refresh_from_db()
         self.assertEqual(hamlet.is_active, False)
+
+        realm = hamlet.realm
+        realm.refresh_from_db()
+        self.assertEqual(realm.can_manage_all_groups_id, owners_group.id)
 
         # We modify the active attribute in the payload to cause reactivation of the user.
         payload["active"] = True
