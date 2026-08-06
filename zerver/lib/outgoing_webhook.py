@@ -1,6 +1,7 @@
 import abc
 import json
 import logging
+import re
 from contextlib import suppress
 from dataclasses import dataclass
 from time import perf_counter
@@ -143,10 +144,26 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             ("timestamp", event["message"]["timestamp"]),
             ("user_id", f"U{event['message']['sender_id']}"),
             ("user_name", event["message"]["sender_full_name"]),
-            ("text", event["command"]),
-            ("trigger_word", event["trigger"]),
-            ("service_id", event["user_profile_id"]),
         ]
+
+        text = event["command"]
+        command = ""
+
+        bot_mention_match = re.match(r"^@\*\*([^*]+)\*\*", text)
+        if bot_mention_match:
+            command = f"/{bot_mention_match.group(1)}"
+            text = text[bot_mention_match.end() :].lstrip()
+
+        if command:
+            request_data.append(("command", command))
+
+        request_data.extend(
+            [
+                ("text", text),
+                ("trigger_word", event["trigger"]),
+                ("service_id", event["user_profile_id"]),
+            ]
+        )
         return self.session.post(base_url, data=request_data)
 
     @override
