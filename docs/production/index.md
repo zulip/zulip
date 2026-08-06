@@ -29,5 +29,6 @@ email-gateway
 video-calls
 ai-integrations
 gif-picker-integrations
+github-link-previews
 scim
 ```
