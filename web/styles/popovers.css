@@ -493,6 +493,10 @@ ul.popover-group-menu-member-list {
     .tippy-box[data-placement="left"] .tippy-arrow::before {
         border-left-color: var(--color-border-emoji-picker-tippy-arrow);
     }
+
+    .tippy-box[data-placement="right"] .tippy-arrow::before {
+        border-right-color: var(--color-border-emoji-picker-tippy-arrow);
+    }
 }
 
 .modal__overlay #set-user-status-modal + .emoji-popover-root {
