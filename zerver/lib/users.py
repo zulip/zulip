@@ -792,12 +792,11 @@ def get_inaccessible_users_queryset(
         recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
     ).values("recipient_id")
 
-    # We fetch all inaccessible users without filtering
-    # by is_user_active.
     common_subscriptions = Subscription.objects.filter(
         recipient_id__in=acting_user_recipient_ids,
         user_profile_id=OuterRef("pk"),
         active=True,
+        is_user_active=True,
     )
     # All users can access all the bots, so we exclude them.
     target_human_users = UserProfile.objects.filter(id__in=target_user_ids, is_bot=False)
