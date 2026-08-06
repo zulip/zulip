@@ -907,6 +907,26 @@ function register_click_handlers(): void {
         },
     );
 
+    function open_dm_avatar_user_card(element: HTMLElement): void {
+        const user_id = Number.parseInt($(element).attr("data-user-id")!, 10);
+        const user = people.get_by_user_id(user_id);
+        toggle_user_card_popover(element, user);
+    }
+
+    $("#message_view_header").on("click", ".navbar-dm-avatar", function (this: HTMLElement, e) {
+        e.stopPropagation();
+        e.preventDefault();
+        open_dm_avatar_user_card(this);
+    });
+
+    $("#message_view_header").on("keydown", ".navbar-dm-avatar", function (this: HTMLElement, e) {
+        if (e.key === "Enter" || e.key === " ") {
+            e.stopPropagation();
+            e.preventDefault();
+            open_dm_avatar_user_card(this);
+        }
+    });
+
     /* These click handlers are implemented as just deep links to the
      * relevant part of the Zulip UI, so we don't want preventDefault,
      * but we do want to close the modal when you click them. */
