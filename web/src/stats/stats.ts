@@ -179,31 +179,20 @@ function floor_to_local_week(date: Date): Date {
 }
 
 function format_date(date: Date, include_hour: boolean): string {
-    const months = [
-        $t({defaultMessage: "January"}),
-        $t({defaultMessage: "February"}),
-        $t({defaultMessage: "March"}),
-        $t({defaultMessage: "April"}),
-        $t({defaultMessage: "May"}),
-        $t({defaultMessage: "June"}),
-        $t({defaultMessage: "July"}),
-        $t({defaultMessage: "August"}),
-        $t({defaultMessage: "September"}),
-        $t({defaultMessage: "October"}),
-        $t({defaultMessage: "November"}),
-        $t({defaultMessage: "December"}),
-    ];
-    const month_str = months[date.getMonth()];
-    const year = date.getFullYear();
-    const day = date.getDate();
+    const date_options: Intl.DateTimeFormatOptions = {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+    };
     if (include_hour) {
-        const hour = date.getHours();
-
-        const str = hour >= 12 ? "PM" : "AM";
-
-        return `${month_str} ${day}, ${hour % 12}:00${str}`;
+        return new Intl.DateTimeFormat(page_params.request_language, {
+            ...date_options,
+            hour: "numeric",
+            minute: "2-digit",
+            hourCycle: page_params.twenty_four_hour_time ? "h23" : "h12",
+        }).format(date);
     }
-    return `${month_str} ${day}, ${year}`;
+    return new Intl.DateTimeFormat(page_params.request_language, date_options).format(date);
 }
 
 function update_last_full_update(end_times: number[]): void {
@@ -213,17 +202,18 @@ function update_last_full_update(end_times: number[]): void {
 
     last_full_update = Math.min(last_full_update, end_times.at(-1)!);
     const update_time = new Date(last_full_update * 1000);
-    const locale_date = update_time.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-    });
-    const locale_time = update_time.toLocaleTimeString(undefined, {
-        hour: "numeric",
-        minute: "numeric",
-    });
+    const locale_date = format_date(update_time, false);
+    const time_options: Intl.DateTimeFormatOptions = page_params.twenty_four_hour_time
+        ? {hourCycle: "h23", hour: "2-digit", minute: "2-digit"}
+        : {hourCycle: "h12", hour: "numeric", minute: "2-digit"};
 
-    $("#id_last_full_update").text(locale_time + " on " + locale_date);
+    const locale_time = new Intl.DateTimeFormat(page_params.request_language, time_options).format(
+        update_time,
+    );
+
+    $("#id_last_full_update").text(
+        $t({defaultMessage: "{time} on {date}"}, {time: locale_time, date: locale_date}),
+    );
     $("#id_last_full_update").closest(".last-update").show();
 }
 
