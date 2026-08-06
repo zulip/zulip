@@ -68,12 +68,16 @@ def handle_issue_opened(payload: WildValue) -> str:
 
 def handle_issue_updated(payload: WildValue) -> str:
     issue = payload["issue"]
-    author_name = _get_user_name(issue["author"])
+    journal = payload.get("journal")
+    if journal and journal.get("author"):
+        author_name = _get_user_name(journal["author"])
+    else:
+        author_name = _get_user_name(issue["author"])
     issue_link = _get_issue_link(payload)
 
     journal_notes = ""
     if (
-        (journal := payload.get("journal"))
+        journal
         and (notes := journal.get("notes"))
         and (tamed_notes := notes.tame(check_string).strip())
     ):
