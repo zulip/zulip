@@ -1,6 +1,12 @@
 {% extends "!layout.html" %}
 
 {% block document %}
+<pre>
+debugging info:
+pagename={{ pagename }}
+release={{ release }}
+</pre>
+
     {#
     # This allows us to insert a warning that appears only on the development
     # version e.g. to say that something is likely to have changed.
