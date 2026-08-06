@@ -2,7 +2,6 @@ import logging
 from collections import defaultdict
 from collections.abc import Callable
 from datetime import datetime
-from typing import TypedDict
 
 from django.db import connection, transaction
 from django.db.models import Q, QuerySet
@@ -10,7 +9,7 @@ from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Literal
 
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic import topic_match_q
+from zerver.lib.topic import matching_user_topic_exists_q
 from zerver.lib.types import UserTopicDict
 from zerver.models import Recipient, Subscription, UserProfile, UserTopic
 from zerver.models.streams import get_stream
@@ -230,7 +229,7 @@ def exclude_stream_and_topic_mutes(user_profile: UserProfile, stream_id: int | N
     # Note: Unlike get_topic_mutes, here we always want to
     # consider topics in deactivated streams, so they are
     # never filtered from the query in this method.
-    query = UserTopic.objects.filter(
+    muted_topics = UserTopic.objects.filter(
         user_profile=user_profile,
         visibility_policy=UserTopic.VisibilityPolicy.MUTED,
     )
@@ -238,33 +237,12 @@ def exclude_stream_and_topic_mutes(user_profile: UserProfile, stream_id: int | N
     if stream_id is not None:
         # If we are narrowed to a stream, we can optimize the query
         # by not considering topic mutes outside the stream.
-        query = query.filter(stream_id=stream_id)
-
-    excluded_topic_rows = list(
-        query.values(
-            "recipient_id",
-            "topic_name",
-        )
-    )
+        muted_topics = muted_topics.filter(stream_id=stream_id)
 
     conditions = ~Q(pk__in=[])  # Always true.
 
-    class RecipientTopicDict(TypedDict):
-        recipient_id: int
-        topic_name: str
-
-    def topic_cond(row: RecipientTopicDict) -> Q:
-        recipient_id = row["recipient_id"]
-        topic_name = row["topic_name"]
-        assert isinstance(topic_name, str)
-        return Q(recipient_id=recipient_id) & topic_match_q(topic_name)
-
-    # Add this query later to reduce the number of messages it has to run on.
-    if excluded_topic_rows:
-        muted_topics_q = topic_cond(excluded_topic_rows[0])
-        for row in excluded_topic_rows[1:]:
-            muted_topics_q |= topic_cond(row)
-        conditions &= ~muted_topics_q
+    if muted_topics.exists():
+        conditions &= ~matching_user_topic_exists_q(muted_topics)
 
     # Channel-level muting only applies when looking at views that
     # include multiple channels, since we do want users to be able to
@@ -281,37 +259,21 @@ def exclude_stream_and_topic_mutes(user_profile: UserProfile, stream_id: int | N
         if len(muted_recipient_ids) == 0:
             return conditions
 
-        # Add entries with visibility_policy FOLLOWED or UNMUTED in muted_recipient_ids
-        query = UserTopic.objects.filter(
+        followed_or_unmuted_topics = UserTopic.objects.filter(
             user_profile=user_profile,
-            recipient_id__in=muted_recipient_ids,
             visibility_policy__in=[
                 UserTopic.VisibilityPolicy.FOLLOWED,
                 UserTopic.VisibilityPolicy.UNMUTED,
             ],
         )
+        hidden_by_muted_channel = Q(recipient_id__in=muted_recipient_ids)
 
-        included_topic_rows = query.values(
-            "recipient_id",
-            "topic_name",
-        )
+        # Only messages in a muted channel reach this condition, so the
+        # subquery needs no channel restriction of its own.
+        if followed_or_unmuted_topics.filter(recipient_id__in=muted_recipient_ids).exists():
+            hidden_by_muted_channel &= ~matching_user_topic_exists_q(followed_or_unmuted_topics)
 
-        # Exclude muted_recipient_ids unless they match include_followed_or_unmuted_topics_condition
-        muted_stream_condition = Q(recipient_id__in=muted_recipient_ids)
-
-        if included_topic_rows:
-            include_followed_or_unmuted_topics_condition = topic_cond(included_topic_rows[0])
-            for row in included_topic_rows[1:]:  # nocoverage
-                include_followed_or_unmuted_topics_condition |= topic_cond(row)
-
-            exclude_muted_streams_condition = ~(
-                muted_stream_condition & ~include_followed_or_unmuted_topics_condition
-            )
-        else:
-            # If no included topics, exclude all muted streams
-            exclude_muted_streams_condition = ~muted_stream_condition
-
-        conditions &= exclude_muted_streams_condition
+        conditions &= ~hidden_by_muted_channel
 
     return conditions
 
