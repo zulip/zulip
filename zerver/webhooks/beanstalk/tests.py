@@ -20,6 +20,20 @@ class BeanstalkHookTests(WebhookTestCase):
             content_type=None,
         )
 
+    def test_git_single_force_push(self) -> None:
+        """Ensure that a top-level 'forced' flag causes a force-pushed message."""
+        expected_topic_name = "work-test / master"
+        expected_message = """Leo Franchi [force pushed](http://lfranchi-svn.beanstalkapp.com/work-test) 1 commit to branch master.
+
+* add some stuff ([e50508df24c](http://lfranchi-svn.beanstalkapp.com/work-test/changesets/e50508df))"""
+        self.api_channel_message(
+            self.test_user,
+            "git_singlecommit_forced",
+            expected_topic_name,
+            expected_message,
+            content_type=None,
+        )
+
     def test_git_single_filtered_by_branches(self) -> None:
         self.url = self.build_webhook_url(branches="master,development")
         expected_topic_name = "work-test / master"
