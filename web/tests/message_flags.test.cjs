@@ -164,7 +164,7 @@ run_test("read", ({override}) => {
     function send_read(messages) {
         with_overrides(({override_rewire}) => {
             override_rewire(message_flags, "_unread_batch_size", 5);
-            message_flags.send_read(messages);
+            message_flags.send_read.add(messages);
         });
     }
 
@@ -266,6 +266,62 @@ run_test("read", ({override}) => {
         },
     });
 
+    // Drain the locally_echoed retry batch [1, 2] whose success()
+    // was never called, so the next test starts with a clean queue.
+    message_flags.send_read.remove_from_queue([1, 2]);
+    clock.reset();
+});
+
+run_test("send_read.remove_from_queue", ({override}) => {
+    let channel_post_opts;
+    override(channel, "post", (opts) => {
+        channel_post_opts = opts;
+    });
+
+    function send_read(messages) {
+        with_overrides(({override_rewire}) => {
+            override_rewire(message_flags, "_unread_batch_size", 5);
+            message_flags.send_read.add(messages);
+        });
+    }
+
+    // Enqueue messages 21..25.
+    send_read([
+        {locally_echoed: false, id: 21},
+        {locally_echoed: false, id: 22},
+        {locally_echoed: false, id: 23},
+        {locally_echoed: false, id: 24},
+        {locally_echoed: false, id: 25},
+    ]);
+
+    // At this point, channel.post was called with the batch.
+    assert.ok(channel_post_opts.data.messages.includes("21"));
+
+    // Enqueue more messages.
+    send_read([
+        {locally_echoed: false, id: 26},
+        {locally_echoed: false, id: 27},
+    ]);
+
+    // Remove messages 24 and 27 from the queue.
+    message_flags.send_read.remove_from_queue([24, 27]);
+
+    // Simulate success for the first batch [21..25]; this removes
+    // messages [21, 22, 23, 25] from the queue (24 was already
+    // removed above) and schedules the next batch.
+    channel_post_opts.success({messages: [21, 22, 23, 24, 25]});
+
+    // Advance past the throttle window so the next batch fires.
+    clock.tick(1100);
+
+    // The remaining queue should only contain [26].
+    assert.equal(channel_post_opts.data.messages, "[26]");
+
+    // Drain the remaining batch and reset timers for the next test.
+    channel_post_opts.success({messages: [26]});
+    // Reset the clock back but ensure lodash throttle sees a clean
+    // state by first ticking far forward, then resetting.
+    clock.runAll();
     clock.reset();
 });
 
@@ -280,12 +336,14 @@ run_test("read_empty_data", ({override}) => {
     function send_read(messages) {
         with_overrides(({override_rewire}) => {
             override_rewire(message_flags, "_unread_batch_size", 5);
-            message_flags.send_read(messages);
+            message_flags.send_read.add(messages);
         });
     }
 
     // send read to obtain success callback
     send_read([{locally_echoed: false, id: 1}]);
+    // Ensure the throttled server_request fires.
+    clock.tick(1100);
 
     // verify early return on empty data
     const success_callback = channel_post_opts.success;
