@@ -1,0 +1,30 @@
+{
+  "timestamp": 1565965100000,
+  "webhookEvent": "comment_removed",
+  "userKey": "abc123",
+  "user": {
+    "type": "known",
+    "username": "jsmith",
+    "userKey": "abc123",
+    "accountId": "5c76b994e1bcdf6294d0eb0f",
+    "displayName": "John Smith",
+    "_links": {
+      "base": "https://example.atlassian.net/wiki",
+      "context": "/wiki",
+      "self": "https://example.atlassian.net/wiki/rest/api/user?accountId=abc123"
+    }
+  },
+  "comment": {
+    "id": "",
+    "container": {
+      "id": "123456",
+      "type": "page",
+      "status": "current",
+      "title": "Architecture Overview",
+      "_links": {
+        "base": "https://example.atlassian.net/wiki",
+        "webui": "/spaces/ENG/pages/123456/Architecture+Overview"
+      }
+    }
+  }
+}

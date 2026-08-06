@@ -582,6 +582,14 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         legacy=True,
     ),
     IncomingWebhookIntegration(
+        "confluence_cloud",
+        ["project-management"],
+        [WebhookScreenshotConfig("page_created.json")],
+        client_name="ZulipConfluenceCloudWebhook",
+        display_name="Confluence Cloud",
+        logo="images/integrations/logos/confluence.svg",
+    ),
+    IncomingWebhookIntegration(
         "crashlytics", ["monitoring"], [WebhookScreenshotConfig("issue_message.json")]
     ),
     IncomingWebhookIntegration(
