@@ -351,6 +351,36 @@ test("rerender_messages rebuilds every distinct recipient bar", () => {
     assert.deepEqual(rerendered_group_ids, ["group-A", "group-B"]);
 });
 
+test("rerender_messages marks only messages with content edits", () => {
+    const view = new MessageListView({id: 1}, true, true);
+    const dm1 = {msg: {id: 1, type: "private", to_user_ids: "5"}};
+    const dm2 = {msg: {id: 2, type: "private", to_user_ids: "5"}};
+    view.message_containers = new Map([
+        [1, dm1],
+        [2, dm2],
+    ]);
+
+    view.get_row = (id) => ({
+        length: 1,
+        parent: () => ({expectOne: () => ({attr: () => `group-${id}`})}),
+    });
+    view._message_groups = [{message_group_id: "group-1"}, {message_group_id: "group-2"}];
+    view._rerender_header = () => {};
+
+    const content_edit_statuses = [];
+    view._rerender_message = (message_container, opts) => {
+        content_edit_statuses.push([message_container.msg.id, opts.message_content_edited]);
+        return [];
+    };
+
+    view.rerender_messages([dm1.msg, dm2.msg], new Set([dm2.msg.id]));
+
+    assert.deepEqual(content_edit_statuses, [
+        [dm1.msg.id, false],
+        [dm2.msg.id, true],
+    ]);
+});
+
 test("muted_message_vars", () => {
     // This verifies that the variables for muted/hidden messages are set
     // correctly.

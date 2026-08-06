@@ -114,9 +114,12 @@ run_test("update_messages", ({override, override_rewire}) => {
 
     let rendered_msgs;
 
-    message_lists.current.view.rerender_messages = (msgs_to_rerender, message_content_edited) => {
+    message_lists.current.view.rerender_messages = (
+        msgs_to_rerender,
+        content_edited_message_ids,
+    ) => {
         rendered_msgs = msgs_to_rerender;
-        assert.equal(message_content_edited, true);
+        assert.deepEqual(content_edited_message_ids, new Set([original_message.id]));
     };
 
     const side_effects = [
