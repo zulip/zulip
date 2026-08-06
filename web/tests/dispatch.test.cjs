@@ -43,6 +43,7 @@ mock_esm("../src/compose_validate", {
     validate_and_update_send_button_status: noop,
     warn_if_guest_in_dm_recipient: noop,
 });
+const condense = mock_esm("../src/condense");
 const message_events = mock_esm("../src/message_events", {
     update_views_filtered_on_message_property: noop,
     update_current_view_for_topic_visibility: noop,
@@ -1536,6 +1537,43 @@ run_test("update_message (remove star)", () => {
     dispatch(event);
     const msg = message_store.get(test_message.id);
     assert.equal(msg.starred, false);
+});
+
+function assert_condense_state_recalculated(event, override) {
+    const $fake_row = {length: 1, find: () => ({toggleClass: noop})};
+    const condensed_rows = [];
+    override(message_lists.current, "get_row", () => $fake_row);
+    override(condense, "condense_and_collapse", ($row) => {
+        condensed_rows.push($row);
+    });
+    dispatch(event);
+    assert.deepEqual(condensed_rows, [$fake_row]);
+    return {$fake_row, condensed_rows};
+}
+
+run_test("update_message (hide link previews)", ({override}) => {
+    const event = event_fixtures.update_message_flags__hide_link_previews_add;
+    assert_condense_state_recalculated(event, override);
+    const msg = message_store.get(test_message.id);
+    assert.equal(msg.hide_link_previews, true);
+});
+
+run_test("update_message (show link previews)", ({override}) => {
+    const event = event_fixtures.update_message_flags__hide_link_previews_remove;
+    assert_condense_state_recalculated(event, override);
+    const msg = message_store.get(test_message.id);
+    assert.equal(msg.hide_link_previews, false);
+});
+
+run_test("update_message (link previews already hidden)", ({override}) => {
+    const event = event_fixtures.update_message_flags__hide_link_previews_add;
+    const {$fake_row, condensed_rows} = assert_condense_state_recalculated(event, override);
+
+    dispatch(event);
+    assert.deepEqual(condensed_rows, [$fake_row]);
+
+    dispatch({...event, messages: [0]}); // message does not exist
+    assert.deepEqual(condensed_rows, [$fake_row]);
 });
 
 run_test("update_message (wrong data)", () => {

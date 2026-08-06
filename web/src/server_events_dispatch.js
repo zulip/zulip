@@ -1184,6 +1184,16 @@ export function dispatch_normal_event(event) {
                         new_value,
                     );
                     break;
+                case "hide_link_previews":
+                    for (const message_id of event.messages) {
+                        const message = message_store.get(message_id);
+                        if (message === undefined || message.hide_link_previews === new_value) {
+                            continue;
+                        }
+                        message.hide_link_previews = new_value;
+                        message_live_update.update_hide_link_previews_view(message_id, new_value);
+                    }
+                    break;
             }
             break;
         }
