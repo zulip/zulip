@@ -401,9 +401,10 @@ function setup_event_handlers(): void {
         update_bulk_delete_ui();
     });
 
-    $("#drafts_table .overlay_message_controls .draft-selection-checkbox").on("click", (e) => {
-        const is_checked = is_checkbox_icon_checked($(e.target));
-        toggle_checkbox_icon_state($(e.target), !is_checked);
+    $("#drafts_table .overlay_message_controls .draft-selection-tooltip").on("click", (e) => {
+        const $checkbox = $(e.currentTarget).find(".draft-selection-checkbox");
+        const is_checked = is_checkbox_icon_checked($checkbox);
+        toggle_checkbox_icon_state($checkbox, !is_checked);
         update_bulk_delete_ui();
     });
 }
@@ -540,8 +541,8 @@ export function initialize(): void {
             return;
         }
         const draft_row = e.target.closest(".overlay-message-info-box");
-        if (draft_row instanceof HTMLElement) {
-            // A draft gained focus; mark it as the selected draft.
+        if (draft_row instanceof HTMLElement && e.target === draft_row) {
+            // A draft row gained focus; mark it as the selected draft.
             messages_overlay_ui.activate_element(draft_row, keyboard_handling_context);
         } else if (e.target.matches(overlay_util.OVERLAY_FOCUSABLE_SELECTOR)) {
             // Another focusable element (e.g. a header button) gained focus;
