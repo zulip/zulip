@@ -2035,6 +2035,7 @@ li.active-sub-filter {
 .searching-for-more-topics img {
     height: 16px;
     grid-area: row-content;
+    filter: var(--filter-searching-more-topics);
 }
 
 .sidebar-topic-check {
