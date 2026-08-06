@@ -4,6 +4,7 @@ import os
 import sys
 import time
 from argparse import ArgumentParser, BooleanOptionalAction, RawTextHelpFormatter, _ActionsContainer
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import reduce, wraps
 from typing import Any, Protocol
@@ -80,6 +81,38 @@ def skip_unless_locked(handle_func: HandleMethod) -> HandleMethod:
             handle_func(self, *args, **kwargs)
 
     return our_handle
+
+
+def mutually_exclusive_with(
+    conflicting_handle: HandleMethod,
+) -> Callable[[HandleMethod], HandleMethod]:
+    """Prevent this command from overlapping with conflicting_handle's
+    command: take that command's lock for our whole run, exiting with
+    an error if it is already held.  Exclusion works in both
+    directions -- we refuse to start while it runs, and while we hold
+    its lock the conflicting command (which must itself be wrapped in
+    abort_unless_locked or skip_unless_locked) will abort or skip."""
+
+    def decorator(handle_func: HandleMethod) -> HandleMethod:
+        @wraps(handle_func)
+        def our_handle(self: BaseCommand, *args: Any, **kwargs: Any) -> None:
+            path = lockfile_path(conflicting_handle)
+            with lockfile_nonblocking(path) as lock_acquired:
+                if not lock_acquired:
+                    conflicting_name = conflicting_handle.__module__.split(".")[-1]
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f"Process '{conflicting_name}' is currently running "
+                            f"(lock {path} is held). "
+                            f"Please wait until it has finished before trying again."
+                        )
+                    )
+                    sys.exit(1)
+                handle_func(self, *args, **kwargs)
+
+        return our_handle
+
+    return decorator
 
 
 def abort_cron_during_deploy(handle_func: HandleMethod) -> HandleMethod:
