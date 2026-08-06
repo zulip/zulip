@@ -735,6 +735,21 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                 message_batches += 1
             self.assertTrue(message_batches == expected_batch_amount)
 
+        # Regression test: the generator must hand ownership of each
+        # yielded batch to the consumer. Previously it cleared and
+        # reused the same list object after yielding it, so retaining
+        # batches (e.g. materializing with list(...)) left every batch
+        # except the final one emptied and aliased to the same list.
+        batches = list(get_batched_export_message_data(message_file_paths, 5))
+        self.assertEqual(sum(len(batch) for batch in batches), total_messages)
+        flattened_message_ids = [message["Id"] for batch in batches for message in batch]
+        expected_message_ids = [
+            message["Id"]
+            for path in message_file_paths
+            for message in sorted(get_data_file(path), key=lambda m: int(m["Id"]))
+        ]
+        self.assertEqual(flattened_message_ids, expected_message_ids)
+
     @responses.activate
     def test_process_hosted_content_attachments(self) -> None:
         responses.add(

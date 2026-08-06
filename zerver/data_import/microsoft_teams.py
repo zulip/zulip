@@ -700,7 +700,12 @@ def get_batched_export_message_data(
         for message in sorted(messages, key=lambda m: int(m["Id"])):
             if len(batched_messages) == chunk_size:
                 yield batched_messages
-                batched_messages.clear()
+                # Start a new list rather than clearing the yielded one;
+                # the consumer owns the yielded list, and mutating it here
+                # would corrupt every batch if the generator is materialized
+                # (e.g. with list(...)) or batches are retained across
+                # iterations.
+                batched_messages = []
             batched_messages.append(message)
 
     if batched_messages:
