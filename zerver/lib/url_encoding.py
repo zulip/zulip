@@ -1,13 +1,11 @@
 # See the Zulip URL spec at https://zulip.com/api/zulip-urls
 
 import urllib.parse
-from typing import Any
 from urllib.parse import urlsplit
 
 import re2
 
-from zerver.lib.topic import get_topic_from_message_info
-from zerver.lib.types import UserDisplayRecipient
+from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.models import Realm, Stream, UserProfile
 
 hash_replacements = {
@@ -141,19 +139,32 @@ def topic_narrow_url(*, realm: Realm, stream: Stream, topic_name: str) -> str:
 
 
 def message_link_url(
-    realm: Realm, message: dict[str, Any], *, conversation_link: bool = False
+    realm: Realm,
+    message_id: int,
+    display_recipient: DisplayRecipientT,
+    stream_id: int | None = None,
+    topic_name: str | None = None,
+    *,
+    conversation_link: bool = False,
 ) -> str:
-    if message["type"] == "stream":
+    if stream_id:
+        assert isinstance(display_recipient, str)
+        assert topic_name is not None
         url = stream_message_url(
             realm=realm,
-            message=message,
+            message_id=message_id,
+            stream_id=stream_id,
+            stream_name=display_recipient,
+            topic_name=topic_name,
             conversation_link=conversation_link,
         )
         return url
 
+    assert not isinstance(display_recipient, str)
     url = pm_message_url(
         realm=realm,
-        message=message,
+        message_id=message_id,
+        display_recipient=display_recipient,
         conversation_link=conversation_link,
     )
     return url
@@ -161,7 +172,10 @@ def message_link_url(
 
 def stream_message_url(
     realm: Realm | None,
-    message: dict[str, Any],
+    message_id: int,
+    stream_id: int,
+    stream_name: str,
+    topic_name: str,
     *,
     conversation_link: bool = False,
     include_base_url: bool = True,
@@ -172,10 +186,6 @@ def stream_message_url(
         with_or_near = "with"
     else:
         with_or_near = "near"
-    message_id = str(message["id"])
-    stream_id = message["stream_id"]
-    stream_name = message["display_recipient"]
-    topic_name = get_topic_from_message_info(message)
     encoded_topic_name = encode_hash_component(topic_name)
     encoded_stream = encode_channel(stream_id, stream_name)
 
@@ -189,15 +199,18 @@ def stream_message_url(
 
 
 def pm_message_url(
-    realm: Realm, message: dict[str, Any], *, conversation_link: bool = False
+    realm: Realm,
+    message_id: int,
+    display_recipient: list[UserDisplayRecipient],
+    *,
+    conversation_link: bool = False,
 ) -> str:
     if conversation_link:
         with_or_near = "with"
     else:
         with_or_near = "near"
 
-    message_id = str(message["id"])
-    user_ids = [recipient["id"] for recipient in message["display_recipient"]]
+    user_ids = [recipient["id"] for recipient in display_recipient]
 
     direct_message_slug = encode_user_ids(user_ids)
 
@@ -207,7 +220,7 @@ def pm_message_url(
         "dm",
         direct_message_slug,
         with_or_near,
-        message_id,
+        str(message_id),
     ]
     full_url = "/".join(parts)
     return full_url
