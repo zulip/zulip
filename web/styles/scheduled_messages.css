@@ -36,6 +36,10 @@
 
     background-color: var(--background-color-textarea);
 
+    &:focus {
+        border-color: var(--color-border-legacy-input-focus);
+    }
+
     font-size: 1em;
     line-height: var(--base-line-height-unitless);
     font-family: inherit;

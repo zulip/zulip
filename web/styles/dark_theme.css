@@ -19,27 +19,6 @@
         }
     }
 
-    .enter_sends_choices {
-        color: hsl(236deg 33% 90%);
-
-        .enter_sends_minor {
-            color: hsl(0deg 0% 80%);
-        }
-    }
-
-    .dropdown-list-delete {
-        /* hsl(7deg 100% 74%) corresponds to var(--red-250) */
-        color: color-mix(
-            in oklch,
-            hsl(7deg 100% 74%) 70%,
-            transparent
-        ) !important;
-
-        &:hover {
-            color: hsl(7deg 100% 74%) !important;
-        }
-    }
-
     /* this one is because in the app we have blue and in dark-theme it should be white. */
     .popover a {
         color: inherit;
@@ -63,17 +42,6 @@
         opacity: 0.4;
     }
 
-    .popover-filter-input-wrapper .popover-filter-input:focus {
-        background-color: hsl(225deg 6% 7%);
-        border: 1px solid hsl(0deg 0% 100% / 50%);
-        box-shadow: 0 0 5px hsl(0deg 0% 100% / 40%);
-    }
-
-    & select option {
-        background-color: var(--color-background);
-        color: hsl(236deg 33% 90%);
-    }
-
     .pill-container.not-editable-by-user,
     .group_setting_disabled .pill-container {
         opacity: 0.5;
@@ -90,10 +58,6 @@
         }
     }
 
-    textarea.schedule-reminder-note:focus {
-        border-color: hsl(0deg 0% 0% / 90%);
-    }
-
     .popover hr,
     hr {
         opacity: 0.2;
@@ -103,29 +67,11 @@
         border-bottom-width: 1px;
     }
 
-    .drafts-container .header-body .delete-drafts-group > *:focus {
-        background-color: hsl(228deg 11% 17%);
-    }
-
-    .table-striped tbody tr:nth-child(even) td {
-        border-color: hsl(0deg 0% 0% / 20%);
-        background-color: color-mix(
-            in srgb,
-            hsl(0deg 0% 0%) 20%,
-            var(--color-background-modal)
-        );
-    }
-
     .overlay-message-row
         .message_header_private_message
         .message_label_clickable {
         padding: 4px 6px 3px;
         color: inherit;
-    }
-
-    & time {
-        background: hsl(0deg 0% 0% / 20%);
-        box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 40%);
     }
 
     .tip {
@@ -215,36 +161,6 @@
 
     .searching-for-more-topics img {
         filter: invert(100%);
-    }
-
-    .simplebar-track .simplebar-scrollbar::before {
-        background-color: hsl(0deg 0% 100%);
-        box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 33%);
-    }
-
-    .collapse-settings-button:hover {
-        color: hsl(200deg 79% 66%);
-    }
-
-    #loading_older_messages_indicator,
-    #recent_view_loading_messages_indicator {
-        & path {
-            fill: hsl(0deg 0% 100%);
-        }
-    }
-
-    & a:not(:active):focus,
-    button:not(.action-button, .icon-button):focus-visible,
-    i.fa:focus,
-    i.zulip-icon:focus,
-    [role="button"]:focus {
-        outline-color: hsl(0deg 0% 67%);
-    }
-
-    .color_animated_button {
-        .zulip-icon {
-            color: hsl(0deg 0% 100%);
-        }
     }
 
     .panel_user_list > .pill-container,

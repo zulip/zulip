@@ -1497,7 +1497,7 @@ textarea.new_message_textarea {
 .enter_sends_choices {
     display: flex;
     flex-direction: column;
-    color: var(--color-text-popover-menu);
+    color: var(--color-kbd-enter-sends);
 
     .enter_sends_choice {
         padding: 4px 10px;
@@ -1578,6 +1578,7 @@ textarea.new_message_textarea {
     .enter_sends_minor {
         /* 12px at 14px/1em */
         font-size: 0.8571em;
+        color: var(--color-kbd-enter-sends-minor);
 
         .popover-menu-hotkey-hint {
             /* 12px at 14px/1em */
