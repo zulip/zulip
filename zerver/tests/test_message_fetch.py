@@ -300,14 +300,14 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="is", operand="followed", negated=False)
         self._do_add_term_test(
             term,
-            'WHERE EXISTS(SELECT %s AS "a" FROM "zerver_usertopic" U0 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND UPPER(U0."topic_name"::text) = UPPER(("zerver_message"."subject")) AND U0."user_profile_id" = %s AND U0."visibility_policy" = %s) LIMIT 1)',
+            'WHERE EXISTS(SELECT %s AS "a" FROM "zerver_usertopic" U0 WHERE (U0."user_profile_id" = %s AND U0."visibility_policy" = %s AND U0."recipient_id" = ("zerver_message"."recipient_id") AND UPPER(U0."topic_name"::text) = UPPER(("zerver_message"."subject"))) LIMIT 1)',
         )
 
     def test_add_term_using_is_operator_for_negated_followed_topics(self) -> None:
         term = NarrowParameter(operator="is", operand="followed", negated=True)
         self._do_add_term_test(
             term,
-            'WHERE NOT (EXISTS(SELECT %s AS "a" FROM "zerver_usertopic" U0 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND UPPER(U0."topic_name"::text) = UPPER(("zerver_message"."subject")) AND U0."user_profile_id" = %s AND U0."visibility_policy" = %s) LIMIT 1))',
+            'WHERE NOT (EXISTS(SELECT %s AS "a" FROM "zerver_usertopic" U0 WHERE (U0."user_profile_id" = %s AND U0."visibility_policy" = %s AND U0."recipient_id" = ("zerver_message"."recipient_id") AND UPPER(U0."topic_name"::text) = UPPER(("zerver_message"."subject"))) LIMIT 1))',
         )
 
     def test_add_term_using_is_operator_for_muted_topics(self) -> None:
