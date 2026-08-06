@@ -2414,17 +2414,28 @@ def import_message_data(
         message_files,
         num_processes,
         initializer=_initialize_message_worker,
-        initargs=(ID_MAP, realm.id, sender_map, import_dir),
+        initargs=(
+            ID_MAP,
+            path_maps,
+            message_id_to_attachments,
+            realm.id,
+            sender_map,
+            import_dir,
+        ),
     )
 
 
 def _initialize_message_worker(
     id_map: dict[str, dict[int, int]],
+    path_maps_value: dict[str, dict[str, str]],
+    message_id_to_attachments_value: dict[str, dict[int, list[str]]],
     realm_id: int,
     sender_map: dict[int, Record],
     import_dir: Path,
 ) -> None:
     ID_MAP.update(id_map)
+    path_maps.update(path_maps_value)
+    message_id_to_attachments.update(message_id_to_attachments_value)
     ctx = MessageImportContext(
         realm=Realm.objects.get(id=realm_id),
         sender_map=sender_map,
