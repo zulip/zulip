@@ -269,6 +269,15 @@ export function condense_and_collapse(elems: JQuery): void {
             $content.removeClass("could-be-condensed");
         }
 
+        // Completely hide the message and replace it with a "Show more"
+        // button if the user has collapsed it. This check must come first
+        // so that collapsed takes priority over condensed state.
+        if (message.collapsed) {
+            $content.addClass("collapsed");
+            show_message_expander($(elem));
+            continue;
+        }
+
         // If message.condensed is defined, then the user has manually
         // specified whether this message should be expanded or condensed.
         if (message.condensed === true) {
@@ -287,13 +296,6 @@ export function condense_and_collapse(elems: JQuery): void {
         } else {
             $content.removeClass("condensed");
             hide_message_length_toggle($(elem));
-        }
-
-        // Completely hide the message and replace it with a "Show more"
-        // button if the user has collapsed it.
-        if (message.collapsed) {
-            $content.addClass("collapsed");
-            show_message_expander($(elem));
         }
     }
 }
