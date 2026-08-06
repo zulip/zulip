@@ -6,7 +6,7 @@ from collections import Counter
 from datetime import datetime, timedelta, timezone
 from email.headerregistry import Address
 from email.utils import formatdate as email_formatdate
-from typing import Annotated, Any, TypedDict, TypeVar
+from typing import Annotated, Any, Literal, TypedDict, TypeVar
 from urllib.parse import urljoin, urlsplit
 from uuid import UUID
 
@@ -901,13 +901,53 @@ class PushNotificationsDisallowedError(JsonableError):
         super().__init__(msg)
 
 
+class GcmOptions(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    priority: Literal["high", "normal"] | None = None
+
+
+class GcmPayload(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    realm_url: str | None = None
+    # TODO/compatibility: `realm_uri` predates `realm_url` (added in
+    # ac4dde24ae) and is still sent by older self-hosted servers.
+    realm_uri: str | None = None
+    realm_name: str | None = None
+    user_id: int | None = None
+
+
+class ApnsAlert(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    title: str | None = None
+    subtitle: str | None = None
+    body: str | None = None
+
+
+class ApnsCustom(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    zulip: dict[str, Any] = {}
+
+
+class ApnsPayload(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    alert: ApnsAlert | None = None
+    sound: str | None = None
+    badge: int | None = None
+    custom: ApnsCustom | None = None
+
+
 class RemoteServerNotificationPayload(BaseModel):
     user_id: int | None = None
     user_uuid: str | None = None
     realm_uuid: str | None = None
-    gcm_payload: dict[str, Any] = {}
-    apns_payload: dict[str, Any] = {}
-    gcm_options: dict[str, Any] = {}
+    gcm_payload: GcmPayload | None = None
+    apns_payload: ApnsPayload | None = None
+    gcm_options: GcmOptions | None = None
 
     android_devices: list[str] = []
     apple_devices: list[str] = []
@@ -926,9 +966,17 @@ def remote_server_notify_push(
     user_uuid = payload.user_uuid
     user_identity = UserPushIdentityCompat(user_id, user_uuid)
 
-    gcm_payload = payload.gcm_payload
-    apns_payload = payload.apns_payload
-    gcm_options = payload.gcm_options
+    gcm_payload = (
+        payload.gcm_payload.model_dump(exclude_none=True) if payload.gcm_payload is not None else {}
+    )
+    apns_payload = (
+        payload.apns_payload.model_dump(exclude_none=True)
+        if payload.apns_payload is not None
+        else {}
+    )
+    gcm_options = (
+        payload.gcm_options.model_dump(exclude_none=True) if payload.gcm_options is not None else {}
+    )
 
     realm_uuid = payload.realm_uuid
     remote_realm = None
