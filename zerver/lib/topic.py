@@ -414,14 +414,31 @@ def get_resolved_topic_condition_q() -> Q:
     return Q(subject__startswith=RESOLVED_TOPIC_PREFIX, is_channel_message=True)
 
 
-def get_followed_topic_condition_q(user_id: int) -> Q:
+def matching_user_topic_exists_q(topics: QuerySet[UserTopic]) -> Q:
+    """Matches the messages that one of the given UserTopic rows is for.
+
+    Correlating against zerver_usertopic, rather than inlining a
+    condition per row, keeps the query a fixed size however many rows
+    there are.
+
+    Matching a UserTopic's recipient already implies the message is a
+    channel message, since a UserTopic's recipient is always its
+    channel's, so is_channel_message is not tested here.
+    """
     return Q(
         Exists(
-            UserTopic.objects.filter(
-                user_profile_id=user_id,
-                visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
-                topic_name__iexact=OuterRef("subject"),
-                recipient=OuterRef("recipient"),
+            topics.filter(
+                recipient_id=OuterRef("recipient_id"),
+                topic_name__iexact=OuterRef(DB_TOPIC_NAME),
             )
+        )
+    )
+
+
+def get_followed_topic_condition_q(user_id: int) -> Q:
+    return matching_user_topic_exists_q(
+        UserTopic.objects.filter(
+            user_profile_id=user_id,
+            visibility_policy=UserTopic.VisibilityPolicy.FOLLOWED,
         )
     )
