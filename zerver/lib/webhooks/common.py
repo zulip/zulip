@@ -19,6 +19,7 @@ from pydantic import Json
 from typing_extensions import override
 
 from version import ZULIP_VERSION
+from zerver.actions.message_edit import check_update_message
 from zerver.actions.message_send import (
     check_send_private_message,
     check_send_stream_message,
@@ -31,9 +32,11 @@ from zerver.lib.exceptions import (
     JsonableError,
     StreamDoesNotExistError,
 )
+from zerver.lib.message import access_message
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
+from zerver.lib.topic import messages_for_topic
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.models import Realm, UserProfile
 from zerver.models.custom_profile_fields import CustomProfileField, CustomProfileFieldValue
@@ -64,6 +67,7 @@ OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig(
 class PresetUrlOption(str, Enum):
     BRANCHES = "branches"
     IGNORE_PRIVATE_REPOSITORIES = "ignore_private_repositories"
+    ENABLE_TOPIC_RENAME = "enable_topic_rename"
     CHANNEL_MAPPING = "mapping"
 
 
@@ -101,6 +105,12 @@ class WebhookUrlOption:
                     name=config.value,
                     label="Exclude notifications from private repositories",
                     input_type="checkbox",
+                )
+            case PresetUrlOption.ENABLE_TOPIC_RENAME:
+                return cls(
+                    name=config.value,
+                    label="Rename topics when a pull request or issue title is edited",
+                    input_type="checkbox_enabled",
                 )
             case PresetUrlOption.CHANNEL_MAPPING:
                 return cls(
@@ -419,3 +429,44 @@ def get_service_api_data(
             "Failed to fetch data from %s for %s integration: %s", url, integration_name, e
         )
         raise
+
+
+def check_topic_rename(
+    user_profile: UserProfile,
+    sent_message_id: int,
+    old_topic: str,
+) -> bool:
+    try:
+        sent_message = access_message(user_profile, sent_message_id, is_modifying_message=False)
+    except JsonableError:
+        return False
+
+    if not sent_message.is_channel_message:
+        return False
+
+    last_message = (
+        messages_for_topic(
+            realm_id=sent_message.realm_id,
+            stream_recipient_id=sent_message.recipient_id,
+            topic_name=old_topic,
+        )
+        .order_by("-date_sent")
+        .first()
+    )
+
+    if last_message is None:
+        return False
+
+    try:
+        check_update_message(
+            user_profile,
+            last_message.id,
+            topic_name=sent_message.topic_name(),
+            propagate_mode="change_all",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+        )
+    except JsonableError:
+        return False
+
+    return True

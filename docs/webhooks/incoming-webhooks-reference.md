@@ -175,6 +175,16 @@ The currently configured preset URL options are:
   `ignore_private_repositories` boolean parameter will be added to the
   [generated integration URL](https://zulip.com/help/generate-integration-url).
 
+- **`ENABLE_TOPIC_RENAME`**: This preset is intended to be used for
+  [version control integrations](https://zulip.com/integrations/category/version-control),
+  and adds UI for the user to choose whether editing the title of a pull
+  request or issue also renames the topic that its notifications are sent
+  to, moving the messages already in that topic along with it. This option
+  is selected by default, and the `enable_topic_rename` boolean parameter
+  is written into the [generated integration
+  URL](https://zulip.com/help/generate-integration-url) either way, so that
+  URLs generated before this option existed keep their original behavior.
+
 - **`CHANNEL_MAPPING`**: This preset is intended to be used for [chat-app
   integrations](https://zulip.com/integrations/category/communication)
   (like Slack), and adds a special option, **Matching Zulip channel**, to

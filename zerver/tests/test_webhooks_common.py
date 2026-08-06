@@ -12,6 +12,8 @@ from typing_extensions import override
 
 from version import ZULIP_VERSION
 from zerver.actions.custom_profile_fields import try_add_realm_custom_profile_field
+from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.streams import do_rename_stream
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
@@ -25,13 +27,15 @@ from zerver.lib.webhooks.common import (
     MissingHTTPEventHeaderError,
     call_fixture_to_headers,
     check_send_webhook_message,
+    check_topic_rename,
     get_event_header,
     get_service_api_data,
     guess_zulip_user_from_external_account,
     standardize_headers,
     validate_webhook_signature,
 )
-from zerver.models import Client, CustomProfileField, Message, UserProfile
+from zerver.models import Client, CustomProfileField, Message, NamedUserGroup, UserProfile
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user
 
@@ -278,6 +282,122 @@ class TestGuessZulipUserFromExternalAccount(ZulipTestCase):
             external_username_case_insensitive=True,
         )
         self.assertEqual(result, self.hamlet)
+
+
+class TopicRenameTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.realm = get_realm("zulip")
+        self.user_profile = get_user("webhook-bot@zulip.com", self.realm)
+        self.stream_name = "webhook-rename-test"
+        self.make_stream(self.stream_name)
+        self.subscribe(self.user_profile, self.stream_name)
+
+    def send_message_to_new_topic(self, topic_name: str) -> int:
+        return self.send_stream_message(
+            self.user_profile, self.stream_name, topic_name=topic_name, content="Renamed"
+        )
+
+    def test_topic_rename_success(self) -> None:
+        old_topic = "Old Topic"
+        new_topic = "New Topic"
+
+        message_id = self.send_stream_message(
+            self.user_profile, self.stream_name, topic_name=old_topic, content="Test message"
+        )
+
+        self.assertTrue(
+            check_topic_rename(
+                self.user_profile, self.send_message_to_new_topic(new_topic), old_topic
+            )
+        )
+        self.assertEqual(Message.objects.get(id=message_id).topic_name(), new_topic)
+
+    def test_topic_rename_with_no_history_in_old_topic(self) -> None:
+        existing_topic = "Has Messages"
+        message_id = self.send_stream_message(
+            self.user_profile, self.stream_name, topic_name=existing_topic, content="Test message"
+        )
+
+        self.assertFalse(
+            check_topic_rename(
+                self.user_profile, self.send_message_to_new_topic("New"), "Ghost Topic"
+            )
+        )
+        self.assertEqual(Message.objects.get(id=message_id).topic_name(), existing_topic)
+
+    def test_topic_rename_for_a_direct_message(self) -> None:
+        # Integration URLs with no channel send the webhook message to the
+        # bot owner as a direct message, which has no topic to move to.
+        old_topic = "Old Topic"
+        message_id = self.send_stream_message(
+            self.user_profile, self.stream_name, topic_name=old_topic, content="Test message"
+        )
+        direct_message_id = self.send_personal_message(
+            self.user_profile, self.example_user("hamlet")
+        )
+
+        self.assertFalse(check_topic_rename(self.user_profile, direct_message_id, old_topic))
+        self.assertEqual(Message.objects.get(id=message_id).topic_name(), old_topic)
+
+    def test_topic_rename_for_an_inaccessible_message(self) -> None:
+        # The webhook message could be deleted between being sent and the
+        # rename being attempted, which should not raise.
+        old_topic = "Old Topic"
+        message_id = self.send_stream_message(
+            self.user_profile, self.stream_name, topic_name=old_topic, content="Test message"
+        )
+        new_topic_message_id = self.send_message_to_new_topic("New Topic")
+        do_delete_messages(
+            self.realm, [Message.objects.get(id=new_topic_message_id)], acting_user=None
+        )
+
+        self.assertFalse(check_topic_rename(self.user_profile, new_topic_message_id, old_topic))
+        self.assertEqual(Message.objects.get(id=message_id).topic_name(), old_topic)
+
+    def test_topic_rename_multiple_messages(self) -> None:
+        old_topic = "Topic To Move"
+        new_topic = "Moved Topic"
+
+        msg_ids = [
+            self.send_stream_message(
+                self.user_profile, self.stream_name, topic_name=old_topic, content=f"Msg {i}"
+            )
+            for i in range(3)
+        ]
+
+        self.assertTrue(
+            check_topic_rename(
+                self.user_profile, self.send_message_to_new_topic(new_topic), old_topic
+            )
+        )
+
+        messages = Message.objects.filter(id__in=msg_ids)
+        self.assertTrue(all(message.topic_name() == new_topic for message in messages))
+
+    def test_topic_rename_without_permission(self) -> None:
+        old_topic = "Old Topic"
+        new_topic = "New Topic"
+
+        message_id = self.send_stream_message(
+            self.user_profile, self.stream_name, topic_name=old_topic, content="Test message"
+        )
+        new_topic_message_id = self.send_message_to_new_topic(new_topic)
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=self.realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            self.realm,
+            "can_move_messages_between_topics_group",
+            nobody_group,
+            acting_user=None,
+        )
+        user_profile = get_user("webhook-bot@zulip.com", self.realm)
+
+        self.assertFalse(check_topic_rename(user_profile, new_topic_message_id, old_topic))
+        self.assertEqual(Message.objects.get(id=message_id).topic_name(), old_topic)
 
 
 class WebhookURLConfigurationTestCase(WebhookTestCase):
