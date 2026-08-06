@@ -1,3 +1,4 @@
+import math
 from enum import Enum, auto
 from typing import Any
 
@@ -299,7 +300,13 @@ class RateLimitedError(JsonableError):
     @override
     def data(self) -> dict[str, Any]:
         data_dict = super().data
-        data_dict["retry-after"] = self.secs_to_freedom
+        secs_to_freedom = self.secs_to_freedom
+        if secs_to_freedom is not None:
+            # The raw value carries meaninglessly precise fractions of
+            # a second; we round up, since advertising a shorter wait
+            # than the client actually needs would be useless to it.
+            secs_to_freedom = math.ceil(secs_to_freedom * 100) / 100
+        data_dict["retry-after"] = secs_to_freedom
 
         return data_dict
 

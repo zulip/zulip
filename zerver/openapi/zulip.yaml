@@ -30651,7 +30651,11 @@ components:
             The value of `retry-after` in the response indicates how many
             seconds the client must wait before making additional requests.
 
-            **Changes**: Before Zulip 4.0 (feature level 36), the `code` key
+            **Changes**: In Zulip 13.0 (feature level ZF-546a5d), this value
+            is rounded up to the nearest hundredth of a second. Previously,
+            it was an unrounded number of seconds.
+
+            Before Zulip 4.0 (feature level 36), the `code` key
             was not present in rate limit errors.
 
             [rate-limit-headers]: /api/http-headers#rate-limiting-response-headers
@@ -30660,16 +30664,17 @@ components:
             msg: {}
             code: {}
             retry-after:
-              type: integer
+              type: number
               description: |
                 How many seconds the client must wait before making
-                additional requests.
+                additional requests. May be a fractional number of
+                seconds.
           example:
             {
               "code": "RATE_LIMIT_HIT",
               "msg": "API usage exceeded rate limit",
               "result": "error",
-              "retry-after": 28.706807374954224,
+              "retry-after": 28.71,
             }
     RealmDeactivatedError:
       allOf:
