@@ -340,7 +340,7 @@ def upload_custom_emoji() -> dict[str, object]:
 def add_realm_playground() -> dict[str, object]:
     return {
         "name": "Python2 playground",
-        "pygments_language": "Python2",
+        "pygments_language": "python2",
         "url_template": "https://python2.example.com?code={code}",
     }
 
@@ -351,7 +351,7 @@ def remove_realm_playground() -> dict[str, object]:
         get_realm("zulip"),
         acting_user=None,
         name="Python playground",
-        pygments_language="Python",
+        pygments_language="python",
         url_template="https://python.example.com?code={code}",
     )
     return {
