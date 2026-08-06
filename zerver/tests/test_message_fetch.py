@@ -4716,7 +4716,7 @@ class GetOldMessagesTest(ZulipTestCase):
             "narrow": "[]",
         }
 
-        with self.assert_database_query_count(12):
+        with self.assert_database_query_count(13):
             result = self.get_and_check_messages(get_and_check_messages_options)
 
         self.assertEqual(result["anchor"], anchor_message_id)
@@ -4728,7 +4728,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # we should choose the message sent first.
         first_message_with_same_timestamp_id = anchor_message_id
         Message.objects.filter(id=newer_message_id).update(date_sent=base_time)
-        with self.assert_database_query_count(12):
+        with self.assert_database_query_count(13):
             result = self.get_and_check_messages(get_and_check_messages_options)
         self.assertEqual(result["anchor"], first_message_with_same_timestamp_id)
         self.assert_length(result["messages"], 1)
@@ -4752,7 +4752,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # Narrow conditions should be respected when passing `anchor_date`.
         scotland_channel_message_id = self.send_stream_message(sender, "Scotland")
         Message.objects.filter(id=scotland_channel_message_id).update(date_sent=base_time)
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(17):
             result = self.get_and_check_messages(
                 {
                     **get_and_check_messages_options,
@@ -4763,6 +4763,21 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assert_length(result["messages"], 1)
         self.assertEqual(result["messages"][0]["id"], scotland_channel_message_id)
         self.assertTrue(result["found_anchor"])
+
+        # The anchor search must be ordered and bounded on
+        # zerver_usermessage.message_id; ordering it by date_sent scans a
+        # large fraction of zerver_message. See find_date_anchor.
+        with queries_captured() as queries:
+            self.get_and_check_messages(get_and_check_messages_options)
+        anchor_sqls = [
+            query.sql
+            for query in queries
+            if query.sql.endswith("LIMIT 1") and "zerver_usermessage" in query.sql
+        ]
+        self.assert_length(anchor_sqls, 1)
+        self.assertIn('ORDER BY "zerver_usermessage"."message_id" ASC', anchor_sqls[0])
+        self.assertIn('AND "zerver_usermessage"."message_id" >= ', anchor_sqls[0])
+        self.assertNotIn("date_sent", anchor_sqls[0])
 
         # If the narrow has no matching messages, we should return an empty result.
         empty_stream = "Empty stream"
