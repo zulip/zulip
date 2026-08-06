@@ -5,6 +5,7 @@ import render_automatic_new_visibility_policy_banner from "../templates/compose_
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_jump_to_sent_message_conversation_banner from "../templates/compose_banner/jump_to_sent_message_conversation_banner.hbs";
 import render_message_sent_banner from "../templates/compose_banner/message_sent_banner.hbs";
+import render_sent_to_unsubscribed_channel_banner from "../templates/compose_banner/sent_to_unsubscribed_channel.hbs";
 import render_unmute_topic_banner from "../templates/compose_banner/unmute_topic_banner.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -74,6 +75,27 @@ export function notify_above_composebox(
     );
     // We pass in include_unmute_banner as false because we don't want to
     // clear any unmute_banner associated with this same message.
+    compose_banner.clear_message_sent_banners(false);
+    compose_banner.append_compose_banner_to_banner_list($notification, $("#compose_banners"));
+}
+
+export function notify_sent_to_unsubscribed_channel(stream_id: number): void {
+    // Sending to a channel you're not subscribed to is allowed, but you
+    // won't receive replies as notifications, so we warn the user and offer
+    // a one-click way to subscribe.
+    const sub = stream_data.get_sub_by_id(stream_id);
+    if (sub === undefined) {
+        return;
+    }
+    const $notification = $(
+        render_sent_to_unsubscribed_channel_banner({
+            classname: compose_banner.CLASSNAMES.sent_to_unsubscribed_channel,
+            stream: sub,
+            can_subscribe: stream_data.can_toggle_subscription(sub),
+        }),
+    );
+    // We pass include_unmute_banner as false because we don't want to clear
+    // any unmute banner associated with this same message.
     compose_banner.clear_message_sent_banners(false);
     compose_banner.append_compose_banner_to_banner_list($notification, $("#compose_banners"));
 }
@@ -268,6 +290,14 @@ export function notify_local_mixes(
         }
 
         const link_msg_id = message.id;
+
+        // Sending to a channel you aren't subscribed to shows its own banner
+        // (from compose.send_message_success, after the view is refreshed), so
+        // we suppress the redundant "Sent! Scroll down to view your message."
+        // banner for those messages.
+        const sent_to_unsubscribed_channel =
+            message.type === "stream" && !stream_data.is_subscribed(message.stream_id);
+
         const show_narrow_to_recipient_banner = should_show_narrow_to_recipient_banner(message);
         if (show_narrow_to_recipient_banner) {
             const banner_text = $t({
@@ -286,7 +316,7 @@ export function notify_local_mixes(
 
         const jump_to_sent_message_conversation = should_jump_to_sent_message_conversation(message);
         if (!jump_to_sent_message_conversation) {
-            if (need_user_to_scroll) {
+            if (need_user_to_scroll && !sent_to_unsubscribed_channel) {
                 show_scroll_to_view_banner(link_msg_id);
             }
 

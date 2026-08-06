@@ -42,6 +42,9 @@ const compose_notifications = mock_esm("../src/compose_notifications");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const loading = mock_esm("../src/loading");
 const markdown = mock_esm("../src/markdown");
+const message_view = mock_esm("../src/message_view", {
+    maybe_reload_unsubscribed_channel_narrow: noop,
+});
 const narrow_state = mock_esm("../src/narrow_state");
 const rendered_markdown = mock_esm("../src/rendered_markdown");
 const resize = mock_esm("../src/resize");
@@ -174,6 +177,14 @@ function simulate_draft_ui_interactions() {
 
 test_ui("send_message_success", ({override, override_rewire}) => {
     mock_banners();
+
+    // These code paths apply to channels the user is subscribed to; sending to
+    // an unsubscribed channel is covered by a separate test.
+    for (const stream_id of [1, 2]) {
+        const sub = make_stream({stream_id, name: `stream ${stream_id}`});
+        sub.subscribed = true;
+        stream_data.add_sub_for_tests(sub);
+    }
 
     const fake_compose_box = new FakeComposeBox();
 
@@ -418,6 +429,54 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.ok(fake_compose_box.is_textarea_focused());
         assert.ok(!fake_compose_box.is_submit_button_spinner_visible());
     })();
+});
+
+test_ui("send_message_success_to_unsubscribed_channel", ({override, override_rewire, disallow}) => {
+    const subbed = make_stream({stream_id: 201, name: "subbed"});
+    subbed.subscribed = true;
+    const unsubbed = make_stream({stream_id: 202, name: "unsubbed"});
+    unsubbed.subscribed = false;
+    stream_data.add_sub_for_tests(subbed);
+    stream_data.add_sub_for_tests(unsubbed);
+
+    override_rewire(echo, "reify_message_id", noop);
+    override(drafts.draft_model, "deleteDrafts", noop);
+    // Reached only for the subscribed channel; the unsubscribed path returns
+    // before the muted-narrow / visibility-policy handling.
+    override(compose_notifications, "get_muted_narrow", () => undefined);
+    disallow(compose_notifications, "notify_automatic_new_visibility_policy");
+
+    let reloaded_stream_id;
+    let banner_stream_id;
+    override(message_view, "maybe_reload_unsubscribed_channel_narrow", (stream_id) => {
+        reloaded_stream_id = stream_id;
+    });
+    override(compose_notifications, "notify_sent_to_unsubscribed_channel", (stream_id) => {
+        banner_stream_id = stream_id;
+    });
+
+    const base = {
+        type: "stream",
+        topic: "topic",
+        local_id: "123.04",
+        locally_echoed: true,
+        draft_id: 100,
+    };
+
+    // Subscribed channel: the unsubscribed-channel banner and refresh are not used.
+    compose.send_message_success({...base, stream_id: subbed.stream_id}, {id: 1});
+    assert.equal(reloaded_stream_id, undefined);
+    assert.equal(banner_stream_id, undefined);
+
+    // Unsubscribed channel: we refresh the view and warn the user. Passing an
+    // automatic_new_visibility_policy that is then ignored confirms we return
+    // before the normal stream-message handling.
+    compose.send_message_success(
+        {...base, stream_id: unsubbed.stream_id},
+        {id: 2, automatic_new_visibility_policy: 2},
+    );
+    assert.equal(reloaded_stream_id, unsubbed.stream_id);
+    assert.equal(banner_stream_id, unsubbed.stream_id);
 });
 
 test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
