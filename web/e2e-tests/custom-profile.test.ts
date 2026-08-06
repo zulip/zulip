@@ -70,7 +70,7 @@ async function test_delete_custom_profile_field(page: Page): Promise<void> {
     );
     assert.strictEqual(
         await common.get_text_from_selector(page, ".micromodal .dialog_submit_button"),
-        "Confirm",
+        "Delete",
     );
     await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
