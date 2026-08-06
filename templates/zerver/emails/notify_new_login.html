@@ -4,10 +4,6 @@
     {% trans organization_url=realm_url %}Organization: {{ organization_url }} Time: {{ login_time }} Email: {{ user_email }}{% endtrans %}
 {% endblock %}
 
-{% block illustration %}
-<img src="{{ email_images_base_url }}/email_logo.png" alt=""/>
-{% endblock %}
-
 {% block content %}
 <p>{{ _("We noticed a recent login for the following Zulip account.") }}</p>
 <ul>
