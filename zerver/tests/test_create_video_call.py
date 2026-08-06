@@ -1,15 +1,23 @@
+import datetime
 from unittest import mock
+from urllib.parse import urlencode, urljoin
 
+import jwt
 import orjson
 import requests
 import responses
+import time_machine
+from django.conf import settings
 from django.core.signing import Signer
 from django.http import HttpResponseRedirect
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
+from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.url_encoding import append_url_query_string
+from zerver.models import UserProfile
 
 
 @override_settings(VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID=None)
@@ -1004,3 +1012,211 @@ class NextcloudVideoCallTest(ZulipTestCase):
 
         json = self.assert_json_success(response)
         self.assertEqual(json["url"], "https://nextcloud.example.com/index.php/call/abc123token")
+
+
+class JitsiVideoCallTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user = self.example_user("hamlet")
+        self.user.realm.jitsi_server_url = "https://jitsi.example.com"
+        self.user.realm.save()
+        self.login_user(self.user)
+        self.signer = Signer()
+        self.signed_jitsi_video_call = self.signer.sign_object(
+            {
+                "room": "test-room",
+                "voice_only": False,
+                "moderator": self.user.id,
+            }
+        )
+        self.signed_jitsi_audio_call = self.signer.sign_object(
+            {
+                "room": "test-room",
+                "voice_only": True,
+                "moderator": self.user.id,
+            }
+        )
+
+    def test_create_jitsi_url_not_configured(self) -> None:
+        for setting_name in ["JITSI_SERVER_APP_ID", "JITSI_SERVER_APP_SECRET"]:
+            with self.settings(**{setting_name: None}):
+                response = self.client_get(
+                    "/json/calls/jitsi/create",
+                    {"meeting_name": "general meeting", "voice_only": "false"},
+                )
+                self.assert_json_error(response, "Jitsi JWT credentials have not been configured")
+
+    def test_create_jitsi_url_no_server_url(self) -> None:
+        self.user.realm.jitsi_server_url = None
+        self.user.realm.save()
+        with self.settings(JITSI_SERVER_URL=None):
+            response = self.client_get(
+                "/json/calls/jitsi/create",
+                {"meeting_name": "general meeting"},
+            )
+            self.assert_json_error(response, "Jitsi JWT credentials have not been configured")
+
+    def test_create_jitsi_url_public_jitsi(self) -> None:
+        self.user.realm.jitsi_server_url = None
+        self.user.realm.save()
+        with self.settings(JITSI_SERVER_URL="https://meet.jit.si"):
+            response = self.client_get(
+                "/json/calls/jitsi/create",
+                {"meeting_name": "general meeting"},
+            )
+            self.assert_json_error(response, "Jitsi JWT credentials have not been configured")
+
+    def test_create_jitsi_video_link(self) -> None:
+        with mock.patch("zerver.views.video_calls.random.randint", return_value=123456789012):
+            response = self.client_get(
+                "/json/calls/jitsi/create",
+                {"meeting_name": "General > Meeting!"},
+            )
+        response_dict = self.assert_json_success(response)
+        self.assertEqual(
+            response_dict["url"],
+            append_url_query_string(
+                "/calls/jitsi/join",
+                "jitsi="
+                + self.signer.sign_object(
+                    {
+                        "room": "general-meeting-123456789012",
+                        "voice_only": False,
+                        "moderator": self.user.id,
+                    }
+                ),
+            ),
+        )
+
+    def test_create_jitsi_audio_link(self) -> None:
+        with mock.patch("zerver.views.video_calls.random.randint", return_value=123456789012):
+            response = self.client_get(
+                "/json/calls/jitsi/create",
+                {"meeting_name": "General > Meeting!", "voice_only": "true"},
+            )
+        response_dict = self.assert_json_success(response)
+        self.assertEqual(
+            response_dict["url"],
+            append_url_query_string(
+                "/calls/jitsi/join",
+                "jitsi="
+                + self.signer.sign_object(
+                    {
+                        "room": "general-meeting-123456789012",
+                        "voice_only": True,
+                        "moderator": self.user.id,
+                    }
+                ),
+            ),
+        )
+
+    def test_join_jitsi_not_configured(self) -> None:
+        for setting_name in ["JITSI_SERVER_APP_ID", "JITSI_SERVER_APP_SECRET"]:
+            with self.settings(**{setting_name: None}):
+                response = self.client_get(
+                    "/calls/jitsi/join", {"jitsi": self.signed_jitsi_video_call}
+                )
+                self.assert_json_error(response, "Jitsi JWT credentials have not been configured")
+
+    def test_join_jitsi_no_server_url(self) -> None:
+        self.user.realm.jitsi_server_url = None
+        self.user.realm.save()
+        with self.settings(JITSI_SERVER_URL=None):
+            response = self.client_get("/calls/jitsi/join", {"jitsi": self.signed_jitsi_video_call})
+            self.assert_json_error(response, "Jitsi JWT credentials have not been configured")
+
+    def test_join_jitsi_public_jitsi(self) -> None:
+        self.user.realm.jitsi_server_url = None
+        self.user.realm.save()
+        with self.settings(JITSI_SERVER_URL="https://meet.jit.si"):
+            response = self.client_get("/calls/jitsi/join", {"jitsi": self.signed_jitsi_video_call})
+            self.assert_json_error(response, "Jitsi JWT credentials have not been configured")
+
+    def test_join_jitsi_invalid_signature(self) -> None:
+        response = self.client_get("/calls/jitsi/join", {"jitsi": "tampered-data"})
+        self.assert_json_error(response, "Invalid signature.")
+
+    def _build_jitsi_redirect_url(
+        self,
+        room: str,
+        voice_only: bool,
+        user: UserProfile | None = None,
+        affiliation: str = "owner",
+    ) -> str:
+        if user is None:
+            user = self.user
+        payload = {
+            "iss": settings.JITSI_SERVER_APP_ID,
+            "aud": "jitsi",
+            "sub": "jitsi.example.com",
+            "exp": timezone_now() + datetime.timedelta(minutes=5),
+            "room": room,
+            "context": {
+                "user": {
+                    "name": user.full_name,
+                    "email": user.email,
+                    "avatar": absolute_avatar_url(user) or "",
+                    "id": str(user.id),
+                    "affiliation": affiliation,
+                }
+            },
+        }
+        assert settings.JITSI_SERVER_APP_SECRET is not None
+        token = jwt.encode(payload, settings.JITSI_SERVER_APP_SECRET, algorithm="HS256")
+        video_muted = "true" if voice_only else "false"
+        return urljoin(
+            "https://jitsi.example.com",
+            f"/{room}?{urlencode({'jwt': token})}#config.startWithVideoMuted={video_muted}",
+        )
+
+    @time_machine.travel(
+        datetime.datetime(2024, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc), tick=False
+    )
+    def test_join_jitsi_redirects_to_jitsi_server(self) -> None:
+        response = self.client_get("/calls/jitsi/join", {"jitsi": self.signed_jitsi_video_call})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response["Location"],
+            self._build_jitsi_redirect_url("test-room", voice_only=False),
+        )
+
+    @time_machine.travel(
+        datetime.datetime(2024, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc), tick=False
+    )
+    def test_join_jitsi_audio_call_mutes_video(self) -> None:
+        response = self.client_get("/calls/jitsi/join", {"jitsi": self.signed_jitsi_audio_call})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response["Location"],
+            self._build_jitsi_redirect_url("test-room", voice_only=True),
+        )
+
+    @time_machine.travel(
+        datetime.datetime(2024, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc), tick=False
+    )
+    def test_join_jitsi_uses_requester_identity_not_creators(self) -> None:
+        bob = self.example_user("othello")
+        self.login_user(bob)
+        response = self.client_get("/calls/jitsi/join", {"jitsi": self.signed_jitsi_video_call})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response["Location"],
+            self._build_jitsi_redirect_url(
+                "test-room", voice_only=False, user=bob, affiliation="member"
+            ),
+        )
+
+    def test_join_jitsi_uses_realm_url_over_server_default(self) -> None:
+        self.user.realm.jitsi_server_url = "https://custom.jitsi.example.com"
+        self.user.realm.save()
+        response = self.client_get("/calls/jitsi/join", {"jitsi": self.signed_jitsi_video_call})
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("custom.jitsi.example.com", response["Location"])
+
+    def test_join_jitsi_requires_login(self) -> None:
+        self.logout()
+        response = self.client_get("/calls/jitsi/join", {"jitsi": self.signed_jitsi_video_call})
+        # Unauthenticated users are redirected to login, not given a JWT.
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("/login/", response["Location"])
