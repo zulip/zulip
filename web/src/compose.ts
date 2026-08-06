@@ -136,8 +136,10 @@ export function send_message_success(
         clear_compose_box();
     }
 
+    // Reification deletes draft_id from a resend's LocalMessage in place.
+    const {draft_id} = sent_message;
     echo.reify_message_id(sent_message.local_id, data.id);
-    drafts.draft_model.deleteDrafts([sent_message.draft_id]);
+    drafts.draft_model.deleteDrafts([draft_id]);
 
     if (sent_message.type === "stream") {
         if (data.automatic_new_visibility_policy) {
@@ -292,12 +294,7 @@ export let send_message = (): void => {
         // We might not have updated the draft count because we assumed the
         // message would send. Ensure that the displayed count is correct.
         drafts.sync_count();
-
-        assert(draft_id !== undefined);
-        const draft = drafts.draft_model.getDraft(draft_id);
-        assert(draft !== false);
-        draft.is_sending_saving = false;
-        drafts.draft_model.editDraft(draft_id, draft);
+        // Leave is_sending_saving true so the failed message stays in the Outbox.
     }
 
     transmit.send_message(
