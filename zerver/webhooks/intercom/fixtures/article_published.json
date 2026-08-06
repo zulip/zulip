@@ -1,0 +1,49 @@
+{
+    "type": "notification_event",
+    "app_id": "k9i0ocyc",
+    "data": {
+        "type": "notification_event_data",
+        "item": {
+            "id": "15147019",
+            "type": "article",
+            "workspace_id": "k9i0ocyc",
+            "parent_id": null,
+            "parent_type": null,
+            "parent_ids": [
+                19636801
+            ],
+            "statistics": {
+                "type": "article_statistics",
+                "views": 0,
+                "conversations": 0,
+                "reactions": 0,
+                "happy_reaction_percentage": 0,
+                "neutral_reaction_percentage": 0,
+                "sad_reaction_percentage": 0
+            },
+            "tags": {
+                "type": "tag.list",
+                "tags": []
+            },
+            "content_id": "17887909",
+            "title": "Zulip test",
+            "description": "Test for Zulip",
+            "body": "<p class=\"no-margin\">This is a test article for Zulip.</p>",
+            "body_markdown": null,
+            "author_id": 10628207,
+            "state": "published",
+            "created_at": "2026-05-16T14:57:26.000Z",
+            "updated_at": "2026-05-16T14:58:25.000Z",
+            "url": null
+        }
+    },
+    "links": {},
+    "id": "notif_c4b64ec0-8ce2-4376-a4bd-7ea634c68655",
+    "topic": "article.published",
+    "delivery_status": "pending",
+    "delivery_attempts": 1,
+    "delivered_at": 0,
+    "first_sent_at": 1778943506,
+    "created_at": 1778943506,
+    "self": null
+}
