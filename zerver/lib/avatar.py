@@ -116,6 +116,9 @@ def get_avatar_field(
     avatar source, and then we'll add version info to try to avoid
     stale caches.
     """
+    if avatar_source == UserProfile.AVATAR_FROM_SYSTEM:
+        return get_avatar_for_inaccessible_user(medium)
+
     if avatar_source in [UserProfile.AVATAR_FROM_USER, UserProfile.AVATAR_FROM_JDENTICON]:
         hash_key = user_avatar_base_path_from_ids(user_id, avatar_version, realm_id)
         return get_avatar_url(hash_key, medium=medium)
@@ -177,8 +180,11 @@ def is_avatar_new(ldap_avatar: bytes, user_profile: UserProfile) -> bool:
     return True
 
 
-def get_avatar_for_inaccessible_user() -> str:
-    return staticfiles_storage.url("images/unknown-user-avatar.png")
+def get_avatar_for_inaccessible_user(medium: bool = False) -> str:
+    avatar_file_name = (
+        "images/unknown-user-avatar-medium.png" if medium else "images/unknown-user-avatar.png"
+    )
+    return staticfiles_storage.url(avatar_file_name)
 
 
 def generate_avatar_jdenticon(input: str, medium: bool) -> bytes:
