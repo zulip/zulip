@@ -577,10 +577,25 @@ export function initialize(): void {
         function (this: HTMLElement): void {
             void (async () => {
                 const $banner = $(this).closest(".banner");
+                desktop_notifications.suppress_next_focus_close();
                 const permission =
                     await desktop_notifications.request_desktop_notifications_permission();
                 if (permission === "granted" || permission === "denied") {
                     close_navbar_banner_and_resize($banner);
+                }
+                if (
+                    permission === "granted" &&
+                    desktop_notifications.NotificationAPI !== undefined
+                ) {
+                    new desktop_notifications.NotificationAPI(
+                        $t({defaultMessage: "Notification Bot"}),
+                        {
+                            icon: people.gravatar_url_for_email("notification-bot@zulip.com"),
+                            body: $t({defaultMessage: "Zulip desktop notifications are enabled"}),
+                            tag: Math.random().toString(),
+                        },
+                    );
+                    void ui_util.play_audio(util.the($("#user-notification-sound-audio")));
                 }
             })();
         },
