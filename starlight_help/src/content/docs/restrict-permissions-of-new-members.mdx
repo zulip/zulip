@@ -19,6 +19,10 @@ past a certain **waiting period** threshold. After that they are **full members*
 You can configure how long the waiting period is, as well as which actions require
 being a full member.
 
+A bot's status follows its owner: it is a full member exactly when its owner is
+a full member. So a new member's bot is restricted just like its owner, and
+changing a bot's owner can change the bot's status.
+
 For some features, Zulip supports restricting access to only full members. These
 features include [creating channels](/help/configure-who-can-create-channels),
 [inviting users to the organization](/help/invite-new-users),
