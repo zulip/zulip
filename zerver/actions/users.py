@@ -24,12 +24,17 @@ from zerver.actions.user_groups import (
     do_send_user_group_members_update_event,
     update_users_in_full_members_system_group,
 )
-from zerver.actions.user_settings import do_change_avatar_fields, do_change_full_name
+from zerver.actions.user_settings import (
+    do_change_avatar_fields,
+    do_change_full_name,
+    do_scrub_avatar_images,
+)
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields, flush_user_profile
 from zerver.lib.create_user import create_user_profile
 from zerver.lib.event_types import BotServicesOutgoing
 from zerver.lib.invites import revoke_invites_generated_by_user
+from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.sessions import delete_user_sessions
@@ -59,9 +64,14 @@ from zerver.lib.users import (
     user_access_restricted_in_realm,
 )
 from zerver.models import (
+    AlertWord,
+    CustomProfileFieldValue,
+    Device,
     Draft,
+    EmailChangeStatus,
     GroupGroupMembership,
     NamedUserGroup,
+    PushDeviceToken,
     Realm,
     RealmAuditLog,
     Recipient,
@@ -71,6 +81,7 @@ from zerver.models import (
     UserGroup,
     UserGroupMembership,
     UserProfile,
+    UserStatus,
 )
 from zerver.models.bots import get_bot_services
 from zerver.models.messages import UserMessage
@@ -119,6 +130,7 @@ def do_delete_user_core(
       just typing the user's name in their own messages.
     """
     do_deactivate_user(user_profile, acting_user=None)
+    do_scrub_avatar_images(user_profile, acting_user=acting_user)
 
     user_id = user_profile.id
     realm = user_profile.realm
@@ -151,6 +163,12 @@ def do_delete_user_core(
             default_language=UserProfile._meta.get_field("default_language").get_default(),
             email_address_visibility=UserBaseSettings.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
         )
+        # do_scrub_avatar_images above deleted the user's uploaded avatar
+        # files but did not generate a replacement. Point the deleted
+        # user at Gravatar so the /avatar/<id> endpoint redirects to a
+        # random gravatar for the synthesized deleteduser{id}@... email
+        # rather than 404ing on a non-existent local file.
+        temp_replacement_user.avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
 
         overwrite_data = model_to_dict(
             temp_replacement_user,
@@ -196,9 +214,25 @@ def do_delete_user_core(
             (SavedSnippet, "user_profile"),
             (ScheduledMessage, "sender"),
             (Draft, "user_profile"),
+            (CustomProfileFieldValue, "user_profile"),
+            (UserStatus, "user_profile"),
+            (AlertWord, "user_profile"),
+            (PushDeviceToken, "user"),
+            (Device, "user"),
+            (EmailChangeStatus, "user_profile"),
         ]
         for table, field_name in fks_to_delete:
             table.objects.filter(**{field_name: user_profile}).delete()
+        # The loop above deletes this server's PushDeviceToken rows, but
+        # on servers using the push notifications bouncer the
+        # registrations also live on the bouncer and must be unregistered
+        # there. This is safe to defer past the deletion because uuid is
+        # excluded from overwrite_data above, so the bouncer can still
+        # identify the user.
+        queue_event_on_commit(
+            "deferred_work",
+            {"type": "clear_push_device_tokens", "user_profile_id": user_profile.id},
+        )
         # There's also a many-to-many relationship between UserProfile and ScheduledEmail,
         # which would require separate handling from foreign keys. But the clearing out
         # of this data is handled by do_deactivate_user already, so we don't need to do
