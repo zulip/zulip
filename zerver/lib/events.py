@@ -1827,6 +1827,9 @@ def apply_event(
     elif event["type"] == "typing_edit_message":
         # Typing message edit notification events are transient and thus ignored
         pass
+    elif event["type"] == "compose_link_preview":
+        # Compose link-preview updates are transient and thus ignored
+        pass
     elif event["type"] == "attachment":
         # Attachment events are just for updating the "uploads" UI;
         # they are not sent directly.

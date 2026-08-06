@@ -1611,6 +1611,8 @@ async function poll_thumbnail_status(
     $preview_spinner: JQuery,
     $preview_content_box: JQuery,
     content: string,
+    // Threaded through so a thumbnail re-render doesn't drop a shown card.
+    fetch_link_previews = false,
     attempt = 1,
 ): Promise<void> {
     if (attempt > MAX_THUMBNAIL_RETRIES) {
@@ -1650,6 +1652,7 @@ async function poll_thumbnail_status(
                 $preview_content_box,
                 content,
                 false,
+                fetch_link_previews,
             );
             return;
         }
@@ -1662,6 +1665,7 @@ async function poll_thumbnail_status(
                     $preview_spinner,
                     $preview_content_box,
                     content,
+                    fetch_link_previews,
                     attempt + 1,
                 );
             }, retry_delay_secs * 1000);
@@ -1713,12 +1717,59 @@ export function exit_preview_mode($container: JQuery): void {
     $container.find(".markdown_preview").show();
 }
 
+export let apply_preview_render = (
+    $preview_container: JQuery,
+    $preview_spinner: JQuery,
+    $preview_content_box: JQuery,
+    content: string,
+    rendered_content: string,
+    raw_content?: string,
+    fetch_link_previews = false,
+): void => {
+    // raw_content is checked for status messages ("/me ..."); it's
+    // undefined when we have no authoritative raw content (e.g. errors).
+    let rendered_preview_html;
+    if (raw_content !== undefined && markdown.is_status_message(raw_content)) {
+        // Handle previews of /me messages
+        rendered_preview_html =
+            "<p><strong>" +
+            _.escape(current_user.full_name) +
+            "</strong>" +
+            rendered_content.slice("<p>/me".length);
+    } else {
+        rendered_preview_html = rendered_content;
+    }
+
+    $preview_content_box.html(postprocess_content(rendered_preview_html));
+    rendered_markdown.update_elements($preview_content_box);
+
+    // Check for thumbnail loading placeholders and start polling
+    clear_thumbnail_polling();
+    pending_thumbnail_paths = extract_thumbnail_paths($preview_content_box);
+
+    if (pending_thumbnail_paths.size > 0) {
+        void poll_thumbnail_status(
+            $preview_container,
+            $preview_spinner,
+            $preview_content_box,
+            content,
+            fetch_link_previews,
+        );
+    }
+};
+
+export function rewire_apply_preview_render(value: typeof apply_preview_render): void {
+    apply_preview_render = value;
+}
+
 export function render_and_show_preview(
     $preview_container: JQuery,
     $preview_spinner: JQuery,
     $preview_content_box: JQuery,
     content: string,
     show_spinner = true,
+    // Only the compose preview consumes the resulting event.
+    fetch_link_previews = false,
 ): void {
     if (prevent_next_spinner) {
         show_spinner = false;
@@ -1727,40 +1778,16 @@ export function render_and_show_preview(
     const preview_render_count = compose_state.get_preview_render_count() + 1;
     compose_state.set_preview_render_count(preview_render_count);
 
-    function show_preview(rendered_content: string, raw_content?: string): void {
-        // content is passed to check for status messages ("/me ...")
-        // and will be undefined in case of errors
-        let rendered_preview_html;
-        if (raw_content !== undefined && markdown.is_status_message(raw_content)) {
-            // Handle previews of /me messages
-            rendered_preview_html =
-                "<p><strong>" +
-                _.escape(current_user.full_name) +
-                "</strong>" +
-                rendered_content.slice("<p>/me".length);
-        } else {
-            rendered_preview_html = rendered_content;
-        }
-
-        $preview_content_box.html(postprocess_content(rendered_preview_html));
-        rendered_markdown.update_elements($preview_content_box);
-
-        // Check for thumbnail loading placeholders and start polling
-        clear_thumbnail_polling();
-        pending_thumbnail_paths = extract_thumbnail_paths($preview_content_box);
-
-        if (pending_thumbnail_paths.size > 0) {
-            void poll_thumbnail_status(
-                $preview_container,
-                $preview_spinner,
-                $preview_content_box,
-                content,
-            );
-        }
-    }
-
     if (content.length === 0) {
-        show_preview($t_html({defaultMessage: "Nothing to preview"}));
+        apply_preview_render(
+            $preview_container,
+            $preview_spinner,
+            $preview_content_box,
+            content,
+            $t_html({defaultMessage: "Nothing to preview"}),
+            undefined,
+            fetch_link_previews,
+        );
     } else {
         if (markdown.contains_backend_only_syntax(content) && show_spinner) {
             const $spinner = $preview_spinner.expectOne();
@@ -1775,11 +1802,19 @@ export function render_and_show_preview(
             // echoed frontend rendering before receiving the
             // authoritative backend rendering from the server).
             const rendered_content = markdown.render(content).content;
-            show_preview(rendered_content);
+            apply_preview_render(
+                $preview_container,
+                $preview_spinner,
+                $preview_content_box,
+                content,
+                rendered_content,
+                undefined,
+                fetch_link_previews,
+            );
         }
         void channel.post({
             url: "/json/messages/render",
-            data: {content},
+            data: {content, fetch_link_previews},
             success(response_data) {
                 if (
                     preview_render_count !== compose_state.get_preview_render_count() ||
@@ -1795,14 +1830,52 @@ export function render_and_show_preview(
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator($preview_spinner);
                 }
-                show_preview(data.rendered, content);
+                apply_preview_render(
+                    $preview_container,
+                    $preview_spinner,
+                    $preview_content_box,
+                    content,
+                    data.rendered,
+                    content,
+                    fetch_link_previews,
+                );
             },
             error() {
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator($preview_spinner);
                 }
-                show_preview($t_html({defaultMessage: "Failed to generate preview"}));
+                apply_preview_render(
+                    $preview_container,
+                    $preview_spinner,
+                    $preview_content_box,
+                    content,
+                    $t_html({defaultMessage: "Failed to generate preview"}),
+                    undefined,
+                    fetch_link_previews,
+                );
             },
         });
     }
+}
+
+// Live-update the open compose preview with the embed_links worker's re-render.
+export function update_compose_link_preview(content: string, rendered_content: string): void {
+    const $preview_container = $("#compose");
+    if (!$preview_container.hasClass("preview_mode")) {
+        return;
+    }
+    if (content !== compose_state.message_content()) {
+        return;
+    }
+    // Supersede any in-flight render whose response predates the embeds.
+    compose_state.set_preview_render_count(compose_state.get_preview_render_count() + 1);
+    apply_preview_render(
+        $preview_container,
+        $("#compose .markdown_preview_spinner"),
+        $("#compose .preview_content"),
+        content,
+        rendered_content,
+        content,
+        true,
+    );
 }

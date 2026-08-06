@@ -476,6 +476,10 @@ def preview_url_cache_key(url: str) -> str:
     return f"preview_url:{hashlib.sha1(url.encode()).hexdigest()}"
 
 
+def compose_preview_pending_cache_key(user_profile_id: int, content: str) -> str:
+    return f"compose_preview_pending:{user_profile_id}:{hashlib.sha1(content.encode()).hexdigest()}"
+
+
 def display_recipient_cache_key(recipient_id: int) -> str:
     return f"display_recipient_dict:{recipient_id}"
 

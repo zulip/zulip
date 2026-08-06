@@ -98,6 +98,12 @@ class ChannelFolderUpdateEvent(BaseEvent):
     data: ChannelFolderDataForUpdate
 
 
+class ComposeLinkPreviewEvent(BaseEvent):
+    type: Literal["compose_link_preview"]
+    content: str
+    rendered_content: str
+
+
 class DetailedCustomProfileCore(BaseModel):
     id: int
     type: int
