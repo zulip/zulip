@@ -44,6 +44,7 @@ from zerver.views.channel_folders import (
     reorder_realm_channel_folders,
     update_channel_folder,
 )
+from zerver.views.communities import communities_api_view
 from zerver.views.compatibility import check_global_compatibility
 from zerver.views.custom_profile_fields import (
     create_realm_custom_profile_field,
@@ -892,6 +893,7 @@ v1_api_mobile_patterns = [
     #  This view accepts a JWT containing an email and returns an API key
     #  and the details for a single user.
     path("jwt/fetch_api_key", jwt_fetch_api_key),
+    path("open_communities", communities_api_view),
 ]
 
 # Include URL configuration files for site-specified extra installed
