@@ -161,6 +161,7 @@ export type MessageCleanReaction = {
     label: string;
     local_id: string;
     reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
+    unicode_emoji?: string;
     user_ids: number[];
     vote_text: string;
 };
