@@ -27,6 +27,9 @@
         outline-offset: -1px;
         border-radius: 21px;
         align-items: center;
+        /* Cap pill width so long names get truncated. */
+        max-width: 250px;
+        overflow: hidden;
         box-shadow: inset 0 0 5px 0 var(--color-message-reaction-shadow-inner);
         transition:
             transform 100ms linear,
@@ -75,6 +78,9 @@
             font-size: 0.8em;
         }
     }
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 
     .message_reaction_count {
         /* 90% works out here to 12.6px */
