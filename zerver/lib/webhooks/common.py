@@ -25,6 +25,7 @@ from zerver.actions.message_send import (
     check_send_stream_message_by_id,
     send_rate_limited_pm_notification_to_bot_owner,
 )
+from zerver.lib.bot_config import ConfigError, get_bot_config
 from zerver.lib.exceptions import (
     AnomalousWebhookPayloadError,
     ErrorCode,
@@ -320,8 +321,48 @@ def parse_multipart_string(body: str) -> dict[str, str]:
     return data
 
 
+def validate_webhook_delivery(
+    request: HttpRequest,
+    signature_header_name: str,
+    integration_name: str,
+    algorithm: str = "sha256",
+) -> None:
+    assert request.user.is_authenticated
+    user_profile = request.user
+    assert isinstance(user_profile, UserProfile)
+
+    try:
+        config = get_bot_config(user_profile)
+        webhook_secret = config.get(f"{integration_name.lower()}-webhook_secret", "")
+    except ConfigError:
+        webhook_secret = ""
+
+    if not webhook_secret:
+        return
+
+    signature_header = request.headers.get(signature_header_name, "")
+    signature = signature_header.split("=")[-1] if "=" in signature_header else signature_header
+
+    payload = request.body.decode("utf-8")
+
+    try:
+        validate_webhook_signature(
+            payload=payload,
+            signature=signature,
+            secret=webhook_secret,
+            algorithm=algorithm,
+        )
+    except JsonableError:
+        raise
+    except Exception as err:  # nocoverage
+        raise JsonableError(str(err))
+
+
 def validate_webhook_signature(
-    request: HttpRequest, payload: str, signature: str, algorithm: str = "sha256"
+    payload: str,
+    signature: str,
+    secret: str,
+    algorithm: str = "sha256",
 ) -> None:
     if not settings.VERIFY_WEBHOOK_SIGNATURES:  # nocoverage
         return
@@ -331,14 +372,10 @@ def validate_webhook_signature(
             _("The algorithm '{algorithm}' is not supported.").format(algorithm=algorithm)
         )
 
-    webhook_secret: str | None = request.GET.get("webhook_secret")
-    if webhook_secret is None:
-        raise JsonableError(
-            _(
-                "The webhook secret is missing. Please set the webhook_secret while generating the URL."
-            )
-        )
-    webhook_secret_bytes = force_bytes(webhook_secret)
+    if not secret:
+        raise JsonableError(_("Webhook secret is not configured for this bot."))
+
+    webhook_secret_bytes = force_bytes(secret)
     payload_bytes = force_bytes(payload)
 
     signed_payload = hmac.new(

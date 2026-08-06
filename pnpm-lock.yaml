@@ -355,6 +355,9 @@ importers:
       '@types/eslint-config-prettier':
         specifier: ^6.11.3
         version: 6.11.3
+      '@types/estree':
+        specifier: ^1.0.9
+        version: 1.0.9
       '@types/gtag.js':
         specifier: ^0.0.20
         version: 0.0.20
