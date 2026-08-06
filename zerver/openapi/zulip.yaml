@@ -1453,7 +1453,7 @@ paths:
                                     Not present for clients that support the `simplified_presence_events`
                                     [client capability](/api/register-queue#parameter-client_capabilities).
 
-                                    Object containing the presence data (legacy format) of of the modified
+                                    Object containing the presence data (legacy format) of the modified
                                     user.
                                   additionalProperties:
                                     type: object
@@ -24978,7 +24978,7 @@ paths:
                 can_resolve_topics_group:
                   allOf:
                     - description: |
-                        The set of users who have permission to to resolve topics in this channel
+                        The set of users who have permission to resolve topics in this channel
                         expressed as an [update to a group-setting value][update-group-setting].
 
                         [update-group-setting]: /api/group-setting-values#updating-group-setting-values

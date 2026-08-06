@@ -114,7 +114,7 @@ def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
 def check_attachment_reference_change(
     message: Message | ScheduledMessage, rendering_result: MessageRenderingResult
 ) -> AttachmentChangeResult:
-    # For a unsaved message edit (message.* has been updated, but not
+    # For an unsaved message edit (message.* has been updated, but not
     # saved to the database), adjusts Attachment data to correspond to
     # the new content.
     prev_attachments = {a.path_id for a in message.attachment_set.all()}

@@ -174,7 +174,7 @@ result.
 But often, one can write a more readable test by instead verifying
 the values of parameters in the context passed into the template
 rendering. The `mock_template` function in Zulip's testing library
-is designed to support this this.
+is designed to support this.
 
 We use `mock_template` in our unit tests to verify that the JS code is
 calling the template with the expected context data. And then we use

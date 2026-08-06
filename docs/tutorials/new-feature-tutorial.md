@@ -744,7 +744,7 @@ and [OpenAPI configuration](../documentation/openapi.md).
 
 In particular, if there is an API change, you should use the
 `create-api-changelog` tool to create a file for the API changelog
-entry for your your new feature. The API feature level allows the
+entry for your new feature. The API feature level allows the
 developers of mobile clients and other tools using the Zulip API to
 programmatically determine whether the Zulip server they are
 interacting with supports a given feature; see the
