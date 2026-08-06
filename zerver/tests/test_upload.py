@@ -245,15 +245,19 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         consume_response(result)
 
         # Old files may be stored without a content-type in the
-        # database, in which case we try to guess at download time.
+        # database -- as NULL, or as the empty string that a
+        # third-party import can carry over -- in which case we try to
+        # guess at download time.
         attachment = Attachment.objects.get(file_name="somefile")
         self.assertEqual(attachment.content_type, "application/octet-stream")
-        attachment.content_type = None
-        attachment.save(update_fields=["content_type"])
-        result = self.client_get(url)
-        self.assertEqual(result.status_code, 200)
-        self.assertEqual(result["Content-Type"], "application/octet-stream")
-        consume_response(result)
+        for stored_content_type in [None, ""]:
+            with self.subTest(content_type=stored_content_type):
+                attachment.content_type = stored_content_type
+                attachment.save(update_fields=["content_type"])
+                result = self.client_get(url)
+                self.assertEqual(result.status_code, 200)
+                self.assertEqual(result["Content-Type"], "application/octet-stream")
+                consume_response(result)
 
         uploaded_file = SimpleUploadedFile("somefile.txt", b"zulip!", content_type="")
         result = self.api_post(
