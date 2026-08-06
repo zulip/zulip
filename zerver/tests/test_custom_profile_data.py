@@ -977,7 +977,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             data.append({"id": field.id, "value": value})
 
         # Deliberately wrong count to get the real number from the failure output.
-        with self.assert_database_query_count(44):
+        with self.assert_database_query_count(36):
             result = self.client_patch(
                 "/json/users/me/profile_data",
                 {"data": orjson.dumps(data).decode()},
