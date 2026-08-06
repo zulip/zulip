@@ -977,13 +977,12 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             data.append({"id": field.id, "value": value})
 
         # Deliberately wrong count to get the real number from the failure output.
-        with self.assert_database_query_count(36):
+        with self.assert_database_query_count(14):
             result = self.client_patch(
                 "/json/users/me/profile_data",
                 {"data": orjson.dumps(data).decode()},
             )
         self.assert_json_success(result)
-
 
     def test_update_invalid_dropdown_field(self) -> None:
         field_name = "Favorite editor"

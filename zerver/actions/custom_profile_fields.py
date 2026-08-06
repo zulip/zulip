@@ -206,11 +206,46 @@ def do_update_user_custom_profile_data_if_changed(
 ) -> None:
     changes: list[UserProfileChangeDict] = []
 
-    for custom_profile_field in data:
-        field_value, created = CustomProfileFieldValue.objects.get_or_create(
-            user_profile=user_profile, field_id=custom_profile_field["id"]
+    # Batch-fetch the CustomProfileField rows (for is_renderable()/name)
+    # and any existing CustomProfileFieldValue rows for this user, instead
+    # of querying once per field below. This avoids an N+1 query pattern
+    # when updating multiple fields in a single request.
+    field_ids = [custom_profile_field["id"] for custom_profile_field in data]
+    fields_by_id = {
+        field.id: field for field in CustomProfileField.objects.filter(id__in=field_ids)
+    }
+    existing_values_by_field_id = {
+        field_value.field_id: field_value
+        for field_value in CustomProfileFieldValue.objects.filter(
+            user_profile=user_profile, field_id__in=field_ids
         )
+    }
 
+    values_to_create: list[CustomProfileFieldValue] = []
+    # (field_value, field, custom_profile_field, created)
+    values_to_process: list[
+        tuple[CustomProfileFieldValue, CustomProfileField, ProfileDataElementUpdateDict, bool]
+    ] = []
+    for custom_profile_field in data:
+        field_id = custom_profile_field["id"]
+        field = fields_by_id[field_id]
+        existing_field_value = existing_values_by_field_id.get(field_id)
+        if existing_field_value is None:
+            new_field_value = CustomProfileFieldValue(user_profile=user_profile, field_id=field_id)
+            values_to_create.append(new_field_value)
+            values_to_process.append((new_field_value, field, custom_profile_field, True))
+        else:
+            values_to_process.append((existing_field_value, field, custom_profile_field, False))
+
+    if values_to_create:
+        CustomProfileFieldValue.objects.bulk_create(values_to_create)
+
+    values_to_update: list[CustomProfileFieldValue] = []
+
+    for field_value, field, custom_profile_field, created in values_to_process:
+        # Pre-populate the FK cache so field_value.field doesn't trigger a
+        # query below (e.g. inside get_custom_profile_field_display_value).
+        field_value.field = field
         # field_value.value is a TextField() so we need to have field["value"]
         # in string form to correctly make comparisons and assignments.
         if isinstance(custom_profile_field["value"], str):
@@ -226,20 +261,19 @@ def do_update_user_custom_profile_data_if_changed(
         old_value = get_custom_profile_field_display_value(field_value)
 
         field_value.value = custom_profile_field_value_string
-        if field_value.field.is_renderable():
+        if field.is_renderable():
             field_value.rendered_value = render_stream_description(
                 custom_profile_field_value_string, user_profile.realm
             )
-            field_value.save(update_fields=["value", "rendered_value"])
-        else:
-            field_value.save(update_fields=["value"])
+        values_to_update.append(field_value)
+
         notify_user_update_custom_profile_data(
             user_profile,
             {
                 "id": field_value.field_id,
                 "value": field_value.value,
                 "rendered_value": field_value.rendered_value,
-                "type": field_value.field.field_type,
+                "type": field.field_type,
             },
         )
 
@@ -247,11 +281,14 @@ def do_update_user_custom_profile_data_if_changed(
 
         changes.append(
             UserProfileChangeDict(
-                field_name=field_value.field.name,
+                field_name=field.name,
                 old_value=old_value,
                 new_value=new_value,
             )
         )
+
+    if values_to_update:
+        CustomProfileFieldValue.objects.bulk_update(values_to_update, ["value", "rendered_value"])
 
     if changes and notify:
         send_user_profile_update_notification(
