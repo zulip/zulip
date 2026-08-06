@@ -44,6 +44,10 @@ let user_acknowledged_stream_wildcard = false;
 let upload_in_progress = false;
 let no_message_content = false;
 let message_too_long = false;
+// Whether the compose box renders to nothing visible. Like message_too_long,
+// this disables the send button, but it is not part of no_message_content,
+// which means specifically an empty textarea.
+let renders_blank = false;
 // Since same functions are used for both compose and message edit,
 //  we need to track when we are validating compose box.
 let is_validating_compose_box = false;
@@ -1055,6 +1059,27 @@ export function validate_private_message(show_banner = true): boolean {
     return true;
 }
 
+export function message_renders_blank(message_content: string): boolean {
+    // Whether a non-empty message renders to nothing a reader can see. We
+    // only block syntax that shows no element at all -- empty math and an
+    // empty strikethrough. Empty code/quote/spoiler blocks still show a
+    // visible container, so they're allowed. Empty/whitespace input returns
+    // false (that's an empty message, handled separately).
+    if (message_content.trim() === "") {
+        return false;
+    }
+    // `[^\S\n]` matches whitespace other than a newline, so a pasted
+    // non-breaking space is treated like a plain space.
+    const stripped = message_content
+        // Empty math block: ```math with a whitespace-only body.
+        .replaceAll(/(`{3,}|~{3,})[^\S\n]*math[^\S\n]*\n[^\S\n]*(?:\n[^\S\n]*)*?\1/g, "")
+        // Empty inline math: `$$` with a whitespace-only body.
+        .replaceAll(/\$\$[^\S\n]+\$\$/g, "")
+        // Empty strikethrough: renders an empty <del>.
+        .replaceAll(/~~[^\S\n]+~~/g, "");
+    return stripped.trim() === "";
+}
+
 export function check_overflow_text($container: JQuery): number {
     // This function is called when typing every character in the
     // compose box, so it's important that it not doing anything
@@ -1069,6 +1094,7 @@ export function check_overflow_text($container: JQuery): number {
 
     const old_no_message_content = no_message_content;
     const old_message_too_long = message_too_long;
+    const old_renders_blank = renders_blank;
 
     if (text.length > max_length) {
         $indicator.removeClass("textarea-approaching-limit");
@@ -1113,11 +1139,14 @@ export function check_overflow_text($container: JQuery): number {
     }
 
     if (!is_edit_container) {
-        // Update the state for whether the message is empty.
+        // Update the state for whether the message is empty, and (separately)
+        // whether it renders to nothing visible.
         set_no_message_content(text.length === 0);
+        renders_blank = message_renders_blank(text);
         if (
             message_too_long !== old_message_too_long ||
-            old_no_message_content !== no_message_content
+            old_no_message_content !== no_message_content ||
+            old_renders_blank !== renders_blank
         ) {
             // If this keystroke changed the truth status for whether
             // the message is empty or too long, then we need to
@@ -1215,7 +1244,10 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
 
     const no_message_content = /^\s*$/.test(message_content);
     set_no_message_content(no_message_content);
-    if (no_message_content) {
+    // A message that renders to nothing visible (e.g. empty math or an empty
+    // fenced block) is blocked too, but it isn't tracked in no_message_content
+    // since the compose box isn't actually empty.
+    if (no_message_content || message_renders_blank(message_content)) {
         if (show_banner) {
             // If you tried actually sending a message with empty
             // compose, flash the textarea as invalid.

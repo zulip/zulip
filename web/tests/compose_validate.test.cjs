@@ -554,6 +554,34 @@ test_ui("test_check_overflow_text", ({override, override_rewire}) => {
     }
 });
 
+test_ui("message_renders_blank", () => {
+    // Syntax that renders no visible element: empty math and strikethrough.
+    // A pasted non-breaking space counts as a whitespace-only body.
+    assert.ok(compose_validate.message_renders_blank("$$ $$"));
+    assert.ok(compose_validate.message_renders_blank("$$\u{00A0}$$"));
+    assert.ok(compose_validate.message_renders_blank("```math\n\n```"));
+    assert.ok(compose_validate.message_renders_blank("```math\n \n```"));
+    assert.ok(compose_validate.message_renders_blank("~~ ~~"));
+    assert.ok(compose_validate.message_renders_blank("~~\u{00A0}~~"));
+
+    // Real content, or syntax that still shows a visible container (code,
+    // quote, spoiler), is not blank.
+    assert.ok(!compose_validate.message_renders_blank("hello world"));
+    assert.ok(!compose_validate.message_renders_blank("$$a$$"));
+    assert.ok(!compose_validate.message_renders_blank("```math\na^2\n```"));
+    assert.ok(!compose_validate.message_renders_blank("$$ $$ and some text"));
+    assert.ok(!compose_validate.message_renders_blank("~~struck~~"));
+    assert.ok(!compose_validate.message_renders_blank("[]()"));
+    assert.ok(!compose_validate.message_renders_blank("```\n```"));
+    assert.ok(!compose_validate.message_renders_blank("```js\n \n```"));
+    assert.ok(!compose_validate.message_renders_blank("```quote\n\n```"));
+    assert.ok(!compose_validate.message_renders_blank("```spoiler\n\n```"));
+    assert.ok(!compose_validate.message_renders_blank("```spoiler Header\n```"));
+    assert.ok(!compose_validate.message_renders_blank("~~~~"));
+    assert.ok(!compose_validate.message_renders_blank(""));
+    assert.ok(!compose_validate.message_renders_blank("   \n\n"));
+});
+
 test_ui("needs_subscribe_warning", async () => {
     const invalid_user_id = 999;
 
