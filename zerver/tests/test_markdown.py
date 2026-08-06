@@ -1305,18 +1305,30 @@ class MarkdownEmbedsTest(ZulipTestCase):
         self.assertIn("Click to open file.", rendered.rendered_content)
 
         # If the worker could not find an OpenGraph image (the fetch
-        # failed, or the page has no og:image), no embed is produced and
-        # the message renders as a plain link.
-        for missing_image in (None, UrlEmbedData(image=None)):
-            rendered = markdown_convert(
-                url,
-                message_realm=get_realm("zulip"),
-                url_embed_data={url: missing_image},
-            )
-            self.assertEqual(
-                rendered.rendered_content,
-                f'<p><a href="{url}">{url}</a></p>',
-            )
+        # failed, or the page has no og:image):
+        # - If the fetch failed entirely (None), no embed is produced.
+        rendered = markdown_convert(
+            url,
+            message_realm=get_realm("zulip"),
+            url_embed_data={url: None},
+        )
+        self.assertEqual(
+            rendered.rendered_content,
+            f'<p><a href="{url}">{url}</a></p>',
+        )
+
+        # - If the page was fetched but has no og:image, a text-only
+        #   embed is rendered with the Dropbox title and description.
+        rendered = markdown_convert(
+            url,
+            message_realm=get_realm("zulip"),
+            url_embed_data={url: UrlEmbedData(image=None)},
+        )
+        assert rendered.rendered_content is not None
+        self.assertIn('class="message_embed"', rendered.rendered_content)
+        self.assertNotIn("message_embed_image", rendered.rendered_content)
+        self.assertIn("Dropbox file", rendered.rendered_content)
+        self.assertIn("Click to open file.", rendered.rendered_content)
 
     def test_inline_dropbox_no_previews(self) -> None:
         # When previews are disabled (e.g., for channel descriptions),
