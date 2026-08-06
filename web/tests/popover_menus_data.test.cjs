@@ -240,7 +240,10 @@ test("my_message_all_actions", ({override}) => {
     ];
 
     add_message_with_view(list, messages);
-    const response = popover_menus_data.get_actions_popover_content_context(1);
+    const response = popover_menus_data.get_actions_popover_content_context(1, {
+        kind: "full_message",
+        hotkeys_agree: true,
+    });
     assert.equal(response.message_id, 1);
     assert.equal(response.stream_id, 1);
     assert.equal(response.editability_menu_item, "translated: Edit message");
@@ -254,6 +257,35 @@ test("my_message_all_actions", ({override}) => {
     assert.equal(response.should_display_delete_option, true);
     assert.equal(response.should_display_read_receipts_option, true);
     assert.equal(response.should_display_quote_message, true);
+    assert.equal(response.show_quote_and_forward_hotkey_hints, true);
+
+    // A menu opened on a message the selection does not cover quotes just
+    // that message, which is not what > and < would do.
+    const diverging_response = popover_menus_data.get_actions_popover_content_context(1, {
+        kind: "full_message",
+        hotkeys_agree: false,
+    });
+    assert.equal(diverging_response.show_quote_and_forward_hotkey_hints, false);
+    assert.equal(response.quote_message_menu_item, "translated: Quote message");
+    assert.equal(response.forward_message_menu_item, "translated: Forward message");
+
+    // The Quote/Forward labels spell out what a text selection will act on.
+    const selection_response = popover_menus_data.get_actions_popover_content_context(1, {
+        kind: "message_selection",
+        quote_content: "selected text",
+    });
+    assert.equal(selection_response.quote_message_menu_item, "translated: Quote selection");
+    assert.equal(selection_response.forward_message_menu_item, "translated: Forward selection");
+
+    const messages_response = popover_menus_data.get_actions_popover_content_context(1, {
+        kind: "selected_messages",
+        message_ids: [1, 2],
+    });
+    assert.equal(messages_response.quote_message_menu_item, "translated: Quote selected messages");
+    assert.equal(
+        messages_response.forward_message_menu_item,
+        "translated: Forward selected messages",
+    );
 });
 
 test("not_my_message_view_actions", ({override}) => {
@@ -288,7 +320,10 @@ test("not_my_message_view_actions", ({override}) => {
 
     add_message_with_view(list, messages);
 
-    const response = popover_menus_data.get_actions_popover_content_context(1);
+    const response = popover_menus_data.get_actions_popover_content_context(1, {
+        kind: "full_message",
+        hotkeys_agree: true,
+    });
 
     assert.equal(response.view_source_menu_item, "translated: View original message");
     assert.equal(response.editability_menu_item, undefined);
@@ -332,7 +367,10 @@ test("not_my_message_view_source_and_move", ({override}) => {
 
     add_message_with_view(list, messages);
 
-    const response = popover_menus_data.get_actions_popover_content_context(1);
+    const response = popover_menus_data.get_actions_popover_content_context(1, {
+        kind: "full_message",
+        hotkeys_agree: true,
+    });
     assert.equal(response.view_source_menu_item, "translated: View original message");
     assert.equal(response.editability_menu_item, undefined);
     assert.equal(response.move_message_menu_item, "translated: Move messages");

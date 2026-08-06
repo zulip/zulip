@@ -227,6 +227,58 @@ export function rewire_get_highlighted_message_ids(
     get_highlighted_message_ids = value;
 }
 
+// Classification of the current DOM text selection, for quoting purposes.
+type HighlightedSelection =
+    | {type: "none"}
+    | {type: "single_message"; message_id: number}
+    | {type: "multi_message"; message_ids: number[]};
+
+function get_highlighted_selection(): HighlightedSelection {
+    const message_ids = get_highlighted_message_ids();
+    if (message_ids === undefined || message_ids.length === 0) {
+        return {type: "none"};
+    }
+    if (message_ids.length === 1) {
+        const message_id = message_ids[0];
+        assert(message_id !== undefined);
+        return {type: "single_message", message_id};
+    }
+    return {type: "multi_message", message_ids};
+}
+
+// What the message actions menu opened on `message_id` should quote or
+// forward, given the text selection at the time the menu was opened.
+export type QuoteMenuSelection = {
+    // Whether > and < would do the same thing as the menu item. They act on
+    // the selection wherever it is, so they disagree with a menu opened on a
+    // message the selection does not cover.
+    hotkeys_agree: boolean;
+} & (
+    | {kind: "full_message"}
+    | {kind: "message_selection"; quote_content: string}
+    | {kind: "selected_messages"; message_ids: number[]}
+);
+
+export function get_quote_menu_selection(message_id: number): QuoteMenuSelection {
+    const selection = get_highlighted_selection();
+    if (selection.type === "multi_message" && selection.message_ids.includes(message_id)) {
+        return {kind: "selected_messages", message_ids: selection.message_ids, hotkeys_agree: true};
+    }
+    if (selection.type === "single_message" && selection.message_id === message_id) {
+        const quote_content = get_message_selection();
+        // Selecting only a sender name or timestamp lands outside
+        // `.message_content`, leaving nothing quotable to offer. The hotkeys
+        // fall back to the whole message too, so they still agree.
+        if (quote_content.trim() !== "") {
+            return {kind: "message_selection", quote_content, hotkeys_agree: true};
+        }
+        return {kind: "full_message", hotkeys_agree: true};
+    }
+    // With no selection, or one that does not cover this message, the menu
+    // acts on the message it was opened from.
+    return {kind: "full_message", hotkeys_agree: selection.type === "none"};
+}
+
 function get_quote_target_for_single_message(opts: {
     message_id?: number;
     quote_content?: string | undefined;
@@ -528,19 +580,30 @@ function replace_quoting_placeholder_with(info: {
 }
 
 export function quote_messages(opts: QuoteMessageOpts): void {
+    // The message actions menu passes the ids it recorded when the menu was
+    // opened, since the selection they came from no longer exists.
+    const selected_message_ids = opts.highlighted_message_ids;
+    if (selected_message_ids !== undefined && selected_message_ids.length > 1) {
+        quote_multiple_messages(opts);
+        return;
+    }
     if (opts.message_id) {
         quote_single_message(opts);
         return;
     }
-    const highlighted_message_ids = get_highlighted_message_ids();
-    if (highlighted_message_ids === undefined || highlighted_message_ids.length === 0) {
-        quote_single_message(opts);
-    } else if (highlighted_message_ids.length === 1) {
-        opts.highlighted_message_ids = highlighted_message_ids;
-        quote_single_message(opts);
-    } else {
-        opts.highlighted_message_ids = highlighted_message_ids;
-        quote_multiple_messages(opts);
+    const selection = get_highlighted_selection();
+    switch (selection.type) {
+        case "none":
+            quote_single_message(opts);
+            return;
+        case "single_message":
+            opts.highlighted_message_ids = [selection.message_id];
+            quote_single_message(opts);
+            return;
+        case "multi_message":
+            opts.highlighted_message_ids = selection.message_ids;
+            quote_multiple_messages(opts);
+            return;
     }
 }
 
