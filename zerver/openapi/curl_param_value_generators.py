@@ -126,6 +126,19 @@ def iago_message_id() -> dict[str, object]:
     }
 
 
+@openapi_param_value_generator(["/messages/{message_id}/link_previews:patch"])
+def message_with_previewable_url_id() -> dict[str, object]:
+    iago = helpers.example_user("iago")
+    helpers.subscribe(iago, "Denmark")
+    # The message must link to the URL in the endpoint's example, since
+    # only a URL that can have a preview can have one removed.
+    return {
+        "message_id": helpers.send_stream_message(
+            iago, "Denmark", content="https://example.com/article"
+        ),
+    }
+
+
 @openapi_param_value_generator(["/messages/{message_id}/reactions:delete"])
 def add_emoji_to_message() -> dict[str, object]:
     user_profile = helpers.example_user("iago")

@@ -1,9 +1,10 @@
 import re
 from collections import OrderedDict
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest import mock
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
+import orjson
 import responses
 from django.test import override_settings
 from django.utils.html import escape
@@ -12,6 +13,8 @@ from requests.exceptions import ConnectionError
 from typing_extensions import override
 
 from zerver.actions.message_delete import do_delete_messages
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.cache import cache_delete, cache_get, preview_url_cache_key
 from zerver.lib.camo import get_camo_url
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
@@ -21,8 +24,12 @@ from zerver.lib.url_preview.oembed import get_oembed_data, strip_cdata
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
 from zerver.lib.url_preview.preview import get_link_embed_data
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
-from zerver.models import Message, Realm, UserMessage, UserProfile
+from zerver.models import Message, NamedUserGroup, Realm, UserMessage, UserProfile
+from zerver.models.groups import SystemGroups
 from zerver.worker.embed_links import FetchLinksEmbedData
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 def reconstruct_url(url: str, maxwidth: int = 640, maxheight: int = 480) -> str:
@@ -1178,3 +1185,495 @@ class PreviewTestCase(ZulipTestCase):
         msg.refresh_from_db()
         expected_content = f"""<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube link</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="{get_camo_url("https://i.ytimg.com/vi/eSJTXC7Ixgg/mqdefault.jpg")}"></a></div>"""
         self.assertEqual(expected_content, msg.rendered_content)
+
+
+@override_settings(INLINE_URL_EMBED_PREVIEW=True)
+class RemoveLinkPreviewTest(ZulipTestCase):
+    open_graph_html = PreviewTestCase.open_graph_html
+
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        Realm.objects.all().update(inline_url_embed_preview=True)
+
+    def _send_and_embed_urls(self, user: UserProfile, urls: list[str]) -> Message:
+        """Send a message linking each URL, and process the embed worker."""
+        for url in urls:
+            # Clear any cached data so the mock responses are actually fetched.
+            cache_delete(preview_url_cache_key(url))
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            msg_id = self.send_stream_message(
+                user, "Denmark", topic_name="test", content="\n".join(urls)
+            )
+            patched.assert_called_once()
+            event = patched.call_args[0][1]
+
+        for url in urls:
+            PreviewTestCase.create_mock_response(url)
+        with self.settings(TEST_SUITE=False), self.assertLogs(level="INFO"):
+            FetchLinksEmbedData().consume(event)
+
+        return Message.objects.select_related("sender").get(id=msg_id)
+
+    def _send_and_embed_url(self, user: UserProfile, url: str) -> Message:
+        return self._send_and_embed_urls(user, [url])
+
+    def _remove_previews(
+        self, message_id: int, urls: list[str], op: str = "remove"
+    ) -> "TestHttpResponse":
+        return self.client_patch(
+            f"/json/messages/{message_id}/link_previews",
+            {"op": op, "urls": orjson.dumps(urls).decode()},
+        )
+
+    @responses.activate
+    def test_remove_preview_suppresses_embed(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+
+        msg = self._send_and_embed_url(user, url)
+        assert msg.rendered_content is not None
+        self.assertIn("message_embed", msg.rendered_content)
+        self.assertEqual(msg.removed_preview_urls, [])
+
+        # Removing a preview is a rendering update rather than a content
+        # edit, so clients are notified with rendering_only set.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self._remove_previews(msg.id, [url])
+            self.assert_json_success(result)
+        self.assertEqual(events[0]["event"]["type"], "update_message")
+        self.assertTrue(events[0]["event"]["rendering_only"])
+        self.assertIsNone(events[0]["event"]["user_id"])
+
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertNotIn("message_embed", msg.rendered_content)
+        self.assertIn(url, msg.rendered_content)
+        self.assertEqual(msg.removed_preview_urls, [url])
+
+        # The message's content and edit history are untouched.
+        self.assertEqual(msg.content, url)
+        self.assertIsNone(msg.edit_history)
+
+    @responses.activate
+    def test_remove_preview_is_idempotent(self) -> None:
+        """Removing the same URL twice should not create duplicates."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+
+        msg = self._send_and_embed_url(user, url)
+        self.assert_json_success(self._remove_previews(msg.id, [url]))
+
+        # Removing an already-removed preview is a no-op: it changes nothing
+        # and emits no message-update event.
+        with self.capture_send_event_calls(expected_num_events=0):
+            self.assert_json_success(self._remove_previews(msg.id, [url]))
+
+        msg.refresh_from_db()
+        self.assertEqual(msg.removed_preview_urls, [url])
+
+    @responses.activate
+    def test_remove_preview_deduplicates_requested_urls(self) -> None:
+        """The same URL listed twice in one request is stored once."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+
+        msg = self._send_and_embed_url(user, url)
+        self.assert_json_success(self._remove_previews(msg.id, [url, url]))
+
+        msg.refresh_from_db()
+        self.assertEqual(msg.removed_preview_urls, [url])
+
+    @responses.activate
+    def test_remove_multiple_previews_in_one_request(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url1 = "http://test.org/"
+        url2 = "http://other.org/"
+
+        msg = self._send_and_embed_urls(user, [url1, url2])
+        assert msg.rendered_content is not None
+        self.assertEqual(msg.rendered_content.count('class="message_embed"'), 2)
+
+        with self.capture_send_event_calls(expected_num_events=1):
+            self.assert_json_success(self._remove_previews(msg.id, [url1, url2]))
+
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertNotIn("message_embed", msg.rendered_content)
+        self.assertEqual(msg.removed_preview_urls, [url1, url2])
+
+    @responses.activate
+    def test_remove_preview_skips_validating_already_removed_urls(self) -> None:
+        """A URL whose preview is already removed is not re-validated, so a
+        client removing several previews at once does not fail on one it
+        removed earlier -- even if that URL can no longer be previewed."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url1 = "http://test.org/"
+        url2 = "http://other.org/"
+
+        msg = self._send_and_embed_urls(user, [url1, url2])
+        self.assert_json_success(self._remove_previews(msg.id, [url1]))
+
+        # Edit the message so url1 is no longer a link at all.
+        result = self.client_patch(f"/json/messages/{msg.id}", {"content": f"`{url1}` {url2}"})
+        self.assert_json_success(result)
+
+        self.assert_json_success(self._remove_previews(msg.id, [url1, url2]))
+        msg.refresh_from_db()
+        self.assertEqual(msg.removed_preview_urls, [url1, url2])
+
+    @responses.activate
+    def test_remove_preview_rejects_request_atomically(self) -> None:
+        """If any requested URL has no preview, the whole request fails and
+        no preview is removed."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+
+        msg = self._send_and_embed_url(user, url)
+        result = self._remove_previews(msg.id, [url, "http://not-in-message.org/"])
+        self.assert_json_error(
+            result, "URL does not have a link preview: http://not-in-message.org/"
+        )
+
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertEqual(msg.removed_preview_urls, [])
+        self.assertIn("message_embed", msg.rendered_content)
+
+    def test_remove_preview_requires_a_supported_op(self) -> None:
+        """`op` currently accepts only "remove"; restoring a removed preview
+        is planned as a follow-up."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        msg_id = self.send_stream_message(user, "Denmark", topic_name="test", content="hello")
+
+        result = self._remove_previews(msg_id, ["http://test.org/"], op="restore")
+        self.assert_json_error(result, "Invalid op")
+
+    def test_remove_preview_with_no_urls_is_a_noop(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
+            msg_id = self.send_stream_message(
+                user, "Denmark", topic_name="test", content="http://test.org/"
+            )
+
+        with self.capture_send_event_calls(expected_num_events=0):
+            self.assert_json_success(self._remove_previews(msg_id, []))
+
+    def test_remove_preview_on_nonexistent_message(self) -> None:
+        self.login("hamlet")
+        result = self._remove_previews(0, ["http://test.org/"])
+        self.assert_json_error(result, "Invalid message(s)")
+
+    @responses.activate
+    def test_remove_preview_permission_non_sender(self) -> None:
+        """A user who cannot edit the message cannot remove its previews."""
+        sender = self.example_user("hamlet")
+        other_user = self.example_user("cordelia")
+        self.login_user(sender)
+        url = "http://test.org/"
+
+        msg = self._send_and_embed_url(sender, url)
+
+        self.login_user(other_user)
+        result = self._remove_previews(msg.id, [url])
+        self.assert_json_error(result, "You don't have permission to edit this message")
+
+    @responses.activate
+    def test_remove_preview_with_message_editing_disabled(self) -> None:
+        """Removing a preview requires the permission to edit the message's
+        content, so it is refused when editing is turned off."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+
+        msg = self._send_and_embed_url(user, url)
+        do_set_realm_property(user.realm, "allow_message_editing", False, acting_user=None)
+
+        result = self._remove_previews(msg.id, [url])
+        self.assert_json_error(result, "Your organization has turned off message editing")
+
+        msg.refresh_from_db()
+        self.assertEqual(msg.removed_preview_urls, [])
+
+    @responses.activate
+    def test_embed_worker_respects_removed_urls(self) -> None:
+        """The embed worker must not restore a removed preview, even when
+        handed a (possibly stale) event that still lists the removed URL."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+
+        msg = self._send_and_embed_url(user, url)
+        assert msg.rendered_content is not None
+        self.assertIn("message_embed", msg.rendered_content)
+
+        self.assert_json_success(self._remove_previews(msg.id, [url]))
+        msg.refresh_from_db()
+        self.assertNotIn("message_embed", msg.rendered_content)
+
+        # The renderer consults removed_preview_urls directly, so even an
+        # embed event that still lists the removed URL does not restore it.
+        event = {
+            "message_id": msg.id,
+            "message_content": msg.content,
+            "message_realm_id": msg.realm_id,
+            "urls": [url],
+        }
+        PreviewTestCase.create_mock_response(url)
+        with self.settings(TEST_SUITE=False), self.assertLogs(level="INFO"):
+            FetchLinksEmbedData().consume(event)
+
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertNotIn("message_embed", msg.rendered_content)
+
+    @responses.activate
+    def test_content_edit_preserves_removed_inline_image(self) -> None:
+        """A removed inline image must stay removed after a content edit.
+
+        Inline image/video previews never pass through the embed worker, so
+        the renderer must skip removed URLs itself -- otherwise they reappear
+        on edit.
+        """
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "https://example.com/photo.jpg"
+
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="test", content=url)
+
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        assert msg.rendered_content is not None
+        self.assertIn("message_inline_image", msg.rendered_content)
+
+        self.assert_json_success(self._remove_previews(msg.id, [url]))
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertNotIn("message_inline_image", msg.rendered_content)
+
+        # Editing the message content must not restore the removed image.
+        result = self.client_patch(
+            f"/json/messages/{msg.id}",
+            {"content": f"{url} updated text"},
+        )
+        self.assert_json_success(result)
+
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertNotIn("message_inline_image", msg.rendered_content)
+        self.assertIn(url, msg.rendered_content)
+
+    @responses.activate
+    def test_remove_preview_requeues_uncached_remaining_urls(self) -> None:
+        """Removing one preview re-queues sibling previews that are not cached."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url1 = "http://test.org/"
+        url2 = "http://other.org/"
+
+        msg = self._send_and_embed_urls(user, [url1, url2])
+        assert msg.rendered_content is not None
+        self.assertIn("message_embed", msg.rendered_content)
+
+        # Evict url2 from the preview cache, so the re-render cannot reuse
+        # its embed data and must re-queue it for the embed worker.
+        cache_delete(preview_url_cache_key(url2))
+
+        # Remove url1. The re-render encounters url2 without cached embed
+        # data, so it is enqueued for fetching (and url1 is not).
+        with mock_queue_publish("zerver.actions.message_edit.queue_event_on_commit") as patched:
+            self.assert_json_success(self._remove_previews(msg.id, [url1]))
+            patched.assert_called_once()
+            requeue_event = patched.call_args[0][1]
+            self.assertIn(url2, requeue_event["urls"])
+            self.assertNotIn(url1, requeue_event["urls"])
+
+        # After consuming the re-queued event, url2's embed should appear.
+        PreviewTestCase.create_mock_response(url2)
+        with self.settings(TEST_SUITE=False), self.assertLogs(level="INFO"):
+            FetchLinksEmbedData().consume(requeue_event)
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertIn("message_embed", msg.rendered_content)
+
+    @responses.activate
+    def test_remove_preview_reuses_cached_sibling_embeds(self) -> None:
+        """Removing one preview reuses the cached embed data of the others, so
+        they stay inline and are not re-fetched by the embed worker."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url1 = "http://test.org/"
+        url2 = "http://other.org/"
+
+        msg = self._send_and_embed_urls(user, [url1, url2])
+        assert msg.rendered_content is not None
+        self.assertEqual(msg.rendered_content.count('class="message_embed"'), 2)
+
+        # Both URLs' embed data is warm in the cache. Removing url1's preview
+        # should keep url2's embed inline and NOT re-queue it.
+        with mock_queue_publish("zerver.actions.message_edit.queue_event_on_commit") as patched:
+            self.assert_json_success(self._remove_previews(msg.id, [url1]))
+            patched.assert_not_called()
+
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertEqual(msg.rendered_content.count('class="message_embed"'), 1)
+        self.assertIn(url2, msg.rendered_content)
+
+    def test_remove_preview_url_not_in_content(self) -> None:
+        """Removing a URL that doesn't appear in the message should fail."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
+            msg_id = self.send_stream_message(
+                user, "Denmark", topic_name="test", content="http://test.org/"
+            )
+        result = self._remove_previews(msg_id, ["http://not-in-message.org/"])
+        self.assert_json_error(
+            result, "URL does not have a link preview: http://not-in-message.org/"
+        )
+
+    def test_remove_preview_url_must_be_a_previewable_link(self) -> None:
+        """A URL that is only a substring of a real link, or appears only in
+        a code block, has no preview and must be rejected rather than stored."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
+            # The real link is the full URL; `http://example.com/` is just a
+            # substring of it, and the code-span URL is not a link at all.
+            msg_id = self.send_stream_message(
+                user,
+                "Denmark",
+                topic_name="test",
+                content="http://example.com/article and `http://test.org/`",
+            )
+
+        for url in ["http://example.com/", "http://test.org/"]:
+            result = self._remove_previews(msg_id, [url])
+            self.assert_json_error(result, f"URL does not have a link preview: {url}")
+
+        msg = Message.objects.get(id=msg_id)
+        self.assertEqual(msg.removed_preview_urls, [])
+
+        # The whole link is previewable, even though its website preview is
+        # fetched asynchronously and has not arrived yet.
+        self.assert_json_success(self._remove_previews(msg_id, ["http://example.com/article"]))
+        msg.refresh_from_db()
+        self.assertEqual(msg.removed_preview_urls, ["http://example.com/article"])
+
+    def test_remove_preview_suppresses_youtube_embed(self) -> None:
+        """Removing a YouTube preview drops the video embed from rendered content."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "https://www.youtube.com/watch?v=eSJTXC7Ixgg"
+
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="test", content=url)
+
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        assert msg.rendered_content is not None
+        self.assertIn("youtube-video", msg.rendered_content)
+
+        self.assert_json_success(self._remove_previews(msg.id, [url]))
+
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertNotIn("youtube-video", msg.rendered_content)
+        self.assertIn(url, msg.rendered_content)
+
+    def test_remove_preview_suppresses_inline_image(self) -> None:
+        """Removing a direct image URL's preview drops the inline image."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "https://example.com/photo.jpg"
+
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
+            msg_id = self.send_stream_message(user, "Denmark", topic_name="test", content=url)
+
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        assert msg.rendered_content is not None
+        self.assertIn("message_inline_image", msg.rendered_content)
+
+        self.assert_json_success(self._remove_previews(msg.id, [url]))
+
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertNotIn("message_inline_image", msg.rendered_content)
+        self.assertIn(url, msg.rendered_content)
+
+    def test_remove_preview_url_with_rewritten_source(self) -> None:
+        """Previews whose rendered link is a rewritten form of the message
+        URL (Wikipedia File: correction, Dropbox media) can still be removed,
+        even though the client sends the rewritten URL, not the original."""
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        cases = [
+            (
+                "https://en.wikipedia.org/wiki/File:Example.jpg",
+                "https://en.wikipedia.org/wiki/Special:FilePath/File:Example.jpg",
+            ),
+            (
+                "https://www.dropbox.com/scl/fi/abc123/photo.jpg",
+                "https://www.dropbox.com/scl/fi/abc123/photo.jpg?raw=1",
+            ),
+        ]
+        for original, rendered_url in cases:
+            with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit"):
+                msg_id = self.send_stream_message(
+                    user, "Denmark", topic_name="test", content=original
+                )
+            msg = Message.objects.get(id=msg_id)
+            assert msg.rendered_content is not None
+            self.assertIn("message_inline_image", msg.rendered_content)
+            # The preview links to the rewritten URL, which is what the
+            # client sends back to remove it.
+            self.assertIn(rendered_url, msg.rendered_content)
+
+            self.assert_json_success(self._remove_previews(msg.id, [rendered_url]))
+            msg.refresh_from_db()
+            assert msg.rendered_content is not None
+            self.assertNotIn("message_inline_image", msg.rendered_content)
+
+    def test_remove_preview_on_dm_skips_content_edit_checks(self) -> None:
+        """Removing a preview is not a content edit, so it must not re-run
+        content-edit validation.  In a direct message that mentions a group
+        the sender can no longer mention, removing an unrelated preview must
+        still succeed rather than failing the group-mention check."""
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        self.login_user(cordelia)
+
+        leadership = check_add_user_group(
+            cordelia.realm, "leadership", [cordelia], acting_user=cordelia
+        )
+        url = "https://example.com/photo.jpg"
+        msg_id = self.send_personal_message(cordelia, hamlet, f"@*leadership* {url}")
+
+        msg = Message.objects.select_related("sender").get(id=msg_id)
+        assert msg.rendered_content is not None
+        self.assertIn("message_inline_image", msg.rendered_content)
+
+        # Restrict the group so cordelia may no longer mention it.  A real
+        # content edit would now be rejected, but removing a preview must not.
+        moderators = NamedUserGroup.objects.get(
+            realm_for_sharding=cordelia.realm,
+            name=SystemGroups.MODERATORS,
+            is_system_group=True,
+        )
+        leadership.can_mention_group = moderators
+        leadership.save()
+
+        self.assert_json_success(self._remove_previews(msg.id, [url]))
+
+        msg.refresh_from_db()
+        assert msg.rendered_content is not None
+        self.assertNotIn("message_inline_image", msg.rendered_content)
+        self.assertEqual(msg.removed_preview_urls, [url])

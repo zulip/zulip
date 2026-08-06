@@ -10,7 +10,7 @@ from django.utils.translation import gettext as _
 from pydantic import Json, NonNegativeInt
 
 from zerver.actions.message_delete import do_delete_messages
-from zerver.actions.message_edit import check_update_message
+from zerver.actions.message_edit import check_remove_link_previews, check_update_message
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.html_diff import highlight_html_differences
@@ -178,6 +178,27 @@ def update_message_backend(
     log_data["extra"] = f"[{updated_message_result.changed_message_count}]"
 
     return json_success(request, data={"detached_uploads": updated_message_result.detached_uploads})
+
+
+@typed_endpoint
+def update_link_previews_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    message_id: PathOnly[NonNegativeInt],
+    op: Literal["remove"],
+    urls: Json[list[str]],
+) -> HttpResponse:
+    # `op` accepts only "remove" for now; restoring a removed link preview
+    # is planned as a follow-up, and will be another value of this parameter.
+    changed_message_count = check_remove_link_previews(user_profile, message_id, urls)
+
+    # Include the number of messages changed in the logs
+    log_data = RequestNotes.get_notes(request).log_data
+    assert log_data is not None
+    log_data["extra"] = f"[{changed_message_count}]"
+
+    return json_success(request)
 
 
 def validate_can_delete_message(user_profile: UserProfile, message: Message) -> None:
