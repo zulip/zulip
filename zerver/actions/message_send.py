@@ -85,7 +85,7 @@ from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import get_topic_display_name, participants_for_topic
 from zerver.lib.topic_link_util import get_message_link_label, get_stream_link_syntax
-from zerver.lib.types import UserProfileChangeDict
+from zerver.lib.types import SentMessageResult, UserProfileChangeDict
 from zerver.lib.url_encoding import message_link_url, stream_message_url
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
@@ -243,14 +243,6 @@ class ActiveUserDict(TypedDict):
 
 class UserProfileAnnotations(TypedDict):
     has_push_device_registered: bool
-
-
-@dataclass
-class SentMessageResult:
-    message_id: int
-    message_url: str
-    message_link: str
-    automatic_new_visibility_policy: int | None = None
 
 
 def get_recipient_info(
