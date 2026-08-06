@@ -1235,6 +1235,15 @@
 
     /* Recent view */
     --recent-view-body-border-width: 1px;
+    --recent-view-header-border-width: 1px;
+    --recent-view-row-left-padding: 0.75em; /* 12px at 16px / 1em */
+    /* How much farther right the row grid starts than the header
+       grid; the header widens its first column by this to align. */
+    --recent-view-header-channel-column-adjustment: calc(
+        var(--recent-view-row-left-padding) +
+            var(--recent-view-body-border-width) -
+            var(--recent-view-header-border-width)
+    );
     --recent-view-max-avatars: 4;
     --recent-view-participant-item-width: 1.5em; /* 24px at 16px / 1em */
     --recent-view-participant-item-padding-x: 0.0938em; /* 1.5px at 16px / 1em */
