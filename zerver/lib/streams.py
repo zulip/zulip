@@ -1,5 +1,5 @@
 from collections import defaultdict
-from collections.abc import Collection, Iterable
+from collections.abc import Callable, Collection, Iterable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, TypedDict
@@ -19,6 +19,7 @@ from zerver.lib.exceptions import (
     MissingAuthenticationError,
     OrganizationOwnerRequiredError,
 )
+from zerver.lib.partial import partial
 from zerver.lib.stream_subscription import (
     get_guest_user_ids_for_streams,
     get_subscribed_stream_ids_for_user,
@@ -396,20 +397,32 @@ def create_stream_if_needed(
         invite_only, history_public_to_subscribers
     )
 
-    group_setting_values = {}
+    group_setting_values: dict[str, UserGroup | Callable[[], UserGroup]] = {}
     request_settings_dict = locals()
     # We don't want to calculate this value if no default values are
     # needed.
     system_groups_name_dict = None
+
+    def get_default_group_for_setting(setting_name: str) -> UserGroup:
+        nonlocal system_groups_name_dict
+        if system_groups_name_dict is None:
+            system_groups_name_dict = get_role_based_system_groups_dict(realm)
+        return get_stream_permission_default_group(
+            setting_name, system_groups_name_dict, creator=acting_user
+        )
+
     for setting_name in Stream.stream_permission_group_settings:
         if setting_name not in request_settings_dict:  # nocoverage
             continue
 
         if request_settings_dict[setting_name] is None:
-            if system_groups_name_dict is None:
-                system_groups_name_dict = get_role_based_system_groups_dict(realm)
-            group_setting_values[setting_name] = get_stream_permission_default_group(
-                setting_name, system_groups_name_dict, creator=acting_user
+            # Computing a default is not free: the "channel_creator"
+            # default creates an anonymous group. get_or_create only
+            # resolves callables in `defaults` when it actually
+            # creates the object, so passing one here avoids leaving
+            # an unused group behind when the channel already exists.
+            group_setting_values[setting_name] = partial(
+                get_default_group_for_setting, setting_name
             )
         else:
             group_setting_values[setting_name] = request_settings_dict[setting_name]
