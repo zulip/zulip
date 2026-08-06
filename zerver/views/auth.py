@@ -1263,6 +1263,11 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
             result[settings_item] = context[settings_item]
     # TODO/compatibility: Backwards-compatibility name for realm_url.
     result["realm_uri"] = result["realm_url"]
+
+    realm = get_realm_from_request(request)
+    if realm and realm.deactivated_redirect:
+        result["realm_deactivated_redirect"] = realm.deactivated_redirect
+
     return json_success(request, data=result)
 
 
