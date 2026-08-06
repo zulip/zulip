@@ -95,10 +95,16 @@ export function generate_and_insert_audio_or_video_call_link(
                     parsed.success &&
                     parsed.data.code === "INVALID_VIDEO_CALL_PROVIDER_TOKEN"
                 ) {
-                    if (oauth_call_provider === "webex") {
-                        current_user.has_webex_token = false;
-                    } else {
-                        current_user.has_zoom_token = false;
+                    switch (oauth_call_provider) {
+                        case "webex":
+                            current_user.has_webex_token = false;
+                            break;
+                        case "google_meet":
+                            current_user.has_google_meet_token = false;
+                            break;
+                        case "zoom":
+                            current_user.has_zoom_token = false;
+                            break;
                     }
                 }
                 if (
@@ -130,7 +136,8 @@ export function generate_and_insert_audio_or_video_call_link(
         if (
             ((current_user.has_zoom_token || provider_is_zoom_server_to_server) &&
                 oauth_call_provider === "zoom") ||
-            (current_user.has_webex_token && oauth_call_provider === "webex")
+            (current_user.has_webex_token && oauth_call_provider === "webex") ||
+            (current_user.has_google_meet_token && oauth_call_provider === "google_meet")
         ) {
             make_oauth_call();
         } else {

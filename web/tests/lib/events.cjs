@@ -247,6 +247,11 @@ exports.fixtures = {
         topic: "topic1",
     },
 
+    has_google_meet_token: {
+        type: "has_google_meet_token",
+        value: true,
+    },
+
     has_webex_token: {
         type: "has_webex_token",
         value: true,
