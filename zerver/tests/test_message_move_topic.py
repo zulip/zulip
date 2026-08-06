@@ -506,9 +506,9 @@ class MessageMoveTopicTest(ZulipTestCase):
         users_notified_via_user_topic_event: list[int] = []
         for call_args in mock_send_event_on_commit.call_args_list:
             (_arg_realm, arg_event, arg_notified_users) = call_args[0]
-            if arg_event["type"] == "user_topic":
+            if arg_event.type == "user_topic":
                 users_notified_via_user_topic_event.append(*arg_notified_users)
-            elif arg_event["type"] == "muted_topics":
+            elif arg_event.type == "muted_topics":
                 users_notified_via_muted_topics_event.append(*arg_notified_users)
         self.assertEqual(
             sorted(users_notified_via_muted_topics_event),
@@ -768,9 +768,9 @@ class MessageMoveTopicTest(ZulipTestCase):
         users_notified_via_user_topic_event: list[int] = []
         for call_args in mock_send_event_on_commit.call_args_list:
             (_arg_realm, arg_event, arg_notified_users) = call_args[0]
-            if arg_event["type"] == "user_topic":
+            if arg_event.type == "user_topic":
                 users_notified_via_user_topic_event.append(*arg_notified_users)
-            elif arg_event["type"] == "muted_topics":
+            elif arg_event.type == "muted_topics":
                 users_notified_via_muted_topics_event.append(*arg_notified_users)
         self.assertEqual(
             sorted(users_notified_via_muted_topics_event),

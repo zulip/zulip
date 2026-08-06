@@ -3,6 +3,7 @@ from django.db.models import Max
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
+from zerver.lib.event_types import RealmLinkifier, RealmLinkifiersEvent
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.types import LinkifierDict
 from zerver.models import Realm, RealmAuditLog, RealmFilter, UserProfile
@@ -13,7 +14,9 @@ from zerver.tornado.django_api import send_event_on_commit
 
 
 def notify_linkifiers(realm: Realm, realm_linkifiers: list[LinkifierDict]) -> None:
-    event: dict[str, object] = dict(type="realm_linkifiers", realm_linkifiers=realm_linkifiers)
+    event = RealmLinkifiersEvent(
+        realm_linkifiers=[RealmLinkifier(**linkifier) for linkifier in realm_linkifiers],
+    )
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 

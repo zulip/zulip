@@ -1,6 +1,15 @@
+from typing import Any
+
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
+from zerver.lib.event_types import (
+    NavigationViewAddEvent,
+    NavigationViewFields,
+    NavigationViewFieldsForUpdate,
+    NavigationViewRemoveEvent,
+    NavigationViewUpdateEvent,
+)
 from zerver.lib.navigation_views import get_navigation_view_dict
 from zerver.models import NavigationView, RealmAuditLog, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -30,11 +39,9 @@ def do_add_navigation_view(
         extra_data={"fragment": fragment},
     )
 
-    event = {
-        "type": "navigation_view",
-        "op": "add",
-        "navigation_view": get_navigation_view_dict(navigation_view),
-    }
+    event = NavigationViewAddEvent(
+        navigation_view=NavigationViewFields(**get_navigation_view_dict(navigation_view)),
+    )
     send_event_on_commit(user.realm, event, [user.id])
     return navigation_view
 
@@ -46,12 +53,15 @@ def do_update_navigation_view(
     is_pinned: bool | None,
     name: str | None = None,
 ) -> None:
-    update_dict: dict[str, str | bool] = {}
+    # Only the fields the caller actually updated flow through to the
+    # event's data payload, so the serialized event omits keys for
+    # unchanged values (matching the legacy dict-based behavior).
+    update_kwargs: dict[str, Any] = {}
     audit_logs_extra_data: list[dict[str, str | bool | None]] = []
     if name is not None:
         old_name = navigation_view.name
         navigation_view.name = name
-        update_dict["name"] = name
+        update_kwargs["name"] = name
         audit_logs_extra_data.append(
             {
                 "fragment": navigation_view.fragment,
@@ -64,7 +74,7 @@ def do_update_navigation_view(
     if is_pinned is not None:
         old_is_pinned_value = navigation_view.is_pinned
         navigation_view.is_pinned = is_pinned
-        update_dict["is_pinned"] = is_pinned
+        update_kwargs["is_pinned"] = is_pinned
         audit_logs_extra_data.append(
             {
                 "fragment": navigation_view.fragment,
@@ -87,12 +97,10 @@ def do_update_navigation_view(
             extra_data=audit_log_extra_data,
         )
 
-    event = {
-        "type": "navigation_view",
-        "op": "update",
-        "fragment": navigation_view.fragment,
-        "data": update_dict,
-    }
+    event = NavigationViewUpdateEvent(
+        fragment=navigation_view.fragment,
+        data=NavigationViewFieldsForUpdate(**update_kwargs),
+    )
     send_event_on_commit(user.realm, event, [user.id])
 
 
@@ -113,9 +121,5 @@ def do_remove_navigation_view(
         extra_data={"fragment": fragment},
     )
 
-    event = {
-        "type": "navigation_view",
-        "op": "remove",
-        "fragment": navigation_view.fragment,
-    }
+    event = NavigationViewRemoveEvent(fragment=navigation_view.fragment)
     send_event_on_commit(user.realm, event, [user.id])
