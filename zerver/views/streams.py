@@ -298,6 +298,7 @@ def update_stream_backend(
     can_delete_own_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_out_of_channel_group: Json[GroupSettingChangeRequest] | None = None,
     can_move_messages_within_channel_group: Json[GroupSettingChangeRequest] | None = None,
+    can_mention_many_users_group: Json[GroupSettingChangeRequest] | None = None,
     can_remove_subscribers_group: Json[GroupSettingChangeRequest] | None = None,
     can_resolve_topics_group: Json[GroupSettingChangeRequest] | None = None,
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
@@ -695,6 +696,7 @@ def create_channel(
     can_administer_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_move_messages_out_of_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_move_messages_within_channel_group: Json[int | UserGroupMembersData] | None = None,
+    can_mention_many_users_group: Json[int | UserGroupMembersData] | None = None,
     can_remove_subscribers_group: Json[int | UserGroupMembersData] | None = None,
     can_resolve_topics_group: Json[int | UserGroupMembersData] | None = None,
     can_send_message_group: Json[int | UserGroupMembersData] | None = None,
@@ -776,6 +778,7 @@ def create_channel(
         can_move_messages_within_channel_group=group_settings_map[
             "can_move_messages_within_channel_group"
         ],
+        can_mention_many_users_group=group_settings_map["can_mention_many_users_group"],
         can_send_message_group=group_settings_map["can_send_message_group"],
         can_remove_subscribers_group=group_settings_map["can_remove_subscribers_group"],
         can_subscribe_group=group_settings_map["can_subscribe_group"],
@@ -831,6 +834,7 @@ def add_subscriptions_backend(
     can_delete_own_message_group: Json[int | UserGroupMembersData] | None = None,
     can_administer_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_create_topic_group: Json[int | UserGroupMembersData] | None = None,
+    can_mention_many_users_group: Json[int | UserGroupMembersData] | None = None,
     can_move_messages_out_of_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_move_messages_within_channel_group: Json[int | UserGroupMembersData] | None = None,
     can_remove_subscribers_group: Json[int | UserGroupMembersData] | None = None,
