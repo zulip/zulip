@@ -30,3 +30,16 @@ I'm having a problem with this.
 I've started working on this issue. The problem seems to be in the authentication module.
 ~~~"""
         self.check_webhook("issue_updated", self.TOPIC_NAME, expected_message)
+
+    def test_issue_updated_shows_journal_author_not_issue_creator(self) -> None:
+        """Regression test for #39448."""
+        expected_message = """**Demo User** updated [#191 Found a bug](https://example.com).
+
+~~~ quote
+I've started working on this issue.
+~~~"""
+        self.check_webhook(
+            "issue_updated_different_author",
+            self.TOPIC_NAME,
+            expected_message,
+        )
