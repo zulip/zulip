@@ -132,6 +132,9 @@ FENCE_RE = re.compile(
 CODE_WRAP = "<pre><code{}>{}\n</code></pre>"
 LANG_TAG = ' class="{}"'
 
+# Highlight-lines directive in a fenced code header, e.g. ```python hl_lines="1 3"
+HL_LINES_RE = re.compile(r"""hl_lines=(?P<quot>"|')(?P<hl_lines>.*?)(?P=quot)""")
+
 
 def validate_curl_content(lines: list[str]) -> None:
     error_msg = """
@@ -253,7 +256,12 @@ def generic_handler(
     elif lang == "spoiler":
         return SpoilerHandler(processor, output, fence, header)
     else:
-        return CodeHandler(processor, output, fence, lang, run_content_validators)
+        hl_lines = None
+        if header is not None:
+            hl_match = HL_LINES_RE.search(header)
+            if hl_match is not None:
+                hl_lines = parse_hl_lines(hl_match.group("hl_lines"))
+        return CodeHandler(processor, output, fence, lang, run_content_validators, hl_lines)
 
 
 def check_for_new_fence(
@@ -305,9 +313,11 @@ class CodeHandler(ZulipBaseHandler):
         fence: str,
         lang: str | None,
         run_content_validators: bool = False,
+        hl_lines: list[int] | None = None,
     ) -> None:
         self.lang = lang
         self.run_content_validators = run_content_validators
+        self.hl_lines = hl_lines
         super().__init__(processor, output, fence)
 
     @override
@@ -320,7 +330,7 @@ class CodeHandler(ZulipBaseHandler):
 
     @override
     def format_text(self, text: str) -> str:
-        return self.processor.format_code(self.lang, text)
+        return self.processor.format_code(self.lang, text, self.hl_lines)
 
 
 class QuoteHandler(ZulipBaseHandler):
@@ -471,7 +481,7 @@ class FencedBlockPreprocessor(Preprocessor):
             output.append("")
         return output
 
-    def format_code(self, lang: str | None, text: str) -> str:
+    def format_code(self, lang: str | None, text: str, hl_lines: list[int] | None = None) -> str:
         if lang:
             langclass = LANG_TAG.format(lang)
         else:
@@ -497,6 +507,7 @@ class FencedBlockPreprocessor(Preprocessor):
                 style=self.codehilite_conf["pygments_style"][0],
                 use_pygments=self.codehilite_conf["use_pygments"][0],
                 lang=lang or None,
+                hl_lines=hl_lines or [],
                 noclasses=self.codehilite_conf["noclasses"][0],
                 # By default, the Pygments PHP lexers won't highlight
                 # code without a `<?php` marker at the start of the
