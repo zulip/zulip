@@ -828,6 +828,9 @@
                    unless we set the anchor to display as
                    a block. */
                 display: block;
+                /* A clamped title's ellipsis can't take an
+                   underline, per the comment above. */
+                text-decoration: none;
             }
         }
 
@@ -859,7 +862,11 @@
 
     & a:not(.icon-button) {
         color: var(--color-markdown-link);
-        text-decoration: none;
+        text-decoration: underline;
+        text-decoration-color: var(--color-markdown-link-decoration);
+        text-decoration-thickness: 1px;
+        /* 3px at 14px em */
+        text-underline-offset: 0.2143em;
 
         & code {
             color: var(--color-markdown-code-link);
@@ -868,15 +875,33 @@
         &:hover,
         &:focus {
             color: var(--color-markdown-link-hover);
-            text-decoration: underline;
+            text-decoration-color: var(--color-markdown-link-decoration-hover);
 
             & code {
                 color: var(--color-markdown-code-link-hover);
             }
         }
 
+        &:active {
+            color: var(--color-markdown-link-active);
+            text-decoration-color: var(--color-markdown-link-decoration-active);
+
+            & code {
+                color: var(--color-markdown-code-link-active);
+            }
+        }
+
+        /* An underline would be drawn across the media. */
+        &.media-anchor-element {
+            text-decoration: none;
+        }
+
         /* Link styles that are also related to alert words */
         &:has(.alert-word) {
+            text-decoration-color: var(
+                --color-markdown-link-alert-word-decoration
+            );
+
             &:hover,
             &:focus {
                 text-decoration-color: var(
@@ -1111,6 +1136,8 @@
 /* Link styles that are also related to search highlights */
 a:not(.icon-button) {
     &:has(.highlight) {
+        text-decoration-color: var(--color-markdown-link-highlight-decoration);
+
         &:hover,
         &:focus {
             text-decoration-color: var(--color-markdown-link-highlight-hover);
