@@ -149,7 +149,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             Realm.objects.all().update(push_notifications_enabled=True)
             send_server_data_to_push_bouncer()
             self.assertEqual(
-                "WARNING:root:Received 502 from push notification bouncer",
+                "WARNING:zerver.lib.remote_server:Received 502 from push notification bouncer",
                 mock_warning.output[0],
             )
             self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
