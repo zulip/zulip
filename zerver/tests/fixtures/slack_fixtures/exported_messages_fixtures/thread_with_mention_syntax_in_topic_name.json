@@ -1,17 +1,102 @@
 [
     {
-        "text": "<@U061A1R2R> please reply to this message",
         "user": "U061A5N1G",
-        "ts": "1437139200.000002",
-        "thread_ts": "1437139200.000002",
-        "channel_name": "random"
+        "type": "message",
+        "ts": "1776959516.007659",
+        "client_msg_id": "413a156a-ced0-4f52-bb06-de1b6185fd4f",
+        "text": "<@U061A1R2R> please reply to this message",
+        "team": "T06NRA6HM3P",
+        "user_team": "T06NRA6HM3P",
+        "source_team": "T06NRA6HM3P",
+        "user_profile": {
+            "avatar_hash": "112be04f818e",
+            "image_72": "https:\/\/avatars.slack-ed ge.com\/2024-03-10\/6773346635957_112be04f818e7bd093d5_72.png",
+            "first_name": "John",
+            "real_name": "John",
+            "display_name": "",
+            "team": "T06NRA6HM3P",
+            "name": "johndoe",
+            "is_restricted": false,
+            "is_ultra_restricted": false
+        },
+        "thread_ts": "1776959516.007659",
+        "reply_count": 1,
+        "reply_users_count": 1,
+        "channel_name": "random",
+        "latest_reply": "1776959526.566079",
+        "reply_users": [
+            "U061A1R2R"
+        ],
+        "replies": [
+            {
+                "user": "U061A1R2R",
+                "ts": "1776959526.566079"
+            }
+        ],
+        "is_locked": false,
+        "subscribed": true,
+        "last_read": "1776959526.566079",
+        "blocks": [
+            {
+                "type": "rich_text",
+                "block_id": "hzhfu",
+                "elements": [
+                    {
+                        "type": "rich_text_section",
+                        "elements": [
+                            {
+                                "type": "user",
+                                "user_id": "U061A1R2R"
+                            },
+                            {
+                                "type": "text",
+                                "text": " please reply to this message"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     },
     {
-        "text": "Yes?",
         "user": "U061A1R2R",
-        "ts": "1440869295.000008",
+        "type": "message",
+        "ts": "1776959526.566079",
+        "client_msg_id": "d8b51c97-6928-4cbc-95d1-7826c890ca52",
+        "text": "yes?",
+        "team": "T06NRA6HM3P",
+        "user_team": "T06NRA6HM3P",
+        "source_team": "T06NRA6HM3P",
+        "user_profile": {
+            "avatar_hash": "112be04f818e",
+            "image_72": "https:\/\/avatars.slack-edge.com\/2024-03-10\/6773346635957_112be04f818e7bd093d5_72.png",
+            "first_name": "Jane",
+            "real_name": "Jane",
+            "display_name": "",
+            "team": "T06NRA6HM3P",
+            "name": "janedoe",
+            "is_restricted": false,
+            "is_ultra_restricted": false
+        },
+        "thread_ts": "1776959516.007659",
+        "channel_name": "random",
         "parent_user_id": "U061A5N1G",
-        "thread_ts": "1437139200.000002",
-        "channel_name": "random"
+        "blocks": [
+            {
+                "type": "rich_text",
+                "block_id": "X9m+A",
+                "elements": [
+                    {
+                        "type": "rich_text_section",
+                        "elements": [
+                            {
+                                "type": "text",
+                                "text": "yes?"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
     }
 ]
