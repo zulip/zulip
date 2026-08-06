@@ -72,6 +72,41 @@ class S3Test(ZulipTestCase):
         self.send_stream_message(self.example_user("hamlet"), "Denmark", body, "test")
 
     @use_s3_backend
+    def test_upload_message_attachment_filename_with_control_characters(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+        user_profile = self.example_user("hamlet")
+
+        # Some email clients send attachment filenames with a trailing
+        # newline, which must not reach the Content-Disposition header.
+        url, returned_filename = upload_message_attachment(
+            "quotes.txt\n", "text/plain", b"zulip!", user_profile
+        )
+        self.assertEqual(returned_filename, "quotes.txt")
+
+        path_id = url.removeprefix("/user_uploads/")
+        attachment = Attachment.objects.get(owner=user_profile, path_id=path_id)
+        self.assertEqual(attachment.file_name, "quotes.txt")
+
+        content_disposition = bucket.Object(path_id).get()["ContentDisposition"]
+        self.assertEqual(content_disposition, 'inline; filename="quotes.txt"')
+
+    @use_s3_backend
+    def test_upload_message_attachment_content_type_with_control_characters(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
+        user_profile = self.example_user("hamlet")
+
+        # Against the previous code, a newline in the content type
+        # made maybe_add_charset raise ValueError, before the value
+        # could even reach the S3 Content-Type header.
+        url, _ = upload_message_attachment("quotes.txt", "text/plain\n", b"zulip!", user_profile)
+
+        path_id = url.removeprefix("/user_uploads/")
+        attachment = Attachment.objects.get(owner=user_profile, path_id=path_id)
+        self.assertEqual(attachment.content_type, 'text/plain; charset="ascii"')
+
+        self.assertEqual(bucket.Object(path_id).get()["ContentType"], 'text/plain; charset="ascii"')
+
+    @use_s3_backend
     def test_upload_message_attachment_thumbnail(self) -> None:
         bucket = create_s3_buckets(settings.S3_AUTH_UPLOADS_BUCKET)[0]
         user_profile = self.example_user("hamlet")

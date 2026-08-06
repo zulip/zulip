@@ -153,7 +153,9 @@ def serve_local(
     if not os.path.isfile(local_path):
         return HttpResponseNotFound("<p>File not found</p>")
 
-    if content_type is None:
+    # An empty stored content type is as unusable as a missing one;
+    # serve_s3 falls back for both.
+    if not content_type:
         content_type = guess_type(filename)[0] or "application/octet-stream"
 
     if needs_charset_detection(content_type):

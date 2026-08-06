@@ -14,13 +14,15 @@ from pydantic.alias_generators import to_pascal
 from confirmation.models import Confirmation, ConfirmationKeyError, get_object_from_key
 from zerver.decorator import get_basic_credentials, validate_api_key
 from zerver.lib.exceptions import AccessDeniedError, JsonableError
-from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_type
+from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type
 from zerver.lib.rate_limiter import is_local_addr
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.upload import (
     RealmUploadQuotaError,
     attachment_source,
     check_upload_within_quota,
+    clean_uploaded_content_type,
+    clean_uploaded_file_name,
     create_attachment,
     delete_message_attachment,
     generate_message_upload_path,
@@ -145,18 +147,8 @@ def handle_upload_pre_finish_hook(
     path_id = data.id.partition("+")[0]
 
     tus_metadata = data.meta_data
-    filename = tus_metadata.get("filename", "")
-
-    # We want to store as the filename a version that clients are
-    # likely to be able to accept via "Save as..."
-    if filename in {"", ".", ".."}:
-        filename = "uploaded-file"
-
-    content_type = tus_metadata.get("filetype")
-    if not content_type:
-        content_type = guess_type(filename)[0]
-        if content_type is None:
-            content_type = "application/octet-stream"
+    filename = clean_uploaded_file_name(tus_metadata.get("filename", ""))
+    content_type = clean_uploaded_content_type(tus_metadata.get("filetype", ""), filename)
 
     # Only open the object at all when charset detection actually needs to
     # inspect its bytes. With the S3 backend, opening it starts a

@@ -67,6 +67,7 @@ from zerver.lib.upload import (
     ensure_avatar_image,
     generate_message_upload_path,
     get_avatar_path,
+    remove_control_characters,
     sanitize_name,
     upload_emoji_image,
 )
@@ -698,6 +699,12 @@ def sanitize_attachment_data(attachment_data: ImportedTableData, import_dir: Pat
     for attachment in attachment_data["zerver_attachment"]:
         assert attachment["file_name"] and attachment["path_id"]
         attachment["file_name"] = sanitize_name(attachment["file_name"])
+        # We serve this back as Content-Type, where a control
+        # character is not valid; NULL is how we record not knowing
+        # the type.
+        content_type = attachment.get("content_type")
+        if content_type is not None:
+            attachment["content_type"] = remove_control_characters(content_type) or None
         attachment["path_id"], _ = validate_and_resolve_relative_path(
             attachment["path_id"],
             base_dir=uploads_import_dir,
@@ -1359,16 +1366,21 @@ def import_uploads(
             metadata["orig_last_modified"] = str(sanitized_record.raw_record["last_modified"])
         metadata["realm_id"] = str(sanitized_record.raw_record["realm_id"])
 
-        # Zulip exports will always have a content-type, but third-party exports might not.
-        content_type = sanitized_record.raw_record.get("content_type")
-        if content_type is None:
-            content_type = guess_type(sanitized_record.safe_resolved_source_path)[0]
-            if content_type is None:
-                # This is the default for unknown data.  Note that
-                # for `.original` files, this is the value we'll
-                # set; that is OK, because those are never served
-                # directly anyway.
-                content_type = "application/octet-stream"
+        # Zulip exports will always have a content-type, but
+        # third-party exports might not; either way it becomes the S3
+        # object's ContentType, so it needs the same cleaning.
+        content_type = remove_control_characters(
+            sanitized_record.raw_record.get("content_type") or ""
+        )
+        if not content_type:
+            # application/octet-stream is the default for unknown
+            # data. Note that for `.original` files, this is the value
+            # we'll set; that is OK, because those are never served
+            # directly anyway.
+            content_type = (
+                guess_type(sanitized_record.safe_resolved_source_path)[0]
+                or "application/octet-stream"
+            )
 
         return UploadPlan(
             source_path=sanitized_record.safe_resolved_source_path,

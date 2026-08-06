@@ -2622,6 +2622,41 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(imported_realm.night_logo_source, Realm.LOGO_UPLOADED)
 
     @use_s3_backend
+    def test_import_content_type_with_control_characters(self) -> None:
+        uploads_bucket = create_s3_buckets(
+            settings.S3_AUTH_UPLOADS_BUCKET, settings.S3_AVATAR_BUCKET
+        )[0]
+
+        user = self.example_user("hamlet")
+        realm = user.realm
+
+        self.upload_files_for_user(user)
+        self.export_realm_and_create_auditlog(realm)
+
+        # An export taken before we cleaned these values, or a
+        # third-party converter which copies the source service's MIME
+        # type, can carry control characters in the content type.
+        attachment_data = read_json("attachment.json")
+        for attachment in attachment_data["zerver_attachment"]:
+            attachment["content_type"] = "text/plain\n"
+        with open(export_fn("attachment.json"), "wb") as f:
+            f.write(orjson.dumps(attachment_data))
+
+        upload_records = read_json("uploads/records.json")
+        for record in upload_records:
+            record["content_type"] = "text/plain\n"
+        with open(export_fn("uploads/records.json"), "wb") as f:
+            f.write(orjson.dumps(upload_records))
+
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+        uploaded_file = Attachment.objects.get(realm=imported_realm)
+        self.assertEqual(uploaded_file.content_type, "text/plain")
+        self.assertEqual(uploads_bucket.Object(uploaded_file.path_id).content_type, "text/plain")
+
+    @use_s3_backend
     def test_import_files_from_s3(self) -> None:
         uploads_bucket, avatar_bucket = create_s3_buckets(
             settings.S3_AUTH_UPLOADS_BUCKET, settings.S3_AVATAR_BUCKET

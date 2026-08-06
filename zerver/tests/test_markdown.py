@@ -1104,7 +1104,7 @@ class MarkdownEmbedsTest(ZulipTestCase):
         # audio file extension.
         url = upload_message_attachment(
             "filename.mp3",
-            "",
+            "application/octet-stream",
             b"",
             self.example_user("othello"),
         )[0]
