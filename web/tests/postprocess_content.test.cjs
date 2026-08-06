@@ -11,6 +11,12 @@ const thumbnail = mock_esm("../src/thumbnail", {
     },
 });
 
+mock_esm("../src/attachments_ui", {
+    bytes_to_size(bytes) {
+        return `${bytes} B`;
+    },
+});
+
 const {postprocess_content} = zrequire("postprocess_content");
 const {initialize_user_settings} = zrequire("user_settings");
 
@@ -559,5 +565,26 @@ run_test("inline_images", ({override}) => {
             '<img class="inline-image" data-original-src="https://zulip.%20[Click%20to%20join%20video%20call](https://meeting.example.com/abcd1234)%20example.com/user_uploads/2/ab/abcd1234/image.png" src="https://zulip.%20[Click%20to%20join%20video%20call](https://meeting.example.com/abcd1234)%20example.com/user_uploads/2/ab/abcd1234/image.png">',
         ),
         "",
+    );
+});
+
+run_test("user_upload_file_size", () => {
+    // Basic test
+    assert.equal(
+        postprocess_content(
+            '<a href="/user_uploads/1/ff/test_file.txt" data-file-size="250880">file</a>',
+        ),
+        '<a href="/user_uploads/1/ff/test_file.txt" data-file-size="250880" target="_blank" rel="noopener noreferrer" title="translated: Download test_file.txt">file</a>' +
+            '<span class="user-upload-file-size"> (250880 B)</span>',
+    );
+
+    // Duplicate render protection test
+    assert.equal(
+        postprocess_content(
+            '<a href="/user_uploads/1/ff/test_file.txt" data-file-size="250880">file</a>' +
+                '<span class="user-upload-file-size"> (250880 B)</span>',
+        ),
+        '<a href="/user_uploads/1/ff/test_file.txt" data-file-size="250880" target="_blank" rel="noopener noreferrer" title="translated: Download test_file.txt">file</a>' +
+            '<span class="user-upload-file-size"> (250880 B)</span>',
     );
 });
