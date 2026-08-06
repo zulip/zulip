@@ -69,6 +69,17 @@ class UserTopic(models.Model):
                 fields=("user_profile", "visibility_policy", "stream", "topic_name"),
                 name="zerver_usertopic_user_visibility_idx",
             ),
+            # Supports the per-message visibility policy lookup in
+            # matching_user_topic_exists_q, which has the recipient
+            # rather than the channel and matches topic names
+            # case-insensitively, so the index above cannot serve it.
+            models.Index(
+                "user_profile",
+                "visibility_policy",
+                "recipient",
+                Upper("topic_name"),
+                name="zerver_usertopic_user_visibility_recipient_idx",
+            ),
         ]
 
     @override
