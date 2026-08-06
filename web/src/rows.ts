@@ -13,11 +13,15 @@ export function next_visible($message_row: JQuery): JQuery {
     if ($message_row === undefined || $message_row.length === 0) {
         return $();
     }
-    const $row = $message_row.next(".selectable_row");
-    if ($row.length > 0) {
-        return $row;
-    }
+    // Sender-block wrappers mean adjacent rows aren't always direct
+    // siblings: walk the recipient row's full row list to find the next
+    // selectable row before falling back to the next recipient row.
     const $recipient_row = get_message_recipient_row($message_row);
+    const $rows_in_recipient = $recipient_row.find(".selectable_row");
+    const idx = $rows_in_recipient.index($message_row);
+    if (idx >= 0 && idx + 1 < $rows_in_recipient.length) {
+        return $rows_in_recipient.eq(idx + 1);
+    }
     const $next_recipient_rows = $recipient_row.nextAll(".recipient_row");
     if ($next_recipient_rows.length === 0) {
         return $();
@@ -29,11 +33,12 @@ export function prev_visible($message_row: JQuery): JQuery {
     if ($message_row === undefined || $message_row.length === 0) {
         return $();
     }
-    const $row = $message_row.prev(".selectable_row");
-    if ($row.length > 0) {
-        return $row;
-    }
     const $recipient_row = get_message_recipient_row($message_row);
+    const $rows_in_recipient = $recipient_row.find(".selectable_row");
+    const idx = $rows_in_recipient.index($message_row);
+    if (idx > 0) {
+        return $rows_in_recipient.eq(idx - 1);
+    }
     const $prev_recipient_rows = $recipient_row.prevAll(".recipient_row");
     if ($prev_recipient_rows.length === 0) {
         return $();
@@ -145,15 +150,18 @@ export function last_message_in_group($message_group: JQuery): JQuery {
 }
 
 export function get_message_recipient_row($message_row: JQuery): JQuery {
-    return $message_row.parent(".recipient_row").expectOne();
+    // Message rows are wrapped in `.sender-block` divs (one per run of
+    // consecutive same-sender messages), so the recipient row is no longer
+    // the direct DOM parent.
+    return $message_row.closest(".recipient_row").expectOne();
 }
 
 export function get_message_recipient_header($message_row: JQuery): JQuery {
-    return $message_row.parent(".recipient_row").find(".message_header").expectOne();
+    return $message_row.closest(".recipient_row").find(".message_header").expectOne();
 }
 
 export function recipient_from_group($message_group: JQuery): Message | undefined {
-    const message_id = id($message_group.children(".message_row").first().expectOne());
+    const message_id = id($message_group.find(".message_row").first().expectOne());
     return message_store.get(message_id);
 }
 

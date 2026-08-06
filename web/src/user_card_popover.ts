@@ -725,7 +725,13 @@ function register_click_handlers(): void {
             if (mouse_drag.is_drag(e)) {
                 return;
             }
-            const $row = $(this).closest(".message_row");
+            // The sticky avatar lives outside any `.message_row` (it's a
+            // direct child of `.sender-block`), so fall back to the block's
+            // first row when `.closest(".message_row")` doesn't find one.
+            let $row = $(this).closest(".message_row");
+            if ($row.length === 0) {
+                $row = $(this).closest(".sender-block").find(".message_row").first();
+            }
             assert(message_lists.current !== undefined);
             const message = message_lists.current.get(rows.id($row));
             assert(message !== undefined);
