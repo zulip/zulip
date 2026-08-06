@@ -1216,7 +1216,7 @@ def api_github_webhook(
     directly to the X-GitHub-Event header's event, but we sometimes
     refine it based on the payload.
     """
-    validate_webhook_delivery(request, "X_HUB_Signature_256", "sha256")
+    validate_webhook_delivery(request, "X_HUB_Signature_256", "github", "sha256")
 
     header_event = get_event_header(request, "X-GitHub-Event", "GitHub")
 

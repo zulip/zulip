@@ -182,19 +182,20 @@ class WebhooksCommonTestCase(ZulipTestCase):
     def test_validate_webhook_delivery(self) -> None:
         webhook_bot = get_user("webhook-bot@zulip.com", get_realm("zulip"))
         webhook_secret = "test_secret"
+        integration_name = "GitHub"
         payload = '{"key": "value"}'
         signature = hmac.new(
             force_bytes(webhook_secret), force_bytes(payload), hashlib.sha256
         ).hexdigest()
 
-        set_bot_config(webhook_bot, "webhook_secret", webhook_secret)
+        set_bot_config(webhook_bot, f"{integration_name.lower()}-webhook_secret", webhook_secret)
         request = HostRequestMock(meta_data={"HTTP_X_HUB_SIGNATURE_256": f"sha256={signature}"})
         request.user = webhook_bot
         request.GET = QueryDict("", mutable=True)
         request._body = force_bytes(payload)
 
         # Valid signature
-        validate_webhook_delivery(request, "X_HUB_Signature_256")
+        validate_webhook_delivery(request, "X_HUB_Signature_256", integration_name)
 
         # Invalid signature
         request.META["HTTP_X_HUB_SIGNATURE_256"] = "sha256=invalid_signature"
@@ -203,13 +204,13 @@ class WebhooksCommonTestCase(ZulipTestCase):
             JsonableError,
             "Webhook signature verification failed.",
         ):
-            validate_webhook_delivery(request, "X_HUB_Signature_256")
+            validate_webhook_delivery(request, "X_HUB_Signature_256", integration_name)
 
         # No webhook_secret configured for this bot skips validation
-        set_bot_config(webhook_bot, "webhook_secret", "")
+        set_bot_config(webhook_bot, f"{integration_name.lower()}-webhook_secret", "")
         request.META["HTTP_X_HUB_SIGNATURE_256"] = f"sha256={signature}"
         del request.headers
-        validate_webhook_delivery(request, "X_HUB_Signature_256")
+        validate_webhook_delivery(request, "X_HUB_Signature_256", integration_name)
 
     def test_check_send_webhook_message_returns_id(self) -> None:
         webhook_bot = get_user("webhook-bot@zulip.com", get_realm("zulip"))
