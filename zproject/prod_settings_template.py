@@ -33,8 +33,10 @@ ZULIP_ADMINISTRATOR = "zulip-admin@example.com"
 
 ## The user-accessible Zulip hostname for this installation, e.g.
 ## zulip.example.com.  This should match what users will put in their
-## web browser.  If you want to allow multiple hostnames, add the rest
-## to ALLOWED_HOSTS.
+## web browser, and should be a domain name, not an IP address -- if
+## the server has no name in DNS, invent one, and configure it in
+## /etc/hosts on the machines that will access Zulip.  If you want to
+## allow multiple hostnames, add the rest to ALLOWED_HOSTS.
 ##
 ## If you need to access the server on a specific port, you should set
 ## EXTERNAL_HOST to e.g. zulip.example.com:1234 here.
@@ -53,9 +55,13 @@ EXTERNAL_HOST = "zulip.example.com"
 ## Note that these should just be hostnames, without port numbers.
 # ALLOWED_HOSTS = ["zulip-alias.example.com", "192.0.2.1"]
 
-## If EXTERNAL_HOST is not a valid domain name (e.g. an IP address),
-## set FAKE_EMAIL_DOMAIN below to a domain that Zulip can use when
-## generating (fake) email addresses for bots, dummy users, etc.
+## Zulip generates (fake) email addresses for bots, dummy users,
+## etc., in a domain which defaults to EXTERNAL_HOST.  If your
+## EXTERNAL_HOST cannot be used to form email addresses (for example,
+## because it is an IP address), set FAKE_EMAIL_DOMAIN below to a
+## domain name -- not an IP address or URL.  The generated email
+## addresses are stored permanently, so this value should not change
+## later.
 # FAKE_EMAIL_DOMAIN = "fake-domain.example.com"
 
 

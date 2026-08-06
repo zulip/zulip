@@ -102,7 +102,10 @@ of the failure, you can just rerun the script. For more information, see
 
 - `--hostname=zulip.example.com`: The user-accessible domain name for this Zulip
   server, i.e., what users will type in their web browser. This becomes
-  `EXTERNAL_HOST` in the Zulip [settings][doc-settings].
+  `EXTERNAL_HOST` in the Zulip [settings][doc-settings]. It should be a
+  domain name, not an IP address; if the server has no name in DNS, invent
+  one, and configure it in `/etc/hosts` on every machine that will access
+  Zulip.
 
 - `--certbot`: With this option, the Zulip installer automatically obtains an
   SSL certificate for the server [using Certbot][doc-certbot], and configures a

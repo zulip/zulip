@@ -15,7 +15,12 @@ _Unreleased_
 
 ### Upgrade notes for 13.0
 
-- None yet.
+- Zulip now verifies, at startup and before upgrading, that
+  `FAKE_EMAIL_DOMAIN` (which defaults to `EXTERNAL_HOST`) can be used
+  to form email addresses. If your server is hosted at a bare IP
+  address, set `FAKE_EMAIL_DOMAIN` in `/etc/zulip/settings.py` to a
+  domain name before upgrading; using a hostname for `EXTERNAL_HOST`
+  is strongly recommended for new installations.
 
 ## Zulip Server 12.x series
 
