@@ -1,0 +1,31 @@
+{
+  "event_name": "project.deleted",
+  "time": "2026-01-26T16:53:48.324644569Z",
+  "data": {
+    "doer": {
+      "id": 1,
+      "name": "John Doe",
+      "username": "jdoe",
+      "created": "2026-01-16T13:18:58+01:00",
+      "updated": "2026-01-26T10:20:43+01:00"
+    },
+    "project": {
+      "background_blur_hash": "LDBW0fM|9G%L0$M{%Lxu9G%1g4M{",
+      "background_information": null,
+      "created": "2026-01-26T17:53:16+01:00",
+      "description": "<p>Hello!</p>",
+      "hex_color": "1973ff",
+      "id": 35,
+      "identifier": "",
+      "is_archived": false,
+      "is_favorite": false,
+      "max_permission": 0,
+      "owner": null,
+      "parent_project_id": 0,
+      "position": 2293760,
+      "title": "Test",
+      "updated": "2026-01-26T17:53:48+01:00",
+      "views": null
+    }
+  }
+}
