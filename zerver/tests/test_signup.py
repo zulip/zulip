@@ -15,6 +15,7 @@ from django.http import HttpResponse, HttpResponseBase
 from django.template.response import TemplateResponse
 from django.test import Client, override_settings
 from django.utils import translation
+from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link, one_click_unsubscribe_link
 from zerver.actions.create_realm import do_change_realm_subdomain, do_create_realm
@@ -73,6 +74,7 @@ from zerver.models import (
     OnboardingUserMessage,
     PreregistrationUser,
     Realm,
+    RealmAuditLog,
     RealmUserDefault,
     Recipient,
     ScheduledEmail,
@@ -81,6 +83,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.streams import get_stream
@@ -924,12 +927,20 @@ class LoginTest(ZulipTestCase):
     def test_login_deactivated_user(self) -> None:
         user_profile = self.example_user("hamlet")
         do_deactivate_user(user_profile, acting_user=None)
+        now = timezone_now()
         result = self.login_with_return(user_profile.delivery_email, "xxx")
         self.assertEqual(result.status_code, 200)
         self.assert_in_response(
             f"Your account {user_profile.delivery_email} has been deactivated.", result
         )
         self.assert_logged_in_user_id(None)
+        self.assertFalse(
+            RealmAuditLog.objects.filter(
+                modified_user=user_profile,
+                event_type=AuditLogEventType.USER_LOGGED_IN,
+                event_time__gte=now,
+            ).exists()
+        )
 
     def test_login_deactivate_user_error(self) -> None:
         """
@@ -960,9 +971,18 @@ class LoginTest(ZulipTestCase):
     def test_login_bad_password(self) -> None:
         user = self.example_user("hamlet")
         password: str | None = "wrongpassword"
+        now = timezone_now()
         result = self.login_with_return(user.delivery_email, password=password)
         self.assert_in_success_response([user.delivery_email], result)
         self.assert_logged_in_user_id(None)
+        # A failed login must not produce a USER_LOGGED_IN audit row.
+        self.assertFalse(
+            RealmAuditLog.objects.filter(
+                modified_user=user,
+                event_type=AuditLogEventType.USER_LOGGED_IN,
+                event_time__gte=now,
+            ).exists()
+        )
 
         # Parallel test to confirm that the right password works using the
         # same login code, which verifies our failing test isn't broken
@@ -1062,13 +1082,15 @@ class LoginTest(ZulipTestCase):
         # Clear the ContentType cache.
         ContentType.objects.clear_cache()
 
+        now = timezone_now()
+
         # Ensure the number of queries we make is not O(streams)
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
         with (
-            self.assert_database_query_count(101),
+            self.assert_database_query_count(102),
             self.assert_memcached_count(19),
             self.captureOnCommitCallbacks(execute=True),
         ):
@@ -1076,6 +1098,11 @@ class LoginTest(ZulipTestCase):
 
         user_profile = self.nonreg_user("test")
         self.assert_logged_in_user_id(user_profile.id)
+
+        # USER_LOGGED_IN audit log entry is created for
+        # newly registered user as well.
+        self.assert_login_audit_log_entry(user_profile, method="email", since=now)
+
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
         self.check_user_added_in_system_group(user_profile)
 
@@ -2851,6 +2878,7 @@ class UserSignUpTest(ZulipTestCase):
             LDAP_APPEND_DOMAIN="zulip.com",
             AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
         ):
+            now = timezone_now()
             self.login_with_return(email, password, HTTP_HOST=subdomain + ".testserver")
 
             user_profile = UserProfile.objects.get(delivery_email=email)
@@ -2865,6 +2893,10 @@ class UserSignUpTest(ZulipTestCase):
                 user_profile=user_profile, field=phone_number_field
             )
             self.assertEqual(phone_number_field_value.value, "a-new-number")
+
+            # Auto-registration via LDAP login creates a USER_LOGGED_IN
+            # audit row for the newly-created user.
+            self.assert_login_audit_log_entry(user_profile, method="ldap", since=now)
 
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_ldap_auto_registration_on_login_invalid_email_in_directory(self) -> None:
@@ -4007,6 +4039,7 @@ class TwoFactorAuthTest(ZulipTestCase):
                 "password": password,
                 "two_factor_login_view-current_step": "auth",
             }
+            now = timezone_now()
             with self.assertLogs("two_factor.gateways.fake", "INFO") as info_logs:
                 result = self.client_post("/accounts/login/", first_step_data)
             self.assertEqual(
@@ -4014,6 +4047,15 @@ class TwoFactorAuthTest(ZulipTestCase):
                 ['INFO:two_factor.gateways.fake:Fake SMS to +12125550100: "Your token is: 123456"'],
             )
             self.assertEqual(result.status_code, 200)
+            # RealmAuditLog entry will be created only after the
+            # authentication by second factor is completed.
+            self.assertFalse(
+                RealmAuditLog.objects.filter(
+                    modified_user=user_profile,
+                    event_type=AuditLogEventType.USER_LOGGED_IN,
+                    event_time__gte=now,
+                ).exists()
+            )
 
             second_step_data = {
                 "token-otp_token": str(token),
@@ -4022,6 +4064,8 @@ class TwoFactorAuthTest(ZulipTestCase):
             result = self.client_post("/accounts/login/", second_step_data)
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result["Location"], "http://zulip.testserver")
+
+            self.assert_login_audit_log_entry(user_profile, method="email", since=now)
 
             # Going to login page should redirect to '/' if user is already
             # logged in.
