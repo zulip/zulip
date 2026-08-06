@@ -107,7 +107,6 @@
         .pill-close-button,
         .pill-expand-button {
             font-size: 0.7142em; /* 10px at 14px em */
-            text-decoration: none;
             /* Let the close button's box stretch,
                but no larger than the height of the
                banner box when the action button
