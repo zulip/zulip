@@ -1321,6 +1321,13 @@ test("predicate_basics", ({override}) => {
     predicate = get_predicate([["channels", "bogus"]]);
     assert.ok(!predicate({type: stream_message, stream_id: old_sub_id}));
 
+    // A list-of-IDs operand matches messages in any of the listed channels.
+    predicate = get_predicate([["channels", [old_sub_id, private_sub_id]]]);
+    assert.ok(predicate({type: stream_message, stream_id: old_sub_id}));
+    assert.ok(predicate({type: stream_message, stream_id: private_sub_id}));
+    assert.ok(!predicate({type: stream_message, stream_id: web_public_sub_id}));
+    assert.ok(!predicate({type: direct_message}));
+
     predicate = get_predicate([["is", "starred"]]);
     assert.ok(predicate({starred: true}));
     assert.ok(!predicate({starred: false}));
@@ -3178,6 +3185,60 @@ test("error_cases", () => {
     const predicate = get_predicate([["dm", [joe.user_id]]]);
     blueslip.expect("error", "Empty recipient list in message");
     assert.ok(!predicate({type: direct_message, display_recipient: []}));
+});
+
+test("channels list narrow", () => {
+    const scotland_id = new_stream_id();
+    const verona_id = new_stream_id();
+    make_sub("Scotland", scotland_id);
+    make_sub("Verona", verona_id);
+
+    const terms = [{operator: "channels", operand: [scotland_id, verona_id]}];
+    const filter = new Filter(terms);
+
+    // A list-of-IDs operand collapses to a single stable term type.
+    assert.deepEqual(filter.sorted_term_types(), ["channels-ids"]);
+    assert.ok(filter.is_common_narrow());
+    assert.equal(filter.get_title(), "Scotland and Verona");
+    assert.deepEqual(filter.add_icon_data({is_spectator: false}).zulip_icon, "hashtag");
+
+    // The term is only valid when every listed channel is known.
+    assert.ok(
+        Filter.is_valid_canonical_term(
+            Filter.canonicalize_term({operator: "channels", operand: [scotland_id, verona_id]}),
+        ),
+    );
+    assert.ok(
+        !Filter.is_valid_canonical_term(
+            Filter.canonicalize_term({operator: "channels", operand: []}),
+        ),
+    );
+
+    // Round-trips through the search-bar string form as a numeric ID list.
+    const unparsed = Filter.unparse(terms);
+    assert.equal(unparsed, `channels:${scotland_id},${verona_id}`);
+    assert.deepEqual(Filter.parse(unparsed), [
+        {operator: "channels", operand: `${scotland_id},${verona_id}`, negated: false},
+    ]);
+    const round_tripped = Filter.convert_suggestion_to_term(Filter.parse(unparsed)[0]);
+    assert.deepEqual(round_tripped, {
+        operator: "channels",
+        operand: [scotland_id, verona_id],
+        negated: false,
+    });
+
+    // The search description lists the decorated channel names.
+    const parts = Filter.parts_for_describe(
+        [{operator: "channels", operand: `${scotland_id},${verona_id}`, negated: false}],
+        false,
+    );
+    assert.equal(parts.length, 1);
+    assert.equal(parts[0].type, "channels_list");
+    assert.equal(parts[0].verb, "");
+    assert.deepEqual(
+        parts[0].streams.map((sub) => sub.name),
+        ["Scotland", "Verona"],
+    );
 });
 
 run_test("is_spectator_compatible", () => {

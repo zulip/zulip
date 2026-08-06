@@ -1,0 +1,16 @@
+<div class="channel-pill-container pill" tabindex=0>
+    <span class="pill-label">
+        {{~#if this.negated}}-{{~/if~}}
+        channels:
+    </span>
+    {{#each channels}}
+        <div class="pill" data-stream-id="{{this.stream_id}}">
+            <span class="pill-label">
+                <span class="pill-value">{{> decorated_channel_name stream=this}}</span>
+            </span>
+            <div class="exit">
+                <a role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="{{t 'Remove' }}"></a>
+            </div>
+        </div>
+    {{/each}}
+</div>

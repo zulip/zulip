@@ -226,7 +226,7 @@ def topic_has_visibility_policy(
     return has_visibility_policy
 
 
-def exclude_stream_and_topic_mutes(user_profile: UserProfile, stream_id: int | None) -> Q:
+def exclude_stream_and_topic_mutes(user_profile: UserProfile, stream_ids: list[int]) -> Q:
     # Note: Unlike get_topic_mutes, here we always want to
     # consider topics in deactivated streams, so they are
     # never filtered from the query in this method.
@@ -235,10 +235,10 @@ def exclude_stream_and_topic_mutes(user_profile: UserProfile, stream_id: int | N
         visibility_policy=UserTopic.VisibilityPolicy.MUTED,
     )
 
-    if stream_id is not None:
-        # If we are narrowed to a stream, we can optimize the query
-        # by not considering topic mutes outside the stream.
-        query = query.filter(stream_id=stream_id)
+    if stream_ids:
+        # If we are narrowed to specific channels, we can optimize the
+        # query by not considering topic mutes outside those channels.
+        query = query.filter(stream_id__in=stream_ids)
 
     excluded_topic_rows = list(
         query.values(
@@ -267,9 +267,10 @@ def exclude_stream_and_topic_mutes(user_profile: UserProfile, stream_id: int | N
         conditions &= ~muted_topics_q
 
     # Channel-level muting only applies when looking at views that
-    # include multiple channels, since we do want users to be able to
-    # browser messages within a muted channel.
-    if stream_id is None:
+    # are not restricted to a specific set of channels, since we do
+    # want users to be able to browse messages within a muted channel
+    # that they have explicitly narrowed to.
+    if not stream_ids:
         rows = Subscription.objects.filter(
             user_profile=user_profile,
             active=True,
