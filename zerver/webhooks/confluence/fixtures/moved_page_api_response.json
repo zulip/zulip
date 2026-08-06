@@ -1,0 +1,139 @@
+{
+  "id": "123456",
+  "type": "page",
+  "status": "current",
+  "title": "Architecture Overview",
+  "space": {
+    "id": 65548,
+    "key": "ARCH",
+    "name": "Architecture",
+    "status": "current",
+    "type": "global",
+    "creator": {
+      "type": "known",
+      "username": "admin",
+      "userKey": "2c9280839e460b0f019e460ba6440000",
+      "displayName": "John Smith",
+      "_links": {
+        "self": "https://wiki.example.com/rest/api/user?key=2c9280839e460b0f019e460ba6440000"
+      },
+      "_expandable": {
+        "profilePicture": "",
+        "status": ""
+      }
+    },
+    "creationDate": "2019-08-01T15:41:14.448Z",
+    "lastModifier": {
+      "type": "known",
+      "username": "admin",
+      "userKey": "2c9280839e460b0f019e460ba6440000",
+      "displayName": "John Smith",
+      "_links": {
+        "self": "https://wiki.example.com/rest/api/user?key=2c9280839e460b0f019e460ba6440000"
+      },
+      "_expandable": {
+        "profilePicture": "",
+        "status": ""
+      }
+    },
+    "lastModificationDate": "2019-08-10T12:00:00.000Z",
+    "_links": {
+      "webui": "/spaces/ARCH/overview",
+      "self": "https://wiki.example.com/rest/api/space/ARCH"
+    },
+    "_expandable": {
+      "metadata": "",
+      "permissions": "",
+      "icon": "",
+      "description": "",
+      "retentionPolicy": "",
+      "homepage": "/rest/api/content/123400"
+    }
+  },
+  "history": {
+    "latest": true,
+    "createdBy": {
+      "type": "known",
+      "username": "admin",
+      "userKey": "2c9280839e460b0f019e460ba6440000",
+      "profilePicture": {
+        "path": "/images/icons/profilepics/default.svg",
+        "width": 48,
+        "height": 48,
+        "isDefault": true
+      },
+      "displayName": "John Smith",
+      "_links": {
+        "self": "https://wiki.example.com/rest/api/user?key=2c9280839e460b0f019e460ba6440000"
+      },
+      "_expandable": {
+        "status": ""
+      }
+    },
+    "createdDate": "2019-08-16T15:41:14.448Z",
+    "_links": {
+      "self": "https://wiki.example.com/rest/api/content/123456/history"
+    },
+    "_expandable": {
+      "lastUpdated": "",
+      "previousVersion": "",
+      "contributors": "",
+      "nextVersion": ""
+    }
+  },
+  "version": {
+    "by": {
+      "type": "known",
+      "username": "admin",
+      "userKey": "2c9280839e460b0f019e460ba6440000",
+      "profilePicture": {
+        "path": "/images/icons/profilepics/default.svg",
+        "width": 48,
+        "height": 48,
+        "isDefault": true
+      },
+      "displayName": "John Smith",
+      "_links": {
+        "self": "https://wiki.example.com/rest/api/user?key=2c9280839e460b0f019e460ba6440000"
+      },
+      "_expandable": {
+        "status": ""
+      }
+    },
+    "when": "2019-08-20T10:15:00.000Z",
+    "message": "Moved to Architecture space",
+    "number": 2,
+    "minorEdit": false,
+    "hidden": false,
+    "_links": {
+      "self": "https://wiki.example.com/rest/experimental/content/123456/version/2"
+    },
+    "_expandable": {
+      "content": "/rest/api/content/123456"
+    }
+  },
+  "position": -1,
+  "extensions": {
+    "position": "none"
+  },
+  "_links": {
+    "webui": "/spaces/ARCH/pages/123456/Architecture+Overview",
+    "edit": "/pages/resumedraft.action?draftId=123456",
+    "tinyui": "/x/TAAC",
+    "collection": "/rest/api/content",
+    "base": "https://wiki.example.com",
+    "context": "",
+    "self": "https://wiki.example.com/rest/api/content/123456"
+  },
+  "_expandable": {
+    "container": "/rest/api/space/ARCH",
+    "metadata": "",
+    "operations": "",
+    "children": "/rest/api/content/123456/child",
+    "restrictions": "/rest/api/content/123456/restriction/byOperation",
+    "ancestors": "",
+    "body": "",
+    "descendants": "/rest/api/content/123456/descendant",
+    "relevantViewRestrictions": "/rest/api/content/123456/restriction/relevantViewRestrictions"
+  }
+}
