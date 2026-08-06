@@ -444,6 +444,7 @@ def bulk_access_users_by_email(
     allow_deactivated: bool = False,
     allow_bots: bool = False,
     for_admin: bool,
+    acquire_lock: bool = False,
 ) -> set[UserProfile]:
     # We upper-case the email addresses ourselves here, because
     # `email__iexact__in=emails` is not supported by Django.
@@ -453,6 +454,8 @@ def bulk_access_users_by_email(
         .annotate(email_upper=Upper("email"))
         .filter(email_upper__in=target_emails_upper, realm=acting_user.realm)
     )
+    if acquire_lock:
+        users = users.order_by("id").select_for_update(of=("self",), no_key=True)
 
     valid_emails_upper = {user_profile.email_upper for user_profile in users}
     all_users_exist = all(email in valid_emails_upper for email in target_emails_upper)
@@ -473,8 +476,12 @@ def bulk_access_users_by_id(
     allow_deactivated: bool = False,
     allow_bots: bool = False,
     for_admin: bool,
+    acquire_lock: bool = False,
 ) -> set[UserProfile]:
     users = base_bulk_get_user_queryset().filter(id__in=user_ids, realm=acting_user.realm)
+
+    if acquire_lock:
+        users = users.order_by("id").select_for_update(of=("self",), no_key=True)
 
     valid_user_ids = {user_profile.id for user_profile in users}
     all_users_exist = all(user_id in valid_user_ids for user_id in user_ids)
