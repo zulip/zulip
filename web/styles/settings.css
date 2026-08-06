@@ -1689,6 +1689,12 @@ label.preferences-radio-choice-label {
     }
 }
 
+#realm_big_blue_button_settings {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
 #profile-settings,
 #edit-user-form {
     .custom_user_field {
