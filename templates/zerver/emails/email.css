@@ -251,7 +251,122 @@ p.digest_paragraph,
 
 .hot_convo_message_content_block {
     padding-left: 6px;
+    padding-top: 4px;
     font-weight: normal;
+}
+
+/* Styling for rendered markdown content in digest emails, mirroring
+   rendered_markdown.css for the web app. Email clients require inline
+   styles, so css_inline will inline these from the <style> tag. */
+.digest_rendered_markdown p {
+    margin: 0 0 5px;
+}
+
+.digest_rendered_markdown code {
+    font-family: monospace;
+    font-size: 0.825em;
+    white-space: pre-wrap;
+    padding: 1px 3px;
+    color: #3d3d3d;
+    background-color: #f2f2f2;
+    border-radius: 3px;
+}
+
+.digest_rendered_markdown pre {
+    font-size: 0.825em;
+    line-height: 1.4;
+    white-space: pre;
+    overflow-x: auto;
+    margin: 0 0 5px;
+    padding: 5px 7px 3px;
+    border-radius: 4px;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
+}
+
+.digest_rendered_markdown pre code {
+    font-size: inherit;
+    padding: 0;
+    background-color: transparent;
+    border: 0;
+    white-space: inherit;
+    color: inherit;
+}
+
+.digest_rendered_markdown blockquote {
+    padding: 0;
+    padding-left: 8px;
+    margin: 0 0 5px 2px;
+    border-left: 4px solid #ddd;
+}
+
+.digest_rendered_markdown ul,
+.digest_rendered_markdown ol {
+    margin: 0 0 5px 0;
+    padding-left: 18px;
+}
+
+.digest_rendered_markdown li {
+    margin: 2px 0;
+}
+
+.digest_rendered_markdown h1,
+.digest_rendered_markdown h2,
+.digest_rendered_markdown h3,
+.digest_rendered_markdown h4,
+.digest_rendered_markdown h5,
+.digest_rendered_markdown h6 {
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 10px 0 5px;
+}
+
+.digest_rendered_markdown h1 {
+    font-size: 1.4em;
+}
+
+.digest_rendered_markdown h2 {
+    font-size: 1.3em;
+}
+
+.digest_rendered_markdown h3 {
+    font-size: 1.2em;
+}
+
+.digest_rendered_markdown h4 {
+    font-size: 1.1em;
+}
+
+.digest_rendered_markdown a {
+    color: #06c;
+    text-decoration: underline;
+}
+
+.digest_rendered_markdown .user-mention {
+    background-color: #e6e9ff;
+    padding: 0 3px;
+    border-radius: 3px;
+    white-space: nowrap;
+    font-size: 0.95em;
+}
+
+.digest_rendered_markdown table {
+    margin: 0 0 5px;
+    border-collapse: collapse;
+}
+
+.digest_rendered_markdown th,
+.digest_rendered_markdown td {
+    border: 1px solid #ddd;
+    padding: 4px;
+    text-align: left;
+}
+
+.digest_rendered_markdown hr {
+    border: 0;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    margin: 10px 0;
 }
 
 /* Text and link colors for missed-message emails. */
