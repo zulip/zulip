@@ -4,14 +4,17 @@ const assert = require("node:assert/strict");
 
 const events = require("./lib/events.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const {$} = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 const channel = mock_esm("../src/channel");
-const compose_closed_ui = mock_esm("../src/compose_closed_ui");
+const compose_state = mock_esm("../src/compose_state");
 const compose_ui = mock_esm("../src/compose_ui");
+const message_store = mock_esm("../src/message_store");
 mock_esm("../src/resize", {
     watch_manual_resize() {},
 });
@@ -27,13 +30,30 @@ set_global(
 );
 
 const server_events_dispatch = zrequire("server_events_dispatch");
+const compose_call_ui = zrequire("compose_call_ui");
 const compose_setup = zrequire("compose_setup");
+const people = zrequire("people");
+const stream_data = zrequire("stream_data");
 const {set_current_user, set_realm} = zrequire("state_data");
 
-const realm = make_realm();
+const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
+const realm = make_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
 set_realm(realm);
-const current_user = {};
+const current_user = make_user({
+    email: "alice@zulip.com",
+    user_id: 1,
+    full_name: "Alice",
+});
 set_current_user(current_user);
+people.add_active_user(current_user);
+people.add_active_user(
+    make_user({
+        email: "bob@zulip.com",
+        user_id: 2,
+        full_name: "Bob",
+    }),
+);
+people.initialize_current_user(current_user.user_id);
 
 const realm_available_video_chat_providers = {
     disabled: {
@@ -77,7 +97,7 @@ function test(label, f) {
     });
 }
 
-test("videos", ({override}) => {
+test("videos", ({override, override_rewire}) => {
     override(realm, "realm_video_chat_provider", realm_available_video_chat_providers.disabled.id);
     override(window, "to_$", () => $("window-stub"));
 
@@ -312,7 +332,9 @@ test("videos", ({override}) => {
             realm_available_video_chat_providers.big_blue_button.id,
         );
 
-        override(compose_closed_ui, "get_recipient_label", () => ({label_text: "a"}));
+        override_rewire(compose_call_ui, "get_recipient_label_for_call", () => ({
+            label_text: "a",
+        }));
 
         let success_callback;
         const xhr_object = {abort() {}};
@@ -360,7 +382,7 @@ test("videos", ({override}) => {
         const $textarea = $.create("bbb-empty-label-stub");
         $textarea.set_parents_result(".message_edit_form", []);
 
-        override(compose_closed_ui, "get_recipient_label", () => ({label_text: ""}));
+        override_rewire(compose_call_ui, "get_recipient_label_for_call", () => undefined);
 
         let checked = false;
         channel.get = (options) => {
@@ -452,7 +474,9 @@ test("videos", ({override}) => {
             realm_available_video_chat_providers.nextcloud_talk.id,
         );
 
-        override(compose_closed_ui, "get_recipient_label", () => ({label_text: "general"}));
+        override_rewire(compose_call_ui, "get_recipient_label_for_call", () => ({
+            label_text: "general",
+        }));
         let success_callback;
         function call_success_callback() {
             assert.ok(success_callback !== undefined);
@@ -486,7 +510,7 @@ test("videos", ({override}) => {
         const $textarea = $.create("nextcloud-empty-label-stub");
         $textarea.set_parents_result(".message_edit_form", []);
 
-        override(compose_closed_ui, "get_recipient_label", () => ({label_text: ""}));
+        override_rewire(compose_call_ui, "get_recipient_label_for_call", () => undefined);
 
         let checked = false;
         channel.post = (options) => {
@@ -501,6 +525,94 @@ test("videos", ({override}) => {
             .call($textarea, {preventDefault() {}, stopPropagation() {}});
         assert.ok(checked);
     })();
+});
+
+run_test("get_recipient_label_for_call", ({override}) => {
+    const stream = make_stream({
+        subscribed: true,
+        name: "design",
+        stream_id: 200,
+    });
+    stream_data.add_sub_for_tests(stream);
+
+    // --- Compose-box branch (edit_message_id === undefined) ---
+
+    // Stream + non-empty topic.
+    override(compose_state, "get_message_type", () => "stream");
+    override(compose_state, "stream_id", () => stream.stream_id);
+    override(compose_state, "topic", () => "typography");
+    assert.equal(
+        compose_call_ui.get_recipient_label_for_call(undefined).label_text,
+        "#design > typography",
+    );
+
+    // Stream + empty topic uses the realm's empty-topic display name.
+    override(compose_state, "topic", () => "");
+    assert.equal(
+        compose_call_ui.get_recipient_label_for_call(undefined).label_text,
+        `#design > translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}`,
+    );
+
+    // Stream with no stream_id → undefined.
+    override(compose_state, "stream_id", () => undefined);
+    assert.equal(compose_call_ui.get_recipient_label_for_call(undefined), undefined);
+
+    // Stream lookup miss → undefined.
+    override(compose_state, "stream_id", () => 999);
+    assert.equal(compose_call_ui.get_recipient_label_for_call(undefined), undefined);
+
+    // DM with distinct recipients uses the recipient full names. User 2 is
+    // "Bob", set up at the top of this file.
+    override(compose_state, "get_message_type", () => "private");
+    override(compose_state, "private_message_recipient_ids", () => [2]);
+    override(message_store, "get_pm_full_names", () => "Bob");
+    assert.equal(compose_call_ui.get_recipient_label_for_call(undefined).label_text, "Bob");
+
+    // DM with only self → empty label_text, so the meeting name doesn't
+    // start with the current user's own name.
+    override(compose_state, "private_message_recipient_ids", () => [current_user.user_id]);
+    assert.equal(compose_call_ui.get_recipient_label_for_call(undefined).label_text, "");
+
+    // Unknown message type → undefined.
+    override(compose_state, "get_message_type", () => undefined);
+    assert.equal(compose_call_ui.get_recipient_label_for_call(undefined), undefined);
+
+    // --- Edit-form branch (edit_message_id !== undefined) ---
+    // The edit-form path reads from message_store, not compose_state, so we
+    // deliberately don't override compose_state here.
+
+    // Stream edit target uses the message's own stream/topic.
+    override(message_store, "get", () => ({
+        is_stream: true,
+        is_private: false,
+        stream_id: stream.stream_id,
+        topic: "reviews",
+    }));
+    assert.equal(
+        compose_call_ui.get_recipient_label_for_call("42").label_text,
+        "#design > reviews",
+    );
+
+    // DM edit target uses the message's own recipients.
+    override(message_store, "get", () => ({
+        is_stream: false,
+        is_private: true,
+        to_user_ids: "2",
+    }));
+    override(message_store, "get_pm_full_names", () => "Bob");
+    assert.equal(compose_call_ui.get_recipient_label_for_call("43").label_text, "Bob");
+
+    // DM-to-self edit target → empty label_text.
+    override(message_store, "get", () => ({
+        is_stream: false,
+        is_private: true,
+        to_user_ids: String(current_user.user_id),
+    }));
+    assert.equal(compose_call_ui.get_recipient_label_for_call("44").label_text, "");
+
+    // Unknown/evicted message id → undefined.
+    override(message_store, "get", () => undefined);
+    assert.equal(compose_call_ui.get_recipient_label_for_call("999"), undefined);
 });
 
 test("test_video_chat_button_toggle disabled", ({override}) => {
