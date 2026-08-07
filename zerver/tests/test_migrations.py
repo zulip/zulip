@@ -24,7 +24,7 @@ from zerver.lib.test_classes import MigrationsTestCase
 
 class FixDeletedUserEmail(MigrationsTestCase):
     migrate_from = "0804_backfill_user_created_audit_logs"
-    migrate_to = "0805_fix_deleteduser_email"
+    migrate_to = "0807_add_idempotency_table"
 
     @override
     def setUpBeforeMigration(self, apps: StateApps) -> None:
