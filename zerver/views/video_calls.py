@@ -3,6 +3,7 @@ import hashlib
 import json
 import logging
 import random
+import uuid
 from abc import ABC, abstractmethod
 from base64 import b64encode
 from typing import Any, Literal
@@ -11,7 +12,7 @@ from urllib.parse import quote, urlencode, urljoin, urlsplit
 import requests
 from defusedxml import ElementTree
 from django.conf import settings
-from django.core.signing import Signer
+from django.core.signing import BadSignature, Signer
 from django.http import HttpRequest, HttpResponse
 from django.middleware import csrf
 from django.shortcuts import redirect, render
@@ -43,6 +44,7 @@ from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_parameters
 from zerver.lib.url_encoding import append_url_query_string
+from zerver.lib.users import is_moderator_role
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import UserProfile
 from zerver.models.realms import get_realm
@@ -66,6 +68,13 @@ class CreateVideoCallFailedError(JsonableError):
     def __init__(self, provider_name: str) -> None:
         super().__init__(
             _("Failed to create {provider_name} call").format(provider_name=provider_name)
+        )
+
+
+class JoinVideoCallFailedError(JsonableError):
+    def __init__(self, provider_name: str) -> None:
+        super().__init__(
+            _("Failed to create {provider_name} invite").format(provider_name=provider_name)
         )
 
 
@@ -763,3 +772,172 @@ def create_nextcloud_talk_url(
 
     call_url = urljoin(settings.NEXTCLOUD_SERVER, f"/index.php/call/{token}")
     return json_success(request, data={"url": call_url})
+
+
+@typed_endpoint
+def create_galene_call(
+    request: HttpRequest,
+    user: UserProfile,
+    *,
+    group_name: str,
+    subgroup_name: str = "",
+    is_dm: Json[bool] = False,
+) -> HttpResponse:
+    """
+    Galène group URLs, one distinct room per invocation:
+    - Non-empty subgroup_name: {GALENE_URL}/group/{group_name}/{subgroup_name}-{uuid}.
+    - Empty subgroup_name: {GALENE_URL}/group/{group_name}/{uuid}.
+
+    Calls are ephemeral, because we use Galène's auto-subgroups feature.
+
+    This view creates the group URLs, the actual call isn't stored by Galène
+    until someone joins.
+    """
+
+    if (
+        settings.GALENE_URL is None
+        or settings.GALENE_ADMIN_USERNAME is None
+        or settings.GALENE_ADMIN_PASSWORD is None
+    ):
+        raise VideoCallProviderNotConfiguredError("Galene")
+
+    parent_group = quote(group_name, safe="")
+    subgroup_prefix = quote(subgroup_name, safe=",")
+
+    # https://github.com/jech/galene/blob/master/galene-api.md
+    parent_url = urljoin(settings.GALENE_URL, f"/galene-api/v0/.groups/{parent_group}")
+
+    username = str(settings.GALENE_ADMIN_USERNAME)
+    password = str(settings.GALENE_ADMIN_PASSWORD)
+    credentials = f"{username}:{password}".encode()
+    encoded_credentials = b64encode(credentials).decode("ascii")
+
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Basic {encoded_credentials}",
+    }
+
+    # This greatly reduces the number of calls Galène has to track on disk
+    # (one per Zulip channel instead of one per topic).
+    payload = {
+        "auto-subgroups": True,
+    }
+
+    try:
+        response = VideoCallSession().put(parent_url, json=payload, headers=headers, timeout=10)
+        response.raise_for_status()
+        if response.status_code not in [201, 204]:
+            logging.error(
+                "Galene API request to %s failed with status %s", parent_url, response.status_code
+            )
+            raise CreateVideoCallFailedError("Galene")
+    except requests.RequestException as e:
+        if e.response is not None:
+            logging.error(
+                "Galene API request to %s failed with status %s", parent_url, e.response.status_code
+            )
+        else:
+            logging.error("Galene API request to %s failed", parent_url)
+        raise CreateVideoCallFailedError("Galene")
+
+    call_id = str(uuid.uuid4())
+    if subgroup_prefix:
+        full_group_name = f"{parent_group}/{subgroup_prefix}-{call_id}"
+    else:
+        full_group_name = f"{parent_group}/{call_id}"
+
+    signed = Signer().sign_object(
+        {
+            "name": full_group_name,
+            "is_dm": is_dm,
+        }
+    )
+    url = append_url_query_string("/calls/galene/join", "galene_call_join_details=" + signed)
+    return json_success(request, {"url": url})
+
+
+@zulip_login_required
+@never_cache
+@typed_endpoint
+def join_galene_call(request: HttpRequest, *, galene_call_join_details: str) -> HttpResponse:
+    if (
+        settings.GALENE_URL is None
+        or settings.GALENE_ADMIN_USERNAME is None
+        or settings.GALENE_ADMIN_PASSWORD is None
+    ):
+        raise VideoCallProviderNotConfiguredError("Galene")
+
+    assert request.user.is_authenticated
+
+    try:
+        galene_call_join_details_data = Signer().unsign_object(galene_call_join_details)
+    except BadSignature:
+        raise JsonableError(_("Invalid signature."))
+
+    group_name = galene_call_join_details_data["name"]
+
+    is_dm = galene_call_join_details_data["is_dm"]
+
+    # https://github.com/jech/galene/blob/b40dcd2/galene-api.md
+    # note the trailing slash: https://github.com/jech/galene/issues/305
+    token_url = urljoin(settings.GALENE_URL, f"/galene-api/v0/.groups/{group_name}/.tokens/")
+
+    admin_username = str(settings.GALENE_ADMIN_USERNAME)
+    password = str(settings.GALENE_ADMIN_PASSWORD)
+    credentials = f"{admin_username}:{password}".encode()
+    encoded_credentials = b64encode(credentials).decode("ascii")
+
+    headers = {
+        "Accept": "application/json",
+        "Authorization": f"Basic {encoded_credentials}",
+    }
+
+    username = request.user.full_name
+
+    # https://github.com/jech/galene/blob/b40dcd2/galene.md#group-moderation
+    # Permissions:
+    # - Zulip moderators (including admins and owners) become Galène
+    #   operators.
+    # - Zulip members and guests become Galène presenters and can turn
+    #   on their camera.
+    # - In direct-message calls, everyone is an operator.
+    if is_moderator_role(request.user.role) or is_dm:
+        # workaround https://github.com/jech/galene/issues/313
+        permissions = ["op", "present", "message", "caption", "token"]
+    else:
+        permissions = ["present", "message"]
+
+    # invite link expires in 13 minutes, since it should be used immediately (but network
+    # problems might delay) (to get a new one, the user just clicks the /calls/galene/join
+    # link again)
+    expires = (
+        (timezone_now() + datetime.timedelta(minutes=13))
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "Z")
+    )
+
+    payload = {
+        "username": username,
+        "permissions": permissions,
+        "expires": expires,
+    }
+
+    try:
+        response = VideoCallSession().post(token_url, json=payload, headers=headers, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        if e.response is not None:
+            logging.error(
+                "Galene API request to %s failed with status %s", token_url, e.response.status_code
+            )
+        else:
+            logging.error("Galene API request to %s failed", token_url)
+        raise JoinVideoCallFailedError("Galene")
+
+    token = response.headers["location"]
+    if not token:
+        logging.error("Galene invite token not provided by %s", token_url)
+        raise JoinVideoCallFailedError("Galene")
+
+    call_url = urljoin(settings.GALENE_URL, f"/group/{group_name}/")
+    return redirect(append_url_query_string(call_url, f"token={token}"))

@@ -6003,11 +6003,15 @@ paths:
                                         - 6 = Constructor Groups
                                         - 7 = Nextcloud Talk
                                         - 8 = Webex (User OAuth integration)
+                                        - 9 = Galène
 
                                         Note that only one of the [Zoom integrations][zoom-video-calls] can
                                         be configured on a Zulip server.
 
-                                        **Changes**: In Zulip 12.0 (feature level 493),
+                                        **Changes**: In Zulip 13.0 (feature level ZF-1b213a),
+                                        added the Galène option.
+
+                                        In Zulip 12.0 (feature level 493),
                                         added the Webex OAuth option.
 
                                         In Zulip 12.0 (feature level 465), added the
@@ -21067,11 +21071,15 @@ paths:
                           - 6 = Constructor Groups
                           - 7 = Nextcloud Talk
                           - 8 = Webex (User OAuth integration)
+                          - 9 = Galène
 
                           Note that only one of the [Zoom integrations][zoom-video-calls] can
                           be configured on a Zulip server.
 
-                          **Changes**: In Zulip 12.0 (feature level 493), added the
+                          **Changes**: In Zulip 13.0 (feature level ZF-1b213a),
+                          added the Galène option.
+
+                          In Zulip 12.0 (feature level 493), added the
                           Webex OAuth option.
 
                           In Zulip 12.0 (feature level 465), added the
@@ -27467,6 +27475,70 @@ paths:
                         "msg": "",
                         "result": "success",
                         "url": "https://example.constructor.app/groups/room/room-123",
+                      }
+
+  /calls/galene/create:
+    post:
+      tags: ["channels"]
+      operationId: create-galene-video-call
+      summary: Create Galène video call
+      description: |
+        Create a video call URL for a Galène video call. Requires
+        [Galène](/integrations/galene) to be configured on the
+        Zulip server.
+
+        **Changes**: New in Zulip 13.0 (feature level ZF-1b213a)
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - group_name
+              properties:
+                group_name:
+                  type: string
+                  description: |
+                    Galène group for the call.
+                  example: "devel"
+                subgroup_name:
+                  type: string
+                  description: |
+                    Galène sub-group name within the group.
+                  example: "weekly-check-in"
+                is_dm:
+                  type: boolean
+                  default: false
+                  description: |
+                    Whether the call is a direct-message conversation.
+                    When `true`, every user who joins the resulting
+                    Galène URL is granted moderator (op) permissions
+                    on the call.
+                  example: false
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      url:
+                        description: |
+                          The URL for the Galène video call.
+                        type: string
+                        example: "/calls/galene/join?galene_call_join_details=eyJuIjoiZGV2ZWwvdGVhbS1jaGVjay1pbi04ZjE0ZTQ1Zi1jZWVhLTQ2N2EtOTU3NS1kNGQ2YThkNGQxMDAifQ:z_mQK9dQk8jSiQuHml1hyst5_4XAjVGPjRFMTUZcCAw"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "url": "/calls/galene/join?galene_call_join_details=eyJuIjoiZGV2ZWwvdGVhbS1jaGVjay1pbi04ZjE0ZTQ1Zi1jZWVhLTQ2N2EtOTU3NS1kNGQ2YThkNGQxMDAifQ:z_mQK9dQk8jSiQuHml1hyst5_4XAjVGPjRFMTUZcCAw",
                       }
 
 components:
