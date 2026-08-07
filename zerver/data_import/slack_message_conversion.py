@@ -110,7 +110,21 @@ SLACK_BOLD_REGEX = r"""
 
 
 def get_user_full_name(user: ZerverFieldsT) -> str:
-    return user["profile"].get("real_name") or user.get("real_name", user["name"])
+    # None of these fields are guaranteed to be included in the user.info
+    # endpoint. Look for fields that are more suited for the user's full
+    # name first.
+    name_fields = [
+        "real_name",
+        "real_name_normalized",
+        "display_name",
+        "display_name_normalized",
+        "name",
+    ]
+    for field in name_fields:
+        name = user.get(field) or user["profile"].get(field)
+        if isinstance(name, str) and name.strip():
+            return name
+    return f"Slack user {user['id']}"
 
 
 def get_zulip_mention_for_slack_user(

@@ -347,7 +347,7 @@ def users_to_zerver_userprofile(
             role=role,
             is_mirror_dummy=user["is_mirror_dummy"],
             realm_id=realm_id,
-            short_name=user["name"],
+            short_name=user.get("name", FALLBACK_USER_FULL_NAME.format(id=user["id"])),
             timezone=timezone,
             is_bot=is_bot,
             bot_type=bot_type,
