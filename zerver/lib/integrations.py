@@ -8,6 +8,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.http import HttpRequest, HttpResponseBase
 from django.urls import URLPattern, path
 from django.utils.module_loading import import_string
+from django.utils.translation import gettext_lazy
 from django.views.decorators.csrf import csrf_exempt
 from typing_extensions import override
 
@@ -590,7 +591,11 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         [WebhookScreenshotConfig("job_run_completed_errored.json")],
         display_name="dbt",
         url_options=[
-            WebhookUrlOption(name="access_url", label="dbt Access URL", input_type="text")
+            WebhookUrlOption(
+                name="access_url",
+                label=gettext_lazy("dbt Access URL"),
+                input_type="text",
+            )
         ],
     ),
     IncomingWebhookIntegration(
@@ -659,12 +664,12 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
             WebhookUrlOption.build_preset_config(PresetUrlOption.IGNORE_PRIVATE_REPOSITORIES),
             WebhookUrlOption(
                 name="include_repository_name",
-                label="Include repository name in the notifications",
+                label=gettext_lazy("Include repository name in the notifications"),
                 input_type="checkbox",
             ),
             WebhookUrlOption(
                 name="include_emoji_indicators",
-                label="Include emoji indicators in the notifications",
+                label=gettext_lazy("Include emoji indicators in the notifications"),
                 input_type="checkbox_enabled",
             ),
         ],
@@ -691,12 +696,12 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
             WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES),
             WebhookUrlOption(
                 name="ignore_private_projects",
-                label="Exclude notifications from private projects",
+                label=gettext_lazy("Exclude notifications from private projects"),
                 input_type="checkbox",
             ),
             WebhookUrlOption(
                 name="use_merge_request_title",
-                label="Include merge request titles in topics",
+                label=gettext_lazy("Include merge request titles in topics"),
                 input_type="checkbox_enabled",
             ),
         ],
@@ -720,27 +725,29 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         url_options=[
             WebhookUrlOption(
                 "include_trackers",
-                label="Include primary trackers in the notifications",
+                label=gettext_lazy("Include primary trackers in the notifications"),
                 input_type="checkbox_enabled",
             ),
             WebhookUrlOption(
                 "include_topics",
-                label="Include primary topics in the notifications",
+                label=gettext_lazy("Include primary topics in the notifications"),
                 input_type="checkbox_enabled",
             ),
             WebhookUrlOption(
                 "include_participants",
-                label="Include participant names in the notifications",
+                label=gettext_lazy("Include participant names in the notifications"),
                 input_type="checkbox_enabled",
             ),
             WebhookUrlOption(
                 "include_participant_contacts",
-                label="Include participant contact information (requires participant names)",
+                label=gettext_lazy(
+                    "Include participant contact information (requires participant names)"
+                ),
                 input_type="checkbox_enabled",
             ),
             WebhookUrlOption(
                 "include_public_comments",
-                label="Include public comments in the notifications",
+                label=gettext_lazy("Include public comments in the notifications"),
                 input_type="checkbox",
             ),
         ],
@@ -844,7 +851,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         url_options=[
             WebhookUrlOption(
                 name="eu_region",
-                label="Use Opsgenie's European service region",
+                label=gettext_lazy("Use Opsgenie's European service region"),
                 input_type="checkbox",
             )
         ],

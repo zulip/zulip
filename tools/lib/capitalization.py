@@ -20,6 +20,7 @@ IGNORED_PHRASES = [
     r"DevAuthBackend",
     r"DSN",
     r"Esc",
+    r"European",
     r"GCM",
     r"GitHub",
     r"GitLab",
@@ -38,6 +39,7 @@ IGNORED_PHRASES = [
     r"Markdown",
     r"OAuth",
     r"OTP",
+    r"Opsgenie",
     r"Recent conversations",
     r"DM",
     r"DMs",
@@ -64,6 +66,10 @@ IGNORED_PHRASES = [
     r"BigBlueButton",
     r"Constructor Groups",
     r"Nextcloud Talk",
+    # dbt Labs styles its product name in lower case, and "Access URL"
+    # is its own product terminology.
+    r"dbt",
+    r"Access",
     # Code things
     r"\.zuliprc",
     # BeautifulSoup will remove <z-user> which is horribly confusing,
