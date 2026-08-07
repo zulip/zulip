@@ -27997,7 +27997,11 @@ components:
           label:
             type: string
             description: |
-              The label used for the input field in the UI.
+              The label used for the input field in the UI, in the user's
+              language.
+
+              **Changes**: Before Zulip 12.0 (feature level ZF-d62977),
+              this label was always in English.
           input_type:
             type: string
             description: |
