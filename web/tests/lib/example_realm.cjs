@@ -19,7 +19,7 @@ exports.make_realm = (opts = {}) => {
         max_stream_description_length: 0,
         max_stream_name_length: 0,
         max_topic_length: 0,
-        max_bulk_new_subscription_messages: 0,
+        max_bulk_subscription_messages: 0,
         password_min_guesses: 0,
         password_min_length: 0,
         password_max_length: 0,
