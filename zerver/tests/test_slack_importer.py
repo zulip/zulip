@@ -1249,8 +1249,20 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message(self, mock_build_usermessage: mock.Mock) -> None:
         user_data = [
-            {"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
-            {"id": "U061A5N1G", "name": "jane doe", "deleted": False, "real_name": "Jane"},
+            {
+                "id": "U066MTL5U",
+                "name": "john doe",
+                "deleted": False,
+                "real_name": "John",
+                "profile": {"email": "john.doe@example.com"},
+            },
+            {
+                "id": "U061A5N1G",
+                "name": "jane doe",
+                "deleted": False,
+                "real_name": "Jane",
+                "profile": {"email": "jane.doe@example.com"},
+            },
             {
                 "id": "U061A1R2R",
                 "name": "jon",

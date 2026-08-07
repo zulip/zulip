@@ -3,13 +3,21 @@
         "id": "U066MTL5U",
         "name": "john doe",
         "deleted": false,
-        "real_name": "John"
+        "real_name": "John",
+        "profile": {
+            "real_name": "John",
+            "email": "jon.doe@example.com"
+        }
     },
     {
         "id": "U061A5N1G",
         "name": "jane doe",
         "deleted": false,
-        "real_name": "Jane"
+        "real_name": "Jane",
+        "profile": {
+            "real_name": "Jane",
+            "email": "jane.doe@example.com"
+        }
     },
     {
         "id": "U061A1R2R",
@@ -17,6 +25,7 @@
         "deleted": false,
         "real_name": "Jon",
         "profile": {
+            "real_name": "Jon",
             "email": "jon@example.com"
         }
     }

@@ -85,6 +85,7 @@ AddedMPIMsT: TypeAlias = dict[str, tuple[str, int]]
 AddedDMsT: TypeAlias = dict[str, int]
 SlackToZulipRecipientT: TypeAlias = dict[str, int]
 
+FALLBACK_USER_FULL_NAME = "Slack user {id}"
 
 # We can look up unicode codepoints for Slack emoji using iamcal emoji
 # data. https://emojipedia.org/slack/, documents Slack's emoji names
@@ -346,7 +347,7 @@ def users_to_zerver_userprofile(
             role=role,
             is_mirror_dummy=user["is_mirror_dummy"],
             realm_id=realm_id,
-            short_name=user["name"],
+            short_name=user.get("name", FALLBACK_USER_FULL_NAME.format(id=user["id"])),
             timezone=timezone,
             is_bot=is_bot,
             bot_type=bot_type,
@@ -474,8 +475,11 @@ def build_avatar_url(slack_user_id: str, user: ZerverFieldsT) -> tuple[str, str 
     avatar_source = UserProfile.DEFAULT_AVATAR_SOURCE
     if user["profile"].get("avatar_hash"):
         # Process avatar image for a typical Slack user.
-        team_id = user["team_id"]
-        avatar_hash = user["profile"]["avatar_hash"]
+        team_id = user.get("team_id")
+        avatar_hash = user["profile"].get("avatar_hash")
+        if team_id or avatar_hash is None:
+            logging.info("Failed to process avatar for user -> %s\n", user.get("name"))
+            return avatar_source, avatar_url
         avatar_url = f"https://ca.slack-edge.com/{team_id}-{slack_user_id}-{avatar_hash}"
         avatar_source = UserProfile.AVATAR_FROM_USER
     elif user.get("is_integration_bot") and "image_72" in user["profile"]:
