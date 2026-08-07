@@ -30,6 +30,10 @@ class IdempotentRequest(models.Model):
     # None if the work has not been attempted.
     succeeded = models.BooleanField(default=None, null=True)
 
+    # The retention period, in hours, after which rows are
+    # considered expired and eligible for deletion by the cron job.
+    RETENTION_DURATION_IN_HRS = 24
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
