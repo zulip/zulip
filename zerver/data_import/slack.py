@@ -85,6 +85,7 @@ AddedMPIMsT: TypeAlias = dict[str, tuple[str, int]]
 AddedDMsT: TypeAlias = dict[str, int]
 SlackToZulipRecipientT: TypeAlias = dict[str, int]
 
+FALLBACK_USER_FULL_NAME = "Slack user {id}"
 
 # We can look up unicode codepoints for Slack emoji using iamcal emoji
 # data. https://emojipedia.org/slack/, documents Slack's emoji names

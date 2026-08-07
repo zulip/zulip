@@ -7,6 +7,7 @@ from unittest.mock import patch
 import responses
 from typing_extensions import ParamSpec, override
 
+from zerver.data_import.slack import FALLBACK_USER_FULL_NAME
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.webhooks.slack.view import INVALID_SLACK_TOKEN_MESSAGE
 
@@ -456,7 +457,7 @@ To Do""".strip()
         )
         user_id = "U06NU4E26M9"
         expected_message = EXPECTED_MESSAGE.format(
-            user=f"Slack user {user_id}", message=MESSAGE_WITH_NORMAL_TEXT
+            user=FALLBACK_USER_FULL_NAME.format(id=user_id), message=MESSAGE_WITH_NORMAL_TEXT
         )
         self.check_webhook(
             "message_with_normal_text",
@@ -487,7 +488,7 @@ To Do""".strip()
         )
         user_id = "U06NU4E26M9"
         expected_message = EXPECTED_MESSAGE.format(
-            user=f"Slack user {user_id}", message=MESSAGE_WITH_NORMAL_TEXT
+            user=FALLBACK_USER_FULL_NAME.format(id=user_id), message=MESSAGE_WITH_NORMAL_TEXT
         )
         self.check_webhook(
             "message_with_normal_text",
