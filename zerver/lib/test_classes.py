@@ -2463,10 +2463,13 @@ class ZulipTestCase(ZulipTestCaseMixin, TestCase):
 def get_row_pks_in_all_tables() -> Iterator[tuple[str, set[int]]]:
     all_models = apps.get_models(include_auto_created=True)
     ignored_tables = {"django_session"}
+    # A test may leave the schema behind the current models, so that a
+    # model's table does not exist yet; see MigrationsTestCase.
+    db_existing_tables = set(connection.introspection.table_names())
 
     for model in all_models:
         table_name = model._meta.db_table
-        if table_name in ignored_tables:
+        if table_name in ignored_tables or table_name not in db_existing_tables:
             continue
         pks = model._default_manager.all().values_list("pk", flat=True)
         yield table_name, set(pks)
