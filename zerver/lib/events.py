@@ -797,7 +797,7 @@ def fetch_initial_state_data(
                 "url_options": [
                     {
                         "key": c.name,
-                        "label": c.label,
+                        "label": str(c.label),
                         "input_type": c.input_type,
                     }
                     for c in integration.url_options
