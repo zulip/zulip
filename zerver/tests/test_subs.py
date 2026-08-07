@@ -3518,7 +3518,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         subscriptions = [{"name": "my_test_stream_3", "color": "#0g0g0g"}]
         result = self.subscribe_via_post(user, subscriptions, allow_fail=True)
         self.assert_json_error(
-            result, "Invalid subscriptions[0]: Value error, add.color is not a valid hex color code"
+            result, "Invalid subscriptions[0]: Value error, color is not a valid hex color code"
         )
 
     def test_api_valid_property(self) -> None:
