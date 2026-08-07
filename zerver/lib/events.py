@@ -596,6 +596,9 @@ def fetch_initial_state_data(
         state["max_channel_folder_name_length"] = ChannelFolder.MAX_NAME_LENGTH
         state["max_channel_folder_description_length"] = ChannelFolder.MAX_DESCRIPTION_LENGTH
         state["max_reminder_note_length"] = settings.MAX_REMINDER_NOTE_LENGTH
+        state["max_display_in_profile_summary_fields"] = (
+            CustomProfileField.MAX_DISPLAY_IN_PROFILE_SUMMARY_FIELDS
+        )
         if realm.demo_organization_scheduled_deletion_date is not None:
             state["demo_organization_scheduled_deletion_date"] = datetime_to_timestamp(
                 realm.demo_organization_scheduled_deletion_date
