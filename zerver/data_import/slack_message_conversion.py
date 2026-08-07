@@ -110,12 +110,7 @@ SLACK_BOLD_REGEX = r"""
 
 
 def get_user_full_name(user: ZerverFieldsT) -> str:
-    if "deleted" in user and user["deleted"] is False:
-        return user["real_name"] or user["name"]
-    elif user["is_mirror_dummy"]:
-        return user["profile"].get("real_name", user["name"])
-    else:
-        return user["name"]
+    return user["profile"].get("real_name") or user.get("real_name", user["name"])
 
 
 def get_zulip_mention_for_slack_user(
