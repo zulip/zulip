@@ -134,7 +134,7 @@ class UserMessageNotificationsData:
         #
         # Remove the `if` block when one can no longer directly upgrade from 11.x to main.
         if push_device_registered_user_ids is None:
-            push_device_registered = True
+            push_device_registered = True  # nocoverage
         else:
             push_device_registered = user_id in push_device_registered_user_ids
 
