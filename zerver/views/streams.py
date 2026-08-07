@@ -560,7 +560,7 @@ class AddSubscriptionData(BaseModel):
     @model_validator(mode="after")
     def validate_terms(self) -> "AddSubscriptionData":
         if self.color is not None:
-            self.color = check_color("add.color", self.color)
+            self.color = check_color("color", self.color)
         return self
 
 
