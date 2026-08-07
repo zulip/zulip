@@ -1214,6 +1214,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot.refresh_from_db()
         self.assertEqual(bot.email, "newbot-bot@zulip.testserver")
 
+        response_data = orjson.loads(result.content)
+        self.assertEqual(response_data["email"], "newbot-bot@zulip.testserver")
+
     def test_patch_bot_short_name_admin(self) -> None:
         self.login("hamlet")
         bot_info = {
@@ -1304,6 +1307,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         bot.refresh_from_db()
         self.assertEqual(bot.email, "hambot-bot@zulip.testserver")
+
+        response_data = orjson.loads(result.content)
+        self.assertNotIn("email", response_data)
 
     def test_patch_bot_short_name_invalid_fake_email_domain(self) -> None:
         self.login("hamlet")
@@ -2024,6 +2030,191 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         service_payload_url = orjson.loads(result.content)["service_payload_url"]
         self.assertEqual(service_payload_url, "http://foo.bar2.com")
 
+    def test_patch_outgoing_webhook_bot_interface_only(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
+            "payload_url": orjson.dumps("http://foo.bar.com").decode(),
+            "interface_type": Service.GENERIC,
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+        patch_info = {"service_interface": Service.SLACK}
+        result = self.client_patch(f"/json/bots/{bot.id}", patch_info)
+        self.assert_json_success(result)
+
+        [service] = get_bot_services(bot.id)
+        self.assertEqual(service.interface, Service.SLACK)
+        self.assertEqual(service.base_url, "http://foo.bar.com")
+
+        response_data = orjson.loads(result.content)
+        self.assertEqual(response_data["service_interface"], Service.SLACK)
+        self.assertNotIn("service_payload_url", response_data)
+
+    def test_patch_outgoing_webhook_bot_url_only_preserves_interface(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
+            "payload_url": orjson.dumps("http://foo.bar.com").decode(),
+            "interface_type": Service.SLACK,
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+        patch_info = {"service_payload_url": orjson.dumps("http://foo.bar2.com").decode()}
+        result = self.client_patch(f"/json/bots/{bot.id}", patch_info)
+        self.assert_json_success(result)
+
+        [service] = get_bot_services(bot.id)
+        self.assertEqual(service.base_url, "http://foo.bar2.com")
+        self.assertEqual(service.interface, Service.SLACK)
+
+        response_data = orjson.loads(result.content)
+        self.assertEqual(response_data["service_payload_url"], "http://foo.bar2.com")
+        self.assertNotIn("service_interface", response_data)
+
+    def test_patch_non_outgoing_webhook_bot_rejects_service_fields(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+
+        expected_error = (
+            "Cannot set service interface or payload URL on a non-outgoing-webhook bot."
+        )
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"service_interface": Service.SLACK},
+        )
+        self.assert_json_error(result, expected_error)
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"service_payload_url": orjson.dumps("http://foo.bar.com").decode()},
+        )
+        self.assert_json_error(result, expected_error)
+
+    def test_patch_bot_rejects_config_data_on_non_config_bot(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"key": "value"}).decode()},
+        )
+        self.assert_json_error(result, "Only incoming-webhook and embedded bots have config data.")
+
+    def test_patch_incoming_webhook_bot_config_data_without_integration(self) -> None:
+        self.login("hamlet")
+        self.create_bot(
+            full_name="My Bot",
+            short_name="mybot",
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+        )
+        bot = self.get_bot_user("mybot-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"key": "value"}).decode()},
+        )
+        self.assert_json_success(result)
+
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    def test_patch_incoming_webhook_bot_rejects_invalid_config_data(self) -> None:
+        self.login("hamlet")
+        self.create_bot(
+            full_name="My Stripe Bot",
+            short_name="my-stripe",
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            service_name="stripe",
+            config_data=orjson.dumps({"stripe_api_key": "sample-api-key"}).decode(),
+        )
+        bot = self.get_bot_user("my-stripe-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"stripe_api_key": "_invalid_key"}).decode()},
+        )
+        self.assert_json_error(
+            result,
+            "Invalid stripe_api_key value _invalid_key "
+            '(stripe_api_key starts with a "_" and is hence invalid.)',
+        )
+
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    def test_patch_incoming_webhook_bot_change_integration_id_missing_config(self) -> None:
+        self.login("hamlet")
+        self.create_bot(
+            full_name="My Hello Bot",
+            short_name="my-hello",
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            service_name="helloworld",
+        )
+        bot = self.get_bot_user("my-hello-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"integration_id": "stripe"}).decode()},
+        )
+        self.assert_json_error(
+            result,
+            "Missing configuration parameters: {'stripe_api_key'}",
+        )
+        self.assertEqual(get_bot_config(bot)["integration_id"], "helloworld")
+
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    def test_patch_incoming_webhook_bot_change_integration_id_success(self) -> None:
+        self.login("hamlet")
+        self.create_bot(
+            full_name="My Hello Bot",
+            short_name="my-hello",
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            service_name="helloworld",
+        )
+        bot = self.get_bot_user("my-hello-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {
+                "config_data": orjson.dumps(
+                    {"integration_id": "stripe", "stripe_api_key": "sample-api-key"}
+                ).decode()
+            },
+        )
+        self.assert_json_success(result)
+        stored_config = get_bot_config(bot)
+        self.assertEqual(stored_config["integration_id"], "stripe")
+        self.assertEqual(stored_config["stripe_api_key"], "sample-api-key")
+
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    def test_patch_incoming_webhook_bot_integration_id_alone_is_not_a_config_option(
+        self,
+    ) -> None:
+        self.login("hamlet")
+        self.create_bot(
+            full_name="My Stripe Bot",
+            short_name="my-stripe",
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            service_name="stripe",
+            config_data=orjson.dumps({"stripe_api_key": "sample-api-key"}).decode(),
+        )
+        bot = self.get_bot_user("my-stripe-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"integration_id": "stripe"}).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertEqual(get_bot_config(bot)["integration_id"], "stripe")
+
     @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
     def test_patch_bot_config_data(self, mock_validate_config: MagicMock) -> None:
         self.create_test_bot(
@@ -2032,14 +2223,38 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             full_name="Bot with config data",
             bot_type=UserProfile.EMBEDDED_BOT,
             service_name="giphy",
-            config_data=orjson.dumps({"key": "12345678"}).decode(),
+            config_data=orjson.dumps({"key": "12345678", "other_key": "unchanged"}).decode(),
         )
         bot_info = {"config_data": orjson.dumps({"key": "87654321"}).decode()}
         email = "test-bot@zulip.testserver"
         result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
         self.assert_json_success(result)
         config_data = orjson.loads(result.content)["config_data"]
-        self.assertEqual(config_data, orjson.loads(bot_info["config_data"]))
+        self.assertEqual(config_data, {"key": "87654321", "other_key": "unchanged"})
+
+    def test_patch_bot_response_includes_only_sent_parameters(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"full_name": "New name"},
+        )
+        self.assert_json_success(result)
+        response_data = orjson.loads(result.content)
+        self.assertEqual(response_data["full_name"], "New name")
+        for absent_key in (
+            "avatar_url",
+            "service_interface",
+            "service_payload_url",
+            "config_data",
+            "default_sending_stream",
+            "default_events_register_stream",
+            "default_all_public_streams",
+            "bot_owner",
+        ):
+            self.assertNotIn(absent_key, response_data)
 
     def test_outgoing_webhook_invalid_interface(self) -> None:
         self.login("hamlet")

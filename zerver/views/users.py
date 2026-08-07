@@ -41,7 +41,7 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_human_non_guest_user, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
-from zerver.lib.bot_config import set_bot_config
+from zerver.lib.bot_config import ConfigError, get_bot_config, set_bot_config
 from zerver.lib.demo_organizations import check_demo_organization_has_set_email
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
@@ -97,6 +97,7 @@ from zerver.lib.users import (
 )
 from zerver.lib.utils import generate_api_key
 from zerver.models import Service, Stream, UserProfile
+from zerver.models.bots import get_bot_services
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
@@ -481,11 +482,13 @@ def patch_bot_backend(
     default_sending_stream: str | None = None,
     full_name: str | None = None,
     role: Json[RoleParamType] | None = None,
-    service_interface: Json[int] = 1,
+    service_interface: Json[int] | None = None,
     service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
     short_name: str | None = None,
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
+
+    json_result: dict[str, Any] = {}
 
     # Handle short_name change
     if short_name is not None:
@@ -511,9 +514,11 @@ def patch_bot_backend(
             except ValidationError:
                 raise JsonableError(_("Email address already in use"))
             do_change_user_delivery_email(bot, new_email, acting_user=user_profile)
+            json_result["email"] = bot.email
 
     if full_name is not None:
         check_change_bot_full_name(bot, full_name, user_profile)
+        json_result["full_name"] = bot.full_name
 
     if role is not None and bot.role != role:
         # Logic duplicated from update_user_backend.
@@ -537,6 +542,7 @@ def patch_bot_backend(
         previous_owner = bot.bot_owner
         if previous_owner != owner:
             do_change_bot_owner(bot, owner, user_profile)
+            json_result["bot_owner"] = owner.email
 
     if default_sending_stream is not None:
         if default_sending_stream == "":
@@ -544,29 +550,73 @@ def patch_bot_backend(
         else:
             (stream, _sub) = access_stream_by_name(user_profile, default_sending_stream)
         do_change_default_sending_stream(bot, stream, acting_user=user_profile)
+        json_result["default_sending_stream"] = get_stream_name(bot.default_sending_stream)
     if default_events_register_stream is not None:
         if default_events_register_stream == "":
             stream = None
         else:
             (stream, _sub) = access_stream_by_name(user_profile, default_events_register_stream)
         do_change_default_events_register_stream(bot, stream, acting_user=user_profile)
+        json_result["default_events_register_stream"] = get_stream_name(
+            bot.default_events_register_stream
+        )
     if default_all_public_streams is not None:
         do_change_default_all_public_streams(
             bot, default_all_public_streams, acting_user=user_profile
         )
+        json_result["default_all_public_streams"] = bot.default_all_public_streams
 
-    if service_payload_url is not None:
-        check_valid_interface_type(service_interface)
-        assert service_interface is not None
+    if service_interface is not None or service_payload_url is not None:
+        if bot.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
+            raise JsonableError(
+                _("Cannot set service interface or payload URL on a non-outgoing-webhook bot.")
+            )
+        if service_interface is not None:
+            check_valid_interface_type(service_interface)
         do_update_outgoing_webhook_service(
             bot,
             interface=service_interface,
             base_url=service_payload_url,
             acting_user=user_profile,
         )
+        if service_interface is not None:
+            json_result["service_interface"] = service_interface
+        if service_payload_url is not None:
+            json_result["service_payload_url"] = service_payload_url
 
     if config_data is not None:
+        if bot.bot_type not in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
+            raise JsonableError(_("Only incoming-webhook and embedded bots have config data."))
+
+        try:
+            existing_config_data = get_bot_config(bot)
+        except ConfigError:
+            existing_config_data = {}
+
+        merged_config_data = {**existing_config_data, **config_data}
+        if bot.bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
+            proposed_service_name = merged_config_data.get("integration_id")
+            # integration_id identifies which integration this bot is
+            # for; it's stored alongside the integration's own config
+            # options but is not itself one of them, so exclude it from
+            # what check_valid_bot_config validates. Matches the shape
+            # of the check_valid_bot_config call in add_bot_backend.
+            config_data_to_validate = {
+                key: value for key, value in merged_config_data.items() if key != "integration_id"
+            }
+        else:
+            existing_services = get_bot_services(bot.id)
+            existing_service = existing_services[0] if existing_services else None
+            proposed_service_name = existing_service.name if existing_service else None
+            config_data_to_validate = merged_config_data
+        if proposed_service_name is not None:
+            check_valid_bot_config(
+                bot.bot_type,
+                proposed_service_name,
+                config_data_to_validate,
+            )
         do_update_bot_config_data(bot, config_data)
+        json_result["config_data"] = merged_config_data
 
     if len(request.FILES) == 0:
         pass
@@ -578,24 +628,9 @@ def patch_bot_backend(
         upload_avatar_image(user_file, bot, content_type=content_type)
         avatar_source = UserProfile.AVATAR_FROM_USER
         do_change_avatar_fields(bot, avatar_source, acting_user=user_profile)
+        json_result["avatar_url"] = avatar_url(bot)
     else:
         raise JsonableError(_("You may only upload one file at a time"))
-
-    json_result = dict(
-        full_name=bot.full_name,
-        avatar_url=avatar_url(bot),
-        service_interface=service_interface,
-        service_payload_url=service_payload_url,
-        config_data=config_data,
-        default_sending_stream=get_stream_name(bot.default_sending_stream),
-        default_events_register_stream=get_stream_name(bot.default_events_register_stream),
-        default_all_public_streams=bot.default_all_public_streams,
-    )
-
-    # Don't include the bot owner in case it is not set.
-    # Default bots have no owner.
-    if bot.bot_owner is not None:
-        json_result["bot_owner"] = bot.bot_owner.email
 
     return json_success(request, data=json_result)
 
