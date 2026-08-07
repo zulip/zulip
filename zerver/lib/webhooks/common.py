@@ -15,6 +15,7 @@ from django.http import HttpRequest
 from django.utils.crypto import constant_time_compare
 from django.utils.encoding import force_bytes
 from django.utils.translation import gettext as _
+from django_stubs_ext import StrPromise
 from pydantic import Json
 from typing_extensions import override
 
@@ -77,7 +78,7 @@ class WebhookConfigOption:
 @dataclass
 class WebhookUrlOption:
     name: str
-    label: str
+    label: str | StrPromise
     input_type: str
 
     @classmethod
