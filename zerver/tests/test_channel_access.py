@@ -2,18 +2,22 @@ from zerver.actions.streams import do_change_stream_group_based_setting, do_deac
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.users import do_change_user_role
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.stream_subscription import get_subscribed_stream_ids_for_user
 from zerver.lib.streams import (
+    StreamDict,
     access_stream_by_id,
     access_stream_by_name,
     bulk_can_access_stream_metadata_user_ids,
     can_access_stream_history,
     can_access_stream_metadata_user_ids,
+    create_streams_if_needed,
     ensure_stream,
+    get_content_accessible_streams_queryset,
     user_has_content_access,
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.types import UserGroupMembersData
-from zerver.lib.user_groups import UserGroupMembershipDetails
+from zerver.lib.user_groups import UserGroupMembershipDetails, get_recursive_membership_groups
 from zerver.models import NamedUserGroup, Stream, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -435,6 +439,76 @@ class AccessStreamTest(ZulipTestCase):
                 is_subscribed=True,
             ),
             True,
+        )
+
+    def test_get_content_accessible_streams_queryset_for_guest(self) -> None:
+        realm = get_realm("zulip")
+        guest = self.example_user("polonius")
+        self.assertTrue(guest.is_guest)
+        hamlet = self.example_user("hamlet")
+
+        channel_dicts: list[StreamDict] = [
+            {"name": "web-public", "is_web_public": True},
+            {"name": "public", "is_web_public": False},
+            {
+                "name": "private-history-public",
+                "invite_only": True,
+                "history_public_to_subscribers": True,
+            },
+            {
+                "name": "subscribed-history-public",
+                "invite_only": True,
+                "history_public_to_subscribers": True,
+            },
+            {"name": "private-protected", "invite_only": True},
+            {"name": "subscribed-protected", "invite_only": True},
+        ]
+        create_streams_if_needed(realm, channel_dicts)
+
+        self.subscribe(guest, "subscribed-history-public")
+        self.subscribe(guest, "subscribed-protected")
+
+        # Grant both the guest and a non-guest group-based access to the
+        # private channels they are not subscribed to. The guest should
+        # not gain access from this, but the non-guest should — which also
+        # confirms the channels are set up such that group access works.
+        access_group = check_add_user_group(
+            realm, "channel_access_group", [guest, hamlet], acting_user=guest
+        )
+        for channel_name in ["private-history-public", "private-protected"]:
+            do_change_stream_group_based_setting(
+                get_stream(channel_name, realm),
+                "can_add_subscribers_group",
+                access_group,
+                acting_user=self.example_user("iago"),
+            )
+
+        channel_names = {channel_dict["name"] for channel_dict in channel_dicts}
+
+        def accessible_channel_names(user_profile: UserProfile) -> set[str]:
+            queryset = get_content_accessible_streams_queryset(
+                user_profile,
+                get_subscribed_stream_ids_for_user(user_profile),
+                set(get_recursive_membership_groups(user_profile).values_list("id", flat=True)),
+            )
+            # Restrict to the channels created here, ignoring the realm's
+            # pre-existing streams and default subscriptions.
+            return set(queryset.values_list("name", flat=True)) & channel_names
+
+        # Web-public and subscribed channels are accessible to the guest; the
+        # non-subscribed public and private channels are not, and group
+        # permissions don't grant a guest access.
+        self.assertEqual(
+            accessible_channel_names(guest),
+            {"web-public", "subscribed-history-public", "subscribed-protected"},
+        )
+
+        # A non-guest with the same group membership does gain access to the
+        # group-permission private channels, confirming the guest exclusions
+        # above are specific to the guest short-circuit.
+        self.assertEqual(
+            accessible_channel_names(hamlet),
+            {"web-public", "public", "private-history-public", "private-protected"},
         )
 
     def test_can_access_stream_metadata_user_ids(self) -> None:
