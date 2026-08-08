@@ -169,17 +169,22 @@ function build_page(): void {
             return (item: string) => render_typeahead_item({primary: language_labels.get(item)});
         },
         matcher(query: string): (item: string) => boolean {
-            const q = query.trim().toLowerCase();
+            // Filtering is diacritics-agnostic: strip diacritics from both the query
+            // and the language name so ASCII and diacritic spellings match each other.
+            const q = typeahead.remove_diacritics(query.trim().toLowerCase());
 
             if (q === "") {
                 return () => true;
             }
 
+            const begins_with_query = (name: string): boolean =>
+                typeahead.remove_diacritics(name.toLowerCase()).startsWith(q);
+
             return (item: string) =>
-                item.toLowerCase().startsWith(q) ||
+                begins_with_query(item) ||
                 realm_playground
                     .get_aliases_for_pretty_name(item)
-                    .some((alias) => alias.toLowerCase().startsWith(q));
+                    .some((alias) => begins_with_query(alias));
         },
         sorter(items: string[], query: string): string[] {
             const q = query.trim().toLowerCase();
@@ -190,15 +195,17 @@ function build_page(): void {
 
             const {
                 exact_matches,
+                begins_with_case_insensitive_diacritic_matches,
                 begins_with_case_sensitive_matches,
                 begins_with_case_insensitive_matches,
-            } = typeahead.triage_raw_with_multiple_items(q, items, (item) => [
+            } = typeahead.triage_raw(q, items, (item) => [
                 item,
                 ...realm_playground.get_aliases_for_pretty_name(item),
             ]);
 
             const begins_with = [
                 ...exact_matches,
+                ...begins_with_case_insensitive_diacritic_matches,
                 ...begins_with_case_sensitive_matches,
                 ...begins_with_case_insensitive_matches,
             ];

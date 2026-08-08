@@ -118,4 +118,12 @@ run_test("get_pygments_typeahead_list_for_settings", () => {
     assert.equal(iterator.next().value[1], "Text only (text, text)");
     assert.equal(iterator.next().value[1], "quote (quote, quote)");
     assert.equal(iterator.next().value[1], "spoiler (spoiler, spoiler)");
+
+    // Test typing a query with diacritics. The "Custom language" option keeps them.
+    candidates = realm_playground.get_pygments_typeahead_list_for_settings("Français");
+    iterator = candidates.entries();
+    assert.deepEqual(iterator.next().value, [
+        "français",
+        $t({defaultMessage: "Custom language: {query}"}, {query: "français"}),
+    ]);
 });
