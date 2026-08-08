@@ -60,6 +60,11 @@ def bulk_insert_ums(ums: list[UserMessageLite]) -> None:
         return
 
     vals = [(um.user_profile_id, um.message_id, um.flags) for um in ums]
+    # Sort by message_id so the FK check's FOR KEY SHARE locks on
+    # zerver_message are taken in ascending ID order, matching
+    # process_fts_updates' "ORDER BY id FOR UPDATE"; otherwise the
+    # two can deadlock during realm import.
+    vals.sort(key=lambda val: val[1])
     query = SQL(
         """
         INSERT into
