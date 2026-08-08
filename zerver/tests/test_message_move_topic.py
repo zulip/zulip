@@ -1036,7 +1036,7 @@ class MessageMoveTopicTest(ZulipTestCase):
                 user, [[stream_name, "partial move topic"]], UserTopic.VisibilityPolicy.MUTED
             )
 
-        with self.assert_database_query_count(32):
+        with self.assert_database_query_count(31):
             check_update_message(
                 user_profile=hamlet,
                 message_id=second_message_id,
