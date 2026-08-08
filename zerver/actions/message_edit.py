@@ -1380,7 +1380,7 @@ def do_update_message(
         ).exclude(id__in=[*changed_message_ids])
 
         # All behavior in channels with protected history depends on
-        # the permissions of users who might glean information about
+        # the permissions of users who might learn information about
         # whether the topic previously existed. So we need to look at
         # whether this message is becoming the first message in the
         # target topic, as seen by the user who we might change topic
