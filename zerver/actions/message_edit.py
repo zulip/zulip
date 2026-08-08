@@ -1373,21 +1373,23 @@ def do_update_message(
         target_stream = message_edit_request.target_stream
         target_topic = message_edit_request.target_topic_name
 
-        assert target_stream.recipient_id is not None
-
-        messages_in_target_topic = messages_for_topic(
-            realm.id, target_stream.recipient_id, target_topic
-        ).exclude(id__in=[*changed_message_ids])
-
         # All behavior in channels with protected history depends on
         # the permissions of users who might learn information about
         # whether the topic previously existed. So we need to look at
         # whether this message is becoming the first message in the
         # target topic, as seen by the user who we might change topic
         # visibility policy for in this code path.
-        first_message_in_target_topic = bulk_access_stream_messages_query(
-            sender, messages_in_target_topic, target_stream
-        ).first()
+        first_message_in_target_topic: Message | None = None
+        if target_topic_has_messages:
+            assert target_stream.recipient_id is not None
+
+            messages_in_target_topic = messages_for_topic(
+                realm.id, target_stream.recipient_id, target_topic
+            ).exclude(id__in=[*changed_message_ids])
+
+            first_message_in_target_topic = bulk_access_stream_messages_query(
+                sender, messages_in_target_topic, target_stream
+            ).first()
 
         is_target_message_first = False
         # the target_message would be the first message in the moved topic
@@ -1465,25 +1467,27 @@ def do_update_message(
                 and not message_edit_request.topic_unresolved
             )
         ):
-            stream_for_new_topic = message_edit_request.target_stream
-            assert stream_for_new_topic.recipient_id is not None
-
-            new_topic_name = message_edit_request.target_topic_name
-
             # We calculate whether the user moved the entire topic
             # using that user's own permissions, which is important to
             # avoid leaking information about whether there are
             # messages in the destination topic's deeper history that
             # the acting user does not have permission to access.
-            preexisting_topic_messages = messages_for_topic(
-                realm.id, stream_for_new_topic.recipient_id, new_topic_name
-            ).exclude(id__in=[*changed_message_ids, resolved_topic_message_id])
+            no_visible_preexisting_messages = True
+            if target_topic_has_messages:
+                stream_for_new_topic = message_edit_request.target_stream
+                assert stream_for_new_topic.recipient_id is not None
 
-            visible_preexisting_messages = bulk_access_stream_messages_query(
-                user_profile, preexisting_topic_messages, stream_for_new_topic
-            )
+                new_topic_name = message_edit_request.target_topic_name
 
-            no_visible_preexisting_messages = not visible_preexisting_messages.exists()
+                preexisting_topic_messages = messages_for_topic(
+                    realm.id, stream_for_new_topic.recipient_id, new_topic_name
+                ).exclude(id__in=[*changed_message_ids, resolved_topic_message_id])
+
+                visible_preexisting_messages = bulk_access_stream_messages_query(
+                    user_profile, preexisting_topic_messages, stream_for_new_topic
+                )
+
+                no_visible_preexisting_messages = not visible_preexisting_messages.exists()
 
             if no_visible_preexisting_messages and moved_all_visible_messages:
                 new_thread_notification_string = gettext_lazy(
