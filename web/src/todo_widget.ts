@@ -1,6 +1,7 @@
 import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
+import SortableJS from "sortablejs";
 
 import render_message_hidden_dialog from "../templates/message_hidden_dialog.hbs";
 import render_widgets_todo_widget from "../templates/widgets/todo_widget.hbs";
@@ -13,6 +14,7 @@ import type {Message} from "./message_store.ts";
 import {page_params} from "./page_params.ts";
 import type {TodoWidgetOutboundData} from "./todo_data.ts";
 import {TaskData} from "./todo_data.ts";
+import * as util from "./util.ts";
 import type {Event} from "./widget_data.ts";
 import type {AnyWidgetData, WidgetData} from "./widget_schema.ts";
 
@@ -146,6 +148,29 @@ export function render({
         }
     }
 
+    function handle_task_reorder(dragged_item: HTMLElement): void {
+        const dragged_key = dragged_item.dataset["key"];
+        if (dragged_key === undefined) {
+            return;
+        }
+
+        const key_order = $elem
+            .find("li.todo-task-row")
+            .map(function () {
+                return $(this).attr("data-key")!;
+            })
+            .toArray();
+        const new_index = key_order.indexOf(dragged_key);
+        if (new_index === -1) {
+            return;
+        }
+        const after_key = new_index > 0 ? key_order[new_index - 1]! : null;
+
+        task_data.reorder_tasks(dragged_key, after_key);
+
+        callback(task_data.handle.reorder_tasks.outbound(dragged_key, after_key));
+    }
+
     function build_widget(): void {
         const html = render_widgets_todo_widget();
         $elem.html(html);
@@ -203,6 +228,16 @@ export function render({
                 add_task();
             }
         });
+
+        if (!page_params.is_spectator) {
+            SortableJS.create(util.the($elem.find("ul.todo-widget")), {
+                handle: ".todo-drag-handle",
+                animation: 150,
+                onEnd(evt: {item: HTMLElement}): void {
+                    handle_task_reorder(evt.item);
+                },
+            });
+        }
     }
 
     function update_add_task_button(): void {
@@ -231,7 +266,10 @@ export function render({
 
     function render_results(): void {
         const widget_data = task_data.get_widget_data();
-        const html = render_widgets_todo_widget_tasks(widget_data);
+        const html = render_widgets_todo_widget_tasks({
+            ...widget_data,
+            can_reorder: !page_params.is_spectator,
+        });
         $elem.find("ul.todo-widget").html(html);
         $elem.find(".widget-error").text("");
 

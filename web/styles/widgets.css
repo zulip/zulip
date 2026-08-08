@@ -109,6 +109,23 @@
             }
         }
     }
+
+    .todo-drag-handle {
+        display: inline-flex;
+        align-self: center;
+        align-items: center;
+        color: hsl(0deg 0% 75%);
+        cursor: grab;
+        user-select: none;
+
+        &:active {
+            cursor: grabbing;
+        }
+    }
+
+    li.todo-task-row.sortable-ghost {
+        opacity: 0.4;
+    }
 }
 
 .todo-widget,

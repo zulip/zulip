@@ -17,7 +17,7 @@ export type TodoWidgetExtraData = z.infer<typeof todo_widget_extra_data_schema>;
 
 const todo_widget_inbound_data = z.intersection(
     z.object({
-        type: z.enum(["new_task", "new_task_list_title", "strike"]),
+        type: z.enum(["new_task", "new_task_list_title", "strike", "reorder_tasks"]),
     }),
     z.record(z.string(), z.unknown()),
 );
@@ -46,6 +46,12 @@ type TaskStrikeOutboundData = {
     key: string;
 };
 
+type TaskReorderOutboundData = {
+    type: "reorder_tasks";
+    key: string;
+    after_key: string | null;
+};
+
 type TodoTask = {
     task: string;
     desc: string;
@@ -60,7 +66,10 @@ type Task = {
 };
 
 export type TodoWidgetOutboundData =
-    NewTaskTitleOutboundData | NewTaskOutboundData | TaskStrikeOutboundData;
+    | NewTaskTitleOutboundData
+    | NewTaskOutboundData
+    | TaskStrikeOutboundData
+    | TaskReorderOutboundData;
 
 export class TaskData {
     message_sender_id: number;
@@ -69,6 +78,7 @@ export class TaskData {
     report_error_function: (msg: string, more_info?: Record<string, unknown>) => void;
     task_list_title: string;
     task_map = new Map<string, Task>();
+    task_order: string[] = [];
     my_idx = 1;
 
     handle = {
@@ -158,6 +168,7 @@ export class TaskData {
 
                 if (!this.name_in_use(task)) {
                     this.task_map.set(key, task_data);
+                    this.task_order.push(key);
                 }
 
                 // I may have added a task from another device.
@@ -200,6 +211,48 @@ export class TaskData {
                 }
 
                 item.completed = !item.completed;
+            },
+        },
+
+        reorder_tasks: {
+            outbound(key: string, after_key: string | null): TaskReorderOutboundData {
+                const event = {
+                    type: "reorder_tasks" as const,
+                    key,
+                    after_key,
+                };
+                return event;
+            },
+
+            inbound: (_sender_id: number, raw_data: unknown): void => {
+                const task_reorder_inbound_data_schema = z.object({
+                    type: z.literal("reorder_tasks"),
+                    key: z.string(),
+                    after_key: z.nullable(z.string()),
+                });
+                const parsed = task_reorder_inbound_data_schema.safeParse(raw_data);
+                if (!parsed.success) {
+                    blueslip.warn("todo widget: bad type for inbound reorder_tasks data", {
+                        error: parsed.error,
+                    });
+                    return;
+                }
+
+                // All message readers may reorder tasks, same as
+                // adding or striking them.
+                const {key, after_key} = parsed.data;
+                if (!this.task_map.has(key)) {
+                    blueslip.warn("todo widget: reorder_tasks refers to unknown key: " + key);
+                    return;
+                }
+                if (after_key !== null && !this.task_map.has(after_key)) {
+                    blueslip.warn(
+                        "todo widget: reorder_tasks refers to unknown after_key: " + after_key,
+                    );
+                    return;
+                }
+
+                this.reorder(key, after_key);
             },
         },
     };
@@ -262,10 +315,19 @@ export class TaskData {
         return this.input_mode;
     }
 
+    reorder_tasks(key: string, after_key: string | null): void {
+        if (!this.task_map.has(key) || (after_key !== null && !this.task_map.has(after_key))) {
+            return;
+        }
+        this.reorder(key, after_key);
+    }
+
     get_widget_data(): {
         all_tasks: Task[];
     } {
-        const all_tasks = this.task_map.values().toArray();
+        const all_tasks = this.task_order
+            .map((key) => this.task_map.get(key))
+            .filter((task): task is Task => task !== undefined);
 
         const widget_data = {
             all_tasks,
@@ -292,5 +354,24 @@ export class TaskData {
 
         const {data} = parsed;
         this.handle[data.type].inbound(sender_id, data);
+    }
+
+    private reorder(key: string, after_key: string | null): void {
+        const without_key = this.task_order.filter((k) => k !== key);
+
+        if (after_key === null) {
+            this.task_order = [key, ...without_key];
+            return;
+        }
+
+        const after_index = without_key.indexOf(after_key);
+        if (after_index === -1) {
+            without_key.push(key);
+            this.task_order = without_key;
+            return;
+        }
+
+        without_key.splice(after_index + 1, 0, key);
+        this.task_order = without_key;
     }
 }
