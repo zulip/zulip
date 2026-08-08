@@ -1367,7 +1367,7 @@ def do_update_message(
             )
         )
 
-    elif message_edit_request.is_stream_edited or message_edit_request.is_topic_edited:
+    elif message_edit_request.is_message_moved:
         sender = target_message.sender
 
         target_stream = message_edit_request.target_stream
