@@ -1694,7 +1694,11 @@ def handle_push_notification(user_profile_id: int, missed_message: dict[str, Any
         return
 
     user_profile = get_user_profile_by_id(user_profile_id)
-    assert not user_profile.is_bot
+    if user_profile.is_bot:
+        # Bots cannot have mobile push notifications; an event may still be
+        # queued for one when a message mentioning a bot is moved or edited.
+        logger.info("Skipping push notification for bot user %s", user_profile.id)
+        return
 
     if not (
         user_profile.enable_offline_push_notifications

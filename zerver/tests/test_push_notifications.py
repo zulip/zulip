@@ -2164,6 +2164,21 @@ class TestSendNotificationsToBouncer(PushNotificationTestCase):
             self.assertEqual(m.call_args.args[1], apns_expected_payload)
             self.assertEqual(m.call_args.args[2], fcm_expected_payload)
 
+    @mock.patch("zerver.lib.push_notifications.send_push_notifications_legacy")
+    def test_send_notification_to_bot_user_skipped(
+        self, mock_send: mock.MagicMock
+    ) -> None:
+        bot = self.create_test_bot("pushbot", self.example_user("hamlet"))
+        with self.assertLogs("zerver.lib.push_notifications", level="INFO") as mock_logging_info:
+            handle_push_notification(bot.id, {})
+            mock_send.assert_not_called()
+        self.assertEqual(
+            mock_logging_info.output,
+            [
+                f"INFO:zerver.lib.push_notifications:Skipping push notification for bot user {bot.id}"
+            ],
+        )
+
 
 @activate_push_notification_service()
 class TestSendToPushBouncer(ZulipTestCase):
