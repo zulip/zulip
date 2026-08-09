@@ -17499,7 +17499,7 @@ paths:
                     `2` being replaced by `full_with_consent`. The option `full_without_consent`
                     was added for full exports without member consent.
 
-                    **Changes**: New in Zulip 10.0 (feature level 304). Previously,
+                    New in Zulip 10.0 (feature level 304). Previously,
                     all export requests were public data exports.
                   type: string
                   enum:
@@ -28459,7 +28459,7 @@ components:
             `2` being replaced by `full_with_consent`. The option `full_without_consent`
             was added for full exports without member consent.
 
-            **Changes**: New in Zulip 10.0 (feature level 304). Previously,
+            New in Zulip 10.0 (feature level 304). Previously,
             the export type was not included in these objects because only
             public data exports could be created or listed via the API or UI.
     UserGroup:
