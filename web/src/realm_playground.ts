@@ -30,7 +30,20 @@ export function update_playgrounds(playgrounds_data: RealmPlayground[]): void {
 }
 
 export function get_playground_info_for_languages(lang: string): RealmPlayground[] | undefined {
-    return map_language_to_playground_info.get(lang);
+    // The backend lowercases code fence language tags before writing the
+    // data-code-language attribute, so match playgrounds case-insensitively
+    // to ensure custom language names containing uppercase letters work.
+    const exact = map_language_to_playground_info.get(lang);
+    if (exact !== undefined) {
+        return exact;
+    }
+    const lang_lower = lang.toLowerCase();
+    for (const [language, playground_info] of map_language_to_playground_info) {
+        if (language.toLowerCase() === lang_lower) {
+            return playground_info;
+        }
+    }
+    return undefined;
 }
 
 export function get_aliases_for_pretty_name(pretty_name: string): string[] {

@@ -119,3 +119,42 @@ run_test("get_pygments_typeahead_list_for_settings", () => {
     assert.equal(iterator.next().value[1], "quote (quote, quote)");
     assert.equal(iterator.next().value[1], "spoiler (spoiler, spoiler)");
 });
+
+run_test("get_playground_info_for_languages", () => {
+    const playground_data = [
+        {
+            id: 1,
+            name: "Uppercase Lang",
+            pygments_language: "Myownlanguage",
+            url_template: "https://example.com/?q={code}",
+        },
+        {
+            id: 2,
+            name: "Python",
+            pygments_language: "Python",
+            url_template: "https://example.com/?q={code}",
+        },
+    ];
+    realm_playground.initialize({
+        playground_data,
+        pygments_comparator_func: typeahead_helper.compare_language,
+    });
+
+    // A playground configured with an uppercase custom language name must be
+    // matched even when the code fence tag (and thus the backend's
+    // data-code-language attribute) is lowercased.
+    const lowercase_match = realm_playground.get_playground_info_for_languages("myownlanguage");
+    assert.equal(lowercase_match?.length, 1);
+    assert.equal(lowercase_match?.[0]?.id, 1);
+
+    // The original casing and exact matches must still work.
+    const exact_match = realm_playground.get_playground_info_for_languages("Myownlanguage");
+    assert.equal(exact_match?.[0]?.id, 1);
+
+    const python_match = realm_playground.get_playground_info_for_languages("python");
+    assert.equal(python_match?.[0]?.id, 2);
+
+    // Unrelated languages must not match.
+    const no_match = realm_playground.get_playground_info_for_languages("ruby");
+    assert.equal(no_match, undefined);
+});
