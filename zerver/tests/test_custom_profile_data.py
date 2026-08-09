@@ -252,6 +252,10 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "field_data is not valid JSON")
 
+        data["field_data"] = orjson.dumps({"subtype": {"a": "b"}}).decode()
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, "field_data['subtype'] must be a string")
+
         data["field_data"] = orjson.dumps({}).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "subtype key is missing from field_data")
