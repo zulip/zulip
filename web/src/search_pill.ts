@@ -168,7 +168,14 @@ function maybe_generate_combined_channel_topic_pill(
 
     const sign = search_pill.negated ? "-" : "";
     const channel_operand = search_terms[index - 1]!.operand;
-    const sub = stream_data.get_valid_sub_by_id_string(channel_operand);
+    const sub = stream_data.get_sub_by_id_string(channel_operand);
+    // Pill terms are only validated at pill creation, so a suggestion
+    // can reference a channel this client has no data for, e.g. a
+    // channel deleted while a pill referenced it. Fall back to
+    // separate pills, where the channel term is rendered as invalid.
+    if (sub === undefined) {
+        return undefined;
+    }
     return {
         ...search_pill,
         sign,

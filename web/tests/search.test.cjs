@@ -356,6 +356,32 @@ run_test("create_item_from_search_string with invalid string", () => {
     assert.equal(pills.length, 0);
 });
 
+run_test("generate_pills_html with unknown channel", ({mock_template, override}) => {
+    mock_template("search_list_item.hbs", true, (_data, html) => html);
+    override(realm, "realm_empty_topic_display_name", "general chat");
+
+    // A known channel followed by a topic is rendered as a combined
+    // `#channel > topic` pill.
+    let html = search_pill.generate_pills_html(`channel:${verona.stream_id} topic:lunch`, "");
+    assert.ok(html.includes("decorated-channel-name"));
+
+    // The channel can be unknown to this client, e.g. a channel
+    // deleted while a pill referenced it. We render separate pills,
+    // with the channel term rendered as invalid.
+    const unknown_stream_id_string = "999";
+    assert.equal(stream_data.get_sub_by_id_string(unknown_stream_id_string), undefined);
+    html = search_pill.generate_pills_html(`channel:${unknown_stream_id_string} topic:lunch`, "");
+    assert.ok(!html.includes("decorated-channel-name"));
+    assert.ok(html.includes(`channel:${unknown_stream_id_string}`));
+    assert.ok(html.includes("topic: lunch"));
+
+    // The same, for an empty string topic.
+    html = search_pill.generate_pills_html(`channel:${unknown_stream_id_string} topic:`, "");
+    assert.ok(!html.includes("decorated-channel-name"));
+    assert.ok(html.includes(`channel:${unknown_stream_id_string}`));
+    assert.ok(html.includes("empty-topic-display"));
+});
+
 run_test("set_search_bar_contents with duplicate pills", () => {
     const duplicate_attachment_terms = [
         {
