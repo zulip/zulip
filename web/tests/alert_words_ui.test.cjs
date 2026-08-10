@@ -14,7 +14,10 @@ const alert_words_ui = zrequire("alert_words_ui");
 const banners = mock_esm("../src/banners");
 
 alert_words.initialize({
-    alert_words: ["foo", "bar"],
+    watched_phrases: [
+        {watched_phrase: "foo", automatically_follow_topics: true},
+        {watched_phrase: "bar", automatically_follow_topics: false},
+    ],
 });
 
 run_test("rerender_alert_words_ui", ({mock_template}) => {
@@ -23,7 +26,10 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
 
     mock_esm("../src/list_widget", {
         create(_container, words, opts) {
-            assert.deepEqual(words, [{word: "bar"}, {word: "foo"}]);
+            assert.deepEqual(words, [
+                {word: "bar", automatically_follow_topics: false},
+                {word: "foo", automatically_follow_topics: true},
+            ]);
             for (const word of words) {
                 opts.modifier_html(word);
             }
@@ -71,8 +77,8 @@ run_test("remove_alert_word", () => {
     let success_func;
     let fail_func;
     channel.del = (opts) => {
-        assert.equal(opts.url, "/json/users/me/alert_words");
-        assert.deepEqual(opts.data, {alert_words: '["translated: zot"]'});
+        assert.equal(opts.url, "/json/users/me/watched_phrases");
+        assert.deepEqual(opts.data, {watched_phrases: '["translated: zot"]'});
         success_func = opts.success;
         fail_func = opts.error;
     };

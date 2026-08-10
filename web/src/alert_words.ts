@@ -3,25 +3,30 @@ import _ from "lodash";
 import type {Message} from "./message_store.ts";
 import * as message_store from "./message_store.ts";
 import * as people from "./people.ts";
-import type {StateData} from "./state_data.ts";
+import type {StateData, WatchedPhrase} from "./state_data.ts";
 
 // For simplicity, we use a list for our internal
 // data, since that matches what the server sends us.
+let my_watched_phrases: WatchedPhrase[] = [];
 let my_alert_words: string[] = [];
 
-export function set_words(words: string[]): void {
+export function set_watched_phrases(watched_phrases: WatchedPhrase[]): void {
+    my_watched_phrases = watched_phrases;
     // This module's highlighting algorithm of greedily created
     // highlight spans cannot correctly handle overlapping alert word
     // clauses, but processing in order from longest-to-shortest
     // reduces some symptoms of this. See #28415 for details.
-    my_alert_words = words;
+    my_alert_words = watched_phrases.map((phrase) => phrase.watched_phrase);
     my_alert_words.sort((a, b) => b.length - a.length);
 }
 
-export function get_word_list(): {word: string}[] {
-    // Returns a array of objects
-    // (with each alert_word as value and 'word' as key to the object.)
-    return Array.from(my_alert_words, (word) => ({word}));
+export function get_word_list(): {word: string; automatically_follow_topics: boolean}[] {
+    // Returns an array of objects, one per alert word, with the word
+    // itself under the 'word' key.
+    return my_watched_phrases.map((phrase) => ({
+        word: phrase.watched_phrase,
+        automatically_follow_topics: phrase.automatically_follow_topics,
+    }));
 }
 
 export function has_alert_word(word: string): boolean {
@@ -98,5 +103,5 @@ export function notifies(message: Message): boolean {
 }
 
 export const initialize = (params: StateData["alert_words"]): void => {
-    set_words(params.alert_words);
+    set_watched_phrases(params.watched_phrases);
 };

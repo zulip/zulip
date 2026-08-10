@@ -78,17 +78,17 @@ function add_alert_word(): void {
         return;
     }
 
-    const words_to_be_added = [alert_word];
+    const phrases_to_be_added = [{watched_phrase: alert_word}];
 
-    const data = {alert_words: JSON.stringify(words_to_be_added)};
-    dialog_widget.submit_api_request(channel.post, "/json/users/me/alert_words", data);
+    const data = {watched_phrases: JSON.stringify(phrases_to_be_added)};
+    dialog_widget.submit_api_request(channel.post, "/json/users/me/watched_phrases", data);
 }
 
 function remove_alert_word(alert_word: string): void {
-    const words_to_be_removed = [alert_word];
+    const phrases_to_be_removed = [alert_word];
     void channel.del({
-        url: "/json/users/me/alert_words",
-        data: {alert_words: JSON.stringify(words_to_be_removed)},
+        url: "/json/users/me/watched_phrases",
+        data: {watched_phrases: JSON.stringify(phrases_to_be_removed)},
         success() {
             open_alert_word_status_banner(alert_word, false);
         },

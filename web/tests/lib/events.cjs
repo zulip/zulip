@@ -131,11 +131,6 @@ exports.test_realm_emojis = {
 };
 
 exports.fixtures = {
-    alert_words: {
-        type: "alert_words",
-        alert_words: ["fire", "lunch"],
-    },
-
     attachment__add: {
         type: "attachment",
         op: "add",
@@ -1350,6 +1345,14 @@ exports.fixtures = {
         topic_name: "js",
         last_updated: fake_now,
         visibility_policy: 3,
+    },
+
+    watched_phrases: {
+        type: "watched_phrases",
+        watched_phrases: [
+            {watched_phrase: "fire", automatically_follow_topics: true},
+            {watched_phrase: "lunch", automatically_follow_topics: false},
+        ],
     },
 
     web_reload_client: {

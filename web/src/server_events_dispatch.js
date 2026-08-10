@@ -112,11 +112,6 @@ export function dispatch_normal_event(event) {
     };
 
     switch (event.type) {
-        case "alert_words":
-            alert_words.set_words(event.alert_words);
-            alert_words_ui.rerender_alert_words_ui();
-            break;
-
         case "attachment":
             attachments_ui.update_attachments(event);
             break;
@@ -1276,5 +1271,10 @@ export function dispatch_normal_event(event) {
             }
             break;
         }
+
+        case "watched_phrases":
+            alert_words.set_watched_phrases(event.watched_phrases);
+            alert_words_ui.rerender_alert_words_ui();
+            break;
     }
 }
