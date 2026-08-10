@@ -2091,6 +2091,9 @@ class MarkdownAlertTest(ZulipTestCase):
             rendering_result.rendered_content, "<p>We have an ALERTWORD day today!</p>"
         )
         self.assertEqual(rendering_result.user_ids_with_alert_words, {user_profile.id})
+        # Matched alert words are recorded lowercased, since alert
+        # words are matched case-insensitively.
+        self.assertEqual(rendering_result.alert_words, {"alertword"})
 
         msg = Message(
             sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
@@ -2101,6 +2104,17 @@ class MarkdownAlertTest(ZulipTestCase):
             rendering_result.rendered_content, "<p>We have a NOTHINGWORD day today!</p>"
         )
         self.assertEqual(rendering_result.user_ids_with_alert_words, set())
+        self.assertEqual(rendering_result.alert_words, set())
+
+        # Only the alert words that actually appear in the message are
+        # recorded, even when the user has configured several.
+        msg = Message(
+            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+        )
+        content = "A scaryword, but no ALERTWORDs here"
+        rendering_result = render(msg, content)
+        self.assertEqual(rendering_result.user_ids_with_alert_words, {user_profile.id})
+        self.assertEqual(rendering_result.alert_words, {"scaryword"})
 
     def test_alert_words_returns_user_ids_with_alert_words(self) -> None:
         alert_words_for_users: dict[str, list[str]] = {
