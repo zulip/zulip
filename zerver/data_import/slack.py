@@ -483,17 +483,18 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
 def build_avatar_url(slack_user_id: str, user: ZerverFieldsT) -> tuple[str, str | None]:
     avatar_url: str | None = None
     avatar_source = UserProfile.DEFAULT_AVATAR_SOURCE
-    if user["profile"].get("avatar_hash"):
+    profile = user.get("profile", {})
+    avatar_hash = get_optional_slack_field(profile, "avatar_hash", str)
+    team_id = get_optional_slack_field(user, "team_id", str)
+    if avatar_hash is not None and team_id is not None:
         # Process avatar image for a typical Slack user.
-        team_id = user["team_id"]
-        avatar_hash = user["profile"]["avatar_hash"]
         avatar_url = f"https://ca.slack-edge.com/{team_id}-{slack_user_id}-{avatar_hash}"
         avatar_source = UserProfile.AVATAR_FROM_USER
-    elif user.get("is_integration_bot") and "image_72" in user["profile"]:
+    elif user.get("is_integration_bot") and "image_72" in profile:
         # Unlike other Slack user types, Slacks integration bot avatar URL ends with
         # a file type extension (.png, in this case).
         # e.g https://avatars.slack-edge.com/2024-05-01/7218497908_deb94eac4c_512.png
-        avatar_url = user["profile"]["image_72"]
+        avatar_url = profile["image_72"]
         avatar_source = UserProfile.AVATAR_FROM_USER
         content_type = guess_type(avatar_url)[0]
         if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:

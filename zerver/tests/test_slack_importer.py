@@ -914,12 +914,15 @@ class SlackImporter(ZulipTestCase):
             },
             # Slack guarantees neither a handle nor any of the name
             # fields, so we have to be able to import a user with none.
+            # This user is also missing the `team_id` that an avatar URL
+            # is built from, despite having an `avatar_hash`.
             {
                 "id": "U1NONAME00",
                 "deleted": False,
                 "is_mirror_dummy": False,
                 "profile": {
                     "email": "nameless@example.com",
+                    "avatar_hash": "hash",
                 },
             },
             # The same, for a mirror dummy, whose email we synthesize
@@ -1107,6 +1110,10 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[11]["email"], "nameless@example.com")
         self.assertEqual(zerver_userprofile[11]["full_name"], "Slack user U1NONAME00")
         self.assertEqual(zerver_userprofile[11]["short_name"], "Slack user U1NONAME00")
+        # An `avatar_hash` alone isn't enough to build an avatar URL, so
+        # this user falls back to a generated avatar rather than to a URL
+        # with "None" in it.
+        self.assertEqual(zerver_userprofile[11]["avatar_source"], "J")
 
         # The same for a mirror dummy, whose email we have to synthesize
         # from a handle they don't have either.
