@@ -2,7 +2,7 @@ import contextlib
 import re
 from datetime import datetime, timezone
 from itertools import zip_longest
-from typing import Any, Literal, TypeAlias, TypedDict, cast
+from typing import Any, Literal, TypeAlias, TypedDict, TypeVar, cast
 
 import regex
 from django.core.exceptions import ValidationError
@@ -107,6 +107,26 @@ SLACK_BOLD_REGEX = r"""
                         (?=[\p{P}\p{Zs}\p{S}]|$)
                     )
                     """
+
+
+T = TypeVar("T")
+
+
+def get_optional_slack_field(data: SlackFieldsT, key: str, field_type: type[T]) -> T | None:
+    """
+    If a data has not been supplied by a Slack endpoint, it may not be present at
+    all, may be null or may contain the empty string (""). A Slack endpoint that
+    does that is:
+    https://docs.slack.dev/reference/methods/users.info/#profile.
+    """
+    value = data.get(key)
+    if isinstance(value, str):
+        value = value.strip()
+        if not value:
+            return None
+    if not isinstance(value, field_type):
+        return None
+    return value
 
 
 def get_user_full_name(user: ZerverFieldsT) -> str:

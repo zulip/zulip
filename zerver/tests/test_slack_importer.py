@@ -69,6 +69,7 @@ from zerver.data_import.slack import (
     slack_workspace_to_realm,
     users_to_zerver_userprofile,
 )
+from zerver.data_import.slack_message_conversion import get_optional_slack_field
 from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.mime_types import INLINE_MIME_TYPES
@@ -553,6 +554,40 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(get_user_timezone(user_chicago_timezone), "America/Chicago")
         self.assertEqual(get_user_timezone(user_timezone_none), "America/New_York")
         self.assertEqual(get_user_timezone(user_no_timezone), "America/New_York")
+
+    def test_get_optional_slack_field(self) -> None:
+        data = {
+            "real_name": "Jane Doe",
+            "padded_name": "  Jane Doe  ",
+            "blank_name": "",
+            "whitespace_name": "   ",
+            "null_name": None,
+            "deleted": False,
+            "icons": {"image_72": "https://example.com/avatar.png"},
+        }
+
+        self.assertEqual(get_optional_slack_field(data, "real_name", str), "Jane Doe")
+        # Surrounding whitespace is stripped, so that callers can use the
+        # value as a name directly.
+        self.assertEqual(get_optional_slack_field(data, "padded_name", str), "Jane Doe")
+
+        # A field Slack has no value for can reach us in any of these
+        # shapes; all of them mean the same thing.
+        self.assertIsNone(get_optional_slack_field(data, "blank_name", str))
+        self.assertIsNone(get_optional_slack_field(data, "whitespace_name", str))
+        self.assertIsNone(get_optional_slack_field(data, "null_name", str))
+        self.assertIsNone(get_optional_slack_field(data, "absent_name", str))
+
+        # A field of an unexpected type is treated as missing, rather than
+        # returned for the caller to trip over later.
+        self.assertIsNone(get_optional_slack_field(data, "icons", str))
+
+        # False and {} are values Slack meant to send, not missing ones.
+        self.assertEqual(get_optional_slack_field(data, "deleted", bool), False)
+        self.assertEqual(
+            get_optional_slack_field(data, "icons", dict),
+            {"image_72": "https://example.com/avatar.png"},
+        )
 
     @mock.patch("zerver.data_import.slack.get_data_file")
     @mock.patch("zerver.data_import.slack.get_messages_iterator")
