@@ -69,7 +69,7 @@ from zerver.data_import.slack import (
     slack_workspace_to_realm,
     users_to_zerver_userprofile,
 )
-from zerver.data_import.slack_message_conversion import get_optional_slack_field
+from zerver.data_import.slack_message_conversion import get_optional_slack_field, get_user_full_name
 from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.mime_types import INLINE_MIME_TYPES
@@ -588,6 +588,59 @@ class SlackImporter(ZulipTestCase):
             get_optional_slack_field(data, "icons", dict),
             {"image_72": "https://example.com/avatar.png"},
         )
+
+    def test_get_user_full_name(self) -> None:
+        # Slack sets the name fields at the top level for some user
+        # types and inside "profile" for others, so both are consulted.
+        self.assertEqual(
+            get_user_full_name({"id": "U1", "name": "jane", "real_name": "Jane Doe"}), "Jane Doe"
+        )
+        self.assertEqual(
+            get_user_full_name({"id": "U1", "name": "jane", "profile": {"real_name": "Jane Doe"}}),
+            "Jane Doe",
+        )
+
+        # A better-suited field wins over a worse-suited one, wherever
+        # each of them happens to live.
+        self.assertEqual(
+            get_user_full_name(
+                {"id": "U1", "name": "jane", "profile": {"display_name": "Jane D."}}
+            ),
+            "Jane D.",
+        )
+        self.assertEqual(
+            get_user_full_name(
+                {
+                    "id": "U1",
+                    "name": "jane",
+                    "display_name": "Jane D.",
+                    "profile": {"real_name": "Jane Doe"},
+                }
+            ),
+            "Jane Doe",
+        )
+
+        # An empty or null name is skipped rather than imported as the
+        # user's name; Slack sends these for fields the user never set.
+        self.assertEqual(
+            get_user_full_name(
+                {"id": "U1", "name": "jane", "real_name": "", "profile": {"display_name": None}}
+            ),
+            "jane",
+        )
+
+        # Whether a user is deleted has no bearing on which name we use.
+        self.assertEqual(
+            get_user_full_name(
+                {"id": "U1", "name": "jane", "real_name": "Jane Doe", "deleted": True}
+            ),
+            "Jane Doe",
+        )
+
+        # Slack guarantees none of these fields, so we may end up with
+        # nothing to go on.
+        self.assertEqual(get_user_full_name({"id": "U1", "profile": {}}), "Slack user U1")
+        self.assertEqual(get_user_full_name({"id": "U1"}), "Slack user U1")
 
     @mock.patch("zerver.data_import.slack.get_data_file")
     @mock.patch("zerver.data_import.slack.get_messages_iterator")

@@ -133,12 +133,18 @@ def get_optional_slack_field(data: SlackFieldsT, key: str, field_type: type[T]) 
 
 
 def get_user_full_name(user: ZerverFieldsT) -> str:
-    if "deleted" in user and user["deleted"] is False:
-        return user["real_name"] or user["name"]
-    elif user["is_mirror_dummy"]:
-        return user["profile"].get("real_name", user["name"])
-    else:
-        return user["name"]
+    # Slack sets these both at the top level and within "profile",
+    # inconsistently between user types, and any of them may be missing.
+    # Look through them in descending order of how well they serve as a
+    # full name, taking the first one Slack actually gave us.
+    profile = user.get("profile", {})
+    for field in ("real_name", "display_name", "name"):
+        name = get_optional_slack_field(user, field, str) or get_optional_slack_field(
+            profile, field, str
+        )
+        if name is not None:
+            return name
+    return FALLBACK_USER_FULL_NAME.format(id=user["id"])
 
 
 def get_zulip_mention_for_slack_user(
