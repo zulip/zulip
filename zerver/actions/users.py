@@ -58,6 +58,7 @@ from zerver.lib.users import (
     get_users_involved_in_dms_with_target_users,
     user_access_restricted_in_realm,
 )
+from zerver.lib.workplace_users import check_any_group_used_for_workplace_users_group
 from zerver.models import (
     Draft,
     GroupGroupMembership,
@@ -709,7 +710,17 @@ def do_change_user_role(
     role_changed_audit_log.save(update_fields=["extra_data"])
 
     maybe_enqueue_audit_log_upload(user_profile.realm)
-    if settings.BILLING_ENABLED and UserProfile.ROLE_GUEST in [old_value, value]:
+    # A guest becoming a non-guest or vice versa changes the number of licenses
+    # regardless of any group, since guests are counted at a discount. Any other
+    # role change only matters if it moved the user in or out of
+    # realm.workplace_users_group, which the swap between the role based system
+    # groups above does when either of them is that group or inside it.
+    if settings.BILLING_ENABLED and (
+        UserProfile.ROLE_GUEST in [old_value, value]
+        or check_any_group_used_for_workplace_users_group(
+            user_profile.realm, [old_system_group, system_group]
+        )
+    ):
         from corporate.lib.stripe import RealmBillingSession
 
         billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)

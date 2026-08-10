@@ -1,7 +1,7 @@
 import itertools
 import typing
 import uuid
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime, time, timedelta, timezone
 from decimal import Decimal
@@ -78,15 +78,27 @@ from zerver.actions.create_user import (
     do_create_user,
     do_reactivate_user,
 )
-from zerver.actions.realm_settings import do_deactivate_realm, do_reactivate_realm
-from zerver.actions.users import change_user_is_active, do_deactivate_user
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_deactivate_realm,
+    do_reactivate_realm,
+)
+from zerver.actions.user_groups import (
+    add_subgroups_to_user_group,
+    bulk_add_members_to_user_groups,
+    bulk_remove_members_from_user_groups,
+    check_add_user_group,
+    remove_subgroups_from_user_group,
+)
+from zerver.actions.users import change_user_is_active, do_change_user_role, do_deactivate_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.remote_server import send_server_data_to_push_bouncer
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import Message, Realm, RealmAuditLog, Recipient, UserProfile
+from zerver.models import Message, NamedUserGroup, Realm, RealmAuditLog, Recipient, UserProfile
+from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot
@@ -5620,6 +5632,120 @@ class LicenseLedgerTest(StripeTestCase):
         with self.assertRaises(AssertionError):
             billing_session.update_license_ledger_for_manual_plan(plan, self.now)
 
+    def test_workplace_users_group_changes(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        realm = hamlet.realm
+        self.local_upgrade(self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False)
+        plan = get_current_plan_by_realm(realm)
+        assert plan is not None
+
+        workplace_group = check_add_user_group(
+            realm, "workplace users", [hamlet], acting_user=hamlet
+        )
+        subgroup = check_add_user_group(realm, "contractors", [othello], acting_user=hamlet)
+        unrelated_group = check_add_user_group(realm, "unrelated", [hamlet], acting_user=hamlet)
+        administrators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
+        )
+
+        def assert_ledger_rows_added(*, action: Callable[[], None]) -> None:
+            before = LicenseLedger.objects.filter(plan=plan).count()
+            action()
+            self.assertEqual(LicenseLedger.objects.filter(plan=plan).count(), before + 1)
+
+        def assert_ledger_rows_not_added(*, action: Callable[[], None]) -> None:
+            before = LicenseLedger.objects.filter(plan=plan).count()
+            action()
+            self.assertEqual(LicenseLedger.objects.filter(plan=plan).count(), before)
+
+        # Pointing the setting at a narrower group changes who is billed.
+        assert_ledger_rows_added(
+            action=lambda: do_change_realm_permission_group_setting(
+                realm, "workplace_users_group", workplace_group, acting_user=hamlet
+            ),
+        )
+
+        assert_ledger_rows_added(
+            action=lambda: bulk_add_members_to_user_groups(
+                [workplace_group], [othello.id], acting_user=hamlet
+            ),
+        )
+        assert_ledger_rows_added(
+            action=lambda: bulk_remove_members_from_user_groups(
+                [workplace_group], [othello.id], acting_user=hamlet
+            ),
+        )
+
+        # Subgroups count transitively, so attaching and detaching one matters.
+        assert_ledger_rows_added(
+            action=lambda: add_subgroups_to_user_group(
+                workplace_group, [subgroup], acting_user=hamlet
+            ),
+        )
+        assert_ledger_rows_added(
+            action=lambda: bulk_add_members_to_user_groups(
+                [subgroup], [self.example_user("cordelia").id], acting_user=hamlet
+            ),
+        )
+        assert_ledger_rows_added(
+            action=lambda: remove_subgroups_from_user_group(
+                workplace_group, [subgroup], acting_user=hamlet
+            ),
+        )
+
+        # A group unrelated to workplace_users_group does not affect billing.
+        assert_ledger_rows_not_added(
+            action=lambda: bulk_add_members_to_user_groups(
+                [unrelated_group], [othello.id], acting_user=hamlet
+            ),
+        )
+
+        # A role change moves the user between role based system groups, which
+        # are nested inside each other. The administrators group is
+        # workplace_users_group here and the moderators group is not inside it,
+        # so this moves the user out of it. Neither the guest nor the member role
+        # is involved, so nothing else would have updated the ledger.
+        do_change_user_role(
+            iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None, notify=False
+        )
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", administrators_group, acting_user=hamlet
+        )
+        assert_ledger_rows_added(
+            action=lambda: do_change_user_role(
+                iago, UserProfile.ROLE_MODERATOR, acting_user=None, notify=False
+            ),
+        )
+
+        # With a group that no role based group is inside, a role change between
+        # those roles cannot change who is a workplace user.
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", unrelated_group, acting_user=hamlet
+        )
+        assert_ledger_rows_not_added(
+            action=lambda: do_change_user_role(
+                iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None, notify=False
+            ),
+        )
+
+    def test_workplace_users_group_changes_without_a_plan(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+        workplace_group = check_add_user_group(
+            realm, "workplace users", [hamlet], acting_user=hamlet
+        )
+
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", workplace_group, acting_user=hamlet
+        )
+        bulk_add_members_to_user_groups(
+            [workplace_group], [self.example_user("othello").id], acting_user=hamlet
+        )
+
+        self.assertFalse(LicenseLedger.objects.exists())
+
     def test_user_changes(self) -> None:
         self.local_upgrade(self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False)
         user = do_create_user("email", "password", get_realm("zulip"), "name", acting_user=None)
@@ -5640,9 +5766,11 @@ class LicenseLedgerTest(StripeTestCase):
             role=UserProfile.ROLE_GUEST,
             acting_user=None,
         )
-        # Change guest user role to member
+        # Each of these role changes adds two entries: one for the role change
+        # itself, and one because updating the full members system group is a
+        # change to a subgroup of workplace_users_group. Neither changes the
+        # counts recorded, since workplace_users_group is the everyone group.
         self.set_user_role(guest, UserProfile.ROLE_MEMBER)
-        # Change again to moderator, no LicenseLedger created
         self.set_user_role(guest, UserProfile.ROLE_MODERATOR)
         ledger_entries = list(
             LicenseLedger.objects.values_list(
@@ -5658,6 +5786,9 @@ class LicenseLedgerTest(StripeTestCase):
                 (False, self.seat_count + 1, self.seat_count + 1),
                 (False, self.seat_count + 1, self.seat_count + 1),
                 (False, self.seat_count + 1, self.seat_count + 1),
+                (False, self.seat_count + 2, self.seat_count + 2),
+                (False, self.seat_count + 2, self.seat_count + 2),
+                (False, self.seat_count + 2, self.seat_count + 2),
                 (False, self.seat_count + 2, self.seat_count + 2),
             ],
         )

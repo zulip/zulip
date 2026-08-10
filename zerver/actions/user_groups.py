@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import TypedDict
 
 import django.db.utils
+from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -379,6 +380,15 @@ def bulk_add_members_to_user_groups(
 
         maybe_enqueue_audit_log_upload(realm)
 
+        if settings.BILLING_ENABLED:
+            from corporate.lib.stripe import RealmBillingSession
+
+            # acting_user is None for changes made by promote_new_full_members,
+            # and a support admin from another realm for changes made via
+            # /support; RealmBillingSession accepts both.
+            billing_session = RealmBillingSession(user=acting_user, realm=realm)
+            billing_session.update_license_ledger_if_needed(now)
+
     subscriber_ids_for_streams = get_user_ids_for_streams({stream.id for stream in streams})
     new_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
     recent_traffic = get_streams_traffic(realm, {stream.id for stream in streams})
@@ -468,6 +478,15 @@ def bulk_remove_members_from_user_groups(
 
         maybe_enqueue_audit_log_upload(realm)
 
+        if settings.BILLING_ENABLED:
+            from corporate.lib.stripe import RealmBillingSession
+
+            # acting_user is None for changes made by promote_new_full_members,
+            # and a support admin from another realm for changes made via
+            # /support; RealmBillingSession accepts both.
+            billing_session = RealmBillingSession(user=acting_user, realm=realm)
+            billing_session.update_license_ledger_if_needed(now)
+
     for user_group in user_groups:
         do_send_user_group_members_update_event("remove_members", user_group, user_profile_ids)
 
@@ -554,6 +573,15 @@ def add_subgroups_to_user_group(
         from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 
         maybe_enqueue_audit_log_upload(realm)
+
+        if settings.BILLING_ENABLED:
+            from corporate.lib.stripe import RealmBillingSession
+
+            # acting_user is None for changes made by promote_new_full_members,
+            # and a support admin from another realm for changes made via
+            # /support; RealmBillingSession accepts both.
+            billing_session = RealmBillingSession(user=acting_user, realm=realm)
+            billing_session.update_license_ledger_if_needed(now)
 
     subscriber_ids_for_streams = get_user_ids_for_streams({stream.id for stream in streams})
     new_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
@@ -645,6 +673,15 @@ def remove_subgroups_from_user_group(
         from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 
         maybe_enqueue_audit_log_upload(realm)
+
+        if settings.BILLING_ENABLED:
+            from corporate.lib.stripe import RealmBillingSession
+
+            # acting_user is None for changes made by promote_new_full_members,
+            # and a support admin from another realm for changes made via
+            # /support; RealmBillingSession accepts both.
+            billing_session = RealmBillingSession(user=acting_user, realm=realm)
+            billing_session.update_license_ledger_if_needed(now)
 
     do_send_subgroups_update_event("remove_subgroups", user_group, subgroup_ids)
 
