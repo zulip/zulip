@@ -22,7 +22,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.actions.streams import do_change_stream_group_based_setting, do_deactivate_stream
-from zerver.actions.users import do_deactivate_user
+from zerver.actions.users import change_user_is_active, do_deactivate_user
 from zerver.lib.email_mirror import (
     RateLimitedRealmMirror,
     create_missed_message_address,
@@ -1332,7 +1332,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
             othello, mm_address, "TestMissedMessageEmailMessages body"
         )
 
-        with self.assert_database_query_count(22):
+        with self.assert_database_query_count(23):
             process_message(incoming_valid_message)
 
         # confirm that Hamlet got the message
@@ -1360,7 +1360,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
             cordelia, mm_address, "TestMissedGroupDirectMessageEmailMessages body"
         )
 
-        with self.assert_database_query_count(22):
+        with self.assert_database_query_count(23):
             process_message(incoming_valid_message)
 
         # Confirm Iago and Othello received the message.
@@ -1369,6 +1369,99 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
             self.assertEqual(message.content, "TestMissedGroupDirectMessageEmailMessages body")
             self.assertEqual(message.sender, cordelia)
             self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+
+    def test_receive_missed_group_direct_message_email_with_deactivated_user(self) -> None:
+        # A reply to a message notification email for a group direct
+        # message is delivered to the remaining active members when a
+        # member of the group has since been deactivated, and the
+        # conversation remains a group direct message.
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        mm_address = self.send_dm_and_get_reply_address(
+            othello, [cordelia, iago, hamlet], reply_sender=cordelia
+        )
+
+        iago_message_before = most_recent_message(iago)
+        do_deactivate_user(iago, acting_user=None)
+
+        incoming_valid_message = self.build_missed_message_reply_email(
+            cordelia, mm_address, "Reply with deactivated group member body"
+        )
+        process_message(incoming_valid_message)
+
+        # The remaining active members received the message, in the
+        # direct message group of just the active members.
+        direct_message_group = get_or_create_direct_message_group(
+            id_list=[othello.id, cordelia.id, hamlet.id]
+        )
+        for user_profile in [othello, hamlet]:
+            message = most_recent_message(user_profile)
+            self.assertEqual(message.content, "Reply with deactivated group member body")
+            self.assertEqual(message.sender, cordelia)
+            self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+            self.assertEqual(message.recipient.type_id, direct_message_group.id)
+
+        # The deactivated user did not receive the message.
+        self.assertEqual(most_recent_message(iago).id, iago_message_before.id)
+
+    def test_receive_missed_group_direct_message_email_keeps_mirror_dummy_user(self) -> None:
+        # A mirror-dummy user is inactive but a valid recipient; unlike a
+        # deactivated user, it must be kept in the group when delivering
+        # the reply.
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        mm_address = self.send_dm_and_get_reply_address(
+            othello, [cordelia, iago], reply_sender=cordelia
+        )
+
+        iago.is_mirror_dummy = True
+        iago.save(update_fields=["is_mirror_dummy"])
+        change_user_is_active(iago, False)
+
+        incoming_valid_message = self.build_missed_message_reply_email(
+            cordelia, mm_address, "Reply with mirror-dummy group member body"
+        )
+        process_message(incoming_valid_message)
+
+        # The reply reaches the full three-person group (the mirror-dummy
+        # user was kept), not a reduced group.
+        direct_message_group = get_or_create_direct_message_group(
+            id_list=[othello.id, cordelia.id, iago.id]
+        )
+        message = most_recent_message(othello)
+        self.assertEqual(message.content, "Reply with mirror-dummy group member body")
+        self.assertEqual(message.sender, cordelia)
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+        self.assertEqual(message.recipient.type_id, direct_message_group.id)
+
+    def test_receive_missed_group_direct_message_email_all_recipients_deactivated(self) -> None:
+        # If every member other than the sender has been deactivated,
+        # the reply is dropped with a log message rather than an
+        # exception.
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        mm_address = self.send_dm_and_get_reply_address(
+            othello, [cordelia, iago], reply_sender=cordelia
+        )
+
+        do_deactivate_user(othello, acting_user=None)
+        do_deactivate_user(iago, acting_user=None)
+
+        incoming_valid_message = self.build_missed_message_reply_email(
+            cordelia, mm_address, "Reply with no active recipients body"
+        )
+        initial_last_message = self.get_last_message()
+        with self.assertLogs("zerver.lib.email_mirror", level="INFO") as info_logs:
+            process_message(incoming_valid_message)
+        self.assertIn(
+            f"INFO:zerver.lib.email_mirror:Dropping message notification email reply from user {cordelia.id} to a group direct message with no active recipients",
+            info_logs.output,
+        )
+        self.assertEqual(initial_last_message, self.get_last_message())
 
     def test_receive_missed_stream_message_email_messages(self) -> None:
         # build dummy messages for message notification email reply
