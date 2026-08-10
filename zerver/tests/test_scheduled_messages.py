@@ -165,6 +165,53 @@ class ScheduledMessageTest(ZulipTestCase):
         recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream_id)
         self.assert_scheduled_message_delivered(scheduled_message, recipient)
 
+    def test_deliver_scheduled_messages_in_delivery_time_order(self) -> None:
+        self.assertFalse(try_deliver_one_scheduled_message())
+
+        parts = ["First part", "Second part", "Third part"]
+        scheduled_delivery_datetime = timezone_now() + timedelta(minutes=5)
+        base_timestamp = int(scheduled_delivery_datetime.timestamp())
+        verona_stream_id = self.get_stream_id("Verona")
+        scheduled_message_ids = []
+        for offset, part in enumerate(parts):
+            result = self.do_schedule_message(
+                "channel", verona_stream_id, part, base_timestamp + offset
+            )
+            self.assert_json_success(result)
+            scheduled_message_ids.append(self.last_scheduled_message().id)
+
+        second_id = scheduled_message_ids[1]
+        self.client_delete(f"/json/scheduled_messages/{second_id}")
+        result = self.do_schedule_message("channel", verona_stream_id, parts[1], base_timestamp + 1)
+        self.assert_json_success(result)
+        recreated_id = self.last_scheduled_message().id
+        scheduled_message_ids[1] = recreated_id
+        self.assertGreater(recreated_id, scheduled_message_ids[2])
+
+        with time_machine.travel(scheduled_delivery_datetime + timedelta(minutes=1), tick=False):
+            for scheduled_message_id in scheduled_message_ids:
+                with self.assertLogs(level="INFO") as logs:
+                    self.assertTrue(try_deliver_one_scheduled_message())
+                scheduled_message = self.get_scheduled_message(str(scheduled_message_id))
+                self.assertEqual(
+                    logs.output,
+                    [
+                        f"INFO:root:Sending scheduled message {scheduled_message.id} with date {scheduled_message.scheduled_timestamp} (sender: {scheduled_message.sender_id})"
+                    ],
+                )
+                self.assertTrue(scheduled_message.delivered)
+
+        delivered_messages = []
+        for scheduled_message_id in scheduled_message_ids:
+            delivered_message_id = self.get_scheduled_message(
+                str(scheduled_message_id)
+            ).delivered_message_id
+            assert isinstance(delivered_message_id, int)
+            delivered_messages.append(Message.objects.get(id=delivered_message_id))
+        self.assertEqual([message.content for message in delivered_messages], parts)
+        delivered_message_ids = [message.id for message in delivered_messages]
+        self.assertEqual(delivered_message_ids, sorted(delivered_message_ids))
+
     def test_successful_deliver_direct_scheduled_message_to_other(
         self,
     ) -> None:
