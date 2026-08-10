@@ -289,6 +289,12 @@ def do_change_realm_permission_group_setting(
 
         maybe_enqueue_audit_log_upload(realm)
 
+        if settings.BILLING_ENABLED:
+            from corporate.lib.stripe import RealmBillingSession
+
+            billing_session = RealmBillingSession(user=acting_user, realm=realm)
+            billing_session.update_license_ledger_if_needed(event_time)
+
 
 def parse_and_set_setting_value_if_required(
     realm: Realm, setting_name: str, value: int | str, *, acting_user: UserProfile | None
