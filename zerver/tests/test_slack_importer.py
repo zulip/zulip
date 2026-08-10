@@ -912,6 +912,25 @@ class SlackImporter(ZulipTestCase):
                     "first_name": "Unknown Bot",
                 },
             },
+            # Slack guarantees neither a handle nor any of the name
+            # fields, so we have to be able to import a user with none.
+            {
+                "id": "U1NONAME00",
+                "deleted": False,
+                "is_mirror_dummy": False,
+                "profile": {
+                    "email": "nameless@example.com",
+                },
+            },
+            # The same, for a mirror dummy, whose email we synthesize
+            # from their handle.
+            {
+                "id": "U2NONAME00",
+                "team_id": "T5YFFM2QY",
+                "is_mirror_dummy": True,
+                "team_domain": "foreignteam",
+                "profile": {},
+            },
         ]
 
         mock_get_data_file.return_value = user_data
@@ -929,6 +948,8 @@ class SlackImporter(ZulipTestCase):
             "U1ZYFEC91": 8,
             "U1MBOTC81": 9,
             "U1RDFEC90": 10,
+            "U1NONAME00": 11,
+            "U2NONAME00": 12,
         }
         slack_data_dir = "./random_path"
         timestamp = int(timezone_now().timestamp())
@@ -966,7 +987,7 @@ class SlackImporter(ZulipTestCase):
         self.assertDictEqual(slack_user_id_to_zulip_user_id, test_slack_user_id_to_zulip_user_id)
         self.assert_length(avatar_list, 9)
 
-        self.assert_length(zerver_userprofile, 11)
+        self.assert_length(zerver_userprofile, 13)
 
         self.assertEqual(zerver_userprofile[0]["is_staff"], False)
         self.assertEqual(zerver_userprofile[0]["is_bot"], False)
@@ -1078,6 +1099,23 @@ class SlackImporter(ZulipTestCase):
         )
         self.assertEqual(zerver_userprofile[10]["is_active"], True)
         self.assertEqual(zerver_userprofile[10]["avatar_source"], "J")
+
+        # Test converting a user Slack gave us no name of any kind for.
+        self.assertEqual(
+            zerver_userprofile[11]["id"], test_slack_user_id_to_zulip_user_id["U1NONAME00"]
+        )
+        self.assertEqual(zerver_userprofile[11]["email"], "nameless@example.com")
+        self.assertEqual(zerver_userprofile[11]["full_name"], "Slack user U1NONAME00")
+        self.assertEqual(zerver_userprofile[11]["short_name"], "Slack user U1NONAME00")
+
+        # The same for a mirror dummy, whose email we have to synthesize
+        # from a handle they don't have either.
+        self.assertEqual(
+            zerver_userprofile[12]["id"], test_slack_user_id_to_zulip_user_id["U2NONAME00"]
+        )
+        self.assertEqual(zerver_userprofile[12]["email"], "U2NONAME00@foreignteam.slack.com")
+        self.assertEqual(zerver_userprofile[12]["full_name"], "Slack user U2NONAME00")
+        self.assertEqual(zerver_userprofile[12]["is_mirror_dummy"], True)
 
     def test_build_defaultstream(self) -> None:
         realm_id = 1
