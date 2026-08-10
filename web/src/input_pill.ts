@@ -22,6 +22,7 @@ type InputPillCreateOptions<ItemType> = {
     $container: JQuery;
     pill_config?: InputPillConfig | undefined;
     allow_comma_in_item_text?: boolean;
+    create_pill_on_comma?: boolean;
     convert_to_pill_on_enter?: boolean;
     create_item_from_text: (
         text: string,
@@ -63,6 +64,7 @@ type InputPillStore<ItemType> = {
     onPillExpand?: (pill: JQuery) => void;
     createPillonPaste?: () => void;
     allow_comma_in_item_text: boolean;
+    create_pill_on_comma: boolean;
     convert_to_pill_on_enter: boolean;
     show_outline_on_invalid_input: boolean;
     shake_on_invalid_paste: boolean;
@@ -102,6 +104,7 @@ export function create<ItemType extends {type: string}>(
 ): InputPillContainer<ItemType> {
     // a stateful object of this `pill_container` instance.
     // all unique instance information is stored in here.
+    const allow_comma_in_item_text = opts.allow_comma_in_item_text ?? false;
     const store: InputPillStore<ItemType> = {
         pills: [],
         pill_config: opts.pill_config,
@@ -110,7 +113,8 @@ export function create<ItemType extends {type: string}>(
         create_item_from_text: opts.create_item_from_text,
         get_text_from_item: opts.get_text_from_item,
         get_display_value_from_item: opts.get_display_value_from_item,
-        allow_comma_in_item_text: opts.allow_comma_in_item_text ?? false,
+        allow_comma_in_item_text,
+        create_pill_on_comma: opts.create_pill_on_comma ?? !allow_comma_in_item_text,
         convert_to_pill_on_enter: opts.convert_to_pill_on_enter ?? true,
         generate_pill_html: opts.generate_pill_html,
         on_pill_exit: opts.on_pill_exit,
@@ -419,17 +423,26 @@ export function create<ItemType extends {type: string}>(
                 store.$parent.find(".pill").last().trigger("focus");
             }
 
-            // Typing of the comma is prevented if the last field doesn't validate,
-            // as well as when the new pill is created.
-            if (e.key === "," && !store.allow_comma_in_item_text) {
-                // if the pill is successful, it will create the pill and clear
-                // the input.
-                if (funcs.appendPill(store.$input.text().trim())) {
+            // Commas can be part of an item, such as an email display name or search term,
+            // or separators that create a pill, depending on the widget configuration.
+            if (e.key === ",") {
+                const trimmed_text = store.$input.text().trim();
+                // A comma in incomplete item text should not trigger invalid feedback.
+                const shake_on_invalid_input = !store.allow_comma_in_item_text;
+                if (
+                    trimmed_text.length > 0 &&
+                    store.create_pill_on_comma &&
+                    funcs.appendPill(trimmed_text, shake_on_invalid_input)
+                ) {
                     funcs.clear(util.the(store.$input));
+                    e.preventDefault();
+                    return;
                 }
-                e.preventDefault();
 
-                return;
+                if (!store.allow_comma_in_item_text) {
+                    e.preventDefault();
+                    return;
+                }
             }
         });
 

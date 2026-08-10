@@ -96,6 +96,7 @@ export function create_pills(
         get_text_from_item: get_email_from_item,
         get_display_value_from_item: get_email_from_item,
         allow_comma_in_item_text: true,
+        create_pill_on_comma: true,
         split_text_to_form_pills: split_text_to_form_email_pills,
         // This input has no typeahead, so we flag invalid paste.
         shake_on_invalid_paste: true,
