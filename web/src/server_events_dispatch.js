@@ -17,6 +17,7 @@ import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
+import * as condense from "./condense.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_frequency from "./emoji_frequency.ts";
@@ -1183,6 +1184,19 @@ export function dispatch_normal_event(event) {
                         "is-unread",
                         new_value,
                     );
+                    break;
+                case "collapsed":
+                    for (const message_id of event.messages) {
+                        const message = message_store.get(message_id);
+                        if (message === undefined) {
+                            // If we don't have the message locally, do
+                            // nothing; if later we fetch it, it'll come
+                            // with the correct `collapsed` state.
+                            continue;
+                        }
+                        message.collapsed = new_value;
+                        condense.update_collapsed_view(message);
+                    }
                     break;
             }
             break;

@@ -947,6 +947,24 @@ exports.fixtures = {
         recipients: [typing_person2],
     },
 
+    update_message_flags__collapsed_add: {
+        type: "update_message_flags",
+        op: "add",
+        operation: "add",
+        flag: "collapsed",
+        messages: [exports.test_message.id],
+        all: false,
+    },
+
+    update_message_flags__collapsed_remove: {
+        type: "update_message_flags",
+        op: "remove",
+        operation: "remove",
+        flag: "collapsed",
+        messages: [exports.test_message.id],
+        all: false,
+    },
+
     update_message_flags__read: {
         type: "update_message_flags",
         op: "add",
