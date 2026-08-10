@@ -18,7 +18,14 @@ from zerver.forms import LoggingSetPasswordForm
 from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 from zerver.lib.rest import rest_path
 from zerver.lib.url_redirects import DOCUMENTATION_REDIRECTS, get_integration_category_redirects
-from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
+from zerver.views.alert_words import (
+    add_alert_words,
+    add_watched_phrases,
+    list_alert_words,
+    list_watched_phrases,
+    remove_alert_words,
+    remove_watched_phrases,
+)
 from zerver.views.antispam import get_challenge
 from zerver.views.attachments import list_by_user, remove
 from zerver.views.auth import (
@@ -537,6 +544,13 @@ v1_api_and_json_patterns = [
         GET=list_alert_words,
         POST=add_alert_words,
         DELETE=remove_alert_words,
+    ),
+    # users/me/watched_phrases -> zerver.views.alert_words
+    rest_path(
+        "users/me/watched_phrases",
+        GET=list_watched_phrases,
+        POST=add_watched_phrases,
+        DELETE=remove_watched_phrases,
     ),
     # users/me/custom_profile_data -> zerver.views.custom_profile_data
     rest_path(
