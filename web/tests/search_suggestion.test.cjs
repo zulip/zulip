@@ -1207,3 +1207,39 @@ test("queries_with_spaces", () => {
     expected = [`channel:${dev_help_id}`];
     assert.deepEqual(suggestions, expected);
 });
+
+test("empty query suggestions in an inaccessible narrow", ({override}) => {
+    const office_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({
+            stream_id: office_id,
+            name: "office",
+            subscribed: true,
+        }),
+    );
+    const unknown_stream_id = new_stream_id();
+
+    let narrow_terms;
+    override(narrow_state, "search_terms", () => narrow_terms);
+    override(narrow_state, "narrowed_by_topic_reply", () => false);
+    override(narrow_state, "narrowed_by_pm_reply", () => false);
+
+    // An empty query in an accessible narrow suggests searching the
+    // current conversation.
+    narrow_terms = [
+        {operator: "channel", operand: office_id.toString(), negated: false},
+        {operator: "topic", operand: "lunch", negated: false},
+    ];
+    let suggestions = search.get_suggestions([], [], true);
+    assert.equal(suggestions[0], `channel:${office_id} topic:lunch`);
+
+    // When the narrow's channel is unknown to this client,
+    // we don't suggest searching the current conversation, and the
+    // suggestions are the same as if there were no current filter.
+    narrow_terms = [
+        {operator: "channel", operand: unknown_stream_id.toString(), negated: false},
+        {operator: "topic", operand: "lunch", negated: false},
+    ];
+    suggestions = search.get_suggestions([], [], true);
+    assert.deepEqual(suggestions, search.get_suggestions([], [], false));
+});
