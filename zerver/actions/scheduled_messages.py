@@ -438,6 +438,7 @@ def try_deliver_one_scheduled_message() -> bool:
             delivered=False,
             failed=False,
         )
+        .order_by("scheduled_timestamp", "id")
         .select_for_update(no_key=True)
         .first()
     )
