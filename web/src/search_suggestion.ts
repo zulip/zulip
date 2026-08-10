@@ -1001,6 +1001,13 @@ function suggestion_search_string(suggestion_line: SuggestionLine): string {
 }
 
 function suggestions_for_empty_search_query(): SuggestionLine[] {
+    const current_narrow_terms = narrow_state.search_terms();
+    // Don't suggest searching the current conversation when some of
+    // its terms are invalid, e.g. if the user visited a link to a
+    // channel that they can't access, and then opened search.
+    if (current_narrow_terms.some((term) => !Filter.is_valid_canonical_term(term))) {
+        return [];
+    }
     // Since the context here is an **empty** search query, we assume
     // that there is no `near:` operator. So it's safe to use
     // functions like narrowed_by_topic_reply that return false on
@@ -1013,7 +1020,7 @@ function suggestions_for_empty_search_query(): SuggestionLine[] {
                     operand: narrow_state.stream_id()!.toString(),
                 },
             ]),
-            get_default_suggestion_line(narrow_state.search_terms()),
+            get_default_suggestion_line(current_narrow_terms),
         ];
     }
     if (narrow_state.narrowed_by_pm_reply()) {
@@ -1024,10 +1031,10 @@ function suggestions_for_empty_search_query(): SuggestionLine[] {
                     operand: "dm",
                 },
             ]),
-            get_default_suggestion_line(narrow_state.search_terms()),
+            get_default_suggestion_line(current_narrow_terms),
         ];
     }
-    return [get_default_suggestion_line(narrow_state.search_terms())];
+    return [get_default_suggestion_line(current_narrow_terms)];
 }
 
 class Attacher {
