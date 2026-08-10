@@ -77,14 +77,22 @@ function uncondense_row($row: JQuery): void {
     show_message_condenser($row);
 }
 
-export function uncollapse(message: Message): void {
-    // Uncollapse a message, restoring the condensed message "Show more" or
-    // "Show less" button if necessary.
-    message.collapsed = false;
-    message_flags.save_uncollapsed(message);
+// Callers that change the collapsed flag are responsible for saving it.
+export function update_collapsed_view(message: Message): void {
+    for (const list of message_lists.all_rendered_message_lists()) {
+        const $row = list.get_row(message.id);
+        if ($row.length === 0) {
+            continue;
+        }
 
-    const process_row = function process_row($row: JQuery): void {
         const $content = $row.find(".message_content");
+
+        if (message.collapsed) {
+            $content.addClass("collapsed");
+            show_message_expander($row);
+            continue;
+        }
+
         $content.removeClass("collapsed");
 
         if (message.condensed === true) {
@@ -102,14 +110,13 @@ export function uncollapse(message: Message): void {
             // This was a short message, no more need for a [More] link.
             hide_message_length_toggle($row);
         }
-    };
-
-    for (const list of message_lists.all_rendered_message_lists()) {
-        const $rendered_row = list.get_row(message.id);
-        if ($rendered_row.length > 0) {
-            process_row($rendered_row);
-        }
     }
+}
+
+export function uncollapse(message: Message): void {
+    message.collapsed = false;
+    message_flags.save_uncollapsed(message);
+    update_collapsed_view(message);
 }
 
 export function collapse(message: Message): void {
@@ -124,18 +131,7 @@ export function collapse(message: Message): void {
     }
 
     message_flags.save_collapsed(message);
-
-    const process_row = function process_row($row: JQuery): void {
-        $row.find(".message_content").addClass("collapsed");
-        show_message_expander($row);
-    };
-
-    for (const list of message_lists.all_rendered_message_lists()) {
-        const $rendered_row = list.get_row(message.id);
-        if ($rendered_row.length > 0) {
-            process_row($rendered_row);
-        }
-    }
+    update_collapsed_view(message);
 }
 
 export function toggle_collapse(message: Message): void {
