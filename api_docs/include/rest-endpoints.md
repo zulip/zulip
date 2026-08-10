@@ -163,6 +163,7 @@
 * [Deactivate an organization](/api/deactivate-realm)
 * [Deactivate a registered server](/api/deactivate-remote-server)
 * [Check analytics upload status](/api/remote-server-check-analytics)
+* [Upload analytics data](/api/remote-server-post-analytics)
 * [Begin transferring a server registration](/api/transfer-remote-server-registration)
 
 ## Real-time events

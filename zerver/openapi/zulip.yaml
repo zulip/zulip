@@ -14182,6 +14182,169 @@ paths:
                         "msg": "",
                         "result": "success",
                       }
+  /remotes/server/analytics:
+    post:
+      operationId: remote-server-post-analytics
+      summary: Upload analytics data
+      tags: ["server_and_organizations"]
+      description: |
+        Upload analytics and audit-log data for a self-hosted Zulip server
+        and its realms to the [Mobile Push Notification Service][mobile-push].
+
+        A self-hosted server uses this endpoint to periodically push the
+        analytics rows the service has not yet received (see
+        [check analytics upload status](/api/remote-server-check-analytics)).
+        It is not meant to be used by mobile clients directly.
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+      security:
+        - remoteServerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                realm_counts:
+                  type: array
+                  description: |
+                    The `RealmCount` analytics rows to upload.
+                  items:
+                    $ref: "#/components/schemas/RealmCountDataForAnalytics"
+                  example:
+                    - property: "messages_sent:message_type:day"
+                      realm: 2
+                      id: 51
+                      end_time: 1609459200
+                      subgroup: "public_stream"
+                      value: 12
+                installation_counts:
+                  type: array
+                  description: |
+                    The `InstallationCount` analytics rows to upload.
+                  items:
+                    $ref: "#/components/schemas/InstallationCountDataForAnalytics"
+                  example:
+                    - property: "active_users_audit:is_bot:day"
+                      id: 42
+                      end_time: 1609459200
+                      subgroup: "false"
+                      value: 34
+                realmauditlog_rows:
+                  type: array
+                  description: |
+                    The `RealmAuditLog` rows to upload.
+                  items:
+                    $ref: "#/components/schemas/RealmAuditLogDataForAnalytics"
+                  example:
+                    - id: 101
+                      realm: 2
+                      event_time: 1609459200
+                      backfilled: false
+                      extra_data: null
+                      event_type: 105
+                realms:
+                  type: array
+                  description: |
+                    Registration data for the server's realms.
+                  items:
+                    $ref: "#/components/schemas/RealmDataForAnalytics"
+                  example:
+                    - id: 2
+                      host: "zulip.example.com"
+                      url: "https://zulip.example.com"
+                      name: "Example, Inc."
+                      org_type: 10
+                      date_created: 1577836800
+                      deactivated: false
+                      is_system_bot_realm: false
+                      authentication_methods:
+                        Email: true
+                      uuid: "6cde5f7a-1391-4a5b-bdb9-c1a1f6f6a2c9"
+                      uuid_owner_secret: "F4XLSXqburgObydu3EPffsceGE1Yd6Bg"
+                version:
+                  type: string
+                  description: The server's Zulip version string.
+                  example: "9.0"
+                merge_base:
+                  type: string
+                  description: The server's Zulip merge base.
+                  example: "9.0"
+                api_feature_level:
+                  type: integer
+                  description: The server's Zulip API feature level.
+                  example: 383
+              required:
+                - realm_counts
+                - installation_counts
+            encoding:
+              realm_counts:
+                contentType: application/json
+              installation_counts:
+                contentType: application/json
+              realmauditlog_rows:
+                contentType: application/json
+              realms:
+                contentType: application/json
+              version:
+                contentType: application/json
+              merge_base:
+                contentType: application/json
+              api_feature_level:
+                contentType: application/json
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      realms:
+                        type: object
+                        description: |
+                          Map from each realm's UUID to its current push
+                          notification status.
+                        additionalProperties:
+                          type: object
+                          additionalProperties: false
+                          description: |
+                            The push notification status for the realm with
+                            this UUID.
+                          properties:
+                            can_push:
+                              type: boolean
+                              description: |
+                                Whether the realm is currently allowed to use
+                                the push notification service.
+                            expected_end_timestamp:
+                              type: integer
+                              nullable: true
+                              description: |
+                                UNIX timestamp for when the realm's current
+                                grace period or plan is expected to end, or
+                                null if not applicable.
+                          required:
+                            - can_push
+                            - expected_end_timestamp
+                    example:
+                      {
+                        "msg": "",
+                        "realms":
+                          {
+                            "6cde5f7a-1391-4a5b-bdb9-c1a1f6f6a2c9":
+                              {
+                                "can_push": true,
+                                "expected_end_timestamp": null,
+                              },
+                          },
+                        "result": "success",
+                      }
   /remotes/server/register/transfer:
     post:
       operationId: transfer-remote-server-registration
@@ -27625,6 +27788,158 @@ components:
         [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
 
   schemas:
+    RealmCountDataForAnalytics:
+      type: object
+      additionalProperties: false
+      description: |
+        A `RealmCount` analytics row for a realm on the self-hosted server.
+      properties:
+        property:
+          type: string
+          description: The name of the analytics statistic being reported.
+        realm:
+          type: integer
+          description: The server-local ID of the realm this row belongs to.
+        id:
+          type: integer
+          description: The server-local ID of this `RealmCount` row.
+        end_time:
+          type: number
+          description: |
+            UNIX timestamp for the end of the time interval this row covers.
+        subgroup:
+          type: string
+          nullable: true
+          description: The subgroup this count is broken down by, if any.
+        value:
+          type: integer
+          description: The value of the statistic for this row.
+      required:
+        - property
+        - realm
+        - id
+        - end_time
+        - subgroup
+        - value
+    InstallationCountDataForAnalytics:
+      type: object
+      additionalProperties: false
+      description: |
+        An `InstallationCount` analytics row for the self-hosted server.
+      properties:
+        property:
+          type: string
+          description: The name of the analytics statistic being reported.
+        id:
+          type: integer
+          description: The server-local ID of this `InstallationCount` row.
+        end_time:
+          type: number
+          description: |
+            UNIX timestamp for the end of the time interval this row covers.
+        subgroup:
+          type: string
+          nullable: true
+          description: The subgroup this count is broken down by, if any.
+        value:
+          type: integer
+          description: The value of the statistic for this row.
+      required:
+        - property
+        - id
+        - end_time
+        - subgroup
+        - value
+    RealmAuditLogDataForAnalytics:
+      type: object
+      additionalProperties: false
+      description: |
+        A `RealmAuditLog` row relevant to billing and analytics.
+      properties:
+        id:
+          type: integer
+          description: The server-local ID of this `RealmAuditLog` row.
+        realm:
+          type: integer
+          description: The server-local ID of the realm this row belongs to.
+        event_time:
+          type: number
+          description: UNIX timestamp for when the logged event occurred.
+        backfilled:
+          type: boolean
+          description: Whether this row was backfilled after the original event.
+        extra_data:
+          description: |
+            Additional data about the event: a JSON object, a string
+            encoding one, or null if there is none.
+          oneOf:
+            - type: string
+            - type: object
+              additionalProperties: true
+              nullable: true
+        event_type:
+          type: integer
+          description: The numeric type of the logged event.
+      required:
+        - id
+        - realm
+        - event_time
+        - backfilled
+        - extra_data
+        - event_type
+    RealmDataForAnalytics:
+      type: object
+      additionalProperties: false
+      description: |
+        Registration data and metadata about a realm on the self-hosted
+        server.
+      properties:
+        id:
+          type: integer
+          description: The server-local ID of the realm.
+        host:
+          type: string
+          description: The realm's host.
+        url:
+          type: string
+          description: The realm's URL.
+        name:
+          type: string
+          description: The realm's name.
+        org_type:
+          type: integer
+          description: |
+            The realm's [organization type](/api/get-server-settings).
+        date_created:
+          type: number
+          description: UNIX timestamp for when the realm was created.
+        deactivated:
+          type: boolean
+          description: Whether the realm is deactivated.
+        is_system_bot_realm:
+          type: boolean
+          description: Whether this is the server's system bot realm.
+        authentication_methods:
+          type: object
+          additionalProperties:
+            type: boolean
+          description: |
+            Map from each authentication method to whether it is enabled for
+            the realm.
+        uuid:
+          type: string
+          description: The realm's UUID.
+        uuid_owner_secret:
+          type: string
+          description: The secret associated with the realm's UUID.
+      required:
+        - id
+        - host
+        - url
+        - date_created
+        - deactivated
+        - uuid
+        - uuid_owner_secret
     IgnoredParametersUnsupported:
       type: array
       items:

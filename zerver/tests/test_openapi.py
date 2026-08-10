@@ -250,7 +250,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # Lower priority to document
         "/remotes/server/register",
         "/remotes/server/register/verify_challenge",
-        "/remotes/server/analytics",
         "/remotes/server/billing",
     }
 
