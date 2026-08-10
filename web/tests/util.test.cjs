@@ -628,12 +628,12 @@ run_test("get_retry_backoff_seconds", () => {
             code: "RATE_LIMIT_HIT",
             msg: "API usage exceeded rate limit",
             result: "error",
-            "retry-after": 28.706807374954224,
+            "retry-after": 29,
         },
     };
     // First retry should be greater than the retry-after value.
     backoff = get_retry_backoff_seconds(xhr_rate_limit_error, 1);
-    assert.ok(backoff >= 28.706807374954224);
+    assert.ok(backoff >= 29);
     // 100th retry should be between 45-90 seconds.
     backoff = get_retry_backoff_seconds(xhr_rate_limit_error, 100);
     assert.ok(backoff >= 45);
