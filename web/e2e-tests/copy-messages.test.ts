@@ -261,6 +261,51 @@ async function test_multiple_message_selection_with_partially_selected_bookend_m
     assert.deepStrictEqual(actual_copied_lines, expected_copied_lines);
 }
 
+async function test_copying_selection_with_no_message_content(page: Page): Promise<void> {
+    // A recipient header plus the first message's sender name has no
+    // `.message_content`.
+    const result = await page.evaluate(() => {
+        const header = document.querySelector(
+            '.message-list .message_header[data-topic-name="copy-paste-topic #2"]',
+        );
+        const sender_name = header
+            ?.closest(".recipient_row")
+            ?.querySelector(":scope .message_row .sender_name");
+        const header_contents = header?.querySelector(".message-header-contents");
+        if (!header_contents || !sender_name) {
+            throw new Error("Expected topic header and sender name");
+        }
+
+        const range = document.createRange();
+        range.setStart(header_contents, 0);
+        range.setEndAfter(sender_name);
+        window.getSelection()!.removeAllRanges();
+        window.getSelection()!.addRange(range);
+
+        const clipboard_data = new DataTransfer();
+        const copy_event = new ClipboardEvent("copy", {
+            bubbles: true,
+            cancelable: true,
+            clipboardData: clipboard_data,
+        });
+        document.dispatchEvent(copy_event);
+
+        return {
+            default_prevented: copy_event.defaultPrevented,
+            copied_html: clipboard_data.getData("text/html"),
+            copied_text: clipboard_data.getData("text/plain"),
+            selection_text: window.getSelection()!.toString(),
+        };
+    });
+
+    // Synthetic ClipboardEvent: native copy does not fill clipboard_data.
+    // defaultPrevented === false is what shows the handler stepped aside.
+    assert.equal(result.default_prevented, false);
+    assert.equal(result.copied_html, "");
+    assert.equal(result.copied_text, "");
+    assert.ok(result.selection_text.includes("Desdemona"));
+}
+
 async function copy_paste_test(page: Page): Promise<void> {
     await common.log_in(page);
     await common.send_multiple_messages(page, [
@@ -307,6 +352,7 @@ async function copy_paste_test(page: Page): Promise<void> {
     await test_copying_all_from_prev_first_from_next(page);
     await test_copying_messages_from_several_topics(page);
     await test_timestamp_clipboard_has_datetime(page);
+    await test_copying_selection_with_no_message_content(page);
     await test_multiple_message_selection_with_partially_selected_bookend_messages(page);
 }
 
