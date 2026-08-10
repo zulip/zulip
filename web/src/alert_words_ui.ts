@@ -11,6 +11,7 @@ import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
+import * as settings_ui from "./settings_ui.ts";
 import * as ui_report from "./ui_report.ts";
 
 export let loaded = false;
@@ -78,10 +79,40 @@ function add_alert_word(): void {
         return;
     }
 
-    const phrases_to_be_added = [{watched_phrase: alert_word}];
+    const automatically_follow_topics = $<HTMLInputElement>("input#add-alert-word-follow-topic").is(
+        ":checked",
+    );
+    const phrases_to_be_added = [{watched_phrase: alert_word, automatically_follow_topics}];
 
     const data = {watched_phrases: JSON.stringify(phrases_to_be_added)};
     dialog_widget.submit_api_request(channel.post, "/json/users/me/watched_phrases", data);
+}
+
+function toggle_automatically_follow_topics(this: HTMLInputElement, _event: JQuery.Event): void {
+    const $checkbox = $(this);
+    const alert_word = $checkbox.attr("data-word")!;
+    const automatically_follow_topics = this.checked;
+    const data = {
+        watched_phrases: JSON.stringify([
+            {watched_phrase: alert_word, automatically_follow_topics},
+        ]),
+    };
+
+    settings_ui.do_settings_change(
+        channel.post,
+        "/json/users/me/watched_phrases",
+        data,
+        $("#alert-word-settings-status").expectOne(),
+        {
+            error_continuation() {
+                // The table is only re-rendered in response to the
+                // server's `watched_phrases` event, so revert the
+                // checkbox ourselves rather than leave it showing a
+                // state we failed to save.
+                $checkbox.prop("checked", !automatically_follow_topics);
+            },
+        },
+    );
 }
 
 function remove_alert_word(alert_word: string): void {
@@ -136,6 +167,12 @@ export function set_up_alert_words(): void {
     $("#open-add-alert-word-modal").on("click", () => {
         show_add_alert_word_modal();
     });
+
+    $("#alert-words-table").on(
+        "click",
+        "input.alert-word-follow-topic",
+        toggle_automatically_follow_topics,
+    );
 
     $("#alert-words-table").on("click", ".remove-alert-word", (event) => {
         const word = $(event.currentTarget).parents("tr").find(".value").text().trim();
