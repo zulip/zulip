@@ -250,7 +250,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # Lower priority to document
         "/remotes/server/register",
         "/remotes/server/register/verify_challenge",
-        "/remotes/server/billing",
     }
 
     # Endpoints in the API documentation that don't use rest_dispatch

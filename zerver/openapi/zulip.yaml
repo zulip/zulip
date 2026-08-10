@@ -14345,6 +14345,137 @@ paths:
                           },
                         "result": "success",
                       }
+  /remotes/server/billing:
+    post:
+      operationId: remote-realm-billing-entry
+      summary: Create a billing session
+      tags: ["server_and_organizations"]
+      description: |
+        Begin a billing session for a realm on a self-hosted Zulip server,
+        returning a URL that the server redirects a logged-in administrator
+        to in order to manage the realm's plan with the [Mobile Push
+        Notification Service][mobile-push].
+
+        A self-hosted server uses this endpoint to hand off one of its
+        users to the service's self-hosted billing management. It is not
+        meant to be used by mobile clients directly.
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+      security:
+        - remoteServerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                user:
+                  allOf:
+                    - $ref: "#/components/schemas/UserDataForRemoteBilling"
+                  example:
+                    uuid: "50f4a5a2-5d9a-4f5c-8f2e-1d6d1f9c1a2b"
+                    email: "admin@example.com"
+                    full_name: "Example Admin"
+                realm:
+                  allOf:
+                    - $ref: "#/components/schemas/RealmDataForAnalytics"
+                  example:
+                    id: 2
+                    host: "zulip.example.com"
+                    url: "https://zulip.example.com"
+                    name: "Example, Inc."
+                    org_type: 10
+                    date_created: 1577836800
+                    deactivated: false
+                    is_system_bot_realm: false
+                    authentication_methods:
+                      Email: true
+                    uuid: "6cde5f7a-1391-4a5b-bdb9-c1a1f6f6a2c9"
+                    uuid_owner_secret: "F4XLSXqburgObydu3EPffsceGE1Yd6Bg"
+                uri_scheme:
+                  type: string
+                  enum:
+                    - "http://"
+                    - "https://"
+                  default: "https://"
+                  example: "https://"
+                  description: |
+                    The URI scheme to use in the returned billing access URL.
+                next_page:
+                  type: string
+                  enum:
+                    - sponsorship
+                    - upgrade
+                    - billing
+                    - plans
+                    - deactivate
+                  example: "upgrade"
+                  description: |
+                    The billing page to send the user to after they log in.
+                    If omitted, the user lands on the default billing page.
+              required:
+                - user
+                - realm
+            encoding:
+              user:
+                contentType: application/json
+              realm:
+                contentType: application/json
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      billing_access_url:
+                        type: string
+                        description: |
+                          The URL the server should redirect the user to in
+                          order to manage billing with the service.
+                    example:
+                      {
+                        "billing_access_url": "https://selfhosting.zulipchat.com/remote-billing-login/...",
+                        "msg": "",
+                        "result": "success",
+                      }
+        "403":
+          description: |
+            The realm is not registered to this server, or is not registered
+            with the service at all.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "REMOTE_REALM_SERVER_MISMATCH_ERROR",
+                            "msg": "Your organization is registered to a different Zulip server. Please contact Zulip support for assistance in resolving this issue.",
+                            "result": "error",
+                          }
+                        description: |
+                          The realm's UUID is registered to a different server.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "MISSING_REMOTE_REALM",
+                            "msg": "Organization not registered",
+                            "result": "error",
+                          }
+                        description: |
+                          No registration exists for the realm's UUID; the
+                          server should upload its realm data (via
+                          [upload analytics data](/api/remote-server-post-analytics))
+                          to create it.
   /remotes/server/register/transfer:
     post:
       operationId: transfer-remote-server-registration
@@ -27940,6 +28071,26 @@ components:
         - deactivated
         - uuid
         - uuid_owner_secret
+    UserDataForRemoteBilling:
+      type: object
+      additionalProperties: false
+      description: |
+        Identifying information about the server administrator initiating
+        the billing session.
+      properties:
+        uuid:
+          type: string
+          description: The user's UUID.
+        email:
+          type: string
+          description: The user's email address.
+        full_name:
+          type: string
+          description: The user's full name.
+      required:
+        - uuid
+        - email
+        - full_name
     IgnoredParametersUnsupported:
       type: array
       items:
