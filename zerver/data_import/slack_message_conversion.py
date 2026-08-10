@@ -26,6 +26,9 @@ SlackToZulipUserIDT: TypeAlias = dict[str, int]
 AddedChannelsT: TypeAlias = dict[str, tuple[str, int]]
 SlackFieldsT: TypeAlias = dict[str, Any]
 
+# Used when Slack gives us no name at all for a user we have to name.
+FALLBACK_USER_FULL_NAME = "Slack user {id}"
+
 # Slack link can be in the format <http://www.foo.com|www.foo.com> and <http://foo.com/>
 LINK_REGEX = r"""
               (<)                                                              # match '>'
