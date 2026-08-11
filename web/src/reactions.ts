@@ -172,6 +172,13 @@ function send_reaction_request(
                 }, delay_secs * 1000);
             } else {
                 waiting_for_server_request_ids.delete(reaction_request_id);
+                // The server didn't apply the update, so revert the
+                // optimistically-updated local state.
+                if (operation === "add") {
+                    remove_reaction(reaction);
+                } else {
+                    add_reaction(reaction);
+                }
                 if (is_transient_error) {
                     // The transient failure persisted past our retry budget,
                     // so the server is likely having a real problem.
