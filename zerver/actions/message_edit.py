@@ -1686,6 +1686,13 @@ def check_update_message(
         if topic_name == message.topic_name():
             topic_name = None
 
+    if (
+        stream_id is not None
+        and message.is_channel_message
+        and stream_id == message.recipient.type_id
+    ):
+        stream_id = None
+
     validate_message_edit_payload(
         message, stream_id, topic_name, propagate_mode, content, prev_content_sha256
     )

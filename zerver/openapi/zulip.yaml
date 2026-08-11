@@ -10704,6 +10704,10 @@ paths:
                     same time, so sending both `content` and `stream_id` parameters will
                     throw an error.
 
+                    **Changes**: In Zulip 13.0 (feature level 509), fixed a bug where
+                    passing the channel ID that the message is already in was processed as
+                    a channel move.
+
                     **Changes**: New in Zulip 3.0 (feature level 1).
                   type: integer
                   example: 43
