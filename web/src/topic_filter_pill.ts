@@ -9,6 +9,9 @@ export type TopicFilterPill = {
     type: "topic_filter";
     label: string;
     syntax: string;
+    // An alternate spelling that also matches this option, for
+    // filters that users might reasonably type another way.
+    alias_syntax?: string;
     match_prefix_required?: string;
 };
 
@@ -27,6 +30,7 @@ export const filter_options: TopicFilterPill[] = [
         type: "topic_filter",
         label: $t({defaultMessage: "unresolved"}),
         syntax: "-is:resolved",
+        alias_syntax: "is:unresolved",
     },
     {
         type: "topic_filter",
@@ -63,7 +67,9 @@ export function get_typeahead_base_options(): TopicFilterTypeaheadOptions {
                 const matches_syntax_without_negation =
                     item.syntax.startsWith("-") &&
                     item.syntax.slice(1).toLowerCase().startsWith(lowercase_query);
-                return matches_syntax || matches_syntax_without_negation;
+                const matches_alias =
+                    item.alias_syntax?.toLowerCase().startsWith(lowercase_query) ?? false;
+                return matches_syntax || matches_syntax_without_negation || matches_alias;
             };
         },
         sorter(items: TopicFilterPill[], _query: string) {
@@ -109,14 +115,16 @@ export function create_item_from_syntax(
     syntax: string,
     current_items: TopicFilterPill[],
 ): TopicFilterPill | undefined {
-    const existing_syntaxes = current_items.map((item) => item.syntax);
-    if (existing_syntaxes.includes(syntax)) {
+    // Find the matching filter option
+    const filter_option = filter_options.find(
+        (option) => option.syntax === syntax || option.alias_syntax === syntax,
+    );
+    if (!filter_option) {
         return undefined;
     }
 
-    // Find the matching filter option
-    const filter_option = filter_options.find((option) => option.syntax === syntax);
-    if (!filter_option) {
+    const existing_syntaxes = current_items.map((item) => item.syntax);
+    if (existing_syntaxes.includes(filter_option.syntax)) {
         return undefined;
     }
     return filter_option;

@@ -818,6 +818,22 @@ function get_is_filter_suggestions(
         ]);
         other_suggestions.push(is_dm);
     }
+    // Suggest "-is:resolved" to anyone typing "is:unresolved".
+    //
+    // We skip a bare "is:" query, since it lists the operands
+    // for "is:" and should not offer a negated filter.
+    if (
+        last.operator === "is" &&
+        last.operand !== "" &&
+        common.phrase_match(last.operand, "unresolved")
+    ) {
+        const is_unresolved = format_as_suggestion([
+            {operator: last.operator, operand: "resolved", negated: !last.negated},
+        ]);
+        if (suggestions.includes(is_unresolved)) {
+            other_suggestions.push(is_unresolved);
+        }
+    }
     const all_suggestions = [...special_filtered_suggestions, ...other_suggestions];
     return all_suggestions;
 }
