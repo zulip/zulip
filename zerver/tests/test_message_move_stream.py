@@ -26,6 +26,7 @@ from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
 from zerver.lib.types import UserGroupMembersData
 from zerver.lib.url_encoding import stream_message_url
 from zerver.lib.user_groups import UserGroupMembershipDetails
+from zerver.lib.utils import assert_is_not_none
 from zerver.models import Message, NamedUserGroup, Stream, UserMessage, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
@@ -157,6 +158,34 @@ class MessageMoveStreamTest(ZulipTestCase):
 
         messages = get_topic_messages(user_profile, new_stream, "test")
         self.assert_length(messages, 0)
+
+    def test_move_message_to_same_channel_is_not_a_move(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        channel = get_stream("Denmark", user_profile.realm)
+
+        # Request moving message to the channel it's already in.
+        msg_id = self.send_stream_message(user_profile, channel.name, topic_name="topic1")
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {"stream_id": channel.id},
+        )
+        self.assert_json_error(result, "Nothing to change")
+
+        # Alongside a topic change, it is a plain topic edit; the edit
+        # history must not claim the channel changed.
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {"stream_id": channel.id, "topic": "topic2", "propagate_mode": "change_all"},
+        )
+        self.assert_json_success(result)
+        [edit_history_entry] = orjson.loads(
+            assert_is_not_none(Message.objects.get(id=msg_id).edit_history)
+        )
+        self.assertEqual(edit_history_entry["prev_topic"], "topic1")
+        self.assertEqual(edit_history_entry["topic"], "topic2")
+        self.assertNotIn("prev_stream", edit_history_entry)
+        self.assertNotIn("stream", edit_history_entry)
 
     def test_change_all_propagate_mode_for_moving_old_messages(self) -> None:
         user_profile = self.example_user("hamlet")

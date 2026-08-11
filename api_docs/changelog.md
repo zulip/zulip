@@ -20,6 +20,14 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 13.0
 
+**Feature level 509**
+
+**Feature level ZF-25c66e**
+
+* [`PATCH /messages/{message_id}`](/api/update-message): Fixed a bug where
+  passing the `stream_id` that the message is already in was processed as
+  a channel move.
+
 **Feature level 508**
 
 * [`POST /messages`](/api/send-message): Added `message_url` and
