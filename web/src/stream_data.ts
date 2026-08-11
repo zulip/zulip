@@ -223,6 +223,12 @@ export function get_sub_by_id(stream_id: number): StreamSubscription | undefined
     return stream_info.get(stream_id);
 }
 
+export function get_valid_sub_by_id(stream_id: number): StreamSubscription {
+    const stream = get_sub_by_id(stream_id);
+    assert(stream !== undefined);
+    return stream;
+}
+
 export function maybe_get_creator_details(
     creator_id: number | null,
 ): (User & {is_active: boolean}) | undefined {

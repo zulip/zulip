@@ -12,6 +12,10 @@
         {{~!-- squash whitespace --~}}
         {{this.prefix_for_operator}}{{> decorated_channel_name stream=this.stream inline_with_text=true show_colored_icon=false}}
         {{~!-- squash whitespace --~}}
+    {{else if (eq this.type "channels_list")}}
+        {{~!-- squash whitespace --~}}
+        {{this.verb}}messages in {{#each this.streams}}{{> decorated_channel_name stream=this inline_with_text=true show_colored_icon=false}}{{#unless @last}}, {{/unless}}{{/each}}
+        {{~!-- squash whitespace --~}}
     {{else if (eq this.type "invalid_has")}}
         {{~!-- squash whitespace --~}}
         invalid {{this.operand}} operand for has operator
