@@ -20,6 +20,11 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 13.0
 
+**Feature level 508**
+
+* [`POST /messages`](/api/send-message): Added `message_url` and
+  `message_link` fields to the response.
+
 **Feature level 507**
 
 * [`POST /users/me/subscriptions`](/api/subscribe),

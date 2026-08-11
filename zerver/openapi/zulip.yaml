@@ -9270,7 +9270,7 @@ paths:
                           cannot otherwise access it (such as a bot with permission to post to the
                           channel but not to read it).
 
-                          **Changes**: New in Zulip 13.0 (feature level ZF-fcf0cf).
+                          **Changes**: New in Zulip 13.0 (feature level 508).
                       message_link:
                         type: string
                         description: |
@@ -9286,7 +9286,7 @@ paths:
                           `message_url` since there is no suitable text label for the Markdown link
                           formatting.
 
-                          **Changes**: New in Zulip 13.0 (feature level ZF-fcf0cf).
+                          **Changes**: New in Zulip 13.0 (feature level 508).
                       automatic_new_visibility_policy:
                         type: integer
                         enum:
