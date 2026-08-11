@@ -28,26 +28,29 @@ async function copy_messages(
                 )!;
             }
 
+            // Normal messages put the body in a `<p>`; /me status lines
+            // keep the text directly in `.status-message`.
+            function first_text_node(message_content: Element): Text {
+                const p = message_content.querySelector("p");
+                const node = p?.firstChild ?? message_content.firstChild;
+                if (!(node instanceof Text)) {
+                    throw new TypeError("Expected a Text node");
+                }
+                return node;
+            }
+
             // select messages from start_message to end_message
             const selectedRange = document.createRange();
             if (partial_selection_config?.select_start_message_partially) {
                 const offset = partial_selection_config.start_text_node_offset!;
-                const start_message_text_node =
-                    get_message_node(start_message).querySelector("p")?.firstChild;
-                if (!(start_message_text_node instanceof Text)) {
-                    throw new TypeError("Expected a Text node");
-                }
+                const start_message_text_node = first_text_node(get_message_node(start_message));
                 selectedRange.setStart(start_message_text_node, offset);
             } else {
                 selectedRange.setStartBefore(get_message_node(start_message));
             }
             if (partial_selection_config?.select_end_message_partially) {
                 const offset = partial_selection_config.end_text_node_offset!;
-                const end_message_text_node =
-                    get_message_node(end_message).querySelector("p")?.firstChild;
-                if (!(end_message_text_node instanceof Text)) {
-                    throw new TypeError("Expected a Text node");
-                }
+                const end_message_text_node = first_text_node(get_message_node(end_message));
                 // For the last message, the offset will be from the end of the message,
                 // just like how selecting text in the browser would work.
                 selectedRange.setEnd(end_message_text_node, end_message_text_node.length - offset);
@@ -308,6 +311,48 @@ async function test_copying_selection_with_no_message_content(page: Page): Promi
     assert.ok(result.selection_text.length > 0);
 }
 
+async function test_partial_me_bookend_copy_includes_ellipsis(page: Page): Promise<void> {
+    // A partial `/me` bookend should copy the selected status text with
+    // the same `...` marker as a normal bookend.
+    const actual_first = await copy_messages(
+        page,
+        "waves at the camera for status bookend",
+        "BBB after first status message bravo",
+        {
+            select_start_message_partially: true,
+            select_end_message_partially: true,
+            // Offset of "camera" in the status line.
+            start_text_node_offset: 13,
+            end_text_node_offset: 1,
+        },
+    );
+    assert.deepStrictEqual(actual_first, [
+        "Desdemona:",
+        "...camera for status bookend",
+        "Desdemona:",
+        "BBB after first status message brav...",
+    ]);
+
+    const actual_last = await copy_messages(
+        page,
+        "AAA start normal message alpha",
+        "waves at the camera for status bookend",
+        {
+            select_start_message_partially: true,
+            select_end_message_partially: true,
+            start_text_node_offset: 4,
+            // Drop " bookend" (8 chars) from the status line.
+            end_text_node_offset: 8,
+        },
+    );
+    assert.deepStrictEqual(actual_last, [
+        "Desdemona:",
+        "...start normal message alpha",
+        "Desdemona:",
+        "waves at the camera for status...",
+    ]);
+}
+
 async function copy_paste_test(page: Page): Promise<void> {
     await common.log_in(page);
     await common.send_multiple_messages(page, [
@@ -330,6 +375,24 @@ async function copy_paste_test(page: Page): Promise<void> {
         {stream_name: "Verona", topic: "copy-paste-topic #3", content: "copy paste test F"},
 
         {stream_name: "Verona", topic: "copy-paste-topic #3", content: "copy paste test G"},
+
+        {
+            stream_name: "Verona",
+            topic: "copy-paste-topic #5",
+            content: "AAA start normal message alpha",
+        },
+
+        {
+            stream_name: "Verona",
+            topic: "copy-paste-topic #5",
+            content: "/me waves at the camera for status bookend",
+        },
+
+        {
+            stream_name: "Verona",
+            topic: "copy-paste-topic #5",
+            content: "BBB after first status message bravo",
+        },
     ]);
 
     await page.click("#left-sidebar-navigation-list .top_left_all_messages");
@@ -342,6 +405,14 @@ async function copy_paste_test(page: Page): Promise<void> {
             ["copy paste test C", "copy paste test D", "copy paste test E"],
         ],
         ["Verona > copy-paste-topic #3", ["copy paste test F", "copy paste test G"]],
+        [
+            "Verona > copy-paste-topic #5",
+            [
+                "AAA start normal message alpha",
+                "waves at the camera for status bookend",
+                "BBB after first status message bravo",
+            ],
+        ],
     ]);
     console.log("Messages were sent successfully");
 
@@ -356,6 +427,7 @@ async function copy_paste_test(page: Page): Promise<void> {
     await test_timestamp_clipboard_has_datetime(page);
     await test_copying_selection_with_no_message_content(page);
     await test_multiple_message_selection_with_partially_selected_bookend_messages(page);
+    await test_partial_me_bookend_copy_includes_ellipsis(page);
 }
 
 await common.run_test(copy_paste_test);

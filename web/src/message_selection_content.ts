@@ -55,27 +55,35 @@ function get_html_for_bookend_message_content(
             selected_message_content_element instanceof HTMLElement,
     );
 
+    const is_partial =
+        selected_message_content_element.innerHTML.trim() !==
+        original_message_content_element.innerHTML.trim();
+    const $ellipsis_span = $("<span>").text("...");
+
     // Special case for /me messages.
     // We wrap the /me message content in a `div` to ensure newlines are
     // inserted before and after the message content, which is important
     // when copy pasting multiple messages.
     if (selected_message_content_element.classList.contains("status-message")) {
+        if (is_partial) {
+            if (type === "start") {
+                selected_message_content_element.prepend(the($ellipsis_span));
+            } else {
+                selected_message_content_element.append(the($ellipsis_span));
+            }
+        }
         return {
             html: `<div>` + selected_message_content_element.outerHTML + `</div>`,
-            // Status messages are treated as whole units for selection.
-            is_partial: false,
+            is_partial,
         };
     }
 
     // If the selected `.message_content` HTML is same as the complete `.message_content` HTML,
     // we return early and don't append/prepend ellipsis text.
-    if (
-        selected_message_content_element.innerHTML.trim() ===
-        original_message_content_element.innerHTML.trim()
-    ) {
+    if (!is_partial) {
         return {
             html: selected_message_content_element.innerHTML,
-            is_partial: false,
+            is_partial,
         };
     }
 
@@ -84,7 +92,6 @@ function get_html_for_bookend_message_content(
     // inside the first/last paragraph (rather than as a sibling of it) keeps
     // turndown from rendering it on its own line, separated from the text by
     // a blank line.
-    const $ellipsis_span = $("<span>").text("...");
     const $content_children = $(selected_message_content_element).children();
     if (type === "start") {
         const $first_child = $content_children.first();
