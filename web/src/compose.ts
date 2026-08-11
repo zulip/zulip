@@ -255,6 +255,7 @@ export let send_message = (): void => {
 
     function error(response: string, server_error_code: string): void {
         // Error callback for failed message send attempts.
+        compose_ui.hide_compose_spinner();
         if (!locally_echoed) {
             if (server_error_code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
                 // The topic wildcard mention permission code path has
@@ -276,13 +277,6 @@ export let send_message = (): void => {
                 );
             }
 
-            // For messages that were not locally echoed, we're
-            // responsible for hiding the compose spinner to restore
-            // the compose box so one can send a next message.
-            //
-            // (Restoring this state is handled by clear_compose_box
-            // for locally echoed messages.)
-            compose_ui.hide_compose_spinner();
             return;
         }
 
