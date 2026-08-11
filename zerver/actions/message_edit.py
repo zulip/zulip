@@ -144,7 +144,7 @@ def validate_message_edit_payload(
             raise JsonableError(_("Direct messages cannot have topics."))
 
     if propagate_mode != "change_one" and topic_name is None and stream_id is None:
-        raise JsonableError(_("Invalid propagate_mode without topic edit"))
+        raise JsonableError(_("Invalid propagate_mode without topic or channel edit"))
 
     if topic_name in {
         RESOLVED_TOPIC_PREFIX.strip(),
