@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import {$t} from "./i18n.ts";
 import * as message_view from "./message_view.ts";
 import * as people from "./people.ts";
@@ -28,6 +29,18 @@ export function hide_scheduled_message_success_compose_banner(scheduled_message_
     $(
         `.message_scheduled_success_compose_banner[data-scheduled-message-id=${scheduled_message_id}]`,
     ).hide();
+    for (const banner of $(
+        ".message_scheduled_success_compose_banner[data-scheduled-message-ids]",
+    )) {
+        const $banner = $(banner);
+        const ids = $banner
+            .attr("data-scheduled-message-ids")!
+            .split(",")
+            .map((id) => Number.parseInt(id, 10));
+        if (ids.includes(scheduled_message_id)) {
+            $banner.hide();
+        }
+    }
 }
 
 function narrow_via_edit_scheduled_message(compose_args: ScheduledMessageComposeArgs): void {
@@ -100,6 +113,63 @@ function show_message_unscheduled_banner(scheduled_delivery_timestamp: number): 
     );
 }
 
+function restore_unscheduled_split_parts(parts: ScheduledMessage[], count: number): void {
+    if (count === 0) {
+        return;
+    }
+    const first_part = parts[0];
+    assert(first_part !== undefined);
+    const content = parts
+        .slice(0, count)
+        .map((part) => part.content)
+        .join(compose_split_messages.SPLIT_DELIMITER);
+    open_scheduled_message_in_compose({...first_part, content}, false);
+    compose_split_messages.set_split_messages_enabled(true);
+    compose_banner.update_split_messages_info_banner();
+}
+
+export function undo_split_scheduled_messages(
+    scheduled_message_ids: number[],
+    on_nothing_unscheduled?: () => void,
+): void {
+    const parts = scheduled_message_ids
+        .map((scheduled_message_id) =>
+            scheduled_messages.scheduled_messages_by_id.get(scheduled_message_id),
+        )
+        .filter((part) => part !== undefined);
+
+    const first_part = parts[0];
+    if (parts.length !== scheduled_message_ids.length || first_part === undefined) {
+        compose_banner.show_partial_undo_failure(scheduled_message_ids.length);
+        on_nothing_unscheduled?.();
+        return;
+    }
+
+    const delete_part = (index: number): void => {
+        if (index === parts.length) {
+            restore_unscheduled_split_parts(parts, parts.length);
+            show_message_unscheduled_banner(first_part.scheduled_delivery_timestamp);
+            return;
+        }
+        const part = parts[index];
+        assert(part !== undefined);
+        scheduled_messages.delete_scheduled_message(
+            part.scheduled_message_id,
+            () => {
+                delete_part(index + 1);
+            },
+            () => {
+                restore_unscheduled_split_parts(parts, index);
+                compose_banner.show_partial_undo_failure(parts.length - index);
+                if (index === 0) {
+                    on_nothing_unscheduled?.();
+                }
+            },
+        );
+    };
+    delete_part(0);
+}
+
 export function edit_scheduled_message(
     scheduled_message_id: number,
     should_narrow_to_recipient = true,
@@ -123,6 +193,21 @@ export function initialize(): void {
         );
         const should_narrow_to_recipient = false;
         edit_scheduled_message(scheduled_message_id, should_narrow_to_recipient);
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $("body").on("click", ".undo_split_scheduled_messages", (e) => {
+        const $button = $(e.target);
+        const scheduled_message_ids = $button
+            .parents(".message_scheduled_success_compose_banner")
+            .attr("data-scheduled-message-ids")!
+            .split(",")
+            .map((scheduled_message_id) => Number.parseInt(scheduled_message_id, 10));
+        $button.prop("disabled", true);
+        undo_split_scheduled_messages(scheduled_message_ids, () => {
+            $button.prop("disabled", false);
+        });
         e.preventDefault();
         e.stopPropagation();
     });

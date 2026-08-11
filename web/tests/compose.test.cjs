@@ -842,10 +842,9 @@ test_ui(
         assert.deepEqual(deleted_draft_ids, [100]);
         assert.equal(fake_compose_box.textarea_val(), "");
         assert.ok(!fake_compose_box.is_textarea_readonly());
-        // The banner counts every part, and is keyed to the first part so that
-        // the server's removal event for it dismisses the banner.
         assert.equal(banner_context.message_count, 3);
         assert.equal(banner_context.scheduled_message_id, 1);
+        assert.equal(banner_context.scheduled_message_ids, "1,2,3");
 
         compose_split_messages.set_split_messages_enabled(false);
     },
