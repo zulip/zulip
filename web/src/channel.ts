@@ -21,7 +21,7 @@ type AjaxRequestHandlerOptions = Omit<JQuery.AjaxSettings, "success"> & {
               jqXHR: JQuery.jqXHR<unknown>,
           ) => void)
         | undefined;
-    error?: JQuery.Ajax.ErrorCallback<unknown>;
+    error?: JQuery.Ajax.ErrorCallback<unknown> | undefined;
 };
 
 export type AjaxRequestHandler = typeof call;
