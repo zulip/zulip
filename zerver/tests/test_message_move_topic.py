@@ -135,7 +135,7 @@ class MessageMoveTopicTest(ZulipTestCase):
                 "propagate_mode": "change_all",
             },
         )
-        self.assert_json_error(result, "Invalid propagate_mode without topic edit")
+        self.assert_json_error(result, "Invalid propagate_mode without topic or channel edit")
         self.check_topic(id1, topic_name="topic1")
 
     def test_edit_message_empty_topic_with_extra_space(self) -> None:
