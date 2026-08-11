@@ -385,6 +385,17 @@ export function show_partial_schedule_failure(scheduled_count: number): void {
     show_error_message(text, CLASSNAMES.split_partial_failure, $("#compose_banners"));
 }
 
+export function show_partial_undo_failure(still_scheduled_count: number): void {
+    const text = $t(
+        {
+            defaultMessage:
+                "{n, plural, one {# message is} other {# messages are}} still scheduled, because unscheduling failed. You can delete them from your scheduled messages.",
+        },
+        {n: still_scheduled_count},
+    );
+    show_error_message(text, CLASSNAMES.split_partial_failure, $("#compose_banners"));
+}
+
 function split_messages_info_banner_content(): string {
     const context = {
         banner_type: INFO,

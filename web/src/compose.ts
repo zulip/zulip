@@ -553,7 +553,7 @@ export let schedule_message_to_custom_date = (
     scheduled_delivery_timestamp:
         number | undefined = scheduled_messages.get_selected_send_later_timestamp(),
     deliver_at: string | undefined = scheduled_messages.get_formatted_selected_send_later_time(),
-    first_scheduled_message_id?: number,
+    scheduled_message_ids: number[] = [],
 ): boolean => {
     const is_recursive_call = scheduled_count > 0;
 
@@ -624,10 +624,7 @@ export let schedule_message_to_custom_date = (
     const $banner_container = $("#compose_banners");
     const success = function (data: unknown): void {
         const {scheduled_message_id} = z.object({scheduled_message_id: z.number()}).parse(data);
-        // The success banner is keyed to the first part, so that the server's
-        // removal event for it — delivery or deletion — dismisses the banner,
-        // just as it does for a single scheduled message.
-        const banner_scheduled_message_id = first_scheduled_message_id ?? scheduled_message_id;
+        const all_scheduled_message_ids = [...scheduled_message_ids, scheduled_message_id];
         if (is_content_to_send_split) {
             // This part is scheduled; rewrite the in-flight draft to only the
             // still-unscheduled remainder, so a reload mid-schedule can't
@@ -646,7 +643,7 @@ export let schedule_message_to_custom_date = (
                 draft_id,
                 scheduled_delivery_timestamp,
                 deliver_at,
-                banner_scheduled_message_id,
+                all_scheduled_message_ids,
             );
             return;
         }
@@ -669,7 +666,8 @@ export let schedule_message_to_custom_date = (
             });
         } else {
             new_row_html = render_success_split_messages_scheduled_banner({
-                scheduled_message_id: banner_scheduled_message_id,
+                scheduled_message_id: all_scheduled_message_ids[0],
+                scheduled_message_ids: all_scheduled_message_ids.join(","),
                 message_count,
                 minimum_scheduled_message_delay_minutes:
                     scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60,
