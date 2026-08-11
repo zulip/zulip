@@ -451,6 +451,7 @@ test("sending precondition failures", ({override_rewire}) => {
 test("sending failure retries", ({override_rewire}) => {
     const message = sample_message_with_clean_reactions();
     override_rewire(reactions, "add_reaction", noop);
+    override_rewire(reactions, "remove_reaction", noop);
     override_rewire(retry_backoff, "get_retry_backoff_seconds", () => 10);
     const stub = make_stub();
     channel.post = stub.f;
@@ -501,6 +502,61 @@ test("sending failure retries", ({override_rewire}) => {
     reactions.toggle_emoji_reaction(message, "airplane");
     assert.equal(stub.num_calls, 8);
     stub.get_args("args").args.success();
+});
+
+test("sending failure reverts optimistic update", ({override_rewire}) => {
+    const message = sample_message_with_clean_reactions();
+
+    const add_stub = make_stub();
+    const remove_stub = make_stub();
+    override_rewire(reactions, "add_reaction", add_stub.f);
+    override_rewire(reactions, "remove_reaction", remove_stub.f);
+
+    blueslip.expect("error", "Error sending reaction", 2);
+
+    {
+        // A failed add is reverted by removing the reaction locally.
+        const stub = make_stub();
+        channel.post = stub.f;
+        reactions.toggle_emoji_reaction(message, "banana");
+        assert.equal(add_stub.num_calls, 1);
+
+        stub.get_args("args").args.error({
+            readyState: 4,
+            status: 400,
+            responseJSON: {msg: "Invalid message(s)"},
+        });
+        assert.equal(remove_stub.num_calls, 1);
+        assert.deepEqual(remove_stub.get_args("event").event, {
+            message_id: message.id,
+            user_id: alice_user_id,
+            reaction_type: "unicode_emoji",
+            emoji_name: "banana",
+            emoji_code: "1f34c",
+        });
+    }
+
+    {
+        // A failed remove is reverted by re-adding the reaction locally.
+        const stub = make_stub();
+        channel.del = stub.f;
+        reactions.toggle_emoji_reaction(message, "smile");
+        assert.equal(remove_stub.num_calls, 2);
+
+        stub.get_args("args").args.error({
+            readyState: 4,
+            status: 400,
+            responseJSON: {msg: "Invalid message(s)"},
+        });
+        assert.equal(add_stub.num_calls, 2);
+        assert.deepEqual(add_stub.get_args("event").event, {
+            message_id: message.id,
+            user_id: alice_user_id,
+            reaction_type: "unicode_emoji",
+            emoji_name: "smile",
+            emoji_code: "1f604",
+        });
+    }
 });
 
 test("prevent_simultaneous_requests_updating_reaction", ({override_rewire}) => {
