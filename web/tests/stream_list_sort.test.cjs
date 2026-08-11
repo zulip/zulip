@@ -602,3 +602,17 @@ test("initialize", ({override}) => {
 
     assert.ok(!stream_list_sort.is_filtering_inactives());
 });
+
+test("topics_state filter", () => {
+    add_all_subs();
+
+    message_lists.set_current(
+        make_message_list([{operator: "stream", operand: scalene.stream_id.toString()}]),
+    );
+
+    const streams = stream_data.subscribed_stream_ids();
+
+    const sorted_sections = stream_list_sort.sort_groups(streams, "", "is:followed").sections;
+
+    assert.ok(sorted_sections.length > 0);
+});

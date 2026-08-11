@@ -2,7 +2,7 @@
     <div id="left-sidebar-search">
         <div class="input-wrapper-for-tooltip tippy-zulip-delayed-tooltip" data-tooltip-template-id="filter-left-sidebar-tooltip-template">
             {{#> components/input_wrapper input_type="filter-input" custom_classes="left-sidebar-search-section" icon="search" input_button_icon="close"}}
-                <input type="text" class="input-element left-sidebar-search-input" autocomplete="off" placeholder="{{t 'Filter left sidebar' }}" />
+                <div class="input-element left-sidebar-search-input" contenteditable="true" data-placeholder="{{t 'Filter left sidebar' }}" ></div>
             {{/components/input_wrapper}}
         </div>
         <span id="add_streams_button" class="add-stream-icon-container hidden-for-spectators" tabindex="0">

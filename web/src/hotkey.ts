@@ -405,6 +405,8 @@ export let processing_text = (): boolean => {
         $focused_elt.is("input") ||
         $focused_elt.is("select") ||
         $focused_elt.is("textarea") ||
+        $focused_elt.is('[contenteditable="true"]') ||
+        $focused_elt.hasClass("left-sidebar-search-input") ||
         $focused_elt.parents(".pill-container").length > 0 ||
         $focused_elt.attr("id") === "compose-send-button" ||
         $focused_elt.parents(".dropdown-list-container").length > 0

@@ -338,8 +338,8 @@ export function enable_element_and_remove_tooltip($element: JQuery): void {
 }
 
 export let get_left_sidebar_search_term = function (): string {
-    const $search_box = $<HTMLInputElement>("input.left-sidebar-search-input").expectOne();
-    const search_term = $search_box.val();
+    const $search_box = $<HTMLDivElement>("div.left-sidebar-search-input").expectOne();
+    const search_term = $search_box.text().trim();
     assert(search_term !== undefined);
     return search_term.trim();
 };
