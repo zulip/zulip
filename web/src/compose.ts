@@ -26,6 +26,7 @@ import * as scheduled_messages from "./scheduled_messages.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_state from "./server_events_state.ts";
 import {current_user} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as transmit from "./transmit.ts";
 import * as typing from "./typing.ts";
 import {user_settings} from "./user_settings.ts";
@@ -140,6 +141,12 @@ export function send_message_success(
     drafts.draft_model.deleteDrafts([sent_message.draft_id]);
 
     if (sent_message.type === "stream") {
+        const sent_to_unsubscribed_channel = !stream_data.is_subscribed(sent_message.stream_id);
+
+        if (sent_to_unsubscribed_channel && !sent_message.locally_echoed) {
+            message_events.fetch_and_insert_sent_message(data.id);
+        }
+
         if (data.automatic_new_visibility_policy) {
             if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("visibility_policy_banner")) {
                 return;
@@ -150,6 +157,11 @@ export function send_message_success(
                 ...data,
                 automatic_new_visibility_policy: data.automatic_new_visibility_policy,
             });
+            return;
+        }
+
+        if (sent_to_unsubscribed_channel) {
+            compose_notifications.notify_sent_to_unsubscribed_channel(sent_message.stream_id);
             return;
         }
 

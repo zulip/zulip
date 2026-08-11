@@ -407,6 +407,25 @@ export function insert_new_messages(opts: InsertNewMessagesOpts): Message[] {
     return messages;
 }
 
+const fetch_message_response_schema = z.object({
+    message: message_store.raw_message_schema,
+});
+
+export function fetch_and_insert_sent_message(message_id: number): void {
+    void channel.get({
+        url: `/json/messages/${message_id}`,
+        data: {allow_empty_topic_name: true},
+        success(raw_data) {
+            const data = fetch_message_response_schema.parse(raw_data);
+            insert_new_messages({
+                type: "server_message",
+                raw_messages: [data.message],
+                sent_by_this_client: true,
+            });
+        },
+    });
+}
+
 function topic_resolve_toggled(new_topic: string, original_topic: string): boolean {
     if (resolved_topic.is_resolved(new_topic) && new_topic.slice(2) === original_topic) {
         return true;
