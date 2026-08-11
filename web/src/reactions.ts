@@ -16,11 +16,17 @@ import * as message_store from "./message_store.ts";
 import type {Message, MessageCleanReaction, RawMessage} from "./message_store.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as spectators from "./spectators.ts";
 import {current_user} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
 
 const waiting_for_server_request_ids = new Set<string>();
+
+// How many times to retry a reaction request that fails with a
+// transient server (5xx) or network error before giving up and
+// reporting the failure.
+const MAX_SEND_REACTION_RETRIES = 5;
 
 export type ReactionEvent = {
     message_id: number;
@@ -102,31 +108,91 @@ function update_ui_and_send_reaction_ajax(
         remove_reaction(reaction);
     }
 
+    send_reaction_request(operation, reaction, rendering_details, reaction_request_id, 0);
+}
+
+function send_reaction_request(
+    operation: "add" | "remove",
+    reaction: ReactionEvent,
+    rendering_details: EmojiRenderingDetails,
+    reaction_request_id: string,
+    attempt: number,
+): void {
+    waiting_for_server_request_ids.add(reaction_request_id);
     const args = {
-        url: "/json/messages/" + message.id + "/reactions",
+        url: "/json/messages/" + reaction.message_id + "/reactions",
         data: rendering_details,
         success() {
             waiting_for_server_request_ids.delete(reaction_request_id);
         },
         error(xhr: JQuery.jqXHR) {
-            waiting_for_server_request_ids.delete(reaction_request_id);
-            if (xhr.readyState !== 0) {
-                const parsed = z.object({code: z.string()}).safeParse(xhr.responseJSON);
-                if (
-                    parsed.success &&
-                    (parsed.data.code === "REACTION_ALREADY_EXISTS" ||
-                        parsed.data.code === "REACTION_DOES_NOT_EXIST")
-                ) {
-                    // Don't send error report for simple precondition failures caused by race
-                    // conditions; the user already got what they wanted
+            // Network drop (status 0) and gateway/server errors deserve some
+            // retries with exponential backoff.
+            const is_transient_error = xhr.status === 0 || xhr.status >= 500;
+            let parsed;
+            if (xhr.readyState === 0) {
+                // client cancelled the request
+                waiting_for_server_request_ids.delete(reaction_request_id);
+            } else if (
+                (parsed = z.object({code: z.string()}).safeParse(xhr.responseJSON)).success &&
+                (parsed.data.code === "REACTION_ALREADY_EXISTS" ||
+                    parsed.data.code === "REACTION_DOES_NOT_EXIST")
+            ) {
+                // Don't send error report for simple precondition failures caused by race
+                // conditions; the user already got what they wanted
+                waiting_for_server_request_ids.delete(reaction_request_id);
+            } else if (
+                (parsed = z
+                    .object({code: z.literal("RATE_LIMIT_HIT"), ["retry-after"]: z.number()})
+                    .safeParse(xhr.responseJSON)).success
+            ) {
+                // If we hit the rate limit, just retry after the server-specified
+                // delay. This is self-resolving, so we retry indefinitely and
+                // don't count it against the transient-error retry budget.
+                const milliseconds_to_wait = 1000 * parsed.data["retry-after"];
+                setTimeout(() => {
+                    send_reaction_request(
+                        operation,
+                        reaction,
+                        rendering_details,
+                        reaction_request_id,
+                        0,
+                    );
+                }, milliseconds_to_wait);
+            } else if (is_transient_error && attempt < MAX_SEND_REACTION_RETRIES) {
+                // Use the slower backoff, since a restarting server can take
+                // a while to come back.
+                const delay_secs = get_retry_backoff_seconds(xhr, attempt, false, true);
+                setTimeout(() => {
+                    send_reaction_request(
+                        operation,
+                        reaction,
+                        rendering_details,
+                        reaction_request_id,
+                        attempt + 1,
+                    );
+                }, delay_secs * 1000);
+            } else {
+                waiting_for_server_request_ids.delete(reaction_request_id);
+                if (is_transient_error) {
+                    // The transient failure persisted past our retry budget,
+                    // so the server is likely having a real problem.
+                    blueslip.error("Error sending reaction after retries", {
+                        status: xhr.status,
+                        body: xhr.responseText,
+                    });
                 } else {
-                    blueslip.error(channel.xhr_error_message("Error sending reaction", xhr));
+                    // Any other error -- e.g. a 4xx bad request -- is a
+                    // client-side problem that retrying won't fix.
+                    blueslip.error("Error sending reaction", {
+                        status: xhr.status,
+                        body: xhr.responseText,
+                    });
                 }
             }
         },
     };
 
-    waiting_for_server_request_ids.add(reaction_request_id);
     if (operation === "add") {
         void channel.post(args);
     } else if (operation === "remove") {

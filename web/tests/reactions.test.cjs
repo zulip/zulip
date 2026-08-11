@@ -61,6 +61,7 @@ const emoji = zrequire("emoji");
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const people = zrequire("people");
 const reactions = zrequire("reactions");
+const retry_backoff = zrequire("retry_backoff");
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
@@ -358,10 +359,8 @@ test("sending", ({override, override_rewire}) => {
         args.success();
 
         // similarly, we only exercise the failure codepath
-        // Since this path calls blueslip.warn, we need to handle it.
-        blueslip.expect("error", "XHR error message.");
-        channel.xhr_error_message = () => "XHR error message.";
-        args.error({readyState: 4, responseJSON: {msg: "Some error message"}});
+        blueslip.expect("error", "Error sending reaction");
+        args.error({readyState: 4, status: 400, responseJSON: {msg: "Some error message"}});
     }
     emoji_name = "alien"; // not set yet
     {
@@ -419,6 +418,89 @@ test("sending", ({override, override_rewire}) => {
         name: "Error",
         message: "Bad emoji name: unknown-emoji",
     });
+});
+
+test("sending precondition failures", ({override_rewire}) => {
+    const message = sample_message_with_clean_reactions();
+    override_rewire(reactions, "add_reaction", noop);
+    const stub = make_stub();
+    channel.post = stub.f;
+
+    reactions.toggle_emoji_reaction(message, "octopus");
+    assert.equal(stub.num_calls, 1);
+
+    // A precondition failure isn't reported (no blueslip.expect here)
+    // because the user already got what they wanted.
+    stub.get_args("args").args.error({
+        readyState: 4,
+        status: 400,
+        responseJSON: {code: "REACTION_ALREADY_EXISTS", msg: "Reaction already exists."},
+    });
+
+    // The request is no longer in flight, so the user can send another one.
+    reactions.toggle_emoji_reaction(message, "octopus");
+    assert.equal(stub.num_calls, 2);
+
+    // A cancelled request isn't reported either.
+    stub.get_args("args").args.error({readyState: 0, status: 0});
+    reactions.toggle_emoji_reaction(message, "octopus");
+    assert.equal(stub.num_calls, 3);
+    stub.get_args("args").args.success();
+});
+
+test("sending failure retries", ({override_rewire}) => {
+    const message = sample_message_with_clean_reactions();
+    override_rewire(reactions, "add_reaction", noop);
+    override_rewire(retry_backoff, "get_retry_backoff_seconds", () => 10);
+    const stub = make_stub();
+    channel.post = stub.f;
+
+    let timeout_callback;
+    let timeout_delay_ms;
+    set_global("setTimeout", (f, delay) => {
+        timeout_callback = f;
+        timeout_delay_ms = delay;
+    });
+
+    reactions.toggle_emoji_reaction(message, "airplane");
+    assert.equal(stub.num_calls, 1);
+
+    // A rate-limited request is retried after the server-specified delay,
+    // without reporting an error.
+    stub.get_args("args").args.error({
+        readyState: 4,
+        status: 429,
+        responseJSON: {code: "RATE_LIMIT_HIT", "retry-after": 60},
+    });
+    assert.equal(timeout_delay_ms, 60 * 1000);
+
+    // Clicking again while a retry is pending doesn't send a duplicate
+    // request.
+    reactions.toggle_emoji_reaction(message, "airplane");
+    assert.equal(stub.num_calls, 1);
+
+    timeout_callback();
+    assert.equal(stub.num_calls, 2);
+
+    // Transient server errors are retried with backoff, and reported only
+    // once we give up.
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+        stub.get_args("args").args.error({
+            readyState: 4,
+            status: 502,
+            responseText: "Bad gateway",
+        });
+        assert.equal(timeout_delay_ms, 10 * 1000);
+        timeout_callback();
+        assert.equal(stub.num_calls, 3 + attempt);
+    }
+    blueslip.expect("error", "Error sending reaction after retries");
+    stub.get_args("args").args.error({readyState: 4, status: 502, responseText: "Bad gateway"});
+
+    // The request is no longer in flight, so the user can try again.
+    reactions.toggle_emoji_reaction(message, "airplane");
+    assert.equal(stub.num_calls, 8);
+    stub.get_args("args").args.success();
 });
 
 test("prevent_simultaneous_requests_updating_reaction", ({override_rewire}) => {
