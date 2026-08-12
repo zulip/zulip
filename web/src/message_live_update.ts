@@ -1,3 +1,4 @@
+import * as condense from "./condense.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import * as thumbnail from "./thumbnail.ts";
@@ -77,6 +78,30 @@ export function update_starred_view(message_id: number, new_value: boolean): voi
             : "star-message-tooltip-template";
         $star_container.attr("data-tooltip-template-id", data_template_id);
     });
+}
+
+export function update_hide_link_previews_view(message_ids: number[], hide: boolean): void {
+    // Avoid a full re-render, but toggle the link previews in each
+    // message table in which the messages are visible.
+    for (const message_id of message_ids) {
+        update_message_in_all_views(message_id, ($row) => {
+            $row.find(".message_content").toggleClass("hide-link-previews", hide);
+        });
+    }
+
+    if (message_lists.current === undefined) {
+        return;
+    }
+
+    // Hiding a preview changes the message's height, so its condensed
+    // state needs rechecking. Only the current list can be measured.
+    const rows_to_recondense = [];
+    for (const message_id of message_ids) {
+        rows_to_recondense.push(...message_lists.current.get_row(message_id));
+    }
+    if (rows_to_recondense.length > 0) {
+        condense.condense_and_collapse(rows_to_recondense);
+    }
 }
 
 export function update_stream_name(stream_id: number, new_name: string): void {

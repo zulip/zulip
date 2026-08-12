@@ -965,6 +965,24 @@ exports.fixtures = {
         all: false,
     },
 
+    update_message_flags__hide_link_previews_add: {
+        type: "update_message_flags",
+        op: "add",
+        operation: "add",
+        flag: "hide_link_previews",
+        messages: [exports.test_message.id],
+        all: false,
+    },
+
+    update_message_flags__hide_link_previews_remove: {
+        type: "update_message_flags",
+        op: "remove",
+        operation: "remove",
+        flag: "hide_link_previews",
+        messages: [exports.test_message.id],
+        all: false,
+    },
+
     update_message_flags__read: {
         type: "update_message_flags",
         op: "add",

@@ -1059,6 +1059,24 @@
     }
 }
 
+.message_content.hide-link-previews {
+    .message_embed,
+    .youtube-video,
+    .embed-video,
+    .vimeo-video {
+        display: none;
+    }
+
+    /* A gallery whose only children are hidden video previews has
+       nothing left but its bottom margin. Galleries that also hold
+       image or video previews must survive, since those stay visible. */
+    .message-thumbnail-gallery:not(
+        :has(> :not(.youtube-video, .embed-video, .vimeo-video))
+    ) {
+        display: none;
+    }
+}
+
 .codehilite {
     display: block !important;
     border: none !important;
