@@ -27,6 +27,18 @@ export function message_has_attachment(message_content: string): boolean {
     );
 }
 
+export function message_has_link_preview(message_content: string): boolean {
+    // Inline image and video previews are excluded because Markdown drops
+    // the link when the message body is a bare URL, leaving the preview as
+    // the only content; hiding it would blank the message. Video previews
+    // always keep their link, so they are safe to hide. .vimeo-video is
+    // legacy markup for Vimeo, still present in stored rendered content.
+    return is_element_in_message_content(
+        message_content,
+        ".message_embed, .youtube-video, .embed-video, .vimeo-video",
+    );
+}
+
 export function message_has_reaction(message: Message): boolean {
     return message.clean_reactions.size > 0;
 }
