@@ -30,7 +30,18 @@ type ChannelTopicEntry = {
     topic: string;
 };
 
-type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "operand">>;
+// Same as a term, except the operand is an optional string.
+type TermPattern = Omit<NarrowTerm, "operand"> & {operand?: string};
+
+function get_negated_and_unnegated_patterns(
+    operator: TermPattern["operator"],
+    operand: string,
+): TermPattern[] {
+    return [
+        {operator, operand},
+        {operator, operand, negated: true},
+    ];
+}
 
 const common_incompatible_patterns: TermPattern[] = [
     {operator: "is", operand: "dm"},
@@ -47,8 +58,19 @@ const channel_incompatible_patterns: TermPattern[] = [
 
 const channels_public_incompatible_patterns: TermPattern[] = [
     ...common_incompatible_patterns,
-    {operator: "channels", operand: "public"},
+    ...get_negated_and_unnegated_patterns("channels", "public"),
     {operator: "channels", operand: "web-public"},
+];
+
+// Built separately from the list above, not from it. With
+// "-channels:public" in the search bar, "channels:web-public" can
+// never match anything and "-channels:web-public" changes nothing,
+// so both forms of "channels:public" block this suggestion.
+const channels_web_public_incompatible_patterns: TermPattern[] = [
+    ...common_incompatible_patterns,
+    ...get_negated_and_unnegated_patterns("channels", "web-public"),
+    {operator: "channels", operand: "public"},
+    {operator: "channels", operand: "public", negated: true},
 ];
 
 // TODO: Expand this to support all available filters and its description.
@@ -95,10 +117,10 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     channel: channel_incompatible_patterns,
     channels: channel_incompatible_patterns,
     "channels:public": channels_public_incompatible_patterns,
-    "channels:web-public": channels_public_incompatible_patterns,
+    "channels:web-public": channels_web_public_incompatible_patterns,
     "channels:archived": [
         ...common_incompatible_patterns,
-        {operator: "channels", operand: "archived"},
+        ...get_negated_and_unnegated_patterns("channels", "archived"),
     ],
     topic: [
         {operator: "dm"},
@@ -115,19 +137,19 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     ],
     "dm-including": [{operator: "channel"}, {operator: "stream"}, {operator: "channels"}],
     "is:resolved": [
-        {operator: "is", operand: "resolved"},
+        ...get_negated_and_unnegated_patterns("is", "resolved"),
         {operator: "is", operand: "dm"},
         {operator: "dm"},
         {operator: "dm-including"},
     ],
     "-is:resolved": [
-        {operator: "is", operand: "resolved"},
+        ...get_negated_and_unnegated_patterns("is", "resolved"),
         {operator: "is", operand: "dm"},
         {operator: "dm"},
         {operator: "dm-including"},
     ],
     "is:dm": [
-        {operator: "is", operand: "dm"},
+        ...get_negated_and_unnegated_patterns("is", "dm"),
         {operator: "is", operand: "resolved"},
         {operator: "channel"},
         {operator: "dm"},
@@ -137,24 +159,24 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     ],
     mentions: [{operator: "mentions"}],
     sender: [{operator: "sender"}, {operator: "from"}],
-    "is:starred": [{operator: "is", operand: "starred"}],
-    "is:mentioned": [{operator: "is", operand: "mentioned"}],
+    "is:starred": get_negated_and_unnegated_patterns("is", "starred"),
+    "is:mentioned": get_negated_and_unnegated_patterns("is", "mentioned"),
     "is:followed": [
-        {operator: "is", operand: "followed"},
+        ...get_negated_and_unnegated_patterns("is", "followed"),
         {operator: "is", operand: "dm"},
         {operator: "dm"},
         {operator: "dm-including"},
     ],
-    "is:alerted": [{operator: "is", operand: "alerted"}],
-    "is:unread": [{operator: "is", operand: "unread"}],
+    "is:alerted": get_negated_and_unnegated_patterns("is", "alerted"),
+    "is:unread": get_negated_and_unnegated_patterns("is", "unread"),
     "is:muted": [
-        {operator: "is", operand: "muted"},
-        {operator: "in", operand: "home"},
+        ...get_negated_and_unnegated_patterns("is", "muted"),
+        ...get_negated_and_unnegated_patterns("in", "home"),
     ],
-    "has:link": [{operator: "has", operand: "link"}],
-    "has:image": [{operator: "has", operand: "image"}],
-    "has:attachment": [{operator: "has", operand: "attachment"}],
-    "has:reaction": [{operator: "has", operand: "reaction"}],
+    "has:link": get_negated_and_unnegated_patterns("has", "link"),
+    "has:image": get_negated_and_unnegated_patterns("has", "image"),
+    "has:attachment": get_negated_and_unnegated_patterns("has", "attachment"),
+    "has:reaction": get_negated_and_unnegated_patterns("has", "reaction"),
     // `date` and `near` combination is made incompatible to avoid confusing the user.
     // Having both operators only takes `date` into account while narrowing.
     // Details: https://github.com/zulip/zulip/pull/38486#issuecomment-4310019929
@@ -185,6 +207,9 @@ function match_criteria(terms: NarrowCanonicalTerm[], criteria: TermPattern[]): 
     const filter = new Filter(terms);
     return criteria.some((cr) => {
         if (cr.operand !== undefined) {
+            if (cr.negated) {
+                return filter.has_negated_operand(cr.operator, cr.operand);
+            }
             return filter.has_operand(cr.operator, cr.operand);
         }
         return filter.has_operator(cr.operator);

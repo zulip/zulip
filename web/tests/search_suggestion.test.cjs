@@ -1243,3 +1243,103 @@ test("empty query suggestions in an inaccessible narrow", ({override}) => {
     suggestions = search.get_suggestions([], [], true);
     assert.deepEqual(suggestions, search.get_suggestions([], [], false));
 });
+
+test("negated filters are not suggested again", () => {
+    // A filter that's already in the search bar isn't suggested
+    // again, and that holds when the existing term is negated.
+    let query = "-has:link -has:";
+    let suggestions = get_suggestions(query);
+    let expected = ["-has:link -has:image", "-has:link -has:attachment", "-has:link -has:reaction"];
+    assert.deepEqual(suggestions, expected);
+
+    query = "-channels:public -channels:";
+    suggestions = get_suggestions(query);
+    expected = ["-channels:public -channels:archived"];
+    assert.deepEqual(suggestions, expected);
+
+    // Suggesting the non-negated filter would contradict the
+    // existing term, so it's left out too.
+    query = "-has:link has:";
+    suggestions = get_suggestions(query);
+    expected = ["-has:link has:image", "-has:link has:attachment", "-has:link has:reaction"];
+    assert.deepEqual(suggestions, expected);
+
+    query = "-is:starred is:";
+    suggestions = get_suggestions(query);
+    expected = [
+        "-is:starred is:dm",
+        "-is:starred is:mentioned",
+        "-is:starred is:followed",
+        "-is:starred is:alerted",
+        "-is:starred is:unread",
+        "-is:starred is:muted",
+        "-is:starred is:resolved",
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    // `-is:muted` is an alias of `in:home`, so `-in:home` blocks
+    // both forms of the `is:muted` suggestion.
+    query = "-in:home is:";
+    suggestions = get_suggestions(query);
+    expected = [
+        "-in:home is:dm",
+        "-in:home is:starred",
+        "-in:home is:mentioned",
+        "-in:home is:followed",
+        "-in:home is:alerted",
+        "-in:home is:unread",
+        "-in:home is:resolved",
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    query = "-in:home -is:";
+    suggestions = get_suggestions(query);
+    expected = [
+        "-in:home -is:dm",
+        "-in:home -is:starred",
+        "-in:home -is:mentioned",
+        "-in:home -is:followed",
+        "-in:home -is:alerted",
+        "-in:home -is:unread",
+        "-in:home -is:resolved",
+    ];
+    assert.deepEqual(suggestions, expected);
+});
+
+test("negated filters do not block other operands", () => {
+    // "-channels:web-public" neither duplicates nor contradicts
+    // "channels:public", so that suggestion is still offered.
+    const web_public_id = new_stream_id();
+    const sub = make_stream({
+        name: "Web public",
+        stream_id: web_public_id,
+        is_web_public: true,
+    });
+    stream_data.add_sub_for_tests(sub);
+
+    let query = "-channels:web-public channels:";
+    let suggestions = get_suggestions(query);
+    let expected = [
+        "-channels:web-public channels:public",
+        "-channels:web-public channels:archived",
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    query = "-channels:web-public -channels:";
+    suggestions = get_suggestions(query);
+    expected = ["-channels:web-public -channels:public", "-channels:web-public -channels:archived"];
+    assert.deepEqual(suggestions, expected);
+
+    // With all public channels excluded, searching web-public
+    // channels can never match anything, and excluding them changes
+    // nothing, so both suggestions are dropped.
+    query = "-channels:public channels:";
+    suggestions = get_suggestions(query);
+    expected = ["-channels:public channels:archived"];
+    assert.deepEqual(suggestions, expected);
+
+    query = "-channels:public -channels:";
+    suggestions = get_suggestions(query);
+    expected = ["-channels:public -channels:archived"];
+    assert.deepEqual(suggestions, expected);
+});
