@@ -261,17 +261,18 @@ for [generating an integration URL](https://zulip.com/help/generate-integration-
 ## Step 4: Manually test the webhook
 
 You'll want to manually test your webhook implementation in the Zulip
-development environment. There are two command line tools you can use,
-as well as a GUI tool.
+development environment.
 
-For either one of the command line tools, you'll need to [get an API
-key](https://zulip.com/api/api-keys) for an [incoming webhook
-bot](https://zulip.com/help/add-a-bot-or-integration) in your Zulip
-development environment. Replace `<api_key>` with the bot's API key in
-the examples below. This is how the server knows that the request was
-made by an authorized user.
+### Command line tools
 
-### curl
+There are two command line tools you can use. For either one of them,
+you'll need to [get an API key](https://zulip.com/api/api-keys) for
+an [incoming webhook bot](https://zulip.com/help/add-a-bot-or-integration)
+in your Zulip development environment. Replace `<api_key>` with the
+bot's API key in the examples below. This is how the server knows that
+the request was made by an authorized user.
+
+#### curl
 
 Using curl, with the Zulip development server running in a separate
 console window:
@@ -289,7 +290,7 @@ After running the above command, you should see something similar to:
 And if you log-in to the web app as the bot's owner, you should see a new
 direct message from the bot.
 
-### `send_webhook_fixture_message` management command
+#### `send_webhook_fixture_message` management command
 
 Using `manage.py` from within the Zulip development environment:
 
