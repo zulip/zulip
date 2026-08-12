@@ -81,8 +81,8 @@ function sort_scheduled_messages(scheduled_messages: ScheduledMessage[]): Schedu
     );
 }
 
-export function handle_keyboard_events(event_key: string): void {
-    messages_overlay_ui.modals_handle_events(event_key, keyboard_handling_context);
+export function handle_keyboard_events(event_key: string, event_target?: EventTarget | null): void {
+    messages_overlay_ui.modals_handle_events(event_key, keyboard_handling_context, event_target);
 }
 
 function format(scheduled_messages: ScheduledMessage[]): ScheduledMessageRenderContext[] {
@@ -219,6 +219,9 @@ export function initialize(): void {
 
     $("body").on("focus", ".scheduled-message-info-box", function (this: HTMLElement, e) {
         if (e.target !== this) {
+            if (e.target instanceof HTMLElement && e.target.matches(":focus-visible")) {
+                $(".scheduled-message-info-box").removeClass("active");
+            }
             return;
         }
 

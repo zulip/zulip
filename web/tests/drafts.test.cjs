@@ -357,6 +357,25 @@ test("draft row focus ignores child controls", ({override}) => {
     assert.equal(activated_element, draft_row);
 });
 
+test("draft arrow navigation forwards focused child control", ({override}) => {
+    const draft_child_control = Object.create(window.HTMLElement.prototype);
+
+    for (const event_key of ["up_arrow", "down_arrow"]) {
+        let handled_event;
+        override(messages_overlay_ui, "modals_handle_events", (key, context, event_target) => {
+            handled_event = {key, box_item_selector: context.box_item_selector, event_target};
+        });
+
+        drafts_overlay_ui.handle_keyboard_events(event_key, draft_child_control);
+
+        assert.deepEqual(handled_event, {
+            key: event_key,
+            box_item_selector: "draft-message-info-box",
+            event_target: draft_child_control,
+        });
+    }
+});
+
 test("update_draft", ({override}) => {
     compose_state.set_message_type(undefined);
     let draft_id = drafts.update_draft();

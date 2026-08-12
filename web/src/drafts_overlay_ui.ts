@@ -216,8 +216,8 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
     id_attribute_name: "data-draft-id",
 };
 
-export function handle_keyboard_events(event_key: string): void {
-    messages_overlay_ui.modals_handle_events(event_key, keyboard_handling_context);
+export function handle_keyboard_events(event_key: string, event_target?: EventTarget | null): void {
+    messages_overlay_ui.modals_handle_events(event_key, keyboard_handling_context, event_target);
 }
 
 function format_drafts(data: Record<string, LocalStorageDraft>): FormattedDraft[] {
