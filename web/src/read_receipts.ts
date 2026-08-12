@@ -65,7 +65,10 @@ export function fetch_read_receipts(message_id: number): void {
             }
 
             has_initial_data = true;
-            $("#read_receipts_modal .read_receipts_error").removeClass("show");
+            $("#read_receipts_modal #read_receipts_error")
+                .empty()
+                .removeClass("show")
+                .css("display", "");
             const data = read_receipts_api_response_schema.parse(raw_data);
             const users = data.user_ids.map((id) => people.get_user_by_id_assert_valid(id));
             users.sort(people.compare_by_name);
