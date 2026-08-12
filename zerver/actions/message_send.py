@@ -683,10 +683,15 @@ def build_message_send_dict(
     if mention_backend is None:
         mention_backend = MentionBackend(realm.id)
 
+    message_sender_recursive_group_ids = None
+    if user_group_membership_details is not None:
+        message_sender_recursive_group_ids = user_group_membership_details.user_recursive_group_ids
+
     mention_data = MentionData(
         mention_backend=mention_backend,
         content=message.content,
         message_sender=message.sender,
+        message_sender_recursive_group_ids=message_sender_recursive_group_ids,
     )
 
     if message.is_channel_message:
@@ -2023,8 +2028,8 @@ def check_message(
         raise TopicWildcardMentionNotAllowedError
 
     if message_send_dict.rendering_result.mentions_user_group_ids:
-        mentioned_group_ids = list(message_send_dict.rendering_result.mentions_user_group_ids)
-        check_user_group_mention_allowed(sender, mentioned_group_ids)
+        mentioned_group_ids = message_send_dict.rendering_result.mentions_user_group_ids
+        check_user_group_mention_allowed(mentioned_group_ids, message_send_dict.mention_data)
 
     return message_send_dict
 
