@@ -51,6 +51,14 @@ const channels_public_incompatible_patterns: TermPattern[] = [
     {operator: "channels", operand: "web-public"},
 ];
 
+// Shared by the "is:resolved" and "-is:resolved" suggestions.
+const is_resolved_incompatible_patterns: TermPattern[] = [
+    {operator: "is", operand: "resolved"},
+    {operator: "is", operand: "dm"},
+    {operator: "dm"},
+    {operator: "dm-including"},
+];
+
 // TODO: Expand this to support all available filters and its description.
 // Also, we generate some descriptions in filter.ts too, we should look to
 // refactor them together.
@@ -114,18 +122,8 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
         {operator: "is", operand: "resolved"},
     ],
     "dm-including": [{operator: "channel"}, {operator: "stream"}, {operator: "channels"}],
-    "is:resolved": [
-        {operator: "is", operand: "resolved"},
-        {operator: "is", operand: "dm"},
-        {operator: "dm"},
-        {operator: "dm-including"},
-    ],
-    "-is:resolved": [
-        {operator: "is", operand: "resolved"},
-        {operator: "is", operand: "dm"},
-        {operator: "dm"},
-        {operator: "dm-including"},
-    ],
+    "is:resolved": is_resolved_incompatible_patterns,
+    "-is:resolved": is_resolved_incompatible_patterns,
     "is:dm": [
         {operator: "is", operand: "dm"},
         {operator: "is", operand: "resolved"},
