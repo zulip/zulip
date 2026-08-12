@@ -389,6 +389,88 @@ run_test("build_and_process_quote_assets_for_messages", ({override}) => {
         {message: msg_unhydrated, quote_content: "converted_by_turndown: <p>unhydrated</p>"},
         "Fallback to using paste_handler_converter",
     );
+
+    // Case: Partial success. Undefined slots fall back to HTML→markdown.
+    override(
+        compose_paste,
+        "paste_handler_converter",
+        (content) => `converted_by_turndown: ${content}`,
+    );
+
+    const msg_from_message_store = {
+        id: 3,
+        raw_content: "From message_store",
+        content: "<p>message_store only</p>",
+    };
+    const msg_html_only = {id: 4, content: "<p>html only body</p>"};
+    add_messages_to_message_store([
+        msg_hydrated,
+        msg_unhydrated,
+        msg_from_message_store,
+        msg_html_only,
+    ]);
+
+    override(
+        message_fetch_raw_content,
+        "get_raw_content_for_messages",
+        ({_message_ids, on_success, _on_error}) => {
+            // Explicit undefined for ids the batch did not return.
+            on_success(["batch raw", undefined, undefined, undefined]);
+        },
+    );
+
+    compose_reply.build_and_process_quote_assets_for_messages([1, 2, 3, 4], (assets) => {
+        result_assets = assets;
+    });
+
+    assert.equal(result_assets.length, 4);
+    assert.deepEqual(result_assets[0], {
+        message: msg_hydrated,
+        quote_content: "batch raw",
+    });
+    assert.deepEqual(
+        result_assets[1],
+        {
+            message: msg_unhydrated,
+            quote_content: "converted_by_turndown: <p>unhydrated</p>",
+        },
+        "Undefined batch slot uses HTML conversion.",
+    );
+    assert.deepEqual(
+        result_assets[2],
+        {
+            message: msg_from_message_store,
+            quote_content: "converted_by_turndown: <p>message_store only</p>",
+        },
+        "Undefined batch slot ignores message_store raw_content on success path.",
+    );
+    assert.deepEqual(
+        result_assets[3],
+        {
+            message: msg_html_only,
+            quote_content: "converted_by_turndown: <p>html only body</p>",
+        },
+        "Undefined batch slot with neither uses HTML conversion.",
+    );
+
+    // Case: All slots are undefined. Success path uses HTML conversion only.
+    override(
+        message_fetch_raw_content,
+        "get_raw_content_for_messages",
+        ({_message_ids, on_success, _on_error}) => {
+            on_success([undefined, undefined]);
+        },
+    );
+    compose_reply.build_and_process_quote_assets_for_messages([3, 4], (assets) => {
+        result_assets = assets;
+    });
+    assert.deepEqual(
+        result_assets.map((a) => a.quote_content),
+        [
+            "converted_by_turndown: <p>message_store only</p>",
+            "converted_by_turndown: <p>html only body</p>",
+        ],
+    );
 });
 
 run_test("get_quote_menu_selection", ({override_rewire}) => {
