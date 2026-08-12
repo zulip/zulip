@@ -782,6 +782,8 @@ def ok_to_include_history(
 
     include_history = False
     if narrow is not None:
+        # NOTE: Needs to be in sync with `is_history_enabling_term`
+        # in web/src/message_fetch_raw_content.ts.
         for term in narrow:
             if term.operator in channel_operators and not term.negated:
                 operand: str | int = term.operand

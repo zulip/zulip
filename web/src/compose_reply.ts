@@ -629,8 +629,8 @@ export function build_and_process_quote_assets_for_messages(
         message_ids,
         on_success(raw_content_arr) {
             for (const [i, message] of messages.entries()) {
-                const raw_content = raw_content_arr[i];
-                assert(raw_content !== undefined);
+                const raw_content =
+                    raw_content_arr[i] ?? compose_paste.paste_handler_converter(message.content);
                 quote_assets.push({message, quote_content: raw_content});
             }
             callback(quote_assets);
