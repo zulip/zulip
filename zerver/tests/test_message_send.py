@@ -2570,9 +2570,7 @@ class StreamMessagesTest(ZulipTestCase):
         content = "@*group_0*, @*group_1*, @*group_2*"
 
         flush_per_request_caches()
-        # TODO: We should avoid O(n) queries, triggered by sender_can_mention_group,
-        # when bulk mentioning groups.
-        with self.assert_database_query_count(23):
+        with self.assert_database_query_count(20):
             message_id = check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -2587,8 +2585,7 @@ class StreamMessagesTest(ZulipTestCase):
         )
 
         flush_per_request_caches()
-        # TODO: Same as above; we should avoid O(n) queries.
-        with self.assert_database_query_count(29):
+        with self.assert_database_query_count(26):
             check_update_message(sender, message_id, content=f"Edited {content}")
 
         # A cleared flag would mean the edit failed to fetch group membership.
