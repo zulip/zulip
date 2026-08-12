@@ -14,6 +14,7 @@ from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import get_user_mentions_for_display, truncate_content
 from zerver.lib.message_report import MAX_REPORT_MESSAGE_SNIPPET_LENGTH
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.topic_link_util import (
     get_message_link_syntax,
@@ -588,7 +589,94 @@ class ReportMessageTest(ZulipTestCase):
             report_type="harassment",
         )
         self.assert_json_success(result)
-        report_msg = self.get_last_message()
+        # The moderation channel post is now the second-to-last message because
+        # send_report_confirmation_dm() sends a DM after it.  Use the filtered
+        # query to get the channel post specifically.
+        reports = self.get_submitted_moderation_requests()
+        report_msg = reports.last()
+        assert report_msg is not None
         self.assertEqual(report_msg.sender_id, notification_bot.id)
         self.assertEqual(report_msg.topic_name(), "")
         self.assertIn("reported", report_msg.content)
+
+    def test_report_sends_confirmation_dm(self) -> None:
+        reporting_user = self.example_user("hamlet")
+        report_type = "spam"
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, self.realm.id)
+
+        result = self.report_message(
+            reporting_user,
+            self.reported_message_id,
+            report_type=report_type,
+        )
+        self.assert_json_success(result)
+
+        # The confirmation DM is sent after the moderation channel post, so it
+        # is the most recent message seen by the reporting user.
+        confirmation_dm = most_recent_message(reporting_user)
+        self.assertEqual(confirmation_dm.sender_id, notification_bot.id)
+
+        # Must include the lower-cased report reason and a link to the
+        # reported message, but not the message content.
+        realm = get_realm("zulip")
+        expected_url = stream_message_url(
+            realm=realm,
+            message=dict(
+                id=self.reported_message.id,
+                stream_id=self.reported_message.recipient.type_id,
+                display_recipient=self.reported_message.recipient.label(),
+                subject=self.reported_message.topic_name(),
+            ),
+        )
+        self.assertIn(expected_url, confirmation_dm.content)
+        self.assertIn("spam", confirmation_dm.content)
+        self.assertNotIn(self.reported_message.content, confirmation_dm.content)
+
+    @time_machine.travel(MOCKED_DATE_SENT, tick=False)
+    def test_dm_report_sends_confirmation_dm(self) -> None:
+        reporting_user = self.example_user("hamlet")
+        reported_dm_id = self.send_personal_message(
+            self.reported_user,
+            reporting_user,
+            content="I eat pizza with a fork",
+        )
+        reported_dm = self.get_last_message()
+        assert reported_dm.id == reported_dm_id
+
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, self.realm.id)
+        result = self.report_message(reporting_user, reported_dm_id, report_type="harassment")
+        self.assert_json_success(result)
+
+        confirmation_dm = most_recent_message(reporting_user)
+        self.assertEqual(confirmation_dm.sender_id, notification_bot.id)
+
+        # Must include the lower-cased report reason and a link to the
+        # reported DM, but not the DM content.
+        realm = get_realm("zulip")
+        expected_url = pm_message_url(
+            realm,
+            dict(
+                id=reported_dm.id,
+                display_recipient=get_display_recipient(reported_dm.recipient),
+            ),
+        )
+        self.assertIn(expected_url, confirmation_dm.content)
+        self.assertIn("harassment", confirmation_dm.content)
+        self.assertNotIn(reported_dm.content, confirmation_dm.content)
+
+    def test_failed_report_sends_no_confirmation_dm(self) -> None:
+        # When a report is rejected (e.g. moderation disabled), no
+        # confirmation DM should be sent.
+        do_set_realm_moderation_request_channel(
+            self.hamlet.realm, None, -1, acting_user=self.hamlet
+        )
+        message_count_before = Message.objects.count()
+
+        result = self.report_message(
+            self.hamlet,
+            self.reported_message_id,
+            report_type="spam",
+        )
+        self.assert_json_error(result, "Message reporting is not enabled in this organization.")
+        # No new messages of any kind should have been created.
+        self.assertEqual(Message.objects.count(), message_count_before)
