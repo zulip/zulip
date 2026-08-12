@@ -192,7 +192,7 @@ function get_message_height(elem: HTMLElement): number {
     return util.the($(elem).find(".message_content")).scrollHeight;
 }
 
-export function condense_and_collapse(elems: JQuery): void {
+export function condense_and_collapse(elems: JQuery | HTMLElement[]): void {
     if (message_lists.current === undefined) {
         return;
     }

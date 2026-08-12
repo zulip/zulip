@@ -1059,6 +1059,13 @@
     }
 }
 
+.message_content.hide-link-previews {
+    .message_embed,
+    .youtube-video {
+        display: none;
+    }
+}
+
 .codehilite {
     display: block !important;
     border: none !important;

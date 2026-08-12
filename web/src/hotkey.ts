@@ -48,6 +48,7 @@ import {page_params} from "./page_params.ts";
 import * as playground_links_popover from "./playground_links_popover.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
+import * as popover_menus_data from "./popover_menus_data.ts";
 import * as popovers from "./popovers.ts";
 import * as reactions from "./reactions.ts";
 import * as read_receipts from "./read_receipts.ts";
@@ -165,6 +166,7 @@ const KEYDOWN_MAPPINGS: Record<string, Hotkey | Hotkey[]> = {
     "Shift+I": {name: "open_inbox", message_view_only: true},
     "Shift+J": {name: "vim_page_down", message_view_only: true},
     "Shift+K": {name: "vim_page_up", message_view_only: true},
+    "Shift+L": {name: "toggle_link_previews", message_view_only: true},
     "Shift+M": {name: "toggle_topic_visibility_policy", message_view_only: true},
     "Shift+N": {name: "narrow_to_next_unread_followed_topic", message_view_only: false},
     "Shift+P": {name: "narrow_private", message_view_only: true},
@@ -1484,6 +1486,12 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "toggle_message_collapse":
             condense.toggle_collapse(msg);
             return true;
+        case "toggle_link_previews": {
+            if (popover_menus_data.can_toggle_link_previews(msg)) {
+                message_actions_popover.toggle_hide_link_previews(msg);
+            }
+            return true;
+        }
         case "mark_unread":
             unread_ops.mark_as_unread_from_here(msg.id);
             return true;
