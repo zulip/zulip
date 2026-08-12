@@ -4,6 +4,7 @@ title: Restrict permissions of new members
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
 import OwnerOnly from "../include/_OwnerOnly.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
 
@@ -14,16 +15,21 @@ In large Zulip organizations where
 be useful to restrict what new members can do, to make it easier to cope
 with spammers and confused users.
 
-Members are **new members** from when they join till when their account ages
-past a certain **waiting period** threshold. After that they are **full members**.
-You can configure how long the waiting period is, as well as which actions require
-being a full member.
+Members are **new members** from the moment they join until their account
+ages beyond a certain **waiting period** threshold. After that, they are
+**full members**. You can configure how long the waiting period is.
 
-For some features, Zulip supports restricting access to only full members. These
-features include [creating channels](/help/configure-who-can-create-channels),
-[inviting users to the organization](/help/invite-new-users),
-[adding custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji),
-and many more.
+Zulip supports restricting access to certain features only to full members.
+Such features include, but are not limited to,
+[creating channels](/help/configure-who-can-create-channels),
+[inviting users to the organization](/help/invite-new-users), and
+[adding custom emoji](/help/custom-emoji#change-who-can-add-custom-emoji).
+
+<ZulipTip>
+  The **full members** [role](/help/user-roles) only appears as an option
+  for permission settings after a waiting period for new members has
+  been set.
+</ZulipTip>
 
 ## Set waiting period for new members
 
