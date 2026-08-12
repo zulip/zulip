@@ -758,6 +758,31 @@ class MarkdownLinkTest(ZulipTestCase):
         finally:
             clear_web_link_regex_for_testing()
 
+    def test_explicit_link_file(self) -> None:
+        # Regression test: explicit Markdown links like
+        # [text](file:///...) must respect ENABLE_FILE_LINKS just
+        # like bare file:// URLs do (see test_inline_file above).
+        # Previously this bypassed the setting because sanitize_url()
+        # unconditionally allowed the "file" scheme.
+        msg = "[click me](file:///etc/passwd)"
+
+        realm = do_create_realm(string_id="file_links_disabled_2", name="File links disabled")
+        self.assertEqual(
+            markdown_convert(msg, message_realm=realm).rendered_content,
+            "<p>[click me](file:///etc/passwd)</p>",
+        )
+        clear_web_link_regex_for_testing()
+
+        try:
+            with self.settings(ENABLE_FILE_LINKS=True):
+                realm = do_create_realm(string_id="file_links_enabled_2", name="File links enabled")
+                self.assertEqual(
+                    markdown_convert(msg, message_realm=realm).rendered_content,
+                    '<p><a href="file:///etc/passwd">click me</a></p>',
+                )
+        finally:
+            clear_web_link_regex_for_testing()
+
     def test_inline_bitcoin(self) -> None:
         msg = "To bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa or not to bitcoin"
         converted = markdown_convert_wrapper(msg)
