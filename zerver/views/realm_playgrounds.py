@@ -4,6 +4,8 @@ from typing import Annotated
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 from pydantic import AfterValidator
+from pygments.lexers import find_lexer_class_by_name
+from pygments.util import ClassNotFound
 
 from zerver.actions.realm_playgrounds import check_add_realm_playground, do_remove_realm_playground
 from zerver.actions.realm_settings import do_set_realm_property
@@ -30,7 +32,13 @@ def check_pygments_language(var_name: str, val: object) -> str:
                 )
     if s in RealmPlayground.RESTRICTED_KEYWORDS:
         raise JsonableError(_("Language '{language}' is not allowed.").format(language=s))
-    return s
+    try:
+        canonical_name = find_lexer_class_by_name(s.lower()).name
+        if re.match(rf"^{PLAYGROUND_LANGUAGE_REGEX}$", canonical_name):
+            return canonical_name
+        return s.lower()
+    except ClassNotFound:
+        return s.lower()
 
 
 def access_playground_by_id(realm: Realm, playground_id: int) -> RealmPlayground:

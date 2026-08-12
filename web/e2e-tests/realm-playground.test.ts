@@ -51,7 +51,7 @@ async function test_successful_playground_creation(page: Page): Promise<void> {
         url_template: "https://python.example.com?code={code}",
     };
     const status = await _add_playground_and_return_status(page, payload);
-    assert.strictEqual(status, "Custom playground added!");
+    assert.strictEqual(status, "Custom playground added! Language recognized as Python.");
     await page.waitForSelector(".playground_row", {visible: true});
     assert.strictEqual(
         await common.get_text_from_selector(
