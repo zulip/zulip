@@ -195,9 +195,9 @@ def send_report_confirmation_dm(
 
     with override_language(reporting_user.default_language):
         reason = str(Realm.REPORT_MESSAGE_REASONS[report_type]).lower()
-        content = _(
-            "You reported [a message]({message_url}) for {reason}."
-        ).format(message_url=message_url, reason=reason)
+        content = _("You reported [a message]({message_url}) for {reason}.").format(
+            message_url=message_url, reason=reason
+        )
 
     internal_send_private_message(
         get_system_bot(settings.NOTIFICATION_BOT, realm.id),
