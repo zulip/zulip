@@ -184,8 +184,13 @@ WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 
 1. Install [Vagrant][vagrant-dl] (latest).
 2. Install [Docker Desktop](https://docs.docker.com/desktop/mac/install/) (latest).
-3. Open the Docker desktop app's settings panel, and uncheck "Use gRPC FUSE for file sharing" to use the `osxfs (legacy)` file sharing instead.
-   :::
+
+:::{note}
+We recommend installing the latest version of Docker Desktop. If for some
+reason you must run an older version of Docker Desktop, you might need to uncheck
+"Use gRPC FUSE for file sharing" to use `osxfs (legacy)` file sharing before
+attempting to provision.
+:::
 
 :::{tab-item} Ubuntu/Debian
 :sync: os-ubuntu
