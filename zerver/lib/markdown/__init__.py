@@ -305,7 +305,7 @@ def rewrite_local_links_to_relative(db_data: DbData | None, link: str) -> str:
     return link
 
 
-def maybe_add_attachment_path_id(url: str, zmd: "ZulipMarkdown") -> None:
+def get_user_upload_path_id(url: str, zmd: "ZulipMarkdown") -> str | None:
     # Due to rewrite_local_links_to_relative, we need to
     # handle both relative URLs beginning with
     # `/user_uploads` and beginning with `user_uploads`.
@@ -315,12 +315,19 @@ def maybe_add_attachment_path_id(url: str, zmd: "ZulipMarkdown") -> None:
     host = parsed_url.netloc
 
     if host != "" and (zmd.zulip_realm is None or host != zmd.zulip_realm.host):
-        return
+        return None
 
     if not parsed_url.path.startswith("/user_uploads/"):
+        return None
+
+    return parsed_url.path.removeprefix("/user_uploads/")
+
+
+def maybe_add_attachment_path_id(url: str, zmd: "ZulipMarkdown") -> None:
+    path_id = get_user_upload_path_id(url, zmd)
+    if path_id is None:
         return
 
-    path_id = parsed_url.path.removeprefix("/user_uploads/")
     zmd.zulip_rendering_result.potential_attachment_path_ids.append(path_id)
 
 
