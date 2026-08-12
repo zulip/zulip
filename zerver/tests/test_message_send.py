@@ -2568,7 +2568,7 @@ class StreamMessagesTest(ZulipTestCase):
         content = "@*group_0*"
 
         # Send a message with a single group mention.
-        with self.assert_database_query_count(21):
+        with self.assert_database_query_count(20):
             message_id = check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -2585,10 +2585,7 @@ class StreamMessagesTest(ZulipTestCase):
         content = "@*group_0*, @*group_1*, @*group_2*"
 
         # Send a message with multiple group mentions.
-        # TODO: We should avoid O(n) queries, triggered by
-        # sender_can_mention_group, when mentioning multiple groups
-        # in a single message.
-        with self.assert_database_query_count(23):
+        with self.assert_database_query_count(20):
             message_id = check_send_stream_message(
                 sender=sender,
                 client=sending_client,

@@ -2242,10 +2242,7 @@ class EditMessageTest(ZulipTestCase):
         message_id = self.send_stream_message(hamlet, "Denmark", "test message")
         content = "@*group_0*, @*group_1*, @*group_2*"
 
-        # TODO: We should avoid O(n) queries, triggered by
-        # sender_can_mention_group, when mentioning multiple groups
-        # in a single message.
-        with self.assert_database_query_count(33):
+        with self.assert_database_query_count(30):
             result = self.client_patch(
                 "/json/messages/" + str(message_id),
                 {
