@@ -782,6 +782,10 @@ def ok_to_include_history(
 
     include_history = False
     if narrow is not None:
+        # NOTE: This should be kept in sync with
+        # message_fetch_raw_content.is_history_enabling_term
+        # so we don't end up stripping new history enabling terms,
+        # when fetching raw content for multiple messages.
         for term in narrow:
             if term.operator in channel_operators and not term.negated:
                 operand: str | int = term.operand
