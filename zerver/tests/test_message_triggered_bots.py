@@ -374,7 +374,7 @@ class TestMessageTriggeredBotEventTriggers(ZulipTestCase):
         message_id = self.send_group_direct_message(
             sender, recipients, content=f"@**{self.bot_profile.full_name}** foo"
         )
-        # message = Message.objects.get(id=message_id, sender=sender)
+
         bot_user_message = UserMessage.objects.get(
             user_profile=self.bot_profile, message=message_id
         )
