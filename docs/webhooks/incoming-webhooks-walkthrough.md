@@ -339,6 +339,35 @@ test fixtures.
 Custom HTTP headers must be entered as a JSON dictionary, if you want to
 use any. Feel free to use 4-spaces as tabs for indentation if you'd like.
 
+### Testing with the third-party service
+
+:::{warning}
+The development environment is not hardened against hostile traffic. Only
+expose it while you are actively testing.
+:::
+
+To have the third-party service deliver the webhooks itself, it needs to
+be able to reach your development server over the internet.
+
+You don't need to reconfigure the development server for this. You can
+use a tunneling tool, such as [UltraHook](https://www.ultrahook.com/) or
+[localtunnel](https://github.com/localtunnel/localtunnel), to expose
+`http://localhost:9991` at a temporary public URL. When you configure the
+webhook in the third-party service, use that temporary public URL with the
+path for your incoming webhook integration, e.g.,
+`<temporary-public-url>/api/v1/external/helloworld?api_key=<api_key>`.
+
+End-to-end testing with live data can help you spot why something isn't
+working, or whether the service is using [custom HTTP
+headers](incoming-webhooks-reference.md#custom-http-headers) that your
+integration needs to handle.
+
+If you instead need the development server to be reachable from another
+device on your own network, the mobile project's guide to [running the app
+against a development
+server](https://github.com/zulip/zulip-flutter/blob/main/docs/howto/dev-server.md)
+covers configuring the server to listen on all network interfaces.
+
 ## Step 5: Create automated tests
 
 Every incoming webhook integration should have a corresponding `tests.py`

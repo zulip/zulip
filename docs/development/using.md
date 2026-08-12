@@ -90,7 +90,9 @@ the development environment][authentication-dev-server].
 ## Mobile
 
 See the mobile project's documentation on [getting set up to develop
-and contribute to the mobile app][mobile-development-guide].
+and contribute to the mobile app][mobile-development-guide], including
+how to [run the app against your development
+server][mobile-dev-server-guide].
 
 [rest-api]: https://zulip.com/api/rest
 [authentication-dev-server]: authentication.md
@@ -98,3 +100,4 @@ and contribute to the mobile app][mobile-development-guide].
 [new-feature-tutorial]: ../tutorials/new-feature-tutorial.md
 [testing-docs]: ../testing/testing.md
 [mobile-development-guide]: https://github.com/zulip/zulip-flutter/blob/main/docs/setup.md
+[mobile-dev-server-guide]: https://github.com/zulip/zulip-flutter/blob/main/docs/howto/dev-server.md
