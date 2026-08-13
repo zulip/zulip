@@ -1060,11 +1060,14 @@ def is_pull_request_comment_event(payload: WildValue) -> bool:
     return False
 
 
-def get_old_topic_from_rename_event(payload: WildValue) -> str:
+def get_old_topic_from_rename_event(payload: WildValue, event: str) -> str:
+    type_for_topic = "PR" if "pull_request" in event else "issue"
+    item = payload["pull_request"] if "pull_request" in event else payload["issue"]
+
     return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
         repo=get_repository_name(payload),
-        type="PR",
-        id=payload["pull_request"]["number"].tame(check_int),
+        type=type_for_topic,
+        id=item["number"].tame(check_int),
         title=payload["changes"]["title"]["from"].tame(check_string),
     )
 
@@ -1288,19 +1291,19 @@ def api_github_webhook(
 
     sent_message_id = check_send_webhook_message(request, user_profile, topic_name, body, event)
 
-    # Handle topic renaming for PRs with edited titles
+    # Handle topic renaming for PRs and Issues with edited titles
     if (
         sent_message_id is not None
         and enable_topic_rename
         and stream is not None
         and user_specified_topic is None
-        and header_event == "pull_request"
+        and header_event in ("pull_request", "issues")
         and payload["action"].tame(check_string) == "edited"
         and "title" in payload.get("changes", {})
     ):
         check_topic_rename(
             user_profile,
-            old_topic_name=get_old_topic_from_rename_event(payload),
+            old_topic_name=get_old_topic_from_rename_event(payload, event),
             new_topic_name=topic_name,
             channel=stream,
         )
