@@ -1124,9 +1124,9 @@ to debug.
   `localhost:8888` and (in the example config) presents the `htpasswd`
   dialogue. (In a real configuration, it takes the user through
   whatever more complex interaction your SSO solution performs.) The
-  user provides correct login information, and the request reaches a
-  second Zulip Django app instance, running behind Apache, with
-  `REMOTE_USER` set. That request is served by
+  user provides correct login information, and Apache forwards the
+  request to the main Zulip Django application, over the `uwsgi`
+  protocol, with `REMOTE_USER` set. That request is served by
   `zerver.views.remote_user_sso`, which just checks the `REMOTE_USER`
   variable and either logs the user in or, if they don't have an
   account already, registers them. The login sets a cookie.

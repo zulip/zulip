@@ -76,7 +76,7 @@ expected_date="$(TZ=America/Los_Angeles date +%F)"
     || fail "Date in docs/overview/changelog.md does not match '$expected_date'"
 
 extract_version() {
-    python3 -c 'import sys, version; print(getattr(version, sys.argv[1]))' "$1"
+    uv run --no-sync python -c 'import sys, version; print(getattr(version, sys.argv[1]))' "$1"
 }
 
 # Check ZULIP_VERSION and LATEST_RELEASE_VERSION are set appropriately
