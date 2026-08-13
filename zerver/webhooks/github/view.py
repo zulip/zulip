@@ -18,6 +18,7 @@ from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or
 from zerver.lib.webhooks.common import (
     OptionalUserSpecifiedTopicStr,
     check_send_webhook_message,
+    check_topic_rename,
     default_fixture_to_headers,
     get_event_header,
     get_setup_webhook_message,
@@ -1059,6 +1060,15 @@ def is_pull_request_comment_event(payload: WildValue) -> bool:
     return False
 
 
+def get_old_topic_from_rename_event(payload: WildValue) -> str:
+    return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
+        repo=get_repository_name(payload),
+        type="PR",
+        id=payload["pull_request"]["number"].tame(check_int),
+        title=payload["changes"]["title"]["from"].tame(check_string),
+    )
+
+
 def get_topic_based_on_type(payload: WildValue, event: str) -> str:
     if "pull_request" in event:
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
@@ -1221,10 +1231,12 @@ def api_github_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
     branches: str | None = None,
+    stream: str | None = None,
     user_specified_topic: OptionalUserSpecifiedTopicStr = None,
     ignore_private_repositories: Json[bool] = False,
     include_repository_name: Json[bool] = False,
     include_emoji_indicators: Json[bool] = True,
+    enable_topic_rename: Json[bool] = False,
 ) -> HttpResponse:
     """
     GitHub sends the event as an HTTP header.  We have our
@@ -1274,7 +1286,25 @@ def api_github_webhook(
     )
     body = body_function(helper)
 
-    check_send_webhook_message(request, user_profile, topic_name, body, event)
+    sent_message_id = check_send_webhook_message(request, user_profile, topic_name, body, event)
+
+    # Handle topic renaming for PRs with edited titles
+    if (
+        sent_message_id is not None
+        and enable_topic_rename
+        and stream is not None
+        and user_specified_topic is None
+        and header_event == "pull_request"
+        and payload["action"].tame(check_string) == "edited"
+        and "title" in payload.get("changes", {})
+    ):
+        check_topic_rename(
+            user_profile,
+            old_topic_name=get_old_topic_from_rename_event(payload),
+            new_topic_name=topic_name,
+            channel=stream,
+        )
+
     return json_success(request)
 
 
