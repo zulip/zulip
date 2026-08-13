@@ -68,6 +68,7 @@ OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig(
 class PresetUrlOption(str, Enum):
     BRANCHES = "branches"
     IGNORE_PRIVATE_REPOSITORIES = "ignore_private_repositories"
+    ENABLE_TOPIC_RENAME = "enable_topic_rename"
     CHANNEL_MAPPING = "mapping"
 
 
@@ -104,6 +105,12 @@ class WebhookUrlOption:
                 return cls(
                     name=config.value,
                     label="Exclude notifications from private repositories",
+                    input_type="checkbox",
+                )
+            case PresetUrlOption.ENABLE_TOPIC_RENAME:
+                return cls(
+                    name=config.value,
+                    label="Rename topics when a title is edited",
                     input_type="checkbox",
                 )
             case PresetUrlOption.CHANNEL_MAPPING:
