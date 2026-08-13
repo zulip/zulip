@@ -36,6 +36,7 @@ from zerver.lib.webhooks.git import (
     get_push_tag_event_message,
     get_release_event_message,
     get_short_sha,
+    get_title_edited_event_message,
     is_branch_name_notifiable,
 )
 from zerver.models import UserProfile
@@ -125,6 +126,8 @@ def get_opened_or_update_pull_request_body(helper: Helper) -> str:
         assignee = pull_request["assignee"]["login"].tame(check_string)
     description = None
     changes = payload.get("changes", {})
+    if "title" in changes:
+        return get_title_edited_body(helper, pull_request, "PR")
     if "body" in changes or action == "opened":
         description = pull_request["body"].tame(check_none_or(check_string))
     target_branch = None
@@ -205,11 +208,25 @@ def get_member_body(helper: Helper) -> str:
     )
 
 
+def get_title_edited_body(helper: Helper, item: WildValue, type: str) -> str:
+    payload = helper.payload
+    return get_title_edited_event_message(
+        user_name=get_sender_name(helper),
+        url=item["html_url"].tame(check_string),
+        number=item["number"].tame(check_int),
+        old_title=payload["changes"]["title"]["from"].tame(check_string),
+        new_title=item["title"].tame(check_string),
+        type=type,
+    )
+
+
 def get_issue_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
     action = payload["action"].tame(check_string)
     issue = payload["issue"]
+    if "title" in payload.get("changes", {}):
+        return get_title_edited_body(helper, issue, "issue")
     return get_issue_event_message(
         user_name=get_sender_name(helper),
         action=action,

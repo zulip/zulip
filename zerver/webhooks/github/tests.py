@@ -175,7 +175,7 @@ class GitHubWebhookTest(WebhookTestCase):
     def test_issues_edited_title(self) -> None:
         long_title = "This is a very long issue title used to exceed Zulip's maximum topic length so that truncation logic is exercised when the issue title is edited via the GitHub webhook"
         expected_topic_name = truncate_topic(f"test-repo / issue #6 {long_title}")
-        expected_message = "Pritesh-30 edited [issue #6](https://github.com/Pritesh-30/test-repo/issues/6):\n\n``` quote\nThe body of the issue is edited.\n```"
+        expected_message = f"Pritesh-30 renamed [issue #6](https://github.com/Pritesh-30/test-repo/issues/6) from:\n``` quote\nNew Issue edited\n```\nto\n``` quote\n{long_title}\n```"
         self.check_webhook("issues__edited_title", expected_topic_name, expected_message)
 
     def test_issue_comment_msg(self) -> None:
@@ -469,9 +469,7 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("push__tag", TOPIC_REPO, expected_message)
 
     def test_pull_request_edited_msg(self) -> None:
-        expected_message = (
-            "baxterthehacker edited [PR #1](https://github.com/baxterthehacker/public-repo/pull/1)."
-        )
+        expected_message = "baxterthehacker renamed [PR #1](https://github.com/baxterthehacker/public-repo/pull/1) from:\n``` quote\nPR\n```\nto\n``` quote\nUpdate the README with new information\n```"
         self.check_webhook("pull_request__edited_title", TOPIC_PR, expected_message)
 
     def test_pull_request_edited_with_body_change(self) -> None:
