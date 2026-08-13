@@ -75,22 +75,20 @@ class GitlabHookTests(WebhookTestCase):
 
         self.check_webhook("push_hook__remove_branch", expected_topic_name, expected_message)
 
-    def test_add_tag_event_message(self) -> None:
+    def test_tag_push_event_messages(self) -> None:
         expected_topic_name = "my-awesome-project"
-        expected_message = "Tomasz Kolek pushed tag xyz."
+        payload = orjson.loads(self.get_body("tag_push_hook"))
+        test_cases = [
+            (payload["checkout_sha"], "Tomasz Kolek pushed tag xyz."),
+            (None, "Tomasz Kolek removed tag xyz."),
+        ]
 
-        self.check_webhook(
-            "tag_push_hook__add_tag",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Tag Push Hook",
-        )
-
-    def test_remove_tag_event_message(self) -> None:
-        expected_topic_name = "my-awesome-project"
-        expected_message = "Tomasz Kolek removed tag xyz."
-
-        self.check_webhook("tag_push_hook__remove_tag", expected_topic_name, expected_message)
+        for checkout_sha, expected_message in test_cases:
+            with self.subTest(checkout_sha=checkout_sha):
+                payload["checkout_sha"] = checkout_sha
+                self.check_webhook(
+                    "tag_push_hook", expected_topic_name, expected_message, custom_payload=payload
+                )
 
     def test_create_issue_without_assignee_event_message(self) -> None:
         expected_topic_name = "my-awesome-project / issue #1 Issue title"
