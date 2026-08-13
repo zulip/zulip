@@ -517,6 +517,7 @@ def fetch_initial_state_data(
         state["realm_email_auth_enabled"] = email_auth_enabled(
             realm, realm_authentication_methods_dict
         )
+        state["server_admins_can_change_user_emails"] = settings.ADMINS_CAN_CHANGE_USER_EMAILS
         state["realm_password_auth_enabled"] = password_auth_enabled(
             realm, realm_authentication_methods_dict
         )
@@ -758,6 +759,7 @@ def fetch_initial_state_data(
         state["is_owner"] = settings_user.is_realm_owner
         state["is_moderator"] = settings_user.is_moderator
         state["is_guest"] = settings_user.is_guest
+        state["can_change_user_emails"] = settings_user.can_change_user_emails
         state["user_id"] = settings_user.id
         state["email"] = settings_user.email
         state["delivery_email"] = settings_user.delivery_email
