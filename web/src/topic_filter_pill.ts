@@ -53,11 +53,18 @@ export function get_typeahead_base_options(): TopicFilterTypeaheadOptions {
         },
         matcher(query: string) {
             // This basically only matches if `is:` is in the query.
-            return (item: TopicFilterPill) =>
-                query.includes(":") &&
-                (item.syntax.toLowerCase().startsWith(query.toLowerCase()) ||
-                    (item.syntax.startsWith("-") &&
-                        item.syntax.slice(1).toLowerCase().startsWith(query.toLowerCase())));
+            return (item: TopicFilterPill) => {
+                if (!query.includes(":")) {
+                    return false;
+                }
+                const lowercase_query = query.toLowerCase();
+                const matches_syntax = item.syntax.toLowerCase().startsWith(lowercase_query);
+                // Match "-is:resolved" even if the query has no leading "-".
+                const matches_syntax_without_negation =
+                    item.syntax.startsWith("-") &&
+                    item.syntax.slice(1).toLowerCase().startsWith(lowercase_query);
+                return matches_syntax || matches_syntax_without_negation;
+            };
         },
         sorter(items: TopicFilterPill[], _query: string) {
             // This sort order places "Unresolved topics" first
