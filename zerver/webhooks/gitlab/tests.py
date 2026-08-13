@@ -662,17 +662,27 @@ A trivial change that should probably be ignored.
 
         self.check_webhook("release_hook", expected_topic_name, expected_message)
 
-    def test_feature_flag_activate_event_message(self) -> None:
+    def test_feature_flag_event_messages(self) -> None:
+        feature_flag_link = (
+            "[sample-feature-flag](https://gitlab.com/kolanuvarun/sample/-/feature_flags)"
+        )
         expected_topic_name = "sample"
-        expected_message = "Varun Kolanu activated the feature flag [sample-feature-flag](https://gitlab.com/kolanuvarun/sample/-/feature_flags)."
+        test_cases = [
+            (True, f"Varun Kolanu activated the feature flag {feature_flag_link}."),
+            (False, f"Varun Kolanu deactivated the feature flag {feature_flag_link}."),
+        ]
 
-        self.check_webhook("feature_flag_hook__activated", expected_topic_name, expected_message)
+        payload = orjson.loads(self.get_body("feature_flag_hook"))
 
-    def test_feature_flag_deactivate_event_message(self) -> None:
-        expected_topic_name = "sample"
-        expected_message = "Varun Kolanu deactivated the feature flag [sample-feature-flag](https://gitlab.com/kolanuvarun/sample/-/feature_flags)."
-
-        self.check_webhook("feature_flag_hook__deactivated", expected_topic_name, expected_message)
+        for active, expected_message in test_cases:
+            with self.subTest(active=active):
+                payload["object_attributes"]["active"] = active
+                self.check_webhook(
+                    "feature_flag_hook",
+                    expected_topic_name,
+                    expected_message,
+                    custom_payload=payload,
+                )
 
     def test_resource_access_token_project_expiry(self) -> None:
         expected_topic_name = "Flight"
