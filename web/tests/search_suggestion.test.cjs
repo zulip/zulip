@@ -1330,6 +1330,21 @@ test("negated filters do not block other operands", () => {
     expected = ["-channels:web-public -channels:public", "-channels:web-public -channels:archived"];
     assert.deepEqual(suggestions, expected);
 
+    // "channels:public -channels:web-public" is the public channels
+    // that aren't web-public, so the positive term doesn't block the
+    // negated suggestion either.
+    query = "channels:public -channels:";
+    suggestions = get_suggestions(query);
+    expected = ["channels:public -channels:web-public", "channels:public -channels:archived"];
+    assert.deepEqual(suggestions, expected);
+
+    // Searching both is just searching the web-public channels, so
+    // that suggestion stays blocked.
+    query = "channels:public channels:";
+    suggestions = get_suggestions(query);
+    expected = ["channels:public channels:archived"];
+    assert.deepEqual(suggestions, expected);
+
     // With all public channels excluded, searching web-public
     // channels can never match anything, and excluding them changes
     // nothing, so both suggestions are dropped.
