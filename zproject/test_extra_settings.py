@@ -319,3 +319,5 @@ VERIFY_WEBHOOK_SIGNATURES = False
 AUTH_LDAP_USER_ATTR_MAP = {
     "full_name": "cn",
 }
+
+ENABLE_ZULIP_OAUTH = True
