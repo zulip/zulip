@@ -697,6 +697,14 @@ def update_user_topic_visibility_policies_on_move(
         visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
     )
 
+    # A case-only rename within the same channel resolves to the
+    # same UserTopic rows for both the original and target topic,
+    # since topic matching is case-insensitive.
+    topics_share_user_topic_rows = (
+        stream_being_edited.id == target_stream.id
+        and orig_topic_name.lower() == target_topic_name.lower()
+    )
+
     # If the messages are being moved to a stream the user _can_
     # access, we move the user topic records, by removing the old
     # topic visibility_policy and creating a new one.
@@ -738,7 +746,12 @@ def update_user_topic_visibility_policies_on_move(
             new_visibility_policy = get_visibility_policy_after_merge(
                 orig_topic_visibility_policy, target_topic_visibility_policy
             )
-            if new_visibility_policy == target_topic_visibility_policy:
+            if (
+                new_visibility_policy == target_topic_visibility_policy
+                # If topics share the UserTopic rows, we need to
+                # recreate because we deleted the rows above.
+                and not topics_share_user_topic_rows
+            ):
                 continue
             bulk_do_set_user_topic_visibility_policy(
                 user_profiles,
