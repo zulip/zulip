@@ -437,21 +437,27 @@ A trivial change that should probably be ignored.
             expect_noop=True,
         )
 
-    def test_wiki_page_opened_event_message(self) -> None:
-        expected_topic_name = "my-awesome-project"
-        expected_message = 'Tomasz Kolek created [wiki page "how to"](https://gitlab.com/tomaszkolek0/my-awesome-project/wikis/how-to).'
-
-        self.check_webhook(
-            "wiki_page_hook__wiki_page_opened", expected_topic_name, expected_message
+    def test_wiki_page_event_messages(self) -> None:
+        wiki_page_link = (
+            '[wiki page "how to"](https://gitlab.com/tomaszkolek0/my-awesome-project/wikis/how-to)'
         )
-
-    def test_wiki_page_edited_event_message(self) -> None:
         expected_topic_name = "my-awesome-project"
-        expected_message = 'Tomasz Kolek updated [wiki page "how to"](https://gitlab.com/tomaszkolek0/my-awesome-project/wikis/how-to).'
+        test_cases = [
+            ("create", f"Tomasz Kolek created {wiki_page_link}."),
+            ("update", f"Tomasz Kolek updated {wiki_page_link}."),
+        ]
 
-        self.check_webhook(
-            "wiki_page_hook__wiki_page_edited", expected_topic_name, expected_message
-        )
+        payload = orjson.loads(self.get_body("wiki_page_hook"))
+
+        for action, expected_message in test_cases:
+            with self.subTest(action=action):
+                payload["object_attributes"]["action"] = action
+                self.check_webhook(
+                    "wiki_page_hook",
+                    expected_topic_name,
+                    expected_message,
+                    custom_payload=payload,
+                )
 
     def test_pipeline_succeeded_with_artifacts_event_message(self) -> None:
         expected_topic_name = "onlysomeproject / test/links-in-zulip-pipeline-message"
