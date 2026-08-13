@@ -22,8 +22,6 @@ format used by the Zulip server that they are interacting with.
 
 **Feature level 509**
 
-**Feature level ZF-25c66e**
-
 * [`PATCH /messages/{message_id}`](/api/update-message): Fixed a bug where
   passing the `stream_id` that the message is already in was processed as
   a channel move.
