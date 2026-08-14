@@ -27,7 +27,9 @@
 
             .delete-selected-drafts-button {
                 &:focus {
-                    background-color: hsl(0deg 0% 93%);
+                    background-color: var(
+                        --color-background-drafts-button-focus
+                    );
                 }
             }
 
@@ -40,7 +42,9 @@
                 padding-right: 15px;
 
                 &:focus {
-                    background-color: hsl(0deg 0% 93%);
+                    background-color: var(
+                        --color-background-drafts-button-focus
+                    );
                 }
             }
 

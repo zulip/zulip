@@ -921,6 +921,10 @@
         right: 0;
         margin: auto;
 
+        & path {
+            fill: var(--color-fill-loading-indicator);
+        }
+
         .loading_indicator_spinner {
             position: relative;
             top: -7px;
