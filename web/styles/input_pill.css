@@ -392,7 +392,8 @@
         border: none;
         text-decoration: none;
 
-        &:focus {
+        &:focus,
+        &:hover {
             color: inherit;
         }
 

@@ -21,6 +21,10 @@
         margin: 5px 0;
     }
 
+    & a {
+        color: light-dark(var(--color-text-generic-link), currentcolor);
+    }
+
     &[data-placement^="top"] {
         > .tippy-arrow {
             &::before {

@@ -23,6 +23,25 @@
     visibility: hidden;
 }
 
+button:disabled:not(.action-button, .icon-button, .info-density-button),
+option:disabled,
+select:disabled,
+input:disabled:not(.modal_text_input),
+input:not([type="radio"], .modal_text_input):read-only,
+#organization-permissions .dropdown-widget-button:disabled,
+#organization-settings .dropdown-widget-button:disabled,
+.pill-container.not-editable-by-user,
+.group_setting_disabled .pill-container {
+    color: inherit;
+    opacity: 0.5;
+}
+
+button.info-density-button:disabled {
+    color: inherit;
+    opacity: 0.4;
+}
+
+
 kbd {
     display: inline-block;
     border: 1px solid var(--color-kbd-border);
@@ -34,10 +53,11 @@ kbd {
     color: var(--color-kbd-text);
     margin: 0.25em 0.1em;
     padding: 0.2em 0.4em;
-    text-shadow: 0 1px 0 hsl(0deg 0% 100%);
+    text-shadow: var(--color-kbd-text-shadow);
     /* Prevent selection */
     user-select: none;
     position: relative;
+    top: -1px;
     min-height: 1em;
     min-width: 1em;
 
@@ -48,6 +68,13 @@ kbd {
         transform: translate(-50%, -50%);
     }
 }
+
+#message-formatting kbd,
+#keyboard-shortcuts kbd {
+    border-color: var(--color-kbd-modal-border);
+    color: var(--color-kbd-modal-text);
+}
+
 
 @media (width < $sm_min) {
     .hide-sm {
@@ -135,7 +162,8 @@ textarea::-webkit-resizer {
         text-overflow: ellipsis;
         white-space: nowrap;
         overflow: hidden;
-        vertical-align: bottom; /* See https://stackoverflow.com/a/43266155/ */
+        vertical-align: bottom;
+        /* See https://stackoverflow.com/a/43266155/ */
         padding: 3px 10px;
         background-color: var(--color-background-tab-switcher-ind-tab);
         cursor: pointer;
@@ -166,9 +194,7 @@ textarea::-webkit-resizer {
 
         &.selected {
             position: relative;
-            background-color: var(
-                --color-background-tab-switcher-ind-tab-selected
-            );
+            background-color: var(--color-background-tab-switcher-ind-tab-selected);
             color: hsl(0deg 0% 100%);
             border: 1px solid var(--color-border-tab-switcher-ind-tab-selected);
             z-index: 2;
@@ -360,7 +386,7 @@ input.settings_text_input {
     /* previously 1rem = 16px at 14px em = 1.1428em */
     font-size: 1.1428em;
     line-height: 1.5;
-    color: hsl(0deg 0% 40%);
+    color: var(--color-text-tip);
 
     &::before {
         content: "\f0a2";
@@ -479,6 +505,25 @@ input.settings_text_input {
         display: block;
     }
 
+    &.alert-success {
+        background-color: var(--color-background-alert-success);
+        border-color: var(--color-border-alert-success);
+        color: var(--color-text-alert-success);
+    }
+
+    &.alert-info {
+        background-color: var(--color-background-alert-info);
+        border-color: var(--color-border-alert-info);
+        color: var(--color-text-alert-info);
+    }
+
+    &.alert-error,
+    &.alert-danger {
+        background-color: var(--color-background-alert-danger);
+        border-color: var(--color-border-alert-danger);
+        color: var(--color-text-alert-danger);
+    }
+
     &#organization-status {
         margin: 20px;
     }
@@ -497,6 +542,7 @@ input.settings_text_input {
 }
 
 .spectator-view {
+
     /* Add this class to elements which a
      * spectator cannot use. */
     .hidden-for-spectators {
@@ -529,8 +575,7 @@ input.settings_text_input {
 
     &:focus {
         background-color: hsl(240deg 41% 50%);
-        box-shadow: 0 1px 4px 0
-            var(--color-box-shadow-animated-purple-button-focus);
+        box-shadow: 0 1px 4px 0 var(--color-box-shadow-animated-purple-button-focus);
         outline: none;
     }
 
@@ -562,7 +607,8 @@ input.settings_text_input {
         }
 
         transition: 0.2s ease;
-        transition-property: background-color, color;
+        transition-property: background-color,
+        color;
     }
 
     .zulip-icon,
@@ -636,13 +682,11 @@ input.settings_text_input {
 
         &[data-sort]:hover {
             cursor: pointer;
-            background-color: var(
-                --color-background-table-header-sortable-hover
-            );
+            background-color: var(--color-background-table-header-sortable-hover);
         }
     }
 
-    tbody > tr:nth-child(odd) {
+    tbody>tr:nth-child(odd) {
         td {
             background-color: var(--color-background-modal);
         }
@@ -660,7 +704,8 @@ input.settings_text_input {
         .icon-button {
             display: inline-flex;
             align-items: center;
-            min-height: 2.1875em; /* 35px at 16px/1em */
+            min-height: 2.1875em;
+            /* 35px at 16px/1em */
         }
     }
 
@@ -703,19 +748,19 @@ input.settings_text_input {
         border-top: 0;
     }
 
-    thead tr:first-child > th:first-child {
+    thead tr:first-child>th:first-child {
         border-top-left-radius: 4px;
     }
 
-    thead tr:first-child > th:last-child {
+    thead tr:first-child>th:last-child {
         border-top-right-radius: 4px;
     }
 
-    tbody:last-child tr:last-child > td:first-child {
+    tbody:last-child tr:last-child>td:first-child {
         border-bottom-left-radius: 4px;
     }
 
-    tbody:last-child tr:last-child > td:last-child {
+    tbody:last-child tr:last-child>td:last-child {
         border-bottom-right-radius: 4px;
     }
 }
@@ -724,14 +769,16 @@ input.settings_text_input {
     display: flex;
     flex-wrap: wrap;
     margin: 0.2857em 0;
-    gap: 0 0.625em; /* 10px at 16px em */
+    gap: 0 0.625em;
+    /* 10px at 16px em */
     align-items: center;
 }
 
 .save-button-controls {
     display: flex;
     align-items: center;
-    gap: 0.3125em; /* 5px at 16px em */
+    gap: 0.3125em;
+    /* 5px at 16px em */
 
     &.hide {
         display: none;
@@ -751,13 +798,16 @@ input.settings_text_input {
     .channel-privacy-type-icon .zulip-icon {
         /* Calculated from visual inspection
            to look good for 12px-20px font sizes. */
-        top: 0.1467em; /* 2.2px at 15px/1em */
-        font-size: 0.9375em; /* 15px at 16px/1em */
+        top: 0.1467em;
+        /* 2.2px at 15px/1em */
+        font-size: 0.9375em;
+        /* 15px at 16px/1em */
 
         &.zulip-icon-lock {
             /* Calculated from visual inspection
                to look good for 12px-20px font sizes. */
-            top: 0.08em; /* 1.2px at 15px/1em */
+            top: 0.08em;
+            /* 1.2px at 15px/1em */
         }
     }
 }
@@ -776,7 +826,8 @@ input.settings_text_input {
     position: relative;
     /* Calculated from visual inspection
         to look good for 12px-20px font sizes. */
-    top: 0.0688em; /* 1.1px at 16px/1em */
+    top: 0.0688em;
+    /* 1.1px at 16px/1em */
 
     &.zulip-icon-globe,
     &.zulip-icon-archive,
@@ -922,6 +973,11 @@ input.settings_text_input {
             border-top: 0;
         }
 
+        .message_header_private_message .message_label_clickable {
+            padding: 4px 6px 3px;
+            color: inherit;
+        }
+
         .messagebox-content {
             grid-template: auto / auto max-content;
             grid-template-areas:
@@ -995,7 +1051,7 @@ input.settings_text_input {
     }
 }
 
-div.overlay .flex.overlay-content > .overlay-container,
+div.overlay .flex.overlay-content>.overlay-container,
 #settings_page,
 .informational-overlays .overlay-content {
     box-shadow: var(--box-shadow-overlay);
@@ -1021,9 +1077,7 @@ div.overlay .flex.overlay-content > .overlay-container,
 
     &:disabled {
         cursor: not-allowed;
-        background-color: var(
-            --color-background-disabled-dropdown-widget-button
-        );
+        background-color: var(--color-background-disabled-dropdown-widget-button);
         /* TODO: Should this be 0.5 to match the spectator block below? */
         opacity: 0.7;
     }
@@ -1124,41 +1178,39 @@ div.overlay .flex.overlay-content > .overlay-container,
         }
     }
 
-    .tab-option:not(:checked) + .tab-option-content {
+    .tab-option:not(:checked)+.tab-option-content {
+
         &:hover,
         &:focus-visible {
-            background-color: var(
-                --color-background-tab-picker-tab-option-hover
-            );
+            background-color: var(--color-background-tab-picker-tab-option-hover);
         }
 
         &:active {
-            background-color: var(
-                --color-background-tab-picker-tab-option-active
-            );
+            background-color: var(--color-background-tab-picker-tab-option-active);
         }
     }
 
     .tab-option {
-        &:nth-of-type(1):checked ~ .slider {
+        &:nth-of-type(1):checked~.slider {
             --tab-selected-tab-picker: 0;
         }
 
-        &:nth-of-type(2):checked ~ .slider {
+        &:nth-of-type(2):checked~.slider {
             --tab-selected-tab-picker: 1;
         }
 
-        &:nth-of-type(3):checked ~ .slider {
+        &:nth-of-type(3):checked~.slider {
             --tab-selected-tab-picker: 2;
         }
 
-        &:nth-of-type(4):checked ~ .slider {
+        &:nth-of-type(4):checked~.slider {
             --tab-selected-tab-picker: 3;
         }
 
-        &:nth-of-type(5):checked ~ .slider {
+        &:nth-of-type(5):checked~.slider {
             --tab-selected-tab-picker: 4;
         }
+
         /* If a tab picker with more than 5 tabs is required,
            extend this using the same pattern as above. */
     }
@@ -1170,12 +1222,7 @@ div.overlay .flex.overlay-content > .overlay-container,
         grid-column: 1 / 2;
         grid-row: 1 / 2;
         /* Move along X-axis: own width + gap between two tabs. */
-        transform: translateX(
-            calc(
-                (100% + var(--grid-gap-tab-picker)) *
-                    var(--tab-selected-tab-picker)
-            )
-        );
+        transform: translateX(calc((100% + var(--grid-gap-tab-picker)) * var(--tab-selected-tab-picker)));
         transition: transform 0.25s cubic-bezier(0.64, 0, 0.78, 0);
         box-sizing: border-box;
         border: 1px solid var(--color-outline-tab-picker-tab-option);
@@ -1190,7 +1237,7 @@ div.overlay .flex.overlay-content > .overlay-container,
             transition: none;
         }
 
-        .tab-option:not(:checked) + .tab-option-content:active {
+        .tab-option:not(:checked)+.tab-option-content:active {
             border-color: var(--color-outline-tab-picker-tab-option);
         }
     }
@@ -1202,12 +1249,7 @@ div.overlay .flex.overlay-content > .overlay-container,
 
         .slider {
             /* Move along Y-axis: own height + gap between two tabs. */
-            transform: translateY(
-                calc(
-                    (100% + var(--grid-gap-tab-picker)) *
-                        var(--tab-selected-tab-picker)
-                )
-            );
+            transform: translateY(calc((100% + var(--grid-gap-tab-picker)) * var(--tab-selected-tab-picker)));
         }
     }
 }
@@ -1230,6 +1272,7 @@ div.overlay .flex.overlay-content > .overlay-container,
     }
 
     &.copy-button-square {
+
         &:hover,
         :focus-visible {
             background-color: var(--color-copy-button-square-bg-hover);
@@ -1269,17 +1312,13 @@ div.overlay .flex.overlay-content > .overlay-container,
 
     &:hover {
         color: var(--color-dropdown-item);
-        background-color: var(
-            --color-background-neutral-subtle-action-button-hover
-        );
+        background-color: var(--color-background-neutral-subtle-action-button-hover);
         border-color: var(--color-border-zulip-button-interactive);
     }
 
     &:focus,
     &.current_selection {
-        background-color: var(
-            --color-background-neutral-subtle-action-button-hover
-        );
+        background-color: var(--color-background-neutral-subtle-action-button-hover);
         outline: none;
     }
 
@@ -1366,9 +1405,7 @@ input.invalid-input {
             font-size: inherit;
 
             &:hover:not(:disabled) {
-                background-color: var(
-                    --color-info-density-button-hover-background
-                );
+                background-color: var(--color-info-density-button-hover-background);
             }
 
             &:focus {
@@ -1420,6 +1457,17 @@ input.invalid-input {
     .uppy-Root {
         height: 100%;
         overflow: hidden;
+    }
+
+    .uppy-ImageCropper {
+        .cropper-modal {
+            opacity: var(--opacity-uppy-cropper-modal);
+            background-color: hsl(0deg 0% 0%);
+        }
+
+        .cropper-view-box {
+            background: var(--background-uppy-cropper-view-box);
+        }
     }
 
     .uppy-ImageCropper-controls {
