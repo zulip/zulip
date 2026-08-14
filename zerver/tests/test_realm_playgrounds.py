@@ -115,6 +115,15 @@ class RealmPlaygroundTests(ZulipTestCase):
         result = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
         self.assert_json_error(result, "Language 'math' is not allowed.")
 
+        # Test that restricted keywords cannot bypass validation using uppercase letters
+        payload = {
+            "name": "Uppercase restricted keyword",
+            "pygments_language": "MATH",
+            "url_template": "https://example.com/{code}",
+        }
+        result = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+        self.assert_json_error(result, "Language 'math' is not allowed.")
+
     def test_language_normalization(self) -> None:
         iago = self.example_user("iago")
 
