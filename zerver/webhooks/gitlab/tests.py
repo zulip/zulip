@@ -457,45 +457,55 @@ A trivial change that should probably be ignored.
                     custom_payload=payload,
                 )
 
-    def test_pipeline_succeeded_with_artifacts_event_message(self) -> None:
+    def test_pipeline_with_artifacts_event_message(self) -> None:
         expected_topic_name = "onlysomeproject / test/links-in-zulip-pipeline-message"
         expected_message = "[Pipeline (22668)](https://gitlab.example.com/group1/onlysomeproject/-/pipelines/22668) changed status to success with build(s):\n* [cleanup:cleanup docker image](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58592) - success\n* [pages](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58591) - success\n  * built artifact: *artifacts.zip* [[Browse](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58591/artifacts/browse)|[Download](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58591/artifacts/download)]\n* [black+pytest:future environment](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58590) - success\n* [docs:anaconda environment](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58589) - success\n  * built artifact: *sphinx-docs.zip* [[Browse](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58589/artifacts/browse)|[Download](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58589/artifacts/download)]\n* [pytest:current environment](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58588) - success\n* [black:current environment](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58587) - success\n* [setup:docker image](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58586) - success."
 
         self.check_webhook(
-            "pipeline_hook__pipeline_succeeded_with_artifacts",
+            "pipeline_hook__with_artifacts",
             expected_topic_name,
             expected_message,
         )
 
-    def test_pipeline_succeeded_event_message(self) -> None:
+    def test_pipeline_event_messages(self) -> None:
+        pipeline_link = "[Pipeline (4414206)](https://gitlab.com/TomaszKolek/my-awesome-project/-/pipelines/4414206)"
+        job_link = "[job_name](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541112)"
+        job2_link = "[job_name2](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541113)"
         expected_topic_name = "my-awesome-project / master"
-        expected_message = "[Pipeline (4414206)](https://gitlab.com/TomaszKolek/my-awesome-project/-/pipelines/4414206) changed status to success with build(s):\n* [job_name2](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541113) - success\n* [job_name](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541112) - success."
 
-        self.check_webhook(
-            "pipeline_hook__pipeline_succeeded",
-            expected_topic_name,
-            expected_message,
-        )
+        # Each case is a pipeline status, the status of each of the
+        # pipeline's builds keyed by build name, and the expected message.
+        test_cases = [
+            (
+                "pending",
+                {"job_name2": "pending", "job_name": "created"},
+                f"{pipeline_link} was created with build(s):\n* {job2_link} - pending\n* {job_link} - created.",
+            ),
+            (
+                "running",
+                {"job_name2": "pending", "job_name": "running"},
+                f"{pipeline_link} started with build(s):\n* {job2_link} - pending\n* {job_link} - running.",
+            ),
+            (
+                "success",
+                {"job_name2": "success", "job_name": "success"},
+                f"{pipeline_link} changed status to success with build(s):\n* {job2_link} - success\n* {job_link} - success.",
+            ),
+        ]
 
-    def test_pipeline_started_event_message(self) -> None:
-        expected_topic_name = "my-awesome-project / master"
-        expected_message = "[Pipeline (4414206)](https://gitlab.com/TomaszKolek/my-awesome-project/-/pipelines/4414206) started with build(s):\n* [job_name](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541112) - running\n* [job_name2](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541113) - pending."
+        payload = orjson.loads(self.get_body("pipeline_hook"))
 
-        self.check_webhook(
-            "pipeline_hook__pipeline_started",
-            expected_topic_name,
-            expected_message,
-        )
-
-    def test_pipeline_pending_event_message(self) -> None:
-        expected_topic_name = "my-awesome-project / master"
-        expected_message = "[Pipeline (4414206)](https://gitlab.com/TomaszKolek/my-awesome-project/-/pipelines/4414206) was created with build(s):\n* [job_name2](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541113) - pending\n* [job_name](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541112) - created."
-
-        self.check_webhook(
-            "pipeline_hook__pipeline_pending",
-            expected_topic_name,
-            expected_message,
-        )
+        for pipeline_status, build_statuses, expected_message in test_cases:
+            with self.subTest(pipeline_status=pipeline_status):
+                payload["object_attributes"]["status"] = pipeline_status
+                for build in payload["builds"]:
+                    build["status"] = build_statuses[build["name"]]
+                self.check_webhook(
+                    "pipeline_hook",
+                    expected_topic_name,
+                    expected_message,
+                    custom_payload=payload,
+                )
 
     def test_issue_type_test_payload(self) -> None:
         expected_topic_name = "public-repo"
