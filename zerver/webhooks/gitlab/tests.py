@@ -752,6 +752,51 @@ A trivial change that should probably be ignored.
                     custom_payload=payload,
                 )
 
+    def test_deployment_approval_event_message(self) -> None:
+        deployment_url = (
+            "https://gitlab.com/pritesh-30-group/deployment-webhook-test/-/jobs/15664214926"
+        )
+        expected_topic_name = "deployment-webhook-test / production"
+
+        # Status, comment, expected message
+        test_cases = [
+            (
+                "approved",
+                "Approval granted",
+                f"Pritesh-30 approved the [deployment]({deployment_url}).\n``` quote\nApproval granted\n```",
+            ),
+            ("approved", None, f"Pritesh-30 approved the [deployment]({deployment_url})."),
+            (
+                "rejected",
+                "Not ready to ship",
+                f"Pritesh-30 rejected the [deployment]({deployment_url}).\n``` quote\nNot ready to ship\n```",
+            ),
+            ("rejected", None, f"Pritesh-30 rejected the [deployment]({deployment_url})."),
+        ]
+
+        payload = orjson.loads(self.get_body("deployment_hook__approval"))
+
+        for status, comment, expected_message in test_cases:
+            with self.subTest(status=status):
+                payload["status"] = status
+                payload["approval"]["status"] = status
+                payload["approval"]["comment"] = comment
+                self.check_webhook(
+                    "deployment_hook__approval",
+                    expected_topic_name,
+                    expected_message,
+                    custom_payload=payload,
+                )
+
+    def test_deployment_approval_event_message_silent_mention(self) -> None:
+        realm = get_realm("zulip")
+        gitlab_field = try_add_realm_default_custom_profile_field(realm, "gitlab")
+        hamlet = self.example_user("hamlet")
+        self.set_user_custom_profile_data(hamlet, [{"id": gitlab_field.id, "value": "Pritesh-30"}])
+        expected_topic_name = "deployment-webhook-test / production"
+        expected_message = f"@_**{hamlet.full_name}|{hamlet.id}** approved the [deployment](https://gitlab.com/pritesh-30-group/deployment-webhook-test/-/jobs/15664214926).\n``` quote\nApproval granted\n```"
+        self.check_webhook("deployment_hook__approval", expected_topic_name, expected_message)
+
     def test_emoji_award_in_snippet(self) -> None:
         expected_topic_name = "sample / snippet #4831194 Sample Snippet"
         expected_message = "Varun Kolanu added the emoji :thumbsup:."
