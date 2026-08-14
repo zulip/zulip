@@ -723,51 +723,30 @@ A trivial change that should probably be ignored.
             "resource_access_token_hook__group_expiry", expected_topic_name, expected_message
         )
 
-    def test_deployment_started_event_message(self) -> None:
+    def test_deployment_event_message_by_status(self) -> None:
+        deployment_url = "https://gitlab.com/vedant8600317/test/-/jobs/9905389091"
         expected_topic_name = "test / production"
-        expected_message = "[Vedant Joshi](https://gitlab.com/theofficialvedantjoshi) started a new [deployment](https://gitlab.com/vedant8600317/test/-/jobs/9905389091):\n> [5879366](https://gitlab.com/vedant8600317/test/-/commit/58793660b22d6ceacbdc23b28a0562bca339702c) Update .gitlab-ci.yml file"
+        test_cases = [
+            (
+                "running",
+                f"[Vedant Joshi](https://gitlab.com/theofficialvedantjoshi) started a new [deployment]({deployment_url}):\n> [5879366](https://gitlab.com/vedant8600317/test/-/commit/58793660b22d6ceacbdc23b28a0562bca339702c) Update .gitlab-ci.yml file",
+            ),
+            ("success", f"The [deployment]({deployment_url}) was successful."),
+            ("failed", f"The [deployment]({deployment_url}) failed."),
+            ("canceled", f"The [deployment]({deployment_url}) was canceled."),
+        ]
 
-        self.check_webhook(
-            "deployment_hook__running",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Deployment Hook",
-        )
+        payload = orjson.loads(self.get_body("deployment_hook"))
 
-    def test_deployment_succeeded_event_message(self) -> None:
-        expected_topic_name = "test / production"
-        expected_message = "The [deployment](https://gitlab.com/vedant8600317/test/-/jobs/9905389091) was successful."
-
-        self.check_webhook(
-            "deployment_hook__success",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Deployment Hook",
-        )
-
-    def test_deployment_failed_event_message(self) -> None:
-        expected_topic_name = "test / production"
-        expected_message = (
-            "The [deployment](https://gitlab.com/vedant8600317/test/-/jobs/9905759933) failed."
-        )
-
-        self.check_webhook(
-            "deployment_hook__failed",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Deployment Hook",
-        )
-
-    def test_deployment_canceled_event_message(self) -> None:
-        expected_topic_name = "test / production"
-        expected_message = "The [deployment](https://gitlab.com/vedant8600317/test/-/jobs/9905830127) was canceled."
-
-        self.check_webhook(
-            "deployment_hook__canceled",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Deployment Hook",
-        )
+        for status, expected_message in test_cases:
+            with self.subTest(status=status):
+                payload["status"] = status
+                self.check_webhook(
+                    "deployment_hook",
+                    expected_topic_name,
+                    expected_message,
+                    custom_payload=payload,
+                )
 
     def test_emoji_award_in_snippet(self) -> None:
         expected_topic_name = "sample / snippet #4831194 Sample Snippet"
