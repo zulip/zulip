@@ -496,13 +496,34 @@ def get_resource_access_token_expiry_event_body(
     )
 
 
-def get_deployment_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
-    user_text = f"[{get_user_name(payload, realm)}]({payload['user_url'].tame(check_string)})"
+def get_deployment_approval_event_body(
+    payload: WildValue, approval_status: str, deployment_text: str, realm: Realm
+) -> str:
+    approver = payload["approver"]
+    approver_text = get_user_mention(
+        realm,
+        approver["username"].tame(check_string),
+        approver["name"].tame(check_string),
+    )
+    body = f"{approver_text} {approval_status} the {deployment_text}."
 
+    if comment := payload["approval"]["comment"].tame(check_string):
+        body += CONTENT_MESSAGE_TEMPLATE.format(message=comment, fence=get_unused_fence(comment))
+
+    return body
+
+
+def get_deployment_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
     deployment_status = payload["status"].tame(check_string)
     deployable_url = payload.get("deployable_url", "").tame(check_string)
     deployment_text = f"[deployment]({deployable_url})" if deployable_url else "deployment"
 
+    if deployment_status in ("approved", "rejected"):
+        return get_deployment_approval_event_body(
+            payload, deployment_status, deployment_text, realm
+        )
+
+    user_text = f"[{get_user_name(payload, realm)}]({payload['user_url'].tame(check_string)})"
     commit_title = payload["commit_title"].tame(check_string)
     commit_url = payload["commit_url"].tame(check_string)
     commit_sha = commit_url.split("/")[-1][:7]
