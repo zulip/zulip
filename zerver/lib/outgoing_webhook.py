@@ -15,6 +15,7 @@ from typing_extensions import override
 from version import ZULIP_VERSION
 from zerver.actions.message_send import check_send_message
 from zerver.lib.exceptions import JsonableError, StreamDoesNotExistError
+from zerver.lib.mention import MENTIONS_RE
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import retry_event
@@ -110,6 +111,45 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
         return None
 
 
+def get_slack_bot_command(content: str, bot_user: UserProfile) -> tuple[str, str] | None:
+    """If `content` starts with a mention of `bot_user`, return
+    (command, remaining_text) where:
+      - command is the mention transformed into a slash-command-style
+        string, e.g. ``@**My Bot**`` → ``/My Bot``
+      - remaining_text is everything after the mention, stripped of
+        leading/trailing whitespace
+
+    Returns None if the message does not start with a mention of this bot.
+    """
+    # Strip leading whitespace so that messages with accidental
+    # leading spaces or newlines (e.g. from paste or mobile flows)
+    # still get the command/text split.
+    content = content.lstrip()
+    match = MENTIONS_RE.match(content)
+    if match is None:
+        return None
+
+    mention_text = match.group("match")
+
+    # The captured text is either "Full Name" or "Full Name|user_id".
+    if "|" in mention_text:
+        name, id_str = mention_text.rsplit("|", 1)
+        if not id_str.isdigit() or int(id_str) != bot_user.id:
+            return None
+        # If a name is present, verify it matches the bot.
+        if name and name.lower() != bot_user.full_name.lower():
+            return None
+        command_name = name or bot_user.full_name
+    else:
+        if mention_text.lower() != bot_user.full_name.lower():
+            return None
+        command_name = mention_text
+
+    command = f"/{command_name}"
+    remaining_text = content[match.end() :].strip()
+    return (command, remaining_text)
+
+
 class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
     @override
     def make_request(self, base_url: str, event: dict[str, Any], realm: Realm) -> Response | None:
@@ -132,6 +172,15 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         # user_name=Steve
         # text=googlebot: What is the air-speed velocity of an unladen swallow?
         # trigger_word=googlebot:
+        # command=/googlebot
+
+        text = event["command"]
+        command = None
+
+        if event["trigger"] == "mention":
+            split = get_slack_bot_command(event["command"], self.user_profile)
+            if split is not None:
+                command, text = split
 
         request_data = [
             ("token", self.token),
@@ -143,10 +192,14 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             ("timestamp", event["message"]["timestamp"]),
             ("user_id", f"U{event['message']['sender_id']}"),
             ("user_name", event["message"]["sender_full_name"]),
-            ("text", event["command"]),
+            ("text", text),
             ("trigger_word", event["trigger"]),
             ("service_id", event["user_profile_id"]),
         ]
+
+        if command is not None:
+            request_data.append(("command", command))
+
         return self.session.post(base_url, data=request_data)
 
     @override
