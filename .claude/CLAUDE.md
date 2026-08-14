@@ -125,9 +125,10 @@ Structure changes as clean commits:
   documenting an API change. Run `tools/create-api-changelog`; it
   generates an empty `api_docs/unmerged.d/ZF-XXXXXX.md` file (where
   `XXXXXX` is a random hex string the tool picks for you) and stages
-  it for you. Document the changes in that file with the header
-  `**Feature level ZF-XXXXXX**` and an unordered list (`*` bullets)
-  of the additions or changes, formatted to match `api_docs/changelog.md`.
+  it for you. Document the changes in that file as an unordered list
+  (`*` bullets) of the additions or changes, formatted to match
+  `api_docs/changelog.md`. Don't add a `**Feature level**` heading;
+  the merge tooling emits that itself.
   In the OpenAPI yaml (`zerver/openapi/zulip.yaml`), reference the same
   filename stem in **Changes** notes, e.g.,
   `**Changes**: New in Zulip 13.0 (feature level ZF-XXXXXX).` The merge
