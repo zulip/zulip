@@ -1306,7 +1306,8 @@ test("negated filters are not suggested again", () => {
     assert.deepEqual(suggestions, expected);
 });
 
-test("negated filters do not block other operands", () => {
+test("negated filters do not block other operands", ({override}) => {
+    override(narrow_state, "stream_id", noop);
     // "-channels:web-public" neither duplicates nor contradicts
     // "channels:public", so that suggestion is still offered.
     const web_public_id = new_stream_id();
@@ -1356,5 +1357,67 @@ test("negated filters do not block other operands", () => {
     query = "-channels:public -channels:";
     suggestions = get_suggestions(query);
     expected = ["-channels:public -channels:archived"];
+    assert.deepEqual(suggestions, expected);
+
+    // The same reasoning applies to naming a single channel:
+    // "channels:public -channel:Web public" is the public channels
+    // other than that one, while naming it unnegated means the same
+    // as the "channel:" term alone, so only the negated suggestion
+    // is offered.
+    query = "channels:public -channel:";
+    suggestions = get_suggestions(query);
+    expected = [`channels:public -channel:${web_public_id}`];
+    assert.deepEqual(suggestions, expected);
+
+    query = "channels:public channel:";
+    suggestions = get_suggestions(query);
+    expected = [];
+    assert.deepEqual(suggestions, expected);
+
+    // The "-channels:" and "-channel:" operators themselves are
+    // offered the same way, so the negated suggestions above are
+    // reachable by typing a prefix.
+    query = "channels:public -chan";
+    suggestions = get_suggestions(query);
+    expected = ["channels:public -chan", "channels:public -channels:", "channels:public -channel:"];
+    assert.deepEqual(suggestions, expected);
+
+    query = "channels:public chan";
+    suggestions = get_suggestions(query);
+    expected = ["channels:public chan"];
+    assert.deepEqual(suggestions, expected);
+
+    // A loose "-" isn't a parsed negation, so it doesn't unlock the
+    // redundant unnegated suggestion for a channel whose name
+    // happens to match the "-".
+    stream_data.add_sub_for_tests(
+        make_stream({
+            name: "dev - help",
+            stream_id: new_stream_id(),
+        }),
+    );
+    query = "channels:public -";
+    suggestions = get_suggestions(query);
+    expected = [
+        "channels:public -",
+        "channels:public -channels:",
+        "channels:public -channel:",
+        "channels:public -topic:",
+        "channels:public -sender:",
+        "channels:public -near:",
+        "channels:public -mentions:",
+        "channels:public -is:starred",
+        "channels:public -is:mentioned",
+        "channels:public -is:followed",
+        "channels:public -is:alerted",
+        "channels:public -is:unread",
+        "channels:public -is:muted",
+        "channels:public -is:resolved",
+        "channels:public -sender:41",
+        "channels:public -has:link",
+        "channels:public -has:image",
+        "channels:public -has:attachment",
+        "channels:public -has:reaction",
+    ];
     assert.deepEqual(suggestions, expected);
 });

@@ -51,11 +51,6 @@ const common_incompatible_patterns: TermPattern[] = [
     {operator: "in"},
 ];
 
-const channel_incompatible_patterns: TermPattern[] = [
-    ...common_incompatible_patterns,
-    {operator: "channels"},
-];
-
 const channels_public_incompatible_patterns: TermPattern[] = [
     ...common_incompatible_patterns,
     ...get_negated_and_unnegated_patterns("channels", "public"),
@@ -115,8 +110,8 @@ type SearchFilter =
     | "has:reaction";
 
 const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
-    channel: channel_incompatible_patterns,
-    channels: channel_incompatible_patterns,
+    channel: common_incompatible_patterns,
+    channels: common_incompatible_patterns,
     "channels:public": channels_public_incompatible_patterns,
     "channels:web-public": channels_web_public_incompatible_patterns,
     "channels:archived": [
@@ -195,9 +190,20 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
 
 // Broader terms in the search bar that make a suggestion redundant
 // rather than wrong: combining the two means the same as the narrower
-// one alone. Excluding such a filter still changes the search, so
+// one alone. Excluding such a filter can still change the search, so
 // only the unnegated form of the suggestion is dropped.
 const redundant_patterns: Partial<Record<SearchFilter, TermPattern[]>> = {
+    // A "channels:" term already narrows the search to a set of
+    // channels. Naming one of them with "channel:" means the same as
+    // the "channel:" term alone, while excluding one usually changes
+    // the search. Excluding a channel outside the set, like a private
+    // channel with "channels:public", is a no-op, but harmless.
+    channel: [{operator: "channels"}],
+    // A second "channels:" scope alongside an existing one isn't
+    // offered, but excluding part of the current scope, like
+    // "channels:public -channels:web-public", still changes the
+    // search.
+    channels: [{operator: "channels"}],
     // Web-public channels are public, so "channels:public
     // channels:web-public" is just the web-public channels, while
     // "channels:public -channels:web-public" is the public channels
@@ -321,7 +327,8 @@ function get_channel_suggestions(
     // For users with "stream" in their muscle memory, still
     // have suggestions with "channel:" operator.
     const valid = ["stream", "channel", "search", ""];
-    if (!check_validity(last.operator, terms, valid, incompatible_patterns.channel)) {
+    const patterns = get_blocking_patterns("channel", last.negated === true);
+    if (!check_validity(last.operator, terms, valid, patterns)) {
         return [];
     }
 
@@ -476,9 +483,8 @@ function get_person_suggestions(
 
     const valid = ["search", autocomplete_operator];
 
-    if (
-        !check_validity(last.operator, terms, valid, incompatible_patterns[autocomplete_operator])
-    ) {
+    const patterns = get_blocking_patterns(autocomplete_operator, last.negated === true);
+    if (!check_validity(last.operator, terms, valid, patterns)) {
         return [];
     }
 
@@ -968,10 +974,10 @@ function get_operator_suggestions(
         canonicalized_operator_choices.push("date");
     }
 
-    // We remove suggestion choice if its incompatible_pattern matches
-    // that of current search terms.
+    // We remove a suggestion choice if its blocking patterns match
+    // the current search terms.
     canonicalized_operator_choices = canonicalized_operator_choices.filter((choice) => {
-        if (match_criteria(terms, incompatible_patterns[choice])) {
+        if (match_criteria(terms, get_blocking_patterns(choice, negated))) {
             incompatible_operators.add(choice);
             return false;
         }
