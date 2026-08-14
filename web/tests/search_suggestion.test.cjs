@@ -592,6 +592,7 @@ test("check_is_suggestions", ({override}) => {
         "-is:unread",
         "-is:muted",
         "-is:resolved",
+        "-has:image",
     ];
     assert.deepEqual(suggestions, expected);
 
@@ -1157,7 +1158,14 @@ test("operator_suggestions", ({override}) => {
 
     query = "-s";
     suggestions = get_suggestions(query);
-    expected = ["-s", "-sender:", "-channels:", "-channel:", `-sender:${me.user_id}`];
+    expected = [
+        "-s",
+        "-sender:",
+        "-channels:",
+        "-channel:",
+        "-is:starred",
+        `-sender:${me.user_id}`,
+    ];
     assert.deepEqual(suggestions, expected);
 
     stream_data.add_sub_for_tests(
@@ -1172,6 +1180,7 @@ test("operator_suggestions", ({override}) => {
     expected = [
         "channel:66 is:alerted -f",
         "channel:66 is:alerted -sender:",
+        "channel:66 is:alerted -is:followed",
         `channel:66 is:alerted -sender:${me.user_id}`,
     ];
     assert.deepEqual(suggestions, expected);
@@ -1419,5 +1428,50 @@ test("negated filters do not block other operands", ({override}) => {
         "channels:public -has:attachment",
         "channels:public -has:reaction",
     ];
+    assert.deepEqual(suggestions, expected);
+});
+
+test("negated suggestions match typed text", ({override}) => {
+    override(narrow_state, "stream_id", noop);
+    // Typing "star" offers "is:starred", so typing "-star" offers
+    // "-is:starred": the "-" is stripped from both sides before
+    // matching the operand.
+    let query = "-star";
+    let suggestions = get_suggestions(query);
+    let expected = ["-star", "-is:starred"];
+    assert.deepEqual(suggestions, expected);
+
+    query = "-att";
+    suggestions = get_suggestions(query);
+    expected = ["-att", "-has:attachment"];
+    assert.deepEqual(suggestions, expected);
+
+    // Descriptions match the same way: "is:dm" is described as
+    // "direct messages".
+    query = "-dir";
+    suggestions = get_suggestions(query);
+    expected = ["-dir", "-is:dm"];
+    assert.deepEqual(suggestions, expected);
+
+    // "-is:resolved" has a description of its own, "unresolved
+    // topics", offered among the unnegated suggestions.
+    query = "unres";
+    suggestions = get_suggestions(query);
+    expected = ["unres", "-is:resolved"];
+    assert.deepEqual(suggestions, expected);
+
+    // But that description must not match negated input: "-unres"
+    // means "not unresolved", so offering "-is:resolved" for it
+    // would suggest the opposite of what was typed.
+    query = "-unres";
+    suggestions = get_suggestions(query);
+    expected = ["-unres"];
+    assert.deepEqual(suggestions, expected);
+
+    // Negated input matches the unnegated description: "-res"
+    // offers "-is:resolved" via "resolved topics".
+    query = "-res";
+    suggestions = get_suggestions(query);
+    expected = ["-res", "-is:resolved"];
     assert.deepEqual(suggestions, expected);
 });

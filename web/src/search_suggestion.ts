@@ -793,27 +793,41 @@ function get_special_filter_suggestions(
 ): Suggestion[] {
     // Negating suggestions for a negated input is required for
     // suggesting negated terms.
-    if (is_input_negated(last)) {
+    const negated_input = is_input_negated(last);
+    if (negated_input) {
         suggestions = suggestions
             .filter((suggestion) => suggestion !== "-is:resolved")
             .map((suggestion) => "-" + suggestion);
     }
 
     const last_string = Filter.unparse([last]).toLowerCase();
+    // When the typed text is negated, the suggestions are negated
+    // too, so match the text after the "-" against the unnegated
+    // parts of the suggestion: "-star" should offer "-is:starred"
+    // just as "star" offers "is:starred".
+    const match_string = negated_input ? last_string.slice(1) : last_string;
     suggestions = suggestions.filter((s) => {
         if (last_string === "") {
             return true;
         }
 
+        const unnegated_suggestion = s.startsWith("-") ? s.slice(1) : s;
+        // For negated input, never match a negated suggestion's own
+        // description: "-is:resolved" is described as "unresolved
+        // topics", so matching it against the de-negated typed text
+        // would make "-unres" offer "-is:resolved".
+        const description = negated_input ? descriptions[unnegated_suggestion] : descriptions[s];
         // returns the substring after the ":" symbol.
-        const suggestion_operand = s.slice(s.indexOf(":") + 1);
+        const suggestion_operand = unnegated_suggestion.slice(
+            unnegated_suggestion.indexOf(":") + 1,
+        );
         // e.g for `att` search query, `has:attachment` should be suggested.
         const show_operator_suggestions =
-            last.operator === "search" && suggestion_operand.toLowerCase().startsWith(last_string);
+            last.operator === "search" && suggestion_operand.toLowerCase().startsWith(match_string);
         return (
             s.toLowerCase().startsWith(last_string) ||
             show_operator_suggestions ||
-            descriptions[s]?.toLowerCase().startsWith(last_string)
+            description?.toLowerCase().startsWith(match_string)
         );
     });
 
