@@ -30,8 +30,8 @@ def check_pygments_language(var_name: str, val: object) -> str:
                 raise JsonableError(
                     _("Invalid character in language: {character}").format(character=char)
                 )
-    if s in RealmPlayground.RESTRICTED_KEYWORDS:
-        raise JsonableError(_("Language '{language}' is not allowed.").format(language=s))
+    if s.lower() in RealmPlayground.RESTRICTED_KEYWORDS:
+        raise JsonableError(_("Language '{language}' is not allowed.").format(language=s.lower()))
     try:
         canonical_name = find_lexer_class_by_name(s.lower()).name
         if re.match(rf"^{PLAYGROUND_LANGUAGE_REGEX}$", canonical_name):
