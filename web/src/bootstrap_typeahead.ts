@@ -268,6 +268,7 @@ export class Typeahead<ItemType extends string | object> {
     hideOnEmptyAfterBackspace: boolean;
     // Used for adding a custom classname to the typeahead link.
     getCustomItemClassname: ((item: ItemType) => string) | undefined;
+    boundScrollHandler: () => void;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -313,6 +314,7 @@ export class Typeahead<ItemType extends string | object> {
         this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
         this.hideOnEmptyAfterBackspace = options.hideOnEmptyAfterBackspace ?? false;
         this.getCustomItemClassname = options.getCustomItemClassname;
+        this.boundScrollHandler = this.scrollHandler.bind(this);
         this.listen();
     }
 
@@ -680,7 +682,8 @@ export class Typeahead<ItemType extends string | object> {
             .on("click", this.element_click.bind(this))
             .on("focus", this.element_focus.bind(this))
             .on("keydown", this.keydown.bind(this))
-            .on("typeahead.refreshPosition", this.refreshPosition.bind(this));
+            .on("typeahead.refreshPosition", this.refreshPosition.bind(this))
+            .on("scroll", this.boundScrollHandler);
 
         this.$menu
             .on("click", "li", this.click.bind(this))
@@ -694,6 +697,7 @@ export class Typeahead<ItemType extends string | object> {
             });
 
         $(window).on("resize", this.resizeHandler.bind(this));
+        $(window).on("scroll", this.boundScrollHandler);
     }
 
     unlisten(): void {
@@ -703,6 +707,30 @@ export class Typeahead<ItemType extends string | object> {
         for (const event of events) {
             $(this.input_element.$element).off(event);
         }
+        $(window).off("scroll", this.boundScrollHandler);
+    }
+
+    scrollHandler(): void {
+        if (!this.shown) {
+            return;
+        }
+
+        if (this.input_element.type === "textarea") {
+            const element = the(this.input_element.$element);
+            const element_rect = element.getBoundingClientRect();
+            const caret = getCaretCoordinates(element, element.selectionStart);
+            const scrollTop = this.input_element.$element.scrollTop() ?? 0;
+
+            const caret_viewport_top = element_rect.top + caret.top - scrollTop;
+            const caret_viewport_bottom = caret_viewport_top + caret.height;
+
+            if (caret_viewport_bottom < 0 || caret_viewport_top > window.innerHeight) {
+                this.hide();
+                return;
+            }
+        }
+
+        void this.instance?.popperInstance?.update();
     }
 
     resizeHandler(): void {
