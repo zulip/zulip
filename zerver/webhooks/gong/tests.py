@@ -43,91 +43,61 @@ class GongHookTests(WebhookTestCase):
         )
 
     def test_gong_test_call(self) -> None:
-        self.subscribe(self.test_user, self.channel_name)
         payload = orjson.loads(self.get_body("call_completed"))
         payload["isTest"] = True
-        msg = self.send_webhook_payload(
-            self.test_user,
-            self.url,
-            orjson.dumps(payload).decode(),
+        self.check_webhook(
+            "call_completed",
+            "Gong Test",
+            f"Gong webhook has been successfully configured.\n\n{self.EXPECTED_CALL_MESSAGE.format(title=self.CALL_TITLE)}",
             content_type="application/json",
-        )
-        self.assert_channel_message(
-            message=msg,
-            channel_name=self.channel_name,
-            topic_name="Gong Test",
-            content=f"Gong webhook has been successfully configured.\n\n{self.EXPECTED_CALL_MESSAGE.format(title=self.CALL_TITLE)}",
+            custom_payload=payload,
         )
 
     def test_call_without_title(self) -> None:
-        self.subscribe(self.test_user, self.channel_name)
         payload = orjson.loads(self.get_body("call_completed"))
         payload["callData"]["metaData"].pop("title")
-        msg = self.send_webhook_payload(
-            self.test_user,
-            self.url,
-            orjson.dumps(payload).decode(),
+        self.check_webhook(
+            "call_completed",
+            "Gong call (ID: 5599332235511222779)",
+            self.EXPECTED_CALL_MESSAGE.format(title="Gong call"),
             content_type="application/json",
-        )
-        self.assert_channel_message(
-            message=msg,
-            channel_name=self.channel_name,
-            topic_name="Gong call (ID: 5599332235511222779)",
-            content=self.EXPECTED_CALL_MESSAGE.format(title="Gong call"),
+            custom_payload=payload,
         )
 
     def test_call_without_participants(self) -> None:
-        self.subscribe(self.test_user, self.channel_name)
         payload = orjson.loads(self.get_body("call_completed"))
         payload["callData"]["parties"] = []
-        msg = self.send_webhook_payload(
-            self.test_user,
-            self.url,
-            orjson.dumps(payload).decode(),
-            content_type="application/json",
-        )
         intro = self.MESSAGE_INTRO.format(title=self.CALL_TITLE)
-        self.assert_channel_message(
-            message=msg,
-            channel_name=self.channel_name,
-            topic_name=self.EXPECTED_TOPIC,
-            content=f"{intro}\n\n{self.TRACKERS_SECTION}\n\n{self.TOPICS_SECTION}",
+        self.check_webhook(
+            "call_completed",
+            self.EXPECTED_TOPIC,
+            f"{intro}\n\n{self.TRACKERS_SECTION}\n\n{self.TOPICS_SECTION}",
+            content_type="application/json",
+            custom_payload=payload,
         )
 
     def test_call_without_trackers(self) -> None:
-        self.subscribe(self.test_user, self.channel_name)
         payload = orjson.loads(self.get_body("call_completed"))
         payload["callData"]["content"].pop("trackers")
-        msg = self.send_webhook_payload(
-            self.test_user,
-            self.url,
-            orjson.dumps(payload).decode(),
-            content_type="application/json",
-        )
         intro = self.MESSAGE_INTRO.format(title=self.CALL_TITLE)
-        self.assert_channel_message(
-            message=msg,
-            channel_name=self.channel_name,
-            topic_name=self.EXPECTED_TOPIC,
-            content=f"{intro}\n\n{self.PARTICIPANTS_SECTION}\n\n{self.TOPICS_SECTION}",
+        self.check_webhook(
+            "call_completed",
+            self.EXPECTED_TOPIC,
+            f"{intro}\n\n{self.PARTICIPANTS_SECTION}\n\n{self.TOPICS_SECTION}",
+            content_type="application/json",
+            custom_payload=payload,
         )
 
     def test_call_without_topics(self) -> None:
-        self.subscribe(self.test_user, self.channel_name)
         payload = orjson.loads(self.get_body("call_completed"))
         payload["callData"]["content"].pop("topics")
-        msg = self.send_webhook_payload(
-            self.test_user,
-            self.url,
-            orjson.dumps(payload).decode(),
-            content_type="application/json",
-        )
         intro = self.MESSAGE_INTRO.format(title=self.CALL_TITLE)
-        self.assert_channel_message(
-            message=msg,
-            channel_name=self.channel_name,
-            topic_name=self.EXPECTED_TOPIC,
-            content=f"{intro}\n\n{self.PARTICIPANTS_SECTION}\n\n{self.TRACKERS_SECTION}",
+        self.check_webhook(
+            "call_completed",
+            self.EXPECTED_TOPIC,
+            f"{intro}\n\n{self.PARTICIPANTS_SECTION}\n\n{self.TRACKERS_SECTION}",
+            content_type="application/json",
+            custom_payload=payload,
         )
 
     def test_call_with_top_trackers_disabled(self) -> None:

@@ -27,35 +27,23 @@ class IntercomWebHookTests(WebhookTestCase):
         expected_message = f"{BO_NAME} is away."
         self.check_webhook("admin_away_mode_updated", expected_topic_name, expected_message)
 
-        payload = orjson.loads(self.webhook_fixture_data("intercom", "admin_away_mode_updated"))
+        payload = orjson.loads(self.get_body("admin_away_mode_updated"))
         payload["data"]["item"]["away_status_reason"] = "😜 On a vacation"
-        self.subscribe(self.test_user, self.channel_name)
-        msg = self.send_webhook_payload(
-            self.test_user,
-            self.url,
-            orjson.dumps(payload).decode(),
-            content_type="application/json",
-        )
-        self.assert_channel_message(
-            message=msg,
-            channel_name=self.channel_name,
-            topic_name=expected_topic_name,
-            content=f"{BO_NAME} is away (😜 On a vacation).",
+        self.check_webhook(
+            "admin_away_mode_updated",
+            expected_topic_name,
+            f"{BO_NAME} is away (😜 On a vacation).",
+            custom_payload=payload,
         )
 
     def test_admin_away_mode_disabled(self) -> None:
-        self.subscribe(self.test_user, self.channel_name)
-        payload = self.webhook_fixture_data(self.webhook_dir_name, "admin_away_mode_updated")
-        data = orjson.loads(payload)
-        data["data"]["item"]["away_mode_enabled"] = False
-        msg = self.send_webhook_payload(
-            self.test_user, self.url, orjson.dumps(data).decode(), content_type="application/json"
-        )
-        self.assert_channel_message(
-            message=msg,
-            channel_name=self.channel_name,
-            topic_name=f"Admin: {BO_NAME}",
-            content=f"{BO_NAME} is now available.",
+        payload = orjson.loads(self.get_body("admin_away_mode_updated"))
+        payload["data"]["item"]["away_mode_enabled"] = False
+        self.check_webhook(
+            "admin_away_mode_updated",
+            f"Admin: {BO_NAME}",
+            f"{BO_NAME} is now available.",
+            custom_payload=payload,
         )
 
     def test_admin_logged_in(self) -> None:
