@@ -28,20 +28,14 @@ class StripeHookTests(WebhookTestCase):
         )
 
     def test_charge_dispute_created_pdp_prefix(self) -> None:
-        self.subscribe(self.test_user, self.channel_name)
         payload = orjson.loads(self.get_body("charge_dispute_created"))
         payload["data"]["object"]["id"] = "pdp_00000000000000"
-        msg = self.send_webhook_payload(
-            self.test_user,
-            self.url,
-            orjson.dumps(payload).decode(),
+        self.check_webhook(
+            "charge_dispute_created",
+            "disputes",
+            "[Dispute](https://dashboard.stripe.com/disputes/pdp_00000000000000) created. Current status: needs response.",
             content_type="application/x-www-form-urlencoded",
-        )
-        self.assert_channel_message(
-            message=msg,
-            channel_name=self.channel_name,
-            topic_name="disputes",
-            content="[Dispute](https://dashboard.stripe.com/disputes/pdp_00000000000000) created. Current status: needs response.",
+            custom_payload=orjson.dumps(payload).decode(),
         )
 
     def test_charge_failed(self) -> None:
