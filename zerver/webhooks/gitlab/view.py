@@ -607,9 +607,8 @@ def get_repo_name(payload: WildValue) -> str:
         return payload["project"]["name"].tame(check_string)
 
     if "repository" in payload:
-        # Job Hook payloads don't have a `project` section,
-        # but the repository name is accessible from the `repository`
-        # section.
+        # Older Job Hook payloads had no `project` section, and GitLab docs
+        # don't promise one, so this fallback has been retained.
         return payload["repository"]["name"].tame(check_string)
 
     # Group-level events (e.g. group access token expiry) have neither

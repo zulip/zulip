@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock, patch
 
+import orjson
+
 from zerver.actions.custom_profile_fields import try_add_realm_default_custom_profile_field
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
@@ -591,16 +593,40 @@ A trivial change that should probably be ignored.
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    def test_job_hook_event(self) -> None:
-        expected_topic_name = "gitlab_test / gitlab-script-trigger"
-        expected_message = "Build test from test stage was created."
-        self.check_webhook("job_hook__build_created", expected_topic_name, expected_message)
+    def test_job_event_message_by_build_status(self) -> None:
+        expected_topic_name = "TEST-1 / master"
+        test_cases = [
+            ("created", "Build build-job from build stage was created."),
+            ("running", "Build build-job from build stage started."),
+            ("success", "Build build-job from build stage changed status to success."),
+            ("failed", "Build build-job from build stage changed status to failed."),
+        ]
 
-    def test_job_hook_event_topic(self) -> None:
+        payload = orjson.loads(self.get_body("job_hook"))
+
+        for build_status, expected_message in test_cases:
+            with self.subTest(build_status=build_status):
+                payload["build_status"] = build_status
+                self.check_webhook(
+                    "job_hook",
+                    expected_topic_name,
+                    expected_message,
+                    custom_payload=payload,
+                )
+
+    def test_job_event_message_without_project_field_with_custom_topic(self) -> None:
         self.url = self.build_webhook_url(topic="provided topic")
         expected_topic_name = "provided topic"
-        expected_message = "[[gitlab_test](http://192.168.64.1:3005/gitlab-org/gitlab-test)] Build test from test stage was created."
-        self.check_webhook("job_hook__build_created", expected_topic_name, expected_message)
+        expected_message = "[[TEST-1](https://gitlab.com/HydrallHarsh/test-1)] Build build-job from build stage was created."
+
+        # The project link falls back to the `repository` section for
+        # payloads that have no `project` section.
+        payload = orjson.loads(self.get_body("job_hook"))
+        del payload["project"]
+
+        self.check_webhook(
+            "job_hook", expected_topic_name, expected_message, custom_payload=payload
+        )
 
     def test_system_push_event_message(self) -> None:
         expected_topic_name = "gitlab / master"
