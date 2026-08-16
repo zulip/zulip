@@ -38,56 +38,28 @@ class HerokuHookTests(WebhookTestCase):
         self.check_webhook("release_update", self.TOPIC_NAME, expected_message)
 
     def test_release_phase_update(self) -> None:
-        self.subscribe(self.test_user, self.channel_name)
-        payload = self.webhook_fixture_data(self.webhook_dir_name, "release_update")
-        data = orjson.loads(payload)
-        data["data"]["current"] = False
-        last_message_id = self.get_last_message().id
-        result = self.client_post(self.url, orjson.dumps(data), content_type="application/json")
-        self.assert_json_success(result)
-        self.assertEqual(self.get_last_message().id, last_message_id)
+        payload = orjson.loads(self.get_body("release_update"))
+        payload["data"]["current"] = False
+        self.check_webhook("release_update", expect_noop=True, custom_payload=payload)
 
     def test_all_status_emojis(self) -> None:
-        self.subscribe(self.test_user, self.channel_name)
         expected_message_template = "{emoji} The [build](https://build-output.heroku.com/streams/43/4335bcdb-5f6f-41f8-a31b-84697ec96475/logs/b6/b6d5ff62-08db-4044-b96c-b8e9e41f1191.log?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Credential=AKIAZSXS6CXK3PQ5Y6GY%2F20250517%2Fus-east-1%2Fs3%2Faws4_request&amp;X-Amz-Date=20250517T113803Z&amp;X-Amz-Expires=86400&amp;X-Amz-SignedHeaders=host&amp;X-Amz-Signature=0aa7c17cbf2fb161feec2da740e6956a39c25b8c55fbce6ebec5b6d4e01ade7c) triggered by {email} **{status}**."
-        payload = self.webhook_fixture_data(self.webhook_dir_name, "build_update")
-        data = orjson.loads(payload)
+        payload = orjson.loads(self.get_body("build_update"))
 
         for status, emoji in STATUS_MAP.items():
             with self.subTest(status=status):
-                data["data"]["status"] = status
-                expected_message = expected_message_template.format(
-                    emoji=emoji, status=status, email=BO_EMAIL
-                )
-                msg = self.send_webhook_payload(
-                    self.test_user,
-                    self.url,
-                    orjson.dumps(data).decode(),
-                    content_type="application/json",
-                )
-
-                self.assert_channel_message(
-                    message=msg,
-                    channel_name=self.channel_name,
-                    topic_name=self.TOPIC_NAME,
-                    content=expected_message,
+                payload["data"]["status"] = status
+                self.check_webhook(
+                    "build_update",
+                    self.TOPIC_NAME,
+                    expected_message_template.format(emoji=emoji, status=status, email=BO_EMAIL),
+                    custom_payload=payload,
                 )
 
     def test_status_not_in_map(self) -> None:
-        self.subscribe(self.test_user, self.channel_name)
         expected_message = f"The [build](https://build-output.heroku.com/streams/43/4335bcdb-5f6f-41f8-a31b-84697ec96475/logs/b6/b6d5ff62-08db-4044-b96c-b8e9e41f1191.log?X-Amz-Algorithm=AWS4-HMAC-SHA256&amp;X-Amz-Credential=AKIAZSXS6CXK3PQ5Y6GY%2F20250517%2Fus-east-1%2Fs3%2Faws4_request&amp;X-Amz-Date=20250517T113803Z&amp;X-Amz-Expires=86400&amp;X-Amz-SignedHeaders=host&amp;X-Amz-Signature=0aa7c17cbf2fb161feec2da740e6956a39c25b8c55fbce6ebec5b6d4e01ade7c) triggered by {BO_EMAIL} **building**."
-        payload = self.webhook_fixture_data(self.webhook_dir_name, "build_update")
-        data = orjson.loads(payload)
-        data["data"]["status"] = "building"
-        msg = self.send_webhook_payload(
-            self.test_user,
-            self.url,
-            orjson.dumps(data).decode(),
-            content_type="application/json",
-        )
-        self.assert_channel_message(
-            message=msg,
-            channel_name=self.channel_name,
-            topic_name=self.TOPIC_NAME,
-            content=expected_message,
+        payload = orjson.loads(self.get_body("build_update"))
+        payload["data"]["status"] = "building"
+        self.check_webhook(
+            "build_update", self.TOPIC_NAME, expected_message, custom_payload=payload
         )
