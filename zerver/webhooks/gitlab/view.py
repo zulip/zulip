@@ -512,6 +512,7 @@ def get_deployment_event_body(payload: WildValue, include_title: bool, realm: Re
         "success": f"The {deployment_text} was successful.",
         "failed": f"The {deployment_text} failed.",
         "canceled": f"The {deployment_text} was canceled.",
+        "blocked": f"The {deployment_text} is blocked and awaiting manual action.",
     }
 
     return deployment_event_body_map[deployment_status]
