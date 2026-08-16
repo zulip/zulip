@@ -734,6 +734,10 @@ A trivial change that should probably be ignored.
             ("success", f"The [deployment]({deployment_url}) was successful."),
             ("failed", f"The [deployment]({deployment_url}) failed."),
             ("canceled", f"The [deployment]({deployment_url}) was canceled."),
+            (
+                "blocked",
+                f"The [deployment]({deployment_url}) is blocked and awaiting manual action.",
+            ),
         ]
 
         payload = orjson.loads(self.get_body("deployment_hook"))
