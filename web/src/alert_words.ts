@@ -30,7 +30,9 @@ export function get_word_list(): {word: string; automatically_follow_topics: boo
 }
 
 export function has_alert_word(word: string): boolean {
-    return my_alert_words.includes(word);
+    // The server matches alert words case-insensitively.
+    const word_lower = word.toLowerCase();
+    return my_alert_words.some((alert_word) => alert_word.toLowerCase() === word_lower);
 }
 
 const alert_regex_replacements = new Map<string, string>([

@@ -208,4 +208,6 @@ run_test("basic get/set operations", () => {
     assert.ok(alert_words.has_alert_word("breakfast"));
     assert.ok(alert_words.has_alert_word("lunch"));
     assert.ok(!alert_words.has_alert_word("dinner"));
+    // The server matches alert words case-insensitively, so this must too.
+    assert.ok(alert_words.has_alert_word("BreakFast"));
 });
