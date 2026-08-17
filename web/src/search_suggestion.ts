@@ -340,16 +340,23 @@ function get_channel_suggestions(
         channel_matches_query(channel_name, query),
     );
     matching_channel_names = typeahead_helper.sorter(query, matching_channel_names, (x) => x);
-    return matching_channel_names.map((channel_name) => {
+    // A term that's already negated in the search bar isn't suggested
+    // again for either polarity: repeating it duplicates the existing
+    // term, and the unnegated form contradicts it.
+    const filter = new Filter(terms);
+    return matching_channel_names.flatMap((channel_name) => {
         const channel = stream_data.get_sub_by_name(channel_name);
         assert(channel !== undefined);
+        const operand = channel.stream_id.toString();
+        if (filter.has_negated_operand("channel", operand)) {
+            return [];
+        }
         const term: NarrowTerm = {
             operator: "channel",
-            operand: channel.stream_id.toString(),
+            operand,
             negated: last.negated,
         };
-        const search_string = Filter.unparse([term]);
-        return search_string;
+        return [Filter.unparse([term])];
     });
 }
 
@@ -488,37 +495,52 @@ function get_person_suggestions(
         return [];
     }
 
-    const persons = people_getter();
-
-    return persons.map((person) => {
-        const terms: NarrowCanonicalTerm[] = [];
+    const filter = new Filter(terms);
+    return people_getter().flatMap((person) => {
+        let term: NarrowCanonicalTerm;
         switch (autocomplete_operator) {
             case "dm":
             case "dm-including":
-                terms.push({
+                term = {
                     operator: autocomplete_operator,
                     operand: [person.user_id],
                     negated: last.negated,
-                });
+                };
                 break;
             case "sender":
             case "mentions":
-                terms.push({
+                term = {
                     operator: autocomplete_operator,
                     operand: person.user_id,
                     negated: last.negated,
-                });
+                };
                 break;
         }
 
+        if (filter.has_negated_operand(term.operator, term.operand)) {
+            return [];
+        }
+
+        // "mentions:me" canonicalizes to "is:mentioned", so with
+        // "-mentions:me" in the search bar the excluded term to look
+        // for is "-is:mentioned".
+        if (
+            autocomplete_operator === "mentions" &&
+            person.user_id === people.my_current_user_id() &&
+            filter.has_negated_operand("is", "mentioned")
+        ) {
+            return [];
+        }
+
+        const suggestion_terms: NarrowCanonicalTerm[] = [term];
         if (last.negated && autocomplete_operator === "dm") {
             // In the special case of "-dm" or "-pm-with", add "is:dm" before
             // it because we assume the user still wants to narrow to direct
             // messages.
-            terms.unshift({operator: "is", operand: "dm"});
+            suggestion_terms.unshift({operator: "is", operand: "dm"});
         }
 
-        return Filter.unparse(terms);
+        return [Filter.unparse(suggestion_terms)];
     });
 }
 
@@ -929,7 +951,10 @@ function get_sent_by_me_suggestions(
     const from_string = negated_symbol + "from";
     const sent_string = negated_symbol + "sent";
 
-    if (match_criteria(terms, incompatible_patterns.sender)) {
+    if (
+        match_criteria(terms, incompatible_patterns.sender) ||
+        new Filter(terms).has_negated_operand("sender", people.my_current_user_id())
+    ) {
         return [];
     }
 

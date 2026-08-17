@@ -1313,6 +1313,84 @@ test("negated filters are not suggested again", () => {
         "-in:home -is:resolved",
     ];
     assert.deepEqual(suggestions, expected);
+
+    // The same holds for suggestions built per operand: a channel
+    // that's already excluded isn't offered again, while other
+    // channels still are.
+    const devel_id = new_stream_id();
+    const office_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: devel_id, name: "devel", subscribed: true}),
+    );
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: office_id, name: "office", subscribed: true}),
+    );
+
+    query = `-channel:${devel_id} channel:`;
+    suggestions = get_suggestions(query);
+    expected = [`-channel:${devel_id} channel:${office_id}`];
+    assert.deepEqual(suggestions, expected);
+
+    query = `-channel:${devel_id} -channel:`;
+    suggestions = get_suggestions(query);
+    expected = [`-channel:${devel_id} -channel:${office_id}`];
+    assert.deepEqual(suggestions, expected);
+
+    // "-sender:me" blocks suggesting yourself again, both from the
+    // sent-by-me shortcut and from the person suggestions.
+    query = "-sender:me sender:";
+    suggestions = get_suggestions(query);
+    expected = [
+        `-sender:${me.user_id} sender:${alice.user_id}`,
+        `-sender:${me.user_id} sender:${bob.user_id}`,
+        `-sender:${me.user_id} sender:${jeff.user_id}`,
+        `-sender:${me.user_id} sender:${ted.user_id}`,
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    query = "-sender:me -sender:";
+    suggestions = get_suggestions(query);
+    expected = [
+        `-sender:${me.user_id} -sender:${alice.user_id}`,
+        `-sender:${me.user_id} -sender:${bob.user_id}`,
+        `-sender:${me.user_id} -sender:${jeff.user_id}`,
+        `-sender:${me.user_id} -sender:${ted.user_id}`,
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    // Other operators suggesting users skip an excluded user the
+    // same way.
+    query = `-dm:${alice.user_id} dm:`;
+    suggestions = get_suggestions(query);
+    expected = [
+        `-dm:${alice.user_id} dm:${bob.user_id}`,
+        `-dm:${alice.user_id} dm:${jeff.user_id}`,
+        `-dm:${alice.user_id} dm:${me.user_id}`,
+        `-dm:${alice.user_id} dm:${ted.user_id}`,
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    query = `-mentions:${alice.user_id} mentions:`;
+    suggestions = get_suggestions(query);
+    expected = [
+        `-mentions:${alice.user_id} mentions:${bob.user_id}`,
+        `-mentions:${alice.user_id} mentions:${jeff.user_id}`,
+        `-mentions:${alice.user_id} mentions:${me.user_id}`,
+        `-mentions:${alice.user_id} mentions:${ted.user_id}`,
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    // "-mentions:me" canonicalizes to "-is:mentioned", so it blocks
+    // suggesting yourself the same way.
+    query = "-mentions:me mentions:";
+    suggestions = get_suggestions(query);
+    expected = [
+        `-is:mentioned mentions:${alice.user_id}`,
+        `-is:mentioned mentions:${bob.user_id}`,
+        `-is:mentioned mentions:${jeff.user_id}`,
+        `-is:mentioned mentions:${ted.user_id}`,
+    ];
+    assert.deepEqual(suggestions, expected);
 });
 
 test("negated filters do not block other operands", ({override}) => {
