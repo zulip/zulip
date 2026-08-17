@@ -155,6 +155,12 @@ from zproject.backends import (
 ldap_logger = logging.getLogger("zulip.ldap")
 logger = logging.getLogger("zulip.registration")
 
+# Creating a demo organization doesn't involve authenticating at all --
+# the owner's account is created without an email address or password --
+# so login audit log entries for the resulting session record this
+# instead of the name of an authentication method.
+DEMO_ORGANIZATION_CREATION_LOGIN_METHOD = "demo_organization_creation"
+
 
 @typed_endpoint
 def get_prereg_key_and_redirect(
@@ -762,6 +768,10 @@ def registration_helper(
 
         user_profile: UserProfile | None = None
         return_data: dict[str, bool] = {}
+        # The auth method the user used to get here; only consulted for
+        # realm creation, since the other paths out of this function pass
+        # it to login_and_redirect explicitly.
+        login_method = "email"
         if ldap_auth_enabled(realm):
             # If the user was authenticated using an external SSO
             # mechanism like Google or GitHub auth, then authentication
@@ -840,6 +850,7 @@ def registration_helper(
                     return login_and_redirect(request, user_profile, next, login_method="ldap")
                 # With realm_creation=True, we're going to return further down,
                 # after finishing up the creation process.
+                login_method = "ldap"
 
         if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             user_profile = existing_user_profile
@@ -925,9 +936,7 @@ def registration_helper(
             # Because for realm creation, registration happens on the
             # root domain, we need to log them into the subdomain for
             # their new realm.
-            return redirect_and_log_into_subdomain(
-                ExternalAuthResult(user_profile=user_profile, data_dict={"is_realm_creation": True})
-            )
+            return redirect_and_log_into_new_realm(user_profile, login_method=login_method)
 
         # This dummy_backend check below confirms the user is
         # authenticating to the correct subdomain.
@@ -1039,6 +1048,31 @@ def login_and_redirect(
         redirect_to = mark_sanitized(user_profile.realm.url) + reverse("home")
 
     return HttpResponseRedirect(redirect_to)
+
+
+def redirect_and_log_into_new_realm(
+    user_profile: UserProfile, *, login_method: str
+) -> HttpResponse:
+    """Log a user into the realm they just created, which lives on a
+    different subdomain than the request that created it.
+
+    Since the login happens in a fresh session on the new subdomain, we
+    can't record the auth method in the session the way login_and_redirect
+    does. Pass it through the ExternalAuthResult instead; otherwise the
+    login audit log entry would record the ZulipDummyBackend that
+    do_login's hardening re-authentication leaves on user.backend.
+    """
+    return redirect_and_log_into_subdomain(
+        ExternalAuthResult(
+            user_profile=user_profile,
+            data_dict={
+                "is_realm_creation": True,
+                "params_to_store_in_authenticated_session": {
+                    "social_auth_backend": login_method,
+                },
+            },
+        )
+    )
 
 
 def prepare_activation_url(
@@ -1719,8 +1753,8 @@ def create_demo_organization(
             # Because for realm creation, registration happens on the
             # root domain, we need to log them into the subdomain for
             # their new demo organization.
-            return redirect_and_log_into_subdomain(
-                ExternalAuthResult(user_profile=user_profile, data_dict={"is_realm_creation": True})
+            return redirect_and_log_into_new_realm(
+                user_profile, login_method=DEMO_ORGANIZATION_CREATION_LOGIN_METHOD
             )
     else:
         default_language_code = get_browser_language_code(request)
