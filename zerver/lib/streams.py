@@ -450,6 +450,23 @@ def create_stream_if_needed(
         ),
     )
 
+    if not created and anonymous_group_membership is not None:
+        # A racing request created the channel in the window between
+        # the caller checking that the name was available and the
+        # get_or_create above.  The caller passes the membership of
+        # every anonymous group it created for this channel's
+        # settings, and those groups are now referenced by nothing, so
+        # delete them rather than leaving them behind.
+        unused_group_ids = [
+            setting_value.id
+            for setting_value in group_setting_values.values()
+            if isinstance(setting_value, UserGroup)
+            and setting_value.id in anonymous_group_membership
+        ]
+        for group_id in unused_group_ids:
+            del anonymous_group_membership[group_id]
+        UserGroup.objects.filter(id__in=unused_group_ids).delete()
+
     if created:
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
 
