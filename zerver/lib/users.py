@@ -133,57 +133,60 @@ def validate_short_name_and_construct_bot_email(
     return short_name, email
 
 
-def check_valid_bot_config(
-    bot_type: int, service_name: str, config_data: Mapping[str, str]
+def check_valid_incoming_webhook_bot_config(
+    config_data: Mapping[str, str],
 ) -> None:
-    if bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
-        from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
+    from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 
-        config_options = None
-        for integration in INCOMING_WEBHOOK_INTEGRATIONS:
-            if integration.name == service_name:
-                # key: validator
-                config_options = {
-                    option.name: option.validator for option in integration.config_options
-                }
-                break
-        if config_options is None:
+    if not (integration_id := config_data["integration_id"]):
+        raise JsonableError(_("Integration name cannot be empty."))
+    config_options = None
+    for integration in INCOMING_WEBHOOK_INTEGRATIONS:
+        if integration.name == integration_id:
+            # key: validator
+            config_options = {
+                option.name: option.validator for option in integration.config_options
+            }
+            break
+    if config_options is None:
+        raise JsonableError(
+            _("Invalid integration '{integration_name}'.").format(integration_name=integration_id)
+        )
+
+    missing_keys = set(config_options.keys()) - set(config_data.keys())
+    if missing_keys:
+        raise JsonableError(
+            _("Missing configuration parameters: {keys}").format(
+                keys=missing_keys,
+            )
+        )
+
+    for key, validator in config_options.items():
+        value = config_data[key]
+        error = validator(key, value)
+        if error is not None:
             raise JsonableError(
-                _("Invalid integration '{integration_name}'.").format(integration_name=service_name)
+                _("Invalid {key} value {value} ({error})").format(key=key, value=value, error=error)
             )
 
-        missing_keys = set(config_options.keys()) - set(config_data.keys())
-        if missing_keys:
-            raise JsonableError(
-                _("Missing configuration parameters: {keys}").format(
-                    keys=missing_keys,
-                )
-            )
 
-        for key, validator in config_options.items():
-            value = config_data[key]
-            error = validator(key, value)
-            if error is not None:
-                raise JsonableError(
-                    _("Invalid {key} value {value} ({error})").format(
-                        key=key, value=value, error=error
-                    )
-                )
+def check_valid_embedded_bot_config(
+    service_name: str,
+    config_data: Mapping[str, str],
+) -> None:
+    try:
+        from zerver.lib.bot_lib import get_bot_handler
 
-    elif bot_type == UserProfile.EMBEDDED_BOT:
-        try:
-            from zerver.lib.bot_lib import get_bot_handler
-
-            bot_handler = get_bot_handler(service_name)
-            if hasattr(bot_handler, "validate_config"):
-                bot_handler.validate_config(config_data)
-        except ConfigValidationError:
-            # The exception provides a specific error message, but that
-            # message is not tagged translatable, because it is
-            # triggered in the external zulip_bots package.
-            # TODO: Think of some clever way to provide a more specific
-            # error message.
-            raise JsonableError(_("Invalid configuration data!"))
+        bot_handler = get_bot_handler(service_name)
+        if hasattr(bot_handler, "validate_config"):
+            bot_handler.validate_config(config_data)
+    except ConfigValidationError:
+        # The exception provides a specific error message, but that
+        # message is not tagged translatable, because it is
+        # triggered in the external zulip_bots package.
+        # TODO: Think of some clever way to provide a more specific
+        # error message.
+        raise JsonableError(_("Invalid configuration data!"))
 
 
 # Adds an outgoing webhook or embedded bot service.
