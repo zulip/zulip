@@ -10698,18 +10698,19 @@ paths:
                     The channel ID to move the message(s) to, to request moving
                     messages to another channel.
 
-                    Should only be sent when changing the channel, and will throw an error
+                    Should only be sent when changing the channel. Will throw an error
                     if the target message is not a channel message.
 
                     Note that a message's content and channel cannot be changed at the
                     same time, so sending both `content` and `stream_id` parameters will
                     throw an error.
 
-                    **Changes**: In Zulip 13.0 (feature level 509), fixed a bug where
-                    passing the channel ID that the message is already in was processed as
-                    a channel move.
+                    **Changes**: Prior to Zulip 13.0 (feature level 509), passing the channel
+                    ID that the target message is currently in was processed as a successful
+                    channel move, even if the target message was not moved (i.e., neither its
+                    channel nor topic were changed).
 
-                    **Changes**: New in Zulip 3.0 (feature level 1).
+                    New in Zulip 3.0 (feature level 1).
                   type: integer
                   example: 43
             encoding:
