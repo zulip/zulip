@@ -1769,6 +1769,18 @@ def list_to_streams(
         )
         existing_streams += dup_streams
 
+        # We can delete the anonymous groups created for the streams
+        # that weren't created.
+        used_group_ids = {
+            getattr(stream, setting_name + "_id")
+            for stream in created_streams
+            for setting_name in Stream.stream_permission_group_settings
+        }
+        unused_group_ids = [
+            group_id for group_id in anonymous_group_membership if group_id not in used_group_ids
+        ]
+        UserGroup.objects.filter(id__in=unused_group_ids).delete()
+
     return existing_streams, created_streams
 
 
