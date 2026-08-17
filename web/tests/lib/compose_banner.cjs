@@ -32,6 +32,7 @@ exports.mock_banners = () => {
     $cb.set_find_results(".wildcards_not_allowed", $stub);
     $cb.set_find_results(".wildcard_warning", $stub);
     $cb.set_find_results(".topic_missing", $stub);
+    $cb.set_find_results(".invalid_topic", $stub);
     $cb.set_find_results(".missing_stream", $stub);
     $cb.set_find_results(".deactivated_user", $stub);
     $cb.set_find_results(".missing_private_message_recipient", $stub);

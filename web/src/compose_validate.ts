@@ -72,6 +72,11 @@ export const get_message_too_long_for_compose_error = (): string =>
         {defaultMessage: "Message length shouldn't be greater than {max_length} characters."},
         {max_length: realm.max_message_length},
     );
+export const get_invalid_topic_error_message = (position: number): string =>
+    $t(
+        {defaultMessage: "Invalid character in topic, at position {position}!"},
+        {position},
+    );
 export const NO_MESSAGE_CONTENT_ERROR_MESSAGE = $t({defaultMessage: "Compose a message."});
 export const UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE = $t({
     defaultMessage:
@@ -911,6 +916,19 @@ function validate_permission_to_post_messages_in_stream(sub: StreamSubscription)
     return true;
 }
 
+function get_invalid_topic_character_position(topic: string): number | undefined {
+    for (const [index, character] of Array.from(topic).entries()) {
+        const code_point = character.codePointAt(0)!;
+        if (
+            (code_point >= 0 && code_point <= 0x1f) ||
+            (code_point >= 0x7f && code_point <= 0x9f)
+        ) {
+            return index + 1;
+        }
+    }
+    return undefined;
+}
+
 function validate_stream_message(scheduling_message: boolean, show_banner = true): boolean {
     const $banner_container = $("#compose_banners");
     const stream_id = compose_state.stream_id();
@@ -942,6 +960,25 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
             }
             return false;
         }
+    }
+
+    const invalid_topic_character_position = get_invalid_topic_character_position(
+        compose_state.topic(),
+    );
+    if (invalid_topic_character_position !== undefined) {
+        const error_message = get_invalid_topic_error_message(invalid_topic_character_position);
+        if (show_banner) {
+            compose_banner.show_error_message(
+                error_message,
+                compose_banner.CLASSNAMES.invalid_topic,
+                $banner_container,
+                $("#stream_message_recipient_topic"),
+            );
+        }
+        if (is_validating_compose_box) {
+            disabled_send_tooltip_message_html = error_message;
+        }
+        return false;
     }
 
     const sub = stream_data.get_sub_by_id(stream_id);

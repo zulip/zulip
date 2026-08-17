@@ -63,6 +63,7 @@ export const CLASSNAMES = {
     invalid_recipient: "invalid_recipient",
     invalid_recipients: "invalid_recipients",
     deactivated_user: "deactivated_user",
+    invalid_topic: "invalid_topic",
     topic_missing: "topic_missing",
     generic_compose_error: "generic_compose_error",
     user_not_subscribed: "user_not_subscribed",
