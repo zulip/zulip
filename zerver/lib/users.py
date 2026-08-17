@@ -544,11 +544,15 @@ def validate_user_custom_profile_data(
     realm_id: int, profile_data: list[ProfileDataElementUpdateDict], acting_user: UserProfile
 ) -> None:
     # This function validate all custom field values according to their field type.
+    field_ids = [item["id"] for item in profile_data]
+    fields_by_id = {
+        field.id: field
+        for field in CustomProfileField.objects.filter(realm_id=realm_id, id__in=field_ids)
+    }
     for item in profile_data:
         field_id = item["id"]
-        try:
-            field = CustomProfileField.objects.get(realm_id=realm_id, id=field_id)
-        except CustomProfileField.DoesNotExist:
+        field = fields_by_id.get(field_id)
+        if field is None:
             raise JsonableError(_("Field id {id} not found.").format(id=field_id))
 
         if not acting_user.is_realm_admin and not field.editable_by_user:
