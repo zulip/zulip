@@ -285,24 +285,36 @@ class TestCreateStreams(ZulipTestCase):
         channel_folder = check_add_channel_folder(
             user_profile.realm, "sports", "", acting_user=user_profile
         )
+        extra_post_data = {
+            "description": "test channel",
+            "folder_id": orjson.dumps(channel_folder.id).decode(),
+        }
+        for setting_name in Stream.stream_permission_group_settings:
+            extra_post_data[setting_name] = orjson.dumps(
+                {
+                    "direct_members": [cordelia.id],
+                    "direct_subgroups": [nobody_group.id],
+                }
+            ).decode()
+
         result = self.create_channel_via_post(
             user_profile,
             name="testchannel",
-            extra_post_data=dict(
-                description="test channel",
-                can_administer_channel_group=orjson.dumps(
-                    {
-                        "direct_members": [cordelia.id],
-                        "direct_subgroups": [nobody_group.id],
-                    }
-                ).decode(),
-                folder_id=orjson.dumps(channel_folder.id).decode(),
-            ),
+            extra_post_data=extra_post_data,
         )
         self.assert_json_success(result)
         stream = get_stream("testchannel", user_profile.realm)
         self.assertEqual(stream.name, "testchannel")
         self.assertEqual(stream.description, "test channel")
+        for setting_name in Stream.stream_permission_group_settings:
+            setting_value = getattr(stream, setting_name)
+            self.assertEqual(
+                list(setting_value.direct_members.all().values_list("id", flat=True)), [cordelia.id]
+            )
+            self.assertEqual(
+                list(setting_value.direct_subgroups.all().values_list("id", flat=True)),
+                [nobody_group.id],
+            )
 
         # Confirm channel created notification message in channel events topic.
         message = self.get_last_message()
