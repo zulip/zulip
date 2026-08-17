@@ -3,23 +3,19 @@ from typing import Any, Literal
 
 import orjson
 from django.conf import settings
-from django.db import connection, transaction
 from django.utils.timezone import now as timezone_now
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.lib.markdown import markdown_convert
-from zerver.lib.message import messages_for_ids
 from zerver.lib.narrow import (
     LARGER_THAN_MAX_MESSAGE_ID,
     AnchorInfo,
     NarrowParameter,
-    clean_narrow_for_message_fetch,
-    fetch_messages,
+    fetch_plain_text_messages_for_narrow,
 )
 from zerver.models import UserProfile
-from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum
 
 # Maximum number of messages that can be summarized in a single request.
 MAX_MESSAGES_SUMMARIZED = 100
@@ -96,51 +92,17 @@ def do_summarize_narrow(
     # caching previous summaries of the same conversation or rolling
     # summaries. Doing so correctly will require careful work around
     # invalidation of caches when messages are edited, moved, or sent.
-    narrow = clean_narrow_for_message_fetch(narrow, user_profile.realm, user_profile)
-    with transaction.atomic(durable=True):
-        # Mirror GET /messages: repeatable-read isolation keeps the search
-        # and the fetch of the matched messages consistent with each other.
-        # See zerver/views/message_fetch.py for why tests must skip this.
-        if not settings.TEST_SUITE:  # nocoverage
-            cursor = connection.cursor()
-            cursor.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+    message_list, _query_info = fetch_plain_text_messages_for_narrow(
+        user_profile,
+        narrow,
+        anchor_info=AnchorInfo(type="message_id", value=LARGER_THAN_MAX_MESSAGE_ID),
+        include_anchor=True,
+        num_before=MAX_MESSAGES_SUMMARIZED,
+        num_after=0,
+    )
 
-        query_info = fetch_messages(
-            narrow=narrow,
-            user_profile=user_profile,
-            realm=user_profile.realm,
-            is_web_public_query=False,
-            anchor_info=AnchorInfo(type="message_id", value=LARGER_THAN_MAX_MESSAGE_ID),
-            include_anchor=True,
-            num_before=MAX_MESSAGES_SUMMARIZED,
-            num_after=0,
-        )
-
-        if len(query_info.rows) == 0:  # nocoverage
-            return None
-
-        result_message_ids: list[int] = []
-        user_message_flags: dict[int, list[str]] = {}
-        for row in query_info.rows:
-            message_id = row[0]
-            result_message_ids.append(message_id)
-            # We skip populating flags, since they would be ignored below anyway.
-            user_message_flags[message_id] = []
-
-        message_list = messages_for_ids(
-            message_ids=result_message_ids,
-            user_message_flags=user_message_flags,
-            search_fields={},
-            # We currently prefer the plain-text content of messages to
-            apply_markdown=False,
-            # Avoid wasting resources computing gravatars.
-            client_gravatar=True,
-            allow_empty_topic_name=False,
-            # Avoid fetching edit history, which won't be passed to the model.
-            message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.none.value,
-            user_profile=user_profile,
-            realm=user_profile.realm,
-        )
+    if len(message_list) == 0:  # nocoverage
+        return None
 
     # IDEA: We could consider translating input and output text to
     # English to improve results when using a summarization model that

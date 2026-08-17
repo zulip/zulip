@@ -7,7 +7,7 @@ from typing import Any, Generic, Literal, TypeAlias, TypedDict, TypeVar
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
-from django.db import connection
+from django.db import connection, transaction
 from django.db.models import Exists, F, Func, OuterRef, Q, QuerySet, TextField
 from django.db.models.expressions import RawSQL
 from django.utils.translation import gettext as _
@@ -21,6 +21,7 @@ from zerver.lib.message import (
     access_message,
     access_web_public_message,
     get_first_visible_message_id,
+    messages_for_ids,
 )
 from zerver.lib.narrow_predicate import channel_operators, channels_operators
 from zerver.lib.recipient_users import recipient_for_user_profiles
@@ -62,6 +63,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
 )
+from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum
 from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.users import (
     get_user_by_id_in_realm_including_cross_realm,
@@ -1607,6 +1609,65 @@ def fetch_messages(
         include_history=include_history,
         is_search=is_search,
     )
+
+
+def fetch_plain_text_messages_for_narrow(
+    user_profile: UserProfile,
+    narrow: list[NarrowParameter] | None,
+    *,
+    anchor_info: AnchorInfo,
+    include_anchor: bool,
+    num_before: int,
+    num_after: int,
+) -> tuple[list[dict[str, Any]], FetchedMessages]:
+    """Fetches the messages matching a narrow as message dictionaries
+    carrying Markdown source rather than rendered HTML, for callers that
+    pass message content to a language model.
+
+    Neither flags nor edit history are computed, since neither is part of
+    the content such a caller sends; the returned dictionaries carry an
+    empty "flags" list. Callers that need the full API representation of
+    a message should go through GET /messages instead.
+    """
+    realm = user_profile.realm
+    # Resolving a "with" operator queries the database, and the isolation
+    # level below can only be set before the transaction's first query.
+    narrow = clean_narrow_for_message_fetch(narrow, realm, user_profile)
+
+    with transaction.atomic(durable=True):
+        # Mirror GET /messages: repeatable-read isolation keeps the search
+        # and the fetch of the matched messages consistent with each other.
+        # See zerver/views/message_fetch.py for why tests must skip this.
+        if not settings.TEST_SUITE:  # nocoverage
+            cursor = connection.cursor()
+            cursor.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+
+        query_info = fetch_messages(
+            narrow=narrow,
+            user_profile=user_profile,
+            realm=realm,
+            is_web_public_query=False,
+            anchor_info=anchor_info,
+            include_anchor=include_anchor,
+            num_before=num_before,
+            num_after=num_after,
+        )
+
+        message_ids = [row[0] for row in query_info.rows]
+        messages = messages_for_ids(
+            message_ids=message_ids,
+            user_message_flags={message_id: [] for message_id in message_ids},
+            search_fields={},
+            apply_markdown=False,
+            # Avoid computing gravatar URLs, which are not returned.
+            client_gravatar=True,
+            allow_empty_topic_name=False,
+            message_edit_history_visibility_policy=MessageEditHistoryVisibilityPolicyEnum.none.value,
+            user_profile=user_profile,
+            realm=realm,
+        )
+
+    return messages, query_info
 
 
 def access_narrow(
