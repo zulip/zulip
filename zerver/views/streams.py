@@ -770,6 +770,9 @@ def create_channel(
         acting_user=user_profile,
         can_add_subscribers_group=group_settings_map["can_add_subscribers_group"],
         can_administer_channel_group=group_settings_map["can_administer_channel_group"],
+        can_create_topic_group=group_settings_map["can_create_topic_group"],
+        can_delete_any_message_group=group_settings_map["can_delete_any_message_group"],
+        can_delete_own_message_group=group_settings_map["can_delete_own_message_group"],
         can_move_messages_out_of_channel_group=group_settings_map[
             "can_move_messages_out_of_channel_group"
         ],
