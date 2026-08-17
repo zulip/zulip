@@ -6855,11 +6855,13 @@ class DevFetchAPIKeyTest(ZulipTestCase):
         self.email = self.user_profile.delivery_email
 
     def test_success(self) -> None:
+        now = timezone_now()
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
         data = self.assert_json_success(result)
         self.assertEqual(data["email"], self.email)
         self.assertEqual(data["user_id"], self.user_profile.id)
         self.assertEqual(data["api_key"], self.user_profile.api_key)
+        self.assert_login_audit_log_entry(self.user_profile, method="dev", since=now)
 
     def test_invalid_email(self) -> None:
         email = "hamlet"
@@ -7205,9 +7207,11 @@ class TestDevAuthBackend(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
         data = {"direct_email": email}
+        now = timezone_now()
         result = self.client_post("/accounts/login/local/", data)
         self.assertEqual(result.status_code, 302)
         self.assert_logged_in_user_id(user_profile.id)
+        self.assert_login_audit_log_entry(user_profile, method="dev", since=now)
 
     def test_spectator(self) -> None:
         data = {"prefers_web_public_view": "Anonymous login"}
