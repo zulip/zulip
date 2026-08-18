@@ -270,6 +270,22 @@ export function clear_for_testing(): void {
 // TODO: If we finish converting to typescript and find that
 // nothing needs LocalMessage, explicitly remove its extra fields
 // here before returning the Message.
+/**
+ * Return the cached message as a Readonly view of the store singleton.
+ * Prefer this (or get()) for read-only callers.
+ */
+export function get_immutable_message(message_id: number): ReadonlyMessage | undefined {
+    return stored_messages.get(message_id)?.message;
+}
+
+/**
+ * Return the cached message for mutation. Use update_* helpers when one
+ * exists; this is the lookup for remaining in-place writes.
+ */
+export function get_mutable_message(message_id: number): Message | undefined {
+    return stored_messages.get(message_id)?.message;
+}
+
 export function get(message_id: number): Message | undefined {
     return stored_messages.get(message_id)?.message;
 }
@@ -484,7 +500,7 @@ export function get_message_ids_in_stream(stream_id: number): number[] {
 }
 
 export function maybe_update_raw_content(id: number, raw_content: string | undefined): void {
-    const message = get(id);
+    const message = get_mutable_message(id);
     // In case the message was deleted from the cache after receiving a delete
     // event.
     if (message === undefined) {

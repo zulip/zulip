@@ -572,3 +572,50 @@ test("maybe_update_raw_content", () => {
     message_store.maybe_update_raw_content(message1.id, "bye world");
     assert.equal(message1.raw_content, "hello world");
 });
+
+test("get_immutable_and_mutable_message", () => {
+    assert.equal(message_store.get_immutable_message(9001), undefined);
+    assert.equal(message_store.get_mutable_message(9001), undefined);
+    assert.equal(message_store.get(9001), undefined);
+
+    const processed = message_helper.process_new_message({
+        type: "server_message",
+        raw_message: {
+            sender_email: alice.email,
+            sender_id: alice.user_id,
+            type: "stream",
+            display_recipient: devel.name,
+            topic: "readonly-api",
+            subject: "readonly-api",
+            id: 9001,
+            reactions: [],
+            avatar_url: `/avatar/${alice.user_id}`,
+            submessages: [],
+            content: "hello",
+            content_type: "text/html",
+            client: "website",
+            timestamp: 100,
+            flags: [],
+        },
+    }).message;
+
+    const immutable = message_store.get_immutable_message(9001);
+    const mutable = message_store.get_mutable_message(9001);
+    const via_get = message_store.get(9001);
+
+    assert.equal(immutable, processed);
+    assert.equal(mutable, processed);
+    assert.equal(via_get, processed);
+    assert.equal(immutable, mutable);
+
+    mutable.starred = true;
+    assert.equal(message_store.get_immutable_message(9001).starred, true);
+    assert.equal(processed.starred, true);
+
+    message_store.update_message_content(mutable, "updated");
+    assert.equal(message_store.get_immutable_message(9001).content, "updated");
+
+    message_store.remove([9001]);
+    assert.equal(message_store.get_immutable_message(9001), undefined);
+    assert.equal(message_store.get_mutable_message(9001), undefined);
+});

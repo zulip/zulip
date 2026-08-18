@@ -1,4 +1,30 @@
+import {get_immutable_message, get_mutable_message} from "../../src/message_store.ts";
 import type {Message, ReadonlyMessage} from "../../src/message_store.ts";
+
+export function get_returns_readonly_view(id: number): ReadonlyMessage | undefined {
+    return get_immutable_message(id);
+}
+
+export function get_mutable_returns_writable(id: number): Message | undefined {
+    const message = get_mutable_message(id);
+    if (message !== undefined) {
+        message.content = "writable";
+    }
+    return message;
+}
+
+export function cannot_assign_through_immutable_get(id: number): void {
+    const msg = get_immutable_message(id);
+    if (msg === undefined) {
+        return;
+    }
+    // @ts-expect-error ReadonlyMessage forbids assigning content.
+    msg.content = "nope";
+    // @ts-expect-error ReadonlyMessage forbids assigning unread.
+    msg.unread = false;
+    // @ts-expect-error ReadonlyMessage forbids assigning raw_content.
+    msg.raw_content = "x";
+}
 
 function takes_mutable_message(message: Message): void {
     message.content = "rogue";
