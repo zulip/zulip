@@ -140,7 +140,7 @@ function show_message_failed(message_id: number, _failed_msg: string): void {
 
 function show_failed_message_success(message_id: number): void {
     // Previously failed message succeeded
-    const msg = message_store.get(message_id);
+    const msg = message_store.get_immutable_message(message_id);
     message_live_update.update_message_in_all_views(message_id, ($row) => {
         const $message_controls = $row.find(".message_controls");
         $message_controls.html(render_message_controls({msg}));
@@ -148,7 +148,7 @@ function show_failed_message_success(message_id: number): void {
 }
 
 function failed_message_success(message_id: number): void {
-    const message = message_store.get(message_id);
+    const message = message_store.get_mutable_message(message_id);
     if (message === undefined) {
         // A get-events delivery may already have reconciled the message to its
         // real id, in which case the resend's reify_message_id early-returned
@@ -561,7 +561,7 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
 
         reify_message_id(local_id, message.id);
 
-        if (message_store.get(message.id)?.failed_request) {
+        if (message_store.get_immutable_message(message.id)?.failed_request) {
             failed_message_success(message.id);
         }
 
@@ -635,7 +635,7 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
 
 export let message_send_error = (message_id: number, error_response: string): void => {
     // Error sending message, show inline
-    const message = message_store.get(message_id);
+    const message = message_store.get_mutable_message(message_id);
     if (message === undefined) {
         // The message is no longer in the store -- e.g. it was removed while a
         // (re)send was in flight -- so there is no failed send to surface.

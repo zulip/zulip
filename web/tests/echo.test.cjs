@@ -32,7 +32,8 @@ mock_esm("../src/sent_messages", {
 });
 
 const message_store = mock_esm("../src/message_store", {
-    get: () => ({failed_request: true}),
+    get_immutable_message: () => ({failed_request: true}),
+    get_mutable_message: () => ({failed_request: true}),
 
     update_booleans() {},
 
@@ -511,7 +512,8 @@ function make_spinner_row() {
 
 run_test("resend success clears the failed flag", ({override}) => {
     const stored_messages = new Map();
-    override(message_store, "get", (id) => stored_messages.get(id));
+    override(message_store, "get_immutable_message", (id) => stored_messages.get(id));
+    override(message_store, "get_mutable_message", (id) => stored_messages.get(id));
 
     const local_id = "300.01";
     const server_id = 310;
@@ -552,7 +554,7 @@ run_test("resend error re-marks a present message as failed", ({override}) => {
     // When the resend POST fails while the message is still in the store, the
     // error handler surfaces the failure by setting failed_request back to true.
     const stored_messages = new Map();
-    override(message_store, "get", (id) => stored_messages.get(id));
+    override(message_store, "get_mutable_message", (id) => stored_messages.get(id));
 
     const message = {
         id: 280,
@@ -585,7 +587,7 @@ run_test("resend doesn't crash when the message was already reconciled", ({overr
     // message is never stored under the id the response reports, and
     // failed_message_success must tolerate that missing entry.
     const stored_messages = new Map();
-    override(message_store, "get", (id) => stored_messages.get(id));
+    override(message_store, "get_mutable_message", (id) => stored_messages.get(id));
 
     const local_id = "250.01";
     const reconciled_id = 260; // server id the message was reconciled to
@@ -632,7 +634,7 @@ run_test("resend error on a message removed from the store doesn't crash", ({ove
     // (e.g. it was deleted while the resend was in flight), message_send_error
     // must tolerate the missing entry rather than dereference undefined.
     const stored_messages = new Map();
-    override(message_store, "get", (id) => stored_messages.get(id));
+    override(message_store, "get_mutable_message", (id) => stored_messages.get(id));
 
     const message = {
         id: 270,
