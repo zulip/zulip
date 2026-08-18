@@ -15,6 +15,7 @@ const alice_user_id = 5;
 
 const sample_message = {
     id: 1001,
+    sender_id: 6,
     reactions: [
         {emoji_name: "smile", user_id: 5, reaction_type: "unicode_emoji", emoji_code: "1f604"},
         {emoji_name: "smile", user_id: 6, reaction_type: "unicode_emoji", emoji_code: "1f604"},
@@ -529,6 +530,7 @@ test("sending failure reverts optimistic update", ({override_rewire}) => {
         assert.equal(remove_stub.num_calls, 1);
         assert.deepEqual(remove_stub.get_args("event").event, {
             message_id: message.id,
+            message_sender_id: message.sender_id,
             user_id: alice_user_id,
             reaction_type: "unicode_emoji",
             emoji_name: "banana",
@@ -551,6 +553,7 @@ test("sending failure reverts optimistic update", ({override_rewire}) => {
         assert.equal(add_stub.num_calls, 2);
         assert.deepEqual(add_stub.get_args("event").event, {
             message_id: message.id,
+            message_sender_id: message.sender_id,
             user_id: alice_user_id,
             reaction_type: "unicode_emoji",
             emoji_name: "smile",

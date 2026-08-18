@@ -503,6 +503,8 @@ class ReactionEventTest(ZulipTestCase):
         self.assertEqual(event["op"], "add")
         self.assertEqual(event["emoji_name"], "smile")
         self.assertEqual(event["message_id"], pm_id)
+        self.assertEqual(event["message_sender_id"], pm_sender.id)
+        self.assertEqual(event["user_id"], reaction_sender.id)
 
     def test_remove_event(self) -> None:
         """
@@ -548,6 +550,8 @@ class ReactionEventTest(ZulipTestCase):
         self.assertEqual(event["op"], "remove")
         self.assertEqual(event["emoji_name"], "smile")
         self.assertEqual(event["message_id"], pm_id)
+        self.assertEqual(event["message_sender_id"], pm_sender.id)
+        self.assertEqual(event["user_id"], reaction_sender.id)
 
     def test_reaction_event_scope(self) -> None:
         iago = self.example_user("iago")
