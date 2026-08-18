@@ -73,10 +73,7 @@ export const get_message_too_long_for_compose_error = (): string =>
         {max_length: realm.max_message_length},
     );
 export const get_invalid_topic_error_message = (position: number): string =>
-    $t(
-        {defaultMessage: "Invalid character in topic, at position {position}!"},
-        {position},
-    );
+    $t({defaultMessage: "Invalid character in topic, at position {position}!"}, {position});
 export const NO_MESSAGE_CONTENT_ERROR_MESSAGE = $t({defaultMessage: "Compose a message."});
 export const UNSUBSCRIBED_CHANNEL_ERROR_MESSAGE = $t({
     defaultMessage:
@@ -919,10 +916,7 @@ function validate_permission_to_post_messages_in_stream(sub: StreamSubscription)
 function get_invalid_topic_character_position(topic: string): number | undefined {
     for (const [index, character] of [...topic].entries()) {
         const code_point = character.codePointAt(0)!;
-        if (
-            (code_point >= 0 && code_point <= 0x1f) ||
-            (code_point >= 0x7f && code_point <= 0x9f)
-        ) {
+        if ((code_point >= 0 && code_point <= 0x1f) || (code_point >= 0x7f && code_point <= 0x9f)) {
             return index + 1;
         }
     }
