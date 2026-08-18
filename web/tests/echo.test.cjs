@@ -34,6 +34,7 @@ mock_esm("../src/sent_messages", {
 const message_store = mock_esm("../src/message_store", {
     get_immutable_message: () => ({failed_request: true}),
     get_mutable_message: () => ({failed_request: true}),
+    mutable_for: (message) => message,
 
     update_booleans() {},
 

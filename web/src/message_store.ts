@@ -414,7 +414,7 @@ export function convert_raw_message_to_message_with_booleans(opts: NewMessage):
     };
 }
 
-export function update_booleans(message: Message, flags: string[]): void {
+export function update_booleans(message: MutableMessage, flags: string[]): void {
     // When we get server flags for local echo or message edits,
     // we are vulnerable to race conditions, so only update flags
     // that are driven by message content.
@@ -497,7 +497,7 @@ export function reify_message_id({old_id, new_id}: {old_id: number; new_id: numb
     }
 }
 
-export function update_message_content(message: Message, new_content: string): void {
+export function update_message_content(message: MutableMessage, new_content: string): void {
     message.content = new_content;
 }
 
