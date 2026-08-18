@@ -330,6 +330,15 @@
         font-family: inherit;
         font-size: inherit;
 
+        .zulip-icon {
+            /* Nudge the glyph onto the small-caps baseline, and keep it
+               inline rather than making the button a flex container, so
+               the text-overflow: ellipsis above still applies to long
+               translated labels. */
+            vertical-align: -0.1em;
+            margin-right: 3px;
+        }
+
         &:hover {
             background-color: var(
                 --color-show-more-less-button-background-hover
