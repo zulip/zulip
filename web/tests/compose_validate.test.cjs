@@ -438,7 +438,6 @@ test_ui("validate_stream_message", ({override, mock_template}) => {
 test_ui("validate_stream_message rejects control characters in topics", ({mock_template, override}) => {
     mock_banners();
     override(current_user, "user_id", 30);
-    stream_data.set_channel_has_locally_available_topic(() => false);
     const sub = {
         stream_id: 101,
         name: "special",
