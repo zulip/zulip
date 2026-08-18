@@ -768,7 +768,7 @@ def do_change_can_change_user_emails(user_profile: UserProfile, value: bool) -> 
 
 
 @transaction.atomic(durable=True)
-def do_update_outgoing_webhook_service(
+def do_update_bot_service(
     bot_profile: UserProfile,
     *,
     interface: int | None = None,
