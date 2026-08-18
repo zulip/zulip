@@ -85,7 +85,8 @@
         background-color: transparent;
     }
 
-    .media-actions {
+    .media-actions,
+    .code-actions {
         display: flex;
         flex-shrink: 0;
         gap: 10px;
@@ -100,6 +101,7 @@
             border-radius: 4px;
             text-decoration: none;
             display: inline-block;
+            cursor: pointer;
 
             &:hover {
                 background-color: hsl(0deg 0% 100%);
@@ -117,6 +119,18 @@
                 color: hsl(0deg 0% 100%);
                 border: 1px solid hsl(0deg 0% 100% / 60%);
             }
+        }
+    }
+
+    .code-actions {
+        display: none;
+        flex: 1;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        min-width: 0;
+
+        &.show {
+            display: flex;
         }
     }
 

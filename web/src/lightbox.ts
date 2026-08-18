@@ -1,3 +1,4 @@
+import ClipboardJS from "clipboard";
 import {$} from "jquery";
 import assert from "minimalistic-assert";
 import panzoom from "panzoom";
@@ -6,9 +7,11 @@ import type {PanZoom} from "panzoom";
 import render_lightbox_overlay from "../templates/lightbox_overlay.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as message_store from "./message_store.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
+import * as playground_links_popover from "./playground_links_popover.ts";
 import * as popovers from "./popovers.ts";
 import * as rows from "./rows.ts";
 import * as util from "./util.ts";
@@ -341,6 +344,14 @@ export function display_code_block($code_block: JQuery): void {
     const $code_block_clone = $code_block.clone();
     $code_block_clone.find(".code-buttons-container").remove();
     $("#lightbox_overlay .code-preview").empty().append($code_block_clone).show();
+    $("#lightbox_overlay .code-actions").addClass("show");
+    $("#lightbox_overlay .lightbox-code-playground").toggle(
+        $code_block.find(".code_external_link").length > 0,
+    );
+}
+
+export function get_code_preview_text(): string {
+    return $("#lightbox_overlay .code-preview code").text();
 }
 
 function invoke_overlay_restore_callback(): void {
@@ -387,6 +398,8 @@ export function build_open_media_function(
             "#lightbox_overlay .image-preview, #lightbox_overlay .code-preview, .lightbox-zoom-reset, .player-container, .video-player",
         ).hide();
         $("#lightbox_overlay .code-preview").empty();
+        $("#lightbox_overlay .code-actions").removeClass("show");
+        $("#lightbox_overlay .media-actions").show();
         $("#lightbox_overlay .center").show();
 
         if (payload.type === "image") {
@@ -702,6 +715,8 @@ export function initialize(): void {
     const reset_lightbox_state = function (): void {
         remove_video_players();
         $("#lightbox_overlay .code-preview").empty().hide();
+        $("#lightbox_overlay .code-actions").removeClass("show");
+        playground_links_popover.hide();
         is_open = false;
         assert(document.activeElement instanceof HTMLElement);
         document.activeElement.blur();
@@ -713,6 +728,14 @@ export function initialize(): void {
 
     open_image = build_open_media_function(reset_lightbox_state);
     open_video = build_open_media_function(undefined);
+
+    const $copy_code_button = $("#lightbox_overlay .lightbox-copy-code");
+    const clipboard = new ClipboardJS(util.the($copy_code_button), {
+        text: get_code_preview_text,
+    });
+    clipboard.on("success", () => {
+        show_copied_confirmation(util.the($copy_code_button));
+    });
 
     $("#main_div, #compose .preview_content").on(
         "click",
@@ -743,6 +766,13 @@ export function initialize(): void {
         assert($code_block.length > 0);
         display_code_block($code_block);
         open_lightbox(reset_lightbox_state);
+    });
+
+    $("#lightbox_overlay .lightbox-code-playground").on("click", function (e) {
+        e.stopPropagation();
+        const $code_block = $("#lightbox_overlay .code-preview .codehilite");
+        assert($code_block.length > 0);
+        playground_links_popover.open_code_in_playground($code_block, this);
     });
 
     $("#lightbox_overlay .download").on("click", function () {

@@ -95,43 +95,47 @@ export function handle_keyboard(key: string): void {
     popover_menus.popover_items_handle_keyboard(key, $items);
 }
 
+export function open_code_in_playground(
+    $codehilite_div: JQuery,
+    popover_target: tippy.ReferenceElement,
+): void {
+    const language = $codehilite_div.attr("data-code-language");
+    if (language === undefined) {
+        return;
+    }
+    const playground_info = realm_playground.get_playground_info_for_languages(language);
+    if (playground_info === undefined) {
+        return;
+    }
+    // We do the code extraction here and send user to the target destination,
+    // obtained by expanding the url_template with the extracted code.
+    // Depending on whether the language has multiple playground links configured,
+    // a popover is shown.
+    const extracted_code = $codehilite_div.find("code").text();
+    if (playground_info.length === 1 && playground_info[0] !== undefined) {
+        const url_template = new Template(playground_info[0].url_template);
+        const playground_url = url_template.expand({code: extracted_code});
+        window.open(playground_url, "_blank", "noopener,noreferrer");
+    } else {
+        const playground_store = new Map<number, RealmPlaygroundWithURL>();
+        for (const playground of playground_info) {
+            const url_template = new Template(playground.url_template);
+            const playground_url = url_template.expand({code: extracted_code});
+            playground_store.set(playground.id, {...playground, playground_url});
+        }
+        toggle_playground_links_popover(popover_target, playground_store);
+    }
+}
+
 function register_click_handlers(): void {
     $("#main_div, #preview_content, #message-history").on(
         "click",
         ".code_external_link",
         function (e) {
-            const $view_in_playground_button = $(this);
             const $codehilite_div = $(this).closest(".codehilite");
             e.stopPropagation();
-            const language = $codehilite_div.attr("data-code-language");
-            if (language === undefined) {
-                return;
-            }
-            const playground_info = realm_playground.get_playground_info_for_languages(language);
-            if (playground_info === undefined) {
-                return;
-            }
-            // We do the code extraction here and send user to the target destination,
-            // obtained by expanding the url_template with the extracted code.
-            // Depending on whether the language has multiple playground links configured,
-            // a popover is shown.
-            const extracted_code = $codehilite_div.find("code").text();
-            if (playground_info.length === 1 && playground_info[0] !== undefined) {
-                const url_template = new Template(playground_info[0].url_template);
-                const playground_url = url_template.expand({code: extracted_code});
-                window.open(playground_url, "_blank", "noopener,noreferrer");
-            } else {
-                const playground_store = new Map<number, RealmPlaygroundWithURL>();
-                for (const playground of playground_info) {
-                    const url_template = new Template(playground.url_template);
-                    const playground_url = url_template.expand({code: extracted_code});
-                    playground_store.set(playground.id, {...playground, playground_url});
-                }
-                const popover_target = util.the(
-                    $view_in_playground_button.find(".playground-links-popover-container"),
-                );
-                toggle_playground_links_popover(popover_target, playground_store);
-            }
+            const popover_target = util.the($(this).find(".playground-links-popover-container"));
+            open_code_in_playground($codehilite_div, popover_target);
         },
     );
 
