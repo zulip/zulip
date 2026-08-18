@@ -86,6 +86,8 @@ const popovers = mock_esm("../src/user_card_popover", {
 });
 const reactions = mock_esm("../src/reactions");
 const read_receipts = mock_esm("../src/read_receipts");
+const reminders_overlay_ui = mock_esm("../src/reminders_overlay_ui");
+const scheduled_messages_overlay_ui = mock_esm("../src/scheduled_messages_overlay_ui");
 const search = mock_esm("../src/search");
 const settings_data = mock_esm("../src/settings_data");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
@@ -646,10 +648,12 @@ test_while_not_editing_text("motion_keys", () => {
         spacebar: " ",
         up_arrow: "ArrowUp",
     };
+    const event_target_stub = Object.create(window.HTMLElement.prototype);
 
     function process(name) {
         const e = {
             key: keys[name],
+            target: event_target_stub,
         };
 
         try {
@@ -729,11 +733,27 @@ test_while_not_editing_text("motion_keys", () => {
     delete overlays.settings_open;
 
     delete overlays.any_active;
-    overlays.drafts_open = () => true;
-    assert_mapping("up_arrow", drafts_overlay_ui, "handle_keyboard_events");
-    assert_mapping("down_arrow", drafts_overlay_ui, "handle_keyboard_events");
-    delete overlays.any_active;
-    delete overlays.drafts_open;
+    function assert_overlay_arrow_navigation(overlay_module, open_overlay) {
+        open_overlay();
+        for (const key_name of ["up_arrow", "down_arrow"]) {
+            stubbing(overlay_module, "handle_keyboard_events", (stub) => {
+                assert.ok(process(key_name));
+                assert.deepEqual(stub.last_call_args, [key_name, event_target_stub]);
+            });
+        }
+    }
+
+    assert_overlay_arrow_navigation(drafts_overlay_ui, () => {
+        overlays.drafts_open = () => true;
+    });
+    overlays.drafts_open = () => false;
+    assert_overlay_arrow_navigation(scheduled_messages_overlay_ui, () => {
+        overlays.scheduled_messages_open = () => true;
+    });
+    overlays.scheduled_messages_open = () => false;
+    assert_overlay_arrow_navigation(reminders_overlay_ui, () => {
+        overlays.reminders_open = () => true;
+    });
 });
 
 run_test("test new user input hook called", () => {
