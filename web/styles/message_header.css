@@ -192,7 +192,12 @@
         margin-bottom: 1px;
         border-radius: 5px;
 
-        .message_row:last-of-type {
+        /* `.sender-block` wrappers introduced by the sticky-sender-avatar
+           code mean message rows are no longer direct children of
+           `.recipient_row`; the last row in the recipient row is the last
+           row of the last sender block, and the row right after the header
+           is the first row of the first sender block. */
+        .sender-block:last-of-type > .message_row:last-of-type {
             border-radius: var(--last-message-row-border-radius);
             border-bottom: 1px solid var(--color-message-list-border);
 
@@ -207,7 +212,7 @@
             }
         }
 
-        .message_header + .message_row {
+        .message_header + .sender-block > .message_row:first-of-type {
             .messagebox {
                 padding-top: 5px;
             }
