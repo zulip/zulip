@@ -222,7 +222,7 @@ run_test("parse_media_data message row context", () => {
     // Override context to message row instead of overlay.
     rows.is_overlay_row = () => false;
     rows.id = () => 42;
-    message_store.get = () => ({sender_full_name: "Alice"});
+    message_store.get_immutable_message = () => ({sender_full_name: "Alice"});
 
     const result = lightbox.parse_media_data(media);
 
@@ -238,7 +238,7 @@ run_test("parse_media_data unknown message", () => {
 
     rows.is_overlay_row = () => false;
     rows.id = () => 999;
-    message_store.get = () => undefined;
+    message_store.get_immutable_message = () => undefined;
 
     blueslip.expect("error", "Lightbox for unknown message");
     const result = lightbox.parse_media_data(media);
@@ -249,7 +249,7 @@ run_test("parse_media_data unknown message", () => {
 run_test("parse_media_data asset map cache", () => {
     const img_src = "https://example.com/cached.png";
 
-    message_store.get = () => ({sender_full_name: "Bob"});
+    message_store.get_immutable_message = () => ({sender_full_name: "Bob"});
 
     const {media: media1} = make_image({
         img_src,
