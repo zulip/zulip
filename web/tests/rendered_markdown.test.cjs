@@ -836,6 +836,15 @@ function assert_clipboard_setup() {
     assert.equal(text, "text");
 }
 
+run_test("code block buttons include expand action", () => {
+    const render_code_buttons_container = require("../templates/code_buttons_container.hbs");
+    const html = render_code_buttons_container({show_playground_button: false});
+
+    assert.match(html, /<button type="button" class="expand_codeblock"/);
+    assert.match(html, /aria-label="translated: Expand code block"/);
+    assert.match(html, /zulip-icon-expand-both-diagonals/);
+});
+
 function test_code_playground(mock_template, viewing_code) {
     const $content = get_content_element();
     const $hilite = $.create("div.codehilite");

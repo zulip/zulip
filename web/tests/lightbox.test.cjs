@@ -273,3 +273,35 @@ run_test("parse_media_data asset map cache", () => {
     const result2 = lightbox.parse_media_data(media2);
     assert.equal(result2, result1);
 });
+
+run_test("display_code_block", () => {
+    const hidden_elements_selector =
+        "#lightbox_overlay .image-preview, #lightbox_overlay .player-container, #lightbox_overlay .video-player, #lightbox_overlay .media-description, #lightbox_overlay .media-actions, #lightbox_overlay .center";
+    const $hidden_elements = $(hidden_elements_selector).show();
+    const $code_preview = $("#lightbox_overlay .code-preview").hide();
+    $code_preview.html("old code");
+
+    const $code_block = $.create("<code-block>");
+    const $code_block_clone = $.create("<code-block-clone>");
+    const $code_buttons = $.create("<code-buttons>");
+    $code_block_clone.set_find_results(".code-buttons-container", $code_buttons);
+    $code_block.clone = () => $code_block_clone;
+
+    let removed_buttons = false;
+    $code_buttons[0].remove = () => {
+        removed_buttons = true;
+    };
+
+    let appended_element;
+    $code_preview[0].append = (element) => {
+        appended_element = element;
+    };
+
+    lightbox.display_code_block($code_block);
+
+    assert.equal($hidden_elements.visible(), false);
+    assert.equal($code_preview.visible(), true);
+    assert.equal($code_preview.html(), "");
+    assert.equal(appended_element, $code_block_clone[0]);
+    assert.equal(removed_buttons, true);
+});

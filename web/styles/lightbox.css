@@ -34,6 +34,14 @@
         }
     }
 
+    .code-preview {
+        flex: 1;
+        display: none;
+        min-height: 0;
+        padding: 0 20px 20px;
+        overflow: auto;
+    }
+
     .video-player {
         flex: 1;
         display: flex;
