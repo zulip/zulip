@@ -161,7 +161,7 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
     do_change_is_imported_stub,
     do_deactivate_user,
-    do_update_outgoing_webhook_service,
+    do_update_bot_service,
 )
 from zerver.actions.video_calls import do_set_video_call_provider_token
 from zerver.lib.drafts import DraftData, do_create_drafts, do_delete_draft, do_edit_draft
@@ -3617,7 +3617,7 @@ class NormalActionsTest(BaseAction):
         check_realm_user_update("events[0]", events[0], "bot_owner_id")
         check_realm_bot_add("events[1]", events[1], UserProfile.DEFAULT_BOT)
 
-    def test_do_update_outgoing_webhook_service(self) -> None:
+    def test_do_update_bot_service(self) -> None:
         self.user_profile = self.example_user("iago")
         bot = self.create_test_bot(
             "test",
@@ -3628,7 +3628,7 @@ class NormalActionsTest(BaseAction):
             interface_type=Service.GENERIC,
         )
         with self.verify_action() as events:
-            do_update_outgoing_webhook_service(
+            do_update_bot_service(
                 bot,
                 interface=2,
                 base_url="http://hostname.domain2.com",
@@ -3650,11 +3650,11 @@ class NormalActionsTest(BaseAction):
         )
 
         with self.verify_action(num_events=0, state_change_expected=False) as events:
-            do_update_outgoing_webhook_service(bot, acting_user=self.user_profile)
+            do_update_bot_service(bot, acting_user=self.user_profile)
 
         # Trying to update with the same value as existing value results in no op.
         with self.verify_action(num_events=0, state_change_expected=False) as events:
-            do_update_outgoing_webhook_service(
+            do_update_bot_service(
                 bot,
                 interface=2,
                 base_url="http://hostname.domain2.com",

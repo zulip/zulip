@@ -35,7 +35,7 @@ from zerver.actions.users import (
     do_change_user_role,
     do_deactivate_user,
     do_update_bot_config_data,
-    do_update_outgoing_webhook_service,
+    do_update_bot_service,
 )
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_human_non_guest_user, require_realm_admin
@@ -558,7 +558,7 @@ def patch_bot_backend(
     if service_payload_url is not None:
         check_valid_interface_type(service_interface)
         assert service_interface is not None
-        do_update_outgoing_webhook_service(
+        do_update_bot_service(
             bot,
             interface=service_interface,
             base_url=service_payload_url,
