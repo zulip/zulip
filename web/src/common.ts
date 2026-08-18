@@ -1,8 +1,8 @@
 import {$} from "jquery";
 import * as tippy from "tippy.js";
 
+import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
-import * as util from "./util.ts";
 
 export const status_classes = "alert-error alert-success alert-info alert-warning";
 
@@ -119,7 +119,13 @@ function set_password_toggle_label(
 ): void {
     $(password_selector).attr("aria-label", label);
     if (tippy_tooltips) {
-        const element: tippy.ReferenceElement = util.the($(password_selector));
+        const element: tippy.ReferenceElement | undefined = $(password_selector)[0];
+        if (element === undefined) {
+            // Report the missing toggle without throwing, so that
+            // callers still run cleanup like clearing password inputs.
+            blueslip.error("Password visibility toggle not found", {password_selector});
+            return;
+        }
         const tippy_instance = element._tippy ?? tippy.default(element);
         tippy_instance.setContent(label);
     } else {

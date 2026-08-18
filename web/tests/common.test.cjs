@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+const blueslip = require("./lib/zblueslip.cjs");
 const {$} = require("./lib/zjquery.cjs");
 
 mock_esm("tippy.js", {
@@ -157,6 +158,17 @@ run_test("adjust_mac_hotkey_hints mac random", ({override}) => {
     for (const test_item of test_items) {
         assert.deepStrictEqual(test_item.mac_key, test_item.adjusted_key);
     }
+});
+
+run_test("reset password toggle icons with missing toggle", () => {
+    // Password manager extensions can rearrange the DOM around
+    // password inputs such that the toggle selector matches nothing.
+    const password_selector = "#mangled_password ~ .password_visibility_toggle";
+    $.create(password_selector, {elements: []});
+
+    blueslip.expect("error", "Password visibility toggle not found");
+    common.reset_password_toggle_icons("#mangled_password", password_selector);
+    assert.equal($("#mangled_password").attr("type"), "password");
 });
 
 run_test("show password", () => {
