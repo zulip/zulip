@@ -1417,7 +1417,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                 message_id = rows.id($row);
 
                 if (edit_locally_echoed) {
-                    const echoed_message = message_store.get(message_id);
+                    const echoed_message = message_store.get_mutable_message(message_id);
                     assert(echoed_message !== undefined);
                     const echo_data = currently_echoing_messages.get(message_id);
                     assert(echo_data !== undefined);
@@ -1539,7 +1539,9 @@ export function edit_last_sent_message(): void {
         return;
     }
 
-    const current_selected_msg = message_store.get(message_lists.current.selected_id());
+    const current_selected_msg = message_store.get_immutable_message(
+        message_lists.current.selected_id(),
+    );
     if (
         current_selected_msg &&
         current_selected_msg.id < last_sent_msg.id &&
