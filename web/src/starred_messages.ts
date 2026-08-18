@@ -37,7 +37,7 @@ export function get_count_in_topic(stream_id?: number, topic?: string): number {
     }
 
     const messages = [...starred_ids].filter((id) => {
-        const message = message_store.get(id);
+        const message = message_store.get_immutable_message(id);
 
         if (message === undefined) {
             // We know the `id` from the initial data fetch from page_params,
