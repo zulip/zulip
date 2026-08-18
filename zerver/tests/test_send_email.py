@@ -1,4 +1,5 @@
 from datetime import timedelta
+from email.utils import formataddr
 from smtplib import (
     SMTP,
     SMTPDataError,
@@ -105,6 +106,83 @@ class TestBuildEmail(ZulipTestCase):
         self.assertNotIn("\r", email.subject)
         self.assertNotIn("\n", email.subject)
         self.assertEqual(email.subject, "SubjectBcc: attacker@example.com")
+
+    def test_accented_from_name(self) -> None:
+        """Password-reset emails whose translated sender name contains
+        non-ASCII characters (e.g. French "Sécurité du compte Zulip Server")
+        must have an RFC 2047-encoded From header so that strict SMTP
+        servers (e.g. Proton SMTP) don't reject the message.
+
+        Regression test for https://github.com/zulip/zulip/issues/39649.
+        """
+        hamlet = self.example_user("hamlet")
+        # A sender name with accented characters, as produced by the
+        # French translation of "{service_name} account security".
+        # We pass it directly as from_name so the test does not depend
+        # on compiled translation files being present.
+        accented_name = "Sécurité du compte Zulip Server"
+        mail = build_email(
+            "zerver/emails/password_reset",
+            to_emails=[hamlet.email],
+            from_name=accented_name,
+            from_address=FromAddress.NOREPLY,
+            language="en",
+        )
+        from_header = mail.extra_headers["From"]
+        # The From header must be pure ASCII (RFC 2047-encoded).
+        self.assertTrue(
+            from_header.isascii(),
+            f"From header contains non-ASCII characters: {from_header!r}",
+        )
+        # It must match what formataddr() produces, not a raw Unicode string.
+        expected = formataddr((accented_name, FromAddress.NOREPLY))
+        self.assertEqual(from_header, expected)
+
+    def test_security_email_from_name(self) -> None:
+        """FromAddress.security_email_from_name returns a translated string
+        whose result, when containing non-ASCII characters, must still be
+        correctly RFC 2047-encoded by build_email().
+
+        We mock gettext to simulate a translated name with accented characters
+        without depending on compiled translation (.mo) files being present.
+        """
+        hamlet = self.example_user("hamlet")
+        # Simulate a translated sender name with accents (as in French).
+        simulated_translation = "Sécurité du compte {service_name}"
+
+        with (
+            mock.patch(
+                "zerver.lib.send_email._",
+                side_effect=lambda s: simulated_translation,
+            ),
+            override_settings(INSTALLATION_NAME="Zulip Server"),
+        ):
+            from_name = FromAddress.security_email_from_name(language="fr")
+
+        # The returned string must be a plain Unicode str (not pre-encoded).
+        self.assertIsInstance(from_name, str)
+        self.assertGreater(len(from_name), 0)
+        # It should contain accented characters (non-ASCII).
+        self.assertFalse(
+            from_name.isascii(),
+            f"Expected accented sender name, got: {from_name!r}",
+        )
+
+        # When build_email() uses this from_name, the From header must
+        # be RFC 2047-encoded (pure ASCII).
+        mail = build_email(
+            "zerver/emails/password_reset",
+            to_emails=[hamlet.email],
+            from_name=from_name,
+            from_address=FromAddress.NOREPLY,
+            language="en",
+        )
+        from_header = mail.extra_headers["From"]
+        self.assertTrue(
+            from_header.isascii(),
+            f"From header is not ASCII after encoding: {from_header!r}",
+        )
+        self.assertEqual(from_header, formataddr((from_name, FromAddress.NOREPLY)))
 
 
 class TestSendEmail(ZulipTestCase):
