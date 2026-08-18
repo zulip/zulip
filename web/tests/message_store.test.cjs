@@ -607,6 +607,8 @@ test("get_immutable_and_mutable_message", () => {
     assert.equal(mutable, processed);
     assert.equal(via_get, processed);
     assert.equal(immutable, mutable);
+    assert.equal(message_store.mutable_for(processed), processed);
+    assert.equal(message_store.mutable_for(processed), mutable);
 
     mutable.starred = true;
     assert.equal(message_store.get_immutable_message(9001).starred, true);

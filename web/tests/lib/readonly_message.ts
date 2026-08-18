@@ -1,5 +1,10 @@
-import {get, get_immutable_message, get_mutable_message} from "../../src/message_store.ts";
-import type {Message, ReadonlyMessage} from "../../src/message_store.ts";
+import {
+    get,
+    get_immutable_message,
+    get_mutable_message,
+    mutable_for,
+} from "../../src/message_store.ts";
+import type {Message, MutableMessage, ReadonlyMessage} from "../../src/message_store.ts";
 
 export function get_returns_readonly_view(id: number): ReadonlyMessage | undefined {
     return get_immutable_message(id);
@@ -9,12 +14,18 @@ export function get_alias_matches_immutable(id: number): boolean {
     return get(id) === get_immutable_message(id);
 }
 
-export function get_mutable_returns_writable(id: number): Message | undefined {
+export function get_mutable_returns_writable(id: number): MutableMessage | undefined {
     const message = get_mutable_message(id);
     if (message !== undefined) {
         message.content = "writable";
     }
     return message;
+}
+
+export function mutable_for_returns_writable(message: Message): MutableMessage {
+    const mutable = mutable_for(message);
+    mutable.content = "writable";
+    return mutable;
 }
 
 export function cannot_assign_through_get(id: number): void {
@@ -30,7 +41,11 @@ export function cannot_assign_through_get(id: number): void {
     msg.raw_content = "x";
 }
 
-function takes_mutable_message(message: Message): void {
+function takes_message(message: Message): void {
+    message.content = "rogue";
+}
+
+function takes_mutable_message(message: MutableMessage): void {
     message.content = "rogue";
 }
 
@@ -77,7 +92,9 @@ export function readonly_message_type_tests(
     takes_readonly_message(stream_msg);
     takes_readonly_message(private_msg);
 
-    // The #13347 hole: this type-checks, then mutates the singleton.
+    // The #13347 hole: ReadonlyMessage is assignable to Message, and
+    // MutableMessage is an alias of Message, so this type-checks.
+    takes_message(msg);
     takes_mutable_message(msg);
 
     // @ts-expect-error ReadonlyMessage forbids assigning id.

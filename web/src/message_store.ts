@@ -250,6 +250,16 @@ export type ReadonlyMessage =
 
 export type ImmutableMessage = ReadonlyMessage;
 
+/**
+ * Writable cached Message. Callers obtain this from get_mutable_message
+ * or mutable_for so mutation is an explicit opt-in. Same singleton as
+ * the store. Prefer update_* helpers when one exists.
+ *
+ * This is an alias of Message; TypeScript#13347 still lets a
+ * ReadonlyMessage through a Message parameter.
+ */
+export type MutableMessage = Message;
+
 export function update_message_cache(message_data: ProcessedMessage): void {
     // You should only call this from message_helper (or in tests).
     stored_messages.set(message_data.message.id, message_data);
@@ -279,11 +289,20 @@ export function get_immutable_message(message_id: number): ReadonlyMessage | und
 }
 
 /**
- * Return the cached message for mutation. Use update_* helpers when one
- * exists; this is the lookup for remaining in-place writes.
+ * Return the cached message for mutation. Prefer update_* helpers
+ * when one exists.
  */
-export function get_mutable_message(message_id: number): Message | undefined {
+export function get_mutable_message(message_id: number): MutableMessage | undefined {
     return stored_messages.get(message_id)?.message;
+}
+
+/**
+ * Opt into mutation of a Message singleton the caller already holds.
+ * Prefer get_mutable_message when only an id is available. Returns
+ * the cached object when present, otherwise the same object.
+ */
+export function mutable_for(message: Message | ReadonlyMessage): MutableMessage {
+    return get_mutable_message(message.id) ?? message;
 }
 
 /** Alias of get_immutable_message. */
