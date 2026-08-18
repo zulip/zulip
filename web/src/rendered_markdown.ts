@@ -122,7 +122,7 @@ function get_message_for_message_content($content: JQuery): Message | undefined 
         return undefined;
     }
     const message_id = rows.id($message_row);
-    return message_store.get(message_id);
+    return message_store.get_immutable_message(message_id);
 }
 
 // Function to safely wrap mentioned names in a DOM element.
