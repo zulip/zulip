@@ -435,36 +435,42 @@ test_ui("validate_stream_message", ({override, mock_template}) => {
     assert.ok(wildcards_not_allowed_rendered);
 });
 
-test_ui("validate_stream_message rejects control characters in topics", ({mock_template, override}) => {
-    mock_banners();
-    override(current_user, "user_id", 30);
-    const sub = {
-        stream_id: 101,
-        name: "special",
-        subscribed: true,
-        can_send_message_group: everyone.id,
-        topics_policy: "inherit",
-        can_create_topic_group: everyone.id,
-    };
-    stream_data.add_sub_for_tests(sub);
-    compose_state.set_message_type("stream");
-    compose_state.set_stream_id(sub.stream_id);
-    compose_state.topic("topic\twith tab");
-    $("#send_message_form").set_find_results(".message-textarea", $("textarea#compose-textarea"));
+test_ui(
+    "validate_stream_message rejects control characters in topics",
+    ({mock_template, override}) => {
+        mock_banners();
+        override(current_user, "user_id", 30);
+        const sub = {
+            stream_id: 101,
+            name: "special",
+            subscribed: true,
+            can_send_message_group: everyone.id,
+            topics_policy: "inherit",
+            can_create_topic_group: everyone.id,
+        };
+        stream_data.add_sub_for_tests(sub);
+        compose_state.set_message_type("stream");
+        compose_state.set_stream_id(sub.stream_id);
+        compose_state.topic("topic\twith tab");
+        $("#send_message_form").set_find_results(
+            ".message-textarea",
+            $("textarea#compose-textarea"),
+        );
 
-    let error_message;
-    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, compose_banner.CLASSNAMES.invalid_topic);
-        error_message = data.banner_text;
-        return "<banner-stub>";
-    });
+        let error_message;
+        mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+            assert.equal(data.classname, compose_banner.CLASSNAMES.invalid_topic);
+            error_message = data.banner_text;
+            return "<banner-stub>";
+        });
 
-    assert.ok(!compose_validate.validate());
-    assert.equal(error_message, "translated: Invalid character in topic, at position 6!");
+        assert.ok(!compose_validate.validate());
+        assert.equal(error_message, "translated: Invalid character in topic, at position 6!");
 
-    compose_state.topic("topic without tab");
-    assert.ok(compose_validate.validate());
-});
+        compose_state.topic("topic without tab");
+        assert.ok(compose_validate.validate());
+    },
+);
 
 test_ui("test_stream_posting_permission", ({mock_template, override}) => {
     mock_banners();

@@ -917,7 +917,7 @@ function validate_permission_to_post_messages_in_stream(sub: StreamSubscription)
 }
 
 function get_invalid_topic_character_position(topic: string): number | undefined {
-    for (const [index, character] of Array.from(topic).entries()) {
+    for (const [index, character] of [...topic].entries()) {
         const code_point = character.codePointAt(0)!;
         if (
             (code_point >= 0 && code_point <= 0x1f) ||
@@ -966,7 +966,9 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
         compose_state.topic(),
     );
     if (invalid_topic_character_position !== undefined) {
-        const error_message = get_invalid_topic_error_message(invalid_topic_character_position);
+        const error_message = get_invalid_topic_error_message(
+            invalid_topic_character_position,
+        );
         if (show_banner) {
             compose_banner.show_error_message(
                 error_message,
