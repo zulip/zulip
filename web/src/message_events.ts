@@ -160,7 +160,7 @@ export let update_views_filtered_on_message_property = (
         const messages_to_fetch: number[] = [];
         const messages: Message[] = [];
         for (const message_id of message_ids) {
-            const message = message_store.get(message_id);
+            const message = message_store.get_immutable_message(message_id);
             if (message !== undefined) {
                 messages.push(message);
             } else {
@@ -212,7 +212,7 @@ export let update_views_filtered_on_message_property = (
                         .parse(data);
                     for (const raw_message of raw_messages) {
                         messages_to_remove.delete(raw_message.id);
-                        const message = message_store.get(raw_message.id);
+                        const message = message_store.get_immutable_message(raw_message.id);
                         messages_to_add.push(
                             message ?? message_helper.process_new_server_message(raw_message),
                         );
@@ -458,7 +458,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
     message_list_data_cache.clear();
 
     for (const event of events) {
-        const anchor_message = message_store.get(event.message_id);
+        const anchor_message = message_store.get_mutable_message(event.message_id);
         if (anchor_message !== undefined) {
             // Logic for updating the specific edited message only
             // needs to run if we had a local copy of the message.
@@ -567,7 +567,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
 
             // Update each message to reflect the new case.
             for (const message_id of event.message_ids) {
-                const message = message_store.get(message_id);
+                const message = message_store.get_mutable_message(message_id);
                 if (message === undefined) {
                     continue;
                 }
@@ -601,7 +601,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             for (const message_id of event.message_ids) {
                 // We don't need to concern ourselves updating data structures
                 // for messages we don't have stored locally.
-                const message = message_store.get(message_id);
+                const message = message_store.get_mutable_message(message_id);
                 if (message !== undefined) {
                     assert(message.type === "stream");
                     event_messages.push(message);
