@@ -73,6 +73,20 @@ class IntercomWebHookTests(WebhookTestCase):
         expected_message = f"{BO_NAME} is no longer an admin."
         self.check_webhook("admin_removed_from_workspace", expected_topic_name, expected_message)
 
+    def test_api_request_completed(self) -> None:
+        expected_topic_name = "API activity"
+        expected_message = "`GET /admins` succeeded with status 200."
+        self.check_webhook("api_request_completed", expected_topic_name, expected_message)
+
+    def test_api_request_completed_with_error_status(self) -> None:
+        payload = orjson.loads(self.get_body("api_request_completed"))
+        payload["data"]["item"]["response"]["status"] = 404
+        expected_topic_name = "API activity"
+        expected_message = "`GET /admins` failed with status 404."
+        self.check_webhook(
+            "api_request_completed", expected_topic_name, expected_message, custom_payload=payload
+        )
+
     def test_article_event_messages(self) -> None:
         actions = ["created", "updated", "published", "unpublished", "deleted"]
 
