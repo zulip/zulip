@@ -162,6 +162,7 @@ class FakeElement extends RejectMissing {
     classList = new FakeClassList();
     dataset = new FakeDataSet(this);
     innerHTML = "never-been-set";
+    scrollTop = 0;
     selectionEnd = undefined;
     selectionStart = undefined;
     style = new FakeStyle();
@@ -768,6 +769,15 @@ exports.FakeJQuery = class extends RejectMissing {
         assert.equal(this.length, 1);
         assert.equal($result.length, 1);
         this[0].previousElementSibling = $result[0];
+    }
+    scrollTop(val) {
+        if (val === undefined) {
+            return this[0]?.scrollTop ?? 0;
+        }
+        for (const element of this) {
+            element.scrollTop = val;
+        }
+        return this;
     }
     show() {
         for (const element of this) {

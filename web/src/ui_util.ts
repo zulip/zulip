@@ -338,10 +338,7 @@ export function enable_element_and_remove_tooltip($element: JQuery): void {
 }
 
 export let get_left_sidebar_search_term = function (): string {
-    const $search_box = $<HTMLInputElement>("input.left-sidebar-search-input").expectOne();
-    const search_term = $search_box.val();
-    assert(search_term !== undefined);
-    return search_term.trim();
+    return $("#left-sidebar-filter-query").expectOne().text().trim();
 };
 
 export function rewire_get_left_sidebar_search_term(
@@ -365,8 +362,8 @@ export function is_topic_search(): boolean {
 }
 
 export function disable_left_sidebar_search(): void {
-    if ($<HTMLInputElement>("#left-sidebar-search input").val()) {
-        // Triggle click on the close button to clear the search term and
+    if (get_left_sidebar_search_term() !== "" || $("#left-sidebar-filter-input .pill").length > 0) {
+        // Trigger click on the close button to clear the search term and
         // update the left sidebar.
         $("#left-sidebar-search .input-close-filter-button").trigger("click");
     }

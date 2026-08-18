@@ -18,6 +18,7 @@ const stream_topic_history = zrequire("stream_topic_history");
 const message_lists = zrequire("message_lists");
 const channel_folders = zrequire("channel_folders");
 const ui_util = zrequire("ui_util");
+const user_topics = zrequire("user_topics");
 const {initialize_user_settings} = zrequire("user_settings");
 
 state_data.set_realm(
@@ -179,6 +180,7 @@ function sort_groups(query) {
 function test(label, f) {
     run_test(label, (helpers) => {
         stream_data.clear_subscriptions();
+        user_topics.set_user_topics([]);
         f(helpers);
     });
 }
@@ -554,6 +556,39 @@ test("left_sidebar_search", ({override, override_rewire}) => {
     assert.deepEqual(sorted_sections.length, 2);
     assert.deepEqual(sorted_sections[0].default_visible_streams, []);
     assert.deepEqual(sorted_sections[1].default_visible_streams, []);
+});
+
+test("left_sidebar_topic_state_filter_does_not_filter_stream_rows", () => {
+    add_all_subs();
+
+    {
+        const history = stream_topic_history.find_or_create(scalene.stream_id);
+        history.add_or_update("followed topic", 2);
+    }
+    {
+        const history = stream_topic_history.find_or_create(fast_tortoise.stream_id);
+        history.add_or_update("unfollowed topic", 2);
+    }
+
+    user_topics.update_user_topics(
+        scalene.stream_id,
+        scalene.name,
+        "followed topic",
+        user_topics.all_visibility_policies.FOLLOWED,
+        1,
+    );
+
+    const unfiltered_sections = stream_list_sort.sort_groups(
+        stream_data.subscribed_stream_ids(),
+        "",
+    ).sections;
+    const topic_filtered_sections = stream_list_sort.sort_groups(
+        stream_data.subscribed_stream_ids(),
+        "",
+        "is:followed",
+    ).sections;
+
+    assert.deepEqual(topic_filtered_sections, unfiltered_sections);
 });
 
 test("filter inactives", ({override}) => {

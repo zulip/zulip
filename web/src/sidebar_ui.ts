@@ -12,11 +12,13 @@ import * as channel from "./channel.ts";
 import * as compose_ui from "./compose_ui.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as left_sidebar_filter from "./left_sidebar_filter.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {ListCursor} from "./list_cursor.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_reminder from "./message_reminder.ts";
+import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -36,7 +38,7 @@ import * as util from "./util.ts";
 
 const LEFT_SIDEBAR_NAVIGATION_AREA_TITLE = $t({defaultMessage: "VIEWS"});
 
-export let left_sidebar_cursor: ListCursor<JQuery>;
+export let left_sidebar_cursor: ListCursor<JQuery> | undefined;
 
 // Toggling a sidebar changes the message feed's width, causing rows to
 // reflow and shift vertically. Preserve the selected row's viewport
@@ -340,8 +342,8 @@ export function update_expanded_views_for_search(search_term: string): void {
         $("#left-sidebar-navigation-area, #left-sidebar-navigation-list .top_left_row").removeClass(
             "hidden-by-filters",
         );
-        left_sidebar_navigation_area.update_scheduled_messages_row();
-        left_sidebar_navigation_area.update_reminders_row();
+        left_sidebar_navigation_area.update_scheduled_messages_row?.();
+        left_sidebar_navigation_area.update_reminders_row?.();
         return;
     }
 
@@ -393,6 +395,7 @@ export function initialize_left_sidebar(): void {
     left_sidebar_navigation_area.reorder_left_sidebar_navigation_list(user_settings.web_home_view);
     stream_list.update_unread_counts_visibility();
     initialize_left_sidebar_cursor();
+    left_sidebar_filter.setup_left_sidebar_filter_typeahead();
     set_event_handlers();
 }
 
@@ -613,11 +616,10 @@ function should_show_topic_search_hint(search_term: string): boolean {
 }
 
 function initiate_topic_search(): void {
-    const $search_input = $<HTMLInputElement>("input.left-sidebar-search-input").expectOne();
-    const current_value = ($search_input.val() ?? "").trim();
+    const $search_input = $("#left-sidebar-filter-query").expectOne();
+    const current_value = ($search_input.text() ?? "").trim();
     const new_value = ui_util.TOPIC_SEARCH_PREFIX + " " + current_value;
-    $search_input.val(new_value);
-    util.the($search_input).setSelectionRange(new_value.length, new_value.length);
+    $search_input.text(new_value);
     $search_input.trigger("focus").trigger("input");
 }
 
@@ -688,7 +690,7 @@ export function initialize_left_sidebar_cursor(): void {
 function actually_update_left_sidebar_for_search(): void {
     const search_value = ui_util.get_left_sidebar_search_term();
     const is_left_sidebar_search_active = search_value !== "";
-    left_sidebar_cursor.set_is_highlight_visible(is_left_sidebar_search_active);
+    left_sidebar_cursor?.set_is_highlight_visible(is_left_sidebar_search_active);
 
     // Update left sidebar navigation area.
     update_expanded_views_for_search(search_value);
@@ -717,40 +719,133 @@ function actually_update_left_sidebar_for_search(): void {
         );
     }
     $("#left-sidebar-topic-search-hint").toggleClass("hidden", !show_topic_search_hint);
-    left_sidebar_cursor.reset();
+    left_sidebar_cursor?.reset();
     $("#left-sidebar-empty-list-message").toggleClass(
         "hidden",
         !is_left_sidebar_search_active || all_rows().length > 0,
     );
 }
 
+type LeftSidebarSearchState = {
+    search_term: string;
+    topics_state: string;
+    narrow_stream_id: number | undefined;
+    narrow_topic: string | undefined;
+};
+
 // Scroll position before user started searching.
 let pre_search_scroll_position = 0;
-let previous_search_term = "";
+let previous_search_state: LeftSidebarSearchState = {
+    search_term: "",
+    topics_state: "",
+    narrow_stream_id: undefined,
+    narrow_topic: undefined,
+};
+
+// Current narrow affects which topic matches keep a stream visible during search.
+function get_left_sidebar_search_state(): LeftSidebarSearchState {
+    return {
+        search_term: ui_util.get_left_sidebar_search_term(),
+        topics_state: left_sidebar_filter.get_effective_topics_state_for_search(),
+        narrow_stream_id: narrow_state.stream_id(),
+        narrow_topic: narrow_state.topic(),
+    };
+}
+
+function same_left_sidebar_search_state(
+    search_state: LeftSidebarSearchState,
+    other_search_state: LeftSidebarSearchState,
+): boolean {
+    const is_search_active =
+        search_state.search_term !== "" || search_state.topics_state !== "";
+    const was_search_active =
+        other_search_state.search_term !== "" || other_search_state.topics_state !== "";
+
+    if (!is_search_active && !was_search_active) {
+        return true;
+    }
+
+    return (
+        search_state.search_term === other_search_state.search_term &&
+        search_state.topics_state === other_search_state.topics_state &&
+        search_state.narrow_stream_id === other_search_state.narrow_stream_id &&
+        search_state.narrow_topic === other_search_state.narrow_topic
+    );
+}
+
+function restore_left_sidebar_after_text_search(): void {
+    left_sidebar_navigation_area.restore_views_state();
+    scroll_util.get_left_sidebar_scroll_container().scrollTop(pre_search_scroll_position);
+}
+
+function apply_left_sidebar_search_ui_transition({
+    search_state,
+    was_left_sidebar_search_active,
+    use_request_animation_frame,
+}: {
+    search_state: LeftSidebarSearchState;
+    was_left_sidebar_search_active: boolean;
+    use_request_animation_frame: boolean;
+}): void {
+    const is_left_sidebar_search_active = search_state.search_term !== "";
+    const left_sidebar_scroll_container = scroll_util.get_left_sidebar_scroll_container();
+
+    if (is_left_sidebar_search_active && !was_left_sidebar_search_active) {
+        // Store original scroll position to be restored later.
+        pre_search_scroll_position = left_sidebar_scroll_container.scrollTop() ?? 0;
+    }
+
+    const apply_update = (): void => {
+        actually_update_left_sidebar_for_search();
+
+        if (!is_left_sidebar_search_active) {
+            if (was_left_sidebar_search_active) {
+                restore_left_sidebar_after_text_search();
+            }
+            return;
+        }
+
+        // Always scroll to top during stream-name search.
+        left_sidebar_scroll_container.scrollTop(0);
+    };
+
+    if (use_request_animation_frame) {
+        requestAnimationFrame(apply_update);
+        return;
+    }
+
+    apply_update();
+}
+
+function save_and_apply_left_sidebar_search_state({
+    search_state,
+    was_left_sidebar_search_active,
+    use_request_animation_frame,
+}: {
+    search_state: LeftSidebarSearchState;
+    was_left_sidebar_search_active: boolean;
+    use_request_animation_frame: boolean;
+}): void {
+    previous_search_state = search_state;
+    apply_left_sidebar_search_ui_transition({
+        search_state,
+        was_left_sidebar_search_active,
+        use_request_animation_frame,
+    });
+}
 
 const update_left_sidebar_for_search = _.throttle(() => {
-    const search_term = ui_util.get_left_sidebar_search_term();
-    const is_previous_search_term_empty = previous_search_term === "";
-    previous_search_term = search_term;
-
-    const left_sidebar_scroll_container = scroll_util.get_left_sidebar_scroll_container();
-    if (search_term === "") {
-        requestAnimationFrame(() => {
-            actually_update_left_sidebar_for_search();
-            // Restore previous scroll position.
-            left_sidebar_scroll_container.scrollTop(pre_search_scroll_position);
-        });
-    } else {
-        if (is_previous_search_term_empty) {
-            // Store original scroll position to be restored later.
-            pre_search_scroll_position = left_sidebar_scroll_container.scrollTop()!;
-        }
-        requestAnimationFrame(() => {
-            actually_update_left_sidebar_for_search();
-            // Always scroll to top when there is a search term present.
-            left_sidebar_scroll_container.scrollTop(0);
-        });
+    const search_state = get_left_sidebar_search_state();
+    const was_left_sidebar_search_active = previous_search_state.search_term !== "";
+    if (same_left_sidebar_search_state(search_state, previous_search_state)) {
+        return;
     }
+
+    save_and_apply_left_sidebar_search_state({
+        search_state,
+        was_left_sidebar_search_active,
+        use_request_animation_frame: true,
+    });
 }, 50);
 
 function focus_left_sidebar_row($row: JQuery): void {
@@ -824,7 +919,7 @@ function handle_left_sidebar_arrow_navigation(e: JQuery.KeyDownEvent): void {
     // Search inputs have their own arrow key handlers.
     const $active = $(document.activeElement);
     if (
-        $active.is(".left-sidebar-search-input, .direct-messages-list-filter, #topic_filter_query")
+        $active.is("#left-sidebar-filter-query, .direct-messages-list-filter, #topic_filter_query")
     ) {
         return;
     }
@@ -871,9 +966,13 @@ export function focus_pm_search_filter(): void {
 }
 
 export function set_event_handlers(): void {
-    const $search_input = $(".left-sidebar-search-input").expectOne();
+    const $search_input = $("#left-sidebar-filter-query").expectOne();
+    const $filter_input_container = $("#left-sidebar-filter-input").expectOne();
 
     function keydown_enter_key(): void {
+        if (left_sidebar_filter.is_typeahead_shown()) {
+            return;
+        }
         const $row = left_sidebar_cursor.get_key();
 
         if ($row === undefined) {
@@ -901,7 +1000,7 @@ export function set_event_handlers(): void {
         }
         // Clear search input so that there is no confusion
         // about which search input is active.
-        $search_input.val("");
+        left_sidebar_filter.clear_query_text();
         const $nearest_link = $row.find("a").first();
         if ($nearest_link.length > 0) {
             // If the row has a link, we click it.
@@ -925,10 +1024,16 @@ export function set_event_handlers(): void {
                 return true;
             },
             ArrowUp() {
+                if (left_sidebar_filter.is_typeahead_shown()) {
+                    return false;
+                }
                 left_sidebar_cursor.prev();
                 return true;
             },
             ArrowDown() {
+                if (left_sidebar_filter.is_typeahead_shown()) {
+                    return false;
+                }
                 left_sidebar_cursor.next();
                 return true;
             },
@@ -949,7 +1054,11 @@ export function set_event_handlers(): void {
     $search_input.on("focusout", () => {
         left_sidebar_cursor.clear();
     });
-    $search_input.on("input", update_left_sidebar_for_search);
+    $filter_input_container.on("input", update_left_sidebar_for_search);
+    $("#left-sidebar-search .input-close-filter-button").on(
+        "click",
+        left_sidebar_filter.handle_clear_left_sidebar_filter_click,
+    );
 
     // Handle arrow key navigation when a sidebar element has Tab
     // focus, so that Tab and arrow key navigation stay in sync.
@@ -965,7 +1074,7 @@ export function set_event_handlers(): void {
 export function initiate_search(): void {
     popovers.hide_all();
 
-    const $filter = $(".left-sidebar-search-input").expectOne();
+    const $filter = $("#left-sidebar-filter-query").expectOne();
 
     show_left_sidebar();
     $filter.trigger("focus");
