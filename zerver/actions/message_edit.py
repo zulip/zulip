@@ -1739,7 +1739,7 @@ def check_update_message(
         mention_data = MentionData(
             mention_backend=mention_backend,
             content=message_edit_request.content,
-            message_sender=message.sender,
+            acting_user=message.sender,
         )
         prior_mention_user_ids = get_mentions_for_message_updates(message)
 

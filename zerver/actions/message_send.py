@@ -687,7 +687,7 @@ def build_message_send_dict(
     mention_data = MentionData(
         mention_backend=mention_backend,
         content=message.content,
-        message_sender=message.sender,
+        acting_user=message.sender,
     )
 
     if message.is_channel_message:

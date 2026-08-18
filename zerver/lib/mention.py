@@ -98,10 +98,10 @@ class ChannelInfo:
 
 class MentionBackend:
     # Be careful about reuse: MentionBackend contains caches which are
-    # designed to only have the lifespan of a sender user (typically a
+    # designed to only have the lifespan of an acting user (typically a
     # single request).
     #
-    # In particular, user_cache is not robust to message_sender
+    # In particular, user_cache is not robust to acting_user
     # within the lifetime of a single MentionBackend lifetime.
 
     def __init__(self, realm_id: int) -> None:
@@ -111,7 +111,7 @@ class MentionBackend:
         self.topic_cache: dict[ChannelTopicInfo, int | None] = {}
 
     def get_full_name_info_list(
-        self, user_filters: list[UserFilter], message_sender: UserProfile | None
+        self, user_filters: list[UserFilter], acting_user: UserProfile | None
     ) -> list[FullNameInfo]:
         result: list[FullNameInfo] = []
         unseen_user_filters: list[UserFilter] = []
@@ -153,7 +153,7 @@ class MentionBackend:
 
             possible_mention_user_ids = [row.id for row in rows]
             inaccessible_user_ids = get_inaccessible_user_ids(
-                possible_mention_user_ids, message_sender
+                possible_mention_user_ids, acting_user
             )
 
             user_list = [
@@ -345,7 +345,7 @@ def possible_user_group_mentions(content: str) -> dict[str, Literal["silent", "n
 
 
 def get_possible_mentions_info(
-    mention_backend: MentionBackend, mention_texts: set[str], message_sender: UserProfile | None
+    mention_backend: MentionBackend, mention_texts: set[str], acting_user: UserProfile | None
 ) -> list[FullNameInfo]:
     if not mention_texts:
         return []
@@ -369,19 +369,19 @@ def get_possible_mentions_info(
             # For **name** syntax.
             user_filters.append(UserFilter(full_name=mention_text, id=None))
 
-    return mention_backend.get_full_name_info_list(user_filters, message_sender)
+    return mention_backend.get_full_name_info_list(user_filters, acting_user)
 
 
 class MentionData:
     def __init__(
-        self, mention_backend: MentionBackend, content: str, message_sender: UserProfile | None
+        self, mention_backend: MentionBackend, content: str, acting_user: UserProfile | None
     ) -> None:
         self.mention_backend = mention_backend
         realm_id = mention_backend.realm_id
-        self.message_sender = message_sender
+        self.acting_user = acting_user
         mentions = possible_mentions(content)
         possible_mentions_info = get_possible_mentions_info(
-            mention_backend, mentions.mention_texts, message_sender
+            mention_backend, mentions.mention_texts, acting_user
         )
         self.full_name_info = {row.full_name.lower(): row for row in possible_mentions_info}
         self.user_id_info = {row.id: row for row in possible_mentions_info}
@@ -412,16 +412,16 @@ class MentionData:
                 self.user_group_name_info[group.name.lower()] = group
                 self.user_group_names[group.id] = group.name
 
-            # message_sender can be None when mentioning
+            # acting_user can be None when mentioning
             # a group inside a channel/channel folder description,
             # in such case we allow the mention.
             # TODO: This is not consistent, the permission
             # to mention a group must be the same everywhere.
-            if self.message_sender is None:
+            if self.acting_user is None:
                 self.allowed_mention_group_ids = set(self.user_group_names.keys())
             else:
-                self.allowed_mention_group_ids = bulk_get_groups_sender_can_mention(
-                    self.message_sender, named_user_groups
+                self.allowed_mention_group_ids = bulk_get_groups_user_can_mention(
+                    self.acting_user, named_user_groups
                 )
 
             # We only fetch group memberships that can
@@ -506,14 +506,14 @@ def get_user_group_mention_display_name(user_group: NamedUserGroup) -> StrPromis
     return user_group.name
 
 
-def bulk_get_groups_sender_can_mention(
-    sender: UserProfile, named_user_groups: QuerySet[NamedUserGroup]
+def bulk_get_groups_user_can_mention(
+    acting_user: UserProfile, named_user_groups: QuerySet[NamedUserGroup]
 ) -> set[int]:
     # Ids of NamedUserGroup that don't need to be checked against
-    # the sender's permission.
+    # the acting user's permission.
     group_ids_everyone_can_mention = set()
 
-    # NamedUserGroups that must be checked against the sender's permission.
+    # NamedUserGroups that must be checked against the acting user's permission.
     named_groups_requiring_permission_check = set()
 
     for named_group in named_user_groups:
@@ -532,25 +532,25 @@ def bulk_get_groups_sender_can_mention(
 
     setting_config = NamedUserGroup.GROUP_PERMISSION_SETTINGS["can_mention_group"]
 
-    if is_cross_realm_bot_email(sender.delivery_email) or (
-        not setting_config.allow_everyone_group and sender.is_guest
+    if is_cross_realm_bot_email(acting_user.delivery_email) or (
+        not setting_config.allow_everyone_group and acting_user.is_guest
     ):
         return group_ids_everyone_can_mention
 
-    # Ids of all direct and indirect groups the sender is a member of.
+    # Ids of all direct and indirect groups the acting user is a member of.
     user_recursive_group_ids = set(
-        get_recursive_membership_groups(sender).values_list("id", flat=True)
+        get_recursive_membership_groups(acting_user).values_list("id", flat=True)
     )
 
-    # The sender can mention a named_group if they are direct/indirect member
-    # of that named_group.can_mention_group.
-    group_ids_sender_can_mention = {
+    # The acting user can mention a named_group if they are direct/indirect
+    # member of that named_group.can_mention_group.
+    group_ids_user_can_mention = {
         named_group.id
         for named_group in named_groups_requiring_permission_check
         if named_group.can_mention_group_id in user_recursive_group_ids
     }
 
-    # The sender is allowed to mention a NamedUserGroup if that group:
+    # The acting user is allowed to mention a NamedUserGroup if that group:
     # 1- already allows mention by everyone.
-    # 2- required permission check and have passed it for that sender.
-    return group_ids_everyone_can_mention | group_ids_sender_can_mention
+    # 2- required permission check and have passed it for that user.
+    return group_ids_everyone_can_mention | group_ids_user_can_mention

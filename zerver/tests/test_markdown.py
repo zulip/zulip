@@ -251,7 +251,7 @@ class MarkdownMiscTest(ZulipTestCase):
         lst = get_possible_mentions_info(
             mention_backend,
             {"Fred Flintstone", "Cordelia, LEAR's daughter", "Not A User"},
-            message_sender=None,
+            acting_user=None,
         )
         set_of_names = {x.full_name.lower() for x in lst}
         self.assertEqual(set_of_names, {"fred flintstone", "cordelia, lear's daughter"})
@@ -280,7 +280,7 @@ class MarkdownMiscTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         content = "@**King Hamlet** @**Cordelia, lear's daughter**"
         mention_backend = MentionBackend(realm.id)
-        mention_data = MentionData(mention_backend, content, message_sender=None)
+        mention_data = MentionData(mention_backend, content, acting_user=None)
         self.assertEqual(mention_data.get_user_ids(), {hamlet.id, cordelia.id})
         self.assertEqual(
             mention_data.get_user_by_id(hamlet.id),
@@ -297,21 +297,21 @@ class MarkdownMiscTest(ZulipTestCase):
 
         self.assertFalse(mention_data.message_has_stream_wildcards())
         content = "@**King Hamlet** @**Cordelia, lear's daughter** @**all**"
-        mention_data = MentionData(mention_backend, content, message_sender=None)
+        mention_data = MentionData(mention_backend, content, acting_user=None)
         self.assertTrue(mention_data.message_has_stream_wildcards())
 
         self.assertFalse(mention_data.message_has_topic_wildcards())
         content = "@**King Hamlet** @**Cordelia, lear's daughter** @**topic**"
-        mention_data = MentionData(mention_backend, content, message_sender=None)
+        mention_data = MentionData(mention_backend, content, acting_user=None)
         self.assertTrue(mention_data.message_has_topic_wildcards())
 
         content = "@*hamletcharacters*"
         group = NamedUserGroup.objects.get(realm_for_sharding=realm, name="hamletcharacters")
-        mention_data = MentionData(mention_backend, content, message_sender=None)
+        mention_data = MentionData(mention_backend, content, acting_user=None)
         self.assertEqual(mention_data.get_group_members(group.id), {hamlet.id, cordelia.id})
 
         change_user_is_active(cordelia, False)
-        mention_data = MentionData(mention_backend, content, message_sender=None)
+        mention_data = MentionData(mention_backend, content, acting_user=None)
         self.assertEqual(mention_data.get_group_members(group.id), {hamlet.id})
 
     def test_mention_user_groups_with_common_subgroup(self) -> None:
@@ -337,7 +337,7 @@ class MarkdownMiscTest(ZulipTestCase):
 
         content = "@*class-A*  @*class-B*"
         mention_backend = MentionBackend(realm.id)
-        mention_data = MentionData(mention_backend, content, message_sender=None)
+        mention_data = MentionData(mention_backend, content, acting_user=None)
 
         # both groups should have their direct members and the sub-group's members.
         self.assertEqual(mention_data.get_group_members(class_A.id), {iago.id, aaron.id, hamlet.id})
@@ -361,7 +361,7 @@ class MarkdownMiscTest(ZulipTestCase):
 
         # mention zulip_group, but silent mention hamlet_group.
         content = "@*zulip_group*, @_*hamletcharacters*"
-        mention_data = MentionData(mention_backend, content, message_sender=None)
+        mention_data = MentionData(mention_backend, content, acting_user=None)
 
         # non-silent mention should fetch group membership.
         self.assertEqual(mention_data.get_group_members(zulip_group.id), {iago.id, aaron.id})
@@ -374,12 +374,12 @@ class MarkdownMiscTest(ZulipTestCase):
 
         # non-silent before silent.
         content = "@*hamletcharacters*, @_*hamletcharacters*"
-        mention_data = MentionData(mention_backend, content, message_sender=None)
+        mention_data = MentionData(mention_backend, content, acting_user=None)
         self.assertEqual(mention_data.get_group_members(hamlet_group.id), {hamlet.id, cordelia.id})
 
         # non-silent after silent.
         content = "@_*hamletcharacters*, @*hamletcharacters*"
-        mention_data = MentionData(mention_backend, content, message_sender=None)
+        mention_data = MentionData(mention_backend, content, acting_user=None)
         self.assertEqual(mention_data.get_group_members(hamlet_group.id), {hamlet.id, cordelia.id})
 
     def test_fetch_group_membership_when_mention_group_permission_changes(self) -> None:
@@ -422,12 +422,12 @@ class MarkdownMiscTest(ZulipTestCase):
         )
 
         # We should fetch group membership when sender (aaron) is allowed to mention the group.
-        mention_data = MentionData(mention_backend, content, message_sender=aaron)
+        mention_data = MentionData(mention_backend, content, acting_user=aaron)
         self.assertEqual(mention_data.get_group_members(hamlet_group.id), hamlet_members_ids)
 
         # We should NOT fetch group membership when sender is NOT allowed
         # (only aaron is allowed at this point) to mention the group.
-        mention_data = MentionData(mention_backend, content, message_sender=othello)
+        mention_data = MentionData(mention_backend, content, acting_user=othello)
         self.assertEqual(mention_data.get_group_members(hamlet_group.id), set())
 
         # Add 2 levels of sub-groups to test_group.
@@ -436,9 +436,9 @@ class MarkdownMiscTest(ZulipTestCase):
 
         # 3 senders (which are direct/indirect members of test_group)
         # mention hamlet_group.
-        aaron_mention_data = MentionData(mention_backend, content, message_sender=aaron)
-        zoe_mention_data = MentionData(mention_backend, content, message_sender=zoe)
-        prospero_mention_data = MentionData(mention_backend, content, message_sender=prospero)
+        aaron_mention_data = MentionData(mention_backend, content, acting_user=aaron)
+        zoe_mention_data = MentionData(mention_backend, content, acting_user=zoe)
+        prospero_mention_data = MentionData(mention_backend, content, acting_user=prospero)
 
         # We should fetch group membership, as all senders are allowed to mention that group.
         self.assertEqual(aaron_mention_data.get_group_members(hamlet_group.id), hamlet_members_ids)
@@ -484,7 +484,7 @@ class MarkdownMiscTest(ZulipTestCase):
         # Bulk mention groups with the default mention permission i.e. SystemGroups.EVERYONE.
         # We make sure it's constant.
         with self.assert_database_query_count(2):
-            mention_data = MentionData(mention_backend, content, message_sender=zoe)
+            mention_data = MentionData(mention_backend, content, acting_user=zoe)
 
         # We should fetch group memberships for all mentioned groups,
         # since the default is to allow mention by all.
@@ -519,7 +519,7 @@ class MarkdownMiscTest(ZulipTestCase):
         # a permission check (e.g. not SystemGroups.EVERYONE).
         # Again, we make sure it's constant.
         with self.assert_database_query_count(3):
-            mention_data = MentionData(mention_backend, content, message_sender=zoe)
+            mention_data = MentionData(mention_backend, content, acting_user=zoe)
 
         # We should fetch group membership, ONLY for groups the sender "zoe" is allowed
         # to mention.
@@ -2708,7 +2708,7 @@ class MarkdownMentionTest(ZulipTestCase):
         content = f"@**{aaron.full_name}**, @_**{hamlet.full_name}**, @**|{cordelia.id}**, @_**|{othello.id}**"
 
         mention_backend = MentionBackend(realm.id)
-        mention_data = MentionData(mention_backend, content, message_sender=None)
+        mention_data = MentionData(mention_backend, content, acting_user=None)
 
         # user_ids of all the mentioned users, by different mention types,
         # should be captured in mention_data.get_user_ids().
@@ -3631,7 +3631,7 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
         # test caching of topic data for user.
         content = "#**Denmark>some topic**"
         mention_backend = MentionBackend(realm.id)
-        mention_data = MentionData(mention_backend, content, message_sender=None)
+        mention_data = MentionData(mention_backend, content, acting_user=None)
         render_message_markdown(msg, content, mention_data=mention_data)
 
         with (
@@ -3652,7 +3652,7 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
         )
 
         # Test when trying to render a topic link of a channel with shared
-        # history, if message_sender is None, topic link is permalink.
+        # history, if acting_user is None, topic link is permalink.
         content = "#**Denmark>some topic**"
         self.assertEqual(
             markdown_convert_wrapper(content),
@@ -3726,7 +3726,7 @@ class MarkdownStreamTopicMentionTests(ZulipTestCase):
         )
 
         # Test when trying to render a topic link of a channel with protected
-        # history, if message_sender is None, topic link is not permalink.
+        # history, if acting_user is None, topic link is not permalink.
         content = "#**core>testing**"
         self.assertEqual(
             markdown_convert_wrapper(content),
