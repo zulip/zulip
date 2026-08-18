@@ -11,6 +11,7 @@ import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
+import * as desktop_notifications from "./desktop_notifications.ts";
 import * as dropdown_widget from "./dropdown_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as message_notifications from "./message_notifications.ts";
@@ -122,13 +123,9 @@ function rerender_ui(): void {
 }
 
 function update_desktop_notification_banner(): void {
-    // As is also noted in `navbar_alerts.ts`, notifications *basically*
-    // don't work on any mobile platforms, so don't event show the banners.
-    // This prevents trying to access things that don't exist, like
-    // `Notification.permission` in a mobile context, in which we'll also
-    // hide the ability to send a test notification before exiting with an
-    // early return.
-    if (util.is_mobile()) {
+    // Don't attempt to show the notification banner on UAs
+    // that don't support the Notification API.
+    if (!desktop_notifications.has_notification_support()) {
         $(".send_test_notification").hide();
         return;
     }
