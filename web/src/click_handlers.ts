@@ -221,7 +221,7 @@ export function initialize(): void {
         // compose box.
         const current_filter = narrow_state.filter();
         if (current_filter !== undefined && !current_filter.contains_no_partial_conversations()) {
-            const message = message_store.get(id);
+            const message = message_store.get_immutable_message(id);
 
             if (message === undefined) {
                 // This might happen for locally echoed messages, for example.
