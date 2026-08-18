@@ -7,7 +7,7 @@ from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
-from zerver.lib.validator import WildValue, check_bool, check_string
+from zerver.lib.validator import WildValue, check_bool, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
 
@@ -17,9 +17,15 @@ ADMIN_AWAY_MODE_UPDATED_TEMPLATE = "{name} is {away_status}{reason}."
 
 ADMIN_LOGIN_LOGOUT_TEMPLATE = "{name} {phrase}."
 
+ARTICLE_MESSAGE_TEMPLATE = "{title} was {action}.{description}"
+
 
 def get_admin_name(payload: WildValue) -> str:
     return payload["data"]["item"]["name"].tame(check_string)
+
+
+def get_article_title(payload: WildValue) -> str:
+    return payload["data"]["item"]["title"].tame(check_string)
 
 
 def get_topic_name(event_category: str, payload: WildValue) -> str:
@@ -30,6 +36,8 @@ def get_topic_name(event_category: str, payload: WildValue) -> str:
             if payload["topic"].tame(check_string) == "admin.activity_log_event.created":
                 return "Admin activity log"
             return f"Admin: {get_admin_name(payload)}"
+        case "article":
+            return f"Article: {get_article_title(payload)}"
         case _:  # nocoverage
             raise UnsupportedWebhookEventTypeError(payload["topic"].tame(check_string))
 
@@ -71,6 +79,14 @@ def get_admin_away_mode_updated_message(payload: WildValue) -> str:
     )
 
 
+def get_article_message(action: str, payload: WildValue) -> str:
+    description_value = payload["data"]["item"]["description"].tame(check_none_or(check_string))
+    description = f"\n> {description_value}" if description_value else ""
+    return ARTICLE_MESSAGE_TEMPLATE.format(
+        title=get_article_title(payload), action=action, description=description
+    )
+
+
 IGNORED_EVENTS = [
     # Require purchasing an Intercom number.
     *["call"],
@@ -101,6 +117,11 @@ EVENT_TO_FUNCTION_MAPPER: dict[str, Callable[[WildValue], str]] = {
     "admin.removed_from_workspace": partial(get_admin_role_updated_message, "no longer"),
     "admin.logged_in": partial(get_admin_login_logout_message, "logged in"),
     "admin.logged_out": partial(get_admin_login_logout_message, "logged out"),
+    "article.created": partial(get_article_message, "created"),
+    "article.updated": partial(get_article_message, "updated"),
+    "article.published": partial(get_article_message, "published"),
+    "article.unpublished": partial(get_article_message, "unpublished"),
+    "article.deleted": partial(get_article_message, "deleted"),
 }
 
 ALL_EVENT_TYPES = list(EVENT_TO_FUNCTION_MAPPER.keys())
