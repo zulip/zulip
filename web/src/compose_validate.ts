@@ -966,9 +966,7 @@ function validate_stream_message(scheduling_message: boolean, show_banner = true
         compose_state.topic(),
     );
     if (invalid_topic_character_position !== undefined) {
-        const error_message = get_invalid_topic_error_message(
-            invalid_topic_character_position,
-        );
+        const error_message = get_invalid_topic_error_message(invalid_topic_character_position);
         if (show_banner) {
             compose_banner.show_error_message(
                 error_message,
