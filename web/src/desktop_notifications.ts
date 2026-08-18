@@ -84,12 +84,12 @@ export function initialize(): void {
 }
 
 export function permission_state(): string {
-    if (NotificationAPI === undefined) {
-        // act like notifications are blocked if they do not have access to
-        // the notification API.
-        return "denied";
+    if (NotificationAPI) {
+        return NotificationAPI.permission;
     }
-    return NotificationAPI.permission;
+    // Act like notifications are blocked if a UA
+    // has no access to the notification API.
+    return "denied";
 }
 
 export function close_notification(message: Message): void {
@@ -109,7 +109,7 @@ export async function request_desktop_notifications_permission(): Promise<Notifi
     if (NotificationAPI) {
         return await NotificationAPI.requestPermission();
     }
-    // Act like notifications are blocked if they do not have access to
-    // the notification API.
+    // Act like notifications are blocked if a UA
+    // has no access to the notification API.
     return "denied";
 }
