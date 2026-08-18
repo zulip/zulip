@@ -237,6 +237,19 @@ export type Message = (
           }
     );
 
+/**
+ * Compile-time-only view of a cached Message. Same object as the store
+ * singleton; assigning to fields is a type error.
+ *
+ * Distributed over the stream/PM union so `if (msg.type === "stream")`
+ * still narrows `stream_id` / `topic`. A bare `Readonly<Message>` would
+ * collapse those exclusive fields.
+ */
+export type ReadonlyMessage =
+    Readonly<Extract<Message, {type: "private"}>> | Readonly<Extract<Message, {type: "stream"}>>;
+
+export type ImmutableMessage = ReadonlyMessage;
+
 export function update_message_cache(message_data: ProcessedMessage): void {
     // You should only call this from message_helper (or in tests).
     stored_messages.set(message_data.message.id, message_data);
