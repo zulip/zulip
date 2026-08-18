@@ -1833,6 +1833,18 @@ paths:
                                       description: |
                                         The ID of the message to which a reaction was
                                         added.
+                                    message_sender_id:
+                                      type: integer
+                                      description: |
+                                        The ID of the sender of the message to which a
+                                        reaction was added.
+
+                                        Clients can use this to tell whether a reaction
+                                        is to the current user's own message without
+                                        fetching that message.
+
+                                        **Changes**: New in Zulip 13.0 (feature level
+                                        ZF-85adb9).
                                     emoji_code: {}
                                     emoji_name: {}
                                     reaction_type: {}
@@ -1843,6 +1855,7 @@ paths:
                                       "op": "add",
                                       "user_id": 10,
                                       "message_id": 32,
+                                      "message_sender_id": 5,
                                       "emoji_name": "tada",
                                       "emoji_code": "1f389",
                                       "reaction_type": "unicode_emoji",
@@ -1872,6 +1885,18 @@ paths:
                                       description: |
                                         The ID of the message from which the reaction was
                                         removed.
+                                    message_sender_id:
+                                      type: integer
+                                      description: |
+                                        The ID of the sender of the message from which the
+                                        reaction was removed.
+
+                                        Clients can use this to tell whether a reaction
+                                        is to the current user's own message without
+                                        fetching that message.
+
+                                        **Changes**: New in Zulip 13.0 (feature level
+                                        ZF-85adb9).
                                     emoji_code: {}
                                     emoji_name: {}
                                     reaction_type: {}
@@ -1882,6 +1907,7 @@ paths:
                                       "op": "remove",
                                       "user_id": 10,
                                       "message_id": 52,
+                                      "message_sender_id": 5,
                                       "emoji_name": "tada",
                                       "emoji_code": "1f389",
                                       "reaction_type": "unicode_emoji",
