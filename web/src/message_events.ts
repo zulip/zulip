@@ -786,10 +786,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                         //
                         // If the `with` message was moved, we need to update the URL to
                         // use a message from the old topic.
-                        const message_id = Number.parseInt(
-                            current_filter.terms_with_operator("with")[0]!.operand,
-                            10,
-                        );
+                        const message_id = current_filter.message_id_operand("with")!;
                         if (event.message_ids.includes(message_id)) {
                             // At this point, we know that the `with` message was moved.
                             if (!is_old_topic_empty_locally) {

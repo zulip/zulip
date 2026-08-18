@@ -1183,6 +1183,16 @@ export class Filter {
         );
     }
 
+    // Returns the message ID named by an operator whose operand is a
+    // message ID, or undefined if the filter has no such term.
+    message_id_operand(operator: "id" | "near" | "with"): number | undefined {
+        const term = this.terms_with_operator(operator)[0];
+        if (term === undefined) {
+            return undefined;
+        }
+        return Number.parseInt(term.operand, 10);
+    }
+
     has_negated_operand(operator: string, operand: string): boolean {
         return this._terms.some(
             (term) => term.negated && term.operator === operator && term.operand === operand,
@@ -2062,8 +2072,8 @@ export class Filter {
         }
 
         if (!message) {
-            const message_id = Number.parseInt(this.terms_with_operator("with")[0]!.operand, 10);
-            message = message_store.get(message_id);
+            const with_message_id = this.message_id_operand("with")!;
+            message = message_store.get(with_message_id);
         }
 
         if (!message) {
