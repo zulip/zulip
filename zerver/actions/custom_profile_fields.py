@@ -2,6 +2,7 @@ from collections.abc import Iterable
 
 import orjson
 from django.db import transaction
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.actions.message_send import send_user_profile_update_notification
@@ -9,10 +10,22 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.streams import render_stream_description
-from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData, UserProfileChangeDict
+from zerver.lib.types import (
+    CustomProfileFieldDict,
+    ProfileDataElementUpdateDict,
+    ProfileFieldData,
+    UserProfileChangeDict,
+)
 from zerver.lib.users import get_user_ids_who_can_access_user
-from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, UserProfile
+from zerver.models import (
+    CustomProfileField,
+    CustomProfileFieldValue,
+    Realm,
+    RealmAuditLog,
+    UserProfile,
+)
 from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -31,6 +44,8 @@ def try_add_realm_default_custom_profile_field(
     required: bool = False,
     editable_by_user: bool = True,
     use_for_user_matching: bool = False,
+    *,
+    acting_user: UserProfile | None,
 ) -> CustomProfileField:
     field_data = DEFAULT_EXTERNAL_ACCOUNTS[field_subtype]
     custom_profile_field = CustomProfileField(
@@ -47,8 +62,35 @@ def try_add_realm_default_custom_profile_field(
     custom_profile_field.save()
     custom_profile_field.order = custom_profile_field.id
     custom_profile_field.save(update_fields=["order"])
+
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=AuditLogEventType.REALM_CUSTOM_PROFILE_FIELD_CREATED,
+        event_time=timezone_now(),
+        extra_data={
+            "field_id": custom_profile_field.id,
+            "name": custom_profile_field.name,
+            "field_type": custom_profile_field.field_type,
+        },
+    )
+
     notify_realm_custom_profile_fields(realm)
     return custom_profile_field
+
+
+def custom_profile_field_to_dict(field: CustomProfileField) -> CustomProfileFieldDict:
+    return CustomProfileFieldDict(
+        id=field.id,
+        name=field.name,
+        field_type=field.field_type,
+        hint=field.hint,
+        field_data=field.field_data,
+        order=field.order,
+        display_in_profile_summary=field.display_in_profile_summary,
+        required=field.required,
+        editable_by_user=field.editable_by_user,
+    )
 
 
 @transaction.atomic(durable=True)
@@ -62,6 +104,8 @@ def try_add_realm_custom_profile_field(
     required: bool = False,
     editable_by_user: bool = True,
     use_for_user_matching: bool = False,
+    *,
+    acting_user: UserProfile | None,
 ) -> CustomProfileField:
     custom_profile_field = CustomProfileField(
         realm=realm,
@@ -82,17 +126,45 @@ def try_add_realm_custom_profile_field(
     custom_profile_field.save()
     custom_profile_field.order = custom_profile_field.id
     custom_profile_field.save(update_fields=["order"])
+
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=AuditLogEventType.REALM_CUSTOM_PROFILE_FIELD_CREATED,
+        event_time=timezone_now(),
+        extra_data={
+            "custom_profile_field": custom_profile_field_to_dict(custom_profile_field),
+        },
+    )
+
     notify_realm_custom_profile_fields(realm)
     return custom_profile_field
 
 
 @transaction.atomic(durable=True)
-def do_remove_realm_custom_profile_field(realm: Realm, field: CustomProfileField) -> None:
+def do_remove_realm_custom_profile_field(
+    realm: Realm,
+    field: CustomProfileField,
+    *,
+    acting_user: UserProfile | None,
+) -> None:
     """
     Deleting a field will also delete the user profile data
     associated with it in CustomProfileFieldValue model.
     """
+    field_dict = custom_profile_field_to_dict(field)
     field.delete()
+
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=AuditLogEventType.REALM_CUSTOM_PROFILE_FIELD_DELETED,
+        event_time=timezone_now(),
+        extra_data={
+            "custom_profile_field": field_dict,
+        },
+    )
+
     notify_realm_custom_profile_fields(realm)
 
 
@@ -101,7 +173,7 @@ def do_remove_realm_custom_profile_fields(realm: Realm) -> None:
 
 
 def remove_custom_profile_field_value_if_required(
-    field: CustomProfileField, field_data: ProfileFieldData
+    field: CustomProfileField, field_data: ProfileFieldData, acting_user: UserProfile | None
 ) -> None:
     old_values = set(orjson.loads(field.field_data).keys())
     new_values = set(field_data.keys())
@@ -115,6 +187,20 @@ def remove_custom_profile_field_value_if_required(
     ).select_related("user_profile")
 
     updated_users = [field_value.user_profile for field_value in values_to_delete]
+
+    for field_value in values_to_delete:
+        RealmAuditLog.objects.create(
+            realm=field_value.user_profile.realm,
+            acting_user=acting_user,
+            modified_user=field_value.user_profile,
+            event_type=AuditLogEventType.USER_CUSTOM_PROFILE_FIELD_VALUE_CHANGED,
+            event_time=timezone_now(),
+            extra_data={
+                "field_id": field.id,
+                RealmAuditLog.OLD_VALUE: field_value.value,
+                RealmAuditLog.NEW_VALUE: None,
+            },
+        )
 
     values_to_delete.delete()
 
@@ -141,7 +227,10 @@ def try_update_realm_custom_profile_field(
     required: bool | None = None,
     editable_by_user: bool | None = None,
     use_for_user_matching: bool | None = None,
+    *,
+    acting_user: UserProfile | None,
 ) -> None:
+
     if name is not None:
         field.name = name
     if hint is not None:
@@ -162,26 +251,54 @@ def try_update_realm_custom_profile_field(
         # If field_data is None, field_data is unchanged and there is no need for
         # comparing field_data values.
         if field_data is not None and field.field_type == CustomProfileField.DROPDOWN:
-            remove_custom_profile_field_value_if_required(field, field_data)
+            remove_custom_profile_field_value_if_required(field, field_data, acting_user)
 
         # If field.field_data is the default empty string, we will set field_data
         # to an empty dict.
         if field_data is not None or field.field_data == "":
             field.field_data = orjson.dumps(field_data or {}).decode()
     field.save()
+
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=AuditLogEventType.REALM_CUSTOM_PROFILE_FIELD_UPDATED,
+        event_time=timezone_now(),
+        extra_data={
+            "field_id": field.id,
+            "changed_field": custom_profile_field_to_dict(field),
+        },
+    )
+
     notify_realm_custom_profile_fields(realm)
 
 
 @transaction.atomic(durable=True)
-def try_reorder_realm_custom_profile_fields(realm: Realm, order: Iterable[int]) -> None:
+def try_reorder_realm_custom_profile_fields(
+    realm: Realm, order: Iterable[int], *, acting_user: UserProfile | None
+) -> None:
     order_mapping = {_[1]: _[0] for _ in enumerate(order)}
-    custom_profile_fields = CustomProfileField.objects.filter(realm=realm)
+    custom_profile_fields = list(CustomProfileField.objects.filter(realm=realm).order_by("order"))
+    old_order = [field.id for field in custom_profile_fields]
+
     for custom_profile_field in custom_profile_fields:
         if custom_profile_field.id not in order_mapping:
             raise JsonableError(_("Invalid order mapping."))
     for custom_profile_field in custom_profile_fields:
         custom_profile_field.order = order_mapping[custom_profile_field.id]
         custom_profile_field.save(update_fields=["order"])
+
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=AuditLogEventType.REALM_CUSTOM_PROFILE_FIELD_ORDER_CHANGED,
+        event_time=timezone_now(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_order,
+            RealmAuditLog.NEW_VALUE: list(order),
+        },
+    )
+
     notify_realm_custom_profile_fields(realm)
 
 
@@ -210,6 +327,7 @@ def do_update_user_custom_profile_data_if_changed(
         field_value, created = CustomProfileFieldValue.objects.get_or_create(
             user_profile=user_profile, field_id=custom_profile_field["id"]
         )
+        old_raw_value = field_value.value if not created else None
 
         # field_value.value is a TextField() so we need to have field["value"]
         # in string form to correctly make comparisons and assignments.
@@ -233,6 +351,20 @@ def do_update_user_custom_profile_data_if_changed(
             field_value.save(update_fields=["value", "rendered_value"])
         else:
             field_value.save(update_fields=["value"])
+
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            acting_user=acting_user,
+            modified_user=user_profile,
+            event_type=AuditLogEventType.USER_CUSTOM_PROFILE_FIELD_VALUE_CHANGED,
+            event_time=timezone_now(),
+            extra_data={
+                "field_id": field_value.field_id,
+                RealmAuditLog.OLD_VALUE: old_raw_value,
+                RealmAuditLog.NEW_VALUE: field_value.value,
+            },
+        )
+
         notify_user_update_custom_profile_data(
             user_profile,
             {
@@ -266,7 +398,7 @@ def get_custom_profile_field_display_value(field_value: CustomProfileFieldValue)
     type = field_value.field.field_type
 
     if type == CustomProfileField.DROPDOWN:
-        field_data_dict = orjson.loads(field_value.field.field_data)
+        field_data_dict: dict[str, dict[str, str]] = orjson.loads(field_value.field.field_data)
         value_key = field_value.value
         return field_data_dict[value_key]["text"]
 
@@ -295,8 +427,23 @@ def check_remove_custom_profile_field_value(
         field_value = CustomProfileFieldValue.objects.get(
             field=custom_profile_field, user_profile=user_profile
         )
+        old_raw_value = field_value.value
         old_value = get_custom_profile_field_display_value(field_value)
         field_value.delete()
+
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            acting_user=acting_user,
+            modified_user=user_profile,
+            event_type=AuditLogEventType.USER_CUSTOM_PROFILE_FIELD_VALUE_CHANGED,
+            event_time=timezone_now(),
+            extra_data={
+                "field_id": field_id,
+                RealmAuditLog.OLD_VALUE: old_raw_value,
+                RealmAuditLog.NEW_VALUE: None,
+            },
+        )
+
         notify_user_update_custom_profile_data(
             user_profile,
             {
