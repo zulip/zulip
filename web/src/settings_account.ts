@@ -389,7 +389,7 @@ export function set_up(): void {
         $("#api_key_buttons").hide();
         common.setup_password_visibility_toggle(
             "#get_api_key_password",
-            "#get_api_key_password + .password_visibility_toggle",
+            "#get_api_key_password ~ .password_visibility_toggle",
             {tippy_tooltips: true},
         );
 
@@ -457,7 +457,7 @@ export function set_up(): void {
         $("#api_key_modal [data-micromodal-close]").on("click", () => {
             common.reset_password_toggle_icons(
                 "#get_api_key_password",
-                "#get_api_key_password + .password_visibility_toggle",
+                "#get_api_key_password ~ .password_visibility_toggle",
             );
         });
         new ClipboardJS("#show_api_key .copy-button", {
@@ -491,11 +491,11 @@ export function set_up(): void {
         // for an XSS attacker to find.
         common.reset_password_toggle_icons(
             "#old_password",
-            "#old_password + .password_visibility_toggle",
+            "#old_password ~ .password_visibility_toggle",
         );
         common.reset_password_toggle_icons(
             "#new_password",
-            "#new_password + .password_visibility_toggle",
+            "#new_password ~ .password_visibility_toggle",
         );
         $("#old_password, #new_password").val("");
         password_quality?.("", $("#pw_strength .bar"), $("#new_password"));
@@ -509,12 +509,12 @@ export function set_up(): void {
             });
         common.setup_password_visibility_toggle(
             "#old_password",
-            "#old_password + .password_visibility_toggle",
+            "#old_password ~ .password_visibility_toggle",
             {tippy_tooltips: true},
         );
         common.setup_password_visibility_toggle(
             "#new_password",
-            "#new_password + .password_visibility_toggle",
+            "#new_password ~ .password_visibility_toggle",
             {tippy_tooltips: true},
         );
         clear_password_change();
