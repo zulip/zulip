@@ -4,6 +4,7 @@ from django.core.validators import MinLengthValidator, RegexValidator
 from django.db import models
 from django.db.models import CASCADE, Q
 from django.db.models.signals import post_delete, post_save
+from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext_lazy
 from typing_extensions import override
 
@@ -18,6 +19,7 @@ class EmojiInfo(TypedDict):
     deactivated: bool
     author_id: int | None
     still_url: str | None
+    date_created: int
 
 
 def get_all_custom_emoji_for_realm_cache_key(realm_id: int) -> str:
@@ -41,6 +43,8 @@ class RealmEmoji(models.Model):
             ),
         ]
     )
+
+    date_created = models.DateTimeField(default=timezone_now)
 
     # The basename of the custom emoji's filename; see PATH_ID_TEMPLATE for the full path.
     file_name = models.TextField(db_index=True, null=True, blank=True)
@@ -81,6 +85,7 @@ def emoji_as_emojiinfo(realm_emoji: RealmEmoji) -> EmojiInfo:
         deactivated=realm_emoji.deactivated,
         author_id=author_id,
         still_url=None,
+        date_created=int(realm_emoji.date_created.timestamp()),
     )
 
     if realm_emoji.is_animated:

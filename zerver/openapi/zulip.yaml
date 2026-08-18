@@ -4406,6 +4406,7 @@ paths:
                                       "still_url": null,
                                       "deactivated": false,
                                       "author_id": 11,
+                                      "date_created": 1717484476,
                                     },
                                   "id": 0,
                                 }
@@ -4517,6 +4518,7 @@ paths:
                                           "source_url": "/user_avatars/2/emoji/images/2.png",
                                           "deactivated": true,
                                           "author_id": 11,
+                                          "date_created": 1717484476,
                                         },
                                       "1":
                                         {
@@ -4525,6 +4527,7 @@ paths:
                                           "source_url": "/user_avatars/2/emoji/images/1.png",
                                           "deactivated": false,
                                           "author_id": 11,
+                                          "date_created": 1717484476,
                                         },
                                     },
                                   "id": 0,
@@ -14848,6 +14851,7 @@ paths:
                                 "source_url": "/user_avatars/1/emoji/images/1.png",
                                 "deactivated": false,
                                 "author_id": 5,
+                                "date_created": 1717484476,
                               },
                           },
                       }
@@ -22940,6 +22944,7 @@ paths:
                                 "id": "1",
                                 "name": "green_tick",
                                 "source_url": "/user_avatars/1/emoji/images/1.png",
+                                "date_created": 1717484476,
                               },
                             "2":
                               {
@@ -22949,6 +22954,7 @@ paths:
                                 "name": "animated_img",
                                 "source_url": "/user_avatars/1/emoji/images/animated_img.gif",
                                 "still_url": "/user_avatars/1/emoji/images/still/animated_img.png",
+                                "date_created": 1717484476,
                               },
                           },
                         "result": "success",
@@ -28245,6 +28251,13 @@ components:
 
             **Changes**: New in Zulip 3.0 (feature level 7). Previously
             was accessible via an `author` object with an `id` field.
+        date_created:
+          type: integer
+          description: |
+            The UNIX timestamp for when the emoji was created, in UTC seconds.
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-b4f538).
+
     RealmDomain:
       type: object
       additionalProperties: false
