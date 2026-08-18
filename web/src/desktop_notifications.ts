@@ -83,6 +83,11 @@ export function initialize(): void {
     });
 }
 
+// Utility function for testing support for the Notifications API
+export function has_notification_support(): boolean {
+    return NotificationAPI !== undefined;
+}
+
 export function permission_state(): string {
     if (NotificationAPI) {
         return NotificationAPI.permission;

@@ -28,7 +28,6 @@ import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_topics from "./user_topics.ts";
-import * as util from "./util.ts";
 
 function open_navbar_banner_and_resize(banner: AlertBanner): void {
     banners.open(banner, $("#navbar_alerts_wrapper"));
@@ -55,10 +54,8 @@ export function should_show_desktop_notifications_banner(ls: LocalStorage): bool
         // Spectators cannot receive desktop notifications, so never
         // request permissions to send them.
         !page_params.is_spectator &&
-        // notifications *basically* don't work on any mobile platforms, so don't
-        // event show the banners. This prevents trying to access things that
-        // don't exist like `Notification.permission`.
-        !util.is_mobile() &&
+        // Only show banners on UAs that do not include the Notification API.
+        desktop_notifications.has_notification_support() &&
         // if permission has not been granted yet.
         !desktop_notifications.granted_desktop_notifications_permission() &&
         // if permission is allowed to be requested (e.g. not in "denied" state).
