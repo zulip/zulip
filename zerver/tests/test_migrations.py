@@ -22,45 +22,28 @@ from zerver.lib.test_classes import MigrationsTestCase
 #   "zerver_subscription" because it has pending trigger events
 
 
-class FixDeletedUserEmail(MigrationsTestCase):
-    migrate_from = "0804_backfill_user_created_audit_logs"
-    migrate_to = "0805_fix_deleteduser_email"
+class ReactionNotificationSettingsDefault(MigrationsTestCase):
+    migrate_from = "0806_stream_default_push_notifications"
+    migrate_to = "0807_realmuserdefault_enable_reaction_audible_notifications_and_more"
 
     @override
     def setUpBeforeMigration(self, apps: StateApps) -> None:
-        UserProfile = apps.get_model("zerver", "UserProfile")
+        # The migration only adds boolean columns with a database
+        # default, so there is nothing to set up here; the test verifies
+        # that rows predating the migration are backfilled to the enabled
+        # default.
+        pass
 
-        # Simulate a user deleted before the fix in 208c0c303405,
-        # after 0439_fix_deleteduser_email repaired delivery_email.
-        deleted_user = self.example_user("hamlet")
-        UserProfile.objects.filter(id=deleted_user.id).update(
-            is_active=False,
-            email=f"deleteduser{deleted_user.id}@https://zulip.testserver",
-            delivery_email=f"deleteduser{deleted_user.id}@zulip.testserver",
-        )
-        self.deleted_user_id = deleted_user.id
-
-        # A normal active user, as a control.
-        control_user = self.example_user("cordelia")
-        self.control_user_id = control_user.id
-        self.control_user_email = control_user.email
-
-        # A deactivated user with a valid email, as a control for the
-        # is_active=False part of the migration's filter.
-        deactivated_user = self.example_user("othello")
-        UserProfile.objects.filter(id=deactivated_user.id).update(is_active=False)
-        self.deactivated_user_id = deactivated_user.id
-        self.deactivated_user_email = deactivated_user.email
-
-    def test_deleted_user_email_fixed(self) -> None:
+    def test_reaction_notification_settings_default_to_true(self) -> None:
         UserProfile = self.apps.get_model("zerver", "UserProfile")
+        RealmUserDefault = self.apps.get_model("zerver", "RealmUserDefault")
 
-        deleted_user = UserProfile.objects.get(id=self.deleted_user_id)
-        self.assertEqual(deleted_user.email, f"deleteduser{deleted_user.id}@zulip.testserver")
-        self.assertEqual(deleted_user.email, deleted_user.delivery_email)
+        self.assertGreater(UserProfile.objects.count(), 0)
+        for user in UserProfile.objects.all().iterator():
+            self.assertTrue(user.enable_reaction_desktop_notifications)
+            self.assertTrue(user.enable_reaction_audible_notifications)
 
-        control_user = UserProfile.objects.get(id=self.control_user_id)
-        self.assertEqual(control_user.email, self.control_user_email)
-
-        deactivated_user = UserProfile.objects.get(id=self.deactivated_user_id)
-        self.assertEqual(deactivated_user.email, self.deactivated_user_email)
+        self.assertGreater(RealmUserDefault.objects.count(), 0)
+        for realm_default in RealmUserDefault.objects.all().iterator():
+            self.assertTrue(realm_default.enable_reaction_desktop_notifications)
+            self.assertTrue(realm_default.enable_reaction_audible_notifications)
