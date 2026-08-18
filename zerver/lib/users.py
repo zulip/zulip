@@ -1164,6 +1164,10 @@ def get_active_bots_owned_by_user(user_profile: UserProfile) -> QuerySet[UserPro
     return UserProfile.objects.filter(is_bot=True, is_active=True, bot_owner=user_profile)
 
 
+def get_bots_owned_by_user(user_profile: UserProfile) -> QuerySet[UserProfile]:
+    return UserProfile.objects.filter(is_bot=True, bot_owner=user_profile)
+
+
 def is_2fa_verified(user: UserProfile) -> bool:
     """
     It is generally unsafe to call is_verified directly on `request.user` since

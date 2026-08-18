@@ -40,7 +40,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.users import active_user_ids
+from zerver.models.users import active_user_ids, compute_is_provisional_member
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -48,6 +48,21 @@ class MemberGroupUserDict(TypedDict):
     id: int
     role: int
     date_joined: datetime
+    is_bot: bool
+    bot_owner__role: int | None
+    bot_owner__date_joined: datetime | None
+
+
+# The bot_owner fields let us pin a member-role bot's full-member status to
+# its owner; see compute_is_provisional_member.
+MEMBER_GROUP_USER_FIELDS = (
+    "id",
+    "role",
+    "date_joined",
+    "is_bot",
+    "bot_owner__role",
+    "bot_owner__date_joined",
+)
 
 
 @transaction.atomic(savepoint=False)
@@ -124,27 +139,33 @@ def update_users_in_full_members_system_group(
     if affected_user_ids:
         full_member_group_users = list(
             full_members_system_group.direct_members.filter(id__in=affected_user_ids).values(
-                "id", "role", "date_joined"
+                *MEMBER_GROUP_USER_FIELDS
             )
         )
         member_group_users = list(
             members_system_group.direct_members.filter(id__in=affected_user_ids).values(
-                "id", "role", "date_joined"
+                *MEMBER_GROUP_USER_FIELDS
             )
         )
     else:
         full_member_group_users = list(
-            full_members_system_group.direct_members.all().values("id", "role", "date_joined")
+            full_members_system_group.direct_members.all().values(*MEMBER_GROUP_USER_FIELDS)
         )
         member_group_users = list(
-            members_system_group.direct_members.all().values("id", "role", "date_joined")
+            members_system_group.direct_members.all().values(*MEMBER_GROUP_USER_FIELDS)
         )
 
     def is_provisional_member(user: MemberGroupUserDict) -> bool:
-        diff = (timezone_now() - user["date_joined"]).days
-        if diff < realm.waiting_period_threshold:
-            return True
-        return False
+        if (
+            user["is_bot"]
+            and user["role"] == UserProfile.ROLE_MEMBER
+            and user["bot_owner__role"] is not None
+        ):
+            assert user["bot_owner__date_joined"] is not None
+            return compute_is_provisional_member(
+                realm, user["bot_owner__role"], user["bot_owner__date_joined"]
+            )
+        return compute_is_provisional_member(realm, user["role"], user["date_joined"])
 
     old_full_members = [
         user

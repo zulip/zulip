@@ -24,6 +24,7 @@ from zerver.models import (
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.streams import StreamTopicsPolicyEnum
+from zerver.models.users import user_is_provisional_member
 
 
 def bulk_create_users(
@@ -124,7 +125,7 @@ def bulk_create_users(
         group_memberships_to_create.append(
             UserGroupMembership(user_profile=user_profile, user_group=members_system_group)
         )
-        if not user_profile.is_provisional_member:
+        if not user_is_provisional_member(user_profile):
             group_memberships_to_create.append(
                 UserGroupMembership(user_profile=user_profile, user_group=full_members_system_group)
             )
