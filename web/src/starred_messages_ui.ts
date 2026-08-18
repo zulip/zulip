@@ -7,7 +7,6 @@ import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts
 import * as message_flags from "./message_flags.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as message_store from "./message_store.ts";
-import type {Message} from "./message_store.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as starred_messages from "./starred_messages.ts";
 import * as sub_store from "./sub_store.ts";
@@ -15,7 +14,11 @@ import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
 
-export function toggle_starred_and_update_server(message: Message): void {
+export function toggle_starred_and_update_server(message_id: number): void {
+    const message = message_store.get_mutable_message(message_id);
+    if (message === undefined) {
+        return;
+    }
     if (message.locally_echoed) {
         // This is defensive code for when you hit the "*" key
         // before we get a server ack.  It's rare that somebody
@@ -46,7 +49,7 @@ export function toggle_starred_and_update_server(message: Message): void {
 // This updates the state of the starred flag in local data
 // structures, and triggers a UI rerender.
 export function update_starred_flag(message_id: number, updated_starred_flag: boolean): void {
-    const message = message_store.get(message_id);
+    const message = message_store.get_mutable_message(message_id);
     if (message === undefined) {
         // If we don't have the message locally, do nothing; if later
         // we fetch it, it'll come with the correct `starred` state.
