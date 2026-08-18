@@ -124,7 +124,7 @@ run_test("handle_event", () => {
         post_to_server = opts.post_to_server;
     };
 
-    message_store.get = (msg_id) => {
+    message_store.get_mutable_message = (msg_id) => {
         assert.equal(msg_id, message.id);
         return message;
     };
