@@ -1920,7 +1920,7 @@ export class Filter {
         const predicate = this.predicate();
 
         const first_id = msg_ids.find((msg_id) => {
-            const message = message_store.get(msg_id);
+            const message = message_store.get_immutable_message(msg_id);
 
             if (message === undefined) {
                 return false;
@@ -2073,7 +2073,7 @@ export class Filter {
 
         if (!message) {
             const with_message_id = this.message_id_operand("with")!;
-            message = message_store.get(with_message_id);
+            message = message_store.get_immutable_message(with_message_id);
         }
 
         if (!message) {
