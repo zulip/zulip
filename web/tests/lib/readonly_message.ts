@@ -1,8 +1,12 @@
-import {get_immutable_message, get_mutable_message} from "../../src/message_store.ts";
+import {get, get_immutable_message, get_mutable_message} from "../../src/message_store.ts";
 import type {Message, ReadonlyMessage} from "../../src/message_store.ts";
 
 export function get_returns_readonly_view(id: number): ReadonlyMessage | undefined {
     return get_immutable_message(id);
+}
+
+export function get_alias_matches_immutable(id: number): boolean {
+    return get(id) === get_immutable_message(id);
 }
 
 export function get_mutable_returns_writable(id: number): Message | undefined {
@@ -13,8 +17,8 @@ export function get_mutable_returns_writable(id: number): Message | undefined {
     return message;
 }
 
-export function cannot_assign_through_immutable_get(id: number): void {
-    const msg = get_immutable_message(id);
+export function cannot_assign_through_get(id: number): void {
+    const msg = get(id);
     if (msg === undefined) {
         return;
     }

@@ -286,8 +286,9 @@ export function get_mutable_message(message_id: number): Message | undefined {
     return stored_messages.get(message_id)?.message;
 }
 
-export function get(message_id: number): Message | undefined {
-    return stored_messages.get(message_id)?.message;
+/** Alias of get_immutable_message. */
+export function get(message_id: number): ReadonlyMessage | undefined {
+    return get_immutable_message(message_id);
 }
 
 export function set_messages_for_tests(messages: ProcessedMessage[]): void {
