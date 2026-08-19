@@ -597,6 +597,7 @@ export async function fetch_subscriptions_for_user(user_id: number): Promise<voi
             }
         }
         if (num_attempts === 5) {
+            pending_subscription_requests.delete(user_id);
             blueslip.error("Failure fetching user's subscribed channels. Giving up.", {
                 user_id,
             });
