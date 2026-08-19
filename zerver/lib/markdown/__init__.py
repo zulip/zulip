@@ -1544,6 +1544,10 @@ class ZulipNormalizeWhitespace(markdown.preprocessors.Preprocessor):
     LIST_INDENT_TAB_WIDTH = 2
     CODE_BLOCK_TAB_WIDTH = 4
 
+    # Matches fences preceded by optional leading spaces or blockquote markers,
+    # ensuring tab stops in indented/nested code blocks expand to 4 spaces.
+    PREFIXED_FENCE_RE = re.compile(r"^[ ]*(?:>[ ]*)*(?P<fence>(?:~{3,}|`{3,}))")
+
     @override
     def run(self, lines: list[str]) -> list[str]:
         source = "\n".join(lines)
@@ -1555,7 +1559,7 @@ class ZulipNormalizeWhitespace(markdown.preprocessors.Preprocessor):
         current_fence: str | None = None
         processed_lines: list[str] = []
         for line in source.split("\n"):
-            m = FENCE_RE.match(line)
+            m = FENCE_RE.match(line) or self.PREFIXED_FENCE_RE.match(line)
             if m:
                 fence = m.group("fence")
                 if current_fence is None:
