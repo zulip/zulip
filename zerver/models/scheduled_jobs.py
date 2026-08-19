@@ -126,6 +126,7 @@ class APIScheduledStreamMessageDict(TypedDict):
     topic: str
     scheduled_delivery_timestamp: int
     failed: bool
+    split_group_id: str | None
 
 
 class APIScheduledDirectMessageDict(TypedDict):
@@ -136,6 +137,7 @@ class APIScheduledDirectMessageDict(TypedDict):
     rendered_content: str
     scheduled_delivery_timestamp: int
     failed: bool
+    split_group_id: str | None
 
 
 class APIReminderDirectMessageDict(TypedDict):
@@ -172,6 +174,8 @@ class ScheduledMessage(models.Model):
     # moment arrived.
     failed = models.BooleanField(default=False)
     failure_message = models.TextField(null=True)
+
+    split_group_id = models.CharField(max_length=36, null=True, db_index=True)
 
     SEND_LATER = 1
     REMIND = 2
@@ -243,6 +247,7 @@ class ScheduledMessage(models.Model):
                 rendered_content=self.rendered_content,
                 scheduled_delivery_timestamp=datetime_to_timestamp(self.scheduled_timestamp),
                 failed=self.failed,
+                split_group_id=self.split_group_id,
             )
 
         # The recipient for stream messages should always just be the unique stream ID.
@@ -257,6 +262,7 @@ class ScheduledMessage(models.Model):
             topic=self.topic_name(),
             scheduled_delivery_timestamp=datetime_to_timestamp(self.scheduled_timestamp),
             failed=self.failed,
+            split_group_id=self.split_group_id,
         )
 
     def to_reminder_dict(self) -> APIReminderDirectMessageDict:
