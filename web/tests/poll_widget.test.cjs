@@ -5,12 +5,27 @@ const assert = require("node:assert/strict");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {noop, run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const {$} = require("./lib/zjquery.cjs");
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
+});
+
+// poll_widget.ts runs question/option text through the Markdown
+// pipeline, but that pipeline (and DOM post-processing for rendered
+// mentions) is exercised by markdown.test.cjs and
+// rendered_markdown.test.cjs; here we only care that poll_widget
+// calls into it correctly, so we stub both with the identity
+// transform by default. Individual tests can override these to
+// verify poll_widget wires the Markdown-rendered HTML into the DOM.
+const markdown = mock_esm("../src/markdown", {
+    parse_non_message: (raw_content) => raw_content,
+    maybe_unwrap_single_paragraph: (html) => html,
+});
+const rendered_markdown = mock_esm("../src/rendered_markdown", {
+    update_elements: noop,
 });
 
 const {PollData} = zrequire("poll_data");
@@ -282,7 +297,7 @@ run_test("activate another person poll", ({mock_template}) => {
 
     assert.equal($widget_elem.html(), "widgets/poll_widget");
     assert.equal($widget_option_container.html(), "widgets/poll_widget_results");
-    assert.equal($poll_question_header.text(), "What do you want?");
+    assert.equal($poll_question_header.html(), "What do you want?");
 
     {
         /* Testing data sent to server on adding option */
@@ -407,7 +422,7 @@ run_test("activate own poll", ({mock_template}) => {
 
     assert.equal($widget_elem.html(), "widgets/poll_widget");
     assert.equal($widget_option_container.html(), "widgets/poll_widget_results");
-    assert.equal($poll_question_header.text(), "Where to go?");
+    assert.equal($poll_question_header.html(), "Where to go?");
 
     {
         /* Testing data sent to server on editing question */
@@ -424,4 +439,78 @@ run_test("activate own poll", ({mock_template}) => {
         $poll_question_submit.trigger("click");
         assert.deepEqual(out_data, undefined);
     }
+});
+
+run_test("poll question and option text run through markdown", ({override, mock_template}) => {
+    mock_template("widgets/poll_widget.hbs", false, () => "widgets/poll_widget");
+    // Render the real results template so we can verify poll_widget
+    // passes it Markdown-rendered (unescaped) option HTML.
+    mock_template("widgets/poll_widget_results.hbs", true, (_data, html) => html);
+
+    // Fake mention rendering, so we can verify without depending on
+    // the real Markdown pipeline (covered by markdown.test.cjs).
+    override(markdown, "parse_non_message", (raw_content) =>
+        raw_content.replace(
+            /@\*\*(.+?)\*\*/,
+            '<span class="user-mention" data-user-id="100">@$1</span>',
+        ),
+    );
+    let update_elements_calls = 0;
+    override(rendered_markdown, "update_elements", () => {
+        update_elements_calls += 1;
+    });
+
+    const $widget_elem = $("<div>").addClass("widget-content");
+    const activate_opts = {
+        message: {
+            sender_id: alice.user_id,
+        },
+        any_data: {
+            widget_type: "poll",
+            extra_data: {
+                question: "cc @**Alice Lee**",
+                options: ["ping @**Alice Lee**"],
+            },
+        },
+    };
+
+    const set_widget_find_result = (selector) => {
+        const $elem = $.create(selector);
+        $widget_elem.set_find_results(selector, $elem);
+        return $elem;
+    };
+
+    set_widget_find_result("button.poll-option");
+    set_widget_find_result("input.poll-option");
+    const $widget_option_container = set_widget_find_result("ul.poll-widget");
+
+    set_widget_find_result("button.poll-question-check");
+    set_widget_find_result(".poll-edit-question");
+    const $poll_question_header = set_widget_find_result(".poll-question-header");
+    set_widget_find_result(".poll-question-bar");
+    set_widget_find_result(".poll-option-bar");
+    set_widget_find_result("button.poll-vote");
+    set_widget_find_result(".poll-please-wait");
+    set_widget_find_result("button.poll-question-remove");
+    set_widget_find_result("input.poll-question");
+
+    const {widget_data} = poll_widget.activate(activate_opts);
+    poll_widget.render({
+        $elem: $widget_elem,
+        callback: noop,
+        message: {sender_id: alice.user_id},
+        widget_data,
+        rerender: false,
+    });
+
+    assert.equal(
+        $poll_question_header.html(),
+        'cc <span class="user-mention" data-user-id="100">@Alice Lee</span>',
+    );
+    assert.match(
+        $widget_option_container.html(),
+        /<span class="poll-option-text">ping <span class="user-mention" data-user-id="100">@Alice Lee<\/span><\/span>/,
+    );
+    // Called once for the question and once for the options list.
+    assert.equal(update_elements_calls, 2);
 });

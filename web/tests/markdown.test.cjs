@@ -1054,6 +1054,25 @@ test("parse_non_message", () => {
     assert.equal(markdown.parse_non_message("type `/day`"), "<p>type <code>/day</code></p>");
 });
 
+test("maybe_unwrap_single_paragraph", () => {
+    assert.equal(markdown.maybe_unwrap_single_paragraph("<p>hello</p>"), "hello");
+    assert.equal(
+        markdown.maybe_unwrap_single_paragraph("  <p>hello</p>  "),
+        "hello",
+        "surrounding whitespace should be trimmed before checking for a wrapping <p> tag",
+    );
+    assert.equal(
+        markdown.maybe_unwrap_single_paragraph("<p>hello</p>\n<p>world</p>"),
+        "<p>hello</p>\n<p>world</p>",
+        "multiple paragraphs should be left untouched",
+    );
+    assert.equal(
+        markdown.maybe_unwrap_single_paragraph("hello"),
+        "hello",
+        "content with no wrapping <p> tag should be left untouched",
+    );
+});
+
 test("missing unicode emojis", ({override}) => {
     let message = {raw_content: "\u{1F6B2}"};
 

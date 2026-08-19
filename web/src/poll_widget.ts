@@ -8,10 +8,12 @@ import render_widgets_poll_widget_results from "../templates/widgets/poll_widget
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as markdown from "./markdown.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import type {PollWidgetOutboundData} from "./poll_data.ts";
 import {PollData, new_option_schema, question_schema, vote_schema} from "./poll_data.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
 import {ZulipWidgetContext} from "./widget_context.ts";
 import type {Event} from "./widget_data.ts";
 import type {AnyWidgetData, WidgetData} from "./widget_schema.ts";
@@ -105,6 +107,21 @@ export function render({
         $elem.find("button.poll-question-check").toggle(has_question);
     }
 
+    // Poll questions and options are plain text typed by users, but we
+    // still want to render mentions, emoji, and other inline Markdown
+    // in them the same way we would in a normal message.
+    function render_poll_content($content: JQuery, raw_content: string): void {
+        if (raw_content.trim() === "") {
+            $content.text("");
+            return;
+        }
+        const html = markdown.maybe_unwrap_single_paragraph(
+            markdown.parse_non_message(raw_content),
+        );
+        $content.html(html);
+        rendered_markdown.update_elements($content);
+    }
+
     function render_question(): void {
         const question = poll_data.get_question();
         const input_mode = poll_data.get_input_mode();
@@ -113,7 +130,7 @@ export function render({
         const waiting = !is_my_poll && !has_question;
 
         $elem.find(".poll-question-header").toggle(!input_mode);
-        $elem.find(".poll-question-header").text(question);
+        render_poll_content($elem.find(".poll-question-header"), question);
         $elem.find(".poll-edit-question").toggle(can_edit);
         update_edit_controls();
 
@@ -266,9 +283,20 @@ export function render({
 
     function render_results(): void {
         const widget_data = poll_data.get_widget_data();
+        const rendered_widget_data = {
+            ...widget_data,
+            options: widget_data.options.map((option_data) => ({
+                ...option_data,
+                option_html: markdown.maybe_unwrap_single_paragraph(
+                    markdown.parse_non_message(option_data.option),
+                ),
+            })),
+        };
 
-        const html = render_widgets_poll_widget_results(widget_data);
-        $elem.find("ul.poll-widget").html(html);
+        const html = render_widgets_poll_widget_results(rendered_widget_data);
+        const $poll_options = $elem.find("ul.poll-widget");
+        $poll_options.html(html);
+        rendered_markdown.update_elements($poll_options);
 
         $elem
             .find("button.poll-vote")

@@ -864,3 +864,18 @@ export function parse_non_message(raw_content: string): string {
     // handle things like mentions, stream links, and linkifiers.
     return parse({raw_content, helper_config: web_app_helpers}).content;
 }
+
+export function maybe_unwrap_single_paragraph(html: string): string {
+    // Markdown wraps single-line content in a <p> tag, which isn't
+    // valid when the caller wants to inline the result inside
+    // another element (e.g. a heading or a <span>). We only unwrap
+    // when there's a single paragraph; multi-paragraph content is
+    // left untouched, since stripping only the outer tags would
+    // leave behind an unpaired inner </p>...<p>.
+    const trimmed = html.trim();
+    const inner = trimmed.slice("<p>".length, -"</p>".length);
+    if (trimmed.startsWith("<p>") && trimmed.endsWith("</p>") && !inner.includes("<p>")) {
+        return inner;
+    }
+    return html;
+}
