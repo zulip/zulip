@@ -219,6 +219,7 @@ export default defineConfig(
             "unicorn/prefer-ternary": "off",
             "unicorn/prefer-top-level-await": "off",
             "unicorn/prevent-abbreviations": "off",
+            "unicorn/single-line-block-comment-style": "off",
             "unicorn/switch-case-braces": "off",
             "valid-typeof": ["error", {requireStringLiterals: true}],
             yoda: "error",

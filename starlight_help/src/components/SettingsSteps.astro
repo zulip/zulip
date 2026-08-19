@@ -163,46 +163,40 @@ const {setting_type, setting_name, setting_link} = setting_link_mapping[setting_
 ---
 
 <ol>
-    {
-        SHOW_RELATIVE_LINKS ? (
-            // The "Bots" label appears in both Personal and
-            // Organization settings in the user interface, so we need special
-            // text for this setting.
-            // As for the the case of "Users", it refers to the Users tab in
-            // organization settings. Since the users tab has multiple sub tabs
-            // like active, deactivated etc., we need a way to point to them.
-            setting_name === "Bots" || setting_name === "Users" ? (
-                <li>
-                    Navigate to the <a href={setting_link}>{setting_name}</a> tab of the{" "}
-                    <b>{setting_type}</b> menu.
-                </li>
-            ) : (
-                <li>
-                    Go to <a href={setting_link}>{setting_name}</a>.
-                </li>
-            )
+    {SHOW_RELATIVE_LINKS ? (
+        // The "Bots" label appears in both Personal and
+        // Organization settings in the user interface, so we need special
+        // text for this setting.
+        // As for the the case of "Users", it refers to the Users tab in
+        // organization settings. Since the users tab has multiple sub tabs
+        // like active, deactivated etc., we need a way to point to them.
+        setting_name === "Bots" || setting_name === "Users" ? (
+            <li>
+                Navigate to the <a href={setting_link}>{setting_name}</a> tab of the{" "}
+                <b>{setting_type}</b> menu.
+            </li>
         ) : (
-            <>
-                <li>
-                    Click on the <b>gear</b> (<GearIcon />) icon in the upper right corner of the
-                    web or desktop app.
-                </li>
-                <li>
-                    Select{" "}
-                    <b>
-                        {setting_type === ORGANIZATION_SETTINGS_TYPE ? (
-                            <BuildingIcon />
-                        ) : (
-                            <ToolIcon />
-                        )}{" "}
-                        {setting_type}
-                    </b>
-                    .
-                </li>
-                <li>
-                    On the left, click <b>{setting_name}</b>.
-                </li>
-            </>
+            <li>
+                Go to <a href={setting_link}>{setting_name}</a>.
+            </li>
         )
-    }
+    ) : (
+        <>
+            <li>
+                Click on the <b>gear</b> (<GearIcon />) icon in the upper right corner of the web or
+                desktop app.
+            </li>
+            <li>
+                Select{" "}
+                <b>
+                    {setting_type === ORGANIZATION_SETTINGS_TYPE ? <BuildingIcon /> : <ToolIcon />}{" "}
+                    {setting_type}
+                </b>
+                .
+            </li>
+            <li>
+                On the left, click <b>{setting_name}</b>.
+            </li>
+        </>
+    )}
 </ol>

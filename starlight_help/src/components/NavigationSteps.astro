@@ -10,10 +10,8 @@ if (navigation_link_type !== "settings" && navigation_link_type !== "relative") 
 }
 ---
 
-{
-    navigation_link_type === "settings" ? (
-        <SettingsSteps setting_key={parts[0]} />
-    ) : (
-        <RelativeSteps link_type={parts[0]} key={parts[1]} />
-    )
-}
+{navigation_link_type === "settings" ? (
+    <SettingsSteps setting_key={parts[0]} />
+) : (
+    <RelativeSteps link_type={parts[0]} key={parts[1]} />
+)}

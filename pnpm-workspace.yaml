@@ -2,8 +2,6 @@ packages:
   - starlight_help
 
 minimumReleaseAge: 1440
-minimumReleaseAgeExclude:
-  - bonjour-service@1.4.4
 
 overrides:
   "@types/eslint": npm:eslint@^9.10.0
@@ -18,7 +16,6 @@ packageExtensions:
 
 patchedDependencies:
   autosize: patches/autosize.patch
-  babel-plugin-formatjs: patches/babel-plugin-formatjs.patch # https://github.com/formatjs/formatjs/issues/6928
   email-addresses: patches/email-addresses.patch # https://github.com/jackbearheart/email-addresses/pull/81
   eslint-plugin-import-x: patches/eslint-plugin-import-x.patch # https://github.com/un-ts/eslint-plugin-import-x/pull/492
   handlebars: patches/handlebars.patch # https://github.com/handlebars-lang/handlebars.js/pull/2053
