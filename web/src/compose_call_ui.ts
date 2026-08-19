@@ -131,9 +131,9 @@ export function generate_and_insert_audio_or_video_call_link(
         };
 
         if (
+            (current_user.has_webex_token && oauth_call_provider === "webex") ||
             ((current_user.has_zoom_token || provider_is_zoom_server_to_server) &&
-                oauth_call_provider === "zoom") ||
-            (current_user.has_webex_token && oauth_call_provider === "webex")
+                oauth_call_provider === "zoom")
         ) {
             make_oauth_call();
         } else {
