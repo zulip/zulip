@@ -4630,9 +4630,10 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to the user who requested a
+                                Event sent to organization administrators when the
+                                status of a public or standard
                                 [data export](/help/export-your-organization)
-                                when the status of the data export changes.
+                                in the organization changes.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
