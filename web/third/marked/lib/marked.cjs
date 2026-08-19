@@ -718,6 +718,7 @@ InlineLexer.prototype.output = function(src) {
 
     // link
     if (cap = this.rules.link.exec(src)) {
+      cap = this.balanceLinkParens(src, cap);
       src = src.substring(cap[0].length);
       this.inLink = true;
       out += this.outputLink(cap, {
@@ -866,6 +867,48 @@ InlineLexer.prototype.output = function(src) {
 /**
  * Compile Link
  */
+
+
+// An optional quoted title, then the ")" that closes the link:
+//   )            or            "some title")
+var linkEnding = /^(?:\s+['"]([\s\S]*?)['"])?\s*\)/;
+
+// The link regex stops the href at the first ")". That is wrong when
+// the URL itself contains parentheses, like http://a/b(c)d: the href
+// is cut at "c" and "d)" is left over as text.
+//
+// `cap` is the regex's match:
+//   cap[0]  the text the regex matched, from "[" to ")"
+//   cap[1]  the link text
+//   cap[2]  the href
+//   cap[3]  the title, or undefined
+// This returns an array with the same four entries. cap[0] now ends
+// at the ")" that really closes the link, and cap[2] holds the full
+// href. cap[1] is copied over unchanged. If the link doesn't look the
+// way we expect, `cap` is returned as is.
+InlineLexer.prototype.balanceLinkParens = function(src, cap) {
+  // Start just after "[text](", or "![text](" for images.
+  var index = (cap[0].charAt(0) === '!' ? 2 : 1) + cap[1].length + 2;
+  // Skip any whitespace before the href.
+  index += /^\s*/.exec(src.substring(index))[0].length;
+  // The href runs up to the next whitespace...
+  var href = /^\S*/.exec(src.substring(index))[0];
+  // ...or up to a ")" that has no matching "(" before it.
+  var unmatched = findClosingBracket(href, '()');
+  if (unmatched > -1) {
+    href = href.substring(0, unmatched);
+  }
+  index += href.length;
+  // If what's left isn't the end of a link, or the href is wrapped
+  // in <> (Markdown's way of allowing spaces in a URL, which the
+  // regex already handles), leave the regex's match as is.
+  var ending = linkEnding.exec(src.substring(index));
+  if (!ending || href.charAt(0) === '<') {
+    return cap;
+  }
+  index += ending[0].length;
+  return [src.substring(0, index), cap[1], href, ending[1]];
+};
 
 InlineLexer.prototype.outputLink = function(cap, link) {
   var href = escape(link.href)
@@ -1385,6 +1428,27 @@ function unescape(html) {
     }
     return unescapeReplacements[n] || '';
   });
+}
+
+// Adapted from marked v0.6.2 (https://github.com/markedjs/marked/pull/1476).
+// Unlike upstream, backslash-escaped brackets are not skipped, to
+// match the server's markdown implementation.
+function findClosingBracket(str, b) {
+  if (str.indexOf(b[1]) === -1) {
+    return -1;
+  }
+  var level = 0;
+  for (var i = 0; i < str.length; i++) {
+    if (str[i] === b[0]) {
+      level++;
+    } else if (str[i] === b[1]) {
+      level--;
+      if (level < 0) {
+        return i;
+      }
+    }
+  }
+  return -1;
 }
 
 function replace(regex, opt) {

@@ -493,6 +493,43 @@
       "expected_output": "<p><a href=\"https://github.com\">https://github.com</a></p>"
     },
     {
+      "name": "link_with_parentheses_in_url",
+      "input": "[this issue](https://github.com/zulip/zulip/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22area%3A%20markdown%20(embeds%2Fpreviews)%22)",
+      "expected_output": "<p><a href=\"https://github.com/zulip/zulip/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22area%3A%20markdown%20(embeds%2Fpreviews)%22\">this issue</a></p>"
+    },
+    {
+      "name": "link_with_nested_parentheses_in_url",
+      "input": "[foo](http://example.com/a(b(c)d)e)",
+      "expected_output": "<p><a href=\"http://example.com/a(b(c)d)e\">foo</a></p>"
+    },
+    {
+      "name": "link_with_parentheses_in_url_and_title",
+      "input": "[foo](http://example.com/a(b) \"my title\")",
+      "expected_output": "<p><a href=\"http://example.com/a(b)\" title=\"my title\">foo</a></p>"
+    },
+    {
+      "name": "link_with_parenthesis_in_title",
+      "input": "[foo](http://example.com/a \"my (title)\")",
+      "expected_output": "<p><a href=\"http://example.com/a\" title=\"my (title)\">foo</a></p>"
+    },
+    {
+      "name": "link_with_escaped_parenthesis_in_url",
+      "input": "[foo](http://example.com/a\\)b)",
+      "expected_output": "<p><a href=\"http://example.com/a\\\">foo</a>b)</p>"
+    },
+    {
+      "name": "image_with_parentheses_in_url",
+      "input": "![foo](http://example.com/a(b)c \"my title\")",
+      "expected_output": "<p>![foo](<a href=\"http://example.com/a(b)c\">http://example.com/a(b)c</a> \"my title\")</p>",
+      "marked_expected_output": "<p><img src=\"http://example.com/a(b)c\" alt=\"foo\" title=\"my title\"></p>"
+    },
+    {
+      "name": "link_with_unbalanced_parenthesis_in_url",
+      "input": "[foo](http://example.com/a(b)",
+      "expected_output": "<p>[foo](<a href=\"http://example.com/a(b)\">http://example.com/a(b)</a></p>",
+      "marked_expected_output": "<p><a href=\"http://example.com/a(b\">foo</a></p>"
+    },
+    {
       "name": "fragment_link",
       "input": "[foo](http://zulip.testserver/#narrow/channel/1-Denmark)",
       "expected_output": "<p><a href=\"#narrow/channel/1-Denmark\">foo</a></p>",
