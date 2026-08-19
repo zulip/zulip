@@ -50,9 +50,7 @@ class SemaphoreHookTests(WebhookTestCase):
 * **Branch**: rw/webhook_impl
 * **Author**: [radwo](https://github.com/radwo)
 """.strip()
-        self.check_webhook(
-            "push", expected_topic_name, expected_message, content_type="application/json"
-        )
+        self.check_webhook("push", expected_topic_name, expected_message)
 
     def test_semaphore2_push_non_gh_repo(self) -> None:
         expected_topic_name = "notifications/rw/webhook_impl"  # repo/branch
@@ -63,9 +61,7 @@ class SemaphoreHookTests(WebhookTestCase):
 * **Author**: radwo
 """.strip()
         with patch("zerver.webhooks.semaphore.view.is_github_repo", return_value=False):
-            self.check_webhook(
-                "push", expected_topic_name, expected_message, content_type="application/json"
-            )
+            self.check_webhook("push", expected_topic_name, expected_message)
 
     def test_semaphore_pull_request(self) -> None:
         expected_topic_name = "notifications/test-notifications"
@@ -75,9 +71,7 @@ class SemaphoreHookTests(WebhookTestCase):
 * **Branch**: test-notifications
 * **Author**: [radwo](https://github.com/radwo)
 """.strip()
-        self.check_webhook(
-            "pull_request", expected_topic_name, expected_message, content_type="application/json"
-        )
+        self.check_webhook("pull_request", expected_topic_name, expected_message)
 
     def test_semaphore_pull_request_non_gh_repo(self) -> None:
         expected_topic_name = "notifications/test-notifications"
@@ -88,12 +82,7 @@ class SemaphoreHookTests(WebhookTestCase):
 * **Author**: radwo
 """.strip()
         with patch("zerver.webhooks.semaphore.view.is_github_repo", return_value=False):
-            self.check_webhook(
-                "pull_request",
-                expected_topic_name,
-                expected_message,
-                content_type="application/json",
-            )
+            self.check_webhook("pull_request", expected_topic_name, expected_message)
 
     def test_semaphore_tag(self) -> None:
         expected_topic_name = "notifications"
@@ -102,9 +91,7 @@ class SemaphoreHookTests(WebhookTestCase):
 * **Tag**: [v1.0.1](https://github.com/renderedtext/notifications/tree/v1.0.1)
 * **Author**: [radwo](https://github.com/radwo)
 """.strip()
-        self.check_webhook(
-            "tag", expected_topic_name, expected_message, content_type="application/json"
-        )
+        self.check_webhook("tag", expected_topic_name, expected_message)
 
     def test_semaphore_tag_non_gh_repo(self) -> None:
         expected_topic_name = "notifications"
@@ -114,9 +101,7 @@ class SemaphoreHookTests(WebhookTestCase):
 * **Author**: radwo
 """.strip()
         with patch("zerver.webhooks.semaphore.view.is_github_repo", return_value=False):
-            self.check_webhook(
-                "tag", expected_topic_name, expected_message, content_type="application/json"
-            )
+            self.check_webhook("tag", expected_topic_name, expected_message)
 
     def test_semaphore_unknown(self) -> None:
         expected_topic_name = "knighthood/master"
@@ -136,9 +121,7 @@ class SemaphoreHookTests(WebhookTestCase):
         with patch(
             "zerver.webhooks.semaphore.tests.SemaphoreHookTests.get_body", self.get_unknown_event
         ):
-            self.check_webhook(
-                "tag", expected_topic_name, expected_message, content_type="application/json"
-            )
+            self.check_webhook("tag", expected_topic_name, expected_message)
 
     def get_unknown_event(self, fixture_name: str) -> str:
         """Return modified payload with revision.reference_type changed"""
