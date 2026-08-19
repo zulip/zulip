@@ -1029,7 +1029,7 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
 
 def get_accessible_user_ids(
     realm: Realm, user_profile: UserProfile, include_deactivated_users: bool = False
-) -> list[int]:
+) -> set[int]:
     subscribers_dict_of_target_user_subscriptions = get_subscribers_of_target_user_subscriptions(
         [user_profile], include_deactivated_users_for_dm_groups=include_deactivated_users
     )
@@ -1045,7 +1045,7 @@ def get_accessible_user_ids(
         | users_involved_in_dms_dict[user_profile.id]
     )
 
-    return list(accessible_user_ids)
+    return accessible_user_ids
 
 
 def get_user_dicts_in_realm(
