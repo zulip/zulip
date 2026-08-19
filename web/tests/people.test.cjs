@@ -1674,7 +1674,7 @@ run_test("reset MockDate", () => {
     clock.reset();
 });
 
-run_test("fetch_users retry", async ({override, override_rewire}) => {
+run_test("user fetch retries a failed request", async ({override, override_rewire}) => {
     initialize();
     people.add_valid_user_id(1);
     let retry_count = 1;
@@ -1724,7 +1724,7 @@ run_test("fetch_users retry", async ({override, override_rewire}) => {
     await people.fetch_users_from_ids_internal([1]);
 });
 
-run_test("fetch_users", async ({override}) => {
+run_test("user fetch during initialize", async ({override}) => {
     initialize();
     people.init();
 
@@ -1835,29 +1835,163 @@ run_test("fetch_users", async ({override}) => {
     assert.equal(people.get_by_email("alice@example.com").user_id, 16);
     assert.equal(people.get_by_email("retiree@example.com").user_id, 15);
 
-    override(channel, "get", ({url, _data, _success, error}) => {
-        assert.equal(url, "/json/users");
-        // Return error response.
-        error({responseJSON: {msg: "test error"}});
-    });
-
-    await assert.rejects(
-        async () => {
-            await people.fetch_users(new Set([15, 16]));
-        },
-        (err) => {
-            // Check that the error is an instance of Error and has the correct message
-            assert.ok(err instanceof Error);
-            assert.equal(err.message, "test error");
-            return true;
-        },
-    );
-
     blueslip.expect("error", "Ignored invalid user_ids: 1, 2");
-    await people.fetch_users(new Set([1, 2]));
+    assert.deepEqual(await people.get_or_fetch_users_from_ids([1, 2]), []);
+    assert.equal(user_GET_request_calls, 1);
 });
 
-run_test("fetch_users corner case", async ({override, override_rewire}) => {
+function make_fetched_user(user_id) {
+    return {
+        email: `user${user_id}@example.com`,
+        user_id,
+        full_name: `User ${user_id}`,
+        delivery_email: "",
+        date_joined: "",
+        is_active: true,
+        is_owner: false,
+        is_admin: false,
+        is_guest: false,
+        role: Role.MEMBER,
+        avatar_url: "",
+        avatar_version: 1,
+        is_bot: false,
+        is_imported_stub: false,
+    };
+}
+
+function make_params_for_users_missing_from_register(my_user_id, missing_user_ids) {
+    return {
+        people_params: {
+            realm_users: [
+                {
+                    email: "my_email@example.com",
+                    user_id: my_user_id,
+                    full_name: "Me Myself",
+                },
+            ],
+            realm_non_active_users: [],
+            cross_realm_bots: [],
+        },
+        user_group_params: {
+            realm_user_groups: [
+                make_user_group({
+                    is_system_group: true,
+                    members: [my_user_id, ...missing_user_ids],
+                }),
+            ],
+        },
+    };
+}
+
+run_test("user fetch batches a large request", async ({override}) => {
+    initialize();
+    people.init();
+
+    const my_user_id = 42;
+    const user_ids_to_fetch = Array.from({length: 1200}, (_unused, index) => 1000 + index);
+    const {people_params, user_group_params} = make_params_for_users_missing_from_register(
+        my_user_id,
+        user_ids_to_fetch,
+    );
+
+    const requested_batches = [];
+    override(channel, "get", ({url, data, success}) => {
+        assert.equal(url, "/json/users");
+        const batch = JSON.parse(data.user_ids);
+        // Users from the earlier batches are already known by the time we
+        // request this one, rather than only once every batch has arrived.
+        assert.ok(requested_batches.flat().every((user_id) => people.is_known_user_id(user_id)));
+        requested_batches.push(batch);
+        success({
+            members: batch.map((user_id) => make_fetched_user(user_id)),
+            result: "success",
+            msg: "",
+        });
+    });
+
+    await people.initialize(my_user_id, people_params, user_group_params);
+
+    assert.deepEqual(
+        requested_batches.map((batch) => batch.length),
+        [500, 500, 200],
+    );
+    assert.deepEqual(
+        requested_batches.flat().toSorted((a, b) => a - b),
+        user_ids_to_fetch,
+    );
+
+    for (const user_id of user_ids_to_fetch) {
+        assert.equal(people.get_by_user_id(user_id).full_name, `User ${user_id}`);
+    }
+});
+
+run_test("user fetch resumes after a failed batch", async ({override, override_rewire}) => {
+    // Inaccessible users make a batch succeed while returning no members,
+    // which is what requires tracking progress by the IDs we sent.
+    initialize();
+    people.init();
+    override(settings_data, "user_can_access_all_other_users", () => false);
+
+    const my_user_id = 42;
+    const inaccessible_user_ids = Array.from({length: 1200}, (_unused, index) => 1000 + index);
+    const {people_params, user_group_params} = make_params_for_users_missing_from_register(
+        my_user_id,
+        inaccessible_user_ids,
+    );
+
+    const response_with_no_accessible_users = {members: [], result: "success", msg: ""};
+    const requested_batches = [];
+    // Requests 2 and 4 are the first attempts at the second and third
+    // batches, so a success falls between the two failures.
+    const failing_request_numbers = new Set([2, 4]);
+    override(channel, "get", ({url, data, success, error}) => {
+        assert.equal(url, "/json/users");
+        requested_batches.push(JSON.parse(data.user_ids));
+
+        if (failing_request_numbers.has(requested_batches.length)) {
+            error({responseJSON: {msg: "test error"}});
+            return;
+        }
+
+        success(response_with_no_accessible_users);
+    });
+
+    const backoff_attempt_counts = [];
+    override_rewire(retry_backoff, "get_retry_backoff_seconds", (_xhr, attempts) => {
+        backoff_attempt_counts.push(attempts);
+        return 0;
+    });
+    blueslip.expect(
+        "warn",
+        "Fetch for users failed, retrying after 0 seconds. Error: test error",
+        2,
+    );
+
+    await people.initialize(my_user_id, people_params, user_group_params);
+
+    // Only the failed batches are requested twice; the rest are not refetched.
+    assert.deepEqual(
+        requested_batches.map((batch) => batch.length),
+        [500, 500, 500, 200, 200],
+    );
+    assert.deepEqual(requested_batches[1], requested_batches[2]);
+    assert.deepEqual(requested_batches[3], requested_batches[4]);
+
+    const request_count_by_user_id = new Map();
+    for (const user_id of requested_batches.flat()) {
+        request_count_by_user_id.set(user_id, (request_count_by_user_id.get(user_id) ?? 0) + 1);
+    }
+    assert.ok(requested_batches[0].every((user_id) => request_count_by_user_id.get(user_id) === 1));
+
+    // The counter restarts at 1 because a batch succeeded between the failures.
+    assert.deepEqual(backoff_attempt_counts, [1, 1]);
+
+    for (const user_id of inaccessible_user_ids) {
+        assert.ok(people.get_by_user_id(user_id).is_inaccessible_user);
+    }
+});
+
+run_test("user fetch corner case", async ({override, override_rewire}) => {
     // We test here for the following sequence of fetches:
     // 1st request for [1, 2].
     // 2nd request for [1, 2, 3] while the first one is in-flight.
