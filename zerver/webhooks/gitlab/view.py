@@ -536,6 +536,8 @@ def get_deployment_event_body(payload: WildValue, include_title: bool, realm: Re
         "blocked": f"The {deployment_text} is blocked and awaiting manual action.",
     }
 
+    if deployment_status not in deployment_event_body_map:
+        raise UnsupportedWebhookEventTypeError(f"Deployment Hook {deployment_status}")
     return deployment_event_body_map[deployment_status]
 
 
