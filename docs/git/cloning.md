@@ -113,6 +113,10 @@ configure for your own fork of Zulip. After doing so, GitHub Actions
 will run tests for new refs you push to GitHub and email you the outcome
 (you can also view the results in the web interface).
 
+You can [manually run GitHub Actions jobs][github-manual-workflow] when
+you first push your new branch to your fork. When you create a pull
+request, GitHub Actions will run all the jobs automatically.
+
 Running CI against your fork can help save both your and the
 Zulip maintainers time by making it easy to test a change fully before
 submitting a pull request. We generally recommend a workflow where as
@@ -124,9 +128,6 @@ you create a pull request. While you wait for GitHub Actions jobs
 to run, you can start working on your next task. When the tests finish,
 you can create a pull request that you already know passes the tests.
 
-GitHub Actions will run all the jobs by default on your forked repository.
-You can check the `Actions` tab of your repository to see the builds.
-
 [gitbook-rebase]: https://git-scm.com/book/en/v2/Git-Branching-Rebasing
 [github-help-add-ssh-key]: https://help.github.com/en/articles/adding-a-new-ssh-key-to-your-github-account
 [github-help-conf-remote]: https://help.github.com/en/articles/configuring-a-remote-for-a-fork
@@ -135,6 +136,7 @@ You can check the `Actions` tab of your repository to see the builds.
 [github-zulip]: https://github.com/zulip/
 [github-zulip-zulip]: https://github.com/zulip/zulip/
 [github-actions]: https://docs.github.com/en/actions
+[github-manual-workflow]: https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow#running-a-workflow
 [zulip-rtd-dev-first-time]: ../development/setup-recommended.md
 [zulip-rtd-dev-overview]: ../development/overview.md
 [zulip-rtd-tools-setup]: zulip-tools.md#set-up-git-repo-script
