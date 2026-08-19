@@ -663,6 +663,19 @@ test("fetch_subscriptions_for_user", async () => {
     await peer_data.fetch_subscriptions_for_user(fred.user_id);
     blueslip.reset();
 
+    // After giving up, a later call should start a new fetch instead
+    // of returning the finished request's promise.
+    channel_get_calls = 0;
+    mock_channel_get(channel, (opts) => {
+        channel_get_calls += 1;
+        opts.success({
+            subscribed_channel_ids: [india.stream_id],
+        });
+    });
+    await peer_data.fetch_subscriptions_for_user(fred.user_id);
+    assert.equal(channel_get_calls, 1);
+    assert.ok(stream_data.is_user_loaded_and_subscribed(india.stream_id, fred.user_id));
+
     peer_data.clear_for_testing();
     mock_channel_get(channel, (opts) => {
         opts.error({status: 400, responseJSON: {msg: "bad request"}});
