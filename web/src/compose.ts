@@ -539,50 +539,32 @@ export function do_post_send_tasks(): void {
     reload.maybe_reset_pending_reload_timeout("compose_end");
 }
 
-// Schedules the message currently in the compose box. When splitting is
-// enabled this schedules each part as its own message, posting them
-// sequentially (each in the previous part's success callback) so that they
-// get ascending scheduled-message ids and therefore deliver in order. State
-// (recipient, timestamp, content) is captured on the first call and threaded
-// through the recursion, mirroring send_message.
-export let schedule_message_to_custom_date = (
-    message_content: string = compose_state.message_content(),
-    captured_recipient: CapturedRecipient = capture_current_recipient(),
-    scheduled_count = 0,
-    draft_id?: string,
-    scheduled_delivery_timestamp:
-        number | undefined = scheduled_messages.get_selected_send_later_timestamp(),
-    deliver_at: string | undefined = scheduled_messages.get_formatted_selected_send_later_time(),
-    scheduled_message_ids: number[] = [],
-): boolean => {
-    const is_recursive_call = scheduled_count > 0;
+export let schedule_message_to_custom_date = (): boolean => {
+    const message_content = compose_state.message_content();
+    const captured_recipient = capture_current_recipient();
+    const scheduled_delivery_timestamp = scheduled_messages.get_selected_send_later_timestamp();
+    const deliver_at = scheduled_messages.get_formatted_selected_send_later_time();
 
-    if (!is_recursive_call) {
-        const part_count = compose_split_messages.get_all_split_parts(message_content).length;
-        if (part_count > compose_split_messages.MAX_SPLIT_PARTS) {
-            compose_banner.show_error_message(
-                $t(
-                    {
-                        defaultMessage:
-                            "Cannot schedule more than {max} messages at once. Please remove some blank-line separators or split your message manually.",
-                    },
-                    {max: compose_split_messages.MAX_SPLIT_PARTS},
-                ),
-                compose_banner.CLASSNAMES.generic_compose_error,
-                $("#compose_banners"),
-            );
-            compose_ui.hide_compose_spinner();
-            return false;
-        }
+    const parts = compose_split_messages.get_all_split_parts(message_content);
+    const is_split = parts.length > 1;
+
+    if (parts.length > compose_split_messages.MAX_SPLIT_PARTS) {
+        compose_banner.show_error_message(
+            $t(
+                {
+                    defaultMessage:
+                        "Cannot schedule more than {max} messages at once. Please remove some blank-line separators or split your message manually.",
+                },
+                {max: compose_split_messages.MAX_SPLIT_PARTS},
+            ),
+            compose_banner.CLASSNAMES.generic_compose_error,
+            $("#compose_banners"),
+        );
+        compose_ui.hide_compose_spinner();
+        return false;
     }
 
-    const [content_to_send, rest_of_the_content] =
-        compose_split_messages.split_message(message_content);
-    const is_content_to_send_split = rest_of_the_content !== "";
-
-    // Silently save / update a draft so the message isn't lost if scheduling
-    // fails. Created once and reused across parts; deleted on the final part.
-    draft_id ??= drafts.update_draft({
+    const draft_id = drafts.update_draft({
         no_notify: true,
         update_count: false,
         is_sending_saving: true,
@@ -590,74 +572,41 @@ export let schedule_message_to_custom_date = (
     });
     assert(draft_id !== undefined);
 
-    if (is_recursive_call || is_content_to_send_split) {
-        drafts.set_split_send_draft({
-            draft_id,
-            content: compose_split_messages.trim_except_whitespace_before_text(message_content),
-        });
-    }
-
-    const part_delivery_timestamp =
-        scheduled_delivery_timestamp === undefined
-            ? undefined
-            : scheduled_delivery_timestamp + scheduled_count;
-
-    let scheduled_message_data;
-    if (captured_recipient.type === "private") {
-        scheduled_message_data = {
-            type: "direct",
-            to: JSON.stringify(captured_recipient.recipient_ids),
-            topic: "",
-            content: content_to_send,
-            scheduled_delivery_timestamp: part_delivery_timestamp,
-        };
-    } else {
-        scheduled_message_data = {
-            type: "stream",
-            to: JSON.stringify(captured_recipient.stream_id),
-            topic: captured_recipient.topic,
-            content: content_to_send,
-            scheduled_delivery_timestamp: part_delivery_timestamp,
-        };
-    }
+    const recipient_data =
+        captured_recipient.type === "private"
+            ? {
+                  type: "direct",
+                  to: JSON.stringify(captured_recipient.recipient_ids),
+                  topic: "",
+              }
+            : {
+                  type: "stream",
+                  to: JSON.stringify(captured_recipient.stream_id),
+                  topic: captured_recipient.topic,
+              };
+    const content_data = is_split
+        ? {split_message_contents: JSON.stringify(parts)}
+        : {content: message_content};
+    const scheduled_message_data = {
+        ...recipient_data,
+        ...content_data,
+        scheduled_delivery_timestamp,
+    };
 
     const $banner_container = $("#compose_banners");
     const success = function (data: unknown): void {
-        const {scheduled_message_id} = z.object({scheduled_message_id: z.number()}).parse(data);
-        const all_scheduled_message_ids = [...scheduled_message_ids, scheduled_message_id];
-        if (is_content_to_send_split) {
-            // This part is scheduled; rewrite the in-flight draft to only the
-            // still-unscheduled remainder, so a reload mid-schedule can't
-            // re-schedule parts that already went through.
-            assert(draft_id !== undefined);
-            const draft = drafts.draft_model.getDraft(draft_id);
-            if (draft !== false) {
-                draft.content =
-                    compose_split_messages.trim_except_whitespace_before_text(rest_of_the_content);
-                drafts.draft_model.editDraft(draft_id, draft);
-            }
-            schedule_message_to_custom_date(
-                rest_of_the_content,
-                captured_recipient,
-                scheduled_count + 1,
-                draft_id,
-                scheduled_delivery_timestamp,
-                deliver_at,
-                all_scheduled_message_ids,
-            );
-            return;
-        }
-
         drafts.draft_model.deleteDrafts([draft_id]);
-        if (scheduled_count === 0 || drafts.compose_draft_id === draft_id) {
-            clear_compose_box();
-        }
+        clear_compose_box();
         compose_banner.clear_message_sent_banners();
-        const message_count = scheduled_count + 1;
         let new_row_html;
-        if (message_count === 1) {
-            new_row_html = render_success_message_scheduled_banner({
-                scheduled_message_id,
+        if (is_split) {
+            const {scheduled_message_ids} = z
+                .object({scheduled_message_ids: z.array(z.number())})
+                .parse(data);
+            new_row_html = render_success_split_messages_scheduled_banner({
+                scheduled_message_id: scheduled_message_ids[0],
+                scheduled_message_ids: scheduled_message_ids.join(","),
+                message_count: scheduled_message_ids.length,
                 minimum_scheduled_message_delay_minutes:
                     scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60,
                 deliver_at,
@@ -665,10 +614,9 @@ export let schedule_message_to_custom_date = (
                     scheduled_messages.show_minimum_scheduled_message_delay_minutes_note,
             });
         } else {
-            new_row_html = render_success_split_messages_scheduled_banner({
-                scheduled_message_id: all_scheduled_message_ids[0],
-                scheduled_message_ids: all_scheduled_message_ids.join(","),
-                message_count,
+            const {scheduled_message_id} = z.object({scheduled_message_id: z.number()}).parse(data);
+            new_row_html = render_success_message_scheduled_banner({
+                scheduled_message_id,
                 minimum_scheduled_message_delay_minutes:
                     scheduled_messages.MINIMUM_SCHEDULED_MESSAGE_DELAY_SECONDS / 60,
                 deliver_at,
@@ -688,45 +636,11 @@ export let schedule_message_to_custom_date = (
             $banner_container,
             $("textarea#compose-textarea"),
         );
-
-        if (scheduled_count > 0 || is_content_to_send_split) {
-            // Restore only the still-unscheduled content to the compose box.
-            // Already-scheduled parts are left scheduled (no rollback), so
-            // retrying can't re-schedule them.
-            const remaining = is_content_to_send_split
-                ? content_to_send +
-                  compose_split_messages.SPLIT_DELIMITER +
-                  compose_split_messages.trim_except_whitespace_before_text(rest_of_the_content)
-                : content_to_send;
-            compose_state.message_content(remaining);
-            $("textarea#compose-textarea").prop("readonly", false).trigger("input");
-            compose_ui.autosize_textarea($("textarea#compose-textarea"));
-            drafts.update_draft({
-                no_notify: true,
-                update_count: false,
-                is_sending_saving: false,
-                force_save: true,
-            });
-        } else {
-            assert(draft_id !== undefined);
-            const draft = drafts.draft_model.getDraft(draft_id);
-            assert(draft !== false);
-            draft.is_sending_saving = false;
-            drafts.draft_model.editDraft(draft_id, draft);
-        }
-
-        if (scheduled_count > 0) {
-            compose_banner.show_partial_schedule_failure(scheduled_count);
-        }
-        drafts.set_split_send_draft(undefined);
+        const draft = drafts.draft_model.getDraft(draft_id);
+        assert(draft !== false);
+        draft.is_sending_saving = false;
+        drafts.draft_model.editDraft(draft_id, draft);
     };
-
-    if (!is_recursive_call && is_content_to_send_split) {
-        // A split schedule keeps the full content visible across several
-        // sequential round-trips; make it read-only so edits during that
-        // window aren't silently discarded by the final clear_compose_box().
-        $("textarea#compose-textarea").prop("readonly", true);
-    }
 
     channel.post({
         url: "/json/scheduled_messages",
