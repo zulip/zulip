@@ -1874,14 +1874,15 @@ async function start_fetch_for_requested_users(): Promise<void> {
 
     fetch_users_storage.promise_for_pending = undefined;
 
-    let fetched_users;
-    for (let num_attempts = 1; ; num_attempts += 1) {
+    const fetched_users: UsersFetchResponse["members"] = [];
+    const user_ids_remaining = get_valid_user_ids_to_fetch(user_ids_pending_fetch);
+    let num_failed_attempts = 0;
+    while (user_ids_remaining.size > 0) {
         try {
-            fetched_users = await fetch_users(user_ids_pending_fetch);
-            break;
+            fetched_users.push(...(await fetch_next_user_batch(user_ids_remaining)));
         } catch (error) {
-            // Retry on error.
-            const retry_delay_secs = get_retry_backoff_seconds(undefined, num_attempts);
+            num_failed_attempts += 1;
+            const retry_delay_secs = get_retry_backoff_seconds(undefined, num_failed_attempts);
 
             // Since users are in `valid_user_ids`, we expect
             // the fetch to eventually succeed, so we log a warning
@@ -2033,24 +2034,19 @@ export function get_users_that_match_role_ids(
     return users;
 }
 
-export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResponse["members"]> {
-    // Requested users outside the set of known valid user IDs likely
-    // reflect some sort of Zulip bug, so fetch and log them.
-    const invalid_user_ids = user_ids.difference(valid_user_ids);
-    if (invalid_user_ids.size > 0) {
-        blueslip.error("Ignored invalid user_ids: " + [...invalid_user_ids].join(", "));
-    }
+// nginx and the development proxy both reject a request line over 8KB,
+// which 500 IDs stay inside even at the int4 maximum user ID. Batches go
+// out one at a time, since concurrent ones would burst against the user's
+// rate limit.
+const MAX_USER_IDS_PER_FETCH = 500;
 
-    const user_ids_to_fetch = valid_user_ids.intersection(user_ids);
-    if (user_ids_to_fetch.size === 0) {
-        return [];
-    }
+async function fetch_user_batch(user_ids: number[]): Promise<UsersFetchResponse["members"]> {
     return new Promise((resolve, reject) => {
         fetch_users_from_server({
             // POST /register obtains custom profile field data if and only if
             // the current user is not a spectator. Mimic this behavior.
             include_custom_profile_fields: !page_params.is_spectator,
-            user_ids: JSON.stringify([...user_ids_to_fetch]),
+            user_ids: JSON.stringify(user_ids),
             success(users) {
                 resolve(users);
             },
@@ -2068,6 +2064,37 @@ export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResp
             },
         });
     });
+}
+
+function get_valid_user_ids_to_fetch(user_ids: Set<number>): Set<number> {
+    // Requested users outside the set of known valid user IDs likely
+    // reflect some sort of Zulip bug, so fetch and log them.
+    const invalid_user_ids = user_ids.difference(valid_user_ids);
+    if (invalid_user_ids.size > 0) {
+        blueslip.error("Ignored invalid user_ids: " + [...invalid_user_ids].join(", "));
+    }
+
+    return valid_user_ids.intersection(user_ids);
+}
+
+async function fetch_next_user_batch(
+    user_ids_remaining: Set<number>,
+): Promise<UsersFetchResponse["members"]> {
+    const batch = [...user_ids_remaining].slice(0, MAX_USER_IDS_PER_FETCH);
+    const fetched_users = await fetch_user_batch(batch);
+    for (const user_id of batch) {
+        user_ids_remaining.delete(user_id);
+    }
+    return fetched_users;
+}
+
+export async function fetch_users(user_ids: Set<number>): Promise<UsersFetchResponse["members"]> {
+    const user_ids_remaining = get_valid_user_ids_to_fetch(user_ids);
+    const fetched_users: UsersFetchResponse["members"] = [];
+    while (user_ids_remaining.size > 0) {
+        fetched_users.push(...(await fetch_next_user_batch(user_ids_remaining)));
+    }
+    return fetched_users;
 }
 
 export async function initialize(
