@@ -1661,6 +1661,7 @@ label.preferences-radio-choice-label {
 }
 
 .time-limit-custom-input,
+.time-limit-custom-input-unit,
 .realm_jitsi_server_url_custom_input {
     padding: var(--input-vertical-padding) var(--input-horizontal-padding);
     color: var(--color-text-default);
@@ -1677,6 +1678,12 @@ label.preferences-radio-choice-label {
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
             0 0 8px hsl(206deg 80% 62% / 60%);
     }
+}
+
+.time-limit-custom-input-unit {
+    width: auto;
+    margin-left: 6px;
+    cursor: pointer;
 }
 
 #realm_jitsi_server_url_setting {

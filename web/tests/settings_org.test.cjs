@@ -323,9 +323,9 @@ function test_parse_time_limit({override}) {
             settings_components.parse_time_limit($elem),
         );
         assert.equal(
-            settings_components.get_realm_time_limits_in_minutes(
+            settings_components.get_realm_time_limit_value_and_unit(
                 "realm_message_content_edit_limit_seconds",
-            ),
+            ).value,
             expected_value,
         );
     };
@@ -346,6 +346,61 @@ function test_parse_time_limit({override}) {
     test_function("201.1");
     test_function("501.15", "501.1");
     test_function("501.34", "501.3");
+}
+
+function test_parse_time_limit_with_unit({override}) {
+    const $value_elem = $("#id_realm_message_content_edit_limit_minutes");
+    const $unit_elem = $.create("<stub time limit unit select>");
+
+    const test_function = (value, unit, expected_seconds) => {
+        $value_elem.val(value);
+        $unit_elem.val(unit);
+        assert.equal(
+            settings_components.parse_time_limit($value_elem, $unit_elem),
+            expected_seconds,
+        );
+    };
+
+    test_function("10", "minutes", 10 * 60);
+    test_function("2", "hours", 2 * 60 * 60);
+    test_function("3", "days", 3 * 24 * 60 * 60);
+    test_function("1", "weeks", 7 * 24 * 60 * 60);
+
+    // parse_time_limit falls back to minutes when no unit is given.
+    $value_elem.val("5");
+    assert.equal(settings_components.parse_time_limit($value_elem), 5 * 60);
+
+    override(realm, "realm_message_content_edit_limit_seconds", 2 * 24 * 60 * 60);
+    assert.deepEqual(
+        settings_components.get_realm_time_limit_value_and_unit(
+            "realm_message_content_edit_limit_seconds",
+        ),
+        {value: "2", unit: "days"},
+    );
+
+    override(realm, "realm_message_content_edit_limit_seconds", 3 * 60 * 60);
+    assert.deepEqual(
+        settings_components.get_realm_time_limit_value_and_unit(
+            "realm_message_content_edit_limit_seconds",
+        ),
+        {value: "3", unit: "hours"},
+    );
+
+    override(realm, "realm_message_content_edit_limit_seconds", 2 * 7 * 24 * 60 * 60);
+    assert.deepEqual(
+        settings_components.get_realm_time_limit_value_and_unit(
+            "realm_message_content_edit_limit_seconds",
+        ),
+        {value: "2", unit: "weeks"},
+    );
+
+    override(realm, "realm_message_content_edit_limit_seconds", null);
+    assert.deepEqual(
+        settings_components.get_realm_time_limit_value_and_unit(
+            "realm_message_content_edit_limit_seconds",
+        ),
+        {value: "", unit: "minutes"},
+    );
 }
 
 function test_discard_changes_button({override}, discard_changes) {
@@ -410,9 +465,12 @@ function test_discard_changes_button({override}, discard_changes) {
         settings_config.message_edit_history_visibility_policy_values.always.code,
     );
     assert.equal($msg_edit_limit_setting.val(), "3600");
-    assert.equal($message_content_edit_limit_minutes.val(), "60");
+    // 3600 seconds is displayed in the largest exact unit: 1 hour.
+    assert.equal($message_content_edit_limit_minutes.val(), "1");
+    assert.equal($("#id_realm_message_content_edit_limit_unit").val(), "hours");
     assert.equal($msg_delete_limit_setting.val(), "120");
     assert.equal($message_content_delete_limit_minutes.val(), "2");
+    assert.equal($("#id_realm_message_content_delete_limit_unit").val(), "minutes");
     assert.ok(!$save_button_controls.visible());
 }
 
@@ -496,6 +554,12 @@ test("set_up", ({override, override_rewire}) => {
         $custom_edit_limit_input,
     );
     $custom_edit_limit_input.attr("id", "id_realm_message_content_edit_limit_minutes");
+    const $custom_edit_limit_unit = $("#id_realm_message_content_edit_limit_unit");
+    $stub_message_content_edit_limit_parent.set_find_results(
+        ".time-limit-custom-input-unit",
+        $custom_edit_limit_unit,
+    );
+    $custom_edit_limit_unit.attr("id", "id_realm_message_content_edit_limit_unit");
 
     const $custom_move_within_stream_limit_input = $(
         "#id_realm_move_messages_within_stream_limit_minutes",
@@ -507,6 +571,17 @@ test("set_up", ({override, override_rewire}) => {
     $custom_move_within_stream_limit_input.attr(
         "id",
         "id_realm_move_messages_within_stream_limit_minutes",
+    );
+    const $custom_move_within_stream_limit_unit = $(
+        "#id_realm_move_messages_within_stream_limit_unit",
+    );
+    $stub_move_within_stream_limit_parent.set_find_results(
+        ".time-limit-custom-input-unit",
+        $custom_move_within_stream_limit_unit,
+    );
+    $custom_move_within_stream_limit_unit.attr(
+        "id",
+        "id_realm_move_messages_within_stream_limit_unit",
     );
 
     const $custom_move_between_streams_limit_input = $(
@@ -520,6 +595,17 @@ test("set_up", ({override, override_rewire}) => {
         "id",
         "id_realm_move_messages_between_streams_limit_minutes",
     );
+    const $custom_move_between_streams_limit_unit = $(
+        "#id_realm_move_messages_between_streams_limit_unit",
+    );
+    $stub_move_between_streams_limit_parent.set_find_results(
+        ".time-limit-custom-input-unit",
+        $custom_move_between_streams_limit_unit,
+    );
+    $custom_move_between_streams_limit_unit.attr(
+        "id",
+        "id_realm_move_messages_between_streams_limit_unit",
+    );
 
     const $custom_delete_limit_input = $("#id_realm_message_content_delete_limit_minutes");
     $stub_message_content_delete_limit_parent.set_find_results(
@@ -527,6 +613,12 @@ test("set_up", ({override, override_rewire}) => {
         $custom_delete_limit_input,
     );
     $custom_delete_limit_input.attr("id", "id_realm_message_content_delete_limit_minutes");
+    const $custom_delete_limit_unit = $("#id_realm_message_content_delete_limit_unit");
+    $stub_message_content_delete_limit_parent.set_find_results(
+        ".time-limit-custom-input-unit",
+        $custom_delete_limit_unit,
+    );
+    $custom_delete_limit_unit.attr("id", "id_realm_message_content_delete_limit_unit");
 
     const $stub_realm_message_retention_parent = $.create(
         "<stub message retention setting parent>",
@@ -601,6 +693,7 @@ test("set_up", ({override, override_rewire}) => {
     test_change_save_button_state();
     test_sync_realm_settings({override});
     test_parse_time_limit({override});
+    test_parse_time_limit_with_unit({override});
     test_discard_changes_button(
         {override},
         $(".admin-realm-form").get_on_handler(

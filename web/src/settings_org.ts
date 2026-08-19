@@ -1685,16 +1685,6 @@ export function build_page(): void {
     update_description_empty_state();
     $("#id_realm_description").on("input", update_description_empty_state);
 
-    $(".org-permissions-form").on(
-        "input change",
-        ".time-limit-custom-input",
-        function (this: HTMLInputElement, e) {
-            e.preventDefault();
-            e.stopPropagation();
-            settings_components.update_custom_time_limit_minute_text($(this));
-        },
-    );
-
     $(".settings-subsection-parent").on("keydown", "input", (e) => {
         e.stopPropagation();
         if (keydown_util.is_enter_event(e)) {

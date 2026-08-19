@@ -180,21 +180,22 @@ export function build_page(): void {
         can_add_emojis: settings_data.user_can_add_custom_emoji(),
         can_create_new_bots: settings_bots.can_create_incoming_webhooks(),
         realm_message_content_edit_limit_minutes:
-            settings_components.get_realm_time_limits_in_minutes(
+            settings_components.get_realm_time_limit_value_and_unit(
                 "realm_message_content_edit_limit_seconds",
-            ),
+            ).value,
         realm_move_messages_between_streams_limit_minutes:
-            settings_components.get_realm_time_limits_in_minutes(
+            settings_components.get_realm_time_limit_value_and_unit(
                 "realm_move_messages_between_streams_limit_seconds",
-            ),
+            ).value,
         realm_move_messages_within_stream_limit_minutes:
-            settings_components.get_realm_time_limits_in_minutes(
+            settings_components.get_realm_time_limit_value_and_unit(
                 "realm_move_messages_within_stream_limit_seconds",
-            ),
+            ).value,
         realm_message_content_delete_limit_minutes:
-            settings_components.get_realm_time_limits_in_minutes(
+            settings_components.get_realm_time_limit_value_and_unit(
                 "realm_message_content_delete_limit_seconds",
-            ),
+            ).value,
+        custom_time_unit_values: settings_config.custom_time_unit_values,
         realm_message_retention_days: realm.realm_message_retention_days,
         realm_message_edit_history_visibility_policy:
             realm.realm_message_edit_history_visibility_policy,
