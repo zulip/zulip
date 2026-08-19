@@ -40,6 +40,12 @@
         min-height: 0;
         padding: 0 20px 20px;
         overflow: auto;
+
+        &.wrap-code pre {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            word-break: normal;
+        }
     }
 
     .video-player {

@@ -274,6 +274,21 @@ run_test("parse_media_data asset map cache", () => {
     assert.equal(result2, result1);
 });
 
+run_test("set_code_wrapping", () => {
+    const $code_preview = $("#lightbox_overlay .code-preview");
+    const $wrap_button = $("#lightbox_overlay .lightbox-code-wrap");
+
+    lightbox.set_code_wrapping(true);
+
+    assert.equal($code_preview.hasClass("wrap-code"), true);
+    assert.equal($wrap_button.attr("aria-pressed"), "true");
+
+    lightbox.set_code_wrapping(false);
+
+    assert.equal($code_preview.hasClass("wrap-code"), false);
+    assert.equal($wrap_button.attr("aria-pressed"), "false");
+});
+
 run_test("display_code_block", () => {
     const hidden_elements_selector =
         "#lightbox_overlay .image-preview, #lightbox_overlay .player-container, #lightbox_overlay .video-player, #lightbox_overlay .media-description, #lightbox_overlay .media-actions, #lightbox_overlay .center";
@@ -281,7 +296,9 @@ run_test("display_code_block", () => {
     const $code_preview = $("#lightbox_overlay .code-preview").hide();
     const $code_actions = $("#lightbox_overlay .code-actions").removeClass("show");
     const $playground_action = $("#lightbox_overlay .lightbox-code-playground").hide();
+    const $wrap_button = $("#lightbox_overlay .lightbox-code-wrap");
     $code_preview.html("old code");
+    lightbox.set_code_wrapping(true);
 
     const $code_block = $.create("<code-block>");
     const $code_block_clone = $.create("<code-block-clone>");
@@ -307,6 +324,8 @@ run_test("display_code_block", () => {
     assert.equal($code_preview.visible(), true);
     assert.equal($code_actions.hasClass("show"), true);
     assert.equal($playground_action.visible(), true);
+    assert.equal($code_preview.hasClass("wrap-code"), false);
+    assert.equal($wrap_button.attr("aria-pressed"), "false");
     assert.equal($code_preview.html(), "");
     assert.equal(appended_element, $code_block_clone[0]);
     assert.equal(removed_buttons, true);
@@ -339,5 +358,6 @@ run_test("lightbox overlay includes code actions", () => {
     const html = render_lightbox_overlay();
 
     assert.match(html, /class="lightbox-media-action lightbox-copy-code"/);
+    assert.match(html, /class="lightbox-media-action lightbox-code-wrap" aria-pressed="false"/);
     assert.match(html, /class="lightbox-media-action lightbox-code-playground"/);
 });

@@ -336,10 +336,17 @@ function display_video(payload: Media): void {
     $("#lightbox_overlay .player-container").append($iframe);
 }
 
+export function set_code_wrapping(should_wrap: boolean): void {
+    $("#lightbox_overlay .code-preview").toggleClass("wrap-code", should_wrap);
+    $("#lightbox_overlay .lightbox-code-wrap").attr("aria-pressed", should_wrap.toString());
+}
+
 export function display_code_block($code_block: JQuery): void {
     $(
         "#lightbox_overlay .image-preview, #lightbox_overlay .player-container, #lightbox_overlay .video-player, #lightbox_overlay .media-description, #lightbox_overlay .media-actions, #lightbox_overlay .center",
     ).hide();
+
+    set_code_wrapping(false);
 
     const $code_block_clone = $code_block.clone();
     $code_block_clone.find(".code-buttons-container").remove();
@@ -714,6 +721,7 @@ export function initialize(): void {
 
     const reset_lightbox_state = function (): void {
         remove_video_players();
+        set_code_wrapping(false);
         $("#lightbox_overlay .code-preview").empty().hide();
         $("#lightbox_overlay .code-actions").removeClass("show");
         playground_links_popover.hide();
@@ -773,6 +781,12 @@ export function initialize(): void {
         const $code_block = $("#lightbox_overlay .code-preview .codehilite");
         assert($code_block.length > 0);
         playground_links_popover.open_code_in_playground($code_block, this);
+    });
+
+    $("#lightbox_overlay .lightbox-code-wrap").on("click", (e) => {
+        e.stopPropagation();
+        const should_wrap = !$("#lightbox_overlay .code-preview").hasClass("wrap-code");
+        set_code_wrapping(should_wrap);
     });
 
     $("#lightbox_overlay .download").on("click", function () {
