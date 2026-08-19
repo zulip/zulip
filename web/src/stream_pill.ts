@@ -2,6 +2,7 @@ import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
 
+import {$t} from "./i18n.ts";
 import type {InputPillContainer} from "./input_pill.ts";
 import * as peer_data from "./peer_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -55,6 +56,23 @@ export function get_stream_name_from_item(item: StreamPill): string {
     const stream = stream_data.get_sub_by_id(item.stream_id);
     assert(stream !== undefined);
     return stream.name;
+}
+
+export function get_subscriber_fetch_failure_message(failed_stream_id: number): string {
+    const sub = stream_data.get_sub_by_id(failed_stream_id);
+    if (sub === undefined) {
+        return $t({
+            defaultMessage:
+                "Failed to fetch subscribers of a channel. Remove the channel and try again.",
+        });
+    }
+    return $t(
+        {
+            defaultMessage:
+                "Failed to fetch subscribers of #{channel_name}. Remove the channel and try again.",
+        },
+        {channel_name: sub.name},
+    );
 }
 
 // Returns the user ids the pills stand for, or the channel whose

@@ -12,6 +12,7 @@ import * as loading from "./loading.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_data from "./settings_data.ts";
 import {realm} from "./state_data.ts";
+import * as stream_pill from "./stream_pill.ts";
 import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
 import * as ui_report from "./ui_report.ts";
 import {place_caret_at_end} from "./ui_util.ts";
@@ -53,6 +54,13 @@ class UserGroupMembershipError {
     report_no_members_to_user_group(): void {
         $("#user_group_membership_error").text(
             $t({defaultMessage: "You cannot create a user group with no members or subgroups."}),
+        );
+        $("#user_group_membership_error").show();
+    }
+
+    report_subscriber_fetch_failed(failed_stream_id: number): void {
+        $("#user_group_membership_error").text(
+            stream_pill.get_subscriber_fetch_failure_message(failed_stream_id),
         );
         $("#user_group_membership_error").show();
     }
@@ -182,11 +190,23 @@ function clear_error_display(): void {
     user_group_membership_error.clear_errors();
 }
 
+function set_footer_buttons_disabled(disabled: boolean): void {
+    $(
+        "#user-group-creation .finalize_create_user_group, #user-group-creation #user_group_go_to_configure_settings",
+    ).prop("disabled", disabled);
+}
+
 export function show_new_user_group_modal(): void {
     $("#user-group-creation").removeClass("hide");
     $(".right .settings").hide();
 
     user_group_create_members.build_widgets();
+
+    // A previous create click may have left these buttons disabled,
+    // either because the group was created or because the form was
+    // closed while waiting for member data. The sticky footer is not
+    // re-rendered when the form reopens, so reset the buttons here.
+    set_footer_buttons_disabled(false);
 
     clear_error_display();
 }
@@ -204,6 +224,7 @@ function create_user_group(): void {
             $t_html({defaultMessage: "The group description cannot contain newline characters."}),
             $(".user_group_create_info"),
         );
+        set_footer_buttons_disabled(false);
         return;
     }
     const user_ids = user_group_create_members.get_principals();
@@ -246,6 +267,7 @@ function create_user_group(): void {
             );
             reset_name();
             loading.destroy_indicator($("#user_group_creating_indicator"));
+            set_footer_buttons_disabled(false);
         },
     });
 }
@@ -270,13 +292,6 @@ export function set_up_handlers(): void {
             return;
         }
 
-        const principals = user_group_create_members_data.get_principals();
-        const subgroups = user_group_create_members_data.get_subgroups();
-        if (principals.length === 0 && subgroups.length === 0) {
-            user_group_membership_error.report_no_members_to_user_group();
-            return;
-        }
-
         assert(user_group_create_members.pill_widget !== undefined);
         assert(user_group_create_members.pill_widget !== null);
         if (user_group_create_members.pill_widget.is_pending()) {
@@ -289,7 +304,39 @@ export function set_up_handlers(): void {
             return;
         }
 
-        create_user_group();
+        void (async () => {
+            // Disable the create button until the group is created, so
+            // that clicking it again (or pressing Enter) while we wait
+            // for subscriber data or for the server cannot create the
+            // group twice, and the back button so that the settings we
+            // validated cannot be changed underneath us. The buttons
+            // are re-enabled if creating fails, or when the form is
+            // reopened.
+            set_footer_buttons_disabled(true);
+            const result = await user_group_create_members.add_members_from_pills();
+            // The creation form was closed while we were fetching
+            // subscriber data, so don't create the group. Leave the
+            // buttons alone, since a newly opened form may have
+            // disabled them for its own fetch.
+            if (result.status === "form_closed") {
+                return;
+            }
+            if (result.status === "fetch_failed") {
+                set_footer_buttons_disabled(false);
+                user_group_membership_error.report_subscriber_fetch_failed(result.failed_stream_id);
+                return;
+            }
+
+            const principals = user_group_create_members_data.get_principals();
+            const subgroups = user_group_create_members_data.get_subgroups();
+            if (principals.length === 0 && subgroups.length === 0) {
+                set_footer_buttons_disabled(false);
+                user_group_membership_error.report_no_members_to_user_group();
+                return;
+            }
+
+            create_user_group();
+        })();
     });
 
     $container.on("input", "#create_user_group_name", () => {
