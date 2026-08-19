@@ -923,10 +923,13 @@ input.settings_text_input {
         }
 
         .messagebox-content {
-            grid-template: auto / auto max-content;
-            grid-template-areas:
-                "message controls"
-                "message .       ";
+            /* The min-content effectively cinches to the
+               height of the per-draft controls, while the
+               second row accommodates the full message. */
+            grid-template:
+                "message controls" min-content
+                "message .       " minmax(0, 1fr)
+                / minmax(0, 1fr) max-content;
             /* to space from restore draft button */
             column-gap: 5px;
             padding: 10px;
