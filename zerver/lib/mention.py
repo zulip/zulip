@@ -412,11 +412,10 @@ class MentionData:
                 self.user_group_name_info[group.name.lower()] = group
                 self.user_group_names[group.id] = group.name
 
-            # acting_user can be None when mentioning
-            # a group inside a channel/channel folder description,
-            # in such case we allow the mention.
-            # TODO: This is not consistent, the permission
-            # to mention a group must be the same everywhere.
+            # acting_user is None when rendering content that no
+            # user is responsible for such as a realm description or
+            # data imported from another chat product; we allow
+            # mentions in those cases.
             if self.acting_user is None:
                 self.allowed_mention_group_ids = set(self.user_group_names.keys())
             else:
