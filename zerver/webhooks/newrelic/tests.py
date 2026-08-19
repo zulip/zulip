@@ -28,7 +28,6 @@ class NewRelicHookTests(WebhookTestCase):
             "incident_activated_new_default_payload",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
 
     def test_incident_activated_new_provided_base_payload(self) -> None:
@@ -58,7 +57,6 @@ class NewRelicHookTests(WebhookTestCase):
             "incident_activated_new_provided_base_payload",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
 
     def test_incident_closed_default_payload(self) -> None:
@@ -87,7 +85,6 @@ class NewRelicHookTests(WebhookTestCase):
             "incident_closed_default_payload",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
 
     def test_incident_closed_provided_base_payload(self) -> None:
@@ -117,7 +114,6 @@ class NewRelicHookTests(WebhookTestCase):
             "incident_closed_provided_base_payload",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
 
     def test_incident_acknowledged_default_payload(self) -> None:
@@ -146,7 +142,6 @@ class NewRelicHookTests(WebhookTestCase):
             "incident_acknowledged_default_payload",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
 
     def test_incident_acknowledged_provided_base_payload(self) -> None:
@@ -175,7 +170,6 @@ class NewRelicHookTests(WebhookTestCase):
             "incident_acknowledged_provided_base_payload",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
 
     def test_incident_created_default_payload(self) -> None:
@@ -204,7 +198,6 @@ class NewRelicHookTests(WebhookTestCase):
             "incident_created_default_payload",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
 
     def test_incident_created_provided_base_payload(self) -> None:
@@ -233,7 +226,6 @@ class NewRelicHookTests(WebhookTestCase):
             "incident_created_provided_base_payload",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
 
     def test_incident_default_base_with_zulip_custom_fields(self) -> None:
@@ -267,7 +259,6 @@ class NewRelicHookTests(WebhookTestCase):
             "incident_default_base_with_zulip_custom_fields",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
 
     def test_incident_provided_base_with_zulip_custom_fields(self) -> None:
@@ -301,7 +292,6 @@ class NewRelicHookTests(WebhookTestCase):
             "incident_provided_base_with_zulip_custom_fields",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
 
     def test_incident_with_invalid_zulip_custom_fields(self) -> None:
@@ -333,7 +323,6 @@ class NewRelicHookTests(WebhookTestCase):
             "incident_with_invalid_zulip_custom_fields",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
 
     def test_missing_essential_fields_default_payload(self) -> None:
@@ -350,5 +339,4 @@ class NewRelicHookTests(WebhookTestCase):
             "missing_essential_fields_default_payload",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
