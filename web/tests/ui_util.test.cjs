@@ -2,9 +2,16 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const {$} = require("./lib/zjquery.cjs");
+
+mock_esm("text-field-edit", {
+    insertTextIntoField(elem, text) {
+        elem.value =
+            elem.value.slice(0, elem.selectionStart) + text + elem.value.slice(elem.selectionEnd);
+    },
+});
 
 const ui_util = zrequire("ui_util");
 
@@ -106,6 +113,43 @@ run_test("topic search term parsing", ({override_rewire}) => {
     set_search_term("mytopic:foo");
     assert.equal(ui_util.get_left_sidebar_topic_search_term(), undefined);
     assert.equal(ui_util.is_topic_search(), false);
+});
+
+run_test("truncate_input_to_max_code_points", () => {
+    function make_input(value, cursor_position) {
+        return {
+            value,
+            selectionStart: cursor_position,
+            selectionEnd: cursor_position,
+            setSelectionRange(start, end) {
+                this.selectionStart = start;
+                this.selectionEnd = end;
+            },
+        };
+    }
+
+    let elem = make_input("abc", 3);
+    assert.equal(ui_util.truncate_input_to_max_code_points(elem, 3), false);
+    assert.equal(elem.value, "abc");
+
+    elem = make_input("🐛🐛ab", 6);
+    assert.equal(ui_util.truncate_input_to_max_code_points(elem, 4), false);
+    assert.equal(elem.value, "🐛🐛ab");
+
+    elem = make_input("🐛🐛abc", 4);
+    assert.equal(ui_util.truncate_input_to_max_code_points(elem, 4), true);
+    assert.equal(elem.value, "🐛🐛ab");
+    assert.equal(elem.selectionStart, 4);
+
+    elem = make_input("abcdef", 6);
+    assert.equal(ui_util.truncate_input_to_max_code_points(elem, 4), true);
+    assert.equal(elem.value, "abcd");
+    assert.equal(elem.selectionStart, 4);
+
+    elem = make_input("abcdef", 2);
+    assert.equal(ui_util.truncate_input_to_max_code_points(elem, 4), true);
+    assert.equal(elem.value, "abcd");
+    assert.equal(elem.selectionStart, 2);
 });
 
 run_test("replace_emoji_name_with_emoji_unicode", () => {
