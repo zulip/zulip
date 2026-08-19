@@ -43,6 +43,7 @@ import * as sub_store from "./sub_store.ts";
 import * as subscriber_api from "./subscriber_api.ts";
 import {get_timestamp_for_flatpickr} from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
+import * as ui_util from "./ui_util.ts";
 import * as upload from "./upload.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
@@ -748,11 +749,14 @@ export function initialize(): void {
     });
 
     function handle_topic_length_limit(): void {
-        let topic = compose_state.topic();
-        if (topic.length > realm.max_topic_length) {
-            topic = topic.slice(0, realm.max_topic_length);
-            compose_state.topic(topic);
-            $("input#stream_message_recipient_topic").addClass("shake");
+        const $topic_input = $<HTMLInputElement>("input#stream_message_recipient_topic");
+        if (
+            ui_util.truncate_input_to_max_code_points(
+                util.the($topic_input),
+                realm.max_topic_length,
+            )
+        ) {
+            $topic_input.addClass("shake");
         }
     }
 
