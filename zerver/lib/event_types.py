@@ -221,13 +221,13 @@ class DraftsUpdateEvent(BaseEvent):
     draft: DraftFields
 
 
-class HasZoomTokenEvent(BaseEvent):
-    type: Literal["has_zoom_token"] = "has_zoom_token"
+class HasWebexTokenEvent(BaseEvent):
+    type: Literal["has_webex_token"] = "has_webex_token"
     value: bool
 
 
-class HasWebexTokenEvent(BaseEvent):
-    type: Literal["has_webex_token"] = "has_webex_token"
+class HasZoomTokenEvent(BaseEvent):
+    type: Literal["has_zoom_token"] = "has_zoom_token"
     value: bool
 
 
