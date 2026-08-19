@@ -65,8 +65,24 @@ export function clear_for_testing(): void {
     user_filter = undefined;
 }
 
+let user_card_is_open = false;
+let buddy_list_redraw_deferred = false;
+
+export function set_user_card_open(is_open: boolean): void {
+    user_card_is_open = is_open;
+    if (!is_open && buddy_list_redraw_deferred) {
+        buddy_list_redraw_deferred = false;
+        redraw();
+    }
+}
+
 export function redraw_user(user_id: number): void {
     if (realm.realm_presence_disabled) {
+        return;
+    }
+
+    if (user_card_is_open) {
+        buddy_list_redraw_deferred = true;
         return;
     }
 
@@ -104,6 +120,11 @@ export function searching(): boolean {
 
 export let build_user_sidebar = (): number[] | undefined => {
     if (realm.realm_presence_disabled) {
+        return undefined;
+    }
+
+    if (user_card_is_open) {
+        buddy_list_redraw_deferred = true;
         return undefined;
     }
 
