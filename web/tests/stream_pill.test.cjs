@@ -162,6 +162,17 @@ run_test("get_user_ids_fetch_failed", async () => {
     blueslip.reset();
 });
 
+run_test("get_subscriber_fetch_failure_message", () => {
+    assert.equal(
+        stream_pill.get_subscriber_fetch_failure_message(germany.stream_id),
+        "translated: Failed to fetch subscribers of #Germany. Remove the channel and try again.",
+    );
+    assert.equal(
+        stream_pill.get_subscriber_fetch_failure_message(999),
+        "translated: Failed to fetch subscribers of a channel. Remove the channel and try again.",
+    );
+});
+
 run_test("get_stream_ids", () => {
     const items = [denmark_pill, sweden_pill];
     const widget = {items: () => items};

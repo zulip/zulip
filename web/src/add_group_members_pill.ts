@@ -15,7 +15,7 @@ import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import * as user_pill from "./user_pill.ts";
 
-async function get_pill_user_ids(
+export async function get_pill_user_ids(
     pill_widget: CombinedPillContainer,
 ): Promise<UserIdsFetchResult> {
     const stream_result = await stream_pill.get_user_ids(pill_widget);
@@ -28,7 +28,7 @@ async function get_pill_user_ids(
     return {status: "success", user_ids: [...user_ids, ...stream_result.user_ids]};
 }
 
-function get_pill_group_ids(pill_widget: CombinedPillContainer): number[] {
+export function get_pill_group_ids(pill_widget: CombinedPillContainer): number[] {
     const group_user_ids = user_group_pill.get_group_ids(pill_widget);
     return group_user_ids;
 }
