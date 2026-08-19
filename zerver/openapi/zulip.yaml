@@ -6531,6 +6531,7 @@ paths:
                                         "rendered_content": "<p>Hello there!</p>",
                                         "scheduled_delivery_timestamp": 1681662420,
                                         "failed": false,
+                                        "split_group_id": null,
                                       },
                                     ],
                                 }
@@ -6568,6 +6569,7 @@ paths:
                                       "rendered_content": "<p>Hello there!</p>",
                                       "scheduled_delivery_timestamp": 1681662420,
                                       "failed": false,
+                                      "split_group_id": null,
                                     },
                                 }
                             - type: object
@@ -8209,6 +8211,7 @@ paths:
                               "topic": "Introduction",
                               "scheduled_delivery_timestamp": 1681662420,
                               "failed": false,
+                              "split_group_id": null,
                             },
                           ],
                       }
@@ -8266,7 +8269,30 @@ paths:
                       minLength: 1
                   example: [9, 10]
                 content:
-                  $ref: "#/components/schemas/RequiredContent"
+                  description: |
+                    The content of the scheduled message.
+
+                    Exactly one of `content` and `split_message_contents` must be
+                    provided.
+                  type: string
+                  example: Hello
+                split_message_contents:
+                  description: |
+                    An ordered list of message contents to schedule as a single
+                    split message: one scheduled message per element, all sharing
+                    the same recipient, topic and delivery time. The parts are
+                    created together, deliver in order at the scheduled time, and
+                    share a `split_group_id` so clients can present and act on them
+                    as one scheduled message.
+
+                    Must contain between 2 and 20 elements. Exactly one of
+                    `content` and `split_message_contents` must be provided.
+
+                    **Changes**: New in Zulip 13.0 (feature level ZF-f9de78).
+                  type: array
+                  items:
+                    type: string
+                  example: ["First part", "Second part"]
                 topic:
                   description: |
                     The topic of the message. Only required for channel messages
@@ -8308,10 +8334,11 @@ paths:
               required:
                 - type
                 - to
-                - content
                 - scheduled_delivery_timestamp
             encoding:
               to:
+                contentType: application/json
+              split_message_contents:
                 contentType: application/json
               scheduled_delivery_timestamp:
                 contentType: application/json
@@ -8333,10 +8360,21 @@ paths:
                       scheduled_message_id:
                         type: integer
                         description: |
-                          The unique ID of the scheduled message.
+                          The unique ID of the scheduled message. Returned when a
+                          single message was scheduled (`content`).
 
                           This is different from the unique ID that the message will have
                           after it is sent.
+                      scheduled_message_ids:
+                        type: array
+                        items:
+                          type: integer
+                        description: |
+                          The unique IDs of the scheduled messages, in the order they
+                          will be delivered. Returned when a split message was scheduled
+                          (`split_message_contents`).
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-f9de78).
                     example:
                       {
                         "msg": "",
@@ -29914,6 +29952,17 @@ components:
             get the content of the scheduled message.
 
             **Changes**: New in Zulip 7.0 (feature level 181).
+        split_group_id:
+          type: string
+          nullable: true
+          description: |
+            If this scheduled message is one part of a message that was composed
+            as one and scheduled as several parts (via "send as multiple
+            messages"), an identifier shared by every part of that message, so
+            clients can present and act on the parts as a single scheduled
+            message. `null` otherwise.
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-f9de78).
       additionalProperties: false
       required:
         - scheduled_message_id
@@ -29923,6 +29972,7 @@ components:
         - rendered_content
         - scheduled_delivery_timestamp
         - failed
+        - split_group_id
     ScheduledMessage:
       allOf:
         - $ref: "#/components/schemas/ScheduledMessageBase"
@@ -29936,6 +29986,7 @@ components:
             rendered_content: {}
             scheduled_delivery_timestamp: {}
             failed: {}
+            split_group_id: {}
     Reminder:
       type: object
       additionalProperties: false

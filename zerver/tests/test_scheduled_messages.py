@@ -212,6 +212,92 @@ class ScheduledMessageTest(ZulipTestCase):
         delivered_message_ids = [message.id for message in delivered_messages]
         self.assertEqual(delivered_message_ids, sorted(delivered_message_ids))
 
+    def do_schedule_split_message(
+        self, parts: list[str], scheduled_delivery_timestamp: int
+    ) -> "TestHttpResponse":
+        self.login("hamlet")
+        verona_stream_id = self.get_stream_id("Verona")
+        return self.client_post(
+            "/json/scheduled_messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps(verona_stream_id).decode(),
+                "topic": "Test topic",
+                "split_message_contents": orjson.dumps(parts).decode(),
+                "scheduled_delivery_timestamp": scheduled_delivery_timestamp,
+            },
+        )
+
+    def test_schedule_split_message(self) -> None:
+        parts = ["First part", "Second part", "Third part"]
+        scheduled_delivery_datetime = timezone_now() + timedelta(minutes=5)
+        scheduled_delivery_timestamp = int(scheduled_delivery_datetime.timestamp())
+
+        result = self.do_schedule_split_message(parts, scheduled_delivery_timestamp)
+        scheduled_message_ids = self.assert_json_success(result)["scheduled_message_ids"]
+        self.assert_length(scheduled_message_ids, 3)
+
+        scheduled_messages = [self.get_scheduled_message(str(id)) for id in scheduled_message_ids]
+
+        group_ids = {scheduled_message.split_group_id for scheduled_message in scheduled_messages}
+        self.assert_length(group_ids, 1)
+        self.assertIsNotNone(scheduled_messages[0].split_group_id)
+        self.assertEqual(
+            [scheduled_message.content for scheduled_message in scheduled_messages], parts
+        )
+        self.assertEqual(scheduled_message_ids, sorted(scheduled_message_ids))
+        delivery_times = {
+            scheduled_message.scheduled_timestamp for scheduled_message in scheduled_messages
+        }
+        self.assert_length(delivery_times, 1)
+        fetch_result = self.assert_json_success(self.client_get("/json/scheduled_messages"))
+        self.assertEqual(
+            {
+                scheduled_message["split_group_id"]
+                for scheduled_message in fetch_result["scheduled_messages"]
+            },
+            {scheduled_messages[0].split_group_id},
+        )
+
+        with time_machine.travel(scheduled_delivery_datetime + timedelta(minutes=1), tick=False):
+            for _ in parts:
+                with self.assertLogs(level="INFO"):
+                    self.assertTrue(try_deliver_one_scheduled_message())
+        delivered_messages = []
+        for scheduled_message_id in scheduled_message_ids:
+            delivered_message_id = self.get_scheduled_message(
+                str(scheduled_message_id)
+            ).delivered_message_id
+            assert isinstance(delivered_message_id, int)
+            delivered_messages.append(Message.objects.get(id=delivered_message_id))
+        self.assertEqual([message.content for message in delivered_messages], parts)
+        self.assertEqual(
+            [message.id for message in delivered_messages],
+            sorted(message.id for message in delivered_messages),
+        )
+
+    def test_schedule_split_message_validation(self) -> None:
+        scheduled_delivery_timestamp = int((timezone_now() + timedelta(minutes=5)).timestamp())
+
+        result = self.do_schedule_split_message(["only one"], scheduled_delivery_timestamp)
+        self.assert_json_error(result, "Number of split messages must be between 2 and 20.")
+
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/scheduled_messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps(self.get_stream_id("Verona")).decode(),
+                "topic": "Test topic",
+                "content": "single",
+                "split_message_contents": orjson.dumps(["a", "b"]).decode(),
+                "scheduled_delivery_timestamp": scheduled_delivery_timestamp,
+            },
+        )
+        self.assert_json_error(
+            result, "Exactly one of content or split_message_contents is required."
+        )
+
     def test_successful_deliver_direct_scheduled_message_to_other(
         self,
     ) -> None:
