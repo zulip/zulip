@@ -708,11 +708,6 @@ function toggle_sidebar_user_card_popover($target: JQuery): void {
         "compose_private_message",
         "user_sidebar",
         "left",
-        false,
-        (instance) => {
-            /* See comment in get_props_for_popover_centering for explanation of this. */
-            $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
-        },
     );
 
     current_user_sidebar_user_id = user.user_id;
