@@ -752,6 +752,25 @@ A trivial change that should probably be ignored.
                     custom_payload=payload,
                 )
 
+    def test_deployment_event_with_unsupported_status(self) -> None:
+        payload_data = orjson.loads(
+            self.webhook_fixture_data(self.webhook_dir_name, "deployment_hook")
+        )
+        payload_data["status"] = "skipped"
+
+        result = self.client_post(
+            self.url,
+            orjson.dumps(payload_data),
+            content_type="application/json",
+            HTTP_X_GITLAB_EVENT="Deployment Hook",
+        )
+
+        self.assert_json_success(result)
+        self.assert_in_response(
+            "The 'Deployment Hook skipped' event isn't currently supported by the GitLab webhook; ignoring",
+            result,
+        )
+
     def test_deployment_approval_event_message(self) -> None:
         deployment_url = (
             "https://gitlab.com/pritesh-30-group/deployment-webhook-test/-/jobs/15664214926"
