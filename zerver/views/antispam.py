@@ -6,19 +6,10 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponseBase
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from pydantic import BaseModel
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint_without_parameters
-
-
-class AltchaPayload(BaseModel):
-    algorithm: str
-    challenge: str
-    number: int
-    salt: str
-    signature: str
 
 
 @typed_endpoint_without_parameters
