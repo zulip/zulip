@@ -247,7 +247,7 @@ class TestReadReceipts(ZulipTestCase):
         self.assertFalse(cordelia.id in response_dict["user_ids"])
         self.assertTrue(othello.id in response_dict["user_ids"])
 
-        # Login as Othello and make sure Cordelia is not in in read receipts.
+        # Login as Othello and make sure Cordelia is not in read receipts.
         self.login("othello")
         result = self.client_get(f"/json/messages/{message_id}/read_receipts")
         response_dict = self.assert_json_success(result)

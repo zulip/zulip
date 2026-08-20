@@ -236,7 +236,7 @@ More generally, you should only mock those functions you explicitly don't want t
 
 Since Python 3.3, the standard mocking library is `unittest.mock`. `unittest.mock` implements the basic mocking class `Mock`.
 It also implements `MagicMock`, which is the same as `Mock`, but contains many default magic methods (in Python,
-those are the ones starting with with a dunder `__`). From the docs:
+those are the ones starting with a dunder `__`). From the docs:
 
 > In most of these examples the Mock and MagicMock classes are interchangeable. As the MagicMock is the more capable class
 > it makes a sensible one to use by default.

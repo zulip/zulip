@@ -163,7 +163,7 @@ test("fetch on search", async ({override}) => {
     assert.equal(populate_call_count, 1);
 
     // Now try updating the narrow and starting a new search, before the old search
-    // is resolved. We should make two requests but only only update populate the
+    // is resolved. We should make two requests but only populate the
     // buddy list for the second fetch (the first fetch returns early).
     get_call_count = 0;
     populate_call_count = 0;

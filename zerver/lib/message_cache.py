@@ -30,7 +30,7 @@ class RawReactionRow(TypedDict):
 def sew_messages_and_reactions(
     messages: list[dict[str, Any]], reactions: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
-    """Given a iterable of messages and reactions stitch reactions
+    """Given an iterable of messages and reactions stitch reactions
     into messages.
     """
     # Add all messages with empty reaction item
