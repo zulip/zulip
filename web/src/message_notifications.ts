@@ -4,11 +4,9 @@ import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
 import {$t} from "./i18n.ts";
-import * as message_parser from "./message_parser.ts";
 import type {Message} from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as people from "./people.ts";
-import * as spoilers from "./spoilers.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as ui_util from "./ui_util.ts";
@@ -34,42 +32,6 @@ type TestNotificationMessage = {
 function small_avatar_url_for_test_notification(message: TestNotificationMessage): string {
     // this is a heavily simplified version of people.small_avatar_url
     return people.gravatar_url_for_email(message.sender_email);
-}
-
-function get_notification_content(message: Message | TestNotificationMessage): string {
-    let content;
-    // Convert the content to plain text, replacing emoji with their alt text
-    const $content = $("<div>").html(message.content);
-    ui_util.convert_unicode_eligible_emoji_to_unicode($content);
-    ui_util.change_katex_to_raw_latex($content);
-    ui_util.potentially_collapse_quotes($content);
-    spoilers.hide_spoilers_in_notification($content);
-
-    if (
-        $content.text().trim() === "" &&
-        (message_parser.message_has_image(message.content) ||
-            message_parser.message_has_attachment(message.content))
-    ) {
-        content = $t({defaultMessage: "(attached file)"});
-    } else {
-        content = $content.text();
-    }
-
-    if (message.is_me_message) {
-        content = message.sender_full_name + content.slice(3);
-    }
-
-    if (
-        (message.type === "private" || message.type === "test-notification") &&
-        !user_settings.pm_content_in_desktop_notifications
-    ) {
-        content = $t(
-            {defaultMessage: "New direct message from {sender_full_name}"},
-            {sender_full_name: message.sender_full_name},
-        );
-    }
-
-    return content;
 }
 
 function debug_notification_source_value(message: Message | TestNotificationMessage): void {
@@ -167,7 +129,7 @@ export function process_notification(notification: {
     desktop_notify: boolean;
 }): void {
     const message = notification.message;
-    const content = get_notification_content(message);
+    const content = desktop_notifications.get_notification_content(message);
     const key = get_notification_key(message);
     let msg_count = 1;
 

@@ -2,6 +2,11 @@ import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import {electron_bridge} from "./electron_bridge.ts";
+import {$t} from "./i18n.ts";
+import * as message_parser from "./message_parser.ts";
+import * as spoilers from "./spoilers.ts";
+import * as ui_util from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
 
 type NoticeMemory = Map<
     string,
@@ -68,6 +73,52 @@ if (electron_bridge?.new_notification) {
     NotificationAPI = ElectronBridgeNotification;
 } else if (window.Notification) {
     NotificationAPI = window.Notification;
+}
+
+// The parts of a message that the notification body is built from. This
+// is structural rather than `Message`, since the test notifications
+// message_notifications sends are not real messages.
+export type NotificationContentMessage = {
+    content: string;
+    sender_full_name: string;
+    type: "stream" | "private" | "test-notification";
+    is_me_message?: boolean | undefined;
+};
+
+export function get_notification_content(message: NotificationContentMessage): string {
+    let content;
+    // Convert the content to plain text, replacing emoji with their alt text
+    const $content = $("<div>").html(message.content);
+    ui_util.convert_unicode_eligible_emoji_to_unicode($content);
+    ui_util.change_katex_to_raw_latex($content);
+    ui_util.potentially_collapse_quotes($content);
+    spoilers.hide_spoilers_in_notification($content);
+
+    if (
+        $content.text().trim() === "" &&
+        (message_parser.message_has_image(message.content) ||
+            message_parser.message_has_attachment(message.content))
+    ) {
+        content = $t({defaultMessage: "(attached file)"});
+    } else {
+        content = $content.text();
+    }
+
+    if (message.is_me_message) {
+        content = message.sender_full_name + content.slice(3);
+    }
+
+    if (
+        (message.type === "private" || message.type === "test-notification") &&
+        !user_settings.pm_content_in_desktop_notifications
+    ) {
+        content = $t(
+            {defaultMessage: "New direct message from {sender_full_name}"},
+            {sender_full_name: message.sender_full_name},
+        );
+    }
+
+    return content;
 }
 
 export function create_notification(opts: {
