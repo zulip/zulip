@@ -38,7 +38,7 @@ def get_challenge(
             *session_challenges,
             (challenge.challenge, expires.timestamp()),
         ]
-        return json_success(request, data=challenge.__dict__)
+        return json_success(request, data=challenge.to_dict())
     except Exception:  # nocoverage
         logging.exception("Error while generating challenge")
         raise JsonableError(_("Failed to generate challenge"))
