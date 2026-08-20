@@ -1,21 +1,15 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
 import logging
-import tempfile
 import time
 from typing import Any
 
-from django.conf import settings
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import gettext as _
-from django.utils.translation import override as override_language
 from typing_extensions import override
 
 from zerver.actions.data_import import import_slack_data
 from zerver.actions.message_flags import do_mark_stream_messages_as_read
-from zerver.actions.message_send import internal_send_private_message
-from zerver.actions.realm_export import notify_realm_export
+from zerver.actions.realm_export import export_realm_from_event
 from zerver.actions.realm_settings import scrub_deactivated_realm
-from zerver.lib.export import export_realm_wrapper, export_tarball_prefix
 from zerver.lib.push_notifications import clear_push_device_tokens
 from zerver.lib.queue import retry_event
 from zerver.lib.remote_server import (
@@ -24,8 +18,8 @@ from zerver.lib.remote_server import (
 )
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.upload import handle_reupload_emojis_event
-from zerver.models import Realm, RealmAuditLog, RealmExport
-from zerver.models.users import get_system_bot, get_user_profile_by_id
+from zerver.models import Realm
+from zerver.models.users import get_user_profile_by_id
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
 logger = logging.getLogger(__name__)
@@ -80,91 +74,7 @@ class DeferredWorker(QueueProcessingWorker):
 
                 retry_event(self.queue_name, event, failure_processor)
         elif event["type"] == "realm_export":
-            user_profile = get_user_profile_by_id(event["user_profile_id"])
-            realm = user_profile.realm
-            output_dir = tempfile.mkdtemp(prefix=export_tarball_prefix(realm))
-            export_event = None
-
-            if "realm_export_id" in event:
-                export_row = RealmExport.objects.get(id=event["realm_export_id"])
-            else:
-                # Handle existing events in the queue before we switched to RealmExport model.
-                export_event = RealmAuditLog.objects.get(id=event["id"])
-                extra_data = export_event.extra_data
-
-                if extra_data.get("export_row_id") is not None:
-                    export_row = RealmExport.objects.get(id=extra_data["export_row_id"])
-                else:
-                    export_row = RealmExport.objects.create(
-                        realm=realm,
-                        type=RealmExport.EXPORT_PUBLIC,
-                        acting_user=user_profile,
-                        status=RealmExport.REQUESTED,
-                        date_requested=event["time"],
-                    )
-                    export_event.extra_data = {"export_row_id": export_row.id}
-                    export_event.save(update_fields=["extra_data"])
-
-            if export_row.status != RealmExport.REQUESTED:
-                logger.error(
-                    "Marking export for realm %s as failed due to retry -- possible OOM during export?",
-                    realm.string_id,
-                )
-                export_row.status = RealmExport.FAILED
-                export_row.date_failed = timezone_now()
-                export_row.save(update_fields=["status", "date_failed"])
-                notify_realm_export(realm)
-                return
-
-            logger.info(
-                "Starting realm export for realm %s into %s, initiated by user_profile_id %s",
-                realm.string_id,
-                output_dir,
-                user_profile.id,
-            )
-
-            try:
-                export_realm_wrapper(
-                    export_row=export_row,
-                    output_dir=output_dir,
-                    processes=1 if self.threaded else 6,
-                    upload=True,
-                )
-            except Exception:
-                logging.exception(
-                    "Data export for %s failed after %s",
-                    realm.string_id,
-                    time.time() - start,
-                    stack_info=True,
-                )
-                notify_realm_export(realm)
-                return
-
-            # We create RealmAuditLog entry in 'export_realm_wrapper'.
-            # Delete the old entry created before we switched to RealmExport model.
-            if export_event:
-                export_event.delete()
-
-            # Send a direct message notification letting the user who
-            # triggered the export know the export finished.
-            with override_language(user_profile.default_language):
-                content = _(
-                    "Your data export is complete. [View and download exports]({export_settings_link})."
-                ).format(export_settings_link="/#organization/data-exports-admin")
-            internal_send_private_message(
-                sender=get_system_bot(settings.NOTIFICATION_BOT, realm.id),
-                recipient_user=user_profile,
-                content=content,
-            )
-
-            # For future frontend use, also notify administrator
-            # clients that the export happened.
-            notify_realm_export(realm)
-            logging.info(
-                "Completed data export for %s in %s",
-                realm.string_id,
-                time.time() - start,
-            )
+            export_realm_from_event(event, threaded=self.threaded, logger=logger)
         elif event["type"] == "reupload_realm_emoji":
             # This is a special event queued by the migration for reuploading emojis.
             # We don't want to run the necessary code in the actual migration, so it simply
