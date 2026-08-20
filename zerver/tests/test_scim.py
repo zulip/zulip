@@ -168,7 +168,7 @@ class TestSCIMUser(SCIMTestCase):
         expected_response_schema = {
             "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
             "totalResults": 1,
-            "itemsPerPage": 50,
+            "itemsPerPage": 1,
             "startIndex": 1,
             "Resources": [self.generate_user_schema(hamlet)],
         }
@@ -198,7 +198,7 @@ class TestSCIMUser(SCIMTestCase):
         expected_empty_results_response_schema = {
             "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
             "totalResults": 0,
-            "itemsPerPage": 50,
+            "itemsPerPage": 0,
             "startIndex": 1,
             "Resources": [],
         }
@@ -218,7 +218,7 @@ class TestSCIMUser(SCIMTestCase):
         expected_response_schema = {
             "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
             "totalResults": 1,
-            "itemsPerPage": 50,
+            "itemsPerPage": 1,
             "startIndex": 1,
             "Resources": [self.generate_user_schema(hamlet)],
         }
@@ -239,10 +239,11 @@ class TestSCIMUser(SCIMTestCase):
         self.assertEqual(result_all.status_code, 200)
         output_data_all = orjson.loads(result_all.content)
 
+        count = UserProfile.objects.filter(realm=realm, is_bot=False).count()
         expected_response_schema = {
             "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
-            "totalResults": UserProfile.objects.filter(realm=realm, is_bot=False).count(),
-            "itemsPerPage": 50,
+            "totalResults": count,
+            "itemsPerPage": count,
             "startIndex": 1,
             "Resources": [
                 self.generate_user_schema(user_profile)
@@ -323,10 +324,11 @@ class TestSCIMUser(SCIMTestCase):
         user_query = UserProfile.objects.filter(
             realm=realm, is_bot=False, delivery_email__endswith="@zulip.com"
         )
+        count = user_query.count()
         expected_response_schema = {
             "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
-            "totalResults": user_query.count(),
-            "itemsPerPage": 50,
+            "totalResults": count,
+            "itemsPerPage": count,
             "startIndex": 1,
             "Resources": [
                 self.generate_user_schema(user_profile)
@@ -1202,7 +1204,7 @@ class TestSCIMGroup(SCIMTestCase):
         expected_response_schema = {
             "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
             "totalResults": 1,
-            "itemsPerPage": 50,
+            "itemsPerPage": 1,
             "startIndex": 1,
             "Resources": [self.generate_group_schema(test_group)],
         }
@@ -1223,7 +1225,7 @@ class TestSCIMGroup(SCIMTestCase):
         expected_response_schema = {
             "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
             "totalResults": 0,
-            "itemsPerPage": 50,
+            "itemsPerPage": 0,
             "startIndex": 1,
             "Resources": [],
         }
@@ -1244,10 +1246,11 @@ class TestSCIMGroup(SCIMTestCase):
         self.assertEqual(result_all.status_code, 200)
         output_data_all = orjson.loads(result_all.content)
 
+        count = NamedUserGroup.objects.filter(realm_for_sharding=realm).count()
         expected_response_schema = {
             "schemas": ["urn:ietf:params:scim:api:messages:2.0:ListResponse"],
-            "totalResults": NamedUserGroup.objects.filter(realm_for_sharding=realm).count(),
-            "itemsPerPage": 50,
+            "totalResults": count,
+            "itemsPerPage": count,
             "startIndex": 1,
             "Resources": [
                 self.generate_group_schema(group)
