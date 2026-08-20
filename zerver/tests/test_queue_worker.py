@@ -887,6 +887,16 @@ class WorkerTest(ZulipTestCase):
             worker.consume(import_event)
         mock_import.assert_called_once_with(import_event)
 
+        scrub_event = {"type": "scrub_deactivated_realm", "realm_id": 1}
+        with (
+            patch(
+                "zerver.worker.deferred_work_high_latency.clean_deactivated_realm_data"
+            ) as mock_scrub,
+            self.assertLogs(deferred_work_high_latency.logger, level="INFO"),
+        ):
+            worker.consume(scrub_event)
+        mock_scrub.assert_called_once_with()
+
     def test_high_latency_worker_rejects_unknown_event_type(self) -> None:
         """Acknowledging an unrecognized type would silently discard a job that
         can take an hour to redo."""
