@@ -1849,7 +1849,7 @@ class RealmImportExportTest(ExportFile):
         )
         self.assertEqual(
             original_msg.rendered_content,
-            '<div class="codehilite"><pre><span></span><code>&#39;\n</code></pre></div>\n'
+            """<div class="codehilite"><pre><span></span><code>'\n</code></pre></div>\n"""
             f'<p><span class="user-mention" data-user-id="{orig_polonius_user.id}">@Polonius</span></p>',
         )
         imported_polonius_user = UserProfile.objects.get(
