@@ -65,6 +65,15 @@ type ComposeHook = () => void;
 const compose_clear_box_hooks: ComposeHook[] = [];
 const compose_cancel_hooks: ComposeHook[] = [];
 
+// Disallowed triggers for compose start.
+const disallowed_triggers = new Set([
+    "hotkey",
+    "hotkey enter",
+    "message click",
+    "hotkey pm",
+    "popover respond",
+]);
+
 export function register_compose_box_clear_hook(hook: ComposeHook): void {
     compose_clear_box_hooks.push(hook);
 }
@@ -311,21 +320,24 @@ function same_recipient_as_before(opts: ComposeActionsOpts): boolean {
 }
 
 function hide_compose_box_and_maybe_display_missing_permissions_toast(trigger: string): void {
-    hide_box();
-    if (trigger === "hotkey") {
+    cancel();
+    if (trigger === "hotkey" || trigger === "hotkey pm") {
         feedback_widget.show({
             title_text: $t({defaultMessage: "Reply not allowed"}),
             populate($container) {
-                const message = $t({
-                    defaultMessage: "You don't have permission to reply to this conversation.",
-                });
+                const message =
+                    trigger === "hotkey"
+                        ? $t({
+                              defaultMessage:
+                                  "You don't have permission to reply to this conversation.",
+                          })
+                        : $t({
+                              defaultMessage: "You don't have permission to reply to the sender.",
+                          });
                 $container.text(message);
             },
         });
     }
-    // This is done to avoid a faded group of messages on clicking a message
-    // to which we cannot reply when it is part of a mixed narrow.
-    compose_fade.start_compose("stream");
 }
 
 export let start = (raw_opts: ComposeActionsStartOpts): void => {
@@ -388,27 +400,52 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
     }
 
     if (opts.message_type === "private") {
-        compose_state.set_compose_recipient_id(compose_state.DIRECT_MESSAGE_ID);
-        compose_recipient.on_compose_select_recipient_update();
-    } else if (opts.stream_id && opts.topic) {
-        const stream = stream_data.get_sub_by_id(opts.stream_id);
-        compose_state.topic(opts.topic);
-        compose_state.set_stream_id(opts.stream_id);
-        compose_recipient.on_compose_select_recipient_update();
-        if (!(stream && stream_data.can_post_messages_in_stream(stream))) {
+        const user_ids = opts.private_message_recipient_ids;
+
+        // we don't show compose if the user doesn't have permission to send direct
+        // message to the recipients.
+        if (
+            user_ids.length > 0 &&
+            !message_util.user_can_send_direct_message(user_ids.join(",")) &&
+            disallowed_triggers.has(opts.trigger)
+        ) {
             hide_compose_box_and_maybe_display_missing_permissions_toast(opts.trigger);
             return;
         }
-    } else if (opts.stream_id) {
-        const stream = stream_data.get_sub_by_id(opts.stream_id);
-        if (stream && stream_data.can_post_messages_in_stream(stream)) {
+        compose_state.set_compose_recipient_id(compose_state.DIRECT_MESSAGE_ID);
+        compose_recipient.on_compose_select_recipient_update();
+    } else {
+        const stream = opts.stream_id ? stream_data.get_sub_by_id(opts.stream_id) : undefined;
+        const can_post_messages_in_stream =
+            stream !== undefined && stream_data.can_post_messages_in_stream(stream);
+
+        // Close compose box if user doesn't have permission to post in the stream.
+        if (
+            opts.stream_id !== undefined &&
+            !can_post_messages_in_stream &&
+            disallowed_triggers.has(opts.trigger) &&
+            !compose_state.get_is_processing_forward_message()
+        ) {
+            hide_compose_box_and_maybe_display_missing_permissions_toast(opts.trigger);
+            return;
+        }
+
+        // We set the compose recipient with the stream-topic details if the
+        // user has posting permissions to the stream or else we reset the
+        // recipients and open the stream selection dropdown.
+        if (opts.stream_id && can_post_messages_in_stream) {
+            compose_state.topic(opts.topic);
             compose_state.set_stream_id(opts.stream_id);
             compose_recipient.on_compose_select_recipient_update();
         } else {
+            opts.topic = opts.stream_id !== undefined ? "" : opts.topic;
             opts.stream_id = undefined;
             compose_state.set_stream_id("");
-            opts.topic = "";
-            compose_recipient.toggle_compose_recipient_dropdown();
+            // For forward message, the caller opens the dropdown after start()
+            // returns; we skip the toggle here to avoid canceling it out.
+            if (!compose_state.get_is_processing_forward_message()) {
+                compose_recipient.toggle_compose_recipient_dropdown();
+            }
         }
 
         if (
@@ -419,10 +456,6 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
             // Open the typahead so that user can select an existing topic.
             composebox_typeahead.stream_message_topic_typeahead.lookup(false, true);
         }
-    } else {
-        // Open stream selection dropdown if no stream is selected.
-        compose_state.set_stream_id("");
-        compose_recipient.toggle_compose_recipient_dropdown();
     }
     compose_recipient.update_topic_displayed_text(opts.topic);
 
