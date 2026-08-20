@@ -229,7 +229,11 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             ("नाम में क्या रक्खा हे", "utf-8", "utf-8"),  # Enough to get 99% confidence UTF-8
             ("日本語", "iso2022_jp", "ISO-2022-JP"),  # Non-UTF-8 95% confidence
             ("\xa0" + " " * 30, "utf-8", "utf-8"),  # UTF-8 is only 87% confident
-            ("· ar aitheach a le chan ir ana s din tag", "L1", "ISO-8859-1"),  # 76% confidence
+            (
+                "´s - a a a a be den den den en en fva h ig ilan in kanandender lllinganger m mar ochar omer omer per sar ser sker sorararat st st t t t vinstatateretetetinttt f",
+                "L1",
+                "ISO-8859-1",
+            ),  # 74% confidence
             ("Aucune idée", "mac-roman", None),  # Short text in obscure formats is left unguessed
         ]
         self.login("hamlet")
