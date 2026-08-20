@@ -181,6 +181,55 @@ multiprocess mode, a dedicated worker process), so they aren't delayed
 behind such jobs. This costs an additional worker process, so it is most
 useful on large servers; smaller servers should leave it disabled.
 
+#### `dedicated_deferred_work_high_latency_queue`
+
+Some deferred work has no latency expectations at all: realm data exports
+and Slack imports can each take many minutes. By default they run in the
+shared `deferred_work` queue, where they can hold up other,
+latency-sensitive jobs in that queue. Set this to true to process them in
+a dedicated queue, isolating them from the rest of `deferred_work`.
+
+In multiprocess mode (see `queue_workers_multiprocess` above) this costs
+an additional worker process that is idle almost all the time; in
+multithreaded mode it costs only a thread. Set it identically on all
+application frontends, and on the host running the RabbitMQ Nagios
+checks, so that monitoring agrees with which queue is in use.
+
+Turning this back off requires care, because exports and Slack imports
+already in the `deferred_work_high_latency` queue are not moved back to
+`deferred_work`. A stranded export is displayed to administrators as
+permanently in progress and cannot be deleted; a stranded Slack import
+leaves that organization's signup permanently stuck. Disable it in this
+order, so that nothing new is enqueued while the worker still exists:
+
+1. Set it to false in `/etc/zulip/zulip.conf`.
+
+2. Restart the server, so that it stops publishing to the dedicated
+   queue. Running `zulip-puppet-apply` alone does not do this:
+
+   ```console
+   # /home/zulip/deployments/current/scripts/restart-server
+   ```
+
+3. Wait for the queue to drain. As root, this should report `0`:
+
+   ```console
+   # rabbitmqctl list_queues name messages | grep deferred_work_high_latency
+   ```
+
+4. Run `zulip-puppet-apply` to remove the now-idle worker.
+
+If the worker was removed before the queue drained, you can drain it
+directly; interrupt the command with ^C once the queue is empty:
+
+```console
+$ /home/zulip/deployments/current/manage.py process_queue \
+    --queue_name=deferred_work_high_latency
+```
+
+Note that `manage.py process_queue --all` and `manage.py purge_queue`
+both skip this queue while the setting is disabled.
+
 #### `rolling_restart`
 
 If set to true, when using `./scripts/restart-server` to restart

@@ -1294,6 +1294,14 @@ DEDICATED_SOFT_REACTIVATION_QUEUE = get_config(
     "application_server", "dedicated_soft_reactivation_queue", False
 )
 
+# Process realm data exports and Slack imports in their own queue
+# instead of sharing deferred_work, so they can't hold up its
+# latency-sensitive jobs. Like DEDICATED_SOFT_REACTIVATION_QUEUE above,
+# this can only be set in zulip.conf, and is off by default.
+DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE = get_config(
+    "application_server", "dedicated_deferred_work_high_latency_queue", False
+)
+
 TWO_FACTOR_PATCH_ADMIN = False
 
 # Allow the environment to override the default DSN

@@ -165,12 +165,17 @@ class zulip::app_frontend_base {
     'user_activity',
     'user_activity_interval',
   ]
-  # Soft reactivations normally share the deferred_work queue; larger
-  # servers can opt into a dedicated queue (and worker process) for them.
-  $queues = zulipconf('application_server', 'dedicated_soft_reactivation_queue', false) ? {
-    true    => $base_queues + ['soft_reactivation'],
-    default => $base_queues,
+  # Larger servers can opt each of these out of the shared deferred_work
+  # queue, into a dedicated queue and worker process.
+  $soft_reactivation_queue = zulipconf('application_server', 'dedicated_soft_reactivation_queue', false) ? {
+    true    => ['soft_reactivation'],
+    default => [],
   }
+  $high_latency_queue = zulipconf('application_server', 'dedicated_deferred_work_high_latency_queue', false) ? {
+    true    => ['deferred_work_high_latency'],
+    default => [],
+  }
+  $queues = $base_queues + $soft_reactivation_queue + $high_latency_queue
 
   if $zulip::common::total_memory_mb > 24000 {
     $uwsgi_default_processes = 16
