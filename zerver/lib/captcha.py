@@ -45,6 +45,27 @@ class AltchaWidget(forms.TextInput):
         )
 
 
+class CaptchaFormMixin(forms.Form):
+    captcha = forms.CharField(required=True, widget=AltchaWidget)
+
+    def __init__(self, *args: Any, request: HttpRequest, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.request = request
+        if not settings.USING_CAPTCHA or not settings.ALTCHA_HMAC_KEY:
+            del self.fields["captcha"]
+
+    @override
+    def clean(self) -> None:
+        super().clean()
+        if "captcha" in self.fields and not self.data.get("captcha"):
+            self.add_error("captcha", _("Validation failed, please try again."))
+
+    def clean_captcha(self) -> str:
+        payload = self.data.get("captcha", "")
+        validate_captcha_payload(self.request, payload)
+        return payload
+
+
 def validate_captcha_payload(request: HttpRequest, captcha_payload: str) -> None:
     if not settings.USING_CAPTCHA or not settings.ALTCHA_HMAC_KEY:  # nocoverage
         raise forms.ValidationError(_("Challenges are not enabled."))
