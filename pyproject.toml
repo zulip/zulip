@@ -174,7 +174,7 @@ prod = [
   "pybreaker",
 
   # Runtime monkeypatching of django-stubs generics
-  "django-stubs-ext",
+  "django-stubs-ext<6.1.0",  # 6.1.0 requires Python ≥ 3.11
 
   # Structured data representation with parsing.
   "pydantic",
@@ -293,7 +293,7 @@ dev = [
   "mypy[faster-cache]",
 
   "boto3-stubs[s3,ses,sns,sqs]",
-  "django-stubs",
+  "django-stubs<6.1.0",  # 6.1.0 requires Python ≥ 3.11
   "google-re2-stubs",
   "lxml-stubs",
   "types-beautifulsoup4",
@@ -342,9 +342,6 @@ no-binary-package = [
 ]
 
 [tool.uv.sources]
-# Python 3.14 support: https://github.com/disqus/django-bitfield/pull/137
-django-bitfield = { git = "https://github.com/disqus/django-bitfield.git" }
-
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
 # and chardet, cchardet: https://github.com/mailgun/talon/pull/239
 # and fix invalid escape sequences: https://github.com/mailgun/talon/pull/245

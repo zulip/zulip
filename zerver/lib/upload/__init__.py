@@ -155,7 +155,7 @@ def create_attachment(
     notify_attachment_update(user_profile, "add", attachment.to_dict())
 
 
-def get_file_info(user_file: UploadedFile) -> tuple[str, str]:
+def get_file_info(user_file: UploadedFile[bytes]) -> tuple[str, str]:
     uploaded_file_name = user_file.name
     assert uploaded_file_name is not None
 
@@ -318,7 +318,7 @@ def claim_attachment(
 
 
 def upload_message_attachment_from_request(
-    user_file: UploadedFile, user_profile: UserProfile
+    user_file: UploadedFile[bytes], user_profile: UserProfile
 ) -> tuple[str, str]:
     uploaded_file_name, content_type = get_file_info(user_file)
     return upload_message_attachment(
