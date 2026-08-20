@@ -173,7 +173,7 @@ class DemoCreationTest(ZulipTestCase):
         # If we override the validation, we get an error because it's not in the session
         payload = base64.b64encode(orjson.dumps({"challenge": "moose"})).decode()
         with (
-            patch("zerver.forms.verify_solution", return_value=(True, None)) as verify,
+            patch("zerver.lib.captcha.verify_solution", return_value=(True, None)) as verify,
             self.assertLogs(level="WARNING") as logs,
         ):
             result = self.submit_demo_creation_form(captcha=payload)
@@ -197,7 +197,7 @@ class DemoCreationTest(ZulipTestCase):
         # Update the payload so the challenge matches what is in the
         # session.  The real payload would have other keys.
         payload = base64.b64encode(orjson.dumps({"challenge": data["challenge"]})).decode()
-        with patch("zerver.forms.verify_solution", return_value=(True, None)) as verify:
+        with patch("zerver.lib.captcha.verify_solution", return_value=(True, None)) as verify:
             result = self.submit_demo_creation_form(captcha=payload)
             self.assertEqual(result.status_code, 302)
             verify.assert_called_once_with(payload, "secret", check_expires=True)
@@ -1183,7 +1183,7 @@ class RealmCreationTest(ZulipTestCase):
         # If we override the validation, we get an error because it's not in the session
         payload = base64.b64encode(orjson.dumps({"challenge": "moose"})).decode()
         with (
-            patch("zerver.forms.verify_solution", return_value=(True, None)) as verify,
+            patch("zerver.lib.captcha.verify_solution", return_value=(True, None)) as verify,
             self.assertLogs(level="WARNING") as logs,
         ):
             result = self.submit_realm_creation_form(
@@ -1209,7 +1209,7 @@ class RealmCreationTest(ZulipTestCase):
         # Update the payload so the challenge matches what is in the
         # session.  The real payload would have other keys.
         payload = base64.b64encode(orjson.dumps({"challenge": data["challenge"]})).decode()
-        with patch("zerver.forms.verify_solution", return_value=(True, None)) as verify:
+        with patch("zerver.lib.captcha.verify_solution", return_value=(True, None)) as verify:
             result = self.submit_realm_creation_form(
                 email, realm_subdomain=string_id, realm_name=realm_name, captcha=payload
             )
