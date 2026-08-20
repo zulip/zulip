@@ -146,9 +146,9 @@ class DemoCreationTest(ZulipTestCase):
         result = self.client_get("/new/demo/")
         self.assert_not_in_success_response(["Validation failed"], result)
 
-        # Without the CAPTCHA value, we get an error
+        # Without the CAPTCHA value, we get a single error
         result = self.submit_demo_creation_form()
-        self.assert_in_success_response(["Validation failed, please try again."], result)
+        self.assertEqual(result.content.decode().count("Validation failed, please try again."), 1)
 
         # With an invalid value, we also get an error
         with self.assertLogs(level="WARNING") as logs:
@@ -1149,11 +1149,11 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_get("/new/")
         self.assert_not_in_success_response(["Validation failed"], result)
 
-        # Without the CAPTCHA value, we get an error
+        # Without the CAPTCHA value, we get a single error
         result = self.submit_realm_creation_form(
             email, realm_subdomain=string_id, realm_name=realm_name
         )
-        self.assert_in_success_response(["Validation failed, please try again."], result)
+        self.assertEqual(result.content.decode().count("Validation failed, please try again."), 1)
 
         # With an invalid value, we also get an error
         with self.assertLogs(level="WARNING") as logs:
