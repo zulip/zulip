@@ -1571,7 +1571,7 @@ class TestRealmAuditLog(ZulipTestCase):
 
         othello = self.example_user("othello")
         old_setting_api_value = get_group_setting_value_for_api(user_group.can_mention_group)
-        # Since the old setting value was a anonymous group, we just update the
+        # Since the old setting value was an anonymous group, we just update the
         # members and subgroups of the already existing UserGroup instead of creating
         # a new UserGroup object to keep this consistent with the actual code.
         new_group = self.create_or_update_anonymous_group_for_setting(

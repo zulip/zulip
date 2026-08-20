@@ -120,7 +120,7 @@ class PreregistrationUser(models.Model):
 
     # Used in realm import flow to allow importer (the person
     # whose email is set as PreregistrationRealm.email) to create
-    # a new user if a imported user with the matching
+    # a new user if an imported user with the matching
     # email was not found.
     is_realm_importer = models.BooleanField(default=False)
 

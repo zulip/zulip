@@ -58,7 +58,7 @@ the first frame, as a 64x64 PNG image. This is currently mostly unused, but is
 intended to be part of a user preference to disable emoji animations (see
 [#13434](https://github.com/zulip/zulip/issues/13434)). Current use is limited
 to [user status](https://zulip.com/help/status-and-availability) display in
-the the buddy list. When a user uses an animated emoji as their status, the
+the buddy list. When a user uses an animated emoji as their status, the
 "still" version is used.
 
 The original emoji is stored adjacent to the thumbnailed version, enabling later
