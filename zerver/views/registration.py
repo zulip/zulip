@@ -58,8 +58,6 @@ from zerver.context_processors import (
 from zerver.decorator import add_google_analytics, do_login, require_post
 from zerver.forms import (
     HOW_FOUND_ZULIP_EXTRA_CONTEXT,
-    CaptchaDemoRegistrationForm,
-    CaptchaRealmCreationForm,
     DemoRegistrationForm,
     FindMyTeamForm,
     HomepageForm,
@@ -1466,10 +1464,7 @@ def create_realm(request: HttpRequest, confirmation_key: str | None = None) -> H
     # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
     # with a few restrictions on their email address.
     if request.method == "POST":
-        if settings.USING_CAPTCHA and settings.ALTCHA_HMAC_KEY:
-            form: RealmCreationForm = CaptchaRealmCreationForm(data=request.POST, request=request)
-        else:
-            form = RealmCreationForm(request.POST)
+        form = RealmCreationForm(request.POST, request=request)
         if form.is_valid():
             try:
                 rate_limit_request_by_ip(request, domain="sends_email_by_ip")
@@ -1544,10 +1539,7 @@ def create_realm(request: HttpRequest, confirmation_key: str | None = None) -> H
         initial_data = {
             "realm_default_language": default_language_code,
         }
-        if settings.USING_CAPTCHA and settings.ALTCHA_HMAC_KEY:
-            form = CaptchaRealmCreationForm(request=request, initial=initial_data)
-        else:
-            form = RealmCreationForm(initial=initial_data)
+        form = RealmCreationForm(initial=initial_data, request=request)
 
     context = get_realm_create_form_context()
     context.update(
@@ -1665,12 +1657,7 @@ def create_demo_organization(
         )
 
     if request.method == "POST":
-        if settings.USING_CAPTCHA and settings.ALTCHA_HMAC_KEY:
-            form: DemoRegistrationForm = CaptchaDemoRegistrationForm(
-                data=request.POST, request=request
-            )
-        else:
-            form = DemoRegistrationForm(request.POST)
+        form = DemoRegistrationForm(request.POST, request=request)
         if form.is_valid():
             try:
                 rate_limit_request_by_ip(request, domain="demo_realm_creation_by_ip")
@@ -1716,10 +1703,7 @@ def create_demo_organization(
             if default_language_code is None
             else default_language_code,
         }
-        if settings.USING_CAPTCHA and settings.ALTCHA_HMAC_KEY:
-            form = CaptchaDemoRegistrationForm(request=request, initial=initial_data)
-        else:
-            form = DemoRegistrationForm(initial=initial_data)
+        form = DemoRegistrationForm(initial=initial_data, request=request)
 
     context = get_realm_create_form_context()
     context.update(

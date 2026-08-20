@@ -19,7 +19,7 @@ from typing_extensions import override
 
 from zerver.actions.user_settings import do_change_password, do_change_user_setting
 from zerver.actions.users import do_send_password_reset_email
-from zerver.lib.captcha import AltchaWidget, validate_captcha_payload
+from zerver.lib.captcha import CaptchaFormMixin
 from zerver.lib.email_validation import (
     email_allowed_for_realm,
     email_reserved_for_system_bots_error,
@@ -226,7 +226,7 @@ class RegistrationForm(HowFoundZulipFormMixin, RealmDetailsForm):
         return password
 
 
-class DemoRegistrationForm(HowFoundZulipFormMixin, forms.Form):
+class DemoRegistrationForm(CaptchaFormMixin, HowFoundZulipFormMixin, forms.Form):
     terms = forms.BooleanField(required=False)
     realm_type = forms.TypedChoiceField(
         coerce=int, choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()]
@@ -339,7 +339,7 @@ class ImportRealmOwnerSelectionForm(forms.Form):
     user_id = forms.IntegerField(required=False)
 
 
-class RealmCreationForm(RealmDetailsForm):
+class RealmCreationForm(CaptchaFormMixin, RealmDetailsForm):
     # This form determines whether users can create a new realm.
     email = forms.EmailField(
         validators=[email_not_system_bot, email_is_not_disposable], max_length=EMAIL_MAX_LENGTH
@@ -356,56 +356,6 @@ class RealmCreationForm(RealmDetailsForm):
     def clean_import_from(self) -> str:
         # Convert "" to "none".
         return self.cleaned_data["import_from"] or "none"
-
-
-class CaptchaRealmCreationForm(RealmCreationForm):
-    captcha = forms.CharField(required=True, widget=AltchaWidget)
-
-    def __init__(
-        self,
-        *,
-        request: HttpRequest,
-        data: dict[str, Any] | None = None,
-        initial: dict[str, Any] | None = None,
-    ) -> None:
-        super().__init__(data=data, initial=initial)
-        self.request = request
-
-    @override
-    def clean(self) -> None:
-        super().clean()
-        if not self.data.get("captcha"):
-            self.add_error("captcha", _("Validation failed, please try again."))
-
-    def clean_captcha(self) -> str:
-        payload = self.data.get("captcha", "")
-        validate_captcha_payload(self.request, payload)
-        return payload
-
-
-class CaptchaDemoRegistrationForm(DemoRegistrationForm):
-    captcha = forms.CharField(required=True, widget=AltchaWidget)
-
-    def __init__(
-        self,
-        *,
-        request: HttpRequest,
-        data: dict[str, Any] | None = None,
-        initial: dict[str, Any] | None = None,
-    ) -> None:
-        super().__init__(data=data, initial=initial)
-        self.request = request
-
-    @override
-    def clean(self) -> None:
-        super().clean()
-        if not self.data.get("captcha"):
-            self.add_error("captcha", _("Validation failed, please try again."))
-
-    def clean_captcha(self) -> str:
-        payload = self.data.get("captcha", "")
-        validate_captcha_payload(self.request, payload)
-        return payload
 
 
 class LoggingSetPasswordForm(SetPasswordForm[UserProfile]):
