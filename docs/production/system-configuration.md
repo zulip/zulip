@@ -533,3 +533,14 @@ The Sentry organization used for the [Sentry deploy hook](deployment.md#sentry-d
 #### `project`
 
 The Sentry project used for the [Sentry deploy hook](deployment.md#sentry-deploy-hook).
+
+### `[email_gateway]`
+
+#### `listen`
+
+The address for the [incoming email gateway's](email-gateway.md) SMTP
+server to bind to, as a bare port number, or `address:port`; IPv6
+addresses must be enclosed in square brackets (e.g.,
+`[2001:db8::1]:25`). Defaults to listening on port 25 on all
+addresses, both IPv4 and IPv6. This only applies to the local
+delivery mode of the gateway, not the polling mode.

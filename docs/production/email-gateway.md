@@ -97,6 +97,13 @@ using an [HTTP reverse proxy][reverse-proxy]).
 
 Congratulations! The integration should be fully operational.
 
+:::{note}
+The incoming mail server listens on port 25, on all IPv4 and IPv6
+addresses, by default; you can adjust this with the
+[`email_gateway.listen`](system-configuration.md#listen) setting in
+`/etc/zulip/zulip.conf`.
+:::
+
 [reverse-proxy]: reverse-proxies.md
 
 ## Polling setup
