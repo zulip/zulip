@@ -22931,6 +22931,7 @@ paths:
                                 timezone: {}
                                 avatar_url:
                                   nullable: true
+                                avatar_source: {}
                                 avatar_version: {}
                                 is_imported_stub: {}
                       server_report_message_types:
@@ -30104,6 +30105,7 @@ components:
             timezone: {}
             avatar_url:
               nullable: true
+            avatar_source: {}
             avatar_version: {}
             is_imported_stub: {}
             is_deleted: {}
@@ -30251,6 +30253,21 @@ components:
             In Zulip 3.0 (feature level 18), if the client has the
             `user_avatar_url_field_optional` capability, this will be missing at
             the server's sole discretion.
+        avatar_source:
+          type: string
+          description: |
+            The avatar data source type for the user. Only present for bot
+            users. Valid values are:
+
+            - `"G"` = Hosted by Gravatar
+            - `"J"` = Generated using Jdenticon
+            - `"U"` = Uploaded by user
+
+            **Changes**: Previously, `avatar_source` was only exposed at the top level of the `/register` response for the current user.
+          enum:
+            - "G"
+            - "J"
+            - "U"
         avatar_version:
           type: integer
           description: |
