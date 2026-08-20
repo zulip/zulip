@@ -144,7 +144,7 @@ run_test("count text in a conversation view", () => {
     // A view that has not fetched the whole topic can only give a
     // lower bound.
     set_current_view(topic_view_terms("foo"), foo_messages, {found_oldest: false});
-    assert.equal(count_text("change_all", "foo"), "translated: At least 3 messages will be moved.");
+    assert.equal(count_text("change_all", "foo"), "translated: 3+ messages will be moved.");
 
     // A `near` term points at one message of the conversation without
     // narrowing the view any further, so the count stays exact.
@@ -197,17 +197,17 @@ run_test("count text in views that cannot answer for the topic", () => {
     // we count from the recent conversations cache and say the count is
     // a lower bound.
     set_current_view([], foo_messages);
-    assert.equal(count_text("change_all", "foo"), "translated: At least 1 message will be moved.");
+    assert.equal(count_text("change_all", "foo"), "translated: 1+ messages will be moved.");
 
     set_current_channel_topics_view(rome.stream_id);
-    assert.equal(count_text("change_all", "foo"), "translated: At least 1 message will be moved.");
+    assert.equal(count_text("change_all", "foo"), "translated: 1+ messages will be moved.");
 });
 
 run_test("count text when the channel's history is limited", () => {
     // The user cannot see the messages older than the ones the server
     // sent us, but moving the topic moves those too.
     set_current_view(topic_view_terms("foo"), foo_messages, {history_limited: true});
-    assert.equal(count_text("change_all", "foo"), "translated: At least 3 messages will be moved.");
+    assert.equal(count_text("change_all", "foo"), "translated: 3+ messages will be moved.");
 
     // The messages we cannot see are all older than the selected one,
     // so this count is still exact.

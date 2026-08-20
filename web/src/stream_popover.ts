@@ -497,10 +497,7 @@ export function update_move_messages_count_text(
         );
     } else {
         message_text = $t(
-            {
-                defaultMessage:
-                    "At least {count, plural, one {# message} other {# messages}} will be moved.",
-            },
+            {defaultMessage: "{count}+ messages will be moved."},
             {count: message_move_count},
         );
     }
