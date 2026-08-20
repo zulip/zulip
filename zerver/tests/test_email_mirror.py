@@ -45,7 +45,11 @@ from zerver.lib.email_mirror_helpers import (
     get_channel_email_token,
     get_email_gateway_message_string_from_address,
 )
-from zerver.lib.email_mirror_server import ZulipMessageHandler, send_to_postmaster
+from zerver.lib.email_mirror_server import (
+    ZulipMessageHandler,
+    parse_listen_address,
+    send_to_postmaster,
+)
 from zerver.lib.markdown.from_html import convert_html_to_markdown
 from zerver.lib.message import truncate_topic
 from zerver.lib.send_email import FromAddress
@@ -2168,6 +2172,23 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
 
 
 class TestEmailMirrorServer(ZulipTestCase):
+    def test_parse_listen_address(self) -> None:
+        ipv4_wildcard = "0.0.0.0"  # noqa: S104
+        with mock.patch("socket.has_dualstack_ipv6", return_value=True):
+            self.assertEqual(parse_listen_address("25"), ("::", 25))
+            self.assertEqual(parse_listen_address(":25"), ("::", 25))
+        with mock.patch("socket.has_dualstack_ipv6", return_value=False):
+            self.assertEqual(parse_listen_address("25"), (ipv4_wildcard, 25))
+            self.assertEqual(parse_listen_address(":25"), (ipv4_wildcard, 25))
+        self.assertEqual(parse_listen_address(f"{ipv4_wildcard}:25"), (ipv4_wildcard, 25))
+        self.assertEqual(parse_listen_address("[::]:2525"), ("::", 2525))
+        self.assertEqual(parse_listen_address("[2001:db8::1]:25"), ("2001:db8::1", 25))
+        self.assertEqual(parse_listen_address("mail.example.com:25"), ("mail.example.com", 25))
+        with self.assertRaisesRegex(
+            RuntimeError, "'mail.example.com' does not have a valid port number."
+        ):
+            parse_listen_address("mail.example.com")
+
     def test_send_postmaster(self) -> None:
         email = EmailMessage()
         email.set_content("Hello postmaster!")

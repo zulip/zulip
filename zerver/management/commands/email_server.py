@@ -1,12 +1,11 @@
 import os
 import ssl
 from typing import Any
-from urllib.parse import SplitResult
 
 from django.core.management.base import BaseCommand, CommandParser
 from typing_extensions import override
 
-from zerver.lib.email_mirror_server import run_smtp_server
+from zerver.lib.email_mirror_server import parse_listen_address, run_smtp_server
 
 
 class Command(BaseCommand):
@@ -15,7 +14,7 @@ class Command(BaseCommand):
     @override
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
-            "--listen", help="[Port, or address:port, to bind HTTP server to]", default="0.0.0.0:25"
+            "--listen", help="[Port, or address:port, to bind the SMTP server to]", default="25"
         )
         parser.add_argument(
             "--user",
@@ -52,14 +51,7 @@ class Command(BaseCommand):
 
     @override
     def handle(self, *args: Any, **options: Any) -> None:
-        listen = options["listen"]
-        if listen.isdigit():
-            host, port = "0.0.0.0", int(listen)  # noqa: S104
-        else:
-            r = SplitResult("", listen, "", "", "")
-            if r.port is None:
-                raise RuntimeError(f"{listen!r} does not have a valid port number.")
-            host, port = r.hostname or "0.0.0.0", r.port  # noqa: S104
+        host, port = parse_listen_address(options["listen"])
         if options["tls_cert"] and options["tls_key"]:
             tls_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
             tls_context.load_cert_chain(options["tls_cert"], options["tls_key"])
