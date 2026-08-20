@@ -177,8 +177,11 @@ def is_avatar_new(ldap_avatar: bytes, user_profile: UserProfile) -> bool:
     return True
 
 
-def get_avatar_for_inaccessible_user() -> str:
-    return staticfiles_storage.url("images/unknown-user-avatar.png")
+def get_avatar_for_inaccessible_user(medium: bool) -> str:
+    avatar_file_name = (
+        "images/unknown-user-avatar-medium.png" if medium else "images/unknown-user-avatar.png"
+    )
+    return staticfiles_storage.url(avatar_file_name)
 
 
 def generate_avatar_jdenticon(input: str, medium: bool) -> bytes:
