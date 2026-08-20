@@ -579,6 +579,7 @@ def can_access_delivery_email(
 class APIUserDict(TypedDict):
     email: str
     user_id: int
+    avatar_source: NotRequired[str]
     avatar_version: int
     is_admin: bool
     is_owner: bool
@@ -690,6 +691,7 @@ def format_user_row(
 
         # Note that bot_owner_id can be None with legacy data.
         result["bot_owner_id"] = row["bot_owner_id"]
+        result["avatar_source"] = row["avatar_source"]
     elif custom_profile_field_data is not None:
         result["profile_data"] = custom_profile_field_data
     return result
