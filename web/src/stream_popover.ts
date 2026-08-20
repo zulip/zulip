@@ -380,30 +380,97 @@ async function get_message_placement_in_conversation(
     );
 }
 
-// The following logic is correct only when
-// both message_lists.current.data.fetch_status.has_found_newest
-// and message_lists.current.data.fetch_status.has_found_oldest are true;
-// otherwise, we cannot be certain of the correct count.
-export function get_count_of_messages_to_be_moved(
+// The current message list contains the topic being moved when it is
+// narrowed to that topic, or to the channel the topic is in. Any other
+// list -- an interleaved view, a search, another conversation, a view
+// of the channel that also filters by something else -- holds only
+// whichever of the topic's messages happen to match it, and views
+// rendered without a message list have none of them, so neither can
+// tell us how many messages the topic has.
+//
+// Containing the topic is not the same as having fetched all of it;
+// `fetch_status` answers that question.
+function current_message_list_contains_topic(stream_id: number, topic_name: string): boolean {
+    const current_filter = message_lists.current?.data.filter;
+    if (current_filter === undefined || narrow_state.stream_id(current_filter) !== stream_id) {
+        return false;
+    }
+
+    // A `near` or `with` term points at one message of the view without
+    // narrowing down which messages the view contains.
+    const term_types = current_filter
+        .sorted_term_types()
+        .filter((term_type) => term_type !== "near" && term_type !== "with");
+
+    // A channel view contains every topic in the channel.
+    if (term_types.length === 1 && term_types[0] === "channel") {
+        return true;
+    }
+
+    // A conversation view contains a single topic.
+    return (
+        term_types.length === 2 &&
+        term_types[0] === "channel" &&
+        term_types[1] === "topic" &&
+        util.lower_same(narrow_state.topic(current_filter), topic_name)
+    );
+}
+
+type MoveMessagesCount = {
+    count: number;
+    // False when the messages we counted may not be all of the ones the
+    // move will take, which makes the count a lower bound.
+    is_exact: boolean;
+};
+
+export function get_move_messages_count(
     selected_option: PropagateMode,
     current_stream_id: number,
     topic_name: string,
     message_id?: number,
-): number {
+): MoveMessagesCount {
     if (selected_option === "change_one") {
-        return 1;
+        return {count: 1, is_exact: true};
     }
+
+    // We prefer the current message list, which can see the whole
+    // history it has fetched for the topic, and fall back to the recent
+    // conversations cache, which is missing the older messages of a
+    // topic that has not been active recently.
+    const contains_topic = current_message_list_contains_topic(current_stream_id, topic_name);
+    const loaded_messages_in_topic = contains_topic
+        ? message_util.get_loaded_messages_in_topic_in_current_view(current_stream_id, topic_name)
+        : message_util.get_loaded_messages_in_topic(current_stream_id, topic_name);
+
+    let count;
     if (selected_option === "change_later") {
         // Only the message actions popover offers this option, and it
         // always knows which message the user selected.
         assert(message_id !== undefined);
-        return message_util.get_count_of_messages_in_topic_sent_after_current_message(
-            current_stream_id,
-            topic_name,
-            message_id,
-        );
+        count = loaded_messages_in_topic.filter((message) => message.id >= message_id).length;
+    } else {
+        count = loaded_messages_in_topic.length;
     }
-    return message_util.get_loaded_messages_in_topic(current_stream_id, topic_name).length;
+
+    if (!contains_topic) {
+        return {count, is_exact: false};
+    }
+
+    // We counted all the messages the move will take only if the list
+    // has fetched to the end of the range it takes them from.
+    assert(message_lists.current !== undefined);
+    const fetch_status = message_lists.current.data.fetch_status;
+    if (selected_option === "change_later") {
+        return {count, is_exact: fetch_status.has_found_newest()};
+    }
+
+    // A move also takes the messages that plan restrictions kept out of
+    // our fetch, which we cannot see to count.
+    const is_exact =
+        fetch_status.has_found_newest() &&
+        fetch_status.has_found_oldest() &&
+        !fetch_status.history_limited();
+    return {count, is_exact};
 }
 
 export function update_move_messages_count_text(
@@ -412,37 +479,15 @@ export function update_move_messages_count_text(
     topic_name: string,
     message_id?: number,
 ): void {
-    const message_move_count = get_count_of_messages_to_be_moved(
+    const {count: message_move_count, is_exact} = get_move_messages_count(
         selected_option,
         current_stream_id,
         topic_name,
         message_id,
     );
-    const is_topic_narrowed = narrow_state.narrowed_by_topic_reply();
-    const is_stream_narrowed = narrow_state.narrowed_by_stream_reply();
-    const is_same_stream = narrow_state.stream_id() === current_stream_id;
-    const is_same_topic = narrow_state.topic() === topic_name;
-
-    const can_have_exact_count_in_narrow =
-        (is_stream_narrowed && is_same_stream) ||
-        (is_topic_narrowed && is_same_stream && is_same_topic);
-    let exact_message_count = false;
-    if (selected_option === "change_one") {
-        exact_message_count = true;
-    } else if (can_have_exact_count_in_narrow) {
-        const has_found_newest = message_lists.current?.data.fetch_status.has_found_newest();
-        const has_found_oldest = message_lists.current?.data.fetch_status.has_found_oldest();
-
-        if (selected_option === "change_later" && has_found_newest) {
-            exact_message_count = true;
-        }
-        if (selected_option === "change_all" && has_found_newest && has_found_oldest) {
-            exact_message_count = true;
-        }
-    }
 
     let message_text;
-    if (exact_message_count) {
+    if (is_exact) {
         message_text = $t(
             {
                 defaultMessage:

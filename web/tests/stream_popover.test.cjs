@@ -91,12 +91,12 @@ function topic_view_terms(topic_name) {
 }
 
 function count_of_messages_to_be_moved(selected_option, topic_name, message_id) {
-    return stream_popover.get_count_of_messages_to_be_moved(
+    return stream_popover.get_move_messages_count(
         selected_option,
         rome.stream_id,
         topic_name,
         message_id,
-    );
+    ).count;
 }
 
 function count_text(selected_option, topic_name, message_id) {
@@ -119,10 +119,10 @@ run_test("count of messages to be moved", () => {
 
     assert.equal(count_of_messages_to_be_moved("change_one", "foo", selected_message_id), 1);
 
-    // The count comes from recent conversations rather than from the
-    // view, so it misses the messages that only the view has.
-    assert.equal(count_of_messages_to_be_moved("change_later", "foo", selected_message_id), 1);
-    assert.equal(count_of_messages_to_be_moved("change_all", "foo"), 1);
+    // The count comes from the view, so it sees the whole topic: two of
+    // its messages are at or after the selected one.
+    assert.equal(count_of_messages_to_be_moved("change_later", "foo", selected_message_id), 2);
+    assert.equal(count_of_messages_to_be_moved("change_all", "foo"), 3);
 });
 
 run_test("count text in a conversation view", () => {
@@ -133,42 +133,41 @@ run_test("count text in a conversation view", () => {
         "translated: 1 message will be moved.",
     );
 
-    // Wrong: the count is presented as exact, because this view is
-    // narrowed to the topic and has fetched all of it, but the number
-    // itself came from the recent conversations cache.
+    // This view is narrowed to the topic and has fetched all of it, so
+    // the count is exact.
     assert.equal(
         count_text("change_later", "foo", selected_message_id),
-        "translated: 1 message will be moved.",
+        "translated: 2 messages will be moved.",
     );
-    assert.equal(count_text("change_all", "foo"), "translated: 1 message will be moved.");
+    assert.equal(count_text("change_all", "foo"), "translated: 3 messages will be moved.");
 
     // A view that has not fetched the whole topic can only give a
     // lower bound.
     set_current_view(topic_view_terms("foo"), foo_messages, {found_oldest: false});
-    assert.equal(count_text("change_all", "foo"), "translated: At least 1 message will be moved.");
+    assert.equal(count_text("change_all", "foo"), "translated: At least 3 messages will be moved.");
 
-    // Wrong: this view is narrowed to the topic and has fetched all of
-    // it, so the count could be exact, but a `near` term stops us from
-    // recognizing it as a conversation view.
+    // A `near` term points at one message of the conversation without
+    // narrowing the view any further, so the count stays exact.
     set_current_view(
         [...topic_view_terms("foo"), {operator: "near", operand: selected_message_id.toString()}],
         foo_messages,
     );
-    assert.equal(count_text("change_all", "foo"), "translated: At least 1 message will be moved.");
+    assert.equal(count_text("change_all", "foo"), "translated: 3 messages will be moved.");
 });
 
 run_test("count text in a channel view", () => {
     const channel_view_terms = [{operator: "channel", operand: rome.stream_id.toString()}];
     set_current_view(channel_view_terms, foo_messages);
-    assert.equal(count_text("change_all", "foo"), "translated: 1 message will be moved.");
+    assert.equal(count_text("change_all", "foo"), "translated: 3 messages will be moved.");
 
-    // Wrong for the same reason as in the conversation view above: a
-    // `near` term stops us from recognizing this as a channel view.
+    // A `near` term points at one message without narrowing the
+    // view, so a channel view that has one still contains the whole
+    // topic.
     set_current_view(
         [...channel_view_terms, {operator: "near", operand: selected_message_id.toString()}],
         foo_messages,
     );
-    assert.equal(count_text("change_all", "foo"), "translated: At least 1 message will be moved.");
+    assert.equal(count_text("change_all", "foo"), "translated: 3 messages will be moved.");
 
     // Muting a topic hides its messages from a channel view, but a move
     // still moves them, so the count should not change.
@@ -181,7 +180,7 @@ run_test("count text in a channel view", () => {
     );
     const message_list = set_current_view(channel_view_terms, foo_messages);
     assert.deepEqual(message_list.all_messages(), []);
-    assert.equal(count_text("change_all", "foo"), "translated: 1 message will be moved.");
+    assert.equal(count_text("change_all", "foo"), "translated: 3 messages will be moved.");
 
     user_topics.update_user_topics(
         rome.stream_id,
@@ -192,10 +191,11 @@ run_test("count text in a channel view", () => {
     );
 });
 
-run_test("count text in views that have no message list", () => {
-    // The messages of the topic loaded in an interleaved view are only
-    // the ones that happen to match it, so we count from the recent
-    // conversations cache and say so.
+run_test("count text in views that cannot answer for the topic", () => {
+    // An interleaved view can hold messages of the topic without
+    // holding all of them, and cannot tell us which of those it is, so
+    // we count from the recent conversations cache and say the count is
+    // a lower bound.
     set_current_view([], foo_messages);
     assert.equal(count_text("change_all", "foo"), "translated: At least 1 message will be moved.");
 
@@ -207,11 +207,12 @@ run_test("count text when the channel's history is limited", () => {
     // The user cannot see the messages older than the ones the server
     // sent us, but moving the topic moves those too.
     set_current_view(topic_view_terms("foo"), foo_messages, {history_limited: true});
+    assert.equal(count_text("change_all", "foo"), "translated: At least 3 messages will be moved.");
 
-    // Wrong: the count is presented as exact.
-    assert.equal(count_text("change_all", "foo"), "translated: 1 message will be moved.");
+    // The messages we cannot see are all older than the selected one,
+    // so this count is still exact.
     assert.equal(
         count_text("change_later", "foo", selected_message_id),
-        "translated: 1 message will be moved.",
+        "translated: 2 messages will be moved.",
     );
 });
