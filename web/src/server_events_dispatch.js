@@ -222,10 +222,10 @@ export function dispatch_normal_event(event) {
             break;
         }
 
-        case "has_zoom_token":
-            current_user.has_zoom_token = event.value;
+        case "has_google_meet_token":
+            current_user.has_google_meet_token = event.value;
             if (event.value) {
-                compose_call_session_manager.run_and_clear_callbacks_for_provider("zoom");
+                compose_call_session_manager.run_and_clear_callbacks_for_provider("google_meet");
             }
             break;
 
@@ -233,6 +233,13 @@ export function dispatch_normal_event(event) {
             current_user.has_webex_token = event.value;
             if (event.value) {
                 compose_call_session_manager.run_and_clear_callbacks_for_provider("webex");
+            }
+            break;
+
+        case "has_zoom_token":
+            current_user.has_zoom_token = event.value;
+            if (event.value) {
+                compose_call_session_manager.run_and_clear_callbacks_for_provider("zoom");
             }
             break;
 
