@@ -11,6 +11,7 @@ from django.http import HttpRequest
 from django.utils.html import format_html
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from typing_extensions import override
 
 
@@ -46,19 +47,16 @@ class AltchaWidget(forms.TextInput):
 
 
 class CaptchaFormMixin(forms.Form):
-    captcha = forms.CharField(required=True, widget=AltchaWidget)
+    captcha = forms.CharField(
+        widget=AltchaWidget,
+        error_messages={"required": gettext_lazy("Validation failed, please try again.")},
+    )
 
     def __init__(self, *args: Any, request: HttpRequest, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.request = request
         if not settings.USING_CAPTCHA or not settings.ALTCHA_HMAC_KEY:
             del self.fields["captcha"]
-
-    @override
-    def clean(self) -> None:
-        super().clean()
-        if "captcha" in self.fields and not self.data.get("captcha"):
-            self.add_error("captcha", _("Validation failed, please try again."))
 
     def clean_captcha(self) -> str:
         payload = self.data.get("captcha", "")
