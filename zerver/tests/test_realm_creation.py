@@ -1209,6 +1209,18 @@ class RealmCreationTest(ZulipTestCase):
         # Update the payload so the challenge matches what is in the
         # session.  The real payload would have other keys.
         payload = base64.b64encode(orjson.dumps({"challenge": data["challenge"]})).decode()
+
+        # A failure in some other field does not consume the solved
+        # challenge; it is not even validated.
+        with patch("zerver.lib.captcha.verify_solution", return_value=(True, None)) as verify:
+            result = self.submit_realm_creation_form(
+                "invalid", realm_subdomain=string_id, realm_name=realm_name, captcha=payload
+            )
+            self.assert_in_success_response(["Enter a valid email address."], result)
+            verify.assert_not_called()
+        self.assert_length(self.client.session["altcha_challenges"], 1)
+
+        # The same solved challenge is accepted once the form is valid.
         with patch("zerver.lib.captcha.verify_solution", return_value=(True, None)) as verify:
             result = self.submit_realm_creation_form(
                 email, realm_subdomain=string_id, realm_name=realm_name, captcha=payload

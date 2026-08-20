@@ -58,10 +58,19 @@ class CaptchaFormMixin(forms.Form):
         if not settings.USING_CAPTCHA or not settings.ALTCHA_HMAC_KEY:
             del self.fields["captcha"]
 
-    def clean_captcha(self) -> str:
-        payload = self.data.get("captcha", "")
-        validate_captcha_payload(self.request, payload)
-        return payload
+    @override
+    def clean(self) -> None:
+        super().clean()
+        # Validating the payload consumes the solved challenge, to
+        # prevent replay; defer it until the rest of the form is
+        # valid, so that a failure in some other field does not
+        # invalidate a successful solve.  The captcha field does not
+        # exist when the captcha is not enabled.
+        if "captcha" in self.fields and not self.errors:
+            try:
+                validate_captcha_payload(self.request, self.cleaned_data["captcha"])
+            except forms.ValidationError as error:
+                self.add_error("captcha", error)
 
 
 def validate_captcha_payload(request: HttpRequest, captcha_payload: str) -> None:
