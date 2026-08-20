@@ -183,8 +183,9 @@ useful on large servers; smaller servers should leave it disabled.
 
 #### `dedicated_deferred_work_high_latency_queue`
 
-Some deferred work has no latency expectations at all: realm data exports
-and Slack imports can each take many minutes. By default they run in the
+Some deferred work has no latency expectations at all: realm data
+exports, Slack imports, and scrubbing the data of a deactivated
+organization can each take many minutes. By default they run in the
 shared `deferred_work` queue, where they can hold up other,
 latency-sensitive jobs in that queue. Set this to true to process them in
 a dedicated queue, isolating them from the rest of `deferred_work`.
@@ -195,8 +196,8 @@ multithreaded mode it costs only a thread. Set it identically on all
 application frontends, and on the host running the RabbitMQ Nagios
 checks, so that monitoring agrees with which queue is in use.
 
-Turning this back off requires care, because exports and Slack imports
-already in the `deferred_work_high_latency` queue are not moved back to
+Turning this back off requires care, because jobs already in the
+`deferred_work_high_latency` queue are not moved back to
 `deferred_work`. A stranded export is displayed to administrators as
 permanently in progress and cannot be deleted; a stranded Slack import
 leaves that organization's signup permanently stuck. Disable it in this

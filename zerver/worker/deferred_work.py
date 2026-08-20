@@ -3,13 +3,12 @@ import logging
 import time
 from typing import Any
 
-from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from zerver.actions.data_import import import_slack_data
 from zerver.actions.message_flags import do_mark_stream_messages_as_read
 from zerver.actions.realm_export import export_realm_from_event
-from zerver.actions.realm_settings import scrub_deactivated_realm
+from zerver.actions.realm_settings import clean_deactivated_realm_data
 from zerver.lib.push_notifications import clear_push_device_tokens
 from zerver.lib.queue import retry_event
 from zerver.lib.remote_server import (
@@ -101,12 +100,7 @@ class DeferredWorker(QueueProcessingWorker):
             logger.info("Updating push bouncer with metadata on behalf of realm %s", realm_id)
             send_server_data_to_push_bouncer(consider_usage_statistics=False)
         elif event["type"] == "scrub_deactivated_realm":
-            realms_to_scrub = Realm.objects.filter(
-                deactivated=True,
-                scheduled_deletion_date__lte=timezone_now(),
-            )
-            for realm in realms_to_scrub:
-                scrub_deactivated_realm(realm)
+            clean_deactivated_realm_data()
         elif event["type"] == "import_slack_data":
             import_slack_data(event)
 
