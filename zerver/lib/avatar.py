@@ -99,6 +99,10 @@ def get_avatar_field(
     if is_cross_realm_bot_email(email):
         return get_static_avatar_url(email, medium)
 
+    # Avatars provided by Zulip are served from a static URL.
+    if avatar_source == UserProfile.AVATAR_FROM_SYSTEM:
+        return get_avatar_for_inaccessible_user(medium)
+
     """
     If our client knows how to calculate gravatar hashes, we
     will return None and let the client compute the gravatar
