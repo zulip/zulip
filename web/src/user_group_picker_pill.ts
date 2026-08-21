@@ -1,6 +1,6 @@
 import render_input_pill from "../templates/input_pill.hbs";
 
-import {set_up_handlers_for_add_button_state} from "./add_subscribers_pill.ts";
+import {set_up_handlers_for_pill_action_button_state} from "./add_subscribers_pill.ts";
 import * as input_pill from "./input_pill.ts";
 import {set_up_user_group} from "./pill_typeahead.ts";
 import * as settings_data from "./settings_data.ts";
@@ -95,7 +95,7 @@ export function create(
 
     set_up_pill_typeahead({pill_widget, $pill_container: $user_group_pill_container}, user_id);
     if (user_id) {
-        set_up_handlers_for_add_button_state(pill_widget, $user_group_pill_container);
+        set_up_handlers_for_pill_action_button_state(pill_widget, $user_group_pill_container);
     }
     return pill_widget;
 }
