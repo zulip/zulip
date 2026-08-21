@@ -802,6 +802,7 @@ class SlackImporter(ZulipTestCase):
                 "is_mirror_dummy": False,
                 "real_name": "Integration Bot",
                 "is_integration_bot": True,
+                "is_bot": True,
                 "profile": {
                     "image_72": "https://avatars.slack-edge.com/2024-05-01/7057208497908_a4351f6deb91094eac4c_512.png",
                     "bot_id": "B06NWMNUQ3W",
@@ -818,6 +819,7 @@ class SlackImporter(ZulipTestCase):
                 "is_mirror_dummy": False,
                 "real_name": "Unknown Bot",
                 "is_integration_bot": True,
+                "is_bot": True,
                 "profile": {
                     "image_72": "https://avatars.slack-edge.com/2024-05-01/dasdasdasdasdXXXXXX",
                     "bot_id": "B0DSAMNUQ3W",
@@ -984,12 +986,16 @@ class SlackImporter(ZulipTestCase):
         )
         self.assertEqual(zerver_userprofile[9]["is_active"], True)
         self.assertEqual(zerver_userprofile[9]["avatar_source"], "U")
+        self.assertEqual(zerver_userprofile[9]["is_bot"], True)
+        self.assertEqual(zerver_userprofile[9]["bot_type"], UserProfile.DEFAULT_BOT)
 
         self.assertEqual(
             zerver_userprofile[10]["id"], test_slack_user_id_to_zulip_user_id["U1RDFEC90"]
         )
         self.assertEqual(zerver_userprofile[10]["is_active"], True)
         self.assertEqual(zerver_userprofile[10]["avatar_source"], "J")
+        self.assertEqual(zerver_userprofile[10]["is_bot"], True)
+        self.assertEqual(zerver_userprofile[10]["bot_type"], UserProfile.DEFAULT_BOT)
 
     def test_build_defaultstream(self) -> None:
         realm_id = 1
