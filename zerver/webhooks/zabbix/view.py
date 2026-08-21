@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
+from pydantic import Json
 
 from zerver.actions.message_send import send_rate_limited_pm_notification_to_bot_owner
 from zerver.decorator import webhook_view
@@ -28,6 +29,15 @@ ZABBIX_MESSAGE_TEMPLATE = """
 * {item}
 """.strip()
 
+ZABBIX_SEVERITY_EMOJI = {
+    "Disaster": ":red_circle:",
+    "High": ":orange_circle:",
+    "Average": ":yellow_circle:",
+    "Warning": ":blue_circle:",
+    "Information": ":white_circle:",
+    "Not classified": ":black_circle:",
+}
+
 
 @webhook_view("Zabbix")
 @typed_endpoint
@@ -36,9 +46,10 @@ def api_zabbix_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
+    include_emoji_indicators: Json[bool] = False,
 ) -> HttpResponse:
     try:
-        body = get_body_for_http_request(payload)
+        body = get_body_for_http_request(payload, include_emoji_indicators)
         topic_name = get_topic_for_http_request(payload)
     except ValidationError:
         message = MISCONFIGURED_PAYLOAD_ERROR_MESSAGE.format(
@@ -57,7 +68,7 @@ def get_topic_for_http_request(payload: WildValue) -> str:
     return ZABBIX_TOPIC_TEMPLATE.format(hostname=payload["hostname"].tame(check_string))
 
 
-def get_body_for_http_request(payload: WildValue) -> str:
+def get_body_for_http_request(payload: WildValue, include_emoji_indicators: bool = False) -> str:
     hostname = payload["hostname"].tame(check_string)
     severity = payload["severity"].tame(check_string)
     status = payload["status"].tame(check_string)
@@ -73,4 +84,9 @@ def get_body_for_http_request(payload: WildValue) -> str:
         "trigger": trigger,
         "link": link,
     }
-    return ZABBIX_MESSAGE_TEMPLATE.format(**data)
+    message = ZABBIX_MESSAGE_TEMPLATE.format(**data)
+    if include_emoji_indicators:
+        emoji = ZABBIX_SEVERITY_EMOJI.get(severity)
+        if emoji is not None:
+            message = f"{emoji} {message}"
+    return message

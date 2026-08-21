@@ -13,6 +13,21 @@ Receive Zabbix notifications in Zulip!
 
 1. {!generate-webhook-url-basic.md!}
 
+   If you want Zabbix alerts to include a severity color indicator in the
+   generated message, append `&include_emoji_indicators=true` to the webhook URL.
+   For example:
+
+       https://zulip.example.com/api/v1/external/zabbix?api_key=YOUR_API_KEY&include_emoji_indicators=true
+
+   The severity-to-color mapping is:
+
+   * Disaster = Red
+   * High = Orange
+   * Average = Yellow
+   * Warning = Blue
+   * Information = White
+   * Not classified = Black
+
 1. Go to **Administration** in your Zabbix web interface. Click on
    **General**, and select **Macros** from the dropdown. Click **Add**.
 
