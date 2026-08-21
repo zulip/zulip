@@ -13175,6 +13175,10 @@ paths:
                           The [description](/help/change-the-channel-description)
                           to use for a new channel being created, in text/markdown format.
 
+                          **Changes**: Before Zulip 13.0 (feature level ZF-31a8cd), a
+                          description could mention any user group, ignoring the group's
+                          `can_mention_group` setting.
+
                           See the help center article on [message formatting](/help/format-your-message-using-markdown) for details on Zulip-flavored Markdown.
 
                           Clients should use the `max_stream_description_length` returned
@@ -24748,7 +24752,11 @@ paths:
                     by the [`POST /register`](/api/register-queue) endpoint to
                     determine the maximum channel description length.
 
-                    **Changes**: Removed unnecessary JSON-encoding of this parameter in
+                    **Changes**: Before Zulip 13.0 (feature level ZF-31a8cd), a
+                    description could mention any user group, ignoring the group's
+                    `can_mention_group` setting.
+
+                    Removed unnecessary JSON-encoding of this parameter in
                     Zulip 4.0 (feature level 64).
                   type: string
                   example: "Discuss Italian history and travel destinations."
@@ -26871,6 +26879,10 @@ paths:
                     Note that this parameter must be passed as part of the request,
                     but can be an empty string if no description for the new channel
                     folder is desired.
+
+                    **Changes**: Before Zulip 13.0 (feature level ZF-31a8cd), a
+                    description could mention any user group, ignoring the group's
+                    `can_mention_group` setting.
                   type: string
                   example: Channels for marketing.
               required:
@@ -27088,6 +27100,10 @@ paths:
                     Clients should use the `max_channel_folder_description_length`
                     returned by the [`POST /register`](/api/register-queue) endpoint
                     to determine the maximum channel folder description length.
+
+                    **Changes**: Before Zulip 13.0 (feature level ZF-31a8cd), a
+                    description could mention any user group, ignoring the group's
+                    `can_mention_group` setting.
                   type: string
                   example: Backend channels.
                 is_archived:

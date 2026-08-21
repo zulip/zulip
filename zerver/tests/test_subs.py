@@ -35,7 +35,11 @@ from zerver.actions.streams import (
     do_set_stream_property,
     do_unarchive_stream,
 )
-from zerver.actions.user_groups import bulk_add_members_to_user_groups, check_add_user_group
+from zerver.actions.user_groups import (
+    bulk_add_members_to_user_groups,
+    check_add_user_group,
+    do_change_user_group_permission_setting,
+)
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.attachments import (
     validate_attachment_request,
@@ -2282,6 +2286,58 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(
             stream.rendered_description,
             f'<p><a class="stream-topic" data-stream-id="{core_stream.id}" href="/#narrow/channel/{core_stream.id}-core/topic/testing/with/{msg_id}">#{core_stream.name} &gt; testing</a></p>',
+        )
+
+    def test_user_group_mention_in_stream_description(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+        aaron = self.example_user("aaron")
+        stream = self.subscribe(iago, "stream_name1")
+        self.login_user(iago)
+
+        test_group = check_add_user_group(realm, "test_group", [aaron], acting_user=othello)
+
+        # iago can mention test_group by default.
+        description = "Ask @*test_group* for help"
+        result = self.client_patch(f"/json/streams/{stream.id}", {"description": description})
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(
+            stream.rendered_description,
+            f'<p>Ask <span class="user-group-mention" data-user-group-id="{test_group.id}">@test_group</span> for help</p>',
+        )
+
+        # Restrict mentioning test_group to its own members, which iago is not.
+        do_change_user_group_permission_setting(
+            test_group, "can_mention_group", test_group, acting_user=None
+        )
+        result = self.client_patch(f"/json/streams/{stream.id}", {"description": description})
+        self.assert_json_error(result, "You are not allowed to mention user group 'test_group'.")
+
+        # As when sending a message, the restriction does not apply to
+        # silent mentions.
+        result = self.client_patch(
+            f"/json/streams/{stream.id}", {"description": "Ask @_*test_group* for help"}
+        )
+        self.assert_json_success(result)
+
+        # Creating a channel with such a description is rejected too.
+        result = self.subscribe_via_post(
+            iago,
+            [{"name": "new_stream", "description": description}],
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "You are not allowed to mention user group 'test_group'.")
+
+        # Add iago to test_group, to regain mention permission.
+        bulk_add_members_to_user_groups([test_group], [iago.id], acting_user=othello)
+        result = self.client_patch(f"/json/streams/{stream.id}", {"description": description})
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(
+            stream.rendered_description,
+            f'<p>Ask <span class="user-group-mention" data-user-group-id="{test_group.id}">@test_group</span> for help</p>',
         )
 
     def test_change_stream_message_retention_days_notifications(self) -> None:
