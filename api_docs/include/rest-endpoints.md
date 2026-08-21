@@ -204,3 +204,4 @@
 * [Fetch an API key (JWT)](/api/jwt-fetch-api-key)
 * [List users (development only)](/api/dev-list-users)
 * [Outgoing webhook payloads](/api/outgoing-webhook-payload)
+* [Get open communities](/api/open_communities)
