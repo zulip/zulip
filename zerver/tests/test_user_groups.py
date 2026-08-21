@@ -751,6 +751,7 @@ class UserGroupTestCase(ZulipTestCase):
             allow_everyone_group=True,
             allow_internet_group=True,
             default_group_name=SystemGroups.EVERYONE_ON_INTERNET,
+            replacement_group_name=SystemGroups.OWNERS,
         )
 
         # When allow_internet_group is True and the setting is set to the
