@@ -187,9 +187,9 @@ Do not be afraid to change this code if you understand
 how modern browsers deal with copy/paste.  Just test
 your changes carefully.
 */
-function construct_copy_div($div: JQuery, start_id: number, end_id: number): void {
+function construct_copy_div($div: JQuery, start_id: number, end_id: number): boolean {
     if (message_lists.current === undefined) {
-        return;
+        return false;
     }
     let $first_message_element;
     let $last_message_element;
@@ -223,7 +223,7 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
             copy_rows.splice(-1, 1);
             if (copy_rows.length === 0) {
                 // In case this just involved selecting the username of a message.
-                return;
+                return false;
             }
         }
         assert(copy_rows[0] && copy_rows.at(-1));
@@ -319,6 +319,7 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): voi
     if (should_include_start_recipient_header) {
         construct_recipient_header($start_row).prependTo($div);
     }
+    return true;
 }
 
 // We want to grab the closest katex span up the tree
@@ -603,7 +604,11 @@ export function copy_handler(ev: ClipboardEvent): boolean {
     // more difficult since we can get a range (start_id and end_id) for
     // each selection `Range`.
     const $div = $("<div>");
-    construct_copy_div($div, start_id, end_id);
+    if (!construct_copy_div($div, start_id, end_id)) {
+        // No message content in the selection; let the browser copy
+        // the highlighted text natively.
+        return false;
+    }
 
     const html_content = $div.html().trim();
     const plain_text = $div.text().trim();
