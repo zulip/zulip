@@ -98,7 +98,6 @@ def merge_changelogs(changelogs: str, new_feature_level: int, update_changelog: 
 
 def update_feature_level_in_api_docs(new_feature_level: int) -> None:
     changelog_files_list = get_changelog_files_list()
-    num_replaces = 0
     current_version = get_current_major_version()
 
     # Get all the markdown files in api_docs folder along with zulip.yaml.
@@ -108,26 +107,21 @@ def update_feature_level_in_api_docs(new_feature_level: int) -> None:
 
     for api_docs_path in api_docs_paths:
         with open(api_docs_path) as file:
-            lines = file.readlines()
+            content = file.read()
 
         num_replaces = 0
 
-        with open(api_docs_path, "w") as file:
-            for line in lines:
-                old_line = line
-                for file_name in changelog_files_list:
-                    temporary_feature_level = file_name[: -len(".md")]
+        for file_name in changelog_files_list:
+            temporary_feature_level = file_name[: -len(".md")]
 
-                    pattern = rf"Zulip \d+\.\d+ \(feature level {temporary_feature_level}\)"
-                    replacement = f"Zulip {current_version} (feature level {new_feature_level})"
-                    line = re.sub(pattern, replacement, line)
-
-                if old_line != line:
-                    num_replaces += 1
-
-                file.write(line)
+            pattern = rf"Zulip \d+\.\d+ \(feature level {temporary_feature_level}\)"
+            replacement = f"Zulip {current_version} (feature level {new_feature_level})"
+            content, n = re.subn(pattern, replacement, content)
+            num_replaces += n
 
         if num_replaces:
+            with open(api_docs_path, "w") as file:
+                file.write(content)
             print(f"Updated {api_docs_path}; {num_replaces} replaces were made.")
 
 
