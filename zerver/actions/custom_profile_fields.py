@@ -206,10 +206,42 @@ def do_update_user_custom_profile_data_if_changed(
 ) -> None:
     changes: list[UserProfileChangeDict] = []
 
-    for custom_profile_field in data:
-        field_value, created = CustomProfileFieldValue.objects.get_or_create(
-            user_profile=user_profile, field_id=custom_profile_field["id"]
+    field_ids = [custom_profile_field["id"] for custom_profile_field in data]
+
+    # We fetch the field with each value, since accessing field_value.field
+    # below would otherwise be a query per field.
+    existing_field_values_by_field_id = {
+        field_value.field_id: field_value
+        for field_value in CustomProfileFieldValue.objects.filter(
+            user_profile=user_profile, field_id__in=field_ids
+        ).select_related("field")
+    }
+
+    new_field_values = [
+        CustomProfileFieldValue(user_profile=user_profile, field=field)
+        for field in CustomProfileField.objects.filter(
+            realm_id=user_profile.realm_id,
+            id__in=[
+                field_id
+                for field_id in field_ids
+                if field_id not in existing_field_values_by_field_id
+            ],
         )
+    ]
+    CustomProfileFieldValue.objects.bulk_create(new_field_values)
+
+    field_values_by_field_id: dict[int, CustomProfileFieldValue] = {
+        **existing_field_values_by_field_id,
+        **{field_value.field_id: field_value for field_value in new_field_values},
+    }
+    new_field_ids = {field_value.field_id for field_value in new_field_values}
+
+    modified_field_values: list[CustomProfileFieldValue] = []
+
+    for custom_profile_field in data:
+        field_id = custom_profile_field["id"]
+        field_value = field_values_by_field_id[field_id]
+        created = field_id in new_field_ids
 
         # field_value.value is a TextField() so we need to have field["value"]
         # in string form to correctly make comparisons and assignments.
@@ -230,9 +262,8 @@ def do_update_user_custom_profile_data_if_changed(
             field_value.rendered_value = render_stream_description(
                 custom_profile_field_value_string, user_profile.realm
             )
-            field_value.save(update_fields=["value", "rendered_value"])
-        else:
-            field_value.save(update_fields=["value"])
+        modified_field_values.append(field_value)
+
         notify_user_update_custom_profile_data(
             user_profile,
             {
@@ -252,6 +283,8 @@ def do_update_user_custom_profile_data_if_changed(
                 new_value=new_value,
             )
         )
+
+    CustomProfileFieldValue.objects.bulk_update(modified_field_values, ["value", "rendered_value"])
 
     if changes and notify:
         send_user_profile_update_notification(
