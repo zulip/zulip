@@ -50,9 +50,6 @@ EMOJI_MESSAGE_TEMPLATE = "{user_name} {action} the emoji :{emoji_text}:{suffix}.
 
 
 def fixture_to_headers(fixture_name: str) -> dict[str, str]:
-    if fixture_name.startswith("build"):
-        return {}  # Since there are 2 possible event types.
-
     # Map "push_hook__push_commits_more_than_limit.json" into GitLab's
     # HTTP event title "Push Hook".
     return {"HTTP_X_GITLAB_EVENT": fixture_name.split("__", 1)[0].replace("_", " ").title()}
@@ -363,7 +360,7 @@ def get_wiki_page_event_body(
     )
 
 
-def get_build_hook_event_body(
+def get_job_hook_event_body(
     payload: WildValue, include_title: bool, realm: Realm | None = None
 ) -> str:
     build_status = payload["build_status"].tame(check_string)
@@ -499,13 +496,34 @@ def get_resource_access_token_expiry_event_body(
     )
 
 
-def get_deployment_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
-    user_text = f"[{get_user_name(payload, realm)}]({payload['user_url'].tame(check_string)})"
+def get_deployment_approval_event_body(
+    payload: WildValue, approval_status: str, deployment_text: str, realm: Realm
+) -> str:
+    approver = payload["approver"]
+    approver_text = get_user_mention(
+        realm,
+        approver["username"].tame(check_string),
+        approver["name"].tame(check_string),
+    )
+    body = f"{approver_text} {approval_status} the {deployment_text}."
 
+    if comment := payload["approval"]["comment"].tame(check_none_or(check_string)):
+        body += CONTENT_MESSAGE_TEMPLATE.format(message=comment, fence=get_unused_fence(comment))
+
+    return body
+
+
+def get_deployment_event_body(payload: WildValue, include_title: bool, realm: Realm) -> str:
     deployment_status = payload["status"].tame(check_string)
     deployable_url = payload.get("deployable_url", "").tame(check_string)
     deployment_text = f"[deployment]({deployable_url})" if deployable_url else "deployment"
 
+    if deployment_status in ("approved", "rejected"):
+        return get_deployment_approval_event_body(
+            payload, deployment_status, deployment_text, realm
+        )
+
+    user_text = f"[{get_user_name(payload, realm)}]({payload['user_url'].tame(check_string)})"
     commit_title = payload["commit_title"].tame(check_string)
     commit_url = payload["commit_url"].tame(check_string)
     commit_sha = commit_url.split("/")[-1][:7]
@@ -515,8 +533,11 @@ def get_deployment_event_body(payload: WildValue, include_title: bool, realm: Re
         "success": f"The {deployment_text} was successful.",
         "failed": f"The {deployment_text} failed.",
         "canceled": f"The {deployment_text} was canceled.",
+        "blocked": f"The {deployment_text} is blocked and awaiting manual action.",
     }
 
+    if deployment_status not in deployment_event_body_map:
+        raise UnsupportedWebhookEventTypeError(f"Deployment Hook {deployment_status}")
     return deployment_event_body_map[deployment_status]
 
 
@@ -607,9 +628,8 @@ def get_repo_name(payload: WildValue) -> str:
         return payload["project"]["name"].tame(check_string)
 
     if "repository" in payload:
-        # Job Hook payloads don't have a `project` section,
-        # but the repository name is accessible from the `repository`
-        # section.
+        # Older Job Hook payloads had no `project` section, and GitLab docs
+        # don't promise one, so this fallback has been retained.
         return payload["repository"]["name"].tame(check_string)
 
     # Group-level events (e.g. group access token expiry) have neither
@@ -707,8 +727,7 @@ EVENT_FUNCTION_MAPPER: dict[str, EventFunction] = {
     "Merge Request Hook reopen": partial(get_merge_request_event_body, "reopened"),
     "Wiki Page Hook create": partial(get_wiki_page_event_body, "created"),
     "Wiki Page Hook update": partial(get_wiki_page_event_body, "updated"),
-    "Job Hook": get_build_hook_event_body,
-    "Build Hook": get_build_hook_event_body,
+    "Job Hook": get_job_hook_event_body,
     "Pipeline Hook": get_pipeline_event_body,
     "Release Hook": get_release_event_body,
     "Feature Flag Hook": get_feature_flag_event_body,
@@ -770,7 +789,7 @@ def get_body_based_on_event(event: str) -> EventFunction:
 def get_topic_based_on_event(event: str, payload: WildValue, use_merge_request_title: bool) -> str:
     if event == "Push Hook":
         return f"{get_repo_name(payload)} / {get_branch_name(payload)}"
-    elif event in ("Job Hook", "Build Hook"):
+    elif event == "Job Hook":
         return "{} / {}".format(
             payload["repository"]["name"].tame(check_string), get_branch_name(payload)
         )

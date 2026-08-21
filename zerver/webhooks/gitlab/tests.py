@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock, patch
 
+import orjson
+
 from zerver.actions.custom_profile_fields import try_add_realm_default_custom_profile_field
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
@@ -73,22 +75,20 @@ class GitlabHookTests(WebhookTestCase):
 
         self.check_webhook("push_hook__remove_branch", expected_topic_name, expected_message)
 
-    def test_add_tag_event_message(self) -> None:
+    def test_tag_push_event_messages(self) -> None:
         expected_topic_name = "my-awesome-project"
-        expected_message = "Tomasz Kolek pushed tag xyz."
+        payload = orjson.loads(self.get_body("tag_push_hook"))
+        test_cases = [
+            (payload["checkout_sha"], "Tomasz Kolek pushed tag xyz."),
+            (None, "Tomasz Kolek removed tag xyz."),
+        ]
 
-        self.check_webhook(
-            "tag_push_hook__add_tag",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Tag Push Hook",
-        )
-
-    def test_remove_tag_event_message(self) -> None:
-        expected_topic_name = "my-awesome-project"
-        expected_message = "Tomasz Kolek removed tag xyz."
-
-        self.check_webhook("tag_push_hook__remove_tag", expected_topic_name, expected_message)
+        for checkout_sha, expected_message in test_cases:
+            with self.subTest(checkout_sha=checkout_sha):
+                payload["checkout_sha"] = checkout_sha
+                self.check_webhook(
+                    "tag_push_hook", expected_topic_name, expected_message, custom_payload=payload
+                )
 
     def test_create_issue_without_assignee_event_message(self) -> None:
         expected_topic_name = "my-awesome-project / issue #1 Issue title"
@@ -435,127 +435,77 @@ A trivial change that should probably be ignored.
             expect_noop=True,
         )
 
-    def test_wiki_page_opened_event_message(self) -> None:
+    def test_wiki_page_event_messages(self) -> None:
+        wiki_page_link = (
+            '[wiki page "how to"](https://gitlab.com/tomaszkolek0/my-awesome-project/wikis/how-to)'
+        )
         expected_topic_name = "my-awesome-project"
-        expected_message = 'Tomasz Kolek created [wiki page "how to"](https://gitlab.com/tomaszkolek0/my-awesome-project/wikis/how-to).'
+        test_cases = [
+            ("create", f"Tomasz Kolek created {wiki_page_link}."),
+            ("update", f"Tomasz Kolek updated {wiki_page_link}."),
+        ]
 
-        self.check_webhook(
-            "wiki_page_hook__wiki_page_opened", expected_topic_name, expected_message
-        )
+        payload = orjson.loads(self.get_body("wiki_page_hook"))
 
-    def test_wiki_page_edited_event_message(self) -> None:
-        expected_topic_name = "my-awesome-project"
-        expected_message = 'Tomasz Kolek updated [wiki page "how to"](https://gitlab.com/tomaszkolek0/my-awesome-project/wikis/how-to).'
+        for action, expected_message in test_cases:
+            with self.subTest(action=action):
+                payload["object_attributes"]["action"] = action
+                self.check_webhook(
+                    "wiki_page_hook",
+                    expected_topic_name,
+                    expected_message,
+                    custom_payload=payload,
+                )
 
-        self.check_webhook(
-            "wiki_page_hook__wiki_page_edited", expected_topic_name, expected_message
-        )
-
-    def test_build_created_event_message(self) -> None:
-        expected_topic_name = "my-awesome-project / master"
-        expected_message = "Build job_name from test stage was created."
-
-        self.check_webhook(
-            "build_created",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Job Hook",
-        )
-
-    def test_build_started_event_message(self) -> None:
-        expected_topic_name = "my-awesome-project / master"
-        expected_message = "Build job_name from test stage started."
-
-        self.check_webhook(
-            "build_started",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Job Hook",
-        )
-
-    def test_build_succeeded_event_message(self) -> None:
-        expected_topic_name = "my-awesome-project / master"
-        expected_message = "Build job_name from test stage changed status to success."
-
-        self.check_webhook(
-            "build_succeeded",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Job Hook",
-        )
-
-    def test_build_created_event_message_legacy_event_name(self) -> None:
-        expected_topic_name = "my-awesome-project / master"
-        expected_message = "Build job_name from test stage was created."
-
-        self.check_webhook(
-            "build_created",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Build Hook",
-        )
-
-    def test_build_started_event_message_legacy_event_name(self) -> None:
-        expected_topic_name = "my-awesome-project / master"
-        expected_message = "Build job_name from test stage started."
-
-        self.check_webhook(
-            "build_started",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Build Hook",
-        )
-
-    def test_build_succeeded_event_message_legacy_event_name(self) -> None:
-        expected_topic_name = "my-awesome-project / master"
-        expected_message = "Build job_name from test stage changed status to success."
-
-        self.check_webhook(
-            "build_succeeded",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Build Hook",
-        )
-
-    def test_pipeline_succeeded_with_artifacts_event_message(self) -> None:
+    def test_pipeline_with_artifacts_event_message(self) -> None:
         expected_topic_name = "onlysomeproject / test/links-in-zulip-pipeline-message"
         expected_message = "[Pipeline (22668)](https://gitlab.example.com/group1/onlysomeproject/-/pipelines/22668) changed status to success with build(s):\n* [cleanup:cleanup docker image](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58592) - success\n* [pages](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58591) - success\n  * built artifact: *artifacts.zip* [[Browse](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58591/artifacts/browse)|[Download](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58591/artifacts/download)]\n* [black+pytest:future environment](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58590) - success\n* [docs:anaconda environment](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58589) - success\n  * built artifact: *sphinx-docs.zip* [[Browse](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58589/artifacts/browse)|[Download](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58589/artifacts/download)]\n* [pytest:current environment](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58588) - success\n* [black:current environment](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58587) - success\n* [setup:docker image](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58586) - success."
 
         self.check_webhook(
-            "pipeline_hook__pipeline_succeeded_with_artifacts",
+            "pipeline_hook__with_artifacts",
             expected_topic_name,
             expected_message,
         )
 
-    def test_pipeline_succeeded_event_message(self) -> None:
+    def test_pipeline_event_messages(self) -> None:
+        pipeline_link = "[Pipeline (4414206)](https://gitlab.com/TomaszKolek/my-awesome-project/-/pipelines/4414206)"
+        job_link = "[job_name](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541112)"
+        job2_link = "[job_name2](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541113)"
         expected_topic_name = "my-awesome-project / master"
-        expected_message = "[Pipeline (4414206)](https://gitlab.com/TomaszKolek/my-awesome-project/-/pipelines/4414206) changed status to success with build(s):\n* [job_name2](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541113) - success\n* [job_name](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541112) - success."
 
-        self.check_webhook(
-            "pipeline_hook__pipeline_succeeded",
-            expected_topic_name,
-            expected_message,
-        )
+        # Each case is a pipeline status, the status of each of the
+        # pipeline's builds keyed by build name, and the expected message.
+        test_cases = [
+            (
+                "pending",
+                {"job_name2": "pending", "job_name": "created"},
+                f"{pipeline_link} was created with build(s):\n* {job2_link} - pending\n* {job_link} - created.",
+            ),
+            (
+                "running",
+                {"job_name2": "pending", "job_name": "running"},
+                f"{pipeline_link} started with build(s):\n* {job2_link} - pending\n* {job_link} - running.",
+            ),
+            (
+                "success",
+                {"job_name2": "success", "job_name": "success"},
+                f"{pipeline_link} changed status to success with build(s):\n* {job2_link} - success\n* {job_link} - success.",
+            ),
+        ]
 
-    def test_pipeline_started_event_message(self) -> None:
-        expected_topic_name = "my-awesome-project / master"
-        expected_message = "[Pipeline (4414206)](https://gitlab.com/TomaszKolek/my-awesome-project/-/pipelines/4414206) started with build(s):\n* [job_name](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541112) - running\n* [job_name2](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541113) - pending."
+        payload = orjson.loads(self.get_body("pipeline_hook"))
 
-        self.check_webhook(
-            "pipeline_hook__pipeline_started",
-            expected_topic_name,
-            expected_message,
-        )
-
-    def test_pipeline_pending_event_message(self) -> None:
-        expected_topic_name = "my-awesome-project / master"
-        expected_message = "[Pipeline (4414206)](https://gitlab.com/TomaszKolek/my-awesome-project/-/pipelines/4414206) was created with build(s):\n* [job_name2](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541113) - pending\n* [job_name](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541112) - created."
-
-        self.check_webhook(
-            "pipeline_hook__pipeline_pending",
-            expected_topic_name,
-            expected_message,
-        )
+        for pipeline_status, build_statuses, expected_message in test_cases:
+            with self.subTest(pipeline_status=pipeline_status):
+                payload["object_attributes"]["status"] = pipeline_status
+                for build in payload["builds"]:
+                    build["status"] = build_statuses[build["name"]]
+                self.check_webhook(
+                    "pipeline_hook",
+                    expected_topic_name,
+                    expected_message,
+                    custom_payload=payload,
+                )
 
     def test_issue_type_test_payload(self) -> None:
         expected_topic_name = "public-repo"
@@ -591,16 +541,40 @@ A trivial change that should probably be ignored.
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    def test_job_hook_event(self) -> None:
-        expected_topic_name = "gitlab_test / gitlab-script-trigger"
-        expected_message = "Build test from test stage was created."
-        self.check_webhook("job_hook__build_created", expected_topic_name, expected_message)
+    def test_job_event_message_by_build_status(self) -> None:
+        expected_topic_name = "TEST-1 / master"
+        test_cases = [
+            ("created", "Build build-job from build stage was created."),
+            ("running", "Build build-job from build stage started."),
+            ("success", "Build build-job from build stage changed status to success."),
+            ("failed", "Build build-job from build stage changed status to failed."),
+        ]
 
-    def test_job_hook_event_topic(self) -> None:
+        payload = orjson.loads(self.get_body("job_hook"))
+
+        for build_status, expected_message in test_cases:
+            with self.subTest(build_status=build_status):
+                payload["build_status"] = build_status
+                self.check_webhook(
+                    "job_hook",
+                    expected_topic_name,
+                    expected_message,
+                    custom_payload=payload,
+                )
+
+    def test_job_event_message_without_project_field_with_custom_topic(self) -> None:
         self.url = self.build_webhook_url(topic="provided topic")
         expected_topic_name = "provided topic"
-        expected_message = "[[gitlab_test](http://192.168.64.1:3005/gitlab-org/gitlab-test)] Build test from test stage was created."
-        self.check_webhook("job_hook__build_created", expected_topic_name, expected_message)
+        expected_message = "[[TEST-1](https://gitlab.com/HydrallHarsh/test-1)] Build build-job from build stage was created."
+
+        # The project link falls back to the `repository` section for
+        # payloads that have no `project` section.
+        payload = orjson.loads(self.get_body("job_hook"))
+        del payload["project"]
+
+        self.check_webhook(
+            "job_hook", expected_topic_name, expected_message, custom_payload=payload
+        )
 
     def test_system_push_event_message(self) -> None:
         expected_topic_name = "gitlab / master"
@@ -670,42 +644,59 @@ A trivial change that should probably be ignored.
             "merge_request_hook__merge_request_unapproved", expected_topic_name, expected_message
         )
 
-    def test_release_created_event_message(self) -> None:
+    def test_release_event_messages(self) -> None:
+        release_url = "https://example.com/gitlab-org/release-webhook-example/-/releases/v1.1"
+        release_description = "\n``` quote\n## v1.1 (2024-09-06)\n\n- Feature added\n```"
         expected_topic_name = "release-webhook-example"
-        expected_message = "Release [v1.1](https://example.com/gitlab-org/release-webhook-example/-/releases/v1.1) for tag v1.1 was created.\n``` quote\n## v1.1 (2024-09-06)\n\n- Feature added\n```"
+        test_cases = [
+            (
+                "create",
+                f"Release [v1.1]({release_url}) for tag v1.1 was created.{release_description}",
+            ),
+            (
+                "update",
+                f"Release [v1.1]({release_url}) for tag v1.1 was updated.{release_description}",
+            ),
+            ("delete", "Release v1.1 for tag v1.1 was deleted."),
+        ]
 
-        self.check_webhook("release_hook__create", expected_topic_name, expected_message)
+        payload = orjson.loads(self.get_body("release_hook"))
+
+        for action, expected_message in test_cases:
+            with self.subTest(action=action):
+                payload["action"] = action
+                self.check_webhook(
+                    "release_hook", expected_topic_name, expected_message, custom_payload=payload
+                )
 
     def test_release_created_event_message_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url("topic=Specific%20topic")
         expected_topic_name = "Specific topic"
         expected_message = "[[release-webhook-example](https://example.com/gitlab-org/release-webhook-example)] Release [v1.1](https://example.com/gitlab-org/release-webhook-example/-/releases/v1.1) for tag v1.1 was created.\n``` quote\n## v1.1 (2024-09-06)\n\n- Feature added\n```"
 
-        self.check_webhook("release_hook__create", expected_topic_name, expected_message)
+        self.check_webhook("release_hook", expected_topic_name, expected_message)
 
-    def test_release_update_event_message(self) -> None:
-        expected_topic_name = "release-webhook-example"
-        expected_message = "Release [v1.1](https://example.com/gitlab-org/release-webhook-example/-/releases/v1.1) for tag v1.1 was updated.\n``` quote\n## v1.1 (2024-09-06)\n\n- Feature added\n```"
-
-        self.check_webhook("release_hook__update", expected_topic_name, expected_message)
-
-    def test_release_delete_event_message(self) -> None:
-        expected_topic_name = "release-webhook-example"
-        expected_message = "Release v1.1 for tag v1.1 was deleted."
-
-        self.check_webhook("release_hook__delete", expected_topic_name, expected_message)
-
-    def test_feature_flag_activate_event_message(self) -> None:
+    def test_feature_flag_event_messages(self) -> None:
+        feature_flag_link = (
+            "[sample-feature-flag](https://gitlab.com/kolanuvarun/sample/-/feature_flags)"
+        )
         expected_topic_name = "sample"
-        expected_message = "Varun Kolanu activated the feature flag [sample-feature-flag](https://gitlab.com/kolanuvarun/sample/-/feature_flags)."
+        test_cases = [
+            (True, f"Varun Kolanu activated the feature flag {feature_flag_link}."),
+            (False, f"Varun Kolanu deactivated the feature flag {feature_flag_link}."),
+        ]
 
-        self.check_webhook("feature_flag_hook__activated", expected_topic_name, expected_message)
+        payload = orjson.loads(self.get_body("feature_flag_hook"))
 
-    def test_feature_flag_deactivate_event_message(self) -> None:
-        expected_topic_name = "sample"
-        expected_message = "Varun Kolanu deactivated the feature flag [sample-feature-flag](https://gitlab.com/kolanuvarun/sample/-/feature_flags)."
-
-        self.check_webhook("feature_flag_hook__deactivated", expected_topic_name, expected_message)
+        for active, expected_message in test_cases:
+            with self.subTest(active=active):
+                payload["object_attributes"]["active"] = active
+                self.check_webhook(
+                    "feature_flag_hook",
+                    expected_topic_name,
+                    expected_message,
+                    custom_payload=payload,
+                )
 
     def test_resource_access_token_project_expiry(self) -> None:
         expected_topic_name = "Flight"
@@ -732,51 +723,98 @@ A trivial change that should probably be ignored.
             "resource_access_token_hook__group_expiry", expected_topic_name, expected_message
         )
 
-    def test_deployment_started_event_message(self) -> None:
+    def test_deployment_event_message_by_status(self) -> None:
+        deployment_url = "https://gitlab.com/vedant8600317/test/-/jobs/9905389091"
         expected_topic_name = "test / production"
-        expected_message = "[Vedant Joshi](https://gitlab.com/theofficialvedantjoshi) started a new [deployment](https://gitlab.com/vedant8600317/test/-/jobs/9905389091):\n> [5879366](https://gitlab.com/vedant8600317/test/-/commit/58793660b22d6ceacbdc23b28a0562bca339702c) Update .gitlab-ci.yml file"
+        test_cases = [
+            (
+                "running",
+                f"[Vedant Joshi](https://gitlab.com/theofficialvedantjoshi) started a new [deployment]({deployment_url}):\n> [5879366](https://gitlab.com/vedant8600317/test/-/commit/58793660b22d6ceacbdc23b28a0562bca339702c) Update .gitlab-ci.yml file",
+            ),
+            ("success", f"The [deployment]({deployment_url}) was successful."),
+            ("failed", f"The [deployment]({deployment_url}) failed."),
+            ("canceled", f"The [deployment]({deployment_url}) was canceled."),
+            (
+                "blocked",
+                f"The [deployment]({deployment_url}) is blocked and awaiting manual action.",
+            ),
+        ]
 
-        self.check_webhook(
-            "deployment_hook__running",
-            expected_topic_name,
-            expected_message,
+        payload = orjson.loads(self.get_body("deployment_hook"))
+
+        for status, expected_message in test_cases:
+            with self.subTest(status=status):
+                payload["status"] = status
+                self.check_webhook(
+                    "deployment_hook",
+                    expected_topic_name,
+                    expected_message,
+                    custom_payload=payload,
+                )
+
+    def test_deployment_event_with_unsupported_status(self) -> None:
+        payload_data = orjson.loads(
+            self.webhook_fixture_data(self.webhook_dir_name, "deployment_hook")
+        )
+        payload_data["status"] = "skipped"
+
+        result = self.client_post(
+            self.url,
+            orjson.dumps(payload_data),
+            content_type="application/json",
             HTTP_X_GITLAB_EVENT="Deployment Hook",
         )
 
-    def test_deployment_succeeded_event_message(self) -> None:
-        expected_topic_name = "test / production"
-        expected_message = "The [deployment](https://gitlab.com/vedant8600317/test/-/jobs/9905389091) was successful."
-
-        self.check_webhook(
-            "deployment_hook__success",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Deployment Hook",
+        self.assert_json_success(result)
+        self.assert_in_response(
+            "The 'Deployment Hook skipped' event isn't currently supported by the GitLab webhook; ignoring",
+            result,
         )
 
-    def test_deployment_failed_event_message(self) -> None:
-        expected_topic_name = "test / production"
-        expected_message = (
-            "The [deployment](https://gitlab.com/vedant8600317/test/-/jobs/9905759933) failed."
+    def test_deployment_approval_event_message(self) -> None:
+        deployment_url = (
+            "https://gitlab.com/pritesh-30-group/deployment-webhook-test/-/jobs/15664214926"
         )
+        expected_topic_name = "deployment-webhook-test / production"
 
-        self.check_webhook(
-            "deployment_hook__failed",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Deployment Hook",
-        )
+        # Status, comment, expected message
+        test_cases = [
+            (
+                "approved",
+                "Approval granted",
+                f"Pritesh-30 approved the [deployment]({deployment_url}).\n``` quote\nApproval granted\n```",
+            ),
+            ("approved", None, f"Pritesh-30 approved the [deployment]({deployment_url})."),
+            (
+                "rejected",
+                "Not ready to ship",
+                f"Pritesh-30 rejected the [deployment]({deployment_url}).\n``` quote\nNot ready to ship\n```",
+            ),
+            ("rejected", None, f"Pritesh-30 rejected the [deployment]({deployment_url})."),
+        ]
 
-    def test_deployment_canceled_event_message(self) -> None:
-        expected_topic_name = "test / production"
-        expected_message = "The [deployment](https://gitlab.com/vedant8600317/test/-/jobs/9905830127) was canceled."
+        payload = orjson.loads(self.get_body("deployment_hook__approval"))
 
-        self.check_webhook(
-            "deployment_hook__canceled",
-            expected_topic_name,
-            expected_message,
-            HTTP_X_GITLAB_EVENT="Deployment Hook",
-        )
+        for status, comment, expected_message in test_cases:
+            with self.subTest(status=status):
+                payload["status"] = status
+                payload["approval"]["status"] = status
+                payload["approval"]["comment"] = comment
+                self.check_webhook(
+                    "deployment_hook__approval",
+                    expected_topic_name,
+                    expected_message,
+                    custom_payload=payload,
+                )
+
+    def test_deployment_approval_event_message_silent_mention(self) -> None:
+        realm = get_realm("zulip")
+        gitlab_field = try_add_realm_default_custom_profile_field(realm, "gitlab")
+        hamlet = self.example_user("hamlet")
+        self.set_user_custom_profile_data(hamlet, [{"id": gitlab_field.id, "value": "Pritesh-30"}])
+        expected_topic_name = "deployment-webhook-test / production"
+        expected_message = f"@_**{hamlet.full_name}|{hamlet.id}** approved the [deployment](https://gitlab.com/pritesh-30-group/deployment-webhook-test/-/jobs/15664214926).\n``` quote\nApproval granted\n```"
+        self.check_webhook("deployment_hook__approval", expected_topic_name, expected_message)
 
     def test_emoji_award_in_snippet(self) -> None:
         expected_topic_name = "sample / snippet #4831194 Sample Snippet"
