@@ -28013,6 +28013,8 @@ components:
 
                       - 1 = Zulip's native outgoing webhook format.
                       - 2 = Emulate the Slack outgoing webhook format.
+                  triggers:
+                    $ref: "#/components/schemas/BotServiceTriggers"
               - type: object
                 additionalProperties: false
                 description: |
@@ -28024,6 +28026,8 @@ components:
                       The name of the bot.
                   config_data:
                     $ref: "#/components/schemas/BotConfiguration"
+                  triggers:
+                    $ref: "#/components/schemas/BotServiceTriggers"
     Bot:
       allOf:
         - $ref: "#/components/schemas/BasicBotBase"
@@ -28120,6 +28124,31 @@ components:
             type: string
             description: |
               The type of input field this URL parameter maps to in the UI.
+    BotServiceTriggers:
+      type: array
+      items:
+        type: string
+        enum:
+          - all_direct_mentions
+          - dms_received
+        example: all_direct_mentions
+      description: |
+        An array of events that can trigger the bots' service. Supported
+        trigger events are:
+
+        - `"all_direct_mentions"`: Any mention of the bot user, regardless of
+          whether the bot is part of the recipient or not. Topic, group and @-all
+          mentions that include the bot user are not direct mentions, and therefore
+          do not trigger the bot's service.
+        - `"dms_received"`: Whenever the bot receives a one-on-one or group direct
+          message.
+
+        A bot service's `triggers` array must contain at least one of the trigger
+        events.
+
+        **Changes**: New in Zulip 11.0 (feature level ZF-9ff0e2). Prior to this feature
+        level, message-triggered bots (outgoing webhook bot and embedded bot) are always
+        triggered on direct mention and direct message.
     CustomProfileField:
       type: object
       additionalProperties: false
