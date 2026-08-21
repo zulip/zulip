@@ -1544,6 +1544,7 @@ def convert_bot_info_to_slack_user(bot_info: dict[str, Any]) -> ZerverFieldsT:
         "is_mirror_dummy": False,
         "real_name": bot_info["name"],
         "is_integration_bot": True,
+        "is_bot": True,
         "profile": {
             "bot_id": bot_info["id"],
             "first_name": bot_info["name"],
