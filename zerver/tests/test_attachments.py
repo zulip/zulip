@@ -8,7 +8,7 @@ from zerver.lib.attachments import user_attachments
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file
 from zerver.lib.thumbnail import ThumbnailFormat
-from zerver.models import Attachment, ImageAttachment
+from zerver.models import Attachment, ImageAttachment, Message
 
 
 class AttachmentsTests(ZulipTestCase):
@@ -71,6 +71,33 @@ class AttachmentsTests(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(Attachment.objects.filter(path_id=path_id).count(), 0)
         self.assertEqual(ImageAttachment.objects.filter(path_id=path_id).count(), 0)
+
+    @mock.patch("zerver.lib.attachments.delete_message_attachment")
+    def test_remove_attachment_from_dm(self, ignored: Any) -> None:
+        user_profile = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        self.login_user(user_profile)
+
+        with self.assertLogs(level="WARNING") as cm:
+            self.send_personal_message(
+                user_profile,
+                hamlet,
+                "Here is the file: [test.txt](http://zulip.testserver/user_uploads/1/foo/bar/test.txt)",
+            )
+        self.assertTrue(
+            "tried to share upload 1/foo/bar/test.txt in message 31, but lacks permission"
+            in cm.output[0]
+        )
+        # Link the attachment to the message we just sent.
+        # In a real upload flow this happens automatically, but we created the attachment manually in setUp.
+        # We need to find the message ID.
+        message = Message.objects.filter(sender=user_profile, realm=user_profile.realm).latest("id")
+        self.attachment.messages.add(message)
+
+        result = self.client_delete(f"/json/attachments/{self.attachment.id}")
+        self.assert_json_success(result)
+        attachments = user_attachments(user_profile)
+        self.assertEqual(attachments, [])
 
     def test_list_another_user(self) -> None:
         user_profile = self.example_user("iago")
