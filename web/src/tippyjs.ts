@@ -327,10 +327,27 @@ export function initialize(): void {
             ".spectator_narrow_login_button",
             ".error-icon-message-recipient .zulip-icon",
             "#personal-menu-dropdown .status-circle",
-            ".popover-group-menu-member-list .popover-group-menu-user-presence",
             ".delete-code-playground",
         ].join(","),
         appendTo: () => document.body,
+    });
+
+    // The channel/group card description is clamped to two lines; when it
+    // overflows, point users to settings for the full text.
+    tippy.delegate("body", {
+        target: ".popover-card-description",
+        appendTo: () => document.body,
+        onShow(instance) {
+            const description = instance.reference;
+            // The template only adds this tooltip for viewers who can open
+            // settings, so we just check that the text is actually truncated.
+            const line_height = Number.parseFloat(getComputedStyle(description).lineHeight);
+            const tolerance = Number.isNaN(line_height) ? 2 : line_height / 2;
+            if (description.scrollHeight <= description.clientHeight + tolerance) {
+                return false;
+            }
+            return undefined;
+        },
     });
 
     tippy.delegate("body", {
