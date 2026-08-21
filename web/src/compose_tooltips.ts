@@ -289,12 +289,19 @@ export function initialize(): void {
         trigger: "mouseenter",
         appendTo: () => document.body,
         onShow(instance) {
-            instance.setContent(
-                $t(
-                    {defaultMessage: "Maximum message length: {max_length} characters"},
-                    {max_length: realm.max_message_length},
-                ),
-            );
+            const $indicator = $(instance.reference);
+            const $container = $(instance.popper).find(".tooltip-container");
+            $container
+                .find(".max-length-indicator")
+                .text(
+                    $t(
+                        {defaultMessage: "Maximum message length: {max_length} characters"},
+                        {max_length: realm.max_message_length},
+                    ),
+                );
+            $container
+                .find(".exceeding-position")
+                .text($indicator.attr("data-additional-text") ?? "");
         },
     });
 

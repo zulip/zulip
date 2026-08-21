@@ -1,6 +1,7 @@
 import logging
 from collections.abc import Sequence
 from datetime import datetime, timedelta
+from uuid import uuid4
 
 from django.conf import settings
 from django.db import transaction
@@ -75,6 +76,39 @@ def check_schedule_message(
     )[0]
 
 
+def check_schedule_split_message(
+    sender: UserProfile,
+    client: Client,
+    recipient_type_name: str,
+    message_to: list[int],
+    topic_name: str | None,
+    message_contents: list[str],
+    deliver_at: datetime,
+    realm: Realm | None = None,
+    *,
+    read_by_sender: bool | None = None,
+) -> list[int]:
+    addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name, realm)
+    send_requests = []
+    for message_content in message_contents:
+        send_request = check_message(sender, client, addressee, message_content, realm=realm)
+        send_request.deliver_at = deliver_at
+        send_requests.append(send_request)
+
+    if read_by_sender is None:
+        read_by_sender = client.default_read_by_sender() and not addressee.is_message_to_self(
+            sender
+        )
+
+    return do_schedule_messages(
+        send_requests,
+        sender,
+        read_by_sender=read_by_sender,
+        delivery_type=ScheduledMessage.SEND_LATER,
+        split_group_id=uuid4().hex,
+    )
+
+
 def notify_new_scheduled_message(
     user_profile: UserProfile, scheduled_messages: list[ScheduledMessage]
 ) -> None:
@@ -104,11 +138,13 @@ def do_schedule_messages(
     read_by_sender: bool = False,
     skip_events: bool = False,
     delivery_type: int,
+    split_group_id: str | None = None,
 ) -> list[int]:
     scheduled_messages: list[tuple[ScheduledMessage, SendMessageRequest]] = []
 
     for send_request in send_message_requests:
         scheduled_message = ScheduledMessage()
+        scheduled_message.split_group_id = split_group_id
         scheduled_message.sender = send_request.message.sender
         scheduled_message.recipient = send_request.message.recipient
         topic_name = send_request.message.topic_name()
@@ -439,6 +475,7 @@ def try_deliver_one_scheduled_message() -> bool:
             delivered=False,
             failed=False,
         )
+        .order_by("scheduled_timestamp", "id")
         .select_for_update(no_key=True)
         .first()
     )
