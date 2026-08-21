@@ -768,7 +768,7 @@ def do_change_can_change_user_emails(user_profile: UserProfile, value: bool) -> 
 
 
 @transaction.atomic(durable=True)
-def do_update_outgoing_webhook_service(
+def do_update_bot_service(
     bot_profile: UserProfile,
     *,
     interface: int | None = None,
@@ -797,6 +797,14 @@ def do_update_outgoing_webhook_service(
         return
 
     service.save(update_fields=updated_fields)
+
+    if bot_profile.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
+        # Currently only interface/base_url are updated.
+        # Embedded bots have a Service row with these fields, but
+        # the frontend's services dict for them is {service_name,
+        # config_data} and does not consume these fields, so we do not
+        # emit a realm_bot/update event.
+        return
 
     # Keep the event payload of the updated bot service in sync with the
     # schema expected by `bot_data.update()` method.
