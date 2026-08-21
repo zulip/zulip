@@ -72,6 +72,10 @@ Meet REST API.
 1. In `/etc/zulip/settings.py`, set `VIDEO_GOOGLE_MEET_CLIENT_ID` to the
    **Client ID** you noted down for your Google Cloud OAuth client.
 
+1. Set `VIDEO_GOOGLE_MEET_AUDIENCE_INTERNAL` in `/etc/zulip/settings.py` to
+   reflect whether your Google Cloud OAuth client is configured for an
+   internal audience, as described above.
+
 1. Restart the Zulip server with
    `/home/zulip/deployments/current/scripts/restart-server`.
 

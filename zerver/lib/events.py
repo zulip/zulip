@@ -579,6 +579,8 @@ def fetch_initial_state_data(
             else server_default_jitsi_server_url
         )
 
+        state["server_google_meet_app_internal"] = settings.VIDEO_GOOGLE_MEET_AUDIENCE_INTERNAL
+
         state["server_can_summarize_topics"] = settings.TOPIC_SUMMARIZATION_MODEL is not None
 
         for channel_field in [
