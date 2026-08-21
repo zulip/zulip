@@ -923,7 +923,7 @@ input.settings_text_input {
         }
 
         .messagebox-content {
-            grid-template: auto / auto max-content;
+            grid-template: minmax(0, 1fr) / auto max-content;
             grid-template-areas:
                 "message controls"
                 "message .       ";
