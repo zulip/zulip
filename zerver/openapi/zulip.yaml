@@ -22212,6 +22212,17 @@ paths:
                           is set or not.
 
                           **Changes**: New in Zulip 10.0 (feature level 350).
+                      server_video_google_meet_app_internal:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether the server admin has declared the Google Cloud
+                          OAuth 2.0 app backing the Google Meet integration to
+                          use an Internal (Workspace-restricted) audience, as
+                          opposed to an External one.
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-eabf93).
                       event_queue_longpoll_timeout_seconds:
                         type: integer
                         description: |

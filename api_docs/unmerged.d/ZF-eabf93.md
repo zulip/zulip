@@ -9,3 +9,7 @@
 * [`GET /events`](/api/get-events): A `has_google_meet_token` event is sent
   to clients when the user has completed the OAuth flow for the Google Meet
   video call integration.
+* [`POST /register`](/api/register-queue): Added
+  `server_video_google_meet_app_internal` boolean field, indicating whether
+  the server's Google Cloud OAuth app is configured with an Internal
+  (Workspace-restricted) audience.

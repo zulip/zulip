@@ -576,6 +576,7 @@ def fetch_initial_state_data(
         )
 
         state["server_can_summarize_topics"] = settings.TOPIC_SUMMARIZATION_MODEL is not None
+        state["server_video_google_meet_app_internal"] = settings.VIDEO_GOOGLE_MEET_APP_INTERNAL
 
         for channel_field in [
             "moderation_request_channel_id",

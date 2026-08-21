@@ -799,6 +799,12 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## You must also set video_google_meet_client_secret in
 ## /etc/zulip/zulip-secrets.conf to enable Google Meet as a call provider.
 # VIDEO_GOOGLE_MEET_CLIENT_ID = "<your Google Meet client ID>"
+## Set to False if your Google Cloud OAuth app uses the External
+## audience (any Google account can create calls); the default True
+## matches Internal (Workspace-restricted) apps and shows users a
+## confirmation modal warning that non-Workspace accounts may be
+## rejected before the OAuth popup opens.
+# VIDEO_GOOGLE_MEET_APP_INTERNAL = True
 
 ## Controls the Jitsi Meet video call integration.  By default, the
 ## integration uses the SaaS https://meet.jit.si server.  You can specify

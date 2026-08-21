@@ -636,6 +636,7 @@ export const realm_schema = z.object({
     server_typing_started_expiry_period_milliseconds: z.number(),
     server_typing_started_wait_period_milliseconds: z.number(),
     server_typing_stopped_wait_period_milliseconds: z.number(),
+    server_video_google_meet_app_internal: z.boolean(),
     server_web_public_streams_enabled: z.boolean(),
     settings_send_digest_emails: z.boolean(),
     stop_words: z.array(z.string()),

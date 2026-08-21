@@ -296,6 +296,13 @@ There are two Audience types for Google Cloud OAuth 2.0 apps:
 1. In `/etc/zulip/settings.py`, set `VIDEO_GOOGLE_MEET_CLIENT_ID` to the
    **Client ID** you noted down for your Google Cloud OAuth client.
 
+1. If your Google Cloud OAuth app uses the **External** audience (any
+   Google account can create calls), also set
+   `VIDEO_GOOGLE_MEET_APP_INTERNAL = False` in `/etc/zulip/settings.py`.
+   The default `True` matches the **Internal** audience and shows users
+   a warning that non-Workspace Google accounts may be rejected before
+   they grant access.
+
 1. Restart the Zulip server with
    `/home/zulip/deployments/current/scripts/restart-server`.
 
