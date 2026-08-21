@@ -182,6 +182,9 @@ export function open_uppy_editor(
     $file_input: JQuery<HTMLInputElement>,
     $upload_button: JQuery,
     upload_function: UploadFunction,
+    // Used by callers whose upload button lives inside another modal that had
+    // to be closed to make room for this one.
+    on_editor_closed?: () => void,
 ): void {
     const rendered_image_editor_modal = render_image_editor_modal();
     dialog_widget.launch({
@@ -261,6 +264,7 @@ export function open_uppy_editor(
             assert(uppy_widget !== undefined);
             uppy_widget.destroy();
             $file_input.val("");
+            on_editor_closed?.();
         },
     });
 }
