@@ -639,7 +639,7 @@ def do_send_missedmessage_events_reply_in_zulip(
 
     # Soft reactivate the long_term_idle user personally mentioned
     soft_reactivate_if_personal_notification(
-        user_profile, unique_triggers, mentioned_user_group_members_count
+        user_profile, unique_triggers, mentioned_user_group_members_count, missed_messages
     )
 
     with override_language(user_profile.default_language):
