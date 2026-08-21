@@ -20,6 +20,11 @@ which can help with porting an existing Slack integration to work with
 Zulip, and allows immediate integration with many third-party systems
 that already support Slack outgoing webhooks.
 
+**Changes**: In Zulip 13.0 (feature level ZF-4d8ff9), the
+`command` field was added to requests triggered by a leading bot
+mention, and the leading bot mention is no longer included in `text`
+for those requests.
+
 The following table details how the Zulip server translates a Zulip
 message into the Slack-compatible webhook format.
 
@@ -70,7 +75,18 @@ message into the Slack-compatible webhook format.
         </tr>
         <tr>
             <td><code>text</code></td>
-            <td>The content of the message (in Markdown)</td>
+            <td>The content of the message (in Markdown). When the
+            webhook is triggered by a bot mention at the start of the
+            message, the mention is stripped from <code>text</code>
+            and sent separately in the <code>command</code> field.</td>
+        </tr>
+        <tr>
+            <td><code>command</code></td>
+            <td>Present when the message starts with a mention of the
+            bot. Contains the mention transformed into a
+            slash-command-style string, e.g., <code>/My Bot</code>.
+            Omitted when the message does not start with a bot
+            mention.</td>
         </tr>
         <tr>
             <td><code>trigger_word</code></td>
@@ -95,9 +111,10 @@ The above data is posted as list of tuples (not JSON), here's an example:
  ('timestamp', 1532078950),
  ('user_id', 'U21'),
  ('user_name', 'Full Name'),
- ('text', '@**test**'),
+ ('text', 'do something'),
  ('trigger_word', 'mention'),
- ('service_id', 27)]
+ ('service_id', 27),
+ ('command', '/My Bot')]
 ```
 
 * For successful requests, if data is returned, it returns that data,

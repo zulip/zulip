@@ -160,8 +160,10 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))
+        bot_name = self.bot_user.full_name  # "Outgoing Webhook"
+
         self.stream_message_event = {
-            "command": "@**test**",
+            "command": f"@**{bot_name}** do something",
             "user_profile_id": 12,
             "service_name": "test-service",
             "trigger": "mention",
@@ -201,30 +203,147 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
             token="abcdef", user_profile=self.bot_user, service_name="test-service"
         )
 
-    def test_make_request_stream_message(self) -> None:
+    def _get_request_data(self, event: dict[str, Any]) -> list[tuple[str, Any]]:
+        """Helper to call make_request and return the posted data."""
         test_url = "https://example.com/example"
         with mock.patch.object(self.handler, "session") as session:
-            self.handler.make_request(
-                test_url,
-                self.stream_message_event,
-                self.bot_user.realm,
-            )
+            self.handler.make_request(test_url, event, self.bot_user.realm)
             session.post.assert_called_once()
             self.assertEqual(session.post.call_args[0], (test_url,))
-            request_data = session.post.call_args[1]["data"]
+            return session.post.call_args[1]["data"]
 
-        self.assertEqual(request_data[0][1], "abcdef")  # token
-        self.assertEqual(request_data[1][1], "T2")  # team_id
-        self.assertEqual(request_data[2][1], "zulip.testserver")  # team_domain
-        self.assertEqual(request_data[3][1], "C123")  # channel_id
-        self.assertEqual(request_data[4][1], "integrations")  # channel_name
-        self.assertEqual(request_data[5][1], 123456)  # thread_id
-        self.assertEqual(request_data[6][1], 123456)  # timestamp
-        self.assertEqual(request_data[7][1], "U21")  # user_id
-        self.assertEqual(request_data[8][1], "Sample User")  # user_name
-        self.assertEqual(request_data[9][1], "@**test**")  # text
-        self.assertEqual(request_data[10][1], "mention")  # trigger_word
-        self.assertEqual(request_data[11][1], 12)  # user_profile_id
+    def test_make_request_stream_message(self) -> None:
+        request_data = self._get_request_data(self.stream_message_event)
+
+        request_dict = dict(request_data)
+        self.assertEqual(request_dict["token"], "abcdef")
+        self.assertEqual(request_dict["team_id"], "T2")
+        self.assertEqual(request_dict["team_domain"], "zulip.testserver")
+        self.assertEqual(request_dict["channel_id"], "C123")
+        self.assertEqual(request_dict["channel_name"], "integrations")
+        self.assertEqual(request_dict["thread_ts"], 123456)
+        self.assertEqual(request_dict["timestamp"], 123456)
+        self.assertEqual(request_dict["user_id"], "U21")
+        self.assertEqual(request_dict["user_name"], "Sample User")
+        # The leading bot mention is split into command and stripped from text.
+        self.assertEqual(request_dict["text"], "do something")
+        self.assertEqual(request_dict["command"], f"/{self.bot_user.full_name}")
+        self.assertEqual(request_dict["trigger_word"], "mention")
+        self.assertEqual(request_dict["service_id"], 12)
+
+    def test_make_request_stream_message_silent_mention(self) -> None:
+        """A silent mention (@_**Bot Name**) at the start is split the same way."""
+        event = {
+            **self.stream_message_event,
+            "command": f"@_**{self.bot_user.full_name}** deploy prod",
+        }
+        request_data = self._get_request_data(event)
+        request_dict = dict(request_data)
+        self.assertEqual(request_dict["command"], f"/{self.bot_user.full_name}")
+        self.assertEqual(request_dict["text"], "deploy prod")
+
+    def test_make_request_stream_message_id_mention(self) -> None:
+        """A mention with |user_id disambiguation is handled correctly."""
+        event = {
+            **self.stream_message_event,
+            "command": f"@**{self.bot_user.full_name}|{self.bot_user.id}** status",
+        }
+        request_data = self._get_request_data(event)
+        request_dict = dict(request_data)
+        self.assertEqual(request_dict["command"], f"/{self.bot_user.full_name}")
+        self.assertEqual(request_dict["text"], "status")
+
+    def test_make_request_stream_message_non_numeric_id_mention(self) -> None:
+        full_content = f"@**{self.bot_user.full_name}|not-a-user-id** status"
+        event = {
+            **self.stream_message_event,
+            "command": full_content,
+        }
+        request_data = self._get_request_data(event)
+        request_dict = dict(request_data)
+        self.assertEqual(request_dict["text"], full_content)
+        self.assertNotIn("command", request_dict)
+
+    def test_make_request_stream_message_wrong_id_mention(self) -> None:
+        full_content = f"@**{self.bot_user.full_name}|{self.bot_user.id + 1}** status"
+        event = {
+            **self.stream_message_event,
+            "command": full_content,
+        }
+        request_data = self._get_request_data(event)
+        request_dict = dict(request_data)
+        self.assertEqual(request_dict["text"], full_content)
+        self.assertNotIn("command", request_dict)
+
+    def test_make_request_stream_message_wrong_name_with_id_mention(self) -> None:
+        full_content = f"@**Not The Bot|{self.bot_user.id}** status"
+        event = {
+            **self.stream_message_event,
+            "command": full_content,
+        }
+        request_data = self._get_request_data(event)
+        request_dict = dict(request_data)
+        self.assertEqual(request_dict["text"], full_content)
+        self.assertNotIn("command", request_dict)
+
+    def test_make_request_stream_message_mention_mid_message(self) -> None:
+        """A bot mention that is NOT at the start → no command, text is full content."""
+        full_content = f"Hey @**{self.bot_user.full_name}** help me"
+        event = {
+            **self.stream_message_event,
+            "command": full_content,
+        }
+        request_data = self._get_request_data(event)
+        request_dict = dict(request_data)
+        self.assertEqual(request_dict["text"], full_content)
+        self.assertNotIn("command", request_dict)
+
+    def test_make_request_stream_message_different_user_mention(self) -> None:
+        """A mention of a *different* user at the start → no split."""
+        full_content = "@**Hamlet** do something"
+        event = {
+            **self.stream_message_event,
+            "command": full_content,
+        }
+        request_data = self._get_request_data(event)
+        request_dict = dict(request_data)
+        self.assertEqual(request_dict["text"], full_content)
+        self.assertNotIn("command", request_dict)
+
+    def test_make_request_no_mention_trigger(self) -> None:
+        """When trigger is not 'mention', no split is attempted."""
+        full_content = f"@**{self.bot_user.full_name}** hello"
+        event = {
+            **self.stream_message_event,
+            "command": full_content,
+            "trigger": "stream",
+        }
+        request_data = self._get_request_data(event)
+        request_dict = dict(request_data)
+        self.assertEqual(request_dict["text"], full_content)
+        self.assertNotIn("command", request_dict)
+
+    def test_make_request_stream_message_leading_whitespace(self) -> None:
+        """Leading whitespace before the mention doesn't prevent the split."""
+        event = {
+            **self.stream_message_event,
+            "command": f"  \n @**{self.bot_user.full_name}** deploy",
+        }
+        request_data = self._get_request_data(event)
+        request_dict = dict(request_data)
+        self.assertEqual(request_dict["command"], f"/{self.bot_user.full_name}")
+        self.assertEqual(request_dict["text"], "deploy")
+
+    def test_make_request_stream_message_multiple_mentions(self) -> None:
+        """Only the first mention becomes 'command'; the rest stays in 'text'."""
+        event = {
+            **self.stream_message_event,
+            "command": f"@**{self.bot_user.full_name}** @**Hamlet** do thing",
+        }
+        request_data = self._get_request_data(event)
+        request_dict = dict(request_data)
+        self.assertEqual(request_dict["command"], f"/{self.bot_user.full_name}")
+        self.assertEqual(request_dict["text"], "@**Hamlet** do thing")
 
     @mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
     def test_make_request_private_message(self, mock_fail_with_message: mock.Mock) -> None:
