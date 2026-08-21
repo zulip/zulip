@@ -64,6 +64,7 @@ from zerver.lib.users import (
     Account,
     access_user_by_id,
     access_user_by_id_including_cross_realm,
+    bulk_get_subscribers_of_target_user_subscriptions,
     check_can_access_user,
     get_accessible_user_ids,
     get_accounts_for_email,
@@ -3591,7 +3592,7 @@ class GetProfileTest(ZulipTestCase):
         self.set_up_db_for_testing_user_access()
 
         self.login("polonius")
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(6):
             result = orjson.loads(self.client_get("/json/users").content)
         accessible_users = result["members"]
         # The user can access 3 bot users and 7 human users.
@@ -3684,7 +3685,7 @@ class GetProfileTest(ZulipTestCase):
         accessible_user_ids_subset = [hamlet.id, iago.id, aaron.id, zoe.id, webhook_bot.id]
         inaccessible_user_ids_subset = [cordelia.id, desdemona.id]
         user_ids_to_fetch = accessible_user_ids_subset + inaccessible_user_ids_subset
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(6):
             result = orjson.loads(
                 self.client_get(
                     "/json/users", {"user_ids": orjson.dumps(user_ids_to_fetch).decode()}
@@ -3753,7 +3754,7 @@ class GetProfileTest(ZulipTestCase):
             result = self.client_get(f"/json/users/{user.id}")
             self.assert_json_error(result, "Insufficient permission")
 
-        with self.settings(PARTIAL_USERS=True), self.assert_database_query_count(7):
+        with self.settings(PARTIAL_USERS=True), self.assert_database_query_count(6):
             result = self.client_get("/json/users")
         self.assert_json_success(result)
 
@@ -3848,6 +3849,41 @@ class GetProfileTest(ZulipTestCase):
         # already have very limited access to users.
         hamlet = self.example_user("hamlet")
         self.assertTrue(check_can_access_user(hamlet, None))
+
+    def test_bulk_get_subscribers_of_target_user_subscriptions(
+        self,
+    ) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        aaron = self.example_user("aaron")
+        othello = self.example_user("othello")
+
+        self.send_group_direct_message(hamlet, [othello, cordelia])
+
+        # othello is deactivated while subscribed to a DM group with
+        # hamlet.
+        do_deactivate_user(othello, acting_user=None)
+        # aaron is deactivated while subscribed to a stream
+        # with hamlet.
+        do_deactivate_user(aaron, acting_user=None)
+
+        subscribers_dict = bulk_get_subscribers_of_target_user_subscriptions([hamlet])
+        self.assertIn(cordelia.id, subscribers_dict[hamlet.id])
+
+        # By default, we exclude all deactivated subscribers.
+        self.assertNotIn(othello.id, subscribers_dict[hamlet.id])
+        self.assertNotIn(aaron.id, subscribers_dict[hamlet.id])
+
+        subscribers_dict_with_deactivated = bulk_get_subscribers_of_target_user_subscriptions(
+            [hamlet], include_deactivated_users_for_dm_groups=True
+        )
+        self.assertIn(cordelia.id, subscribers_dict_with_deactivated[hamlet.id])
+
+        # othello is now included because the flag is scoped to DM groups.
+        self.assertIn(othello.id, subscribers_dict_with_deactivated[hamlet.id])
+        # aaron is still excluded; deactivated stream subscribers
+        # are always excluded.
+        self.assertNotIn(aaron.id, subscribers_dict_with_deactivated[hamlet.id])
 
     def test_get_users_for_spectators(self) -> None:
         # Checks that spectators can fetch users data.

@@ -59,7 +59,7 @@ from zerver.lib.user_groups import (
 )
 from zerver.lib.users import (
     all_users_accessible_by_everyone_in_realm,
-    get_subscribers_of_target_user_subscriptions,
+    bulk_get_subscribers_of_target_user_subscriptions,
 )
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
@@ -852,8 +852,8 @@ def bulk_add_subscriptions(
 
     if not all_users_accessible_by_everyone_in_realm(realm):
         altered_users = list(altered_streams_dict.keys())
-        subscribers_of_altered_user_subscriptions = get_subscribers_of_target_user_subscriptions(
-            altered_users
+        subscribers_of_altered_user_subscriptions = (
+            bulk_get_subscribers_of_target_user_subscriptions(altered_users)
         )
 
     bulk_add_subs_to_db_with_logging(
@@ -1019,7 +1019,7 @@ def send_user_remove_events_on_removing_subscriptions(
     for stream_ids in altered_user_dict.values():
         altered_stream_ids |= stream_ids
 
-    subscribers_of_altered_user_subscriptions = get_subscribers_of_target_user_subscriptions(
+    subscribers_of_altered_user_subscriptions = bulk_get_subscribers_of_target_user_subscriptions(
         altered_users
     )
 
