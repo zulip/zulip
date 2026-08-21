@@ -25,6 +25,31 @@ run_test("redraw", ({override, override_rewire}) => {
     activity_ui.redraw();
 });
 
+run_test("defer buddy list redraw while a user card is open", ({override, override_rewire}) => {
+    const realm = make_realm();
+    state_data.set_realm(realm);
+    override(realm, "realm_presence_disabled", false);
+    override(pm_list, "update_private_messages", noop);
+    override(buddy_list_presence, "update_indicators", noop);
+    activity_ui.set_cursor_and_filter();
+
+    activity_ui.set_user_card_open(true);
+    assert.equal(activity_ui.build_user_sidebar(), undefined);
+    activity_ui.redraw_user(1);
+
+    let build_count = 0;
+    override_rewire(activity_ui, "build_user_sidebar", () => {
+        build_count += 1;
+        return undefined;
+    });
+    activity_ui.set_user_card_open(false);
+    assert.equal(build_count, 1);
+
+    activity_ui.set_user_card_open(true);
+    activity_ui.set_user_card_open(false);
+    assert.equal(build_count, 1);
+});
+
 run_test("initialize", ({override, override_rewire}) => {
     const realm = make_realm();
     state_data.set_realm(realm);
