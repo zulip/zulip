@@ -1890,18 +1890,39 @@
     --color-text-search-highlight: light-dark(currentcolor, hsl(0deg 0% 0%));
     --color-text-alert-word: light-dark(currentcolor, hsl(0deg 0% 0%));
     --color-markdown-link: light-dark(
-        hsl(200deg 100% 40%),
-        var(--color-text-generic-link)
+        hsl(200deg 100% 36%),
+        hsl(200deg 100% 50%)
+    );
+    --color-markdown-link-decoration: light-dark(
+        hsl(200deg 100% 36% / 30%),
+        hsl(200deg 100% 50% / 30%)
     );
     --color-markdown-code-link: var(--color-markdown-link);
     --color-markdown-link-hover: light-dark(
-        hsl(200deg 100% 25%),
-        var(--color-text-generic-link-interactive)
+        hsl(200deg 100% 33%),
+        hsl(200deg 100% 66%)
+    );
+    --color-markdown-link-decoration-hover: light-dark(
+        hsl(200deg 100% 33% / 70%),
+        hsl(200deg 100% 66% / 70%)
     );
     --color-markdown-code-link-hover: var(--color-markdown-link-hover);
+    --color-markdown-link-active: light-dark(
+        hsl(200deg 100% 30%),
+        hsl(200deg 100% 55%)
+    );
+    --color-markdown-link-decoration-active: light-dark(
+        hsl(200deg 100% 30%),
+        hsl(200deg 100% 50% / 70%)
+    );
+    --color-markdown-code-link-active: var(--color-markdown-link-active);
     --color-markdown-link-highlight: light-dark(
         hsl(200deg 100% 40%),
         hsl(210deg 100% 25%)
+    );
+    --color-markdown-link-highlight-decoration: light-dark(
+        hsl(200deg 100% 40% / 30%),
+        hsl(210deg 100% 25% / 30%)
     );
     --color-markdown-link-highlight-hover: light-dark(
         hsl(200deg 100% 25%),
@@ -1910,6 +1931,10 @@
     --color-markdown-link-alert-word: light-dark(
         hsl(200deg 100% 40%),
         hsl(210deg 100% 25%)
+    );
+    --color-markdown-link-alert-word-decoration: light-dark(
+        hsl(200deg 100% 40% / 30%),
+        hsl(210deg 100% 25% / 30%)
     );
     --color-markdown-link-alert-word-hover: light-dark(
         hsl(200deg 100% 25%),
