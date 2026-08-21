@@ -34,7 +34,7 @@ def send_message_report(
     reported_message: Message,
     report_type: str,
     description: str,
-) -> None:
+) -> int | None:
     moderation_request_channel = realm.moderation_request_channel
     assert moderation_request_channel is not None
 
@@ -150,7 +150,7 @@ def send_message_report(
     if moderation_request_channel.topics_policy == StreamTopicsPolicyEnum.empty_topic_only.value:
         topic_name = ""
 
-    internal_send_stream_message(
+    return internal_send_stream_message(
         sender=get_system_bot(settings.NOTIFICATION_BOT, moderation_request_channel.realm.id),
         stream=moderation_request_channel,
         topic_name=topic_name,

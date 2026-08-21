@@ -33,7 +33,7 @@ def report_message_backend(
 
     reported_message = access_message(user_profile, message_id, is_modifying_message=False)
     with override_language(user_profile.realm.default_language):
-        send_message_report(
+        message_report_id = send_message_report(
             user_profile,
             user_profile.realm,
             reported_message,
@@ -41,4 +41,8 @@ def report_message_backend(
             description,
         )
 
+    if message_report_id is None:
+        raise JsonableError(_("Failed to send the message report."))
+
     return json_success(request)
+

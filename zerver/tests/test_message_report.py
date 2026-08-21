@@ -1,4 +1,6 @@
 from datetime import timedelta
+from unittest import mock
+from unittest import mock
 
 import time_machine
 from django.conf import settings
@@ -594,3 +596,15 @@ class ReportMessageTest(ZulipTestCase):
         self.assertEqual(report_msg.sender_id, notification_bot.id)
         self.assertEqual(report_msg.topic_name(), "")
         self.assertIn("reported", report_msg.content)
+
+    def test_failed_internal_send_raises_error(self) -> None:
+        with mock.patch(
+            "zerver.lib.message_report.internal_send_stream_message",
+            return_value=None,
+        ):
+            result = self.report_message(
+                self.hamlet,
+                self.reported_message_id,
+                report_type="spam",
+            )
+        self.assert_json_error(result, "Failed to send the message report.")
