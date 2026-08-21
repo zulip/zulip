@@ -14053,6 +14053,8 @@ paths:
         It is not meant to be used by mobile clients directly.
 
         **Changes**: New in Zulip 11.0 (feature level 406).
+      security:
+        - remoteServerAuth: []
       requestBody:
         required: true
         content:
@@ -14149,6 +14151,439 @@ paths:
                     description: |
                       An example JSON response for when no realm is registered for
                       the authenticated server on the bouncer for the given `realm_uuid`:
+  /remotes/server/deactivate:
+    post:
+      operationId: deactivate-remote-server
+      summary: Deactivate a registered server
+      tags: ["server_and_organizations"]
+      description: |
+        Deactivate a self-hosted Zulip server's registration with the
+        [Mobile Push Notification Service][mobile-push].
+
+        A self-hosted server uses this endpoint to deactivate its own
+        registration with the service. It is not meant to be used by
+        mobile clients directly.
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+      security:
+        - remoteServerAuth: []
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+  /remotes/server/analytics/status:
+    get:
+      operationId: remote-server-check-analytics
+      summary: Check analytics upload status
+      tags: ["server_and_organizations"]
+      description: |
+        Fetch the IDs of the most recent analytics rows the [Mobile Push
+        Notification Service][mobile-push] has received from a self-hosted
+        Zulip server.
+
+        A self-hosted server uses this endpoint to determine which
+        analytics rows it still needs to upload via
+        `POST /remotes/server/analytics`. It is not meant to be used by
+        mobile clients directly.
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+      security:
+        - remoteServerAuth: []
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      last_realm_count_id:
+                        type: integer
+                        description: |
+                          The ID of the last `RealmCount` analytics row the
+                          service has received from this server.
+                      last_installation_count_id:
+                        type: integer
+                        description: |
+                          The ID of the last `InstallationCount` analytics row
+                          the service has received from this server.
+                      last_realmauditlog_id:
+                        type: integer
+                        description: |
+                          The ID of the last `RealmAuditLog` row the service has
+                          received from this server.
+                    example:
+                      {
+                        "last_installation_count_id": 0,
+                        "last_realm_count_id": 0,
+                        "last_realmauditlog_id": 0,
+                        "msg": "",
+                        "result": "success",
+                      }
+  /remotes/server/register:
+    post:
+      operationId: register-remote-server
+      summary: Register a server
+      tags: ["server_and_organizations"]
+      description: |
+        Register a self-hosted Zulip server with the [Mobile Push
+        Notification Service][mobile-push], or update an existing
+        registration.
+
+        A self-hosted server generates its `zulip_org_id` and
+        `zulip_org_key` locally (with `scripts/setup/generate_secrets.py`)
+        and uses this endpoint to register them with the service, so that
+        they are accepted as credentials on all other, authenticated
+        bouncer requests. It is not meant to be used by mobile clients
+        directly.
+
+        This endpoint is unauthenticated: a server registering for the
+        first time has no registered credentials yet. When updating an
+        existing registration, the request must present the current
+        `zulip_org_key` for the given `zulip_org_id`.
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                zulip_org_id:
+                  description: |
+                    The globally unique UUID identifying the server, generated
+                    locally by `scripts/setup/generate_secrets.py`.
+                  type: string
+                  example: "0a3bf9bf-8b8b-4f8a-8f9e-1d6d1f9c1a2b"
+                zulip_org_key:
+                  description: |
+                    The server's secret key. On an initial registration, this
+                    is the key the server will use to authenticate future
+                    requests; when updating an existing registration, it must
+                    match the currently stored key.
+                  type: string
+                  example: "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"
+                hostname:
+                  description: |
+                    The server's hostname, which the service uses to reach it.
+                    May include a port.
+                  type: string
+                  example: "zulip.example.com"
+                contact_email:
+                  description: |
+                    An email address for the server administrator. Must be a
+                    real, deliverable address; disposable domains and
+                    `example.com` are rejected.
+                  type: string
+                  example: "admin@example.org"
+                new_org_key:
+                  description: |
+                    When updating an existing registration, a new secret key
+                    to replace the current `zulip_org_key`.
+                  type: string
+                  example: "0011223344556677889900aabbccddee0011223344556677889900aabbccddee"
+              required:
+                - zulip_org_id
+                - zulip_org_key
+                - hostname
+                - contact_email
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      created:
+                        type: boolean
+                        description: |
+                          Whether a new registration was created (`true`) or an
+                          existing registration for this `zulip_org_id` was
+                          updated (`false`).
+                    example: {"created": true, "msg": "", "result": "success"}
+        "400":
+          description: |
+            Bad request; the registration was rejected. The `code` field
+            distinguishes the cases below.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "zulip.example.com/path contains invalid components (e.g., path, query, fragment).",
+                            "result": "error",
+                          }
+                        description: |
+                          The `hostname` is malformed or contains extra URL
+                          components (a path, query, or fragment).
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Invalid server administrator email address: example.com is not a valid email domain.",
+                            "result": "error",
+                          }
+                        description: |
+                          The `contact_email` is invalid, uses a disposable
+                          domain, or its domain has no MX record; the `msg`
+                          gives the specific reason.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "INVALID_ZULIP_SERVER",
+                            "msg": "Zulip server auth failure: key does not match role 0a3bf9bf-8b8b-4f8a-8f9e-1d6d1f9c1a2b",
+                            "result": "error",
+                          }
+                        description: |
+                          A registration already exists for the given
+                          `zulip_org_id`, but the presented `zulip_org_key`
+                          does not match it.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR",
+                            "msg": "A server with hostname zulip.example.com already exists",
+                            "result": "error",
+                          }
+                        description: |
+                          A different server is already registered with the
+                          given `hostname`.
+        "401":
+          description: |
+            The registration for this `zulip_org_id` has been deactivated.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "REALM_DEACTIVATED",
+                        "msg": "The mobile push notification service registration for your server has been deactivated",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response for when the registration for
+                      this `zulip_org_id` has been deactivated:
+  /remotes/server/register/transfer:
+    post:
+      operationId: transfer-remote-server-registration
+      summary: Begin transferring a server registration
+      tags: ["server_and_organizations"]
+      description: |
+        Begin transferring an existing server's registration with the
+        [Mobile Push Notification Service][mobile-push] to a server that
+        no longer has the original registration credentials.
+
+        The service returns a short-lived `verification_secret` that the
+        requesting server proves it controls by serving it from the
+        registered hostname; the service then reissues the credentials.
+        This endpoint is unauthenticated, since a server performing a
+        transfer does not have valid credentials to authenticate with.
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                hostname:
+                  description: |
+                    The hostname of the registration to transfer. It must
+                    already be registered with the service.
+                  type: string
+                  example: "zulip.example.com"
+              required:
+                - hostname
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      verification_secret:
+                        type: string
+                        description: |
+                          The secret the requesting server should serve from
+                          its hostname to prove control of it.
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "verification_secret": "3430...",
+                      }
+  /remotes/server/register/verify_challenge:
+    post:
+      operationId: verify-registration-transfer-challenge
+      summary: Acknowledge a registration transfer challenge
+      tags: ["server_and_organizations"]
+      description: |
+        Complete a registration transfer started with [begin transferring a
+        server registration](/api/transfer-remote-server-registration).
+
+        After obtaining a `verification_secret` and serving it at
+        `https://{hostname}/api/v1/zulip-services/verify/{access_token}/`,
+        the requesting server calls this endpoint to announce that it is
+        ready. The [Mobile Push Notification Service][mobile-push] then
+        fetches the secret from that URL to confirm the server controls the
+        hostname, and on success reissues the registration credentials in
+        the response. The `access_token` is chosen by the requesting server
+        so that only it can read the secret served at that URL.
+
+        This endpoint is unauthenticated, since a server completing a
+        transfer does not have valid credentials to authenticate with. It is
+        not meant to be used by mobile clients directly.
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                hostname:
+                  description: |
+                    The hostname whose registration is being transferred. It
+                    must already be registered with the service.
+                  type: string
+                  example: "zulip.example.com"
+                access_token:
+                  description: |
+                    A random token, chosen by the requesting server, that
+                    forms part of the URL at which it serves the
+                    `verification_secret`.
+                  type: string
+                  example: "0bad1dea0bad1dea0bad1dea0bad1dea"
+              required:
+                - hostname
+                - access_token
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      zulip_org_id:
+                        type: string
+                        description: |
+                          The server's UUID, which is unchanged by the
+                          transfer.
+                      zulip_org_key:
+                        type: string
+                        description: |
+                          The newly issued secret key for the server. It
+                          replaces the server's previous key.
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "zulip_org_id": "0a3bf9bf-8b8b-4f8a-8f9e-1d6d1f9c1a2b",
+                        "zulip_org_key": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2",
+                      }
+        "400":
+          description: |
+            The challenge could not be verified. The `msg` field explains
+            which step failed.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Registration not found for this hostname",
+                            "result": "error",
+                          }
+                        description: |
+                          No active registration exists for the given
+                          `hostname`.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "The host reported it has no verification secret.",
+                            "result": "error",
+                          }
+                        description: |
+                          The host has not prepared a verification secret to
+                          serve.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "The verification secret is invalid",
+                            "result": "error",
+                          }
+                        description: |
+                          The secret served by the host did not validate; it
+                          may be invalid, expired, malformed, or for a
+                          different hostname.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "The request timed out while communicating with the host.",
+                            "result": "error",
+                          }
+                        description: |
+                          The service could not reach the host or read its
+                          response while fetching the secret.
+        "429":
+          description: |
+            The global usage limit for this endpoint has been reached.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "RATE_LIMIT_HIT",
+                        "msg": "The global limits on recent usage of this endpoint have been reached. Please try again later or reach out to support@zulip.com for assistance.",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON response for when the endpoint's global
+                      rate limit has been reached:
   /register_client_device:
     post:
       operationId: register-client-device
@@ -27599,6 +28034,18 @@ components:
         Basic authentication, with the user's email as the username, and the API
         key as the password. The API key can be fetched using the
         `/fetch_api_key` or `/dev_fetch_api_key` endpoints.
+    remoteServerAuth:
+      type: http
+      scheme: basic
+      description: |
+        Basic authentication used by self-hosted Zulip servers to
+        communicate with the [Mobile Push Notification Service][mobile-push].
+        Unlike the user-facing API, the username is the server's
+        `zulip_org_id` (a UUID) and the password is its `zulip_org_key`,
+        both obtained when the server registers with the service using
+        `manage.py register_server`.
+
+        [mobile-push]: https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html
 
   schemas:
     IgnoredParametersUnsupported:
