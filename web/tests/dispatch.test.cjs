@@ -43,6 +43,7 @@ mock_esm("../src/compose_validate", {
     validate_and_update_send_button_status: noop,
     warn_if_guest_in_dm_recipient: noop,
 });
+const condense = mock_esm("../src/condense");
 const message_events = mock_esm("../src/message_events", {
     update_views_filtered_on_message_property: noop,
     update_current_view_for_topic_visibility: noop,
@@ -1536,6 +1537,40 @@ run_test("update_message (remove star)", () => {
     dispatch(event);
     const msg = message_store.get(test_message.id);
     assert.equal(msg.starred, false);
+});
+
+run_test("update_message (collapse)", ({override}) => {
+    const updated_messages = [];
+    override(condense, "update_collapsed_view", (message) => {
+        updated_messages.push(message);
+    });
+
+    const event = event_fixtures.update_message_flags__collapsed_add;
+    dispatch(event);
+    const msg = message_store.get(test_message.id);
+    assert.equal(msg.collapsed, true);
+    assert.deepEqual(updated_messages, [msg]);
+
+    // A cached flag that already matches doesn't mean the rendered rows
+    // do, so we re-render them regardless of the flag's previous value.
+    dispatch(event);
+    assert.deepEqual(updated_messages, [msg, msg]);
+
+    // We don't have this message locally, so there's no view to update.
+    dispatch({...event, messages: [0]});
+    assert.deepEqual(updated_messages, [msg, msg]);
+});
+
+run_test("update_message (uncollapse)", ({override}) => {
+    const updated_messages = [];
+    override(condense, "update_collapsed_view", (message) => {
+        updated_messages.push(message);
+    });
+
+    dispatch(event_fixtures.update_message_flags__collapsed_remove);
+    const msg = message_store.get(test_message.id);
+    assert.equal(msg.collapsed, false);
+    assert.deepEqual(updated_messages, [msg]);
 });
 
 run_test("update_message (wrong data)", () => {
