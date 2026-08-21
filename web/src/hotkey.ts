@@ -673,7 +673,11 @@ function process_enter_key(e: JQuery.KeyDownEvent): boolean {
     // It restores draft that is focused.
     if (overlays.drafts_open()) {
         const $draft_overlay = $("#draft_overlay");
-        if ($draft_overlay.find("a:focus, button:focus, input:focus").length > 0) {
+        if (
+            $draft_overlay.find(
+                "a:focus, button:focus, input:focus, [role='button']:focus, [role='checkbox']:focus",
+            ).length > 0
+        ) {
             return false;
         }
         drafts_overlay_ui.handle_keyboard_events("enter");
@@ -905,6 +909,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
 
     // TODO: break out specific handlers for up_arrow,
     //       down_arrow, and backspace
+    const event_target = e.target instanceof HTMLElement ? e.target : undefined;
     switch (event_name) {
         case "up_arrow":
         case "down_arrow":
@@ -913,15 +918,15 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         case "backspace":
         case "delete":
             if (overlays.drafts_open()) {
-                drafts_overlay_ui.handle_keyboard_events(event_name);
+                drafts_overlay_ui.handle_keyboard_events(event_name, event_target);
                 return true;
             }
             if (overlays.scheduled_messages_open()) {
-                scheduled_messages_overlay_ui.handle_keyboard_events(event_name);
+                scheduled_messages_overlay_ui.handle_keyboard_events(event_name, event_target);
                 return true;
             }
             if (overlays.reminders_open()) {
-                reminders_overlay_ui.handle_keyboard_events(event_name);
+                reminders_overlay_ui.handle_keyboard_events(event_name, event_target);
                 return true;
             }
             if (overlays.message_edit_history_open()) {
