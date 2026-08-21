@@ -5,7 +5,7 @@ import orjson
 from django.db import connection
 from typing_extensions import override
 
-from zerver.actions.message_flags import do_update_message_flags
+from zerver.actions.message_flags import do_unstar_stream_messages, do_update_message_flags
 from zerver.actions.streams import do_change_stream_group_based_setting, do_change_stream_permission
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
@@ -27,6 +27,7 @@ from zerver.lib.message import (
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
+from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_message import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
 from zerver.models import (
     Device,
@@ -2117,6 +2118,153 @@ class MessageAccessTests(ZulipTestCase):
             bulk_access_stream_messages_query_count=1,
         )
         self.assert_length(filtered_messages, 2)
+
+
+class UnstarStreamMessagesTest(ZulipTestCase):
+    def test_do_unstar_stream_messages(self) -> None:
+        """
+        Test that do_unstar_stream_messages removes the starred flag
+        from messages in a given stream and sends the appropriate event.
+        """
+        hamlet = self.example_user("hamlet")
+        stream_name = "private_stream"
+        stream = self.make_stream(stream_name, invite_only=True)
+        self.subscribe(hamlet, stream_name)
+
+        # Send messages and star them.
+        message_id1 = self.send_stream_message(hamlet, stream_name, "test 1")
+        message_id2 = self.send_stream_message(hamlet, stream_name, "test 2")
+        do_update_message_flags(hamlet, "add", "starred", [message_id1, message_id2])
+
+        # Verify messages are starred.
+        um1 = UserMessage.objects.get(user_profile=hamlet, message_id=message_id1)
+        um2 = UserMessage.objects.get(user_profile=hamlet, message_id=message_id2)
+        self.assertTrue(um1.flags.starred)
+        self.assertTrue(um2.flags.starred)
+
+        assert stream.recipient_id is not None
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            count = do_unstar_stream_messages(hamlet, stream.recipient_id)
+
+        self.assertEqual(count, 2)
+
+        # Verify the event.
+        self.assertEqual(events[0]["event"]["type"], "update_message_flags")
+        self.assertEqual(events[0]["event"]["op"], "remove")
+        self.assertEqual(events[0]["event"]["flag"], "starred")
+        self.assertEqual(sorted(events[0]["event"]["messages"]), sorted([message_id1, message_id2]))
+
+        # Verify the flags are cleared in the database.
+        um1.refresh_from_db()
+        um2.refresh_from_db()
+        self.assertFalse(um1.flags.starred)
+        self.assertFalse(um2.flags.starred)
+
+    def test_do_unstar_stream_messages_no_starred(self) -> None:
+        """
+        Test that do_unstar_stream_messages is a no-op when there are
+        no starred messages in the stream.
+        """
+        hamlet = self.example_user("hamlet")
+        stream_name = "private_stream"
+        stream = self.make_stream(stream_name, invite_only=True)
+        self.subscribe(hamlet, stream_name)
+
+        # Send a message but don't star it.
+        self.send_stream_message(hamlet, stream_name, "test")
+
+        assert stream.recipient_id is not None
+        with self.capture_send_event_calls(expected_num_events=0):
+            count = do_unstar_stream_messages(hamlet, stream.recipient_id)
+
+        self.assertEqual(count, 0)
+
+    def test_unsubscribe_private_stream_unstars_messages(self) -> None:
+        """
+        When a user unsubscribes from a private stream they can no
+        longer access, their starred messages in that stream should
+        be unstarred via a deferred work event.
+        """
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        stream_name = "private_stream"
+        stream = self.make_stream(stream_name, invite_only=True)
+        self.subscribe(hamlet, stream_name)
+        self.subscribe(cordelia, stream_name)
+
+        # Send a message and star it.
+        message_id = self.send_stream_message(hamlet, stream_name, "important message")
+        do_update_message_flags(hamlet, "add", "starred", [message_id])
+
+        # Verify the message is starred.
+        um = UserMessage.objects.get(user_profile=hamlet, message_id=message_id)
+        self.assertTrue(um.flags.starred)
+
+        # Unsubscribe hamlet from the private stream.
+        # This should queue a deferred work event to unstar messages.
+        with mock.patch("zerver.actions.streams.queue_event_on_commit") as mock_queue:
+            self.unsubscribe(hamlet, stream_name)
+
+        # Check that the unstar deferred work event was queued
+        # (along with the mark_stream_messages_as_read event).
+        queued_events = [call.args[1] for call in mock_queue.call_args_list]
+        unstar_events = [
+            e for e in queued_events if e["type"] == "unstar_inaccessible_stream_messages"
+        ]
+        self.assert_length(unstar_events, 1)
+        self.assertEqual(unstar_events[0]["user_profile_id"], hamlet.id)
+        self.assertEqual(unstar_events[0]["stream_recipient_ids"], [stream.recipient_id])
+
+    def test_unsubscribe_private_stream_unstars_messages_for_realm_admin(self) -> None:
+        iago = self.example_user("iago")
+        stream_name = "private_stream"
+        stream = self.make_stream(stream_name, invite_only=True)
+        self.subscribe(iago, stream_name)
+
+        message_id = self.send_stream_message(iago, stream_name, "important message")
+        do_update_message_flags(iago, "add", "starred", [message_id])
+
+        with mock.patch("zerver.actions.streams.queue_event_on_commit") as mock_queue:
+            self.unsubscribe(iago, stream_name)
+
+        queued_events = [call.args[1] for call in mock_queue.call_args_list]
+        unstar_events = [
+            e for e in queued_events if e["type"] == "unstar_inaccessible_stream_messages"
+        ]
+        self.assert_length(unstar_events, 1)
+        self.assertEqual(unstar_events[0]["user_profile_id"], iago.id)
+        self.assertEqual(unstar_events[0]["stream_recipient_ids"], [stream.recipient_id])
+
+    def test_unsubscribe_private_stream_unstars_for_channel_admin(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        stream_name = "private_stream"
+        stream = self.make_stream(stream_name, invite_only=True)
+        self.subscribe(hamlet, stream_name)
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            UserGroupMembersData(direct_members=[hamlet.id], direct_subgroups=[]),
+            acting_user=iago,
+        )
+
+        message_id = self.send_stream_message(hamlet, stream_name, "important message")
+        do_update_message_flags(hamlet, "add", "starred", [message_id])
+
+        with (
+            mock.patch("zerver.actions.streams.queue_event_on_commit") as mock_queue,
+            mock.patch("zerver.actions.streams.send_stream_deletion_event") as mock_delete,
+        ):
+            self.unsubscribe(hamlet, stream_name)
+
+        queued_events = [call.args[1] for call in mock_queue.call_args_list]
+        unstar_events = [
+            e for e in queued_events if e["type"] == "unstar_inaccessible_stream_messages"
+        ]
+        self.assert_length(unstar_events, 1)
+        self.assertEqual(unstar_events[0]["user_profile_id"], hamlet.id)
+        self.assertEqual(unstar_events[0]["stream_recipient_ids"], [stream.recipient_id])
+        mock_delete.assert_not_called()
 
 
 class PersonalMessagesFlagTest(ZulipTestCase):
