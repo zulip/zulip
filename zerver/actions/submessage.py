@@ -1,6 +1,7 @@
 from django.utils.translation import gettext as _
 
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
+from zerver.lib.event_types import SubmessageEvent
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import (
     event_recipient_ids_for_action_on_messages,
@@ -83,8 +84,7 @@ def do_add_submessage(
                     visibility_policy=new_visibility_policy,
                 )
 
-    event = dict(
-        type="submessage",
+    event = SubmessageEvent(
         msg_type=msg_type,
         message_id=message_id,
         submessage_id=submessage.id,

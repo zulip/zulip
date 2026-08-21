@@ -4,6 +4,8 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.message_flags import do_mark_muted_user_messages_as_read
+from zerver.lib.event_types import MutedUser as MutedUserData
+from zerver.lib.event_types import MutedUsersEvent
 from zerver.lib.muted_users import add_user_mute, get_user_mutes
 from zerver.models import MutedUser, RealmAuditLog, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -20,7 +22,9 @@ def do_mute_user(
         date_muted = timezone_now()
     add_user_mute(user_profile, muted_user, date_muted)
     do_mark_muted_user_messages_as_read(user_profile, muted_user)
-    event = dict(type="muted_users", muted_users=get_user_mutes(user_profile))
+    event = MutedUsersEvent(
+        muted_users=[MutedUserData(**m) for m in get_user_mutes(user_profile)],
+    )
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
     RealmAuditLog.objects.create(
@@ -38,7 +42,9 @@ def do_unmute_user(mute_object: MutedUser) -> None:
     user_profile = mute_object.user_profile
     muted_user = mute_object.muted_user
     mute_object.delete()
-    event = dict(type="muted_users", muted_users=get_user_mutes(user_profile))
+    event = MutedUsersEvent(
+        muted_users=[MutedUserData(**m) for m in get_user_mutes(user_profile)],
+    )
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
     RealmAuditLog.objects.create(
