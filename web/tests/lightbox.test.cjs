@@ -273,3 +273,91 @@ run_test("parse_media_data asset map cache", () => {
     const result2 = lightbox.parse_media_data(media2);
     assert.equal(result2, result1);
 });
+
+run_test("set_code_wrapping", () => {
+    const $code_preview = $("#lightbox_overlay .code-preview");
+    const $wrap_button = $("#lightbox_overlay .lightbox-code-wrap");
+
+    lightbox.set_code_wrapping(true);
+
+    assert.equal($code_preview.hasClass("wrap-code"), true);
+    assert.equal($wrap_button.attr("aria-pressed"), "true");
+
+    lightbox.set_code_wrapping(false);
+
+    assert.equal($code_preview.hasClass("wrap-code"), false);
+    assert.equal($wrap_button.attr("aria-pressed"), "false");
+});
+
+run_test("display_code_block", () => {
+    const hidden_elements_selector =
+        "#lightbox_overlay .image-preview, #lightbox_overlay .player-container, #lightbox_overlay .video-player, #lightbox_overlay .media-description, #lightbox_overlay .media-actions, #lightbox_overlay .center";
+    const $hidden_elements = $(hidden_elements_selector).show();
+    const $code_preview = $("#lightbox_overlay .code-preview").hide();
+    const $code_actions = $("#lightbox_overlay .code-actions").removeClass("show");
+    const $playground_action = $("#lightbox_overlay .lightbox-code-playground").hide();
+    const $wrap_button = $("#lightbox_overlay .lightbox-code-wrap");
+    $code_preview.html("old code");
+    lightbox.set_code_wrapping(true);
+
+    const $code_block = $.create("<code-block>");
+    const $code_block_clone = $.create("<code-block-clone>");
+    const $code_buttons = $.create("<code-buttons>");
+    const $playground_link = $.create("<playground-link>");
+    $code_block.set_find_results(".code_external_link", $playground_link);
+    $code_block_clone.set_find_results(".code-buttons-container", $code_buttons);
+    $code_block.clone = () => $code_block_clone;
+
+    let removed_buttons = false;
+    $code_buttons[0].remove = () => {
+        removed_buttons = true;
+    };
+
+    let appended_element;
+    $code_preview[0].append = (element) => {
+        appended_element = element;
+    };
+
+    lightbox.display_code_block($code_block);
+
+    assert.equal($hidden_elements.visible(), false);
+    assert.equal($code_preview.visible(), true);
+    assert.equal($code_actions.hasClass("show"), true);
+    assert.equal($playground_action.visible(), true);
+    assert.equal($code_preview.hasClass("wrap-code"), false);
+    assert.equal($wrap_button.attr("aria-pressed"), "false");
+    assert.equal($code_preview.html(), "");
+    assert.equal(appended_element, $code_block_clone[0]);
+    assert.equal(removed_buttons, true);
+});
+
+run_test("display_code_block without a configured playground", () => {
+    const $code_block = $.create("<code-block-without-playground>");
+    const $code_block_clone = $.create("<code-block-clone-without-playground>");
+    const $code_buttons = $.create("<code-buttons-without-playground>");
+    $code_block.set_find_results(".code_external_link", []);
+    $code_block_clone.set_find_results(".code-buttons-container", $code_buttons);
+    $code_block.clone = () => $code_block_clone;
+    $code_buttons[0].remove = () => {};
+
+    lightbox.display_code_block($code_block);
+
+    assert.equal($("#lightbox_overlay .code-actions").hasClass("show"), true);
+    assert.equal($("#lightbox_overlay .lightbox-code-playground").visible(), false);
+});
+
+run_test("get_code_preview_text", () => {
+    const $code = $("#lightbox_overlay .code-preview code");
+    $code.text("const greeting = 'hello';\n");
+
+    assert.equal(lightbox.get_code_preview_text(), "const greeting = 'hello';\n");
+});
+
+run_test("lightbox overlay includes code actions", () => {
+    const render_lightbox_overlay = require("../templates/lightbox_overlay.hbs");
+    const html = render_lightbox_overlay();
+
+    assert.match(html, /class="lightbox-media-action lightbox-copy-code"/);
+    assert.match(html, /class="lightbox-media-action lightbox-code-wrap" aria-pressed="false"/);
+    assert.match(html, /class="lightbox-media-action lightbox-code-playground"/);
+});

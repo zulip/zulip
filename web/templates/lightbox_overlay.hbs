@@ -9,6 +9,11 @@
             <a class="lightbox-media-action open" rel="noopener noreferrer" target="_blank">{{t "Open" }}</a>
             <a class="lightbox-media-action download" download>{{t "Download" }}</a>
         </div>
+        <div class="code-actions">
+            <button type="button" class="lightbox-media-action lightbox-copy-code">{{t "Copy" }}</button>
+            <button type="button" class="lightbox-media-action lightbox-code-wrap" aria-pressed="false">{{t "Wrap lines" }}</button>
+            <button type="button" class="lightbox-media-action lightbox-code-playground">{{t "View in playground" }}</button>
+        </div>
         <div class="exit" aria-label="{{t 'Close' }}">
             <span aria-hidden="true" class="zulip-icon zulip-icon-close"></span>
         </div>
@@ -17,6 +22,7 @@
     <div class="image-preview no-select">
         <div class="zoom-element no-select"></div>
     </div>
+    <div class="code-preview rendered_markdown"></div>
     <div class="video-player"></div>
     <div class="player-container"></div>
     <div class="center">
