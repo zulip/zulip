@@ -617,6 +617,7 @@ export const realm_schema = z.object({
     server_avatar_changes_disabled: z.boolean(),
     server_can_summarize_topics: z.boolean(),
     server_emoji_data_url: z.string(),
+    server_google_meet_app_internal: z.boolean(),
     server_inline_image_preview: z.boolean(),
     server_inline_url_embed_preview: z.boolean(),
     server_max_deactivated_realm_deletion_days: z.nullable(z.number()),

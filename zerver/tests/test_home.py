@@ -252,6 +252,7 @@ class HomeTest(ZulipTestCase):
         "server_can_summarize_topics",
         "server_emoji_data_url",
         "server_generation",
+        "server_google_meet_app_internal",
         "server_inline_image_preview",
         "server_inline_url_embed_preview",
         "server_jitsi_server_url",

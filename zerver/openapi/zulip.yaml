@@ -22081,6 +22081,19 @@ paths:
                           since the last request.
 
                           **Changes**: New in Zulip 6.0 (feature level 140).
+                      server_google_meet_app_internal:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether a configured Google Meet video call integration should be
+                          considered to have an internal, workspace-restricted audience.
+
+                          Clients should use this to warn users that the video call feature
+                          is restricted to a particular Google Workspace before starting the
+                          Google OAuth flow for the Google Meet video call integration.
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-eabf93).
                       server_jitsi_server_url:
                         type: string
                         nullable: true
