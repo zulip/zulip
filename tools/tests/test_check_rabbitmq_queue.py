@@ -31,6 +31,22 @@ class AnalyzeQueueStatsTests(TestCase):
         )
         self.assertEqual(result["status"], OK)
 
+    def test_high_latency_queue_tolerates_a_single_long_job(self) -> None:
+        """A realm export averaging 30 minutes is normal for this queue, not a
+        backlog: it must not alert while that one job is in flight."""
+        stats = {
+            "update_time": time.time(),
+            "queue_last_emptied_timestamp": time.time() - 1800,
+            "recent_average_consume_time": 1800,
+        }
+        # The in-flight job is unacknowledged, so rabbitmqctl counts it.
+        result = analyze_queue_stats("deferred_work_high_latency", stats, 1)
+        self.assertEqual(result["status"], OK)
+
+        result = analyze_queue_stats("deferred_work_high_latency", stats, 25)
+        self.assertEqual(result["status"], CRITICAL)
+        self.assertIn("clearing the backlog", result["message"])
+
     def test_queue_normal(self) -> None:
         """10000 events and each takes a second => it'll take a long time to empty."""
         result = analyze_queue_stats(

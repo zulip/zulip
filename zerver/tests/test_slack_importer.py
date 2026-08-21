@@ -18,6 +18,7 @@ from attr import dataclass
 from django.conf import settings
 from django.db import IntegrityError
 from django.http import HttpResponse
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from requests.models import PreparedRequest
 
@@ -72,6 +73,7 @@ from zerver.data_import.slack import (
 from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.mime_types import INLINE_MIME_TYPES
+from zerver.lib.queue import high_latency_queue_name
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import find_key_by_email, read_test_image_file
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
@@ -2689,8 +2691,9 @@ To Do
                 importer_set_email_address_visibility,
             )
 
+        # The queue name comes from the setting; see the dedicated-queue test below.
         m.assert_called_once_with(
-            "deferred_work",
+            high_latency_queue_name(),
             {
                 "type": "import_slack_data",
                 "preregistration_realm_id": prereg_realm.id,
@@ -2856,6 +2859,13 @@ To Do
         self.assertEqual(result["Location"], f"/realm/import/post_process/{confirmation_key}")
         result = self.client_get(f"/realm/import/post_process/{confirmation_key}")
         self.assert_in_success_response(["Select your account"], result)
+
+    @override_settings(DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE=True)
+    def test_end_to_end_slack_import_with_dedicated_queue(self) -> None:
+        """Half the point of the dedicated queue is routing Slack imports to
+        it, so run the same flow with the setting enabled."""
+        self.assertEqual(high_latency_queue_name(), "deferred_work_high_latency")
+        self.test_end_to_end_slack_import()
 
     @mock.patch("zerver.actions.data_import.do_import_realm")
     @mock.patch("zerver.actions.data_import.do_convert_zipfile")
