@@ -1,3 +1,4 @@
+import math
 from enum import Enum, auto
 from typing import Any
 
@@ -287,11 +288,22 @@ class RateLimitedError(JsonableError):
         )
 
     @property
+    def _secs_to_freedom_rounded_up(self) -> int | None:
+        # Round up: the `Retry-After` header permits only a whole
+        # number of seconds, and rounding down would advertise a
+        # shorter wait than the client actually needs to observe.
+        if self.secs_to_freedom is None:
+            return None
+
+        return math.ceil(self.secs_to_freedom)
+
+    @property
     @override
     def extra_headers(self) -> dict[str, Any]:
         extra_headers_dict = super().extra_headers
-        if self.secs_to_freedom is not None:
-            extra_headers_dict["Retry-After"] = self.secs_to_freedom
+        secs_to_freedom = self._secs_to_freedom_rounded_up
+        if secs_to_freedom is not None:
+            extra_headers_dict["Retry-After"] = secs_to_freedom
 
         return extra_headers_dict
 
@@ -299,7 +311,7 @@ class RateLimitedError(JsonableError):
     @override
     def data(self) -> dict[str, Any]:
         data_dict = super().data
-        data_dict["retry-after"] = self.secs_to_freedom
+        data_dict["retry-after"] = self._secs_to_freedom_rounded_up
 
         return data_dict
 
