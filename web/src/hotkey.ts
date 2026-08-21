@@ -31,6 +31,7 @@ import {$t} from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as inbox_util from "./inbox_util.ts";
 import * as info_overlay from "./info_overlay.ts";
+import * as keydown_util from "./keydown_util.ts";
 import * as lightbox from "./lightbox.ts";
 import * as list_util from "./list_util.ts";
 import * as message_actions_popover from "./message_actions_popover.ts";
@@ -365,6 +366,11 @@ export function get_keydown_hotkey(e: JQuery.KeyDownEvent): Hotkey | Hotkey[] | 
         } else {
             return undefined;
         }
+    }
+
+    const mac_ctrl_navigation_key = keydown_util.get_mac_ctrl_navigation_key(e);
+    if (popover_menus.get_visible_instance() && mac_ctrl_navigation_key !== undefined) {
+        return KEYDOWN_MAPPINGS[mac_ctrl_navigation_key];
     }
 
     if (common.has_mac_keyboard() && e.ctrlKey && key !== "[") {
