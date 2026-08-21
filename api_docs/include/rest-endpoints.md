@@ -162,6 +162,11 @@
 * [Delete a data export](/api/delete-realm-export)
 * [Test welcome bot custom message](/api/test-welcome-bot-custom-message)
 * [Deactivate an organization](/api/deactivate-realm)
+* [Deactivate a registered server](/api/deactivate-remote-server)
+* [Check analytics upload status](/api/remote-server-check-analytics)
+* [Upload analytics data](/api/remote-server-post-analytics)
+* [Create a billing session](/api/remote-realm-billing-entry)
+* [Begin transferring a server registration](/api/transfer-remote-server-registration)
 
 ## Real-time events
 

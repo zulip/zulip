@@ -247,12 +247,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/remotes/push/e2ee/notify",
         # Lower priority to document
         "/remotes/server/register",
-        "/remotes/server/register/transfer",
         "/remotes/server/register/verify_challenge",
-        "/remotes/server/deactivate",
-        "/remotes/server/analytics",
-        "/remotes/server/analytics/status",
-        "/remotes/server/billing",
     }
 
     # Endpoints in the API documentation that don't use rest_dispatch
@@ -261,6 +256,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "fetch_api_key",
         "dev_fetch_api_key",
         "jwt/fetch_api_key",
+        "remotes/server/register/transfer",
     }
 
     # Endpoints where the documentation is currently failing our
