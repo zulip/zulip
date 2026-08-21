@@ -1,17 +1,22 @@
-import contextlib
 import re
+from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from itertools import zip_longest
 from typing import Any, Literal, TypeAlias, TypedDict, cast
+from xmlrpc.client import boolean
 
 import regex
 from django.core.exceptions import ValidationError
 from requests.utils import requote_uri
 
+from zerver.lib.markdown import get_markdown_link_for_url
+from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.types import Validator
 from zerver.lib.validator import (
     WildValue,
+    check_anything,
     check_dict,
     check_int,
     check_list,
@@ -25,6 +30,16 @@ ZerverFieldsT: TypeAlias = dict[str, Any]
 SlackToZulipUserIDT: TypeAlias = dict[str, int]
 AddedChannelsT: TypeAlias = dict[str, tuple[str, int]]
 SlackFieldsT: TypeAlias = dict[str, Any]
+ChannelMentionProcessorT: TypeAlias = Callable[[str], str | None]
+UserMentionProcessorT: TypeAlias = Callable[[str], tuple[str, int] | None]
+
+
+@dataclass
+class RenderResult:
+    content: str
+    mentioned_user_ids: list[int]
+    has_link: boolean
+
 
 # Slack link can be in the format <http://www.foo.com|www.foo.com> and <http://foo.com/>
 LINK_REGEX = r"""
@@ -44,13 +59,6 @@ SLACK_MAILTO_REGEX = r"""
                       ([\w\.-]+@[\w\.-]+(\.[\w]+)+)?>  # match email
                       """
 
-SLACK_USERMENTION_REGEX = r"""
-                           (<@)                  # Start with '<@'
-                               ([a-zA-Z0-9]+)    # Here we have the Slack id
-                           (\|)?                 # We not always have a vertical line in mention
-                               ([a-zA-Z0-9]+)?   # If vertical line is present, this is short name
-                           (>)                   # ends with '>'
-                           """
 # Slack doesn't have mid-word message-formatting like Zulip.
 # Hence, ~stri~ke doesn't format the word in Slack, but ~~stri~~ke
 # formats the word in Zulip
@@ -133,23 +141,6 @@ def get_zulip_mention_for_slack_user(
     return None
 
 
-def get_user_mentions(
-    token: str,
-    users: list[ZerverFieldsT],
-    slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
-) -> tuple[str, int | None]:
-    slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, token, re.VERBOSE)
-    assert slack_usermention_match is not None
-    short_name = slack_usermention_match.group(4)
-    slack_id = slack_usermention_match.group(2)
-    zulip_mention = get_zulip_mention_for_slack_user(slack_id, short_name, users)
-    if zulip_mention is not None:
-        token = re.sub(SLACK_USERMENTION_REGEX, zulip_mention, token, flags=re.VERBOSE)
-        user_id = slack_user_id_to_zulip_user_id[slack_id]
-        return token, user_id
-    return token, None
-
-
 def convert_link_format(text: str) -> tuple[str, bool]:
     """
     1. Converts '<https://foo.com>' to 'https://foo.com'
@@ -197,68 +188,167 @@ def convert_markdown_syntax(text: str, pattern: str, zulip_keyword: str) -> str:
     return regex.sub(pattern, replace_slack_format, text, flags=re.VERBOSE | re.MULTILINE)
 
 
-def convert_slack_workspace_mentions(text: str) -> str:
-    # Map Slack's '<!everyone>', '<!channel>' and '<!here>'
-    # mentions to Zulip's '@**all**' wildcard mention.
-    # No regex for these as they can be present anywhere
-    # in the sentence.
-    text = text.replace("<!everyone>", "@**all**")
-    text = text.replace("<!channel>", "@**all**")
-    text = text.replace("<!here>", "@**all**")
-    return text
-
-
-def convert_slack_formatting(text: str) -> str:
+def convert_slack_formatting(text: str) -> tuple[str, bool]:
     text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
     text = convert_markdown_syntax(text, SLACK_STRIKETHROUGH_REGEX, "~~")
     text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
-    return text
-
-
-# Markdown mapping
-def convert_to_zulip_markdown(
-    text: str,
-    users: list[ZerverFieldsT],
-    added_channels: AddedChannelsT,
-    slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
-) -> tuple[str, list[int], bool]:
-    mentioned_users_id = []
-    text = convert_slack_formatting(text)
-    text = convert_slack_workspace_mentions(text)
-
-    # Map Slack channel mention: '<#C5Z73A7RA|general>' to '#**general**'
-    for cname, ids in added_channels.items():
-        cid = ids[0]
-        text = text.replace(f"<#{cid}|{cname}>", "#**" + cname + "**")
-
-    tokens = text.split(" ")
-    for iterator in range(len(tokens)):
-        # Check user mentions and change mention format from
-        # '<@slack_id|short_name>' to '@**full_name**'
-        if re.findall(SLACK_USERMENTION_REGEX, tokens[iterator], re.VERBOSE):
-            tokens[iterator], user_id = get_user_mentions(
-                tokens[iterator], users, slack_user_id_to_zulip_user_id
-            )
-            if user_id is not None:
-                mentioned_users_id.append(user_id)
-
-    text = " ".join(tokens)
-
     # Check and convert link format
     text, has_link = convert_link_format(text)
     # convert `<mailto:foo@foo.com>` to `mailto:foo@foo.com`
     text, has_mailto_link = convert_mailto_format(text)
-
-    message_has_link = has_link or has_mailto_link
-
-    return text, mentioned_users_id, message_has_link
+    return text, has_link or has_mailto_link
 
 
 class LossyConversionError(Exception):
     pass
 
 
-def render_block(block: WildValue) -> str:
+def render_rich_text_inline_style(element: WildValue, text: str) -> str:
+    if "style" not in element:
+        return text
+
+    # Whitespace between words is included as part of the rich_text block of
+    # the text to its right. Pull out trailing whitespace from each rich_text
+    # block so that we only format the text. This helps our Markdown engine
+    # parse each formatted text correctly.
+    stripped = text.rstrip()
+    trailing_whitespace = text[len(stripped) :]
+    text = stripped
+
+    element_style = element["style"]
+    if text.strip() != "":
+        # The order is important. Other formatting syntaxes cannot be inside an
+        # inline code block (backticks).
+        if "code" in element_style:
+            text = f"`{text}`"
+        if "bold" in element_style:
+            text = f"**{text}**"
+        if "italic" in element_style:
+            text = f"*{text}*"
+        if "strike" in element_style:
+            text = f"~~{text}~~"
+    text += trailing_whitespace
+    return text
+
+
+def render_rich_text_element(
+    element: WildValue,
+    channel_mention_processor: ChannelMentionProcessorT,
+    user_mention_processor: UserMentionProcessorT,
+) -> RenderResult:
+    element_type = element["type"].tame(check_string)
+    has_link = False
+    mentioned_user_ids = []
+    match element_type:
+        case "rich_text_section":
+            # This element is composed of "text", "link", or "emoji" elements.
+            # A "rich_text_section" as a sentence looks something like this
+            # (each [{text}] is a rich text element):
+            #
+            # "[bold text here ][followed by some basic texts, ][some italic text, ]
+            # [an inline code][ , etc.\n]"
+            pieces = []
+            for sub_element in element["elements"]:
+                result = render_rich_text_element(
+                    sub_element, channel_mention_processor, user_mention_processor
+                )
+                pieces.append(result.content)
+                if result.has_link:
+                    has_link = True
+                mentioned_user_ids += result.mentioned_user_ids
+            text = "".join(piece for piece in pieces)
+        case "rich_text_list":
+            # This element is a list.
+            pieces = []
+            for sub_element in element["elements"]:
+                result = render_rich_text_element(
+                    sub_element, channel_mention_processor, user_mention_processor
+                )
+                pieces.append(result.content)
+                if result.has_link:
+                    has_link = True
+                mentioned_user_ids += result.mentioned_user_ids
+            list_style = element["style"].tame(check_string_in(["ordered", "bullet"]))
+            list_syntax = "1." if list_style == "ordered" else "-"
+            indent_depth = element["indent"].tame(check_int)
+            # We start to reliably render a list item as a sub list item at 3 or
+            # more indents/white spaces.
+            indents = " " * 3 * indent_depth if indent_depth > 0 else ""
+            text = "".join(f"{indents}{list_syntax} {piece}\n" for piece in pieces).rstrip()
+        case "rich_text_quote":
+            # This element is a quote block.
+            pieces = []
+            for sub_element in element["elements"]:
+                result = render_rich_text_element(
+                    sub_element, channel_mention_processor, user_mention_processor
+                )
+                pieces.append(result.content)
+            quote_content = "".join(piece for piece in pieces)
+            fence = get_unused_fence(quote_content)
+            text = f"{fence}quote\n{quote_content}\n{fence}"
+        case "rich_text_preformatted":
+            # This is a code block, it should contain exactly one "text" element.
+            assert len(element["elements"]) == 1
+            code_block_content = element["elements"][0]["text"].tame(check_string)
+            fence = get_unused_fence(code_block_content)
+            # Slack code block is programming language agnostic.
+            text = f"{fence}text\n{code_block_content}\n{fence}"
+        case "text":
+            text = element["text"].tame(check_string)
+            text = render_rich_text_inline_style(element, text)
+        case "link":
+            url = element["url"].tame(check_string)
+            if "text" in element:
+                # The text field here may contain trailing whitespace that might mess up
+                # Markdown rendering if included inside any formatting syntax.
+                linked_text = element["text"].tame(check_string)
+                stripped = linked_text.rstrip()
+                trailing_whitespace = linked_text[len(stripped) :]
+                linked_text = stripped
+                text = get_markdown_link_for_url(linked_text, url) + trailing_whitespace
+            else:
+                text = url
+            has_link = True
+            text = render_rich_text_inline_style(element, text)
+        case "emoji":
+            emoji_name = element["name"].tame(check_string)
+            text = f":{emoji_name}:"
+        case "user":
+            slack_user_id = element["user_id"].tame(check_string)
+            if mention_result := user_mention_processor(slack_user_id):
+                user_mention, zulip_user_id = mention_result
+                text = user_mention
+                mentioned_user_ids.append(zulip_user_id)
+            else:
+                text = f"**#Unknown Slack user {slack_user_id}**"
+        case "channel":
+            slack_channel_id = element["channel_id"].tame(check_string)
+            channel_mention = channel_mention_processor(slack_channel_id)
+            text = channel_mention or f"**#Unknown Slack channel {slack_channel_id}**"
+        case "broadcast":
+            if element["range"].tame(check_string) in ["here", "everyone", "channel"]:
+                text = "@**all**"
+        case "canvas":
+            # This is attached files, both the Slack importer and webhook integration
+            # have a different way of handling files, so we don't need to do anything
+            # special here.
+            text = ""
+        case _:
+            raise LossyConversionError(
+                f"Unknown rich_text block: {element_type}.\n{element.tame(check_anything)}"
+            )
+    return RenderResult(
+        content=text,
+        mentioned_user_ids=mentioned_user_ids,
+        has_link=has_link,
+    )
+
+
+def render_block(
+    block: WildValue,
+    channel_mention_processor: ChannelMentionProcessorT,
+    user_mention_processor: UserMentionProcessorT,
+) -> RenderResult:
     """
     Raises `LossyConversionError` if it's a rich_text block type.
     """
@@ -269,6 +359,7 @@ def render_block(block: WildValue) -> str:
         "header",
         "image",
         "section",
+        "rich_text",
     }
     unhandled_types = {
         # `call` is a block type we've observed in the wild in a Slack export,
@@ -292,18 +383,25 @@ def render_block(block: WildValue) -> str:
     known_types = {
         *supported_types,
         *unhandled_types,
-        # rich_text is a special case. It probably composes the bulk of a message
-        # body since it's responsible for very basic text formatting--such as
-        # plain text, bold, italic, etc. Our current Slack text conversion module
-        # can't process this block since this is not formatted in Markdown.
-        "rich_text",
     }
     block_type = block["type"].tame(check_string_in(known_types))
 
+    content: str = ""
+    has_link = False
+    mentioned_user_ids = []
     if block_type in unhandled_types:
-        return ""
+        content = ""
     elif block_type == "rich_text":
-        raise LossyConversionError
+        pieces = []
+        for sub_element in block["elements"]:
+            result = render_rich_text_element(
+                sub_element, channel_mention_processor, user_mention_processor
+            )
+            pieces.append(result.content)
+            if result.has_link:
+                has_link = True
+            mentioned_user_ids += result.mentioned_user_ids
+        content = "\n".join(piece for piece in pieces if piece.strip() != "")
     elif block_type == "context" and block.get("elements"):
         pieces = []
         # Slack renders these pieces left-to-right, packed in as
@@ -314,23 +412,29 @@ def render_block(block: WildValue) -> str:
             if element_type == "image":
                 pieces.append(render_block_element(element))
             else:
-                pieces.append(element.tame(check_text_block())["text"])
-        return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
+                text_field = element.tame(check_text_block())
+                text, block_has_link = convert_slack_formatting(text_field["text"])
+                has_link = has_link or block_has_link
+                pieces.append(text)
+        content = "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
     elif block_type == "divider":
-        return "----"
+        content = "----"
     elif block_type == "header":
-        return "## " + block["text"].tame(check_text_block(plain_text_only=True))["text"]
+        content = "## " + block["text"].tame(check_text_block(plain_text_only=True))["text"]
     elif block_type == "image":
         image_url = block["image_url"].tame(check_url)
         alt_text = block["alt_text"].tame(check_string)
         if "title" in block:
             alt_text = block["title"].tame(check_text_block(plain_text_only=True))["text"]
-        return f"[{alt_text}]({image_url})"
+        content = f"[{alt_text}]({image_url})"
+        has_link = True
     elif block_type == "section":
         pieces = []
         if "text" in block:
-            pieces.append(block["text"].tame(check_text_block())["text"])
-
+            text_field = block["text"].tame(check_text_block())
+            text, block_has_link = convert_slack_formatting(text_field["text"])
+            has_link = has_link or block_has_link
+            pieces.append(text)
         if "accessory" in block:
             pieces.append(render_block_element(block["accessory"]))
 
@@ -340,7 +444,9 @@ def render_block(block: WildValue) -> str:
                 # Special-case a single field to display a bit more
                 # nicely, without extraneous borders and limitations
                 # on its contents.
-                pieces.append(fields[0]["text"])
+                text, block_has_link = convert_slack_formatting(fields[0]["text"])
+                has_link = has_link or block_has_link
+                pieces.append(text)
             else:
                 # It is not possible to have newlines in a table, nor
                 # escape the pipes that make it up; replace them with
@@ -356,9 +462,9 @@ def render_block(block: WildValue) -> str:
                     table += f"| {left} | {right} |\n"
                 pieces.append(table)
 
-        return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
+        content = "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
 
-    return ""  # nocoverage
+    return RenderResult(content=content, mentioned_user_ids=mentioned_user_ids, has_link=has_link)
 
 
 class TextField(TypedDict):
@@ -402,12 +508,18 @@ def render_block_element(element: WildValue) -> str:
         return ""
 
 
-def render_attachment(attachment: WildValue) -> str:
+def render_attachment(
+    attachment: WildValue,
+    channel_mention_processor: ChannelMentionProcessorT,
+    user_mention_processor: UserMentionProcessorT,
+) -> RenderResult:
     # https://api.slack.com/reference/messaging/attachments
     # Slack recommends the usage of "blocks" even within attachments; the
     # rest of the fields we handle here are legacy fields. These fields are
     # optional and may contain null values.
     pieces = []
+    has_link = False
+    mentioned_user_ids = []
     if attachment.get("title"):
         title = attachment["title"].tame(check_string)
         if attachment.get("title_link"):
@@ -418,30 +530,29 @@ def render_attachment(attachment: WildValue) -> str:
     if attachment.get("pretext"):
         pieces.append(attachment["pretext"].tame(check_string))
     if attachment.get("text"):
-        pieces.append(attachment["text"].tame(check_string))
+        text, has_link = convert_slack_formatting(attachment["text"].tame(check_string))
+        pieces.append(text)
     if "fields" in attachment:
         fields = []
         for field in attachment["fields"]:
             if "title" in field and "value" in field and field["title"] and field["value"]:
                 title = field["title"].tame(check_string)
                 value = field["value"].tame(check_string)
-                fields.append(f"*{title}*: {value}")
+                fields.append(f"**{title}**: {value}")
             elif field.get("title"):
                 title = field["title"].tame(check_string)
-                fields.append(f"*{title}*")
+                fields.append(f"**{title}**")
             elif field.get("value"):
                 value = field["value"].tame(check_string)
                 fields.append(f"{value}")
         pieces.append("\n".join(fields))
     if attachment.get("blocks"):
         for block in attachment["blocks"]:
-            # rich_text blocks in "attachments" elements don't have a
-            # corresponding raw value in the "text" field, so we can't
-            # fallback to the "text" field in this case like we can do
-            # with rich_text in message "blocks".
-            # TODO: We should use the raw rich_text strings instead.
-            with contextlib.suppress(LossyConversionError):  # nocoverage
-                pieces.append(render_block(block))
+            result = render_block(block, channel_mention_processor, user_mention_processor)
+            pieces.append(result.content)
+            if result.has_link:
+                has_link = True
+            mentioned_user_ids += result.mentioned_user_ids
     if image_url_wv := attachment.get("image_url"):
         try:
             image_url = image_url_wv.tame(check_url)
@@ -449,6 +560,7 @@ def render_attachment(attachment: WildValue) -> str:
             image_url = image_url_wv.tame(check_string)
             image_url = requote_uri(image_url)
         pieces.append(f"[]({image_url})")
+        has_link = True
     if attachment.get("footer"):
         pieces.append(attachment["footer"].tame(check_string))
     if attachment.get("ts"):
@@ -467,7 +579,11 @@ def render_attachment(attachment: WildValue) -> str:
             time = int(ts_float)
         pieces.append(datetime_to_global_time(datetime.fromtimestamp(time, timezone.utc)))
 
-    return "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
+    return RenderResult(
+        content="\n\n".join(piece.strip() for piece in pieces if piece.strip() != ""),
+        mentioned_user_ids=mentioned_user_ids,
+        has_link=has_link,
+    )
 
 
 def replace_links(text: str) -> str:
@@ -476,24 +592,46 @@ def replace_links(text: str) -> str:
     return text
 
 
-def process_slack_block_and_attachment(message: WildValue) -> str:
+def process_slack_block_and_attachment(
+    message: WildValue,
+    channel_mention_processor: ChannelMentionProcessorT,
+    user_mention_processor: UserMentionProcessorT,
+) -> RenderResult:
     pieces: list[str] = []
+    has_link = False
+    mentioned_user_ids = []
     raw_text = message["text"].tame(check_string)
 
     if message.get("blocks"):
-        try:
-            pieces += map(render_block, message["blocks"])
-        except LossyConversionError:
-            # render_block doesn't yet handle the "rich_text" block, which is used
-            # for very basic text formatting. To avoid message content loss, process
-            # the message["text"] field instead if rich_text is used.
-            pieces.append(raw_text)
+        for block in message["blocks"]:
+            result = render_block(block, channel_mention_processor, user_mention_processor)
+            pieces.append(result.content)
+            if result.has_link:
+                has_link = True
+            mentioned_user_ids += result.mentioned_user_ids
 
-    if set(pieces) in ({""}, set()):
-        pieces.append(raw_text)
+    # This is primarily for payloads like zerver/webhooks/slack/fixtures/message_with_variety_files.json
+    # where the message contains the "text" field but no "blocks" field.
+    # Although, upon trying to recreate the message data again, it seems
+    # to have generated proper "blocks" for any text the message might
+    # have, so for the most part this is just an extra safe guard.
+    # See test_variety_files_and_rich_text in test_slack_message_conversion.py.
+    if set(pieces) in ({""}, set()) and raw_text:
+        text, text_has_link = convert_slack_formatting(raw_text)
+        has_link = has_link or text_has_link
+        pieces.append(text)
 
-    # The attachments typically don't have a corresponding raw value in
-    # message["text"] and only add to it, so the output is appended unconditionally.
     if message.get("attachments"):
-        pieces += map(render_attachment, message["attachments"])
-    return "\n".join(piece.strip() for piece in pieces if piece.strip() != "")
+        for attachment in message["attachments"]:
+            result = render_attachment(
+                attachment, channel_mention_processor, user_mention_processor
+            )
+            pieces.append(result.content)
+            if result.has_link:
+                has_link = True
+            mentioned_user_ids += result.mentioned_user_ids
+    return RenderResult(
+        content="\n".join(piece.strip() for piece in pieces if piece.strip() != ""),
+        mentioned_user_ids=mentioned_user_ids,
+        has_link=has_link,
+    )

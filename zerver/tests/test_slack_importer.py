@@ -1273,7 +1273,7 @@ class SlackImporter(ZulipTestCase):
                 "channel_name": "random",
             },
             {
-                "text": "<@U061A5N1G>: hey!",
+                "text": "hey!",
                 "user": "U061A1R2R",
                 "ts": "1437868294.000006",
                 "has_image": True,
@@ -1416,7 +1416,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(conversion_result.reaction_list[0]["emoji_name"], reactions[0]["name"])
 
         # Message conversion already tested in tests.test_slack_message_conversion
-        self.assertEqual(zerver_message[0]["content"], "@**Jane**: hey!")
+        self.assertEqual(zerver_message[0]["content"], "hey!")
         self.assertEqual(zerver_message[0]["has_link"], False)
         self.assertEqual(zerver_message[2]["content"], "http://journals.plos.org/plosone/article")
         self.assertEqual(zerver_message[2]["has_link"], True)
@@ -1511,7 +1511,7 @@ class SlackImporter(ZulipTestCase):
         self.assert_length(attachment, 0)
 
         # Message conversion already tested in tests.test_slack_message_conversion
-        self.assertEqual(zerver_message[0]["content"], "@**Jane**: hey!")
+        self.assertEqual(zerver_message[0]["content"], "hey!")
         self.assertEqual(zerver_message[0]["has_link"], False)
         self.assertEqual(
             zerver_message[1]["recipient"],
@@ -1770,8 +1770,8 @@ message body text
 
         self.assert_length(zerver_message, 2)
         # Test mention syntax in thread topic name.
-        expected_thread_topic_name = "2015-07-17 @**Jon** please reply to this message"
-        thread_1_topic_link_syntax = get_stream_topic_link_syntax(
+        expected_thread_topic_name = "2026-04-23 @**Jon** please reply to this message"
+        thread_topic_link_syntax = get_stream_topic_link_syntax(
             slack_recipient_name_to_zulip_recipient_id["random"],
             "random",
             expected_thread_topic_name,
@@ -1780,8 +1780,9 @@ message body text
         expected_thread_message_1_content = f"""
 {original_thread_message_1_content}
 
-*1 reply in {thread_1_topic_link_syntax}*
+*1 reply in {thread_topic_link_syntax}*
 """.strip()
+
         self.assertEqual(zerver_message[0]["content"], expected_thread_message_1_content)
         self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
         self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_topic_name)
