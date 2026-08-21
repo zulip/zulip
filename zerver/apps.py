@@ -13,6 +13,7 @@ from typing_extensions import override
 from zerver.checks import (
     check_auth_settings,
     check_external_host_setting,
+    check_fake_email_domain_setting,
     check_required_settings,
     check_uploads_settings,
 )
@@ -58,6 +59,7 @@ class ZerverConfig(AppConfig):
     def ready(self) -> None:
         register(check_required_settings)
         register(check_external_host_setting)
+        register(check_fake_email_domain_setting)
         register(check_auth_settings)
         register(check_uploads_settings)
 
