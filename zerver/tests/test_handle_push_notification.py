@@ -357,7 +357,7 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             handle_push_notification(self.user_profile.id, missed_message)
 
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
-    @override_settings(ZULIP_SERVICE_PUSH_NOTIFICATIONS=False, ZULIP_SERVICES=set())
+    @override_settings(ZULIP_SERVICE_PUSH_NOTIFICATIONS=False)
     def test_read_message(self, mock_push_notifications: mock.MagicMock) -> None:
         self.setup_apns_tokens()
         self.setup_fcm_tokens()
