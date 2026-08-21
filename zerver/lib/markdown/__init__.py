@@ -14,6 +14,7 @@ from urllib.parse import parse_qs, parse_qsl, urlencode, urljoin, urlsplit, urlu
 from xml.etree.ElementTree import Element, SubElement
 
 import ahocorasick
+import lxml.html
 import markdown
 import markdown.blockprocessors
 import markdown.inlinepatterns
@@ -25,6 +26,7 @@ import re2
 import regex
 import uri_template
 from django.conf import settings
+from django.utils.html import escape
 from markdown.blockparser import BlockParser
 from markdown.extensions import codehilite, nl2br, sane_lists, tables
 from tlds import tld_set
@@ -2751,6 +2753,42 @@ def markdown_convert(
     )
     markdown_stats_finish()
     return ret
+
+
+def render_inline_markdown(text: str, realm: Realm) -> str:
+    """Render Markdown for a short text field, keeping only inline formatting.
+
+    Block elements and entity references (mentions, channel links, timestamps,
+    emoji, math) are stripped to plain text, so the result is safe to display
+    inline in contexts such as custom profile field labels.
+    """
+    if not text:
+        return ""
+
+    rendered = markdown_convert(
+        text,
+        message_realm=realm,
+        no_previews=True,
+    ).rendered_content
+
+    tree = lxml.html.fragment_fromstring(rendered, create_parent="div")
+    # Math renders to spans whose text is meaningless in isolation, so drop the
+    # whole subtree rather than keeping its text like the other stripped tags.
+    for element in tree.cssselect(".katex"):
+        element.drop_tree()
+    allowed_tags = {"strong", "em", "del", "code", "a"}
+    for element in list(tree.iterdescendants()):
+        is_internal_link = element.tag == "a" and element.get("class") is not None
+        if element.tag not in allowed_tags or is_internal_link:
+            element.drop_tag()
+
+    if not tree.text_content().strip():
+        # Source that renders to no text (a lone custom emoji, horizontal rule,
+        # or math) falls back to its escaped source so the label is never blank.
+        return escape(text)
+
+    serialized = lxml.html.tostring(tree, encoding="unicode")
+    return serialized[len("<div>") : -len("</div>")]
 
 
 def render_message_markdown(

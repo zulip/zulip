@@ -2009,6 +2009,9 @@ def do_import_realm(
     re_map_foreign_keys(data, "zerver_customprofilefield", "realm", related_table="realm")
     update_model_ids(CustomProfileField, data, related_table="customprofilefield")
     bulk_import_model(data, CustomProfileField)
+    # Clear any imported rendered values so they are re-rendered on demand with
+    # this server's Markdown, rather than carrying over the source server's HTML.
+    CustomProfileField.objects.filter(realm=realm).update(rendered_name=None, rendered_hint=None)
 
     re_map_foreign_keys(
         data, "zerver_customprofilefieldvalue", "user_profile", related_table="user_profile"

@@ -74,6 +74,11 @@ class CustomProfileField(models.Model):
     name = models.CharField(max_length=NAME_MAX_LENGTH)
     hint = models.CharField(max_length=HINT_MAX_LENGTH, default="")
 
+    # None until the Markdown is rendered on demand the first time the field is
+    # serialized, so pre-existing fields need no data migration to render.
+    rendered_name = models.TextField(null=True)
+    rendered_hint = models.TextField(null=True)
+
     # Sort order for display of custom profile fields.
     order = models.IntegerField(default=0)
 
@@ -168,12 +173,30 @@ class CustomProfileField(models.Model):
     def __str__(self) -> str:
         return f"{self.realm!r} {self.name} {self.field_type} {self.order}"
 
+    def maybe_render_markdown(self) -> None:
+        from zerver.lib.markdown import render_inline_markdown
+
+        update_fields = []
+        if self.rendered_name is None:
+            self.rendered_name = render_inline_markdown(self.name, self.realm)
+            update_fields.append("rendered_name")
+        if self.rendered_hint is None:
+            self.rendered_hint = render_inline_markdown(self.hint, self.realm)
+            update_fields.append("rendered_hint")
+        if update_fields:
+            self.save(update_fields=update_fields)
+
     def as_dict(self) -> ProfileDataElementBase:
+        self.maybe_render_markdown()
+        assert self.rendered_name is not None
+        assert self.rendered_hint is not None
         data_as_dict: ProfileDataElementBase = {
             "id": self.id,
             "name": self.name,
+            "rendered_name": self.rendered_name,
             "type": self.field_type,
             "hint": self.hint,
+            "rendered_hint": self.rendered_hint,
             "field_data": self.field_data,
             "order": self.order,
             "required": self.required,
@@ -193,7 +216,11 @@ class CustomProfileField(models.Model):
 
 
 def custom_profile_fields_for_realm(realm_id: int) -> QuerySet[CustomProfileField]:
-    return CustomProfileField.objects.filter(realm=realm_id).order_by("order")
+    # select_related("realm") avoids a query per field when as_dict renders
+    # Markdown on demand (see CustomProfileField.maybe_render_markdown).
+    return (
+        CustomProfileField.objects.filter(realm=realm_id).select_related("realm").order_by("order")
+    )
 
 
 class CustomProfileFieldValue(models.Model):
