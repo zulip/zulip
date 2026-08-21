@@ -79,6 +79,10 @@ export function build_bot_edit_widget(
         "bot_avatar",
     );
 
+    if (avatar_source !== "U") {
+        $("#bot-avatar-upload-widget .image-delete-button").hide();
+    }
+
     $("#bot-avatar-upload-widget .image-delete-button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
