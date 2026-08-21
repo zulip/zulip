@@ -11,6 +11,7 @@ import {$t} from "./i18n.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_parser from "./message_parser.ts";
 import type {Message} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
@@ -42,6 +43,8 @@ type ActionPopoverContext = {
     should_display_remind_me_option: boolean;
     should_display_collapse: boolean;
     should_display_uncollapse: boolean;
+    should_display_hide_link_previews: boolean;
+    should_display_show_link_previews: boolean;
     should_display_quote_message: boolean;
     quote_message_menu_item: string;
     forward_message_menu_item: string;
@@ -180,6 +183,24 @@ function get_quote_menu_labels(kind: QuoteMenuSelection["kind"]): {
     }
 }
 
+// Shared with the keyboard shortcut, so both are offered in the same cases.
+export function can_toggle_link_previews(message: Message): boolean {
+    if (message.locally_echoed || page_params.is_spectator) {
+        return false;
+    }
+
+    // A collapsed message, and one hidden for a muted sender, show no
+    // body at all, so there is nothing to toggle until it is shown.
+    assert(message_lists.current !== undefined);
+    const message_container = message_lists.current.view.message_containers.get(message.id);
+    if (message.collapsed || message_container === undefined || message_container.is_hidden) {
+        return false;
+    }
+
+    // Parsing the message's HTML is the expensive part, so check it last.
+    return message_parser.message_has_link_preview(message.content);
+}
+
 export function get_actions_popover_content_context(
     message_id: number,
     quote_menu_selection: QuoteMenuSelection,
@@ -249,6 +270,10 @@ export function get_actions_popover_content_context(
         should_display_uncollapse = message.collapsed || message_condensed;
     }
 
+    const can_toggle_previews = can_toggle_link_previews(message);
+    const should_display_hide_link_previews = can_toggle_previews && !message.hide_link_previews;
+    const should_display_show_link_previews = can_toggle_previews && message.hide_link_previews;
+
     const should_display_quote_message = not_spectator;
     const {quote_message_menu_item, forward_message_menu_item} = get_quote_menu_labels(
         quote_menu_selection.kind,
@@ -299,6 +324,8 @@ export function get_actions_popover_content_context(
         view_source_menu_item,
         should_display_collapse,
         should_display_uncollapse,
+        should_display_hide_link_previews,
+        should_display_show_link_previews,
         should_display_add_reaction_option,
         conversation_time_url,
         should_display_delete_option,

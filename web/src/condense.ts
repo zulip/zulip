@@ -87,7 +87,11 @@ export function uncollapse(message: Message): void {
         const $content = $row.find(".message_content");
         $content.removeClass("collapsed");
 
-        if (message.condensed === true) {
+        if (!$content.hasClass("could-be-condensed")) {
+            // A short message needs no [More] link, whatever the user chose.
+            $content.removeClass("condensed");
+            hide_message_length_toggle($row);
+        } else if (message.condensed === true) {
             // This message was condensed by the user, so re-show the
             // "Show more" button.
             condense_row($row);
@@ -95,12 +99,9 @@ export function uncollapse(message: Message): void {
             // This message was un-condensed by the user, so re-show the
             // "Show less" button.
             uncondense_row($row);
-        } else if ($content.hasClass("could-be-condensed")) {
+        } else {
             // By default, condense a long message.
             condense_row($row);
-        } else {
-            // This was a short message, no more need for a [More] link.
-            hide_message_length_toggle($row);
         }
     };
 
@@ -191,7 +192,7 @@ function get_message_height(elem: HTMLElement): number {
     return util.the($(elem).find(".message_content")).scrollHeight;
 }
 
-export function condense_and_collapse(elems: JQuery): void {
+export function condense_and_collapse(elems: JQuery | HTMLElement[]): void {
     if (message_lists.current === undefined) {
         return;
     }
@@ -280,12 +281,13 @@ export function condense_and_collapse(elems: JQuery): void {
 
         // If message.condensed is defined, then the user has manually
         // specified whether this message should be expanded or condensed.
-        if (message.condensed === true) {
+        // That choice only applies while the message is still condensable.
+        if (long_message && message.condensed === true) {
             condense_row($(elem));
             continue;
         }
 
-        if (message.condensed === false) {
+        if (long_message && message.condensed === false) {
             uncondense_row($(elem));
             continue;
         }

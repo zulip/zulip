@@ -73,6 +73,7 @@ const overlays = mock_esm("../src/overlays", {
     info_overlay_open: () => false,
     message_edit_history_open: () => false,
 });
+const popover_menus_data = mock_esm("../src/popover_menus_data");
 const popovers = mock_esm("../src/user_card_popover", {
     user_sidebar: {
         is_open: () => false,
@@ -191,6 +192,7 @@ run_test("mappings", () => {
     assert.equal(map_down("Delete").name, "delete");
     assert.equal(map_down("Enter", true).name, "enter");
     assert.equal(map_down("H", true).name, "view_edit_history");
+    assert.equal(map_down("L", true).name, "toggle_link_previews");
     assert.equal(map_down("N", true).name, "narrow_to_next_unread_followed_topic");
     assert.deepEqual(
         map_down("V", true).map((item) => item.name),
@@ -403,7 +405,7 @@ run_test("unmapped keys return false easily", () => {
     // calling any functions outside of hotkey.ts.
     // (unless we are editing text)
     assert_unmapped("bfo");
-    assert_unmapped("BEFLOQTWXZ");
+    assert_unmapped("BEFOQTWXZ");
 });
 
 run_test("allow normal typing when editing text", ({override, override_rewire}) => {
@@ -508,7 +510,7 @@ run_test("modal open", ({override}) => {
     test_normal_typing();
 });
 
-test_while_not_editing_text("misc", ({override}) => {
+test_while_not_editing_text("misc", ({override, disallow}) => {
     // Next, test keys that only work on a selected message.
     const message_view_only_keys = "@+>RjJkKsuvVi:GH";
 
@@ -567,6 +569,18 @@ test_while_not_editing_text("misc", ({override}) => {
         type: "stream",
     }));
     assert_unmapped("H");
+
+    override(message_lists.current, "selected_message", () => ({
+        id: 4,
+        type: "stream",
+    }));
+    override(popover_menus_data, "can_toggle_link_previews", () => true);
+    assert_mapping("L", message_actions_popover, "toggle_hide_link_previews", true);
+
+    // The shortcut is still handled when previews cannot be toggled.
+    override(popover_menus_data, "can_toggle_link_previews", () => false);
+    disallow(message_actions_popover, "toggle_hide_link_previews");
+    assert.ok(process("L", true));
 
     override(narrow_state, "narrowed_by_topic_reply", () => true);
     assert_mapping("s", message_view, "narrow_by_recipient");
