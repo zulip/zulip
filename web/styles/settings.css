@@ -669,13 +669,11 @@ input[type="checkbox"] {
 .advanced-configurations-container {
     .advance-config-toggle-area {
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 0 0.625em;
-
-        .settings-subsection-title {
-            margin: 4px 0;
-        }
+        /* Unlike other subsection headers, which wrap their save/discard
+           widget below the title, this row is just a caret and a title;
+           a long translated title should wrap within the title rather
+           than dropping below the caret. */
+        flex-wrap: nowrap;
 
         .toggle-advanced-configurations-icon {
             font-size: 1.4286em; /* 20px at 14px / em */
