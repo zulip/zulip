@@ -1053,6 +1053,7 @@ ZAPIER_INTEGRATIONS: list[Integration] = [
 ]
 
 PLUGIN_INTEGRATIONS: list[Integration] = [
+    Integration("asyntai", ["productivity"], logo="images/integrations/logos/asyntai.png"),
     Integration("atolio", ["productivity"], logo="images/integrations/logos/atolio.jpeg"),
     Integration("discourse", ["communication"]),
     Integration(
@@ -1201,7 +1202,7 @@ INTEGRATIONS_WITHOUT_SCREENSHOTS = (
     # Integration frameworks
     {"ifttt", "n8n", "slack_incoming", "zapier"}
     # Outgoing integrations
-    | {"atolio", "email", "onyx"}
+    | {"asyntai", "atolio", "email", "onyx"}
     # Video call integrations
     | {"big-blue-button", "constructor-groups", "jitsi", "nextcloud-talk", "webex", "zoom"}
     | {
