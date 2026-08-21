@@ -1299,6 +1299,27 @@ export function do_save_inline_topic_edit($row: JQuery, message: Message, new_to
     });
 }
 
+const fetched_message_response_schema = z.object({
+    message: message_store.raw_message_schema,
+});
+
+function fetch_and_update_edited_message(message_id: number): void {
+    void channel.get({
+        url: "/json/messages/" + message_id,
+        data: {allow_empty_topic_name: true},
+        success(raw_data) {
+            const data = fetched_message_response_schema.parse(raw_data);
+            const message = message_store.get(message_id);
+            if (message === undefined) {
+                return;
+            }
+            message_store.update_booleans(message, data.message.flags);
+            message_store.update_message_content(message, data.message.content);
+            message_live_update.rerender_messages_view_by_message_ids([message_id]);
+        },
+    });
+}
+
 export async function save_message_row_edit($row: JQuery): Promise<void> {
     compose_tooltips.hide_compose_control_button_tooltips($row);
 
@@ -1406,6 +1427,8 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
             if (edit_locally_echoed) {
                 delete message.local_edit_timestamp;
                 currently_echoing_messages.delete(message_id);
+            } else if (stream_id !== undefined && !stream_data.is_subscribed(stream_id)) {
+                fetch_and_update_edited_message(message_id);
             }
 
             // Ordinarily, in a code path like this, we'd make

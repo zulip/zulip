@@ -214,23 +214,19 @@ export function initialize(): void {
         },
     );
 
-    const user_not_subscribed_selector = `.${CSS.escape(
-        compose_banner.CLASSNAMES.user_not_subscribed,
-    )}`;
     $("body").on(
         "click",
-        `${user_not_subscribed_selector} .main-view-banner-action-button`,
+        `.${CSS.escape(
+            compose_banner.CLASSNAMES.sent_to_unsubscribed_channel,
+        )} .sent_to_unsubscribed_channel_subscribe_button`,
         (event) => {
             event.preventDefault();
-
-            const stream_id = compose_state.stream_id();
-            if (stream_id === undefined) {
-                return;
-            }
+            const $button = $(event.currentTarget);
+            const stream_id = Number.parseInt($button.attr("data-stream-id")!, 10);
             const sub = stream_data.get_sub_by_id(stream_id);
             assert(sub !== undefined);
             stream_settings_components.sub_or_unsub(sub);
-            $(user_not_subscribed_selector).remove();
+            $button.closest(".main-view-banner").remove();
         },
     );
 

@@ -42,6 +42,10 @@ const compose_notifications = mock_esm("../src/compose_notifications");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const loading = mock_esm("../src/loading");
 const markdown = mock_esm("../src/markdown");
+const message_events = mock_esm("../src/message_events", {
+    fetch_and_insert_sent_message: noop,
+    insert_new_messages: noop,
+});
 const narrow_state = mock_esm("../src/narrow_state");
 const rendered_markdown = mock_esm("../src/rendered_markdown");
 const resize = mock_esm("../src/resize");
@@ -174,6 +178,12 @@ function simulate_draft_ui_interactions() {
 
 test_ui("send_message_success", ({override, override_rewire}) => {
     mock_banners();
+
+    for (const stream_id of [1, 2]) {
+        const sub = make_stream({stream_id, name: `stream ${stream_id}`});
+        sub.subscribed = true;
+        stream_data.add_sub_for_tests(sub);
+    }
 
     const fake_compose_box = new FakeComposeBox();
 
@@ -418,6 +428,84 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.ok(fake_compose_box.is_textarea_focused());
         assert.ok(!fake_compose_box.is_submit_button_spinner_visible());
     })();
+});
+
+test_ui("send_message_success_to_unsubscribed_channel", ({override, override_rewire}) => {
+    const subbed = make_stream({stream_id: 201, name: "subbed"});
+    subbed.subscribed = true;
+    const unsubbed = make_stream({stream_id: 202, name: "unsubbed"});
+    unsubbed.subscribed = false;
+    stream_data.add_sub_for_tests(subbed);
+    stream_data.add_sub_for_tests(unsubbed);
+
+    override_rewire(echo, "reify_message_id", noop);
+    override(drafts.draft_model, "deleteDrafts", noop);
+    override(
+        onboarding_steps,
+        "ONE_TIME_NOTICES_TO_DISPLAY",
+        new Set(["visibility_policy_banner"]),
+    );
+    override(compose_notifications, "get_muted_narrow", () => undefined);
+
+    let unsubscribed_banner_stream_id;
+    override(compose_notifications, "notify_sent_to_unsubscribed_channel", (stream_id) => {
+        unsubscribed_banner_stream_id = stream_id;
+    });
+    let visibility_policy_stream_id;
+    override(compose_notifications, "notify_automatic_new_visibility_policy", (message) => {
+        visibility_policy_stream_id = message.stream_id;
+    });
+    let fetched_message_id;
+    override(message_events, "fetch_and_insert_sent_message", (message_id) => {
+        fetched_message_id = message_id;
+    });
+
+    const base = {
+        type: "stream",
+        topic: "topic",
+        local_id: "123.04",
+        locally_echoed: true,
+        draft_id: 100,
+    };
+
+    unsubscribed_banner_stream_id = undefined;
+    fetched_message_id = undefined;
+    compose.send_message_success({...base, stream_id: subbed.stream_id}, {id: 1});
+    assert.equal(unsubscribed_banner_stream_id, undefined);
+    assert.equal(fetched_message_id, undefined);
+
+    unsubscribed_banner_stream_id = undefined;
+    fetched_message_id = undefined;
+    compose.send_message_success({...base, stream_id: unsubbed.stream_id}, {id: 2});
+    assert.equal(unsubscribed_banner_stream_id, unsubbed.stream_id);
+    assert.equal(fetched_message_id, undefined);
+
+    unsubscribed_banner_stream_id = undefined;
+    visibility_policy_stream_id = undefined;
+    compose.send_message_success(
+        {...base, stream_id: unsubbed.stream_id},
+        {id: 3, automatic_new_visibility_policy: 2},
+    );
+    assert.equal(visibility_policy_stream_id, unsubbed.stream_id);
+    assert.equal(unsubscribed_banner_stream_id, undefined);
+
+    mock_banners();
+    const fake_compose_box = new FakeComposeBox();
+
+    fetched_message_id = undefined;
+    compose.send_message_success(
+        {...base, stream_id: unsubbed.stream_id, locally_echoed: false},
+        {id: 4},
+    );
+    assert.equal(fetched_message_id, 4);
+    assert.equal(fake_compose_box.textarea_val(), "");
+
+    fetched_message_id = undefined;
+    compose.send_message_success(
+        {...base, stream_id: subbed.stream_id, locally_echoed: false},
+        {id: 5},
+    );
+    assert.equal(fetched_message_id, undefined);
 });
 
 test_ui("handle_enter_key_with_preview_open", ({override, override_rewire}) => {
