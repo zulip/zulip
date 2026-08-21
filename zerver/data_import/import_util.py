@@ -16,13 +16,13 @@ import orjson
 import requests
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 from urllib3.util import Retry
 
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
+from zerver.lib.email_validation import validate_email_is_valid
 from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.markdown import get_markdown_link_for_url
 from zerver.lib.message import normalize_body_for_import
@@ -915,12 +915,9 @@ def long_term_idle_helper(
 
 
 def validate_user_emails_for_import(user_emails: list[str]) -> None:
-    invalid_emails = []
-    for email in user_emails:
-        try:
-            validate_email(email)
-        except ValidationError:
-            invalid_emails.append(email)
+    invalid_emails = [
+        email for email in user_emails if validate_email_is_valid(email, lambda x: None) is not None
+    ]
 
     if invalid_emails:
         details = ", ".join(invalid_emails)
