@@ -6,6 +6,8 @@ import render_new_stream_users from "../templates/stream_settings/new_stream_use
 import * as add_subscribers_pill from "./add_subscribers_pill.ts";
 import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
+import * as loading from "./loading.ts";
+import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_create_subscribers_data from "./stream_create_subscribers_data.ts";
@@ -28,6 +30,35 @@ function redraw_subscriber_list(): void {
 function add_user_ids(user_ids: number[]): void {
     stream_create_subscribers_data.add_user_ids(user_ids);
     redraw_subscriber_list();
+}
+
+export async function add_subscribers_from_pills(): Promise<boolean> {
+    // Subscriber data for a channel pill may still be fetching from
+    // the server, in which case the subscribers of that channel are
+    // not yet in the data set. Wait for the fetch and sync the pills'
+    // user ids, so that the channel is not created without them.
+    const $spinner = $("#people_to_add .add-subscriber-loading-spinner");
+    loading.make_indicator($spinner, {
+        height: 28, // 2em at 14px / 1em
+    });
+    const current_pill_widget = pill_widget;
+    const user_ids = await add_subscribers_pill.get_pill_user_ids(pill_widget);
+    // Make sure the creation form was not closed, or closed and
+    // rebuilt, while we were waiting for subscriber data. Closing
+    // the channels overlay hides it without resetting the panes,
+    // so also check that the overlay itself is still open. We don't
+    // need to destroy the spinner in that case, because build_widgets
+    // re-renders its container every time the form opens.
+    if (
+        pill_widget !== current_pill_widget ||
+        !overlays.streams_open() ||
+        $("#stream-creation").css("display") === "none"
+    ) {
+        return false;
+    }
+    loading.destroy_indicator($spinner);
+    add_user_ids(user_ids);
+    return true;
 }
 
 function soft_remove_user_id(user_id: number): void {

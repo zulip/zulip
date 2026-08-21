@@ -480,6 +480,13 @@ export function show_new_stream_modal(): void {
 
     stream_create_subscribers.build_widgets();
 
+    // A previous create click may have disabled this button while
+    // waiting for subscriber data, and that fetch retries indefinitely.
+    // The sticky footer is not re-rendered when the form reopens, so
+    // reset the button here rather than leaving a fresh form unusable
+    // until the abandoned fetch finishes.
+    $("#stream-creation .finalize_create_stream").prop("disabled", false);
+
     // Make the options default to the same each time
 
     // The message retention setting is visible to owners only. The below block
@@ -600,17 +607,11 @@ export function set_up_handlers(): void {
         e.preventDefault();
         clear_error_display();
 
-        const stream_name = $<HTMLInputElement>("input#create_stream_name").val()!.trim();
+        let stream_name = $<HTMLInputElement>("input#create_stream_name").val()!.trim();
         const name_ok = stream_name_error.validate_for_submit(stream_name);
 
         if (!name_ok) {
             stream_settings_components.show_subs_pane.create_stream("configure_channel_settings");
-            return;
-        }
-
-        const principals = stream_create_subscribers.get_principals();
-        if (principals.length === 0) {
-            stream_subscription_error.report_no_subs_to_stream();
             return;
         }
 
@@ -626,23 +627,56 @@ export function set_up_handlers(): void {
             return;
         }
 
-        if (principals.length >= 50) {
-            const modal_content_html = render_subscription_invites_warning_modal({
-                channel_name: stream_name,
-                count: principals.length,
-            });
+        void (async () => {
+            // Disable the button so that clicking it again (or
+            // pressing Enter) while we wait for subscriber data
+            // cannot create the channel twice.
+            const $create_button = $container.find(".finalize_create_stream");
+            $create_button.prop("disabled", true);
+            const pills_synced = await stream_create_subscribers.add_subscribers_from_pills();
+            // The creation form was closed while we were fetching
+            // subscriber data, so don't create the channel. We leave
+            // the button alone, since it now belongs to a form we no
+            // longer own; show_new_stream_modal re-enables it.
+            if (!pills_synced) {
+                return;
+            }
+            $create_button.prop("disabled", false);
 
-            confirm_dialog.launch({
-                modal_title_html: $t_html({defaultMessage: "Large number of subscribers"}),
-                modal_content_html,
-                is_compact: true,
-                on_click() {
-                    create_stream();
-                },
-            });
-        } else {
-            create_stream();
-        }
+            // The name can be edited from the settings pane while we
+            // wait for subscriber data, so validate it again.
+            stream_name = $<HTMLInputElement>("input#create_stream_name").val()!.trim();
+            if (!stream_name_error.validate_for_submit(stream_name)) {
+                stream_settings_components.show_subs_pane.create_stream(
+                    "configure_channel_settings",
+                );
+                return;
+            }
+
+            const principals = stream_create_subscribers.get_principals();
+            if (principals.length === 0) {
+                stream_subscription_error.report_no_subs_to_stream();
+                return;
+            }
+
+            if (principals.length >= 50) {
+                const modal_content_html = render_subscription_invites_warning_modal({
+                    channel_name: stream_name,
+                    count: principals.length,
+                });
+
+                confirm_dialog.launch({
+                    modal_title_html: $t_html({defaultMessage: "Large number of subscribers"}),
+                    modal_content_html,
+                    is_compact: true,
+                    on_click() {
+                        create_stream();
+                    },
+                });
+            } else {
+                create_stream();
+            }
+        })();
     });
 
     $container.on("input", "#create_stream_name", () => {

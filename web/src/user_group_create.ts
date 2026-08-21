@@ -188,6 +188,13 @@ export function show_new_user_group_modal(): void {
 
     user_group_create_members.build_widgets();
 
+    // A previous create click may have disabled this button while
+    // waiting for member data, and that fetch retries indefinitely.
+    // The sticky footer is not re-rendered when the form reopens, so
+    // reset the button here rather than leaving a fresh form unusable
+    // until the abandoned fetch finishes.
+    $("#user-group-creation .finalize_create_user_group").prop("disabled", false);
+
     clear_error_display();
 }
 
@@ -260,20 +267,13 @@ export function set_up_handlers(): void {
         e.preventDefault();
         clear_error_display();
 
-        const group_name = $<HTMLInputElement>("input#create_user_group_name").val()!.trim();
+        let group_name = $<HTMLInputElement>("input#create_user_group_name").val()!.trim();
         const name_ok = user_group_name_error.validate_for_submit(group_name);
 
         if (!name_ok) {
             user_group_components.show_user_group_settings_pane.create_user_group(
                 "configure_user_group_settings",
             );
-            return;
-        }
-
-        const principals = user_group_create_members_data.get_principals();
-        const subgroups = user_group_create_members_data.get_subgroups();
-        if (principals.length === 0 && subgroups.length === 0) {
-            user_group_membership_error.report_no_members_to_user_group();
             return;
         }
 
@@ -289,7 +289,41 @@ export function set_up_handlers(): void {
             return;
         }
 
-        create_user_group();
+        void (async () => {
+            // Disable the button so that clicking it again (or
+            // pressing Enter) while we wait for subscriber data
+            // cannot create the group twice.
+            const $create_button = $container.find(".finalize_create_user_group");
+            $create_button.prop("disabled", true);
+            const pills_synced = await user_group_create_members.add_members_from_pills();
+            // The creation form was closed while we were fetching
+            // member data, so don't create the group. We leave the
+            // button alone, since it now belongs to a form we no
+            // longer own; show_new_user_group_modal re-enables it.
+            if (!pills_synced) {
+                return;
+            }
+            $create_button.prop("disabled", false);
+
+            // The name can be edited from the settings pane while we
+            // wait for subscriber data, so validate it again.
+            group_name = $<HTMLInputElement>("input#create_user_group_name").val()!.trim();
+            if (!user_group_name_error.validate_for_submit(group_name)) {
+                user_group_components.show_user_group_settings_pane.create_user_group(
+                    "configure_user_group_settings",
+                );
+                return;
+            }
+
+            const principals = user_group_create_members_data.get_principals();
+            const subgroups = user_group_create_members_data.get_subgroups();
+            if (principals.length === 0 && subgroups.length === 0) {
+                user_group_membership_error.report_no_members_to_user_group();
+                return;
+            }
+
+            create_user_group();
+        })();
     });
 
     $container.on("input", "#create_user_group_name", () => {
