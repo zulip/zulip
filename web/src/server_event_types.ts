@@ -7,7 +7,6 @@ import {group_setting_value_schema, topic_link_schema} from "./types.ts";
 // relies on "subscription" data instead.
 // Keep in sync with want() calls in zerver/lib/events.py.
 export const FETCH_EVENT_TYPES: string[] = [
-    "alert_words",
     "channel_folders",
     "custom_profile_fields",
     "default_stream_groups",
@@ -48,6 +47,7 @@ export const FETCH_EVENT_TYPES: string[] = [
     "user_status",
     "user_topic",
     "video_calls",
+    "watched_phrases",
 ];
 
 export const user_group_update_event_schema = z.object({

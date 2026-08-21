@@ -20,6 +20,9 @@ class AlertWord(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     # Case-insensitive name for the alert word.
     word = models.TextField()
+    # Whether to automatically follow topics that receive a message
+    # containing this alert word.
+    automatically_follow_topics = models.BooleanField(default=False, db_default=False)
 
     class Meta:
         unique_together = ("user_profile", "word")

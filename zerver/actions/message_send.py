@@ -12,6 +12,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models import Exists, F, OuterRef, QuerySet
+from django.db.models.functions import Lower
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -105,6 +106,7 @@ from zerver.lib.users import (
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
+    AlertWord,
     Client,
     Device,
     Message,
@@ -1163,6 +1165,27 @@ def do_send_messages(
                         automatically_follow_topics_where_mentioned=True,
                     )
                 )
+
+            # Also follow the topic for users who have an alert word in
+            # this message configured with "automatically_follow_topics".
+            human_users_with_alert_words = (
+                send_request.rendering_result.user_ids_with_alert_words
+                & (send_request.active_user_ids - send_request.all_bot_user_ids)
+            )
+            if len(human_users_with_alert_words) > 0:
+                expect_follow_user_profiles |= {
+                    alert_word.user_profile
+                    for alert_word in AlertWord.objects.annotate(word_lower=Lower("word"))
+                    .filter(
+                        realm_id=realm_id,
+                        user_profile_id__in=human_users_with_alert_words,
+                        # `rendering_result.alert_words` is lowercased.
+                        word_lower__in=send_request.rendering_result.alert_words,
+                        automatically_follow_topics=True,
+                    )
+                    .select_related("user_profile")
+                }
+
             if len(expect_follow_user_profiles) > 0:
                 user_topics_query_set = UserTopic.objects.filter(
                     user_profile__in=expect_follow_user_profiles,
