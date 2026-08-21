@@ -5,7 +5,7 @@ import sys
 import time
 from copy import deepcopy
 from typing import Any, Final, Literal
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 
 from scripts.lib.zulip_tools import get_tornado_ports
 from zerver.lib.db import TimeTrackingConnection, TimeTrackingCursor
@@ -43,6 +43,7 @@ from .configured_settings import (
     EXTRA_INSTALLED_APPS,
     GOOGLE_OAUTH2_CLIENT_ID,
     IS_DEV_DROPLET,
+    JITSI_SERVER_URL,
     LOCAL_UPLOADS_DIR,
     MEMCACHED_LOCATION,
     MEMCACHED_USERNAME,
@@ -526,6 +527,23 @@ if LOCAL_UPLOADS_DIR is None and S3_REGION is None:
     S3_REGION = boto3.client("s3").meta.region_name
 
 DROPBOX_APP_KEY = get_secret("dropbox_app_key")
+
+# Parse JITSI_SERVER_URL string and if no URL scheme is present,
+# default to "https".
+if JITSI_SERVER_URL is not None:
+    split_url = urlsplit(JITSI_SERVER_URL)
+    if split_url.scheme == "":
+        if split_url.netloc == "":
+            # Parsing the URL returned no scheme or netloc,
+            # e.g., "jitsi.example.com", so prepend the
+            # default "https" scheme along with the "://"
+            # character pattern.
+            JITSI_SERVER_URL = f"https://{JITSI_SERVER_URL}"
+        else:
+            # Parsing the URL did return a netloc, e.g.,
+            # "example.com/jitsi", so replace the empty
+            # scheme with "https" and unsplit the URL.
+            JITSI_SERVER_URL = split_url._replace(scheme="https").geturl()
 
 BIG_BLUE_BUTTON_SECRET = get_secret("big_blue_button_secret")
 
