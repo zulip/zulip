@@ -10,7 +10,7 @@
     <div class="image_upload_button {{#unless is_editable_by_current_user}}hide{{/unless}}">
         <div class="image-hover-background"></div>
         <button class="image-delete-button" aria-label="{{ delete_text }}" role="button" tabindex="0">
-            &times;
+            <i class="zulip-icon zulip-icon-close" aria-hidden="true"></i>
         </button>
         <span class="image-delete-text" aria-label="{{ delete_text }}" tabindex="0">
             {{ delete_text }}
