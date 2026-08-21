@@ -44,6 +44,7 @@ from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES
+from zerver.lib.topic import EXPORT_TOPIC_NAME
 from zerver.models import Attachment, Message, Reaction, Recipient, UserProfile
 from zerver.models.presence import PresenceSequence
 from zerver.models.realms import Realm, get_realm
@@ -1160,7 +1161,11 @@ class MatterMostImporter(MattermostImportTestBase):
         exported_messages_id = self.get_set(messages["zerver_message"], "id")
         self.assertIn(messages["zerver_message"][0]["sender"], exported_user_ids)
         self.assertIn(messages["zerver_message"][0]["recipient"], exported_recipient_ids)
-        self.assertIn(messages["zerver_message"][0]["content"], "harry joined the channel.\n\n")
+        self.assertEqual(
+            messages["zerver_message"][0]["content"],
+            "harry joined the channel.\n\n"
+            "*1 reply in #**Dumbledores army>2019-03-21 harry joined the channel.***",
+        )
 
         exported_usermessage_userprofiles = self.get_set(
             messages["zerver_usermessage"], "user_profile"
@@ -1189,6 +1194,39 @@ class MatterMostImporter(MattermostImportTestBase):
             self.assertIsNotNone(message.rendered_content)
 
         self.verify_emoji_code_foreign_keys()
+
+    def test_do_convert_data_thread_conversion(self) -> None:
+        mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
+        output_dir = self.make_import_output_dir("mattermost")
+
+        with self.assertLogs(level="WARNING"):
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=False,
+            )
+
+        harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
+        messages = self.read_file(harry_team_output_dir, "messages-000001.json")
+
+        # A Mattermost thread is converted into its own Zulip topic. The thread's
+        # root message stays in the main import topic, with a link to the new
+        # thread topic appended to it.
+        thread_root_message = messages["zerver_message"][0]
+        self.assertEqual(thread_root_message[EXPORT_TOPIC_NAME], "imported from mattermost")
+        self.assertEqual(
+            thread_root_message["content"],
+            "harry joined the channel.\n\n"
+            "*1 reply in #**Dumbledores army>2019-03-21 harry joined the channel.***",
+        )
+
+        # The reply is moved into the new per-thread topic.
+        thread_reply_message = messages["zerver_message"][1]
+        self.assertEqual(thread_reply_message["content"], "The weather is so hot!")
+        self.assertEqual(
+            thread_reply_message[EXPORT_TOPIC_NAME],
+            "2019-03-21 harry joined the channel.",
+        )
 
     def test_do_convert_data_with_prefering_direct_messages_for_1_to_1_messages(self) -> None:
         mattermost_data_dir = self.fixture_file_name("direct_channel", "mattermost_fixtures")
@@ -1327,7 +1365,11 @@ class MatterMostImporter(MattermostImportTestBase):
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
         messages = self.read_file(harry_team_output_dir, "messages-000001.json")
 
-        self.assertIn(messages["zerver_message"][0]["content"], "xxxxx xxxxxx xxx xxxxxxx.\n\n")
+        self.assertEqual(
+            messages["zerver_message"][0]["content"],
+            "xxxxx xxxxxx xxx xxxxxxx.\n\n"
+            "*1 reply in #**Dumbledores army>2019-03-21 xxxxx xxxxxx xxx xxxxxxx.***",
+        )
 
     def test_import_data_to_existing_database(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
