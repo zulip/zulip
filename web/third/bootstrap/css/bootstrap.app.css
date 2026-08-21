@@ -39,12 +39,6 @@ ol {
   padding: 0;
   margin: 0 0 10px 25px;
 }
-ul ul,
-ul ol,
-ol ol,
-ol ul {
-  margin-bottom: 0;
-}
 hr {
   margin: 20px 0;
   border: 0;
