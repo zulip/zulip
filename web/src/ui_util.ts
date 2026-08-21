@@ -350,6 +350,22 @@ export function rewire_get_left_sidebar_search_term(
     get_left_sidebar_search_term = value;
 }
 
+export const SHOW_RECIPIENT_BAR_CONTROLS_CLASS = "show-recipient-bar-controls";
+
+// Browsers do not recompute :hover when the hovered node is replaced
+// until the pointer moves. Re-apply control visibility for the header
+// currently under the cursor.
+export function restore_recipient_bar_controls_at_point(client_x: number, client_y: number): void {
+    const el = document.elementFromPoint(client_x, client_y);
+    if (el === null) {
+        return;
+    }
+    const $header = $(el).closest(".message_header");
+    if ($header.length === 1) {
+        $header.addClass(SHOW_RECIPIENT_BAR_CONTROLS_CLASS);
+    }
+}
+
 export const TOPIC_SEARCH_PREFIX = "topic:";
 
 export function get_left_sidebar_topic_search_term(): string | undefined {

@@ -30,6 +30,14 @@ mock_esm("../src/people", {
     maybe_get_user_by_id: noop,
 });
 
+mock_esm("../src/popover_menus", {
+    popover_instances: {
+        topics_menu: null,
+        change_visibility_policy: null,
+    },
+    hide_current_popover_if_visible: noop,
+});
+
 const {Filter} = zrequire("../src/filter");
 const {MessageListView} = zrequire("../src/message_list_view");
 const message_list = zrequire("message_list");
