@@ -1,0 +1,72 @@
+{
+  "timestamp": 1666877021969,
+  "webhookEvent": "jira:worklog_updated",
+  "issue_event_type_name": "issue_work_logged",
+  "user": {
+    "self": "https://zulipp.atlassian.net/rest/api/2/user?username=admin",
+    "name": "admin",
+    "key": "admin",
+    "emailAddress": "othello@zulip.com",
+    "displayName": "Leonardo Franchi [Administrator]",
+    "active": true,
+    "timeZone": "Europe/Berlin"
+  },
+  "issue": {
+    "id": "10022",
+    "self": "https://zulipp.atlassian.net/rest/api/2/issue/10022",
+    "key": "SCRUM-23",
+    "fields": {
+      "issuetype": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/issuetype/10002",
+        "id": "10002",
+        "name": "Story",
+        "subtask": false
+      },
+      "summary": "Improve the payment gateway",
+      "description": "The payment gateway times out under load.",
+      "timespent": 21060,
+      "aggregatetimespent": 21060,
+      "timeoriginalestimate": 21600,
+      "timeestimate": 540,
+      "assignee": null,
+      "priority": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/priority/3",
+        "name": "Medium",
+        "id": "3"
+      },
+      "status": {
+        "self": "https://zulipp.atlassian.net/rest/api/2/status/3",
+        "name": "In Progress",
+        "id": "3"
+      },
+      "created": "2022-09-19T06:00:40.345-0300",
+      "updated": "2022-10-27T10:23:41.885-0300",
+      "labels": [],
+      "components": [],
+      "versions": [],
+      "issuelinks": [],
+      "subtasks": []
+    }
+  },
+  "changelog": {
+    "id": "10500",
+    "items": [
+      {
+        "field": "WorklogId",
+        "fieldtype": "jira",
+        "from": "10200",
+        "fromString": "10200",
+        "to": "10200",
+        "toString": "10200"
+      },
+      {
+        "field": "timespent",
+        "fieldtype": "jira",
+        "from": "19500",
+        "fromString": "19500",
+        "to": "21060",
+        "toString": "21060"
+      }
+    ]
+  }
+}
