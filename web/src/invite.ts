@@ -704,6 +704,17 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
     }
 
     function invite_users(): void {
+        // Resolve any in-flight pill edit before reading the invite fields;
+        // refuse to submit if it can't be resolved.
+        if (
+            !email_pill_widget.finalize_pending_edit() ||
+            !stream_pill_widget.finalize_pending_edit() ||
+            (user_group_pill_widget !== undefined &&
+                !user_group_pill_widget.finalize_pending_edit())
+        ) {
+            dialog_widget.hide_dialog_spinner();
+            return;
+        }
         const is_generate_invite_link =
             $(".invite_users_option_tabs").find(".selected").attr("data-tab-key") ===
             "invite-link-tab";
