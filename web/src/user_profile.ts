@@ -1014,6 +1014,20 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         });
     }
 
+    function reopen_bot_manage_tab(): void {
+        assert(bot !== undefined);
+        assert(bot.is_bot);
+        show_user_profile(bot.user_id, "manage-profile-tab");
+        if (avatar_just_saved) {
+            avatar_just_saved = false;
+            ui_report.success(
+                $t_html({defaultMessage: "Saved"}),
+                $("#user-profile-modal .save-success"),
+                1200,
+            );
+        }
+    }
+
     function edit_bot_post_render(): void {
         $("#edit_bot_modal .dialog_submit_button").prop("disabled", true);
 
@@ -1090,6 +1104,12 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             });
         }
 
+        avatar.build_bot_edit_widget(
+            upload_bot_avatar,
+            delete_bot_avatar,
+            bot.avatar_source,
+            reopen_bot_manage_tab,
+        );
 
         if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
             assert(service !== undefined && "interface" in service);
