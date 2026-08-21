@@ -119,9 +119,38 @@ type StreamListSortResult = {
     sections: StreamListSection[];
 };
 
+function stream_has_matching_topics({
+    stream_id,
+    topic_search_term,
+    topics_state,
+    current_topic_name,
+    is_current_channel,
+}: {
+    stream_id: number;
+    topic_search_term: string;
+    topics_state: string;
+    current_topic_name: string | undefined;
+    is_current_channel: boolean;
+}): boolean {
+    const topics = topic_list_data.get_filtered_topic_names(stream_id, (topic_names) =>
+        topic_list_data.filter_topics_by_search_term(
+            stream_id,
+            topic_names,
+            topic_search_term,
+            topics_state,
+        ),
+    );
+    return topics.some(
+        (topic) =>
+            (is_current_channel && topic.toLowerCase() === current_topic_name) ||
+            !user_topics.is_topic_muted(stream_id, topic),
+    );
+}
+
 export function sort_groups(
     all_subscribed_stream_ids: number[],
     search_term: string,
+    topics_state = "",
 ): StreamListSortResult {
     const pinned_section: StreamListSection = {
         id: "pinned-streams",
@@ -194,19 +223,14 @@ export function sort_groups(
         if (matching_stream_ids.includes(stream_id)) {
             continue;
         }
-        // If any of the unmuted topics of the channel match the search
-        // term, or a muted topic matches the current topic, we include
-        // the channel in the list of matches.
-        const topics = topic_list_data.get_filtered_topic_names(stream_id, (topic_names) =>
-            topic_list_data.filter_topics_by_search_term(stream_id, topic_names, search_term),
-        );
         if (
-            topics.some(
-                (topic) =>
-                    (current_channel_id === stream_id &&
-                        topic.toLowerCase() === current_topic_name) ||
-                    !user_topics.is_topic_muted(stream_id, topic),
-            )
+            stream_has_matching_topics({
+                stream_id,
+                topic_search_term: search_term,
+                topics_state,
+                current_topic_name,
+                is_current_channel: current_channel_id === stream_id,
+            })
         ) {
             matching_stream_ids.push(stream_id);
         }

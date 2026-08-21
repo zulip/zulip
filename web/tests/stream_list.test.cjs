@@ -38,6 +38,32 @@ mock_esm("../src/unread", {
     }),
     stream_has_any_unread_mentions: () => stream_has_any_unread_mentions,
     stream_has_any_unmuted_mentions: () => noop,
+    get_missing_topics: () => [],
+    get_topics_with_unread_mentions: () => new Set(),
+    num_unread_for_topic: () => 0,
+    get_channels_with_unread_mentions: () => new Set(),
+    get_channels_with_unmuted_mentions: () => new Set(),
+});
+
+let left_sidebar_topics_state = "";
+mock_esm("../src/left_sidebar_filter", {
+    clear_left_sidebar_filter: () => {
+        $("#left-sidebar-search .input-close-filter-button").trigger("click");
+    },
+    clear_query: () => {
+        $("#left-sidebar-filter-query").empty();
+        $("#left-sidebar-filter-query").text("");
+    },
+    get_effective_topics_state_for_search: () => left_sidebar_topics_state,
+    get_raw_topics_state: () =>
+        $("#left-sidebar-filter-input .pill").length > 0 ? "is:followed" : "",
+});
+
+let browser_history_navigated_to;
+mock_esm("../src/browser_history", {
+    go_to_location: (url) => {
+        browser_history_navigated_to = url;
+    },
 });
 
 const {Filter} = zrequire("../src/filter");
@@ -46,9 +72,11 @@ const stream_data = zrequire("stream_data");
 const stream_list = zrequire("stream_list");
 stream_list.set_update_inbox_channel_view_callback(noop);
 const stream_list_sort = zrequire("stream_list_sort");
+const stream_topic_history = zrequire("stream_topic_history");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 const settings_config = zrequire("settings_config");
+const user_topics = zrequire("user_topics");
 mock_esm("../src/settings_data", {
     user_can_create_private_streams: () => true,
     user_has_permission_for_group_setting: () => true,
@@ -157,6 +185,13 @@ function test_ui(label, f) {
     run_test(label, (helpers) => {
         stream_data.clear_subscriptions();
         stream_list.stream_sidebar.rows.clear();
+        stream_topic_history.reset();
+        user_topics.set_user_topics([]);
+        $("#left-sidebar-filter-query").text("");
+        $.reset_selector("#left-sidebar-filter-input .pill");
+        $.set_results("#left-sidebar-filter-input .pill", []);
+        left_sidebar_topics_state = "";
+        browser_history_navigated_to = undefined;
         f(helpers);
     });
 }
@@ -284,6 +319,150 @@ test_ui("pinned_streams_never_inactive", ({mock_template, override_rewire}) => {
 
     row.update_whether_active();
     assert.ok(!$devel_sidebar.hasClass("inactive_stream"));
+});
+
+test_ui("clear_search", () => {
+    const scenarios = [
+        {
+            search_term: "",
+            has_topic_state_pill: false,
+            expected_filter_events: ["blur"],
+            expected_close_button_events: [],
+        },
+        {
+            search_term: "",
+            has_topic_state_pill: true,
+            expected_filter_events: [],
+            expected_close_button_events: ["click"],
+        },
+    ];
+
+    for (const scenario of scenarios) {
+        $.reset_selector("#left-sidebar-filter-query");
+        $.reset_selector("#left-sidebar-search .input-close-filter-button");
+        $.reset_selector("#left-sidebar-filter-input .pill");
+        $.set_results("#left-sidebar-filter-input .pill", []);
+        const $filter = $("#left-sidebar-filter-query");
+        $filter.text(scenario.search_term);
+        if (scenario.has_topic_state_pill) {
+            const $pill = $.create("left-sidebar-topic-state-pill");
+            $.reset_selector("#left-sidebar-filter-input .pill");
+            $.set_results("#left-sidebar-filter-input .pill", [$pill[0]]);
+        }
+
+        const filter_events = [];
+        $filter.on("blur", () => {
+            filter_events.push("blur");
+        });
+
+        const close_button_events = [];
+        const $close_button = $("#left-sidebar-search .input-close-filter-button");
+        $close_button.on("click", () => {
+            close_button_events.push("click");
+        });
+
+        stream_list.clear_search();
+
+        assert.deepEqual(filter_events, scenario.expected_filter_events);
+        assert.deepEqual(close_button_events, scenario.expected_close_button_events);
+    }
+});
+
+test_ui("searching", () => {
+    const $filter = $("#left-sidebar-filter-query");
+    $.reset_selector("#left-sidebar-filter-input .pill");
+    $.set_results("#left-sidebar-filter-input .pill", []);
+
+    assert.equal(stream_list.searching(), false);
+
+    $filter.trigger("focus");
+    assert.equal(stream_list.searching(), true);
+
+    $filter.trigger("blur");
+    assert.equal(stream_list.searching(), false);
+
+    const $pill = $.create("left-sidebar-topic-state-pill-searching");
+    $.reset_selector("#left-sidebar-filter-input .pill");
+    $.set_results("#left-sidebar-filter-input .pill", [$pill[0]]);
+
+    $pill.trigger("focus");
+    assert.equal(stream_list.searching(), true);
+
+    $pill.trigger("blur");
+    assert.equal(stream_list.searching(), false);
+});
+
+test_ui("on_sidebar_channel_click_with_preserved_topic_state_filter", ({override}) => {
+    stream_data.add_sub_for_tests(develSub);
+
+    override(
+        user_settings,
+        "web_channel_default_view",
+        settings_config.web_channel_default_view_values.top_topic_in_channel.code,
+    );
+
+    const $filter = $("#left-sidebar-filter-query");
+    const scenarios = [
+        {
+            search_term: "de",
+            add_matching_followed_topic() {
+                user_topics.update_user_topics(
+                    develSub.stream_id,
+                    develSub.name,
+                    "topic 2",
+                    user_topics.all_visibility_policies.FOLLOWED,
+                    1,
+                );
+            },
+            expected_topic_name: "topic 2",
+            expected_show_channel_feed_called: false,
+        },
+        {
+            search_term: "",
+            add_matching_followed_topic: noop,
+            expected_topic_name: undefined,
+            expected_show_channel_feed_called: true,
+        },
+    ];
+
+    for (const scenario of scenarios) {
+        left_sidebar_topics_state = "is:followed";
+        $filter.text(scenario.search_term);
+        $filter.html(scenario.search_term);
+
+        stream_topic_history.add_message({
+            stream_id: develSub.stream_id,
+            topic_name: "topic 1",
+            message_id: 1,
+        });
+        stream_topic_history.add_message({
+            stream_id: develSub.stream_id,
+            topic_name: "topic 2",
+            message_id: 2,
+        });
+        scenario.add_matching_followed_topic();
+        const expected_url =
+            scenario.expected_topic_name === undefined
+                ? undefined
+                : stream_topic_history.channel_topic_permalink_hash(
+                      develSub.stream_id,
+                      scenario.expected_topic_name,
+                  );
+
+        let show_channel_feed_called = false;
+        stream_list.on_sidebar_channel_click(develSub.stream_id, null, () => {
+            show_channel_feed_called = true;
+        });
+
+        assert.equal($filter.html(), "");
+        assert.equal(browser_history_navigated_to, expected_url);
+        assert.equal(show_channel_feed_called, scenario.expected_show_channel_feed_called);
+
+        stream_topic_history.reset();
+        user_topics.set_user_topics([]);
+        browser_history_navigated_to = undefined;
+        left_sidebar_topics_state = "";
+    }
 });
 
 function add_row(sub) {

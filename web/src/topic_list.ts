@@ -10,6 +10,7 @@ import render_topic_list_new_topic from "../templates/topic_list_new_topic.hbs";
 import * as blueslip from "./blueslip.ts";
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import * as left_sidebar_filter from "./left_sidebar_filter.ts";
 import {ListCursor} from "./list_cursor.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -651,6 +652,10 @@ function get_zoomed_topic_search_term(): string {
 
 export function get_typeahead_search_pills_syntax(): string {
     const pills = topic_filter_pill_widget?.items() ?? [];
+
+    if (!zoomed) {
+        return left_sidebar_filter.get_effective_topics_state_for_search();
+    }
 
     if (pills.length === 0) {
         return "";

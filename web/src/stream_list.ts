@@ -20,6 +20,7 @@ import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as left_sidebar_filter from "./left_sidebar_filter.ts";
 import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import {localstorage} from "./localstorage.ts";
 import type {Message} from "./message_store.ts";
@@ -432,9 +433,13 @@ export function build_stream_list(force_rerender: boolean): void {
     const streams = stream_data.subscribed_stream_ids();
     const search_term =
         ui_util.get_left_sidebar_topic_search_term() ?? ui_util.get_left_sidebar_search_term();
-    const stream_groups = stream_list_sort.sort_groups(streams, search_term);
+    const topics_state = left_sidebar_filter.get_effective_topics_state_for_search();
+    const stream_groups = stream_list_sort.sort_groups(streams, search_term, topics_state);
+    const is_stream_name_search_active = search_term !== "";
 
     if (stream_groups.same_as_before && !force_rerender) {
+        set_sections_states();
+        $("#streams_list").toggleClass("is_searching", is_stream_name_search_active);
         return;
     }
 
@@ -502,10 +507,10 @@ export function build_stream_list(force_rerender: boolean): void {
                 section.id !== "pinned-streams",
             );
         }
-        // If a section appears empty, due to only having inactive or muted channels,
-        // we collapse it, since there's nothing to easily see. But don't do this during
-        // search, since sections can enter that state temporarily.
-        if (!searching()) {
+        // If a section appears empty due to only having inactive or muted channels,
+        // we collapse it. But don't do this while stream-name search is active,
+        // since sections can enter that state temporarily.
+        if (!is_stream_name_search_active) {
             if (!is_empty && section.default_visible_streams.length === 0) {
                 collapsed_sections.add(section.id);
                 sections_with_only_inactive_or_muted.add(section.id);
@@ -522,8 +527,8 @@ export function build_stream_list(force_rerender: boolean): void {
     update_stream_section_mention_indicators();
     update_unread_counts_visibility();
     set_sections_states();
-    // Show inactive channels when user starts typing.
-    $("#streams_list").toggleClass("is_searching", ui_util.get_left_sidebar_search_term() !== "");
+    // Show inactive channels only during stream-name search.
+    $("#streams_list").toggleClass("is_searching", is_stream_name_search_active);
 }
 
 export function mention_counts_by_section(): Map<
@@ -1498,7 +1503,13 @@ export function on_sidebar_channel_click(
         const topic_list_info = topic_list_data.get_list_info(
             stream_id,
             false,
-            (topic_names: string[]) => topic_names,
+            (topic_names: string[]) =>
+                topic_list_data.filter_topics_by_search_term(
+                    stream_id,
+                    topic_names,
+                    "",
+                    left_sidebar_filter.get_effective_topics_state_for_search(),
+                ),
         );
         // This initial value handles both the top_topic_in_channel
         // mode as well as the top_unread_topic_in_channel fallback
@@ -1728,14 +1739,21 @@ function toggle_inactive_or_muted_channels($section_container: JQuery): void {
 }
 
 export function searching(): boolean {
-    return $(".left-sidebar-search-input").expectOne().is(":focus");
+    const $pills = $("#left-sidebar-filter-input .pill");
+    return (
+        $("#left-sidebar-filter-query").is(":focus") ||
+        ($pills.length > 0 && $pills.is(":focus"))
+    );
 }
 
 export function clear_search(): void {
-    const $filter = $(".left-sidebar-search-input").expectOne();
-    if ($filter.val() !== "") {
-        $filter.val("");
-        $filter.trigger("input");
+    if (left_sidebar_filter.get_raw_topics_state() !== "") {
+        left_sidebar_filter.clear_left_sidebar_filter();
+        return;
+    }
+    const $filter = $("#left-sidebar-filter-query");
+    if ($filter.text().trim() !== "") {
+        left_sidebar_filter.clear_query();
     }
     $filter.trigger("blur");
 }
