@@ -188,6 +188,13 @@ export function show_new_user_group_modal(): void {
 
     user_group_create_members.build_widgets();
 
+    // A previous create click may have disabled this button while
+    // waiting for member data, and that fetch retries indefinitely.
+    // The sticky footer is not re-rendered when the form reopens, so
+    // reset the button here rather than leaving a fresh form unusable
+    // until the abandoned fetch finishes.
+    $("#user-group-creation .finalize_create_user_group").prop("disabled", false);
+
     clear_error_display();
 }
 
@@ -289,15 +296,14 @@ export function set_up_handlers(): void {
             const $create_button = $container.find(".finalize_create_user_group");
             $create_button.prop("disabled", true);
             const pills_synced = await user_group_create_members.add_members_from_pills();
-            // Re-enable the button even if the form was closed; the
-            // footer is not re-rendered when the form is reopened
-            // within the same overlay session.
-            $create_button.prop("disabled", false);
             // The creation form was closed while we were fetching
-            // subscriber data, so don't create the group.
+            // member data, so don't create the group. We leave the
+            // button alone, since it now belongs to a form we no
+            // longer own; show_new_user_group_modal re-enables it.
             if (!pills_synced) {
                 return;
             }
+            $create_button.prop("disabled", false);
 
             // The name can be edited from the settings pane while we
             // wait for subscriber data, so validate it again.

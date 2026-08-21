@@ -480,6 +480,13 @@ export function show_new_stream_modal(): void {
 
     stream_create_subscribers.build_widgets();
 
+    // A previous create click may have disabled this button while
+    // waiting for subscriber data, and that fetch retries indefinitely.
+    // The sticky footer is not re-rendered when the form reopens, so
+    // reset the button here rather than leaving a fresh form unusable
+    // until the abandoned fetch finishes.
+    $("#stream-creation .finalize_create_stream").prop("disabled", false);
+
     // Make the options default to the same each time
 
     // The message retention setting is visible to owners only. The below block
@@ -627,15 +634,14 @@ export function set_up_handlers(): void {
             const $create_button = $container.find(".finalize_create_stream");
             $create_button.prop("disabled", true);
             const pills_synced = await stream_create_subscribers.add_subscribers_from_pills();
-            // Re-enable the button even if the form was closed; the
-            // footer is not re-rendered when the form is reopened
-            // within the same overlay session.
-            $create_button.prop("disabled", false);
             // The creation form was closed while we were fetching
-            // subscriber data, so don't create the channel.
+            // subscriber data, so don't create the channel. We leave
+            // the button alone, since it now belongs to a form we no
+            // longer own; show_new_stream_modal re-enables it.
             if (!pills_synced) {
                 return;
             }
+            $create_button.prop("disabled", false);
 
             // The name can be edited from the settings pane while we
             // wait for subscriber data, so validate it again.
