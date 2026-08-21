@@ -156,6 +156,14 @@ ldap_logger = logging.getLogger("zulip.ldap")
 logger = logging.getLogger("zulip.registration")
 
 
+def is_string_id_unique_violation(error: IntegrityError) -> bool:
+    diag = getattr(error.__cause__, "diag", None)
+    return getattr(diag, "constraint_name", None) in {
+        "zerver_realm_string_id_key",
+        "zerver_realm_subdomain_key",
+    }
+
+
 @typed_endpoint
 def get_prereg_key_and_redirect(
     request: HttpRequest,
@@ -263,6 +271,66 @@ def get_selected_realm_default_language_name(
         return None
 
     return get_language_name(prereg_realm.default_language)
+
+
+def render_registration_form(
+    request: HttpRequest,
+    *,
+    form: RegistrationForm,
+    email: str,
+    key: str,
+    name_validated: bool,
+    realm: Realm | None,
+    realm_creation: bool,
+    password_required: bool,
+    require_ldap_password: bool,
+    prereg_realm: PreregistrationRealm | None,
+    next_url: str,
+    status: int = 200,
+) -> TemplateResponse:
+    default_email_address_visibility = None
+    if realm is not None:
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        default_email_address_visibility = realm_user_default.email_address_visibility
+
+    context = {
+        "form": form,
+        "email": email,
+        "key": key,
+        "full_name": request.session.get("authenticated_full_name", None),
+        "lock_name": name_validated and name_changes_disabled(realm),
+        # password_auth_enabled is normally set via our context processor,
+        # but for the registration form, there is no logged in user yet, so
+        # we have to set it here.
+        "creating_new_realm": realm_creation,
+        "password_required": password_auth_enabled(realm) and password_required,
+        "require_ldap_password": require_ldap_password,
+        "password_auth_enabled": password_auth_enabled(realm),
+        "default_stream_groups": [] if realm is None else get_default_stream_groups(realm),
+        "accounts": get_accounts_for_email(email),
+        "MAX_NAME_LENGTH": str(UserProfile.MAX_NAME_LENGTH),
+        "MAX_PASSWORD_LENGTH": str(form.MAX_PASSWORD_LENGTH),
+        "corporate_enabled": settings.CORPORATE_ENABLED,
+        "default_email_address_visibility": default_email_address_visibility,
+        "selected_realm_type_name": get_selected_realm_type_name(prereg_realm),
+        "selected_realm_default_language_name": get_selected_realm_default_language_name(
+            prereg_realm
+        ),
+        "email_address_visibility_admins_only": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+        "email_address_visibility_moderators": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+        "email_address_visibility_nobody": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+        "email_address_visibility_options_dict": UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP,
+        "how_realm_creator_found_zulip_options": RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items(),
+        "next": next_url,
+    }
+
+    if realm_creation:
+        # Add context for realm creation part of the form.
+        context.update(get_realm_create_form_context())
+
+    return TemplateResponse(
+        request, "zerver/create_user/register.html", context=context, status=status
+    )
 
 
 @add_google_analytics
@@ -726,17 +794,39 @@ def registration_helper(
                 extra_context_field = HOW_FOUND_ZULIP_EXTRA_CONTEXT[how_found_zulip]
                 how_found_zulip_extra_context = form.cleaned_data[extra_context_field]
 
-            realm = do_create_realm(
-                string_id,
-                realm_name,
-                org_type=realm_type,
-                default_language=realm_default_language,
-                prereg_realm=prereg_realm,
-                how_realm_creator_found_zulip=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[
-                    how_found_zulip
-                ],
-                how_realm_creator_found_zulip_extra_context=how_found_zulip_extra_context,
-            )
+            try:
+                realm = do_create_realm(
+                    string_id,
+                    realm_name,
+                    org_type=realm_type,
+                    default_language=realm_default_language,
+                    prereg_realm=prereg_realm,
+                    how_realm_creator_found_zulip=RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS[
+                        how_found_zulip
+                    ],
+                    how_realm_creator_found_zulip_extra_context=how_found_zulip_extra_context,
+                )
+            except IntegrityError as error:
+                if not is_string_id_unique_violation(error):
+                    raise
+                form.add_error(
+                    "realm_subdomain",
+                    _("Subdomain is already in use. Please choose a different one."),
+                )
+                return render_registration_form(
+                    request,
+                    form=form,
+                    email=email,
+                    key=key,
+                    name_validated=name_validated,
+                    realm=realm,
+                    realm_creation=realm_creation,
+                    password_required=password_required,
+                    require_ldap_password=require_ldap_password,
+                    prereg_realm=prereg_realm,
+                    next_url=next,
+                    status=400,
+                )
         assert realm is not None
 
         full_name = form.cleaned_data["full_name"]
@@ -950,47 +1040,19 @@ def registration_helper(
         assert isinstance(auth_result, UserProfile)
         return login_and_redirect(request, auth_result, next)
 
-    default_email_address_visibility = None
-    if realm is not None:
-        realm_user_default = RealmUserDefault.objects.get(realm=realm)
-        default_email_address_visibility = realm_user_default.email_address_visibility
-
-    context = {
-        "form": form,
-        "email": email,
-        "key": key,
-        "full_name": request.session.get("authenticated_full_name", None),
-        "lock_name": name_validated and name_changes_disabled(realm),
-        # password_auth_enabled is normally set via our context processor,
-        # but for the registration form, there is no logged in user yet, so
-        # we have to set it here.
-        "creating_new_realm": realm_creation,
-        "password_required": password_auth_enabled(realm) and password_required,
-        "require_ldap_password": require_ldap_password,
-        "password_auth_enabled": password_auth_enabled(realm),
-        "default_stream_groups": [] if realm is None else get_default_stream_groups(realm),
-        "accounts": get_accounts_for_email(email),
-        "MAX_NAME_LENGTH": str(UserProfile.MAX_NAME_LENGTH),
-        "MAX_PASSWORD_LENGTH": str(form.MAX_PASSWORD_LENGTH),
-        "corporate_enabled": settings.CORPORATE_ENABLED,
-        "default_email_address_visibility": default_email_address_visibility,
-        "selected_realm_type_name": get_selected_realm_type_name(prereg_realm),
-        "selected_realm_default_language_name": get_selected_realm_default_language_name(
-            prereg_realm
-        ),
-        "email_address_visibility_admins_only": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS,
-        "email_address_visibility_moderators": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
-        "email_address_visibility_nobody": RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_NOBODY,
-        "email_address_visibility_options_dict": UserProfile.EMAIL_ADDRESS_VISIBILITY_ID_TO_NAME_MAP,
-        "how_realm_creator_found_zulip_options": RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items(),
-    }
-    context["next"] = next
-
-    if realm_creation:
-        # Add context for realm creation part of the form.
-        context.update(get_realm_create_form_context())
-
-    return TemplateResponse(request, "zerver/create_user/register.html", context=context)
+    return render_registration_form(
+        request,
+        form=form,
+        email=email,
+        key=key,
+        name_validated=name_validated,
+        realm=realm,
+        realm_creation=realm_creation,
+        password_required=password_required,
+        require_ldap_password=require_ldap_password,
+        prereg_realm=prereg_realm,
+        next_url=next,
+    )
 
 
 def login_and_redirect(
