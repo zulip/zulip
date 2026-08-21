@@ -682,7 +682,7 @@ export function build_and_process_quote_assets_for_messages(
 ): void {
     const messages: Message[] = [];
     for (const id of message_ids) {
-        const message = message_store.get(id);
+        const message = message_store.get_immutable_message(id);
         assert(message !== undefined);
         messages.push(message);
     }

@@ -112,7 +112,7 @@ export function get_topics_for_message_ids(message_ids: number[]): Map<string, [
     const topics = new Map<string, [number, string]>(); // key = stream_id:topic
     for (const msg_id of message_ids) {
         // message_store still has data on deleted messages when this runs.
-        const message = message_store.get(msg_id);
+        const message = message_store.get_immutable_message(msg_id);
         if (message === undefined) {
             // We may not have the deleted message cached locally in
             // message_store; if so, we can just skip processing it.

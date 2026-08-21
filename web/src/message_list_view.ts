@@ -2342,7 +2342,7 @@ export class MessageListView {
             blueslip.error(`Missing message id for sticky recipient row.`);
             return;
         }
-        const message = message_store.get(msg_id);
+        const message = message_store.get_immutable_message(msg_id);
         if (!message) {
             blueslip.error(
                 `Message not found for the message id identified for sticky header: ${msg_id}.`,

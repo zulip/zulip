@@ -12,7 +12,7 @@ export function rerender_messages_view(): void {
 export function rerender_messages_view_by_message_ids(message_ids: number[]): void {
     const messages_to_render = [];
     for (const id of message_ids) {
-        const message = message_store.get(id);
+        const message = message_store.get_immutable_message(id);
         if (message !== undefined) {
             messages_to_render.push(message);
         }

@@ -1,4 +1,4 @@
-import type {Message} from "./message_store.ts";
+import type {ReadonlyMessage} from "./message_store.ts";
 import type {UpdatableStreamProperties} from "./stream_types.ts";
 
 let is_view_visible = false;
@@ -28,7 +28,7 @@ export function get_topic_key(stream_id: number, topic: string): string {
     return stream_id + ":" + topic.toLowerCase();
 }
 
-export function get_key_from_message(msg: Message): string {
+export function get_key_from_message(msg: ReadonlyMessage): string {
     if (msg.type === "private") {
         // The to_user_ids field on a direct message object is a
         // string containing the user IDs involved in the message in

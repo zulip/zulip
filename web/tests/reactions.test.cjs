@@ -332,7 +332,7 @@ test("unknown realm emojis (insert)", () => {
 test("sending", ({override, override_rewire}) => {
     const message = sample_message_with_clean_reactions();
     assert.equal(message.id, 1001);
-    override(message_store, "get", (message_id) => {
+    override(message_store, "get_mutable_message", (message_id) => {
         assert.equal(message_id, message.id);
         return message;
     });
@@ -593,7 +593,7 @@ test("get_reaction_sections", () => {
 
 test("emoji_reaction_title", ({override}) => {
     const message = sample_message_with_clean_reactions();
-    override(message_store, "get", () => message);
+    override(message_store, "get_mutable_message", () => message);
     const local_id = "unicode_emoji,1f604";
 
     assert.equal(
@@ -611,7 +611,7 @@ test("add_reaction/remove_reaction", ({override, override_rewire}) => {
 
     override(user_settings, "display_emoji_reaction_users", true);
 
-    override(message_store, "get", () => message);
+    override(message_store, "get_mutable_message", () => message);
 
     let function_calls = [];
 
@@ -1364,7 +1364,7 @@ test("remove_reaction_from_view (last reaction)", () => {
 test("bogus_event", ({override}) => {
     // We don't expect errors when we process events with
     // bad message ids.
-    override(message_store, "get", noop);
+    override(message_store, "get_mutable_message", noop);
 
     const bogus_event = {
         message_id: 55,
@@ -1381,7 +1381,7 @@ test("remove spurious user", ({override}) => {
     // get coverage for removing non-user (it should just
     // silently fail)
     const message = sample_message_with_clean_reactions();
-    override(message_store, "get", () => message);
+    override(message_store, "get_mutable_message", () => message);
 
     const event = {
         reaction_type: "unicode_emoji",
@@ -1397,7 +1397,7 @@ test("remove spurious user", ({override}) => {
 test("remove last user", ({override, override_rewire}) => {
     const message = sample_message_with_clean_reactions();
 
-    override(message_store, "get", () => message);
+    override(message_store, "get_mutable_message", () => message);
     override_rewire(reactions, "remove_reaction_from_view", noop);
 
     function assert_names(names) {
@@ -1434,7 +1434,7 @@ test("process_reaction_click", ({override, override_rewire}) => {
     override_rewire(reactions, "remove_reaction_from_view", noop);
 
     const message = sample_message_with_clean_reactions();
-    override(message_store, "get", () => message);
+    override(message_store, "get_mutable_message", () => message);
 
     const expected_reaction_info = {
         reaction_type: "unicode_emoji",
@@ -1470,7 +1470,7 @@ test("code coverage", ({override}) => {
         it easy to enforce 100% coverage for more significant
         code additions.
     */
-    override(message_store, "get", (id) => {
+    override(message_store, "get_mutable_message", (id) => {
         assert.equal(id, 42);
         return {
             clean_reactions: new Map(),
@@ -1496,7 +1496,7 @@ test("duplicates", () => {
 });
 
 test("process_reaction_click undefined", ({override}) => {
-    override(message_store, "get", () => undefined);
+    override(message_store, "get_mutable_message", () => undefined);
     blueslip.expect("error", "reactions: Bad message id");
     blueslip.expect("error", "message_id for reaction click is unknown");
     reactions.process_reaction_click(55, "whatever");
@@ -1504,7 +1504,7 @@ test("process_reaction_click undefined", ({override}) => {
 
 test("process_reaction_click bad local id", ({override}) => {
     const stub_message = {id: 4001, clean_reactions: new Map()};
-    override(message_store, "get", () => stub_message);
+    override(message_store, "get_mutable_message", () => stub_message);
     blueslip.expect("error", "Data integrity problem for reaction");
     reactions.process_reaction_click("some-msg-id", "bad-local-id");
 });

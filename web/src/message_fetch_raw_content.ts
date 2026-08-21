@@ -16,7 +16,7 @@ export function get_raw_content_for_messages(info: {
 
     // We fill what we can from the store
     for (const [i, id] of message_ids.entries()) {
-        const message = message_store.get(id);
+        const message = message_store.get_immutable_message(id);
         assert(message !== undefined);
         if (message.raw_content) {
             raw_content_arr[i] = message.raw_content;
@@ -66,7 +66,7 @@ export function get_raw_content_for_single_message(info: {
     timeout_ms?: number;
 }): void {
     const {message_id, on_success, on_error, timeout_ms} = info;
-    const message = message_store.get(message_id);
+    const message = message_store.get_immutable_message(message_id);
     assert(message !== undefined);
     if (message.raw_content) {
         on_success(message.raw_content);

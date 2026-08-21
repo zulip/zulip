@@ -21,6 +21,7 @@ mock_esm("../src/left_sidebar_navigation_area", {
 });
 
 const message_flags = zrequire("message_flags");
+const message_store = zrequire("message_store");
 const starred_messages_ui = zrequire("starred_messages_ui");
 const {initialize_user_settings} = zrequire("user_settings");
 
@@ -30,6 +31,7 @@ run_test("starred", ({override}) => {
     const message = {
         id: 50,
     };
+    message_store.set_messages_for_tests([{type: "server_message", message}]);
     let ui_updated;
 
     override(message_live_update, "update_starred_view", () => {
@@ -43,7 +45,7 @@ run_test("starred", ({override}) => {
         posted_data = opts.data;
     });
 
-    starred_messages_ui.toggle_starred_and_update_server(message);
+    starred_messages_ui.toggle_starred_and_update_server(message.id);
 
     assert.ok(ui_updated);
 
@@ -60,7 +62,7 @@ run_test("starred", ({override}) => {
 
     ui_updated = false;
 
-    starred_messages_ui.toggle_starred_and_update_server(message);
+    starred_messages_ui.toggle_starred_and_update_server(message.id);
 
     assert.ok(ui_updated);
 
@@ -83,8 +85,11 @@ run_test("starring local echo", () => {
         starred: false,
         locally_echoed: true,
     };
+    message_store.set_messages_for_tests([
+        {type: "server_message", message: locally_echoed_message},
+    ]);
 
-    starred_messages_ui.toggle_starred_and_update_server(locally_echoed_message);
+    starred_messages_ui.toggle_starred_and_update_server(locally_echoed_message.id);
 
     // message_live_update.update_starred_view not called
 

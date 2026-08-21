@@ -174,7 +174,7 @@ export function process_topic_edit(opts: {
     // the messages were moved to another stream or deleted.
 
     for (const message_id of message_ids) {
-        const message = message_store.get(message_id);
+        const message = message_store.get_immutable_message(message_id);
         if (!message) {
             continue;
         }
@@ -189,7 +189,7 @@ export function process_topic_edit(opts: {
 
 export function update_topics_of_deleted_message_ids(message_ids: number[]): void {
     for (const message_id of message_ids) {
-        const message = message_store.get(message_id);
+        const message = message_store.get_immutable_message(message_id);
         if (message?.type !== "stream") {
             continue;
         }

@@ -513,7 +513,7 @@ export function parse_media_data(media: HTMLMediaElement | HTMLImageElement): Me
             return payload;
         }
 
-        const message = message_store.get(message_id);
+        const message = message_store.get_immutable_message(message_id);
         if (message === undefined) {
             blueslip.error("Lightbox for unknown message", {message_id});
         } else {
