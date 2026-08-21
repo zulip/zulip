@@ -10,6 +10,11 @@
             <span class="stream-name">{{name}}</span>
 
             <div class="left-sidebar-controls">
+                {{#if show_expand_topics_button}}
+                <div class="channel-expand-topics-button" tabindex="0" role="button" aria-label="{{t 'Toggle topic list' }}" aria-expanded="false" data-stream-id="{{id}}">
+                    <i class="zulip-icon zulip-icon-chevron-right" aria-hidden="true"></i>
+                </div>
+                {{/if}}
                 <div class="channel-search-topics-button" tabindex="0" data-tippy-content="{{t 'Search topics' }}" data-stream-id="{{id}}">
                     <i class="zulip-icon zulip-icon-search" aria-hidden="true"></i>
                 </div>
