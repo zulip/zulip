@@ -1,7 +1,8 @@
 from django.conf import settings
 from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
-from zerver.actions.message_send import internal_send_stream_message
+from zerver.actions.message_send import internal_send_private_message, internal_send_stream_message
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
@@ -13,7 +14,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.topic_link_util import get_message_link_syntax
-from zerver.lib.url_encoding import pm_message_url
+from zerver.lib.url_encoding import pm_message_url, stream_message_url
 from zerver.models import Message, Realm, UserProfile
 from zerver.models.recipients import Recipient
 from zerver.models.streams import StreamTopicsPolicyEnum
@@ -156,4 +157,42 @@ def send_message_report(
         topic_name=topic_name,
         content=content,
         acting_user=reporting_user,
+    )
+
+
+def send_report_confirmation_dm(
+    reporting_user: UserProfile,
+    realm: Realm,
+    reported_message: Message,
+    report_type: str,
+) -> None:
+    if reported_message.is_channel_message:
+        message_url = stream_message_url(
+            realm=realm,
+            message=dict(
+                id=reported_message.id,
+                stream_id=reported_message.recipient.type_id,
+                display_recipient=reported_message.recipient.label(),
+                topic=reported_message.topic_name(),
+            ),
+        )
+    else:
+        message_url = pm_message_url(
+            realm,
+            dict(
+                id=reported_message.id,
+                display_recipient=get_display_recipient(reported_message.recipient),
+            ),
+        )
+
+    with override_language(reporting_user.default_language):
+        reason = str(Realm.REPORT_MESSAGE_REASONS[report_type]).lower()
+        content = _("You reported [a message]({message_url}) for {reason}.").format(
+            message_url=message_url, reason=reason
+        )
+
+    internal_send_private_message(
+        get_system_bot(settings.NOTIFICATION_BOT, realm.id),
+        reporting_user,
+        content,
     )
