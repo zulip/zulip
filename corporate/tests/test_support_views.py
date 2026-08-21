@@ -74,8 +74,8 @@ class TestRemoteServerSupportEndpoint(ZulipTestCase):
                 LicenseLedger.objects.filter(plan=complimentary_access_plan).order_by("-id").first()
             )
             assert last_ledger_entry is not None
-            last_ledger_entry.licenses_at_next_renewal = billed_licenses
-            last_ledger_entry.save(update_fields=["licenses_at_next_renewal"])
+            last_ledger_entry.workplace_licenses_at_next_renewal = billed_licenses
+            last_ledger_entry.save(update_fields=["workplace_licenses_at_next_renewal"])
             complimentary_access_plan.status = CustomerPlan.SWITCH_PLAN_TIER_AT_PLAN_END
             complimentary_access_plan.save(update_fields=["status"])
             plan_params = {
@@ -760,8 +760,8 @@ class TestSupportEndpoint(ZulipTestCase):
             next_invoice_date=add_months(now, months),
         )
         LicenseLedger.objects.create(
-            licenses=10,
-            licenses_at_next_renewal=10,
+            workplace_licenses=10,
+            workplace_licenses_at_next_renewal=10,
             event_time=now,
             is_renewal=True,
             plan=plan,

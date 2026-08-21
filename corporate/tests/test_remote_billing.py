@@ -1029,8 +1029,8 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
             plan=server_plan,
             is_renewal=True,
             event_time=timezone_now(),
-            licenses=initial_license_count,
-            licenses_at_next_renewal=initial_license_count,
+            workplace_licenses=initial_license_count,
+            workplace_licenses_at_next_renewal=initial_license_count,
         )
         self.server.plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
         self.server.save(update_fields=["plan_type"])
@@ -1114,8 +1114,8 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         billable_licenses = billing_session.get_billable_licenses_for_customer(customer, plan.tier)
         assert license_ledger is not None
         self.assertNotEqual(initial_license_count, billable_licenses)
-        self.assertEqual(license_ledger.licenses, initial_license_count)
-        self.assertEqual(license_ledger.licenses_at_next_renewal, billable_licenses)
+        self.assertEqual(license_ledger.workplace_licenses, initial_license_count)
+        self.assertEqual(license_ledger.workplace_licenses_at_next_renewal, billable_licenses)
         self.assertFalse(license_ledger.is_renewal)
 
     @responses.activate

@@ -57,6 +57,7 @@ from zerver.lib.users import (
     get_user_ids_who_can_access_user,
     user_access_restricted_in_realm,
 )
+from zerver.lib.workplace_users import check_any_group_used_for_workplace_users_group
 from zerver.models import (
     Draft,
     GroupGroupMembership,
@@ -625,7 +626,11 @@ def do_change_user_role(
 
     user_profile.role = value
     user_profile.save(update_fields=["role"])
-    RealmAuditLog.objects.create(
+    # ROLE_COUNT is filled in at the end of this function, once the system
+    # group memberships below have been updated; see the comment there. The
+    # entry itself is created here so that it precedes the audit log entries
+    # for those membership updates.
+    role_changed_audit_log = RealmAuditLog.objects.create(
         realm=user_profile.realm,
         modified_user=user_profile,
         acting_user=acting_user,
@@ -634,15 +639,8 @@ def do_change_user_role(
         extra_data={
             RealmAuditLog.OLD_VALUE: old_value,
             RealmAuditLog.NEW_VALUE: value,
-            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
         },
     )
-    maybe_enqueue_audit_log_upload(user_profile.realm)
-    if settings.BILLING_ENABLED and UserProfile.ROLE_GUEST in [old_value, value]:
-        from corporate.lib.stripe import RealmBillingSession
-
-        billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
-        billing_session.update_license_ledger_if_needed(timezone_now())
 
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, role=user_profile.role)
@@ -697,6 +695,32 @@ def do_change_user_role(
         update_users_in_full_members_system_group(
             user_profile.realm, [user_profile.id], acting_user=acting_user
         )
+
+    # realm_user_count_by_role counts the workplace users from
+    # memberships of realm.workplace_users_group, for cases where
+    # we cannot compute it directly from role counts. So the count
+    # is only correct once every membership update above has run.
+    role_changed_audit_log.extra_data[RealmAuditLog.ROLE_COUNT] = realm_user_count_by_role(
+        user_profile.realm
+    )
+    role_changed_audit_log.save(update_fields=["extra_data"])
+
+    maybe_enqueue_audit_log_upload(user_profile.realm)
+    # A guest becoming a non-guest or vice versa changes the number of licenses
+    # regardless of any group, since guests are counted at a discount. Any other
+    # role change only matters if it moved the user in or out of
+    # realm.workplace_users_group, which the swap between the role based system
+    # groups above does when either of them is that group or inside it.
+    if settings.BILLING_ENABLED and (
+        UserProfile.ROLE_GUEST in [old_value, value]
+        or check_any_group_used_for_workplace_users_group(
+            user_profile.realm, [old_system_group, system_group]
+        )
+    ):
+        from corporate.lib.stripe import RealmBillingSession
+
+        billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
+        billing_session.update_license_ledger_if_needed(timezone_now())
 
     send_stream_events_for_role_update(user_profile, previously_accessible_streams)
 
