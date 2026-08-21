@@ -153,6 +153,20 @@ class TestCreateStreams(ZulipTestCase):
         stream = get_stream("new_stream", realm)
         self.assertEqual(stream.description, "multi line description")
 
+    def test_create_api_self_reference_description(self) -> None:
+        user = self.example_user("hamlet")
+        realm = user.realm
+        self.login_user(user)
+        subscriptions = [{"name": "new_stream", "description": "#**new_stream** is so cool"}]
+        result = self.subscribe_via_post(user, subscriptions, subdomain="zulip")
+        self.assert_json_success(result)
+        stream = get_stream("new_stream", realm)
+        self.assertEqual(stream.description, "#**new_stream** is so cool")
+        self.assertEqual(
+            stream.rendered_description,
+            f'<p><a class="stream" data-stream-id="{stream.id}" href="/#narrow/channel/{stream.id}-new_stream">#new_stream</a> is so cool</p>',
+        )
+
     def test_create_api_topic_permalink_description(self) -> None:
         user = self.example_user("iago")
         realm = user.realm
