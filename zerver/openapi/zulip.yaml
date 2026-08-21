@@ -16647,6 +16647,12 @@ paths:
       summary: Update a user by email
       tags: ["users"]
       x-requires-administrator: true
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - new_email
       description: |
         Administrative endpoint to update the details of another user in the organization by their email address.
         Works the same way as [`PATCH /users/{user_id}`](/api/update-user) but fetching the target user by their
@@ -16788,6 +16794,12 @@ paths:
       summary: Update a user
       tags: ["users"]
       x-requires-administrator: true
+      x-curl-examples-parameters:
+        oneOf:
+          - type: exclude
+            parameters:
+              enum:
+                - new_email
       description: |
         Administrative endpoint to update the details of another user in the organization.
 
@@ -21975,6 +21987,13 @@ paths:
                                 If this file format is animated. These formats
                                 are only generated for uploaded images which
                                 themselves are animated.
+                      server_admins_can_change_user_emails:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether the server allows organization administrators to change user email addresses.
+                          Based on the `ADMINS_CAN_CHANGE_USER_EMAILS` server level setting.
                       server_avatar_changes_disabled:
                         type: boolean
                         description: |
@@ -22823,6 +22842,12 @@ paths:
                           **Changes**: New in Zulip 4.0 (feature level 51).
 
                           [who-can-send-invitations]: /help/restrict-account-creation#change-who-can-send-invitations
+                      can_change_user_emails:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+                          Whether the current user has been granted the ability to change other
+                          users' email addresses by an organization administrator.
                       is_admin:
                         type: boolean
                         description: |

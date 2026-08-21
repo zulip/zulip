@@ -113,6 +113,26 @@ def send_delivery_email_update_events(
         )
 
 
+def send_admin_email_change_notifications(
+    user_profile: UserProfile, old_email: str, new_email: str
+) -> None:
+    context = dict(realm_name=user_profile.realm.name, old_email=old_email, new_email=new_email)
+    language = user_profile.default_language
+
+    for recipient_email in [old_email, new_email]:
+        if recipient_email == "":
+            continue
+        send_email(
+            "zerver/emails/notify_change_in_email_by_admin",
+            to_emails=[recipient_email],
+            from_name=FromAddress.security_email_from_name(user_profile=user_profile),
+            from_address=FromAddress.SUPPORT,
+            language=language,
+            context=context,
+            realm=user_profile.realm,
+        )
+
+
 @transaction.atomic(savepoint=False)
 def do_change_user_delivery_email(
     user_profile: UserProfile, new_email: str, *, acting_user: UserProfile | None
@@ -145,6 +165,9 @@ def do_change_user_delivery_email(
         # Additionally, if we're also changing the publicly visible
         # email, we send a new_email event as well.
         send_user_email_update_event(user_profile)
+
+    if acting_user is not None and acting_user.id != user_profile.id:
+        send_admin_email_change_notifications(user_profile, original_email, new_email)
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
