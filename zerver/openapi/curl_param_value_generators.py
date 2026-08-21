@@ -25,6 +25,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.upload import upload_message_attachment
+from zerver.lib.users import validate_short_name_and_construct_bot_email
 from zerver.models import Client, Message, NamedUserGroup, UserPresence
 from zerver.models.channel_folders import ChannelFolder
 from zerver.models.realms import RealmExport, get_realm
@@ -257,6 +258,28 @@ def get_user_presence() -> dict[str, object]:
 def create_user() -> dict[str, object]:
     return {
         "email": helpers.nonreg_email("test"),
+    }
+
+
+@openapi_param_value_generator(["/bots:post"])
+def add_bot_names() -> dict[str, object]:
+    # This runs against a development database that persists between
+    # runs, so pick names that a previous run has not already used.
+    realm = get_realm("zulip")
+    count = 0
+    exists = True
+    while exists:
+        count += 1
+        short_name = f"hambot{count}"
+        full_name = f"Bot of Hamlet {count}"
+        email = validate_short_name_and_construct_bot_email(short_name, realm)[1]
+        exists = (
+            UserProfile.objects.filter(realm=realm, delivery_email=email).exists()
+            or UserProfile.objects.filter(realm=realm, full_name=full_name, is_active=True).exists()
+        )
+    return {
+        "short_name": short_name,
+        "full_name": full_name,
     }
 
 

@@ -184,6 +184,7 @@ class ZulipClientHandler(ClientHandler):
             and not (
                 response.status_code == 302 and response.headers["Location"].startswith("/login/")
             )
+            and not request.META.get("skip_openapi_validation", False)
         ):
             openapi_request = DjangoOpenAPIRequest(request)
             openapi_response = DjangoOpenAPIResponse(response)
@@ -580,6 +581,7 @@ Output:
         headers: Mapping[str, Any] | None = None,
         query_params: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
+        skip_openapi_validation: bool = False,
         content_type: str | None = None,
         **extra: str,
     ) -> "TestHttpResponse":
@@ -609,6 +611,7 @@ Output:
             query_params=query_params,
             content_type=content_type,
             intentionally_undocumented=intentionally_undocumented,
+            skip_openapi_validation=skip_openapi_validation,
             **extra,
         )
 
@@ -637,6 +640,7 @@ Output:
         headers: Mapping[str, Any] | None = None,
         query_params: Mapping[str, Any] | None = None,
         intentionally_undocumented: bool = False,
+        skip_openapi_validation: bool = False,
         **extra: str,
     ) -> "TestHttpResponse":
         django_client = self.client  # see WRAPPER_COMMENT
@@ -649,6 +653,7 @@ Output:
             headers=headers,
             query_params=query_params,
             intentionally_undocumented=intentionally_undocumented,
+            skip_openapi_validation=skip_openapi_validation,
             **extra,
         )
 
@@ -804,6 +809,7 @@ Output:
             headers=None,
             query_params=None,
             intentionally_undocumented=False,
+            skip_openapi_validation=False,
             **extra,
         )
         self.assertNotEqual(result.status_code, 500)
@@ -951,6 +957,7 @@ Output:
             headers=None,
             query_params=None,
             intentionally_undocumented=False,
+            skip_openapi_validation=False,
             **extra,
         )
 
@@ -1109,6 +1116,7 @@ Output:
             headers=None,
             query_params=None,
             intentionally_undocumented=False,
+            skip_openapi_validation=False,
             **extra,
         )
 
@@ -1129,6 +1137,7 @@ Output:
             headers=None,
             query_params=None,
             intentionally_undocumented=False,
+            skip_openapi_validation=False,
             **extra,
         )
 
@@ -1146,6 +1155,7 @@ Output:
             headers=None,
             query_params=None,
             intentionally_undocumented=False,
+            skip_openapi_validation=False,
             **extra,
         )
 
@@ -1169,6 +1179,7 @@ Output:
             headers=None,
             query_params=None,
             intentionally_undocumented=intentionally_undocumented,
+            skip_openapi_validation=False,
             **extra,
         )
 
@@ -1804,6 +1815,7 @@ Output:
             headers=None,
             query_params=None,
             intentionally_undocumented=False,
+            skip_openapi_validation=False,
             **extra,
         )
         self.assert_json_success(result)
