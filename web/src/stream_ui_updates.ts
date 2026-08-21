@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import type * as tippy from "tippy.js";
 
 import render_announce_stream_checkbox from "../templates/stream_settings/announce_stream_checkbox.hbs";

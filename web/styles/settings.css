@@ -3,8 +3,8 @@ label {
 }
 
 label,
-h4,
-h3,
+.settings-subsection-title,
+.settings-table-title,
 /* We need settings-section-title here because some legacy settings
    widgets use a <div> with this class for their heading. */
 .settings-section-title {
@@ -12,6 +12,27 @@ h3,
         top: 1px;
         position: relative;
     }
+}
+
+/* Shared font for the subsection and table/list-panel headings across the
+   settings, channel, and group settings overlays. */
+.settings-subsection-title,
+.settings-table-title {
+    font-size: 1.5em;
+    font-weight: normal;
+    line-height: 1.5;
+}
+
+/* Subsection headings, used by both the settings panels and the channel
+   and group overlays. */
+.settings-subsection-title {
+    margin: calc(0.3125 * var(--base-font-size-px)) 0; /* 5px 0 at 16px font size. */
+}
+
+/* Table/list-panel headings ('.settings_panel_list_header') use the larger
+   table heading margin rather than the subsection margin. */
+.settings-table-title {
+    margin: 10px 0;
 }
 
 /* TODO: This should ideally be added to help_link_widget.hbs,
@@ -43,7 +64,8 @@ a.help_link_widget {
     }
 }
 
-h3,
+.settings-subsection-title,
+.settings-table-title,
 .settings-section-title {
     .help_link_widget {
         margin-left: 5px;
@@ -281,17 +303,6 @@ h3,
         }
     }
 
-    /* Bare <h3> section titles in settings panels get their font-size,
-       font-weight, and line-height from the '#settings_page h3' rule
-       further down in this file; previously their margin came from the
-       universal h1-h4 reset in bootstrap.app.css. Set the margin
-       explicitly here so the spacing survives that reset's removal.
-       Specificity matches the existing '.admin-realm-form h3' margin
-       override, which appears later in this file and so still wins. */
-    & h3 {
-        margin: 10px 0;
-    }
-
     .table-sticky-headers {
         position: sticky;
         top: 0;
@@ -345,10 +356,6 @@ h3,
         padding-top: 4px;
         padding-bottom: 4px;
         height: 1.4em; /* To match height of input elements */
-    }
-
-    .account-settings-heading {
-        margin-right: 10px;
     }
 }
 
@@ -558,23 +565,8 @@ input[type="checkbox"] {
     margin-bottom: 0;
 }
 
-.admin-realm-form {
-    & h3 {
-        margin: calc(0.3125 * var(--base-font-size-px)) 0; /* 5px 0 at 16px font size. */
-    }
-
-    .subsection-header h3 {
-        display: inline;
-    }
-}
-
 .preferences-settings-form,
 .notification-settings-form {
-    .subsection-header h3 {
-        display: inline-block;
-        margin: calc(0.3125 * var(--base-font-size-px)) 0; /* 5px 0 at 16px font size. */
-    }
-
     .tip {
         width: fit-content;
         margin-top: 0;
@@ -681,7 +673,7 @@ input[type="checkbox"] {
         align-items: center;
         gap: 0 0.625em;
 
-        .stream_setting_subsection_title {
+        .settings-subsection-title {
             margin: 4px 0;
         }
 
@@ -701,20 +693,12 @@ input[type="checkbox"] {
     margin-bottom: 1em;
 }
 
-.organization-settings-parent {
-    padding-top: 5px;
-}
-
 #id_org_profile_preview {
     width: max-content;
     display: flex;
     gap: 5px;
     align-items: center;
     margin-bottom: 20px;
-}
-
-.inline-block.organization-permissions-parent {
-    padding-top: 5px;
 }
 
 #org-other-permissions .tip {
@@ -771,11 +755,6 @@ input[type="checkbox"] {
     border-radius: 4px;
     color: hsl(156deg 30% 50%);
     padding: 3px 10px;
-
-    &.account-alert-notification {
-        margin: 0 0 10px;
-        vertical-align: middle;
-    }
 
     &:not(:empty) {
         border: 1px solid hsl(156deg 30% 50%);
@@ -1470,12 +1449,6 @@ label.preferences-radio-choice-label {
         vertical-align: middle;
     }
 
-    & h3 {
-        font-size: 1.5em;
-        font-weight: normal;
-        line-height: 1.5;
-    }
-
     & h5 {
         font-size: 1em;
         font-weight: normal;
@@ -1832,6 +1805,12 @@ label.preferences-radio-choice-label {
 .settings-field-label {
     margin-bottom: var(--margin-bottom-field-description);
     /* Avoid having the clickable area extend to the full width of the containing element */
+    width: fit-content;
+}
+
+#realm_invite_required_container {
+    /* Keep the disabled-setting tooltip's hover area on the checkbox, not
+       the empty space its wider siblings stretch this container across. */
     width: fit-content;
 }
 
@@ -2275,10 +2254,6 @@ label.preferences-radio-choice-label {
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-
-    & h3 {
-        display: inline-block;
-    }
 
     .user_filters,
     .bot-filters {

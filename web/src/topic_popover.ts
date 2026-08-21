@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
@@ -7,7 +7,7 @@ import render_left_sidebar_topic_actions_popover from "../templates/popovers/lef
 
 import * as clipboard_handler from "./clipboard_handler.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_summary from "./message_summary.ts";
@@ -132,10 +132,10 @@ export function initialize(): void {
 
                 popover_menus.focus_popover(instance);
 
-                $popper.on("change", "input[name='sidebar-topic-visibility-select']", (e) => {
+                $popper.on("change", "input[name='sidebar-topic-visibility-select']", function () {
                     const start_time = Date.now();
                     const visibility_policy = Number.parseInt(
-                        $(e.currentTarget).attr("data-visibility-policy")!,
+                        $(this).attr("data-visibility-policy")!,
                         10,
                     );
 
@@ -153,7 +153,7 @@ export function initialize(): void {
                             stream_id,
                             topic_name,
                         );
-                        const $prev_visibility_policy_input = $(e.currentTarget)
+                        const $prev_visibility_policy_input = $(this)
                             .parent()
                             .find(`input[data-visibility-policy="${prev_visibility_policy}"]`);
                         setTimeout(
@@ -205,9 +205,11 @@ export function initialize(): void {
                         modal_title_html: $t_html({defaultMessage: "Delete topic"}),
                         help_link: "/help/delete-a-topic",
                         modal_content_html,
+                        modal_submit_button_text: $t({defaultMessage: "Delete"}),
                         on_click() {
                             message_delete.delete_topic(stream_id, topic_name);
                         },
+                        dangerous_action: true,
                     });
 
                     popover_menus.hide_current_popover_if_visible(instance);

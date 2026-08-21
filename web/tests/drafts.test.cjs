@@ -8,7 +8,7 @@ const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {clock, mock_esm, mock_cjs, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const user_pill = mock_esm("../src/user_pill", {get_user_ids: () => []});
 const settings_data = mock_esm("../src/settings_data");

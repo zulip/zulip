@@ -4,6 +4,7 @@
 import assert from "minimalistic-assert";
 
 import * as buddy_data from "./buddy_data.ts";
+import type {QuoteMenuSelection} from "./compose_reply.ts";
 import * as gear_menu_util from "./gear_menu_util.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
@@ -42,6 +43,9 @@ type ActionPopoverContext = {
     should_display_collapse: boolean;
     should_display_uncollapse: boolean;
     should_display_quote_message: boolean;
+    quote_message_menu_item: string;
+    forward_message_menu_item: string;
+    show_quote_and_forward_hotkey_hints: boolean;
     conversation_time_url: string;
     should_display_delete_option: boolean;
     should_display_read_receipts_option: boolean;
@@ -145,8 +149,43 @@ type BillingInfo = {
     show_plans: boolean;
 };
 
-export function get_actions_popover_content_context(message_id: number): ActionPopoverContext {
+// The Quote and Forward labels spell out what the menu item will act on,
+// so that clicking it is not a surprise when there is a text selection.
+function get_quote_menu_labels(kind: QuoteMenuSelection["kind"]): {
+    quote_message_menu_item: string;
+    forward_message_menu_item: string;
+} {
+    switch (kind) {
+        case "full_message":
+            return {
+                quote_message_menu_item: $t({defaultMessage: "Quote message"}),
+                forward_message_menu_item: $t({defaultMessage: "Forward message"}),
+            };
+        case "message_selection":
+            return {
+                quote_message_menu_item: $t({defaultMessage: "Quote selection"}),
+                forward_message_menu_item: $t({defaultMessage: "Forward selection"}),
+            };
+        case "selected_messages":
+            return {
+                quote_message_menu_item: $t({defaultMessage: "Quote selected messages"}),
+                forward_message_menu_item: $t({defaultMessage: "Forward selected messages"}),
+            };
+        default: {
+            // Fail loudly rather than mislabel the menu item if a new kind
+            // of selection is added without wording to go with it.
+            const unexpected_kind: never = kind;
+            throw new Error(`Unexpected quote menu selection kind: ${String(unexpected_kind)}`);
+        }
+    }
+}
+
+export function get_actions_popover_content_context(
+    message_id: number,
+    quote_menu_selection: QuoteMenuSelection,
+): ActionPopoverContext {
     assert(message_lists.current !== undefined);
+    const $message_row = message_lists.current.get_row(message_id);
     const message = message_lists.current.get(message_id);
     assert(message !== undefined);
     const not_spectator = !page_params.is_spectator;
@@ -185,26 +224,38 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     // To work around #22893, we also only offer the option if the
     // fetch_status data structure means we'll be able to mark
     // everything below the current message as read correctly.
-    const not_stream_message = message.type !== "stream";
-    const subscribed_to_stream =
-        message.type === "stream" && stream_data.is_subscribed(message.stream_id);
+    const stream_message = message.type === "stream";
+    const subscribed_to_stream = stream_message && stream_data.is_subscribed(message.stream_id);
     const should_display_mark_as_unread =
-        !message.unread && not_spectator && (not_stream_message || subscribed_to_stream);
+        !message.unread && not_spectator && (!stream_message || subscribed_to_stream);
 
     let stream_id;
-    if (!not_stream_message) {
+    if (stream_message) {
         stream_id = message.stream_id;
     }
 
-    // Disabling this for /me messages is a temporary workaround
-    // for the fact that we don't have a styling for how that
+    // Disabling these for /me messages is a workaround for
+    // the fact that we don't have a styling for how that
     // should look.  See also condense.js.
-    const should_display_collapse =
-        !message.locally_echoed && !message.is_me_message && !message.collapsed && not_spectator;
-    const should_display_uncollapse =
-        !message.locally_echoed && !message.is_me_message && message.collapsed;
+    function maybe_show_collapse_uncollapse(message: Message): boolean {
+        return !message.locally_echoed && !message.is_me_message && not_spectator;
+    }
+
+    let should_display_collapse = false;
+    let should_display_uncollapse = false;
+    if (maybe_show_collapse_uncollapse(message)) {
+        const message_condensed = $message_row.find(".message_content").hasClass("condensed");
+        should_display_collapse = !message.collapsed && !message_condensed;
+        should_display_uncollapse = message.collapsed || message_condensed;
+    }
 
     const should_display_quote_message = not_spectator;
+    const {quote_message_menu_item, forward_message_menu_item} = get_quote_menu_labels(
+        quote_menu_selection.kind,
+    );
+    // Showing a hotkey next to a menu item that does something else would be
+    // a lie, so we drop the hint rather than the item.
+    const show_quote_and_forward_hotkey_hints = quote_menu_selection.hotkeys_agree;
 
     const conversation_time_url = hash_util.by_conversation_and_time_url(message);
 
@@ -224,9 +275,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         return true;
     };
 
-    function is_add_reaction_icon_visible(): boolean {
-        assert(message_lists.current !== undefined);
-        const $message_row = message_lists.current.get_row(message_id);
+    function is_add_reaction_icon_visible($message_row: JQuery): boolean {
         const $reaction_button = $message_row.find(".message_controls .reaction_button");
         return $reaction_button.length === 1 && $reaction_button.css("display") !== "none";
     }
@@ -236,7 +285,7 @@ export function get_actions_popover_content_context(message_id: number): ActionP
     // popover if it is not displayed.
     const should_display_add_reaction_option =
         !message.is_me_message &&
-        !is_add_reaction_icon_visible() &&
+        !is_add_reaction_icon_visible($message_row) &&
         not_spectator &&
         !(stream_id && stream_data.is_stream_archived_by_id(stream_id));
 
@@ -255,6 +304,9 @@ export function get_actions_popover_content_context(message_id: number): ActionP
         should_display_delete_option,
         should_display_read_receipts_option,
         should_display_quote_message,
+        quote_message_menu_item,
+        forward_message_menu_item,
+        show_quote_and_forward_hotkey_hints,
         should_display_message_report_option: should_display_message_report_option(),
     };
 }

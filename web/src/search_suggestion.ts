@@ -320,7 +320,6 @@ function get_group_suggestions(
         if (last.operator === "search") {
             new_query = last.operand;
             existing_user_ids = last_complete_term.operand;
-            terms = terms.slice(-1);
         } else if (last.operator === "") {
             // User hasn't started typing the next term yet; use the
             // last complete term to generate suggestions.
@@ -657,7 +656,8 @@ function get_topic_suggestions(
             excluded_channel_ids.has(subscribed_channel_id.toString())
         ) {
             continue;
-        } else if (!show_topics_from_other_channels) {
+        }
+        if (!show_topics_from_other_channels) {
             continue;
         }
 
@@ -718,7 +718,7 @@ function get_topic_suggestions(
         const terms: NarrowTerm[] = [{operator: "channel", operand: topic.channel_id}, topic_term];
         // We don't want to have two channel pills in the search suggestion.
         if (filter.has_operator("channel")) {
-            terms.splice(0, 1);
+            terms.shift();
         }
 
         return format_as_suggestion(terms);
@@ -1001,6 +1001,13 @@ function suggestion_search_string(suggestion_line: SuggestionLine): string {
 }
 
 function suggestions_for_empty_search_query(): SuggestionLine[] {
+    const current_narrow_terms = narrow_state.search_terms();
+    // Don't suggest searching the current conversation when some of
+    // its terms are invalid, e.g. if the user visited a link to a
+    // channel that they can't access, and then opened search.
+    if (current_narrow_terms.some((term) => !Filter.is_valid_canonical_term(term))) {
+        return [];
+    }
     // Since the context here is an **empty** search query, we assume
     // that there is no `near:` operator. So it's safe to use
     // functions like narrowed_by_topic_reply that return false on
@@ -1013,7 +1020,7 @@ function suggestions_for_empty_search_query(): SuggestionLine[] {
                     operand: narrow_state.stream_id()!.toString(),
                 },
             ]),
-            get_default_suggestion_line(narrow_state.search_terms()),
+            get_default_suggestion_line(current_narrow_terms),
         ];
     }
     if (narrow_state.narrowed_by_pm_reply()) {
@@ -1024,10 +1031,10 @@ function suggestions_for_empty_search_query(): SuggestionLine[] {
                     operand: "dm",
                 },
             ]),
-            get_default_suggestion_line(narrow_state.search_terms()),
+            get_default_suggestion_line(current_narrow_terms),
         ];
     }
-    return [get_default_suggestion_line(narrow_state.search_terms())];
+    return [get_default_suggestion_line(current_narrow_terms)];
 }
 
 class Attacher {

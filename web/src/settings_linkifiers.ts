@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import {RE2JSSyntaxException} from "re2js";
 import SortableJS from "sortablejs";

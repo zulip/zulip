@@ -107,7 +107,6 @@
         .pill-close-button,
         .pill-expand-button {
             font-size: 0.7142em; /* 10px at 14px em */
-            text-decoration: none;
             /* Let the close button's box stretch,
                but no larger than the height of the
                banner box when the action button
@@ -122,8 +121,7 @@
                ::before content where the icon sits. */
             display: flex;
             align-items: center;
-            /* !important overrides `.dark-theme:root a:hover` */
-            color: var(--color-input-pill-close) !important;
+            color: var(--color-input-pill-close);
             opacity: 0.7;
         }
 
@@ -133,7 +131,7 @@
             height: var(--length-input-pill-exit);
             display: flex;
             justify-content: center;
-            margin-right: 2px;
+            margin-right: var(--length-input-pill-exit-margin);
             border-radius: 2px;
 
             &:hover {
@@ -159,8 +157,7 @@
             }
 
             .pill-close-button {
-                /* !important overrides `.dark-theme:root a:hover` */
-                color: var(--color-close-deactivated-user-pill) !important;
+                color: var(--color-close-deactivated-user-pill);
             }
 
             .exit:hover {

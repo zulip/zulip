@@ -71,7 +71,11 @@
     .search-input-and-pills {
         grid-area: search-pills;
         display: flex;
-        padding: 0;
+        /* Match the pills' single-line centering slack so wrapped rows
+           get the same breathing room without changing the single-line
+           box height. */
+        padding: calc((var(--search-box-height) - var(--height-input-pill)) / 2)
+            0;
         flex-wrap: wrap;
         gap: 0.3571em; /* 5px at 14px em, matches pill spacing in typeahead dropdown */
         align-self: center;
@@ -212,8 +216,8 @@
 
         color: var(--color-text-search);
 
-        display: flex;
-        align-items: center;
+        display: block;
+        align-self: center;
 
         &:empty::before {
             content: attr(data-placeholder-text);
@@ -335,7 +339,10 @@
                 display: grid;
                 grid-template-columns:
                     var(--length-search-pill-image) minmax(0, 1fr)
-                    var(--length-input-pill-exit);
+                    calc(
+                        var(--length-input-pill-exit) +
+                            var(--length-input-pill-exit-margin)
+                    );
                 align-content: center;
                 /* Don't inherit large line-height for user pills themselves, either. */
                 line-height: 1.1;

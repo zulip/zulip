@@ -1138,7 +1138,7 @@ class RealmImportExportTest(ExportFile):
             all(row["is_mirror_dummy"] is False for row in realm_data["zerver_userprofile"])
         )
 
-        # Verify that the deactivated_non_consented_user did not not become a mirror dummy.
+        # Verify that the deactivated_non_consented_user did not become a mirror dummy.
         exported_deactivated_non_consented_user = next(
             user
             for user in realm_data["zerver_userprofile"]
@@ -1446,7 +1446,7 @@ class RealmImportExportTest(ExportFile):
             original_sub = model_to_dict(sub)
             exported_sub = non_consented_user_exported_subscriptions[sub.id]
             self.assertNotEqual(original_sub, exported_sub)
-            # Subscriptions of the non-consenting users get get scrubbed to replace
+            # Subscriptions of the non-consenting users get scrubbed to replace
             # "user setting"-type attributes with default values, so the #foo color
             # will be overwritten in the process.
             self.assertNotEqual(exported_sub["color"], "#foo")
@@ -1849,7 +1849,7 @@ class RealmImportExportTest(ExportFile):
         )
         self.assertEqual(
             original_msg.rendered_content,
-            '<div class="codehilite"><pre><span></span><code>&#39;\n</code></pre></div>\n'
+            """<div class="codehilite"><pre><span></span><code>'\n</code></pre></div>\n"""
             f'<p><span class="user-mention" data-user-id="{orig_polonius_user.id}">@Polonius</span></p>',
         )
         imported_polonius_user = UserProfile.objects.get(

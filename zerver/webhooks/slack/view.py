@@ -28,6 +28,7 @@ from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_web
 from zerver.models import UserProfile
 
 FILE_LINK_TEMPLATE = "\n*[{file_name}]({file_link})*"
+FILE_ID_TEMPLATE = "\n*Slack file {file_id}*"
 ZULIP_MESSAGE_TEMPLATE = "**{sender}**: {text}"
 VALID_OPTIONS = {"SHOULD_NOT_BE_MAPPED": "0", "SHOULD_BE_MAPPED": "1"}
 
@@ -69,7 +70,13 @@ def get_slack_sender_name(user_id: str, token: str) -> str:
         token=token,
         user=user_id,
     )
-    return slack_user_data["real_name"]
+    # The "real_name" field is not guaranteed to be included.
+    # If it is included -- although unlikely -- its type could
+    # be null, an empty string, or None.
+    user_name = slack_user_data.get("real_name")
+    if isinstance(user_name, str) and user_name.strip():
+        return user_name
+    return f"Slack user {user_id}"
 
 
 def convert_slack_user_and_channel_mentions(text: str, app_token: str) -> str:
@@ -111,10 +118,13 @@ def convert_to_zulip_markdown(text: str, slack_app_token: str) -> str:
 
 
 def convert_raw_file_data(file_dict: WildValue) -> SlackFileListT:
+    # Files uploaded to Slack Connect channels arrive without their
+    # metadata. See https://docs.slack.dev/reference/objects/file-object/#slack_connect_files.
     files = [
         {
-            "file_link": file.get("permalink").tame(check_string),
-            "file_name": file.get("title").tame(check_string),
+            "file_link": file.get("permalink").tame(check_none_or(check_string)) or "",
+            "file_name": file.get("title").tame(check_none_or(check_string)) or "",
+            "file_id": file["id"].tame(check_string),
         }
         for file in file_dict
     ]
@@ -124,7 +134,8 @@ def convert_raw_file_data(file_dict: WildValue) -> SlackFileListT:
 def get_message_body(text: str, sender: str, files: SlackFileListT) -> str:
     body = ZULIP_MESSAGE_TEMPLATE.format(sender=sender, text=text)
     for file in files:
-        body += FILE_LINK_TEMPLATE.format(**file)
+        file_template = FILE_LINK_TEMPLATE if file["file_link"] else FILE_ID_TEMPLATE
+        body += file_template.format(**file)
     return body
 
 

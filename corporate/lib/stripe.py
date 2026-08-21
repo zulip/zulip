@@ -1355,7 +1355,7 @@ class BillingSession(ABC):
                 is_created_for_free_trial_upgrade=current_plan_id is not None and on_free_trial,
             )
 
-            if stripe_invoice.status != "paid" and charge_automatically:
+            if charge_automatically and stripe_invoice.status != "paid":
                 # Stripe can take its sweet hour to charge customers after creating an invoice.
                 # Since we want to charge customers immediately, we charge them manually.
                 # Then poll for the status of the invoice to see if the payment succeeded.
@@ -1370,7 +1370,7 @@ class BillingSession(ABC):
             if isinstance(e, stripe.CardError):
                 raise StripeCardError("card error", e.user_message)
             else:  # nocoverage
-                raise e
+                raise
 
         assert stripe_invoice.id is not None
         return stripe_invoice.id
@@ -2778,6 +2778,11 @@ class BillingSession(ABC):
                         )
                     )
                 )
+            elif last_sent_invoice.status == Invoice.VOID:
+                # An unpaid free-trial invoice downgrades the plan at trial end
+                # (see make_end_of_cycle_updates), so show that pending
+                # downgrade rather than a prompt to pay the voided invoice.
+                downgrade_at_end_of_free_trial = True
 
         billing_frequency = CustomerPlan.BILLING_SCHEDULES[plan.billing_schedule]
 
@@ -4151,7 +4156,7 @@ class BillingSession(ABC):
         plan_tier = CustomerPlan.TIER_SELF_HOSTED_LEGACY
         if isinstance(self, RealmBillingSession):  # nocoverage
             # TODO implement a complimentary access plan/tier for Zulip Cloud.
-            return None
+            return
         customer = self.update_or_create_customer()
 
         complimentary_access_plan = self.create_customer_plan(
@@ -6012,7 +6017,7 @@ def invoice_plans_as_needed(event_time: datetime | None = None) -> None:
                     stack_info=True,
                 )
             else:
-                billing_logger.exception(e, stack_info=True)  # nocoverage
+                billing_logger.exception("Error while invoicing", stack_info=True)  # nocoverage
 
 
 def is_realm_on_free_trial(realm: Realm) -> bool:

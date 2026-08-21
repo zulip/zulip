@@ -159,7 +159,9 @@
 * [Get all data exports](/api/get-realm-exports)
 * [Create a data export](/api/export-realm)
 * [Get data export consent state](/api/get-realm-export-consents)
+* [Delete a data export](/api/delete-realm-export)
 * [Test welcome bot custom message](/api/test-welcome-bot-custom-message)
+* [Deactivate an organization](/api/deactivate-realm)
 
 ## Real-time events
 
@@ -174,12 +176,15 @@
 * [Update a bot's stored data](/api/update-bot-storage)
 * [Remove a bot's stored data](/api/remove-bot-storage)
 
-## Specialty endpoints
+## Video call integrations
 
-* [Fetch an API key (production)](/api/fetch-api-key)
-* [Fetch an API key (development only)](/api/dev-fetch-api-key)
-* [Fetch an API key (JWT)](/api/jwt-fetch-api-key)
-* [List users (development only)](/api/dev-list-users)
+* [Create BigBlueButton video call](/api/create-big-blue-button-video-call)
+* [Create Constructor Groups video call](/api/create-constructor-groups-video-call)
+* [Create Nextcloud Talk video call](/api/create-nextcloud-talk-video-call)
+* [Create Webex video call](/api/create-webex-video-call)
+
+## Mobile push notifications
+
 * [Register a logged-in device](/api/register-client-device)
 * [Remove a registered device](/api/remove-client-device)
 * [Send an E2EE test notification to mobile device(s)](/api/e2ee-test-notify)
@@ -191,8 +196,11 @@
 * [Remove an APNs device token](/api/remove-apns-token)
 * [Add an FCM registration token](/api/add-fcm-token)
 * [Remove an FCM registration token](/api/remove-fcm-token)
-* [Create BigBlueButton video call](/api/create-big-blue-button-video-call)
-* [Create Constructor Groups video call](/api/create-constructor-groups-video-call)
-* [Create Nextcloud Talk video call](/api/create-nextcloud-talk-video-call)
-* [Create Webex video call](/api/create-webex-video-call)
+
+## Specialty endpoints
+
+* [Fetch an API key (production)](/api/fetch-api-key)
+* [Fetch an API key (development only)](/api/dev-fetch-api-key)
+* [Fetch an API key (JWT)](/api/jwt-fetch-api-key)
+* [List users (development only)](/api/dev-list-users)
 * [Outgoing webhook payloads](/api/outgoing-webhook-payload)

@@ -9,7 +9,7 @@ import {
     parseISO,
     startOfToday,
 } from "date-fns";
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
 
@@ -208,8 +208,8 @@ export type TimeRender = {
 };
 
 export function render_now(time: Date, today = new Date(), display_year?: boolean): TimeRender {
-    let time_str = "";
-    let needs_update = false;
+    let time_str;
+    let needs_update;
     // render formal time to be used for tippy tooltip
     const formal_time_str = get_localized_date_or_time_for_format(time, "weekday_dayofyear_year");
     // How many days old is 'time'? 0 = today, 1 = yesterday, 7 = a
@@ -275,11 +275,8 @@ export function relative_time_string_from_date(date: Date, use_minutes_short_for
 
     if (days_old < 90) {
         return $t({defaultMessage: "{days_old} days ago"}, {days_old});
-    } else if (
-        days_old > 90 &&
-        days_old < 365 &&
-        date.getFullYear() === current_date.getFullYear()
-    ) {
+    }
+    if (days_old > 90 && days_old < 365 && date.getFullYear() === current_date.getFullYear()) {
         // Online more than 90 days ago, in the same year
         return get_localized_date_or_time_for_format(date, "dayofyear");
     }
@@ -317,7 +314,8 @@ export function last_seen_status_from_date(last_active_date: Date): string {
 
     if (days_old < 90) {
         return $t({defaultMessage: "Active {days_old} days ago"}, {days_old});
-    } else if (
+    }
+    if (
         days_old > 90 &&
         days_old < 365 &&
         last_active_date.getFullYear() === current_date.getFullYear()
@@ -500,13 +498,17 @@ export function format_time_modern(time: number | Date, today = new Date()): str
     if (time > today) {
         /* For timestamps in the future, we always show the year*/
         return get_localized_date_or_time_for_format(time, "dayofyear_year");
-    } else if (hours < 24) {
+    }
+    if (hours < 24) {
         return stringify_time(time);
-    } else if (days_old === 1) {
+    }
+    if (days_old === 1) {
         return $t({defaultMessage: "Yesterday"});
-    } else if (days_old < 7) {
+    }
+    if (days_old < 7) {
         return get_localized_date_or_time_for_format(time, "weekday");
-    } else if (days_old <= 180) {
+    }
+    if (days_old <= 180) {
         return get_localized_date_or_time_for_format(time, "dayofyear");
     }
 
@@ -518,7 +520,7 @@ export function format_time_modern(time: number | Date, today = new Date()): str
 export function absolute_time(timestamp: number): string {
     const today = new Date();
     const date = new Date(timestamp);
-    const is_older_year = today.getFullYear() - date.getFullYear() > 0;
+    const is_older_year = today.getFullYear() > date.getFullYear();
 
     return get_localized_date_or_time_for_format(
         date,

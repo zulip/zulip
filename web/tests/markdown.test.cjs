@@ -2,8 +2,6 @@
 
 const assert = require("node:assert/strict");
 
-const katex = require("katex");
-
 const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_cases.json");
 
 const {make_user_group} = require("./lib/example_group.cjs");
@@ -466,7 +464,7 @@ test("marked", ({override}) => {
                 '<p>This is an <span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span> message</p>',
         },
         {
-            input: "\uD83D\uDCA9",
+            input: "\u{1F4A9}",
             expected:
                 '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>',
         },
@@ -1077,15 +1075,4 @@ test("missing unicode emojis", ({override}) => {
         ...markdown.render(message.raw_content),
     };
     assert.equal(message.content, "<p>\u{1F6B2}</p>");
-});
-
-test("katex_throws_unexpected_exceptions", ({override}) => {
-    const message = {raw_content: "$$a$$"};
-    override(katex, "renderToString", () => {
-        throw new Error("some-exception");
-    });
-    assert.throws(() => markdown.render(message.raw_content), {
-        name: "Error",
-        message: "some-exception\nPlease report this to https://zulip.com/development-community/",
-    });
 });

@@ -769,7 +769,7 @@ run_test("set_custom_profile_field_data", () => {
     assert.equal(person.profile_data[field.id].rendered_value, "<p>Field value</p>");
 
     people.set_custom_profile_field_data(person.user_id, {id: 3, value: null});
-    assert.ok(!(field.id in person.profile_data));
+    assert.ok(!Object.hasOwn(person.profile_data, field.id));
 });
 
 run_test("is_current_user_only_owner", ({override}) => {
@@ -1319,6 +1319,12 @@ run_test("get_mention_syntax", () => {
     assert.equal(people.get_mention_syntax("Stephen King", 601), "@**Stephen King|601**");
     assert.equal(people.get_mention_syntax("Stephen King", 602, true), "@_**Stephen King|602**");
     assert.equal(people.get_mention_syntax("Maria Athens", 603), "@**Maria Athens**");
+
+    // With always_include_id, the id is pinned even when the name is unique.
+    assert.equal(
+        people.get_mention_syntax("Maria Athens", 603, false, true),
+        "@**Maria Athens|603**",
+    );
 
     // Following tests handle a special case when `full_name` matches with a wildcard.
     //
@@ -1937,7 +1943,8 @@ run_test("fetch_users corner case", async ({override, override_rewire}) => {
                 msg: "",
             });
             return;
-        } else if (data.user_ids === "[1,2]") {
+        }
+        if (data.user_ids === "[1,2]") {
             if (!sent_success_response_for_third_user) {
                 error({responseJSON: {msg: "Network error"}});
                 return;

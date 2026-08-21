@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
@@ -168,7 +168,14 @@ function maybe_generate_combined_channel_topic_pill(
 
     const sign = search_pill.negated ? "-" : "";
     const channel_operand = search_terms[index - 1]!.operand;
-    const sub = stream_data.get_valid_sub_by_id_string(channel_operand);
+    const sub = stream_data.get_sub_by_id_string(channel_operand);
+    // Pill terms are only validated at pill creation, so a suggestion
+    // can reference a channel this client has no data for, e.g. a
+    // channel deleted while a pill referenced it. Fall back to
+    // separate pills, where the channel term is rendered as invalid.
+    if (sub === undefined) {
+        return undefined;
+    }
     return {
         ...search_pill,
         sign,
@@ -221,7 +228,7 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                     // (`text_query`), or is not the last term in the text input, and
                     //  therefore the empty operand represents "general chat".
                     //
-                    // (2) The user has selected a topic operator, and and thus has
+                    // (2) The user has selected a topic operator, and thus has
                     // exactly `topic:` or `-topic:` written out, and it's appropriate
                     // to suggest the "general chat" operand.
                     //
@@ -235,7 +242,7 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                         text_query === "" ||
                         index < search_terms.length - 1 ||
                         // case 2
-                        text_query.trim().endsWith("topic:")
+                        text_query.trimEnd().endsWith("topic:")
                     ) {
                         // We want to show a combined pill for the case
                         // where the preceding operator is a `channel`.
@@ -339,7 +346,8 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
                 pills: pill_render_data,
                 description_html,
             });
-        } else if (render_data.type === "search_user" && is_sent_by_me_pill(render_data)) {
+        }
+        if (render_data.type === "search_user" && is_sent_by_me_pill(render_data)) {
             const description_html = render_data.negated
                 ? $t({defaultMessage: "Exclude messages you sent"})
                 : $t({defaultMessage: "Messages you sent"});

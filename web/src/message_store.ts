@@ -139,8 +139,7 @@ type Booleans = {
 };
 
 type RawMessageWithBooleans = (
-    | Omit<RawMessage & {type: "private"}, "flags">
-    | Omit<RawMessage & {type: "stream"}, "flags">
+    Omit<RawMessage & {type: "private"}, "flags"> | Omit<RawMessage & {type: "stream"}, "flags">
 ) &
     Booleans;
 
@@ -460,13 +459,15 @@ export function remove(message_ids: number[]): void {
 }
 
 export function get_message_ids_in_stream(stream_id: number): number[] {
-    return [...stored_messages.values()]
+    return stored_messages
+        .values()
         .filter(
             (message_data) =>
                 message_data.message.type === "stream" &&
                 message_data.message.stream_id === stream_id,
         )
-        .map((message_data) => message_data.message.id);
+        .map((message_data) => message_data.message.id)
+        .toArray();
 }
 
 export function maybe_update_raw_content(id: number, raw_content: string | undefined): void {

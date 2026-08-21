@@ -1382,6 +1382,13 @@ def sanitize_url(url: str) -> str | None:
     if scheme not in allowed_schemes:
         return None
 
+    # The "file" scheme is only allowed when ENABLE_FILE_LINKS is set;
+    # otherwise, explicit Markdown links like [text](file:///etc/passwd)
+    # would bypass the restriction that already applies to bare
+    # file:// URLs via the autolinker (see file_links above).
+    if scheme == "file" and not settings.ENABLE_FILE_LINKS:
+        return None
+
     # Upstream code scans path, parameters, and query for colon characters
     # because
     #
@@ -1966,7 +1973,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         super().__init__(pattern, zmd)
         self.zmd = zmd
 
-    def zulip_specific_link_changes(self, el: Element) -> None | Element:
+    def zulip_specific_link_changes(self, el: Element) -> Element | None:
         href = el.get("href")
         assert href is not None
 
@@ -2024,7 +2031,7 @@ class AudioInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
 
         return self.zulip_specific_src_changes(el)
 
-    def zulip_specific_src_changes(self, el: Element) -> None | Element:
+    def zulip_specific_src_changes(self, el: Element) -> Element | None:
         src = el.get("src")
         assert src is not None
 
@@ -2090,7 +2097,7 @@ class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
         super().__init__(pattern, zmd)
         self.zmd = zmd
 
-    def zulip_specific_src_changes(self, img: Element) -> None | Element:
+    def zulip_specific_src_changes(self, img: Element) -> Element | None:
         # function partially copied from LinkInlineProcessor.zulip_specific_link_changes
         src = img.get("src")
         assert src is not None

@@ -113,9 +113,11 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             self.assertEqual(
                 views_logger.output,
                 [
-                    "INFO:zilencer.views:"
-                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
-                    f"{len(fcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
+                    (
+                        "INFO:zilencer.views:"
+                        f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
+                        f"{len(fcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices"
+                    ),
                 ],
             )
             for token in apns_devices:
@@ -303,9 +305,11 @@ class HandlePushNotificationTest(PushNotificationTestCase):
             self.assertEqual(
                 views_logger.output,
                 [
-                    "INFO:zilencer.views:"
-                    f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
-                    f"{len(fcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices",
+                    (
+                        "INFO:zilencer.views:"
+                        f"Sending mobile push notifications for remote user 6cde5f7a-1f7e-4978-9716-49f69ebfc9fe:<id:{self.user_profile.id}><uuid:{self.user_profile.uuid}>: "
+                        f"{len(fcm_devices)} via FCM devices, {len(apns_devices)} via APNs devices"
+                    ),
                 ],
             )
             for token in apns_devices:
@@ -682,15 +686,16 @@ class HandlePushNotificationTest(PushNotificationTestCase):
         test_end_to_end(missed_message, db_query_count=8)
 
         # Channel message
-        # 3 extra queries than 1:1 DM
+        # 2 extra queries than 1:1 DM
         # 1 : fetch Stream in `access_message_and_usermessage` codepath
-        # 1 : query NamedUserGroup in `check_can_access_user` codepath
         # 1 : fetch Stream in `get_message_payload` (TODO: we can avoid this)
+        # `check_can_access_user` adds no query here because the sender is the
+        # recipient themselves, so it short-circuits before any DB access.
         channel = get_stream("Denmark", realm)
         message = self.get_message(Recipient.STREAM, channel.id, realm.id)
         UserMessage.objects.create(user_profile=self.user_profile, message=message)
         missed_message = {"message_id": message.id, "trigger": NotificationTriggers.STREAM_PUSH}
-        test_end_to_end(missed_message, db_query_count=10)
+        test_end_to_end(missed_message, db_query_count=9)
 
         # Channel message: private channel + user-group mention
         # 3 extra queries than prev:

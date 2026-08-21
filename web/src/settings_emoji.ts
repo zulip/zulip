@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import emoji_codes from "../../static/generated/emoji/emoji_codes.json";

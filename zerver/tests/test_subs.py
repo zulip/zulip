@@ -3282,7 +3282,7 @@ class StreamAdminTest(ZulipTestCase):
         ]
         result = self.attempt_unsubscribe_of_principal(
             query_count=22,
-            cache_count=13,
+            cache_count=12,
             target_users=target_users,
             is_realm_admin=True,
             is_subbed=True,
@@ -3644,7 +3644,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
 
     def test_patch_enforces_valid_stream_name_check(self) -> None:
         """
-        Only way to force an error is with a empty string.
+        Only way to force an error is with an empty string.
         """
         user = self.example_user("hamlet")
         self.login_user(user)
@@ -4347,7 +4347,7 @@ class SubscriptionAPITest(ZulipTestCase):
         streams_to_sub = ["multi_user_stream"]
         with (
             self.capture_send_event_calls(expected_num_events=5) as events,
-            self.assert_database_query_count(44),
+            self.assert_database_query_count(45),
         ):
             self.subscribe_via_post(
                 self.test_user,
@@ -4879,7 +4879,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         with (
             self.assert_database_query_count(20),
-            self.assert_memcached_count(11),
+            self.assert_memcached_count(10),
             mock.patch("zerver.views.streams.send_user_subscribed_and_new_channel_notifications"),
         ):
             self.subscribe_via_post(
@@ -5256,7 +5256,7 @@ class SubscriptionAPITest(ZulipTestCase):
         ]
 
         # Test creating a public stream when realm does not have a notification stream.
-        with self.assert_database_query_count(44):
+        with self.assert_database_query_count(45):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[0]],
@@ -5276,7 +5276,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(56):
+        with self.assert_database_query_count(57):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[2]],

@@ -161,7 +161,13 @@ def do_mark_muted_user_messages_as_read(
 ) -> int:
     query = (
         UserMessage.select_for_update_query()
-        .filter(user_profile=user_profile, message__sender=muted_user)
+        .filter(
+            user_profile=user_profile,
+            message__sender=muted_user,
+            # Filtering by message.realm_id is redundant, but required to use index:
+            # zerver_message_realm_sender_recipient
+            message__realm_id=user_profile.realm_id,
+        )
         .extra(where=[UserMessage.where_unread()])  # noqa: S610
     )
     message_ids = list(query.values_list("message_id", flat=True))

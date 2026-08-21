@@ -35,7 +35,7 @@ import * as util from "./util.ts";
 export let old_unreads_missing = false;
 // Note this doesn't handle the case of `old_unreads_missing` because
 // it is simpler and we as a client are not expected to.
-export let first_unread_unmuted_message_id = Number.POSITIVE_INFINITY;
+export let first_unread_unmuted_message_id = Infinity;
 
 export function clear_old_unreads_missing(): void {
     old_unreads_missing = false;
@@ -842,9 +842,7 @@ export function process_unread_message(message: UnreadMessageData): void {
             message_id: message.id,
             user_ids_string: message.user_ids_string,
         });
-    }
-
-    if (message.type === "stream") {
+    } else if (message.type === "stream") {
         unread_topic_counter.add({
             message_id: message.id,
             stream_id: message.stream_id,
@@ -966,7 +964,7 @@ export function get_counts(): FullUnreadCountsData {
     const update_first_unmuted_message_id = true;
     // Reset the first_unread_unmuted_message_id, to ensure it is always capture the
     // minimum of current unread messages between topics and DMs.
-    first_unread_unmuted_message_id = Number.POSITIVE_INFINITY;
+    first_unread_unmuted_message_id = Infinity;
     const topic_res = unread_topic_counter.get_counts(update_first_unmuted_message_id);
     const pm_res = unread_direct_message_counter.get_counts(update_first_unmuted_message_id);
 
@@ -994,7 +992,7 @@ export function get_counts(): FullUnreadCountsData {
 
 // Saves us from calling to get_counts() when we can avoid it.
 export function calculate_notifiable_count(res: FullUnreadCountsData): number {
-    let new_message_count = 0;
+    let new_message_count;
 
     const only_show_dm_mention =
         user_settings.desktop_icon_count_display ===

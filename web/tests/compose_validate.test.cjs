@@ -13,7 +13,7 @@ const {mock_channel_get} = require("./lib/mock_channel.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const channel = mock_esm("../src/channel");
 
@@ -299,7 +299,7 @@ test_ui("validate", ({mock_template, override}) => {
     stream_data.add_sub_for_tests(denmark);
     compose_state.set_stream_id(denmark.stream_id);
     override(realm, "realm_topics_policy", "disable_empty_topic");
-    let missing_topic_error_rendered = false;
+    let missing_topic_error_rendered;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.topic_missing);
         missing_topic_error_rendered = true;
@@ -617,7 +617,8 @@ test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
     let banner_rendered = false;
     mock_template("compose_banner/private_stream_warning.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.private_stream_warning);
-        assert.equal(data.channel_name, "Denmark");
+        assert.equal(data.channel_name, "secret");
+        assert.equal(data.audience_channel_name, "Denmark");
         banner_rendered = true;
         return "<banner-stub>";
     });
@@ -644,7 +645,7 @@ test_ui("warn_if_private_stream_is_linked", async ({mock_template}) => {
     compose_state.set_selected_recipient_id(denmark.stream_id);
     const secret_stream = {
         invite_only: true,
-        name: "Denmark",
+        name: "secret",
         stream_id: 22,
     };
     stream_data.add_sub_for_tests(secret_stream);
@@ -881,7 +882,7 @@ test_ui("test warn_if_topic_resolved", ({override, mock_template}) => {
     $.set_results("#compose_banners .topic_resolved", []);
     override(realm, "realm_can_resolve_topics_group", everyone.id);
 
-    let error_shown = false;
+    let error_shown;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {
         assert.equal(data.classname, compose_banner.CLASSNAMES.topic_resolved);
         assert.equal(
@@ -967,7 +968,6 @@ test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template, override}) => {
     initialize_pm_pill(mock_template);
     compose_state.set_private_message_recipient_ids([guest.user_id]);
     const classname = compose_banner.CLASSNAMES.guest_in_dm_recipient_warning;
-    let $banner = $(`#compose_banners .${CSS.escape(classname)}`);
 
     // if setting is disabled, remove warning if exists
     realm.realm_enable_guest_user_dm_warning = false;
@@ -977,7 +977,7 @@ test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template, override}) => {
     // to show warning for guest emails, banner should be created
     realm.realm_enable_guest_user_dm_warning = true;
     $.reset_selector(`#compose_banners .${CSS.escape(classname)}`);
-    $banner = $.set_results(`#compose_banners .${CSS.escape(classname)}`, []);
+    $.set_results(`#compose_banners .${CSS.escape(classname)}`, []);
     compose_validate.warn_if_guest_in_dm_recipient();
     assert.ok(is_active);
     assert.deepEqual(compose_state.get_recipient_guest_ids_for_dm_warning(), [33]);
@@ -988,7 +988,6 @@ test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template, override}) => {
     assert.ok(!is_active);
 
     // on modifying the guest recipient, update banner if already shown.
-    is_active = true;
     const new_guest = {
         email: "new_guest@example.com",
         user_id: 34,
@@ -1000,7 +999,7 @@ test_ui("test_warn_if_guest_in_dm_recipient", ({mock_template, override}) => {
     initialize_pm_pill(mock_template);
     compose_state.set_private_message_recipient_ids([guest.user_id, new_guest.user_id]);
     $.reset_selector(`#compose_banners .${CSS.escape(classname)}`);
-    $banner = $(`#compose_banners .${CSS.escape(classname)}`);
+    const $banner = $(`#compose_banners .${CSS.escape(classname)}`);
     const $banner_content = $(`#compose_banners .${CSS.escape(classname)} .banner_content`);
     $banner.set_find_results(".banner_content", $banner_content);
     compose_validate.warn_if_guest_in_dm_recipient();

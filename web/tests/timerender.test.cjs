@@ -7,7 +7,7 @@ const {add} = require("date-fns");
 const {$t} = require("./lib/i18n.cjs");
 const {clock, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const {initialize_user_settings} = zrequire("user_settings");
 

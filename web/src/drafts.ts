@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
@@ -292,7 +292,7 @@ export function sync_count(): void {
 
 export function delete_all_drafts(): void {
     const drafts = draft_model.get();
-    for (const [id] of Object.entries(drafts)) {
+    for (const id of Object.keys(drafts)) {
         draft_model.deleteDrafts([id]);
     }
 }
@@ -301,8 +301,10 @@ export function confirm_delete_all_drafts(): void {
     confirm_dialog.launch({
         modal_title_html: $t_html({defaultMessage: "Delete all drafts"}),
         modal_content_html: render_confirm_delete_all_drafts(),
+        modal_submit_button_text: $t({defaultMessage: "Delete"}),
         is_compact: true,
         on_click: delete_all_drafts,
+        dangerous_action: true,
     });
 }
 
@@ -525,7 +527,8 @@ export function current_recipient_data(): {
             topic: compose_state.topic(),
             private_recipient_ids: undefined,
         };
-    } else if (compose_state.get_message_type() === "private") {
+    }
+    if (compose_state.get_message_type() === "private") {
         return {
             stream_name: undefined,
             topic: undefined,
@@ -583,8 +586,7 @@ export function filter_drafts_by_compose_box_and_recipient(
 }
 
 export function get_last_restorable_draft_based_on_compose_state():
-    | LocalStorageDraftWithId
-    | undefined {
+    LocalStorageDraftWithId | undefined {
     const current_drafts = draft_model.get();
     const drafts_map_for_compose_state = filter_drafts_by_compose_box_and_recipient(current_drafts);
     const drafts_for_compose_state = Object.entries(drafts_map_for_compose_state).map(

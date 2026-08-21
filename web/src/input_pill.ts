@@ -1,6 +1,6 @@
 // todo: Refactor pills subsystem to use modern javascript classes?
 
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
@@ -397,7 +397,7 @@ export function create<ItemType extends {type: string}>(
             ) {
                 e.preventDefault();
                 const pill = store.pills.at(-1);
-                // We focus the pill first first, as a signal that the pill
+                // We focus the pill first, as a signal that the pill
                 // is about to be deleted. The deletion will then happen through
                 // `removePill` from the event handler on the pill.
                 if (pill) {

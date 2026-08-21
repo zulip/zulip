@@ -19,6 +19,7 @@ export function initialize($scroll_container: JQuery, header_selector: string): 
             header.classList.toggle("sidebar-header-drop-shadow", is_stuck);
         }
     }
+    // eslint-disable-next-line unicorn/prefer-observer-apis
     scroll_container.addEventListener("scroll", update, {passive: true});
     update();
 }

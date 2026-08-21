@@ -99,12 +99,6 @@
         opacity: 0.2;
     }
 
-    #recent_view_table {
-        .zulip-icon-user {
-            opacity: 0.7;
-        }
-    }
-
     #recent-view-content-table {
         border-bottom-width: 1px;
     }
@@ -134,8 +128,7 @@
         box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 40%);
     }
 
-    .tip,
-    .invite-stream-notice {
+    .tip {
         color: inherit;
     }
 

@@ -11,7 +11,7 @@ supported by Zulip are:
 - [BigBlueButton](https://zulip.com/integrations/big-blue-button)
 - [Constructor Groups](https://zulip.com/integrations/constructor-groups)
 - [Nextcloud Talk](https://zulip.com/integrations/nextcloud-talk)
-- [Webex](https://zulip.com/integrations/category/video-calling)
+- [Webex](https://zulip.com/integrations/webex)
 
 By default, Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
 as its call provider. This page documents the configurations required to support
@@ -54,7 +54,7 @@ This Zoom application type, introduced in Zulip 10.0, is easiest to
 set up, and is ideal for most installations that self-host Zulip. To
 [create Zoom meeting links in Zulip
 messages](https://zulip.com/help/start-a-call#start-a-call) using this
-integration, users will will need to be members of your Zoom
+integration, users will need to be members of your Zoom
 organization and use the same email address in Zulip that they have
 registered with Zoom.
 

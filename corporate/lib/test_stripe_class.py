@@ -78,6 +78,7 @@ from corporate.lib.stripe import (
     stripe_get_customer,
 )
 from corporate.models.customers import Customer
+from corporate.models.licenses import LicenseLedger
 from corporate.models.plans import CustomerPlan
 from corporate.models.stripe_state import Invoice
 from zerver.actions.users import do_deactivate_user
@@ -487,6 +488,7 @@ HANDLED_STRIPE_EVENT_TYPES: frozenset[str] = frozenset(
     {
         "checkout.session.completed",
         "invoice.paid",
+        "invoice.voided",
     }
 )
 
@@ -1046,3 +1048,12 @@ class StripeTestCase(ZulipTestCase):
         else:
             response = self.client_patch(url, info)
         return response
+
+    def check_last_ledger_entry_license_counts(
+        self, plan: CustomerPlan, licenses: int, licenses_at_next_renewal: int
+    ) -> LicenseLedger:
+        ledger_entry = LicenseLedger.objects.filter(plan=plan).order_by("-id").first()
+        assert ledger_entry is not None
+        self.assertEqual(ledger_entry.licenses, licenses)
+        self.assertEqual(ledger_entry.licenses_at_next_renewal, licenses_at_next_renewal)
+        return ledger_entry

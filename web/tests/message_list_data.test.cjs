@@ -249,7 +249,7 @@ run_test("muting", () => {
 
     let unmuted_messages_calls = 0;
     mld.unmuted_messages = (messages) => {
-        unmuted_messages_calls = unmuted_messages_calls + 1;
+        unmuted_messages_calls += 1;
         return messages;
     };
 

@@ -1,7 +1,7 @@
 <form class="notification-settings-form">
     <div class="general_notifications {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
         <div class="subsection-header">
-            <h3>{{t "Notification triggers" }}</h3>
+            <h3 class="settings-subsection-title">{{t "Notification triggers" }}</h3>
             {{#if for_realm_settings}}
                 {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
             {{/if}}
@@ -76,7 +76,7 @@
     <div class="topic_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header">
-            <h3>{{t "Topic notifications" }}
+            <h3 class="settings-subsection-title">{{t "Topic notifications" }}
                 {{> ../help_link_widget link="/help/topic-notifications" }}
             </h3>
             {{> settings_save_discard_widget section_name="topic-notifications-settings" show_save_discard_buttons=for_realm_settings }}
@@ -140,7 +140,7 @@
     <div class="desktop_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header">
-            <h3>{{t "Desktop message notifications" }}
+            <h3 class="settings-subsection-title">{{t "Desktop message notifications" }}
                 {{> ../help_link_widget link="/help/desktop-notifications" }}
             </h3>
             {{> settings_save_discard_widget section_name="desktop-message-settings" show_save_discard_buttons=for_realm_settings }}
@@ -207,7 +207,7 @@
     <div class="mobile_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header">
-            <h3>{{t "Mobile message notifications" }}
+            <h3 class="settings-subsection-title">{{t "Mobile message notifications" }}
                 {{> ../help_link_widget link="/help/mobile-notifications" }}
             </h3>
             {{> settings_save_discard_widget section_name="mobile-message-settings" show_save_discard_buttons=for_realm_settings }}
@@ -231,7 +231,7 @@
     <div class="email_message_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header">
-            <h3>{{t "Email message notifications" }}
+            <h3 class="settings-subsection-title">{{t "Email message notifications" }}
                 {{> ../help_link_widget link="/help/email-notifications" }}
             </h3>
             {{> settings_save_discard_widget section_name="email-message-settings" show_save_discard_buttons=for_realm_settings }}
@@ -289,7 +289,7 @@
     <div class="other_email_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header">
-            <h3>{{t "Other emails" }}</h3>
+            <h3 class="settings-subsection-title">{{t "Other emails" }}</h3>
             {{> settings_save_discard_widget section_name="other-emails-settings" show_save_discard_buttons=for_realm_settings }}
         </div>
         {{#each notification_settings.other_email_settings}}

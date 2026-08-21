@@ -2,8 +2,10 @@
     <div class="alert" id="dev-account-settings-status"></div>
     <div class="account-settings-form">
         <div id="user_details_section">
-            <h3 class="inline-block account-settings-heading">{{t "Account" }}</h3>
-            <div class="alert-notification account-alert-notification" id="account-settings-status"></div>
+            <div class="subsection-header">
+                <h3 class="settings-subsection-title">{{t "Account" }}</h3>
+                <div class="alert-notification account-alert-notification" id="account-settings-status"></div>
+            </div>
             <form class="grid">
                 {{#if user_has_email_set}}
                 <div class="input-group">
@@ -108,7 +110,9 @@
         {{> privacy_settings . for_realm_settings=false prefix="user_" read_receipts_help_icon_tooltip_text=send_read_receipts_tooltip hide_read_receipts_tooltip=realm.realm_enable_read_receipts}}
 
         <div id="api_key_button_box">
-            <h3>{{t "API key" }}</h3>
+            <div class="subsection-header">
+                <h3 class="settings-subsection-title">{{t "API key" }}</h3>
+            </div>
 
             <div class="input-group">
                 <p class="api-key-note">

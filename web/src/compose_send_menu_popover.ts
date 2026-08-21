@@ -1,5 +1,5 @@
 import autosize from "autosize";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 

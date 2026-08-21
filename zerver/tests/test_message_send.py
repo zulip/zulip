@@ -854,6 +854,158 @@ class MessagePOSTTest(ZulipTestCase):
         content = self.assert_json_success(result)
         assert "automatic_new_visibility_policy" not in content
 
+    def test_message_url_in_api_response(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        # A subscribed sender has metadata access, so the URL includes the
+        # channel name and message_link is the "Copy link to message" Markdown.
+        stream = get_stream("Verona", hamlet.realm)
+        result = self.api_post(
+            hamlet,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps(stream.name).decode(),
+                "content": "Test message",
+                "topic": "Test topic",
+            },
+        )
+        response_dict = self.assert_json_success(result)
+        message_id = response_dict["id"]
+        self.assertEqual(
+            response_dict["message_url"],
+            f"http://zulip.testserver/#narrow/channel/{stream.id}-{stream.name}"
+            f"/topic/Test.20topic/near/{message_id}",
+        )
+        # message_link embeds the same absolute URL as message_url, so the
+        # link stays valid when used outside Zulip.
+        self.assertEqual(
+            response_dict["message_link"],
+            f"[#{stream.name} > Test topic @ 💬]({response_dict['message_url']})",
+        )
+
+        # A DM has no channel name to protect and no standard label, so
+        # message_link is just the URL.
+        result = self.api_post(
+            hamlet,
+            "/api/v1/messages",
+            {
+                "type": "direct",
+                "content": "Test message",
+                "to": orjson.dumps([othello.id]).decode(),
+            },
+        )
+        response_dict = self.assert_json_success(result)
+        message_id = response_dict["id"]
+        dm_slug = ",".join(str(user_id) for user_id in sorted([hamlet.id, othello.id]))
+        self.assertEqual(
+            response_dict["message_url"],
+            f"http://zulip.testserver/#narrow/dm/{dm_slug}/near/{message_id}",
+        )
+        self.assertEqual(response_dict["message_link"], response_dict["message_url"])
+
+        # A bot posting to a private channel via its owner's subscription
+        # (without being subscribed itself) can send but lacks metadata
+        # access, so it gets an ID-only URL with the channel name omitted.
+        private_stream = self.make_stream("private channel", invite_only=True)
+        self.subscribe(hamlet, private_stream.name)
+        bot = self.create_test_bot("writeonly", hamlet)
+        # Resolving metadata access for such a bot must not add a query:
+        # it reaches the check without its group memberships loaded, and we
+        # treat those as empty rather than looking them up.
+        flush_per_request_caches()
+        with self.assert_database_query_count(20):
+            result = self.api_post(
+                bot,
+                "/api/v1/messages",
+                {
+                    "type": "channel",
+                    "to": orjson.dumps(private_stream.name).decode(),
+                    "content": "Test message",
+                    "topic": "Test topic",
+                },
+            )
+        response_dict = self.assert_json_success(result)
+        message_id = response_dict["id"]
+        self.assertEqual(
+            response_dict["message_url"],
+            f"http://zulip.testserver/#narrow/channel/{private_stream.id}"
+            f"/topic/Test.20topic/near/{message_id}",
+        )
+        self.assertNotIn("private", response_dict["message_url"])
+        self.assertEqual(response_dict["message_link"], response_dict["message_url"])
+
+        # A sender whose metadata access comes solely from a group (here
+        # can_subscribe_group), without being directly subscribed, still
+        # sees the channel name: the send path resolves metadata access
+        # from the recursive group memberships it already looked up to
+        # authorize the send, so the URL includes the channel name.
+        group_access_stream = self.make_stream(
+            "group access channel", invite_only=True, history_public_to_subscribers=True
+        )
+        othello_group = check_add_user_group(
+            othello.realm, "othello_group", [othello], acting_user=othello
+        )
+        do_change_stream_group_based_setting(
+            group_access_stream,
+            "can_subscribe_group",
+            othello_group,
+            acting_user=othello,
+        )
+        result = self.api_post(
+            othello,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps(group_access_stream.name).decode(),
+                "content": "Test message",
+                "topic": "Test topic",
+            },
+        )
+        response_dict = self.assert_json_success(result)
+        message_id = response_dict["id"]
+        self.assertEqual(
+            response_dict["message_url"],
+            f"http://zulip.testserver/#narrow/channel/{group_access_stream.id}-group-access-channel"
+            f"/topic/Test.20topic/near/{message_id}",
+        )
+        self.assertEqual(
+            response_dict["message_link"],
+            f"[#{group_access_stream.name} > Test topic @ 💬]({response_dict['message_url']})",
+        )
+
+        # A long-term-idle subscriber still gets the channel name. Idle
+        # subscribers are omitted from the send-recipient rows, but the send
+        # path confirms the sender's subscription while authorizing the
+        # message, so metadata access is resolved from that rather than the
+        # rows.
+        idle_stream = self.make_stream("idle private channel", invite_only=True)
+        self.subscribe(othello, idle_stream.name)
+        othello.long_term_idle = True
+        othello.save(update_fields=["long_term_idle"])
+        result = self.api_post(
+            othello,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps(idle_stream.name).decode(),
+                "content": "Test message",
+                "topic": "Test topic",
+            },
+        )
+        response_dict = self.assert_json_success(result)
+        message_id = response_dict["id"]
+        self.assertEqual(
+            response_dict["message_url"],
+            f"http://zulip.testserver/#narrow/channel/{idle_stream.id}-idle-private-channel"
+            f"/topic/Test.20topic/near/{message_id}",
+        )
+        self.assertEqual(
+            response_dict["message_link"],
+            f"[#{idle_stream.name} > Test topic @ 💬]({response_dict['message_url']})",
+        )
+
     def test_personal_message(self) -> None:
         """
         Sending a personal message to a valid username is successful.
@@ -1785,7 +1937,7 @@ class StreamMessagesTest(ZulipTestCase):
             setting_value=UserProfile.AUTOMATICALLY_CHANGE_VISIBILITY_POLICY_NEVER,
             acting_user=None,
         )
-        with self.assert_database_query_count(14):
+        with self.assert_database_query_count(15):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1805,7 +1957,7 @@ class StreamMessagesTest(ZulipTestCase):
         # 5 queries: 1 to check if it is the first message in the topic +
         # 1 to check if the topic is already followed + 3 to follow the topic.
         flush_per_request_caches()
-        with self.assert_database_query_count(19):
+        with self.assert_database_query_count(20):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1825,7 +1977,7 @@ class StreamMessagesTest(ZulipTestCase):
         # a message to a topic with visibility policy other than FOLLOWED.
         # 1 to check if the topic is already followed + 3 queries to follow the topic.
         flush_per_request_caches()
-        with self.assert_database_query_count(18):
+        with self.assert_database_query_count(19):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1836,7 +1988,7 @@ class StreamMessagesTest(ZulipTestCase):
         # If the topic is already FOLLOWED, there will be an increase in the query
         # count of 1 to check if the topic is already followed.
         flush_per_request_caches()
-        with self.assert_database_query_count(15):
+        with self.assert_database_query_count(16):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1861,7 +2013,7 @@ class StreamMessagesTest(ZulipTestCase):
         # 1 to get the user_id of the mentioned user + 1 to check if the topic
         # is already followed + 3 queries to follow the topic.
         flush_per_request_caches()
-        with self.assert_database_query_count(23):
+        with self.assert_database_query_count(24):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1874,7 +2026,7 @@ class StreamMessagesTest(ZulipTestCase):
         # 1 to get the user_id of the mentioned user + 1 to check if the topic is
         # already followed.
         flush_per_request_caches()
-        with self.assert_database_query_count(20):
+        with self.assert_database_query_count(21):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1884,7 +2036,7 @@ class StreamMessagesTest(ZulipTestCase):
             )
 
         flush_per_request_caches()
-        with self.assert_database_query_count(17):
+        with self.assert_database_query_count(18):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1907,7 +2059,7 @@ class StreamMessagesTest(ZulipTestCase):
         )
         flush_per_request_caches()
 
-        with self.assert_database_query_count(18):
+        with self.assert_database_query_count(19):
             check_send_stream_message(
                 sender=sender,
                 client=sending_client,
@@ -1989,6 +2141,47 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_personal_message(self.example_user("hamlet"), user_profile, content="test")
         message = most_recent_message(user_profile)
         self.assertFalse(message.is_channel_message)
+
+    def test_realm_guest_user_ids_in_message_event(self) -> None:
+        hamlet = self.example_user("hamlet")
+        polonius = self.example_user("polonius")
+
+        # Events for public channel messages include all active guest
+        # users in the realm, whether or not they are subscribed.
+        stream_name = "Test stream"
+        self.subscribe(hamlet, stream_name)
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            self.send_stream_message(
+                hamlet,
+                stream_name,
+                content="test",
+                skip_capture_on_commit_callbacks=True,
+            )
+        self.assertEqual(events[0]["event"]["realm_guest_user_ids"], [polonius.id])
+
+        # The field is not attached to events for private channel
+        # messages or direct messages as we do not send events to
+        # clients in realm_clients_all_streams for these messages.
+        private_stream_name = "Private test stream"
+        self.make_stream(private_stream_name, invite_only=True)
+        self.subscribe(hamlet, private_stream_name)
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            self.send_stream_message(
+                hamlet,
+                private_stream_name,
+                content="test",
+                skip_capture_on_commit_callbacks=True,
+            )
+        self.assertNotIn("realm_guest_user_ids", events[0]["event"])
+
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            self.send_personal_message(
+                hamlet,
+                polonius,
+                content="test",
+                skip_capture_on_commit_callbacks=True,
+            )
+        self.assertNotIn("realm_guest_user_ids", events[0]["event"])
 
     def _send_stream_message(self, user: UserProfile, stream_name: str, content: str) -> set[int]:
         with self.capture_send_event_calls(expected_num_events=1) as events:
@@ -2812,11 +3005,86 @@ class PersonalMessageSendTest(ZulipTestCase):
         self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
 
     def test_personal_message(self) -> None:
-        user_profile = self.example_user("hamlet")
+        hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
+        prospero = self.example_user("prospero")
 
+        # A normal user sends a personal message.
         with self.assert_database_query_count(24):
-            self.send_personal_message(user_profile, cordelia)
+            self.send_personal_message(hamlet, cordelia)
+
+        # Give guests limited user access.
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+        # Make prospero a guest user.
+        self.set_user_role(prospero, UserProfile.ROLE_GUEST)
+
+        # A guest with limited user access sends a personal message
+        # to another accessible user.
+        with self.assert_database_query_count(25):
+            self.send_personal_message(polonius, hamlet)
+
+        # A guest with limited user access sends a personal message
+        # to themself.
+        with self.assert_database_query_count(21):
+            self.send_personal_message(polonius, polonius)
+
+        # A guest with limited user access sends a personal message
+        # to another accessible guest.
+        with self.assert_database_query_count(22):
+            self.send_personal_message(polonius, prospero)
+
+    def test_group_direct_message(self) -> None:
+        """
+        When a guest with limited user access sends a group Direct Message
+        to recipients with another guest included, we do extra checks resulting
+        in extra queries as opposed to a normal user.
+        This test tracks query count for these different cases.
+        """
+        # Give guests limited user access.
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+        prospero = self.example_user("prospero")
+
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        bot = self.create_test_bot("test2", cordelia, full_name="Test bot")
+
+        # Make prospero a guest user.
+        self.set_user_role(prospero, UserProfile.ROLE_GUEST)
+
+        # Direct message group recipients including a guest (prospero).
+        recipients = [cordelia, hamlet, bot, prospero]
+
+        # A normal user sends the first message
+        # to a new DirectMessageGroup.
+        with self.assert_database_query_count(28):
+            self.send_group_direct_message(iago, recipients)
+
+        # A normal user sends a message
+        # to an existing DirectMessageGroup.
+        with self.assert_database_query_count(21):
+            self.send_group_direct_message(iago, recipients)
+
+        # Subscribe polonius to Verona to make the recipients
+        # below accessible for polonius.
+        self.subscribe(polonius, "Verona")
+
+        # polonius and prospero have already exchanged 1:1 DM
+        # via set_up_db_for_testing_user_access;
+        # it's very common for a message recipients
+        # to have 1:1 DM partners.
+
+        # A guest with limited user access sends the first message
+        # to a new DirectMessageGroup.
+        with self.assert_database_query_count(30):
+            self.send_group_direct_message(polonius, recipients)
+
+        # A guest with limited user access sends a message
+        # to an existing DirectMessageGroup.
+        with self.assert_database_query_count(23):
+            self.send_group_direct_message(polonius, recipients)
 
     def test_direct_message_initiator_group_setting(self) -> None:
         """

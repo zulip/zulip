@@ -1,5 +1,5 @@
 import {getUnixTime, isValid} from "date-fns";
-import katex from "katex";
+import * as katex from "katex";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type {Matcher, RE2JS} from "re2js";
@@ -56,8 +56,8 @@ export function contains_backend_only_syntax(content: string): boolean {
 export let web_app_helpers: MarkdownHelpers | undefined;
 
 export type AbstractMap<K, V> = {
-    keys: () => IterableIterator<K>;
-    entries: () => IterableIterator<[K, V]>;
+    keys: () => IteratorObject<K, BuiltinIteratorReturn>;
+    entries: () => IteratorObject<[K, V], BuiltinIteratorReturn>;
     get: (k: K) => V | undefined;
 };
 
@@ -104,43 +104,34 @@ export function translate_emoticons_to_names({
 }): string {
     // Translates emoticons in a string to their colon syntax.
     let translated = src;
-    let replacement_text: string;
     const terminal_symbols = ",.;?!()[] \"'\n\t"; // From composebox_typeahead
     const symbols_except_space = terminal_symbols.replace(" ", "");
 
-    const emoticon_replacer = function (
-        match: string,
-        _capture_group: string,
-        offset: number,
-        str: string,
-    ): string {
-        const prev_char = str[offset - 1];
-        const next_char = str[offset + match.length];
-
-        const non_space_at_start =
-            prev_char !== undefined && symbols_except_space.includes(prev_char);
-        const non_space_at_end =
-            next_char !== undefined && symbols_except_space.includes(next_char);
-        const valid_start = prev_char === undefined || terminal_symbols.includes(prev_char);
-        const valid_end = next_char === undefined || terminal_symbols.includes(next_char);
-
-        if (non_space_at_start && non_space_at_end) {
-            // Hello!:)?
-            return match;
-        }
-        if (valid_start && valid_end) {
-            return replacement_text;
-        }
-        return match;
-    };
-
     for (const translation of get_emoticon_translations()) {
-        // We can't pass replacement_text directly into
-        // emoticon_replacer, because emoticon_replacer is
-        // a callback for `replace()`.  Instead we just mutate
-        // the `replacement_text` that the function closes on.
-        replacement_text = translation.replacement_text;
-        translated = translated.replace(translation.regex, emoticon_replacer);
+        const replacement_text = translation.replacement_text;
+        translated = translated.replace(
+            translation.regex,
+            (match, _capture_group, offset: number, str: string) => {
+                const prev_char = str[offset - 1];
+                const next_char = str[offset + match.length];
+
+                const non_space_at_start =
+                    prev_char !== undefined && symbols_except_space.includes(prev_char);
+                const non_space_at_end =
+                    next_char !== undefined && symbols_except_space.includes(next_char);
+                const valid_start = prev_char === undefined || terminal_symbols.includes(prev_char);
+                const valid_end = next_char === undefined || terminal_symbols.includes(next_char);
+
+                if (non_space_at_start && non_space_at_end) {
+                    // Hello!:)?
+                    return match;
+                }
+                if (valid_start && valid_end) {
+                    return replacement_text;
+                }
+                return match;
+            },
+        );
     }
 
     return translated;
@@ -204,7 +195,6 @@ function parse_with_options(
                 return `<span class="${classes}">${_.escape(display_text)}</span>`;
             }
 
-            let full_name;
             let user_id;
 
             const id_regex = /^(.+)?\|(\d+)$/; // For @**user|id** and @**|id** syntax
@@ -226,7 +216,7 @@ function parse_with_options(
                     through to the other code (which may be a
                     misfeature).
                 */
-                full_name = match[1];
+                const full_name = match[1];
                 user_id = Number.parseInt(match[2]!, 10);
 
                 if (full_name === undefined) {
@@ -234,21 +224,18 @@ function parse_with_options(
                     if (!helper_config.is_valid_user_id(user_id)) {
                         // silently ignore invalid user id.
                         user_id = undefined;
-                    } else {
-                        full_name = helper_config.get_actual_name_from_user_id(user_id);
                     }
                 } else {
                     // For @**user|id** syntax
                     if (!helper_config.is_valid_full_name_and_user_id(full_name, user_id)) {
                         user_id = undefined;
-                        full_name = undefined;
                     }
                 }
             }
 
             if (user_id === undefined) {
                 // Handle normal syntax
-                full_name = mention;
+                const full_name = mention;
                 user_id = helper_config.get_user_id_from_name(full_name);
             }
 
@@ -490,13 +477,13 @@ function handleUnicodeEmoji(
     // in boxes) into qualified emoji (images).
     // More specifically, we skip anything with text in the second column of
     // this table https://unicode.org/Public/emoji/1.0/emoji-data.txt
-    if (/^\P{Emoji_Presentation}\u20E3?$/u.test(unicode_emoji)) {
+    if (/^\P{Emoji_Presentation}\u{20E3}?$/u.test(unicode_emoji)) {
         return unicode_emoji;
     }
 
     // This unqualifies qualified emoji, which helps us make sure we
     // can match both versions.
-    const unqualified_unicode_emoji = unicode_emoji.replace(/\uFE0F/, "");
+    const unqualified_unicode_emoji = unicode_emoji.replace(/\u{FE0F}/u, "");
 
     const codepoint = [...unqualified_unicode_emoji]
         .map((char) => (char.codePointAt(0)?.toString(16) ?? "").padStart(4, "0"))
@@ -583,7 +570,7 @@ function handleTimestamp(time_string: string): string {
 
     // Use html5 <time> tag for valid timestamps.
     // render time without milliseconds.
-    const escaped_isotime = _.escape(timeobject.toISOString().split(".")[0] + "Z");
+    const escaped_isotime = _.escape(timeobject.toISOString().split(".", 1)[0] + "Z");
     return `<time datetime="${escaped_isotime}">${escaped_time}</time>`;
 }
 
@@ -678,12 +665,11 @@ function handleTex(tex: string, fullmatch: string): string {
     try {
         return katex.renderToString(tex);
     } catch (error) {
-        assert(error instanceof Error);
-        if (error.message.startsWith("KaTeX parse error")) {
-            // TeX syntax error
+        if (error instanceof katex.ParseError) {
             return `<span class="tex-error">${_.escape(fullmatch)}</span>`;
         }
-        throw new Error(error.message);
+        /* istanbul ignore next */
+        throw error;
     }
 }
 
@@ -698,7 +684,7 @@ export function parse({
     flags: string[];
 } {
     function get_linkifier_regexes(): RE2JS[] {
-        return [...helper_config.get_linkifier_map().keys()];
+        return helper_config.get_linkifier_map().keys().toArray();
     }
 
     function disable_markdown_regex(rules: Record<string, RegExpOrStub>, name: string): void {

@@ -714,6 +714,38 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     IncomingWebhookIntegration(
+        "gong",
+        ["customer-support", "marketing"],
+        [WebhookScreenshotConfig("call_completed.json")],
+        url_options=[
+            WebhookUrlOption(
+                "include_trackers",
+                label="Include primary trackers in the notifications",
+                input_type="checkbox_enabled",
+            ),
+            WebhookUrlOption(
+                "include_topics",
+                label="Include primary topics in the notifications",
+                input_type="checkbox_enabled",
+            ),
+            WebhookUrlOption(
+                "include_participants",
+                label="Include participant names in the notifications",
+                input_type="checkbox_enabled",
+            ),
+            WebhookUrlOption(
+                "include_participant_contacts",
+                label="Include participant contact information (requires participant names)",
+                input_type="checkbox_enabled",
+            ),
+            WebhookUrlOption(
+                "include_public_comments",
+                label="Include public comments in the notifications",
+                input_type="checkbox",
+            ),
+        ],
+    ),
+    IncomingWebhookIntegration(
         "gosquared",
         ["marketing"],
         [WebhookScreenshotConfig("traffic_spike.json")],
@@ -736,7 +768,9 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
     IncomingWebhookIntegration(
         "helloworld", ["misc"], [WebhookScreenshotConfig("hello.json")], display_name="Hello World"
     ),
-    IncomingWebhookIntegration("heroku", ["deployment"], [WebhookScreenshotConfig("deploy.txt")]),
+    IncomingWebhookIntegration(
+        "heroku", ["deployment"], [WebhookScreenshotConfig("build_create.json")]
+    ),
     IncomingWebhookIntegration(
         "homeassistant",
         ["misc"],

@@ -1,12 +1,13 @@
 // Because this logic is heavily focused around managing browser quirks,
 // this module is currently tested manually and via
 // by web/e2e-tests/copy_messages.test.ts, not with node tests.
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_copied_recipient_header from "../templates/copied_recipient_header.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import {MENTION_SELECTOR} from "./compose_paste.ts";
 import * as message_lists from "./message_lists.ts";
 import * as rows from "./rows.ts";
 import {the} from "./util.ts";
@@ -39,7 +40,8 @@ function find_boundary_tr(
     }
     if (j === 10) {
         return undefined;
-    } else if (j !== 0) {
+    }
+    if (j !== 0) {
         // If we updated tr, then we are not dealing with a selection
         // that is entirely within one td, and we can skip the same td
         // check (In fact, we need to because it won't work correctly
@@ -69,7 +71,7 @@ function get_selected_message_content_elements(): NodeListOf<HTMLElement> | unde
         .querySelectorAll(".message_content");
 }
 
-// Returns the the inner HTML of the `.message_content` element
+// Returns the inner HTML of the `.message_content` element
 // for the first or last message of a single range selection.
 // The caller is expected to only pass the first or last message
 // from a selection range, as the intermediate selected messages
@@ -391,7 +393,8 @@ function improve_time_selection_range(range: Range): void {
     // Chrome strips <time> and .timestamp-content-wrapper from the
     // paste HTML, so wrap the date text in a <span data-datetime> that
     // the paste handler can read.
-    for (const time of new Set([start_time, end_time])) {
+    const times = new Set([start_time, end_time]);
+    for (const time of times) {
         if (!time) {
             continue;
         }
@@ -416,6 +419,32 @@ function improve_time_selection_range(range: Range): void {
     }
     if (end_time) {
         range.setEndAfter(end_time);
+    }
+}
+
+export function improve_mention_selection_range(range: Range): void {
+    const start_element = get_nearest_html_element(range.startContainer);
+    const end_element = get_nearest_html_element(range.endContainer);
+    if (!start_element || !end_element) {
+        return;
+    }
+
+    const start_mention = start_element.closest(MENTION_SELECTOR);
+    const end_mention = end_element.closest(MENTION_SELECTOR);
+
+    if (!start_mention && !end_mention) {
+        return;
+    }
+
+    // Expand the range so a partial selection inside a mention pill
+    // becomes a selection of the full mention span. Otherwise the
+    // copied/quoted markdown ends up as a broken mention like
+    // @_amlet|34 from selecting "amlet" inside "King Hamlet".
+    if (start_mention) {
+        range.setStartBefore(start_mention);
+    }
+    if (end_mention) {
+        range.setEndAfter(end_mention);
     }
 }
 
@@ -550,6 +579,7 @@ export function copy_handler(ev: ClipboardEvent): boolean {
         let custom_handle_copy = false;
         for (let i = 0; i < selection.rangeCount; i += 1) {
             improve_time_selection_range(selection.getRangeAt(i));
+            improve_mention_selection_range(selection.getRangeAt(i));
             improve_katex_selection_range(selection.getRangeAt(i));
 
             if (maybe_update_range_for_code_blocks(selection.getRangeAt(i), ev)) {
@@ -603,26 +633,20 @@ export function analyze_selection(selection: Selection): {
     // full content.
 
     let i;
-    let range;
     const ranges = [];
-    let $startc;
-    let $endc;
-    let $initial_end_tr;
     let start_id;
     let end_id;
-    let start_data;
-    let end_data;
     // skip_same_td_check is true whenever we know for a fact that the
     // selection covers multiple messages (and thus we should no
     // longer consider letting the browser handle the copy event).
     let skip_same_td_check = false;
 
     for (i = 0; i < selection.rangeCount; i += 1) {
-        range = selection.getRangeAt(i);
+        const range = selection.getRangeAt(i);
         ranges.push(range);
 
-        $startc = $(range.startContainer);
-        start_data = find_boundary_tr(
+        const $startc = $(range.startContainer);
+        const start_data = find_boundary_tr(
             $startc
                 .parents(".selectable_row, .message_header")
                 .not(".overlay-message-header")
@@ -637,9 +661,9 @@ export function analyze_selection(selection: Selection): {
         // touched by the selection.
         start_id ??= start_data[0];
 
-        $endc = $(range.endContainer);
-        $initial_end_tr = get_end_tr_from_endc($endc);
-        end_data = find_boundary_tr($initial_end_tr, ($row) => $row.prev());
+        const $endc = $(range.endContainer);
+        const $initial_end_tr = get_end_tr_from_endc($endc);
+        const end_data = find_boundary_tr($initial_end_tr, ($row) => $row.prev());
 
         if (end_data === undefined) {
             // Skip any selection sections that don't intersect a message.

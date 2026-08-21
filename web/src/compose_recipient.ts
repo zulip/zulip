@@ -1,6 +1,6 @@
 /* Compose box module responsible for the message's recipient */
 
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
@@ -461,10 +461,13 @@ export function initialize(): void {
                     });
                 }
             }
-            const stream_items = [...stream_items_by_stream_id.values()].map((item) => item.stream);
+            const stream_items = stream_items_by_stream_id
+                .values()
+                .map((item) => item.stream)
+                .toArray();
             const sorted_streams = typeahead_helper.sort_streams(stream_items, filter_value);
-            const sorted_stream_items = sorted_streams.map(
-                (stream) => stream_items_by_stream_id.get(stream.stream_id)!,
+            const sorted_stream_items = sorted_streams.map((stream) =>
+                stream_items_by_stream_id.get(stream.stream_id)!,
             );
 
             if (non_stream_items.length > 0) {

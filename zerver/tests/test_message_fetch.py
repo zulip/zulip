@@ -300,14 +300,14 @@ class NarrowBuilderTest(ZulipTestCase):
         term = NarrowParameter(operator="is", operand="followed", negated=False)
         self._do_add_term_test(
             term,
-            'WHERE EXISTS(SELECT %s AS "a" FROM "zerver_usertopic" U0 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND UPPER(U0."topic_name"::text) = UPPER(("zerver_message"."subject")) AND U0."user_profile_id" = %s AND U0."visibility_policy" = %s) LIMIT 1)',
+            'WHERE EXISTS(SELECT %s AS "a" FROM "zerver_usertopic" U0 WHERE (U0."user_profile_id" = %s AND U0."visibility_policy" = %s AND U0."recipient_id" = ("zerver_message"."recipient_id") AND UPPER(U0."topic_name"::text) = UPPER(("zerver_message"."subject"))) LIMIT 1)',
         )
 
     def test_add_term_using_is_operator_for_negated_followed_topics(self) -> None:
         term = NarrowParameter(operator="is", operand="followed", negated=True)
         self._do_add_term_test(
             term,
-            'WHERE NOT (EXISTS(SELECT %s AS "a" FROM "zerver_usertopic" U0 WHERE (U0."recipient_id" = ("zerver_message"."recipient_id") AND UPPER(U0."topic_name"::text) = UPPER(("zerver_message"."subject")) AND U0."user_profile_id" = %s AND U0."visibility_policy" = %s) LIMIT 1))',
+            'WHERE NOT (EXISTS(SELECT %s AS "a" FROM "zerver_usertopic" U0 WHERE (U0."user_profile_id" = %s AND U0."visibility_policy" = %s AND U0."recipient_id" = ("zerver_message"."recipient_id") AND UPPER(U0."topic_name"::text) = UPPER(("zerver_message"."subject"))) LIMIT 1))',
         )
 
     def test_add_term_using_is_operator_for_muted_topics(self) -> None:
@@ -4716,7 +4716,7 @@ class GetOldMessagesTest(ZulipTestCase):
             "narrow": "[]",
         }
 
-        with self.assert_database_query_count(12):
+        with self.assert_database_query_count(13):
             result = self.get_and_check_messages(get_and_check_messages_options)
 
         self.assertEqual(result["anchor"], anchor_message_id)
@@ -4728,7 +4728,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # we should choose the message sent first.
         first_message_with_same_timestamp_id = anchor_message_id
         Message.objects.filter(id=newer_message_id).update(date_sent=base_time)
-        with self.assert_database_query_count(12):
+        with self.assert_database_query_count(13):
             result = self.get_and_check_messages(get_and_check_messages_options)
         self.assertEqual(result["anchor"], first_message_with_same_timestamp_id)
         self.assert_length(result["messages"], 1)
@@ -4752,7 +4752,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # Narrow conditions should be respected when passing `anchor_date`.
         scotland_channel_message_id = self.send_stream_message(sender, "Scotland")
         Message.objects.filter(id=scotland_channel_message_id).update(date_sent=base_time)
-        with self.assert_database_query_count(16):
+        with self.assert_database_query_count(17):
             result = self.get_and_check_messages(
                 {
                     **get_and_check_messages_options,
@@ -4763,6 +4763,21 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assert_length(result["messages"], 1)
         self.assertEqual(result["messages"][0]["id"], scotland_channel_message_id)
         self.assertTrue(result["found_anchor"])
+
+        # The anchor search must be ordered and bounded on
+        # zerver_usermessage.message_id; ordering it by date_sent scans a
+        # large fraction of zerver_message. See find_date_anchor.
+        with queries_captured() as queries:
+            self.get_and_check_messages(get_and_check_messages_options)
+        anchor_sqls = [
+            query.sql
+            for query in queries
+            if query.sql.endswith("LIMIT 1") and "zerver_usermessage" in query.sql
+        ]
+        self.assert_length(anchor_sqls, 1)
+        self.assertIn('ORDER BY "zerver_usermessage"."message_id" ASC', anchor_sqls[0])
+        self.assertIn('AND "zerver_usermessage"."message_id" >= ', anchor_sqls[0])
+        self.assertNotIn("date_sent", anchor_sqls[0])
 
         # If the narrow has no matching messages, we should return an empty result.
         empty_stream = "Empty stream"
@@ -4966,13 +4981,23 @@ class GetOldMessagesTest(ZulipTestCase):
         # Do some tests on the main query, to verify the muting logic
         # runs on this code path.
         capture_anchor.assert_called_once()
-        sql = get_django_sql(capture_anchor.call_args.args[0])
+        anchor_query = capture_anchor.call_args.args[0].query
+        sql, params = anchor_query.sql_with_params()
+
+        cond = """\
+AND NOT (EXISTS(SELECT %s AS "a" FROM "zerver_usertopic" U0 \
+WHERE (U0."user_profile_id" = %s AND U0."visibility_policy" = %s AND U0."stream_id" = %s \
+AND U0."recipient_id" = ("zerver_message"."recipient_id") \
+AND UPPER(U0."topic_name"::text) = UPPER(("zerver_message"."subject"))) LIMIT 1))\
+"""
+        self.assertIn(cond, sql)
 
         channel = get_stream("Scotland", realm)
-        assert channel.recipient is not None
-        recipient_id = channel.recipient.id
-        cond = f"""AND NOT ("zerver_message"."recipient_id" = {recipient_id} AND "zerver_message"."is_channel_message" AND UPPER("zerver_message"."subject"::text) = UPPER('golf'))"""
-        self.assertIn(cond, sql)
+        placeholders_before_cond = sql[: sql.index(cond)].count("%s")
+        self.assertEqual(
+            params[placeholders_before_cond : placeholders_before_cond + 4],
+            (1, user_profile.id, UserTopic.VisibilityPolicy.MUTED, channel.id),
+        )
 
         # Next, verify the use_first_unread_anchor setting invokes
         # the `message_id = LARGER_THAN_MAX_MESSAGE_ID` hack.
@@ -5105,7 +5130,10 @@ class GetOldMessagesTest(ZulipTestCase):
         expected_query = """\
 SELECT "zerver_message"."id" AS "id" \
 FROM "zerver_message" \
-WHERE NOT ("zerver_message"."recipient_id" = %s AND "zerver_message"."is_channel_message" AND UPPER("zerver_message"."subject"::text) = UPPER(%s))\
+WHERE NOT (EXISTS(SELECT %s AS "a" FROM "zerver_usertopic" U0 \
+WHERE (U0."user_profile_id" = %s AND U0."visibility_policy" = %s AND U0."stream_id" = %s \
+AND U0."recipient_id" = ("zerver_message"."recipient_id") \
+AND UPPER(U0."topic_name"::text) = UPPER(("zerver_message"."subject"))) LIMIT 1))\
 """
 
         sql, params = query.sql_with_params()
@@ -5114,8 +5142,10 @@ WHERE NOT ("zerver_message"."recipient_id" = %s AND "zerver_message"."is_channel
         self.assertEqual(
             params,
             (
-                get_recipient_id_for_channel_name(realm, "Scotland"),
-                "golf",
+                1,
+                user_profile.id,
+                UserTopic.VisibilityPolicy.MUTED,
+                get_stream("Scotland", realm).id,
             ),
         )
 
@@ -5134,8 +5164,10 @@ WHERE NOT ("zerver_message"."recipient_id" = %s AND "zerver_message"."is_channel
         expected_query = """\
 SELECT "zerver_message"."id" AS "id" \
 FROM "zerver_message" \
-WHERE (NOT (("zerver_message"."recipient_id" = %s AND "zerver_message"."is_channel_message" AND UPPER("zerver_message"."subject"::text) = UPPER(%s)) \
-OR ("zerver_message"."recipient_id" = %s AND "zerver_message"."is_channel_message" AND UPPER("zerver_message"."subject"::text) = UPPER(%s))) \
+WHERE (NOT (EXISTS(SELECT %s AS "a" FROM "zerver_usertopic" U0 \
+WHERE (U0."user_profile_id" = %s AND U0."visibility_policy" = %s \
+AND U0."recipient_id" = ("zerver_message"."recipient_id") \
+AND UPPER(U0."topic_name"::text) = UPPER(("zerver_message"."subject"))) LIMIT 1)) \
 AND NOT ("zerver_message"."recipient_id" IN (%s)))\
 """
         sql, params = query.sql_with_params()
@@ -5143,10 +5175,9 @@ AND NOT ("zerver_message"."recipient_id" IN (%s)))\
         self.assertEqual(
             params,
             (
-                get_recipient_id_for_channel_name(realm, "Scotland"),
-                "golf",
-                get_recipient_id_for_channel_name(realm, "web stuff"),
-                "css",
+                1,
+                user_profile.id,
+                UserTopic.VisibilityPolicy.MUTED,
                 channel_verona_id,
             ),
         )
@@ -5165,25 +5196,44 @@ AND NOT ("zerver_message"."recipient_id" IN (%s)))\
         expected_query = """\
 SELECT "zerver_message"."id" AS "id" \
 FROM "zerver_message" \
-WHERE (NOT (("zerver_message"."recipient_id" = %s AND "zerver_message"."is_channel_message" AND UPPER("zerver_message"."subject"::text) = UPPER(%s)) \
-OR ("zerver_message"."recipient_id" = %s AND "zerver_message"."is_channel_message" AND UPPER("zerver_message"."subject"::text) = UPPER(%s))) \
+WHERE (NOT (EXISTS(SELECT %s AS "a" FROM "zerver_usertopic" U0 \
+WHERE (U0."user_profile_id" = %s AND U0."visibility_policy" = %s \
+AND U0."recipient_id" = ("zerver_message"."recipient_id") \
+AND UPPER(U0."topic_name"::text) = UPPER(("zerver_message"."subject"))) LIMIT 1)) \
 AND NOT ("zerver_message"."recipient_id" IN (%s) \
-AND NOT ("zerver_message"."recipient_id" = %s AND "zerver_message"."is_channel_message" AND UPPER("zerver_message"."subject"::text) = UPPER(%s))))\
+AND NOT (EXISTS(SELECT %s AS "a" FROM "zerver_usertopic" U0 \
+WHERE (U0."user_profile_id" = %s AND U0."visibility_policy" IN (%s, %s) \
+AND U0."recipient_id" = ("zerver_message"."recipient_id") \
+AND UPPER(U0."topic_name"::text) = UPPER(("zerver_message"."subject"))) LIMIT 1))))\
 """
         sql, params = query.sql_with_params()
         self.assertEqual(sql, expected_query)
         self.assertEqual(
             params,
             (
-                get_recipient_id_for_channel_name(realm, "Scotland"),
-                "golf",
-                get_recipient_id_for_channel_name(realm, "web stuff"),
-                "css",
+                1,
+                user_profile.id,
+                UserTopic.VisibilityPolicy.MUTED,
                 channel_verona_id,
-                channel_verona_id,
-                "Hi",
+                1,
+                user_profile.id,
+                UserTopic.VisibilityPolicy.FOLLOWED,
+                UserTopic.VisibilityPolicy.UNMUTED,
             ),
         )
+
+        # The query must not grow with the number of muted topics; the
+        # inlined form it replaced added a condition per muted topic,
+        # which for a user with thousands of them produced SQL that was
+        # extremely expensive for PostgreSQL to plan.
+        set_topic_visibility_policy(
+            user_profile,
+            [["Scotland", f"topic {i}"] for i in range(100)],
+            UserTopic.VisibilityPolicy.MUTED,
+        )
+        muting_conditions = exclude_muting_conditions(user_profile, narrow)
+        query = Message.objects.all().filter(muting_conditions).values("id").query
+        self.assertEqual(query.sql_with_params(), (sql, params))
 
     def test_get_messages_queries(self) -> None:
         query_ids = self.get_query_ids()

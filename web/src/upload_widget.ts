@@ -169,7 +169,7 @@ function set_up_uppy_widget(property_name: "realm_icon" | "realm_logo" | "user_a
             background: true,
             initialAspectRatio: property_name === "realm_logo" ? 8 : 1,
             // For realm logo, crop box is not restricted to any aspect ratio.
-            aspectRatio: property_name === "realm_logo" ? Number.NaN : 1,
+            aspectRatio: property_name === "realm_logo" ? NaN : 1,
         },
     });
 }

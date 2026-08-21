@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import type * as z from "zod/mini";
 
 import render_message_reminders from "../templates/message_reminders.hbs";

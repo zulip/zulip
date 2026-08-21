@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import {electron_bridge} from "./electron_bridge.ts";
@@ -83,13 +83,18 @@ export function initialize(): void {
     });
 }
 
+// Utility function for testing support for the Notifications API
+export function has_notification_support(): boolean {
+    return NotificationAPI !== undefined;
+}
+
 export function permission_state(): string {
-    if (NotificationAPI === undefined) {
-        // act like notifications are blocked if they do not have access to
-        // the notification API.
-        return "denied";
+    if (NotificationAPI) {
+        return NotificationAPI.permission;
     }
-    return NotificationAPI.permission;
+    // Act like notifications are blocked if a UA
+    // has no access to the notification API.
+    return "denied";
 }
 
 export function close_notification(message: Message): void {
@@ -109,7 +114,7 @@ export async function request_desktop_notifications_permission(): Promise<Notifi
     if (NotificationAPI) {
         return await NotificationAPI.requestPermission();
     }
-    // Act like notifications are blocked if they do not have access to
-    // the notification API.
+    // Act like notifications are blocked if a UA
+    // has no access to the notification API.
     return "denied";
 }

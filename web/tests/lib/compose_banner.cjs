@@ -3,7 +3,7 @@
 const compose_banner = require("../../src/compose_banner.ts");
 
 const {noop} = require("./test.cjs");
-const $ = require("./zjquery.cjs");
+const {$} = require("./zjquery.cjs");
 
 exports.mock_banners = () => {
     // zjquery doesn't support `remove`, which is used when clearing the compose box.
@@ -37,4 +37,7 @@ exports.mock_banners = () => {
     $cb.set_find_results(".missing_private_message_recipient", $stub);
     $cb.set_find_results(".subscription_error", $stub);
     $cb.set_find_results(".generic_compose_error", $stub);
+    $cb.set_find_results(".topic_resolved", $stub);
+    $cb.set_find_results(".search_view", $stub);
+    $cb.set_find_results(".unscheduled_message", $stub);
 };

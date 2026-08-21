@@ -55,8 +55,8 @@ You can run all of the linters at once:
 $ ./tools/lint
 ```
 
-Note that will take a little time. `./tools/lint` runs many
-lint checks in parallel, including:
+But, doing that will take a little time, because `./tools/lint`
+runs many lint checks in parallel, including:
 
 - JavaScript ([ESLint](https://eslint.org/),
   [Prettier](https://prettier.io/))
@@ -307,9 +307,9 @@ assert obj.id in set([o.id for o in some_objs])
 ### Don't call user_profile.save() without `update_fields`
 
 You should always pass the `update_fields` keyword argument to `.save()`
-when modifying an existing Django model object. By default, `.save()` will
-overwrite every value in the column, which results in lots of race
-conditions where unrelated changes made by one thread can be
+when modifying an existing Django model object. By default, `.save()`
+updates all of the model object fields in the database, which results
+in lots of race conditions where unrelated changes made by one thread can be
 accidentally overwritten by another thread that fetched its `UserProfile`
 object before the first thread wrote out its change.
 

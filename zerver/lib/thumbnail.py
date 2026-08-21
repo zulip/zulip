@@ -194,8 +194,8 @@ def libvips_check_image(
 
     try:
         yield source_image
-    except pyvips.Error as e:  # nocoverage
-        logging.exception(e)
+    except pyvips.Error:  # nocoverage
+        logging.exception("Error while processing image")
         raise BadImageError(_("Image is corrupted or truncated"))
 
 

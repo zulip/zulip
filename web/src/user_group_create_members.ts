@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_new_user_group_user from "../templates/stream_settings/new_stream_user.hbs";
 import render_new_user_group_subgroup from "../templates/user_group_settings/new_user_group_subgroup.hbs";
@@ -175,7 +175,7 @@ export function build_widgets(): void {
             return render_new_user_group_subgroup(item);
         },
         filter: {
-            $element: $("#people_to_add_in_group .add-user-list-filter"),
+            $element: $("#people_to_add_in_group input.search"),
             predicate(member, search_term) {
                 return user_group_components.build_group_member_matcher(search_term)(member);
             },

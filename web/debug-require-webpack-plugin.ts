@@ -19,7 +19,7 @@ export default class DebugRequirePlugin implements webpack.WebpackPluginInstance
             .for("normal")
             .tap("DebugRequirePlugin", (resolver) => {
                 resolver.getHook("beforeRawModule").tap("DebugRequirePlugin", (req) => {
-                    if (!(nameSymbol in req)) {
+                    if (!Object.hasOwn(req, nameSymbol)) {
                         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
                         (req as NamedRequest)[nameSymbol] = req.request;
                     }
@@ -29,7 +29,7 @@ export default class DebugRequirePlugin implements webpack.WebpackPluginInstance
                 resolver.getHook("beforeRelative").tap("DebugRequirePlugin", (req) => {
                     if (req.path !== false) {
                         const inPath = path.relative(compiler.context, req.path);
-                        if (!inPath.startsWith("../") && !(nameSymbol in req)) {
+                        if (!inPath.startsWith("../") && !Object.hasOwn(req, nameSymbol)) {
                             // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
                             (req as NamedRequest)[nameSymbol] = "./" + inPath;
                         }
@@ -91,7 +91,8 @@ export default class DebugRequirePlugin implements webpack.WebpackPluginInstance
                                 if (m.resource === debugRequirePath) {
                                     hasDebugRequire = true;
                                 }
-                                for (const name of resolved.get(m.resource) ?? []) {
+                                const names = resolved.get(m.resource) ?? [];
+                                for (const name of names) {
                                     ids.push([
                                         m.rawRequest.slice(0, m.rawRequest.lastIndexOf("!") + 1) +
                                             name,
@@ -108,7 +109,7 @@ export default class DebugRequirePlugin implements webpack.WebpackPluginInstance
                         return source;
                     }
 
-                    ids.sort();
+                    ids.sort(([a], [b]) => Number(a > b) - Number(a < b));
                     return webpack.Template.asString([
                         source,
                         `__webpack_require__.debugRequireIds = ${JSON.stringify(

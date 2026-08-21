@@ -16,7 +16,10 @@ const emoji_frequency_data = mock_esm("../src/emoji_frequency_data", {
         set: (emoji, emoji_usage) => map.set(emoji, emoji_usage),
     },
     preferred_emoji_list() {
-        const emojis = [...map.values()].toSorted((a, b) => b.score - a.score);
+        const emojis = map
+            .values()
+            .toArray()
+            .toSorted((a, b) => b.score - a.score);
         const count = emojis.length;
         const emojis_per_row = 6;
         return emojis.slice(0, count - (count % emojis_per_row));
@@ -96,10 +99,10 @@ run_test("initialize", () => {
         "1f600", // grinning face
         "1f680", // rocket
     ];
-    const non_popular_emojis_usage = [];
-    for (const [i, non_popular_emoji_code] of non_popular_emoji_codes.entries()) {
-        non_popular_emojis_usage.push(make_emoji(non_popular_emoji_code, i + 10));
-    }
+    const non_popular_emojis_usage = Array.from(
+        non_popular_emoji_codes,
+        (non_popular_emoji_code, i) => make_emoji(non_popular_emoji_code, i + 10),
+    );
     for (const emoji of [...popular_emojis, ...non_popular_emojis_usage]) {
         emoji_frequency_data.reaction_data.set(emoji.emoji_code, emoji);
     }

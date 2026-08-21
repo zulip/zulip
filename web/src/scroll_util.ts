@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import SimpleBar from "simplebar";
 
 import * as util from "./util.ts";
@@ -25,7 +25,8 @@ export function get_scroll_element($element: JQueryOrZJQuery): JQuery {
     const sb = SimpleBar.instances.get(element);
     if (sb) {
         return $(sb.getScrollElement()!);
-    } else if (element.hasAttribute("data-simplebar")) {
+    }
+    if (element.hasAttribute("data-simplebar")) {
         // The SimpleBar mutation observer hasn’t processed this element yet.
         // Create the SimpleBar early in case we need to add event listeners.
         return $(new SimpleBar(element, {tabIndex: -1}).getScrollElement()!);

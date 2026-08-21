@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -130,7 +130,7 @@ function empty_search_query_banner(
 
     // Gather information about each query word
     for (const query_word of query_words) {
-        if (realm.stop_words.includes(query_word)) {
+        if (realm.stop_words.includes(query_word.toLowerCase())) {
             search_string_result.has_stop_word = true;
             search_string_result.query_words.push({
                 query_word,
@@ -560,7 +560,7 @@ export function pick_empty_narrow_banner(
                 };
             }
             const valid_people_in_dms: people.User[] = [];
-            for (const user of people_in_dms.values()) {
+            for (const user of people_in_dms) {
                 if (user === undefined) {
                     return {
                         // We don't pinpoint which user is invalid,
@@ -644,8 +644,12 @@ export function show_empty_narrow_message(current_filter: Filter, invalid_narrow
 
     // Removing messages from the current narrow can leave a stale
     // top-of-feed notice visible, so hide all of them before showing
-    // the empty-narrow banner.
+    // the empty-narrow banner. Hiding the notices restores the
+    // top-of-feed logo, so re-evaluate whether it should be visible;
+    // an empty narrow whose history is fully fetched should not
+    // suggest that more messages may load above.
     message_feed_top_notices.hide_top_of_narrow_notices();
+    message_feed_top_notices.update_top_of_feed_logo();
 
     if (current_filter.may_have_incomplete_message_history()) {
         $(".empty_feed_notice .empty-feed-notice-action").show();

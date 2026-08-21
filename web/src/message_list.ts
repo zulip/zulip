@@ -1,5 +1,5 @@
 import autosize from "autosize";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import * as activity_ui from "./activity_ui.ts";
@@ -384,15 +384,11 @@ export class MessageList {
         return (
             this.data.can_mark_messages_read() &&
             !this.reading_prevented &&
-            !(
-                user_settings.web_mark_read_on_scroll_policy ===
-                web_mark_read_on_scroll_policy_values.never.code
-            ) &&
-            !(
-                user_settings.web_mark_read_on_scroll_policy ===
-                    web_mark_read_on_scroll_policy_values.conversation_only.code &&
-                !is_conversation_view
-            )
+            user_settings.web_mark_read_on_scroll_policy !==
+                web_mark_read_on_scroll_policy_values.never.code &&
+            (user_settings.web_mark_read_on_scroll_policy !==
+                web_mark_read_on_scroll_policy_values.conversation_only.code ||
+                is_conversation_view)
         );
     }
 

@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/browser";
 import {SPAN_STATUS_OK} from "@sentry/core";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -370,12 +370,13 @@ export function try_rendering_locally_for_same_narrow(
         return false;
     }
 
+    const near_message_id = filter.message_id_operand("near");
     let target_id;
     if (opts.then_select_id !== undefined) {
         target_id = opts.then_select_id;
         target_scroll_offset = opts.then_select_offset;
-    } else if (filter.has_operator("near")) {
-        target_id = Number.parseInt(filter.terms_with_operator("near")[0]!.operand, 10);
+    } else if (near_message_id !== undefined) {
+        target_id = near_message_id;
     } else if (filter.equals(current_filter)) {
         // The caller doesn't want to force rerender and the filter is the same.
         // Also, we don't have a specific message id we want to select, so we
@@ -558,13 +559,9 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
         const terms = filter.terms();
 
         // These two narrowing operators specify what message should be
-        // selected and should be the center of the narrow.
-        if (filter.has_operator("near")) {
-            id_info.target_id = Number.parseInt(filter.terms_with_operator("near")[0]!.operand, 10);
-        }
-        if (filter.has_operator("id")) {
-            id_info.target_id = Number.parseInt(filter.terms_with_operator("id")[0]!.operand, 10);
-        }
+        // selected and should be the center of the narrow; `id` wins
+        // if a filter somehow has both.
+        id_info.target_id = filter.message_id_operand("id") ?? filter.message_id_operand("near");
 
         if (
             // Filter has `with` operator but we don't have message locally.
@@ -577,7 +574,7 @@ export let show = (raw_terms: NarrowTerm[], show_opts: ShowMessageViewOpts): voi
             // from server first and then try to select `then_select_id` message.
             // There is no risk of this hack causing any issues since the `id_info`
             // will be reset after we fetch the `with` operator message.
-            id_info.target_id = Number.parseInt(filter.terms_with_operator("with")[0]!.operand, 10);
+            id_info.target_id = filter.message_id_operand("with")!;
         }
 
         // Narrow with near / id operator. There are two possibilities:

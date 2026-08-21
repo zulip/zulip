@@ -1453,7 +1453,7 @@ paths:
                                     Not present for clients that support the `simplified_presence_events`
                                     [client capability](/api/register-queue#parameter-client_capabilities).
 
-                                    Object containing the presence data (legacy format) of of the modified
+                                    Object containing the presence data (legacy format) of the modified
                                     user.
                                   additionalProperties:
                                     type: object
@@ -4630,9 +4630,10 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
-                                Event sent to the user who requested a
+                                Event sent to organization administrators when the
+                                status of a public or standard
                                 [data export](/help/export-your-organization)
-                                when the status of the data export changes.
+                                in the organization changes.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -7368,6 +7369,7 @@ paths:
       operationId: get-drafts
       tags: ["drafts"]
       summary: Get drafts
+      x-pending-web-implementation: true
       description: |
         Fetch all drafts for the current user.
       responses:
@@ -7433,6 +7435,7 @@ paths:
       operationId: create-drafts
       tags: ["drafts"]
       summary: Create drafts
+      x-pending-web-implementation: true
       description: |
         Create one or more drafts on the server. These drafts will be automatically
         synchronized to other clients via `drafts` events.
@@ -7504,6 +7507,7 @@ paths:
       operationId: edit-draft
       tags: ["drafts"]
       summary: Edit a draft
+      x-pending-web-implementation: true
       description: |
         Edit a draft on the server. The edit will be automatically
         synchronized to other clients via `drafts` events.
@@ -7564,6 +7568,7 @@ paths:
       operationId: delete-draft
       tags: ["drafts"]
       summary: Delete a draft
+      x-pending-web-implementation: true
       description: |
         Delete a single draft from the server. The deletion will be automatically
         synchronized to other clients via a `drafts` event.
@@ -7600,6 +7605,7 @@ paths:
       operationId: get-navigation-views
       tags: ["navigation_views"]
       summary: Get all navigation views
+      x-pending-web-implementation: true
       description: |
         Fetch all configured custom navigation views for the current user.
 
@@ -7639,6 +7645,7 @@ paths:
       operationId: add-navigation-view
       tags: ["navigation_views"]
       summary: Add a navigation view
+      x-pending-web-implementation: true
       description: |
         Adds a new custom left sidebar navigation view configuration
         for the current user.
@@ -7684,6 +7691,7 @@ paths:
       operationId: edit-navigation-view
       tags: ["navigation_views"]
       summary: Update the navigation view
+      x-pending-web-implementation: true
       description: |
         Update the details of an existing configured navigation view,
         such as its name or whether it's pinned.
@@ -7772,6 +7780,7 @@ paths:
       operationId: remove-navigation-view
       tags: ["navigation_views"]
       summary: Remove a navigation view
+      x-pending-web-implementation: true
       description: |
         Remove a navigation view.
 
@@ -9238,6 +9247,8 @@ paths:
                   - additionalProperties: false
                     required:
                       - id
+                      - message_url
+                      - message_link
                     properties:
                       result: {}
                       msg: {}
@@ -9246,6 +9257,37 @@ paths:
                         type: integer
                         description: |
                           The unique ID assigned to the sent message.
+                      message_url:
+                        type: string
+                        description: |
+                          A URL that [links directly to the sent
+                          message](/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message)
+                          within its conversation.
+
+                          For channel messages, [the channel's name is included in the
+                          URL](/api/zulip-urls#encoding-channels) only when the sender has access to
+                          the channel's metadata. Otherwise, a URL referencing the channel by ID alone
+                          is returned, so that the channel's name is not revealed to a sender who
+                          cannot otherwise access it (such as a bot with permission to post to the
+                          channel but not to read it).
+
+                          **Changes**: New in Zulip 13.0 (feature level 508).
+                      message_link:
+                        type: string
+                        description: |
+                          A [Markdown link](/help/format-your-message-using-markdown#links) to the
+                          sent message within its conversation, matching the link produced by the
+                          ["Copy link to
+                          message"](/help/link-to-a-message-or-conversation#get-a-link-to-a-specific-message)
+                          feature in the Zulip web app; for example,
+                          `[#channel name > topic name @ 💬](message_url)`.
+
+                          For direct messages, and for channel messages where the channel name is
+                          omitted from `message_url` as described above, this is the same plain URL as
+                          `message_url` since there is no suitable text label for the Markdown link
+                          formatting.
+
+                          **Changes**: New in Zulip 13.0 (feature level 508).
                       automatic_new_visibility_policy:
                         type: integer
                         enum:
@@ -9278,6 +9320,8 @@ paths:
                       {
                         "msg": "",
                         "id": 42,
+                        "message_url": "https://example.zulipchat.com/#narrow/channel/7-test-here/topic/test/near/42",
+                        "message_link": "[#test here > test @ 💬](https://example.zulipchat.com/#narrow/channel/7-test-here/topic/test/near/42)",
                         "automatic_new_visibility_policy": 2,
                         "result": "success",
                       }
@@ -10654,14 +10698,19 @@ paths:
                     The channel ID to move the message(s) to, to request moving
                     messages to another channel.
 
-                    Should only be sent when changing the channel, and will throw an error
+                    Should only be sent when changing the channel. Will throw an error
                     if the target message is not a channel message.
 
                     Note that a message's content and channel cannot be changed at the
                     same time, so sending both `content` and `stream_id` parameters will
                     throw an error.
 
-                    **Changes**: New in Zulip 3.0 (feature level 1).
+                    **Changes**: Prior to Zulip 13.0 (feature level 509), passing the channel
+                    ID that the target message is currently in was processed as a successful
+                    channel move, even if the target message was not moved (i.e., neither its
+                    channel nor topic were changed).
+
+                    New in Zulip 3.0 (feature level 1).
                   type: integer
                   example: 43
             encoding:
@@ -15042,6 +15091,121 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+  /realm/deactivate:
+    post:
+      operationId: deactivate-realm
+      summary: Deactivate an organization
+      tags: ["server_and_organizations"]
+      description: |
+        [Deactivate an organization](/help/deactivate-your-organization) on the
+        Zulip server. Deactivating an organization immediately logs out all of
+        its users and prevents them from logging in again.
+
+        A deactivated organization can be reactivated via a [management
+        command](https://zulip.readthedocs.io/en/latest/production/management-commands.html),
+        unless its data has been permanently deleted (see the
+        [`deletion_delay_days` parameter](/api/deactivate-realm#parameter-deletion_delay_days)
+        below).
+
+        This endpoint is primarily useful for Zulip servers that host
+        [multiple organizations](https://zulip.readthedocs.io/en/latest/production/multiple-organizations.html).
+      x-requires-owner: true
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                deletion_delay_days:
+                  type: integer
+                  nullable: true
+                  description: |
+                    The number of days to wait before permanently deleting all
+                    of the deactivated organization's data (users, channels,
+                    messages, etc.).
+
+                    A value of `0` will delete the organization's data
+                    immediately, which means that the organization cannot be
+                    reactivated. A `null` value indicates that the organization's
+                    data will not be deleted, but rather retained indefinitely.
+
+                    Valid values for this parameter are limited to the range
+                    permitted by the server, indicated by the
+                    `server_min_deactivated_realm_deletion_days` and
+                    `server_max_deactivated_realm_deletion_days` fields in the
+                    [`POST /register`](/api/register-queue) response. A value of
+                    `null` is only permitted when
+                    `server_max_deactivated_realm_deletion_days` is `null`. A
+                    value of `0` is only permitted when
+                    `server_min_deactivated_realm_deletion_days` is `null`.
+
+                    These limits do not apply to
+                    [Zulip Cloud demo organizations](/help/demo-organizations),
+                    for which this parameter is instead required: it must be `0`
+                    when the organization owner has not configured an email
+                    address, and otherwise must not exceed the number of days
+                    remaining before the demo organization's scheduled deletion.
+
+                    **Changes**: New in Zulip 10.0 (feature level 332).
+                  example: 30
+            encoding:
+              deletion_delay_days:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when the current user is
+                          not an organization owner:
+                        example:
+                          {
+                            "code": "UNAUTHORIZED_PRINCIPAL",
+                            "msg": "Must be an organization owner",
+                            "result": "error",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when `deletion_delay_days`
+                          is below the minimum permitted by the server:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Data deletion time must be at least 14 days in the future.",
+                            "result": "error",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when `deletion_delay_days`
+                          exceeds the maximum permitted by the server:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Data deletion time must be at most 30 days in the future.",
+                            "result": "error",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when an invalid
+                          `deletion_delay_days` is given for a
+                          [Zulip Cloud demo organization](/help/demo-organizations):
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Invalid data deletion time for demo organization.",
+                            "result": "error",
+                          }
   /realm/profile_fields:
     get:
       operationId: get-custom-profile-fields
@@ -17157,6 +17321,67 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/SimpleSuccess"
+  /export/realm/{export_id}:
+    delete:
+      operationId: delete-realm-export
+      summary: Delete a data export
+      tags: ["server_and_organizations"]
+      x-requires-administrator: true
+      description: |
+        Delete a completed public or standard [data export][export-data]
+        of the organization.
+
+        Data exports that happened on a previous server (i.e., an export
+        with `"export_from_prior_server": true` in the
+        [`GET /export/realm`](/api/get-realm-exports#response) response)
+        cannot be deleted using this endpoint, since their tarball is no
+        longer stored on this server; attempting to do so fails with
+        the same error as for an export that has already been deleted.
+
+        This endpoint's success response does not describe the resulting
+        state of the organization's data exports. Clients should rely
+        on the [`realm_export` event](/api/get-events#realm_export),
+        which every organization administrator receives whenever a
+        data export's state changes, for the current state of an
+        organization's data exports.
+
+        **Changes**: Prior to Zulip 13.0 (feature level 506), data
+        exports without a tarball stored on this server had no
+        dedicated status, so attempting to delete one resulted in an
+        unexpected error. Starting at that feature level, such a
+        delete attempt instead fails cleanly, as described above. This
+        change was also backported to the Zulip 12.x series, at
+        feature level 499.
+
+        New in Zulip 2.1.
+
+        [export-data]: /help/export-your-organization#export-data-in-an-importable-format
+      parameters:
+        - name: export_id
+          in: path
+          description: The ID of the data export to be deleted.
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - description: |
+                      A typical failed JSON response for an invalid data export ID.
+                    example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid data export ID",
+                        "result": "error",
+                      }
   /export/realm:
     get:
       operationId: get-realm-exports
@@ -17218,16 +17443,32 @@ paths:
       tags: ["server_and_organizations"]
       x-requires-administrator: true
       description: |
-        Create a public or a standard [data export][export-data] of the organization.
-
         !!! warn ""
 
             **Note**: If you're the administrator of a self-hosted installation,
             you may be looking for the documentation on [server data export and
             import][data-export] or [server backups][backups].
 
-        **Changes**: Prior to Zulip 10.0 (feature level 304), only
-        public data exports could be created using this endpoint.
+        Create a public or a standard [data export][export-data] of the
+        organization.
+
+        This endpoint only queues the data export; it does not wait for
+        the export to complete, which depending on the size of the
+        organization can take anywhere from seconds to an hour.
+        Therefore, this endpoint's success response does not describe
+        the outcome of the export.
+
+        To find out the outcome of the export, clients should rely on the
+        [`realm_export` event](/api/get-events#realm_export), which is
+        which is sent to every organization administrator immediately
+        when the export is requested, and again once it completes or
+        fails. Additionally, when the export succeeds, the user who
+        requested it will receive a direct message from the Notification
+        Bot with a link to the organization's data exports panel, where
+        the export can be downloaded.
+
+        **Changes**: Prior to Zulip 10.0 (feature level 304), only public
+        data exports could be created using this endpoint.
 
         New in Zulip 2.1.
 
@@ -17260,7 +17501,7 @@ paths:
                     `2` being replaced by `full_with_consent`. The option `full_without_consent`
                     was added for full exports without member consent.
 
-                    **Changes**: New in Zulip 10.0 (feature level 304). Previously,
+                    New in Zulip 10.0 (feature level 304). Previously,
                     all export requests were public data exports.
                   type: string
                   enum:
@@ -24855,7 +25096,7 @@ paths:
                 can_resolve_topics_group:
                   allOf:
                     - description: |
-                        The set of users who have permission to to resolve topics in this channel
+                        The set of users who have permission to resolve topics in this channel
                         expressed as an [update to a group-setting value][update-group-setting].
 
                         [update-group-setting]: /api/group-setting-values#updating-group-setting-values
@@ -28220,7 +28461,7 @@ components:
             `2` being replaced by `full_with_consent`. The option `full_without_consent`
             was added for full exports without member consent.
 
-            **Changes**: New in Zulip 10.0 (feature level 304). Previously,
+            New in Zulip 10.0 (feature level 304). Previously,
             the export type was not included in these objects because only
             public data exports could be created or listed via the API or UI.
     UserGroup:

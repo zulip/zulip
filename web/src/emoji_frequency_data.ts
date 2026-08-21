@@ -61,12 +61,15 @@ export function show_reaction_data(): (ScoredEmoji & {
     others_count: number;
 })[] {
     const others_count_for_all_emoji = get_other_users_total_emoji_usage();
-    const data_for_emojis = [...reaction_data.values()].map((emoji_usage) => ({
-        ...get_scored_emoji_for_usage(emoji_usage, others_count_for_all_emoji),
-        my_count: emoji_usage.current_user_reacted_message_ids.size,
-        others_count:
-            emoji_usage.message_ids.size - emoji_usage.current_user_reacted_message_ids.size,
-    }));
+    const data_for_emojis = reaction_data
+        .values()
+        .map((emoji_usage) => ({
+            ...get_scored_emoji_for_usage(emoji_usage, others_count_for_all_emoji),
+            my_count: emoji_usage.current_user_reacted_message_ids.size,
+            others_count:
+                emoji_usage.message_ids.size - emoji_usage.current_user_reacted_message_ids.size,
+        }))
+        .toArray();
     return data_for_emojis.toSorted((a, b) => b.score - a.score);
 }
 
@@ -125,9 +128,10 @@ function get_scored_emoji_for_usage(
 
 export function preferred_emoji_list(): typeahead.EmojiItem[] {
     const others_count_for_all_emoji = get_other_users_total_emoji_usage();
-    const scored_emojis: ScoredEmoji[] = [...reaction_data.values()].map((emoji_usage) =>
-        get_scored_emoji_for_usage(emoji_usage, others_count_for_all_emoji),
-    );
+    const scored_emojis: ScoredEmoji[] = reaction_data
+        .values()
+        .map((emoji_usage) => get_scored_emoji_for_usage(emoji_usage, others_count_for_all_emoji))
+        .toArray();
     const sorted_scored_emojis = scored_emojis.toSorted((a, b) => b.score - a.score);
 
     const top_frequently_used_emojis = [];

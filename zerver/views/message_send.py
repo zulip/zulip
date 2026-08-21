@@ -1,13 +1,14 @@
 from collections.abc import Iterable, Sequence
 from dataclasses import asdict
 from email.headerregistry import Address
-from typing import Annotated, Literal, cast
+from typing import Annotated, Literal, TypedDict, cast
 
+from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
-from pydantic import Json
+from pydantic import Json, StringConstraints
 
 from zerver.actions.message_send import (
     check_send_message,
@@ -30,6 +31,13 @@ from zerver.lib.typed_endpoint import (
 from zerver.lib.zcommand import process_zcommands
 from zerver.models import Client, Message, RealmDomain, UserProfile
 from zerver.models.users import get_user_including_cross_realm
+
+
+class SendMessageResponseData(TypedDict, total=False):
+    id: int
+    message_url: str
+    message_link: str
+    automatic_new_visibility_policy: int
 
 
 class InvalidMirrorInputError(Exception):
@@ -219,7 +227,7 @@ def send_message_backend(
         # automatically marked as read for yourself.
         read_by_sender = client.default_read_by_sender()
 
-    data: dict[str, int] = {}
+    data: SendMessageResponseData = {}
     sent_message_result = check_send_message(
         sender,
         client,
@@ -237,6 +245,8 @@ def send_message_backend(
         read_by_sender=read_by_sender,
     )
     data["id"] = sent_message_result.message_id
+    data["message_url"] = sent_message_result.message_url
+    data["message_link"] = sent_message_result.message_link
     if sent_message_result.automatic_new_visibility_policy:
         data["automatic_new_visibility_policy"] = (
             sent_message_result.automatic_new_visibility_policy
@@ -256,7 +266,7 @@ def render_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    content: str,
+    content: Annotated[str, StringConstraints(max_length=settings.MAX_MESSAGE_LENGTH)],
 ) -> HttpResponse:
     message = Message()
     message.sender = user_profile

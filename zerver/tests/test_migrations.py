@@ -28,11 +28,13 @@ class FixDeletedUserEmail(MigrationsTestCase):
 
     @override
     def setUpBeforeMigration(self, apps: StateApps) -> None:
+        Realm = apps.get_model("zerver", "Realm")
         UserProfile = apps.get_model("zerver", "UserProfile")
+        realm = Realm.objects.get(string_id="zulip")
 
         # Simulate a user deleted before the fix in 208c0c303405,
         # after 0439_fix_deleteduser_email repaired delivery_email.
-        deleted_user = self.example_user("hamlet")
+        deleted_user = UserProfile.objects.get(realm=realm, delivery_email="hamlet@zulip.com")
         UserProfile.objects.filter(id=deleted_user.id).update(
             is_active=False,
             email=f"deleteduser{deleted_user.id}@https://zulip.testserver",
@@ -41,13 +43,13 @@ class FixDeletedUserEmail(MigrationsTestCase):
         self.deleted_user_id = deleted_user.id
 
         # A normal active user, as a control.
-        control_user = self.example_user("cordelia")
+        control_user = UserProfile.objects.get(realm=realm, delivery_email="cordelia@zulip.com")
         self.control_user_id = control_user.id
         self.control_user_email = control_user.email
 
         # A deactivated user with a valid email, as a control for the
         # is_active=False part of the migration's filter.
-        deactivated_user = self.example_user("othello")
+        deactivated_user = UserProfile.objects.get(realm=realm, delivery_email="othello@zulip.com")
         UserProfile.objects.filter(id=deactivated_user.id).update(is_active=False)
         self.deactivated_user_id = deactivated_user.id
         self.deactivated_user_email = deactivated_user.email

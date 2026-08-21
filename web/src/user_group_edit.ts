@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
@@ -759,7 +759,7 @@ export function add_assigned_permission_to_permissions_panel(
             break;
         }
         if ($subsection_elem.find(`.prop-element[name="${CSS.escape(name)}"`).length > 0) {
-            insert_position = insert_position + 1;
+            insert_position += 1;
         }
     }
 

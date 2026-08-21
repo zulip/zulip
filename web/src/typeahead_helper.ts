@@ -35,8 +35,7 @@ import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
 
 export type UserOrMention =
-    | {type: "broadcast"; user: PseudoMentionUser}
-    | {type: "user"; user: User};
+    {type: "broadcast"; user: PseudoMentionUser} | {type: "user"; user: User};
 export type UserOrMentionPillData = UserOrMention & {
     is_silent?: boolean;
 };
@@ -97,7 +96,6 @@ export let render_person = (
     person: UserPillData | UserOrMentionPillData,
     opts?: {
         query: string;
-        should_remove_diacritics: boolean;
     },
 ): string => {
     if (person.type === "broadcast") {
@@ -124,11 +122,14 @@ export let render_person = (
     let secondary_text = user_email;
 
     if (opts) {
+        // Strip diacritics as query_matches_person does, so the email or
+        // field that made this user match is the one we show.
+        const diacritic_stripped_query = typeahead.remove_diacritics(opts.query);
         const email_matches = typeahead.query_matches_string_in_order(
-            opts.query,
+            diacritic_stripped_query,
             user_email ?? "",
             "",
-            opts.should_remove_diacritics,
+            true,
         );
         let matched_custom_field;
 
@@ -141,10 +142,10 @@ export let render_person = (
 
             if (
                 typeahead.query_matches_string_in_order(
-                    opts.query,
+                    diacritic_stripped_query,
                     value ?? "",
                     "",
-                    opts.should_remove_diacritics,
+                    true,
                 )
             ) {
                 matched_custom_field = value;
@@ -206,7 +207,6 @@ export function render_person_or_user_group(
     item: UserGroupPillData | UserPillData | UserOrMentionPillData,
     opts?: {
         query: string;
-        should_remove_diacritics: boolean;
     },
 ): string {
     if (item.type === "user_group") {
@@ -302,7 +302,8 @@ export function compare_users_for_dms(user_a: User, user_b: User, query = ""): n
     if (a_message_id !== undefined && b_message_id !== undefined) {
         if (a_message_id > b_message_id) {
             return -1;
-        } else if (a_message_id < b_message_id) {
+        }
+        if (a_message_id < b_message_id) {
             return 1;
         }
     } else if (a_message_id !== undefined) {
@@ -472,9 +473,11 @@ function compare_language_by_popularity(lang_a: string, lang_b: string): number 
     // languages seem sensible.
     if (!lang_a_data && !lang_b_data) {
         return 0; // Neither have popularity, so they tie.
-    } else if (!lang_a_data) {
+    }
+    if (!lang_a_data) {
         return 1; // lang_a doesn't have popularity, so sort a after b.
-    } else if (!lang_b_data) {
+    }
+    if (!lang_b_data) {
         return -1; // lang_b doesn't have popularity, so sort a before b.
     }
 
@@ -539,29 +542,50 @@ const get_user_matches_with_quality = <UserType extends UserOrMentionPillData | 
     ok_users: () => UserType[];
     worst_users: () => UserType[];
 } => {
-    const users_name_results = typeahead.triage_raw(query, users, (p) => p.user.full_name);
-    const users_name_good_matches = [
-        ...users_name_results.exact_matches,
-        ...users_name_results.begins_with_case_sensitive_matches,
-        ...users_name_results.begins_with_case_insensitive_matches,
-    ];
+    const users_name_results = typeahead.triage_raw(query, users, (p) => [p.user.full_name]);
     const users_name_okay_matches = [...users_name_results.word_boundary_matches];
 
-    const email_results = typeahead.triage_raw(
-        query,
-        users_name_results.no_matches,
-        (p) => p.user.email,
-    );
+    const email_results = typeahead.triage_raw(query, users_name_results.no_matches, (p) => [
+        p.user.email,
+    ]);
     const email_good_matches = [
         ...email_results.exact_matches,
+        ...email_results.begins_with_case_insensitive_diacritic_matches,
         ...email_results.begins_with_case_sensitive_matches,
         ...email_results.begins_with_case_insensitive_matches,
     ];
     const email_okay_matches = [...email_results.word_boundary_matches];
-    const best_users = (): UserType[] => [
-        ...sort_relevance(users_name_good_matches),
-        ...sort_relevance(users_name_okay_matches),
-    ];
+    const query_has_diacritics = typeahead.contains_diacritics(query);
+    const best_users = (): UserType[] => {
+        if (query_has_diacritics) {
+            // Sort exact and diacritic-prefix matches together as one tier, and
+            // case-sensitive + case-insensitive (including the diacritic-stripped
+            // fallback) as a second tier. The separate sort calls ensure relevance
+            // sorting within the second tier can't bubble a diacritic-stripped
+            // fallback above a diacritic prefix match.
+            return [
+                ...sort_relevance([
+                    ...users_name_results.exact_matches,
+                    ...users_name_results.begins_with_case_insensitive_diacritic_matches,
+                ]),
+                ...sort_relevance([
+                    ...users_name_results.begins_with_case_sensitive_matches,
+                    ...users_name_results.begins_with_case_insensitive_matches,
+                ]),
+                ...sort_relevance(users_name_okay_matches),
+            ];
+        }
+
+        const users_name_good_matches = [
+            ...users_name_results.exact_matches,
+            ...users_name_results.begins_with_case_sensitive_matches,
+            ...users_name_results.begins_with_case_insensitive_matches,
+        ];
+        return [
+            ...sort_relevance(users_name_good_matches),
+            ...sort_relevance(users_name_okay_matches),
+        ];
+    };
     const ok_users = (): UserType[] => [
         ...sort_relevance(email_good_matches),
         ...sort_relevance(email_okay_matches),
@@ -608,7 +632,7 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
         worst_users: worst_bots,
     } = get_user_matches_with_quality(bots, query, sort_relevance);
 
-    const groups_results = typeahead.triage_raw_with_multiple_items(query, groups, (g) => {
+    const groups_results = typeahead.triage_raw(query, groups, (g) => {
         if (g.name === "role:members") {
             return [
                 user_groups.get_display_group_name(g.name),
@@ -619,6 +643,7 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
     });
     const groups_good_matches = [
         ...groups_results.exact_matches,
+        ...groups_results.begins_with_case_insensitive_diacritic_matches,
         ...groups_results.begins_with_case_sensitive_matches,
         ...groups_results.begins_with_case_insensitive_matches,
     ];
@@ -822,13 +847,11 @@ export const sort_users_and_groups_options = ({
         return objs;
     }
 
-    const users_name_results = typeahead.triage_raw(query, users, (p) => p.user.full_name);
-    const email_results = typeahead.triage_raw(
-        query,
-        users_name_results.no_matches,
-        (p) => p.user.email,
-    );
-    const groups_results = typeahead.triage_raw_with_multiple_items(query, groups, (g) => {
+    const users_name_results = typeahead.triage_raw(query, users, (p) => [p.user.full_name]);
+    const email_results = typeahead.triage_raw(query, users_name_results.no_matches, (p) => [
+        p.user.email,
+    ]);
+    const groups_results = typeahead.triage_raw(query, groups, (g) => {
         if (g.name === "role:members") {
             return [
                 user_groups.get_display_group_name(g.name),
@@ -845,6 +868,9 @@ export const sort_users_and_groups_options = ({
     ]);
 
     const prefix_matches = sort_items([
+        ...groups_results.begins_with_case_insensitive_diacritic_matches,
+        ...users_name_results.begins_with_case_insensitive_diacritic_matches,
+        ...email_results.begins_with_case_insensitive_diacritic_matches,
         ...groups_results.begins_with_case_sensitive_matches,
         ...groups_results.begins_with_case_insensitive_matches,
         ...users_name_results.begins_with_case_sensitive_matches,
@@ -1016,7 +1042,8 @@ function slash_command_comparator(
 ): number {
     if (slash_command_a.name < slash_command_b.name) {
         return -1;
-    } else if (slash_command_a.name > slash_command_b.name) {
+    }
+    if (slash_command_a.name > slash_command_b.name) {
         return 1;
     }
     /* istanbul ignore next */
@@ -1147,19 +1174,19 @@ export function rewire_sort_user_groups(value: typeof sort_user_groups): void {
 export function query_matches_person_name(
     query: string,
     person: UserPillData,
-    should_remove_diacritics: boolean,
     match_prefix?: boolean,
 ): boolean {
-    query = query.toLowerCase();
-
-    const full_name = people.maybe_remove_diacritics_from_name(
-        person.user,
-        should_remove_diacritics,
-    );
-
+    // Filtering is diacritics-agnostic: we strip diacritics from both the query
+    // and the name so ASCII and diacritic spellings match each other. Ranking is
+    // not -- triage_raw/sort_recipients keep exact diacritic-prefix matches above
+    // the diacritic-stripped ones.
+    const diacritic_stripped_query = typeahead.remove_diacritics(query.toLowerCase());
+    const diacritic_stripped_name = people
+        .maybe_remove_diacritics_from_name(person.user, true)
+        .toLowerCase();
     return typeahead.query_matches_string_in_order_assume_canonicalized(
-        query,
-        full_name.toLowerCase(),
+        diacritic_stripped_query,
+        diacritic_stripped_name,
         " ",
         match_prefix,
     );
@@ -1168,24 +1195,18 @@ export function query_matches_person_name(
 export function query_matches_person(
     query: string,
     person: UserPillData | UserOrMentionPillData,
-    should_remove_diacritics: boolean,
     match_prefix?: boolean,
     allow_custom_profile_field_matching = false,
 ): boolean {
     if (
         person.type === "broadcast" &&
-        typeahead.query_matches_string_in_order(
-            query,
-            person.user.full_name,
-            " ",
-            should_remove_diacritics,
-        )
+        typeahead.query_matches_string_in_order(query, person.user.full_name, " ", true)
     ) {
         return true;
     }
 
     if (person.type === "user") {
-        if (query_matches_person_name(query, person, should_remove_diacritics, match_prefix)) {
+        if (query_matches_person_name(query, person, match_prefix)) {
             return true;
         }
 
@@ -1197,10 +1218,10 @@ export function query_matches_person(
                         people.get_custom_profile_data(person.user.user_id, field.id)?.value ?? "";
                     if (
                         typeahead.query_matches_string_in_order(
-                            query,
+                            typeahead.remove_diacritics(query),
                             field_value,
                             " ",
-                            should_remove_diacritics,
+                            true,
                         )
                     ) {
                         return true;
@@ -1211,10 +1232,10 @@ export function query_matches_person(
 
         if (person.user.delivery_email) {
             return typeahead.query_matches_string_in_order(
-                query,
+                typeahead.remove_diacritics(query),
                 people.get_visible_email(person.user),
                 " ",
-                should_remove_diacritics,
+                true,
             );
         }
     }
@@ -1234,31 +1255,23 @@ export function query_matches_stream_name(
     );
 }
 
-export function query_matches_group_name(
-    query: string,
-    user_group: UserGroupPillData,
-    should_remove_diacritics: boolean,
-): boolean {
+export function query_matches_group_name(query: string, user_group: UserGroupPillData): boolean {
+    // Filtering is diacritics-agnostic, like query_matches_person_name: we
+    // strip diacritics from both the query and the group name so ASCII and
+    // diacritic spellings match each other. Ranking (sort_recipients) stays
+    // diacritic-aware.
+    const diacritic_stripped_query = typeahead.remove_diacritics(query.toLowerCase());
+    const matches_group_name = (group_name: string): boolean =>
+        typeahead.query_matches_string_in_order_assume_canonicalized(
+            diacritic_stripped_query,
+            typeahead.remove_diacritics(group_name.toLowerCase()),
+            "",
+        );
     if (user_group.name === "role:members") {
         return (
-            typeahead.query_matches_string_in_order(
-                query,
-                user_groups.get_display_group_name(user_group.name),
-                "",
-                should_remove_diacritics,
-            ) ||
-            typeahead.query_matches_string_in_order(
-                query,
-                settings_config.alternate_members_group_typeahead_matching_name,
-                "",
-                should_remove_diacritics,
-            )
+            matches_group_name(user_groups.get_display_group_name(user_group.name)) ||
+            matches_group_name(settings_config.alternate_members_group_typeahead_matching_name)
         );
     }
-    return typeahead.query_matches_string_in_order(
-        query,
-        user_groups.get_display_group_name(user_group.name),
-        "",
-        should_remove_diacritics,
-    );
+    return matches_group_name(user_groups.get_display_group_name(user_group.name));
 }

@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/browser";
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import * as z from "zod/mini";
 

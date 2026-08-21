@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
@@ -258,7 +258,7 @@ const SOME_MESSAGES_LOADED_INCLUDING_NEWEST = 2;
 const ALL_MESSAGES_LOADED = 3;
 
 let loading_state = NO_MESSAGES_LOADED;
-let oldest_message_timestamp = Number.POSITIVE_INFINITY;
+let oldest_message_timestamp = Infinity;
 
 function set_oldest_message_date(msg_list_data: MessageListData): void {
     const has_found_oldest = msg_list_data.fetch_status.has_found_oldest();
@@ -271,7 +271,7 @@ function set_oldest_message_date(msg_list_data: MessageListData): void {
         );
     }
 
-    if (oldest_message_timestamp === Number.POSITIVE_INFINITY && !has_found_oldest) {
+    if (oldest_message_timestamp === Infinity && !has_found_oldest) {
         // This should only happen either very early in loading the
         // message list, since it requires the msg_list_data object
         // being empty, without having server confirmation that's the
@@ -474,7 +474,7 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
         const topic_offset = topic_offset_to_visible_area($topic_row);
 
         if (topic_offset === "above") {
-            scroll_element.scrollBy({top: -1 * half_height_of_visible_area});
+            scroll_element.scrollBy({top: -half_height_of_visible_area});
         } else if (topic_offset === "below") {
             scroll_element.scrollBy({top: half_height_of_visible_area});
         }
@@ -560,7 +560,7 @@ export function revive_current_focus(): boolean {
         if (last_visited_topic !== undefined) {
             // If the only message in the topic was deleted,
             // then the topic will not be in Recent Conversations data.
-            if (recent_view_data.conversations.get(last_visited_topic) !== undefined) {
+            if (recent_view_data.conversations.has(last_visited_topic)) {
                 const last_conversation = recent_view_data.conversations.get(last_visited_topic);
                 assert(last_conversation !== undefined);
                 const topic_last_msg_id = last_conversation.last_msg_id;
@@ -878,11 +878,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
             users: sorted_pm_users,
         });
 
-        const sorted_pm_usernames_only: string[] = [];
-
-        for (const user of sorted_pm_users) {
-            sorted_pm_usernames_only.push(user.name);
-        }
+        const sorted_pm_usernames_only = Array.from(sorted_pm_users, (user) => user.name);
 
         const pm_users_as_plain = util.format_array_as_list_with_conjunction(
             sorted_pm_usernames_only,
@@ -976,7 +972,7 @@ export function process_topic_edit(
 
     const old_topic_msgs = message_util.get_loaded_messages_in_topic(old_stream_id, old_topic);
 
-    new_stream_id = new_stream_id || old_stream_id;
+    new_stream_id ||= old_stream_id;
     const new_topic_msgs = message_util.get_loaded_messages_in_topic(new_stream_id, new_topic);
 
     for (const msg of [...old_topic_msgs, ...new_topic_msgs]) {
@@ -1420,7 +1416,8 @@ function sort_comparator(a: string, b: string): number {
     // compares strings in lowercase and returns -1, 0, 1
     if (a.toLowerCase() > b.toLowerCase()) {
         return 1;
-    } else if (a.toLowerCase() === b.toLowerCase()) {
+    }
+    if (a.toLowerCase() === b.toLowerCase()) {
         return 0;
     }
     return -1;
@@ -1580,7 +1577,8 @@ function topic_offset_to_visible_area($topic_row: JQuery): string | undefined {
     if (topic_props.top < thead_bottom) {
         return "above";
         // Topic is below the visible scroll region.
-    } else if (topic_props.bottom > compose_top) {
+    }
+    if (topic_props.bottom > compose_top) {
         return "below";
     }
 
@@ -1671,7 +1669,7 @@ function dropdown_filter_click_handler(
 }
 
 function get_list_data_for_widget(): ConversationData[] {
-    return [...recent_view_data.get_conversations().values()];
+    return recent_view_data.get_conversations().values().toArray();
 }
 
 function set_time_column_width_css_variable(): void {
@@ -1695,6 +1693,27 @@ function set_time_column_width_css_variable(): void {
     const max_width = util.max_text_content_width(candidate_strings);
     // The icon and padding space is added via calc() in CSS.
     $(":root").css("--recent-view-time-text-width", `${Math.ceil(max_width)}px`);
+}
+
+function set_channel_header_min_width_css_variable(): void {
+    if (page_params.is_node_test) {
+        return;
+    }
+    const $channel_sort_header = $(".recent-view-channel-sort-header");
+    if ($channel_sort_header.length === 0) {
+        return;
+    }
+    // Measure the "Channel" sort header's intrinsic width by cloning
+    // it into a hidden max-content wrapper inside the header cell (so
+    // it keeps the same styles). CSS floors the channel column to this
+    // width so the label never overlaps the "Conversation" header.
+    const measure_wrapper = util.make_offscreen_measurement_container();
+    measure_wrapper.append($channel_sort_header[0]!.cloneNode(true));
+    const $header_cell = $channel_sort_header.closest("th");
+    $header_cell[0]!.append(measure_wrapper);
+    const width = measure_wrapper.getBoundingClientRect().width;
+    measure_wrapper.remove();
+    $(":root").css("--recent-view-header-channel-column-min-width", `${Math.ceil(width)}px`);
 }
 
 export function update_participants_column_class(): void {
@@ -1740,6 +1759,9 @@ export function complete_rerender(coming_from_other_views = false): void {
         ...get_recent_view_filters_params(),
     });
     $("#recent_view_table").html(rendered_body);
+
+    // Measure the "Channel" header now that it is in the DOM.
+    set_channel_header_min_width_css_variable();
 
     // `show_selected_filters` needs to be called after the Recent
     // Conversations view has been added to the DOM, to ensure that filters
@@ -1952,7 +1974,7 @@ function up_arrow_navigation(row: number, col: number): void {
     }
     const type = get_row_type(row);
 
-    if (type === "stream" && col === COLUMNS.read && row - 1 >= 0 && !has_unread(row - 1)) {
+    if (type === "stream" && col === COLUMNS.read && row >= 1 && !has_unread(row - 1)) {
         col_focus = COLUMNS.topic;
     }
 }
@@ -2103,10 +2125,7 @@ export function change_focused_element($elt: JQuery, input_key: string): boolean
         const start = textInput.selectionStart!;
         const end = textInput.selectionEnd!;
         const text_length = textInput.value.length;
-        let is_selected = false;
-        if (end - start > 0) {
-            is_selected = true;
-        }
+        const is_selected = end > start;
 
         switch (input_key) {
             //  Allow browser to handle all
@@ -2453,7 +2472,7 @@ export function initialize({
         // Focus topic on channel click since we don't have
         // separate column for channel and topic.
         focus_clicked_element(topic_row_index, COLUMNS.topic);
-        window.location.href = $(e.currentTarget).find("a").attr("href")!;
+        window.location.assign($(e.currentTarget).find("a").attr("href")!);
     });
 
     $("body").on("click", "td.recent_topic_name", (e) => {
@@ -2470,7 +2489,7 @@ export function initialize({
         const topic_key = topic_id.slice("recent_conversation:".length);
         const topic_row_index = $topic_row.index();
         focus_clicked_element(topic_row_index, COLUMNS.topic, topic_key);
-        window.location.href = $(e.currentTarget).find("a").attr("href")!;
+        window.location.assign($(e.currentTarget).find("a").attr("href")!);
     });
 
     $("body").on("click", "#recent-view-content-table .change_visibility_policy", (e) => {

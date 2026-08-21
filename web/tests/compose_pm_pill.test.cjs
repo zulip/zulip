@@ -6,7 +6,7 @@ const {make_realm} = require("./lib/example_realm.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const input_pill = mock_esm("../src/input_pill");
 const people = zrequire("people");
@@ -63,7 +63,7 @@ run_test("pills", ({override}) => {
         assert.ok(!all_pills.has(id));
         all_pills.set(id, item);
     };
-    pills.items = () => [...all_pills.values()];
+    pills.items = () => all_pills.values().toArray();
 
     pills.clear_text = () => {};
 

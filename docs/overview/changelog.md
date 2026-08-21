@@ -19,6 +19,42 @@ _Unreleased_
 
 ## Zulip Server 12.x series
 
+### Zulip Server 12.2
+
+_Released 2026-08-10_
+
+- GHSA-5r8f-gq2h-fcgp: Guest users could receive new messages sent to
+  public channels they were not subscribed to, by registering an
+  event queue with appropriate parameters. Existing event queues also
+  continued to deliver such messages after a guest lost access to the
+  channel. This vulnerability was discovered in an internal audit,
+  and independently reported by Anthony Green of GreenHat Security.
+- GHSA-vwqp-7j32-xfg5: Insufficient access checks in message
+  draft creation allowed a guest to gain access to the profile
+  information of any other user in the organization. This issue only
+  impacted organizations that limit which users guests can see. This
+  vulnerability was reported by @JebeenLee.
+- GHSA-3m37-hwq6-jrj8: In organizations with web-public channels
+  enabled, logged-out visitors could read the custom profile field
+  values of every user in the organization. This vulnerability was
+  reported by Jaeyoon Kim (@jaeyoon-kim-dev) of System Security Lab,
+  SKKU.
+- GHSA-xw9h-9rcm-hx4m: The OpenID Connect authentication backend did
+  not consult the `email_verified` claim, so a misconfigured identity
+  provider sending an untrusted `email` claim with
+  `email_verified=false` could log a user into an account belonging
+  to someone else. This vulnerability was reported by @JebeenLee.
+- GHSA-m257-w4r5-5rmf: The message rendering endpoint
+  (`POST /json/messages/render`) did not enforce the message content
+  length limit, allowing an authenticated user to consume excessive
+  server resources. This vulnerability was reported by @Team-Atlanta.
+- Fixed the Mattermost import tool silently discarding text that
+  resembles an HTML tag (e.g., `</rant>` or `<username>`) from
+  imported messages. Mattermost imports are also considerably faster
+  as a result of this change.
+- Fixed crashes in some database migrations that run when upgrading
+  from Zulip 11.x.
+
 ### Zulip Server 12.1
 
 _Released 2026-06-26_

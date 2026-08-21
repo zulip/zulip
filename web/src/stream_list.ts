@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 import * as z from "zod/mini";
@@ -355,7 +355,8 @@ export function rewire_stream_list_section_container_html(
 function get_section_channel_plus_icon_url(section: StreamListSection): string | undefined {
     if (section.folder_id !== null) {
         return `#channels/folders/${section.folder_id}/new`;
-    } else if (section.id === "normal-streams") {
+    }
+    if (section.id === "normal-streams") {
         return "#channels/new";
     }
     return undefined;
@@ -1007,7 +1008,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         hidden_muted: 0,
     };
 
-    for (const [stream_id, stream_count_info] of counts.stream_count.entries()) {
+    for (const [stream_id, stream_count_info] of counts.stream_count) {
         const sub = sub_store.get(stream_id);
         assert(sub);
         if (sub.pin_to_top) {

@@ -3,7 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {run_test} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 /*
 

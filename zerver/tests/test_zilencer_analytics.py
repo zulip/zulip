@@ -975,7 +975,7 @@ class AnalyticsBouncerTest(BouncerTestCase):
             def transform_realmauditlog_extra_data(
                 method: str,
                 endpoint: str,
-                post_data: bytes | Mapping[str, str | int | None | bytes],
+                post_data: bytes | Mapping[str, str | int | bytes | None],
                 extra_headers: Mapping[str, str] = {},
             ) -> dict[str, Any]:
                 if endpoint == "server/analytics":
@@ -1393,8 +1393,10 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.assertEqual(
             analytics_logger.output,
             [
-                "WARNING:zulip.analytics:"
-                f"Received unexpected realm UUID from bouncer {deleted_realm_uuid}"
+                (
+                    "WARNING:zulip.analytics:"
+                    f"Received unexpected realm UUID from bouncer {deleted_realm_uuid}"
+                )
             ],
         )
 

@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as compose_recipient from "./compose_recipient.ts";
 import * as inbox_util from "./inbox_util.ts";

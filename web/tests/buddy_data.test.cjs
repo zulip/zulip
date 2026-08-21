@@ -340,7 +340,8 @@ test("bulk_data_hacks", ({override_rewire}) => {
     // sanity check
     assert.equal(mark.user_id, 1005);
 
-    for (const i of _.range(mark.user_id + 1, 2000)) {
+    const start_id = mark.user_id + 1;
+    for (const i of _.range(start_id, 2000)) {
         const person = {
             user_id: i,
             full_name: `Human ${i}`,

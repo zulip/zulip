@@ -23,7 +23,7 @@ function get_actual_name_from_user_id(user_id) {
 }
 
 function get_user_id_from_name(name) {
-    for (const [user_id, _name] of user_map.entries()) {
+    for (const [user_id, _name] of user_map) {
         if (name === _name) {
             return user_id;
         }
@@ -98,7 +98,7 @@ function get_emoji_codepoint(emoji_name) {
 }
 
 function get_emoji_name(codepoint) {
-    for (const [emoji_name, _codepoint] of emoji_map.entries()) {
+    for (const [emoji_name, _codepoint] of emoji_map) {
         if (codepoint === _codepoint) {
             return emoji_name;
         }
@@ -217,7 +217,7 @@ run_test("emojis", () => {
         '<p>I <img alt=":heart:" class="emoji" src="/images/emoji/heart.bmp" title="heart"> JavaScript</p>',
     );
     assert_parse(
-        "Mars Attacks! \uD83D\uDC7D",
+        "Mars Attacks! \u{1F47D}",
         '<p>Mars Attacks! <span aria-label="alien" class="emoji emoji-1f47d" role="img" title="alien">:alien:</span></p>',
     );
 });

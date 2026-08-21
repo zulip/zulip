@@ -52,9 +52,11 @@ Zulip's Puppet configuration will change the ownership of
 `/var/log/nginx` so that the `zulip` user can access it. Depending on
 your configuration, this may or may not cause problems.
 
-Depending on how you have configured `nginx` for your other services,
-you may need to add a `server_name` for the Zulip `server` block in
-the `nginx` configuration.
+Depending on how you have configured `nginx` for your other
+services, you may need to set
+[`nginx_server_name`](system-configuration.md#nginx_server_name) in
+`/etc/zulip/zulip.conf`, so that Zulip's `nginx` `server` blocks
+only claim requests for their intended hostnames.
 
 ### Puppet
 

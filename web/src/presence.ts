@@ -80,11 +80,11 @@ export function get_status(user_id: number): PresenceStatus["status"] {
 }
 
 export function get_user_ids(): number[] {
-    return [...presence_info.keys()];
+    return presence_info.keys().toArray();
 }
 
 export function get_active_or_idle_user_ids(): number[] {
-    return [...presence_info.entries()]
+    return [...presence_info]
         .filter((entry) => entry[1].status !== "offline")
         .map((entry) => entry[0]);
 }

@@ -215,8 +215,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         ## This one isn't really representable
         # "/user_uploads/{realm_id_str}/{filename}",
         #### These realm administration settings are valuable to document:
-        # Delete a data export.
-        "/export/realm/{export_id}",
         # Default stream groups are an unfinished feature and therefore
         # shouldn't be added to the documentation until that's completed.
         "/default_stream_groups/create",
@@ -233,7 +231,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/realm/profile_fields/{field_id}",
         "/realm/icon",
         "/realm/logo",
-        "/realm/deactivate",
         "/realm/subdomain/{subdomain}",
         # API for Zoom video calls.  Unclear if this can support other apps.
         "/calls/zoom/create",

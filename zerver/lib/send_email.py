@@ -352,7 +352,7 @@ def send_immediate_email(
         connection.close()
         raise EmailNotDeliveredError from e
     except (smtplib.SMTPException, OSError) as e:
-        logger.exception("Error sending %s email to %s: %s", template, mail.to, e, stack_info=True)
+        logger.exception("Error sending %s email to %s", template, mail.to, stack_info=True)
         connection.close()
         raise EmailNotDeliveredError from e
 
@@ -474,9 +474,9 @@ def send_future_email(
                 assert len(to_emails) == 1
                 email.address = parseaddr(to_emails[0])[1]
                 email.save()
-        except Exception as e:
+        except Exception:
             email.delete()
-            raise e
+            raise
 
 
 def send_email_to_admins(

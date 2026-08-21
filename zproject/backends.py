@@ -2772,7 +2772,7 @@ def social_auth_finish(
             use_dummy_backend=True,
         )
         if validated_user_profile is None or validated_user_profile != user_profile:
-            # Log this as as a failure to authenticate via the social backend, since that's
+            # Log this as a failure to authenticate via the social backend, since that's
             # the correct way to think about this. ZulipDummyBackend is just an implementation
             # tool, not an actual backend a user could be authenticating through.
             log_auth_attempt(
@@ -4162,9 +4162,28 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
             if value is not None and (isinstance(value, str) and value.strip() != ""):
                 extra_attrs[extra_attr_name] = value
 
-        result = {**user_details, "extra_attrs": extra_attrs}
+        result = {
+            **user_details,
+            "email_verified": get_value("email_verified"),
+            "extra_attrs": extra_attrs,
+        }
         self.logger.debug("get_user_details for <%s>: %s", self.name, result)
         return result
+
+    def get_verified_emails(self, *args: Any, **kwargs: Any) -> list[str]:
+        # Unlike the shared social IdPs (Google/GitHub), a generic OIDC IdP
+        # is a single, administrator-configured identity source. email_verified
+        # is an optional OIDC claim: when the IdP omits it, we accept the email.
+        # We reject only when the IdP explicitly tells us the address is
+        # reported as unverified, since otherwise a user could log in with
+        # an email they have not proven they control.
+        # We expected this to be a very rare situation - a reasonably-configured
+        # IdP for OIDC should only send us trustable email values.
+        details = kwargs["details"]
+        email_verified = details.get("email_verified")
+        if email_verified is not None and not email_verified:
+            return []
+        return [details["email"]]
 
     @override
     def get_key_and_secret(self) -> tuple[str, str]:

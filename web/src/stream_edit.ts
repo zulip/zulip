@@ -1,5 +1,5 @@
 import ClipboardJS from "clipboard";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
@@ -187,29 +187,28 @@ export function save_stream_info(): void {
                 assert(data.new_name !== undefined);
                 const existing_stream = stream_data.get_sub_by_name(data.new_name);
 
+                let rendered_error;
                 if (existing_stream) {
                     const can_rename =
                         existing_stream.is_archived &&
                         stream_settings_data.get_sub_for_settings(existing_stream)
                             .can_change_name_description;
 
-                    const rendered_error = render_channel_name_conflict_error({
+                    rendered_error = render_channel_name_conflict_error({
                         stream_id: existing_stream.stream_id,
                         is_archived: existing_stream.is_archived,
                         show_rename: can_rename,
                         can_view_channel: true,
                     });
-
-                    $("#change_stream_name_error").html(rendered_error).show();
                 } else {
-                    const rendered_error = render_channel_name_conflict_error({
+                    rendered_error = render_channel_name_conflict_error({
                         stream_id: undefined,
                         is_archived: false,
                         show_rename: false,
                         can_view_channel: false,
                     });
-                    $("#change_stream_name_error").html(rendered_error).show();
                 }
+                $("#change_stream_name_error").html(rendered_error).show();
                 $("#change_stream_name").trigger("focus");
             }
         },
@@ -328,7 +327,7 @@ export function stream_settings(sub: StreamSubscription): StreamSetting[] {
                 stream_data.receives_notifications(sub.stream_id, notification_setting.data) &&
                 !realm_setting;
         } else {
-            is_checked = Boolean(sub[setting]) && !realm_setting;
+            is_checked = (sub[setting] ?? false) && !realm_setting;
         }
         return {
             name: setting,
@@ -597,7 +596,7 @@ export function get_stream_email_address(flags: string[], address: string): stri
 
     const flag_string = flags.map((flag) => "." + flag).join("");
 
-    return clean_address.replace("@", flag_string + "@");
+    return clean_address.replace("@", () => flag_string + "@");
 }
 
 function show_stream_email_address_modal(address: string, sub: StreamSubscription): void {
@@ -652,7 +651,8 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
         function update_option_label(sender: User | CurrentUser | Bot): string {
             if (sender.user_id === people.EMAIL_GATEWAY_BOT.user_id) {
                 return "Email Gateway bot";
-            } else if (sender.user_id === current_user.user_id) {
+            }
+            if (sender.user_id === current_user.user_id) {
                 return $t({defaultMessage: "You"});
             }
             return sender.full_name;

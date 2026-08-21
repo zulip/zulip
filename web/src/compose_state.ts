@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as stream_data from "./stream_data.ts";
@@ -117,7 +117,8 @@ function get_or_set(
         }
         if (no_trim) {
             return oldval;
-        } else if (keep_leading_spaces) {
+        }
+        if (keep_leading_spaces) {
             return oldval.trimEnd().replace(/^(\r?\n)+/, "");
         }
         return oldval.trim();

@@ -49,7 +49,7 @@ export class LazySet {
         return data.arr.length;
     }
 
-    keys(): IterableIterator<number> {
+    keys(): IteratorObject<number, BuiltinIteratorReturn> {
         const {data} = this;
         if (data.set !== undefined) {
             return data.set.keys();
@@ -71,7 +71,9 @@ export class LazySet {
     }
 
     map<T>(f: (v: number, k: number) => T): T[] {
-        return [...this.keys()].map((v, k) => f(v, k));
+        return this.keys()
+            .map((v, k) => f(v, k))
+            .toArray();
     }
 
     has(v: number): boolean {

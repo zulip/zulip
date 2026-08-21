@@ -1159,8 +1159,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
             self.assertEqual(
                 m.output,
                 [
-                    f"INFO:{self.logger_string}:Authentication attempt from 127.0.0.1: "
-                    f"subdomain=zulip;username={self.email};outcome=failed;return_data={{}}"
+                    (
+                        f"INFO:{self.logger_string}:Authentication attempt from 127.0.0.1: "
+                        f"subdomain=zulip;username={self.email};outcome=failed;return_data={{}}"
+                    )
                 ],
             )
 
@@ -5222,6 +5224,40 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
             skip_registration_form=False,
             expect_full_name_prepopulated=False,
         )
+
+    def test_social_auth_with_email_verified_claim(self) -> None:
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        # An IdP explicitly reporting the email as unverified must be rejected.
+        account_data_dict["email_verified"] = False
+        subdomain = "zulip"
+        realm = get_realm(subdomain)
+        with self.assertLogs(self.logger_string, level="WARNING") as m:
+            result = self.social_auth_test(account_data_dict, subdomain=subdomain)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], realm.url + "/login/")
+        self.assertEqual(
+            m.output,
+            [
+                self.logger_output(
+                    "Social auth ({}) failed because user has no verified emails".format(
+                        "OpenID Connect"
+                    ),
+                    "warning",
+                )
+            ],
+        )
+
+        # An explicit email_verified=True claim is accepted. The case where the
+        # optional claim is absent entirely is covered by the other success
+        # tests in this class, which don't set it.
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        account_data_dict["email_verified"] = True
+
+        result = self.social_auth_test(account_data_dict, subdomain="zulip")
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.example_email("hamlet"))
+        self.assertEqual(data["subdomain"], "zulip")
+        self.assertEqual(result.status_code, 302)
 
     @override
     def test_social_auth_no_key(self) -> None:

@@ -672,6 +672,9 @@
     /* Fills whole pill height. */
     --length-search-pill-image: var(--length-user-pill-height);
     --length-input-pill-exit: 1.1429em; /* 16px at 14px/em */
+    /* Right margin reserved next to .exit and .expand in input_pill.css.
+       Anything aligning to the exit button must include this margin. */
+    --length-input-pill-exit-margin: 2px;
     --input-pill-side-padding: 0.3571em; /* 5px at 14px/em */
     --vertical-spacing-input-pill: 2px;
     --outer-spacing-input-pill-container: var(--vertical-spacing-input-pill);
@@ -1232,6 +1235,8 @@
 
     /* Recent view */
     --recent-view-body-border-width: 1px;
+    --recent-view-header-border-width: 1px;
+    --recent-view-row-left-padding: 0.75em; /* 12px at 16px / 1em */
     --recent-view-max-avatars: 4;
     --recent-view-participant-item-width: 1.5em; /* 24px at 16px / 1em */
     --recent-view-participant-item-padding-x: 0.0938em; /* 1.5px at 16px / 1em */
@@ -1322,8 +1327,12 @@
         hsl(0deg 0% 0% / 40%)
     );
     --color-compose-send-button-icon-color: hsl(0deg 0% 100%);
-    --color-compose-send-button-background: hsl(240deg 96% 68%);
-    --color-compose-send-button-background-interactive: hsl(240deg 41% 50%);
+    --color-compose-send-button-background: var(
+        --color-background-modal-confirm-button
+    );
+    --color-compose-send-button-background-interactive: var(
+        --color-background-modal-confirm-button-hover
+    );
     --color-compose-send-button-focus-border: hsl(232deg 20% 10%);
     --color-compose-send-button-focus-shadow: light-dark(
         hsl(230deg 100% 20%),
@@ -1995,22 +2004,22 @@
         /* hsl(229deg 9% 36%) corresponds to --grey-600.
            We use the hsl() equivalent directly since postcss-color-mix-function
            cannot dynamically resolve var() arguments. */
-            color-mix(in oklch, hsl(229deg 9% 36%) 70%, transparent),
+        color-mix(in oklch, hsl(229deg 9% 36%) 70%, transparent),
         /* hsl(229deg 10% 70%) corresponds to --grey-400. */
-            color-mix(in oklch, hsl(229deg 10% 70%) 70%, transparent)
+        color-mix(in oklch, hsl(229deg 10% 70%) 70%, transparent)
     );
     --color-copy-button-hover: light-dark(var(--grey-600), var(--grey-300));
     --color-copy-button-square-bg-hover: light-dark(
         /* --grey-600, opacity 0.07 */
-            color-mix(in oklch, hsl(229deg 9% 36%) 7%, transparent),
+        color-mix(in oklch, hsl(229deg 9% 36%) 7%, transparent),
         /* --grey-400, opacity 0.14 */
-            color-mix(in oklch, hsl(230deg 9% 60%) 14%, transparent)
+        color-mix(in oklch, hsl(230deg 9% 60%) 14%, transparent)
     );
     --color-copy-button-active: light-dark(
         /* --grey-600, opacity 0.7 */
-            color-mix(in oklch, hsl(229deg 9% 36%) 70%, transparent),
+        color-mix(in oklch, hsl(229deg 9% 36%) 70%, transparent),
         /* --grey-300, opacity 0.7 */
-            color-mix(in oklch, hsl(229deg 10% 70%) 70%, transparent)
+        color-mix(in oklch, hsl(229deg 10% 70%) 70%, transparent)
     );
     --color-copy-button-square-active: light-dark(
         var(--grey-600),
@@ -2018,9 +2027,9 @@
     );
     --color-copy-button-square-bg-active: light-dark(
         /* --grey-600, opacity 0.11 */
-            color-mix(in oklch, hsl(229deg 9% 36%) 11%, transparent),
+        color-mix(in oklch, hsl(229deg 9% 36%) 11%, transparent),
         /* --grey-400, opacity 0.18 */
-            color-mix(in oklch, hsl(229deg 9% 60%) 18%, transparent)
+        color-mix(in oklch, hsl(229deg 9% 60%) 18%, transparent)
     );
     --color-copy-button-success: light-dark(var(--green-500), var(--green-300));
 
@@ -2716,7 +2725,7 @@
         color-mix(in oklch, hsl(0deg 0% 100%) 85%, transparent)
     );
     --color-background-danger-solid-action-button: light-dark(
-        hsl(4deg 75% 53%),
+        hsl(4deg 75% 51%),
         hsl(2deg 74% 47%)
     );
     --color-background-danger-solid-action-button-hover: light-dark(
@@ -2725,7 +2734,7 @@
     );
     --color-background-danger-solid-action-button-active: light-dark(
         hsl(359deg 93% 39%),
-        hsl(2deg 74% 47%)
+        hsl(2deg 92% 33%)
     );
     --color-text-danger-subtle-action-button: light-dark(
         hsl(359deg 94% 35%),

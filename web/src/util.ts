@@ -31,11 +31,9 @@ export function lower_bound<T1, T2>(
     const last = array.length;
 
     let len = last - first;
-    let middle;
-    let step;
     while (len > 0) {
-        step = Math.floor(len / 2);
-        middle = first + step;
+        const step = Math.floor(len / 2);
+        const middle = first + step;
         if (less(array[middle]!, value, middle)) {
             first = middle;
             first += 1;
@@ -75,8 +73,7 @@ export function extract_pm_recipients(recipients: string): string[] {
 // When the type is "private", properties from to_user_ids might be undefined.
 // See https://github.com/zulip/zulip/pull/23032#discussion_r1038480596.
 export type Recipient =
-    | {type: "private"; to_user_ids?: string | undefined}
-    | ({type: "stream"} & StreamTopic);
+    {type: "private"; to_user_ids?: string | undefined} | ({type: "stream"} & StreamTopic);
 
 export const same_recipient = function util_same_recipient(a?: Recipient, b?: Recipient): boolean {
     if (a === undefined || b === undefined) {
@@ -88,7 +85,8 @@ export const same_recipient = function util_same_recipient(a?: Recipient, b?: Re
             return false;
         }
         return a.to_user_ids === b.to_user_ids;
-    } else if (a.type === "stream" && b.type === "stream") {
+    }
+    if (a.type === "stream" && b.type === "stream") {
         return same_stream_and_topic(a, b);
     }
 
@@ -484,7 +482,7 @@ export function check_time_input(input_value: string, keep_number_as_float = fal
     // Number.parseInt and Number.parseFloat will convert strings like
     // "24a" to 24.
     if (Number.isNaN(Number(input_value))) {
-        return Number.NaN;
+        return NaN;
     }
 
     if (keep_number_as_float) {
@@ -523,7 +521,8 @@ export function the<T>(items: T[] | JQuery<T>): T {
 export function compare_a_b<T>(a: T, b: T): number {
     if (a > b) {
         return 1;
-    } else if (a === b) {
+    }
+    if (a === b) {
         return 0;
     }
     return -1;
@@ -600,13 +599,12 @@ export function parse_youtube_start_time(url: string): number | undefined {
     return undefined;
 }
 
-// Measure the maximum rendered width of a set of candidate text
-// strings. This is used to set CSS variables for column widths
-// that need to fit their content tightly. All candidates are
-// inserted as block-level children of a single hidden container
-// sized to max-content, so only one reflow is needed.
+// Make a hidden, max-content-sized container for measuring the
+// rendered width of content without affecting the page layout.
+// Append it where the content's CSS rules apply, measure, and
+// remove it.
 /* istanbul ignore next */
-export let max_text_content_width = (candidates: string[], css_class?: string): number => {
+export function make_offscreen_measurement_container(): HTMLDivElement {
     const container = document.createElement("div");
     Object.assign(container.style, {
         position: "absolute",
@@ -616,6 +614,17 @@ export let max_text_content_width = (candidates: string[], css_class?: string): 
         left: "-9999px",
         top: "0",
     });
+    return container;
+}
+
+// Measure the maximum rendered width of a set of candidate text
+// strings. This is used to set CSS variables for column widths
+// that need to fit their content tightly. All candidates are
+// inserted as block-level children of a single hidden container
+// sized to max-content, so only one reflow is needed.
+/* istanbul ignore next */
+export let max_text_content_width = (candidates: string[], css_class?: string): number => {
+    const container = make_offscreen_measurement_container();
 
     for (const text of candidates) {
         const child = document.createElement("div");

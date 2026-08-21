@@ -140,7 +140,7 @@ export function get_user_group_from_name(name: string): UserGroup | undefined {
 }
 
 export function get_realm_user_groups(include_deactivated = false): UserGroup[] {
-    const user_groups = [...user_group_by_id_dict.values()];
+    const user_groups = user_group_by_id_dict.values().toArray();
     user_groups.sort((a, b) => a.id - b.id);
     return user_groups.filter((group) => {
         if (group.is_system_group) {
@@ -160,7 +160,7 @@ export function get_all_realm_user_groups(
     include_internet_group = false,
     force_include_full_members_group = false,
 ): UserGroup[] {
-    const user_groups = [...user_group_by_id_dict.values()];
+    const user_groups = user_group_by_id_dict.values().toArray();
     user_groups.sort((a, b) => a.id - b.id);
     return user_groups.filter((group) => {
         if (!include_deactivated && group.deactivated) {
@@ -307,6 +307,7 @@ export function is_empty_group(user_group_id: number): boolean {
             return false;
         }
         for (const direct_subgroup_id of subgroup.direct_subgroup_ids) {
+            // eslint-disable-next-line unicorn/no-loop-iterable-mutation
             subgroup_ids.add(direct_subgroup_id);
         }
     }
@@ -366,6 +367,7 @@ export function get_recursive_subgroups(target_user_group: UserGroup): Set<numbe
         }
 
         for (const direct_subgroup_id of subgroup.direct_subgroup_ids) {
+            // eslint-disable-next-line unicorn/no-loop-iterable-mutation
             subgroup_ids.add(direct_subgroup_id);
         }
     }

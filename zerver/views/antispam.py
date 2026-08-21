@@ -48,6 +48,6 @@ def get_challenge(
             (challenge.challenge, expires.timestamp()),
         ]
         return json_success(request, data=challenge.__dict__)
-    except Exception as e:  # nocoverage
-        logging.exception(e)
+    except Exception:  # nocoverage
+        logging.exception("Error while generating challenge")
         raise JsonableError(_("Failed to generate challenge"))

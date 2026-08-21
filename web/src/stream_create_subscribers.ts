@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_new_stream_user from "../templates/stream_settings/new_stream_user.hbs";
 import render_new_stream_users from "../templates/stream_settings/new_stream_users.hbs";
@@ -122,7 +122,7 @@ export function build_widgets(): void {
             ...ListWidget.generic_sort_functions("alphabetic", ["full_name"]),
         },
         filter: {
-            $element: $("#people_to_add .add-user-list-filter"),
+            $element: $("#people_to_add input.search"),
             predicate(user, search_term) {
                 return people.build_person_matcher(search_term)(user);
             },

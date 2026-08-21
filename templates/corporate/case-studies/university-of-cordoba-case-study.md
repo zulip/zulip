@@ -16,7 +16,7 @@ free plan was a major frustration.
 
 In search of an alternative, a faculty member reached out to request a sponsored
 Zulip Cloud Standard plan. With the request approved the very next day, the
-department moved over to Zulip starting starting in Fall 2020.
+department moved over to Zulip starting in Fall 2020.
 
 Looking back, being pushed off Slack by its search history limit ended up being
 for the best: “I think Zulip is a great tool, much better than Slack,” says

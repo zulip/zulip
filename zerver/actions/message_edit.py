@@ -144,7 +144,7 @@ def validate_message_edit_payload(
             raise JsonableError(_("Direct messages cannot have topics."))
 
     if propagate_mode != "change_one" and topic_name is None and stream_id is None:
-        raise JsonableError(_("Invalid propagate_mode without topic edit"))
+        raise JsonableError(_("Invalid propagate_mode without topic or channel edit"))
 
     if topic_name in {
         RESOLVED_TOPIC_PREFIX.strip(),
@@ -697,6 +697,14 @@ def update_user_topic_visibility_policies_on_move(
         visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
     )
 
+    # A case-only rename within the same channel resolves to the
+    # same UserTopic rows for both the original and target topic,
+    # since topic matching is case-insensitive.
+    topics_share_user_topic_rows = (
+        stream_being_edited.id == target_stream.id
+        and orig_topic_name.lower() == target_topic_name.lower()
+    )
+
     # If the messages are being moved to a stream the user _can_
     # access, we move the user topic records, by removing the old
     # topic visibility_policy and creating a new one.
@@ -738,7 +746,12 @@ def update_user_topic_visibility_policies_on_move(
             new_visibility_policy = get_visibility_policy_after_merge(
                 orig_topic_visibility_policy, target_topic_visibility_policy
             )
-            if new_visibility_policy == target_topic_visibility_policy:
+            if (
+                new_visibility_policy == target_topic_visibility_policy
+                # If topics share the UserTopic rows, we need to
+                # recreate because we deleted the rows above.
+                and not topics_share_user_topic_rows
+            ):
                 continue
             bulk_do_set_user_topic_visibility_policy(
                 user_profiles,
@@ -1208,7 +1221,7 @@ def do_update_message(
             # TODO: Guest users don't see the new moved topic
             # unless breadcrumb message for new stream is
             # enabled. Excluding these users from receiving this
-            # event helps us avoid a error traceback for our
+            # event helps us avoid an error traceback for our
             # clients. We should figure out a way to inform the
             # guest users of this new topic if sending a 'message'
             # event for these messages is not an option.
@@ -1685,6 +1698,13 @@ def check_update_message(
         topic_name = maybe_rename_general_chat_to_empty_topic(topic_name)
         if topic_name == message.topic_name():
             topic_name = None
+
+    if (
+        stream_id is not None
+        and message.is_channel_message
+        and stream_id == message.recipient.type_id
+    ):
+        stream_id = None
 
     validate_message_edit_payload(
         message, stream_id, topic_name, propagate_mode, content, prev_content_sha256

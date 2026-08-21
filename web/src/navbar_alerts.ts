@@ -1,5 +1,5 @@
 import {addDays, differenceInCalendarDays} from "date-fns";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_navbar_banners_testing_popover from "../templates/popovers/navbar_banners_testing_popover.hbs";
@@ -28,7 +28,6 @@ import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_topics from "./user_topics.ts";
-import * as util from "./util.ts";
 
 function open_navbar_banner_and_resize(banner: AlertBanner): void {
     banners.open(banner, $("#navbar_alerts_wrapper"));
@@ -55,10 +54,8 @@ export function should_show_desktop_notifications_banner(ls: LocalStorage): bool
         // Spectators cannot receive desktop notifications, so never
         // request permissions to send them.
         !page_params.is_spectator &&
-        // notifications *basically* don't work on any mobile platforms, so don't
-        // event show the banners. This prevents trying to access things that
-        // don't exist like `Notification.permission`.
-        !util.is_mobile() &&
+        // Only show banners on UAs that do not include the Notification API.
+        desktop_notifications.has_notification_support() &&
         // if permission has not been granted yet.
         !desktop_notifications.granted_desktop_notifications_permission() &&
         // if permission is allowed to be requested (e.g. not in "denied" state).
@@ -114,7 +111,7 @@ export function maybe_toggle_empty_required_profile_fields_banner(): void {
             ...f,
             value: people.my_custom_profile_data(f.id)?.value,
         }))
-        .find((f) => f.required && !f.value);
+        .some((f) => f.required && !f.value);
     if (empty_required_profile_fields_exist) {
         open_navbar_banner_and_resize(PROFILE_MISSING_REQUIRED_FIELDS_BANNER);
     } else if ($banner?.attr("data-process") === "profile-missing-required-fields") {
@@ -324,7 +321,7 @@ const SERVER_NEEDS_UPGRADE_BANNER: AlertBanner = {
 const bankruptcy_banner = (): AlertBanner => {
     const old_unreads_missing = unread.old_unreads_missing;
     const unread_msgs_count = unread.get_unread_message_count();
-    let label = "";
+    let label;
     if (old_unreads_missing) {
         label = $t(
             {

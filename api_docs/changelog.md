@@ -20,6 +20,17 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 13.0
 
+**Feature level 509**
+
+* [`PATCH /messages/{message_id}`](/api/update-message): Fixed a bug where
+  passing the `stream_id` that the message is already in was processed as
+  a channel move.
+
+**Feature level 508**
+
+* [`POST /messages`](/api/send-message): Added `message_url` and
+  `message_link` fields to the response.
+
 **Feature level 507**
 
 * [`POST /users/me/subscriptions`](/api/subscribe),
@@ -52,10 +63,10 @@ format used by the Zulip server that they are interacting with.
   happened on a previous server, so its tarball is no longer stored
   on this server. This change was also backported to the Zulip 12.x
   series, at feature level 499.
-* `DELETE /export/realm/{export_id}`: Export records with the
-  `export_from_prior_server` field set to `true` cannot be deleted, as the
-  server has no exported data to delete for them. This change was also
-  backported to the Zulip 12.x series, at feature level 499.
+* [`DELETE /export/realm/{export_id}`](/api/delete-realm-export): Export
+  records with the `export_from_prior_server` field set to `true` cannot
+  be deleted, as the server has no exported data to delete for them. This
+  change was also backported to the Zulip 12.x series, at feature level 499.
 
 **Feature level 505**
 
@@ -103,10 +114,10 @@ releases.
   for records that were carried across a realm import; the export
   happened on a previous server, so its tarball is no longer stored
   on this server. Backported change from feature level 506.
-* `DELETE /export/realm/{export_id}`: Export records with the
-  `export_from_prior_server` field set to `true` cannot be deleted, as the
-  server has no exported data to delete for them. Backported change from feature
-  level 506.
+* [`DELETE /export/realm/{export_id}`](/api/delete-realm-export): Export
+  records with the `export_from_prior_server` field set to `true` cannot
+  be deleted, as the server has no exported data to delete for them.
+  Backported change from feature level 506.
 
 ## Changes in Zulip 12.0
 
@@ -1643,9 +1654,9 @@ No changes; feature level used for Zulip 10.0 release.
   `server_max_deactivated_realm_deletion_days` fields for the permitted
   number of days before full data deletion of a deactivated organization
   on the server.
-* `POST /realm/deactivate`: Added `deletion_delay_days` parameter to
-  support setting when a full data deletion of the deactivated
-  organization may be done.
+* [`POST /realm/deactivate`](/api/deactivate-realm): Added
+  `deletion_delay_days` parameter to support setting when a full data
+  deletion of the deactivated organization may be done.
 
 **Feature level 331**
 
@@ -3035,7 +3046,7 @@ No changes; feature level used for Zulip 8.0 release.
   `enable_followed_topic_desktop_notifications`
   and `enable_followed_topic_audible_notifications` to control whether a user
   receives email, push, wildcard mention, visual desktop and audible desktop
-  notifications, respectively, for messages sent to followed topics.
+  notifications, respectively, for messages sent to followed topics.
 
 **Feature level 188**
 

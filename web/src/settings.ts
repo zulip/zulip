@@ -1,5 +1,5 @@
 import {parseISO} from "date-fns";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_settings_overlay from "../templates/settings_overlay.hbs";

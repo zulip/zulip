@@ -270,7 +270,7 @@ class ReactionMessageIDTest(ZulipTestCase):
 
     def test_inaccessible_message_id(self) -> None:
         """
-        Reacting to a inaccessible (for instance, private) message fails
+        Reacting to an inaccessible (for instance, private) message fails
         """
         pm_sender = self.example_user("hamlet")
         pm_recipient = self.example_user("othello")

@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -172,7 +172,7 @@ export function resend_message(
 ): void {
     message_store.update_message_content(message, message.raw_content!);
     if (show_retry_spinner($row)) {
-        // retry already in in progress
+        // retry already in progress
         return;
     }
 
@@ -364,7 +364,7 @@ export function rewire_try_deliver_locally(value: typeof try_deliver_locally): v
     try_deliver_locally = value;
 }
 
-export function edit_locally(message: Message, request: LocalEditRequest): Message {
+export function edit_locally(message: Message, request: LocalEditRequest): void {
     // Responsible for doing the rendering work of locally editing the
     // content of a message.  This is used in several code paths:
     // * Editing a message where a message was locally echoed but
@@ -448,7 +448,6 @@ export function edit_locally(message: Message, request: LocalEditRequest): Messa
     }
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
-    return message;
 }
 
 export function update_topic_hash_to_contain_with_term(message: Message): void {
@@ -604,7 +603,7 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
             if (!msg_list.data.filter.can_apply_locally()) {
                 // If this message list is a search filter that we
                 // cannot apply locally, we will not have locally
-                // echoed echoed the message at all originally, and
+                // echoed the message at all originally, and
                 // must request the server now whether to add it to the view.
                 message_events_util.maybe_add_narrowed_messages(
                     msgs_to_rerender_or_add_to_narrow,
@@ -652,7 +651,7 @@ export function rewire_message_send_error(value: typeof message_send_error): voi
     message_send_error = value;
 }
 
-function abort_message(message: Message): void {
+export function abort_message(message: LocalMessage): void {
     // Update the rendered data first since it is most user visible.
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.remove_and_rerender([message.id]);
@@ -661,6 +660,9 @@ function abort_message(message: Message): void {
     for (const msg_list_data of message_lists.non_rendered_data()) {
         msg_list_data.remove([message.id]);
     }
+
+    echo_state.remove_message_from_waiting_for_id(message.local_id);
+    echo_state.remove_message_from_waiting_for_ack(message.local_id);
 }
 
 export function display_slow_send_loading_spinner(message: Message): void {

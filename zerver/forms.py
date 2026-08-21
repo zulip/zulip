@@ -405,8 +405,8 @@ def validate_captcha_payload(request: HttpRequest, captcha_payload: str) -> None
             raise forms.ValidationError(_("Validation failed, please try again."))
     except forms.ValidationError:
         raise
-    except Exception as e:
-        logging.exception(e)
+    except Exception:
+        logging.exception("Error while validating altcha solution")
         raise forms.ValidationError(_("Validation failed, please try again."))
 
     captcha_data = orjson.loads(base64.b64decode(captcha_payload))

@@ -66,7 +66,7 @@ def get_all_users_status_dict(realm: Realm, user_profile: UserProfile) -> dict[s
     )
 
     if not check_user_can_access_all_users(user_profile):
-        accessible_user_ids = get_accessible_user_ids(realm, user_profile)
+        accessible_user_ids = get_accessible_user_ids(user_profile)
         query = query.filter(user_profile_id__in=accessible_user_ids)
 
     rows = query.values(

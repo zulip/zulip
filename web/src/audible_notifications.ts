@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_notification_sound_sources from "../templates/notification_sound_sources.hbs";
 

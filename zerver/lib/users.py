@@ -9,7 +9,7 @@ from typing import Any, TypedDict
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db.models import Q, QuerySet
+from django.db.models import Exists, OuterRef, Q, QuerySet
 from django.db.models.functions import Upper
 from django.utils.translation import gettext as _
 from django_otp.middleware import is_verified
@@ -28,8 +28,6 @@ from zerver.lib.user_groups import user_has_permission_for_group_setting
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
-    DirectMessageGroup,
-    Message,
     Realm,
     Recipient,
     Service,
@@ -750,15 +748,18 @@ def check_can_access_user(
     # loaded but the caller has realm available from another source.
     realm: Realm | None = None,
 ) -> bool:
+    if user_profile is None:
+        # A spectator can access target_user since they
+        # have very limited access to users already.
+        return True
+
+    if user_profile.id == target_user.id:
+        return True
+
     if not user_access_restricted_in_realm(target_user, realm):
         return True
 
     if check_user_can_access_all_users(user_profile):
-        return True
-
-    assert user_profile is not None
-
-    if target_user.id == user_profile.id:
         return True
 
     # These include Subscription objects for streams as well as group DMs.
@@ -776,6 +777,40 @@ def check_can_access_user(
     ).exists()
 
 
+def get_inaccessible_users_queryset(
+    target_user_ids: list[int], acting_user: UserProfile
+) -> QuerySet[UserProfile]:
+    """
+    Fetch human users who have no subscription to a recipient
+    the acting_user is also subscribed to.
+    """
+    acting_user_recipient_ids = Subscription.objects.filter(
+        user_profile=acting_user,
+        active=True,
+        recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
+    ).values("recipient_id")
+
+    common_subscriptions = Subscription.objects.filter(
+        recipient_id__in=acting_user_recipient_ids,
+        user_profile_id=OuterRef("pk"),
+        active=True,
+        is_user_active=True,
+    )
+    # All users can access all the bots, so we exclude them.
+    target_human_users = UserProfile.objects.filter(id__in=target_user_ids, is_bot=False)
+    return target_human_users.exclude(Exists(common_subscriptions))
+
+
+def has_inaccessible_users(target_user_ids: list[int], acting_user: UserProfile) -> bool:
+    if len(target_user_ids) == 1 and target_user_ids[0] == acting_user.id:
+        return False
+
+    if check_user_can_access_all_users(acting_user):
+        return False
+
+    return get_inaccessible_users_queryset(target_user_ids, acting_user).exists()
+
+
 def get_inaccessible_user_ids(
     target_user_ids: list[int], acting_user: UserProfile | None
 ) -> set[int]:
@@ -784,33 +819,9 @@ def get_inaccessible_user_ids(
 
     assert acting_user is not None
 
-    # All users can access all the bots, so we just exclude them.
-    target_human_user_ids = UserProfile.objects.filter(
-        id__in=target_user_ids, is_bot=False
-    ).values_list("id", flat=True)
-
-    if not target_human_user_ids:
-        return set()
-
-    subscribed_recipient_ids = Subscription.objects.filter(
-        user_profile=acting_user,
-        active=True,
-        recipient__type__in=[Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP],
-    ).values_list("recipient_id", flat=True)
-
-    common_subscription_user_ids = (
-        Subscription.objects.filter(
-            recipient_id__in=subscribed_recipient_ids,
-            user_profile_id__in=target_human_user_ids,
-            active=True,
-            is_user_active=True,
-        )
-        .distinct("user_profile_id")
-        .values_list("user_profile_id", flat=True)
+    return set(
+        get_inaccessible_users_queryset(target_user_ids, acting_user).values_list("id", flat=True)
     )
-
-    possible_inaccessible_user_ids = set(target_human_user_ids) - set(common_subscription_user_ids)
-    return possible_inaccessible_user_ids
 
 
 def get_user_ids_who_can_access_user(target_user: UserProfile) -> list[int]:
@@ -824,13 +835,11 @@ def get_user_ids_who_can_access_user(target_user: UserProfile) -> list[int]:
     active_non_guest_user_ids_in_realm = active_non_guest_user_ids(realm.id)
 
     users_sharing_any_subscription = get_subscribers_of_target_user_subscriptions([target_user])
-    users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users([target_user], realm)
 
     user_ids_who_can_access_target_user = (
         {target_user.id}
         | set(active_non_guest_user_ids_in_realm)
         | users_sharing_any_subscription[target_user.id]
-        | users_involved_in_dms_dict[target_user.id]
     )
     return list(user_ids_who_can_access_target_user)
 
@@ -838,6 +847,7 @@ def get_user_ids_who_can_access_user(target_user: UserProfile) -> list[int]:
 def get_subscribers_of_target_user_subscriptions(
     target_users: list[UserProfile], include_deactivated_users_for_dm_groups: bool = False
 ) -> dict[int, set[int]]:
+    """Get all users involved in stream and direct message groups with target_users."""
     target_user_ids = [user.id for user in target_users]
     target_user_subscriptions = (
         Subscription.objects.filter(
@@ -895,46 +905,6 @@ def get_subscribers_of_target_user_subscriptions(
             )
 
     return users_subbed_to_target_user_subscriptions_dict
-
-
-def get_users_involved_in_dms_with_target_users(
-    target_users: list[UserProfile], realm: Realm, include_deactivated_users: bool = False
-) -> dict[int, set[int]]:
-    # Find DM partners via 1:1 DM groups with message history.
-    # Push the message-existence check into the subscription query
-    # as a subquery, so we only fetch DMGs that actually have messages.
-    target_dmg_subs = Subscription.objects.filter(
-        user_profile_id__in=[user.id for user in target_users],
-        recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
-        recipient__type_id__in=DirectMessageGroup.objects.filter(
-            group_size__lte=2,
-        ),
-        recipient_id__in=Message.objects.filter(realm=realm).values("recipient_id"),
-    ).values_list("user_profile_id", "recipient_id")
-
-    dmg_to_targets: dict[int, set[int]] = defaultdict(set)
-    for target_id, recipient_id in target_dmg_subs:
-        dmg_to_targets[recipient_id].add(target_id)
-
-    if not dmg_to_targets:
-        return defaultdict(set)
-
-    # Now that we know the set of relevant recipients, and which of
-    # users we care about are in each, we pull the full subscription
-    # set to map user -> recipient -> full list of other users
-    partner_query = Subscription.objects.filter(
-        recipient_id__in=dmg_to_targets.keys(),
-    )
-    if not include_deactivated_users:
-        partner_query = partner_query.filter(is_user_active=True)
-
-    direct_message_participants_dict: dict[int, set[int]] = defaultdict(set)
-    for recipient_id, user_id in partner_query.values_list("recipient_id", "user_profile_id"):
-        for target_id in dmg_to_targets[recipient_id]:
-            if user_id != target_id:
-                direct_message_participants_dict[target_id].add(user_id)
-
-    return direct_message_participants_dict
 
 
 def user_profile_to_user_row(user_profile: UserProfile) -> RawUserDict:
@@ -1015,24 +985,19 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
 
 
 def get_accessible_user_ids(
-    realm: Realm, user_profile: UserProfile, include_deactivated_users: bool = False
-) -> list[int]:
+    user_profile: UserProfile, include_deactivated_users: bool = False
+) -> set[int]:
     subscribers_dict_of_target_user_subscriptions = get_subscribers_of_target_user_subscriptions(
         [user_profile], include_deactivated_users_for_dm_groups=include_deactivated_users
-    )
-    users_involved_in_dms_dict = get_users_involved_in_dms_with_target_users(
-        [user_profile], realm, include_deactivated_users=include_deactivated_users
     )
 
     # This does not include bots, because either the caller
     # wants only human users or it handles bots separately.
-    accessible_user_ids = (
-        {user_profile.id}
-        | subscribers_dict_of_target_user_subscriptions[user_profile.id]
-        | users_involved_in_dms_dict[user_profile.id]
-    )
+    accessible_user_ids = {user_profile.id} | subscribers_dict_of_target_user_subscriptions[
+        user_profile.id
+    ]
 
-    return list(accessible_user_ids)
+    return accessible_user_ids
 
 
 def get_user_dicts_in_realm(
@@ -1048,9 +1013,7 @@ def get_user_dicts_in_realm(
         return (all_user_dicts, [])
 
     assert user_profile is not None
-    accessible_user_ids = get_accessible_user_ids(
-        realm, user_profile, include_deactivated_users=True
-    )
+    accessible_user_ids = get_accessible_user_ids(user_profile, include_deactivated_users=True)
 
     accessible_user_dicts: list[RawUserDict] = []
     inaccessible_user_dicts: list[APIUserDict] = []
@@ -1110,7 +1073,8 @@ def get_users_for_api(
             realm, acting_user, user_ids
         )
 
-    if include_custom_profile_fields:
+    # Spectators must never receive custom profile field values.
+    if include_custom_profile_fields and acting_user is not None:
         base_query = CustomProfileFieldValue.objects.select_related("field")
         # TODO: Consider optimizing this query away with caching.
         if target_user is not None:

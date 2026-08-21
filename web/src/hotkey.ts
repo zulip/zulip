@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import * as activity from "./activity.ts";
@@ -360,7 +360,7 @@ export function get_keydown_hotkey(e: JQuery.KeyDownEvent): Hotkey | Hotkey[] | 
     let key = e.key;
     if (!use_event_key) {
         const code = `${e.shiftKey ? "Shift+" : ""}${e.code}`;
-        if (CODE_TO_QWERTY_CHAR[code]) {
+        if (CODE_TO_QWERTY_CHAR[code] !== undefined) {
             key = CODE_TO_QWERTY_CHAR[code];
         } else {
             return undefined;
@@ -763,7 +763,7 @@ function process_enter_key(e: JQuery.KeyDownEvent): boolean {
             return false;
         }
 
-        window.location.href = hash_util.by_conversation_and_time_url(message);
+        window.location.assign(hash_util.by_conversation_and_time_url(message));
         return true;
     }
 
@@ -1092,9 +1092,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
                 case "page_down": {
                     // so that it always goes to the end of the text box.
                     const height = util.the($(":focus")).scrollHeight;
-                    $(":focus")
-                        .caret(Number.POSITIVE_INFINITY)
-                        .animate({scrollTop: height}, "fast");
+                    $(":focus").caret(Infinity).animate({scrollTop: height}, "fast");
                     return true;
                 }
                 case "search_with_k":
@@ -1117,10 +1115,12 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         if (overlays.lightbox_open()) {
             lightbox.prev();
             return true;
-        } else if (overlays.streams_open()) {
+        }
+        if (overlays.streams_open()) {
             stream_settings_ui.toggle_view(event_name);
             return true;
-        } else if (compose_state.focus_in_formatting_buttons()) {
+        }
+        if (compose_state.focus_in_formatting_buttons()) {
             // Allow left arrow to scroll the formatting buttons backward
             return false;
         }
@@ -1133,7 +1133,8 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         if (overlays.lightbox_open()) {
             lightbox.next();
             return true;
-        } else if (overlays.streams_open()) {
+        }
+        if (overlays.streams_open()) {
             stream_settings_ui.toggle_view(event_name);
             return true;
         }
@@ -1412,7 +1413,8 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             if (narrow_state.narrowed_by_topic_reply()) {
                 // narrow to stream if user is in topic view
                 return do_narrow_action(message_view.narrow_by_recipient);
-            } else if (narrow_state.narrowed_by_pm_reply()) {
+            }
+            if (narrow_state.narrowed_by_pm_reply()) {
                 // do nothing if user is in DM view
                 return false;
             }

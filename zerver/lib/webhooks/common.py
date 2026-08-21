@@ -217,7 +217,7 @@ def check_send_webhook_message(
             return None
 
 
-def standardize_headers(input_headers: None | dict[str, Any]) -> dict[str, str]:
+def standardize_headers(input_headers: dict[str, Any] | None) -> dict[str, str]:
     """This method can be used to standardize a dictionary of headers with
     the standard format that Django expects. For reference, refer to:
     https://docs.djangoproject.com/en/5.0/ref/request-response/#django.http.HttpRequest.headers

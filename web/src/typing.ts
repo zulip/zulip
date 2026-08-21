@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -85,7 +85,7 @@ function send_stream_typing_notification(
 ): void {
     const stream = stream_data.get_sub_by_id(stream_id)!;
     // If the user lost access to the stream while typing, stream might
-    // be undefined for us, in which case, we need to to return early.
+    // be undefined for us, in which case, we need to return early.
     if (stream === undefined) {
         return;
     }

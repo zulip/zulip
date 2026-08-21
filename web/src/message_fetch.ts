@@ -427,7 +427,7 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
 
     if (opts.num_after > 0) {
         // We hide the bottom loading indicator when we're fetching both top and bottom messages.
-        update_loading_indicator = update_loading_indicator && opts.num_before === 0;
+        update_loading_indicator &&= opts.num_before === 0;
         opts.msg_list_data.fetch_status.start_newer_batch({
             update_loading_indicator,
         });

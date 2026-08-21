@@ -749,7 +749,7 @@ def send_restart_events() -> None:
 
 def mark_clients_to_reload(queue_ids: Iterable[str]) -> None:
     # Build web_reload_clients, which is a sorted-by-realm-id list of
-    # website client queue-ids which were were loaded from old Tornado
+    # website client queue-ids which were loaded from old Tornado
     # instances.  We use an (ordered) dict to make removing one be
     # O(1), as well as pulling an ordered N of them to be O(N).  We
     # sort by realm_id so that restarts are rolling by realm.
@@ -1109,7 +1109,13 @@ def get_client_info_for_message_event(
     # bots) that are registered to get events for ALL streams.
     if "stream_name" in event_template and not event_template.get("invite_only"):
         realm_id = event_template["realm_id"]
+        is_web_public = event_template.get("is_web_public", False)
+        realm_guest_user_ids = set(event_template.get("realm_guest_user_ids", []))
         for client in get_client_descriptors_for_realm_all_streams(realm_id):
+            # Guest users cannot access non-subscribed non web-public
+            # channels.
+            if not is_web_public and client.user_profile_id in realm_guest_user_ids:
+                continue
             send_to_clients[client.event_queue.id] = dict(
                 client=client,
                 flags=[],
@@ -1503,7 +1509,7 @@ def process_message_update_event(
     online_push_user_ids = set(event_template.pop("online_push_user_ids", []))
     stream_name = event_template.get("stream_name")
     message_id = event_template["message_id"]
-    rendering_only_update = event_template["rendering_only"]
+    content_edited = "orig_content" in event_template
 
     # TODO/compatibility: We need to set `push_device_registered_user_ids` to None
     # for update_message events prior to the introduction of `push_device_registered_user_ids`
@@ -1523,15 +1529,11 @@ def process_message_update_event(
             if key != "id":
                 user_event[key] = user_data[key]
 
-        # Events where `rendering_only_update` is True come from the
-        # do_update_embedded_data code path, and represent rendering
-        # previews; there should be no real content changes.
-        # Therefore, we know only events where `rendering_only_update`
-        # is False possibly send notifications.
-        if not rendering_only_update:
-            # The user we'll get here will be the sender if the message's
-            # content was edited, and the editor for topic edits. That's
-            # the correct "acting_user" for both cases.
+        # Only events where content edit is involved possibly send notifications.
+        # Skip it for topic and/or channel edit or when a message's content
+        # has a rendering update.
+        if content_edited:
+            # Message's sender is the acting user here, because only they can edit content.
             acting_user_id = event_template["user_id"]
 
             flags: Collection[str] = user_event["flags"]

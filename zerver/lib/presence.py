@@ -198,7 +198,7 @@ def get_presence_dict_by_realm(
         requesting_user_profile
     ):
         assert requesting_user_profile is not None
-        accessible_user_ids = get_accessible_user_ids(realm, requesting_user_profile)
+        accessible_user_ids = get_accessible_user_ids(requesting_user_profile)
         query = query.filter(user_profile_id__in=accessible_user_ids)
 
     presence_rows = list(
