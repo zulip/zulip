@@ -25762,6 +25762,10 @@ paths:
                 contentType: application/json
               can_create_topic_group:
                 contentType: application/json
+              can_delete_any_message_group:
+                contentType: application/json
+              can_delete_own_message_group:
+                contentType: application/json
               can_administer_channel_group:
                 contentType: application/json
               can_move_messages_out_of_channel_group:
