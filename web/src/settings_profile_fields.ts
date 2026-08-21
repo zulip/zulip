@@ -466,7 +466,7 @@ function show_modal_for_deleting_options(
         count: users_count_with_deleted_option_selected,
         field_name: field.name,
         deleted_options_count,
-        deleted_values,
+        deleted_option_texts: deleted_values.values().toArray(),
     });
 
     confirm_dialog.launch({
