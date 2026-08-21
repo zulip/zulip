@@ -1160,6 +1160,18 @@ test("operator_suggestions", ({override}) => {
     expected = ["-s", "-sender:", "-channels:", "-channel:", `-sender:${me.user_id}`];
     assert.deepEqual(suggestions, expected);
 
+    query = "channels:";
+    suggestions = get_suggestions(query);
+    expected = ["channels:all", "channels:public", "channels:archived"];
+    assert.deepEqual(suggestions, expected);
+
+    // channels:all does not support negation, so -channels:all is never
+    // suggested even though the other negated channels operands are.
+    query = "-channels:";
+    suggestions = get_suggestions(query);
+    expected = ["-channels:public", "-channels:archived"];
+    assert.deepEqual(suggestions, expected);
+
     stream_data.add_sub_for_tests(
         make_stream({
             stream_id: 66,
