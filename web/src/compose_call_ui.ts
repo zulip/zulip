@@ -1,12 +1,15 @@
 import {$} from "jquery";
 import * as z from "zod/mini";
 
+import render_confirm_google_meet_authorization from "../templates/confirm_dialog/confirm_google_meet_authorization.hbs";
+
 import * as channel from "./channel.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
 import {compose_call_session_manager} from "./compose_call_session.ts";
 import {get_recipient_label} from "./compose_closed_ui.ts";
 import * as compose_ui from "./compose_ui.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as rows from "./rows.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -133,14 +136,7 @@ export function generate_and_insert_audio_or_video_call_link(
             }
         };
 
-        if (
-            (current_user.has_google_meet_token && oauth_call_provider === "google_meet") ||
-            (current_user.has_webex_token && oauth_call_provider === "webex") ||
-            ((current_user.has_zoom_token || provider_is_zoom_server_to_server) &&
-                oauth_call_provider === "zoom")
-        ) {
-            make_oauth_call();
-        } else {
+        const open_oauth_popup = (): void => {
             compose_call_session.add_oauth_token_callback(oauth_call_provider, () => {
                 make_oauth_call(true);
             });
@@ -152,6 +148,29 @@ export function generate_and_insert_audio_or_video_call_link(
                 "_blank",
                 "width=800,height=500,noopener,noreferrer",
             );
+        };
+
+        if (
+            (current_user.has_google_meet_token && oauth_call_provider === "google_meet") ||
+            (current_user.has_webex_token && oauth_call_provider === "webex") ||
+            ((current_user.has_zoom_token || provider_is_zoom_server_to_server) &&
+                oauth_call_provider === "zoom")
+        ) {
+            make_oauth_call();
+        } else if (
+            oauth_call_provider === "google_meet" &&
+            realm.server_video_google_meet_app_internal
+        ) {
+            confirm_dialog.launch({
+                modal_title_html: $t_html({defaultMessage: "Continue with Google?"}),
+                modal_content_html: render_confirm_google_meet_authorization(),
+                modal_submit_button_text: $t({defaultMessage: "Continue"}),
+                help_link: "/integrations/google-meet",
+                is_compact: true,
+                on_click: open_oauth_popup,
+            });
+        } else {
+            open_oauth_popup();
         }
     } else {
         switch (realm.realm_video_chat_provider) {

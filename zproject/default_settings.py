@@ -138,6 +138,7 @@ VIDEO_GOOGLE_MEET_TOKEN_URL: str = "https://oauth2.googleapis.com/token"
 VIDEO_GOOGLE_MEET_API_URL: str = "https://meet.googleapis.com/v2/spaces"
 VIDEO_GOOGLE_MEET_CLIENT_ID = get_secret("video_google_meet_client_id", development_only=True)
 VIDEO_GOOGLE_MEET_CLIENT_SECRET = get_secret("video_google_meet_client_secret")
+VIDEO_GOOGLE_MEET_APP_INTERNAL: bool = True
 
 # Email gateway
 EMAIL_GATEWAY_PATTERN = ""

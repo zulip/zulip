@@ -268,6 +268,7 @@ class HomeTest(ZulipTestCase):
         "server_typing_started_expiry_period_milliseconds",
         "server_typing_started_wait_period_milliseconds",
         "server_typing_stopped_wait_period_milliseconds",
+        "server_video_google_meet_app_internal",
         "server_web_public_streams_enabled",
         "settings_send_digest_emails",
         "starred_messages",
