@@ -127,3 +127,42 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
         "user_avatar",
     );
 }
+
+export function build_admin_user_avatar_widget(
+    upload_function: UploadFunction,
+    delete_function: () => void,
+    show_delete_button: boolean,
+): void {
+    const get_file_input = function (): JQuery<HTMLInputElement> {
+        return $<HTMLInputElement>(
+            "#admin-user-avatar-upload-widget input.image_file_input",
+        ).expectOne();
+    };
+
+    if (!show_delete_button) {
+        $("#admin-user-avatar-upload-widget .image-delete-button").hide();
+    }
+
+    $("#admin-user-avatar-upload-widget .image-delete-button").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        confirm_dialog.launch({
+            modal_title_html: $t_html({defaultMessage: "Delete profile picture"}),
+            modal_content_html: $t_html({
+                defaultMessage: "Are you sure you want to delete this profile picture?",
+            }),
+            is_compact: true,
+            on_click: delete_function,
+        });
+    });
+
+    upload_widget.build_direct_upload_widget(
+        get_file_input,
+        $("#admin-user-avatar-upload-widget-error").expectOne(),
+        $("#admin-user-avatar-upload-widget .image_upload_button").expectOne(),
+        upload_function,
+        realm.max_avatar_file_size_mib,
+        "user_avatar",
+    );
+}
