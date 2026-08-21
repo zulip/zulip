@@ -47,6 +47,9 @@ jobs:
 
   notify-if-api-docs-changed:
     runs-on: ubuntu-slim
+    # The failure message in tools/check-feature-level-updated says that
+    # its failure skips this job. Update that message if changing this
+    # dependency.
     needs: check-feature-level-updated
 
     steps:

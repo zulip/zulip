@@ -24,7 +24,7 @@ if __name__ == "__main__":
     for api_docs_path in api_docs_paths:
         with open(api_docs_path) as file:
             if "ZF-" in file.read():
-                content = f"[Build]({build_url}) triggered by {github_actor} on branch `{branch}` has failed: Feature level not replaced in '{api_docs_path}'."
+                content = f"[Build]({build_url}) triggered by {github_actor} on branch `{branch}` has failed: Feature level not replaced in '{api_docs_path}'. This also skips the job that posts the new-feature-level announcement to #**api documentation**. After fixing `{branch}`, post the announcement manually if needed."
                 print(f"fail=true\ntopic={topic}\ncontent={content}")
                 sys.exit(0)
 
