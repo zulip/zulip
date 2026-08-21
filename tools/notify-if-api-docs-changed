@@ -12,6 +12,7 @@ TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(TOOLS_DIR))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 
+from tools.lib.api_design_links import find_api_design_links
 from zerver.openapi.merge_api_changelogs import get_feature_level
 
 
@@ -100,10 +101,19 @@ if __name__ == "__main__":
     if feature_level <= get_feature_level_before_commit():
         sys.exit(1)
 
-    changelog_entries = get_changelog_entries()
+    # The entries end with the blank line that preceded the previous
+    # feature level's heading. Drop it, so that any discussion links
+    # appended below form their own paragraph.
+    changelog_entries = get_changelog_entries().rstrip()
+
+    discussion_links = find_api_design_links(pull_request.body or "") if pull_request else []
     topic = f"new feature level: {feature_level}"
 
     content = f"{pull_request_label} has updated the API documentation for the following endpoints: \n{changelog_entries}"
+    if len(discussion_links) == 1:
+        content += f"\n\nDesign discussion: {discussion_links[0]}"
+    elif discussion_links:
+        content += "\n\nDesign discussions:\n" + "\n".join(f"- {link}" for link in discussion_links)
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:
         with open(github_output, "a") as f:
