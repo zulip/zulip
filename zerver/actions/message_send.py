@@ -25,7 +25,15 @@ from zerver.actions.user_topics import (
 )
 from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import get_alert_word_automaton
-from zerver.lib.cache import cache_with_key, user_profile_delivery_email_cache_key
+from zerver.lib.cache import (
+    cache_get,
+    cache_set,
+    cache_with_key,
+    preview_url_cache_key,
+    preview_url_fetch_failed_cache_key,
+    url_embed_data_pending_cache_key,
+    user_profile_delivery_email_cache_key,
+)
 from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import (
     DirectMessageInitiationError,
@@ -136,7 +144,7 @@ from zerver.models.users import (
     get_user_by_delivery_email,
     is_cross_realm_bot_email,
 )
-from zerver.tornado.django_api import send_event_on_commit
+from zerver.tornado.django_api import send_event_on_commit, send_event_rollback_unsafe
 
 
 def compute_irc_user_fullname(email: str) -> str:
@@ -203,6 +211,87 @@ def render_incoming_message(
     except MarkdownRenderingError:
         raise JsonableError(_("Unable to render message"))
     return rendering_result
+
+
+def render_unsaved_message(
+    sender: UserProfile,
+    content: str,
+    *,
+    url_embed_data: dict[str, UrlEmbedData | None] | None = None,
+) -> MessageRenderingResult:
+    message = Message()
+    message.sender = sender
+    message.realm = sender.realm
+    message.content = content
+    return render_message_markdown(
+        message=message,
+        content=content,
+        realm=sender.realm,
+        url_embed_data=url_embed_data,
+    )
+
+
+URL_EMBED_DATA_PENDING_TIMEOUT_SECONDS = 60
+
+PREVIEW_URL_FETCH_FAILED_TIMEOUT_SECONDS = 60
+
+
+def get_cached_embeds_and_enqueue_fetch(
+    sender: UserProfile,
+    content: str,
+    links_for_preview: set[str],
+) -> dict[str, UrlEmbedData | None]:
+    """Return the cached embeds to bake into the render, and enqueue an
+    embed_links job for the rest.
+
+    The job lists the cached links alongside the ones to fetch, since the
+    client swaps in the worker's re-render, which would otherwise drop the
+    cached links' cards. A link whose fetch we have given up on is left out,
+    so that a sibling link's job does not refetch it.
+
+    The pending marker is keyed on the draft the job will deliver, not the
+    link, because a job for a draft the user has since edited renders content
+    the client discards. It is best-effort: a lost race costs a redundant job.
+    """
+    url_embed_data: dict[str, UrlEmbedData | None] = {}
+    urls_to_fetch = []
+    for url in links_for_preview:
+        cache_entry = cache_get(preview_url_cache_key(url))
+        if cache_entry is not None:
+            # cache_with_key stores values in a singleton tuple.
+            url_embed_data[url] = cache_entry[0]
+        elif cache_get(preview_url_fetch_failed_cache_key(url)) is None:
+            urls_to_fetch.append(url)
+
+    if urls_to_fetch:
+        pending_cache_key = url_embed_data_pending_cache_key(sender.id, content)
+        if cache_get(pending_cache_key) is None:
+            cache_set(
+                pending_cache_key,
+                True,
+                timeout=URL_EMBED_DATA_PENDING_TIMEOUT_SECONDS,
+            )
+            queue_event_on_commit(
+                "embed_links",
+                {
+                    "populate_url_embed_data": True,
+                    "user_id": sender.id,
+                    "content": content,
+                    "urls": [*url_embed_data, *urls_to_fetch],
+                    "uncached_urls": urls_to_fetch,
+                },
+            )
+
+    return url_embed_data
+
+
+def do_send_url_embed_data_event(sender: UserProfile, content: str, rendered_content: str) -> None:
+    event = {
+        "type": "url_embed_data",
+        "content": content,
+        "rendered_content": rendered_content,
+    }
+    send_event_rollback_unsafe(sender.realm, event, [sender.id])
 
 
 @dataclass
