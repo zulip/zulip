@@ -57,6 +57,10 @@ ISSUE_MILESTONED_OR_DEMILESTONED_MESSAGE_TEMPLATE = "[{user_name}]({user_url}) {
 ISSUE_MILESTONED_OR_DEMILESTONED_MESSAGE_TEMPLATE_WITH_TITLE = "[{user_name}]({user_url}) {action} milestone [{milestone_name}]({milestone_url}) {preposition} [issue #{id} {title}]({url})."
 
 PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE = "{user_name} {action}{assignee} [{type}{id}{title}]({url})"
+PULL_REQUEST_OR_ISSUE_TITLE_EDITED_MESSAGE_TEMPLATE = (
+    "{user_name} renamed [{type} #{id}]({url}) from:\n"
+    "{fence} quote\n{old_title}\n{fence}\nto\n{fence} quote\n{new_title}\n{fence}"
+)
 PULL_REQUEST_OR_ISSUE_MESSAGE_TEMPLATE_WITHOUT_REFERENCE = "{user_name} {action}"
 PULL_REQUEST_OR_ISSUE_ASSIGNEE_INFO_TEMPLATE = "(assigned to {assignee})"
 PULL_REQUEST_BRANCH_INFO_TEMPLATE = "from `{target}` to `{base}`"
@@ -282,6 +286,26 @@ def get_pull_request_event_message(
         fence = get_unused_fence(message)
         main_message += "\n" + CONTENT_MESSAGE_TEMPLATE.format(message=message, fence=fence)
     return main_message.rstrip()
+
+
+def get_title_edited_event_message(
+    *,
+    user_name: str,
+    url: str,
+    number: int,
+    old_title: str,
+    new_title: str,
+    type: str,
+) -> str:
+    return PULL_REQUEST_OR_ISSUE_TITLE_EDITED_MESSAGE_TEMPLATE.format(
+        user_name=user_name,
+        type=type,
+        id=number,
+        url=url,
+        old_title=old_title,
+        new_title=new_title,
+        fence=get_unused_fence(f"{old_title}\n{new_title}"),
+    )
 
 
 def get_issue_event_message(
