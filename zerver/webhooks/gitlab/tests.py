@@ -778,6 +778,39 @@ A trivial change that should probably be ignored.
             HTTP_X_GITLAB_EVENT="Deployment Hook",
         )
 
+    def test_deployment_blocked_event_message(self) -> None:
+        expected_topic_name = "deployment-webhook-test / production"
+        expected_message = "The [deployment](https://gitlab.com/pritesh-30-group/deployment-webhook-test/-/jobs/15663409982) is blocked and waiting for approval."
+
+        self.check_webhook(
+            "deployment_hook__blocked",
+            expected_topic_name,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Deployment Hook",
+        )
+
+    def test_deployment_approved_event_message(self) -> None:
+        expected_topic_name = "deployment-webhook-test / production"
+        expected_message = "Pritesh-30 approved the [deployment](https://gitlab.com/pritesh-30-group/deployment-webhook-test/-/jobs/15664214926).\n``` quote\nApproval granted\n```"
+
+        self.check_webhook(
+            "deployment_hook__approved",
+            expected_topic_name,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Deployment Hook",
+        )
+
+    def test_deployment_rejected_event_message(self) -> None:
+        expected_topic_name = "deployment-webhook-test / production"
+        expected_message = "Pritesh-30 rejected the [deployment](https://gitlab.com/pritesh-30-group/deployment-webhook-test/-/jobs/15663435853).\n``` quote\nrejected\n```"
+
+        self.check_webhook(
+            "deployment_hook__rejected",
+            expected_topic_name,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Deployment Hook",
+        )
+
     def test_emoji_award_in_snippet(self) -> None:
         expected_topic_name = "sample / snippet #4831194 Sample Snippet"
         expected_message = "Varun Kolanu added the emoji :thumbsup:."
