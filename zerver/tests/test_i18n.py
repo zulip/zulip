@@ -175,6 +175,39 @@ class TranslationTestCase(ZulipTestCase):
         with mock.patch("zerver.lib.i18n.get_language_list", return_value=mocked_language_list):
             self.assertEqual(get_browser_language_code(req), "de")
 
+    def test_get_language_translation_data(self) -> None:
+        from unittest import mock
+
+        from zerver.lib.i18n import get_language_translation_data
+
+        # 1. English immediately returns an empty dict
+        self.assertEqual(get_language_translation_data("en"), {})
+
+        with (
+            mock.patch("builtins.open", new_callable=mock.mock_open) as mock_file,
+            mock.patch("zerver.lib.i18n.orjson.loads") as mock_loads,
+            mock.patch("builtins.print"),
+        ):
+            # 2. Test successful merge of base and regional locales
+            # The first dict simulates the base file, the second simulates the regional file
+            mock_loads.side_effect = [
+                {"hello": "hallo", "world": "welt", "apple": "apfel"},
+                {"world": "regional_welt", "apple": ""},
+            ]
+
+            data = get_language_translation_data("de-at")
+
+            # 'hello' only exists in base
+            self.assertEqual(data["hello"], "hallo")
+            # 'world' exists in both, regional should win
+            self.assertEqual(data["world"], "regional_welt")
+            # 'apple' is empty in regional, base should NOT be overwritten
+            self.assertEqual(data["apple"], "apfel")
+
+            # 3. Test that missing files are handled safely
+            mock_file.side_effect = FileNotFoundError
+            self.assertEqual(get_language_translation_data("invalid-lang"), {})
+
 
 class JsonTranslationTestCase(ZulipTestCase):
     @override
