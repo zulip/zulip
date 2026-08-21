@@ -54,17 +54,33 @@ export function build_bot_edit_widget($target: JQuery): UploadWidget {
         $preview_text,
         $preview_image,
     );
+
+    $("#bot-avatar-upload-widget .image-delete-button").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        display_avatar_delete_started("bot-avatar-upload-widget");
+        delete_function({
+            on_success() {
+                display_avatar_delete_complete("bot-avatar-upload-widget");
+                get_file_input().val("");
+            },
+            on_error() {
+                display_avatar_delete_complete("bot-avatar-upload-widget");
+                $("#bot-avatar-upload-widget .image-delete-button").show();
+            },
+        });
+    });
 }
 
-function display_avatar_delete_complete(): void {
-    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
-    $("#user-avatar-upload-widget .image-upload-text").show();
+function display_avatar_delete_complete(container_id: string): void {
+    $(`#${container_id} .upload-spinner-background`).css({visibility: "hidden"});
+    $(`#${container_id} .image-upload-text`).show();
 }
 
-function display_avatar_delete_started(): void {
-    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "visible"});
-    $("#user-avatar-upload-widget .image-upload-text").hide();
-    $("#user-avatar-upload-widget .image-delete-button").hide();
+function display_avatar_delete_started(container_id: string): void {
+    $(`#${container_id} .upload-spinner-background`).css({visibility: "visible"});
+    $(`#${container_id} .image-upload-text`).hide();
+    $(`#${container_id} .image-delete-button`).hide();
 }
 
 export function build_user_avatar_widget(upload_function: UploadFunction): void {
@@ -90,11 +106,11 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
         e.preventDefault();
         e.stopPropagation();
         function delete_user_avatar(): void {
-            display_avatar_delete_started();
+            display_avatar_delete_started("user-avatar-upload-widget");
             void channel.del({
                 url: "/json/users/me/avatar",
                 success() {
-                    display_avatar_delete_complete();
+                    display_avatar_delete_complete("user-avatar-upload-widget");
 
                     // Need to clear input because of a small edge case
                     // where you try to upload the same image you just deleted.
@@ -102,7 +118,7 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
                     // Rest of the work is done via the user_events -> avatar_url event we will get
                 },
                 error() {
-                    display_avatar_delete_complete();
+                    display_avatar_delete_complete("user-avatar-upload-widget");
                     $("#user-avatar-upload-widget .image-delete-button").show();
                 },
             });
