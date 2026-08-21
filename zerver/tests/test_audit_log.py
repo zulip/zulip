@@ -25,6 +25,14 @@ from zerver.actions.create_user import (
     do_create_user,
     do_reactivate_user,
 )
+from zerver.actions.custom_profile_fields import (
+    check_remove_custom_profile_field_value,
+    do_remove_realm_custom_profile_field,
+    do_update_user_custom_profile_data_if_changed,
+    try_add_realm_custom_profile_field,
+    try_reorder_realm_custom_profile_fields,
+    try_update_realm_custom_profile_field,
+)
 from zerver.actions.navigation_views import (
     do_add_navigation_view,
     do_remove_navigation_view,
@@ -95,6 +103,7 @@ from zerver.lib.upload import get_emoji_url
 from zerver.lib.user_groups import get_group_setting_value_for_api
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
+    CustomProfileField,
     Message,
     NamedUserGroup,
     RealmAuditLog,
@@ -2265,4 +2274,172 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(
             audit_log_entries[0].event_type,
             AuditLogEventType.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_REMOVED,
+        )
+
+
+class TestCustomProfileFieldsAuditLog(ZulipTestCase):
+    def test_custom_profile_fields_audit_log(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        now = timezone_now()
+        field = try_add_realm_custom_profile_field(
+            realm=realm,
+            name="Zodiac",
+            field_type=CustomProfileField.SHORT_TEXT,
+            acting_user=hamlet,
+        )
+
+        audit_log = RealmAuditLog.objects.get(
+            event_type=AuditLogEventType.REALM_CUSTOM_PROFILE_FIELD_CREATED,
+            event_time__gte=now,
+        )
+        self.assertEqual(audit_log.acting_user, hamlet)
+        self.assertEqual(audit_log.realm, realm)
+        self.assertEqual(
+            audit_log.extra_data,
+            {
+                "custom_profile_field": {
+                    "id": field.id,
+                    "name": "Zodiac",
+                    "field_type": CustomProfileField.SHORT_TEXT,
+                    "hint": "",
+                    "field_data": "",
+                    "order": field.id,
+                    "display_in_profile_summary": False,
+                    "required": False,
+                    "editable_by_user": True,
+                }
+            },
+        )
+
+        # Test updating a custom profile field
+        now = timezone_now()
+        try_update_realm_custom_profile_field(
+            realm=realm,
+            field=field,
+            name="Zodiac Sign",
+            hint="Your astrological zodiac sign",
+            acting_user=hamlet,
+        )
+
+        audit_log = RealmAuditLog.objects.get(
+            event_type=AuditLogEventType.REALM_CUSTOM_PROFILE_FIELD_UPDATED,
+            event_time__gte=now,
+        )
+        self.assertEqual(audit_log.acting_user, hamlet)
+        self.assertEqual(
+            audit_log.extra_data,
+            {
+                "field_id": field.id,
+                "changed_field": {
+                    "id": field.id,
+                    "name": "Zodiac Sign",
+                    "field_type": CustomProfileField.SHORT_TEXT,
+                    "hint": "Your astrological zodiac sign",
+                    "field_data": "",
+                    "order": field.id,
+                    "display_in_profile_summary": False,
+                    "required": False,
+                    "editable_by_user": True,
+                },
+            },
+        )
+
+        # Test reordering custom profile fields
+        now = timezone_now()
+        fields = CustomProfileField.objects.filter(realm=realm).order_by("order")
+        old_order = list(fields.values_list("id", flat=True))
+        new_order = [*old_order[1:], old_order[0]]
+        try_reorder_realm_custom_profile_fields(realm, new_order, acting_user=hamlet)
+
+        audit_log = RealmAuditLog.objects.get(
+            event_type=AuditLogEventType.REALM_CUSTOM_PROFILE_FIELD_ORDER_CHANGED,
+            event_time__gte=now,
+        )
+        self.assertEqual(audit_log.acting_user, hamlet)
+        self.assertEqual(
+            audit_log.extra_data,
+            {
+                RealmAuditLog.OLD_VALUE: old_order,
+                RealmAuditLog.NEW_VALUE: new_order,
+            },
+        )
+
+        # Test updating a user's custom profile field value
+        now = timezone_now()
+        field_2 = try_add_realm_custom_profile_field(
+            realm=realm,
+            name="Pets",
+            field_type=CustomProfileField.SHORT_TEXT,
+            acting_user=hamlet,
+        )
+        do_update_user_custom_profile_data_if_changed(
+            hamlet,
+            [{"id": field_2.id, "value": "Dog"}],
+            acting_user=hamlet,
+            notify=False,
+        )
+
+        audit_log = RealmAuditLog.objects.get(
+            event_type=AuditLogEventType.USER_CUSTOM_PROFILE_FIELD_VALUE_CHANGED,
+            event_time__gte=now,
+        )
+        self.assertEqual(audit_log.acting_user, hamlet)
+        self.assertEqual(audit_log.modified_user, hamlet)
+        self.assertEqual(
+            audit_log.extra_data,
+            {
+                "field_id": field_2.id,
+                RealmAuditLog.OLD_VALUE: None,
+                RealmAuditLog.NEW_VALUE: "Dog",
+            },
+        )
+
+        # Test removing a user's custom profile field value
+        now = timezone_now()
+        check_remove_custom_profile_field_value(
+            hamlet, field_2.id, acting_user=hamlet, notify=False
+        )
+
+        audit_log = RealmAuditLog.objects.get(
+            event_type=AuditLogEventType.USER_CUSTOM_PROFILE_FIELD_VALUE_CHANGED,
+            event_time__gte=now,
+        )
+        self.assertEqual(audit_log.acting_user, hamlet)
+        self.assertEqual(audit_log.modified_user, hamlet)
+        self.assertEqual(
+            audit_log.extra_data,
+            {
+                "field_id": field_2.id,
+                RealmAuditLog.OLD_VALUE: "Dog",
+                RealmAuditLog.NEW_VALUE: None,
+            },
+        )
+
+        # Test deleting a custom profile field
+        now = timezone_now()
+        field_id = field.id
+        do_remove_realm_custom_profile_field(realm, field, acting_user=hamlet)
+
+        audit_log = RealmAuditLog.objects.get(
+            event_type=AuditLogEventType.REALM_CUSTOM_PROFILE_FIELD_DELETED,
+            event_time__gte=now,
+        )
+        self.assertEqual(audit_log.acting_user, hamlet)
+        self.assertEqual(
+            audit_log.extra_data,
+            {
+                "custom_profile_field": {
+                    "id": field_id,
+                    "name": "Zodiac Sign",
+                    "field_type": CustomProfileField.SHORT_TEXT,
+                    "hint": "Your astrological zodiac sign",
+                    "field_data": "",
+                    "order": field_id,
+                    "display_in_profile_summary": False,
+                    "required": False,
+                    "editable_by_user": True,
+                }
+            },
         )
