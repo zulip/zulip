@@ -1,0 +1,105 @@
+{
+  "event_name": "project.updated",
+  "time": "2026-01-26T16:24:21.877509619Z",
+  "data": {
+    "doer": {
+      "id": 1,
+      "name": "John Doe",
+      "username": "jdoe",
+      "created": "2026-01-16T13:18:58+01:00",
+      "updated": "2026-01-26T10:20:43+01:00"
+    },
+    "project": {
+      "id": 35,
+      "title": "Test",
+      "description": "<p>Hello!</p>",
+      "identifier": "tst",
+      "hex_color": "1973ff",
+      "parent_project_id": 0,
+      "owner": {
+        "id": 1,
+        "name": "John Doe",
+        "username": "jdoe",
+        "created": "2026-01-16T13:18:58+01:00",
+        "updated": "2026-01-26T10:20:43+01:00"
+      },
+      "is_archived": false,
+      "background_information": {
+        "id": 6,
+        "unsplash_id": "db35dVpZlQw",
+        "author": "beckerworks",
+        "author_name": "David Becker"
+      },
+      "background_blur_hash": "LDBW0fM|9G%L0$M{%Lxu9G%1g4M{",
+      "is_favorite": false,
+      "position": 2293760,
+      "views": [
+        {
+          "id": 137,
+          "title": "List",
+          "project_id": 35,
+          "view_kind": "list",
+          "filter": {
+            "s": "",
+            "sort_by": null,
+            "order_by": null,
+            "filter": "done = false",
+            "filter_include_nulls": false
+          },
+          "position": 100,
+          "bucket_configuration_mode": "none",
+          "bucket_configuration": null,
+          "default_bucket_id": 0,
+          "done_bucket_id": 0,
+          "updated": "2026-01-26T17:06:42+01:00",
+          "created": "2026-01-26T17:06:42+01:00"
+        },
+        {
+          "id": 138,
+          "title": "Gantt",
+          "project_id": 35,
+          "view_kind": "gantt",
+          "filter": null,
+          "position": 200,
+          "bucket_configuration_mode": "none",
+          "bucket_configuration": null,
+          "default_bucket_id": 0,
+          "done_bucket_id": 0,
+          "updated": "2026-01-26T17:06:42+01:00",
+          "created": "2026-01-26T17:06:42+01:00"
+        },
+        {
+          "id": 139,
+          "title": "Table",
+          "project_id": 35,
+          "view_kind": "table",
+          "filter": null,
+          "position": 300,
+          "bucket_configuration_mode": "none",
+          "bucket_configuration": null,
+          "default_bucket_id": 0,
+          "done_bucket_id": 0,
+          "updated": "2026-01-26T17:06:42+01:00",
+          "created": "2026-01-26T17:06:42+01:00"
+        },
+        {
+          "id": 140,
+          "title": "Kanban",
+          "project_id": 35,
+          "view_kind": "kanban",
+          "filter": null,
+          "position": 400,
+          "bucket_configuration_mode": "manual",
+          "bucket_configuration": null,
+          "default_bucket_id": 248,
+          "done_bucket_id": 250,
+          "updated": "2026-01-26T17:06:42+01:00",
+          "created": "2026-01-26T17:06:42+01:00"
+        }
+      ],
+      "max_permission": 0,
+      "created": "2026-01-26T17:06:42+01:00",
+      "updated": "2026-01-26T17:24:21+01:00"
+    }
+  }
+}
