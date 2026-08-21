@@ -1,5 +1,6 @@
 from typing import Any
 from unittest import mock
+from urllib.parse import parse_qs
 
 import orjson
 import requests
@@ -47,9 +48,6 @@ def connection_error(final_url: Any, **request_kwargs: Any) -> Any:
 class DoRestCallTests(ZulipTestCase):
     def mock_event(self, bot_user: UserProfile) -> dict[str, Any]:
         return {
-            # In the tests there is no active queue processor, so retries don't get processed.
-            # Therefore, we need to emulate `retry_event` in the last stage when the maximum
-            # retries have been exceeded.
             "failed_tries": 3,
             "message": {
                 "display_recipient": "Verona",
@@ -287,8 +285,6 @@ The webhook got a response with status code *400*.""",
         expect_logging_exception = self.assertLogs(level="ERROR")
         expect_fail = mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
 
-        # Don't think that we should catch and assert whole log output(which is actually a very big error traceback).
-        # We are already asserting bot_owner_notification.content which verifies exception did occur.
         with (
             mock.patch.object(service_handler, "session") as session,
             expect_logging_exception,
@@ -319,8 +315,6 @@ I'm a generic exception :(
         mock_event = self.mock_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
-        # The "widget_content" value must be a valid widget_content
-        # dict; passing a plain string will cause validation to fail.
         response = {"content": "whatever", "widget_content": "test"}
         expect_logging_info = self.assertLogs(level="INFO")
         expect_fail = mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
@@ -354,8 +348,6 @@ The outgoing webhook server attempted to send a message in Zulip, but that reque
         expect_fail = mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
 
         with responses.RequestsMock(assert_all_requests_are_fired=True) as requests_mock:
-            # We mock the endpoint to return response with valid json which doesn't
-            # translate to a dict like is expected,
             requests_mock.add(
                 requests_mock.POST, "https://example.zulip.com", status=200, json=True
             )
@@ -384,7 +376,6 @@ The outgoing webhook server attempted to send a message in Zulip, but that reque
         expect_fail = mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
 
         with responses.RequestsMock(assert_all_requests_are_fired=True) as requests_mock:
-            # We mock the endpoint to return response with a body which isn't valid json.
             requests_mock.add(
                 requests_mock.POST,
                 "https://example.zulip.com",
@@ -530,7 +521,6 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
 
             self.assert_length(responses.calls, 1)
 
-            # create message dict to get the message url
             message = {
                 "display_recipient": [{"id": bot.id}, {"id": sender.id}],
                 "stream_id": 999,
@@ -716,12 +706,6 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
 
     @responses.activate
     def test_empty_string_json_as_response_to_outgoing_webhook_request(self) -> None:
-        """
-        Verifies that if the response to the request triggered by mentioning the bot
-        is the json representation of the empty string, the outcome is the same
-        as {"response_not_required": True} - since this behavior is kept for
-        backwards-compatibility.
-        """
         bot_owner = self.example_user("othello")
         bot = self.create_outgoing_bot(bot_owner)
 
@@ -741,7 +725,51 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         self.assert_length(logs.output, 1)
         self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
 
-        # We verify that no new message was sent, since that's the behavior implied
-        # by the response_not_required option.
         last_message = self.get_last_message()
         self.assertEqual(last_message.id, stream_message_id)
+
+    @responses.activate
+    def test_slack_outgoing_webhook_request_format(self) -> None:
+        bot_owner = self.example_user("othello")
+        bot = do_create_user(
+            bot_owner=bot_owner,
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            full_name="Slack Bot",
+            email="slack-bot@zulip.testserver",
+            realm=bot_owner.realm,
+            password=None,
+            acting_user=None,
+        )
+
+        add_service(
+            "slack_service",
+            user_profile=bot,
+            interface=Service.SLACK,
+            base_url="https://slack.example.com/",
+            token="slack_token",
+        )
+
+        responses.add(
+            responses.POST,
+            "https://slack.example.com/",
+            json={"text": "Hello from Slack handler"},
+        )
+
+        self.send_stream_message(
+            bot_owner, "Denmark", content=f"@**{bot.full_name}** status update", topic_name="bar"
+        )
+
+        self.assert_length(responses.calls, 1)
+        request_body = responses.calls[0].request.body
+
+        parsed_data = {
+            k: v[0]
+            for k, v in parse_qs(
+                request_body.decode() if isinstance(request_body, bytes) else str(request_body)
+            ).items()
+        }
+
+        self.assertEqual(parsed_data["token"], "slack_token")
+        self.assertEqual(parsed_data["command"], "/Slack Bot")
+        self.assertEqual(parsed_data["text"], "status update")
+        self.assertEqual(parsed_data["trigger_word"], f"@**{bot.full_name}**")
