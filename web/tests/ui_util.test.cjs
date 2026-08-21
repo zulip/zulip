@@ -119,3 +119,44 @@ run_test("replace_emoji_name_with_emoji_unicode", () => {
     const man_cook_emoji = "👨‍🍳";
     assert.equal(man_cook_emoji, ui_util.convert_emoji_element_to_unicode($emoji));
 });
+
+run_test("restore_recipient_bar_controls_at_point", () => {
+    assert.equal(ui_util.SHOW_RECIPIENT_BAR_CONTROLS_CLASS, "show-recipient-bar-controls");
+
+    const $header = $.create("message-header-stub");
+    const $target = $.create("pointer-target");
+    $target.set_closest_results(".message_header", $header);
+
+    const original = document.elementFromPoint;
+    document.elementFromPoint = () => ({
+        to_$() {
+            return $target;
+        },
+    });
+    try {
+        ui_util.restore_recipient_bar_controls_at_point(12, 34);
+        assert.ok($header.hasClass("show-recipient-bar-controls"));
+    } finally {
+        document.elementFromPoint = original;
+    }
+
+    const $other = $.create("unrelated-pointer-target");
+    $other.set_closest_results(".message_header", []);
+    document.elementFromPoint = () => ({
+        to_$() {
+            return $other;
+        },
+    });
+    try {
+        ui_util.restore_recipient_bar_controls_at_point(0, 0);
+    } finally {
+        document.elementFromPoint = original;
+    }
+
+    document.elementFromPoint = () => null;
+    try {
+        ui_util.restore_recipient_bar_controls_at_point(1, 1);
+    } finally {
+        document.elementFromPoint = original;
+    }
+});

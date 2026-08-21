@@ -119,6 +119,14 @@
                 transition: opacity 0.15s ease-in;
             }
         }
+
+        /* Applied when the header was replaced under the pointer. */
+        &.show-recipient-bar-controls {
+            .recipient_bar_controls {
+                opacity: 1;
+                transition: opacity 0.15s ease-in;
+            }
+        }
     }
 
     #report-message-preview-container & {

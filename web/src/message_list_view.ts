@@ -33,6 +33,7 @@ import * as muted_users from "./muted_users.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
 import * as reactions from "./reactions.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
@@ -289,6 +290,25 @@ function get_topic_edit_properties(message: Message): {
     };
 }
 
+function hide_popovers_anchored_to_header($header: JQuery): void {
+    // These popovers attach to nodes inside the header. Hide them
+    // before replaceWith so Tippy is not left pointing at a detached
+    // reference (which can rebuild the menu with missing items).
+    const instances = [
+        popover_menus.popover_instances.topics_menu,
+        popover_menus.popover_instances.change_visibility_policy,
+    ];
+    for (const instance of instances) {
+        if (!instance?.state.isVisible) {
+            continue;
+        }
+        const reference = instance.reference;
+        if (reference instanceof Element && $header.has(reference).length > 0) {
+            popover_menus.hide_current_popover_if_visible(instance);
+        }
+    }
+}
+
 type RecipientRowUser = {
     full_name: string;
     should_add_guest_user_indicator: boolean;
@@ -401,6 +421,7 @@ export function populate_group_from_message(
     message: Message,
     date_unchanged: boolean,
     year_changed: boolean,
+    always_display_date = narrow_state.is_search_view(),
 ): MessageGroup {
     const is_stream = message.is_stream;
     const is_private = message.is_private;
@@ -410,7 +431,8 @@ export function populate_group_from_message(
 
     // Each searched message is a self-contained result,
     // so we always display date in the recipient bar for those messages.
-    const always_display_date = narrow_state.is_search_view();
+    // Callers should pass the message list's own filter; defaulting to
+    // the current narrow is only correct for the active view.
     if (is_stream) {
         assert(message.type === "stream");
         // stream messages have string display_recipient
@@ -975,6 +997,7 @@ export class MessageListView {
                 message_for_next_group,
                 same_day(message_for_next_group, prev_message),
                 !same_year(message_for_next_group, prev_message),
+                !this.list.data.filter.contains_no_partial_conversations(),
             );
         };
 
@@ -1815,6 +1838,10 @@ export class MessageListView {
         // class.
         const $header = $(`#${CSS.escape(group.message_group_id)}`).find(".message_header");
 
+        // replaceWith drops :hover until the pointer moves (#24228).
+        const was_hovered = $header.is(":hover");
+        hide_popovers_anchored_to_header($header);
+
         // TODO: It's possible that we no longer need this populate
         // call; it was introduced in an earlier version of this code
         // where we constructed an artificial message group for this
@@ -1829,6 +1856,7 @@ export class MessageListView {
                 group.message_containers[0]!.msg,
                 group.date_unchanged,
                 group.message_containers[0]!.year_changed,
+                !this.list.data.filter.contains_no_partial_conversations(),
             ),
             // We don't want `populate_group_from_message` to generate a
             // new id. We also preserve the message containers, since this
@@ -1836,9 +1864,19 @@ export class MessageListView {
             preserved_properties,
         );
 
-        const $rendered_recipient_row = $(render_recipient_row(group));
+        // `_render_group` passes this via the parent template.
+        const $rendered_recipient_row = $(
+            render_recipient_row({
+                ...group,
+                use_match_properties: this.list.is_keyword_search(),
+            }),
+        );
 
         $header.replaceWith($rendered_recipient_row);
+
+        if (was_hovered) {
+            $rendered_recipient_row.addClass(ui_util.SHOW_RECIPIENT_BAR_CONTROLS_CLASS);
+        }
     }
 
     _rerender_message(

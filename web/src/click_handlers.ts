@@ -567,6 +567,14 @@ export function initialize(): void {
     }
 
     $("#message_feed_container").on(
+        "mouseleave",
+        `.message_header.${ui_util.SHOW_RECIPIENT_BAR_CONTROLS_CLASS}`,
+        function (this: HTMLElement) {
+            $(this).removeClass(ui_util.SHOW_RECIPIENT_BAR_CONTROLS_CLASS);
+        },
+    );
+
+    $("#message_feed_container").on(
         "click",
         ".narrows_by_topic, .narrows_by_recipient",
         function (this: HTMLElement, e) {
@@ -580,7 +588,9 @@ export function initialize(): void {
             if ($(this).hasClass("narrows_by_topic")) {
                 e.preventDefault();
                 const row_id = get_row_id_for_narrowing(this);
+                const {clientX, clientY} = e;
                 message_view.narrow_by_topic(row_id, {trigger: "message header"});
+                ui_util.restore_recipient_bar_controls_at_point(clientX, clientY);
             }
         },
     );
