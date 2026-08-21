@@ -370,6 +370,12 @@ export function upload_pasted_file(textarea: HTMLTextAreaElement, pasted_file: F
     upload_files(edit_uploader, edit_config(row), [pasted_file]);
 }
 
+export function upload_recorded_audio_file(recorded_file: File): void {
+    // A voice message is an ordinary audio upload; reuse the compose upload
+    // pipeline so the recording renders with the inline <audio> player.
+    upload_files(compose_upload_object, compose_config, [recorded_file]);
+}
+
 // Borrowed from tus-js-client code at
 // https://github.com/tus/tus-js-client/blob/ca63ba254ea8766438b9d422f6f94284911f1fa5/lib/index.d.ts#L79
 // The library does not export this type, hence requiring a copy here.
