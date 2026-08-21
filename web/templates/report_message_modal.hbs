@@ -3,7 +3,7 @@
         {{t "Your report will be sent to the private moderation requests channel for this organization." }}
     </p>
     <div id="report-message-preview-container" class="input-group">
-        {{> recipient_row recipient_row_data}}
+        {{> recipient_row recipient_row_data show_channel_name=show_channel_name}}
         {{> single_message message_container_data}}
     </div>
     <div class="input-group">
