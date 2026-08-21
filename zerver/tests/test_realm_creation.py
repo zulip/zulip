@@ -8,6 +8,7 @@ import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 
 from confirmation import settings as confirmation_settings
 from zerver.actions.create_realm import do_change_realm_subdomain
@@ -41,6 +42,7 @@ class DemoCreationTest(ZulipTestCase):
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id)
         signups_channel, _ = create_stream_if_needed(notification_bot.realm, "signups")
 
+        now = timezone_now()
         result = self.submit_demo_creation_form()
         realm = Realm.objects.filter(
             demo_organization_scheduled_deletion_date__isnull=False
@@ -64,6 +66,9 @@ class DemoCreationTest(ZulipTestCase):
         user_profile = UserProfile.objects.all().order_by("id").last()
         assert user_profile is not None
         self.assert_logged_in_user_id(user_profile.id)
+        self.assert_login_audit_log_entry(
+            user_profile, method="demo_organization_creation", since=now
+        )
 
         # Demo organizations are created without setting an email address for the owner.
         self.assertEqual(user_profile.delivery_email, "")
@@ -219,7 +224,9 @@ class DemoCreationTest(ZulipTestCase):
 
 class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
-    def check_able_to_create_realm(self, email: str, password: str = "test") -> None:
+    def check_able_to_create_realm(
+        self, email: str, password: str = "test", *, expected_login_method: str = "email"
+    ) -> None:
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         notification_bot = get_system_bot(settings.NOTIFICATION_BOT, internal_realm.id)
         signups_stream, _ = create_stream_if_needed(notification_bot.realm, "signups")
@@ -259,6 +266,7 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
 
+        now = timezone_now()
         result = self.submit_reg_form_for_user(
             email, password, realm_subdomain=string_id, realm_name=org_name
         )
@@ -267,11 +275,21 @@ class RealmCreationTest(ZulipTestCase):
             result["Location"].startswith("http://custom-test.testserver/accounts/login/subdomain/")
         )
 
+        # Following that redirect logs the new owner into their new
+        # organization's subdomain.
+        result = self.client_get(result["Location"], subdomain=string_id)
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], f"http://{string_id}.testserver")
+
         # Make sure the realm is created
         realm = get_realm(string_id)
         self.assertEqual(realm.string_id, string_id)
         user = get_user(email, realm)
         self.assertEqual(user.realm, realm)
+        self.assert_logged_in_user_id(user.id)
+        # The login audit log entry records how the owner authenticated,
+        # not the dummy backend do_login re-authenticates them through.
+        self.assert_login_audit_log_entry(user, method=expected_login_method, since=now)
 
         # Check that user is the owner.
         self.assertEqual(user.role, UserProfile.ROLE_REALM_OWNER)
@@ -352,13 +370,22 @@ class RealmCreationTest(ZulipTestCase):
     def test_create_realm_existing_email(self) -> None:
         self.check_able_to_create_realm("hamlet@zulip.com")
 
-    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
+    @override_settings(
+        AUTHENTICATION_BACKENDS=(
+            "zproject.backends.ZulipLDAPAuthBackend",
+            # Production always has this backend enabled, and completing
+            # the login on the new organization's subdomain requires it.
+            "zproject.backends.ZulipDummyBackend",
+        )
+    )
     def test_create_realm_ldap_email(self) -> None:
         self.init_default_ldap_database()
 
         with self.settings(LDAP_EMAIL_ATTR="mail"):
             self.check_able_to_create_realm(
-                "newuser_email@zulip.com", self.ldap_password("newuser_with_email")
+                "newuser_email@zulip.com",
+                self.ldap_password("newuser_with_email"),
+                expected_login_method="ldap",
             )
 
     def test_create_realm_as_system_bot(self) -> None:

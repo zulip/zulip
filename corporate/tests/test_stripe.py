@@ -239,7 +239,15 @@ class StripeTest(StripeTestCase):
         self.check_initial_ledger_entry(plan, licenses_purchased)
         # Check RealmAuditLog
         audit_log_entries = list(
-            RealmAuditLog.objects.filter(acting_user=user)
+            RealmAuditLog.objects.filter(
+                acting_user=user,
+                event_type__in=[
+                    AuditLogEventType.STRIPE_CUSTOMER_CREATED,
+                    AuditLogEventType.STRIPE_CARD_CHANGED,
+                    AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                    AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
+                ],
+            )
             .values_list("event_type", "event_time")
             .order_by("id")
         )
@@ -356,7 +364,15 @@ class StripeTest(StripeTestCase):
         self.check_initial_ledger_entry(plan, 123)
         # Check RealmAuditLog
         audit_log_entries = list(
-            RealmAuditLog.objects.filter(acting_user=user)
+            RealmAuditLog.objects.filter(
+                acting_user=user,
+                event_type__in=[
+                    AuditLogEventType.STRIPE_CUSTOMER_CREATED,
+                    AuditLogEventType.STRIPE_CARD_CHANGED,
+                    AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                    AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
+                ],
+            )
             .values_list("event_type", "event_time")
             .order_by("id")
         )
@@ -476,7 +492,15 @@ class StripeTest(StripeTestCase):
         self.check_initial_ledger_entry(plan, self.seat_count)
         # Check RealmAuditLog
         audit_log_entries = list(
-            RealmAuditLog.objects.filter(acting_user=user)
+            RealmAuditLog.objects.filter(
+                acting_user=user,
+                event_type__in=[
+                    AuditLogEventType.STRIPE_CUSTOMER_CREATED,
+                    AuditLogEventType.STRIPE_CARD_CHANGED,
+                    AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                    AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
+                ],
+            )
             .values_list("event_type", "event_time")
             .order_by("id")
         )
@@ -604,7 +628,15 @@ class StripeTest(StripeTestCase):
         self.check_initial_ledger_entry(plan, 123)
         # Check RealmAuditLog
         audit_log_entries = list(
-            RealmAuditLog.objects.filter(acting_user=user)
+            RealmAuditLog.objects.filter(
+                acting_user=user,
+                event_type__in=[
+                    AuditLogEventType.STRIPE_CUSTOMER_CREATED,
+                    AuditLogEventType.STRIPE_CARD_CHANGED,
+                    AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                    AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
+                ],
+            )
             .values_list("event_type", "event_time")
             .order_by("id")
         )
@@ -711,7 +743,15 @@ class StripeTest(StripeTestCase):
             )
             self.check_initial_ledger_entry(plan, self.seat_count)
             audit_log_entries = list(
-                RealmAuditLog.objects.filter(acting_user=user)
+                RealmAuditLog.objects.filter(
+                    acting_user=user,
+                    event_type__in=[
+                        AuditLogEventType.STRIPE_CUSTOMER_CREATED,
+                        AuditLogEventType.STRIPE_CARD_CHANGED,
+                        AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                        AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
+                    ],
+                )
                 .values_list("event_type", "event_time")
                 .order_by("id")
             )
@@ -909,7 +949,15 @@ class StripeTest(StripeTestCase):
 
             self.check_initial_ledger_entry(plan, 123)
             audit_log_entries = list(
-                RealmAuditLog.objects.filter(acting_user=user)
+                RealmAuditLog.objects.filter(
+                    acting_user=user,
+                    event_type__in=[
+                        AuditLogEventType.STRIPE_CUSTOMER_CREATED,
+                        AuditLogEventType.STRIPE_CARD_CHANGED,
+                        AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                        AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
+                    ],
+                )
                 .values_list("event_type", "event_time")
                 .order_by("id")
             )
@@ -1184,7 +1232,15 @@ class StripeTest(StripeTestCase):
 
             self.check_initial_ledger_entry(plan, 123)
             audit_log_entries = list(
-                RealmAuditLog.objects.filter(acting_user=user)
+                RealmAuditLog.objects.filter(
+                    acting_user=user,
+                    event_type__in=[
+                        AuditLogEventType.STRIPE_CUSTOMER_CREATED,
+                        AuditLogEventType.STRIPE_CARD_CHANGED,
+                        AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                        AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
+                    ],
+                )
                 .values_list("event_type", "event_time")
                 .order_by("id")
             )
@@ -1367,7 +1423,15 @@ class StripeTest(StripeTestCase):
 
             self.check_initial_ledger_entry(plan, 123)
             audit_log_entries = list(
-                RealmAuditLog.objects.filter(acting_user=user)
+                RealmAuditLog.objects.filter(
+                    acting_user=user,
+                    event_type__in=[
+                        AuditLogEventType.STRIPE_CUSTOMER_CREATED,
+                        AuditLogEventType.STRIPE_CARD_CHANGED,
+                        AuditLogEventType.CUSTOMER_PLAN_CREATED,
+                        AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
+                    ],
+                )
                 .values_list("event_type", "event_time")
                 .order_by("id")
             )
