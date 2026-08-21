@@ -1055,6 +1055,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
         bot_owner_dropdown_widget.setup();
 
         assert(bot !== undefined);
+        assert(bot.is_bot);
         $("#bot-role-select").val(bot.role);
         if (!current_user.is_owner) {
             $("#bot-role-select")
@@ -1064,7 +1065,31 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
                 .hide();
         }
 
-        avatar_widget = avatar.build_bot_edit_widget($("#bot-edit-form"));
+        function delete_bot_avatar(callbacks: {
+            on_success: () => void;
+            on_error: () => void;
+        }): void {
+            assert(bot !== undefined);
+            assert(bot.is_bot);
+            const url = "/json/bots/" + encodeURIComponent(bot.user_id);
+            void channel.patch({
+                url,
+                data: {delete_avatar: JSON.stringify(true)},
+                success() {
+                    bot.avatar_source = realm.realm_default_avatar_source;
+                    callbacks.on_success();
+                },
+                error(xhr) {
+                    ui_report.error(
+                        $t_html({defaultMessage: "Failed"}),
+                        xhr,
+                        $("#bot-edit-form-error"),
+                    );
+                    callbacks.on_error();
+                },
+            });
+        }
+
 
         if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
             assert(service !== undefined && "interface" in service);
