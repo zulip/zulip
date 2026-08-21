@@ -114,7 +114,9 @@ def update_feature_level_in_api_docs(new_feature_level: int) -> None:
         for file_name in changelog_files_list:
             temporary_feature_level = file_name[: -len(".md")]
 
-            pattern = rf"Zulip \d+\.\d+ \(feature level {temporary_feature_level}\)"
+            # \s+ also matches a phrase that an editor has line-wrapped,
+            # with the placeholder landing on a later line.
+            pattern = rf"Zulip\s+\d+\.\d+\s+\(feature\s+level\s+{temporary_feature_level}\)"
             replacement = f"Zulip {current_version} (feature level {new_feature_level})"
             content, n = re.subn(pattern, replacement, content)
             num_replaces += n
