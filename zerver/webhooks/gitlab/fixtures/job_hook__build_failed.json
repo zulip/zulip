@@ -1,0 +1,82 @@
+{
+    "object_kind": "build",
+    "ref": "master",
+    "tag": false,
+    "before_sha": "08a8d8fda9038d82249227e60818d8023fe5e125",
+    "sha": "0794985e8d4e9ec790c07bf764530841851d073c",
+    "retries_count": 0,
+    "build_id": 14003953980,
+    "build_name": "build-job",
+    "build_stage": "build",
+    "build_status": "failed",
+    "build_created_at": "2026-04-20 16:38:06 UTC",
+    "build_started_at": "2026-04-20 16:44:02 UTC",
+    "build_finished_at": "2026-04-20 16:44:34 UTC",
+    "build_created_at_iso": "2026-04-20T16:38:06Z",
+    "build_started_at_iso": "2026-04-20T16:44:02Z",
+    "build_finished_at_iso": "2026-04-20T16:44:34Z",
+    "build_duration": 31.226933,
+    "build_queued_duration": 355.352288,
+    "build_allow_failure": false,
+    "build_failure_reason": "script_failure",
+    "pipeline_id": 2466073078,
+    "runner": {
+        "id": 32976645,
+        "description": "6-green.saas-linux-small-amd64.runners-manager.gitlab.com/default",
+        "runner_type": "instance_type",
+        "active": true,
+        "is_shared": true,
+        "tags": [
+            "saas-linux-small-amd64",
+            "gitlab--duo"
+        ]
+    },
+    "project_id": 77624161,
+    "project_name": "HydrallHarsh / TEST-1",
+    "user": {
+        "id": 18515580,
+        "name": "HydrallHarsh",
+        "username": "HydrallHarsh",
+        "avatar_url": "https://secure.gravatar.com/avatar/552c486d24108fc2455757fe13b4d81a23c6f2d652f979bbddb10a36d3b66298?s=80&d=identicon",
+        "email": "[REDACTED]"
+    },
+    "commit": {
+        "id": 2466073078,
+        "name": null,
+        "sha": "0794985e8d4e9ec790c07bf764530841851d073c",
+        "message": "Edit DemoApplication.java",
+        "author_name": "HydrallHarsh",
+        "author_email": "user@example.com",
+        "author_url": "https://gitlab.com/HydrallHarsh",
+        "status": "running",
+        "duration": null,
+        "started_at": "2026-04-20 16:44:03 UTC",
+        "finished_at": null,
+        "started_at_iso": "2026-04-20T16:44:03Z",
+        "finished_at_iso": null
+    },
+    "repository": {
+        "name": "TEST-1",
+        "url": "git@gitlab.com:HydrallHarsh/test-1.git",
+        "description": "Testing- Webhook",
+        "homepage": "https://gitlab.com/HydrallHarsh/test-1",
+        "git_http_url": "https://gitlab.com/HydrallHarsh/test-1.git",
+        "git_ssh_url": "git@gitlab.com:HydrallHarsh/test-1.git",
+        "visibility_level": 0
+    },
+    "project": {
+        "id": 77624161,
+        "name": "TEST-1",
+        "description": "Testing- Webhook",
+        "web_url": "https://gitlab.com/HydrallHarsh/test-1",
+        "avatar_url": null,
+        "git_ssh_url": "git@gitlab.com:HydrallHarsh/test-1.git",
+        "git_http_url": "https://gitlab.com/HydrallHarsh/test-1.git",
+        "namespace": "HydrallHarsh",
+        "visibility_level": 0,
+        "path_with_namespace": "HydrallHarsh/test-1",
+        "default_branch": "master",
+        "ci_config_path": ""
+    },
+    "environment": null
+}
