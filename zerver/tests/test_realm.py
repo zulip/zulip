@@ -54,6 +54,7 @@ from zerver.actions.user_groups import (
     do_change_user_group_permission_setting,
 )
 from zerver.actions.user_settings import do_change_avatar_fields
+from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.cache import cache_delete, realm_rendered_description_cache_key
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
@@ -67,6 +68,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.thumbnail import ThumbnailFormat
 from zerver.lib.upload import upload_avatar_image, upload_message_attachment
+from zerver.lib.user_topics import topic_has_visibility_policy
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -85,6 +87,7 @@ from zerver.models import (
     UserGroupMembership,
     UserMessage,
     UserProfile,
+    UserTopic,
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -906,6 +909,11 @@ class RealmTest(ZulipTestCase):
         self.send_stream_message(cordelia, "Atlantis")
         atlantis = get_stream("Atlantis", realm)
 
+        # Per-topic visibility policies move to the surviving stream.
+        do_set_user_topic_visibility_policy(
+            cordelia, atlantis, "test", visibility_policy=UserTopic.VisibilityPolicy.MUTED
+        )
+
         stats = merge_streams(realm, denmark, denmark)
         self.assertEqual(stats, (0, 0, 0))
 
@@ -913,6 +921,12 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(stats, (1, 1, 1))
 
         self.assertEqual(get_stream("Atlantis", realm).deactivated, True)
+        self.assertFalse(UserTopic.objects.filter(user_profile=cordelia, stream=atlantis).exists())
+        self.assertTrue(
+            topic_has_visibility_policy(
+                cordelia, denmark.id, "test", UserTopic.VisibilityPolicy.MUTED
+            )
+        )
 
         stats = merge_streams(realm, denmark, new_stream_announcements_stream)
         realm.refresh_from_db()
