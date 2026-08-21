@@ -275,7 +275,7 @@ ZULIP_SERVICE_SECURITY_ALERTS = False
 PUSH_NOTIFICATION_BOUNCER_URL: str | None = None
 # Keep this default True, so that legacy deployments that configured PUSH_NOTIFICATION_BOUNCER_URL
 # without overriding SUBMIT_USAGE_STATISTICS get the original behavior. If a server configures
-# the modern ZULIP_SERVICES setting, all this will be ignored.
+# the modern ZULIP_SERVICE_* settings, all this will be ignored.
 SUBMIT_USAGE_STATISTICS = True
 
 PROMOTE_SPONSORING_ZULIP = True
