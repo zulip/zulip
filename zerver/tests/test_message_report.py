@@ -108,12 +108,10 @@ class ReportMessageTest(ZulipTestCase):
         # Make sure channel message link is accessible.
         message_link = stream_message_url(
             None,
-            dict(
-                id=reported_message.id,
-                stream_id=channel_id,
-                display_recipient=channel_name,
-                topic=topic_name,
-            ),
+            reported_message.id,
+            channel_id,
+            channel_name,
+            topic_name,
             include_base_url=False,
         )
 
@@ -173,10 +171,8 @@ class ReportMessageTest(ZulipTestCase):
 
         direct_message_link = pm_message_url(
             realm,
-            dict(
-                id=reported_dm.id,
-                display_recipient=get_display_recipient(reported_dm.recipient),
-            ),
+            reported_dm.id,
+            get_display_recipient(reported_dm.recipient),
         )
         expected_message = self.build_direct_message_report_template(
             direct_message_link=direct_message_link,
@@ -212,10 +208,8 @@ class ReportMessageTest(ZulipTestCase):
         message_sent_to = f"{reporting_user_mention} reported a message sent by {reported_user_mention} to {list_of_direct_message_recipients} at {reported_gdm_date_sent}."
         direct_message_link = pm_message_url(
             realm,
-            dict(
-                id=reported_gdm.id,
-                display_recipient=get_display_recipient(reported_gdm.recipient),
-            ),
+            reported_gdm.id,
+            get_display_recipient(reported_gdm.recipient),
         )
         expected_message = self.build_direct_message_report_template(
             direct_message_link=direct_message_link,

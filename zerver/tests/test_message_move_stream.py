@@ -767,13 +767,9 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
         messages = get_topic_messages(user_profile, new_stream, "test")
-        message = {
-            "id": msg_id_later,
-            "stream_id": new_stream.id,
-            "display_recipient": new_stream.name,
-            "topic": "test",
-        }
-        moved_message_link = stream_message_url(messages[1].realm, message)
+        moved_message_link = stream_message_url(
+            messages[1].realm, msg_id_later, new_stream.id, new_stream.name, "test"
+        )
         self.assert_length(messages, 2)
         self.assertEqual(messages[0].id, msg_id_later)
         self.assertEqual(
@@ -812,13 +808,9 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
         messages = get_topic_messages(user_profile, new_stream, "test")
-        message = {
-            "id": msg_id_later,
-            "stream_id": new_stream.id,
-            "display_recipient": new_stream.name,
-            "topic": "test",
-        }
-        moved_message_link = stream_message_url(messages[2].realm, message)
+        moved_message_link = stream_message_url(
+            messages[2].realm, msg_id_later, new_stream.id, new_stream.name, "test"
+        )
         self.assert_length(messages, 3)
         self.assertEqual(messages[0].id, msg_id_later)
         self.assertEqual(
@@ -1877,13 +1869,9 @@ class MessageMoveStreamTest(ZulipTestCase):
         self.assertEqual(messages[1].content, "Third")
 
         messages = get_topic_messages(user_profile, stream, "edited")
-        message = {
-            "id": msg_id,
-            "stream_id": stream.id,
-            "display_recipient": stream.name,
-            "topic": "edited",
-        }
-        moved_message_link = stream_message_url(messages[1].realm, message)
+        moved_message_link = stream_message_url(
+            messages[1].realm, msg_id, stream.id, stream.name, "edited"
+        )
         self.assert_length(messages, 2)
         self.assertEqual(messages[0].content, "First")
         self.assertEqual(
@@ -1924,13 +1912,9 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
         messages = get_topic_messages(user_profile, stream, "edited")
-        message = {
-            "id": msg_id,
-            "stream_id": stream.id,
-            "display_recipient": stream.name,
-            "topic": "edited",
-        }
-        moved_message_link = stream_message_url(messages[0].realm, message)
+        moved_message_link = stream_message_url(
+            messages[0].realm, msg_id, stream.id, stream.name, "edited"
+        )
         self.assert_length(messages, 2)
         self.assertEqual(messages[0].content, "First")
         self.assertEqual(
