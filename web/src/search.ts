@@ -156,6 +156,16 @@ export function initialize(opts: {on_narrow_search: OnNarrowSearch}): void {
 
     $("#searchbox_form").on("focusin", () => {
         $("#searchbox-input-container").toggleClass("focused", true);
+
+        const active = document.activeElement;
+
+        if (
+            active &&
+            $(active).is("#searchbox-input-container") &&
+            !$("#search_query").is(":focus")
+        ) {
+            initiate_search();
+        }
     });
 
     $("#searchbox_form").on("focusout", () => {
