@@ -22,10 +22,33 @@
     --color-user-circle-deactivated: hsl(0deg 0% 50%);
     /* stylelint-enable color-no-hex */
 
-    /* NOTE: These colors are also used in zulip web app for banner
-       colors. Do grep for these variables when changing them and
-       confirm on CZO on whether the colors there need to change as
-       well. */
+    /* =========================================================
+     * APP VARIABLES
+     * NOTE: These variables are shared with the Zulip web app.
+     * Before making any changes here, please confirm on CZO
+     * if the same changes need to be carried over.
+     * ========================================================= */
+
+    /* Link colors */
+    --color-text-link: light-dark(hsl(210deg 94% 42%), hsl(200deg 100% 50%));
+    --color-text-link-decoration: light-dark(
+        color-mix(in oklch, hsl(210deg 94% 42%) 20%, transparent),
+        color-mix(in oklch, hsl(200deg 100% 50%) 20%, transparent)
+    );
+    --color-text-link-hover: light-dark(
+        hsl(212deg 100% 50%),
+        hsl(200deg 100% 60%)
+    );
+    --color-text-link-decoration-hover: light-dark(
+        color-mix(in oklch, hsl(212deg 100% 50%) 70%, transparent),
+        color-mix(in oklch, hsl(200deg 100% 60%) 70%, transparent)
+    );
+    --color-text-link-active: light-dark(
+        hsl(212deg 100% 30%),
+        hsl(200deg 100% 50%)
+    );
+
+    /* Banner colors */
     /* Banners - Neutral Variant */
     --color-text-neutral-banner: light-dark(
         hsl(229deg 12% 25%),
@@ -65,6 +88,10 @@
         hsl(204deg 58% 92%),
         hsl(204deg 100% 12%)
     );
+
+    /* =========================================================
+     * END APP VARIABLES
+     * ========================================================= */
 
     /* Keyboard shortcuts */
     --color-keyboard-shortcuts: light-dark(
@@ -213,6 +240,27 @@
             border: none;
             vertical-align: text-top;
             margin-bottom: 0;
+        }
+    }
+
+    a:not(:where(.not-content *)) {
+        /* The :not(:where(.not-content *)) is required to avoid
+           applying these styles to links in certain components
+           which use the .not-content class.
+           Reference: https://starlight.astro.build/components/using-components/#compatibility-with-starlights-styles */
+        color: var(--color-text-link);
+        text-decoration-color: var(--color-text-link-decoration);
+        text-decoration-style: solid;
+        text-underline-offset: 2px;
+
+        &:hover {
+            color: var(--color-text-link-hover);
+            text-decoration-color: var(--color-text-link-decoration-hover);
+        }
+
+        &:active {
+            color: var(--color-text-link-active);
+            text-decoration-color: currentcolor;
         }
     }
 
