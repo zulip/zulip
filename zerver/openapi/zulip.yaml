@@ -2830,9 +2830,10 @@ paths:
 
                                     This field should be used by clients to determine if the event
                                     only provides a rendering update to the message content,
-                                    such as for an [inline URL preview][inline-url-previews].
-                                    When `true`, the event does not reflect a user-generated edit
-                                    and does not modify the message history.
+                                    such as for an [inline URL preview][inline-url-previews] or
+                                    when a [link preview is removed](/api/update-link-previews).
+                                    When `true`, the event does not reflect an edit to the
+                                    message's content and does not modify the message history.
 
                                     **Changes**: New in Zulip 5.0 (feature level 114). Clients can
                                     correctly identify these rendering update events prior to this
@@ -10955,6 +10956,91 @@ paths:
                           {
                             "code": "BAD_REQUEST",
                             "msg": "You don't have permission to delete this message",
+                            "result": "error",
+                          }
+  /messages/{message_id}/link_previews:
+    patch:
+      operationId: update-link-previews
+      summary: Remove link previews
+      tags: ["messages"]
+      description: |
+        Removes individual auto-generated [link
+        previews](/help/image-video-and-website-previews) from a message.
+
+        Removing a link preview changes only how the message is displayed;
+        the link itself and the message's content are unchanged, and the
+        removal applies for every user who can see the message. Because of
+        that, this requires the same [permissions as editing the message's
+        content](/help/restrict-message-editing-and-deletion), including the
+        organization's time limit for editing messages.
+
+        The re-rendered message is delivered to clients as an
+        [`update_message`](/api/get-events#update_message) event with
+        `rendering_only: true`; the message's [edit
+        history](/api/get-message-history) is not modified.
+
+        **Changes**: New in Zulip 13.0 (feature level ZF-39494a).
+      parameters:
+        - $ref: "#/components/parameters/MessageId"
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                op:
+                  description: |
+                    The operation to perform on the link previews for `urls`.
+                    Currently, `remove` is the only supported value; restoring
+                    a removed link preview is planned as a future addition.
+                  type: string
+                  enum:
+                    - remove
+                  example: remove
+                urls:
+                  description: |
+                    An array of the URLs whose link previews should be removed.
+
+                    Each URL must be one that the message links to and that the
+                    organization previews; a URL that has no preview, such as a
+                    link to an uploaded file, cannot have one removed. A URL
+                    whose website preview has not arrived yet can be removed,
+                    since those previews are generated asynchronously. URLs
+                    whose previews were already removed are ignored, so removing
+                    a preview twice has no additional effect.
+                  type: array
+                  items:
+                    type: string
+                  example: ["https://example.com/photo.jpg"]
+              required:
+                - op
+                - urls
+            encoding:
+              urls:
+                contentType: application/json
+      responses:
+        "200":
+          $ref: "#/components/responses/SimpleSuccess"
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/InvalidMessageError"
+                      - description: |
+                          An example JSON response for when the specified message does not exist:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when a URL in `urls` has no
+                          link preview to remove:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "URL does not have a link preview: https://example.com/article",
                             "result": "error",
                           }
   /messages/{message_id}/report:

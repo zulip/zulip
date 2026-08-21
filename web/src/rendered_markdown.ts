@@ -10,6 +10,7 @@ import render_decorated_channel_name from "../templates/decorated_channel_name.h
 import render_markdown_audio from "../templates/markdown_audio.hbs";
 import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import render_mention_content_wrapper from "../templates/mention_content_wrapper.hbs";
+import render_remove_preview_button from "../templates/remove_preview_button.hbs";
 import render_topic_link from "../templates/topic_link.hbs";
 
 import * as alert_words from "./alert_words.ts";
@@ -25,6 +26,7 @@ import * as rows from "./rows.ts";
 import * as rtl from "./rtl.ts";
 import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
+import {parse_html} from "./ui_util.ts";
 import * as user_groups from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
@@ -123,6 +125,22 @@ function get_message_for_message_content($content: JQuery): Message | undefined 
     }
     const message_id = rows.id($message_row);
     return message_store.get(message_id);
+}
+
+function is_removable_preview_url(href: string): boolean {
+    let url;
+    try {
+        // An upload written as a full URL renders as a realm-relative path
+        // with no leading slash, so the href has to be resolved first.
+        url = new URL(href, window.location.href);
+    } catch {
+        // A preview we cannot identify is not one to offer removing.
+        return false;
+    }
+    // Uploaded files are message content rather than a generated preview.
+    // Hosts are compared rather than origins, so that http and https forms
+    // of the realm's own URL both match.
+    return url.host !== window.location.host || !url.pathname.startsWith("/user_uploads/");
 }
 
 // Function to safely wrap mentioned names in a DOM element.
@@ -402,6 +420,31 @@ export const update_elements = ($content: JQuery): void => {
         });
         $codehilite.addClass("zulip-code-block");
     });
+
+    // Inject remove-preview buttons on link previews (embeds, images,
+    // videos). Skips user uploads. The button is revealed only to
+    // viewers who can edit the message, via CSS keyed on the edit-window
+    // timer (see rendered_markdown.css), and the action is re-checked in
+    // click_handlers.ts. Skip compose/edit previews (`.preview_content`),
+    // which render inside a message row and would otherwise get a stray button.
+    message ??= get_message_for_message_content($content);
+    if (message !== undefined && $content.closest(".preview_content").length === 0) {
+        $content
+            .find(".message_embed, .message-media-preview-image, .message-media-preview-video")
+            .each(function (): void {
+                const $preview = $(this);
+
+                const preview_url = $preview.find("a").attr("href");
+                if (preview_url === undefined || !is_removable_preview_url(preview_url)) {
+                    return;
+                }
+
+                const $remove_preview_button = parse_html(
+                    render_remove_preview_button({preview_url}),
+                );
+                $preview.append($remove_preview_button);
+            });
+    }
 
     $content.find("audio").each(function (): void {
         // We grab the audio source and title for

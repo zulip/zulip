@@ -115,6 +115,10 @@ class MessageRenderingResult:
     mentions_user_group_ids: set[int]
     alert_words: set[str]
     links_for_preview: set[str]
+    # URLs this rendering generated a link preview for, including the
+    # rewritten forms that some previews link to. Uploaded files are
+    # excluded; they are message content rather than a generated preview.
+    removable_preview_urls: set[str]
     user_ids_with_alert_words: set[int]
     potential_attachment_path_ids: list[str]
     thumbnail_spinners: set[str]
@@ -305,7 +309,7 @@ def rewrite_local_links_to_relative(db_data: DbData | None, link: str) -> str:
     return link
 
 
-def maybe_add_attachment_path_id(url: str, zmd: "ZulipMarkdown") -> None:
+def get_user_upload_path_id(url: str, zmd: "ZulipMarkdown") -> str | None:
     # Due to rewrite_local_links_to_relative, we need to
     # handle both relative URLs beginning with
     # `/user_uploads` and beginning with `user_uploads`.
@@ -315,12 +319,19 @@ def maybe_add_attachment_path_id(url: str, zmd: "ZulipMarkdown") -> None:
     host = parsed_url.netloc
 
     if host != "" and (zmd.zulip_realm is None or host != zmd.zulip_realm.host):
-        return
+        return None
 
     if not parsed_url.path.startswith("/user_uploads/"):
+        return None
+
+    return parsed_url.path.removeprefix("/user_uploads/")
+
+
+def maybe_add_attachment_path_id(url: str, zmd: "ZulipMarkdown") -> None:
+    path_id = get_user_upload_path_id(url, zmd)
+    if path_id is None:
         return
 
-    path_id = parsed_url.path.removeprefix("/user_uploads/")
     zmd.zulip_rendering_result.potential_attachment_path_ids.append(path_id)
 
 
@@ -1023,6 +1034,29 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         if info["remove"] is not None:
             info["parent"].remove(info["remove"])
 
+    def get_preview_url_aliases(self, url: str) -> set[str]:
+        # Some previews link to a rewritten form of the source URL (Dropbox
+        # media, image-source correction), so the URL recorded when removing
+        # a preview can differ from the one written in the message. Match
+        # every form the preview below might use.
+        aliases = {url}
+        dropbox_media = self.dropbox_media(url)
+        if isinstance(dropbox_media, DropboxInlineMediaInfo):
+            aliases.add(dropbox_media.media_url)
+        elif dropbox_media is None and self.is_image(url):
+            image_source = self.corrected_image_source(url)
+            if image_source is not None:
+                aliases.add(image_source)
+        return aliases
+
+    def record_removable_preview(self, url: str, aliases: set[str]) -> None:
+        # Called from every branch below that generates a preview. Uploaded
+        # files are message content rather than a generated preview.
+        if get_user_upload_path_id(url, self.zmd) is not None:
+            return
+
+        self.zmd.zulip_rendering_result.removable_preview_urls |= aliases
+
     @override
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
@@ -1033,6 +1067,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         unique_previewable_urls = {
             found_url.result[0] for found_url in found_urls if not found_url.family.in_blockquote
         }
+
+        removed_preview_urls: set[str] = set()
+        if self.zmd.zulip_message is not None:
+            removed_preview_urls = set(self.zmd.zulip_message.removed_preview_urls)
 
         # Update message.has_link attribute.
         if len(found_urls) > 0:
@@ -1058,6 +1096,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             else:
                 continue
 
+            preview_url_aliases = self.get_preview_url_aliases(url)
+
+            # Skip preview generation for URLs whose preview has been
+            # removed, matching the preview's rewritten URL forms too.
+            if preview_url_aliases & removed_preview_urls:
+                continue
+
             dropbox_media = self.dropbox_media(url)
             if isinstance(dropbox_media, DropboxDeferredPreviewInfo):
                 # Media previewed via its OpenGraph image. Register the URL
@@ -1065,6 +1110,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 # the embed from it.
                 if self.zmd.url_embed_data is None or url not in self.zmd.url_embed_data:
                     self.zmd.zulip_rendering_result.links_for_preview.add(url)
+                    self.record_removable_preview(url, preview_url_aliases)
                     continue
 
                 # If there is data, but it's None, we did process the URL,
@@ -1091,6 +1137,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                         image=extracted_data.image,
                     ),
                 )
+                self.record_removable_preview(url, preview_url_aliases)
                 continue
 
             if isinstance(dropbox_media, DropboxInlineMediaInfo):
@@ -1102,6 +1149,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     self.handle_image_inlining(root, found_url)
                 else:
                     self.handle_video_inlining(root, found_url)
+                self.record_removable_preview(url, preview_url_aliases)
                 continue
 
             # This needs to run after all the dropbox code has been run.
@@ -1111,6 +1159,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # url.
             if self.is_video(url):
                 self.handle_video_inlining(root, found_url)
+                self.record_removable_preview(url, preview_url_aliases)
                 continue
 
             if self.is_image(url):
@@ -1121,6 +1170,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                         result=(image_source, image_source),
                     )
                 self.handle_image_inlining(root, found_url)
+                self.record_removable_preview(url, preview_url_aliases)
                 continue
 
             netloc = urlsplit(url).netloc
@@ -1133,6 +1183,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             youtube = self.youtube_image(url)
             if youtube is not None:
                 self.handle_youtube_url_inlining(root, found_url, youtube)
+                self.record_removable_preview(url, preview_url_aliases)
                 # NOTE: We don't `continue` here, to allow replacing the URL with
                 # the title, if INLINE_URL_EMBED_PREVIEW feature is enabled.
                 # The entire preview would ideally be shown only if the feature
@@ -1148,6 +1199,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
             if self.zmd.url_embed_data is None or url not in self.zmd.url_embed_data:
                 self.zmd.zulip_rendering_result.links_for_preview.add(url)
+                self.record_removable_preview(url, preview_url_aliases)
                 continue
 
             # Existing but being None means that we did process the
@@ -1165,6 +1217,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                         found_url.family.child.text = text
                 continue
             self.add_embed(root, url, extracted_data)
+            self.record_removable_preview(url, preview_url_aliases)
             if self.vimeo_id(url):
                 title = self.vimeo_title(extracted_data)
                 if title:
@@ -2592,6 +2645,7 @@ def do_convert(
         mentions_user_group_ids=set(),
         alert_words=set(),
         links_for_preview=set(),
+        removable_preview_urls=set(),
         user_ids_with_alert_words=set(),
         potential_attachment_path_ids=[],
         thumbnail_spinners=set(),
