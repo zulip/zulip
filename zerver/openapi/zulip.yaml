@@ -10974,9 +10974,11 @@ paths:
         parameter is required. Clients should also enforce and communicate this
         behavior in the UI.
 
-        **Changes**: New in Zulip 11.0 (feature level 382). This API builds on
-        the `moderation_request_channel` realm setting, which was added in
-        feature level 331.
+        **Changes**: In Zulip 13.0 (feature level ZF-f6b664), this endpoint
+        now returns an error if the message report fails to be sent to the
+        moderation request channel. New in Zulip 11.0 (feature level 382).
+        This API builds on the `moderation_request_channel` realm setting,
+        which was added in feature level 331.
       parameters:
         - $ref: "#/components/parameters/MessageId"
       requestBody:

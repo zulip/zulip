@@ -7,7 +7,7 @@ from pydantic import StringConstraints
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import access_message
-from zerver.lib.message_report import send_message_report
+from zerver.lib.message_report import send_message_report, send_report_confirmation_dm
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_string_in_validator
@@ -33,12 +33,17 @@ def report_message_backend(
 
     reported_message = access_message(user_profile, message_id, is_modifying_message=False)
     with override_language(user_profile.realm.default_language):
-        send_message_report(
+        message_report_id = send_message_report(
             user_profile,
             user_profile.realm,
             reported_message,
             report_type,
             description,
         )
+
+    if message_report_id is None:
+        raise JsonableError(_("Failed to send the message report."))
+
+    send_report_confirmation_dm(user_profile, user_profile.realm, reported_message, report_type)
 
     return json_success(request)
