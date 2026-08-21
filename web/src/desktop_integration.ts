@@ -28,6 +28,11 @@ export function initialize(): void {
         browser_history.go_to_location("settings/notifications");
     });
 
+    // Tell the desktop app that the web app now plays notification
+    // sounds via play_notification_sound, so it no longer needs to
+    // filter out that sound and mute itself.
+    electron_bridge.set_play_notification_sound_supported?.(true);
+
     // The code below is for sending a message received from notification reply which
     // is often referred to as inline reply feature. This is done so desktop app doesn't
     // have to depend on channel.post for setting crsf_token and message_view.narrow_by_topic
