@@ -8,6 +8,7 @@ import {group_setting_value_schema, topic_link_schema} from "./types.ts";
 // Keep in sync with want() calls in zerver/lib/events.py.
 export const FETCH_EVENT_TYPES: string[] = [
     "alert_words",
+    "attachment",
     "channel_folders",
     "custom_profile_fields",
     "default_stream_groups",
