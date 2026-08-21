@@ -3,6 +3,13 @@ import orjson
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.webhooks.fixtureless_integrations import BO_NAME
 
+API_TOPIC_NAME = "API activity"
+ARTICLE_TOPIC_NAME = "Article: Getting started with your account"
+ARTICLE_MESSAGE_TEMPLATE = (
+    "Getting started with your account was {action}.\n"
+    "> A short tour of the first things to set up in your account."
+)
+
 
 class IntercomWebHookTests(WebhookTestCase):
     def test_ping(self) -> None:
@@ -72,3 +79,57 @@ class IntercomWebHookTests(WebhookTestCase):
         expected_topic_name = f"Admin: {BO_NAME}"
         expected_message = f"{BO_NAME} is no longer an admin."
         self.check_webhook("admin_removed_from_workspace", expected_topic_name, expected_message)
+
+    def test_api_request_completed(self) -> None:
+        expected_message = "`GET /admins` succeeded with status 200."
+        self.check_webhook("api_request_completed", API_TOPIC_NAME, expected_message)
+
+    def test_api_request_completed_with_error_status(self) -> None:
+        self.subscribe(self.test_user, self.channel_name)
+        payload = self.webhook_fixture_data(self.webhook_dir_name, "api_request_completed")
+        data = orjson.loads(payload)
+        data["data"]["item"]["response"]["status"] = 404
+        msg = self.send_webhook_payload(
+            self.test_user, self.url, orjson.dumps(data).decode(), content_type="application/json"
+        )
+        self.assert_channel_message(
+            message=msg,
+            channel_name=self.channel_name,
+            topic_name=API_TOPIC_NAME,
+            content="`GET /admins` failed with status 404.",
+        )
+
+    def test_article_created(self) -> None:
+        expected_message = ARTICLE_MESSAGE_TEMPLATE.format(action="created")
+        self.check_webhook("article_created", ARTICLE_TOPIC_NAME, expected_message)
+
+    def test_article_deleted(self) -> None:
+        expected_message = ARTICLE_MESSAGE_TEMPLATE.format(action="deleted")
+        self.check_webhook("article_deleted", ARTICLE_TOPIC_NAME, expected_message)
+
+    def test_article_published(self) -> None:
+        expected_message = ARTICLE_MESSAGE_TEMPLATE.format(action="published")
+        self.check_webhook("article_published", ARTICLE_TOPIC_NAME, expected_message)
+
+    def test_article_unpublished(self) -> None:
+        expected_message = ARTICLE_MESSAGE_TEMPLATE.format(action="unpublished")
+        self.check_webhook("article_unpublished", ARTICLE_TOPIC_NAME, expected_message)
+
+    def test_article_updated(self) -> None:
+        expected_message = ARTICLE_MESSAGE_TEMPLATE.format(action="updated")
+        self.check_webhook("article_updated", ARTICLE_TOPIC_NAME, expected_message)
+
+    def test_article_without_description(self) -> None:
+        self.subscribe(self.test_user, self.channel_name)
+        payload = self.webhook_fixture_data(self.webhook_dir_name, "article_created")
+        data = orjson.loads(payload)
+        data["data"]["item"]["description"] = None
+        msg = self.send_webhook_payload(
+            self.test_user, self.url, orjson.dumps(data).decode(), content_type="application/json"
+        )
+        self.assert_channel_message(
+            message=msg,
+            channel_name=self.channel_name,
+            topic_name=ARTICLE_TOPIC_NAME,
+            content="Getting started with your account was created.",
+        )
