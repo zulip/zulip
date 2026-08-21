@@ -196,11 +196,15 @@ def server_processes() -> list[list[str]]:
         # things, but search/etc. features won't work.
         return main_cmds
 
+    # tools/provision's PostgreSQL needs PGHOST=127.0.0.1 so libpq's
+    # .pgpass lookup matches.  When PGHOST is already set in the
+    # environment, leave it alone so process_fts_updates connects to
+    # the developer's chosen Postgres.
+    fts_env = ["env"] if "PGHOST" in os.environ else ["env", "PGHOST=127.0.0.1"]
     other_cmds = [
         ["./manage.py", "process_queue", "--all", *manage_args, "--automated"],
         [
-            "env",
-            "PGHOST=127.0.0.1",  # Force password authentication using .pgpass
+            *fts_env,
             "./puppet/zulip/files/postgresql/process_fts_updates",
             "--quiet",
         ],
