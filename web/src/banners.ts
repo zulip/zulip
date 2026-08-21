@@ -9,6 +9,7 @@ import type {ComponentIntent} from "./types.ts";
 export type Banner = {
     intent: ComponentIntent;
     label: string | Handlebars.SafeString;
+    label_id?: string;
     buttons: ActionButton[];
     close_button: boolean;
     custom_classes?: string;
