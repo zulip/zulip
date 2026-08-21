@@ -71,6 +71,7 @@ const stats_params_schema = z.object({
     upload_space_used: z.nullable(z.number()),
     guest_users: z.nullable(z.number()),
     translation_data: z.record(z.string(), z.string()),
+    twenty_four_hour_time: z.boolean(),
 });
 
 // Sync this with corporate.views.portico.team_view.
