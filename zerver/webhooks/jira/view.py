@@ -13,7 +13,7 @@ from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
-from zerver.lib.validator import WildValue, check_none_or, check_string
+from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     guess_zulip_user_from_external_account,
@@ -26,7 +26,6 @@ IGNORED_EVENTS = [
     "issuelink_created",
     "issuelink_deleted",
     "jira:version_released",
-    "jira:worklog_updated",
     "sprint_closed",
     "sprint_started",
     "worklog_created",
@@ -331,10 +330,43 @@ def handle_comment_deleted_event(payload: WildValue, user_profile: UserProfile) 
     )
 
 
+def format_time_spent(seconds: int) -> str:
+    hours, remainder = divmod(seconds, 3600)
+    minutes, _ = divmod(remainder, 60)
+
+    time_parts = []
+    if hours > 0:
+        time_parts.append(f"{hours}h")
+    if minutes > 0:
+        time_parts.append(f"{minutes}m")
+
+    return " ".join(time_parts) if time_parts else "0m"
+
+
+def handle_worklog_updated_event(payload: WildValue, user_profile: UserProfile) -> str:
+    author = get_issue_author(payload, user_profile.realm)
+    issue_string = get_issue_string(payload, with_title=True)
+
+    action = "updated a work log entry on"
+    for item in payload.get("changelog", {}).get("items", []):
+        field = item.get("field").tame(check_none_or(check_string))
+        # An empty WorklogId means the entry was deleted rather than edited.
+        if field == "WorklogId" and not item.get("to"):
+            action = "deleted a work log entry from"
+
+    time_spent = get_in(payload, ["issue", "fields", "timespent"])
+    if not isinstance(time_spent.value, int):
+        return f"{author} {action} {issue_string}."
+
+    total = format_time_spent(time_spent.tame(check_int))
+    return f"{author} {action} {issue_string}; total time spent is now {total}."
+
+
 JIRA_CONTENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue, UserProfile], str] | None] = {
     "jira:issue_created": handle_created_issue_event,
     "jira:issue_deleted": handle_deleted_issue_event,
     "jira:issue_updated": handle_updated_issue_event,
+    "jira:worklog_updated": handle_worklog_updated_event,
     "comment_created": handle_comment_created_event,
     "comment_updated": handle_comment_updated_event,
     "comment_deleted": handle_comment_deleted_event,
