@@ -40,6 +40,7 @@ from zerver.lib.markdown import (
     InlineInterestingLinkProcessor,
     MarkdownListPreprocessor,
     MessageRenderingResult,
+    ZulipNormalizeWhitespace,
     clear_web_link_regex_for_testing,
     content_has_emoji_syntax,
     image_preview_enabled,
@@ -476,6 +477,60 @@ class MarkdownMiscTest(ZulipTestCase):
                 content_type="text/html; charset=utf-8",
             )
             self.assertEqual(render_tex("foo"), "<i>html</i>")
+
+
+class ZulipNormalizeWhitespaceTest(ZulipTestCase):
+    def run_preprocessor(self, text: str) -> str:
+        preprocessor = ZulipNormalizeWhitespace(md=None)
+        lines = text.split("\n")
+        return "\n".join(preprocessor.run(lines))
+
+    def test_tab_in_plain_code_block_is_4_spaces(self) -> None:
+        """Tabs inside a plain fenced code block expand to 4 spaces, not 2."""
+        text = "```python\n\tprint('hello')\n```"
+        result = self.run_preprocessor(text)
+        lines = result.split("\n")
+        self.assertEqual(lines[1], "    print('hello')")
+
+    def test_tab_outside_code_block_is_2_spaces(self) -> None:
+        """Tabs outside any fenced code block expand to 2 spaces for list
+        indentation support."""
+        text = "\t* item"
+        result = self.run_preprocessor(text)
+        self.assertTrue(
+            result.startswith("  "),
+            f"Expected tab outside code block to expand to 2 spaces, got: {result!r}",
+        )
+
+    def test_blockquoted_fence_detected_as_code_block(self) -> None:
+        """A fenced code block preceded by a blockquote marker ('> ```') must
+        be detected as a fence, so that the tab inside the content is
+        expanded to 4 spaces (code mode) rather than 2 (list mode).
+        """
+        text = "> ```python\n\tprint('bug')\n> ```"
+        result = self.run_preprocessor(text)
+        lines = result.split("\n")
+        code_line = lines[1]
+        self.assertEqual(
+            code_line,
+            "    print('bug')",
+            f"Tab inside blockquoted code block should expand to 4 spaces, got: {code_line!r}",
+        )
+
+    def test_indented_fence_detected_as_code_block(self) -> None:
+        """A fenced code block with leading spaces ('   ```') must be
+        detected as a fence, so that the tab inside the content is
+        expanded to 4 spaces (code mode) rather than 2 (list mode).
+        """
+        text = "   ```python\n\tprint('indented bug')\n   ```"
+        result = self.run_preprocessor(text)
+        lines = result.split("\n")
+        code_line = lines[1]
+        self.assertEqual(
+            code_line,
+            "    print('indented bug')",
+            f"Tab inside indented code block should expand to 4 spaces, got: {code_line!r}",
+        )
 
 
 class MarkdownListPreprocessorTest(ZulipTestCase):

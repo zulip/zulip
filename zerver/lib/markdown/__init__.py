@@ -1533,6 +1533,59 @@ class Fence:
     is_code: bool
 
 
+class ZulipNormalizeWhitespace(markdown.preprocessors.Preprocessor):
+    """Like upstream NormalizeWhitespace, but expands tabs to 2 spaces
+    for list items while preserving standard 4-space tab stops inside
+    fenced code blocks.
+
+    Zulip uses 2-space indentation for nested bulleted and numbered
+    lists (see UListProcessor and ListIndentProcessor). The upstream
+    NormalizeWhitespace expands tabs using the Markdown instance's
+    tab_length (default 4), which causes tab-indented list items
+    (e.g. pasted from an external editor) to be treated as code blocks
+    or flat items rather than nested list items.
+
+    See https://github.com/zulip/zulip/issues/38436 for more details.
+    """
+
+    LIST_INDENT_TAB_WIDTH = 2
+    CODE_BLOCK_TAB_WIDTH = 4
+
+    # Matches fences preceded by optional leading spaces or blockquote markers,
+    # ensuring tab stops in indented/nested code blocks expand to 4 spaces.
+    PREFIXED_FENCE_RE = re.compile(r"^[ ]*(?:>[ ]*)*(?P<fence>(?:~{3,}|`{3,}))")
+
+    @override
+    def run(self, lines: list[str]) -> list[str]:
+        source = "\n".join(lines)
+        source = source.replace(markdown.util.STX, "").replace(markdown.util.ETX, "")
+        source = source.replace("\r\n", "\n").replace("\r", "\n") + "\n\n"
+
+        # Line-by-line processing to expand tabs to 2 spaces outside code blocks,
+        # and 4 spaces inside fenced code blocks.
+        current_fence: str | None = None
+        processed_lines: list[str] = []
+        for line in source.split("\n"):
+            m = FENCE_RE.match(line) or self.PREFIXED_FENCE_RE.match(line)
+            if m:
+                fence = m.group("fence")
+                if current_fence is None:
+                    # We are entering a fenced code/quote/spoiler block
+                    current_fence = fence
+                elif fence == current_fence:
+                    # We are leaving the fenced block
+                    current_fence = None
+
+            if current_fence is not None:
+                processed_lines.append(line.expandtabs(self.CODE_BLOCK_TAB_WIDTH))
+            else:
+                processed_lines.append(line.expandtabs(self.LIST_INDENT_TAB_WIDTH))
+
+        cleaned_source = "\n".join(processed_lines)
+        cleaned_source = re.sub(r"(?<=\n) +\n", "\n", cleaned_source)
+        return cleaned_source.split("\n")
+
+
 class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     """Allows list blocks that come directly after another block
     to be rendered as a list.
@@ -2234,9 +2287,7 @@ class ZulipMarkdown(markdown.Markdown):
         # reference - references don't make sense in a chat context.
         preprocessors = markdown.util.Registry[markdown.preprocessors.Preprocessor]()
         preprocessors.register(MarkdownListPreprocessor(self), "hanging_lists", 35)
-        preprocessors.register(
-            markdown.preprocessors.NormalizeWhitespace(self), "normalize_whitespace", 30
-        )
+        preprocessors.register(ZulipNormalizeWhitespace(self), "normalize_whitespace", 30)
         preprocessors.register(fenced_code.FencedBlockPreprocessor(self), "fenced_code_block", 25)
         preprocessors.register(
             AlertWordNotificationProcessor(self), "custom_text_notifications", 20
