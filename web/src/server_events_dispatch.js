@@ -1114,6 +1114,7 @@ export function dispatch_normal_event(event) {
                         msg_list.rerender();
                     }
                     // Rerender buddy list status emoji
+                    user_status.rerender_emoji_info();
                     activity_ui.build_user_sidebar();
                     break;
                 case "display_emoji_reaction_users":
