@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 from urllib.request import Request, urlopen
 
@@ -14,7 +15,14 @@ sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 from zerver.openapi.merge_api_changelogs import get_feature_level
 
 
-def get_pull_request_number_or_commit_hash() -> str:
+@dataclass
+class PullRequestData:
+    commit_hash: str
+    number: int | None = None
+    body: str | None = None
+
+
+def get_pull_request_data() -> PullRequestData:
     github_token = os.environ["GITHUB_TOKEN"]
     repo = os.environ["GITHUB_REPOSITORY"]
     commit_hash = os.environ["GITHUB_SHA"]
@@ -29,11 +37,15 @@ def get_pull_request_number_or_commit_hash() -> str:
         req = Request(url, headers=headers)
         with urlopen(req) as response:
             pull_requests = json.load(response)
-        if len(pull_requests) > 0:
-            return f"#{pull_requests[0]['number']}"
-        return commit_hash
+        if not pull_requests:
+            return PullRequestData(commit_hash=commit_hash)
+        return PullRequestData(
+            commit_hash=commit_hash,
+            number=pull_requests[0]["number"],
+            body=pull_requests[0]["body"],
+        )
     except Exception:
-        return commit_hash
+        return PullRequestData(commit_hash=commit_hash)
 
 
 def get_changelog_entries() -> str:
@@ -86,10 +98,13 @@ if __name__ == "__main__":
 
     topic = f"new feature level: {feature_level}"
 
-    pull_request = get_pull_request_number_or_commit_hash()
+    pull_request = get_pull_request_data()
+    pull_request_label = (
+        f"#{pull_request.number}" if pull_request.number else pull_request.commit_hash
+    )
     changelog_entries = get_changelog_entries()
 
-    content = f"{pull_request} has updated the API documentation for the following endpoints: \n{changelog_entries}"
+    content = f"{pull_request_label} has updated the API documentation for the following endpoints: \n{changelog_entries}"
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:
         with open(github_output, "a") as f:
