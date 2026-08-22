@@ -285,7 +285,7 @@ def get_recipient_info(
             # A topic participant is anyone who either sent or reacted to messages in the topic.
             # It is expensive to call `participants_for_topic` if the topic has a large number
             # of messages. But it is fine to call it here, as this gets called only if the message
-            # has syntax that might be a @topic mention without having confirmed the syntax isn't, say,
+            # has syntax that might be a @topic mention without having confirmed the syntax isn't, say,
             # in a code block.
             topic_participant_user_ids = participants_for_topic(
                 realm_id, recipient.id, stream_topic.topic_name
@@ -1641,8 +1641,9 @@ def send_pm_if_empty_stream(
 
     if sender.bot_owner is not None:
         with override_language(sender.bot_owner.default_language):
+            bot_mention = silent_mention_syntax_for_user(sender)
             arg_dict: dict[str, Any] = {
-                "bot_identity": f"`{sender.delivery_email}`",
+                "bot_identity": bot_mention,
             }
             if stream is None:
                 if stream_id is not None:
@@ -1680,6 +1681,60 @@ def send_pm_if_empty_stream(
                 ).format(**arg_dict)
 
         send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
+
+
+def send_pm_if_stream_access_denied(
+    stream: Stream,
+    realm: Realm,
+    sender: UserProfile,
+) -> None:
+    """If a bot tries to post to a channel it lacks permission to access,
+    sends a notification to the bot owner so they can fix permissions."""
+    if not sender.is_bot or sender.bot_owner is None:
+        return
+
+    with override_language(sender.bot_owner.default_language):
+        bot_mention = silent_mention_syntax_for_user(sender)
+        stream_link = get_stream_link_syntax(stream.id, stream.name)
+        permissions_link = f"#channels/{stream.id}/{stream.name}/permissions"
+        content = _(
+            "Your bot {bot_identity} tried to send a message to channel "
+            "{channel_name}, but it does not have permission to post there. "
+            "You can manage permissions [here]({permissions_link})."
+        ).format(
+            bot_identity=bot_mention,
+            channel_name=stream_link,
+            permissions_link=permissions_link,
+        )
+
+    send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
+
+
+def send_pm_if_topic_access_denied(
+    stream: Stream,
+    topic_name: str,
+    realm: Realm,
+    sender: UserProfile,
+) -> None:
+    """If a bot tries to post to a topic it lacks permission to create/post to,
+    sends a notification to the bot owner."""
+    if not sender.is_bot or sender.bot_owner is None:
+        return
+
+    with override_language(sender.bot_owner.default_language):
+        bot_mention = silent_mention_syntax_for_user(sender)
+        stream_link = get_stream_link_syntax(stream.id, stream.name)
+        content = _(
+            "Your bot {bot_identity} tried to send a message to "
+            "topic `{topic_name}` in channel {channel_name}, "
+            "but it does not have permission to post to this topic."
+        ).format(
+            bot_identity=bot_mention,
+            topic_name=topic_name,
+            channel_name=stream_link,
+        )
+
+    send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
 
 
 def validate_stream_name_with_pm_notification(
@@ -1892,14 +1947,18 @@ def check_message(
         user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
         system_groups_name_dict = get_realm_system_groups_name_dict(stream.realm_id)
         if not skip_stream_access_check:
-            stream_access_result = access_stream_for_send_message(
-                sender=sender,
-                stream=stream,
-                forwarder_user_profile=forwarder_user_profile,
-                archived_channel_notice=archived_channel_notice,
-                user_group_membership_details=user_group_membership_details,
-                system_groups_name_dict=system_groups_name_dict,
-            )
+            try:
+                stream_access_result = access_stream_for_send_message(
+                    sender=sender,
+                    stream=stream,
+                    forwarder_user_profile=forwarder_user_profile,
+                    archived_channel_notice=archived_channel_notice,
+                    user_group_membership_details=user_group_membership_details,
+                    system_groups_name_dict=system_groups_name_dict,
+                )
+            except JsonableError:
+                send_pm_if_stream_access_denied(stream, realm, sender)
+                raise
             sender_is_subscribed = stream_access_result["is_subscribed"]
         else:
             # Defensive assertion - the only currently supported use case
@@ -1908,21 +1967,28 @@ def check_message(
             # else can sneak past the access check.
             assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
 
-        check_for_can_create_topic_group_violation(
-            user_profile=sender,
-            stream=stream,
-            topic_name=topic_name,
-            user_group_membership_details=user_group_membership_details,
-            system_groups_name_dict=system_groups_name_dict,
-        )
+        try:
+            check_for_can_create_topic_group_violation(
+                user_profile=sender,
+                stream=stream,
+                topic_name=topic_name,
+                user_group_membership_details=user_group_membership_details,
+                system_groups_name_dict=system_groups_name_dict,
+            )
 
-        topics_policy = get_stream_topics_policy(realm, stream)
-        empty_topic_display_name = get_topic_display_name("", sender.default_language)
-        if topics_policy == StreamTopicsPolicyEnum.disable_empty_topic.value and topic_name == "":
-            raise MessagesNotAllowedInEmptyTopicError(empty_topic_display_name)
+            topics_policy = get_stream_topics_policy(realm, stream)
+            empty_topic_display_name = get_topic_display_name("", sender.default_language)
+            if (
+                topics_policy == StreamTopicsPolicyEnum.disable_empty_topic.value
+                and topic_name == ""
+            ):
+                raise MessagesNotAllowedInEmptyTopicError(empty_topic_display_name)
 
-        if topics_policy == StreamTopicsPolicyEnum.empty_topic_only.value and topic_name != "":
-            raise TopicsNotAllowedError(empty_topic_display_name)
+            if topics_policy == StreamTopicsPolicyEnum.empty_topic_only.value and topic_name != "":
+                raise TopicsNotAllowedError(empty_topic_display_name)
+        except JsonableError:
+            send_pm_if_topic_access_denied(stream, topic_name, realm, sender)
+            raise
 
     elif addressee.is_private():
         user_profiles = addressee.user_profiles()
