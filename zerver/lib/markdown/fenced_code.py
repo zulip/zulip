@@ -101,7 +101,7 @@ FENCE_RE = re.compile(
     r"""
     # ~~~ or ```
     (?P<fence>
-        ^(?:~{3,}|`{3,})
+        ^(?:(?P<fence_tilde>~{3,})|(?P<fence_backtick>`{3,}))
     )
 
     [ ]* # spaces
@@ -117,9 +117,19 @@ FENCE_RE = re.compile(
 
         [ ]* # spaces
 
-        # header for features that use fenced block header syntax (like spoilers)
+        # Header for features that use fenced block header syntax (like
+        # spoilers). We only need to forbid the header from containing the
+        # fence's own delimiter character, since that's the only character
+        # that could be confused with a continuation/closing of the fence.
+        # This means a `~~~`-fenced header can contain backticks (so that
+        # inline code spans work in spoiler titles), and a
+        # ```-fenced header can contain tildes.
         (?P<header>
-            [^ ~`][^~`]*
+            (?(fence_tilde)
+                [^ ~][^~]*
+            |
+                [^ `][^`]*
+            )
         )?
         \}?
     )?
