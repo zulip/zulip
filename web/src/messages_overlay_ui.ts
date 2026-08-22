@@ -38,6 +38,26 @@ export function activate_element(elem: HTMLElement, context: Context): void {
     elem.focus({preventScroll: true});
 }
 
+// A row's info-box is focused directly when the user Tabs onto the row
+// itself, but focus can also land on a focusable control nested inside it
+// (e.g. an action button reached via Tab). In the latter case, we must not
+// call `.focus()` on the row, since that would immediately steal focus back
+// from the control the user just tabbed to. We still mark the row active so
+// it keeps its selection highlight and so arrow-key navigation resumes from
+// it.
+export function handle_row_focus(
+    focused_element: HTMLElement,
+    row: HTMLElement,
+    context: Context,
+): void {
+    if (focused_element === row) {
+        activate_element(row, context);
+    } else {
+        $(`.${CSS.escape(context.box_item_selector)}`).removeClass("active");
+        row.classList.add("active");
+    }
+}
+
 export function get_focused_element_id(context: Context): string | undefined {
     return row_with_focus(context).attr(context.id_attribute_name);
 }
