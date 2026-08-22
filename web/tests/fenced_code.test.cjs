@@ -7,6 +7,13 @@ const {run_test} = require("./lib/test.cjs");
 
 const fenced_code = zrequire("fenced_code");
 
+// Shared identity stash function used to restore fenced_code's default
+// (no-op) stashing behavior at the end of tests that override it. Reusing
+// one reference (rather than a fresh `(text) => text` literal per test)
+// keeps this as a single coverage location that the next stash-triggering
+// test naturally exercises.
+const identity_stash_func = (text) => text;
+
 // Check the default behavior of fenced code blocks
 // works properly before Markdown is initialized.
 run_test("fenced_block_defaults", () => {
@@ -140,7 +147,42 @@ run_test("process_fenced_code_spoiler", () => {
     assert.ok(stashed.some((s) => s.includes("spoiler-block")));
 
     // Restore the default no-op stash func.
-    fenced_code.set_stash_func((text) => text);
+    fenced_code.set_stash_func(identity_stash_func);
+});
+
+run_test("process_fenced_code_spoiler_header_backticks", () => {
+    // Regression test for #37003:
+    // a tilde-fenced spoiler header may contain backticks (which will
+    // later be rendered as inline code spans by the full Markdown),
+    // since there's no ambiguity with the tilde fence.
+    const stashed = [];
+    fenced_code.set_stash_func((text) => {
+        stashed.push(text);
+        return "STASHED";
+    });
+
+    const input = "~~~spoiler Title that includes an `inline code span`\nhidden content\n~~~";
+    const output = fenced_code.process_fenced_code(input);
+    assert.ok(output.includes("Title that includes an `inline code span`"));
+    assert.ok(output.includes("hidden content"));
+    assert.ok(stashed.some((s) => s.includes("spoiler-block")));
+
+    // Restore the default no-op stash func.
+    fenced_code.set_stash_func(identity_stash_func);
+});
+
+run_test("process_fenced_code_spoiler_header_own_delimiter_still_restricted", () => {
+    // A header still cannot contain its *own* fence's delimiter, since
+    // that would be ambiguous with the fence itself. This restriction is
+    // unchanged by the #37003 fix, which only relaxes it for the other
+    // delimiter character.
+    const backtick_input = "```spoiler Title with a `backtick` in it\nhidden content\n```";
+    const backtick_output = fenced_code.process_fenced_code(backtick_input);
+    assert.ok(!backtick_output.includes("spoiler-header"));
+
+    const tilde_input = "~~~spoiler Title with a ~tilde~ in it\nhidden content\n~~~";
+    const tilde_output = fenced_code.process_fenced_code(tilde_input);
+    assert.ok(!tilde_output.includes("spoiler-header"));
 });
 
 run_test("process_fenced_code_tilde_fence", () => {

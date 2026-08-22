@@ -2433,6 +2433,97 @@ class MarkdownCodeBlockTest(ZulipTestCase):
         self.assertEqual(rendering_result.rendered_content, expected_output)
 
 
+class MarkdownSpoilerTest(ZulipTestCase):
+    """
+    Regression tests for #37003:
+    inline code spans (backticks) inside a spoiler header should be
+    parsed correctly when the spoiler block itself uses tilde (~~~)
+    fencing, since there's no ambiguity between the two delimiters.
+    """
+
+    def test_tilde_spoiler_header_with_inline_code(self) -> None:
+        msg = "~~~spoiler Title that includes an `inline code span`\ncontents\n~~~"
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            '<div class="spoiler-block"><div class="spoiler-header">\n'
+            "<p>Title that includes an <code>inline code span</code></p>\n"
+            '</div><div class="spoiler-content" aria-hidden="true">\n'
+            "<p>contents</p>\n"
+            "</div></div>",
+        )
+
+    def test_tilde_spoiler_header_with_multiple_code_spans(self) -> None:
+        msg = "~~~spoiler Use `foo()` then `bar()`\ncontents\n~~~"
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            '<div class="spoiler-block"><div class="spoiler-header">\n'
+            "<p>Use <code>foo()</code> then <code>bar()</code></p>\n"
+            '</div><div class="spoiler-content" aria-hidden="true">\n'
+            "<p>contents</p>\n"
+            "</div></div>",
+        )
+
+    def test_tilde_spoiler_header_plain_title_no_regression(self) -> None:
+        # A tilde-fenced spoiler with a plain title (no backticks) should
+        # continue to render exactly as before.
+        msg = "~~~spoiler Plain title, no code\ncontents\n~~~"
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            '<div class="spoiler-block"><div class="spoiler-header">\n'
+            "<p>Plain title, no code</p>\n"
+            '</div><div class="spoiler-content" aria-hidden="true">\n'
+            "<p>contents</p>\n"
+            "</div></div>",
+        )
+
+    def test_backtick_spoiler_header_plain_title_no_regression(self) -> None:
+        # Standard backtick-fenced spoilers without any special characters
+        # in the header should also be unaffected.
+        msg = "```spoiler Plain title, no code\ncontents\n```"
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            '<div class="spoiler-block"><div class="spoiler-header">\n'
+            "<p>Plain title, no code</p>\n"
+            '</div><div class="spoiler-content" aria-hidden="true">\n'
+            "<p>contents</p>\n"
+            "</div></div>",
+        )
+
+    def test_backtick_spoiler_header_with_tilde_is_allowed(self) -> None:
+        # A backtick-fenced spoiler header may contain tildes, since only
+        # the fence's own delimiter character is restricted.
+        msg = "```spoiler Title with a ~tilde~ in it\ncontents\n```"
+        converted = markdown_convert_wrapper(msg)
+        self.assertEqual(
+            converted,
+            '<div class="spoiler-block"><div class="spoiler-header">\n'
+            "<p>Title with a ~tilde~ in it</p>\n"
+            '</div><div class="spoiler-content" aria-hidden="true">\n'
+            "<p>contents</p>\n"
+            "</div></div>",
+        )
+
+    def test_backtick_spoiler_header_with_backtick_not_supported(self) -> None:
+        # Per CommonMark-style fenced code block conventions, a header on a
+        # backtick-fenced block still cannot itself contain a backtick,
+        # since that would be ambiguous with the fence delimiter. This is
+        # unchanged by the #37003 fix, which only relaxes the restriction
+        # for the *other* delimiter character.
+        msg = "```spoiler Title with a `backtick` in it\ncontents\n```"
+        converted = markdown_convert_wrapper(msg)
+        self.assertNotIn('class="spoiler-block"', converted)
+
+    def test_tilde_spoiler_header_with_tilde_not_supported(self) -> None:
+        # Symmetrically, a tilde-fenced header cannot contain a tilde.
+        msg = "~~~spoiler Title with a ~tilde~ in it\ncontents\n~~~"
+        converted = markdown_convert_wrapper(msg)
+        self.assertNotIn('class="spoiler-block"', converted)
+
+
 class MarkdownMentionTest(ZulipTestCase):
     def test_mention_topic_wildcard(self) -> None:
         user_profile = self.example_user("othello")
