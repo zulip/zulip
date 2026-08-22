@@ -166,7 +166,7 @@ export function update_history_public_to_subscribers_on_can_create_topic_group_c
     }
 }
 
-export function initialize_cant_subscribe_popover(): void {
+export function initialize_subscription_toggle_disabled_popover(): void {
     const $button_wrapper = $(
         "#subscription_overlay .stream-title-buttons .sub_unsub_button_wrapper",
     );
@@ -239,6 +239,7 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
             .addClass("unsubscribed action-button-subtle-brand")
             .removeClass("action-button-subtle-neutral");
     }
+    const $parent = $settings_button.parent();
     if (stream_data.can_toggle_subscription(sub)) {
         $settings_button.prop("disabled", false);
         const $parent_element: tippy.ReferenceElement & HTMLElement = util.the(
@@ -249,7 +250,12 @@ export function update_settings_button_for_sub(sub: StreamSubscription): void {
         $settings_button.addClass("toggle-subscription-tooltip");
     } else {
         $settings_button.attr("title", "");
-        initialize_cant_subscribe_popover();
+        if (sub.subscribed) {
+            $parent.attr("data-tooltip-template-id", "cannot-unsubscribe-tooltip-template");
+        } else {
+            $parent.attr("data-tooltip-template-id", "cannot-subscribe-tooltip-template");
+        }
+        initialize_subscription_toggle_disabled_popover();
         $settings_button.prop("disabled", true);
         $settings_button.removeClass("toggle-subscription-tooltip");
     }

@@ -591,6 +591,10 @@ export default defineConfig({
                             link: "/configure-who-can-invite-to-channels",
                         },
                         {
+                            label: "Configure who can unsubscribe",
+                            link: "/configure-who-can-unsubscribe",
+                        },
+                        {
                             label: "Configure who can unsubscribe anyone",
                             link: "/configure-who-can-unsubscribe-others",
                         },
