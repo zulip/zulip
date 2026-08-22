@@ -26,6 +26,7 @@ VENV_DEPENDENCIES = [
     "libvips-tools",
     "libicu-dev",  # For building pyicu
     "libcrypt-dev",  # For building uwsgi
+    "libpcre2-dev",  # For building uwsgi
 ]
 
 COMMON_YUM_VENV_DEPENDENCIES = [
