@@ -9,14 +9,15 @@ const messages_overlay_ui = zrequire("messages_overlay_ui");
 
 // A minimal stand-in for an HTMLElement, tracking just enough state
 // (CSS classes and focus calls) for these tests to observe whether
-// `activate_element`/`handle_row_focus` moved DOM focus.
+// `activate_element`/`handle_row_focus` moved DOM focus. Only the
+// classList methods `activate_element`/`handle_row_focus` actually call
+// are stubbed here.
 function make_element(initial_classes) {
     const classes = new Set(initial_classes);
     return {
         focus_call_count: 0,
         classList: {
             add: (name) => classes.add(name),
-            remove: (name) => classes.delete(name),
             contains: (name) => classes.has(name),
         },
         focus() {
@@ -25,11 +26,10 @@ function make_element(initial_classes) {
     };
 }
 
+// Only `box_item_selector` is read by `activate_element`/`handle_row_focus`;
+// the rest of the `Context` type isn't needed for these tests.
 const context = {
     box_item_selector: "overlay-message-info-box",
-    get_items_ids: () => [],
-    on_enter() {},
-    on_delete() {},
 };
 
 run_test("activate_element focuses and marks the given element active", () => {
