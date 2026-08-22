@@ -794,6 +794,31 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
                 label="Include the issue assignee in the notifications",
                 input_type="checkbox_enabled",
             ),
+            WebhookUrlOption(
+                "include_issue_type",
+                label="Include the issue type in the notifications",
+                input_type="checkbox",
+            ),
+            WebhookUrlOption(
+                "include_status",
+                label="Include the issue status in the notifications",
+                input_type="checkbox",
+            ),
+            WebhookUrlOption(
+                "include_components",
+                label="Include the issue components in the notifications",
+                input_type="checkbox",
+            ),
+            WebhookUrlOption(
+                "include_versions",
+                label="Include the issue versions in the notifications",
+                input_type="checkbox",
+            ),
+            WebhookUrlOption(
+                "include_labels",
+                label="Include the issue labels in the notifications",
+                input_type="checkbox",
+            ),
         ],
     ),
     IncomingWebhookIntegration(
