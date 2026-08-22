@@ -34,6 +34,12 @@ IGNORED_EVENTS = [
 ]
 
 
+class Helper:
+    def __init__(self, payload: WildValue, user_profile: UserProfile) -> None:
+        self.payload = payload
+        self.user_profile = user_profile
+
+
 def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> UserProfile | None:
     try:
         # Try to find a matching user in Zulip
@@ -209,7 +215,10 @@ def add_change_info(
     return content
 
 
-def handle_updated_issue_event(payload: WildValue, user_profile: UserProfile) -> str:
+def handle_updated_issue_event(helper: Helper) -> str:
+    payload = helper.payload
+    user_profile = helper.user_profile
+
     # Reassigned, commented, reopened, and resolved events are all bundled
     # into this one 'updated' event type, so we try to extract the meaningful
     # event that happened
@@ -254,7 +263,10 @@ def handle_updated_issue_event(payload: WildValue, user_profile: UserProfile) ->
     return content
 
 
-def handle_created_issue_event(payload: WildValue, user_profile: UserProfile) -> str:
+def handle_created_issue_event(helper: Helper) -> str:
+    payload = helper.payload
+    user_profile = helper.user_profile
+
     priority = get_in(payload, ["issue", "fields", "priority", "name"]).tame(check_string).lower()
 
     assignee_payload = get_in(payload, ["issue", "fields", "assignee"])
@@ -272,7 +284,10 @@ def handle_created_issue_event(payload: WildValue, user_profile: UserProfile) ->
     )
 
 
-def handle_deleted_issue_event(payload: WildValue, user_profile: UserProfile) -> str:
+def handle_deleted_issue_event(helper: Helper) -> str:
+    payload = helper.payload
+    user_profile = helper.user_profile
+
     template = "{author} deleted {issue_string}{punctuation}"
     title = get_issue_title(payload)
     punctuation = "." if title[-1] not in string.punctuation else ""
@@ -298,7 +313,10 @@ def get_comment_author(comment_payload: WildValue, realm: Realm) -> str:
     return get_user_mention(realm, author_payload)
 
 
-def handle_comment_created_event(payload: WildValue, user_profile: UserProfile) -> str:
+def handle_comment_created_event(helper: Helper) -> str:
+    payload = helper.payload
+    user_profile = helper.user_profile
+
     return "{author} commented on {issue_string}\
 \n``` quote\n{comment}\n```\n".format(
         author=get_comment_author(payload["comment"], user_profile.realm),
@@ -309,7 +327,10 @@ def handle_comment_created_event(payload: WildValue, user_profile: UserProfile) 
     )
 
 
-def handle_comment_updated_event(payload: WildValue, user_profile: UserProfile) -> str:
+def handle_comment_updated_event(helper: Helper) -> str:
+    payload = helper.payload
+    user_profile = helper.user_profile
+
     return "{author} updated their comment on {issue_string}\
 \n``` quote\n{comment}\n```\n".format(
         author=get_comment_author(payload["comment"], user_profile.realm),
@@ -320,7 +341,10 @@ def handle_comment_updated_event(payload: WildValue, user_profile: UserProfile) 
     )
 
 
-def handle_comment_deleted_event(payload: WildValue, user_profile: UserProfile) -> str:
+def handle_comment_deleted_event(helper: Helper) -> str:
+    payload = helper.payload
+    user_profile = helper.user_profile
+
     return "{author} deleted their comment on {issue_string}\
 \n``` quote\n~~{comment}~~\n```\n".format(
         author=get_comment_author(payload["comment"], user_profile.realm),
@@ -331,7 +355,7 @@ def handle_comment_deleted_event(payload: WildValue, user_profile: UserProfile) 
     )
 
 
-JIRA_CONTENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue, UserProfile], str] | None] = {
+JIRA_CONTENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], str] | None] = {
     "jira:issue_created": handle_created_issue_event,
     "jira:issue_deleted": handle_deleted_issue_event,
     "jira:issue_updated": handle_updated_issue_event,
@@ -364,8 +388,9 @@ def api_jira_webhook(
     if content_func is None:
         raise UnsupportedWebhookEventTypeError(event)
 
+    helper = Helper(payload, user_profile)
     topic_name = get_issue_topic(payload)
-    content: str = content_func(payload, user_profile)
+    content: str = content_func(helper)
 
     check_send_webhook_message(
         request, user_profile, topic_name, content, event, unquote_url_parameters=True
