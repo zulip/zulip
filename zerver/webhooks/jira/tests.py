@@ -59,6 +59,34 @@ class JiraHookTests(WebhookTestCase):
         expected_message = "Bo Williams created [TEST-4: Test Created Assignee](https://zulipp.atlassian.net/browse/TEST-4) with major priority (assigned to Kevin Lin)."
         self.check_webhook("issue_created_with_assignee", expected_topic_name, expected_message)
 
+    def test_created_with_priority_disabled(self) -> None:
+        self.url = self.build_webhook_url(include_priority="false")
+        expected_topic_name = "BUG-15: New bug with hook"
+        expected_message = "@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15)."
+        self.check_webhook("issue_created", expected_topic_name, expected_message)
+
+    def test_created_with_assignee_disabled(self) -> None:
+        self.url = self.build_webhook_url(include_assignee="false")
+        expected_topic_name = "TEST-4: Test Created Assignee"
+        expected_message = "Bo Williams created [TEST-4: Test Created Assignee](https://zulipp.atlassian.net/browse/TEST-4) with major priority."
+        self.check_webhook("issue_created_with_assignee", expected_topic_name, expected_message)
+
+    def test_created_with_priority_and_assignee_disabled(self) -> None:
+        self.url = self.build_webhook_url(include_priority="false", include_assignee="false")
+        expected_topic_name = "TEST-4: Test Created Assignee"
+        expected_message = "Bo Williams created [TEST-4: Test Created Assignee](https://zulipp.atlassian.net/browse/TEST-4)."
+        self.check_webhook("issue_created_with_assignee", expected_topic_name, expected_message)
+
+    def test_reassigned_with_assignee_disabled(self) -> None:
+        # The assignee blurb is dropped from the header, but the changelog
+        # still reports the assignee change itself.
+        self.url = self.build_webhook_url(include_assignee="false")
+        expected_topic_name = "BUG-15: New bug with hook"
+        expected_message = """@_**Othello, the Moor of Venice|12** updated [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
+
+* Changed assignee to @_**Othello, the Moor of Venice|12**"""
+        self.check_webhook("issue_updated__reassigned", expected_topic_name, expected_message)
+
     def test_deleted(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
         expected_message = "@_**Othello, the Moor of Venice|12** deleted [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15)."

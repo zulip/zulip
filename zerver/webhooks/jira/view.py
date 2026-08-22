@@ -6,6 +6,7 @@ from collections.abc import Callable
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
+from pydantic import Json
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import AnomalousWebhookPayloadError, UnsupportedWebhookEventTypeError
@@ -35,9 +36,17 @@ IGNORED_EVENTS = [
 
 
 class Helper:
-    def __init__(self, payload: WildValue, user_profile: UserProfile) -> None:
+    def __init__(
+        self,
+        payload: WildValue,
+        user_profile: UserProfile,
+        include_priority: bool,
+        include_assignee: bool,
+    ) -> None:
         self.payload = payload
         self.user_profile = user_profile
+        self.include_priority = include_priority
+        self.include_assignee = include_assignee
 
 
 def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> UserProfile | None:
@@ -232,7 +241,9 @@ def handle_updated_issue_event(helper: Helper) -> str:
     else:
         assignee_mention = ""
 
-    if assignee_mention != "":
+    # The changelog below still reports assignee changes when this option
+    # is off; it describes a change rather than decorating the header.
+    if helper.include_assignee and assignee_mention != "":
         assignee_blurb = f" (assigned to {assignee_mention})"
     else:
         assignee_blurb = ""
@@ -267,21 +278,25 @@ def handle_created_issue_event(helper: Helper) -> str:
     payload = helper.payload
     user_profile = helper.user_profile
 
-    priority = get_in(payload, ["issue", "fields", "priority", "name"]).tame(check_string).lower()
+    author = get_issue_author(payload, user_profile.realm)
+    issue_string = get_issue_string(payload, with_title=True)
+    content = f"{author} created {issue_string}"
+
+    if helper.include_priority:
+        priority = (
+            get_in(payload, ["issue", "fields", "priority", "name"]).tame(check_string).lower()
+        )
+        content += f" with {priority} priority"
 
     assignee_payload = get_in(payload, ["issue", "fields", "assignee"])
-    if assignee_payload.value and isinstance(assignee_payload.value, dict):
-        assignee_blurb = f" (assigned to {get_user_mention(user_profile.realm, assignee_payload)})"
-    else:
-        assignee_blurb = ""
+    if (
+        helper.include_assignee
+        and assignee_payload.value
+        and isinstance(assignee_payload.value, dict)
+    ):
+        content += f" (assigned to {get_user_mention(user_profile.realm, assignee_payload)})"
 
-    template = "{author} created {issue_string} with {priority} priority{assignee_blurb}."
-    return template.format(
-        author=get_issue_author(payload, user_profile.realm),
-        issue_string=get_issue_string(payload, with_title=True),
-        priority=priority,
-        assignee_blurb=assignee_blurb,
-    )
+    return content + "."
 
 
 def handle_deleted_issue_event(helper: Helper) -> str:
@@ -374,6 +389,8 @@ def api_jira_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
+    include_priority: Json[bool] = True,
+    include_assignee: Json[bool] = True,
 ) -> HttpResponse:
     event = payload.get("webhookEvent").tame(check_none_or(check_string))
     if event in IGNORED_EVENTS:
@@ -388,7 +405,7 @@ def api_jira_webhook(
     if content_func is None:
         raise UnsupportedWebhookEventTypeError(event)
 
-    helper = Helper(payload, user_profile)
+    helper = Helper(payload, user_profile, include_priority, include_assignee)
     topic_name = get_issue_topic(payload)
     content: str = content_func(helper)
 

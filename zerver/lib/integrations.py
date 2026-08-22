@@ -783,6 +783,18 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "jira",
         ["project-management"],
         [WebhookScreenshotConfig("issue_created_with_assignee.json")],
+        url_options=[
+            WebhookUrlOption(
+                "include_priority",
+                label="Include the issue priority in the notifications",
+                input_type="checkbox_enabled",
+            ),
+            WebhookUrlOption(
+                "include_assignee",
+                label="Include the issue assignee in the notifications",
+                input_type="checkbox_enabled",
+            ),
+        ],
     ),
     IncomingWebhookIntegration(
         "jotform", ["productivity"], [WebhookScreenshotConfig("screenshot_response.multipart")]
