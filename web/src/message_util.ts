@@ -12,6 +12,7 @@ import {realm} from "./state_data.ts";
 import * as unread from "./unread.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as user_groups from "./user_groups.ts";
+import * as util from "./util.ts";
 
 type DirectMessagePermissionHints = {
     is_known_empty_conversation: boolean;
@@ -72,24 +73,42 @@ export function do_unread_count_updates(messages: Message[], expect_no_new_unrea
     }
 }
 
-export function get_count_of_messages_in_topic_sent_after_current_message(
-    stream_id: number,
-    topic: string,
-    message_id: number,
-): number {
-    const all_messages = get_loaded_messages_in_topic(stream_id, topic);
-    return all_messages.filter((msg) => msg.id >= message_id).length;
+function is_message_in_topic(message: Message, stream_id: number, topic: string): boolean {
+    return (
+        message.type === "stream" &&
+        message.stream_id === stream_id &&
+        util.lower_same(message.topic, topic)
+    );
 }
 
+// Returns the messages in the topic that the current message list has
+// loaded. It can see the whole history that list has fetched, but it
+// only describes the topic if that list contains all of it, which is a
+// question about the list's filter that callers answer for themselves.
+export function get_loaded_messages_in_topic_in_current_view(
+    stream_id: number,
+    topic: string,
+): Message[] {
+    if (message_lists.current === undefined) {
+        // Views rendered without a message list, such as the inbox and
+        // recent conversations, have no messages of their own.
+        return [];
+    }
+
+    // Muting only hides messages from the view; a move still moves them.
+    return message_lists.current.data
+        .all_messages_including_muted()
+        .filter((message) => is_message_in_topic(message, stream_id, topic));
+}
+
+// Returns the messages in the topic that are cached for recent
+// conversations. This works whatever view we are in, but the cache
+// holds only the newest slice of history, so it can be missing older
+// messages of a topic that has not been active recently.
 export function get_loaded_messages_in_topic(stream_id: number, topic: string): Message[] {
     return recent_view_messages_data
         .all_messages_after_mute_filtering()
-        .filter(
-            (x) =>
-                x.type === "stream" &&
-                x.stream_id === stream_id &&
-                x.topic.toLowerCase() === topic.toLowerCase(),
-        );
+        .filter((message) => is_message_in_topic(message, stream_id, topic));
 }
 
 export function get_messages_in_dm_conversations(user_ids_strings: Set<string>): Message[] {
