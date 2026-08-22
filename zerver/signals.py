@@ -61,6 +61,7 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
     # We import here to minimize the dependencies of this module,
     # since it runs as part of `manage.py` initialization
     from zerver.context_processors import common_context
+    from zproject.backends import password_auth_enabled
 
     if not settings.SEND_LOGIN_EMAILS:
         return
@@ -83,6 +84,14 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
         context["device_os"] = get_device_os(user_agent) or _("an unknown operating system")
         context["device_browser"] = get_device_browser(user_agent) or _("An unknown browser")
         context["unsubscribe_link"] = one_click_unsubscribe_link(user, "login")
+        # Suggesting a password reset only makes sense if the user's
+        # realm actually supports logging in with a password; e.g. it
+        # is useless (and confusing) advice for a SAML-only realm.
+        context["password_reset_link"] = (
+            context["realm_url"] + "/accounts/password/reset/"
+            if password_auth_enabled(user.realm)
+            else None
+        )
 
         email_dict = {
             "template_prefix": "zerver/emails/notify_new_login",

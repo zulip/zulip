@@ -1,10 +1,12 @@
 from collections.abc import Sequence
 from datetime import datetime, timedelta, timezone
+from unittest.mock import patch
 
 import time_machine
 from django.conf import settings
 from django.core import mail
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from corporate.lib.stripe import get_latest_seat_count
@@ -122,6 +124,40 @@ class SendLoginEmailTest(ZulipTestCase):
         with time_machine.travel(mock_time, tick=False):
             self.login_user(user)
         self.assert_length(mail.outbox, 1)
+
+    @override_settings(SEND_LOGIN_EMAILS=True)
+    def test_login_email_offers_password_reset_when_password_auth_enabled(self) -> None:
+        user = self.example_user("hamlet")
+        user.date_joined = timezone_now() - timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
+        user.save()
+
+        self.login_user(user)
+
+        self.assert_length(mail.outbox, 1)
+        body = str(mail.outbox[0].body)
+        self.assertIn("reset your password", body)
+        self.assertIn(f"{user.realm.url}/accounts/password/reset/", body)
+
+    @override_settings(SEND_LOGIN_EMAILS=True)
+    def test_login_email_omits_password_reset_when_password_auth_disabled(self) -> None:
+        """
+        Realms that only allow SSO-based authentication (e.g. SAML-only
+        realms) have no usable password to reset, so the login
+        notification email should not suggest resetting one. See
+        https://github.com/zulip/zulip/issues/30248.
+        """
+        user = self.example_user("hamlet")
+        user.date_joined = timezone_now() - timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
+        user.save()
+
+        with patch("zproject.backends.password_auth_enabled", return_value=False):
+            self.login_user(user)
+
+        self.assert_length(mail.outbox, 1)
+        body = str(mail.outbox[0].body)
+        self.assertNotIn("reset your password", body)
+        self.assertNotIn("/accounts/password/reset/", body)
+        self.assertIn("contact us immediately", body)
 
 
 class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
