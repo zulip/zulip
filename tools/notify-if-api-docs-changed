@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 from urllib.request import Request, urlopen
 
@@ -14,7 +15,18 @@ sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 from zerver.openapi.merge_api_changelogs import get_feature_level
 
 
-def get_pull_request_number_or_commit_hash() -> str:
+@dataclass
+class PullRequest:
+    """The parts of a pull request that this script uses."""
+
+    number: int
+
+    # The PR's description, or None if it doesn't have one.
+    body: str | None
+
+
+def get_pull_request() -> PullRequest | None:
+    """Return the pull request this push's head commit came from, if any."""
     github_token = os.environ["GITHUB_TOKEN"]
     repo = os.environ["GITHUB_REPOSITORY"]
     commit_hash = os.environ["GITHUB_SHA"]
@@ -29,11 +41,11 @@ def get_pull_request_number_or_commit_hash() -> str:
         req = Request(url, headers=headers)
         with urlopen(req) as response:
             pull_requests = json.load(response)
-        if len(pull_requests) > 0:
-            return f"#{pull_requests[0]['number']}"
-        return commit_hash
+        if not pull_requests:
+            return None
+        return PullRequest(number=pull_requests[0]["number"], body=pull_requests[0]["body"])
     except Exception:
-        return commit_hash
+        return None
 
 
 def get_changelog_entries() -> str:
@@ -80,7 +92,9 @@ def get_feature_level_before_commit() -> int:
 
 
 if __name__ == "__main__":
-    pull_request = get_pull_request_number_or_commit_hash()
+    commit_hash = os.environ["GITHUB_SHA"]
+    pull_request = get_pull_request()
+    pull_request_label = f"#{pull_request.number}" if pull_request else commit_hash
 
     feature_level = get_feature_level(update_feature_level=False) - 1
     if feature_level <= get_feature_level_before_commit():
@@ -89,7 +103,7 @@ if __name__ == "__main__":
     changelog_entries = get_changelog_entries()
     topic = f"new feature level: {feature_level}"
 
-    content = f"{pull_request} has updated the API documentation for the following endpoints: \n{changelog_entries}"
+    content = f"{pull_request_label} has updated the API documentation for the following endpoints: \n{changelog_entries}"
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:
         with open(github_output, "a") as f:
