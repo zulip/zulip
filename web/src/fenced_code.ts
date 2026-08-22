@@ -31,14 +31,19 @@ const fencestr =
     "([a-zA-Z0-9_+-./#]*)" + // Language
     "\\}?" +
     ")" +
-    "[ ]*" + // Spaces
-    "(" +
-    "\\{?\\.?" +
-    "([^~`]*)" + // Header (see fenced_code.py)
-    "\\}?" +
-    ")" +
-    "$";
-const fence_re = new RegExp(fencestr);
+    "[ ]*"; // Spaces
+const fence_and_lang_re = new RegExp(fencestr);
+
+// The header (used by features like spoilers) may contain the fence
+// delimiter character *other* than the one that opened this block, but
+// not its own — this mirrors FENCE_RE's `header` group in the backend's
+// fenced_code. JS regexes can't express this as a single conditional
+// pattern, so we match the fence + language first, then build the header
+// regex based on which delimiter was actually used.
+function make_header_re(fence: string): RegExp {
+    const excluded = fence.startsWith("~") ? "~" : "`";
+    return new RegExp("^(\\{?\\.?([^" + excluded + "]*)\\}?)$");
+}
 
 // Default stashing function does nothing
 let stash_func = function (text: string): string {
@@ -209,16 +214,20 @@ export function process_fenced_code(content: string): string {
     }
 
     consume_line = function consume_line(output_lines: string[], line: string) {
-        const match = fence_re.exec(line);
-        if (match) {
-            const fence = match[1]!;
-            const lang = match[3]!;
-            const header = match[5]!;
-            const handler = handler_for_fence(output_lines, fence, lang, header);
-            handler_stack.push(handler);
-        } else {
-            output_lines.push(line);
+        const fence_and_lang_match = fence_and_lang_re.exec(line);
+        if (fence_and_lang_match) {
+            const fence = fence_and_lang_match[1]!;
+            const lang = fence_and_lang_match[3]!;
+            const remainder = line.slice(fence_and_lang_match[0].length);
+            const header_match = make_header_re(fence).exec(remainder);
+            if (header_match) {
+                const header = header_match[2]!;
+                const handler = handler_for_fence(output_lines, fence, lang, header);
+                handler_stack.push(handler);
+                return;
+            }
         }
+        output_lines.push(line);
     };
 
     const current_handler = default_handler();
