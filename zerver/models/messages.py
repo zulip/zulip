@@ -228,7 +228,7 @@ class Message(AbstractMessage):
                 # is done case-insensitively
                 "realm_id",
                 Upper("subject"),
-                F("id").desc(nulls_last=True),
+                F("id").desc(),
                 name="zerver_message_realm_upper_subject",
                 condition=Q(is_channel_message=True),
             ),
@@ -240,7 +240,7 @@ class Message(AbstractMessage):
                 "realm_id",
                 "recipient_id",
                 Upper("subject"),
-                F("id").desc(nulls_last=True),
+                F("id").desc(),
                 name="zerver_message_realm_recipient_upper_subject",
                 condition=Q(is_channel_message=True),
             ),
@@ -250,14 +250,14 @@ class Message(AbstractMessage):
                 "realm_id",
                 "recipient_id",
                 "subject",
-                F("id").desc(nulls_last=True),
+                F("id").desc(),
                 name="zerver_message_realm_recipient_subject",
                 condition=Q(is_channel_message=True),
             ),
             models.Index(
                 # Only used by update_first_visible_message_id
                 "realm_id",
-                F("id").desc(nulls_last=True),
+                F("id").desc(),
                 name="zerver_message_realm_id",
             ),
             models.Index(
