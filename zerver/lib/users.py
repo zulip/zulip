@@ -977,7 +977,7 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
         is_active=True,
         date_joined=user_date_joined.isoformat(),
         delivery_email=None,
-        avatar_url=get_avatar_for_inaccessible_user(),
+        avatar_url=get_avatar_for_inaccessible_user(medium=False),
         profile_data={},
         is_imported_stub=False,
     )
