@@ -321,9 +321,10 @@ No changes; API feature level used for the Zulip 12.0 release.
 **Feature level 476**
 
 * [`POST /realm/profile_fields`](/api/create-custom-profile-field),
-  [`GET /realm/profile_fields`](/api/get-custom-profile-fields) The
-  `display_in_profile_summary` parameter can now be set to true for the
-  `Paragraph` field type.
+  [`GET /realm/profile_fields`](/api/get-custom-profile-fields),
+  [`PATCH /realm/profile_fields/{field_id}`](/api/update-custom-profile-field)
+  The `display_in_profile_summary` parameter can now be set to true for
+  the `Paragraph` field type.
 
 **Feature level 475**
 
@@ -2042,9 +2043,11 @@ No changes; feature level used for Zulip 10.0 release.
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
   [`POST /realm/profile_fields`](/api/create-custom-profile-field),
-  [`GET /realm/profile_fields`](/api/get-custom-profile-fields): Added a new
-  parameter `editable_by_user` to custom profile field objects, which indicates whether
-  regular users can edit the value of the profile field on their own account.
+  [`GET /realm/profile_fields`](/api/get-custom-profile-fields),
+  [`PATCH /realm/profile_fields/{field_id}`](/api/update-custom-profile-field):
+  Added a new parameter `editable_by_user` to custom profile field objects,
+  which indicates whether regular users can edit the value of the profile
+  field on their own account.
 
 **Feature level 295**
 
@@ -2521,10 +2524,11 @@ No changes; feature level used for Zulip 9.0 release.
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
   [`POST /realm/profile_fields`](/api/create-custom-profile-field),
-  [`GET /realm/profile_fields`](/api/get-custom-profile-fields): Added a new
-  parameter `required`, on custom profile field objects, indicating whether an
-  organization administrator has configured the field as something users should
-  be required to provide.
+  [`GET /realm/profile_fields`](/api/get-custom-profile-fields),
+  [`PATCH /realm/profile_fields/{field_id}`](/api/update-custom-profile-field):
+  Added a new parameter `required`, on custom profile field objects,
+  indicating whether an organization administrator has configured the
+  field as something users should be required to provide.
 
 **Feature level 243**
 
@@ -3435,10 +3439,11 @@ No changes; feature level used for Zulip 6.0 release.
 **Feature level 146**
 
 * [`POST /realm/profile_fields`](/api/create-custom-profile-field),
-[`GET /realm/profile_fields`](/api/get-custom-profile-fields): Added a
-new parameter `display_in_profile_summary`, which clients use to
-decide whether to display the field in a small/summary section of the
-user's profile.
+[`GET /realm/profile_fields`](/api/get-custom-profile-fields),
+[`PATCH /realm/profile_fields/{field_id}`](/api/update-custom-profile-field):
+Added a new parameter `display_in_profile_summary`, which clients use
+to decide whether to display the field in a small/summary section of
+the user's profile.
 
 **Feature level 145**
 
