@@ -71,6 +71,50 @@ function get_selected_message_content_elements(): NodeListOf<HTMLElement> | unde
         .querySelectorAll(".message_content");
 }
 
+// First selected range start through last selected range end.
+// Firefox <147 splits a contiguous selection into several ranges
+// around `user-select: none` nodes.
+function selection_extent_range(): Range {
+    const selection = window.getSelection();
+    assert(selection !== null && selection.rangeCount > 0);
+    const first = selection.getRangeAt(0);
+    if (selection.rangeCount === 1) {
+        return first;
+    }
+    const last = selection.getRangeAt(selection.rangeCount - 1);
+    const extent = document.createRange();
+    extent.setStart(first.startContainer, first.startOffset);
+    extent.setEnd(last.endContainer, last.endOffset);
+    return extent;
+}
+
+function selection_covers_message_content($row: JQuery, range: Range): boolean {
+    const content = the($row).querySelector(".message_content");
+    assert(content !== null);
+    return range.intersectsNode(content);
+}
+
+// "end" when the selection starts after the previous message's
+// body, for example on a /me timestamp or reminder, and ends
+// in the middle of this message.
+// "start" when the range begins inside the first body.
+function bookend_ellipsis_side(range: Range, content: Element): RangeContainer {
+    return range.isPointInRange(content, 0) ? "end" : "start";
+}
+
+// Drop a bookend row whose .message_content is outside the selection.
+function drop_unselected_bookend_rows(copy_rows: JQuery[]): void {
+    const range = selection_extent_range();
+    const $first = copy_rows[0];
+    if ($first !== undefined && !selection_covers_message_content($first, range)) {
+        copy_rows.shift();
+    }
+    const $last = copy_rows.at(-1);
+    if ($last !== undefined && !selection_covers_message_content($last, range)) {
+        copy_rows.pop();
+    }
+}
+
 // Returns the inner HTML of the `.message_content` element
 // for the first or last message of a single range selection.
 // The caller is expected to only pass the first or last message
@@ -144,9 +188,11 @@ function maybe_expand_selection_for_first_and_last_messages(
     copy_rows: JQuery[],
     range_count: number,
 ): void {
-    // This is only meant for a multi-message selection involving
-    // multiple ranges.
-    assert(range_count > 1 && copy_rows.length > 1);
+    // Firefox <147 can emit multiple ranges for a single-row
+    // selection; expanding is only for a multi-row copy.
+    if (range_count <= 1 || copy_rows.length <= 1) {
+        return;
+    }
 
     if (navigator.userAgent.includes("Chrome")) {
         blueslip.error("Multiple ranges detected in Chrome for a multi-message selection.");
@@ -195,8 +241,14 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): boo
     let $first_message_element;
     let $last_message_element;
     const copy_rows = rows.visible_range(start_id, end_id);
-    const range_count = window.getSelection()?.rangeCount;
-    if (range_count && range_count > 1) {
+    const range_count = window.getSelection()?.rangeCount ?? 0;
+    // Trim before expanding a Firefox <147 multi-range selection,
+    // which can have rangeCount > 1 with fewer contentful rows.
+    drop_unselected_bookend_rows(copy_rows);
+    if (copy_rows.length === 0) {
+        return false;
+    }
+    if (range_count > 1) {
         // Expand selection to select content from all the messages
         // belonging to the multi-message selection.
         // We do this only for Firefox where multi-message selections are
@@ -214,19 +266,6 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): boo
         // a single range for a multi-message selection.
         const selected_message_content_elements = get_selected_message_content_elements();
         assert(selected_message_content_elements !== undefined);
-        // Case where the last message doesn't have any highlighted `.message_content`.
-        // Here, end_id is set to id of the message whose username at the top
-        // was highlighted, but has no highlighted `.message_content`.
-        // (See analyze_selection for details.)
-        // So the actually useful/contentful last message of this selection is
-        // at copy_rows[copy_rows.length - 2]
-        if (selected_message_content_elements.length === copy_rows.length - 1) {
-            copy_rows.splice(-1, 1);
-            if (copy_rows.length === 0) {
-                // In case this just involved selecting the username of a message.
-                return false;
-            }
-        }
         assert(copy_rows[0] && copy_rows.at(-1));
         const first_selected_message_content_element = the(copy_rows[0]).querySelector(
             ".message_content",
@@ -235,9 +274,16 @@ function construct_copy_div($div: JQuery, start_id: number, end_id: number): boo
             ".message_content",
         );
         assert(first_selected_message_content_element && last_selected_message_content_element);
+        const first_bookend_side =
+            selected_message_content_elements.length === 1
+                ? bookend_ellipsis_side(
+                      selection_extent_range(),
+                      first_selected_message_content_element,
+                  )
+                : "start";
         $first_message_element = $(
             get_html_for_bookend_message_content(
-                "start",
+                first_bookend_side,
                 first_selected_message_content_element,
                 selected_message_content_elements[0],
             ),
