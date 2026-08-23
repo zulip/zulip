@@ -14,6 +14,7 @@ from zerver.lib.event_types import (
     TypingStopEvent,
 )
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.recipient_users import check_sender_can_access_recipients
 from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.models import Realm, Stream, UserProfile
 from zerver.models.users import get_user_by_id_in_realm_including_cross_realm
@@ -81,6 +82,8 @@ def check_send_typing_notification(
         except UserProfile.DoesNotExist:
             raise JsonableError(_("Invalid user ID {user_id}").format(user_id=user_id))
         user_profiles.append(user_profile)
+
+    check_sender_can_access_recipients(sender, user_profiles)
 
     do_send_typing_notification(
         realm=realm,
