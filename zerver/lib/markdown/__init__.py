@@ -1440,7 +1440,7 @@ class AutoLink(CompiledPattern):
 
 class OListProcessor(sane_lists.SaneOListProcessor):
     def __init__(self, parser: BlockParser) -> None:
-        parser.md.tab_length = 2
+        parser.md.tab_length = ZULIP_LIST_TAB_LENGTH
         super().__init__(parser)
         parser.md.tab_length = 4
 
@@ -1449,7 +1449,7 @@ class UListProcessor(sane_lists.SaneUListProcessor):
     """Unordered lists, but with 2-space indent"""
 
     def __init__(self, parser: BlockParser) -> None:
-        parser.md.tab_length = 2
+        parser.md.tab_length = ZULIP_LIST_TAB_LENGTH
         super().__init__(parser)
         parser.md.tab_length = 4
 
@@ -1464,7 +1464,7 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
         # HACK: Set the tab length to 2 just for the initialization of
         # this class, so that bulleted lists (and only bulleted lists)
         # work off 2-space indentation.
-        parser.md.tab_length = 2
+        parser.md.tab_length = ZULIP_LIST_TAB_LENGTH
         super().__init__(parser)
         parser.md.tab_length = 4
 
@@ -1533,12 +1533,22 @@ class Fence:
     is_code: bool
 
 
+ZULIP_LIST_TAB_LENGTH = 2
 LIST_ITEM_REGEX = re.compile(
     r"""
     ^[ ]*           # Start with zero or more spaces
     ([*+-]|\d+\.)   # A bullet marker (*, +, or -) or one or more digits followed by "."
     [ ]+            # Followed by one or more spaces
     (.*)            # The list content, which could be empty
+    """,
+    re.VERBOSE,
+)
+
+TAB_INDENTED_LIST_ITEM_REGEX = re.compile(
+    r"""
+    ^(\t+)        # One or more leading tabs
+    ([*+-]|\d+\.) # A bullet marker (*, +, or -) or one or more digits followed by "."
+    [ ]+          # Followed by one or more spaces
     """,
     re.VERBOSE,
 )
@@ -1562,6 +1572,41 @@ def line_is_in_code_fence(line: str, open_fences: list[Fence]) -> bool:
             open_fences.append(Fence(fence_str, is_code))
 
     return any(fence.is_code for fence in open_fences)
+
+
+class TabIndentedListPreprocessor(markdown.preprocessors.Preprocessor):
+    """Convert leading tabs of tab-indented nested list items to
+    Zulip's 2-space list indentation.
+
+    This is needed because Python-Markdown's NormalizeWhitespace
+    preprocessor, which runs after this one, would expand the tabs to
+    4 spaces, preventing the items from nesting under Zulip's 2-space
+    list indentation convention.
+    """
+
+    @override
+    def run(self, lines: list[str]) -> list[str]:
+        copy: list[str] = []
+        open_fences: list[Fence] = []
+        prev_line_is_li = False
+        for line in lines:
+            # Ignore anything that is inside a fenced code block but not quoted.
+            # We ignore all lines where some parent is a non-quote code block.
+            in_code_fence = line_is_in_code_fence(line, open_fences)
+            if in_code_fence:
+                prev_line_is_li = False
+            else:
+                tabbed_li = TAB_INDENTED_LIST_ITEM_REGEX.match(line)
+
+                # Only tabbed nested list items are converted. This preserves
+                # the trailing tabs for NormalizeWhitespace to handle.
+                if prev_line_is_li and tabbed_li:
+                    leading_tabs = tabbed_li.group(1)
+                    indent = leading_tabs.expandtabs(ZULIP_LIST_TAB_LENGTH)
+                    line = indent + line[len(leading_tabs) :]
+                prev_line_is_li = bool(LIST_ITEM_REGEX.match(line))
+            copy.append(line)
+        return copy
 
 
 class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
@@ -2247,6 +2292,7 @@ class ZulipMarkdown(markdown.Markdown):
         # reference - references don't make sense in a chat context.
         preprocessors = markdown.util.Registry[markdown.preprocessors.Preprocessor]()
         preprocessors.register(MarkdownListPreprocessor(self), "hanging_lists", 35)
+        preprocessors.register(TabIndentedListPreprocessor(self), "tab_indented_lists", 32)
         preprocessors.register(
             markdown.preprocessors.NormalizeWhitespace(self), "normalize_whitespace", 30
         )
