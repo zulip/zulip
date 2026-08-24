@@ -201,7 +201,10 @@ def demo_request(request: HttpRequest) -> HttpResponse:
                 request, "corporate/support/support_request_thanks.html", context=context
             )
             return response
+    else:
+        form = DemoRequestForm()
 
+    context["form"] = form
     response = render(request, "corporate/support/demo_request.html", context=context)
     return response
 
