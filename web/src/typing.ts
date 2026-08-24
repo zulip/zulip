@@ -114,7 +114,7 @@ function send_typing_notification_based_on_message_type(
 }
 
 function message_edit_typing_notifications_enabled(message_id: number): boolean {
-    const message = message_store.get(message_id);
+    const message = message_store.get_immutable_message(message_id);
     assert(message !== undefined);
     if (message.type === "stream") {
         return user_settings.send_stream_typing_notifications;

@@ -47,7 +47,7 @@ export function update_frequently_used_emojis_list(): void {
 */
 export function update_emoji_frequency_on_add_reaction_event(event: reactions.ReactionEvent): void {
     const message_id = event.message_id;
-    const message = message_store.get(message_id);
+    const message = message_store.get_immutable_message(message_id);
     if (message === undefined) {
         return;
     }
@@ -77,7 +77,7 @@ export function update_emoji_frequency_on_remove_reaction_event(
     event: reactions.ReactionEvent,
 ): void {
     const message_id = event.message_id;
-    const message = message_store.get(message_id);
+    const message = message_store.get_immutable_message(message_id);
     if (message === undefined) {
         return;
     }
@@ -99,7 +99,7 @@ export function update_emoji_frequency_on_remove_reaction_event(
 
 export function update_emoji_frequency_on_messages_deletion(message_ids: number[]): void {
     for (const message_id of message_ids) {
-        const message = message_store.get(message_id);
+        const message = message_store.get_immutable_message(message_id);
         // It's normal to receive events about the deletion of
         // messages that this client doesn't have locally cached. No
         // action is required, since only messages that are locally

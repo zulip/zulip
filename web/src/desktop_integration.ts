@@ -34,7 +34,7 @@ export function initialize(): void {
     // to narrow to the message being sent.
     electron_bridge.set_send_notification_reply_message_supported?.(true);
     electron_bridge.on_event("send_notification_reply_message", (message_id, reply) => {
-        const message = message_store.get(message_id);
+        const message = message_store.get_immutable_message(message_id);
         assert(message !== undefined);
         const data = {
             type: message.type,

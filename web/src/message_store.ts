@@ -237,6 +237,29 @@ export type Message = (
           }
     );
 
+/**
+ * Compile-time-only view of a cached Message. Same object as the store
+ * singleton; assigning to fields is a type error.
+ *
+ * Distributed over the stream/PM union so `if (msg.type === "stream")`
+ * still narrows `stream_id` / `topic`. A bare `Readonly<Message>` would
+ * collapse those exclusive fields.
+ */
+export type ReadonlyMessage =
+    Readonly<Extract<Message, {type: "private"}>> | Readonly<Extract<Message, {type: "stream"}>>;
+
+export type ImmutableMessage = ReadonlyMessage;
+
+/**
+ * Writable cached Message. Callers obtain this from get_mutable_message
+ * or mutable_for so mutation is an explicit opt-in. Same singleton as
+ * the store. Prefer update_* helpers when one exists.
+ *
+ * This is an alias of Message; TypeScript#13347 still lets a
+ * ReadonlyMessage through a Message parameter.
+ */
+export type MutableMessage = Message;
+
 export function update_message_cache(message_data: ProcessedMessage): void {
     // You should only call this from message_helper (or in tests).
     stored_messages.set(message_data.message.id, message_data);
@@ -257,8 +280,34 @@ export function clear_for_testing(): void {
 // TODO: If we finish converting to typescript and find that
 // nothing needs LocalMessage, explicitly remove its extra fields
 // here before returning the Message.
-export function get(message_id: number): Message | undefined {
+/**
+ * Return the cached message as a Readonly view of the store singleton.
+ * Prefer this (or get()) for read-only callers.
+ */
+export function get_immutable_message(message_id: number): ReadonlyMessage | undefined {
     return stored_messages.get(message_id)?.message;
+}
+
+/**
+ * Return the cached message for mutation. Prefer update_* helpers
+ * when one exists.
+ */
+export function get_mutable_message(message_id: number): MutableMessage | undefined {
+    return stored_messages.get(message_id)?.message;
+}
+
+/**
+ * Opt into mutation of a Message singleton the caller already holds.
+ * Prefer get_mutable_message when only an id is available. Returns
+ * the cached object when present, otherwise the same object.
+ */
+export function mutable_for(message: Message | ReadonlyMessage): MutableMessage {
+    return get_mutable_message(message.id) ?? message;
+}
+
+/** Alias of get_immutable_message. */
+export function get(message_id: number): ReadonlyMessage | undefined {
+    return get_immutable_message(message_id);
 }
 
 export function set_messages_for_tests(messages: ProcessedMessage[]): void {
@@ -365,7 +414,7 @@ export function convert_raw_message_to_message_with_booleans(opts: NewMessage):
     };
 }
 
-export function update_booleans(message: Message, flags: string[]): void {
+export function update_booleans(message: MutableMessage, flags: string[]): void {
     // When we get server flags for local echo or message edits,
     // we are vulnerable to race conditions, so only update flags
     // that are driven by message content.
@@ -448,7 +497,7 @@ export function reify_message_id({old_id, new_id}: {old_id: number; new_id: numb
     }
 }
 
-export function update_message_content(message: Message, new_content: string): void {
+export function update_message_content(message: MutableMessage, new_content: string): void {
     message.content = new_content;
 }
 
@@ -471,7 +520,7 @@ export function get_message_ids_in_stream(stream_id: number): number[] {
 }
 
 export function maybe_update_raw_content(id: number, raw_content: string | undefined): void {
-    const message = get(id);
+    const message = get_mutable_message(id);
     // In case the message was deleted from the cache after receiving a delete
     // event.
     if (message === undefined) {

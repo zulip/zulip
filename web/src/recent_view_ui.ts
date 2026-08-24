@@ -528,7 +528,7 @@ export function get_focused_row_message(): Message | undefined {
         const last_conversation = recent_view_data.conversations.get(conversation_id);
         assert(last_conversation !== undefined);
         const topic_last_msg_id = last_conversation.last_msg_id;
-        return message_store.get(topic_last_msg_id);
+        return message_store.get_immutable_message(topic_last_msg_id);
     }
     return undefined;
 }
@@ -797,7 +797,7 @@ type ConversationContext = {
 );
 
 function format_conversation(conversation_data: ConversationData): ConversationContext {
-    const last_msg = message_store.get(conversation_data.last_msg_id);
+    const last_msg = message_store.get_immutable_message(conversation_data.last_msg_id);
     assert(last_msg !== undefined);
     const time = new Date(last_msg.timestamp * 1000);
     const type = last_msg.type;
@@ -954,7 +954,7 @@ function format_conversation(conversation_data: ConversationData): ConversationC
 }
 
 function get_topic_row(topic_data: ConversationData): JQuery {
-    const msg = message_store.get(topic_data.last_msg_id);
+    const msg = message_store.get_immutable_message(topic_data.last_msg_id);
     assert(msg !== undefined);
     const topic_key = recent_view_util.get_key_from_message(msg);
     return $(`#${CSS.escape(recent_conversation_key_prefix + topic_key)}`);
@@ -1008,7 +1008,7 @@ export function update_topics_of_deleted_message_ids(message_ids: number[]): voi
 
     const dm_conversations_to_rerender = new Set<string>();
     for (const msg_id of message_ids) {
-        const msg = message_store.get(msg_id);
+        const msg = message_store.get_immutable_message(msg_id);
         if (msg === undefined) {
             continue;
         }
@@ -1039,7 +1039,7 @@ export function update_topics_of_deleted_message_ids(message_ids: number[]): voi
 }
 
 export function filters_should_hide_row(topic_data: ConversationData): boolean {
-    const msg = message_store.get(topic_data.last_msg_id);
+    const msg = message_store.get_immutable_message(topic_data.last_msg_id);
     assert(msg !== undefined);
 
     if (msg.type === "stream") {
@@ -1162,7 +1162,7 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
         if (processed_count >= row_keys.length) {
             break;
         }
-        const msg = message_store.get(topic_data.last_msg_id);
+        const msg = message_store.get_immutable_message(topic_data.last_msg_id);
         assert(msg !== undefined);
         const topic_key = recent_view_util.get_key_from_message(msg);
         if (row_keys.includes(topic_key)) {
@@ -1425,9 +1425,9 @@ function sort_comparator(a: string, b: string): number {
 
 function channel_sort(a: Row, b: Row): number {
     if (a.type === b.type) {
-        const a_msg = message_store.get(a.last_msg_id);
+        const a_msg = message_store.get_immutable_message(a.last_msg_id);
         assert(a_msg !== undefined);
-        const b_msg = message_store.get(b.last_msg_id);
+        const b_msg = message_store.get_immutable_message(b.last_msg_id);
         assert(b_msg !== undefined);
 
         if (a_msg.type === "stream") {
@@ -1461,9 +1461,9 @@ function channel_sort(a: Row, b: Row): number {
 
 function conversation_sort(a: Row, b: Row): number {
     if (a.type === b.type) {
-        const a_msg = message_store.get(a.last_msg_id);
+        const a_msg = message_store.get_immutable_message(a.last_msg_id);
         assert(a_msg !== undefined);
-        const b_msg = message_store.get(b.last_msg_id);
+        const b_msg = message_store.get_immutable_message(b.last_msg_id);
         assert(b_msg !== undefined);
 
         if (a_msg.type === "stream") {
@@ -1485,7 +1485,7 @@ function conversation_sort(a: Row, b: Row): number {
 }
 
 function unread_count(conversation_data: ConversationData): number {
-    const message = message_store.get(conversation_data.last_msg_id);
+    const message = message_store.get_immutable_message(conversation_data.last_msg_id);
     assert(message !== undefined);
     return message_to_conversation_unread_count(message);
 }
@@ -1523,7 +1523,7 @@ function has_visible_unread_conversation(): boolean {
     // Iterate the widget's already-filtered list so we avoid
     // re-evaluating `filters_should_hide_row` per topic.
     for (const topic_data of topics_widget.get_current_list()) {
-        const msg = message_store.get(topic_data.last_msg_id);
+        const msg = message_store.get_immutable_message(topic_data.last_msg_id);
         assert(msg !== undefined);
         if (message_to_conversation_unread_count(msg) > 0) {
             return true;
@@ -1821,7 +1821,7 @@ export function update_recent_view_rendered_time(): void {
     // only update it when the user comes back from idle which has
     // maximum chance of user seeing incorrect rendered time.
     for (const conversation_data of topics_widget.get_rendered_list()) {
-        const last_msg = message_store.get(conversation_data.last_msg_id);
+        const last_msg = message_store.get_immutable_message(conversation_data.last_msg_id);
         assert(last_msg !== undefined);
         const time = new Date(last_msg.timestamp * 1000);
         const updated_time = timerender.relative_time_string_from_date(time, true);
@@ -1918,7 +1918,7 @@ function has_unread(row: number): boolean {
     const current_row = topics_widget.get_current_list()[row];
     assert(current_row !== undefined);
     const last_msg_id = current_row.last_msg_id;
-    const last_msg = message_store.get(last_msg_id);
+    const last_msg = message_store.get_immutable_message(last_msg_id);
     assert(last_msg !== undefined);
     if (last_msg.type === "stream") {
         return unread.num_unread_for_topic(last_msg.stream_id, last_msg.topic) > 0;

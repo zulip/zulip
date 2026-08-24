@@ -681,7 +681,7 @@ export function process_read_messages_event(message_ids: number[]): void {
     for (const message_id of message_ids) {
         unread.mark_as_read(message_id);
 
-        const message = message_store.get(message_id);
+        const message = message_store.get_immutable_message(message_id);
 
         // TODO: This ends up doing one in-place rerender operation on
         // recent conversations per message, not a single global
@@ -712,7 +712,7 @@ export function process_unread_messages_event({
     }
 
     for (const message_id of message_ids) {
-        const message = message_store.get(message_id);
+        const message = message_store.get_mutable_message(message_id);
         const message_info = message_details[message_id];
         assert(message_info !== undefined);
         let mentioned_me_directly;

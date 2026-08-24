@@ -42,7 +42,7 @@ export function current_user_has_reacted_to_emoji(message: Message, local_id: st
 }
 
 function get_message(message_id: number): Message | undefined {
-    const message = message_store.get(message_id);
+    const message = message_store.get_mutable_message(message_id);
     if (!message) {
         blueslip.error("reactions: Bad message id", {message_id});
         return undefined;
@@ -275,7 +275,7 @@ export function rewire_set_reaction_vote_text(value: typeof set_reaction_vote_te
 
 export let add_reaction = (event: ReactionEvent): void => {
     const message_id = event.message_id;
-    const message = message_store.get(message_id);
+    const message = message_store.get_mutable_message(message_id);
 
     if (message === undefined) {
         // If we don't have the message in cache, do nothing; if we
@@ -413,7 +413,7 @@ export function rewire_insert_new_reaction(value: typeof insert_new_reaction): v
 export let remove_reaction = (event: ReactionEvent): void => {
     const message_id = event.message_id;
     const user_id = event.user_id;
-    const message = message_store.get(message_id);
+    const message = message_store.get_mutable_message(message_id);
     const local_id = get_local_reaction_id(event);
 
     if (message === undefined) {
@@ -500,7 +500,7 @@ export function rewire_remove_reaction_from_view(value: typeof remove_reaction_f
 export function get_emojis_used_by_user_for_message_id(message_id: number): string[] {
     const user_id = current_user.user_id;
     assert(user_id !== undefined);
-    const message = message_store.get(message_id);
+    const message = message_store.get_mutable_message(message_id);
     assert(message !== undefined);
     update_clean_reactions(message);
 

@@ -632,7 +632,7 @@ class UnreadTopicCounter {
 const unread_topic_counter = new UnreadTopicCounter();
 
 function add_message_to_unread_mentions(message_id: number): void {
-    const message = message_store.get(message_id);
+    const message = message_store.get_immutable_message(message_id);
     if (message?.type === "stream") {
         const topic_key = recent_view_util.get_topic_key(message.stream_id, message.topic);
         const topic_message_ids = unread_mention_topics.get(topic_key);
@@ -917,7 +917,7 @@ export function mark_as_read(message_id: number): void {
     direct_message_with_mention_count.delete(message_id);
     unread_messages.delete(message_id);
 
-    const message = message_store.get(message_id);
+    const message = message_store.get_mutable_message(message_id);
     if (message) {
         message.unread = false;
     }

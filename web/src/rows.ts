@@ -154,7 +154,7 @@ export function get_message_recipient_header($message_row: JQuery): JQuery {
 
 export function recipient_from_group($message_group: JQuery): Message | undefined {
     const message_id = id($message_group.children(".message_row").first().expectOne());
-    return message_store.get(message_id);
+    return message_store.get_immutable_message(message_id);
 }
 
 export function is_header_of_row_sticky($recipient_row: JQuery): boolean {

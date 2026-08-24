@@ -140,7 +140,7 @@ function show_message_failed(message_id: number, _failed_msg: string): void {
 
 function show_failed_message_success(message_id: number): void {
     // Previously failed message succeeded
-    const msg = message_store.get(message_id);
+    const msg = message_store.get_immutable_message(message_id);
     message_live_update.update_message_in_all_views(message_id, ($row) => {
         const $message_controls = $row.find(".message_controls");
         $message_controls.html(render_message_controls({msg}));
@@ -148,7 +148,7 @@ function show_failed_message_success(message_id: number): void {
 }
 
 function failed_message_success(message_id: number): void {
-    const message = message_store.get(message_id);
+    const message = message_store.get_mutable_message(message_id);
     if (message === undefined) {
         // A get-events delivery may already have reconciled the message to its
         // real id, in which case the resend's reify_message_id early-returned
@@ -170,7 +170,7 @@ export function resend_message(
         send_message: typeof transmit.send_message;
     },
 ): void {
-    message_store.update_message_content(message, message.raw_content!);
+    message_store.update_message_content(message_store.mutable_for(message), message.raw_content!);
     if (show_retry_spinner($row)) {
         // retry already in progress
         return;
@@ -377,69 +377,70 @@ export function edit_locally(message: Message, request: LocalEditRequest): void 
     // * Restoring the original content should the server return an
     //   error after having locally echoed content-only messages.
     // The details of what should be changed are encoded in the request.
+    const mutable = message_store.mutable_for(message);
     const raw_content = request.raw_content;
-    const message_content_edited = raw_content !== undefined && message.raw_content !== raw_content;
+    const message_content_edited = raw_content !== undefined && mutable.raw_content !== raw_content;
 
     if (request.new_topic !== undefined || request.new_stream_id !== undefined) {
-        assert(message.type === "stream");
+        assert(mutable.type === "stream");
         const new_stream_id = request.new_stream_id;
         const new_topic = request.new_topic;
         stream_topic_history.remove_messages({
-            stream_id: message.stream_id,
-            topic_name: message.topic,
+            stream_id: mutable.stream_id,
+            topic_name: mutable.topic,
             num_messages: 1,
-            max_removed_msg_id: message.id,
+            max_removed_msg_id: mutable.id,
         });
 
         if (new_stream_id !== undefined) {
-            message.stream_id = new_stream_id;
+            mutable.stream_id = new_stream_id;
         }
         if (new_topic !== undefined) {
-            message.topic = new_topic;
+            mutable.topic = new_topic;
         }
 
         stream_topic_history.add_message({
-            stream_id: message.stream_id,
-            topic_name: message.topic,
-            message_id: message.id,
+            stream_id: mutable.stream_id,
+            topic_name: mutable.topic,
+            message_id: mutable.id,
         });
     }
 
     if (message_content_edited) {
-        message_store.maybe_update_raw_content(message.id, raw_content);
+        message_store.maybe_update_raw_content(mutable.id, raw_content);
         if (request.content !== undefined) {
             // This happens in the code path where message editing
             // failed and we're trying to undo the local echo.  We use
             // the saved content and flags rather than rendering; this
             // is important in case
             // markdown.contains_backend_only_syntax(message) is true.
-            message_store.update_message_content(message, request.content);
-            message.mentioned = request.mentioned ?? false;
-            message.mentioned_me_directly = request.mentioned_me_directly ?? false;
-            message.alerted = request.alerted ?? false;
+            message_store.update_message_content(mutable, request.content);
+            mutable.mentioned = request.mentioned ?? false;
+            mutable.mentioned_me_directly = request.mentioned_me_directly ?? false;
+            mutable.alerted = request.alerted ?? false;
         } else {
             // Otherwise, we Markdown-render the message; this resets
             // all flags, so we need to restore those flags that are
             // properties of how the user has interacted with the
             // message, and not its rendering.
             const {content, flags, is_me_message} = markdown.render(raw_content);
-            message_store.update_message_content(message, content);
+            message_store.update_message_content(mutable, content);
             // Recompute the content-driven boolean flags (mentioned,
             // mentioned_me_directly, etc.) from the freshly rendered
             // flags. Without this, the message keeps its stale mention
             // booleans until the server event arrives, which (e.g. when
             // editing away a personal mention) briefly miscolors the
             // message as a group mention.
-            message_store.update_booleans(message, flags);
-            message.is_me_message = is_me_message;
+            message_store.update_booleans(mutable, flags);
+            mutable.is_me_message = is_me_message;
             if (request.starred !== undefined) {
-                message.starred = request.starred;
+                mutable.starred = request.starred;
             }
             if (request.historical !== undefined) {
-                message.historical = request.historical;
+                mutable.historical = request.historical;
             }
             if (request.collapsed !== undefined) {
-                message.collapsed = request.collapsed;
+                mutable.collapsed = request.collapsed;
             }
         }
     }
@@ -565,34 +566,35 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
 
         reify_message_id(local_id, message.id);
 
-        if (message_store.get(message.id)?.failed_request) {
+        if (message_store.get_immutable_message(message.id)?.failed_request) {
             failed_message_success(message.id);
         }
 
+        const mutable_client_message = message_store.mutable_for(client_message);
         if (client_message.content !== message.content) {
-            message_store.update_message_content(client_message, message.content);
+            message_store.update_message_content(mutable_client_message, message.content);
             sent_messages.mark_disparity(local_id);
         }
         sent_messages.report_event_received(local_id);
 
-        message_store.update_booleans(client_message, message.flags);
+        message_store.update_booleans(mutable_client_message, message.flags);
 
         // We don't try to highlight alert words locally, so we have to
         // do it now.  (Note that we will indeed highlight alert words in
         // messages that we sent to ourselves, since we might want to test
         // that our alert words are set up correctly.)
-        alert_words.process_message(client_message);
+        alert_words.process_message(mutable_client_message);
 
         // Previously, the message had the "local echo" timestamp set
         // by the browser; if there was some round-trip delay to the
         // server, the actual server-side timestamp could be slightly
         // different.  This corrects the frontend timestamp to match
         // the backend.
-        client_message.timestamp = message.timestamp;
+        mutable_client_message.timestamp = message.timestamp;
 
-        client_message.topic_links = message.topic_links ?? [];
-        client_message.is_me_message = message.is_me_message;
-        client_message.submessages = message.submessages;
+        mutable_client_message.topic_links = message.topic_links ?? [];
+        mutable_client_message.is_me_message = message.is_me_message;
+        mutable_client_message.submessages = message.submessages;
 
         msgs_to_rerender_or_add_to_narrow.push(client_message);
         echo_state.remove_message_from_waiting_for_ack(local_id);
@@ -639,7 +641,7 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
 
 export let message_send_error = (message_id: number, error_response: string): void => {
     // Error sending message, show inline
-    const message = message_store.get(message_id);
+    const message = message_store.get_mutable_message(message_id);
     if (message === undefined) {
         // The message is no longer in the store -- e.g. it was removed while a
         // (re)send was in flight -- so there is no failed send to surface.

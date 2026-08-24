@@ -221,7 +221,7 @@ export function initialize(): void {
         // compose box.
         const current_filter = narrow_state.filter();
         if (current_filter !== undefined && !current_filter.contains_no_partial_conversations()) {
-            const message = message_store.get(id);
+            const message = message_store.get_immutable_message(id);
 
             if (message === undefined) {
                 // This might happen for locally echoed messages, for example.
@@ -253,9 +253,7 @@ export function initialize(): void {
         }
 
         const message_id = rows.id($(this).closest(".message_row"));
-        const message = message_store.get(message_id);
-        assert(message !== undefined);
-        starred_messages_ui.toggle_starred_and_update_server(message);
+        starred_messages_ui.toggle_starred_and_update_server(message_id);
     });
 
     $("#main_div").on("click", ".message_reaction", function (this: HTMLElement, e) {

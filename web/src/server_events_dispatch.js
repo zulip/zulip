@@ -184,7 +184,7 @@ export function dispatch_normal_event(event) {
             let deleted_dm_user_ids;
             if (event.message_type === "private") {
                 for (const msg_id of msg_ids) {
-                    const message = message_store.get(msg_id);
+                    const message = message_store.get_immutable_message(msg_id);
                     if (message !== undefined) {
                         deleted_dm_user_ids = people.pm_with_user_ids(message);
                         if (deleted_dm_user_ids !== undefined) {
