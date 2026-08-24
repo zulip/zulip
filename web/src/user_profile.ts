@@ -214,7 +214,9 @@ function initialize_bot_owner(
                 )}"] .pill-container`,
             )
             .expectOne();
-        const pills = user_pill.create_pills($pill_container);
+        const pills = user_pill.create_pills($pill_container, undefined, {
+            disable_pill_editing: true,
+        });
 
         user_pill.append_user(bot_owner, pills);
         user_pills.set(bot_owner.user_id, pills);
