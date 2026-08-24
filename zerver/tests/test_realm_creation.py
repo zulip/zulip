@@ -1230,3 +1230,13 @@ class RealmCreationTest(ZulipTestCase):
 
         # And the challenge has been stripped out of the session
         self.assertEqual(self.client.session["altcha_challenges"], [])
+
+    @override_settings(OPEN_REALM_CREATION=True, USING_CAPTCHA=True, ALTCHA_HMAC_KEY="")
+    def test_create_realm_captcha_without_secret(self) -> None:
+        # With USING_CAPTCHA enabled but no altcha_hmac secret
+        # configured, the captcha is disabled entirely, rather than
+        # rendering a widget whose solutions the server could never
+        # validate.
+        result = self.client_get("/new/")
+        self.assertEqual(result.status_code, 200)
+        self.assert_not_in_success_response(["altcha-widget"], result)
