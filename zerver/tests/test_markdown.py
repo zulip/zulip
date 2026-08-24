@@ -38,6 +38,7 @@ from zerver.lib.markdown import (
     InlineInterestingLinkProcessor,
     MarkdownListPreprocessor,
     MessageRenderingResult,
+    ZulipNormalizeWhitespace,
     clear_web_link_regex_for_testing,
     content_has_emoji_syntax,
     fetch_tweet_data,
@@ -565,6 +566,68 @@ Outside. Should convert:<>
         """
         original, expected = self.split_message(msg)
         self.assertEqual(preprocessor.run(original), expected)
+
+
+class ZulipNormalizeWhitespaceTest(ZulipTestCase):
+    def test_tab_outside_code_block_is_2_spaces(self) -> None:
+        preprocessor = ZulipNormalizeWhitespace(Markdown())
+        msg = ["- one", "\t- two", "\t\t- three"]
+        expected = ["- one", "  - two", "    - three", "", ""]
+        self.assertEqual(preprocessor.run(msg), expected)
+
+    def test_tab_in_plain_code_block_is_4_spaces(self) -> None:
+        preprocessor = ZulipNormalizeWhitespace(Markdown())
+        msg = ["```python", "def func():", "\tx = 1", "```"]
+        expected = ["```python", "def func():", "    x = 1", "```", "", ""]
+        self.assertEqual(preprocessor.run(msg), expected)
+
+    def test_indented_fence_detected_as_code_block(self) -> None:
+        preprocessor = ZulipNormalizeWhitespace(Markdown())
+        msg = ["  ```python", "  def func():", "  \tx = 1", "  ```"]
+        expected = ["  ```python", "  def func():", "    x = 1", "  ```", "", ""]
+        self.assertEqual(preprocessor.run(msg), expected)
+
+    def test_blockquoted_fence_detected_as_code_block(self) -> None:
+        preprocessor = ZulipNormalizeWhitespace(Markdown())
+        msg = ["> ```python", "> def func():", ">\tx = 1", "> ```"]
+        expected = ["> ```python", "> def func():", ">   x = 1", "> ```", "", ""]
+        self.assertEqual(preprocessor.run(msg), expected)
+
+    def test_quote_block_tabs_are_2_spaces(self) -> None:
+        preprocessor = ZulipNormalizeWhitespace(Markdown())
+        msg = ["```quote", "* one", "\t* two", "```"]
+        expected = ["```quote", "* one", "  * two", "```", "", ""]
+        self.assertEqual(preprocessor.run(msg), expected)
+
+    def test_code_block_inside_quote_block(self) -> None:
+        preprocessor = ZulipNormalizeWhitespace(Markdown())
+        msg = [
+            "```quote",
+            "* one",
+            "\t* two",
+            "```python",
+            "def func():",
+            "\tx = 1",
+            "```",
+            "* three",
+            "\t* four",
+            "```",
+        ]
+        expected = [
+            "```quote",
+            "* one",
+            "  * two",
+            "```python",
+            "def func():",
+            "    x = 1",
+            "```",
+            "* three",
+            "  * four",
+            "```",
+            "",
+            "",
+        ]
+        self.assertEqual(preprocessor.run(msg), expected)
 
 
 class MarkdownFixtureTest(ZulipTestCase):
