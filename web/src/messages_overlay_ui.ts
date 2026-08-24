@@ -28,7 +28,15 @@ export type Context = {
 };
 
 export function row_with_focus(context: Context): JQuery {
-    const $focused_item = $(`.${CSS.escape(context.box_item_selector)}:focus`);
+    // The box itself is `:focus`ed when the user tabbed directly onto it,
+    // but DOM focus can also be on a nested control inside it (e.g. an
+    // action button); `handle_row_focus` still marks that box `.active` in
+    // that case, so fall back to it to find the row keyboard navigation
+    // should treat as current.
+    let $focused_item = $(`.${CSS.escape(context.box_item_selector)}:focus`);
+    if ($focused_item.length === 0) {
+        $focused_item = $(`.${CSS.escape(context.box_item_selector)}.active`);
+    }
     return $focused_item.parent(`.${CSS.escape(context.row_item_selector)}`);
 }
 
@@ -180,9 +188,11 @@ function row_after_focus(context: Context): JQuery {
 function initialize_focus(event_name: string, context: Context): void {
     // If an item is not focused in modal, then focus the last item
     // if up_arrow is clicked or the first item if down_arrow is clicked.
+    const $active_box = $(`.${CSS.escape(context.box_item_selector)}.active`);
     if (
         (event_name !== "up_arrow" && event_name !== "down_arrow") ||
-        $(`.${CSS.escape(context.box_item_selector)}:focus`).length > 0
+        $active_box.is(":focus") ||
+        $active_box.find(":focus").length > 0
     ) {
         return;
     }
@@ -193,7 +203,6 @@ function initialize_focus(event_name: string, context: Context): void {
     // user clicks elsewhere in the overlay, which clears focus but leaves
     // the active item visually highlighted. Resume navigation from that
     // active item rather than restarting at the first or last one.
-    const $active_box = $(`.${CSS.escape(context.box_item_selector)}.active`);
     if ($active_box.length > 0) {
         activate_element(util.the($active_box), context);
         scroll_util.scroll_element_into_container(

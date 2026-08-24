@@ -2,8 +2,11 @@
 
 const assert = require("node:assert/strict");
 
+const {JSDOM} = require("jsdom");
+
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const messages_overlay_ui = zrequire("messages_overlay_ui");
 
@@ -70,4 +73,34 @@ run_test("handle_row_focus does not steal focus from a nested control", () => {
     // buttons unreachable via Tab.
     assert.equal(row.focus_call_count, 0);
     assert.equal(action_button.focus_call_count, 0);
+});
+
+run_test("row_with_focus falls back to the active row when focus is on a nested control", () => {
+    // Pressing Up/Down while a nested action button has focus (e.g. after
+    // Tabbing onto Delete) must resolve to the row the button lives in --
+    // not silently find nothing, which is what happens if row_with_focus
+    // only looks for the box itself being `:focus`ed. `handle_row_focus`
+    // keeps the box `.active` in exactly this situation, so that's the
+    // fallback this proves.
+    //
+    // Real DOM nodes (not zjquery's FakeElement stand-ins) are used here
+    // because `.parent()` needs genuine `parentNode`/`matches()` support.
+    const {document} = new JSDOM(
+        '<div class="overlay-message-row"><div class="overlay-message-info-box active"></div></div>',
+    ).window;
+    const active_box = document.querySelector(".overlay-message-info-box");
+    const row = document.querySelector(".overlay-message-row");
+
+    const list_context = {
+        row_item_selector: "overlay-message-row",
+        box_item_selector: "overlay-message-info-box",
+    };
+
+    // Nothing is directly `:focus`ed -- DOM focus is on a nested button.
+    $.set_results(".overlay-message-info-box:focus", []);
+    $.set_results(".overlay-message-info-box.active", [active_box]);
+
+    const $result = messages_overlay_ui.row_with_focus(list_context);
+
+    assert.equal($result[0], row);
 });
