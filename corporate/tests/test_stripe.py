@@ -2051,10 +2051,19 @@ class StripeTest(StripeTestCase):
             "type_of_hosting": "Zulip Cloud",
             "message": "Need help!",
         }
-        result = self.client_post("/request-demo/", data)
-        self.assert_in_success_response(["Thanks for contacting us!"], result)
 
         from django.core.mail import outbox
+
+        # A validation failure re-renders the form with the error
+        # displayed and the submitted values preserved.
+        result = self.client_post("/request-demo/", {**data, "email": "invalid"})
+        self.assert_in_success_response(
+            ["Enter a valid email address.", "King Hamlet", "Need help!"], result
+        )
+        self.assert_length(outbox, 0)
+
+        result = self.client_post("/request-demo/", data)
+        self.assert_in_success_response(["Thanks for contacting us!"], result)
 
         self.assert_length(outbox, 1)
 
