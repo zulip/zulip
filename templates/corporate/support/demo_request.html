@@ -94,11 +94,12 @@
                     {% endfor %}
                 </div>
 
-                <div class="register-button-box">
+                <div class="register-button-box {% if 'captcha' in form.fields %}altcha-button-box{% endif %}">
                     <button class="register-button support-submit-button" type="submit">
                         <span>Submit</span>
                         <object class="loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                     </button>
+                    {% include 'zerver/altcha_form_field.html' %}
                 </div>
             </fieldset>
         </form>
