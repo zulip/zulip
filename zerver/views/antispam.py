@@ -7,6 +7,7 @@ from django.http import HttpRequest, HttpResponseBase
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
+from zerver.lib.captcha import captcha_enabled
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint_without_parameters
@@ -16,7 +17,7 @@ from zerver.lib.typed_endpoint import typed_endpoint_without_parameters
 def get_challenge(
     request: HttpRequest,
 ) -> HttpResponseBase:
-    if not settings.USING_CAPTCHA or not settings.ALTCHA_HMAC_KEY:  # nocoverage
+    if not captcha_enabled():  # nocoverage
         raise JsonableError(_("Challenges are not enabled."))
 
     now = timezone_now()

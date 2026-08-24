@@ -1544,7 +1544,6 @@ def create_realm(request: HttpRequest, confirmation_key: str | None = None) -> H
     context = get_realm_create_form_context()
     context.update(
         {
-            "has_captcha": settings.USING_CAPTCHA,
             "form": form,
             "current_url": request.get_full_path,
         }
@@ -1708,7 +1707,6 @@ def create_demo_organization(
     context = get_realm_create_form_context()
     context.update(
         {
-            "has_captcha": settings.USING_CAPTCHA,
             "form": form,
             "current_url": request.get_full_path,
             "how_realm_creator_found_zulip_options": RealmAuditLog.HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS.items(),

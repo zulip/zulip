@@ -15,6 +15,10 @@ from django.utils.translation import gettext_lazy
 from typing_extensions import override
 
 
+def captcha_enabled() -> bool:
+    return bool(settings.USING_CAPTCHA and settings.ALTCHA_HMAC_KEY)
+
+
 class AltchaWidget(forms.TextInput):
     @override
     def render(
@@ -55,7 +59,7 @@ class CaptchaFormMixin(forms.Form):
     def __init__(self, *args: Any, request: HttpRequest, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         self.request = request
-        if not settings.USING_CAPTCHA or not settings.ALTCHA_HMAC_KEY:
+        if not captcha_enabled():
             del self.fields["captcha"]
 
     @override
@@ -74,7 +78,7 @@ class CaptchaFormMixin(forms.Form):
 
 
 def validate_captcha_payload(request: HttpRequest, captcha_payload: str) -> None:
-    if not settings.USING_CAPTCHA or not settings.ALTCHA_HMAC_KEY:  # nocoverage
+    if not captcha_enabled():  # nocoverage
         raise forms.ValidationError(_("Challenges are not enabled."))
 
     try:
