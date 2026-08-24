@@ -468,8 +468,8 @@ class NarrowBuilder:
         else:
             raise BadNarrowOperatorError("unknown channels operand " + operand)
 
-        recipient_ids = recipient_queryset.values_list("recipient_id", flat=True).order_by("id")
-        cond = Q(recipient_id__in=list(recipient_ids))
+        recipient_ids = recipient_queryset.values_list("recipient_id", flat=True)
+        cond = Q(recipient_id__in=sorted(recipient_ids))
         return query.filter(maybe_negate(cond))
 
     def by_topic(
