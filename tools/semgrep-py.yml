@@ -43,6 +43,28 @@ rules:
       exclude:
         - "**/migrations/"
 
+  - id: index-ordering-unusable-nulls-placement
+    patterns:
+      - pattern-either:
+          - pattern-inside: models.Index(...)
+          - pattern-inside: Index(...)
+      - pattern-either:
+          - pattern: $X.desc(..., nulls_last=True, ...)
+          - pattern: $X.asc(..., nulls_first=True, ...)
+    message: |
+      This index column's NULLS placement makes the index unusable for ordering.
+
+      PostgreSQL reads `ORDER BY x ASC` as `ASC NULLS LAST` and `ORDER BY x DESC`
+      as `DESC NULLS FIRST`, and an index scan can only supply the order the index
+      declares or the exact reverse of it.
+      If you're confident the NULLS ordering you specified is the correct one for
+      your situation nonetheless, add an exception to this semgrep rule.
+    languages: [python]
+    severity: ERROR
+    paths:
+      exclude:
+        - "**/migrations/"
+
   - id: dont-use-empty-select_related
     pattern-either:
       - pattern: $X.select_related()
