@@ -42,6 +42,7 @@ from zerver.actions.realm_settings import (
 from zerver.actions.users import do_delete_user_preserving_messages
 from zerver.decorator import require_server_admin, zulip_login_required
 from zerver.forms import check_subdomain_available
+from zerver.lib.captcha import CaptchaFormMixin
 from zerver.lib.rate_limiter import rate_limit_request_by_ip
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.send_email import FromAddress, send_email
@@ -85,7 +86,7 @@ class SupportRequestForm(forms.Form):
     request_message = forms.CharField(widget=forms.Textarea)
 
 
-class DemoRequestForm(forms.Form):
+class DemoRequestForm(CaptchaFormMixin, forms.Form):
     MAX_INPUT_LENGTH = 50
     SORTED_ORG_TYPE_NAMES = sorted(
         ([org_type["name"] for org_type in Realm.ORG_TYPES.values() if not org_type["hidden"]]),
@@ -171,7 +172,7 @@ def demo_request(request: HttpRequest) -> HttpResponse:
 
     if request.POST:
         post_data = request.POST.copy()
-        form = DemoRequestForm(post_data)
+        form = DemoRequestForm(post_data, request=request)
 
         if form.is_valid():
             rate_limit_request_by_ip(request, domain="sends_email_by_ip")
@@ -202,7 +203,7 @@ def demo_request(request: HttpRequest) -> HttpResponse:
             )
             return response
     else:
-        form = DemoRequestForm()
+        form = DemoRequestForm(request=request)
 
     context["form"] = form
     response = render(request, "corporate/support/demo_request.html", context=context)
