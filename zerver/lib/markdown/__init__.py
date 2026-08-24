@@ -1541,7 +1541,7 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     directly after a line of text, and inserts a newline between
     to satisfy Markdown"""
 
-    LI_RE = re.compile(r"^[ ]*([*+-]|\d\.)[ ]+(.*)", re.MULTILINE)
+    LI_RE = re.compile(r"^[ ]*([*+-]|\d\.)[ ]+(.*)")
 
     @override
     def run(self, lines: list[str]) -> list[str]:
