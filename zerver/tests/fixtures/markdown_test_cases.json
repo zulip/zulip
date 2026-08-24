@@ -55,6 +55,13 @@
       "text_content": "Hamlet once said\ndef func():\n    x = 1\n\n    y = 2\n\n    z = 3\n\nAnd all was good."
     },
     {
+      "name": "codeblock_tab_indent",
+      "input": "```\ndef func():\n\tx = 1\n```",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code>def func():\n    x = 1\n</code></pre></div>",
+      "marked_expected_output": "<div class=\"codehilite\"><pre><span></span><code>def func():\n\tx = 1\n</code></pre></div>",
+      "text_content": "def func():\n    x = 1\n"
+    },
+    {
       "name": "inline_code_spaces",
       "input": "` outer ` ```    space    ```",
       "expected_output": "<p><code> outer </code> <code>    space    </code></p>",
@@ -274,6 +281,12 @@
     {
       "name": "ulist_nested_ulist_two_space_indent",
       "input": "Nested list\n* I am outer list\n  * I am inner nested list first item\n  * I am inner nested list second item",
+      "expected_output": "<p>Nested list</p>\n<ul>\n<li>I am outer list<ul>\n<li>I am inner nested list first item</li>\n<li>I am inner nested list second item</li>\n</ul>\n</li>\n</ul>",
+      "text_content": "Nested list\n\nI am outer list\nI am inner nested list first item\nI am inner nested list second item\n\n\n"
+    },
+    {
+      "name": "ulist_nested_ulist_tab_indent",
+      "input": "Nested list\n* I am outer list\n\t* I am inner nested list first item\n\t* I am inner nested list second item",
       "expected_output": "<p>Nested list</p>\n<ul>\n<li>I am outer list<ul>\n<li>I am inner nested list first item</li>\n<li>I am inner nested list second item</li>\n</ul>\n</li>\n</ul>",
       "text_content": "Nested list\n\nI am outer list\nI am inner nested list first item\nI am inner nested list second item\n\n\n"
     },

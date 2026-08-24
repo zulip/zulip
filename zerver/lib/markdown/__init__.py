@@ -1791,6 +1791,70 @@ class Fence:
     is_code: bool
 
 
+LIST_INDENT_TAB_WIDTH = 2
+CODE_BLOCK_TAB_WIDTH = 4
+
+PREFIXED_FENCE_RE = re.compile(
+    r"""
+    ^[ ]*(?:>[ ]*)*
+    (?P<fence>~{3,}|`{3,})
+    [ ]*
+    (?:
+        \{?\.?
+        (?P<lang>[a-zA-Z0-9_+-./#]+)
+        [ ]*
+        (?P<header>[^ ~`][^~`]*)?
+        \}?
+    )?
+    [ ]*$
+    """,
+    re.VERBOSE,
+)
+
+
+class ZulipNormalizeWhitespace(markdown.preprocessors.Preprocessor):
+    """Normalize whitespace for consistent parsing.
+
+    Expands tabs to 2 spaces outside fenced code blocks to support
+    nested bulleted and numbered lists, while expanding tabs to 4 spaces
+    inside fenced code blocks to preserve code block tab stops.
+    """
+
+    @override
+    def run(self, lines: list[str]) -> list[str]:
+        source = "\n".join(lines)
+        source = source.replace(markdown.util.STX, "").replace(markdown.util.ETX, "")
+        source = source.replace("\r\n", "\n").replace("\r", "\n") + "\n\n"
+
+        raw_lines = source.split("\n")
+        expanded_lines: list[str] = []
+        open_fences: list[Fence] = []
+
+        for line in raw_lines:
+            m = PREFIXED_FENCE_RE.match(line)
+            in_code = bool(open_fences and open_fences[-1].is_code)
+
+            if m:
+                fence_str = m.group("fence")
+                lang = m.group("lang")
+                if in_code:
+                    if not lang and fence_str == open_fences[-1].fence_str:
+                        open_fences.pop()
+                else:
+                    if not lang and open_fences and fence_str == open_fences[-1].fence_str:
+                        open_fences.pop()
+                    else:
+                        is_code = (lang or "").lower() not in ("quote", "quoted", "spoiler")
+                        open_fences.append(Fence(fence_str, is_code))
+
+            tab_width = CODE_BLOCK_TAB_WIDTH if in_code else LIST_INDENT_TAB_WIDTH
+            expanded_lines.append(line.expandtabs(tab_width))
+
+        source = "\n".join(expanded_lines)
+        source = re.sub(r"(?<=\n) +\n", "\n", source)
+        return source.split("\n")
+
+
 class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     """Allows list blocks that come directly after another block
     to be rendered as a list.
@@ -2330,7 +2394,7 @@ class ZulipMarkdown(markdown.Markdown):
         preprocessors = markdown.util.Registry[markdown.preprocessors.Preprocessor]()
         preprocessors.register(MarkdownListPreprocessor(self), "hanging_lists", 35)
         preprocessors.register(
-            markdown.preprocessors.NormalizeWhitespace(self), "normalize_whitespace", 30
+            ZulipNormalizeWhitespace(self), "normalize_whitespace", 30
         )
         preprocessors.register(fenced_code.FencedBlockPreprocessor(self), "fenced_code_block", 25)
         preprocessors.register(
