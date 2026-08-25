@@ -34,7 +34,7 @@ Come find us on the [development community chat](https://zulip.com/development-c
 
 - **Contributing code**. Check out our [guide for new
   contributors](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)
-  to get started. We have invested in making Zulip’s code highly
+  to get started. We have invested in making Zulip's code highly
   readable, thoughtfully tested, and easy to modify. Beyond that, we
   have written an extraordinary 185K words of documentation for Zulip
   contributors.
@@ -54,9 +54,11 @@ Come find us on the [development community chat](https://zulip.com/development-c
 
 - **Running a Zulip server**. Self-host Zulip directly on Ubuntu or Debian
   Linux, in [Docker](https://github.com/zulip/docker-zulip), or with prebuilt
-  images for [Digital Ocean](https://marketplace.digitalocean.com/apps/zulip) and
-  [Render](https://render.com/docs/deploy-zulip).
+  images for [Digital Ocean](https://marketplace.digitalocean.com/apps/zulip),
+  [Render](https://render.com/docs/deploy-zulip), and
+  [RepoCloud](https://repocloud.io/details/Zulip/).
   Learn more about [self-hosting Zulip](https://zulip.com/self-hosting/).
+  [![Deploy on RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploylobe.svg)](https://repocloud.io/details/Zulip/)
 
 - **Using Zulip without setting up a server**. Learn about [Zulip
   Cloud](https://zulip.com/zulip-cloud/) hosting options. Zulip sponsors free [Zulip
