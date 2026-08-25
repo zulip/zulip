@@ -9,6 +9,10 @@ from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_string
 
+# The report fields are user-controlled and unbounded, so we cap
+# each one to keep a single request from bloating the logs.
+MAX_REPORT_FIELD_LENGTH = 200
+
 
 @csrf_exempt
 @require_POST
@@ -17,7 +21,14 @@ def report_csp_violations(
     request: HttpRequest, *, csp_report: JsonBodyPayload[WildValue]
 ) -> HttpResponse:
     def get_attr(csp_report_attr: str) -> str:
-        return csp_report.get(csp_report_attr, "").tame(check_string)
+        value = csp_report.get(csp_report_attr, "").tame(check_string)
+        if len(value) > MAX_REPORT_FIELD_LENGTH:
+            value = value[:MAX_REPORT_FIELD_LENGTH] + "…"
+        # The report fields are user-controlled and logged verbatim, so
+        # replace non-printable characters to prevent forging log lines or
+        # injecting terminal escape sequences. This covers all line
+        # separators and format characters, not just ASCII newlines.
+        return "".join(c if c.isprintable() else " " for c in value)
 
     logging.warning(
         "CSP violation in document('%s'). "
