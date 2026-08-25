@@ -57,7 +57,7 @@ write, including tests and documentation, if you use the right process.
 
 ## Hello world walkthrough
 
-Check out [this detailed guide](incoming-webhooks-walkthrough) for
+Check out [this detailed guide](incoming-webhooks-walkthrough.md) for
 step-by-step instructions on developing an incoming webhook integration.
 
 ## Checklist
