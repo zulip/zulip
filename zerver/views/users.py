@@ -556,51 +556,67 @@ def patch_bot_backend(
             bot, default_all_public_streams, acting_user=user_profile
         )
 
-    if service_interface is not None or service_payload_url is not None:
-        if bot.bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
-            raise JsonableError(
-                _("Only outgoing-webhook bots have a service interface and payload URL.")
-            )
-        if service_interface is not None:
-            check_valid_interface_type(service_interface)
-        do_update_outgoing_webhook_service(
-            bot,
-            interface=service_interface,
-            base_url=service_payload_url,
-            acting_user=user_profile,
-        )
-
-    if config_data is not None:
-        if bot.bot_type not in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
-            raise JsonableError(_("Only incoming-webhook and embedded bots have config data."))
-
-        try:
-            existing_config_data = get_bot_config(bot)
-        except ConfigError:
-            existing_config_data = {}
-
-        merged_config_data = {**existing_config_data, **config_data}
-        if bot.bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
-            proposed_service_name = merged_config_data.get("integration_id")
-            # integration_id identifies which integration this bot is
-            # for; it's stored alongside the integration's own config
-            # options but is not itself one of them, so exclude it from
-            # what check_valid_bot_config validates. Matches the shape
-            # of the check_valid_bot_config call in add_bot_backend.
-            config_data_to_validate = {
-                key: value for key, value in merged_config_data.items() if key != "integration_id"
-            }
-        else:
-            existing_service = get_bot_services(bot.id)[0]
-            proposed_service_name = existing_service.name
-            config_data_to_validate = merged_config_data
-        if proposed_service_name is not None:
-            check_valid_bot_config(
-                bot.bot_type,
-                proposed_service_name,
-                config_data_to_validate,
-            )
-        do_update_bot_config_data(bot, config_data)
+    if service_interface is not None or service_payload_url is not None or config_data is not None:
+        match bot.bot_type:
+            case UserProfile.OUTGOING_WEBHOOK_BOT:
+                if config_data is not None:
+                    raise JsonableError(_("Outgoing-webhook bots have no config data to update."))
+                if service_interface is not None:
+                    check_valid_interface_type(service_interface)
+                do_update_outgoing_webhook_service(
+                    bot,
+                    interface=service_interface,
+                    base_url=service_payload_url,
+                    acting_user=user_profile,
+                )
+            case UserProfile.EMBEDDED_BOT:
+                if service_interface is not None or service_payload_url is not None:
+                    raise JsonableError(_("Service fields cannot be updated on embedded bots"))
+                assert config_data is not None
+                existing_config_data = get_bot_config(bot)
+                merged_config_data = {**existing_config_data, **config_data}
+                existing_service = get_bot_services(bot.id)[0]
+                check_valid_bot_config(
+                    bot.bot_type,
+                    existing_service.name,
+                    merged_config_data,
+                )
+                do_update_bot_config_data(bot, config_data)
+            case UserProfile.INCOMING_WEBHOOK_BOT:
+                if service_interface is not None or service_payload_url is not None:
+                    raise JsonableError(
+                        _("Incoming-webhook bots have no service fields to update.")
+                    )
+                assert config_data is not None
+                try:
+                    existing_config_data = get_bot_config(bot)
+                except ConfigError:
+                    existing_config_data = {}
+                merged_config_data = {**existing_config_data, **config_data}
+                proposed_integration_id = merged_config_data.get("integration_id")
+                if proposed_integration_id is not None:
+                    # integration_id identifies which integration this
+                    # bot is for; it's stored alongside the
+                    # integration's own config options but is not
+                    # itself one of them, so exclude it from what
+                    # check_valid_bot_config validates. Matches the
+                    # shape of the check_valid_bot_config call in
+                    # add_bot_backend.
+                    config_data_to_validate = {
+                        key: value
+                        for key, value in merged_config_data.items()
+                        if key != "integration_id"
+                    }
+                    check_valid_bot_config(
+                        bot.bot_type,
+                        proposed_integration_id,
+                        config_data_to_validate,
+                    )
+                do_update_bot_config_data(bot, config_data)
+            case UserProfile.DEFAULT_BOT:
+                raise JsonableError(_("Generic bots have no service or config data to update."))
+            case _:  # nocoverage
+                raise JsonableError(_("Unexpected bot type."))
 
     if len(request.FILES) == 0:
         pass
