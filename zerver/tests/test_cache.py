@@ -159,6 +159,23 @@ class CacheWithKeyDecoratorTest(ZulipTestCase):
 
         self.assertEqual(result_two, None)
 
+    def test_cache_with_key_pickled_tupled_false_serves_hits(self) -> None:
+        key = "CacheWithKeyDecoratorTest:pickled_tupled_false"
+        cache_delete(key)
+        calls = 0
+
+        @cache_with_key(lambda: key, timeout=1000, pickled_tupled=False)
+        def encode() -> bytes:
+            nonlocal calls
+            calls += 1
+            return b"encoded"
+
+        self.assertEqual(encode(), b"encoded")
+        # Stored raw, not wrapped in a 1-tuple.
+        self.assertEqual(cache_get(key), b"encoded")
+        self.assertEqual(encode(), b"encoded")
+        self.assertEqual(calls, 1)
+
     def test_cache_with_key_rejects_queryset_return(self) -> None:
         """Returning a QuerySet from a @cache_with_key-decorated function
         raises AssertionError under TEST_SUITE / DEBUG; production skips

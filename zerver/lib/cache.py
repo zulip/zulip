@@ -210,8 +210,8 @@ def cache_with_key(
             # pickled_tupled=False avoids pickling the result (if it's
             # a raw string or bytes) at the cost of losing this
             # distinction.
-            if val is not None and pickled_tupled:
-                return val[0]
+            if val is not None:
+                return val[0] if pickled_tupled else val
 
             val = checked(*args, **kwargs)
             cache_set(
