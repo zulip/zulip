@@ -326,23 +326,6 @@ def cache_get_many(keys: list[str], cache_name: str | None = None) -> dict[str, 
     }
 
 
-def safe_cache_get_many(keys: list[str], cache_name: str | None = None) -> dict[str, Any]:
-    """Variant of cache_get_many that drops any keys that fail
-    validation, rather than throwing an exception visible to the
-    caller."""
-    try:
-        # Almost always the keys will all be correct, so we just try
-        # to do normal cache_get_many to avoid the overhead of
-        # validating all the keys here.
-        return cache_get_many(keys, cache_name)
-    except InvalidCacheKeyError:
-        stack_trace = traceback.format_exc()
-        good_keys, bad_keys = filter_good_and_bad_keys(keys)
-
-        log_invalid_cache_keys(stack_trace, bad_keys)
-        return cache_get_many(good_keys, cache_name)
-
-
 def cache_set_many(
     items: dict[str, Any], cache_name: str | None = None, timeout: int | None = None
 ) -> None:
@@ -358,27 +341,6 @@ def cache_set_many(
     except MemcachedException:
         logger.exception("Error while storing to cache")
     remote_cache_stats_finish()
-
-
-def safe_cache_set_many(
-    items: dict[str, Any], cache_name: str | None = None, timeout: int | None = None
-) -> None:
-    """Variant of cache_set_many that drops saving any keys that fail
-    validation, rather than throwing an exception visible to the
-    caller."""
-    try:
-        # Almost always the keys will all be correct, so we just try
-        # to do normal cache_set_many to avoid the overhead of
-        # validating all the keys here.
-        return cache_set_many(items, cache_name, timeout)
-    except InvalidCacheKeyError:
-        stack_trace = traceback.format_exc()
-
-        good_keys, bad_keys = filter_good_and_bad_keys(list(items.keys()))
-        log_invalid_cache_keys(stack_trace, bad_keys)
-
-        good_items = {key: items[key] for key in good_keys}
-        return cache_set_many(good_items, cache_name, timeout)
 
 
 def cache_delete(key: str, cache_name: str | None = None) -> None:
@@ -720,19 +682,6 @@ def read_through_cache(
     else:
         _cache_fill_race_detected += 1
     return value
-
-
-def filter_good_and_bad_keys(keys: list[str]) -> tuple[list[str], list[str]]:
-    good_keys = []
-    bad_keys = []
-    for key in keys:
-        try:
-            validate_cache_key(key)
-            good_keys.append(key)
-        except InvalidCacheKeyError:
-            bad_keys.append(key)
-
-    return good_keys, bad_keys
 
 
 # Generic_bulk_cached fetch and its helpers.  We start with declaring

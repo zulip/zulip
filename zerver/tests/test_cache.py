@@ -34,8 +34,6 @@ from zerver.lib.cache import (
     cache_with_key,
     get_cache_fill_counts,
     read_through_cache,
-    safe_cache_get_many,
-    safe_cache_set_many,
     user_profile_by_id_cache_key,
     validate_cache_key,
 )
@@ -337,61 +335,6 @@ class BmemcachedBridgeTest(ZulipTestCase):
         self.assert_length(logs.output, 2)
         self.assertIn("Error while storing to cache", logs.output[0])
         self.assertIn("Error while storing to cache", logs.output[1])
-
-
-class SafeCacheFunctionsTest(ZulipTestCase):
-    def test_safe_cache_functions_with_all_good_keys(self) -> None:
-        items = {
-            "SafeFunctionsTest:key1": 1,
-            "SafeFunctionsTest:key2": 2,
-            "SafeFunctionsTest:key3": 3,
-        }
-        safe_cache_set_many(items)
-
-        result = safe_cache_get_many(list(items.keys()))
-        for key, value in result.items():
-            self.assertEqual(value, items[key])
-
-    def test_safe_cache_functions_with_all_bad_keys(self) -> None:
-        items = {"SafeFunctionsTest:\nbadkey1": 1, "SafeFunctionsTest:\nbadkey2": 2}
-        with self.assertLogs(level="WARNING") as m:
-            safe_cache_set_many(items)
-            self.assertIn(
-                "WARNING:root:Invalid cache key used: ['SafeFunctionsTest:\\nbadkey1', 'SafeFunctionsTest:\\nbadkey2']",
-                m.output[0],
-            )
-            self.assert_length(m.output, 1)
-
-        with self.assertLogs(level="WARNING") as m:
-            result = safe_cache_get_many(list(items.keys()))
-            self.assertEqual(result, {})
-            self.assertIn(
-                "WARNING:root:Invalid cache key used: ['SafeFunctionsTest:\\nbadkey1', 'SafeFunctionsTest:\\nbadkey2']",
-                m.output[0],
-            )
-            self.assert_length(m.output, 1)
-
-    def test_safe_cache_functions_with_good_and_bad_keys(self) -> None:
-        bad_items = {"SafeFunctionsTest:\nbadkey1": 1, "SafeFunctionsTest:\nbadkey2": 2}
-        good_items = {"SafeFunctionsTest:goodkey1": 3, "SafeFunctionsTest:goodkey2": 4}
-        items = {**good_items, **bad_items}
-
-        with self.assertLogs(level="WARNING") as m:
-            safe_cache_set_many(items)
-            self.assertIn(
-                "WARNING:root:Invalid cache key used: ['SafeFunctionsTest:\\nbadkey1', 'SafeFunctionsTest:\\nbadkey2']",
-                m.output[0],
-            )
-            self.assert_length(m.output, 1)
-
-        with self.assertLogs(level="WARNING") as m:
-            result = safe_cache_get_many(list(items.keys()))
-            self.assertEqual(result, good_items)
-            self.assertIn(
-                "WARNING:root:Invalid cache key used: ['SafeFunctionsTest:\\nbadkey1', 'SafeFunctionsTest:\\nbadkey2']",
-                m.output[0],
-            )
-            self.assert_length(m.output, 1)
 
 
 class BotCacheKeyTest(ZulipTestCase):
