@@ -7,13 +7,18 @@ from django.db import transaction
 from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from django.utils.translation import override as override_language
 
 from zerver.actions.default_streams import (
     do_remove_default_stream,
     do_remove_streams_from_default_stream_group,
 )
-from zerver.actions.message_send import maybe_send_channel_events_notice
+from zerver.actions.message_send import (
+    do_send_messages,
+    internal_prep_stream_message,
+    maybe_send_channel_events_notice,
+)
 from zerver.lib.cache import (
     cache_delete_many,
     cache_set,
@@ -21,8 +26,16 @@ from zerver.lib.cache import (
     to_dict_cache_key_id,
 )
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.mention import silent_mention_syntax_for_user, silent_mention_syntax_for_user_group
-from zerver.lib.message import get_last_message_id
+from zerver.lib.mention import (
+    MentionBackend,
+    silent_mention_syntax_for_user,
+    silent_mention_syntax_for_user_group,
+)
+from zerver.lib.message import (
+    SendMessageRequest,
+    get_last_message_id,
+    get_user_mentions_for_display,
+)
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.stream_color import pick_colors
 from zerver.lib.stream_subscription import (
@@ -38,6 +51,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
     can_access_stream_metadata_user_ids,
+    channel_events_topic_name,
     check_basic_stream_access,
     get_anonymous_group_membership_dict_for_streams,
     get_stream_permission_policy_key,
@@ -744,6 +758,136 @@ def send_user_creation_events_on_adding_subscriptions(
 
 
 SubT: TypeAlias = tuple[list[SubInfo], list[SubInfo]]
+
+
+# Changes affecting more than this many users collapse to a count with the
+# roster in a spoiler block, so the topic isn't flooded with names.
+MAX_INLINE_SUBSCRIPTION_NOTICE_USERS = 3
+
+
+def get_subscription_change_notice_content(
+    *, acting_user: UserProfile, users: list[UserProfile], subscribed: bool
+) -> str:
+    assert users
+    acting_user_mention = silent_mention_syntax_for_user(acting_user)
+
+    # Someone changing only their own membership needs no target list.
+    if len(users) == 1 and users[0].id == acting_user.id:
+        if subscribed:
+            return _("{acting_user} subscribed to this channel.").format(
+                acting_user=acting_user_mention
+            )
+        return _("{acting_user} unsubscribed from this channel.").format(
+            acting_user=acting_user_mention
+        )
+
+    count = len(users)
+
+    if count <= MAX_INLINE_SUBSCRIPTION_NOTICE_USERS:
+        target_users = get_user_mentions_for_display(users)
+        if subscribed:
+            return _("{acting_user} subscribed {target_users} to this channel.").format(
+                acting_user=acting_user_mention, target_users=target_users
+            )
+        return _("{acting_user} unsubscribed {target_users} from this channel.").format(
+            acting_user=acting_user_mention, target_users=target_users
+        )
+
+    if subscribed:
+        header = ngettext(
+            "{acting_user} subscribed {count} user to this channel.",
+            "{acting_user} subscribed {count} users to this channel.",
+            count,
+        ).format(acting_user=acting_user_mention, count=count)
+    else:
+        header = ngettext(
+            "{acting_user} unsubscribed {count} user from this channel.",
+            "{acting_user} unsubscribed {count} users from this channel.",
+            count,
+        ).format(acting_user=acting_user_mention, count=count)
+
+    member_list = ", ".join(sorted(silent_mention_syntax_for_user(user) for user in users))
+    return f"```spoiler {header}\n{member_list}\n```"
+
+
+def prep_subscription_change_notices(
+    realm: Realm,
+    *,
+    acting_user: UserProfile,
+    changed_subs: list[tuple[UserProfile, Stream]],
+    subscribed: bool,
+    mention_backend: MentionBackend | None = None,
+) -> list[SendMessageRequest | None]:
+    """Prepare the "channel events" notices for an interactive membership change.
+
+    Only private, non-archived channels notify, with one message per channel
+    however many users changed.  Callers that have other messages to send for
+    the same request pass a shared mention_backend and send everything in one
+    batch.
+
+    Callers are the interactive subscribe/unsubscribe flows, not
+    bulk_add_subscriptions / bulk_remove_subscriptions; those are also used for
+    user deletion, channel merges, and management commands, where a notice
+    would be noise.
+    """
+    if not realm.send_channel_events_messages:
+        return []
+
+    streams_by_id: dict[int, Stream] = {}
+    users_by_stream_id: dict[int, list[UserProfile]] = defaultdict(list)
+    for user, stream in changed_subs:
+        if not stream.invite_only or stream.deactivated:
+            continue
+        streams_by_id[stream.id] = stream
+        users_by_stream_id[stream.id].append(user)
+
+    if not streams_by_id:
+        return []
+
+    sender = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+    if mention_backend is None:
+        # MentionBackend's caches are only valid for a single sender, which
+        # every notice in this batch shares.
+        mention_backend = MentionBackend(realm.id)
+
+    message_requests: list[SendMessageRequest | None] = []
+    with override_language(realm.default_language):
+        for stream_id, stream in streams_by_id.items():
+            content = get_subscription_change_notice_content(
+                acting_user=acting_user,
+                users=users_by_stream_id[stream_id],
+                subscribed=subscribed,
+            )
+            message_requests.append(
+                internal_prep_stream_message(
+                    sender,
+                    stream,
+                    channel_events_topic_name(stream),
+                    content,
+                    realm=realm,
+                    mention_backend=mention_backend,
+                    acting_user=acting_user,
+                )
+            )
+    return message_requests
+
+
+def send_subscription_change_notices(
+    realm: Realm,
+    *,
+    acting_user: UserProfile,
+    changed_subs: list[tuple[UserProfile, Stream]],
+    subscribed: bool,
+    mark_as_read_user_ids: Collection[int] = (),
+) -> None:
+    message_requests = prep_subscription_change_notices(
+        realm,
+        acting_user=acting_user,
+        changed_subs=changed_subs,
+        subscribed=subscribed,
+    )
+    if message_requests:
+        do_send_messages(message_requests, mark_as_read=list(mark_as_read_user_ids))
 
 
 @transaction.atomic(savepoint=False)
