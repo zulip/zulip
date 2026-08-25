@@ -58,7 +58,6 @@ Come find us on the [development community chat](https://zulip.com/development-c
   [Render](https://render.com/docs/deploy-zulip), and
   [RepoCloud](https://repocloud.io/details/Zulip/).
   Learn more about [self-hosting Zulip](https://zulip.com/self-hosting/).
-  [![Deploy on RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploylobe.svg)](https://repocloud.io/details/Zulip/)
 
 - **Using Zulip without setting up a server**. Learn about [Zulip
   Cloud](https://zulip.com/zulip-cloud/) hosting options. Zulip sponsors free [Zulip
