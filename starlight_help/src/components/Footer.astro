@@ -1,0 +1,29 @@
+---
+import {CORPORATE_ENABLED, SUPPORT_EMAIL} from "astro:env/client";
+---
+
+<footer class="sl-flex">
+    <hr />
+    {CORPORATE_ENABLED ? (
+        <p>
+            Your feedback helps us make Zulip better for everyone! Please{" "}
+            <a href="/help/contact-support">contact us</a> with questions, suggestions, and feature
+            requests.
+        </p>
+    ) : (
+        <p>
+            Don't see an answer to your question?{" "}
+            <a href={`mailto:${SUPPORT_EMAIL}`}>Contact this Zulip server's administrators</a> for
+            support.
+        </p>
+    )}
+</footer>
+
+<style>
+    @layer starlight.core {
+        footer {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+    }
+</style>

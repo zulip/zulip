@@ -8,8 +8,8 @@ When a user tries to set a password, we use [zxcvbn][zxcvbn] to check
 that it isn't a weak one.
 
 See discussion in [our main docs for server
-admins](security-model.md#passwords). This doc explains in more
-detail how we set the default threshold (`PASSWORD_MIN_GUESSES`) we use.
+admins](authentication-methods.md#email-and-password). This doc explains in
+more detail how we set the default threshold (`PASSWORD_MIN_GUESSES`) we use.
 
 First, read the doc section there. (It's short.)
 

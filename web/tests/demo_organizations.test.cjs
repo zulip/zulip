@@ -4,13 +4,14 @@ const assert = require("node:assert/strict");
 
 const {addDays} = require("date-fns");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const demo_organization_ui = zrequire("demo_organizations_ui");
 const {set_realm} = zrequire("state_data");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 
 run_test("get_demo_organization_deadline_days_remaining", ({override}) => {

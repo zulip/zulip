@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 $(() => {
     // This code will be executed when the user visits /login and

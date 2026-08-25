@@ -42,10 +42,23 @@ run(["./tools/setup/build_pygments_data"])
 # Build time zone data
 run(["./tools/setup/build_timezone_values"])
 
+# Generate supported browser regex used during initial load
+run(["node", "./tools/setup/build_supported_browser_regex.ts"])
+
 # Generate landing page images of various sizes and formats if we will
 # need them.
 if settings.CORPORATE_ENABLED:
     run(["./tools/setup/generate_landing_page_images.py"])
+    run(
+        [
+            "./tools/build-help-center",
+            "--no-relative-links",
+            "--out-dir",
+            "./dist_no_relative_links",
+        ]
+    )
+
+run(["./tools/build-help-center"])
 
 # Create webpack bundle
 run(["./tools/webpack", "--quiet"])

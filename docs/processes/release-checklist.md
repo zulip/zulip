@@ -1,0 +1,163 @@
+# Zulip server release checklist
+
+This document has reminders of things one might forget to do when
+preparing a new release.
+
+### A week before the release
+
+- _Major releases only (e.g., 4.0):_
+  - Upgrade all Python dependencies in
+    `requirements` to latest upstream versions so they can burn in (use
+    `pip list --outdated`).
+  - Upgrade all puppet dependencies in `puppet/deps.yaml`
+  - Upgrade all puppet-installed dependencies (e.g., Smokescreen, go,
+    etc) in `puppet/zulip/manifests/common.pp`
+  - [Post a message to
+    Weblate](https://hosted.weblate.org/projects/zulip/#announcement)
+    inviting translators to translate new strings.
+  - Prepare draft updates to the [changelog](../overview/changelog.md)
+    with changes since the last release. The `/write-changelog` experimental
+    Claude skill may be a better starting point than the original
+    `git log --stat 12.x..upstream/main` marathon workflow.
+  - Use updating the changelog and drafting the release blog post as review
+    passes to identify:
+    - Projects that require follow-up work.
+    - Documentation that needs to be updated.
+  - Update /features and other pages (e.g., /for/business) with major new
+    features, and important changes to existing features.
+  - Draft newsletter.
+  - Draft email and social media announcements.
+- Create a burn-down list of issues that need to be fixed before we can
+  release, and make sure all of them are being worked on.
+- Draft the release blog post (a.k.a. the release notes) in Paper. In
+  it, list the important changes in the release, from most to least
+  notable (or organized by category for major releases).
+- Collect a list of folks who would like to be mentioned in the blog
+  post for their non-code contributions during the release cycle. See
+  [CZO thread for previous releases][non-code-contributions-topic].
+
+### Final release preparation
+
+- Update the Paper blog post draft with any new commits.
+- Merge updated translations from Weblate (using the appropriate
+  branch for the release).
+- Send around the Paper blog post draft for review.
+- Move the blog post draft to Astro:
+  - Use "··· > Export > Markdown" to get a pretty good Markdown
+    conversion, and save it in `src/posts` with a filename appropriate
+    for a URL slug.
+  - Add the needed YAML frontmatter.
+  - Move any images into `public` and update their references.
+  - Proofread, especially for formatting.
+  - If the draft post should remain secret until release, avoid using
+    a guessable Git branch name for the pull request (the deployment
+    preview URL is based on the branch name).
+- _Major releases only (e.g., 4.0):_ Schedule team members to provide
+  extra responsive #production help support following the release.
+
+### Executing the release
+
+- Create the release commit, on `main` (for major releases) or on the
+  release branch (for minor releases):
+  - Copy the Markdown release notes for the release into
+    `docs/overview/changelog.md`.
+  - Verify the changelog passes lint, and has the right release date.
+  - _Major releases only:_ Adjust the `changelog.md` heading to have
+    the stable release series boilerplate.
+  - Update `ZULIP_VERSION` and `LATEST_RELEASE_VERSION` in `version.py`.
+  - _Major releases only:_ Update `API_FEATURE_LEVEL` to a feature
+    level for the final release, and document a reserved range.
+- Run `tools/release` with the release version.
+- Update the [Docker image](https://github.com/zulip/docker-zulip):
+  - Commit the Docker updates:
+    - Update `ZULIP_GIT_REF` in `Dockerfile`
+    - Update `README.md`
+    - Update the image in `docker-compose.yml`, as well as the `ZULIP_GIT_REF`
+  - Commit the Helm updates:
+    - Add a new entry to `kubernetes/chart/zulip/CHANGELOG.md`
+    - Update the `appVersion` in `kubernetes/chart/zulip/Chart.yaml`
+    - Update the `tag` in `kubernetes/chart/zulip/values.yaml`
+    - Update the docs by running `helm-docs`
+    - Update the `image` in `kubernetes/manual/zulip-rc.yml`
+  - Build the image: `docker build --pull . -t zulip/docker-zulip:4.11-0 --no-cache`
+  - Also tag it with `latest`: `docker build . -t zulip/docker-zulip:latest`
+  - Push those tags: `docker push zulip/docker-zulip:4.11-0; docker push zulip/docker-zulip:latest`
+  - Push the commits to `main`.
+- Merge the blog post PR.
+- Announce the release, pointing to the blog post, via:
+  - Email to [zulip-announce](https://groups.google.com/g/zulip-announce)
+  - Email to [zulip-blog-announce](https://groups.google.com/a/zulip.com/g/zulip-blog-announce)
+  - Message in [#announce](https://chat.zulip.org/#narrow/channel/1-announce)
+  - Post from [@zulip.bsky.social](https://bsky.app/profile/zulip.bsky.social).
+  - Toot from [fosstodon.org/@zulip](https://fosstodon.org/@zulip)
+  - Post from [Kandra Labs LinkedIn](https://linkedin.com/company/zulip-by-kandra-labs/)
+
+### Post-release
+
+- The DigitalOcean one-click image will report in an internal channel
+  once it is built, and how to test it. Verify it, then publish it to
+  DigitalOcean marketplace.
+- _Major releases only:_
+  - Create a release branch (e.g., `4.x`).
+  - On the release branch, update `ZULIP_VERSION` in `version.py` to
+    the present release with a `+git` suffix, e.g., `4.0+git`.
+  - On `main`, update `ZULIP_VERSION` to the future major release with
+    a `-dev+git` suffix, e.g., `5.0-dev+git`. Make a Git tag for this
+    update commit with a `-dev` suffix, e.g., `5.0-dev`. Push the tag
+    to both zulip.git and zulip-internal.git to get a correct version
+    number for future Cloud deployments.
+  - Add the new release to `.github/ISSUE_TEMPLATE/2_bug_report.md`.
+  - Consider removing a few old releases from the issue template and
+    ReadTheDocs; we keep about two years of back-versions.
+  - Update Weblate to add a component on the release branch for
+    Django; then add a parallel Frontend component by using "Duplicate
+    this component" on the Django release branch component.
+  - In Weblate, remove the previous stable components.
+  - Add a new CI production upgrade target:
+    - Build a docker image: `cd tools/ci && docker build --pull . -f Dockerfile.prod --build-arg=BASE_IMAGE=zulip/ci:bookworm --build-arg=VERSION=7.0 --tag=zulip/ci:bookworm-7.0 && docker push zulip/ci:bookworm-7.0`
+    - Add a new line to the `production_upgrade` matrix in
+      `.github/workflows/production-suite.yml`.
+  - Update /history page in `templates/corporate/history.md`, adding the release
+    and any other major news from the release cycle.
+  - Inspect all `TODO/compatibility` comments for whether we can
+    remove any backwards-compatibility code following this release.
+  - Review possible improvements to API bindings to better match the
+    defaults and features of the new release.
+- _Minor releases only (e.g., 3.2):_
+  - On the release branch, update `ZULIP_VERSION` to the present
+    release with a `+git` suffix, e.g., `3.2+git`.
+  - On main, update `LATEST_RELEASE_VERSION` with the released
+    version, as well as the changelog changes from the release branch.
+- _Prereleases only (e.g., 7.0-beta3):_
+  - Atop the prerelease commit (e.g., `7.0-beta3`), make a commit
+    updating `ZULIP_VERSION` to the prerelease version with a `+git`
+    suffix, e.g., `7.0-beta3+git`. Push this to `main`. (If `main` has
+    already diverged from the prerelease, a merge commit will be
+    needed here.)
+  - Delete the prerelease branch (e.g., `7.0-beta3-branch`); it's now
+    an ancestor of `main` and thus unnecessary.
+
+### Important permissions for executing the release
+
+Note that the main steps of pushing the release through `tools/release` require
+several distinct permissions. Ensure that the person executing the release has
+these permissions - this is particularly important for a security release, to
+avoid getting stuck in a half-way state where the final commits have already
+been pushed but the release can't be finalized.
+
+- AWS credentials that authorize you to upload the tarball to
+  `download.zulip.com`. This is needed by the `tools/upload-release`
+  step. You will need `aws-cli` installed and logged in. The simplest
+  way to set up credentials for use by `upload-release` is to export
+  temporary credentials into your environment, obtained via
+  `aws configure export-credentials --format env`.
+- `git` permission to push to the `<major version>.x` branch.
+- `git` permission to push the `<major version>.<minor version>` tag.
+  Note that tags matching this specific release tag format can be
+  subject to GitHub rules restricting who can push them - so check
+  this and don't assume that you can push these tags just because you
+  can push ordinary tags such as `foo`.
+- The GitHub `gh` CLI tool, logged into your account, with permission
+  to create releases.
+
+[non-code-contributions-topic]: https://chat.zulip.org/#narrow/channel/1-announce/topic/recognition.20for.20non-code.20contributions/with/2443350

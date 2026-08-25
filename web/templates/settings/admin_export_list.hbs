@@ -4,7 +4,7 @@
         <span class="acting_user">{{acting_user}}</span>
     </td>
     <td>
-        <span>{{export_type}}</span>
+        <span>{{export_type_description}}</span>
     </td>
     <td>
         <span class="export_time">{{event_time}}</span>
@@ -18,6 +18,8 @@
         <div class="export_url_spinner"></div>
         {{else if time_deleted}}
         <span class="export_status">{{t 'Deleted' }}: {{time_deleted}}</span>
+        {{else if export_from_prior_server}}
+        <span class="export_status">{{t 'Export from a prior server' }}</span>
         {{/if}}
     </td>
     <td class="actions">

@@ -1,11 +1,10 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_navbar_personal_menu_popover from "../templates/popovers/navbar/navbar_personal_menu_popover.hbs";
 
 import * as channel from "./channel.ts";
 import * as information_density from "./information_density.ts";
 import * as message_view from "./message_view.ts";
-import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
 import * as popovers from "./popovers.ts";
@@ -18,7 +17,7 @@ export function initialize(): void {
     popover_menus.register_popover_menu("#personal-menu", {
         theme: "popover-menu",
         placement: "bottom",
-        offset: [-50, 0],
+        offset: popover_menus.NAVBAR_POPOVER_OFFSET,
         // The strategy: "fixed"; and eventlisteners modifier option
         // ensure that the personal menu does not modify its position
         // or disappear when user zooms the page.
@@ -37,18 +36,18 @@ export function initialize(): void {
             const $popper = $(instance.popper);
             popover_menus.popover_instances.personal_menu = instance;
 
-            $popper.on("change", "input[name='theme-select']", (e) => {
-                const new_theme_code = $(e.currentTarget).attr("data-theme-code");
+            $popper.on("change", "input[name='theme-select']", function () {
+                const new_theme_code = $(this).attr("data-theme-code");
                 channel.patch({
                     url: "/json/settings",
                     data: {color_scheme: new_theme_code},
-                    error() {
+                    error: () => {
                         // NOTE: The additional delay allows us to visually communicate
                         // that an error occurred due to which we are reverting back
                         // to the previously used value.
                         setTimeout(() => {
                             const prev_theme_code = user_settings.color_scheme;
-                            $(e.currentTarget)
+                            $(this)
                                 .parent()
                                 .find(`input[data-theme-code="${prev_theme_code}"]`)
                                 .prop("checked", true);
@@ -71,12 +70,11 @@ export function initialize(): void {
 
             $popper.one("click", ".narrow-self-direct-message", (e) => {
                 const user_id = current_user.user_id;
-                const email = people.get_by_user_id(user_id).email;
                 message_view.show(
                     [
                         {
                             operator: "dm",
-                            operand: email,
+                            operand: [user_id],
                         },
                     ],
                     {trigger: "personal menu"},
@@ -87,12 +85,11 @@ export function initialize(): void {
 
             $popper.one("click", ".narrow-messages-sent", (e) => {
                 const user_id = current_user.user_id;
-                const email = people.get_by_user_id(user_id).email;
                 message_view.show(
                     [
                         {
                             operator: "sender",
-                            operand: email,
+                            operand: user_id,
                         },
                     ],
                     {trigger: "personal menu"},
@@ -116,8 +113,7 @@ export function initialize(): void {
                     $(this),
                     changed_property,
                 );
-                const data: Record<string, number> = {};
-                data[changed_property] = new_setting_value;
+                const data = {[changed_property]: new_setting_value};
                 information_density.enable_or_disable_control_buttons($popper);
 
                 if (changed_property === "web_font_size_px") {

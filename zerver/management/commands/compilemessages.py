@@ -68,7 +68,7 @@ class Command(compilemessages.Command):
     def get_name_from_po_file(self, po_filename: str, locale: str) -> str:
         try:
             team = polib.pofile(po_filename).metadata["Language-Team"]
-            return team[: team.rindex(" (")]
+            return team[: team.rindex(" <")]
         except (KeyError, ValueError):
             raise Exception(f"Unknown language {locale}")
 
@@ -156,18 +156,5 @@ class Command(compilemessages.Command):
                 total += 1
                 if value == "":
                     not_translated += 1
-
-        # mobile stats
-        with open(os.path.join(locale_path, "mobile_info.json"), "rb") as mob:
-            mobile_info = orjson.loads(mob.read())
-        try:
-            info = mobile_info[locale]
-        except KeyError:
-            if self.strict:
-                raise
-            info = {"total": 0, "not_translated": 0}
-
-        total += info["total"]
-        not_translated += info["not_translated"]
 
         return (total - not_translated) * 100 // total

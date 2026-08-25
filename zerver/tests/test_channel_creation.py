@@ -1,9 +1,12 @@
 import orjson
 
 from zerver.actions.channel_folders import check_add_channel_folder
-from zerver.actions.realm_settings import do_change_realm_plan_type
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_change_realm_plan_type,
+    do_set_realm_property,
+)
 from zerver.actions.user_groups import check_add_user_group
-from zerver.actions.users import do_change_user_role
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
@@ -16,11 +19,12 @@ from zerver.lib.streams import (
 )
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
-from zerver.lib.types import UserGroupMembersDict
+from zerver.lib.types import UserGroupMembersData, UserGroupMembersDict
 from zerver.models import (
     Message,
     NamedUserGroup,
     Realm,
+    Recipient,
     Stream,
     Subscription,
     UserMessage,
@@ -28,7 +32,7 @@ from zerver.models import (
 )
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
-from zerver.models.streams import get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import active_non_guest_user_ids
 
 
@@ -87,7 +91,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(events[0]["event"]["streams"][0]["stream_weekly_traffic"], None)
 
         moderators_system_group = NamedUserGroup.objects.get(
-            name="role:moderators", realm=realm, is_system_group=True
+            name="role:moderators", realm_for_sharding=realm, is_system_group=True
         )
         new_streams, existing_streams = create_streams_if_needed(
             realm,
@@ -242,7 +246,7 @@ class TestCreateStreams(ZulipTestCase):
         )
         self.assert_json_error(result, "Insufficient permission")
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         result = self.subscribe_via_post(
             user_profile, subscriptions, {"is_default_stream": "true"}, subdomain="zulip"
         )
@@ -266,18 +270,326 @@ class TestCreateStreams(ZulipTestCase):
         )
         self.assert_json_error(result, "A default channel cannot be private.")
 
-    def test_history_public_to_subscribers_zephyr_realm(self) -> None:
-        realm = get_realm("zephyr")
+    def test_create_stream_using_add_channel(self) -> None:
+        user_profile = self.example_user("iago")
+        result = self.create_channel_via_post(user_profile, name="basketball")
+        self.assert_json_success(result)
+        stream = get_stream("basketball", user_profile.realm)
+        self.assertEqual(stream.name, "basketball")
 
-        stream, created = create_stream_if_needed(realm, "private_stream", invite_only=True)
-        self.assertTrue(created)
-        self.assertTrue(stream.invite_only)
-        self.assertFalse(stream.history_public_to_subscribers)
+        cordelia = self.example_user("cordelia")
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=cordelia.realm, is_system_group=True
+        )
 
-        stream, created = create_stream_if_needed(realm, "public_stream", invite_only=False)
-        self.assertTrue(created)
-        self.assertFalse(stream.invite_only)
-        self.assertFalse(stream.history_public_to_subscribers)
+        channel_folder = check_add_channel_folder(
+            user_profile.realm, "sports", "", acting_user=user_profile
+        )
+        result = self.create_channel_via_post(
+            user_profile,
+            name="testchannel",
+            extra_post_data=dict(
+                description="test channel",
+                can_administer_channel_group=orjson.dumps(
+                    {
+                        "direct_members": [cordelia.id],
+                        "direct_subgroups": [nobody_group.id],
+                    }
+                ).decode(),
+                folder_id=orjson.dumps(channel_folder.id).decode(),
+            ),
+        )
+        self.assert_json_success(result)
+        stream = get_stream("testchannel", user_profile.realm)
+        self.assertEqual(stream.name, "testchannel")
+        self.assertEqual(stream.description, "test channel")
+
+        # Confirm channel created notification message in channel events topic.
+        message = self.get_last_message()
+        self.assertEqual(message.recipient.type, Recipient.STREAM)
+        self.assertEqual(message.recipient.type_id, stream.id)
+        self.assertEqual(message.topic_name(), Realm.STREAM_EVENTS_NOTIFICATION_TOPIC_NAME)
+        self.assertEqual(message.sender_id, self.notification_bot(user_profile.realm).id)
+        expected_message_content = (
+            f"**Public** channel created by @_**{user_profile.full_name}|{user_profile.id}**. **Description:**\n"
+            "```` quote\ntest channel\n````"
+        )
+        self.assertEqual(message.content, expected_message_content)
+
+        # Test channel created notification is not sent if `send_channel_events_messages`
+        # realm setting is `False`.
+        do_set_realm_property(stream.realm, "send_channel_events_messages", False, acting_user=None)
+        result = self.create_channel_via_post(
+            user_profile,
+            name="testchannel2",
+        )
+        self.assert_json_success(result)
+        stream = get_stream("testchannel2", user_profile.realm)
+        self.assertEqual(stream.name, "testchannel2")
+        with self.assertRaises(Message.DoesNotExist):
+            Message.objects.get(recipient__type_id=stream.id)
+
+        # Creating an existing channel should return an error.
+        result = self.create_channel_via_post(user_profile, name="basketball")
+        self.assert_json_error(result, "Channel 'basketball' already exists", status_code=409)
+
+        # Test creating channel with no subscribers
+        post_data = {
+            "name": "no-sub-channel",
+            "subscribers": orjson.dumps([]).decode(),
+        }
+
+        result = self.api_post(
+            user_profile,
+            "/api/v1/channels/create",
+            post_data,
+        )
+        self.assert_json_success(result)
+        stream = get_stream("no-sub-channel", user_profile.realm)
+        self.assertEqual(stream.name, "no-sub-channel")
+        self.assertEqual(stream.subscriber_count, 0)
+
+        # Test creating channel with invalid user ID.
+        result = self.create_channel_via_post(
+            user_profile,
+            name="invalid-user-channel",
+            subscribers=[12, 1000],
+        )
+        self.assert_json_error(result, "No such user")
+
+    def test_channel_creation_miscellaneous(self) -> None:
+        iago = self.example_user("iago")
+        desdemona = self.example_user("desdemona")
+        cordelia = self.example_user("cordelia")
+
+        result = self.create_channel_via_post(
+            iago, extra_post_data={"message_retention_days": orjson.dumps(10).decode()}
+        )
+        self.assert_json_error(result, "Must be an organization owner")
+
+        result = self.create_channel_via_post(
+            desdemona,
+            [iago.id],
+            name="new_channel",
+            extra_post_data={"message_retention_days": orjson.dumps(10).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("new_channel", desdemona.realm)
+        self.assertEqual(stream.name, "new_channel")
+        self.assertEqual(stream.message_retention_days, 10)
+
+        # Default streams can only be created by admins
+        result = self.create_channel_via_post(
+            iago,
+            name="testing_channel1",
+            extra_post_data={"is_default_stream": orjson.dumps(True).decode()},
+            invite_only=True,
+        )
+        self.assert_json_error(result, "A default channel cannot be private.")
+
+        result = self.create_channel_via_post(
+            iago,
+            name="testing_channel1",
+            extra_post_data={"is_default_stream": orjson.dumps(True).decode()},
+            invite_only=False,
+        )
+        self.assert_json_success(result)
+        stream = get_stream("testing_channel1", iago.realm)
+        self.assertEqual(stream.name, "testing_channel1")
+        self.assertTrue(stream.id in get_default_stream_ids_for_realm(iago.realm.id))
+
+        # Only org owners can create web public streams by default, if they are enabled.
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            self.assertFalse(desdemona.realm.has_web_public_streams())
+            result = self.create_channel_via_post(
+                desdemona,
+                name="testing_web_public_channel",
+                is_web_public=True,
+            )
+            self.assert_json_error(result, "Web-public channels are not enabled.")
+
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=True):
+            self.assertTrue(desdemona.realm.has_web_public_streams())
+            result = self.create_channel_via_post(
+                desdemona,
+                name="testing_web_public_channel",
+                is_web_public=True,
+            )
+            self.assert_json_success(result)
+            stream = get_stream("testing_web_public_channel", desdemona.realm)
+            self.assertEqual(stream.name, "testing_web_public_channel")
+
+        polonius = self.example_user("polonius")
+        result = self.create_channel_via_post(
+            polonius,
+            name="testing_channel4",
+            invite_only=True,
+        )
+        self.assert_json_error(result, "Not allowed for guest users")
+
+        # topics policy
+        owners = NamedUserGroup.objects.get(
+            name=SystemGroups.OWNERS, realm_for_sharding=cordelia.realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            cordelia.realm, "can_set_topics_policy_group", owners, acting_user=None
+        )
+        self.assertTrue(desdemona.can_set_topics_policy())
+        self.assertFalse(cordelia.can_set_topics_policy())
+        result = self.create_channel_via_post(
+            cordelia,
+            name="testing_channel4",
+            extra_post_data={
+                "topics_policy": orjson.dumps(
+                    StreamTopicsPolicyEnum.disable_empty_topic.name
+                ).decode()
+            },
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        result = self.create_channel_via_post(
+            desdemona,
+            name="testing_channel4",
+            extra_post_data={
+                "topics_policy": orjson.dumps(
+                    StreamTopicsPolicyEnum.disable_empty_topic.name
+                ).decode()
+            },
+        )
+        self.assert_json_success(result)
+        stream = get_stream("testing_channel4", desdemona.realm)
+        self.assertEqual(stream.name, "testing_channel4")
+        self.assertEqual(stream.topics_policy, StreamTopicsPolicyEnum.disable_empty_topic.value)
+
+    def _test_group_based_settings_for_creating_channels(
+        self,
+        stream_policy: str,
+        *,
+        invite_only: bool,
+        is_web_public: bool,
+    ) -> None:
+        def check_permission_to_create_channel(
+            user: UserProfile, stream_name: str, *, expect_fail: bool = False
+        ) -> None:
+            result = self.create_channel_via_post(
+                user,
+                name=stream_name,
+                invite_only=invite_only,
+                is_web_public=is_web_public,
+            )
+            if expect_fail:
+                self.assert_json_error(result, "Insufficient permission")
+                return
+
+            self.assert_json_success(result)
+            self.assertTrue(
+                Stream.objects.filter(name=stream_name, realm_id=user.realm.id).exists()
+            )
+
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        desdemona = self.example_user("desdemona")
+
+        # System groups case
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=cordelia.realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            cordelia.realm, stream_policy, nobody_group, acting_user=None
+        )
+
+        check_permission_to_create_channel(
+            cordelia,
+            "testing_channel_group_permission1",
+            expect_fail=True,
+        )
+
+        check_permission_to_create_channel(
+            iago, "testing_channel_group_permission1", expect_fail=True
+        )
+
+        member_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=cordelia.realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            cordelia.realm, stream_policy, member_group, acting_user=None
+        )
+        check_permission_to_create_channel(
+            cordelia,
+            "testing_channel_group_permission1",
+        )
+
+        check_permission_to_create_channel(iago, "testing_channel_group_permission2")
+
+        admin_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS,
+            realm_for_sharding=cordelia.realm,
+            is_system_group=True,
+        )
+        do_change_realm_permission_group_setting(
+            cordelia.realm, stream_policy, admin_group, acting_user=None
+        )
+        check_permission_to_create_channel(
+            cordelia,
+            "testing_channel_group_permission3",
+            expect_fail=True,
+        )
+        check_permission_to_create_channel(iago, "testing_channel_group_permission3")
+
+        # User defined group case
+        leadership_group = check_add_user_group(
+            cordelia.realm, "Leadership", [desdemona], acting_user=desdemona
+        )
+        do_change_realm_permission_group_setting(
+            cordelia.realm, stream_policy, leadership_group, acting_user=None
+        )
+        check_permission_to_create_channel(
+            cordelia,
+            "testing_channel_group_permission4",
+            expect_fail=True,
+        )
+        check_permission_to_create_channel(
+            desdemona,
+            "testing_channel_group_permission4",
+        )
+
+        # Anonymous group case
+        staff_group = check_add_user_group(cordelia.realm, "Staff", [iago], acting_user=iago)
+        setting_group = self.create_or_update_anonymous_group_for_setting([cordelia], [staff_group])
+        do_change_realm_permission_group_setting(
+            cordelia.realm, stream_policy, setting_group, acting_user=None
+        )
+        check_permission_to_create_channel(
+            desdemona,
+            "testing_channel_group_permission5",
+            expect_fail=True,
+        )
+        check_permission_to_create_channel(iago, "testing_channel_group_permission5")
+        check_permission_to_create_channel(
+            cordelia,
+            "testing_channel_group_permission6",
+        )
+
+    def test_group_based_permissions_for_creating_private_streams(self) -> None:
+        self._test_group_based_settings_for_creating_channels(
+            "can_create_private_channel_group",
+            invite_only=True,
+            is_web_public=False,
+        )
+
+    def test_group_based_permissions_for_creating_public_streams(self) -> None:
+        self._test_group_based_settings_for_creating_channels(
+            "can_create_public_channel_group",
+            invite_only=False,
+            is_web_public=False,
+        )
+
+    def test_group_based_permissions_for_creating_web_public_streams(self) -> None:
+        self._test_group_based_settings_for_creating_channels(
+            "can_create_web_public_channel_group",
+            invite_only=False,
+            is_web_public=True,
+        )
 
     def test_auto_mark_stream_created_message_as_read_for_stream_creator(self) -> None:
         # This test relies on email == delivery_email for
@@ -328,6 +640,7 @@ class TestCreateStreams(ZulipTestCase):
                 "8": ["brand new stream"],
             },
             "already_subscribed": {},
+            "new_subscription_messages_sent": True,
         }
         self.assertEqual(response.status_code, 200)
         self.assertEqual(orjson.loads(response.content), expected_response)
@@ -365,25 +678,118 @@ class TestCreateStreams(ZulipTestCase):
         realm = user.realm
         self.login_user(user)
         nobody_system_group = NamedUserGroup.objects.get(
-            name="role:nobody", realm=realm, is_system_group=True
+            name="role:nobody", realm_for_sharding=realm, is_system_group=True
         )
 
-        stream, created = create_stream_if_needed(
+        stream, _created = create_stream_if_needed(
             realm, "new stream without acting user", invite_only=True
         )
         self.assertEqual(stream.can_administer_channel_group.id, nobody_system_group.id)
 
-        stream, created = create_stream_if_needed(
+        stream, _created = create_stream_if_needed(
             realm, "new stream with acting user", acting_user=user
         )
         self.assertCountEqual(stream.can_administer_channel_group.direct_members.all(), [user])
+
+    def test_can_create_topic_group_for_protected_history_streams(self) -> None:
+        """
+        For channels with protected history, can_create_topic_group can only
+        be set to "role:everyone" system group.
+        """
+        user = self.example_user("iago")
+        realm = user.realm
+        self.login_user(user)
+
+        everyone_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm=realm, is_system_group=True
+        )
+        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+
+        error_msg = "Unsupported parameter combination: history_public_to_subscribers, can_create_topic_group"
+
+        def check_create_protected_history_stream(
+            can_create_topic_group: int | UserGroupMembersData,
+            expect_fail: bool = False,
+        ) -> None:
+            stream_name = "test_protected_history_stream"
+            subscriptions = [{"name": stream_name}]
+            extra_post_data = {
+                "history_public_to_subscribers": orjson.dumps(False).decode(),
+                "can_create_topic_group": orjson.dumps(can_create_topic_group).decode(),
+            }
+
+            result = self.subscribe_via_post(
+                user,
+                subscriptions,
+                extra_post_data,
+                invite_only=True,
+                subdomain="zulip",
+                allow_fail=expect_fail,
+            )
+
+            if expect_fail:
+                self.assert_json_error(result, error_msg)
+            else:
+                self.assert_json_success(result)
+                stream = get_stream(stream_name, realm)
+                self.assertFalse(stream.history_public_to_subscribers)
+                self.assertEqual(stream.can_create_topic_group_id, everyone_system_group.id)
+                # Delete the created stream so that we can create stream
+                # with same name for further cases.
+                stream.delete()
+
+            # Test creating channel using "/channels/create" endpoint as well.
+            result = self.create_channel_via_post(
+                user,
+                name=stream_name,
+                extra_post_data=extra_post_data,
+                invite_only=True,
+            )
+
+            if expect_fail:
+                self.assert_json_error(result, error_msg)
+                return
+
+            self.assert_json_success(result)
+            stream = get_stream(stream_name, realm)
+            self.assertFalse(stream.history_public_to_subscribers)
+            self.assertEqual(stream.can_create_topic_group_id, everyone_system_group.id)
+            # Delete the created stream so that we can create stream
+            # with same name for further cases.
+            stream.delete()
+
+        # Testing for everyone group.
+        check_create_protected_history_stream(everyone_system_group.id)
+
+        # Testing for a system group.
+        check_create_protected_history_stream(moderators_system_group.id, expect_fail=True)
+
+        # Testing for a user defined group.
+        check_create_protected_history_stream(hamletcharacters_group.id, expect_fail=True)
+
+        # Testing for an anonymous group.
+        check_create_protected_history_stream(
+            UserGroupMembersData(
+                direct_members=[user.id], direct_subgroups=[moderators_system_group.id]
+            ),
+            expect_fail=True,
+        )
+
+        # Testing for an anonymous group without members and
+        # only everyone group as subgroup.
+        check_create_protected_history_stream(
+            UserGroupMembersData(direct_members=[], direct_subgroups=[everyone_system_group.id]),
+        )
 
     def do_test_permission_setting_on_stream_creation(self, setting_name: str) -> None:
         user = self.example_user("hamlet")
         realm = user.realm
         self.login_user(user)
         moderators_system_group = NamedUserGroup.objects.get(
-            name="role:moderators", realm=realm, is_system_group=True
+            name="role:moderators", realm_for_sharding=realm, is_system_group=True
         )
 
         permission_config = Stream.stream_permission_group_settings[setting_name]
@@ -408,7 +814,7 @@ class TestCreateStreams(ZulipTestCase):
         result = self.subscribe_via_post(user, subscriptions, subdomain="zulip")
         self.assert_json_success(result)
         stream = get_stream("new_stream", realm)
-        if permission_config.default_group_name == "stream_creator_or_nobody":
+        if permission_config.default_group_name == "channel_creator":
             self.assertEqual(list(getattr(stream, setting_name).direct_members.all()), [user])
             self.assertEqual(
                 list(getattr(stream, setting_name).direct_subgroups.all()),
@@ -416,14 +822,18 @@ class TestCreateStreams(ZulipTestCase):
             )
         else:
             default_group = NamedUserGroup.objects.get(
-                name=permission_config.default_group_name, realm=realm, is_system_group=True
+                name=permission_config.default_group_name,
+                realm_for_sharding=realm,
+                is_system_group=True,
             )
             self.assertEqual(getattr(stream, setting_name).id, default_group.id)
         # Delete the created stream, so we can create a new one for
         # testing another setting value.
         stream.delete()
 
-        hamletcharacters_group = NamedUserGroup.objects.get(name="hamletcharacters", realm=realm)
+        hamletcharacters_group = NamedUserGroup.objects.get(
+            name="hamletcharacters", realm_for_sharding=realm
+        )
         subscriptions = [{"name": "new_stream", "description": "New stream"}]
         extra_post_data[setting_name] = orjson.dumps(hamletcharacters_group.id).decode()
         result = self.subscribe_via_post(
@@ -463,7 +873,7 @@ class TestCreateStreams(ZulipTestCase):
         stream.delete()
 
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=realm
+            name="role:nobody", is_system_group=True, realm_for_sharding=realm
         )
 
         subscriptions = [{"name": "new_stream", "description": "New stream"}]
@@ -486,7 +896,7 @@ class TestCreateStreams(ZulipTestCase):
 
         subscriptions = [{"name": "new_stream", "description": "New stream"}]
         owners_group = NamedUserGroup.objects.get(
-            name="role:owners", is_system_group=True, realm=realm
+            name="role:owners", is_system_group=True, realm_for_sharding=realm
         )
         extra_post_data[setting_name] = orjson.dumps(owners_group.id).decode()
         result = self.subscribe_via_post(
@@ -521,7 +931,7 @@ class TestCreateStreams(ZulipTestCase):
 
         subscriptions = [{"name": "new_stream", "description": "New stream"}]
         everyone_group = NamedUserGroup.objects.get(
-            name="role:everyone", is_system_group=True, realm=realm
+            name="role:everyone", is_system_group=True, realm_for_sharding=realm
         )
         extra_post_data[setting_name] = orjson.dumps(everyone_group.id).decode()
         result = self.subscribe_via_post(
@@ -546,7 +956,7 @@ class TestCreateStreams(ZulipTestCase):
 
         subscriptions = [{"name": "new_stream", "description": "New stream"}]
         internet_group = NamedUserGroup.objects.get(
-            name="role:internet", is_system_group=True, realm=realm
+            name="role:internet", is_system_group=True, realm_for_sharding=realm
         )
         extra_post_data[setting_name] = orjson.dumps(internet_group.id).decode()
         result = self.subscribe_via_post(
@@ -562,6 +972,17 @@ class TestCreateStreams(ZulipTestCase):
         )
 
     def test_permission_settings_on_stream_creation(self) -> None:
+        realm = get_realm("zulip")
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_set_delete_message_policy_group",
+            members_system_group,
+            acting_user=None,
+        )
+
         for setting_name in Stream.stream_permission_group_settings:
             self.do_test_permission_setting_on_stream_creation(setting_name)
 
@@ -579,13 +1000,13 @@ class TestCreateStreams(ZulipTestCase):
         self.assert_json_success(result)
 
         nobody_group = NamedUserGroup.objects.get(
-            name=SystemGroups.NOBODY, realm=realm, is_system_group=True
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
         )
         admins_group = NamedUserGroup.objects.get(
-            name=SystemGroups.ADMINISTRATORS, realm=realm, is_system_group=True
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
         )
         everyone_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
         )
 
         stream = get_stream("new_stream", realm)
@@ -659,16 +1080,10 @@ class TestCreateStreams(ZulipTestCase):
             channel_creator = self.example_user("desdemona")
             subdomain = "zulip"
 
-            if policy_key == "public_protected_history":
-                # This is a special channel policy only available in Zephyr realms.
-                channel_creator = self.mit_user("starnine")
-                subdomain = "zephyr"
-
-            self.login_user(channel_creator)
             new_channel_name = f"New {policy_key} channel"
             result = self.api_post(
                 channel_creator,
-                "/json/users/me/subscriptions",
+                "/api/v1/users/me/subscriptions",
                 {
                     "subscriptions": orjson.dumps([{"name": new_channel_name}]).decode(),
                     "is_web_public": orjson.dumps(policy_dict["is_web_public"]).decode(),
@@ -684,10 +1099,6 @@ class TestCreateStreams(ZulipTestCase):
             channel_events_messages = get_topic_messages(
                 channel_creator, new_channel, "channel events"
             )
-            if policy_key == "public_protected_history":
-                # These do not get channel creation notification.
-                self.assert_length(channel_events_messages, 0)
-                continue
 
             self.assert_length(channel_events_messages, 1)
             self.assertIn(policy_key_map[policy_key], channel_events_messages[0].content)
@@ -756,8 +1167,13 @@ class TestCreateStreams(ZulipTestCase):
                 "is_web_public": False,
             }
         ]
+
+        request_settings_dict = dict.fromkeys(Stream.stream_permission_group_settings)
+
         with self.assertRaisesRegex(JsonableError, "Must be an organization owner"):
-            list_to_streams(streams_raw, admin, autocreate=True)
+            list_to_streams(
+                streams_raw, admin, autocreate=True, request_settings_dict=request_settings_dict
+            )
 
         streams_raw = [
             {
@@ -767,7 +1183,9 @@ class TestCreateStreams(ZulipTestCase):
             }
         ]
         with self.assertRaisesRegex(JsonableError, "Must be an organization owner"):
-            list_to_streams(streams_raw, admin, autocreate=True)
+            list_to_streams(
+                streams_raw, admin, autocreate=True, request_settings_dict=request_settings_dict
+            )
 
         streams_raw = [
             {
@@ -776,7 +1194,9 @@ class TestCreateStreams(ZulipTestCase):
                 "is_web_public": False,
             }
         ]
-        result = list_to_streams(streams_raw, admin, autocreate=True)
+        result = list_to_streams(
+            streams_raw, admin, autocreate=True, request_settings_dict=request_settings_dict
+        )
         self.assert_length(result[0], 0)
         self.assert_length(result[1], 1)
         self.assertEqual(result[1][0].name, "new_stream")
@@ -805,10 +1225,14 @@ class TestCreateStreams(ZulipTestCase):
         with self.assertRaisesRegex(
             JsonableError, "Available on Zulip Cloud Standard. Upgrade to access."
         ):
-            list_to_streams(streams_raw, owner, autocreate=True)
+            list_to_streams(
+                streams_raw, owner, autocreate=True, request_settings_dict=request_settings_dict
+            )
 
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_SELF_HOSTED, acting_user=admin)
-        result = list_to_streams(streams_raw, owner, autocreate=True)
+        result = list_to_streams(
+            streams_raw, owner, autocreate=True, request_settings_dict=request_settings_dict
+        )
         self.assert_length(result[0], 0)
         self.assert_length(result[1], 3)
         self.assertEqual(result[1][0].name, "new_stream1")
@@ -817,3 +1241,110 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(result[1][1].message_retention_days, -1)
         self.assertEqual(result[1][2].name, "new_stream3")
         self.assertEqual(result[1][2].message_retention_days, None)
+
+    def test_permission_settings_when_creating_multiple_streams(self) -> None:
+        """
+        Check that different anonymous group is used for each setting when creating
+        multiple streams in a single request.
+        """
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
+        )
+
+        subscriptions = [
+            {"name": "new_stream", "description": "New stream"},
+            {"name": "new_stream_2", "description": "New stream 2"},
+        ]
+        extra_post_data = {
+            "can_add_subscribers_group": orjson.dumps(
+                {
+                    "direct_members": [cordelia.id],
+                    "direct_subgroups": [moderators_group.id],
+                }
+            ).decode(),
+        }
+
+        result = self.subscribe_via_post(
+            hamlet,
+            subscriptions,
+            extra_post_data,
+        )
+        self.assert_json_success(result)
+
+        stream_1 = get_stream("new_stream", realm)
+        stream_2 = get_stream("new_stream_2", realm)
+
+        # Check value of can_administer_channel_group setting which is set to its default
+        # of an anonymous group with creator as the only member.
+        self.assertFalse(hasattr(stream_1.can_administer_channel_group, "named_user_group"))
+        self.assertFalse(hasattr(stream_2.can_administer_channel_group, "named_user_group"))
+        self.assertEqual(list(stream_1.can_administer_channel_group.direct_members.all()), [hamlet])
+        self.assertEqual(list(stream_2.can_administer_channel_group.direct_members.all()), [hamlet])
+        self.assertEqual(list(stream_1.can_administer_channel_group.direct_subgroups.all()), [])
+        self.assertEqual(list(stream_2.can_administer_channel_group.direct_subgroups.all()), [])
+
+        # Check value of can_add_subscribers_group setting which is set to an anonymous
+        # group as request.
+        self.assertFalse(hasattr(stream_1.can_add_subscribers_group, "named_user_group"))
+        self.assertFalse(hasattr(stream_2.can_add_subscribers_group, "named_user_group"))
+        self.assertEqual(list(stream_1.can_add_subscribers_group.direct_members.all()), [cordelia])
+        self.assertEqual(list(stream_2.can_add_subscribers_group.direct_members.all()), [cordelia])
+        self.assertEqual(
+            list(stream_1.can_add_subscribers_group.direct_subgroups.all()), [moderators_group]
+        )
+        self.assertEqual(
+            list(stream_2.can_add_subscribers_group.direct_subgroups.all()), [moderators_group]
+        )
+
+        # Check that for each stream, different anonymous group is used.
+        self.assertNotEqual(
+            stream_1.can_administer_channel_group_id, stream_2.can_administer_channel_group_id
+        )
+        self.assertNotEqual(
+            stream_1.can_add_subscribers_group_id, stream_2.can_add_subscribers_group_id
+        )
+
+    def test_create_stream_with_default_push_notifications(self) -> None:
+        """An admin can set default_push_notifications=True when creating a stream.
+        A non-admin cannot."""
+        admin = self.example_user("iago")
+        non_admin = self.example_user("hamlet")
+        realm = admin.realm
+
+        result = self.subscribe_via_post(
+            non_admin,
+            ["push_create_nonadmin"],
+            extra_post_data={"default_push_notifications": orjson.dumps(True).decode()},
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        # Same guard on /channels/create.
+        result = self.create_channel_via_post(
+            non_admin,
+            name="push_create_nonadmin_v2",
+            extra_post_data={"default_push_notifications": orjson.dumps(True).decode()},
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        self.subscribe_via_post(
+            admin,
+            ["push_create_admin"],
+            extra_post_data={"default_push_notifications": orjson.dumps(True).decode()},
+        )
+        stream = get_stream("push_create_admin", realm)
+        self.assertTrue(stream.default_push_notifications)
+
+        # Verify the /channels/create endpoint also persists the field for admins.
+        result = self.create_channel_via_post(
+            admin,
+            name="push_create_via_channels_api",
+            extra_post_data={"default_push_notifications": orjson.dumps(True).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("push_create_via_channels_api", realm)
+        self.assertTrue(stream.default_push_notifications)

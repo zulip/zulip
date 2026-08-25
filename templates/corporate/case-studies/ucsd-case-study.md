@@ -90,6 +90,7 @@ events, conferences of interest, etc.”
 ---
 
 Learn more about [Zulip for Education](/for/education/), and how
-Zulip is being used at the [Technical University of Munich](/case-studies/tum/).
+Zulip is being used at the [Technical University of Munich](/case-studies/tum/)
+and the [National University of Córdoba](/case-studies/university-of-cordoba/).
 You can also check out our guides on using Zulip for [conferences](/for/events/)
 and [research](/for/research/)!

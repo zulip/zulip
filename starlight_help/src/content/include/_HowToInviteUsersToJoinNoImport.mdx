@@ -1,0 +1,24 @@
+import { Steps, TabItem } from "@astrojs/starlight/components";
+
+import HowToInviteUsersToJoinAllowAnyone from "../include/_HowToInviteUsersToJoinAllowAnyone.mdx";
+
+<TabItem label="Require invitations">
+  <Steps>
+    1. [Configure allowed authentication
+       methods](/help/configure-authentication-methods). Zulip offers a variety of
+       authentication methods, including email/password, Google, GitHub, GitLab,
+       Apple, Discord, LDAP and [SAML](/help/saml-authentication). Users can [log
+       in][logging-in] with any allowed authentication method, regardless of how
+       they signed up.
+    1. Invite users by [sending email invitations][email-invitations] or
+       sharing a [reusable invitation link][invitation-links].
+  </Steps>
+</TabItem>
+
+<HowToInviteUsersToJoinAllowAnyone />
+
+[email-invitations]: /help/invite-new-users#send-email-invitations
+
+[invitation-links]: /help/invite-new-users#create-a-reusable-invitation-link
+
+[logging-in]: /help/logging-in

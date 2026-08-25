@@ -11,7 +11,7 @@ def set_realm_for_existing_scheduledemails(
 ) -> None:
     scheduledemail_model = apps.get_model("zerver", "ScheduledEmail")
     preregistrationuser_model = apps.get_model("zerver", "PreregistrationUser")
-    for scheduledemail in scheduledemail_model.objects.all():
+    for scheduledemail in scheduledemail_model.objects.all().iterator():
         if scheduledemail.type == 3:  # ScheduledEmail.INVITATION_REMINDER
             # Don't think this can be None, but just be safe
             prereg = preregistrationuser_model.objects.filter(email=scheduledemail.address).first()

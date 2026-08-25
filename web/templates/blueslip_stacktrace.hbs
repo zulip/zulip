@@ -24,9 +24,11 @@
                 </div>
                 <div class="code-context" style="display: none">
                     <div class="code-context-content">
-                        {{~#each context~}}
-                            <div {{#if focus}}class="focus-line"{{/if}}><span class="line-number">{{ line_number }}</span> {{ line }}</div>
-                        {{~/each~}}
+                        {{~#unless (eq context undefined)~}}
+                            {{~#each context~}}
+                                <div {{#if focus}}class="focus-line"{{/if}}><span class="line-number">{{ line_number }}</span> {{ line }}</div>
+                            {{~/each~}}
+                        {{~/unless~}}
                     </div>
                 </div>
             </div>

@@ -1,10 +1,8 @@
-import $ from "jquery";
+import {$} from "jquery";
 
-import render_confirm_delete_playground from "../templates/confirm_dialog/confirm_delete_playground.hbs";
 import render_admin_playground_list from "../templates/settings/admin_playground_list.hbs";
 
 import {Typeahead} from "./bootstrap_typeahead.ts";
-import * as bootstrap_typeahead from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
@@ -15,6 +13,7 @@ import * as realm_playground from "./realm_playground.ts";
 import type {RealmPlayground} from "./realm_playground.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {current_user, realm} from "./state_data.ts";
+import * as typeahead from "./typeahead.ts";
 import {render_typeahead_item} from "./typeahead_helper.ts";
 import * as ui_report from "./ui_report.ts";
 
@@ -95,11 +94,11 @@ function build_page(): void {
         const url =
             "/json/realm/playgrounds/" +
             encodeURIComponent($button.closest("tr").attr("data-playground-id")!);
-        const html_body = render_confirm_delete_playground();
 
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Delete code playground?"}),
-            html_body,
+            modal_title_html: $t_html({defaultMessage: "Delete code playground?"}),
+            modal_content_html: $t_html({defaultMessage: "This action cannot be undone."}),
+            is_compact: true,
             id: "confirm_delete_code_playgrounds_modal",
             on_click() {
                 dialog_widget.submit_api_request(channel.del, url, {});
@@ -147,12 +146,7 @@ function build_page(): void {
                 },
                 error(xhr) {
                     $add_playground_button.prop("disabled", false);
-                    ui_report.error(
-                        $t_html({defaultMessage: "Failed"}),
-                        xhr,
-                        $playground_status,
-                        3000,
-                    );
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $playground_status);
                 },
             });
         });
@@ -168,17 +162,63 @@ function build_page(): void {
     pygments_typeahead = new Typeahead(bootstrap_typeahead_input, {
         source(query: string): string[] {
             language_labels = realm_playground.get_pygments_typeahead_list_for_settings(query);
-            return [...language_labels.keys()];
+            return language_labels.keys().toArray();
         },
-        helpOnEmptyStrings: true,
-        highlighter_html: (item: string): string =>
-            render_typeahead_item({primary: language_labels.get(item)}),
-        matcher(item: string, query: string): boolean {
-            const q = query.trim().toLowerCase();
-            return item.toLowerCase().startsWith(q);
+        helpOnEmptyStrings: () => true,
+        item_html(_query: string): (item: string) => string {
+            return (item: string) => render_typeahead_item({primary: language_labels.get(item)});
+        },
+        matcher(query: string): (item: string) => boolean {
+            // Filtering is diacritics-agnostic: strip diacritics from both the query
+            // and the language name so ASCII and diacritic spellings match each other.
+            const q = typeahead.remove_diacritics(query.trim().toLowerCase());
+
+            if (q === "") {
+                return () => true;
+            }
+
+            const begins_with_query = (name: string): boolean =>
+                typeahead.remove_diacritics(name.toLowerCase()).startsWith(q);
+
+            return (item: string) =>
+                begins_with_query(item) ||
+                realm_playground
+                    .get_aliases_for_pretty_name(item)
+                    .some((alias) => begins_with_query(alias));
         },
         sorter(items: string[], query: string): string[] {
-            return bootstrap_typeahead.defaultSorter(items, query);
+            const q = query.trim().toLowerCase();
+
+            if (q === "") {
+                return items;
+            }
+
+            const {
+                exact_matches,
+                begins_with_case_insensitive_diacritic_matches,
+                begins_with_case_sensitive_matches,
+                begins_with_case_insensitive_matches,
+            } = typeahead.triage_raw(q, items, (item) => [
+                item,
+                ...realm_playground.get_aliases_for_pretty_name(item),
+            ]);
+
+            const begins_with = [
+                ...exact_matches,
+                ...begins_with_case_insensitive_diacritic_matches,
+                ...begins_with_case_sensitive_matches,
+                ...begins_with_case_insensitive_matches,
+            ];
+
+            // Move the "Custom language" option to the end so that
+            // canonical language names matched via aliases appear above it in the typeahead.
+            const exact_match_index = begins_with.indexOf(q);
+            if (exact_match_index !== -1 && begins_with.length > 1) {
+                begins_with.splice(exact_match_index, 1);
+                begins_with.push(q);
+            }
+
+            return begins_with;
         },
     });
 

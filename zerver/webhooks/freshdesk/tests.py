@@ -4,10 +4,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class FreshdeskHookTests(WebhookTestCase):
-    CHANNEL_NAME = "freshdesk"
-    URL_TEMPLATE = "/api/v1/external/freshdesk?stream={stream}"
-    WEBHOOK_DIR_NAME = "freshdesk"
-
     def test_ticket_creation(self) -> None:
         """
         Messages are generated on ticket creation through Freshdesk's
@@ -121,7 +117,7 @@ Requester Bob <requester-bob@example.com> added a {} note to \
         """
         expected_topic_name = "#12: Not enough ☃ guinea pigs"
         expected_message = """
-Requester \u2603 Bob <requester-bob@example.com> created [ticket #12](http://test1234zzz.freshdesk.com/helpdesk/tickets/12):\n\n``` quote\nThere are too many cat pictures on the internet \u2603. We need more guinea pigs.\nExhibit 1:\n\n  \n\n[guinea_pig.png](http://cdn.freshdesk.com/data/helpdesk/attachments/production/12744808/original/guinea_pig.png)\n```\n\n* **Type**: Problem\n* **Priority**: Urgent\n* **Status**: Open
+Requester \u2603 Bob <requester-bob@example.com> created [ticket #12](http://test1234zzz.freshdesk.com/helpdesk/tickets/12):\n\n``` quote\nThere are too many cat pictures on the internet \u2603. We need more guinea pigs. Exhibit 1:\n\n[guinea_pig.png](http://cdn.freshdesk.com/data/helpdesk/attachments/production/12744808/original/guinea_pig.png?1383958880)\n```\n\n* **Type**: Problem\n* **Priority**: Urgent\n* **Status**: Open
 """.strip()
         self.api_channel_message(
             self.test_user,

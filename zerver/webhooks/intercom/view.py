@@ -1,322 +1,106 @@
 from collections.abc import Callable
-from html.parser import HTMLParser
 
 from django.http import HttpRequest, HttpResponse
-from typing_extensions import override
 
 from zerver.decorator import return_success_on_head_request, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
-from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.validator import WildValue, check_bool, check_string
+from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
 
-COMPANY_CREATED = """
-New company **{name}** created:
-* **User count**: {user_count}
-* **Monthly spending**: {monthly_spend}
-""".strip()
+ADMIN_ROLE_UPDATED_TEMPLATE = "{name} is {phrase} an admin."
 
-CONTACT_EMAIL_ADDED = "New email {email} added to contact."
+ADMIN_AWAY_MODE_UPDATED_TEMPLATE = "{name} is {away_status}{reason}."
 
-CONTACT_CREATED = """
-New contact created:
-* **Name (or pseudonym)**: {name}
-* **Email**: {email}
-* **Location**: {location_info}
-""".strip()
-
-CONTACT_SIGNED_UP = """
-Contact signed up:
-* **Email**: {email}
-* **Location**: {location_info}
-""".strip()
-
-CONTACT_TAG_CREATED = "Contact tagged with the `{name}` tag."
-
-CONTACT_TAG_DELETED = "The tag `{name}` was removed from the contact."
-
-CONVERSATION_ADMIN_ASSIGNED = "{name} assigned to conversation."
-
-CONVERSATION_ADMIN_TEMPLATE = "{admin_name} {action} the conversation."
-
-CONVERSATION_ADMIN_REPLY_TEMPLATE = """
-{admin_name} {action} the conversation:
-
-``` quote
-{content}
-```
-""".strip()
-
-CONVERSATION_ADMIN_INITIATED_CONVERSATION = """
-{admin_name} initiated a conversation:
-
-``` quote
-{content}
-```
-""".strip()
-
-EVENT_CREATED = "New event **{event_name}** created."
-
-USER_CREATED = """
-New user created:
-* **Name**: {name}
-* **Email**: {email}
-""".strip()
+ADMIN_LOGIN_LOGOUT_TEMPLATE = "{name} {phrase}."
 
 
-class MLStripper(HTMLParser):
-    def __init__(self) -> None:
-        self.reset()
-        self.strict = False
-        self.convert_charrefs = True
-        self.fed: list[str] = []
-
-    @override
-    def handle_data(self, d: str) -> None:
-        self.fed.append(d)
-
-    def get_data(self) -> str:
-        return "".join(self.fed)
+def get_admin_name(payload: WildValue) -> str:
+    return payload["data"]["item"]["name"].tame(check_string)
 
 
-def strip_tags(html: str) -> str:
-    s = MLStripper()
-    s.feed(html)
-    return s.get_data()
+def get_topic_name(event_category: str, payload: WildValue) -> str:
+    match event_category:
+        case "ping":
+            return "Intercom"
+        case "admin":
+            if payload["topic"].tame(check_string) == "admin.activity_log_event.created":
+                return "Admin activity log"
+            return f"Admin: {get_admin_name(payload)}"
+        case _:  # nocoverage
+            raise UnsupportedWebhookEventTypeError(payload["topic"].tame(check_string))
 
 
-def get_topic_for_contacts(user: WildValue) -> str:
-    topic_name = "{type}: {name}".format(
-        type=user["type"].tame(check_string).capitalize(),
-        name=user.get("name").tame(check_none_or(check_string))
-        or user.get("pseudonym").tame(check_none_or(check_string))
-        or user.get("email").tame(check_none_or(check_string)),
+def get_ping_message(payload: WildValue) -> str:
+    return get_setup_webhook_message("Intercom")
+
+
+def get_admin_activity_log_event_created_message(payload: WildValue) -> str:
+    return payload["data"]["item"]["activity_description"].tame(check_string)
+
+
+def get_admin_role_updated_message(phrase: str, payload: WildValue) -> str:
+    return ADMIN_ROLE_UPDATED_TEMPLATE.format(name=get_admin_name(payload), phrase=phrase)
+
+
+def get_admin_login_logout_message(phrase: str, payload: WildValue) -> str:
+    return ADMIN_LOGIN_LOGOUT_TEMPLATE.format(name=get_admin_name(payload), phrase=phrase)
+
+
+def get_admin_away_mode_updated_message(payload: WildValue) -> str:
+    admin_name = get_admin_name(payload)
+    away_mode_enabled = payload["data"]["item"]["away_mode_enabled"].tame(check_bool)
+
+    if away_mode_enabled:
+        away_status = "away"
+        reason_value = payload["data"]["item"]["away_status_reason"].tame(check_string)
+
+        # Strip trailing period if exists,
+        # since reason will be wrapped inside parentheses.
+        reason_value = reason_value.removesuffix(".")
+        reason = f" ({reason_value})" if reason_value else ""
+    else:
+        away_status = "now available"
+        reason = ""
+
+    return ADMIN_AWAY_MODE_UPDATED_TEMPLATE.format(
+        name=admin_name, away_status=away_status, reason=reason
     )
 
-    return topic_name
+
+IGNORED_EVENTS = [
+    # Require purchasing an Intercom number.
+    *["call"],
+    # Might be restricted for trial accounts.
+    # Only content_stat.banners was attempted, and it was restricted.
+    *["content_stat"],
+    # Can only be invoked by SMS from registered US or Canadian numbers.
+    *[
+        "contact.lead.signed_up",
+        "contact.unsubscribed_from_sms",
+    ],
+    # Unable to invoke these events, likely restricted for trial accounts.
+    *[
+        "conversation.rating.added",
+        "ticket.rating.provided",
+        "data_connector.execution.completed",
+        "job.completed",
+        "messenger.deployment_completed.event.created",
+    ],
+]
 
 
-def get_company_created_message(payload: WildValue) -> tuple[str, str]:
-    body = COMPANY_CREATED.format(
-        name=payload["data"]["item"]["name"].tame(check_string),
-        user_count=payload["data"]["item"]["user_count"].tame(check_int),
-        monthly_spend=payload["data"]["item"]["monthly_spend"].tame(check_int),
-    )
-    return ("Companies", body)
-
-
-def get_contact_added_email_message(payload: WildValue) -> tuple[str, str]:
-    user = payload["data"]["item"]
-    body = CONTACT_EMAIL_ADDED.format(email=user["email"].tame(check_string))
-    topic_name = get_topic_for_contacts(user)
-    return (topic_name, body)
-
-
-def get_contact_created_message(payload: WildValue) -> tuple[str, str]:
-    contact = payload["data"]["item"]
-    body = CONTACT_CREATED.format(
-        name=contact.get("name").tame(check_none_or(check_string))
-        or contact.get("pseudonym").tame(check_none_or(check_string)),
-        email=contact["email"].tame(check_string),
-        location_info="{city_name}, {region_name}, {country_name}".format(
-            city_name=contact["location_data"]["city_name"].tame(check_string),
-            region_name=contact["location_data"]["region_name"].tame(check_string),
-            country_name=contact["location_data"]["country_name"].tame(check_string),
-        ),
-    )
-    topic_name = get_topic_for_contacts(contact)
-    return (topic_name, body)
-
-
-def get_contact_signed_up_message(payload: WildValue) -> tuple[str, str]:
-    contact = payload["data"]["item"]
-    body = CONTACT_SIGNED_UP.format(
-        email=contact["email"].tame(check_string),
-        location_info="{city_name}, {region_name}, {country_name}".format(
-            city_name=contact["location_data"]["city_name"].tame(check_string),
-            region_name=contact["location_data"]["region_name"].tame(check_string),
-            country_name=contact["location_data"]["country_name"].tame(check_string),
-        ),
-    )
-    topic_name = get_topic_for_contacts(contact)
-    return (topic_name, body)
-
-
-def get_contact_tag_created_message(payload: WildValue) -> tuple[str, str]:
-    body = CONTACT_TAG_CREATED.format(
-        name=payload["data"]["item"]["tag"]["name"].tame(check_string)
-    )
-    contact = payload["data"]["item"]["contact"]
-    topic_name = get_topic_for_contacts(contact)
-    return (topic_name, body)
-
-
-def get_contact_tag_deleted_message(payload: WildValue) -> tuple[str, str]:
-    body = CONTACT_TAG_DELETED.format(
-        name=payload["data"]["item"]["tag"]["name"].tame(check_string)
-    )
-    contact = payload["data"]["item"]["contact"]
-    topic_name = get_topic_for_contacts(contact)
-    return (topic_name, body)
-
-
-def get_conversation_admin_assigned_message(payload: WildValue) -> tuple[str, str]:
-    body = CONVERSATION_ADMIN_ASSIGNED.format(
-        name=payload["data"]["item"]["assignee"]["name"].tame(check_string)
-    )
-    user = payload["data"]["item"]["user"]
-    topic_name = get_topic_for_contacts(user)
-    return (topic_name, body)
-
-
-def get_conversation_admin_message(
-    action: str,
-    payload: WildValue,
-) -> tuple[str, str]:
-    assignee = payload["data"]["item"]["assignee"]
-    user = payload["data"]["item"]["user"]
-    body = CONVERSATION_ADMIN_TEMPLATE.format(
-        admin_name=assignee.get("name").tame(check_none_or(check_string)),
-        action=action,
-    )
-    topic_name = get_topic_for_contacts(user)
-    return (topic_name, body)
-
-
-def get_conversation_admin_reply_message(
-    action: str,
-    payload: WildValue,
-) -> tuple[str, str]:
-    assignee = payload["data"]["item"]["assignee"]
-    user = payload["data"]["item"]["user"]
-    note = payload["data"]["item"]["conversation_parts"]["conversation_parts"][0]
-    content = strip_tags(note["body"].tame(check_string))
-    body = CONVERSATION_ADMIN_REPLY_TEMPLATE.format(
-        admin_name=assignee.get("name").tame(check_none_or(check_string)),
-        action=action,
-        content=content,
-    )
-    topic_name = get_topic_for_contacts(user)
-    return (topic_name, body)
-
-
-def get_conversation_admin_single_created_message(payload: WildValue) -> tuple[str, str]:
-    assignee = payload["data"]["item"]["assignee"]
-    user = payload["data"]["item"]["user"]
-    conversation_body = payload["data"]["item"]["conversation_message"]["body"].tame(check_string)
-    content = strip_tags(conversation_body)
-    body = CONVERSATION_ADMIN_INITIATED_CONVERSATION.format(
-        admin_name=assignee.get("name").tame(check_none_or(check_string)),
-        content=content,
-    )
-    topic_name = get_topic_for_contacts(user)
-    return (topic_name, body)
-
-
-def get_conversation_user_created_message(payload: WildValue) -> tuple[str, str]:
-    user = payload["data"]["item"]["user"]
-    conversation_body = payload["data"]["item"]["conversation_message"]["body"].tame(check_string)
-    content = strip_tags(conversation_body)
-    body = CONVERSATION_ADMIN_INITIATED_CONVERSATION.format(
-        admin_name=user.get("name").tame(check_none_or(check_string)),
-        content=content,
-    )
-    topic_name = get_topic_for_contacts(user)
-    return (topic_name, body)
-
-
-def get_conversation_user_replied_message(payload: WildValue) -> tuple[str, str]:
-    user = payload["data"]["item"]["user"]
-    note = payload["data"]["item"]["conversation_parts"]["conversation_parts"][0]
-    content = strip_tags(note["body"].tame(check_string))
-    body = CONVERSATION_ADMIN_REPLY_TEMPLATE.format(
-        admin_name=user.get("name").tame(check_none_or(check_string)),
-        action="replied to",
-        content=content,
-    )
-    topic_name = get_topic_for_contacts(user)
-    return (topic_name, body)
-
-
-def get_event_created_message(payload: WildValue) -> tuple[str, str]:
-    event = payload["data"]["item"]
-    body = EVENT_CREATED.format(event_name=event["event_name"].tame(check_string))
-    return ("Events", body)
-
-
-def get_user_created_message(payload: WildValue) -> tuple[str, str]:
-    user = payload["data"]["item"]
-    body = USER_CREATED.format(
-        name=user["name"].tame(check_string), email=user["email"].tame(check_string)
-    )
-    topic_name = get_topic_for_contacts(user)
-    return (topic_name, body)
-
-
-def get_user_deleted_message(payload: WildValue) -> tuple[str, str]:
-    user = payload["data"]["item"]
-    topic_name = get_topic_for_contacts(user)
-    return (topic_name, "User deleted.")
-
-
-def get_user_email_updated_message(payload: WildValue) -> tuple[str, str]:
-    user = payload["data"]["item"]
-    body = "User's email was updated to {}.".format(user["email"].tame(check_string))
-    topic_name = get_topic_for_contacts(user)
-    return (topic_name, body)
-
-
-def get_user_tagged_message(
-    action: str,
-    payload: WildValue,
-) -> tuple[str, str]:
-    user = payload["data"]["item"]["user"]
-    tag = payload["data"]["item"]["tag"]
-    topic_name = get_topic_for_contacts(user)
-    body = "The tag `{tag_name}` was {action} the user.".format(
-        tag_name=tag["name"].tame(check_string),
-        action=action,
-    )
-    return (topic_name, body)
-
-
-def get_user_unsubscribed_message(payload: WildValue) -> tuple[str, str]:
-    user = payload["data"]["item"]
-    body = "User unsubscribed from emails."
-    topic_name = get_topic_for_contacts(user)
-    return (topic_name, body)
-
-
-EVENT_TO_FUNCTION_MAPPER: dict[str, Callable[[WildValue], tuple[str, str]]] = {
-    "company.created": get_company_created_message,
-    "contact.added_email": get_contact_added_email_message,
-    "contact.created": get_contact_created_message,
-    "contact.signed_up": get_contact_signed_up_message,
-    "contact.tag.created": get_contact_tag_created_message,
-    "contact.tag.deleted": get_contact_tag_deleted_message,
-    "conversation.admin.assigned": get_conversation_admin_assigned_message,
-    "conversation.admin.closed": partial(get_conversation_admin_message, "closed"),
-    "conversation.admin.opened": partial(get_conversation_admin_message, "opened"),
-    "conversation.admin.snoozed": partial(get_conversation_admin_message, "snoozed"),
-    "conversation.admin.unsnoozed": partial(get_conversation_admin_message, "unsnoozed"),
-    "conversation.admin.replied": partial(get_conversation_admin_reply_message, "replied to"),
-    "conversation.admin.noted": partial(get_conversation_admin_reply_message, "added a note to"),
-    "conversation.admin.single.created": get_conversation_admin_single_created_message,
-    "conversation.user.created": get_conversation_user_created_message,
-    "conversation.user.replied": get_conversation_user_replied_message,
-    "event.created": get_event_created_message,
-    "user.created": get_user_created_message,
-    "user.deleted": get_user_deleted_message,
-    "user.email.updated": get_user_email_updated_message,
-    "user.tag.created": partial(get_user_tagged_message, "added to"),
-    "user.tag.deleted": partial(get_user_tagged_message, "removed from"),
-    "user.unsubscribed": get_user_unsubscribed_message,
-    # Note that we do not have a payload for visitor.signed_up
-    # but it should be identical to contact.signed_up
-    "visitor.signed_up": get_contact_signed_up_message,
+EVENT_TO_FUNCTION_MAPPER: dict[str, Callable[[WildValue], str]] = {
+    "ping": get_ping_message,
+    "admin.activity_log_event.created": get_admin_activity_log_event_created_message,
+    "admin.away_mode_updated": get_admin_away_mode_updated_message,
+    "admin.added_to_workspace": partial(get_admin_role_updated_message, "now"),
+    "admin.removed_from_workspace": partial(get_admin_role_updated_message, "no longer"),
+    "admin.logged_in": partial(get_admin_login_logout_message, "logged in"),
+    "admin.logged_out": partial(get_admin_login_logout_message, "logged out"),
 }
 
 ALL_EVENT_TYPES = list(EVENT_TO_FUNCTION_MAPPER.keys())
@@ -333,13 +117,16 @@ def api_intercom_webhook(
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
     event_type = payload["topic"].tame(check_string)
-    if event_type == "ping":
-        return json_success(request)
+    # event_type is of the form "{event_category}.{event}".
+    event_category = event_type.split(".", 1)[0]
+    if event_type in IGNORED_EVENTS or event_category in IGNORED_EVENTS:
+        return json_success(request)  # nocoverage
 
     handler = EVENT_TO_FUNCTION_MAPPER.get(event_type)
     if handler is None:
         raise UnsupportedWebhookEventTypeError(event_type)
-    topic_name, body = handler(payload)
+    body = handler(payload)
+    topic_name = get_topic_name(event_category, payload)
 
     check_send_webhook_message(request, user_profile, topic_name, body, event_type)
     return json_success(request)

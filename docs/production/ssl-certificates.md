@@ -7,6 +7,14 @@ Fortunately, since about 2017, new options can make getting and
 maintaining a genuine, trusted-by-browsers certificate no longer the
 chore (nor expense) that it used to be.
 
+:::{important}
+
+If you are using [Docker](docker.md), see
+{doc}`docker:how-to/compose-ssl` for the `CERTIFICATES` mechanism,
+or {doc}`docker:how-to/helm-ssl` for Helm's Ingress-based TLS.
+
+:::
+
 ## Manual install
 
 If you already have an SSL certificate, just install (or symlink) its

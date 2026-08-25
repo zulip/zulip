@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_new_user_group_user from "../templates/stream_settings/new_stream_user.hbs";
 import render_new_user_group_subgroup from "../templates/user_group_settings/new_user_group_subgroup.hbs";
@@ -139,8 +139,7 @@ export function build_widgets(): void {
 
     user_group_create_members_data.initialize_with_current_user();
     const current_user_id = current_user.user_id;
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const initial_members = [people.get_by_user_id(current_user_id)] as (User | UserGroup)[];
+    const initial_members: (User | UserGroup)[] = [people.get_by_user_id(current_user_id)];
 
     all_users_list_widget = ListWidget.create($("#create_user_group_members"), initial_members, {
         name: "new_user_group_add_users",
@@ -157,6 +156,7 @@ export function build_widgets(): void {
                     user_id: member.user_id,
                     full_name: member.full_name,
                     is_current_user: member.user_id === current_user_id,
+                    is_bot: member.is_bot,
                     img_src: people.small_avatar_url_for_person(member),
                     soft_removed: user_group_create_members_data.user_id_in_soft_remove_list(
                         member.user_id,
@@ -175,7 +175,7 @@ export function build_widgets(): void {
             return render_new_user_group_subgroup(item);
         },
         filter: {
-            $element: $("#people_to_add_in_group .add-user-list-filter"),
+            $element: $("#people_to_add_in_group input.search"),
             predicate(member, search_term) {
                 return user_group_components.build_group_member_matcher(search_term)(member);
             },

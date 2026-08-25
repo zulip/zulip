@@ -12,7 +12,7 @@ background_colors = [
 
 
 def get_svg_filenames() -> list[str]:
-    icons_dir = os.path.join(os.path.dirname(__file__), "../../../web/shared/icons")
+    icons_dir = os.path.join(os.path.dirname(__file__), "../../../web/icons")
 
     # Get all .svg file names from the directory
     svg_files = [f for f in os.listdir(icons_dir) if f.endswith(".svg")]
@@ -48,3 +48,16 @@ def showroom_component_banners(request: HttpRequest) -> HttpResponse:
         "isolated_page": True,
     }
     return render(request, "zerver/development/showroom/banners.html", context)
+
+
+def showroom_component_inputs(request: HttpRequest) -> HttpResponse:
+    context = {
+        "background_colors": background_colors,
+        "icons": get_svg_filenames(),
+        "page_is_showroom": True,
+        "showroom_component": "inputs",
+        "doc_root_title": "Input styles browser",
+        # We set isolated_page to avoid clutter from footer/header.
+        "isolated_page": True,
+    }
+    return render(request, "zerver/development/showroom/inputs.html", context)

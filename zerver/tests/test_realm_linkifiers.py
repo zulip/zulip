@@ -60,10 +60,113 @@ class RealmFilterTest(ZulipTestCase):
             result, "Group 'id' in linkifier pattern is not present in URL template."
         )
 
-        data["url_template"] = "https://realm.com/my_realm_filter/#hashtag/{id}"
+        data["pattern"] = r"ZUL-(?P<id>\d+)"
+        data["url_template"] = "https://realm.com/my_realm_filter/{id}"
+        data["example_input"] = "no match"
+        data["reverse_template"] = "ZUL-{id}"
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Example input does not match the linkifier pattern.")
+
+        data = {
+            "pattern": r"ZUL-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/{id}",
+            "reverse_template": "ZUL-{id}",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(
+            result, "Example text is required when auto-conversion field is set."
+        )
+
+        data = {
+            "pattern": r"ZUL-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/{id}",
+            "example_input": "ZUL-15",
+            "reverse_template": "ZUL-{id}-x",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Example text does not match auto-conversion field.")
+
+        # Example input does not contain the optional group.
+        data = {
+            "pattern": r"(?P<prefix>[a-z]+-)?ZUL-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/{prefix}ZUL-{id}",
+            "example_input": "ZUL-15",
+            "reverse_template": "{prefix}ZUL-{id}",
+        }
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
         self.assertIsNotNone(re.match(data["pattern"], "ZUL-15"))
+
+        # Similar pattern, but with the optional group present in the example.
+        data = {
+            "pattern": r"(?P<prefix>[a-z]+-)?ZUL-NEW-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/{prefix}ZUL-NEW-{id}",
+            "example_input": "abc-ZUL-NEW-15",
+            "reverse_template": "{prefix}ZUL-NEW-{id}",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data["pattern"], "abc-ZUL-NEW-15"))
+
+        data = {
+            "pattern": r"ZUL-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/{id}",
+            "example_input": "ZUL-15",
+            "reverse_template": "ZUL-{id",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Invalid auto-conversion field: missing '}' character.")
+
+        data["reverse_template"] = "ZUL-{}"
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Invalid auto-conversion field: empty field name.")
+
+        data["reverse_template"] = "ZUL-{other}"
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(
+            result, "Group 'other' in auto-conversion field is not present in linkifier pattern."
+        )
+
+        data = {
+            "pattern": r"ZUL-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/#hashtag/{id}",
+            "example_input": "ZUL-15",
+            "reverse_template": "ZUL-{id}",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data["pattern"], "ZUL-15"))
+
+        data = {
+            "pattern": r"ZUL-NEW-(?P<id>\d+)",
+            "url_template": "https://realm.com/my_realm_filter/#hashtag/{id}",
+            "example_input": "ZUL-NEW-42",
+            "reverse_template": "ZUL-NEW-{id}",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data["pattern"], "ZUL-NEW-42"))
+
+        data = {
+            "pattern": r"ZUL-\{(?P<id>\d+)\}",
+            "url_template": "https://realm.com/my_realm_filter/#hashtag/{id}",
+            "example_input": "ZUL-{15}",
+            "reverse_template": "ZUL-{{{id}}}",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data["pattern"], "ZUL-{15}"))
+
+        data = {
+            "pattern": "ZUL-15",
+            "url_template": "https://realm.com/example_url",
+            "example_input": "ZUL-15",
+            "reverse_template": "ZUL-15",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+        data.pop("example_input")
+        data.pop("reverse_template")
 
         data["pattern"] = r"ZUL2-(?P<id>\d+)"
         data["url_template"] = "https://realm.com/my_realm_filter/?value={id}"
@@ -184,6 +287,8 @@ class RealmFilterTest(ZulipTestCase):
         data = {
             "pattern": "#(?P<id>[0-9]+)",
             "url_template": "https://realm.com/my_realm_filter/issues/{id}",
+            "example_input": "#1234",
+            "reverse_template": "#{id}",
         }
         result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
         self.assert_json_success(result)
@@ -197,6 +302,39 @@ class RealmFilterTest(ZulipTestCase):
         self.assertEqual(
             linkifier[0]["url_template"], "https://realm.com/my_realm_filter/issues/{id}"
         )
+        self.assertEqual(linkifier[0]["example_input"], "#1234")
+
+        # Resetting example_input should not work when reverse_template is set.
+        data["example_input"] = ""
+        result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
+        self.assert_json_error(
+            result, "Example text is required when auto-conversion field is set."
+        )
+        data.pop("example_input")
+
+        # Resetting reverse_template should work.
+        data["reverse_template"] = ""
+        result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
+        self.assert_json_success(result)
+        data.pop("reverse_template")
+
+        result = self.client_get("/json/realm/linkifiers")
+        linkifier = self.assert_json_success(result)["linkifiers"]
+        self.assert_length(linkifier, 1)
+        self.assertIsNone(linkifier[0]["reverse_template"])
+        self.assertIsNotNone(linkifier[0]["example_input"])
+
+        # Resetting example_input should work once reverse_template has been unset.
+        data["example_input"] = ""
+        result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
+        self.assert_json_success(result)
+        data.pop("example_input")
+
+        result = self.client_get("/json/realm/linkifiers")
+        linkifier = self.assert_json_success(result)["linkifiers"]
+        self.assert_length(linkifier, 1)
+        self.assertIsNone(linkifier[0]["reverse_template"])
+        self.assertIsNone(linkifier[0]["example_input"])
 
         data = {
             "pattern": r"ZUL-(?P<id>\d????)",
@@ -221,6 +359,120 @@ class RealmFilterTest(ZulipTestCase):
         data["url_template"] = "{id"
         result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
         self.assert_json_error(result, "Invalid URL template.")
+
+    def test_alternative_url_templates(self) -> None:
+        self.login("iago")
+
+        # Create a linkifier with alternative URL templates.
+        data = {
+            "pattern": r"#(?P<id>[0-9]+)",
+            "url_template": "https://github.com/zulip/zulip/issues/{id}",
+            "alternative_url_templates": orjson.dumps(
+                ["https://github.com/zulip/zulip/pull/{id}"]
+            ).decode(),
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        linkifier_id = self.assert_json_success(result)["id"]
+
+        # Verify the alternative URL templates are returned.
+        result = self.client_get("/json/realm/linkifiers")
+        linkifiers = self.assert_json_success(result)["linkifiers"]
+        self.assert_length(linkifiers, 1)
+        self.assertEqual(
+            linkifiers[0]["alternative_url_templates"],
+            ["https://github.com/zulip/zulip/pull/{id}"],
+        )
+
+        # Update to add more alternative URL templates.
+        data = {
+            "pattern": r"#(?P<id>[0-9]+)",
+            "url_template": "https://github.com/zulip/zulip/issues/{id}",
+            "alternative_url_templates": orjson.dumps(
+                [
+                    "https://github.com/zulip/zulip/pull/{id}",
+                    "https://github.com/zulip/zulip/discussions/{id}",
+                ]
+            ).decode(),
+        }
+        result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
+        self.assert_json_success(result)
+
+        result = self.client_get("/json/realm/linkifiers")
+        linkifiers = self.assert_json_success(result)["linkifiers"]
+        self.assertEqual(
+            linkifiers[0]["alternative_url_templates"],
+            [
+                "https://github.com/zulip/zulip/pull/{id}",
+                "https://github.com/zulip/zulip/discussions/{id}",
+            ],
+        )
+
+        # Update to clear alternative URL templates.
+        data = {
+            "pattern": r"#(?P<id>[0-9]+)",
+            "url_template": "https://github.com/zulip/zulip/issues/{id}",
+            "alternative_url_templates": orjson.dumps([]).decode(),
+        }
+        result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
+        self.assert_json_success(result)
+
+        result = self.client_get("/json/realm/linkifiers")
+        linkifiers = self.assert_json_success(result)["linkifiers"]
+        self.assertEqual(linkifiers[0]["alternative_url_templates"], [])
+
+        # Invalid RFC 6570 template should be rejected.
+        data = {
+            "pattern": r"#(?P<id>[0-9]+)",
+            "url_template": "https://github.com/zulip/zulip/issues/{id}",
+            "alternative_url_templates": orjson.dumps(["https://example.com/{foo"]).decode(),
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(result, "Invalid URL template.")
+
+        # Variable not in pattern should be rejected.
+        data["alternative_url_templates"] = orjson.dumps(["https://example.com/{other}"]).decode()
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(
+            result,
+            "Group 'other' in alternative URL template is not present in linkifier pattern.",
+        )
+
+        # Missing pattern group in alternative template should be rejected.
+        data["pattern"] = r"(?P<org>[a-z]+)#(?P<id>[0-9]+)"
+        data["url_template"] = "https://github.com/{org}/issues/{id}"
+        data["alternative_url_templates"] = orjson.dumps(
+            ["https://github.com/zulip/pull/{id}"]
+        ).decode()
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(
+            result,
+            "Group 'org' in linkifier pattern is not present in alternative URL template.",
+        )
+
+        # Alternative matching the main URL template should be rejected.
+        data["pattern"] = r"#(?P<id>[0-9]+)"
+        data["url_template"] = "https://github.com/zulip/zulip/issues/{id}"
+        data["alternative_url_templates"] = orjson.dumps(
+            ["https://github.com/zulip/zulip/issues/{id}"]
+        ).decode()
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(
+            result,
+            "An alternative URL template cannot be the same as the URL template.",
+        )
+
+        # Duplicate alternative URL templates should be rejected.
+        data["alternative_url_templates"] = orjson.dumps(
+            [
+                "https://github.com/zulip/zulip/pull/{id}",
+                "https://github.com/zulip/zulip/pull/{id}",
+            ]
+        ).decode()
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_error(
+            result,
+            "Alternative URL templates must be unique.",
+        )
 
     def test_valid_urls(self) -> None:
         valid_urls = [

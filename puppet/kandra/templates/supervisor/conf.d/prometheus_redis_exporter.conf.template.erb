@@ -1,5 +1,5 @@
 [program:prometheus_redis_exporter]
-command=/usr/local/bin/secret-env-wrapper REDIS_PASSWORD=redis_password <%= @bin %>
+command=/usr/local/bin/secret-env-wrapper REDIS_PASSWORD=redis_password <%= @bin %> --web.listen-address=127.0.0.1:9121
 priority=10
 autostart=true
 autorestart=true

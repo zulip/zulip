@@ -1,19 +1,19 @@
 import time
 from collections.abc import Callable
-from typing import Annotated, Any, TypeVar
+from typing import Annotated, Any, Literal, TypeVar
 
 from asgiref.sync import async_to_sync
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
-from pydantic import BaseModel, Json, NonNegativeInt, StringConstraints, model_validator
+from pydantic import BaseModel, Json, PositiveInt, StringConstraints, model_validator
 from typing_extensions import ParamSpec
 
 from zerver.decorator import internal_api_view, process_client
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.queue import get_queue_client
 from zerver.lib.request import RequestNotes
-from zerver.lib.response import AsynchronousResponse, json_success
+from zerver.lib.response import AsynchronousResponse, json_response, json_success
 from zerver.lib.sessions import narrow_request_user
 from zerver.lib.typed_endpoint import ApiParamConfig, DocumentationStatus, typed_endpoint
 from zerver.models import UserProfile
@@ -36,6 +36,15 @@ def in_tornado_thread(f: Callable[P, T]) -> Callable[P, T]:
         return f(*args, **kwargs)
 
     return async_to_sync(wrapped)
+
+
+# Registered as handler404/handler500 by zproject/tornado_urls.py.
+def json_not_found(request: HttpRequest, exception: Exception) -> HttpResponse:
+    return json_response(res_type="error", msg=_("Not found"), status=404)
+
+
+def json_internal_server_error(request: HttpRequest) -> HttpResponse:
+    return json_response(res_type="error", msg=_("Internal server error"), status=500)
 
 
 @internal_api_view(True)
@@ -178,19 +187,15 @@ def get_events_backend(
         Json[list[list[str]]] | None,
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
     ] = None,
-    lifespan_secs: Annotated[
-        Json[NonNegativeInt],
+    idle_queue_timeout: Annotated[
+        Json[PositiveInt | Literal["mobile"]] | None,
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
-    ] = 0,
+    ] = None,
     bulk_message_deletion: Annotated[
         Json[bool],
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
     ] = False,
     stream_typing_notifications: Annotated[
-        Json[bool],
-        ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
-    ] = False,
-    user_settings_object: Annotated[
         Json[bool],
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
     ] = False,
@@ -218,6 +223,14 @@ def get_events_backend(
         Json[bool],
         ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
     ] = False,
+    simplified_presence_events: Annotated[
+        Json[bool],
+        ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
+    ] = False,
+    individual_emoji_changes: Annotated[
+        Json[bool],
+        ApiParamConfig(documentation_status=DocumentationStatus.INTENTIONALLY_UNDOCUMENTED),
+    ] = False,
 ) -> HttpResponse:
     if narrow is None:
         narrow = []
@@ -239,7 +252,6 @@ def get_events_backend(
     if queue_id is None:
         new_queue_data = dict(
             user_profile_id=user_profile.id,
-            user_recipient_id=user_profile.recipient_id,
             realm_id=user_profile.realm_id,
             event_types=event_types,
             client_type_name=valid_user_client_name,
@@ -247,18 +259,19 @@ def get_events_backend(
             client_gravatar=client_gravatar,
             slim_presence=slim_presence,
             all_public_streams=all_public_streams,
-            queue_timeout=lifespan_secs,
+            queue_timeout=idle_queue_timeout,
             last_connection_time=time.time(),
             narrow=narrow,
             bulk_message_deletion=bulk_message_deletion,
             stream_typing_notifications=stream_typing_notifications,
-            user_settings_object=user_settings_object,
             pronouns_field_type_supported=pronouns_field_type_supported,
             linkifier_url_template=linkifier_url_template,
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
             archived_channels=archived_channels,
             empty_topic_name=empty_topic_name,
+            simplified_presence_events=simplified_presence_events,
+            individual_emoji_changes=individual_emoji_changes,
         )
 
     result = in_tornado_thread(fetch_events)(

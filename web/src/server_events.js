@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 
 import * as blueslip from "./blueslip.ts";
@@ -10,11 +10,11 @@ import {page_params} from "./page_params.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
+import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_dispatch from "./server_events_dispatch.js";
-import {queue_id} from "./server_events_state.ts";
+import {mark_first_events_response_received, queue_id} from "./server_events_state.ts";
 import {server_message_schema} from "./server_message.ts";
-import * as util from "./util.ts";
 import * as watchdog from "./watchdog.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
@@ -34,7 +34,7 @@ const get_events_params = {};
 let event_queue_expired = false;
 
 function get_events_success(events) {
-    let messages = [];
+    let raw_messages = [];
     const update_message_events = [];
     const post_message_events = [];
 
@@ -73,7 +73,7 @@ function get_events_success(events) {
                 if (event.local_message_id) {
                     msg.local_id = event.local_message_id;
                 }
-                messages.push(msg);
+                raw_messages.push(msg);
                 break;
             }
 
@@ -100,16 +100,16 @@ function get_events_success(events) {
         }
     }
 
-    if (messages.length > 0) {
+    if (raw_messages.length > 0) {
         // Sort by ID, so that if we get multiple messages back from
         // the server out-of-order, we'll still end up with our
         // message lists in order.
-        messages = _.sortBy(messages, "id");
+        raw_messages = _.sortBy(raw_messages, "id");
         try {
-            messages = echo.process_from_server(messages);
-            if (messages.length > 0) {
+            raw_messages = echo.process_from_server(raw_messages);
+            if (raw_messages.length > 0) {
                 let sent_by_this_client = false;
-                for (const msg of messages) {
+                for (const msg of raw_messages) {
                     if (sent_messages.messages.has(msg.local_id)) {
                         sent_by_this_client = true;
                     }
@@ -122,8 +122,11 @@ function get_events_success(events) {
                 // But in any case, insert_new_messages handles multiple
                 // messages, only one of which was sent by this client,
                 // correctly.
-
-                message_events.insert_new_messages(messages, sent_by_this_client, false);
+                message_events.insert_new_messages({
+                    type: "server_message",
+                    raw_messages,
+                    sent_by_this_client,
+                });
             }
         } catch (error) {
             blueslip.error("Failed to insert new messages", undefined, error);
@@ -195,13 +198,14 @@ function get_events({dont_block = false} = {}) {
                 popup_banners.close_connection_error_popup_banner("server_events");
 
                 get_events_success(data.events);
+                mark_first_events_response_received();
             } catch (error) {
                 blueslip.error("Failed to handle get_events success", undefined, error);
             }
             get_events_timeout = setTimeout(get_events, 0);
         },
         error(xhr, error_type) {
-            const retry_delay_secs = util.get_retry_backoff_seconds(xhr, get_events_failures);
+            const retry_delay_secs = get_retry_backoff_seconds(xhr, get_events_failures);
             try {
                 get_events_xhr = undefined;
                 // If we're old enough that our message queue has been
@@ -218,7 +222,8 @@ function get_events({dont_block = false} = {}) {
                 if (error_type === "abort") {
                     // Don't restart if we explicitly aborted
                     return;
-                } else if (error_type === "timeout") {
+                }
+                if (error_type === "timeout") {
                     // Retry indefinitely on timeout.
                     get_events_failures = 0;
                     popup_banners.close_connection_error_popup_banner("server_events");

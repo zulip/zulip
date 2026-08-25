@@ -1,0 +1,129 @@
+---
+title: Recent conversations
+---
+
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import KeyboardTip from "../../components/KeyboardTip.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+import ConversationDefinition from "../include/_ConversationDefinition.mdx";
+import GoToRecentConversations from "../include/_GoToRecentConversations.mdx";
+import RecentConversations from "../include/_RecentConversations.mdx";
+
+<ConversationDefinition />
+
+<RecentConversations />
+
+<KeyboardTip>
+  The arrow keys and vim navigation keys (<kbd>J</kbd>, <kbd>K</kbd>,
+  <kbd>L</kbd>, <kbd>H</kbd>) can be used to move between elements.
+</KeyboardTip>
+
+## Filter conversations
+
+### Filter by topic status
+
+In the web app, you can control whether **recent conversations** includes all
+topics, just [unmuted](/help/mute-a-topic) topics, or only topics you
+[follow](/help/follow-a-topic).
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <GoToRecentConversations />
+
+      1. Select **All topics**, **Standard view**, or **Followed topics** from
+         the dropdown in the upper left of the **recent conversations** view.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+### Filter by keyword
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <GoToRecentConversations />
+
+      1. Use the **Filter topics** box at the top to find a conversation.
+         You can filter by channel, topic, or direct message participants.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+<KeyboardTip>
+  In the **recent conversations** view, you can use <kbd>T</kbd> to start
+  filtering.
+</KeyboardTip>
+
+### Filter by folder
+
+If your organization sorts channels into [folders](/help/channel-folders), you
+can filter **recent conversations** to show only conversations in channels in a
+specific folder.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <GoToRecentConversations />
+
+      1. Select a folder from the folder dropdown at the top of the
+         **recent conversations** view.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+### Other filters
+
+You can filter which conversations are shown to focus your attention:
+
+* **Include DMs**: Enable to include direct messages conversations.
+* **Unread**: Enable to only show conversations where you have unread messages.
+* **Participated**: Enable to only show conversations where you participated recently.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <GoToRecentConversations />
+
+      1. Click **Include DMs**, **Unread**, or **Participated** at the top to
+         toggle the corresponding filter.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Load more conversations
+
+The **recent conversations** view displays a limited number of conversations
+containing the most recent messages.
+
+<ZulipTip>
+  Use the [search bar](/help/search-for-messages) at the top of the web app
+  to search through all conversations, not just recent ones.
+</ZulipTip>
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <GoToRecentConversations />
+
+      1. Scroll to the bottom of the list of conversations, or bring the bottom into
+         view by filtering for a non-existent keyword.
+      1. Click the **Load more** button in the banner at the bottom.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Finding a conversation to read](/help/finding-a-conversation-to-read)
+* [Reading conversations](/help/reading-conversations)
+* [Reading strategies](/help/reading-strategies)
+* [Inbox](/help/inbox)
+* [List of topics in a channel](/help/list-of-topics)
+* [Combined feed](/help/combined-feed)
+* [Configure home view](/help/configure-home-view)
+* [Channel folders](/help/channel-folders)
+* [Mute or unmute a topic](/help/mute-a-topic)
+* [Follow a topic](/help/follow-a-topic)

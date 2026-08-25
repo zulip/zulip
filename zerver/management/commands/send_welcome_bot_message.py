@@ -4,7 +4,7 @@ from typing import Any
 from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
-from zerver.lib.onboarding import send_initial_direct_message
+from zerver.lib.onboarding import send_initial_direct_messages_to_user
 
 
 class Command(ZulipBaseCommand):
@@ -22,4 +22,4 @@ class Command(ZulipBaseCommand):
     @override
     def handle(self, *args: Any, **options: str) -> None:
         for user_profile in self.get_users(options, self.get_realm(options), is_bot=False):
-            send_initial_direct_message(user_profile)
+            send_initial_direct_messages_to_user(user_profile)

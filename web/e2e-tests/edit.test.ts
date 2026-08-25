@@ -114,4 +114,4 @@ async function edit_tests(page: Page): Promise<void> {
     await test_edit_private_message(page);
 }
 
-common.run_test(edit_tests);
+await common.run_test(edit_tests);

@@ -23,7 +23,7 @@
                             <input
                               type="text" value="{% if form.subdomain.value() %}{{ form.subdomain.value() }}{% endif %}"
                               placeholder="{{ _('your-organization') }}" autofocus id="realm_redirect_subdomain" name="subdomain"
-                              autocomplete="off" required/>
+                              autocomplete="off"/>
                             <span id="realm_redirect_external_host">.{{external_host}}</span>
                         </div>
                         <div id="errors">
@@ -46,6 +46,12 @@
         <div class="bottom-text">
             {% trans org_creation_link="/new/" %}
             <a target="_blank" rel="noopener noreferrer" href="{{ org_creation_link }}">Create a new organization</a> if you don't have one yet.
+            {% endtrans %}
+        </div>
+        <div class="bottom-text self-hosting-login-help-text">
+            {{ _("Self-hosting Zulip?") }}
+            {% trans self_hosted_login_help="https://zulip.com/help/self-hosted-billing#log-in-to-billing-management" %}
+            You can <a target="_blank" rel="noopener noreferrer" href="{{ self_hosted_login_help }}">log in to manage plans and billing.</a>
             {% endtrans %}
         </div>
     </div>

@@ -2,6 +2,7 @@
 import logging
 import os
 import sys
+import time
 from argparse import ArgumentParser, BooleanOptionalAction, RawTextHelpFormatter, _ActionsContainer
 from dataclasses import dataclass
 from functools import reduce, wraps
@@ -14,6 +15,7 @@ from django.core.management.base import BaseCommand, CommandError, CommandParser
 from django.db.models import Q, QuerySet
 from typing_extensions import override
 
+from scripts.lib.zulip_tools import LOCK_DIR as DEPLOYMENT_LOCK_DIR
 from zerver.lib.context_managers import lockfile_nonblocking
 from zerver.lib.initial_password import initial_password
 from zerver.models import Client, Realm, UserProfile
@@ -28,40 +30,74 @@ def is_integer_string(val: str) -> bool:
         return False
 
 
-def check_config() -> None:
-    for setting_name, default in settings.REQUIRED_SETTINGS:
-        # if required setting is the same as default OR is not found in settings,
-        # throw error to add/set that setting in config
-        try:
-            if getattr(settings, setting_name) != default:
-                continue
-        except AttributeError:
-            pass
-
-        raise CommandError(f"Error: You must set {setting_name} in /etc/zulip/settings.py.")
-
-
 class HandleMethod(Protocol):
     def __call__(self, *args: Any, **kwargs: Any) -> None: ...
 
 
+def lockfile_path(handle_func: HandleMethod) -> str:
+    os.makedirs(settings.LOCKFILE_DIRECTORY, exist_ok=True)
+    # Trim out just the last part of the module name, which is the
+    # command name, to use as the lockfile name;
+    # `zerver.management.commands.send_zulip_update_announcements`
+    # becomes `/srv/zulip-locks/send_zulip_update_announcements.lock`
+    lockfile_name = handle_func.__module__.split(".")[-1]
+    return settings.LOCKFILE_DIRECTORY + "/" + lockfile_name + ".lock"
+
+
 def abort_unless_locked(handle_func: HandleMethod) -> HandleMethod:
+    """Take a per-command lock, exiting with an error if it is already
+    held.  For cron jobs wrapped in Sentry's `monitors run`, that error
+    surfaces as a failed check-in; use this only for commands whose
+    runtime is reliably shorter than their cron interval, where an
+    overlapping run signals something is wrong and is worth alerting on."""
+
     @wraps(handle_func)
     def our_handle(self: BaseCommand, *args: Any, **kwargs: Any) -> None:
-        os.makedirs(settings.LOCKFILE_DIRECTORY, exist_ok=True)
-        # Trim out just the last part of the module name, which is the
-        # command name, to use as the lockfile name;
-        # `zerver.management.commands.send_zulip_update_announcements`
-        # becomes `/srv/zulip-locks/send_zulip_update_announcements.lock`
-        lockfile_name = handle_func.__module__.split(".")[-1]
-        lockfile_path = settings.LOCKFILE_DIRECTORY + "/" + lockfile_name + ".lock"
-        with lockfile_nonblocking(lockfile_path) as lock_acquired:
+        path = lockfile_path(handle_func)
+        with lockfile_nonblocking(path) as lock_acquired:
             if not lock_acquired:  # nocoverage
-                self.stdout.write(
-                    self.style.ERROR(f"Lock {lockfile_path} is unavailable; exiting.")
-                )
+                self.stdout.write(self.style.ERROR(f"Lock {path} is unavailable; exiting."))
                 sys.exit(1)
             handle_func(self, *args, **kwargs)
+
+    return our_handle
+
+
+def skip_unless_locked(handle_func: HandleMethod) -> HandleMethod:
+    """Like abort_unless_locked, but for commands where an overlapping
+    run is an expected, benign condition -- for instance a network-bound
+    job polled every minute, where a still-running previous invocation
+    just means this one should do nothing.  If the lock is already held,
+    exit successfully and silently -- in particular emitting no output,
+    since under cron any output is mailed to the administrator."""
+
+    @wraps(handle_func)
+    def our_handle(self: BaseCommand, *args: Any, **kwargs: Any) -> None:
+        path = lockfile_path(handle_func)
+        with lockfile_nonblocking(path) as lock_acquired:
+            if not lock_acquired:  # nocoverage
+                return
+            handle_func(self, *args, **kwargs)
+
+    return our_handle
+
+
+def abort_cron_during_deploy(handle_func: HandleMethod) -> HandleMethod:
+    @wraps(handle_func)
+    def our_handle(self: BaseCommand, *args: Any, **kwargs: Any) -> None:
+        # For safety, we only trust the lock directory if it was
+        # created within the last hour -- otherwise, a spurious
+        # deploy lock could linger and block all hourly crons.
+        if (
+            os.environ.get("RUNNING_UNDER_CRON")
+            and os.path.exists(DEPLOYMENT_LOCK_DIR)
+            and time.time() - os.path.getctime(DEPLOYMENT_LOCK_DIR) < 3600
+        ):  # nocoverage
+            self.stdout.write(
+                self.style.ERROR("Deployment in process; aborting cron management command.")
+            )
+            sys.exit(1)
+        handle_func(self, *args, **kwargs)
 
     return our_handle
 
@@ -97,7 +133,7 @@ class ZulipBaseCommand(BaseCommand):
         super().execute(*args, **options)
 
     def add_realm_args(
-        self, parser: ArgumentParser, *, required: bool = False, help: str | None = None
+        self, parser: _ActionsContainer, *, required: bool = False, help: str | None = None
     ) -> None:
         if help is None:
             help = """The numeric or string ID (subdomain) of the Zulip organization to modify.

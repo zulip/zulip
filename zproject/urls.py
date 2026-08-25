@@ -15,16 +15,9 @@ from django.utils.module_loading import import_string
 from django.views.generic import RedirectView
 
 from zerver.forms import LoggingSetPasswordForm
-from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 from zerver.lib.rest import rest_path
-from zerver.lib.url_redirects import DOCUMENTATION_REDIRECTS
-from zerver.tornado.views import (
-    cleanup_event_queue,
-    get_events,
-    get_events_internal,
-    notify,
-    web_reload_clients,
-)
+from zerver.lib.url_redirects import DOCUMENTATION_REDIRECTS, get_integration_category_redirects
 from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
 from zerver.views.antispam import get_challenge
 from zerver.views.attachments import list_by_user, remove
@@ -48,6 +41,7 @@ from zerver.views.auth import (
 from zerver.views.channel_folders import (
     create_channel_folder,
     get_channel_folders,
+    reorder_realm_channel_folders,
     update_channel_folder,
 )
 from zerver.views.compatibility import check_global_compatibility
@@ -60,8 +54,9 @@ from zerver.views.custom_profile_fields import (
     update_realm_custom_profile_field,
     update_user_custom_profile_data,
 )
+from zerver.views.devices import register_device, remove_device
 from zerver.views.digest import digest_page
-from zerver.views.documentation import IntegrationView, MarkdownDirectoryView, integration_doc
+from zerver.views.documentation import MarkdownDirectoryView, integrations_catalog, integrations_doc
 from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_drafts
 from zerver.views.events_register import events_register_backend
 from zerver.views.health import health
@@ -74,6 +69,7 @@ from zerver.views.invite import (
     revoke_multiuse_invite,
     revoke_user_invite,
 )
+from zerver.views.llms_txt import llms_txt
 from zerver.views.message_edit import (
     delete_message_backend,
     get_message_edit_history,
@@ -104,17 +100,20 @@ from zerver.views.presence import (
     get_status_backend,
     get_statuses_for_realm,
     update_active_status_backend,
+    update_user_status_admin,
     update_user_status_backend,
 )
 from zerver.views.push_notifications import (
     add_android_reg_id,
     add_apns_device_token,
+    register_push_device,
     remove_android_reg_id,
     remove_apns_device_token,
     self_hosting_auth_json_endpoint,
     self_hosting_auth_not_configured,
     self_hosting_auth_redirect_endpoint,
     self_hosting_registration_transfer_challenge_verify,
+    send_e2ee_test_push_notification_api,
     send_test_push_notification_api,
 )
 from zerver.views.reactions import add_reaction, remove_reaction
@@ -123,6 +122,7 @@ from zerver.views.realm import (
     check_subdomain_available,
     deactivate_realm,
     realm_reactivation,
+    realm_reactivation_get,
     update_realm,
     update_realm_user_settings_defaults,
 )
@@ -153,6 +153,7 @@ from zerver.views.registration import (
     accounts_home,
     accounts_home_from_multiuse_invite,
     accounts_register,
+    create_demo_organization,
     create_realm,
     find_account,
     get_prereg_key_and_redirect,
@@ -164,7 +165,7 @@ from zerver.views.registration import (
     realm_register,
     signup_send_confirm,
 )
-from zerver.views.reminders import create_reminders_message_backend
+from zerver.views.reminders import create_reminders_message_backend, delete_reminder
 from zerver.views.report import report_csp_violations
 from zerver.views.saved_snippets import (
     create_saved_snippet,
@@ -175,6 +176,7 @@ from zerver.views.saved_snippets import (
 from zerver.views.scheduled_messages import (
     create_scheduled_message_backend,
     delete_scheduled_messages,
+    fetch_reminders,
     fetch_scheduled_messages,
     update_scheduled_message_backend,
 )
@@ -183,6 +185,7 @@ from zerver.views.storage import get_storage, remove_storage, update_storage
 from zerver.views.streams import (
     add_default_stream,
     add_subscriptions_backend,
+    create_channel,
     create_default_stream_group,
     deactivate_stream_backend,
     delete_in_topic,
@@ -204,7 +207,7 @@ from zerver.views.streams import (
     update_subscriptions_property,
 )
 from zerver.views.submessage import process_submessage
-from zerver.views.thumbnail import backend_serve_thumbnail
+from zerver.views.thumbnail import backend_serve_thumbnail, check_thumbnail_status
 from zerver.views.tusd import handle_tusd_hook
 from zerver.views.typing import send_message_edit_notification_backend, send_notification_backend
 from zerver.views.unsubscribe import email_unsubscribe
@@ -229,6 +232,7 @@ from zerver.views.user_groups import (
 )
 from zerver.views.user_settings import (
     confirm_email_change,
+    confirm_email_change_get,
     delete_avatar_backend,
     json_change_settings,
     regenerate_api_key,
@@ -244,10 +248,12 @@ from zerver.views.users import (
     deactivate_bot_backend,
     deactivate_user_backend,
     deactivate_user_own_backend,
+    get_bot_api_key,
     get_bots_backend,
     get_member_backend,
     get_members_backend,
     get_profile_backend,
+    get_subscribed_channels_backend,
     get_subscription_backend,
     get_user_by_email,
     patch_bot_backend,
@@ -257,24 +263,36 @@ from zerver.views.users import (
     update_user_by_id_api,
 )
 from zerver.views.video_calls import (
+    complete_webex_user,
     complete_zoom_user,
+    create_nextcloud_talk_url,
     deauthorize_zoom_user,
     get_bigbluebutton_url,
     join_bigbluebutton,
+    make_constructor_groups_video_call,
+    make_webex_video_call,
     make_zoom_video_call,
+    register_webex_user,
     register_zoom_user,
 )
-from zerver.views.zephyr import webathena_kerberos_login
+from zerver.views.welcome_bot_custom_message import send_test_welcome_bot_custom_message
 from zproject import dev_urls
 
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:  # nocoverage
     from two_factor.gateways.twilio.urls import urlpatterns as tf_twilio_urls
     from two_factor.urls import urlpatterns as tf_urls
 
+INTEGRATION_CATEGORY_REDIRECT_PATHS = [
+    path(
+        redirect.old_url.lstrip("/"),
+        RedirectView.as_view(url=redirect.new_url, permanent=True, query_string=True),
+    )
+    for redirect in get_integration_category_redirects()
+]
+
 # NB: There are several other pieces of code which route requests by URL:
 #
-#   - runtornado.py has its own URL list for Tornado views.  See the
-#     invocation of web.Application in that file.
+#   - tornado_urls.py has its own URL list for Tornado views.
 #
 #   - The nginx config knows which URLs to route to Django or Tornado.
 #
@@ -331,6 +349,8 @@ v1_api_and_json_patterns = [
     ),
     # realm/deactivate -> zerver.views.deactivate_realm
     rest_path("realm/deactivate", POST=deactivate_realm),
+    # realm/test_welcome_bot_custom_message -> zerver.views.welcome_bot_custom_message
+    rest_path("realm/test_welcome_bot_custom_message", POST=send_test_welcome_bot_custom_message),
     # users -> zerver.views.users
     rest_path(
         "users", GET=(get_members_backend, {"allow_anonymous_user_web"}), POST=create_user_backend
@@ -343,9 +363,11 @@ v1_api_and_json_patterns = [
         PATCH=update_user_by_id_api,
         DELETE=deactivate_user_backend,
     ),
+    rest_path("users/<int:user_id>/channels", GET=get_subscribed_channels_backend),
     rest_path("users/<int:user_id>/subscriptions/<int:stream_id>", GET=get_subscription_backend),
     rest_path("users/<email>", GET=get_user_by_email, PATCH=update_user_by_email_api),
     rest_path("bots", GET=get_bots_backend, POST=add_bot_backend),
+    rest_path("bots/<int:bot_id>/api_key", GET=get_bot_api_key),
     rest_path("bots/<int:bot_id>/api_key/regenerate", POST=regenerate_bot_api_key),
     rest_path("bots/<int:bot_id>", PATCH=patch_bot_backend, DELETE=deactivate_bot_backend),
     # invites -> zerver.views.invite
@@ -378,7 +400,11 @@ v1_api_and_json_patterns = [
         DELETE=delete_saved_snippet,
         PATCH=edit_saved_snippet,
     ),
-    rest_path("reminders", POST=create_reminders_message_backend),
+    rest_path("reminders", GET=fetch_reminders, POST=create_reminders_message_backend),
+    rest_path(
+        "reminders/<int:reminder_id>",
+        DELETE=delete_reminder,
+    ),
     rest_path(
         "scheduled_messages", GET=fetch_scheduled_messages, POST=create_scheduled_message_backend
     ),
@@ -433,6 +459,11 @@ v1_api_and_json_patterns = [
     rest_path("typing", POST=send_notification_backend),
     # POST sends a message edit typing notification
     rest_path("messages/<int:message_id>/typing", POST=send_message_edit_notification_backend),
+    # Thumbnail metadata API
+    rest_path(
+        "thumbnail/status/<realm_id_str>/<path:filename>",
+        GET=check_thumbnail_status,
+    ),
     # user_uploads -> zerver.views.upload
     rest_path("user_uploads", POST=upload_file_backend),
     rest_path(
@@ -448,6 +479,8 @@ v1_api_and_json_patterns = [
     ),
     rest_path("users/me/android_gcm_reg_id", POST=add_android_reg_id, DELETE=remove_android_reg_id),
     rest_path("mobile_push/test_notification", POST=send_test_push_notification_api),
+    rest_path("mobile_push/e2ee/test_notification", POST=send_e2ee_test_push_notification_api),
+    rest_path("mobile_push/register", POST=register_push_device),
     # users/*/presence => zerver.views.presence.
     rest_path(
         "users/me/presence", POST=(update_active_status_backend, {"narrow_user_session_cache"})
@@ -458,7 +491,7 @@ v1_api_and_json_patterns = [
     rest_path("users/<user_id_or_email>/presence", GET=get_presence_backend),
     rest_path("realm/presence", GET=get_statuses_for_realm),
     rest_path("users/me/status", POST=update_user_status_backend),
-    rest_path("users/<int:user_id>/status", GET=get_status_backend),
+    rest_path("users/<int:user_id>/status", POST=update_user_status_admin, GET=get_status_backend),
     # user_groups -> zerver.views.user_groups
     rest_path("user_groups", GET=get_user_groups),
     rest_path("user_groups/create", POST=add_user_group),
@@ -517,6 +550,7 @@ v1_api_and_json_patterns = [
     # streams -> zerver.views.streams
     # (this API is only used externally)
     rest_path("streams", GET=get_streams_backend),
+    rest_path("channels/create", POST=create_channel),
     # GET returns `stream_id`, stream name should be encoded in the URL query (in `stream` param)
     rest_path("get_stream_id", GET=json_get_stream_id),
     # GET returns "stream info" (undefined currently?), HEAD returns whether stream exists (200 or 404)
@@ -549,7 +583,7 @@ v1_api_and_json_patterns = [
         DELETE=remove_subscriptions_backend,
     ),
     rest_path("channel_folders/create", POST=create_channel_folder),
-    rest_path("channel_folders", GET=get_channel_folders),
+    rest_path("channel_folders", GET=get_channel_folders, PATCH=reorder_realm_channel_folders),
     rest_path("channel_folders/<int:channel_folder_id>", PATCH=update_channel_folder),
     # topic-muting -> zerver.views.user_topics
     # (deprecated and will be removed once clients are migrated to use '/user_topics')
@@ -560,23 +594,22 @@ v1_api_and_json_patterns = [
     rest_path("users/me/muted_users/<int:muted_user_id>", POST=mute_user, DELETE=unmute_user),
     # used to register for an event queue in tornado
     rest_path("register", POST=(events_register_backend, {"allow_anonymous_user_web"})),
-    # events -> zerver.tornado.views
-    rest_path(
-        "events",
-        GET=(get_events, {"narrow_user_session_cache"}),
-        DELETE=(cleanup_event_queue, {"narrow_user_session_cache"}),
-    ),
     # Used to generate a Zoom video call URL
     rest_path("calls/zoom/create", POST=make_zoom_video_call),
+    rest_path("calls/webex/create", POST=make_webex_video_call),
     # Used to generate a BigBlueButton video call URL
     rest_path("calls/bigbluebutton/create", GET=get_bigbluebutton_url),
+    # Used to generate a Constructor Groups video call URL
+    rest_path("calls/constructorgroups/create", POST=make_constructor_groups_video_call),
+    # Used to generate a Nextcloud Talk video call URL
+    rest_path("calls/nextcloud_talk/create", POST=create_nextcloud_talk_url),
     # export/realm -> zerver.views.realm_export
     rest_path("export/realm", POST=export_realm, GET=get_realm_exports),
     rest_path("export/realm/<int:export_id>", DELETE=delete_realm_export),
     rest_path("export/realm/consents", GET=get_users_export_consents),
+    rest_path("register_client_device", POST=register_device),
+    rest_path("remove_client_device", POST=remove_device),
 ]
-
-integrations_view = IntegrationView.as_view()
 
 # These views serve pages (HTML). As such, their internationalization
 # must depend on the URL.
@@ -611,7 +644,6 @@ i18n_urls = [
     path("accounts/login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
     path("accounts/login/", LoginView.as_view(template_name="zerver/login.html"), name="login"),
     path("accounts/logout/", logout_view),
-    path("accounts/webathena_kerberos_login/", webathena_kerberos_login),
     path("accounts/password/reset/", password_reset, name="password_reset"),
     path(
         "accounts/password/reset/done/",
@@ -663,9 +695,14 @@ i18n_urls = [
         name="get_prereg_key_and_redirect",
     ),
     path(
-        "accounts/confirm_new_email/<confirmation_key>",
+        "accounts/confirm_new_email/",
         confirm_email_change,
         name="confirm_email_change",
+    ),
+    path(
+        "accounts/confirm_new_email/<confirmation_key>",
+        confirm_email_change_get,
+        name="confirm_email_change_get",
     ),
     # Email unsubscription endpoint. Allows for unsubscribing from various types of emails,
     # including welcome emails, missed direct messages, etc.
@@ -683,9 +720,11 @@ i18n_urls = [
     # Realm creation
     path("json/antispam_challenge", get_challenge),
     path("new/", create_realm),
-    path("new/<creation_key>", create_realm, name="create_realm"),
+    path("new/demo/", create_demo_organization),
+    path("new/<confirmation_key>", create_realm, name="create_realm"),
     # Realm reactivation
-    path("reactivate/<confirmation_key>", realm_reactivation, name="realm_reactivation"),
+    path("reactivate/", realm_reactivation, name="realm_reactivation"),
+    path("reactivate/<confirmation_key>", realm_reactivation_get, name="realm_reactivation_get"),
     # Login/registration
     path("register/", accounts_home, name="register"),
     path("login/", login_page, {"template_name": "zerver/login.html"}, name="login_page"),
@@ -694,12 +733,38 @@ i18n_urls = [
     path("calls/zoom/register", register_zoom_user),
     path("calls/zoom/complete", complete_zoom_user),
     path("calls/zoom/deauthorize", deauthorize_zoom_user),
+    # Used to complete Webex OAuth flow to get user's
+    # access token.
+    path("calls/webex/register", register_webex_user),
+    path("calls/webex/complete", complete_webex_user),
     # Used to join a BigBlueButton video call
     path("calls/bigbluebutton/join", join_bigbluebutton),
-    # API and integrations documentation
-    path("integrations/doc-html/<integration_name>", integration_doc),
-    path("integrations/", integrations_view),
-    path("integrations/<path:path>", integrations_view),
+    # Integrations documentation
+    path(
+        "integrations/",
+        integrations_catalog,
+        {"category_slug": "all"},
+        name="integrations_home",
+    ),
+    path(
+        "integrations/category/<str:category_slug>",
+        integrations_catalog,
+        name="integrations_category",
+    ),
+    *INTEGRATION_CATEGORY_REDIRECT_PATHS,
+    path(
+        "integrations/doc/<str:integration_name>",
+        RedirectView.as_view(pattern_name="integration_doc", permanent=True, query_string=True),
+    ),
+    path(
+        "integrations/doc/<str:integration_name>/",
+        RedirectView.as_view(pattern_name="integration_doc", permanent=True, query_string=True),
+    ),
+    path(
+        "integrations/<str:integration_name>",
+        integrations_doc,
+        name="integration_doc",
+    ),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english
@@ -780,10 +845,22 @@ urls += [
     path("report/csp_violations", report_csp_violations),
 ]
 
+# This URL provides machine-readable API discovery information for LLMs,
+# following the llms.txt specification (https://llmstxt.org/).
+urls += [
+    path("llms.txt", llms_txt),
+]
+
 # Incoming webhook URLs
 # We don't create URLs for particular Git integrations here
 # because of generic one below
-urls.extend(incoming_webhook.url_object for incoming_webhook in WEBHOOK_INTEGRATIONS)
+urls.extend(
+    [
+        url_object
+        for incoming_webhook in INCOMING_WEBHOOK_INTEGRATIONS
+        for url_object in incoming_webhook.url_objects
+    ]
+)
 
 # Desktop-specific authentication URLs
 urls += [
@@ -825,14 +902,17 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
         urls += [path("", include(f"{app_name}.urls"))]
         i18n_urls += import_string(f"{app_name}.urls.i18n_urlpatterns")
 
-# Used internally for communication between command-line, tusd, Django,
-# and Tornado processes
+# Used internally for communication between tusd and Django,
 urls += [
-    path("api/internal/notify_tornado", notify),
     path("api/internal/tusd", handle_tusd_hook),
-    path("api/internal/web_reload_clients", web_reload_clients),
-    path("api/v1/events/internal", get_events_internal),
 ]
+
+if settings.TEST_SUITE:
+    # Tests talk directly to Tornado APIs via the Django server, so
+    # include those URLs for convenience
+    urls += [
+        path("", include("zproject.tornado_urls")),
+    ]
 
 # Python Social Auth
 
@@ -850,10 +930,6 @@ urls += [
     # the django-scim2 code for them.
     re_path(
         r"^scim/v2/Groups/.search$",
-        scim_views.SCIMView.as_view(implemented=False),
-    ),
-    re_path(
-        r"^scim/v2/Groups(?:/(?P<uuid>[^/]+))?$",
         scim_views.SCIMView.as_view(implemented=False),
     ),
     re_path(r"^scim/v2/Me$", scim_views.SCIMView.as_view(implemented=False)),
@@ -878,11 +954,6 @@ if settings.SENTRY_FRONTEND_DSN:  # nocoverage
     urls += [path("error_tracing", sentry_tunnel)]
 
 # User documentation site
-help_documentation_view = MarkdownDirectoryView.as_view(
-    template_name="zerver/documentation_main.html",
-    path_template=f"{settings.DEPLOY_ROOT}/help/%s.md",
-    help_view=True,
-)
 api_documentation_view = MarkdownDirectoryView.as_view(
     template_name="zerver/documentation_main.html",
     path_template=f"{settings.DEPLOY_ROOT}/api_docs/%s.md",
@@ -899,8 +970,6 @@ for redirect in DOCUMENTATION_REDIRECTS:
     urls += [path(old_url, RedirectView.as_view(url=redirect.new_url, permanent=True))]
 
 urls += [
-    path("help/", help_documentation_view),
-    path("help/<path:article>", help_documentation_view),
     path("api/", api_documentation_view),
     path("api/<slug:article>", api_documentation_view),
     path("policies/", policy_documentation_view),

@@ -11,9 +11,8 @@
                             {{t "Channel name" }}
                         </label>
                         <input type="text" name="stream_name" id="create_stream_name" class="settings_text_input"
-                          placeholder="{{t 'Channel name' }}" value="" autocomplete="off" maxlength="{{ max_stream_name_length }}" />
+                          placeholder="{{t 'Channel name' }}" value="" autocomplete="off" />
                         <div id="stream_name_error" class="stream_creation_error"></div>
-                        <a id="archived_stream_rename"></a>
                     </section>
                     <section id="create_stream_description_container">
                         <label for="create_stream_description" class="settings-field-label">
@@ -24,18 +23,20 @@
                           placeholder="{{t 'Channel description' }}" value="" autocomplete="off" maxlength="{{ max_stream_description_length }}" />
                     </section>
                     <section id="make-invite-only">
-                        <div class="stream-types">
-                            {{> stream_types .
-                              is_stream_edit=false
-                              prefix="id_new_" }}
+                        <div class="new-stream-configuration">
+                            {{> new_stream_configuration .
+                              prefix="id_new_"
+                              channel_folder_widget_name="new_channel_folder_id"}}
                         </div>
                     </section>
                 </div>
                 <div class="subscribers_container stream_creation_container">
                     <section class="stream_create_add_subscriber_container">
-                        <label class="choose-subscribers-label">
-                            <h4 class="stream_setting_subsection_title">{{t "Choose subscribers" }}</h4>
-                        </label>
+                        <div class="subsection-header">
+                            <h3 class="settings-subsection-title">
+                                <label class="choose-subscribers-label">{{t "Choose subscribers" }}</label>
+                            </h3>
+                        </div>
                         <div id="stream_subscription_error" class="stream_creation_error"></div>
                         <div class="controls" id="people_to_add"></div>
                     </section>
@@ -48,7 +49,7 @@
                   label=(t "Back to settings")
                   custom_classes="hide"
                   id="stream_creation_go_to_configure_channel_settings"
-                  attention="quiet"
+                  variant="subtle"
                   intent="brand"
                   }}
             </div>
@@ -56,13 +57,13 @@
                 {{> ../components/action_button
                   label=(t "Cancel")
                   custom_classes="create_stream_cancel inline-block"
-                  attention="quiet"
+                  variant="subtle"
                   intent="neutral"
                   }}
                 {{> ../components/action_button
                   label=(t "Create")
                   custom_classes="finalize_create_stream hide"
-                  attention="quiet"
+                  variant="subtle"
                   intent="brand"
                   type="submit"
                   }}
@@ -70,7 +71,7 @@
                   label=(t "Continue to add subscribers")
                   custom_classes="inline-block"
                   id="stream_creation_go_to_subscribers"
-                  attention="quiet"
+                  variant="subtle"
                   intent="brand"
                   }}
             </div>

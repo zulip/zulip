@@ -12,6 +12,7 @@ import type {StreamSubscription} from "./sub_store.ts";
 export function add_user_ids_to_stream(
     user_ids: number[],
     sub: StreamSubscription,
+    send_new_subscription_messages: boolean,
     success: (data: unknown) => void,
     failure: (xhr: JQuery.jqXHR<unknown>) => void,
 ): void {
@@ -22,7 +23,10 @@ export function add_user_ids_to_stream(
         const color = sub.color;
         void channel.post({
             url: "/json/users/me/subscriptions",
-            data: {subscriptions: JSON.stringify([{name: stream_name, color}])},
+            data: {
+                subscriptions: JSON.stringify([{name: stream_name, color}]),
+                send_new_subscription_messages,
+            },
             success,
             error: failure,
         });
@@ -33,6 +37,7 @@ export function add_user_ids_to_stream(
         data: {
             subscriptions: JSON.stringify([{name: stream_name}]),
             principals: JSON.stringify(user_ids),
+            send_new_subscription_messages,
         },
         success,
         error: failure,

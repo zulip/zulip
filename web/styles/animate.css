@@ -1,0 +1,27 @@
+.content-expand-animation-start {
+    opacity: 0;
+}
+
+.content-expand-animation-end {
+    opacity: 1;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.content-collapse-animation-start {
+    opacity: 1;
+}
+
+.content-collapse-animation-end {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.collapse-expand-animation-extra-content-blocker {
+    z-index: 10000;
+    position: relative;
+}
+
+.mark-element-for-translation {
+    position: relative;
+    z-index: 1;
+}

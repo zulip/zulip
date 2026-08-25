@@ -3,6 +3,7 @@ from collections.abc import Callable, Collection, Iterable, Mapping
 from operator import itemgetter
 from typing import Any, Literal
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import connection
 from django.db.models import QuerySet
@@ -42,7 +43,7 @@ from zerver.lib.user_groups import (
     get_recursive_membership_groups,
 )
 from zerver.models import Realm, Stream, Subscription, UserGroup, UserProfile
-from zerver.models.streams import get_all_streams
+from zerver.models.streams import StreamTopicsPolicyEnum, get_all_streams
 
 
 def get_web_public_subs(
@@ -63,12 +64,26 @@ def get_web_public_subs(
 
     for stream in streams:
         # Add Stream fields.
-        is_archived = stream.deactivated
         can_add_subscribers_group = get_group_setting_value_for_register_api(
             stream.can_add_subscribers_group_id, anonymous_group_membership
         )
         can_administer_channel_group = get_group_setting_value_for_register_api(
             stream.can_administer_channel_group_id, anonymous_group_membership
+        )
+        can_create_topic_group = get_group_setting_value_for_register_api(
+            stream.can_create_topic_group_id, anonymous_group_membership
+        )
+        can_delete_any_message_group = get_group_setting_value_for_register_api(
+            stream.can_delete_any_message_group_id, anonymous_group_membership
+        )
+        can_delete_own_message_group = get_group_setting_value_for_register_api(
+            stream.can_delete_own_message_group_id, anonymous_group_membership
+        )
+        can_move_messages_out_of_channel_group = get_group_setting_value_for_register_api(
+            stream.can_move_messages_out_of_channel_group_id, anonymous_group_membership
+        )
+        can_move_messages_within_channel_group = get_group_setting_value_for_register_api(
+            stream.can_move_messages_within_channel_group_id, anonymous_group_membership
         )
         can_send_message_group = get_group_setting_value_for_register_api(
             stream.can_send_message_group_id, anonymous_group_membership
@@ -76,17 +91,22 @@ def get_web_public_subs(
         can_remove_subscribers_group = get_group_setting_value_for_register_api(
             stream.can_remove_subscribers_group_id, anonymous_group_membership
         )
+        can_resolve_topics_group = get_group_setting_value_for_register_api(
+            stream.can_resolve_topics_group_id, anonymous_group_membership
+        )
         can_subscribe_group = get_group_setting_value_for_register_api(
             stream.can_subscribe_group_id, anonymous_group_membership
         )
         creator_id = stream.creator_id
         date_created = datetime_to_timestamp(stream.date_created)
+        default_push_notifications = stream.default_push_notifications
         description = stream.description
         first_message_id = stream.first_message_id
         folder_id = stream.folder_id
-        is_recently_active = stream.is_recently_active
         history_public_to_subscribers = stream.history_public_to_subscribers
         invite_only = stream.invite_only
+        is_archived = stream.deactivated
+        is_recently_active = stream.is_recently_active
         is_web_public = stream.is_web_public
         message_retention_days = stream.message_retention_days
         name = stream.name
@@ -95,6 +115,9 @@ def get_web_public_subs(
         stream_post_policy = get_stream_post_policy_value_based_on_group_setting(
             stream.can_send_message_group
         )
+        topics_policy = stream.topics_policy
+
+        # Computed Stream fields
         is_announcement_only = stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS
 
         # Add versions of the Subscription fields based on a simulated
@@ -113,27 +136,34 @@ def get_web_public_subs(
         wildcard_mentions_notify = True
 
         sub = SubscriptionStreamDict(
-            is_archived=is_archived,
             audible_notifications=audible_notifications,
             can_add_subscribers_group=can_add_subscribers_group,
             can_administer_channel_group=can_administer_channel_group,
+            can_create_topic_group=can_create_topic_group,
+            can_delete_any_message_group=can_delete_any_message_group,
+            can_delete_own_message_group=can_delete_own_message_group,
+            can_move_messages_out_of_channel_group=can_move_messages_out_of_channel_group,
+            can_move_messages_within_channel_group=can_move_messages_within_channel_group,
             can_send_message_group=can_send_message_group,
             can_remove_subscribers_group=can_remove_subscribers_group,
+            can_resolve_topics_group=can_resolve_topics_group,
             can_subscribe_group=can_subscribe_group,
             color=color,
             creator_id=creator_id,
             date_created=date_created,
+            default_push_notifications=default_push_notifications,
             description=description,
             desktop_notifications=desktop_notifications,
             email_notifications=email_notifications,
             first_message_id=first_message_id,
             folder_id=folder_id,
-            is_recently_active=is_recently_active,
             history_public_to_subscribers=history_public_to_subscribers,
             in_home_view=in_home_view,
             invite_only=invite_only,
             is_announcement_only=is_announcement_only,
+            is_archived=is_archived,
             is_muted=is_muted,
+            is_recently_active=is_recently_active,
             is_web_public=is_web_public,
             message_retention_days=message_retention_days,
             name=name,
@@ -143,6 +173,8 @@ def get_web_public_subs(
             stream_id=stream_id,
             stream_post_policy=stream_post_policy,
             stream_weekly_traffic=stream_weekly_traffic,
+            subscriber_count=stream.subscriber_count,
+            topics_policy=StreamTopicsPolicyEnum(topics_policy).name,
             wildcard_mentions_notify=wildcard_mentions_notify,
         )
         subscribed.append(sub)
@@ -172,7 +204,7 @@ def build_stream_api_dict(
         stream_weekly_traffic = get_average_weekly_stream_traffic(
             raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
         )
-    else:
+    else:  # nocoverage
         stream_weekly_traffic = None
 
     # Backwards-compatibility for clients that haven't been
@@ -186,30 +218,57 @@ def build_stream_api_dict(
     can_administer_channel_group = get_group_setting_value_for_register_api(
         raw_stream_dict["can_administer_channel_group_id"], anonymous_group_membership
     )
+    can_create_topic_group = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_create_topic_group_id"], anonymous_group_membership
+    )
+    can_delete_any_message_group = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_delete_any_message_group_id"], anonymous_group_membership
+    )
+    can_delete_own_message_group = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_delete_own_message_group_id"], anonymous_group_membership
+    )
+    can_move_messages_out_of_channel_group = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_move_messages_out_of_channel_group_id"], anonymous_group_membership
+    )
+    can_move_messages_within_channel_group = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_move_messages_within_channel_group_id"], anonymous_group_membership
+    )
     can_send_message_group = get_group_setting_value_for_register_api(
         raw_stream_dict["can_send_message_group_id"], anonymous_group_membership
     )
     can_remove_subscribers_group = get_group_setting_value_for_register_api(
         raw_stream_dict["can_remove_subscribers_group_id"], anonymous_group_membership
     )
+    can_resolve_topics_group = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_resolve_topics_group_id"], anonymous_group_membership
+    )
     can_subscribe_group = get_group_setting_value_for_register_api(
         raw_stream_dict["can_subscribe_group_id"], anonymous_group_membership
     )
 
     return APIStreamDict(
-        is_archived=raw_stream_dict["deactivated"],
         can_add_subscribers_group=can_add_subscribers_group,
         can_administer_channel_group=can_administer_channel_group,
+        can_create_topic_group=can_create_topic_group,
+        can_delete_any_message_group=can_delete_any_message_group,
+        can_delete_own_message_group=can_delete_own_message_group,
+        can_move_messages_out_of_channel_group=can_move_messages_out_of_channel_group,
+        can_move_messages_within_channel_group=can_move_messages_within_channel_group,
         can_send_message_group=can_send_message_group,
         can_remove_subscribers_group=can_remove_subscribers_group,
         can_subscribe_group=can_subscribe_group,
+        can_resolve_topics_group=can_resolve_topics_group,
         creator_id=raw_stream_dict["creator_id"],
         date_created=datetime_to_timestamp(raw_stream_dict["date_created"]),
+        default_push_notifications=raw_stream_dict["default_push_notifications"],
         description=raw_stream_dict["description"],
         first_message_id=raw_stream_dict["first_message_id"],
         folder_id=raw_stream_dict["folder_id"],
         history_public_to_subscribers=raw_stream_dict["history_public_to_subscribers"],
         invite_only=raw_stream_dict["invite_only"],
+        is_announcement_only=is_announcement_only,
+        is_archived=raw_stream_dict["deactivated"],
+        is_recently_active=raw_stream_dict["is_recently_active"],
         is_web_public=raw_stream_dict["is_web_public"],
         message_retention_days=raw_stream_dict["message_retention_days"],
         name=raw_stream_dict["name"],
@@ -217,8 +276,8 @@ def build_stream_api_dict(
         stream_id=raw_stream_dict["id"],
         stream_post_policy=raw_stream_dict["stream_post_policy"],
         stream_weekly_traffic=stream_weekly_traffic,
-        is_announcement_only=is_announcement_only,
-        is_recently_active=raw_stream_dict["is_recently_active"],
+        subscriber_count=raw_stream_dict["subscriber_count"],
+        topics_policy=raw_stream_dict["topics_policy"],
     )
 
 
@@ -228,19 +287,28 @@ def build_stream_dict_for_sub(
     stream_dict: APIStreamDict,
 ) -> SubscriptionStreamDict:
     # Handle Stream.API_FIELDS
-    is_archived = stream_dict["is_archived"]
     can_add_subscribers_group = stream_dict["can_add_subscribers_group"]
     can_administer_channel_group = stream_dict["can_administer_channel_group"]
+    can_create_topic_group = stream_dict["can_create_topic_group"]
+    can_delete_any_message_group = stream_dict["can_delete_any_message_group"]
+    can_delete_own_message_group = stream_dict["can_delete_own_message_group"]
+    can_move_messages_out_of_channel_group = stream_dict["can_move_messages_out_of_channel_group"]
+    can_move_messages_within_channel_group = stream_dict["can_move_messages_within_channel_group"]
     can_send_message_group = stream_dict["can_send_message_group"]
     can_remove_subscribers_group = stream_dict["can_remove_subscribers_group"]
+    can_resolve_topics_group = stream_dict["can_resolve_topics_group"]
     can_subscribe_group = stream_dict["can_subscribe_group"]
     creator_id = stream_dict["creator_id"]
     date_created = stream_dict["date_created"]
+    default_push_notifications = stream_dict["default_push_notifications"]
     description = stream_dict["description"]
     first_message_id = stream_dict["first_message_id"]
     folder_id = stream_dict["folder_id"]
     history_public_to_subscribers = stream_dict["history_public_to_subscribers"]
     invite_only = stream_dict["invite_only"]
+    is_announcement_only = stream_dict["is_announcement_only"]
+    is_archived = stream_dict["is_archived"]
+    is_recently_active = stream_dict["is_recently_active"]
     is_web_public = stream_dict["is_web_public"]
     message_retention_days = stream_dict["message_retention_days"]
     name = stream_dict["name"]
@@ -248,8 +316,8 @@ def build_stream_dict_for_sub(
     stream_id = stream_dict["stream_id"]
     stream_post_policy = stream_dict["stream_post_policy"]
     stream_weekly_traffic = stream_dict["stream_weekly_traffic"]
-    is_announcement_only = stream_dict["is_announcement_only"]
-    is_recently_active = stream_dict["is_recently_active"]
+    subscriber_count = stream_dict["subscriber_count"]
+    topics_policy = stream_dict["topics_policy"]
 
     # Handle Subscription.API_FIELDS.
     color = sub_dict["color"]
@@ -267,16 +335,22 @@ def build_stream_dict_for_sub(
 
     # Our caller may add a subscribers field.
     return SubscriptionStreamDict(
-        is_archived=is_archived,
         audible_notifications=audible_notifications,
         can_add_subscribers_group=can_add_subscribers_group,
         can_administer_channel_group=can_administer_channel_group,
+        can_create_topic_group=can_create_topic_group,
+        can_delete_any_message_group=can_delete_any_message_group,
+        can_delete_own_message_group=can_delete_own_message_group,
+        can_move_messages_out_of_channel_group=can_move_messages_out_of_channel_group,
+        can_move_messages_within_channel_group=can_move_messages_within_channel_group,
         can_send_message_group=can_send_message_group,
         can_remove_subscribers_group=can_remove_subscribers_group,
+        can_resolve_topics_group=can_resolve_topics_group,
         can_subscribe_group=can_subscribe_group,
         color=color,
         creator_id=creator_id,
         date_created=date_created,
+        default_push_notifications=default_push_notifications,
         description=description,
         desktop_notifications=desktop_notifications,
         email_notifications=email_notifications,
@@ -287,6 +361,7 @@ def build_stream_dict_for_sub(
         in_home_view=in_home_view,
         invite_only=invite_only,
         is_announcement_only=is_announcement_only,
+        is_archived=is_archived,
         is_muted=is_muted,
         is_web_public=is_web_public,
         message_retention_days=message_retention_days,
@@ -297,6 +372,8 @@ def build_stream_dict_for_sub(
         stream_id=stream_id,
         stream_post_policy=stream_post_policy,
         stream_weekly_traffic=stream_weekly_traffic,
+        subscriber_count=subscriber_count,
+        topics_policy=topics_policy,
         wildcard_mentions_notify=wildcard_mentions_notify,
     )
 
@@ -306,27 +383,30 @@ def build_stream_dict_for_never_sub(
     recent_traffic: dict[int, int] | None,
     anonymous_group_membership: dict[int, UserGroupMembersData],
 ) -> NeverSubscribedStreamDict:
-    is_archived = raw_stream_dict["deactivated"]
     creator_id = raw_stream_dict["creator_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
+    default_push_notifications = raw_stream_dict["default_push_notifications"]
     description = raw_stream_dict["description"]
     first_message_id = raw_stream_dict["first_message_id"]
     folder_id = raw_stream_dict["folder_id"]
-    is_recently_active = raw_stream_dict["is_recently_active"]
     history_public_to_subscribers = raw_stream_dict["history_public_to_subscribers"]
     invite_only = raw_stream_dict["invite_only"]
+    is_archived = raw_stream_dict["deactivated"]
+    is_recently_active = raw_stream_dict["is_recently_active"]
     is_web_public = raw_stream_dict["is_web_public"]
     message_retention_days = raw_stream_dict["message_retention_days"]
     name = raw_stream_dict["name"]
     rendered_description = raw_stream_dict["rendered_description"]
     stream_id = raw_stream_dict["id"]
     stream_post_policy = raw_stream_dict["stream_post_policy"]
+    subscriber_count = raw_stream_dict["subscriber_count"]
+    topics_policy = raw_stream_dict["topics_policy"]
 
     if recent_traffic is not None:
         stream_weekly_traffic = get_average_weekly_stream_traffic(
             raw_stream_dict["id"], raw_stream_dict["date_created"], recent_traffic
         )
-    else:
+    else:  # nocoverage
         stream_weekly_traffic = None
 
     can_add_subscribers_group_value = get_group_setting_value_for_register_api(
@@ -335,11 +415,29 @@ def build_stream_dict_for_never_sub(
     can_administer_channel_group_value = get_group_setting_value_for_register_api(
         raw_stream_dict["can_administer_channel_group_id"], anonymous_group_membership
     )
+    can_create_topic_group = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_create_topic_group_id"], anonymous_group_membership
+    )
+    can_delete_any_message_group_value = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_delete_any_message_group_id"], anonymous_group_membership
+    )
+    can_delete_own_message_group_value = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_delete_own_message_group_id"], anonymous_group_membership
+    )
+    can_move_messages_out_of_channel_group_value = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_move_messages_out_of_channel_group_id"], anonymous_group_membership
+    )
+    can_move_messages_within_channel_group_value = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_move_messages_within_channel_group_id"], anonymous_group_membership
+    )
     can_send_message_group_value = get_group_setting_value_for_register_api(
         raw_stream_dict["can_send_message_group_id"], anonymous_group_membership
     )
     can_remove_subscribers_group_value = get_group_setting_value_for_register_api(
         raw_stream_dict["can_remove_subscribers_group_id"], anonymous_group_membership
+    )
+    can_resolve_topics_group_value = get_group_setting_value_for_register_api(
+        raw_stream_dict["can_resolve_topics_group_id"], anonymous_group_membership
     )
     can_subscribe_group_value = get_group_setting_value_for_register_api(
         raw_stream_dict["can_subscribe_group_id"], anonymous_group_membership
@@ -350,21 +448,28 @@ def build_stream_dict_for_never_sub(
 
     # Our caller may add a subscribers field.
     return NeverSubscribedStreamDict(
-        is_archived=is_archived,
         can_add_subscribers_group=can_add_subscribers_group_value,
         can_administer_channel_group=can_administer_channel_group_value,
+        can_create_topic_group=can_create_topic_group,
+        can_delete_any_message_group=can_delete_any_message_group_value,
+        can_delete_own_message_group=can_delete_own_message_group_value,
+        can_move_messages_out_of_channel_group=can_move_messages_out_of_channel_group_value,
+        can_move_messages_within_channel_group=can_move_messages_within_channel_group_value,
         can_send_message_group=can_send_message_group_value,
         can_remove_subscribers_group=can_remove_subscribers_group_value,
+        can_resolve_topics_group=can_resolve_topics_group_value,
         can_subscribe_group=can_subscribe_group_value,
         creator_id=creator_id,
         date_created=date_created,
+        default_push_notifications=default_push_notifications,
         description=description,
         first_message_id=first_message_id,
         folder_id=folder_id,
-        is_recently_active=is_recently_active,
         history_public_to_subscribers=history_public_to_subscribers,
         invite_only=invite_only,
         is_announcement_only=is_announcement_only,
+        is_archived=is_archived,
+        is_recently_active=is_recently_active,
         is_web_public=is_web_public,
         message_retention_days=message_retention_days,
         name=name,
@@ -372,6 +477,8 @@ def build_stream_dict_for_never_sub(
         stream_id=stream_id,
         stream_post_policy=stream_post_policy,
         stream_weekly_traffic=stream_weekly_traffic,
+        subscriber_count=subscriber_count,
+        topics_policy=topics_policy,
     )
 
 
@@ -475,6 +582,7 @@ def bulk_get_subscriber_user_ids(
     stream_dicts: Collection[Mapping[str, Any]],
     user_profile: UserProfile,
     subscribed_stream_ids: set[int],
+    streams_to_partially_fetch: list[int],
 ) -> dict[int, list[int]]:
     """sub_dict maps stream_id => whether the user is subscribed to that stream."""
     target_stream_dicts = []
@@ -498,10 +606,19 @@ def bulk_get_subscriber_user_ids(
         target_stream_dicts.append(stream_dict)
 
     recip_to_stream_id = {stream["recipient_id"]: stream["id"] for stream in target_stream_dicts}
-    recipient_ids = sorted(stream["recipient_id"] for stream in target_stream_dicts)
+    full_fetch_recipient_ids = sorted(
+        stream["recipient_id"]
+        for stream in target_stream_dicts
+        if stream["id"] not in streams_to_partially_fetch
+    )
+    partial_fetch_recipient_ids = sorted(
+        stream["recipient_id"]
+        for stream in target_stream_dicts
+        if stream["id"] in streams_to_partially_fetch
+    )
 
     result: dict[int, list[int]] = {stream["id"]: [] for stream in stream_dicts}
-    if not recipient_ids:
+    if not full_fetch_recipient_ids and not partial_fetch_recipient_ids:
         return result
 
     """
@@ -509,27 +626,63 @@ def bulk_get_subscriber_user_ids(
     20k+ total subscribers.  (For large realms with lots of default
     streams, this function deals with LOTS of data, so it is important
     to optimize.)
+
+    One optimization is to use two branches for creating this query,
+    to avoid joining on zerver_userprofile when we're not sending
+    partial users.
     """
 
-    query = SQL(
-        """
-        SELECT
-            zerver_subscription.recipient_id,
-            zerver_subscription.user_profile_id
-        FROM
-            zerver_subscription
-        WHERE
-            zerver_subscription.recipient_id in %(recipient_ids)s AND
-            zerver_subscription.active AND
-            zerver_subscription.is_user_active
-        ORDER BY
-            zerver_subscription.recipient_id,
-            zerver_subscription.user_profile_id
-        """
-    )
+    if partial_fetch_recipient_ids:
+        query = SQL(
+            """
+            SELECT
+                zerver_subscription.recipient_id,
+                zerver_subscription.user_profile_id
+            FROM
+                zerver_subscription
+            JOIN zerver_userprofile on zerver_userprofile.id = zerver_subscription.user_profile_id
+            WHERE
+                zerver_subscription.active AND
+                zerver_subscription.is_user_active AND
+                (
+                    zerver_subscription.recipient_id = ANY (%(full_fetch_recipient_ids)s)
+                    OR
+                    (
+                        zerver_subscription.recipient_id = ANY (%(partial_fetch_recipient_ids)s) AND
+                        (zerver_userprofile.is_bot OR (NOT zerver_userprofile.long_term_idle))
+                    )
+                )
+            ORDER BY
+                zerver_subscription.recipient_id,
+                zerver_subscription.user_profile_id
+            """
+        )
+    else:
+        query = SQL(
+            """
+            SELECT
+                zerver_subscription.recipient_id,
+                zerver_subscription.user_profile_id
+            FROM
+                zerver_subscription
+            WHERE
+                zerver_subscription.active AND
+                zerver_subscription.is_user_active AND
+                zerver_subscription.recipient_id = ANY (%(full_fetch_recipient_ids)s)
+            ORDER BY
+                zerver_subscription.recipient_id,
+                zerver_subscription.user_profile_id
+            """
+        )
 
     cursor = connection.cursor()
-    cursor.execute(query, {"recipient_ids": tuple(recipient_ids)})
+    cursor.execute(
+        query,
+        {
+            "full_fetch_recipient_ids": full_fetch_recipient_ids,
+            "partial_fetch_recipient_ids": partial_fetch_recipient_ids,
+        },
+    )
     rows = cursor.fetchall()
     cursor.close()
 
@@ -683,6 +836,9 @@ def gather_subscriptions_helper(
             stream.can_send_message_group
         )
         all_streams_map[stream.id]["stream_post_policy"] = stream_post_policy
+        all_streams_map[stream.id]["topics_policy"] = StreamTopicsPolicyEnum(
+            stream.topics_policy
+        ).name
 
     if anonymous_group_membership is None:
         setting_group_ids = set()
@@ -714,8 +870,7 @@ def gather_subscriptions_helper(
     def get_stream_id(sub_dict: RawSubscriptionDict) -> int:
         return recip_id_to_stream_id[sub_dict["recipient_id"]]
 
-    traffic_stream_ids = {get_stream_id(sub_dict) for sub_dict in sub_dicts}
-    recent_traffic = get_streams_traffic(stream_ids=traffic_stream_ids, realm=realm)
+    recent_traffic = get_streams_traffic(realm=realm)
 
     # Okay, now we finally get to populating our main results, which
     # will be these three lists.
@@ -814,44 +969,39 @@ def gather_subscriptions_helper(
             get_stream_id(sub_dict) for sub_dict in sub_dicts if sub_dict["active"]
         }
 
+        # If the client only wants partial subscriber data, we send:
+        # - all subscribers (full data) for channels with fewer than
+        #   MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE subscribers.
+        # - only bots and recently active users for other channels.
+        streams_to_partially_fetch = []
+        if include_subscribers == "partial":
+            streams_to_partially_fetch = [
+                stream.id
+                for stream in all_streams
+                if stream.subscriber_count >= settings.MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE
+            ]
+
         subscriber_map = bulk_get_subscriber_user_ids(
             all_stream_dicts,
             user_profile,
             subscribed_stream_ids,
+            streams_to_partially_fetch,
         )
-
-        # Eventually "partial subscribers" will return (at minimum):
-        # (1) all subscriptions for recently active users (for the buddy list)
-        # (2) subscriptions for all bots
-        #
-        # For now, we're only doing (2).
-        send_partial_subscribers = include_subscribers == "partial"
-        partial_subscriber_map: dict[int, list[int]] = dict()
-        if send_partial_subscribers:
-            bot_users = set(
-                UserProfile.objects.filter(
-                    is_bot=True, realm=user_profile.realm, is_active=True
-                ).values_list("id", flat=True)
-            )
-            for stream_id, users in subscriber_map.items():
-                partial_subscribers = [user_id for user_id in users if user_id in bot_users]
-                if len(partial_subscribers) != len(subscriber_map[stream_id]):
-                    partial_subscriber_map[stream_id] = partial_subscribers
 
         for lst in [subscribed, unsubscribed]:
             for stream_dict in lst:
                 assert isinstance(stream_dict["stream_id"], int)
                 stream_id = stream_dict["stream_id"]
-                if send_partial_subscribers and partial_subscriber_map.get(stream_id) is not None:
-                    stream_dict["partial_subscribers"] = partial_subscriber_map[stream_id]
+                if stream_id in streams_to_partially_fetch:
+                    stream_dict["partial_subscribers"] = subscriber_map[stream_id]
                 else:
                     stream_dict["subscribers"] = subscriber_map[stream_id]
 
         for slim_stream_dict in never_subscribed:
             assert isinstance(slim_stream_dict["stream_id"], int)
             stream_id = slim_stream_dict["stream_id"]
-            if send_partial_subscribers and partial_subscriber_map.get(stream_id) is not None:
-                slim_stream_dict["partial_subscribers"] = partial_subscriber_map[stream_id]
+            if stream_id in streams_to_partially_fetch:
+                slim_stream_dict["partial_subscribers"] = subscriber_map[stream_id]
             else:
                 slim_stream_dict["subscribers"] = subscriber_map[stream_id]
 
@@ -868,7 +1018,7 @@ def gather_subscriptions_helper(
 
 def gather_subscriptions(
     user_profile: UserProfile,
-    include_subscribers: bool = False,
+    include_subscribers: bool | Literal["partial"] = False,
 ) -> tuple[list[SubscriptionStreamDict], list[SubscriptionStreamDict]]:
     helper_result = gather_subscriptions_helper(
         user_profile,

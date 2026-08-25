@@ -2,12 +2,19 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const scheduled_messages = zrequire("scheduled_messages");
 const compose_send_menu_popover = zrequire("compose_send_menu_popover");
 const {initialize_user_settings} = zrequire("user_settings");
+const {set_realm} = zrequire("state_data");
+set_realm(
+    make_realm({
+        max_reminder_note_length: 1000,
+    }),
+);
 
 initialize_user_settings({user_settings: {}});
 
@@ -73,6 +80,7 @@ function get_expected_send_opts(day, expecteds) {
         },
         possible_send_later_today: false,
         possible_send_later_monday: false,
+        max_reminder_note_length: 1000,
     };
     const optional_modal_opts = {
         send_later_today: {
@@ -97,8 +105,8 @@ function get_expected_send_opts(day, expecteds) {
     // 'today_four_pm'
     // 'monday_nine_am'
     for (const expect of expecteds) {
-        const day = expect.split("_")[0]; // "today", "monday"
-        if (!modal_opts[`possible_send_later_${day}`]) {
+        const day = expect.split("_", 1)[0]; // "today", "monday"
+        if (modal_opts[`possible_send_later_${day}`] === false) {
             modal_opts[`possible_send_later_${day}`] = {};
         }
         modal_opts[`possible_send_later_${day}`][expect] =

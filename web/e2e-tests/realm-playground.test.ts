@@ -12,9 +12,7 @@ type Playground = {
 
 async function _add_playground_and_return_status(page: Page, payload: Playground): Promise<string> {
     await page.waitForSelector(".admin-playground-form", {visible: true});
-    // Let's first ensure that the success/failure status from an earlier step has disappeared.
     const admin_playground_status_selector = "div#admin-playground-status";
-    await page.waitForSelector(admin_playground_status_selector, {hidden: true});
 
     await common.select_item_via_typeahead(
         page,
@@ -33,6 +31,9 @@ async function _add_playground_and_return_status(page: Page, payload: Playground
     await page.$eval("button#submit_playground_button", (el) => {
         el.click();
     });
+
+    // Wait for the request to complete by checking when the button is re-enabled.
+    await page.waitForSelector("button#submit_playground_button:not([disabled])", {visible: true});
 
     // We return the success/failure status message back to the caller.
     await page.waitForSelector(admin_playground_status_selector, {visible: true});
@@ -81,10 +82,11 @@ async function test_invalid_playground_parameters(page: Page): Promise<void> {
     payload.url_template = "https://python.example.com?code={code}";
     payload.pygments_language = "py!@%&";
     status = await _add_playground_and_return_status(page, payload);
-    assert.strictEqual(status, "Failed: Invalid characters in pygments language");
+    assert.strictEqual(status, "Failed: Invalid character in language: !");
 }
 
 async function test_successful_playground_deletion(page: Page): Promise<void> {
+    await page.waitForSelector(".playground_row button.delete", {visible: true});
     await page.click(".playground_row button.delete");
 
     await common.wait_for_micromodal_to_open(page);
@@ -104,4 +106,4 @@ async function playground_test(page: Page): Promise<void> {
     await test_successful_playground_deletion(page);
 }
 
-common.run_test(playground_test);
+await common.run_test(playground_test);

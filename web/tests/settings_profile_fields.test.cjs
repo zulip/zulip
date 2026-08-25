@@ -2,23 +2,23 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
 
 const loading = mock_esm("../src/loading");
 
 const SHORT_TEXT_ID = 1;
 
-const SELECT_ID = 3;
+const DROPDOWN_ID = 3;
 const EXTERNAL_ACCOUNT_ID = 7;
-const LONG_TEXT_ID = 2;
+const PARAGRAPH_ID = 2;
 const USER_FIELD_ID = 6;
 
 const SHORT_TEXT_NAME = "Short text";
-const SELECT_NAME = "Select";
+const DROPDOWN_NAME = "Dropdown";
 const EXTERNAL_ACCOUNT_NAME = "External account";
-const LONG_TEXT_NAME = "Long text";
+const PARAGRAPH_NAME = "Paragraph";
 const USER_FIELD_NAME = "Person";
 
 const custom_profile_field_types = {
@@ -26,17 +26,17 @@ const custom_profile_field_types = {
         id: SHORT_TEXT_ID,
         name: SHORT_TEXT_NAME,
     },
-    SELECT: {
-        id: SELECT_ID,
-        name: SELECT_NAME,
+    DROPDOWN: {
+        id: DROPDOWN_ID,
+        name: DROPDOWN_NAME,
     },
     EXTERNAL_ACCOUNT: {
         id: EXTERNAL_ACCOUNT_ID,
         name: EXTERNAL_ACCOUNT_NAME,
     },
-    LONG_TEXT: {
-        id: LONG_TEXT_ID,
-        name: LONG_TEXT_NAME,
+    PARAGRAPH: {
+        id: PARAGRAPH_ID,
+        name: PARAGRAPH_NAME,
     },
     USER: {
         id: USER_FIELD_ID,
@@ -55,7 +55,7 @@ const {set_current_user, set_realm} = zrequire("state_data");
 
 const current_user = {};
 set_current_user(current_user);
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 
 function make_list_widget_only_render_items(override) {
@@ -72,9 +72,6 @@ function test_populate(opts, template_data) {
 
         override(realm, "custom_profile_field_types", custom_profile_field_types);
         override(current_user, "is_admin", opts.is_admin);
-        const $table = $("#admin_profile_fields_table");
-
-        $table[0] = "stub";
 
         loading.destroy_indicator = noop;
 
@@ -89,8 +86,6 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
 
     override(realm, "custom_profile_fields", {});
     override(realm, "realm_default_external_accounts", JSON.stringify({}));
-
-    $("#admin_profile_fields_table .display_in_profile_summary_false").toggleClass = noop;
 
     const template_data = [];
     mock_template("settings/admin_profile_field_list.hbs", false, (data) => {
@@ -110,7 +105,7 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
             required: false,
         },
         {
-            type: SELECT_ID,
+            type: DROPDOWN_ID,
             id: 30,
             name: "meal",
             hint: "lunch",
@@ -161,9 +156,6 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
                 name: "favorite color",
                 hint: "blue?",
                 type: SHORT_TEXT_NAME,
-                choices: [],
-                is_select_field: false,
-                is_external_account_field: false,
                 display_in_profile_summary: false,
                 valid_to_display_in_summary: true,
                 required: false,
@@ -176,13 +168,7 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
                 id: 30,
                 name: "meal",
                 hint: "lunch",
-                type: SELECT_NAME,
-                choices: [
-                    {order: "0", value: "0", text: "lunch"},
-                    {order: "1", value: "1", text: "dinner"},
-                ],
-                is_select_field: true,
-                is_external_account_field: false,
+                type: DROPDOWN_NAME,
                 display_in_profile_summary: false,
                 valid_to_display_in_summary: true,
                 required: false,
@@ -196,9 +182,6 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
                 name: "github profile",
                 hint: "username only",
                 type: EXTERNAL_ACCOUNT_NAME,
-                choices: [],
-                is_select_field: false,
-                is_external_account_field: true,
                 display_in_profile_summary: true,
                 valid_to_display_in_summary: true,
                 required: false,
@@ -212,9 +195,6 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
                 name: "zulip profile",
                 hint: "username only",
                 type: EXTERNAL_ACCOUNT_NAME,
-                choices: [],
-                is_select_field: false,
-                is_external_account_field: true,
                 display_in_profile_summary: true,
                 valid_to_display_in_summary: true,
                 required: false,

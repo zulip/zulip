@@ -47,13 +47,14 @@ When we discover a security issue in Zulip, we publish a security and
 bug fix release, transparently documenting the issue using the
 industry-standard [CVE advisory process](https://cve.mitre.org/).
 
-When new security releases are published, we simultaneously publish
-the fixes to the `main` and stable release branches, so
-that anyone using those branches can immediately upgrade as well.
+When new security releases are published, we simultaneously publish the fixes to
+the `main` branch and the release branch for the current major release series.
 
-See also our [security model][security-model] documentation.
+See also our [security overview][security-overview], and our [guide on securing
+your Zulip server][securing-your-zulip-server].
 
-[security-model]: ../production/security-model.md
+[security-overview]: https://zulip.com/security/
+[securing-your-zulip-server]: ../production/securing-your-zulip-server.md
 
 ### Git versions
 
@@ -218,7 +219,7 @@ independently as needed.
 [chat-zulip-org]: https://zulip.com/development-community/
 [fork-zulip]: ../production/modify.md
 [zulip-server]: https://github.com/zulip/zulip
-[mobile-beta]: https://github.com/zulip/zulip-mobile#using-the-beta
+[mobile-beta]: https://zulip.com/help/mobile-app-install-guide#install-a-beta-release
 [label-blocker]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+blocker%22
 [label-high]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3A%22priority%3A+high%22
 [label-help-wanted]: https://github.com/zulip/zulip/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22

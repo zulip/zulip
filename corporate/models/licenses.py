@@ -41,5 +41,5 @@ class LicenseLedger(models.Model):
     @override
     def __str__(self) -> str:
         ledger_type = "renewal" if self.is_renewal else "update"
-        ledger_time = self.event_time.strftime("%Y-%m-%d %H:%M")
+        ledger_time = self.event_time.replace(tzinfo=None).isoformat(" ", "minutes")
         return f"License {ledger_type}, {self.licenses} purchased, {self.licenses_at_next_renewal} next cycle, {ledger_time} (id={self.id})"

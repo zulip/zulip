@@ -10,6 +10,7 @@ from zerver.lib.push_notifications import (
     handle_remove_push_notification,
     initialize_push_notifications,
 )
+from zerver.lib.push_registration import handle_register_push_device_to_bouncer
 from zerver.lib.queue import retry_event
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.worker.base import QueueProcessingWorker, assign_queue
@@ -46,7 +47,10 @@ class PushNotificationsWorker(QueueProcessingWorker):
     @override
     def consume(self, event: dict[str, Any]) -> None:
         try:
-            if event.get("type", "add") == "remove":
+            event_type = event.get("type")
+            if event_type == "register_push_device_to_bouncer":
+                handle_register_push_device_to_bouncer(event["payload"])
+            elif event_type == "remove":
                 message_ids = event["message_ids"]
                 handle_remove_push_notification(event["user_profile_id"], message_ids)
             else:
@@ -54,9 +58,15 @@ class PushNotificationsWorker(QueueProcessingWorker):
         except PushNotificationBouncerRetryLaterError:
 
             def failure_processor(event: dict[str, Any]) -> None:
-                logger.warning(
-                    "Maximum retries exceeded for trigger:%s event:push_notification",
-                    event["user_profile_id"],
-                )
+                if event_type == "register_push_device_to_bouncer":
+                    logger.warning(
+                        "Maximum retries exceeded for device_id:%s event:register_push_device_to_bouncer",
+                        event["payload"]["device_id"],
+                    )
+                else:
+                    logger.warning(
+                        "Maximum retries exceeded for trigger:%s event:push_notification",
+                        event["user_profile_id"],
+                    )
 
             retry_event(self.queue_name, event, failure_processor)

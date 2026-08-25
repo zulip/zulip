@@ -2,17 +2,14 @@ import logging
 from collections import defaultdict
 from collections.abc import Callable
 from datetime import datetime
-from typing import TypedDict
 
 from django.db import connection, transaction
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Literal
-from sqlalchemy.sql import ClauseElement, and_, column, not_, or_
-from sqlalchemy.types import Integer
 
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.topic_sqlalchemy import topic_match_sa
+from zerver.lib.topic import matching_user_topic_exists_q
 from zerver.lib.types import UserTopicDict
 from zerver.models import Recipient, Subscription, UserProfile, UserTopic
 from zerver.models.streams import get_stream
@@ -228,13 +225,11 @@ def topic_has_visibility_policy(
     return has_visibility_policy
 
 
-def exclude_stream_and_topic_mutes(
-    conditions: list[ClauseElement], user_profile: UserProfile, stream_id: int | None
-) -> list[ClauseElement]:
+def exclude_stream_and_topic_mutes(user_profile: UserProfile, stream_id: int | None) -> Q:
     # Note: Unlike get_topic_mutes, here we always want to
     # consider topics in deactivated streams, so they are
     # never filtered from the query in this method.
-    query = UserTopic.objects.filter(
+    muted_topics = UserTopic.objects.filter(
         user_profile=user_profile,
         visibility_policy=UserTopic.VisibilityPolicy.MUTED,
     )
@@ -242,28 +237,12 @@ def exclude_stream_and_topic_mutes(
     if stream_id is not None:
         # If we are narrowed to a stream, we can optimize the query
         # by not considering topic mutes outside the stream.
-        query = query.filter(stream_id=stream_id)
+        muted_topics = muted_topics.filter(stream_id=stream_id)
 
-    excluded_topic_rows = query.values(
-        "recipient_id",
-        "topic_name",
-    )
+    conditions = ~Q(pk__in=[])  # Always true.
 
-    class RecipientTopicDict(TypedDict):
-        recipient_id: int
-        topic_name: str
-
-    def topic_cond(row: RecipientTopicDict) -> ClauseElement:
-        recipient_id = row["recipient_id"]
-        topic_name = row["topic_name"]
-        stream_cond = column("recipient_id", Integer) == recipient_id
-        topic_cond = topic_match_sa(topic_name)
-        return and_(stream_cond, topic_cond)
-
-    # Add this query later to reduce the number of messages it has to run on.
-    if excluded_topic_rows:
-        exclude_muted_topics_condition = not_(or_(*map(topic_cond, excluded_topic_rows)))
-        conditions = [*conditions, exclude_muted_topics_condition]
+    if muted_topics.exists():
+        conditions &= ~matching_user_topic_exists_q(muted_topics)
 
     # Channel-level muting only applies when looking at views that
     # include multiple channels, since we do want users to be able to
@@ -280,40 +259,21 @@ def exclude_stream_and_topic_mutes(
         if len(muted_recipient_ids) == 0:
             return conditions
 
-        # Add entries with visibility_policy FOLLOWED or UNMUTED in muted_recipient_ids
-        query = UserTopic.objects.filter(
+        followed_or_unmuted_topics = UserTopic.objects.filter(
             user_profile=user_profile,
-            recipient_id__in=muted_recipient_ids,
             visibility_policy__in=[
                 UserTopic.VisibilityPolicy.FOLLOWED,
                 UserTopic.VisibilityPolicy.UNMUTED,
             ],
         )
+        # Exclude messages in muted_recipient_ids, unless they match
+        # followed_or_unmuted_topics.
+        hidden_by_muted_channel = Q(recipient_id__in=muted_recipient_ids)
 
-        included_topic_rows = query.values(
-            "recipient_id",
-            "topic_name",
-        )
+        if followed_or_unmuted_topics.filter(recipient_id__in=muted_recipient_ids).exists():
+            hidden_by_muted_channel &= ~matching_user_topic_exists_q(followed_or_unmuted_topics)
 
-        # Exclude muted_recipient_ids unless they match include_followed_or_unmuted_topics_condition
-        muted_stream_condition = column("recipient_id", Integer).in_(muted_recipient_ids)
-
-        if included_topic_rows:
-            include_followed_or_unmuted_topics_condition = or_(
-                *map(topic_cond, included_topic_rows)
-            )
-
-            exclude_muted_streams_condition = not_(
-                and_(
-                    muted_stream_condition,
-                    not_(include_followed_or_unmuted_topics_condition),
-                )
-            )
-        else:
-            # If no included topics, exclude all muted streams
-            exclude_muted_streams_condition = not_(muted_stream_condition)
-
-        conditions = [*conditions, exclude_muted_streams_condition]
+        conditions &= ~hidden_by_muted_channel
 
     return conditions
 
@@ -338,7 +298,7 @@ def build_get_topic_visibility_policy(
         recipient_id = row["recipient_id"]
         topic_name = row["topic_name"]
         visibility_policy = row["visibility_policy"]
-        topic_to_visibility_policy[(recipient_id, topic_name)] = visibility_policy
+        topic_to_visibility_policy[(recipient_id, topic_name.lower())] = visibility_policy
 
     def get_topic_visibility_policy(recipient_id: int, topic_name: str) -> int:
         return topic_to_visibility_policy[(recipient_id, topic_name.lower())]

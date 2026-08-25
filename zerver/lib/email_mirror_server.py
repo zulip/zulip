@@ -31,8 +31,8 @@ from zerver.lib.exceptions import JsonableError, RateLimitedError
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
 
+# We add a file handler to this later, once we've dropped privileges
 logger = logging.getLogger("zerver.lib.email_mirror")
-log_to_file(logger, settings.EMAIL_MIRROR_LOG_PATH)
 
 
 def send_to_postmaster(msg: email.message.Message) -> None:
@@ -64,8 +64,8 @@ def send_to_postmaster(msg: email.message.Message) -> None:
             e.smtp_error,
             stack_info=True,
         )
-    except smtplib.SMTPException as e:
-        logger.exception("Error sending bounce email to %s: %s", mail.to, str(e), stack_info=True)
+    except smtplib.SMTPException:
+        logger.exception("Error sending bounce email to %s", mail.to, stack_info=True)
 
 
 class ZulipMessageHandler(MessageHandler):
@@ -100,10 +100,11 @@ class ZulipMessageHandler(MessageHandler):
             recipient_realm = await sync_to_async(
                 lambda a: decode_stream_email_address(a)[0].realm
             )(address)
-            logger.warning(
-                "Rejecting a MAIL FROM: %s to realm: %s - rate limited.",
+            logger.info(
+                "Rejecting a MAIL FROM: %s to realm: %s via %s - rate limited.",
                 envelope.mail_from,
-                recipient_realm.name,
+                recipient_realm.string_id,
+                str(session.peer),
             )
             return "550 4.7.0 Rate-limited due to too many emails on this realm."
 
@@ -120,6 +121,12 @@ class ZulipMessageHandler(MessageHandler):
     def handle_message(self, message: email.message.Message) -> None:
         msg_base64 = base64.b64encode(bytes(message))
 
+        logger.info(
+            "Received email to %s, from %s via %s",
+            message["X-RcptTo"],
+            message["X-MailFrom"],
+            message["X-Peer"],
+        )
         for address in message["X-RcptTo"].split(", "):
             if address == "postmaster":
                 send_to_postmaster(message)
@@ -138,10 +145,10 @@ class ZulipMessageHandler(MessageHandler):
                 reason = error.__cause__.reason
             else:
                 reason = str(error.__cause__)
-            logger.info("Dropping invalid TLS connection: %s", reason)
+            logger.debug("Dropping invalid TLS connection: %s", reason)
             return f"421 4.7.6 TLS error: {reason}"
         else:
-            logger.exception("SMTP session exception")
+            logger.error("SMTP session exception", exc_info=error)
             return "500 Server error"
 
 
@@ -174,9 +181,17 @@ class PermissionDroppingUnthreadedController(UnthreadedController):  # nocoverag
         if os.geteuid() == 0:
             assert self.user_id is not None
             assert self.group_id is not None
+            # We may have a logfile owned by root, from before we
+            # fixed it to be owned by zulip; chown it if it exists, so
+            # we don't fail below.
+            if os.path.exists(settings.EMAIL_MIRROR_LOG_PATH):
+                os.chown(settings.EMAIL_MIRROR_LOG_PATH, self.user_id, self.group_id)
+
             logger.info("Dropping privileges to uid %d / gid %d", self.user_id, self.group_id)
             os.setgid(self.group_id)
             os.setuid(self.user_id)
+
+        log_to_file(logger, settings.EMAIL_MIRROR_LOG_PATH)
 
         server = self.loop.create_server(
             self._factory_invoker,

@@ -4,9 +4,10 @@ const assert = require("node:assert/strict");
 const Module = require("node:module");
 const path = require("node:path");
 
+const FakeTimers = require("@sinonjs/fake-timers");
 const {default: callsites} = require("callsites");
 
-const $ = require("./zjquery.cjs");
+const {$} = require("./zjquery.cjs");
 
 const new_globals = new Set();
 let old_globals = {};
@@ -18,7 +19,6 @@ const used_module_mocks = new Set();
 const used_templates = new Set();
 
 const jquery_path = require.resolve("jquery");
-const real_jquery_path = require.resolve("./real_jquery.cjs");
 
 let in_mid_render = false;
 let jquery_function;
@@ -30,11 +30,13 @@ function load(request, parent, isMain) {
     if (module_mocks.has(filename)) {
         used_module_mocks.add(filename);
         return module_mocks.get(filename);
-    } else if (filename.endsWith(".hbs") && filename.startsWith(template_path + path.sep)) {
+    }
+    if (filename.endsWith(".hbs") && filename.startsWith(template_path + path.sep)) {
         const actual_render = actual_load(request, parent, isMain);
         return template_stub({filename, actual_render});
-    } else if (filename === jquery_path && parent.filename !== real_jquery_path) {
-        return jquery_function || $;
+    }
+    if (filename === jquery_path) {
+        return {$: jquery_function ?? $};
     }
 
     const module = actual_load(request, parent, isMain);
@@ -69,20 +71,27 @@ function template_stub({filename, actual_render}) {
 
         const data = args[0];
 
+        let html;
         if (exercise_template) {
             // If our dev wants to exercise the actual template, then do so.
             // We set the in_mid_render bool so that included (i.e. partial)
             // templates get rendered.
             in_mid_render = true;
-            const html = actual_render(...args);
+            html = actual_render(...args);
             in_mid_render = false;
-
-            return f(data, html);
         }
 
-        return f(data);
+        const mock_html = f(data, html);
+        assert.equal(
+            typeof mock_html,
+            "string",
+            `The template mock for ${filename} must return a string`,
+        );
+        return mock_html;
     };
 }
+
+exports.clock = FakeTimers.install();
 
 exports.start = () => {
     assert.equal(actual_load, undefined, "namespace.start was called twice in a row.");
@@ -135,7 +144,7 @@ exports.mock_cjs = (module_path, obj, {callsite = callsites()[1]} = {}) => {
     assert.ok(!module_mocks.has(filename), `You already set up a mock for ${filename}`);
 
     assert.ok(
-        !(filename in require.cache),
+        !Object.hasOwn(require.cache, filename),
         `It is too late to mock ${filename}; call this earlier.`,
     );
 
@@ -173,6 +182,7 @@ exports.mock_esm = (module_path, obj = {}, {callsite = callsites()[1]} = {}) => 
     return exports.mock_cjs(module_path, {...obj, __esModule: true}, {callsite});
 };
 
+/* istanbul ignore next */
 exports.unmock_module = (module_path, {callsite = callsites()[1]} = {}) => {
     const filename = Module._resolveFilename(
         module_path,
@@ -194,8 +204,8 @@ exports.unmock_module = (module_path, {callsite = callsites()[1]} = {}) => {
 exports.set_global = function (name, val) {
     assert.notEqual(val, null, `We try to avoid using null in our codebase.`);
 
-    if (!(name in old_globals)) {
-        if (!(name in global)) {
+    if (!Object.hasOwn(old_globals, name)) {
+        if (!Object.hasOwn(global, name)) {
             new_globals.add(name);
         }
         old_globals[name] = global[name];
@@ -240,6 +250,7 @@ exports.finish = function () {
         running to do things like detecting pointless mocks
         and resetting our _load hook.
     */
+    exports.clock.reset();
     jquery_function = undefined;
 
     assert.notEqual(actual_load, undefined, "namespace.finish was called without namespace.start.");
@@ -365,7 +376,7 @@ exports.with_overrides = function (test_function) {
 
         const rewire_prop = `rewire_${prop}`;
         /* istanbul ignore if */
-        if (!(rewire_prop in obj)) {
+        if (!Object.hasOwn(obj, rewire_prop)) {
             assert.fail(`You must define ${rewire_prop} to use override_rewire on ${prop}.`);
         }
         obj[rewire_prop](new_value);

@@ -2,6 +2,7 @@ from collections.abc import Iterable
 
 import ahocorasick
 from django.db import transaction
+from django.db.models.functions import Lower
 
 from zerver.lib.cache import (
     cache_with_key,
@@ -32,7 +33,7 @@ def get_alert_word_automaton(realm: Realm) -> ahocorasick.Automaton:
         for alert_word in alert_words:
             alert_word_lower = alert_word.lower()
             if alert_word_automaton.exists(alert_word_lower):
-                (key, user_ids_for_alert_word) = alert_word_automaton.get(alert_word_lower)
+                (_key, user_ids_for_alert_word) = alert_word_automaton.get(alert_word_lower)
                 user_ids_for_alert_word.add(user_id)
             else:
                 alert_word_automaton.add_word(alert_word_lower, (alert_word_lower, {user_id}))
@@ -74,9 +75,10 @@ def add_user_alert_words(user_profile: UserProfile, new_words: Iterable[str]) ->
 
 @transaction.atomic(savepoint=False)
 def remove_user_alert_words(user_profile: UserProfile, delete_words: Iterable[str]) -> list[str]:
-    # TODO: Ideally, this would be a bulk query, but Django doesn't have a `__iexact`.
-    # We can clean this up if/when PostgreSQL has more native support for case-insensitive fields.
-    # If we turn this into a bulk operation, we will need to call flush_realm_alert_words() here.
-    for delete_word in delete_words:
-        AlertWord.objects.filter(user_profile=user_profile, word__iexact=delete_word).delete()
+    delete_words_lower = [word.lower() for word in delete_words]
+    AlertWord.objects.annotate(word_lower=Lower("word")).filter(
+        user_profile=user_profile,
+        word_lower__in=delete_words_lower,
+    ).delete()
+    flush_realm_alert_words(user_profile.realm_id)
     return user_alert_words(user_profile)

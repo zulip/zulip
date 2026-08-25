@@ -1,15 +1,22 @@
 import isUrl from "is-url";
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import {insertTextIntoField} from "text-field-edit";
 import TurndownService from "turndown";
 
+import * as compose_banner from "./compose_banner.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as hash_util from "./hash_util.ts";
+import {$t} from "./i18n.ts";
+import * as people from "./people.ts";
 import * as stream_data from "./stream_data.ts";
 import * as topic_link_util from "./topic_link_util.ts";
+import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
+
+const MINIMUM_PASTE_SIZE_FOR_FILE_TREATMENT = 2000;
+const MINIMUM_PASTE_SIZE_TO_AVOID_DIRECT_PASTE = 5000;
 
 declare global {
     // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -34,14 +41,35 @@ function image_to_zulip_markdown(
         // For Zulip's custom emoji
         return node.getAttribute("alt") ?? "";
     }
-    const src = node.getAttribute("src") ?? node.getAttribute("href") ?? "";
-    const title = deduplicate_newlines(node.getAttribute("title") ?? "");
-    // Using Zulip's link like syntax for images
-    return src ? "[" + title + "](" + src + ")" : (node.getAttribute("alt") ?? "");
+    // For inline images presented in Markdown syntax, we need
+    // to grab the `data-original-src` attribute, rather than
+    // the thumbnailed image referenced on the `src` attribute
+    const src =
+        node.getAttribute("data-original-src") ??
+        node.getAttribute("src") ??
+        node.getAttribute("href") ??
+        "";
+    // For the label, we prioritize the alt attribute, which will be
+    // present on both Zulip and third-party Markdown images, but use
+    // title as a fallback, since older-style Zulip image previews
+    // only set title.
+    let alt;
+    if (node.classList.contains("inline-image")) {
+        alt = node.getAttribute("alt") ?? "";
+    } else {
+        alt = deduplicate_newlines(node.getAttribute("title") ?? "");
+    }
+    // Use Markdown syntax for images
+    return src ? "![" + alt + "](" + src + ")" : (node.getAttribute("alt") ?? "");
 }
 
-// Returns 2 or more if there are multiple valid text nodes in the tree.
-function check_multiple_text_nodes(child_nodes: ChildNode[]): number {
+// Returns the count of valid text nodes in the tree.
+// We return the count as soon as we find at least `cutoff` valid nodes
+// to avoid walking the whole tree.
+function count_valid_text_nodes_upto(child_nodes: ChildNode[], cutoff: number): number {
+    if (cutoff <= 0) {
+        return 0;
+    }
     let textful_nodes = 0;
 
     for (const child of child_nodes) {
@@ -53,14 +81,14 @@ function check_multiple_text_nodes(child_nodes: ChildNode[]): number {
 
         if (child.nodeValue && child.nodeType === Node.TEXT_NODE) {
             textful_nodes += 1;
-            if (textful_nodes >= 2) {
+            if (textful_nodes >= cutoff) {
                 return textful_nodes;
             }
         }
 
-        textful_nodes += check_multiple_text_nodes([...child.childNodes]);
+        textful_nodes += count_valid_text_nodes_upto([...child.childNodes], cutoff - textful_nodes);
 
-        if (textful_nodes >= 2) {
+        if (textful_nodes >= cutoff) {
             return textful_nodes;
         }
     }
@@ -80,8 +108,7 @@ function within_single_element(html_fragment: HTMLElement): boolean {
 // be removed (e.g., for headings that contain <br> and other tags in the fragment).
 // Empty nodes like comments or newline-only text should not be counted.
 function has_single_textful_child_node(html_fragment: HTMLElement): boolean {
-    let textful_nodes = 0;
-    textful_nodes = check_multiple_text_nodes([...html_fragment.childNodes]);
+    const textful_nodes = count_valid_text_nodes_upto([...html_fragment.childNodes], 2);
     if (textful_nodes >= 2) {
         return false;
     }
@@ -123,7 +150,7 @@ export function is_white_space_pre(paste_html: string): boolean {
 
 function is_from_excel(html_fragment: HTMLBodyElement): boolean {
     const html_tag = html_fragment.parentElement;
-    if (!html_tag || html_tag.nodeName !== "HTML") {
+    if (html_tag?.nodeName !== "HTML") {
         return false;
     }
 
@@ -151,7 +178,39 @@ function is_from_excel(html_fragment: HTMLBodyElement): boolean {
         return false;
     }
 
-    if (!excel_namespaces.some((ns) => html_outer.includes(ns))) {
+    if (excel_namespaces.every((ns) => !html_outer.includes(ns))) {
+        return false;
+    }
+
+    return true;
+}
+
+// There might be some false positives while pasting only tables from
+// something like LibreOffice Writer.
+function is_from_libreoffice_calc(body_tag: HTMLBodyElement): boolean {
+    const html_tag = body_tag.parentElement;
+    if (html_tag?.nodeName !== "HTML") {
+        return false;
+    }
+
+    const has_libreoffice_metadata = [...html_tag.querySelectorAll("meta")].some(
+        (meta) => meta.name === "generator" && meta.content.startsWith("LibreOffice"),
+    );
+    if (!has_libreoffice_metadata) {
+        return false;
+    }
+
+    // This is done to narrow the possible false positives such as pasting
+    // text from LibreOffice Writer, that also contains the same meta data.
+    if (
+        !body_tag ||
+        // Check that <body> has only one child element to avoid
+        // misclassification. Multiple children may appear when
+        // pasting mixed content from something like LibreOffice
+        // Writer,but Calc always pastes a single <table> element.
+        body_tag.children.length > 1 ||
+        body_tag.firstElementChild?.tagName !== "TABLE"
+    ) {
         return false;
     }
 
@@ -165,11 +224,30 @@ export function is_single_image(paste_html: string): boolean {
     assert(html_fragment !== null);
     return (
         is_from_excel(html_fragment) ||
-        (html_fragment.childNodes.length === 1 &&
-            html_fragment.firstElementChild !== null &&
-            html_fragment.firstElementChild.nodeName === "IMG")
+        is_from_libreoffice_calc(html_fragment) ||
+        (html_fragment.querySelectorAll("img").length === 1 &&
+            count_valid_text_nodes_upto([...html_fragment.childNodes], 1) === 0)
     );
 }
+
+function get_code_block_language(
+    pre_element: HTMLElement,
+    code_element_class_name: string,
+): string {
+    let language;
+    const parent_contains_lang_metadata =
+        pre_element.parentElement?.classList.contains("zulip-code-block");
+
+    if (parent_contains_lang_metadata) {
+        const codehilite_element = pre_element.closest<HTMLElement>(".codehilite");
+        language = codehilite_element?.getAttribute("data-code-language") ?? "";
+    } else {
+        language = (/language-(\S+)/.exec(code_element_class_name) ?? [null, ""])[1];
+    }
+    return language;
+}
+
+export const MENTION_SELECTOR = ".user-mention, .user-group-mention, .topic-mention";
 
 export function paste_handler_converter(
     paste_html: string,
@@ -182,20 +260,29 @@ export function paste_handler_converter(
 
     const has_single_child_with_valid_text = has_single_textful_child_node(copied_html_fragment);
 
-    const outer_elements_to_retain = ["PRE", "UL", "OL", "A", "CODE"];
+    const outer_elements_to_retain = ["PRE", "UL", "OL", "A", "CODE", "TIME"];
     // If the entire selection copied is within a single HTML element (like an
     // `h1`), we don't want to retain its styling, except when it is needed to
     // identify the intended structure of the copied content.
     if (
         has_single_child_with_valid_text &&
         copied_html_fragment.firstElementChild !== null &&
-        !outer_elements_to_retain.includes(copied_html_fragment.firstElementChild.nodeName)
+        !outer_elements_to_retain.includes(copied_html_fragment.firstElementChild.nodeName) &&
+        // A mention anywhere in the selection (even wrapped in a <p> or
+        // nested inside .mention-content-wrapper) must reach the Turndown
+        // mention rule, so never take the plain-text fast path for it.
+        copied_html_fragment.querySelector(MENTION_SELECTOR) === null
     ) {
         // This will always return some text as it is already ensured
         // that such a text node exists in `has_single_textful_child_node`.
         const text_content = get_the_only_textful_child_content([...copied_html_fragment.children]);
         if (text_content) {
-            return text_content;
+            // Firefox preserves the wrapped newline characters in the textContent of <p>
+            // tags in `paste_html`, even when the original content does not contain newlines.
+            // This results in unexpected bad wrapping of paragraphs when copy-pasting
+            // text back into the compose box.
+            // This replace logic is used to handle that edge case.
+            return text_content.replaceAll(/\s*\n\s*/g, " ");
         }
         // Ideally, this should never happen.
         // Just for fallback in case it does.
@@ -211,6 +298,61 @@ export function paste_handler_converter(
         headingStyle: "atx",
         br: "",
     });
+    turndownService.addRule("mentions", {
+        filter(node) {
+            return node.nodeName === "SPAN" && node.matches(MENTION_SELECTOR);
+        },
+        replacement(_content, node) {
+            assert(node instanceof HTMLElement);
+            const is_silent = node.classList.contains("silent");
+            const is_group = node.classList.contains("user-group-mention");
+
+            // Group mentions use single-asterisk syntax (@*name* / @_*name*);
+            // user, topic, and wildcard mentions use double-asterisk.
+            const delimiter = is_group ? "*" : "**";
+            const prefix = (is_silent ? "@_" : "@") + delimiter;
+
+            const user_id = node.getAttribute("data-user-id");
+            if (
+                node.classList.contains("user-mention") &&
+                !node.classList.contains("channel-wildcard-mention") &&
+                user_id !== null
+            ) {
+                // Look up canonical full_name from the people store so the markdown
+                // doesn't depend on the display text (which can include suffixes
+                // like "(guest)" added by rendered_markdown.ts). Fall back to the
+                // id-only @**|id** syntax if the user can't be resolved locally;
+                // the backend will resolve it on send.
+                const user = people.maybe_get_user_by_id(Number(user_id), true);
+                if (user !== undefined) {
+                    return people.get_mention_syntax(
+                        user.full_name,
+                        Number(user_id),
+                        is_silent,
+                        true,
+                    );
+                }
+                return `${prefix}|${user_id}${delimiter}`;
+            }
+
+            const group_id = node.getAttribute("data-user-group-id");
+            if (is_group && group_id !== null) {
+                // System groups render with a display name (e.g. "Owners")
+                // that differs from the mention name (e.g. "role:owners"),
+                // so look up the canonical name instead of the display text.
+                const group = user_groups.maybe_get_user_group_from_id(Number(group_id));
+                if (group !== undefined) {
+                    return `${prefix}${group.name}${delimiter}`;
+                }
+            }
+
+            let name = (node.textContent ?? "").trim();
+            if (name.startsWith("@")) {
+                name = name.slice(1);
+            }
+            return `${prefix}${name}${delimiter}`;
+        },
+    });
     turndownService.addRule("style", {
         filter: "style",
         replacement() {
@@ -221,6 +363,31 @@ export function paste_handler_converter(
         filter: ["del", "s", "strike"],
         replacement(content) {
             return "~~" + content + "~~";
+        },
+    });
+    turndownService.addRule("timestamp", {
+        filter(node) {
+            // Require .timestamp-content-wrapper to distinguish Zulip timestamps
+            // from arbitrary <time datetime> elements on other websites.
+            if (
+                node.nodeName === "TIME" &&
+                node.hasAttribute("datetime") &&
+                node.querySelector(".timestamp-content-wrapper") !== null
+            ) {
+                return true;
+            }
+            // Fallback when Chrome's clipboard serializer strips the
+            // <time> wrapper: the copy handler stashes the datetime on
+            // the .timestamp-content-wrapper span as `data-datetime`.
+            if (node.hasAttribute("data-datetime") && node.closest("time") === null) {
+                return true;
+            }
+            return false;
+        },
+        replacement(_content, node) {
+            assert(node instanceof HTMLElement);
+            const datetime = node.getAttribute("datetime") ?? node.getAttribute("data-datetime");
+            return `<time:${datetime}>`;
         },
     });
     turndownService.addRule("links", {
@@ -247,7 +414,7 @@ export function paste_handler_converter(
             content = content
                 .replace(/^\n+/, "") // remove leading newlines
                 .replace(/\n+$/, "\n") // replace trailing newlines with just a single one
-                .replaceAll(/\n/gm, "\n  "); // custom 2 space indent
+                .replaceAll("\n", "\n  "); // custom 2 space indent
             let prefix = "* ";
             const parent = node.parentElement;
             assert(parent !== null);
@@ -261,7 +428,7 @@ export function paste_handler_converter(
     });
 
     /*
-        Below lies the the thought process behind the parsing for math blocks and inline math expressions.
+        Below lies the thought process behind the parsing for math blocks and inline math expressions.
 
         The general structure of the katex-displays i.e. math blocks is:
         <p>
@@ -318,7 +485,7 @@ export function paste_handler_converter(
             let consecutive_empty_display_count = 0;
             for (const child of parent.children) {
                 const annotation_element = child.querySelector(
-                    '.katex-mathml annotation[encoding="application/x-tex"]',
+                    ':scope .katex-mathml annotation[encoding="application/x-tex"]',
                 );
                 if (annotation_element?.textContent) {
                     const katex_source = annotation_element.textContent.trim();
@@ -335,7 +502,7 @@ export function paste_handler_converter(
                         continue;
                     }
                     if (consecutive_empty_display_count === 0) {
-                        math_block_markdown += "\n\n\n";
+                        math_block_markdown += "\n".repeat(3);
                     } else {
                         math_block_markdown += "\n\n";
                     }
@@ -344,7 +511,8 @@ export function paste_handler_converter(
             }
             // Don't add extra newline at the end
             math_block_markdown = math_block_markdown.slice(0, -1);
-            return (math_block_markdown += "```");
+            math_block_markdown += "```";
+            return math_block_markdown;
         },
     });
 
@@ -377,9 +545,13 @@ export function paste_handler_converter(
 
     turndownService.addRule("zulipImagePreview", {
         filter(node) {
-            // select image previews in Zulip messages
+            // select image previews in Zulip messages; we continue to check for
+            // message_inline_image to handle content pasted in from older
+            // versions of Zulip
             return (
-                node.classList.contains("message_inline_image") && node.firstChild?.nodeName === "A"
+                (node.classList.contains("message_inline_image") ||
+                    node.classList.contains("message-media-preview-image")) &&
+                node.firstChild?.nodeName === "A"
             );
         },
 
@@ -388,16 +560,17 @@ export function paste_handler_converter(
             // present, always comes before the preview in the copied html) is also there.
 
             // If the 1st element with the same image link in the copied html
-            // does not have the `message_inline_image` class, it means it is the generating
-            // link, and not the preview, meaning the generating link is copied as well.
+            // does not have a `message-media-preview-image` or `message_inline_image`
+            // class, it means it is the generating link, and not the preview, meaning
+            // the generating link is copied as well.
             const copied_html = new DOMParser().parseFromString(paste_html, "text/html");
-            let href;
+            const href = node.firstElementChild?.getAttribute("href") ?? "";
+            const anchor_element = copied_html.querySelector("a[href='" + CSS.escape(href) + "']");
             if (
                 node.firstElementChild === null ||
-                (href = node.firstElementChild.getAttribute("href")) === null ||
-                !copied_html
-                    .querySelector("a[href='" + CSS.escape(href) + "']")
-                    ?.parentElement?.classList.contains("message_inline_image")
+                href === "" ||
+                !anchor_element?.parentElement?.classList.contains("message_inline_image") ||
+                !anchor_element?.parentElement?.classList.contains("message-media-preview-image")
             ) {
                 // We skip previews which have their generating link copied too, to avoid
                 // double pasting the same link.
@@ -406,6 +579,7 @@ export function paste_handler_converter(
             return image_to_zulip_markdown(content, node.firstElementChild);
         },
     });
+
     turndownService.addRule("images", {
         filter: "img",
 
@@ -414,7 +588,8 @@ export function paste_handler_converter(
 
     // We override the original upstream implementation of this rule to make
     // several tweaks:
-    // - We turn any single line code blocks into inline markdown code.
+    // - We turn any single line code blocks into inline markdown code, if they don't
+    // have associated language metadata.
     // - We generalise the filter condition to allow a `pre` element with a
     // `code` element as its only non-empty child, which applies to Zulip code
     // blocks too.
@@ -444,15 +619,13 @@ export function paste_handler_converter(
             const code = codeElement.textContent;
             assert(code !== null);
 
-            // We convert single line code inside a code block to inline markdown code,
-            // and the code for this is taken from upstream's `code` rule.
+            const className = codeElement.getAttribute("class") ?? "";
+            const language = get_code_block_language(node, className);
+            // We convert single line code inside a code block which does not have language metadata
+            // to inline markdown code, and the code for this is taken from upstream's `code` rule.
             if (!code.includes("\n")) {
-                // If the cursor is just after a backtick, then we don't add extra backticks.
-                if (
-                    $textarea &&
-                    $textarea.caret() !== 0 &&
-                    $textarea.val()?.at($textarea.caret() - 1) === "`"
-                ) {
+                // If the cursor is inside an inline code span, then we don't add extra backticks.
+                if ($textarea && compose_ui.cursor_inside_inline_code_span($textarea)) {
                     return content;
                 }
                 if (!code) {
@@ -465,16 +638,11 @@ export function paste_handler_converter(
                 let delimiter = "`";
                 const matches: string[] = code.match(/`+/gm) ?? [];
                 while (matches.includes(delimiter)) {
-                    delimiter = delimiter + "`";
+                    delimiter += "`";
                 }
 
                 return delimiter + extraSpace + code + extraSpace + delimiter;
             }
-
-            const className = codeElement.getAttribute("class") ?? "";
-            const language = node.parentElement?.classList.contains("zulip-code-block")
-                ? (node.closest<HTMLElement>(".codehilite")?.dataset?.codeLanguage ?? "")
-                : (/language-(\S+)/.exec(className) ?? [null, ""])[1];
 
             assert(options.fence !== undefined);
             const fenceChar = options.fence.charAt(0);
@@ -495,17 +663,40 @@ export function paste_handler_converter(
             );
         },
     });
+
+    // Block elements wrap their content in two `\n`s as per
+    // the default turndown rules.
+    // We define this rule to avoid that behavior when
+    // the `paste_html` has divs.
+    // We may need to add other block elements in the future
+    // in the filter where we only want one newline as the
+    // separator.
+    turndownService.addRule("no extra newline", {
+        filter: "div",
+        replacement(content) {
+            return "\n" + content + "\n";
+        },
+    });
+
+    turndownService.addRule("message-header paste output", {
+        filter: (node) =>
+            node.nodeName === "P" && node.getAttribute("data-message-header-paragraph") === "true",
+        replacement(content) {
+            return `\n\n${content}\n`;
+        },
+    });
+
     let markdown_text = turndownService.turndown(paste_html);
 
     // Checks for escaped ordered list syntax.
     markdown_text = markdown_text.replaceAll(/^(\W* {0,3})(\d+)\\\. /gm, "$1$2. ");
 
     // Removes newlines before the start of a list and between list elements.
-    markdown_text = markdown_text.replaceAll(/\n+([*+-])/g, "\n$1");
+    markdown_text = markdown_text.replaceAll(/\n+([*+-])[ \t]+/g, "\n$1 ");
     return markdown_text;
 }
 
-function is_safe_url_paste_target($textarea: JQuery<HTMLTextAreaElement>): boolean {
+function can_paste_url_over_range($textarea: JQuery<HTMLTextAreaElement>): boolean {
     const range = $textarea.range();
 
     if (!range.text) {
@@ -515,19 +706,6 @@ function is_safe_url_paste_target($textarea: JQuery<HTMLTextAreaElement>): boole
 
     if (isUrl(range.text.trim())) {
         // Don't engage our URL paste logic over existing URLs
-        return false;
-    }
-
-    if (range.start <= 2) {
-        // The range opens too close to the start of the textarea
-        // to have to worry about Markdown link syntax
-        return true;
-    }
-
-    // Look at the two characters before the start of the original
-    // range in search of the tell-tale `](` from existing Markdown
-    // link syntax
-    if (cursor_at_markdown_link_marker($textarea)) {
         return false;
     }
 
@@ -559,6 +737,18 @@ function add_text_and_select(text: string, $textarea: JQuery<HTMLTextAreaElement
     insertTextIntoField(textarea, text);
     const new_cursor_pos = textarea.selectionStart;
     textarea.setSelectionRange(init_cursor_pos, new_cursor_pos);
+}
+
+function replace_pasted_text(
+    $textarea: JQuery<HTMLTextAreaElement>,
+    pasted_text: string,
+    replacement_text: string,
+): void {
+    // To ensure you can get the actual pasted URL back via the browser
+    // undo feature, we first paste the URL in, then select it, and then
+    // replace it with the nicer markdown syntax.
+    add_text_and_select(pasted_text, $textarea);
+    compose_ui.insert_and_scroll_into_view(replacement_text, $textarea);
 }
 
 export function try_stream_topic_syntax_text(text: string): string | null {
@@ -606,7 +796,50 @@ export function try_stream_topic_syntax_text(text: string): string | null {
     return syntax_text;
 }
 
-export function paste_handler(this: HTMLTextAreaElement, event: JQuery.TriggeredEvent): void {
+function create_text_file(text: string, filename: string): File {
+    const blob = new Blob([text], {type: "text/plain"});
+    return new File([blob], filename, {type: "text/plain"});
+}
+
+function do_paste_text(
+    paste_html: string,
+    paste_text: string,
+    $textarea: JQuery<HTMLTextAreaElement>,
+): void {
+    let text_to_insert: string;
+
+    if (paste_html) {
+        const text = paste_handler_converter(paste_html, $textarea);
+        const trimmed_paste_text = paste_text.trim();
+        if (trimmed_paste_text !== text) {
+            // Pasting formatted text is a two-step process: First
+            // we paste unformatted text, then overwrite it with
+            // formatted text, so that undo restores the
+            // pre-formatting syntax.
+            add_text_and_select(trimmed_paste_text, $textarea);
+        }
+        text_to_insert = text;
+    } else {
+        text_to_insert = paste_text;
+    }
+
+    const reverse_linkified_text = compose_ui.reverse_linkify_text(text_to_insert);
+    if (reverse_linkified_text) {
+        // For reverse linkification, we want the first undo state
+        // to have original URLs instead of the reverse linkified version.
+        // The second undo state would then contain the plain text
+        // version, if paste_html was truthy.
+        add_text_and_select(text_to_insert, $textarea);
+        text_to_insert = reverse_linkified_text;
+    }
+    compose_ui.insert_and_scroll_into_view(text_to_insert, $textarea);
+}
+
+export function paste_handler(
+    this: HTMLTextAreaElement,
+    event: JQuery.TriggeredEvent,
+    upload_pasted_file: (textarea: HTMLTextAreaElement, pasted_file: File) => void,
+): void {
     assert(event.originalEvent instanceof ClipboardEvent);
     const clipboardData = event.originalEvent.clipboardData;
     if (!clipboardData) {
@@ -618,40 +851,89 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
         return;
     }
 
+    let avoid_direct_paste = false;
     if (clipboardData.getData) {
         const $textarea = $(this);
+        const existing_text = $textarea.val() ?? "";
         const paste_text = clipboardData.getData("text");
         let paste_html = clipboardData.getData("text/html");
+        const reverse_linkified_text = compose_ui.reverse_linkify_text(paste_text);
         // Trim the paste_text to accommodate sloppy copying
         const trimmed_paste_text = paste_text.trim();
+        const pasted_text_length = paste_text.length;
+
+        // Idea: We could consider having two thresholds: Very large
+        // files could prompt before running the paste handler and
+        // putting the content into the compose box.
+        const is_paste_large_enough_for_file =
+            pasted_text_length >= MINIMUM_PASTE_SIZE_FOR_FILE_TREATMENT;
+        avoid_direct_paste = pasted_text_length >= MINIMUM_PASTE_SIZE_TO_AVOID_DIRECT_PASTE;
+        // If the pasted or combined text is too large, present a
+        // banner offering to upload as a file.
+        if (is_paste_large_enough_for_file) {
+            const filename = `${$t({defaultMessage: "PastedText"})}.txt`;
+            const pasted_file = create_text_file(paste_text, filename);
+            const $banner = compose_banner.show_convert_pasted_text_to_file_banner({
+                show_paste_button: avoid_direct_paste,
+                convert_to_file_cb: () => {
+                    // Important: This undo mechanism is only correct if
+                    // the compose area hasn't changed since the banner
+                    // was created.
+                    $textarea.val(existing_text);
+                    upload_pasted_file(this, pasted_file);
+                },
+                paste_to_compose_cb() {
+                    do_paste_text(paste_html, paste_text, $textarea);
+                },
+                $textarea,
+            });
+            setTimeout(() => {
+                $textarea.one("input", () => {
+                    // The banner only displays until the user does
+                    // some further input. This is both reasonable UI
+                    // and also is required for undo, see above.
+                    $banner.remove();
+                });
+                if (avoid_direct_paste) {
+                    // Using focus({focusVisible: true}) here ensures that :focus-visible
+                    // activates in Chrome.
+                    $banner
+                        .find(".main-view-banner-action-button.paste-to-compose")[0]
+                        ?.focus({focusVisible: true});
+                }
+            }, 0);
+        }
 
         // Only intervene to generate formatted links when dealing
         // with a URL and a URL-safe range selection.
         if (isUrl(trimmed_paste_text)) {
-            if (is_safe_url_paste_target($textarea)) {
+            if (cursor_at_markdown_link_marker($textarea)) {
+                // When pasting a link after the link marker syntax, we want to
+                // avoid inserting markdown syntax text and instead just paste
+                // the raw text, possibly replacing any selection. In other words,
+                // let the browser handle it.
+                return;
+            }
+            if (can_paste_url_over_range($textarea)) {
                 event.preventDefault();
                 event.stopPropagation();
                 const url = trimmed_paste_text;
                 compose_ui.format_text($textarea, "linked", url);
                 return;
             }
-
-            if (
-                !compose_ui.cursor_inside_code_block($textarea) &&
-                !cursor_at_markdown_link_marker($textarea) &&
-                !compose_ui.shift_pressed
-            ) {
+            if (!compose_ui.cursor_inside_code_block($textarea) && !compose_ui.shift_pressed) {
                 // Try to transform the url to #**stream>topic** syntax
                 // if it is a valid url.
                 const syntax_text = try_stream_topic_syntax_text(trimmed_paste_text);
                 if (syntax_text) {
                     event.preventDefault();
                     event.stopPropagation();
-                    // To ensure you can get the actual pasted URL back via the browser
-                    // undo feature, we first paste the URL in, then select it, and then
-                    // replace it with the nicer markdown syntax.
-                    add_text_and_select(trimmed_paste_text, $textarea);
-                    compose_ui.insert_and_scroll_into_view(syntax_text + " ", $textarea);
+                    replace_pasted_text($textarea, trimmed_paste_text, syntax_text + " ");
+                }
+                if (reverse_linkified_text !== null) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    replace_pasted_text($textarea, paste_text, reverse_linkified_text);
                 }
                 return;
             }
@@ -662,7 +944,7 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
         // if not, we proceed with the default formatted paste.
         if (
             !compose_ui.cursor_inside_code_block($textarea) &&
-            paste_html &&
+            (paste_html || reverse_linkified_text !== null) &&
             !compose_ui.shift_pressed
         ) {
             if (is_single_image(paste_html)) {
@@ -671,21 +953,35 @@ export function paste_handler(this: HTMLTextAreaElement, event: JQuery.Triggered
             }
             event.preventDefault();
             event.stopPropagation();
-            paste_html = maybe_transform_html(paste_html, paste_text);
-            const text = paste_handler_converter(paste_html, $textarea);
-            if (trimmed_paste_text !== text) {
-                // Pasting formatted text is a two-step process: First
-                // we paste unformatted text, then overwrite it with
-                // formatted text, so that undo restores the
-                // pre-formatting syntax.
-                add_text_and_select(trimmed_paste_text, $textarea);
+            if (!avoid_direct_paste) {
+                paste_html = maybe_transform_html(paste_html, paste_text);
+                do_paste_text(paste_html, paste_text, $textarea);
             }
-            compose_ui.insert_and_scroll_into_view(text, $textarea);
+        }
+        if (avoid_direct_paste) {
+            event.preventDefault();
+            event.stopPropagation();
         }
     }
 }
 
-export function initialize(): void {
-    $<HTMLTextAreaElement>("textarea#compose-textarea").on("paste", paste_handler);
-    $("body").on("paste", "textarea.message_edit_content", paste_handler);
+export function initialize({
+    upload_pasted_file,
+}: {
+    upload_pasted_file: (textarea: HTMLTextAreaElement, pasted_file: File) => void;
+}): void {
+    $<HTMLTextAreaElement>("textarea#compose-textarea").on(
+        "paste",
+        function (this: HTMLTextAreaElement, event: JQuery.TriggeredEvent) {
+            paste_handler.call(this, event, upload_pasted_file);
+        },
+    );
+
+    $("body").on(
+        "paste",
+        "textarea.message_edit_content",
+        function (this: HTMLTextAreaElement, event: JQuery.TriggeredEvent) {
+            paste_handler.call(this, event, upload_pasted_file);
+        },
+    );
 }

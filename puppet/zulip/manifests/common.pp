@@ -39,8 +39,11 @@ class zulip::common {
   }
   $supervisor_conf_dir = "${supervisor_system_conf_dir}/zulip"
 
-  $total_memory_bytes = $facts['memory']['system']['total_bytes']
-  $total_memory_mb = $total_memory_bytes / 1024 / 1024
+  if $facts['container_memory_limit_mb'] {
+    $total_memory_mb = Integer($facts['container_memory_limit_mb'])
+  } else {
+    $total_memory_mb = Integer($facts['memory']['system']['total_bytes'] / 1024 / 1024)
+  }
 
   $goarch = $facts['os']['architecture'] ? {
     'amd64'   => 'amd64',
@@ -50,46 +53,46 @@ class zulip::common {
   $versions = {
     # https://github.com/cactus/go-camo/releases
     'go-camo' => {
-      'version'   => '2.6.1',
-      'goversion' => '1234',
+      'version'   => '2.7.3',
+      'goversion' => '1260',
       'sha256'    => {
-        'amd64'   => '25cf8aba4506c3fca02aba2f86c1c8f88be06798f129ce4a5d121b2f3801979e',
-        'aarch64' => 'e9f6815c21846baf90d0d9db6038119c968634b5fd8b4806e362176b4aa832a2',
+        'amd64'   => 'd1071300b6692d194a439cb4e380ff95e1f4d894e2318bf47aaec077722370b7',
+        'aarch64' => '22afef25d43cb0cb44dac100ec5602846bd66de0d9d3a3c6fc2c98eae82e6639',
       },
     },
 
     # https://go.dev/dl/
     'golang' => {
-      'version' => '1.24.0',
+      'version' => '1.26.0',
       'sha256'  => {
-        'amd64'   => 'dea9ca38a0b852a74e81c26134671af7c0fbe65d81b0dc1c5bfe22cf7d4c8858',
-        'aarch64' => 'c3fa6d16ffa261091a5617145553c71d21435ce547e44cc6dfb7470865527cc7',
+        'amd64'   => 'aac1b08a0fb0c4e0a7c1555beb7b59180b05dfc5a3d62e40e9de90cd42f88235',
+        'aarch64' => 'bd03b743eb6eb4193ea3c3fd3956546bf0e3ca5b7076c8226334afe6b75704cd',
       },
     },
 
     # https://github.com/stripe/smokescreen/tags
     'smokescreen-src' => {
-      'version' => 'bffe947fa6f682884d48592ff7e9ed13bb7941a4',
+      'version' => '464b1115f802cbd91ffee555a41e71546646d396',
       # Source code, so arch-invariant sha256
-      'sha256'  => 'f1fb51b6b10e106fb269025c51c7c1ac8d9c5359cdcc4d94277f1bd254b09924',
+      'sha256'  => '800d455bbdd23df0587b72e05e9bb51ce80d0f5816bd1b7070c2c26f4340cfca',
     },
 
     # https://github.com/tus/tusd/releases
     # Keep in sync with tools/setup/install-tusd
     'tusd' => {
-      'version' => '2.8.0',
+      'version' => '2.9.1',
       'sha256'  => {
-        'amd64'   => 'e13c8adc9bed4c993a72f60140f688736058d2c3f4a18fb6e59ca26e829fb93b',
-        'aarch64' => '089eb6d144df7cc5e10ac611a18f407308aedb3f9024a78fa01cb60ba99005a9',
+        'amd64'   => '140066be543e40493abd1fda1d1e33ab7fa0e8b9a61d247130f6777e64bf28f6',
+        'aarch64' => 'c9c46eba6e46b8062f863af6a5423f6f72b5157939d967087cd9b6d7c6bd19cf',
       },
     },
 
     # https://github.com/wal-g/wal-g/releases
     'wal-g' => {
-      'version' => '3.0.5',
+      'version' => '3.0.8',
       'sha256'  => {
-        'amd64'   => '367ee2863f5f46fde8ab89ce289ca3a43fab3117f8d580029c502b0462580846',  # The ubuntu-22.04 version
-        'aarch64' => 'b09cb8955518520d48289a8dd6ac91322b6e41ff484a87e151a4317dff7054c2',  # There is only an ubuntu-20.04 version
+        'amd64'   => 'b0df1b484035eb5f131db7bbd303d1a460391848fdcce34ba1e0a564cca493e9',  # wal-g-pg-22.04-amd64.tar.gz
+        'aarch64' => '048b5033c34c1487dc1fccc0572db030e323230984ccc093e80e4e4081c797d1',  # wal-g-pg-22.04-aarch64.tar.gz
       },
     },
 
@@ -97,28 +100,28 @@ class zulip::common {
 
     # https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html
     'aws_signing_helper' => {
-      'version' => '1.4.0',
+      'version' => '1.7.3',
       'sha256'  => {
-        'amd64'   => '4166504134ffd368023b50a2c6f960d22e9be06ad4b4d03ecd9e647bf9d9a17b',
-        'aarch64' => '37d0ba5f8fecae8922424625541aaef38697ed44c20f729f4be62af7c0c0d324',
+        'amd64'   => 'ef609ae021e86a2778b63dc80f4280033fcb1450bddb8b234b4ccd30f917ed21',
+        'aarch64' => '7aaf8b3a4ceac464931dec27bcfd58e4facc93fb48402381e3f96bb45de5a356',
       },
     },
 
     # https://release-registry.services.sentry.io/apps/sentry-cli/latest
     'sentry-cli' => {
-      'version' => '2.42.1',
+      'version' => '2.58.4',
       'sha256'  => {
-        'amd64'   => 'b9d7e2471e7860323f77c6417b6e402c49deacba0f961429a1b95dd245fb9607',
-        'aarch64' => '672fe1d63d6ebbf4b8c59c43e1b75869367378f05088843cf6641562a8c446e2',
+        'amd64'   => 'a4932b4315b192b3d037678a16eb2a5a8731609f671fc4008e643b85c3c74cb6',
+        'aarch64' => '672cb986b0c5d84ef724f39b3aa189be802bceb8bc7dc8c5776a0ca90fcf41bd',
       },
     },
 
     # https://grafana.com/grafana/download?edition=oss
     'grafana' => {
-      'version' => '11.5.2',
+      'version' => '12.3.3',
       'sha256'  => {
-        'amd64'   => '205b16da72842143a6fa1849126b7bd74b5d12a609387d3d037fb104440ea349',
-        'aarch64' => 'f87b23b02b89feba93e2d020ad5e1b420c8ac0d3ff6ff57b6818fcf3781da50a',
+        'amd64'   => 'd69b850d02903bcfe27289661c5b0b1b9a67d0bf0c42d344d55d0e63e62a7bda',
+        'aarch64' => 'a2a50f6a63c89c59914b604482500de2648d12ee266d8eac8886815710482614',
       },
     },
 
@@ -133,52 +136,70 @@ class zulip::common {
 
     # https://prometheus.io/download/#node_exporter
     'node_exporter' => {
-      'version' => '1.9.0',
+      'version' => '1.10.2',
       'sha256'  => {
-        'amd64'   => 'e7b65ea30eec77180487d518081d3dcb121b975f6d95f1866dfb9156c5b24075',
-        'aarch64' => '5314fae1efff19abf807cfc8bd7dadbd47a35565c1043c236ffb0689dc15ef4f',
+        'amd64'   => 'c46e5b6f53948477ff3a19d97c58307394a29fe64a01905646f026ddc32cb65b',
+        'aarch64' => 'de69ec8341c8068b7c8e4cfe3eb85065d24d984a3b33007f575d307d13eb89a6',
       },
     },
 
     # https://github.com/prometheus-community/postgres_exporter/tags
     'postgres_exporter' => {
-      'version' => '0.16.0',
+      'version' => '0.19.0',
       'sha256'  => {
-        'amd64'   => '5763bd10108e9739e7857377deeb43d2addf07c4c4f4d4c882a08847c15bfd61',
-        'aarch64' => 'd88c7d663e4d6a914bca71d2c4a684225e2336c20c62cdce215b2970d2a49b72',
+        'amd64'   => '11033f9016d0c5a5b91742d17aa37490b170f055ec1bb0d7d69509d223952ed0',
+        'aarch64' => '8a2f55b1a00694758ea4bfd96a8bb814c1b279cf9d233a24fecd28a9e87c6280',
       },
     },
 
     # https://github.com/prometheus-community/postgres_exporter/pull/843
     'postgres_exporter-src' => {
-      'version' => '0024e4842054d5c043a0a9c8122e367338f8974c',
-      'sha256'  => '9f9122711b332605080e9cfef42326b34ea4360f8246d12a097c5cfc01e3a580',
+      'version' => '86a2b77aa522f57a136d04ffa33f0e46713d1925',
+      'sha256'  => '03b3a4e794b6c01e911c3f7f4d77a2889d6946e2245f8d12d14844c29554a884',
     },
 
     # https://github.com/ncabatoff/process-exporter/releases
     'process_exporter' => {
-      'version' => '0.8.5',
+      'version' => '0.8.7',
       'sha256'  => {
-        'amd64'   => '30b20325adc4542cf1a3bba85c1135921b7a07b39061bcab298a498b4737aeda',
-        'aarch64' => '8792c2453c52c521846caca382acb940b96e0c09777fee349dae340ac66362ad',
+        'amd64'   => '6d274cca5e94c6a25e55ec05762a472561859ce0a05b984aaedb67dd857ceee2',
+        'aarch64' => '4a2502f290323e57eeeb070fc10e64047ad0cd838ae5a1b347868f75667b5ab0',
       }
     },
 
     # https://prometheus.io/download/#prometheus
     'prometheus' => {
-      'version' => '2.53.3',
+      'version' => '3.9.1',
       'sha256'  => {
-        'amd64'   => 'ebe549477a699c464a0cef0d8d55c0cc9972a1b301fc910b5f260cfc3e08f6a3',
-        'aarch64' => '36d72895b6369c1b6ee51e897f903edc2a9f41d1bee82c5d517f3179276d3cdc',
+        'amd64'   => '86a6999dd6aacbd994acde93c77cfa314d4be1c8e7b7c58f444355c77b32c584',
+        'aarch64' => '4e7f291e527d8aca912a995c183128388c9e048065aff84f74f5a55c9bef3793',
+      },
+    },
+
+    # https://github.com/prometheus/pushgateway/releases
+    'pushgateway' => {
+      'version' => '1.11.2',
+      'sha256'  => {
+        'amd64'   => '2ec72315e150dda071fdeef09360780a386a67e5207ebaa53bb18f2f1a3b89cf',
+        'aarch64' => 'b3fb835dbb0a29b1d6f9cd7ae3568a5615e59b96f8787965248cea67163d4db1',
       },
     },
 
     # https://github.com/oliver006/redis_exporter/releases
     'redis_exporter' => {
-      'version' => '1.67.0',
+      'version' => '1.81.0',
       'sha256'  => {
-        'amd64'   => '32c5ac73b128f1463e311e639b061704fb8b84c9469d0bfef4ee4a2d920457cd',
-        'aarch64' => '5ca41ca7e64aa3976bc51a6042b422260dd983559c5c1fc7b13a4a91f0be7dbc',
+        'amd64'   => 'd2f4740fa81e1a274ca99677783f3fe1544f6022fed997d4cd632d01a8eff1bb',
+        'aarch64' => '038d0d2d8f044075cc97acd323c16a8c3628f08ef7d186601fedaa38b71aad8f',
+      },
+    },
+
+    # https://github.com/alexmv/teleport-sd/releases
+    'teleport-sd' => {
+      'version' => '0.1.0',
+      'sha256' => {
+        'amd64'   => '2128d78dd602c6a24c13fbd759bf19d0c3cebaa732ad0824019ced53163cf455',
+        'aarch64' => 'df93ba9510cb8898ba0f15b293d7c6877173a8d06b1f284dcc42ffc7ff32978e',
       },
     },
 
@@ -193,10 +214,10 @@ class zulip::common {
 
     # https://vector.dev/download/
     'vector' => {
-      'version' => '0.44.0',
+      'version' => '0.53.0',
       'sha256'  => {
-        'amd64'   => '77b44e7d73a1cdac019f3ff01d5d5de767e236384541bc366fdcc517a6857b0b',
-        'aarch64' => '701978e5766acfcc06b8b15884ebd34f0d5b3ffdef6dc391372c853b26301c1d',
+        'amd64'   => '5460f93310eb59cc9e7ee7717a179f1bf2ff8fbc046b7e3eb625159a5e8714bb',
+        'aarch64' => '2722dec4f5c358793caeb86b4f4febd047b37a2d688af181e8264a764ecd28e5',
       },
     },
   }

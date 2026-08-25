@@ -32,7 +32,7 @@ Consumer: TypeAlias = Callable[[ChannelT, Basic.Deliver, pika.BasicProperties, b
 # RabbitMQ/Pika's queuing system; its purpose is to just provide an
 # interface for external files to put things into queues and take them
 # out from bots without having to import pika code all over our codebase.
-class QueueClient(Generic[ChannelT], ABC):
+class QueueClient(ABC, Generic[ChannelT]):
     def __init__(
         self,
         # Disable RabbitMQ heartbeats by default because BlockingConnection can't process them
@@ -464,6 +464,13 @@ def queue_json_publish_rollback_unsafe(
 
 def queue_event_on_commit(queue_name: str, event: dict[str, Any]) -> None:
     transaction.on_commit(lambda: queue_json_publish_rollback_unsafe(queue_name, event))
+
+
+def mobile_notifications_queue_name(user_id: int) -> str:
+    if settings.MOBILE_NOTIFICATIONS_SHARDS > 1:
+        shard_id = user_id % settings.MOBILE_NOTIFICATIONS_SHARDS + 1
+        return f"missedmessage_mobile_notifications_shard{shard_id}"
+    return "missedmessage_mobile_notifications"
 
 
 def retry_event(

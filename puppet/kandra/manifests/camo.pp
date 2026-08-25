@@ -4,4 +4,5 @@ class kandra::camo {
   }
 
   kandra::firewall_allow { 'camo': port => '9292' }
+  kandra::teleport::prometheus_app { 'camo': port => '9292' }
 }

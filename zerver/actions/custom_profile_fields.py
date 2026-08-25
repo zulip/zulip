@@ -4,10 +4,12 @@ import orjson
 from django.db import transaction
 from django.utils.translation import gettext as _
 
+from zerver.actions.message_send import send_user_profile_update_notification
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.streams import render_stream_description
-from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData
+from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData, UserProfileChangeDict
 from zerver.lib.users import get_user_ids_who_can_access_user
 from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, UserProfile
 from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
@@ -28,6 +30,7 @@ def try_add_realm_default_custom_profile_field(
     display_in_profile_summary: bool = False,
     required: bool = False,
     editable_by_user: bool = True,
+    use_for_user_matching: bool = False,
 ) -> CustomProfileField:
     field_data = DEFAULT_EXTERNAL_ACCOUNTS[field_subtype]
     custom_profile_field = CustomProfileField(
@@ -39,6 +42,7 @@ def try_add_realm_default_custom_profile_field(
         display_in_profile_summary=display_in_profile_summary,
         required=required,
         editable_by_user=editable_by_user,
+        use_for_user_matching=use_for_user_matching,
     )
     custom_profile_field.save()
     custom_profile_field.order = custom_profile_field.id
@@ -57,6 +61,7 @@ def try_add_realm_custom_profile_field(
     display_in_profile_summary: bool = False,
     required: bool = False,
     editable_by_user: bool = True,
+    use_for_user_matching: bool = False,
 ) -> CustomProfileField:
     custom_profile_field = CustomProfileField(
         realm=realm,
@@ -65,10 +70,11 @@ def try_add_realm_custom_profile_field(
         display_in_profile_summary=display_in_profile_summary,
         required=required,
         editable_by_user=editable_by_user,
+        use_for_user_matching=use_for_user_matching,
     )
     custom_profile_field.hint = hint
     if custom_profile_field.field_type in (
-        CustomProfileField.SELECT,
+        CustomProfileField.DROPDOWN,
         CustomProfileField.EXTERNAL_ACCOUNT,
     ):
         custom_profile_field.field_data = orjson.dumps(field_data or {}).decode()
@@ -101,8 +107,27 @@ def remove_custom_profile_field_value_if_required(
     new_values = set(field_data.keys())
     removed_values = old_values - new_values
 
-    if removed_values:
-        CustomProfileFieldValue.objects.filter(field=field, value__in=removed_values).delete()
+    if not removed_values:
+        return
+
+    values_to_delete = CustomProfileFieldValue.objects.filter(
+        field=field, value__in=removed_values
+    ).select_related("user_profile")
+
+    updated_users = [field_value.user_profile for field_value in values_to_delete]
+
+    values_to_delete.delete()
+
+    for user_profile in updated_users:
+        notify_user_update_custom_profile_data(
+            user_profile,
+            {
+                "id": field.id,
+                "value": None,
+                "rendered_value": None,
+                "type": field.field_type,
+            },
+        )
 
 
 @transaction.atomic(durable=True)
@@ -115,6 +140,7 @@ def try_update_realm_custom_profile_field(
     display_in_profile_summary: bool | None = None,
     required: bool | None = None,
     editable_by_user: bool | None = None,
+    use_for_user_matching: bool | None = None,
 ) -> None:
     if name is not None:
         field.name = name
@@ -126,14 +152,16 @@ def try_update_realm_custom_profile_field(
         field.editable_by_user = editable_by_user
     if display_in_profile_summary is not None:
         field.display_in_profile_summary = display_in_profile_summary
+    if use_for_user_matching is not None:
+        field.use_for_user_matching = use_for_user_matching
 
     if field.field_type in (
-        CustomProfileField.SELECT,
+        CustomProfileField.DROPDOWN,
         CustomProfileField.EXTERNAL_ACCOUNT,
     ):
         # If field_data is None, field_data is unchanged and there is no need for
         # comparing field_data values.
-        if field_data is not None and field.field_type == CustomProfileField.SELECT:
+        if field_data is not None and field.field_type == CustomProfileField.DROPDOWN:
             remove_custom_profile_field_value_if_required(field, field_data)
 
         # If field.field_data is the default empty string, we will set field_data
@@ -173,7 +201,11 @@ def notify_user_update_custom_profile_data(
 def do_update_user_custom_profile_data_if_changed(
     user_profile: UserProfile,
     data: list[ProfileDataElementUpdateDict],
+    acting_user: UserProfile | None,
+    notify: bool,
 ) -> None:
+    changes: list[UserProfileChangeDict] = []
+
     for custom_profile_field in data:
         field_value, created = CustomProfileFieldValue.objects.get_or_create(
             user_profile=user_profile, field_id=custom_profile_field["id"]
@@ -190,6 +222,8 @@ def do_update_user_custom_profile_data_if_changed(
             # If the field value isn't actually being changed to a different one,
             # we have nothing to do here for this field.
             continue
+
+        old_value = get_custom_profile_field_display_value(field_value)
 
         field_value.value = custom_profile_field_value_string
         if field_value.field.is_renderable():
@@ -209,10 +243,45 @@ def do_update_user_custom_profile_data_if_changed(
             },
         )
 
+        new_value = get_custom_profile_field_display_value(field_value)
+
+        changes.append(
+            UserProfileChangeDict(
+                field_name=field_value.field.name,
+                old_value=old_value,
+                new_value=new_value,
+            )
+        )
+
+    if changes and notify:
+        send_user_profile_update_notification(
+            user_profile=user_profile, acting_user=acting_user, changes=changes
+        )
+
+
+def get_custom_profile_field_display_value(field_value: CustomProfileFieldValue) -> str:
+    """Convert custom profile field value to human-readable string based on field type."""
+    if not field_value.value:
+        return ""
+    type = field_value.field.field_type
+
+    if type == CustomProfileField.DROPDOWN:
+        field_data_dict = orjson.loads(field_value.field.field_data)
+        value_key = field_value.value
+        return field_data_dict[value_key]["text"]
+
+    if type == CustomProfileField.USER:
+        user_ids = orjson.loads(field_value.value)
+        users = UserProfile.objects.filter(id__in=user_ids).only("id", "full_name")
+        users_mentions = [silent_mention_syntax_for_user(user) for user in users]
+        return (", ").join(users_mentions)
+
+    return field_value.value
+
 
 @transaction.atomic(savepoint=False)
 def check_remove_custom_profile_field_value(
-    user_profile: UserProfile, field_id: int, acting_user: UserProfile
+    user_profile: UserProfile, field_id: int, acting_user: UserProfile, notify: bool
 ) -> None:
     try:
         custom_profile_field = CustomProfileField.objects.get(realm=user_profile.realm, id=field_id)
@@ -226,6 +295,7 @@ def check_remove_custom_profile_field_value(
         field_value = CustomProfileFieldValue.objects.get(
             field=custom_profile_field, user_profile=user_profile
         )
+        old_value = get_custom_profile_field_display_value(field_value)
         field_value.delete()
         notify_user_update_custom_profile_data(
             user_profile,
@@ -236,6 +306,17 @@ def check_remove_custom_profile_field_value(
                 "type": custom_profile_field.field_type,
             },
         )
+        if notify:
+            changes: list[UserProfileChangeDict] = [
+                UserProfileChangeDict(
+                    field_name=custom_profile_field.name,
+                    old_value=old_value,
+                    new_value="",
+                )
+            ]
+            send_user_profile_update_notification(
+                user_profile=user_profile, acting_user=acting_user, changes=changes
+            )
     except CustomProfileField.DoesNotExist:
         raise JsonableError(_("Field id {id} not found.").format(id=field_id))
     except CustomProfileFieldValue.DoesNotExist:

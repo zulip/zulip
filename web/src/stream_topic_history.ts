@@ -1,11 +1,11 @@
 import assert from "minimalistic-assert";
 
-import {all_messages_data} from "./all_messages_data.ts";
 import * as echo_state from "./echo_state.ts";
 import {FoldDict} from "./fold_dict.ts";
+import * as internal_url from "./internal_url.ts";
 import * as message_util from "./message_util.ts";
+import * as resolved_topics from "./resolved_topic.ts";
 import * as sub_store from "./sub_store.ts";
-import type {StreamSubscription} from "./sub_store.ts";
 import * as unread from "./unread.ts";
 
 // stream_id -> PerStreamHistory object
@@ -22,60 +22,6 @@ export function set_update_topic_last_message_id(
     update_topic_last_message_id = f;
 }
 
-export function all_topics_in_cache(sub: StreamSubscription): boolean {
-    // Checks whether this browser's cache of contiguous messages
-    // (used to locally render narrows) in all_messages_data has all
-    // messages from a given stream. Because all_messages_data is a range,
-    // we just need to compare it to the range of history on the stream.
-
-    // If the cache isn't initialized, it's a clear false.
-    if (all_messages_data === undefined || all_messages_data.empty()) {
-        return false;
-    }
-
-    // If the cache doesn't have the latest messages, we can't be sure
-    // we have all topics.
-    if (!all_messages_data.fetch_status.has_found_newest()) {
-        return false;
-    }
-
-    if (sub.first_message_id === null) {
-        // If the stream has no message history, we have it all
-        // vacuously.  This should be a very rare condition, since
-        // stream creation sends a message.
-        return true;
-    }
-
-    // Now, we can just compare the first cached message to the first
-    // message ID in the stream; if it's older, we're good, otherwise,
-    // we might be missing the oldest topics in this stream in our
-    // cache.
-    const first_cached_message = all_messages_data.first();
-    return first_cached_message!.id <= sub.first_message_id;
-}
-
-export function is_complete_for_stream_id(stream_id: number): boolean {
-    if (fetched_stream_ids.has(stream_id)) {
-        return true;
-    }
-
-    const sub = sub_store.get(stream_id);
-    const in_cache = sub !== undefined && all_topics_in_cache(sub);
-
-    if (in_cache) {
-        /*
-            If the stream is cached, we can add it to
-            fetched_stream_ids.  Note that for the opposite
-            scenario, we don't delete from
-            fetched_stream_ids, because we may just be
-            waiting for the initial message fetch.
-        */
-        fetched_stream_ids.add(stream_id);
-    }
-
-    return in_cache;
-}
-
 export function stream_has_topics(stream_id: number): boolean {
     if (!stream_dict.has(stream_id)) {
         return false;
@@ -85,6 +31,48 @@ export function stream_has_topics(stream_id: number): boolean {
     assert(history !== undefined);
 
     return history.has_topics();
+}
+
+export function channel_has_locally_available_topic(
+    channel_id: number,
+    topic_name: string,
+): boolean {
+    if (!stream_dict.has(channel_id)) {
+        return false;
+    }
+
+    const history = stream_dict.get(channel_id);
+    assert(history !== undefined);
+
+    return history.topics.has(topic_name);
+}
+
+export function stream_has_locally_available_named_topics(stream_id: number): boolean {
+    if (!stream_dict.has(stream_id)) {
+        return false;
+    }
+
+    const history = stream_dict.get(stream_id);
+    assert(history !== undefined);
+
+    const topic_names = history.topics.keys();
+    for (const topic_name of topic_names) {
+        if (topic_name !== "") {
+            return true;
+        }
+    }
+    return false;
+}
+
+export function stream_has_locally_available_resolved_topics(stream_id: number): boolean {
+    if (!stream_dict.has(stream_id)) {
+        return false;
+    }
+
+    const history = stream_dict.get(stream_id);
+    assert(history !== undefined);
+
+    return history.has_resolved_topics();
 }
 
 export type TopicHistoryEntry = {
@@ -121,6 +109,10 @@ export class PerStreamHistory {
 
     constructor(stream_id: number) {
         this.stream_id = stream_id;
+    }
+
+    has_resolved_topics(): boolean {
+        return this.topics.keys().some((topic) => resolved_topics.is_resolved(topic));
     }
 
     has_topics(): boolean {
@@ -234,7 +226,7 @@ export class PerStreamHistory {
         // of topics the client knows about.
         //
         // This data source is this module's own data structures.
-        const my_recents = [...this.topics.values()];
+        const my_recents = this.topics.values().toArray();
         // This data source is older topics that we know exist because
         // we have unread messages in the topic, even if we don't have
         // any messages from the topic in our local cache.
@@ -246,7 +238,7 @@ export class PerStreamHistory {
         // This data source is locally echoed messages, which should
         // are treated as newer than all delivered messages.
         const local_echo_topics = [
-            ...echo_state.get_waiting_for_ack_local_ids_by_topic(this.stream_id).entries(),
+            ...echo_state.get_waiting_for_ack_local_ids_by_topic(this.stream_id),
         ].map(([topic, local_id]) => ({pretty_name: topic, message_id: local_id}));
         const local_echo_set = new Set<string>(
             local_echo_topics.map((message_topic) => message_topic.pretty_name.toLowerCase()),
@@ -264,10 +256,13 @@ export class PerStreamHistory {
     get_max_message_id(): number {
         // TODO: We probably want to migrate towards this function
         // ignoring locally echoed messages, and thus returning an integer.
-        const unacked_message_ids_in_stream = [
-            ...echo_state.get_waiting_for_ack_local_ids_by_topic(this.stream_id).values(),
-        ];
-        const max_message_id = Math.max(...unacked_message_ids_in_stream, this.max_message_id);
+        const unacked_message_ids_in_stream = echo_state.get_waiting_for_ack_local_ids_by_topic(
+            this.stream_id,
+        );
+        const max_message_id = Math.max(
+            ...unacked_message_ids_in_stream.values(),
+            this.max_message_id,
+        );
         return max_message_id;
     }
 }
@@ -321,6 +316,23 @@ export function remove_messages(opts: {
     }
 }
 
+export function update_topic_name_case(
+    stream_id: number,
+    old_topic_name: string,
+    new_topic_name: string,
+): void {
+    const history = stream_dict.get(stream_id);
+    if (!history) {
+        return;
+    }
+
+    const existing_topic = history.topics.get(old_topic_name);
+    if (!existing_topic) {
+        return;
+    }
+    existing_topic.pretty_name = new_topic_name;
+}
+
 export function find_or_create(stream_id: number): PerStreamHistory {
     let history = stream_dict.get(stream_id);
 
@@ -356,14 +368,14 @@ export function has_history_for(stream_id: number): boolean {
     return fetched_stream_ids.has(stream_id);
 }
 
-export let get_recent_topic_names = (stream_id: number): string[] => {
+export function mark_history_fetched_for(stream_id: number): void {
+    fetched_stream_ids.add(stream_id);
+}
+
+export function get_recent_topic_names(stream_id: number): string[] {
     const history = find_or_create(stream_id);
 
     return history.get_recent_topic_names();
-};
-
-export function rewire_get_recent_topic_names(value: typeof get_recent_topic_names): void {
-    get_recent_topic_names = value;
 }
 
 export function get_max_message_id(stream_id: number): number {
@@ -378,6 +390,26 @@ export function get_latest_known_message_id_in_topic(
 ): number | undefined {
     const history = stream_dict.get(stream_id);
     return history?.topics.get(topic_name)?.message_id;
+}
+
+// We use the topic permalinks if we have access to the last message
+// id of the topic in the cache, by encoding it at the end of the
+// traditional channel-topic url using a `with` operator. If client
+// cache doesn't have a message, we use the traditional link format.
+export function channel_topic_permalink_hash(stream_id: number, topic: string): string {
+    // From an API perspective, any message ID in the topic is a valid
+    // choice. In the client code, we choose the latest message ID in
+    // the topic, since display in recent conversations, the left
+    // sidebar, and most other elements are placed in a way reflecting
+    // the recency of the latest message in the topic.
+    const target_message_id = get_latest_known_message_id_in_topic(stream_id, topic);
+
+    return internal_url.by_stream_topic_url(
+        stream_id,
+        topic,
+        sub_store.maybe_get_stream_name,
+        target_message_id,
+    );
 }
 
 export function reset(): void {
@@ -401,11 +433,6 @@ export function remove_request_pending_for(stream_id: number): void {
 
 export function remove_history_for_stream(stream_id: number): void {
     // Currently only used when user loses access to a stream.
-    if (stream_dict.has(stream_id)) {
-        stream_dict.delete(stream_id);
-    }
-
-    if (fetched_stream_ids.has(stream_id)) {
-        fetched_stream_ids.delete(stream_id);
-    }
+    stream_dict.delete(stream_id);
+    fetched_stream_ids.delete(stream_id);
 }

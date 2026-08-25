@@ -43,9 +43,11 @@
   },
   "created": 1000000000,
   "customer": null,
+  "customer_account": null,
   "id": "free_trial_upgrade_by_card--Customer.retrieve.2.json",
   "livemode": false,
   "metadata": {},
   "object": "payment_method",
+  "shared_payment_granted_token": null,
   "type": "card"
 }

@@ -37,7 +37,7 @@ From image editing program:
 
     def set_avatar(self, user: UserProfile, filename: str) -> None:
         with open(filename, "rb") as f:
-            upload_avatar_image(f, user)
+            upload_avatar_image(f, user, content_type="image/png")
         do_change_avatar_fields(user, UserProfile.AVATAR_FROM_USER, acting_user=None)
 
     def add_message_formatting_conversation(self) -> None:
@@ -61,7 +61,7 @@ From image editing program:
             bot_type=UserProfile.DEFAULT_BOT,
             acting_user=None,
         )
-        self.set_avatar(twitter_bot, "static/images/features/twitter.png")
+        self.set_avatar(twitter_bot, "static/images/characters/coral.png")
 
         bulk_add_subscriptions(
             realm, [stream], list(UserProfile.objects.filter(realm=realm)), acting_user=None
@@ -91,7 +91,7 @@ From image editing program:
             {
                 "sender": fisher,
                 "content": "I'm also a big fan of inline link, tweet, video, and image previews. "
-                "Check out this picture of Çet Whalin[](/static/images/features/whale.png)!",
+                "Check out this picture of seahorse[](/static/images/characters/seahorse.png)!",
             },
             {
                 "sender": starr,

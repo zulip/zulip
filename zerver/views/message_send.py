@@ -1,12 +1,14 @@
 from collections.abc import Iterable, Sequence
+from dataclasses import asdict
 from email.headerregistry import Address
-from typing import Annotated, Literal, cast
+from typing import Annotated, Literal, TypedDict, cast
 
+from django.conf import settings
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
-from pydantic import Json
+from pydantic import Json, StringConstraints
 
 from zerver.actions.message_send import (
     check_send_message,
@@ -27,9 +29,15 @@ from zerver.lib.typed_endpoint import (
     typed_endpoint,
 )
 from zerver.lib.zcommand import process_zcommands
-from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Client, Message, RealmDomain, UserProfile
 from zerver.models.users import get_user_including_cross_realm
+
+
+class SendMessageResponseData(TypedDict, total=False):
+    id: int
+    message_url: str
+    message_link: str
+    automatic_new_visibility_policy: int
 
 
 class InvalidMirrorInputError(Exception):
@@ -48,10 +56,7 @@ def create_mirrored_message_users(
     if recipient_type_name == "private":
         referenced_users.update(email.lower() for email in recipients)
 
-    if client.name == "zephyr_mirror":
-        user_check = same_realm_zephyr_user
-        fullname_function = compute_mit_user_fullname
-    elif client.name == "irc_mirror":
+    if client.name == "irc_mirror":
         user_check = same_realm_irc_user
         fullname_function = compute_irc_user_fullname
     elif client.name in ("jabber_mirror", "JabberMirror"):
@@ -71,28 +76,6 @@ def create_mirrored_message_users(
 
     sender_user_profile = get_user_including_cross_realm(sender_email, user_profile.realm)
     return sender_user_profile
-
-
-def same_realm_zephyr_user(user_profile: UserProfile, email: str) -> bool:
-    #
-    # Are the sender and recipient both addresses in the same Zephyr
-    # mirroring realm?  We have to handle this specially, inferring
-    # the domain from the e-mail address, because the recipient may
-    # not existing in Zulip and we may need to make a stub Zephyr
-    # mirroring user on the fly.
-    try:
-        validators.validate_email(email)
-    except ValidationError:
-        return False
-
-    domain = Address(addr_spec=email).domain.lower()
-
-    # Assumes allow_subdomains=False for all RealmDomain's corresponding to
-    # these realms.
-    return (
-        user_profile.realm.is_zephyr_mirror_realm
-        and RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
-    )
 
 
 def same_realm_irc_user(user_profile: UserProfile, email: str) -> bool:
@@ -132,25 +115,25 @@ def send_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    req_type: Annotated[Literal["direct", "private", "stream", "channel"], ApiParamConfig("type")],
-    req_to: Annotated[str | None, ApiParamConfig("to")] = None,
-    req_sender: Annotated[
-        str | None, ApiParamConfig("sender", documentation_status=DOCUMENTATION_PENDING)
-    ] = None,
     forged_str: Annotated[
         str | None, ApiParamConfig("forged", documentation_status=DOCUMENTATION_PENDING)
     ] = None,
-    topic_name: OptionalTopic = None,
-    message_content: Annotated[str, ApiParamConfig("content")],
-    widget_content: Annotated[
-        str | None, ApiParamConfig("widget_content", documentation_status=DOCUMENTATION_PENDING)
-    ] = None,
     local_id: str | None = None,
+    message_content: Annotated[str, ApiParamConfig("content")],
     queue_id: str | None = None,
+    read_by_sender: Json[bool] | None = None,
+    req_sender: Annotated[
+        str | None, ApiParamConfig("sender", documentation_status=DOCUMENTATION_PENDING)
+    ] = None,
+    req_to: Annotated[str | None, ApiParamConfig("to")] = None,
+    req_type: Annotated[Literal["direct", "private", "stream", "channel"], ApiParamConfig("type")],
     time: Annotated[
         Json[float] | None, ApiParamConfig("time", documentation_status=DOCUMENTATION_PENDING)
     ] = None,
-    read_by_sender: Json[bool] | None = None,
+    topic_name: OptionalTopic = None,
+    widget_content: Annotated[
+        str | None, ApiParamConfig("widget_content", documentation_status=DOCUMENTATION_PENDING)
+    ] = None,
 ) -> HttpResponse:
     recipient_type_name = req_type
     if recipient_type_name == "direct":
@@ -197,7 +180,7 @@ def send_message_backend(
 
     realm = user_profile.realm
 
-    if client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]:
+    if client.name in ["irc_mirror", "jabber_mirror", "JabberMirror"]:
         # Here's how security works for mirroring:
         #
         # For direct messages, the message must be (1) both sent and
@@ -233,8 +216,6 @@ def send_message_backend(
         except InvalidMirrorInputError:
             raise JsonableError(_("Invalid mirrored message"))
 
-        if client.name == "zephyr_mirror" and not user_profile.realm.is_zephyr_mirror_realm:
-            raise JsonableError(_("Zephyr mirroring is not allowed in this organization"))
         sender = mirror_sender
     else:
         if req_sender is not None:
@@ -246,7 +227,7 @@ def send_message_backend(
         # automatically marked as read for yourself.
         read_by_sender = client.default_read_by_sender()
 
-    data: dict[str, int] = {}
+    data: SendMessageResponseData = {}
     sent_message_result = check_send_message(
         sender,
         client,
@@ -264,6 +245,8 @@ def send_message_backend(
         read_by_sender=read_by_sender,
     )
     data["id"] = sent_message_result.message_id
+    data["message_url"] = sent_message_result.message_url
+    data["message_link"] = sent_message_result.message_link
     if sent_message_result.automatic_new_visibility_policy:
         data["automatic_new_visibility_policy"] = (
             sent_message_result.automatic_new_visibility_policy
@@ -275,7 +258,7 @@ def send_message_backend(
 def zcommand_backend(
     request: HttpRequest, user_profile: UserProfile, *, command: str
 ) -> HttpResponse:
-    return json_success(request, data=process_zcommands(command, user_profile))
+    return json_success(request, data=asdict(process_zcommands(command, user_profile)))
 
 
 @typed_endpoint
@@ -283,7 +266,7 @@ def render_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    content: str,
+    content: Annotated[str, StringConstraints(max_length=settings.MAX_MESSAGE_LENGTH)],
 ) -> HttpResponse:
     message = Message()
     message.sender = user_profile

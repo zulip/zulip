@@ -2,7 +2,8 @@
 
 const assert = require("node:assert/strict");
 
-const url_template_lib = require("url-template");
+const {RE2JS} = require("re2js");
+const Template = require("uri-template-lite");
 
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
@@ -12,16 +13,17 @@ const linkifiers = zrequire("linkifiers");
 
 const my_id = 101;
 
-const user_map = new Map();
-user_map.set(my_id, "Me Myself");
-user_map.set(105, "greg");
+const user_map = new Map([
+    [my_id, "Me Myself"],
+    [105, "greg"],
+]);
 
 function get_actual_name_from_user_id(user_id) {
     return user_map.get(user_id);
 }
 
 function get_user_id_from_name(name) {
-    for (const [user_id, _name] of user_map.entries()) {
+    for (const [user_id, _name] of user_map) {
         if (name === _name) {
             return user_id;
         }
@@ -48,8 +50,7 @@ const staff_group = {
     name: "Staff",
 };
 
-const user_group_map = new Map();
-user_group_map.set(staff_group.name, staff_group);
+const user_group_map = new Map([[staff_group.name, staff_group]]);
 
 function get_user_group_from_name(name) {
     return user_group_map.get(name);
@@ -66,8 +67,7 @@ const social = {
     name: "social",
 };
 
-const sub_map = new Map();
-sub_map.set(social.name, social);
+const sub_map = new Map([[social.name, social]]);
 
 function get_stream_by_name(name) {
     return sub_map.get(name);
@@ -88,16 +88,17 @@ function get_emoticon_translations() {
     ];
 }
 
-const emoji_map = new Map();
-emoji_map.set("smile", "1f604");
-emoji_map.set("alien", "1f47d");
+const emoji_map = new Map([
+    ["smile", "1f604"],
+    ["alien", "1f47d"],
+]);
 
 function get_emoji_codepoint(emoji_name) {
     return emoji_map.get(emoji_name);
 }
 
 function get_emoji_name(codepoint) {
-    for (const [emoji_name, _codepoint] of emoji_map.entries()) {
+    for (const [emoji_name, _codepoint] of emoji_map) {
         if (codepoint === _codepoint) {
             return emoji_name;
         }
@@ -107,19 +108,25 @@ function get_emoji_name(codepoint) {
     throw new Error(`unexpected codepoint ${codepoint}`);
 }
 
-const realm_emoji_map = new Map();
-realm_emoji_map.set("heart", "/images/emoji/heart.bmp");
+const realm_emoji_map = new Map([["heart", "/images/emoji/heart.bmp"]]);
 
 function get_realm_emoji_url(emoji_name) {
     return realm_emoji_map.get(emoji_name);
 }
 
-const regex = /#foo(\d+)(?!\w)/g;
-const linkifier_map = new Map();
-linkifier_map.set(regex, {
-    url_template: url_template_lib.parseTemplate("http://foo.com/{id}"),
-    group_number_to_name: {1: "id"},
-});
+const regex = RE2JS.compile(
+    "(^|\\s|\\x{0085}|\\p{Z}|['\"(,:<])(#foo(?P<id>\\d+))($|[^\\p{L}\\p{N}])",
+);
+const linkifier_map = new Map([
+    [
+        regex,
+        {
+            url_template: new Template("http://foo.com/{id}"),
+            reverse_template: null,
+            alternative_url_templates: [],
+        },
+    ],
+]);
 
 function get_linkifier_map() {
     return linkifier_map;
@@ -210,7 +217,7 @@ run_test("emojis", () => {
         '<p>I <img alt=":heart:" class="emoji" src="/images/emoji/heart.bmp" title="heart"> JavaScript</p>',
     );
     assert_parse(
-        "Mars Attacks! \uD83D\uDC7D",
+        "Mars Attacks! \u{1F47D}",
         '<p>Mars Attacks! <span aria-label="alien" class="emoji emoji-1f47d" role="img" title="alien">:alien:</span></p>',
     );
 });
@@ -286,31 +293,33 @@ run_test("topic links repeated", () => {
 });
 
 run_test("topic links overlapping", () => {
+    // Using ":" instead of "#" in test patterns because ":" is in the
+    // boundary character set used by compile_linkifier, while "#" is not.
     linkifiers.initialize([
-        {pattern: "[a-z]+(?P<id>1\\d+) #[a-z]+", url_template: "http://a.com/{id}"},
+        {pattern: "[a-z]+(?P<id>1\\d+) :[a-z]+", url_template: "http://a.com/{id}"},
         {pattern: "[a-z]+(?P<id>1\\d+)", url_template: "http://b.com/{id}"},
-        {pattern: ".+#(?P<id>[a-z]+)", url_template: "http://wildcard.com/{id}"},
-        {pattern: "#(?P<id>[a-z]+)", url_template: "http://c.com/{id}"},
+        {pattern: ".+:(?P<id>[a-z]+)", url_template: "http://wildcard.com/{id}"},
+        {pattern: ":(?P<id>[a-z]+)", url_template: "http://c.com/{id}"},
     ]);
     // b.com's pattern should be matched while it overlaps with c.com's.
-    assert_topic_links("#foo100", [
+    assert_topic_links(":foo100", [
         {
             text: "foo100",
             url: "http://b.com/100",
         },
     ]);
     // a.com's pattern should be matched while it overlaps with b.com's, wildcard.com's and c.com's.
-    assert_topic_links("#asd123 #asd", [
+    assert_topic_links(":asd123 :asd", [
         {
-            text: "asd123 #asd",
+            text: "asd123 :asd",
             url: "http://a.com/123",
         },
     ]);
     // a.com's pattern do not match, wildcard.com's and b.com's patterns should match
     // and the links are ordered by the matched index.
-    assert_topic_links("/#asd #foo100", [
+    assert_topic_links("/:asd :foo100", [
         {
-            text: "/#asd",
+            text: "/:asd",
             url: "http://wildcard.com/asd",
         },
         {
@@ -318,27 +327,27 @@ run_test("topic links overlapping", () => {
             url: "http://b.com/100",
         },
     ]);
-    assert_topic_links("foo.anything/#asd", [
+    assert_topic_links("foo.anything/:asd", [
         {
-            text: "foo.anything/#asd",
+            text: "foo.anything/:asd",
             url: "http://wildcard.com/asd",
         },
     ]);
 
-    // While the raw URL "http://foo.com/foo100" appears before b.com's match "foo100",
+    // While the raw URL "http://foo.com/:foo100" appears before b.com's match "foo100",
     // we prioritize the linkifier match first.
-    assert_topic_links("http://foo.com/foo100", [
+    assert_topic_links("http://foo.com/:foo100", [
         {
             text: "foo100",
             url: "http://b.com/100",
         },
     ]);
 
-    // Here the raw URL "https://foo.com/#asd" appears after wildcard.com's match "something https://foo.com/#asd".
+    // Here the raw URL "https://foo.com/:asd" appears after wildcard.com's match "something https://foo.com/:asd".
     // The latter is prioritized and the raw URL does not get included.
-    assert_topic_links("something https://foo.com/#asd", [
+    assert_topic_links("something https://foo.com/:asd", [
         {
-            text: "something https://foo.com/#asd",
+            text: "something https://foo.com/:asd",
             url: "http://wildcard.com/asd",
         },
     ]);

@@ -8,6 +8,7 @@
   "message": "Hello World",
   "user_id": 4,
   "user_name": "John Smith",
+  "user_username": "jsmith",
   "user_email": "john@example.com",
   "user_avatar": "https://s.gravatar.com/avatar/d4c74594d841139328695756648b6bd6?s=8://s.gravatar.com/avatar/d4c74594d841139328695756648b6bd6?s=80",
   "project_id": 15,

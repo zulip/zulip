@@ -1,9 +1,8 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import render_add_saved_snippet_modal from "../templates/add_saved_snippet_modal.hbs";
-import render_confirm_delete_saved_snippet from "../templates/confirm_dialog/confirm_delete_saved_snippet.hbs";
 import render_edit_saved_snippet_modal from "../templates/edit_saved_snippet_modal.hbs";
 
 import * as channel from "./channel.ts";
@@ -18,6 +17,24 @@ import * as saved_snippets from "./saved_snippets.ts";
 let saved_snippets_widget: dropdown_widget.DropdownWidget | undefined;
 let saved_snippets_dropdown: tippy.Instance | undefined;
 let composebox_saved_snippets_dropdown_widget = false;
+
+function get_target_textarea($target_element: JQuery<Element>): JQuery<HTMLTextAreaElement> {
+    if ($target_element.parents(".message_edit_form").length === 1) {
+        const edit_message_id = rows.id($target_element.parents(".message_row")).toString();
+        return $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
+    }
+
+    return $<HTMLTextAreaElement>("textarea#compose-textarea");
+}
+
+function get_dropdown_target_textarea(): JQuery<HTMLTextAreaElement> | undefined {
+    const reference = saved_snippets_dropdown?.reference;
+    if (reference === undefined) {
+        return undefined;
+    }
+
+    return get_target_textarea($(reference));
+}
 
 function submit_create_saved_snippet_form(): void {
     const title = $<HTMLInputElement>("#add-new-saved-snippet-modal .saved-snippet-title")
@@ -101,24 +118,19 @@ function delete_saved_snippet(saved_snippet_id: string): void {
     });
 }
 
-function item_click_callback(
-    event: JQuery.ClickEvent,
-    dropdown: tippy.Instance,
-    widget: dropdown_widget.DropdownWidget,
-    is_sticky_bottom_option_clicked: boolean,
-): void {
-    event.preventDefault();
-    event.stopPropagation();
-
+function item_button_click_callback(event: JQuery.ClickEvent): void {
     if (
         $(event.target).closest(".saved_snippets-dropdown-list-container .dropdown-list-delete")
             .length > 0
     ) {
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Delete saved snippet?"}),
-            html_body: render_confirm_delete_saved_snippet(),
+            modal_title_html: $t_html({defaultMessage: "Delete saved snippet?"}),
+            modal_content_html: $t({defaultMessage: "This action cannot be undone."}),
+            is_compact: true,
             on_click() {
-                const saved_snippet_id = $(event.currentTarget).attr("data-unique-id");
+                const saved_snippet_id = $(event.target)
+                    .closest(".list-item")
+                    .attr("data-unique-id");
                 assert(saved_snippet_id !== undefined);
                 delete_saved_snippet(saved_snippet_id);
             },
@@ -130,7 +142,7 @@ function item_click_callback(
         $(event.target).closest(".saved_snippets-dropdown-list-container .dropdown-list-edit")
             .length > 0
     ) {
-        const saved_snippet_id = $(event.currentTarget).attr("data-unique-id");
+        const saved_snippet_id = $(event.target).closest(".list-item").attr("data-unique-id");
         assert(saved_snippet_id !== undefined);
 
         const saved_snippet = saved_snippets.get_saved_snippet_by_id(
@@ -138,12 +150,12 @@ function item_click_callback(
         );
         assert(saved_snippet !== undefined);
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Edit saved snippet"}),
-            html_body: render_edit_saved_snippet_modal({
+            modal_title_html: $t_html({defaultMessage: "Edit saved snippet"}),
+            modal_content_html: render_edit_saved_snippet_modal({
                 title: saved_snippet.title,
                 content: saved_snippet.content,
             }),
-            html_submit_button: $t_html({defaultMessage: "Save"}),
+            modal_submit_button_text: $t({defaultMessage: "Save"}),
             id: "edit-saved-snippet-modal",
             form_id: "edit-saved-snippet-form",
             update_submit_disabled_state_on_change: true,
@@ -151,36 +163,40 @@ function item_click_callback(
                 submit_edit_saved_snippet_form(saved_snippet.id);
             },
             on_shown: () => $("#edit-saved-snippet-title").trigger("focus"),
+            on_hidden: () => get_dropdown_target_textarea()?.trigger("focus"),
             post_render() {
                 saved_snippet_edit_modal_post_render(saved_snippet);
             },
         });
         return;
     }
+}
+
+function item_click_callback(
+    event: JQuery.ClickEvent,
+    dropdown: tippy.Instance,
+    widget: dropdown_widget.DropdownWidget,
+    is_sticky_bottom_option_clicked: boolean,
+): void {
+    event.preventDefault();
+    event.stopPropagation();
 
     dropdown.hide();
     // Get target textarea where the "Add saved snippet" button is clicked.
-    const $target_element = $(dropdown.reference);
-    let $target_textarea: JQuery<HTMLTextAreaElement>;
-    let edit_message_id: string | undefined;
-    if ($target_element.parents(".message_edit_form").length === 1) {
-        edit_message_id = rows.id($target_element.parents(".message_row")).toString();
-        $target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
-    } else {
-        $target_textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
-    }
+    const $target_textarea = get_target_textarea($(dropdown.reference));
     if (is_sticky_bottom_option_clicked) {
         dialog_widget.launch({
-            html_heading: $t_html({defaultMessage: "Create a new saved snippet"}),
-            html_body: render_add_saved_snippet_modal({
+            modal_title_html: $t_html({defaultMessage: "Create a new saved snippet"}),
+            modal_content_html: render_add_saved_snippet_modal({
                 prepopulated_content: $target_textarea.val(),
             }),
-            html_submit_button: $t_html({defaultMessage: "Save"}),
+            modal_submit_button_text: $t({defaultMessage: "Save"}),
             id: "add-new-saved-snippet-modal",
             form_id: "add-new-saved-snippet-form",
             update_submit_disabled_state_on_change: true,
             on_click: submit_create_saved_snippet_form,
             on_shown: () => $("#new-saved-snippet-title").trigger("focus"),
+            on_hidden: () => $target_textarea.trigger("focus"),
             post_render: saved_snippet_modal_post_render,
         });
     } else {
@@ -194,29 +210,41 @@ function item_click_callback(
 }
 
 export function setup_saved_snippets_dropdown_widget(widget_selector: string): void {
-    new dropdown_widget.DropdownWidget({
+    saved_snippets_widget = new dropdown_widget.DropdownWidget({
         widget_name: "saved_snippets",
         widget_selector,
         get_options: saved_snippets.get_options_for_dropdown_widget,
         item_click_callback,
+        item_button_click_callback,
         $events_container: $("body"),
         unique_id_type: "number",
+        hide_search_box_focus_first_item_on_keyboard_open: true,
+        highlight_current_value: false,
         sticky_bottom_option: $t({
             defaultMessage: "Create a new saved snippet",
         }),
-        on_show_callback(dropdown: tippy.Instance, widget: dropdown_widget.DropdownWidget) {
-            saved_snippets_widget = widget;
+        no_items_text: $t({defaultMessage: "No saved snippets"}),
+        on_show_callback(dropdown: tippy.Instance) {
             saved_snippets_dropdown = dropdown;
         },
+        on_exit_with_escape_callback: () => get_dropdown_target_textarea()?.trigger("focus"),
         focus_target_on_hidden: false,
         prefer_top_start_placement: true,
-        tippy_props: {
-            // Using -100 as x offset makes saved snippet icon be in the center
-            // of the dropdown widget and 5 as y offset is what we use in compose
-            // recipient dropdown widget.
-            offset: [-100, 5],
+        on_mount_callback(instance: tippy.Instance) {
+            const ref_rect = instance.reference.getBoundingClientRect();
+            const popper_rect = instance.popper.getBoundingClientRect();
+            const x_offset = -(popper_rect.width / 2 - ref_rect.width / 2);
+            instance.setProps({offset: [x_offset, 5]});
         },
-    }).setup();
+        tippy_props: {
+            arrow: true,
+        },
+    });
+    saved_snippets_widget.setup();
+}
+
+export function open_saved_snippets_dropdown_via_hotkey(): void {
+    saved_snippets_widget?.open({trigger: "keyboard"});
 }
 
 export function setup_saved_snippets_dropdown_widget_if_needed(): void {

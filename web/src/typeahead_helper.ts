@@ -1,9 +1,6 @@
-import Handlebars from "handlebars/runtime.js";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as typeahead from "../shared/src/typeahead.ts";
-import type {EmojiSuggestion} from "../shared/src/typeahead.ts";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
 import {MAX_ITEMS} from "./bootstrap_typeahead.ts";
@@ -27,6 +24,8 @@ import * as stream_data from "./stream_data.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
 import type {StreamPill, StreamPillData} from "./stream_pill.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import type {EmojiSuggestion} from "./typeahead.ts";
+import * as typeahead from "./typeahead.ts";
 import type {UserGroupPill, UserGroupPillData} from "./user_group_pill.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
@@ -36,8 +35,7 @@ import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
 
 export type UserOrMention =
-    | {type: "broadcast"; user: PseudoMentionUser}
-    | {type: "user"; user: User};
+    {type: "broadcast"; user: PseudoMentionUser} | {type: "user"; user: User};
 export type UserOrMentionPillData = UserOrMention & {
     is_silent?: boolean;
 };
@@ -47,48 +45,6 @@ export type CombinedPillContainer = InputPillContainer<CombinedPill>;
 
 export type GroupSettingPill = UserGroupPill | UserPill;
 export type GroupSettingPillContainer = InputPillContainer<GroupSettingPill>;
-
-export function build_highlight_regex(query: string): RegExp {
-    const regex = new RegExp("(" + _.escapeRegExp(query) + ")", "ig");
-    return regex;
-}
-
-export function highlight_with_escaping_and_regex(regex: RegExp, item: string): string {
-    // if regex is empty return entire item escaped
-    if (regex.source === "()") {
-        return Handlebars.Utils.escapeExpression(item);
-    }
-
-    // We need to assemble this manually (as opposed to doing 'join') because we need to
-    // (1) escape all the pieces and (2) the regex is case-insensitive, and we need
-    // to know the case of the content we're replacing (you can't just use a bolded
-    // version of 'query')
-
-    const pieces = item.split(regex).filter(Boolean);
-    let result = "";
-
-    for (const [i, piece] of pieces.entries()) {
-        if (regex.test(piece) && (i === 0 || pieces[i - 1]!.endsWith(" "))) {
-            // only highlight if the matching part is a word prefix, ie
-            // if it is the 1st piece or if there was a space before it
-            result += "<strong>" + Handlebars.Utils.escapeExpression(piece) + "</strong>";
-        } else {
-            result += Handlebars.Utils.escapeExpression(piece);
-        }
-    }
-
-    return result;
-}
-
-export function make_query_highlighter(query: string): (phrase: string) => string {
-    query = query.toLowerCase();
-
-    const regex = build_highlight_regex(query);
-
-    return function (phrase) {
-        return highlight_with_escaping_and_regex(regex, phrase);
-    };
-}
 
 type StreamData = {
     invite_only: boolean;
@@ -136,7 +92,12 @@ export function rewire_render_typeahead_item(value: typeof render_typeahead_item
     render_typeahead_item = value;
 }
 
-export let render_person = (person: UserPillData | UserOrMentionPillData): string => {
+export let render_person = (
+    person: UserPillData | UserOrMentionPillData,
+    opts?: {
+        query: string;
+    },
+): string => {
     if (person.type === "broadcast") {
         return render_typeahead_item({
             primary: person.user.special_item_text,
@@ -155,6 +116,52 @@ export let render_person = (person: UserPillData | UserOrMentionPillData): strin
 
     const pronouns = pronouns_list?.[0]?.value;
 
+    // Show the email or a matched custom profile field in the secondary text.
+    // If both the email and a custom profile field match the query, show both.
+    const user_email = person.user.delivery_email;
+    let secondary_text = user_email;
+
+    if (opts) {
+        // Strip diacritics as query_matches_person does, so the email or
+        // field that made this user match is the one we show.
+        const diacritic_stripped_query = typeahead.remove_diacritics(opts.query);
+        const email_matches = typeahead.query_matches_string_in_order(
+            diacritic_stripped_query,
+            user_email ?? "",
+            "",
+            true,
+        );
+        let matched_custom_field;
+
+        for (const field of realm.custom_profile_fields) {
+            if (!field.use_for_user_matching) {
+                continue;
+            }
+
+            const value = people.get_custom_profile_data(person.user.user_id, field.id)?.value;
+
+            if (
+                typeahead.query_matches_string_in_order(
+                    diacritic_stripped_query,
+                    value ?? "",
+                    "",
+                    true,
+                )
+            ) {
+                matched_custom_field = value;
+                break;
+            }
+        }
+
+        // if both email and custom field matches, show both.
+        if (matched_custom_field) {
+            if (user_email !== null && email_matches) {
+                secondary_text = `${user_email}, ${matched_custom_field}`;
+            } else {
+                secondary_text = matched_custom_field;
+            }
+        }
+    }
     const typeahead_arguments = {
         primary: person.user.full_name,
         img_src: avatar_url,
@@ -166,7 +173,7 @@ export let render_person = (person: UserPillData | UserOrMentionPillData): strin
             person.user.user_id,
         ),
         pronouns,
-        secondary: person.user.delivery_email,
+        secondary: secondary_text,
     };
 
     return render_typeahead_item(typeahead_arguments);
@@ -174,6 +181,15 @@ export let render_person = (person: UserPillData | UserOrMentionPillData): strin
 
 export function rewire_render_person(value: typeof render_person): void {
     render_person = value;
+}
+
+export let render_topic_state = (state: string): string =>
+    render_typeahead_item({
+        primary: state,
+    });
+
+export function rewire_render_topic_state(value: typeof render_topic_state): void {
+    render_topic_state = value;
 }
 
 export let render_user_group = (user_group: {name: string; description: string}): string =>
@@ -189,12 +205,15 @@ export function rewire_render_user_group(value: typeof render_user_group): void 
 
 export function render_person_or_user_group(
     item: UserGroupPillData | UserPillData | UserOrMentionPillData,
+    opts?: {
+        query: string;
+    },
 ): string {
     if (item.type === "user_group") {
         return render_user_group(item);
     }
 
-    return render_person(item);
+    return render_person(item, opts);
 }
 
 export let render_stream = (stream: StreamData): string =>
@@ -240,126 +259,175 @@ export function sorter<T>(query: string, objs: T[], get_item: (x: T) => string):
     return [...results.matches, ...results.rest];
 }
 
-export function compare_by_pms(user_a: User, user_b: User): number {
-    const count_a = people.get_recipient_count(user_a);
-    const count_b = people.get_recipient_count(user_b);
+export function compare_users_for_streams(
+    user_a: User,
+    user_b: User,
+    current_stream_id: number,
+    current_topic: string,
+): number {
+    // Sort order: subscribers > recency in topic/stream > direct message recency > alphabetical
+    const a_is_subscribed = stream_data.is_user_loaded_and_subscribed(
+        current_stream_id,
+        user_a.user_id,
+    );
+    const b_is_subscribed = stream_data.is_user_loaded_and_subscribed(
+        current_stream_id,
+        user_b.user_id,
+    );
+    if (a_is_subscribed !== b_is_subscribed) {
+        return a_is_subscribed ? -1 : 1;
+    }
 
-    if (count_a > count_b) {
+    const recency_comparison = recent_senders.compare_by_recency(
+        user_a,
+        user_b,
+        current_stream_id,
+        current_topic,
+    );
+    if (recency_comparison !== 0) {
+        return recency_comparison;
+    }
+
+    return compare_users_for_dms(user_a, user_b);
+}
+
+export function compare_users_for_dms(user_a: User, user_b: User, query = ""): number {
+    // Rank users by how recently you've exchanged direct messages with
+    // them, mirroring the mobile app. A more recent DM conversation,
+    // whether 1:1 or group, ranks higher, and any DM history ranks above
+    // none.
+    const a_message_id = pm_conversations.get_latest_direct_message_id_with_user(user_a.user_id);
+    const b_message_id = pm_conversations.get_latest_direct_message_id_with_user(user_b.user_id);
+
+    if (a_message_id !== undefined && b_message_id !== undefined) {
+        if (a_message_id > b_message_id) {
+            return -1;
+        }
+        if (a_message_id < b_message_id) {
+            return 1;
+        }
+    } else if (a_message_id !== undefined) {
         return -1;
-    } else if (count_a < count_b) {
+    } else if (b_message_id !== undefined) {
         return 1;
     }
 
-    const a_is_partner = pm_conversations.is_partner(user_a.user_id);
-    const b_is_partner = pm_conversations.is_partner(user_b.user_id);
+    // Only apply name length comparison when user has started typing
+    if (query.length > 0) {
+        const name_len_diff = user_a.full_name.length - user_b.full_name.length;
+        if (name_len_diff !== 0) {
+            return name_len_diff < 0 ? -1 : 1;
+        }
+    }
+    return user_a.full_name.localeCompare(user_b.full_name);
+}
 
-    // This code will never run except in the rare case that one has no
-    // recent DM message history with a user, but does have some older
-    // message history that's outside the "recent messages only"
-    // data set powering people.get_recipient_count.
-    if (a_is_partner && !b_is_partner) {
-        return -1;
-    } else if (!a_is_partner && b_is_partner) {
-        return 1;
+export function compare_user_with_wildcard(user: User, stream_id?: number, topic?: string): number {
+    if (stream_id === undefined || topic === undefined) {
+        return pm_conversations.get_latest_direct_message_id_with_user(user.user_id) ? -1 : 1;
     }
 
-    // We use alpha sort as a tiebreaker, which might be helpful for
-    // new users.
-    if (user_a.full_name < user_b.full_name) {
+    const is_subscriber = stream_data.is_user_loaded_and_subscribed(stream_id, user.user_id);
+    if (is_subscriber) {
         return -1;
-    } else if (user_a === user_b) {
-        return 0;
     }
-    return 1;
+
+    const posted_in_topic =
+        recent_senders.max_id_for_stream_topic_sender({
+            stream_id,
+            topic,
+            sender_id: user.user_id,
+        }) > 0;
+    if (posted_in_topic) {
+        return -1;
+    }
+
+    const posted_in_stream =
+        recent_senders.max_id_for_stream_sender({
+            stream_id,
+            sender_id: user.user_id,
+        }) > 0;
+    if (posted_in_stream) {
+        return -1;
+    }
+
+    // A user with no connection to this channel still ranks above the
+    // wildcard mention if there are DMs with them, since a frequent DM
+    // contact is a more likely mention target than @all/@everyone for
+    // most users. Users without DM conversations rank below the wildcard.
+    return pm_conversations.get_latest_direct_message_id_with_user(user.user_id) ? -1 : 1;
 }
 
 export function compare_people_for_relevance(
     person_a: UserOrMentionPillData | UserPillData,
     person_b: UserOrMentionPillData | UserPillData,
-    compare_by_current_conversation?: (user_a: User, user_b: User) => number,
     current_stream_id?: number,
+    current_topic?: string,
+    query = "",
 ): number {
-    // give preference to "all", "everyone" or "stream"
-    if (compose_state.get_message_type() !== "private") {
-        if (person_a.type === "broadcast") {
-            if (person_b.type === "broadcast") {
-                return person_a.user.idx - person_b.user.idx;
-            }
-            return -1;
-        } else if (person_b.type === "broadcast") {
-            return 1;
-        }
-    } else {
-        if (person_a.type === "broadcast") {
-            if (person_b.type === "broadcast") {
-                return person_a.user.idx - person_b.user.idx;
-            }
-            return 1;
-        } else if (person_b.type === "broadcast") {
-            return -1;
-        }
-    }
-
-    // Now handle actual people users.
-    // give preference to subscribed users first
-    if (current_stream_id !== undefined) {
+    const view_is_stream = current_stream_id !== undefined;
+    if (view_is_stream && !peer_data.has_full_subscriber_data(current_stream_id)) {
         // Fetch subscriber data if we don't have it yet, but don't wait for it.
         // It's fine to use partial data for now, and hopefully on subsequent
         // keystrokes, we'll have the full data to show more subscribers at the
         // top of the list.
         //
         // (We will usually have it, since entering a channel triggers a fetch.)
-        if (!peer_data.has_full_subscriber_data(current_stream_id)) {
-            void peer_data.maybe_fetch_stream_subscribers(current_stream_id);
+        void peer_data.fetch_stream_subscribers(current_stream_id);
+    }
+    if (person_a.type === "user" && person_b.type === "user") {
+        if (view_is_stream) {
+            // Callers pass a stream's topic together with its id (the topic
+            // can be ""), so a selected stream always has a defined topic.
+            assert(current_topic !== undefined);
+            return compare_users_for_streams(
+                person_a.user,
+                person_b.user,
+                current_stream_id,
+                current_topic,
+            );
         }
-
-        // If the client does not yet have complete subscriber data,
-        // "unknown" and "not subscribed" are both represented as false here.
-        const a_is_sub = stream_data.is_user_subscribed(current_stream_id, person_a.user.user_id);
-        const b_is_sub = stream_data.is_user_subscribed(current_stream_id, person_b.user.user_id);
-
-        if (a_is_sub && !b_is_sub) {
-            return -1;
-        } else if (!a_is_sub && b_is_sub) {
-            return 1;
-        }
+        return compare_users_for_dms(person_a.user, person_b.user, query);
+    }
+    // User vs wildcard
+    if (person_a.type === "user") {
+        return compare_user_with_wildcard(person_a.user, current_stream_id, current_topic);
+    }
+    if (person_b.type === "user") {
+        return -compare_user_with_wildcard(person_b.user, current_stream_id, current_topic);
     }
 
-    if (compare_by_current_conversation !== undefined) {
-        const preference = compare_by_current_conversation(person_a.user, person_b.user);
-        if (preference !== 0) {
-            return preference;
-        }
-    }
-
-    return compare_by_pms(person_a.user, person_b.user);
+    // Both are wildcard mentions; `idx` preserves the order in which
+    // broadcast_mentions() lists them (e.g. @all before @topic).
+    return person_a.user.idx - person_b.user.idx;
 }
 
 export function sort_people_for_relevance<UserType extends UserOrMentionPillData | UserPillData>(
     objs: UserType[],
     current_stream_id?: number,
     current_topic?: string,
+    query = "",
 ): UserType[] {
     // If sorting for recipientbox typeahead and not viewing a stream / topic, then current_stream = ""
     const current_stream =
         current_stream_id !== undefined ? stream_data.get_sub_by_id(current_stream_id) : undefined;
     if (current_stream === undefined) {
-        objs.sort((person_a, person_b) => compare_people_for_relevance(person_a, person_b));
+        // Viewing PM conversations
+        objs.sort((person_a, person_b) =>
+            compare_people_for_relevance(person_a, person_b, undefined, undefined, query),
+        );
     } else {
         assert(current_stream_id !== undefined);
         assert(current_topic !== undefined);
+
+        // Viewing Stream messages
         objs.sort((person_a, person_b) =>
             compare_people_for_relevance(
                 person_a,
                 person_b,
-                (user_a, user_b) =>
-                    recent_senders.compare_by_recency(
-                        user_a,
-                        user_b,
-                        current_stream_id,
-                        current_topic,
-                    ),
                 current_stream_id,
+                current_topic,
+                query,
             ),
         );
     }
@@ -405,9 +473,11 @@ function compare_language_by_popularity(lang_a: string, lang_b: string): number 
     // languages seem sensible.
     if (!lang_a_data && !lang_b_data) {
         return 0; // Neither have popularity, so they tie.
-    } else if (!lang_a_data) {
+    }
+    if (!lang_a_data) {
         return 1; // lang_a doesn't have popularity, so sort a after b.
-    } else if (!lang_b_data) {
+    }
+    if (!lang_b_data) {
         return -1; // lang_b doesn't have popularity, so sort a before b.
     }
 
@@ -472,29 +542,50 @@ const get_user_matches_with_quality = <UserType extends UserOrMentionPillData | 
     ok_users: () => UserType[];
     worst_users: () => UserType[];
 } => {
-    const users_name_results = typeahead.triage_raw(query, users, (p) => p.user.full_name);
-    const users_name_good_matches = [
-        ...users_name_results.exact_matches,
-        ...users_name_results.begins_with_case_sensitive_matches,
-        ...users_name_results.begins_with_case_insensitive_matches,
-    ];
+    const users_name_results = typeahead.triage_raw(query, users, (p) => [p.user.full_name]);
     const users_name_okay_matches = [...users_name_results.word_boundary_matches];
 
-    const email_results = typeahead.triage_raw(
-        query,
-        users_name_results.no_matches,
-        (p) => p.user.email,
-    );
+    const email_results = typeahead.triage_raw(query, users_name_results.no_matches, (p) => [
+        p.user.email,
+    ]);
     const email_good_matches = [
         ...email_results.exact_matches,
+        ...email_results.begins_with_case_insensitive_diacritic_matches,
         ...email_results.begins_with_case_sensitive_matches,
         ...email_results.begins_with_case_insensitive_matches,
     ];
     const email_okay_matches = [...email_results.word_boundary_matches];
-    const best_users = (): UserType[] => [
-        ...sort_relevance(users_name_good_matches),
-        ...sort_relevance(users_name_okay_matches),
-    ];
+    const query_has_diacritics = typeahead.contains_diacritics(query);
+    const best_users = (): UserType[] => {
+        if (query_has_diacritics) {
+            // Sort exact and diacritic-prefix matches together as one tier, and
+            // case-sensitive + case-insensitive (including the diacritic-stripped
+            // fallback) as a second tier. The separate sort calls ensure relevance
+            // sorting within the second tier can't bubble a diacritic-stripped
+            // fallback above a diacritic prefix match.
+            return [
+                ...sort_relevance([
+                    ...users_name_results.exact_matches,
+                    ...users_name_results.begins_with_case_insensitive_diacritic_matches,
+                ]),
+                ...sort_relevance([
+                    ...users_name_results.begins_with_case_sensitive_matches,
+                    ...users_name_results.begins_with_case_insensitive_matches,
+                ]),
+                ...sort_relevance(users_name_okay_matches),
+            ];
+        }
+
+        const users_name_good_matches = [
+            ...users_name_results.exact_matches,
+            ...users_name_results.begins_with_case_sensitive_matches,
+            ...users_name_results.begins_with_case_insensitive_matches,
+        ];
+        return [
+            ...sort_relevance(users_name_good_matches),
+            ...sort_relevance(users_name_okay_matches),
+        ];
+    };
     const ok_users = (): UserType[] => [
         ...sort_relevance(email_good_matches),
         ...sort_relevance(email_okay_matches),
@@ -519,7 +610,7 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
     max_num_items?: number | undefined;
 }): (UserType | UserGroupPillData)[] => {
     function sort_relevance(items: UserType[]): UserType[] {
-        return sort_people_for_relevance(items, current_stream_id, current_topic);
+        return sort_people_for_relevance(items, current_stream_id, current_topic, query);
     }
 
     function is_bot(user: UserType): boolean {
@@ -541,7 +632,7 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
         worst_users: worst_bots,
     } = get_user_matches_with_quality(bots, query, sort_relevance);
 
-    const groups_results = typeahead.triage_raw_with_multiple_items(query, groups, (g) => {
+    const groups_results = typeahead.triage_raw(query, groups, (g) => {
         if (g.name === "role:members") {
             return [
                 user_groups.get_display_group_name(g.name),
@@ -552,6 +643,7 @@ export let sort_recipients = <UserType extends UserOrMentionPillData | UserPillD
     });
     const groups_good_matches = [
         ...groups_results.exact_matches,
+        ...groups_results.begins_with_case_insensitive_diacritic_matches,
         ...groups_results.begins_with_case_sensitive_matches,
         ...groups_results.begins_with_case_insensitive_matches,
     ];
@@ -699,6 +791,14 @@ export function compare_group_setting_options(
     assert(option_a.type === "user");
     assert(option_b.type === "user");
 
+    if (option_a.user.is_bot && !option_b.user.is_bot) {
+        return 1;
+    }
+
+    if (!option_a.user.is_bot && option_b.user.is_bot) {
+        return -1;
+    }
+
     if (target_group !== undefined) {
         if (
             !target_group.members.has(option_a.user.user_id) &&
@@ -715,13 +815,7 @@ export function compare_group_setting_options(
         }
     }
 
-    if (option_a.user.full_name < option_b.user.full_name) {
-        return -1;
-    } else if (option_a.user.full_name === option_b.user.full_name) {
-        return 0;
-    }
-
-    return 1;
+    return option_a.user.full_name.localeCompare(option_b.user.full_name);
 }
 
 export const sort_users_and_groups_options = ({
@@ -753,13 +847,11 @@ export const sort_users_and_groups_options = ({
         return objs;
     }
 
-    const users_name_results = typeahead.triage_raw(query, users, (p) => p.user.full_name);
-    const email_results = typeahead.triage_raw(
-        query,
-        users_name_results.no_matches,
-        (p) => p.user.email,
-    );
-    const groups_results = typeahead.triage_raw_with_multiple_items(query, groups, (g) => {
+    const users_name_results = typeahead.triage_raw(query, users, (p) => [p.user.full_name]);
+    const email_results = typeahead.triage_raw(query, users_name_results.no_matches, (p) => [
+        p.user.email,
+    ]);
+    const groups_results = typeahead.triage_raw(query, groups, (g) => {
         if (g.name === "role:members") {
             return [
                 user_groups.get_display_group_name(g.name),
@@ -776,6 +868,9 @@ export const sort_users_and_groups_options = ({
     ]);
 
     const prefix_matches = sort_items([
+        ...groups_results.begins_with_case_insensitive_diacritic_matches,
+        ...users_name_results.begins_with_case_insensitive_diacritic_matches,
+        ...email_results.begins_with_case_insensitive_diacritic_matches,
         ...groups_results.begins_with_case_sensitive_matches,
         ...groups_results.begins_with_case_insensitive_matches,
         ...users_name_results.begins_with_case_sensitive_matches,
@@ -908,13 +1003,7 @@ export function compare_stream_or_group_members_options(
     assert(option_a.type === "user");
     assert(option_b.type === "user");
 
-    if (option_a.user.full_name < option_b.user.full_name) {
-        return -1;
-    } else if (option_a.user.full_name === option_b.user.full_name) {
-        return 0;
-    }
-
-    return 1;
+    return option_a.user.full_name.localeCompare(option_b.user.full_name);
 }
 
 export let sort_stream_or_group_members_options = ({
@@ -953,7 +1042,8 @@ function slash_command_comparator(
 ): number {
     if (slash_command_a.name < slash_command_b.name) {
         return -1;
-    } else if (slash_command_a.name > slash_command_b.name) {
+    }
+    if (slash_command_a.name > slash_command_b.name) {
         return 1;
     }
     /* istanbul ignore next */
@@ -971,43 +1061,64 @@ export function sort_slash_commands(
     return [...results.matches, ...results.rest];
 }
 
-function activity_score(sub: StreamSubscription): number {
-    // We assign the highest score to the stream being composed
-    // to, and the lowest score to unsubscribed streams. For others,
-    // we prioritise pinned unmuted streams > unpinned unmuted streams
-    // > pinned muted streams > unpinned muted streams, using recent
-    // activity as a tiebreaker.
-    if (sub.name === compose_state.stream_name()) {
-        return 8;
-    }
-    if (!sub.subscribed) {
-        return -1;
-    }
-
-    let stream_score = 0;
-    if (!sub.is_muted) {
-        stream_score += 4;
-    }
-    if (sub.pin_to_top) {
-        stream_score += 2;
-    }
-    if (stream_list_sort.has_recent_activity(sub)) {
-        stream_score += 1;
-    }
-    return stream_score;
+// Comparator for a boolean property that sorts truthy values before
+// falsy ones.
+function prefer_true(a: boolean, b: boolean): number {
+    return (b ? 1 : 0) - (a ? 1 : 0);
 }
 
-// Sort streams by ranking them by activity. If activity is equal,
-// as defined bv activity_score, decide based on our weekly traffic
-// stats.
+// Sort streams by checking each property below in priority order,
+// deciding as soon as the two streams differ on one of them.
 export function compare_by_activity(
     stream_a: StreamSubscription,
     stream_b: StreamSubscription,
 ): number {
-    let diff = activity_score(stream_b) - activity_score(stream_a);
+    // The channel currently selected in the compose box always sorts
+    // first.
+    const selected_stream_name = compose_state.stream_name();
+    let diff = prefer_true(
+        stream_a.name === selected_stream_name,
+        stream_b.name === selected_stream_name,
+    );
     if (diff !== 0) {
         return diff;
     }
+
+    // Archived channels sort below all unarchived channels, and within
+    // each of those groups subscribed channels sort above unsubscribed
+    // ones.
+    diff = prefer_true(!stream_a.is_archived, !stream_b.is_archived);
+    if (diff !== 0) {
+        return diff;
+    }
+    diff = prefer_true(stream_a.subscribed, stream_b.subscribed);
+    if (diff !== 0) {
+        return diff;
+    }
+
+    if (stream_a.subscribed) {
+        // Among subscribed channels of the same archived status, order
+        // them by the same priorities as the left sidebar: pinned, then
+        // recently active, then unmuted. Unsubscribed channels aren't
+        // ranked by these, falling through to the tiebreakers below.
+        diff = prefer_true(stream_a.pin_to_top, stream_b.pin_to_top);
+        if (diff !== 0) {
+            return diff;
+        }
+        diff = prefer_true(
+            stream_list_sort.has_recent_activity(stream_a),
+            stream_list_sort.has_recent_activity(stream_b),
+        );
+        if (diff !== 0) {
+            return diff;
+        }
+        diff = prefer_true(!stream_a.is_muted, !stream_b.is_muted);
+        if (diff !== 0) {
+            return diff;
+        }
+    }
+
+    // Fall back to recent traffic, and then the channel name.
     diff = (stream_b.stream_weekly_traffic ?? 0) - (stream_a.stream_weekly_traffic ?? 0);
     if (diff !== 0) {
         return diff;
@@ -1023,7 +1134,7 @@ function compare_by_user_group_name(group_a: UserGroup, group_b: UserGroup): num
     return util.strcmp(group_a.name, group_b.name);
 }
 
-export let sort_streams = (matches: StreamPillData[], query: string): StreamPillData[] => {
+export let sort_streams = <T extends StreamSubscription>(matches: T[], query: string): T[] => {
     const name_results = typeahead.triage(query, matches, (x) => x.name, compare_by_activity);
     const desc_results = typeahead.triage(
         query,
@@ -1060,45 +1171,107 @@ export function rewire_sort_user_groups(value: typeof sort_user_groups): void {
     sort_user_groups = value;
 }
 
+export function query_matches_person_name(
+    query: string,
+    person: UserPillData,
+    match_prefix?: boolean,
+): boolean {
+    // Filtering is diacritics-agnostic: we strip diacritics from both the query
+    // and the name so ASCII and diacritic spellings match each other. Ranking is
+    // not -- triage_raw/sort_recipients keep exact diacritic-prefix matches above
+    // the diacritic-stripped ones.
+    const diacritic_stripped_query = typeahead.remove_diacritics(query.toLowerCase());
+    const diacritic_stripped_name = people
+        .maybe_remove_diacritics_from_name(person.user, true)
+        .toLowerCase();
+    return typeahead.query_matches_string_in_order_assume_canonicalized(
+        diacritic_stripped_query,
+        diacritic_stripped_name,
+        " ",
+        match_prefix,
+    );
+}
+
 export function query_matches_person(
     query: string,
     person: UserPillData | UserOrMentionPillData,
+    match_prefix?: boolean,
+    allow_custom_profile_field_matching = false,
 ): boolean {
-    if (typeahead.query_matches_string_in_order(query, person.user.full_name, " ")) {
+    if (
+        person.type === "broadcast" &&
+        typeahead.query_matches_string_in_order(query, person.user.full_name, " ", true)
+    ) {
         return true;
     }
-    if (person.type === "user" && Boolean(person.user.delivery_email)) {
-        return typeahead.query_matches_string_in_order(
-            query,
-            people.get_visible_email(person.user),
-            " ",
-        );
+
+    if (person.type === "user") {
+        if (query_matches_person_name(query, person, match_prefix)) {
+            return true;
+        }
+
+        if (allow_custom_profile_field_matching) {
+            // Check custom profile fields that are enabled for use_for_user_matching
+            for (const field of realm.custom_profile_fields) {
+                if (field.use_for_user_matching) {
+                    const field_value =
+                        people.get_custom_profile_data(person.user.user_id, field.id)?.value ?? "";
+                    if (
+                        typeahead.query_matches_string_in_order(
+                            typeahead.remove_diacritics(query),
+                            field_value,
+                            " ",
+                            true,
+                        )
+                    ) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        if (person.user.delivery_email) {
+            return typeahead.query_matches_string_in_order(
+                typeahead.remove_diacritics(query),
+                people.get_visible_email(person.user),
+                " ",
+                true,
+            );
+        }
     }
     return false;
 }
 
-export function query_matches_stream_name(query: string, stream: StreamPillData): boolean {
-    return typeahead.query_matches_string_in_order(query, stream.name, " ");
+export function query_matches_stream_name(
+    query: string,
+    stream: StreamPillData,
+    should_remove_diacritics: boolean,
+): boolean {
+    return typeahead.query_matches_string_in_order(
+        query,
+        stream.name,
+        " ",
+        should_remove_diacritics,
+    );
 }
 
 export function query_matches_group_name(query: string, user_group: UserGroupPillData): boolean {
+    // Filtering is diacritics-agnostic, like query_matches_person_name: we
+    // strip diacritics from both the query and the group name so ASCII and
+    // diacritic spellings match each other. Ranking (sort_recipients) stays
+    // diacritic-aware.
+    const diacritic_stripped_query = typeahead.remove_diacritics(query.toLowerCase());
+    const matches_group_name = (group_name: string): boolean =>
+        typeahead.query_matches_string_in_order_assume_canonicalized(
+            diacritic_stripped_query,
+            typeahead.remove_diacritics(group_name.toLowerCase()),
+            "",
+        );
     if (user_group.name === "role:members") {
         return (
-            typeahead.query_matches_string_in_order(
-                query,
-                user_groups.get_display_group_name(user_group.name),
-                "",
-            ) ||
-            typeahead.query_matches_string_in_order(
-                query,
-                settings_config.alternate_members_group_typeahead_matching_name,
-                "",
-            )
+            matches_group_name(user_groups.get_display_group_name(user_group.name)) ||
+            matches_group_name(settings_config.alternate_members_group_typeahead_matching_name)
         );
     }
-    return typeahead.query_matches_string_in_order(
-        query,
-        user_groups.get_display_group_name(user_group.name),
-        "",
-    );
+    return matches_group_name(user_groups.get_display_group_name(user_group.name));
 }

@@ -66,8 +66,7 @@ if __name__ == "__main__":
     else:
         keys = get_mentor_keys(args.username)
         with open(authorized_keys, "a") as f:
-            for key in keys:
-                f.write(append_key.format(username=args.username, key=key))
+            f.writelines(append_key.format(username=args.username, key=key) for key in keys)
 
         print(f"Successfully added {args.username}'s SSH key!")
         print("Can you let your mentor know that they can connect to this machine with:\n")

@@ -4,7 +4,7 @@ we only use parts of the marked API and are using a fork
 of the upstream library.
 */
 
-import {PrimitiveValue} from "url-template";
+import type {Matcher, RE2JS} from "./re2js.d.ts";
 
 declare class Renderer {
     code: (code: string) => string;
@@ -19,11 +19,9 @@ declare namespace marked {
               exec(string: string): RegExpExecArray | null;
           };
 
-    type LinkifierMatch = PrimitiveValue | PrimitiveValue[] | Record<string, PrimitiveValue>;
-
     type ParseOptions = {
-        get_linkifier_regexes: () => RegExp[];
-        linkifierHandler: (pattern: RegExp, matches: LinkifierMatch[]) => string;
+        get_linkifier_regexes: () => RE2JS[];
+        linkifierHandler: (pattern: RE2JS, matcher: Matcher) => string;
         emojiHandler: (emoji_name: string) => string;
         unicodeEmojiHandler: (unicode_emoji: string) => string;
         streamHandler: (stream_name: string) => string | undefined;

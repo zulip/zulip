@@ -22,7 +22,7 @@ class kandra::prometheus::memcached {
     source => 'puppet:///modules/kandra/memcached_exporter',
   }
 
-  kandra::firewall_allow { 'memcached_exporter': port => '11212' }
+  kandra::teleport::prometheus_app { 'memcached_exporter': port => '11212' }
   file { "${zulip::common::supervisor_conf_dir}/memcached_exporter.conf":
     ensure  => file,
     require => [

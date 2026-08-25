@@ -1,39 +1,57 @@
-import $ from "jquery";
-import _ from "lodash";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import * as hash_util from "./hash_util.ts";
 import type {MessageList} from "./message_list.ts";
 import * as message_lists from "./message_lists.ts";
-import * as narrow_banner from "./narrow_banner.ts";
 import * as narrow_state from "./narrow_state.ts";
-import * as people from "./people.ts";
+import {page_params} from "./page_params.ts";
 
 function show_history_limit_notice(): void {
-    $(".top-messages-logo").hide();
     $(".history-limited-box").show();
-    narrow_banner.hide_empty_narrow_message();
+    // The history-limit notice and the empty-narrow banner are mutually
+    // exclusive top-of-feed states; clear the latter when showing this.
+    // We do this inline rather than calling narrow_banner, which imports
+    // this module, to avoid an import cycle.
+    $(".empty_feed_notice_main").empty();
 }
 
 function hide_history_limit_notice(): void {
-    $(".top-messages-logo").show();
     $(".history-limited-box").hide();
 }
 
 function hide_end_of_results_notice(): void {
     $(".all-messages-search-caution").hide();
+    $(".combined-feed-notice").hide();
 }
 
 function show_end_of_results_notice(): void {
-    $(".all-messages-search-caution").show();
+    // Both end-of-results notices are hidden for spectators.
+    if (page_params.is_spectator) {
+        return;
+    }
 
-    // Set the link to point to this search with streams:public added.
-    // Note that element we adjust is not visible to spectators.
     const narrow_filter = narrow_state.filter();
     assert(narrow_filter !== undefined);
+
+    if (narrow_filter.is_in_home()) {
+        $(".combined-feed-notice").show();
+        return;
+    }
     const terms = narrow_filter.terms();
+    // Set the link to point to this search with streams:public added.
+    // Note that element we adjust is not visible to spectators.
     const update_hash = hash_util.search_public_streams_notice_url(terms);
-    $(".all-messages-search-caution a.search-shared-history").attr("href", update_hash);
+    $(".all-messages-search-caution").show();
+    $(".all-messages-search-caution .search-shared-history").attr("data-url", update_hash);
+}
+
+export function update_top_of_feed_logo(): void {
+    if (message_lists.current?.data.fetch_status.has_found_oldest()) {
+        $(".top-messages-logo").hide();
+    } else {
+        $(".top-messages-logo").show();
+    }
 }
 
 export function update_top_of_narrow_notices(msg_list: MessageList): void {
@@ -43,6 +61,8 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
         return;
     }
 
+    update_top_of_feed_logo();
+
     if (msg_list.data.fetch_status.has_found_oldest()) {
         const filter = narrow_state.filter();
         // Potentially display the notice that lets users know
@@ -51,17 +71,7 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
         // conditions, but there's a very legitimate use case
         // for moderation of searching for all messages sent
         // by a potential spammer user.
-        if (
-            filter &&
-            !filter.is_in_home() &&
-            !filter.contains_only_private_messages() &&
-            !filter.includes_full_stream_history() &&
-            !filter.is_personal_filter() &&
-            !(
-                _.isEqual(filter._sorted_term_types, ["sender", "has-reaction"]) &&
-                filter.operands("sender")[0] === people.my_current_email()
-            )
-        ) {
+        if (filter?.may_have_incomplete_message_history(false)) {
             show_end_of_results_notice();
         }
     }
@@ -72,6 +82,11 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
 }
 
 export function hide_top_of_narrow_notices(): void {
+    // Restore the top-of-feed logo; this runs when resetting for a new
+    // narrow, whose fetch status we don't know yet. It is hidden again
+    // once we learn we have the narrow's oldest message (see
+    // update_top_of_feed_logo).
+    $(".top-messages-logo").show();
     hide_end_of_results_notice();
     hide_history_limit_notice();
 }

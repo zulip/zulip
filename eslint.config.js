@@ -1,43 +1,67 @@
+// @ts-check
+
 import {FlatCompat} from "@eslint/eslintrc";
 import js from "@eslint/js";
 import confusingBrowserGlobals from "confusing-browser-globals";
+import {defineConfig} from "eslint/config";
 import prettier from "eslint-config-prettier";
+import {configs as astroConfigs} from "eslint-plugin-astro";
 import formatjs from "eslint-plugin-formatjs";
-import importPlugin from "eslint-plugin-import";
+import * as importX from "eslint-plugin-import-x";
+import * as mdx from "eslint-plugin-mdx";
 import noJquery from "eslint-plugin-no-jquery";
+import promise from "eslint-plugin-promise";
 import unicorn from "eslint-plugin-unicorn";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
 const compat = new FlatCompat({baseDirectory: import.meta.dirname});
 
-export default tseslint.config(
-    {
-        files: ["tools/check-openapi"],
-    },
+export default defineConfig(
     {
         // This is intended for generated files and vendored third-party files.
         // For our source code, instead of adding files here, consider using
         // specific eslint-disable comments in the files themselves.
         ignores: [
+            "**/.astro",
+            "**/.pnpm-store",
+            "**/.venv",
+            "**/dist",
             "docs/_build",
-            "static/generated",
+            "static/generated/*",
+            "!static/generated/README.md",
             "static/webpack-bundles",
             "var",
-            "web/generated",
+            "web/generated/*",
+            "!web/generated/README.md",
             "web/third",
+            "webpack-stats-production.json",
         ],
     },
     js.configs.recommended,
-    importPlugin.flatConfigs.recommended,
-    compat.extends("plugin:no-jquery/recommended", "plugin:no-jquery/deprecated"),
+    importX.flatConfigs.recommended,
+    {
+        files: ["**/*.{,[cm]}[jt]s{,x}"],
+        extends: [
+            ...compat.config(noJquery.configs.recommended),
+            ...compat.config(noJquery.configs.deprecated),
+        ],
+    },
     unicorn.configs.recommended,
+    promise.configs["flat/recommended"],
     prettier,
     tseslint.configs.strictTypeChecked,
     tseslint.configs.stylisticTypeChecked,
+    mdx.flat,
     {
-        files: ["**/*.cts", "**/*.mts", "**/*.ts"],
-        extends: [importPlugin.flatConfigs.typescript],
+        files: ["**/*.{,[cm]}ts{,x}"],
+        extends: [importX.flatConfigs.typescript],
+        rules: {
+            "unicorn/require-array-sort-compare": "off",
+            "@typescript-eslint/require-array-sort-compare": "error",
+            "unicorn/no-useless-template-literals": "off",
+            "@typescript-eslint/no-unnecessary-template-expression": "error",
+        },
     },
     {
         plugins: {
@@ -62,11 +86,6 @@ export default tseslint.config(
             formatjs: {
                 additionalFunctionNames: ["$t", "$t_html"],
             },
-            "import/resolver": {
-                node: {
-                    extensions: [".ts", ".d.ts", ".js"],
-                },
-            },
             "no-jquery": {
                 collectionReturningPlugins: {expectOne: "always"},
                 variablePattern: "^\\$(?!t$|t_html$).",
@@ -83,6 +102,10 @@ export default tseslint.config(
             "@typescript-eslint/no-loop-func": "error",
             "@typescript-eslint/no-misused-spread": "off",
             "@typescript-eslint/no-non-null-assertion": "off",
+            "@typescript-eslint/no-restricted-imports": [
+                "error",
+                {paths: [{name: "zod", message: "Use zod/mini."}]},
+            ],
             "@typescript-eslint/no-unnecessary-condition": "off",
             "@typescript-eslint/no-unnecessary-qualifier": "error",
             "@typescript-eslint/no-unused-vars": [
@@ -108,23 +131,25 @@ export default tseslint.config(
             ],
             "formatjs/no-id": "error",
             "guard-for-in": "error",
-            "import/extensions": ["error", "ignorePackages"],
-            "import/first": "error",
-            "import/newline-after-import": "error",
-            "import/no-cycle": ["error", {ignoreExternal: true}],
-            "import/no-duplicates": "error",
-            "import/no-self-import": "error",
-            "import/no-unresolved": "off",
-            "import/no-useless-path-segments": "error",
-            "import/order": ["error", {alphabetize: {order: "asc"}, "newlines-between": "always"}],
-            "import/unambiguous": "error",
+            "import-x/extensions": ["error", "ignorePackages"],
+            "import-x/first": "error",
+            "import-x/newline-after-import": "error",
+            "import-x/no-cycle": ["error", {ignoreExternal: true}],
+            "import-x/no-duplicates": "error",
+            "import-x/no-self-import": "error",
+            "import-x/no-unresolved": "off",
+            "import-x/no-useless-path-segments": "error",
+            "import-x/order": [
+                "error",
+                {alphabetize: {order: "asc"}, "newlines-between": "always"},
+            ],
+            "import-x/unambiguous": "error",
             "lines-around-directive": "error",
             "new-cap": "error",
             "no-alert": "error",
             "no-bitwise": "error",
             "no-caller": "error",
             "no-constant-condition": ["error", {checkLoops: false}],
-            "no-div-regex": "error",
             "no-else-return": "error",
             "no-eval": "error",
             "no-implicit-coercion": "error",
@@ -154,32 +179,57 @@ export default tseslint.config(
             "one-var": ["error", "never"],
             "prefer-arrow-callback": "error",
             "prefer-const": ["error", {ignoreReadBeforeAssign: true}],
+            "promise/no-promise-in-callback": "off",
+            "promise/prefer-await-to-then": ["error", {strict: true}],
             radix: "error",
             "sort-imports": ["error", {ignoreDeclarationSort: true}],
             "spaced-comment": ["error", "always", {markers: ["/"]}],
             strict: "error",
+            "unicorn/consistent-boolean-name": "off",
+            "unicorn/consistent-class-member-order": "off",
             "unicorn/consistent-function-scoping": "off",
+            "unicorn/dom-node-dataset": "off",
             "unicorn/filename-case": "off",
+            "unicorn/max-nested-calls": "off",
+            "unicorn/name-replacements": "off",
             "unicorn/no-await-expression-member": "off",
+            "unicorn/no-break-in-nested-loop": "off",
+            "unicorn/no-declarations-before-early-exit": "off",
+            "unicorn/no-duplicate-if-branches": "off",
             "unicorn/no-negated-condition": "off",
             "unicorn/no-null": "off",
             "unicorn/no-process-exit": "off",
+            "unicorn/no-this-outside-of-class": "off",
+            "unicorn/no-top-level-assignment-in-function": "off",
+            "unicorn/no-top-level-side-effects": "off",
             "unicorn/no-useless-undefined": "off",
             "unicorn/numeric-separators-style": "off",
+            "unicorn/prefer-boolean-return": "off",
+            "unicorn/prefer-continue": "off",
+            "unicorn/prefer-dom-node-html-methods": "off",
+            "unicorn/prefer-early-return": "off",
+            "unicorn/prefer-includes-over-repeated-comparisons": "off",
             "unicorn/prefer-global-this": "off",
+            "unicorn/prefer-https": "off",
+            "unicorn/prefer-minimal-ternary": "off",
+            "unicorn/prefer-number-coercion": "off",
+            "unicorn/prefer-private-class-fields": "off",
+            "unicorn/prefer-simple-condition-first": "off",
             "unicorn/prefer-string-raw": "off",
             "unicorn/prefer-ternary": "off",
             "unicorn/prefer-top-level-await": "off",
             "unicorn/prevent-abbreviations": "off",
+            "unicorn/single-line-block-comment-style": "off",
             "unicorn/switch-case-braces": "off",
             "valid-typeof": ["error", {requireStringLiterals: true}],
             yoda: "error",
         },
     },
     {
-        ignores: ["**/*.cts", "**/*.mts", "**/*.ts"],
+        ignores: ["**/*.cts", "**/*.mts", "**/*.ts", "web/babel.config.js"],
         extends: [tseslint.configs.disableTypeChecked],
         rules: {
+            "@typescript-eslint/consistent-type-imports": "off",
             "@typescript-eslint/explicit-function-return-type": "off",
             "@typescript-eslint/no-require-imports": "off",
             "consistent-return": "error",
@@ -195,18 +245,38 @@ export default tseslint.config(
         },
     },
     {
+        files: ["**/*.mdx"],
+        rules: {
+            "@typescript-eslint/no-unused-vars": "off",
+            "comma-spacing": "error",
+            "import-x/extensions": "off",
+            quotes: "error",
+        },
+    },
+    {
+        files: ["**/*.md", "**/*.mdx"],
+        rules: {
+            "import-x/unambiguous": "off",
+            "unicorn/no-empty-file": "off",
+        },
+    },
+    {
         files: ["web/tests/**"],
         rules: {
             "@typescript-eslint/no-empty-function": "off",
             "@typescript-eslint/no-extraneous-class": "off",
             "no-jquery/no-selector-prop": "off",
             "no-redeclare": "off",
+            "unicorn/no-global-object-property-assignment": "off",
+            "unicorn/no-useless-template-literals": "off",
+            "unicorn/require-array-sort-compare": "off",
         },
     },
     {
         files: ["web/e2e-tests/**"],
         languageOptions: {
             globals: {
+                ...globals.browser,
                 zulip_test: "readonly",
             },
         },
@@ -214,17 +284,17 @@ export default tseslint.config(
     {
         files: ["**/*.d.ts"],
         rules: {
-            "import/unambiguous": "off",
+            "import-x/unambiguous": "off",
         },
     },
     {
-        ignores: ["web/shared/**", "web/src/**"],
+        ignores: ["web/src/**"],
         languageOptions: {
             globals: globals.node,
         },
     },
     {
-        files: ["web/e2e-tests/**", "web/tests/**"],
+        files: ["web/tests/**"],
         languageOptions: {
             globals: {
                 CSS: "readonly",
@@ -236,6 +306,7 @@ export default tseslint.config(
         rules: {
             "formatjs/no-id": "off",
             "new-cap": "off",
+            "unicorn/prefer-https": "off",
         },
     },
     {
@@ -247,9 +318,9 @@ export default tseslint.config(
         },
     },
     {
-        files: ["web/shared/**", "web/src/**"],
+        files: ["web/src/**"],
         settings: {
-            "import/resolver": {
+            "import-x/resolver": {
                 webpack: {
                     config: {},
                 },
@@ -271,24 +342,31 @@ export default tseslint.config(
         },
     },
     {
-        files: ["web/shared/**"],
-        languageOptions: {
-            globals: globals["shared-node-browser"],
-        },
+        files: ["starlight_help/src/scripts/client/**"],
         rules: {
-            "import/no-restricted-paths": [
-                "error",
-                {
-                    zones: [
-                        {
-                            target: "./web/shared",
-                            from: ".",
-                            except: ["./node_modules", "./web/shared"],
-                        },
-                    ],
-                },
-            ],
-            "unicorn/prefer-string-replace-all": "off",
+            "unicorn/prefer-module": "off",
+        },
+        languageOptions: {
+            globals: {
+                ...globals.browser,
+            },
+            sourceType: "script",
+        },
+    },
+    astroConfigs.recommended,
+    {
+        files: ["starlight_help/src/components/ZulipNote.astro"],
+        rules: {
+            "import-x/unambiguous": "off",
+        },
+    },
+    {
+        files: ["starlight_help/src/content/include/*"],
+        rules: {
+            // We need to turn off this rule since we want import statements
+            // to be easily copy-paste-able between content/include and
+            // content/docs.
+            "import-x/no-useless-path-segments": "off",
         },
     },
 );

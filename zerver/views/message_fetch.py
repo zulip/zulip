@@ -4,12 +4,10 @@ from typing import Annotated
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.db import connection, transaction
+from django.db.models import F, Func, TextField
 from django.http import HttpRequest, HttpResponse
-from django.utils.html import escape as escape_html
 from django.utils.translation import gettext as _
 from pydantic import Json, NonNegativeInt
-from sqlalchemy.sql import column
-from sqlalchemy.types import Integer, Text
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import (
@@ -27,13 +25,10 @@ from zerver.lib.narrow import (
     is_spectator_compatible,
     is_web_public_narrow,
     parse_anchor_value,
-    update_narrow_terms_containing_empty_topic_fallback_name,
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
-from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.topic import DB_TOPIC_NAME, MATCH_TOPIC
-from zerver.lib.topic_sqlalchemy import topic_column_sa
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
 from zerver.models import UserMessage, UserProfile
 
@@ -79,13 +74,13 @@ def highlight_string(text: str, locs: Iterable[tuple[int, int]]) -> str:
 
 def get_search_fields(
     rendered_content: str,
-    topic_name: str,
+    escaped_topic_name: str,
     content_matches: Iterable[tuple[int, int]],
     topic_matches: Iterable[tuple[int, int]],
 ) -> dict[str, str]:
     return {
         "match_content": highlight_string(rendered_content, content_matches),
-        MATCH_TOPIC: highlight_string(escape_html(topic_name), topic_matches),
+        MATCH_TOPIC: highlight_string(escaped_topic_name, topic_matches),
     }
 
 
@@ -110,20 +105,21 @@ def get_messages_backend(
     request: HttpRequest,
     maybe_user_profile: UserProfile | AnonymousUser,
     *,
-    anchor_val: Annotated[str | None, ApiParamConfig("anchor")] = None,
-    include_anchor: Json[bool] = True,
-    num_before: Json[NonNegativeInt] = 0,
-    num_after: Json[NonNegativeInt] = 0,
-    narrow: Json[list[NarrowParameter] | None] = None,
-    use_first_unread_anchor_val: Annotated[
-        Json[bool], ApiParamConfig("use_first_unread_anchor")
-    ] = False,
-    client_gravatar: Json[bool] = True,
-    apply_markdown: Json[bool] = True,
     allow_empty_topic_name: Json[bool] = False,
+    anchor_val: Annotated[str | None, ApiParamConfig("anchor")] = None,
+    anchor_date: str | None = None,
+    apply_markdown: Json[bool] = True,
+    client_gravatar: Json[bool] = True,
     client_requested_message_ids: Annotated[
         Json[list[NonNegativeInt] | None], ApiParamConfig("message_ids")
     ] = None,
+    include_anchor: Json[bool] = True,
+    narrow: Json[list[NarrowParameter] | None] = None,
+    num_after: Json[NonNegativeInt] = 0,
+    num_before: Json[NonNegativeInt] = 0,
+    use_first_unread_anchor_val: Annotated[
+        Json[bool], ApiParamConfig("use_first_unread_anchor")
+    ] = False,
 ) -> HttpResponse:
     # User has to either provide message_ids or both num_before and num_after.
     if (
@@ -142,9 +138,9 @@ def get_messages_backend(
     elif client_requested_message_ids is not None:
         include_anchor = False
 
-    anchor = None
+    anchor_info = None
     if client_requested_message_ids is None:
-        anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
+        anchor_info = parse_anchor_value(anchor_val, use_first_unread_anchor_val, anchor_date)
 
     realm = get_valid_realm_from_request(request)
     narrow = clean_narrow_for_message_fetch(narrow, realm, maybe_user_profile)
@@ -243,7 +239,7 @@ def get_messages_backend(
             user_profile=user_profile,
             realm=realm,
             is_web_public_query=is_web_public_query,
-            anchor=anchor,
+            anchor_info=anchor_info,
             include_anchor=include_anchor,
             num_before=num_before,
             num_after=num_after,
@@ -294,9 +290,9 @@ def get_messages_backend(
         if is_search:
             for row in rows:
                 message_id = row[0]
-                (topic_name, rendered_content, content_matches, topic_matches) = row[-4:]
+                (escaped_topic_name, rendered_content, content_matches, topic_matches) = row[-4:]
                 search_fields[message_id] = get_search_fields(
-                    rendered_content, topic_name, content_matches, topic_matches
+                    rendered_content, escaped_topic_name, content_matches, topic_matches
                 )
 
         message_list = messages_for_ids(
@@ -348,38 +344,43 @@ def messages_in_narrow_backend(
     msg_ids = [message_id for message_id in msg_ids if message_id >= first_visible_message_id]
     # This query is limited to messages the user has access to because they
     # actually received them, as reflected in `zerver_usermessage`.
-    query, inner_msg_id_col = get_base_query_for_search(
-        user_profile.realm_id, user_profile, need_user_message=True
-    )
-    query = query.where(column("message_id", Integer).in_(msg_ids))
+    query = get_base_query_for_search(user_profile.realm_id, user_profile, need_user_message=True)
+    query = query.filter(id__in=msg_ids)
 
-    updated_narrow = update_narrow_terms_containing_empty_topic_fallback_name(narrow)
-    query, is_search = add_narrow_conditions(
+    cleaned_narrow = clean_narrow_for_message_fetch(narrow, user_profile.realm, user_profile)
+    query, is_search, _is_dm_narrow = add_narrow_conditions(
         user_profile=user_profile,
-        inner_msg_id_col=inner_msg_id_col,
         query=query,
-        narrow=updated_narrow,
+        narrow=cleaned_narrow,
         is_web_public_query=False,
         realm=user_profile.realm,
     )
 
     if not is_search:
         # `add_narrow_conditions` adds the following columns only if narrow has search operands.
-        query = query.add_columns(topic_column_sa(), column("rendered_content", Text))
+        query = query.annotate(
+            escaped_topic_name=Func(
+                F(DB_TOPIC_NAME), function="escape_html", output_field=TextField()
+            ),
+        )
 
     search_fields = {}
-    with get_sqlalchemy_connection() as sa_conn:
-        for row in sa_conn.execute(query).mappings():
-            message_id = row["message_id"]
-            topic_name: str = row[DB_TOPIC_NAME]
-            rendered_content: str = row["rendered_content"]
-            content_matches = row.get("content_matches", [])
-            topic_matches = row.get("topic_matches", [])
-            search_fields[str(message_id)] = get_search_fields(
-                rendered_content,
-                topic_name,
-                content_matches,
-                topic_matches,
-            )
+    for row in query.values(
+        "id",
+        "escaped_topic_name",
+        "rendered_content",
+        *["content_matches", "topic_matches"] if is_search else [],
+    ):
+        message_id = row["id"]
+        escaped_topic_name: str = row["escaped_topic_name"]
+        rendered_content: str = row["rendered_content"]
+        content_matches = row.get("content_matches", [])
+        topic_matches = row.get("topic_matches", [])
+        search_fields[str(message_id)] = get_search_fields(
+            rendered_content,
+            escaped_topic_name,
+            content_matches,
+            topic_matches,
+        )
 
     return json_success(request, data={"messages": search_fields})

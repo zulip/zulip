@@ -15,7 +15,7 @@ from confirmation.models import Confirmation, create_confirmation_link, generate
 from zerver.actions.custom_profile_fields import do_remove_realm_custom_profile_fields
 from zerver.actions.message_delete import do_delete_messages_by_sender
 from zerver.actions.user_groups import update_users_in_full_members_system_group
-from zerver.actions.user_settings import do_delete_avatar_image
+from zerver.actions.user_settings import do_scrub_avatar_images
 from zerver.lib.demo_organizations import demo_organization_owner_email_exists
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
@@ -37,6 +37,8 @@ from zerver.lib.utils import optional_bytes_to_mib
 from zerver.models import (
     ArchivedAttachment,
     Attachment,
+    DirectMessageGroup,
+    ImageAttachment,
     Message,
     NamedUserGroup,
     Realm,
@@ -55,6 +57,7 @@ from zerver.models.groups import SystemGroups
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import (
     MessageEditHistoryVisibilityPolicyEnum,
+    RealmTopicsPolicyEnum,
     get_default_max_invites_for_realm_plan_type,
     get_realm,
 )
@@ -84,7 +87,21 @@ def do_set_realm_property(
         return
 
     setattr(realm, name, value)
-    realm.save(update_fields=[name])
+    if name == "description":
+        from zerver.lib.realm_description import render_realm_description
+
+        rendered_description, version = render_realm_description(value, realm)
+        realm.rendered_description = rendered_description
+        realm.rendered_description_version = version
+        realm.save(update_fields=[name, "rendered_description", "rendered_description_version"])
+    else:
+        realm.save(update_fields=[name])
+
+    if name == "enable_spectator_access":
+        Attachment.objects.filter(realm=realm).update(is_web_public=None)
+        # We need to do the same for ArchivedAttachment to avoid
+        # bugs if deleted attachments are later restored.
+        ArchivedAttachment.objects.filter(realm=realm).update(is_web_public=None)
 
     event = dict(
         type="realm",
@@ -111,6 +128,26 @@ def do_set_realm_property(
             op="update",
             property=name,
             value=MessageEditHistoryVisibilityPolicyEnum(value).name,
+        )
+    if name == "topics_policy":
+        event = dict(
+            type="realm",
+            op="update_dict",
+            property="default",
+            data={
+                name: RealmTopicsPolicyEnum(value).name,
+                "mandatory_topics": value == RealmTopicsPolicyEnum.disable_empty_topic.value,
+            },
+        )
+    if name == "description":
+        event = dict(
+            type="realm",
+            op="update_dict",
+            property="default",
+            data={
+                "description": realm.description,
+                "rendered_description": realm.rendered_description,
+            },
         )
 
     send_event_on_commit(realm, event, active_user_ids(realm.id))
@@ -235,6 +272,22 @@ def do_change_realm_permission_group_setting(
             "property": setting_name,
         },
     )
+
+    if setting_name == "workplace_users_group":
+        RealmAuditLog.objects.create(
+            realm=realm,
+            event_type=AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED,
+            event_time=event_time,
+            acting_user=acting_user,
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+                "trigger": "setting_changed",
+            },
+        )
+
+        from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
+
+        maybe_enqueue_audit_log_upload(realm)
 
 
 def parse_and_set_setting_value_if_required(
@@ -681,23 +734,71 @@ def do_add_deactivated_redirect(realm: Realm, redirect_url: str) -> None:
     realm.save(update_fields=["deactivated_redirect"])
 
 
-def do_delete_all_realm_attachments(realm: Realm, *, batch_size: int = 1000) -> None:
+def do_delete_all_realm_attachments(realm: Realm) -> None:
     # Delete attachment files from the storage backend, so that we
     # don't leave them dangling.
-    for obj_class in Attachment, ArchivedAttachment:
-        last_id = 0
-        while True:
+    with delete_message_attachments(delete_from=(ImageAttachment,)) as delete_one:
+        for obj_class in Attachment, ArchivedAttachment:
             to_delete = (
-                obj_class._default_manager.filter(realm_id=realm.id, pk__gt=last_id)
+                obj_class._default_manager.filter(realm_id=realm.id)
                 .order_by("pk")
-                .values_list("pk", "path_id")[:batch_size]
+                .select_for_update(no_key=False)
+                .values_list("path_id", flat=True)
             )
-            if len(to_delete) > 0:
-                delete_message_attachments([row[1] for row in to_delete])
-                last_id = to_delete[len(to_delete) - 1][0]
-            if len(to_delete) < batch_size:
-                break
-        obj_class._default_manager.filter(realm=realm).delete()
+            for path_id in to_delete.iterator():
+                delete_one(path_id)
+            obj_class._default_manager.filter(realm_id=realm.id).delete()
+
+
+@transaction.atomic(durable=True)
+def do_delete_realm(realm: Realm) -> None:
+    """Permanently delete a Realm.
+
+    Prefer do_deactivate_realm + do_scrub_realm for production use;
+    they preserve UserProfile rows.
+    """
+    realm = Realm.objects.select_for_update(no_key=False).get(id=realm.id)
+    do_delete_all_realm_attachments(realm)
+
+    # realm.delete() leaves DirectMessageGroup and Recipient rows
+    # behind (no FK back to Realm), and for DMGs with cross-realm
+    # bot subs the bot Subscription survives too.  Human-to-human
+    # cross-realm DMs aren't currently possible, so every DMG our
+    # users were in becomes orphan on realm.delete(): any survivor
+    # must be a system bot.  Snapshot the Recipients now, while
+    # the Subscription join still exists.
+    #
+    # TODO: if cross-realm human DMs become possible, this has to
+    # filter out DMGs that still have a non-bot subscriber from
+    # another realm.
+    orphan_dmg_recipient_ids = set(
+        Subscription.objects.filter(
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+            user_profile__realm_id=realm.id,
+        )
+        .distinct("recipient_id")
+        .values_list("recipient_id", flat=True)
+    )
+    orphan_huddle_ids = set(
+        Recipient.objects.filter(id__in=orphan_dmg_recipient_ids).values_list("type_id", flat=True)
+    )
+
+    # Stream Recipients have no FK back to Stream either, so the
+    # realm's Stream cascade strands them in the same way.  Capture
+    # them alongside the DMG Recipients.
+    orphan_stream_recipient_ids = set(
+        Stream.objects.filter(realm=realm)
+        .exclude(recipient__isnull=True)
+        .values_list("recipient_id", flat=True)
+    )
+
+    realm.delete()
+
+    # Recipient.delete() cascades Subscription and Message;
+    # DirectMessageGroup.recipient is SET_NULL, so the DMG row
+    # needs an explicit delete.
+    Recipient.objects.filter(id__in=orphan_dmg_recipient_ids | orphan_stream_recipient_ids).delete()
+    DirectMessageGroup.objects.filter(id__in=orphan_huddle_ids).delete()
 
 
 @transaction.atomic(durable=True)
@@ -710,8 +811,8 @@ def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
 
     users = UserProfile.objects.filter(realm=realm)
     for user in users:
-        do_delete_messages_by_sender(user)
-        do_delete_avatar_image(user, acting_user=acting_user)
+        do_delete_messages_by_sender(user, skip_notify=True)
+        do_scrub_avatar_images(user, acting_user=acting_user)
         user.full_name = f"Scrubbed {generate_key()[:15]}"
         scrubbed_email = Address(
             username=f"scrubbed-{generate_key()[:15]}", domain=realm.host
@@ -726,13 +827,15 @@ def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
     # more secure against bugs that may cause Message.realm to be incorrect for some
     # cross-realm messages to also determine the actual Recipients - to prevent
     # deletion of excessive messages.
-    all_recipient_ids_in_realm = [
-        *Stream.objects.filter(realm=realm).values_list("recipient_id", flat=True),
-        *UserProfile.objects.filter(realm=realm).values_list("recipient_id", flat=True),
-        *Subscription.objects.filter(
-            recipient__type=Recipient.DIRECT_MESSAGE_GROUP, user_profile__realm=realm
-        ).values_list("recipient_id", flat=True),
-    ]
+    all_recipient_ids_in_realm = (
+        Stream.objects.filter(realm=realm)
+        .values_list("recipient_id", flat=True)
+        .union(
+            Subscription.objects.filter(
+                recipient__type=Recipient.DIRECT_MESSAGE_GROUP, user_profile__realm=realm
+            ).values_list("recipient_id", flat=True),
+        )
+    )
     cross_realm_bot_message_ids = list(
         Message.objects.filter(
             # Filtering by both message.recipient and message.realm is
@@ -745,7 +848,11 @@ def do_scrub_realm(realm: Realm, *, acting_user: UserProfile | None) -> None:
             realm=realm,
         ).values_list("id", flat=True)
     )
-    move_messages_to_archive(cross_realm_bot_message_ids)
+    move_messages_to_archive(cross_realm_bot_message_ids, realm=realm, skip_notify=True)
+
+    # Since we delete messages with skip_notify=True, we must take care of updating the first_message_id
+    # of channels in the realm.
+    Stream.objects.filter(realm=realm).update(first_message_id=None)
 
     do_remove_realm_custom_profile_fields(realm)
     do_delete_all_realm_attachments(realm)
@@ -796,7 +903,13 @@ def do_change_realm_org_type(
         realm=realm,
         event_time=timezone_now(),
         acting_user=acting_user,
-        extra_data={"old_value": old_value, "new_value": org_type},
+        extra_data={
+            # Prior to Zulip 12.0, RealmAuditLog entries for this
+            # incorrectly used the strings "old_value" and "new_value"
+            # as keys here.
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: org_type,
+        },
     )
 
     event = dict(type="realm", op="update", property="org_type", value=org_type)
@@ -811,7 +924,7 @@ def do_change_realm_max_invites(realm: Realm, max_invites: int, acting_user: Use
         new_max = get_default_max_invites_for_realm_plan_type(realm.plan_type)
     else:
         new_max = max_invites
-    realm.max_invites = new_max  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
+    realm.max_invites = new_max
     realm.save(update_fields=["_max_invites"])
 
     RealmAuditLog.objects.create(
@@ -820,8 +933,11 @@ def do_change_realm_max_invites(realm: Realm, max_invites: int, acting_user: Use
         event_time=timezone_now(),
         acting_user=acting_user,
         extra_data={
-            "old_value": old_value,
-            "new_value": new_max,
+            # Prior to Zulip 12.0, RealmAuditLog entries for this
+            # incorrectly used the strings "old_value" and "new_value"
+            # as keys here.
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: new_max,
             "property": "max_invites",
         },
     )
@@ -849,7 +965,7 @@ def do_change_realm_plan_type(
         # can_access_all_users_group, set it back to the default
         # value.
         everyone_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
         )
         if realm.can_access_all_users_group_id != everyone_system_group.id:
             do_change_realm_permission_group_setting(
@@ -876,10 +992,16 @@ def do_change_realm_plan_type(
         realm=realm,
         event_time=timezone_now(),
         acting_user=acting_user,
-        extra_data={"old_value": old_value, "new_value": plan_type},
+        extra_data={
+            # Prior to Zulip 12.0, RealmAuditLog entries for this
+            # incorrectly used the strings "old_value" and "new_value"
+            # as keys here.
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: plan_type,
+        },
     )
 
-    realm.max_invites = get_default_max_invites_for_realm_plan_type(plan_type)  # type: ignore[assignment] # https://github.com/python/mypy/issues/3004
+    realm.max_invites = get_default_max_invites_for_realm_plan_type(plan_type)
     if plan_type == Realm.PLAN_TYPE_LIMITED:
         realm.message_visibility_limit = Realm.MESSAGE_VISIBILITY_LIMITED
     else:
@@ -917,6 +1039,7 @@ def do_send_realm_reactivation_email(realm: Realm, *, acting_user: UserProfile |
         "realm_url": realm.url,
         "realm_name": realm.name,
         "corporate_enabled": settings.CORPORATE_ENABLED,
+        "is_demo_organization": realm.demo_organization_scheduled_deletion_date is not None,
     }
     language = realm.default_language
     send_email_to_admins(
@@ -934,6 +1057,7 @@ def do_send_realm_deactivation_email(
 ) -> None:
     shared_context: dict[str, Any] = {
         "realm_name": realm.name,
+        "is_demo_organization": realm.demo_organization_scheduled_deletion_date is not None,
     }
     deactivation_time = timezone_now()
     owners = set(realm.get_human_owner_users())

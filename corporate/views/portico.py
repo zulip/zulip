@@ -1,6 +1,5 @@
 from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING
-from urllib.parse import urlencode
 
 import orjson
 from django.conf import settings
@@ -104,7 +103,7 @@ def plans_view(request: HttpRequest) -> HttpResponse:
     )
     if is_subdomain_root_or_alias(request):
         # If we're on the root domain, we make this link first ask you which organization.
-        context.sponsorship_url = f"/accounts/go/?{urlencode({'next': context.sponsorship_url})}"
+        context.sponsorship_url = reverse("realm_redirect", query={"next": context.sponsorship_url})
 
     if realm is not None:
         if realm.plan_type == Realm.PLAN_TYPE_SELF_HOSTED and settings.PRODUCTION:
@@ -298,6 +297,7 @@ def team_view(request: HttpRequest) -> HttpResponse:
                 "page_type": "team",
                 "contributors": data["contributors"],
             },
+            "REL_CANONICAL_LINK": f"https://zulip.com{request.path}",
             "date": data["date"],
         },
     )
@@ -311,6 +311,7 @@ def landing_view(request: HttpRequest, template_name: str) -> HttpResponse:
             "billing_base_url": "",
             "tier_cloud_standard": str(CustomerPlan.TIER_CLOUD_STANDARD),
             "tier_cloud_plus": str(CustomerPlan.TIER_CLOUD_PLUS),
+            "REL_CANONICAL_LINK": f"https://zulip.com{request.path}",
         }
     )
 
@@ -319,7 +320,9 @@ def landing_view(request: HttpRequest, template_name: str) -> HttpResponse:
 
 @add_google_analytics
 def hello_view(request: HttpRequest) -> HttpResponse:
-    return TemplateResponse(request, "corporate/hello.html", latest_info_context())
+    context = latest_info_context()
+    context["REL_CANONICAL_LINK"] = "https://zulip.com/"
+    return TemplateResponse(request, "corporate/hello.html", context)
 
 
 @add_google_analytics
@@ -334,6 +337,10 @@ def communities_view(request: HttpRequest) -> HttpResponse:
             # Filter out realms who haven't changed their description from the default.
             description="",
         )
+        .exclude(
+            # Filter out demo organizations.
+            demo_organization_scheduled_deletion_date__isnull=False,
+        )
         .order_by("name")
     )
     for realm in want_to_be_advertised_realms:
@@ -346,7 +353,6 @@ def communities_view(request: HttpRequest) -> HttpResponse:
             )
             eligible_realms.append(
                 {
-                    "id": realm.id,
                     "name": realm.name,
                     "realm_url": realm.url,
                     "logo_url": get_realm_icon_url(realm),
@@ -366,11 +372,12 @@ def communities_view(request: HttpRequest) -> HttpResponse:
     # Remove org_types for which there are no open organizations.
     org_types = dict()
     for org_type in CATEGORIES_TO_OFFER:
-        if Realm.ORG_TYPES[org_type]["id"] in unique_org_type_ids:
-            org_types[org_type] = Realm.ORG_TYPES[org_type]
+        org_type_info = Realm.ORG_TYPES[org_type]
+        if org_type_info["id"] in unique_org_type_ids:
+            org_types[org_type] = {"name": org_type_info["name"]}
 
-    # This code is not required right bot could be useful in future.
-    # If we ever decided to show all the ORG_TYPES.
+    # This code is not required right now, but could be useful in the
+    # future if we ever decide to show all the ORG_TYPES.
     # Remove `Unspecified` ORG_TYPE
     # org_types.pop("unspecified", None)
 
@@ -382,6 +389,7 @@ def communities_view(request: HttpRequest) -> HttpResponse:
         request,
         "corporate/communities.html",
         context={
+            "REL_CANONICAL_LINK": f"https://zulip.com{request.path}",
             "eligible_realms": eligible_realms,
             "org_types": org_types,
         },

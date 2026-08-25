@@ -13,7 +13,7 @@ from zerver.models import UserProfile
 
 @webhook_view("IFTTT")
 @typed_endpoint
-def api_iftt_app_webhook(
+def api_ifttt_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     *,

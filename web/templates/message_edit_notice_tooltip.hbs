@@ -12,7 +12,17 @@
     {{else if message_moved_and_move_history_access}}
         <div>{{t "View move history"}}</div>
     {{/if}}
-    {{#if edited}}
+    {{#if widget_edited}}
+        {{#if edited_time_string}}
+        <div class="tooltip-inner-content italic">
+            {{t 'Last edited {edited_time_string}.'}}
+        </div>
+        {{else}}
+        <div class="tooltip-inner-content italic">
+            {{t 'This poll has been edited.'}}
+        </div>
+        {{/if}}
+    {{else if edited}}
         <div class="tooltip-inner-content italic">
             {{t 'Last edited {edited_time_string}.'}}
         </div>

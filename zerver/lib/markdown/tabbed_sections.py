@@ -29,11 +29,11 @@ NAV_BAR_TEMPLATE = """
 """.strip()
 
 NAV_LIST_ITEM_TEMPLATE = """
-<li data-tab-key="{data_tab_key}" tabindex="0">{label}</li>
+<li class="{class_}" data-tab-key="{data_tab_key}" tabindex="0">{label}</li>
 """.strip()
 
 DIV_TAB_CONTENT_TEMPLATE = """
-<div class="tab-content" data-tab-key="{data_tab_key}" markdown="1">
+<div class="tab-content {class_}" data-tab-key="{data_tab_key}" markdown="1">
 {content}
 </div>
 """.strip()
@@ -44,89 +44,17 @@ TAB_SECTION_LABELS = {
     "desktop-web": "Desktop/Web",
     "ios": "iOS",
     "android": "Android",
-    "mac": "macOS",
-    "windows": "Windows",
-    "linux": "Linux",
-    "most-systems": "Most systems",
-    "linux-with-apt": "Linux with APT",
     "python": "Python",
     "js": "JavaScript",
     "curl": "curl",
     "zulip-send": "zulip-send",
-    "web": "Web",
-    "desktop": "Desktop",
-    "mobile": "Mobile",
-    "mm-default": "Default installation",
-    "mm-cloud": "Cloud instance",
-    "mm-docker": "Docker",
-    "mm-gitlab-omnibus": "GitLab Omnibus",
-    "mm-self-hosting-cloud-export": "Self hosting (cloud export)",
-    "require-invitations": "Require invitations",
-    "allow-anyone-to-join": "Allow anyone to join",
-    "restrict-by-email-domain": "Restrict by email domain",
-    "zoom": "Zoom",
-    "jitsi-meet": "Jitsi Meet",
-    "bigbluebutton": "BigBlueButton",
-    "disable": "Disabled",
-    "chrome": "Chrome",
-    "firefox": "Firefox",
-    "desktop-app": "Desktop app",
-    "system-proxy-settings": "System proxy settings",
-    "custom-proxy-settings": "Custom proxy settings",
-    "stream": "From a stream view",
-    "not-stream": "From other views",
-    "via-recent-conversations": "Via recent conversations",
-    "via-inbox-view": "Via inbox view",
-    "via-left-sidebar": "Via left sidebar",
-    "via-right-sidebar": "Via right sidebar",
     "instructions-for-all-platforms": "Instructions for all platforms",
-    "public-channels": "Public channels",
-    "private-channels": "Private channels",
-    "web-public-channels": "Web-public channels",
-    "via-user-card": "Via user card",
-    "via-user-profile": "Via user profile",
-    "via-organization-settings": "Via organization settings",
-    "via-personal-settings": "Via personal settings",
-    "via-channel-settings": "Via channel settings",
-    "via-group-settings": "Via group settings",
-    "via-group-card": "Via group card",
-    "via-compose-box": "Via compose box",
-    "via-search-box": "Via search box",
-    "default-subdomain": "Default subdomain",
-    "custom-subdomain": "Custom subdomain",
-    "zulip-cloud-standard": "Zulip Cloud Standard",
-    "zulip-cloud-plus": "Zulip Cloud Plus",
-    "request-sponsorship": "Request sponsorship",
-    "request-education-pricing": "Request education pricing",
-    "zulip-cloud": "Zulip Cloud",
-    "self-hosting": "Self hosting",
-    "okta": "Okta",
-    "onelogin": "OneLogin",
-    "azuread": "Entra ID (AzureAD)",
-    "entraid": "Microsoft Entra ID",
-    "keycloak": "Keycloak",
-    "auth0": "Auth0",
-    "logged-in": "If you are logged in",
-    "logged-out": "If you are logged out",
-    "user": "User",
-    "bot": "Bot",
-    "on-sign-up": "On sign-up",
-    "via-paste": "Via paste",
-    "via-drag-and-drop": "Via drag-and-drop",
-    "via-markdown": "Via Markdown",
-    "via-compose-box-buttons": "Via compose box button",
-    "channel-compose": "Compose to a channel",
-    "dm-compose": "Compose a DM",
-    "v6": "Zulip Server 6.0+",
-    "v4": "Zulip Server 4.0+",
-    "organization-billing": "Organization-level billing",
-    "server-billing": "Server-level billing",
-    "by-card": "Pay by credit card",
-    "by-invoice": "Pay by invoice",
     "for-a-bot": "For a bot",
     "for-yourself": "For yourself",
-    "new-organizations": "New organizations",
-    "imported-organizations": "Imported organizations",
+    "grafana-latest": "Grafana 8.3+",
+    "grafana-older-version": "Grafana 8.2 and below",
+    "send-channel-message": "Send a channel message",
+    "send-dm": "Send a DM",
 }
 
 
@@ -176,10 +104,11 @@ def generate_content_blocks(
 
         content = "\n".join(lines[start_index:end_index]).strip()
         tab_content_block = tab_content_template.format(
+            class_="active" if index == 0 else "",
             data_tab_key=tab["tab_key"],
             # This attribute is not used directly in this file here,
             # we need this for the current conversion script in for
-            # help-beta where this function is being imported.
+            # starlight_help where this function is being imported.
             tab_label=TAB_SECTION_LABELS[tab["tab_key"]],
             # Wrapping the content in two newlines is necessary here.
             # If we don't do this, the inner Markdown does not get
@@ -222,15 +151,16 @@ class TabbedSectionsPreprocessor(Preprocessor):
 
     def generate_nav_bar(self, tab_section: dict[str, Any]) -> str:
         li_elements = []
-        for tab in tab_section["tabs"]:
+        for index, tab in enumerate(tab_section["tabs"]):
             tab_key = tab.get("tab_key")
             tab_label = TAB_SECTION_LABELS.get(tab_key)
             if tab_label is None:
                 raise ValueError(
                     f"Tab '{tab_key}' is not present in TAB_SECTION_LABELS in zerver/lib/markdown/tabbed_sections.py"
                 )
+            class_ = "active" if index == 0 else ""
 
-            li = NAV_LIST_ITEM_TEMPLATE.format(data_tab_key=tab_key, label=tab_label)
+            li = NAV_LIST_ITEM_TEMPLATE.format(class_=class_, data_tab_key=tab_key, label=tab_label)
             li_elements.append(li)
 
         return NAV_BAR_TEMPLATE.format(tabs="\n".join(li_elements))

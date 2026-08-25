@@ -14,7 +14,7 @@ def backfill_realm_creation_log_events(
     Realm = apps.get_model("zerver", "Realm")
 
     objects_to_create = []
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.all().iterator():
         entry = RealmAuditLog(
             realm=realm,
             event_type=RealmAuditLog.REALM_CREATED,

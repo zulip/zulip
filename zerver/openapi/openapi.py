@@ -232,11 +232,23 @@ def get_curl_include_exclude(endpoint: str, method: str) -> list[dict[str, Any]]
     ]
 
 
+def check_web_app_pending_implementation(endpoint: str, method: str) -> bool:
+    """Fetch if the endpoint has note about web application implementation."""
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()].get(
+        "x-pending-web-implementation", False
+    )
+
+
 def check_requires_administrator(endpoint: str, method: str) -> bool:
     """Fetch if the endpoint requires admin config."""
     return openapi_spec.openapi()["paths"][endpoint][method.lower()].get(
         "x-requires-administrator", False
     )
+
+
+def check_requires_owner(endpoint: str, method: str) -> bool:
+    """Fetch if the endpoint requires owner config."""
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()].get("x-requires-owner", False)
 
 
 def check_additional_imports(endpoint: str, method: str) -> list[str] | None:
@@ -470,7 +482,7 @@ def validate_test_response(request: Request, response: Response) -> bool:
         return True
     # Code is not declared but appears in various 400 responses. If
     # common, it can be added to 400 response schema
-    if status_code.startswith("4"):
+    if status_code.startswith("4") or status_code == "502":
         # This return statement should ideally be not here. But since
         # we have not defined 400 responses for various paths this has
         # been added as all 400 have the same schema.  When all 400

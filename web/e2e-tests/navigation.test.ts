@@ -29,9 +29,7 @@ async function navigate_to_settings(page: Page): Promise<void> {
     const profile_section_tab_selector = "li[data-section='profile']";
     await page.waitForSelector(profile_section_tab_selector, {visible: true});
     await page.click(profile_section_tab_selector);
-    await page.waitForFunction(
-        () => document.activeElement?.getAttribute("data-section") === "profile",
-    );
+    await page.waitForSelector(`${profile_section_tab_selector}:focus`, {visible: true});
 
     await page.click("#settings_page .content-wrapper .exit");
     // Wait until the overlay is completely closed.
@@ -57,7 +55,7 @@ async function navigate_to_subscriptions(page: Page): Promise<void> {
 async function navigate_to_private_messages(page: Page): Promise<void> {
     console.log("Navigate to direct messages");
 
-    const all_private_messages_icon = "#show-all-direct-messages";
+    const all_private_messages_icon = ".show-all-direct-messages";
     await page.waitForSelector(all_private_messages_icon, {visible: true});
     await page.click(all_private_messages_icon);
 
@@ -95,12 +93,12 @@ async function navigation_tests(page: Page): Promise<void> {
 
     await navigate_using_left_sidebar(page, "Verona");
 
-    await page.click("#left-sidebar-navigation-list .home-link");
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector("#message_view_header .zulip-icon-all-messages", {visible: true});
 
     await navigate_to_subscriptions(page);
 
-    await page.click("#left-sidebar-navigation-list .home-link");
+    await page.click("#left-sidebar-navigation-list .top_left_all_messages");
     await page.waitForSelector("#message_view_header .zulip-icon-all-messages", {visible: true});
 
     await navigate_to_settings(page);
@@ -118,4 +116,4 @@ async function navigation_tests(page: Page): Promise<void> {
     );
 }
 
-common.run_test(navigation_tests);
+await common.run_test(navigation_tests);

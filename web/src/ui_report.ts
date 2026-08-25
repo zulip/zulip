@@ -1,5 +1,5 @@
-import $ from "jquery";
-import {z} from "zod";
+import {$} from "jquery";
+import * as z from "zod/mini";
 
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
@@ -27,7 +27,7 @@ export function message(
         .fadeTo(0, 1);
     if (remove_after !== undefined) {
         setTimeout(() => {
-            $status_box.fadeOut(400);
+            $status_box.fadeOut(400, () => $status_box.removeClass(cls));
         }, remove_after);
     }
     $status_box.addClass("show");
@@ -91,22 +91,4 @@ export function hide_error($target: JQuery): void {
 
 export function show_error($target: JQuery): void {
     $target.addClass("show");
-}
-
-export function loading(
-    response_html: string,
-    $status_box: JQuery,
-    successfully_loaded = false,
-): void {
-    $status_box.find(".alert-content").html(response_html);
-    if (!successfully_loaded) {
-        $status_box.removeClass(common.status_classes).addClass("alert-loading").stop(true);
-    } else {
-        $status_box.removeClass(common.status_classes).addClass("alert-success").stop(true);
-        setTimeout(() => {
-            $status_box.removeClass("show");
-        }, 2500);
-    }
-
-    $status_box.addClass("show");
 }

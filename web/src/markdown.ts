@@ -1,15 +1,16 @@
 import {getUnixTime, isValid} from "date-fns";
-import katex from "katex";
+import * as katex from "katex";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import type {Template} from "url-template";
+import type {Matcher, RE2JS} from "re2js";
 
-import * as fenced_code from "../shared/src/fenced_code.ts";
 import render_channel_message_link from "../templates/channel_message_link.hbs";
 import render_topic_link from "../templates/topic_link.hbs";
 import marked from "../third/marked/lib/marked.cjs";
-import type {LinkifierMatch, ParseOptions, RegExpOrStub} from "../third/marked/lib/marked.cjs";
+import type {ParseOptions, RegExpOrStub} from "../third/marked/lib/marked.cjs";
 
+import * as fenced_code from "./fenced_code.ts";
+import type {LinkifierMapValue} from "./linkifiers.ts";
 import * as util from "./util.ts";
 
 // This contains zulip's frontend Markdown implementation; see
@@ -23,32 +24,44 @@ import * as util from "./util.ts";
 // If we see preview-related syntax in our content, we will need the
 // backend to render it.
 const preview_regexes = [
-    // Inline image and video previews, check for contiguous chars ending in image and video suffix
+    // Inline media previews, check for contiguous chars ending in media suffix
     // To keep the below regexes simple, split them out for the end-of-message case
 
-    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp|\.mp4|\.webm)\)?(\s+|$)/m,
+    /\S*(?:\.bmp|\.gif|\.jpg|\.jpeg|\.png|\.webp|\.mp4|\.webm|\.aac|\.flac|\.mp3|\.mpeg|\.wav)\)?(\s+|$)/m,
 
-    // Twitter and youtube links are given previews
+    // YouTube links are given previews
 
-    /\S*(?:twitter|youtube)\.com\/\S*/,
+    /\S*youtube\.com\/\S*/,
 ];
 
 function contains_preview_link(content: string): boolean {
     return preview_regexes.some((re) => re.test(content));
 }
 
-let web_app_helpers: MarkdownHelpers | undefined;
+function contains_topic_wildcard_mention(content: string): boolean {
+    // If the content has topic wildcard mention (@**topic**) then don't
+    // render it locally. We have only server-side restriction check for
+    // @topic mention. This helps to show the error message (no permission)
+    // via the compose banner and not to local-echo then fail due to restriction.
+    return content.includes("@**topic**");
+}
+
+export function contains_backend_only_syntax(content: string): boolean {
+    // Try to guess whether or not a message contains syntax that only the
+    // backend Markdown processor can correctly handle.
+    // If it doesn't, we can immediately render it client-side for local echo.
+    return contains_preview_link(content) || contains_topic_wildcard_mention(content);
+}
+
+export let web_app_helpers: MarkdownHelpers | undefined;
 
 export type AbstractMap<K, V> = {
-    keys: () => IterableIterator<K>;
-    entries: () => IterableIterator<[K, V]>;
+    keys: () => IteratorObject<K, BuiltinIteratorReturn>;
+    entries: () => IteratorObject<[K, V], BuiltinIteratorReturn>;
     get: (k: K) => V | undefined;
 };
 
-export type AbstractLinkifierMap = AbstractMap<
-    RegExp,
-    {url_template: Template; group_number_to_name: Record<number, string>}
->;
+export type AbstractLinkifierMap = AbstractMap<RE2JS, LinkifierMapValue>;
 
 type GetLinkifierMap = () => AbstractLinkifierMap;
 
@@ -91,86 +104,37 @@ export function translate_emoticons_to_names({
 }): string {
     // Translates emoticons in a string to their colon syntax.
     let translated = src;
-    let replacement_text: string;
     const terminal_symbols = ",.;?!()[] \"'\n\t"; // From composebox_typeahead
     const symbols_except_space = terminal_symbols.replace(" ", "");
 
-    const emoticon_replacer = function (
-        match: string,
-        _capture_group: string,
-        offset: number,
-        str: string,
-    ): string {
-        const prev_char = str[offset - 1];
-        const next_char = str[offset + match.length];
-
-        const non_space_at_start =
-            prev_char !== undefined && symbols_except_space.includes(prev_char);
-        const non_space_at_end =
-            next_char !== undefined && symbols_except_space.includes(next_char);
-        const valid_start = prev_char === undefined || terminal_symbols.includes(prev_char);
-        const valid_end = next_char === undefined || terminal_symbols.includes(next_char);
-
-        if (non_space_at_start && non_space_at_end) {
-            // Hello!:)?
-            return match;
-        }
-        if (valid_start && valid_end) {
-            return replacement_text;
-        }
-        return match;
-    };
-
     for (const translation of get_emoticon_translations()) {
-        // We can't pass replacement_text directly into
-        // emoticon_replacer, because emoticon_replacer is
-        // a callback for `replace()`.  Instead we just mutate
-        // the `replacement_text` that the function closes on.
-        replacement_text = translation.replacement_text;
-        translated = translated.replace(translation.regex, emoticon_replacer);
+        const replacement_text = translation.replacement_text;
+        translated = translated.replace(
+            translation.regex,
+            (match, _capture_group, offset: number, str: string) => {
+                const prev_char = str[offset - 1];
+                const next_char = str[offset + match.length];
+
+                const non_space_at_start =
+                    prev_char !== undefined && symbols_except_space.includes(prev_char);
+                const non_space_at_end =
+                    next_char !== undefined && symbols_except_space.includes(next_char);
+                const valid_start = prev_char === undefined || terminal_symbols.includes(prev_char);
+                const valid_end = next_char === undefined || terminal_symbols.includes(next_char);
+
+                if (non_space_at_start && non_space_at_end) {
+                    // Hello!:)?
+                    return match;
+                }
+                if (valid_start && valid_end) {
+                    return replacement_text;
+                }
+                return match;
+            },
+        );
     }
 
     return translated;
-}
-
-function contains_problematic_linkifier(
-    content: string,
-    get_linkifier_map: GetLinkifierMap,
-): boolean {
-    // If a linkifier doesn't start with some specified characters
-    // then don't render it locally. It is workaround for the fact that
-    // javascript regex doesn't support lookbehind.
-    for (const re of get_linkifier_map().keys()) {
-        const pattern = /[^\s"'(,:<]/.source + re.source + /(?!\w)/.source;
-        const regex = new RegExp(pattern);
-        if (regex.test(content)) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-function contains_topic_wildcard_mention(content: string): boolean {
-    // If the content has topic wildcard mention (@**topic**) then don't
-    // render it locally. We have only server-side restriction check for
-    // @topic mention. This helps to show the error message (no permission)
-    // via the compose banner and not to local-echo then fail due to restriction.
-    return content.includes("@**topic**");
-}
-
-function content_contains_backend_only_syntax(
-    content: string,
-    get_linkifier_map: GetLinkifierMap,
-): boolean {
-    // Try to guess whether or not a message contains syntax that only the
-    // backend Markdown processor can correctly handle.
-    // If it doesn't, we can immediately render it client-side for local echo.
-    return (
-        contains_preview_link(content) ||
-        contains_problematic_linkifier(content, get_linkifier_map) ||
-        contains_topic_wildcard_mention(content)
-    );
 }
 
 function parse_with_options(
@@ -231,7 +195,6 @@ function parse_with_options(
                 return `<span class="${classes}">${_.escape(display_text)}</span>`;
             }
 
-            let full_name;
             let user_id;
 
             const id_regex = /^(.+)?\|(\d+)$/; // For @**user|id** and @**|id** syntax
@@ -253,7 +216,7 @@ function parse_with_options(
                     through to the other code (which may be a
                     misfeature).
                 */
-                full_name = match[1];
+                const full_name = match[1];
                 user_id = Number.parseInt(match[2]!, 10);
 
                 if (full_name === undefined) {
@@ -261,21 +224,18 @@ function parse_with_options(
                     if (!helper_config.is_valid_user_id(user_id)) {
                         // silently ignore invalid user id.
                         user_id = undefined;
-                    } else {
-                        full_name = helper_config.get_actual_name_from_user_id(user_id);
                     }
                 } else {
                     // For @**user|id** syntax
                     if (!helper_config.is_valid_full_name_and_user_id(full_name, user_id)) {
                         user_id = undefined;
-                        full_name = undefined;
                     }
                 }
             }
 
             if (user_id === undefined) {
                 // Handle normal syntax
-                full_name = mention;
+                const full_name = mention;
                 user_id = helper_config.get_user_id_from_name(full_name);
             }
 
@@ -412,24 +372,45 @@ export function get_topic_links(topic: string): TopicLink[] {
     // We export this for testing purposes, and mobile may want to
     // use this as well in the future.
     const links: Link[] = [];
+    if (!topic) {
+        return links;
+    }
     // The lower the precedence is, the more prioritized the pattern is.
     let precedence = 0;
 
     assert(web_app_helpers !== undefined);
     const get_linkifier_map = web_app_helpers.get_linkifier_map;
 
-    for (const [pattern, {url_template, group_number_to_name}] of get_linkifier_map().entries()) {
-        let match;
-        while ((match = pattern.exec(topic)) !== null) {
+    for (const [pattern, {url_template}] of get_linkifier_map().entries()) {
+        let pos = 0;
+        while (pos < topic.length) {
+            const matcher = pattern.matcher(topic.slice(pos));
+            if (!matcher.find()) {
+                break;
+            }
+            // After a successful find() on a pattern wrapped by
+            // compile_linkifier, groups 1 (leading boundary), 2 (user
+            // pattern body), and the trailing boundary group are always
+            // matched, as are all named groups inside the user pattern.
+            // Advance position past the leading boundary group.
+            pos += matcher.end(1);
+
             const template_context = Object.fromEntries(
-                match
-                    .slice(1)
-                    .map((matched_group, i) => [group_number_to_name[i + 1]!, matched_group]),
+                Object.keys(pattern.namedGroups()).map((groupname) => [
+                    groupname,
+                    matcher.group(groupname)!,
+                ]),
             );
+
             const link_url = url_template.expand(template_context);
             // We store the starting index as well, to sort the order of occurrence of the links
             // in the topic, similar to the logic implemented in zerver/lib/markdown/__init__.py
-            links.push({url: link_url, text: match[0], index: match.index, precedence});
+            const match_text = matcher.group(2)!;
+            links.push({url: link_url, text: match_text, index: pos, precedence});
+
+            // Advance past the user match body, but not the trailing boundary,
+            // so that patterns can overlap their whitespace.
+            pos += match_text.length;
         }
         precedence += 1;
     }
@@ -474,9 +455,8 @@ export function get_topic_links(topic: string): TopicLink[] {
     }
     // We need to sort applied_matches again because the links were previously ordered by precedence,
     // so that the links are displayed in the order their patterns are matched.
-    return applied_matches
-        .sort((a, b) => a.index - b.index)
-        .map((match) => ({url: match.url, text: match.text}));
+    applied_matches.sort((a, b) => a.index - b.index);
+    return applied_matches.map((match) => ({url: match.url, text: match.text}));
 }
 
 export function is_status_message(raw_content: string): boolean {
@@ -497,13 +477,13 @@ function handleUnicodeEmoji(
     // in boxes) into qualified emoji (images).
     // More specifically, we skip anything with text in the second column of
     // this table https://unicode.org/Public/emoji/1.0/emoji-data.txt
-    if (/^\P{Emoji_Presentation}\u20E3?$/u.test(unicode_emoji)) {
+    if (/^\P{Emoji_Presentation}\u{20E3}?$/u.test(unicode_emoji)) {
         return unicode_emoji;
     }
 
     // This unqualifies qualified emoji, which helps us make sure we
     // can match both versions.
-    const unqualified_unicode_emoji = unicode_emoji.replace(/\uFE0F/, "");
+    const unqualified_unicode_emoji = unicode_emoji.replace(/\u{FE0F}/u, "");
 
     const codepoint = [...unqualified_unicode_emoji]
         .map((char) => (char.codePointAt(0)?.toString(16) ?? "").padStart(4, "0"))
@@ -556,33 +536,27 @@ function handleEmoji({
 
 function handleLinkifier({
     pattern,
-    matches,
+    matcher,
     get_linkifier_map,
 }: {
-    pattern: RegExp;
-    matches: LinkifierMatch[];
+    pattern: RE2JS;
+    matcher: Matcher;
     get_linkifier_map: GetLinkifierMap;
 }): string {
     const item = get_linkifier_map().get(pattern);
     assert(item !== undefined);
-    const {url_template, group_number_to_name} = item;
+    const {url_template} = item;
     const template_context = Object.fromEntries(
-        matches.map((match, i) => [group_number_to_name[i + 1]!, match]),
+        Object.keys(pattern.namedGroups()).map((groupname) => [
+            groupname,
+            matcher.group(groupname)!,
+        ]),
     );
     return url_template.expand(template_context);
 }
 
 function handleTimestamp(time_string: string): string {
-    let timeobject;
-    const time = Number(time_string);
-
-    if (Number.isNaN(time)) {
-        timeobject = new Date(time_string); // not a Unix timestamp
-    } else {
-        // JavaScript dates are in milliseconds, Unix timestamps are in seconds
-        timeobject = new Date(time * 1000);
-    }
-
+    const timeobject = new Date(time_string);
     const escaped_time = _.escape(time_string);
     if (!isValid(timeobject) || getUnixTime(timeobject) < 0) {
         // Unsupported time format: rerender accordingly.
@@ -596,7 +570,7 @@ function handleTimestamp(time_string: string): string {
 
     // Use html5 <time> tag for valid timestamps.
     // render time without milliseconds.
-    const escaped_isotime = _.escape(timeobject.toISOString().split(".")[0] + "Z");
+    const escaped_isotime = _.escape(timeobject.toISOString().split(".", 1)[0] + "Z");
     return `<time datetime="${escaped_isotime}">${escaped_time}</time>`;
 }
 
@@ -645,10 +619,11 @@ function handleStreamTopic({
         return undefined;
     }
     const href = stream_topic_hash(stream.stream_id, topic);
+    const topic_display_name_html = _.escape(util.get_final_topic_display_name(topic));
     return render_topic_link({
         channel_id: stream.stream_id,
         channel_name: stream.name,
-        topic_display_name: util.get_final_topic_display_name(topic),
+        topic_display_name_html,
         is_empty_string_topic: topic === "",
         href,
     });
@@ -677,9 +652,10 @@ function handleStreamTopicMessage({
         return undefined;
     }
     const href = stream_topic_hash(stream.stream_id, topic) + "/near/" + message_id;
+    const topic_display_name_html = _.escape(util.get_final_topic_display_name(topic));
     return render_channel_message_link({
         channel_name: stream.name,
-        topic_display_name: util.get_final_topic_display_name(topic),
+        topic_display_name_html,
         is_empty_string_topic: topic === "",
         href,
     });
@@ -689,12 +665,11 @@ function handleTex(tex: string, fullmatch: string): string {
     try {
         return katex.renderToString(tex);
     } catch (error) {
-        assert(error instanceof Error);
-        if (error.message.startsWith("KaTeX parse error")) {
-            // TeX syntax error
+        if (error instanceof katex.ParseError) {
             return `<span class="tex-error">${_.escape(fullmatch)}</span>`;
         }
-        throw new Error(error.message);
+        /* istanbul ignore next */
+        throw error;
     }
 }
 
@@ -708,8 +683,8 @@ export function parse({
     content: string;
     flags: string[];
 } {
-    function get_linkifier_regexes(): RegExp[] {
-        return [...helper_config.get_linkifier_map().keys()];
+    function get_linkifier_regexes(): RE2JS[] {
+        return helper_config.get_linkifier_map().keys().toArray();
     }
 
     function disable_markdown_regex(rules: Record<string, RegExpOrStub>, name: string): void {
@@ -819,10 +794,10 @@ export function parse({
         return handleUnicodeEmoji(unicode_emoji, helper_config.get_emoji_name);
     }
 
-    function linkifierHandler(pattern: RegExp, matches: LinkifierMatch[]): string {
+    function linkifierHandler(pattern: RE2JS, matcher: Matcher): string {
         return handleLinkifier({
             pattern,
-            matches,
+            matcher,
             get_linkifier_map: helper_config.get_linkifier_map,
         });
     }
@@ -862,7 +837,10 @@ export function initialize(helper_config: MarkdownHelpers): void {
     web_app_helpers = helper_config;
 }
 
-export function render(raw_content: string): {
+export function render(
+    raw_content: string,
+    helper_config?: MarkdownHelpers,
+): {
     content: string;
     flags: string[];
     is_me_message: boolean;
@@ -870,17 +848,12 @@ export function render(raw_content: string): {
     // This is generally only intended to be called by the web app. Most
     // other platforms should call parse().
     assert(web_app_helpers !== undefined);
-    const {content, flags} = parse({raw_content, helper_config: web_app_helpers});
+    const {content, flags} = parse({raw_content, helper_config: helper_config ?? web_app_helpers});
     return {
         content,
         flags,
         is_me_message: is_status_message(raw_content),
     };
-}
-
-export function contains_backend_only_syntax(content: string): boolean {
-    assert(web_app_helpers !== undefined);
-    return content_contains_backend_only_syntax(content, web_app_helpers.get_linkifier_map);
 }
 
 export function parse_non_message(raw_content: string): string {

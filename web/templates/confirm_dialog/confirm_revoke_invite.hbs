@@ -1,9 +1,9 @@
 {{#if is_multiuse}}
-{{#if referred_by}}
-<p>{{#tr}}Are you sure you want to revoke this invitation link created by <strong>{referred_by}</strong>?{{/tr}}</p>
+    {{#if referred_by}}
+        {{#tr}}Are you sure you want to revoke this invitation link created by <strong>{referred_by}</strong>?{{/tr}}
+    {{else}}
+        {{#tr}}Are you sure you want to revoke this invitation link?{{/tr}}
+    {{/if}}
 {{else}}
-<p>{{#tr}}Are you sure you want to revoke this invitation link?{{/tr}}</p>
-{{/if}}
-{{else}}
-<p>{{#tr}}Are you sure you want to revoke the invitation to <strong>{email}</strong>?{{/tr}}</p>
+    {{#tr}}Are you sure you want to revoke the invitation to <strong>{email}</strong>?{{/tr}}
 {{/if}}

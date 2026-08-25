@@ -1,4 +1,6 @@
-import {z} from "zod";
+// See https://zulip.com/api/update-presence for API documentation.
+
+import * as z from "zod/mini";
 
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
@@ -15,29 +17,25 @@ export type PresenceStatus = {
     last_active?: number | undefined;
 };
 
-export const presence_info_from_event_schema = z.object({
-    website: z.object({
-        client: z.literal("website"),
-        status: z.enum(["idle", "active"]),
-        timestamp: z.number(),
-        pushable: z.boolean(),
+export const presence_info_from_event_schema = z.record(
+    z.string(),
+    z.object({
+        active_timestamp: z.number(),
+        idle_timestamp: z.number(),
     }),
-});
+);
 export type PresenceInfoFromEvent = z.output<typeof presence_info_from_event_schema>;
 
 export const user_last_seen_response_schema = z.object({
     result: z.string(),
-    msg: z.string().optional(),
-    presence: z
-        .object({
-            /* We ignore the keys other than aggregated, since they just contain
-               duplicate data. */
-            aggregated: z.object({
-                status: z.enum(["active", "idle", "offline"]),
-                timestamp: z.number(),
-            }),
-        })
-        .optional(),
+    msg: z.optional(z.string()),
+    server_timestamp: z.optional(z.number()),
+    presence: z.optional(
+        z.object({
+            active_timestamp: z.optional(z.number()),
+            idle_timestamp: z.optional(z.number()),
+        }),
+    ),
 });
 
 // This module just manages data.  See activity.js for
@@ -82,11 +80,11 @@ export function get_status(user_id: number): PresenceStatus["status"] {
 }
 
 export function get_user_ids(): number[] {
-    return [...presence_info.keys()];
+    return presence_info.keys().toArray();
 }
 
 export function get_active_or_idle_user_ids(): number[] {
-    return [...presence_info.entries()]
+    return [...presence_info]
         .filter((entry) => entry[1].status !== "offline")
         .map((entry) => entry[0]);
 }
@@ -163,18 +161,16 @@ export function status_from_raw(raw: RawPresence, user: User | undefined): Prese
 
 export function update_info_from_event(
     user_id: number,
-    info: PresenceInfoFromEvent | null,
-    server_timestamp: number,
+    info: z.infer<typeof presence_schema> | null,
+    server_timestamp?: number,
 ): void {
     /*
         Example of `info`:
 
         {
-            website: {
-                client: 'website',
-                pushable: false,
-                status: 'active',
-                timestamp: 1585745225
+            "10": {
+                active_timestamp: 1585745133,
+                idle_timestamp: 1585745091
             }
         }
 
@@ -190,16 +186,16 @@ export function update_info_from_event(
         server_timestamp: 0,
     };
 
-    raw.server_timestamp = server_timestamp;
+    if (server_timestamp !== undefined) {
+        // The event itself doesn't contain a server_timestamp. But
+        // since the event should be newer than our last polling
+        // response from the server, it should be safe to use that.
+        raw.server_timestamp = server_timestamp;
+    }
 
-    for (const rec of Object.values(info ?? {})) {
-        if (rec.status === "active" && rec.timestamp > (raw.active_timestamp ?? 0)) {
-            raw.active_timestamp = rec.timestamp;
-        }
-
-        if (rec.status === "idle" && rec.timestamp > (raw.idle_timestamp ?? 0)) {
-            raw.idle_timestamp = rec.timestamp;
-        }
+    if (info !== null) {
+        raw.active_timestamp = info.active_timestamp;
+        raw.idle_timestamp = info.idle_timestamp;
     }
 
     raw_info.set(user_id, raw);

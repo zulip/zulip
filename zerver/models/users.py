@@ -14,6 +14,7 @@ from django.utils.translation import gettext_lazy
 from typing_extensions import override
 
 from zerver.lib.cache import (
+    active_guest_user_ids_cache_key,
     active_non_guest_user_ids_cache_key,
     active_user_ids_cache_key,
     bot_dict_fields,
@@ -112,6 +113,10 @@ class UserBaseSettings(models.Model):
     ]
     demote_inactive_streams = models.PositiveSmallIntegerField(default=DEMOTE_STREAMS_AUTOMATIC)
 
+    # UI setting to control showing channel folders in the left sidebar
+    # of the Zulip web app.
+    web_left_sidebar_show_channel_folders = models.BooleanField(default=True, db_default=True)
+
     # UI setting controlling whether or not the Zulip web app will
     # mark messages as read as it scrolls through the feed.
 
@@ -134,11 +139,13 @@ class UserBaseSettings(models.Model):
     WEB_CHANNEL_DEFAULT_VIEW_FIRST_TOPIC = 1
     WEB_CHANNEL_DEFAULT_VIEW_CHANNEL_FEED = 2
     WEB_CHANNEL_DEFAULT_VIEW_TOPIC_LIST = 3
+    WEB_CHANNEL_DEFAULT_VIEW_TOP_UNREAD = 4
 
     WEB_CHANNEL_DEFAULT_VIEW_CHOICES = [
         WEB_CHANNEL_DEFAULT_VIEW_FIRST_TOPIC,
         WEB_CHANNEL_DEFAULT_VIEW_TOPIC_LIST,
         WEB_CHANNEL_DEFAULT_VIEW_CHANNEL_FEED,
+        WEB_CHANNEL_DEFAULT_VIEW_TOP_UNREAD,
     ]
 
     web_channel_default_view = models.SmallIntegerField(
@@ -148,14 +155,12 @@ class UserBaseSettings(models.Model):
 
     # Emoji sets
     GOOGLE_EMOJISET = "google"
-    GOOGLE_BLOB_EMOJISET = "google-blob"
     TEXT_EMOJISET = "text"
     TWITTER_EMOJISET = "twitter"
     EMOJISET_CHOICES = (
         (GOOGLE_EMOJISET, "Google"),
         (TWITTER_EMOJISET, "Twitter"),
         (TEXT_EMOJISET, "Plain text"),
-        (GOOGLE_BLOB_EMOJISET, "Google blobs"),
     )
     emojiset = models.CharField(default=GOOGLE_EMOJISET, choices=EMOJISET_CHOICES, max_length=20)
 
@@ -182,6 +187,8 @@ class UserBaseSettings(models.Model):
     web_stream_unreads_count_display_policy = models.PositiveSmallIntegerField(
         default=WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_UNMUTED_STREAMS
     )
+
+    web_left_sidebar_unreads_count_summary = models.BooleanField(default=True, db_default=True)
 
     # Setting to control whether to automatically go to the
     # conversation where message was sent.
@@ -289,6 +296,10 @@ class UserBaseSettings(models.Model):
     # Whether the user wants to see typing notifications.
     receives_typing_notifications = models.BooleanField(default=True)
 
+    # UI setting to control showing channel folders in the Inbox view
+    # of the Zulip web app.
+    web_inbox_show_channel_folders = models.BooleanField(default=True, db_default=True)
+
     # Who in the organization has access to users' actual email
     # addresses.  Controls whether the UserProfile.email field is
     # the same as UserProfile.delivery_email, or is instead a fake
@@ -315,31 +326,19 @@ class UserBaseSettings(models.Model):
     # Whether user wants to see AI features in the UI.
     hide_ai_features = models.BooleanField(default=False)
 
-    display_settings_legacy = dict(
-        # Don't add anything new to this legacy dict.
-        # Instead, see `modern_settings` below.
-        color_scheme=int,
-        default_language=str,
-        web_home_view=str,
-        demote_inactive_streams=int,
-        emojiset=str,
-        enable_drafts_synchronization=bool,
-        enter_sends=bool,
-        fluid_layout_width=bool,
-        high_contrast_mode=bool,
-        left_side_userlist=bool,
-        starred_message_counts=bool,
-        translate_emoticons=bool,
-        twenty_four_hour_time=bool,
-    )
-
-    notification_settings_legacy = dict(
-        # Don't add anything new to this legacy dict.
-        # Instead, see `modern_notification_settings` below.
+    modern_notification_settings = dict(
+        automatically_follow_topics_policy=int,
+        automatically_follow_topics_where_mentioned=bool,
+        automatically_unmute_topics_in_muted_streams_policy=int,
         desktop_icon_count_display=int,
         email_notifications_batching_period_seconds=int,
         enable_desktop_notifications=bool,
         enable_digest_emails=bool,
+        enable_followed_topic_audible_notifications=bool,
+        enable_followed_topic_desktop_notifications=bool,
+        enable_followed_topic_email_notifications=bool,
+        enable_followed_topic_push_notifications=bool,
+        enable_followed_topic_wildcard_mentions_notify=bool,
         enable_login_emails=bool,
         enable_marketing_emails=bool,
         enable_offline_email_notifications=bool,
@@ -359,51 +358,73 @@ class UserBaseSettings(models.Model):
     )
 
     modern_settings = dict(
-        # Add new general settings here.
+        allow_private_data_export=bool,
+        color_scheme=int,
+        default_language=str,
+        demote_inactive_streams=int,
         display_emoji_reaction_users=bool,
         email_address_visibility=int,
-        web_escape_navigates_to_home_view=bool,
+        emojiset=str,
+        enable_drafts_synchronization=bool,
+        enter_sends=bool,
+        fluid_layout_width=bool,
+        hide_ai_features=bool,
+        high_contrast_mode=bool,
+        left_side_userlist=bool,
         receives_typing_notifications=bool,
+        resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum,
         send_private_typing_notifications=bool,
         send_read_receipts=bool,
         send_stream_typing_notifications=bool,
-        allow_private_data_export=bool,
-        web_mark_read_on_scroll_policy=int,
-        web_channel_default_view=int,
+        starred_message_counts=bool,
+        translate_emoticons=bool,
+        twenty_four_hour_time=bool,
         user_list_style=int,
         web_animate_image_previews=str,
-        web_stream_unreads_count_display_policy=int,
+        web_channel_default_view=int,
+        web_escape_navigates_to_home_view=bool,
         web_font_size_px=int,
+        web_home_view=str,
+        web_inbox_show_channel_folders=bool,
+        web_left_sidebar_show_channel_folders=bool,
+        web_left_sidebar_unreads_count_summary=bool,
         web_line_height_percent=int,
+        web_mark_read_on_scroll_policy=int,
         web_navigate_to_sent_message=bool,
+        web_stream_unreads_count_display_policy=int,
         web_suggest_update_timezone=bool,
-        hide_ai_features=bool,
-        resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum,
     )
 
-    modern_notification_settings = dict(
-        # Add new notification settings here.
-        enable_followed_topic_desktop_notifications=bool,
-        enable_followed_topic_email_notifications=bool,
-        enable_followed_topic_push_notifications=bool,
-        enable_followed_topic_audible_notifications=bool,
-        enable_followed_topic_wildcard_mentions_notify=bool,
-        automatically_follow_topics_policy=int,
-        automatically_unmute_topics_in_muted_streams_policy=int,
-        automatically_follow_topics_where_mentioned=bool,
-    )
-
-    notification_setting_types = {
-        **notification_settings_legacy,
-        **modern_notification_settings,
-    }
+    notification_setting_types = modern_notification_settings
 
     # Define the types of the various automatically managed properties
     property_types = {
-        **display_settings_legacy,
         **notification_setting_types,
         **modern_settings,
     }
+
+    # Settings where security policy may restrict the ability of
+    # organization administrators to change this setting for other
+    # accounts.
+    #
+    # Core account fields like name and email address are not part of
+    # the property_types framework and thus do not appear here.
+    SECURITY_SENSITIVE_USER_SETTINGS = frozenset(
+        {
+            # Data privacy controls
+            "allow_private_data_export",
+            "email_address_visibility",
+            # Email notification controls
+            "enable_digest_emails",
+            "enable_login_emails",
+            "enable_marketing_emails",
+            # Availability/presence privacy controls
+            "presence_enabled",
+            "send_private_typing_notifications",
+            "send_read_receipts",
+            "send_stream_typing_notifications",
+        }
+    )
 
     class Meta:
         abstract = True
@@ -426,7 +447,6 @@ class RealmUserDefault(UserBaseSettings):
 class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     USERNAME_FIELD = "email"
     MAX_NAME_LENGTH = 100
-    MIN_NAME_LENGTH = 2
     API_KEY_LENGTH = 32
     NAME_INVALID_CHARS = ["*", "`", "\\", ">", '"', "@"]
 
@@ -453,9 +473,20 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         EMBEDDED_BOT: "Embedded bot",
     }
 
-    SERVICE_BOT_TYPES = [
+    MESSAGE_TRIGGERED_BOT_TYPES = [
         OUTGOING_WEBHOOK_BOT,
         EMBEDDED_BOT,
+    ]
+
+    # Certain fields can imply an unusually elevated level of permissions
+    # for the user in some way. Such privileges generally should not be
+    # carried over to a new server at import time.
+    SPECIAL_PERMISSIONS_TO_RESET_AT_IMPORT = [
+        "is_staff",
+        "can_forge_sender",
+        "can_create_users",
+        "can_change_user_emails",
+        "rate_limits",
     ]
 
     id = models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
@@ -480,8 +511,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     email = models.EmailField(blank=False, db_index=True)
 
     realm = models.ForeignKey("zerver.Realm", on_delete=CASCADE)
-    # Foreign key to the Recipient object for PERSONAL type messages to this user.
-    recipient = models.ForeignKey("zerver.Recipient", null=True, on_delete=models.SET_NULL)
 
     INACCESSIBLE_USER_NAME = gettext_lazy("Unknown user")
     # The user's name.  We prefer the model of a full_name
@@ -518,6 +547,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     #
     # See also `long_term_idle`.
     is_active = models.BooleanField(default=True, db_index=True)
+
+    # Deleted users are a subset of deactivated users whose metadata
+    # has been removed as well. They cannot be reactivated, to ensure
+    # is_deleted=True, is_active=True is impossible.
+    is_deleted = models.BooleanField(db_default=False, default=False)
 
     is_bot = models.BooleanField(default=False, db_index=True)
     bot_type = models.PositiveSmallIntegerField(null=True, db_index=True)
@@ -581,13 +615,17 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     last_active_message_id = models.IntegerField(null=True)
 
     # Mirror dummies are fake (!is_active) users used to provide
-    # message senders in our cross-protocol Zephyr<->Zulip content
-    # mirroring integration, so that we can display mirrored content
-    # like native Zulip messages (with a name + avatar, etc.).
+    # message senders in cross-protocol mirroring integrations, so
+    # that we can display mirrored content like native Zulip messages
+    # (with a name + avatar, etc.).  We also abuse this for data
+    # imports and deleted users.
     is_mirror_dummy = models.BooleanField(default=False)
 
+    # Flag used for imported users who have not activated their account.
+    is_imported_stub = models.BooleanField(default=False)
+
     # Users with this flag set are allowed to forge messages as sent by another
-    # user and to send to private streams; also used for Zephyr/Jabber mirroring.
+    # user and to send to private streams; also used for Jabber mirroring.
     can_forge_sender = models.BooleanField(default=False, db_index=True)
     # Users with this flag set can create other users via API.
     can_create_users = models.BooleanField(default=False, db_index=True)
@@ -630,13 +668,16 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     timezone = models.CharField(max_length=40, default="")
 
     AVATAR_FROM_GRAVATAR = "G"
+    AVATAR_FROM_JDENTICON = "J"
     AVATAR_FROM_USER = "U"
     AVATAR_SOURCES = (
         (AVATAR_FROM_GRAVATAR, "Hosted by Gravatar"),
+        (AVATAR_FROM_JDENTICON, "Generated using Jdenticon"),
         (AVATAR_FROM_USER, "Uploaded by user"),
     )
+    DEFAULT_AVATAR_SOURCE = AVATAR_FROM_JDENTICON
     avatar_source = models.CharField(
-        default=AVATAR_FROM_GRAVATAR, choices=AVATAR_SOURCES, max_length=1
+        default=DEFAULT_AVATAR_SOURCE, choices=AVATAR_SOURCES, max_length=1
     )
     avatar_version = models.PositiveSmallIntegerField(default=1)
     # This is only used for LDAP-provided avatars; it contains the
@@ -644,7 +685,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     # us, pre-thumbnailing.
     avatar_hash = models.CharField(null=True, max_length=64)
 
-    zoom_token = models.JSONField(default=None, null=True)
+    # A place to store the user's state related to third-party API
+    # integrations, like bearer tokens for accessing video call
+    # providers.
+    #
+    # Note that an index would need to be added to support searching
+    # by values in this object.
+    third_party_api_state = models.JSONField(default=dict, db_default={})
 
     objects = UserManager()
 
@@ -701,7 +748,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         }
         data: ProfileData = []
         for field in custom_profile_fields_for_realm(self.realm_id):
-            field_values = user_data.get(field.id, None)
+            field_values = user_data.get(field.id)
             if field_values:
                 value, rendered_value = (
                     field_values.get("value"),
@@ -894,11 +941,17 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def can_delete_own_message(self) -> bool:
         return self.has_permission("can_delete_own_message_group")
 
+    def can_set_delete_message_policy(self) -> bool:
+        return self.is_realm_admin or self.has_permission("can_set_delete_message_policy_group")
+
+    def can_set_topics_policy(self) -> bool:
+        return self.is_realm_admin or self.has_permission("can_set_topics_policy_group")
+
     def can_summarize_topics(self) -> bool:
         return self.has_permission("can_summarize_topics_group")
 
     def can_access_public_streams(self) -> bool:
-        return not (self.is_guest or self.realm.is_zephyr_mirror_realm)
+        return not self.is_guest
 
     def major_tos_version(self) -> int:
         if self.tos_version is not None:
@@ -964,7 +1017,6 @@ def base_get_user_narrow_queryset() -> QuerySet[UserProfile]:
         "presence_enabled",
         "rate_limits",
         "role",
-        "recipient_id",
         "realm__string_id",
         "realm__deactivated",
     )
@@ -1170,6 +1222,16 @@ def active_non_guest_user_ids(realm_id: int) -> list[int]:
     return list(query)
 
 
+@cache_with_key(active_guest_user_ids_cache_key, timeout=3600 * 24 * 7)
+def active_guest_user_ids(realm_id: int) -> list[int]:
+    query = UserProfile.objects.filter(
+        realm_id=realm_id,
+        is_active=True,
+        role=UserProfile.ROLE_GUEST,
+    ).values_list("id", flat=True)
+    return list(query)
+
+
 def bot_owner_user_ids(user_profile: UserProfile) -> set[int]:
     is_private_bot = (
         user_profile.default_sending_stream and user_profile.default_sending_stream.invite_only
@@ -1205,3 +1267,34 @@ def get_bot_dicts_in_realm(realm: "Realm") -> list[dict[str, Any]]:
 
 def is_cross_realm_bot_email(email: str) -> bool:
     return email.lower() in settings.CROSS_REALM_BOT_EMAILS
+
+
+class ExternalAuthID(models.Model):
+    user = models.ForeignKey(UserProfile, on_delete=CASCADE)
+    realm = models.ForeignKey("zerver.Realm", on_delete=CASCADE)
+    date_created = models.DateTimeField(default=timezone_now)
+    # TODO: We might want to add is_active and date_deactivated fields in the future.
+
+    external_auth_method_name = models.TextField(db_index=False)
+    external_auth_id = models.TextField(db_index=False)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "realm",
+                    "external_auth_method_name",
+                    "external_auth_id",
+                ],
+                name="zerver_externalauthid_uniq",
+            ),
+            # Each user should only have at most a single ExternalAuthID
+            # for any authentication method.
+            models.UniqueConstraint(
+                fields=[
+                    "user",
+                    "external_auth_method_name",
+                ],
+                name="zerver_user_externalauth_uniq",
+            ),
+        ]

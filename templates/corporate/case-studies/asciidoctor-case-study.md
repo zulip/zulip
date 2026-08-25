@@ -14,7 +14,7 @@ says project lead [Dan Allen](https://github.com/mojavelinux). “We finally had
 home base. Zulip has been a game changer for our community.”
 
 
-> “Zulip has been a game changer for our community.”
+> Zulip has been a game changer for our community.
 >
 > — Project lead Dan Allen
 
@@ -42,8 +42,8 @@ using notifications, or scroll back multiple pages to find the little ‘see
 replies’ link and rediscover the thread. It was just so tedious,” Dan recalls.
 
 
-> “The conversations in Gitter were becoming more about Gitter and its
-> limitations and less about the project itself.”
+> The conversations in Gitter were becoming more about Gitter and its
+> limitations and less about the project itself.
 >
 > — Project lead Dan Allen
 
@@ -81,8 +81,8 @@ explains. “As a result, conversations don’t have to be branched from an
 arbitrary spot, and the discussion is much more likely to stay focused and
 succinct.”
 
-> “Zulip starts the conversation out on the right foot by giving it its own
-> space as a topic.”
+> Zulip starts the conversation out on the right foot by giving it its own
+> space as a topic.
 >
 > — Project lead Dan Allen
 
@@ -118,8 +118,8 @@ and I don’t feel stressed,” says Dan. “I used it for my company chat as we
 Zulip is calm and organized. I can immediately see what people are asking
 and jump to respond when I need to.”
 
-> “I can manage hundreds of participants across two communities extremely
-> efficiently.”
+> I can manage hundreds of participants across two communities extremely
+> efficiently.
 >
 > — Project lead Dan Allen
 
@@ -130,7 +130,7 @@ We’re seeing people participating who never participated before,” Dan says.
 can’t type as quickly now all have a chance to be part of the dialogue. Zulip
 offers a more manageable pace.”
 
-> “We’re seeing people participating who never participated before.”
+> We’re seeing people participating who never participated before.
 >
 > — Project lead Dan Allen
 

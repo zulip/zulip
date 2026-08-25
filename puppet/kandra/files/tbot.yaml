@@ -1,0 +1,24 @@
+version: v2
+proxy_server: teleport.zulipchat.net:443
+onboarding:
+  join_method: iam
+  # This "token" is defined in Teleport, and links to the AWS role
+  # https://teleport.zulipchat.net/web/tokens
+  # https://goteleport.com/docs/reference/deployment/join-methods/#aws-iam-role-iam
+  # https://goteleport.com/docs/installation/agents/aws-iam/
+  token: prometheus-scrape-bot
+  ca_pins:
+    - "sha256:062db37249ea74c450579da8f02043b317cb8a174d653bb5090a89752d68efe7"
+storage:
+  type: directory
+  path: /var/lib/teleport/bot
+services:
+  # Prometheus proxies all exporter traffic through this proxy
+  - type: application-proxy
+    listen: tcp://127.0.0.1:8080
+outputs:
+  # This is consumed by teleport-sd to list exporters
+  - type: identity
+    destination:
+      type: directory
+      path: /var/lib/teleport/bot-identity

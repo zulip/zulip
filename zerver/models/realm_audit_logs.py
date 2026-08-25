@@ -37,6 +37,8 @@ class AuditLogEventType(IntEnum):
     USER_DEFAULT_ALL_PUBLIC_STREAMS_CHANGED = 131
     USER_SETTING_CHANGED = 132
     USER_DIGEST_EMAIL_CREATED = 133
+    USER_IS_IMPORTED_STUB_CHANGED = 134
+    USER_DATE_JOINED_CHANGED = 135
 
     REALM_DEACTIVATED = 201
     REALM_REACTIVATED = 202
@@ -66,6 +68,10 @@ class AuditLogEventType(IntEnum):
     REALM_EMOJI_ADDED = 226
     REALM_EMOJI_REMOVED = 227
     REALM_LINKIFIERS_REORDERED = 228
+
+    # This event for a realm means that this server processed exported data
+    # (either from another Zulip server or a 3rd party app such as Slack),
+    # and imported the data as the given realm.
     REALM_IMPORTED = 229
     REALM_EXPORT_DELETED = 230
 
@@ -112,8 +118,11 @@ class AuditLogEventType(IntEnum):
     USER_GROUP_GROUP_BASED_SETTING_CHANGED = 722
     USER_GROUP_DEACTIVATED = 723
     USER_GROUP_REACTIVATED = 724
+    WORKPLACE_USERS_COUNT_CHANGED = 725
 
     SAVED_SNIPPET_CREATED = 800
+
+    CUSTOM_EMAIL_SENT = 810
 
     NAVIGATION_VIEW_CREATED = 850
     NAVIGATION_VIEW_UPDATED = 851
@@ -124,6 +133,8 @@ class AuditLogEventType(IntEnum):
     CHANNEL_FOLDER_DESCRIPTION_CHANGED = 903
     CHANNEL_FOLDER_ARCHIVED = 904
     CHANNEL_FOLDER_UNARCHIVED = 905
+
+    INVITATION_REVOKED = 1001
 
     # The following values are only for remote server/realm logs.
     # Values should be exactly 10000 greater than the corresponding
@@ -181,11 +192,13 @@ class AbstractRealmAuditLog(models.Model):
         AuditLogEventType.REALM_DEACTIVATED,
         AuditLogEventType.REALM_REACTIVATED,
         AuditLogEventType.REALM_IMPORTED,
+        AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED,
     ]
 
     HOW_REALM_CREATOR_FOUND_ZULIP_OPTIONS = {
         "existing_user": "At an organization that's using it",
         "search_engine": "Search engine",
+        "ai_chatbot": "AI/LLM",
         "review_site": "Review site",
         "personal_recommendation": "Personal recommendation",
         "hacker_news": "Hacker News",
@@ -251,6 +264,7 @@ class RealmAuditLog(AbstractRealmAuditLog):
         on_delete=CASCADE,
     )
     event_last_message_id = models.IntegerField(null=True)
+    scrubbed = models.BooleanField(db_default=False, default=False)
 
     class Meta:
         ordering = ["id"]

@@ -37,6 +37,11 @@ class zulip::smokescreen {
   }
 
   $listen_address = zulipconf('http_proxy', 'listen_address', '127.0.0.1')
+  $allow_addresses = split(zulipconf('http_proxy', 'allow_addresses', ''), ',')
+  $allow_ranges = split(zulipconf('http_proxy', 'allow_ranges', ''), ',')
+  $deny_addresses = split(zulipconf('http_proxy', 'deny_addresses', ''), ',')
+  $deny_ranges = split(zulipconf('http_proxy', 'deny_ranges', ''), ',')
+
   file { "${zulip::common::supervisor_conf_dir}/smokescreen.conf":
     ensure  => file,
     require => [

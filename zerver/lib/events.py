@@ -4,6 +4,7 @@ import copy
 import logging
 import time
 from collections.abc import Callable, Collection, Iterable, Sequence
+from dataclasses import asdict
 from typing import Any, Literal
 
 from django.conf import settings
@@ -12,8 +13,12 @@ from typing_extensions import NotRequired, TypedDict
 
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.default_streams import default_stream_groups_to_dicts_sorted
-from zerver.actions.realm_settings import get_realm_authentication_methods_for_page_params_api
+from zerver.actions.realm_settings import (
+    do_set_realm_property,
+    get_realm_authentication_methods_for_page_params_api,
+)
 from zerver.actions.saved_snippets import do_get_saved_snippets
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import get_owned_bot_dicts
 from zerver.lib import emoji
 from zerver.lib.alert_words import user_alert_words
@@ -25,11 +30,14 @@ from zerver.lib.channel_folders import (
 )
 from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
+from zerver.lib.devices import get_devices
+from zerver.lib.event_types import RealmEmojiUpdateData
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import get_default_external_accounts
+from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.integrations import (
     EMBEDDED_BOTS,
-    WEBHOOK_INTEGRATIONS,
+    INCOMING_WEBHOOK_INTEGRATIONS,
     get_all_event_types_for_integration,
 )
 from zerver.lib.message import (
@@ -38,7 +46,6 @@ from zerver.lib.message import (
     apply_unread_message_event,
     extract_unread_data_from_um_rows,
     get_raw_unread_data,
-    get_recent_conversations_recipient_id,
     get_recent_private_conversations,
     get_starred_message_ids,
     remove_message_id_from_unread_mgs,
@@ -51,7 +58,10 @@ from zerver.lib.onboarding_steps import get_next_onboarding_steps
 from zerver.lib.presence import get_presence_for_user, get_presences_for_realm
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
-from zerver.lib.scheduled_messages import get_undelivered_scheduled_messages
+from zerver.lib.scheduled_messages import (
+    get_undelivered_reminders,
+    get_undelivered_scheduled_messages,
+)
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.sounds import get_available_notification_sounds
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
@@ -85,6 +95,7 @@ from zerver.lib.users import (
 )
 from zerver.lib.utils import optional_bytes_to_mib
 from zerver.models import (
+    ChannelFolder,
     Client,
     CustomProfileField,
     Draft,
@@ -106,6 +117,7 @@ from zerver.models.realm_emoji import get_all_custom_emoji_for_realm
 from zerver.models.realm_playgrounds import get_realm_playgrounds
 from zerver.models.realms import (
     MessageEditHistoryVisibilityPolicyEnum,
+    RealmTopicsPolicyEnum,
     get_corresponding_policy_value_for_group_setting,
     get_realm_domains,
 )
@@ -158,9 +170,9 @@ def fetch_initial_state_data(
     realm: Realm,
     event_types: Iterable[str] | None = None,
     queue_id: str | None = "",
+    idle_queue_timeout_secs: int | None = None,
     client_gravatar: bool = False,
     user_avatar_url_field_optional: bool = False,
-    user_settings_object: bool = False,
     slim_presence: bool = False,
     presence_last_update_id_fetched_by_client: int | None = None,
     presence_history_limit_days: int | None = None,
@@ -172,6 +184,7 @@ def fetch_initial_state_data(
     user_list_incomplete: bool = False,
     include_deactivated_groups: bool = False,
     archived_channels: bool = False,
+    simplified_presence_events: bool = False,
 ) -> dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
     web app's `page_params` and `/api/v1/register` (for mobile/terminal
@@ -185,6 +198,9 @@ def fetch_initial_state_data(
     code to apply_events (and add a test in test_events.py).
     """
     state: dict[str, Any] = {"queue_id": queue_id}
+
+    if idle_queue_timeout_secs is not None:
+        state["idle_queue_timeout_secs"] = idle_queue_timeout_secs
 
     if event_types is None:
         # return True always
@@ -222,7 +238,7 @@ def fetch_initial_state_data(
             id=0,
             default_language=spectator_requested_language,
             # Set home view to recent conversations for spectators regardless of default.
-            web_home_view="recent_topics",
+            web_home_view="recent",
         )
 
     # We fetch early some collections of group that we need to
@@ -285,7 +301,9 @@ def fetch_initial_state_data(
         # account, we'd maybe need to store their state using cookies
         # or local storage, rather than in the database.
         state["onboarding_steps"] = (
-            [] if user_profile is None else get_next_onboarding_steps(user_profile)
+            []
+            if user_profile is None
+            else [asdict(step) for step in get_next_onboarding_steps(user_profile)]
         )
         state["navigation_tour_video_url"] = settings.NAVIGATION_TOUR_VIDEO_URL
 
@@ -327,6 +345,9 @@ def fetch_initial_state_data(
             [] if user_profile is None else get_undelivered_scheduled_messages(user_profile)
         )
 
+    if want("reminders"):
+        state["reminders"] = [] if user_profile is None else get_undelivered_reminders(user_profile)
+
     if want("muted_topics") and (
         # Suppress muted_topics data for clients that explicitly
         # support user_topic. This allows clients to request both the
@@ -341,7 +362,7 @@ def fetch_initial_state_data(
         state["muted_users"] = [] if user_profile is None else get_user_mutes(user_profile)
 
     if want("presence"):
-        if presence_last_update_id_fetched_by_client is not None:
+        if presence_last_update_id_fetched_by_client is not None or simplified_presence_events:
             # This param being submitted by the client, means they want to use
             # the modern API.
             slim_presence = True
@@ -386,7 +407,26 @@ def fetch_initial_state_data(
         #
         # Other settings, which are just server-level settings or data
         # about the version of Zulip, can be named without prefixes,
-        # e.g. giphy_rating_options or development_environment.
+        # e.g. gif_rating_policy_options or development_environment.
+
+        # If we no longer have a translation for the organization's language,
+        # correct the organization to have one; this block is a workaround for
+        # there not being a good time to run a migration to audit this after a
+        # new server version is deployed.
+        available_language_codes = get_available_language_codes()
+        if realm.default_language not in available_language_codes:
+            do_set_realm_property(realm, "default_language", "en", acting_user=None)
+
+        # Similar to the organization case above, if we no longer have translation
+        # for the user's language, update it to the organization's language.
+        if (
+            user_profile is not None
+            and user_profile.default_language not in available_language_codes
+        ):
+            do_change_user_setting(
+                user_profile, "default_language", realm.default_language, acting_user=None
+            )
+
         for property_name in Realm.property_types:
             state["realm_" + property_name] = getattr(realm, property_name)
 
@@ -395,6 +435,8 @@ def fetch_initial_state_data(
             state["realm_" + setting_name] = get_group_setting_value_for_register_api(
                 setting_group_id, anonymous_group_membership_data_dict
             )
+
+        state["realm_owner_full_content_access"] = realm.owner_full_content_access
 
         state["realm_create_public_stream_policy"] = (
             get_corresponding_policy_value_for_group_setting(
@@ -480,7 +522,6 @@ def fetch_initial_state_data(
         )
 
         state["server_generation"] = settings.SERVER_GENERATION
-        state["realm_is_zephyr_mirror_realm"] = realm.is_zephyr_mirror_realm
         state["development_environment"] = settings.DEVELOPMENT
         state["realm_org_type"] = realm.org_type
         state["realm_plan_type"] = realm.plan_type
@@ -512,7 +553,7 @@ def fetch_initial_state_data(
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
         state["server_web_public_streams_enabled"] = settings.WEB_PUBLIC_STREAMS_ENABLED
-        state["giphy_rating_options"] = realm.get_giphy_rating_options()
+        state["gif_rating_policy_options"] = realm.get_gif_rating_policy_options()
 
         state["server_emoji_data_url"] = emoji.data_url()
 
@@ -549,13 +590,22 @@ def fetch_initial_state_data(
 
         state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
         state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
+        state["max_bulk_new_subscription_messages"] = settings.MAX_BULK_NEW_SUBSCRIPTION_MESSAGES
         state["max_topic_length"] = MAX_TOPIC_NAME_LENGTH
         state["max_message_length"] = settings.MAX_MESSAGE_LENGTH
+        state["max_channel_folder_name_length"] = ChannelFolder.MAX_NAME_LENGTH
+        state["max_channel_folder_description_length"] = ChannelFolder.MAX_DESCRIPTION_LENGTH
+        state["max_reminder_note_length"] = settings.MAX_REMINDER_NOTE_LENGTH
         if realm.demo_organization_scheduled_deletion_date is not None:
             state["demo_organization_scheduled_deletion_date"] = datetime_to_timestamp(
                 realm.demo_organization_scheduled_deletion_date
             )
         state["realm_date_created"] = datetime_to_timestamp(realm.date_created)
+
+        state["server_report_message_types"] = [
+            {"key": type_id, "name": str(type_name)}
+            for type_id, type_name in Realm.REPORT_MESSAGE_REASONS.items()
+        ]
 
         # Presence system parameters for client behavior.
         state["server_presence_ping_interval_seconds"] = settings.PRESENCE_PING_INTERVAL_SECS
@@ -592,6 +642,14 @@ def fetch_initial_state_data(
                 realm.message_edit_history_visibility_policy
             ).name
         )
+
+        state["realm_topics_policy"] = RealmTopicsPolicyEnum(realm.topics_policy).name
+
+        state["realm_mandatory_topics"] = (
+            realm.topics_policy == RealmTopicsPolicyEnum.disable_empty_topic.value
+        )
+
+        state["realm_uuid"] = str(realm.uuid)
 
     if want("realm_user_settings_defaults"):
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
@@ -729,15 +787,25 @@ def fetch_initial_state_data(
                 "config_options": [
                     {
                         "key": c.name,
-                        "label": c.description,
+                        "label": c.label,
                         "validator": c.validator.__name__,
                     }
                     for c in integration.config_options
                 ]
                 if integration.config_options
                 else [],
+                "url_options": [
+                    {
+                        "key": c.name,
+                        "label": c.label,
+                        "input_type": c.input_type,
+                    }
+                    for c in integration.url_options
+                ]
+                if integration.url_options
+                else [],
             }
-            for integration in WEBHOOK_INTEGRATIONS
+            for integration in INCOMING_WEBHOOK_INTEGRATIONS
             if integration.legacy is False
         ]
 
@@ -753,9 +821,9 @@ def fetch_initial_state_data(
         # to self).
         #
         # Note that raw_recent_private_conversations is an
-        # intermediate form as a dictionary keyed by recipient_id,
-        # which is more efficient to update, and is rewritten to the
-        # final format in post_process_state.
+        # intermediate form as a dictionary keyed by frozenset of
+        # other-user-ids, which is more efficient to update, and is
+        # rewritten to the final format in post_process_state.
         state["raw_recent_private_conversations"] = (
             {} if user_profile is None else get_recent_private_conversations(user_profile)
         )
@@ -777,9 +845,13 @@ def fetch_initial_state_data(
 
     if want("channel_folders"):
         if user_profile is None:
-            state["channel_folders"] = get_channel_folders_for_spectators(realm)
+            state["channel_folders"] = [
+                asdict(folder) for folder in get_channel_folders_for_spectators(realm)
+            ]
         else:
-            state["channel_folders"] = get_channel_folders_in_realm(user_profile.realm, True)
+            state["channel_folders"] = [
+                asdict(folder) for folder in get_channel_folders_in_realm(user_profile.realm, True)
+            ]
 
     if want("update_message_flags") and want("message"):
         # Keeping unread_msgs updated requires both message flag updates and
@@ -840,17 +912,6 @@ def fetch_initial_state_data(
     if want("stop_words"):
         state["stop_words"] = read_stop_words()
 
-    if want("update_display_settings") and not user_settings_object:
-        for prop in UserProfile.display_settings_legacy:
-            state[prop] = getattr(settings_user, prop)
-        state["emojiset_choices"] = UserProfile.emojiset_choices()
-        state["timezone"] = canonicalize_timezone(settings_user.timezone)
-
-    if want("update_global_notifications") and not user_settings_object:
-        for notification in UserProfile.notification_settings_legacy:
-            state[notification] = getattr(settings_user, notification)
-        state["available_notification_sounds"] = get_available_notification_sounds()
-
     if want("user_settings"):
         state["user_settings"] = {}
 
@@ -880,7 +941,8 @@ def fetch_initial_state_data(
         state["user_topics"] = [] if user_profile is None else get_user_topics(user_profile)
 
     if want("video_calls"):
-        state["has_zoom_token"] = settings_user.zoom_token is not None
+        state["has_zoom_token"] = settings_user.third_party_api_state.get("zoom") is not None
+        state["has_webex_token"] = settings_user.third_party_api_state.get("webex") is not None
 
     if want("giphy"):
         # Normally, it would be a nasty security bug to send a
@@ -892,13 +954,17 @@ def fetch_initial_state_data(
         # in letting one search for GIFs; GIPHY only requires API keys
         # to exist at all so that they can deactivate them in cases of
         # abuse.
-        state["giphy_api_key"] = settings.GIPHY_API_KEY if settings.GIPHY_API_KEY else ""
+        state["giphy_api_key"] = settings.GIPHY_API_KEY or ""
 
-    if user_profile is None:
-        # To ensure we have the correct user state set.
-        assert state["is_admin"] is False
-        assert state["is_owner"] is False
-        assert state["is_guest"] is True
+    # See Giphy comment above; Tenor and KLIPY API keys work similarly.
+    if want("tenor"):
+        state["tenor_api_key"] = settings.TENOR_API_KEY or ""
+
+    if want("klipy"):
+        state["klipy_api_key"] = settings.KLIPY_API_KEY or ""
+
+    if want("device"):
+        state["devices"] = {} if user_profile is None else get_devices(user_profile)
 
     return state
 
@@ -916,6 +982,7 @@ def apply_events(
     user_list_incomplete: bool,
     include_deactivated_groups: bool,
     archived_channels: bool = False,
+    simplified_presence_events: bool = False,
 ) -> None:
     for event in events:
         if fetch_event_types is not None and event["type"] not in fetch_event_types:
@@ -939,6 +1006,7 @@ def apply_events(
             user_list_incomplete=user_list_incomplete,
             include_deactivated_groups=include_deactivated_groups,
             archived_channels=archived_channels,
+            simplified_presence_events=simplified_presence_events,
         )
 
 
@@ -954,6 +1022,7 @@ def apply_event(
     user_list_incomplete: bool,
     include_deactivated_groups: bool,
     archived_channels: bool = False,
+    simplified_presence_events: bool = False,
 ) -> None:
     if event["type"] == "message":
         state["max_message_id"] = max(state["max_message_id"], event["message"]["id"])
@@ -969,19 +1038,13 @@ def apply_event(
             if "raw_recent_private_conversations" in state:
                 # Handle maintaining the recent_private_conversations data structure.
                 conversations = state["raw_recent_private_conversations"]
-                recipient_id = get_recent_conversations_recipient_id(
-                    user_profile, event["message"]["recipient_id"], event["message"]["sender_id"]
+                userset = frozenset(
+                    user_dict["id"]
+                    for user_dict in event["message"]["display_recipient"]
+                    if user_dict["id"] != user_profile.id
                 )
 
-                if recipient_id not in conversations:
-                    conversations[recipient_id] = dict(
-                        user_ids=sorted(
-                            user_dict["id"]
-                            for user_dict in event["message"]["display_recipient"]
-                            if user_dict["id"] != user_profile.id
-                        ),
-                    )
-                conversations[recipient_id]["max_message_id"] = event["message"]["id"]
+                conversations[userset] = event["message"]["id"]
             return
 
         # Below, we handle maintaining first_message_id.
@@ -1092,6 +1155,21 @@ def apply_event(
             for idx, scheduled_message in enumerate(state["scheduled_messages"]):
                 if scheduled_message["scheduled_message_id"] == event["scheduled_message_id"]:
                     del state["scheduled_messages"][idx]
+
+    elif event["type"] == "reminders":
+        if event["op"] == "add":
+            # Bulk addition of reminders is not used in normal flow.
+            assert len(event["reminders"]) == 1
+
+            state["reminders"].append(event["reminders"][0])
+            # Sort in ascending order of scheduled_delivery_timestamp.
+            state["reminders"].sort(key=lambda reminder: reminder["scheduled_delivery_timestamp"])
+
+        if event["op"] == "remove":
+            for idx, reminder in enumerate(state["reminders"]):
+                if reminder["reminder_id"] == event["reminder_id"]:
+                    del state["reminders"][idx]
+                    break
 
     elif event["type"] == "onboarding_steps":
         state["onboarding_steps"] = event["onboarding_steps"]
@@ -1240,9 +1318,12 @@ def apply_event(
                             state["never_subscribed"],
                         ]:
                             for sub in sub_dict:
-                                sub["subscribers"] = [
+                                subscriber_key = (
+                                    "subscribers" if "subscribers" in sub else "partial_subscribers"
+                                )
+                                sub[subscriber_key] = [
                                     user_id
-                                    for user_id in sub["subscribers"]
+                                    for user_id in sub[subscriber_key]
                                     if user_id != person_user_id
                                 ]
 
@@ -1285,8 +1366,11 @@ def apply_event(
                     state["never_subscribed"],
                 ]:
                     for sub in sub_dict:
-                        sub["subscribers"] = [
-                            user_id for user_id in sub["subscribers"] if user_id != person_user_id
+                        subscriber_key = (
+                            "subscribers" if "subscribers" in sub else "partial_subscribers"
+                        )
+                        sub[subscriber_key] = [
+                            user_id for user_id in sub[subscriber_key] if user_id != person_user_id
                         ]
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
@@ -1300,11 +1384,7 @@ def apply_event(
         elif event["op"] == "update":
             for bot in state["realm_bots"]:
                 if bot["user_id"] == event["bot"]["user_id"]:
-                    if "owner_id" in event["bot"]:
-                        bot_owner_id = event["bot"]["owner_id"]
-                        bot["owner_id"] = bot_owner_id
-                    else:
-                        bot.update(event["bot"])
+                    bot.update(event["bot"])
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "stream":
@@ -1468,6 +1548,13 @@ def apply_event(
                     state["max_file_upload_size_mib"] = value
                     continue
 
+                if key == "rendered_description":
+                    # realm_rendered_description field is not included in
+                    # the state data returned by fetch_initial_state_data,
+                    # and is added separately to the page_params data
+                    # returned to clients in build_page_params_for_home_load.
+                    continue
+
                 state["realm_" + key] = value
                 # It's a bit messy, but this is where we need to
                 # update the state for whether password authentication
@@ -1590,9 +1677,12 @@ def apply_event(
             # add the new subscriptions
             for sub in event["subscriptions"]:
                 if sub["stream_id"] not in existing_stream_ids:
-                    if "subscribers" in sub and not include_subscribers:
+                    subscriber_key = (
+                        "subscribers" if "subscribers" in sub else "partial_subscribers"
+                    )
+                    if subscriber_key in sub and not include_subscribers:
                         sub = copy.deepcopy(sub)
-                        del sub["subscribers"]
+                        del sub[subscriber_key]
                     state["subscriptions"].append(sub)
 
             # remove them from unsubscribed if they had been there
@@ -1611,7 +1701,11 @@ def apply_event(
             # Remove our user from the subscribers of the removed subscriptions.
             if include_subscribers:
                 for sub in removed_subs:
-                    sub["subscribers"].remove(user_profile.id)
+                    subscriber_key = (
+                        "subscribers" if "subscribers" in sub else "partial_subscribers"
+                    )
+                    if user_profile.id in sub[subscriber_key]:
+                        sub[subscriber_key].remove(user_profile.id)
 
             state["unsubscribed"] += removed_subs
 
@@ -1623,6 +1717,10 @@ def apply_event(
                 if sub["stream_id"] == event["stream_id"]:
                     sub[event["property"]] = event["value"]
         elif event["op"] == "peer_add":
+            # Note: We don't update subscriber_count here, since we
+            # have no way to know whether the added subscriber is
+            # already in our count or not. The opposite decision would
+            # be defensible, but this is less code.
             if include_subscribers:
                 stream_ids = set(event["stream_ids"])
                 user_ids = set(event["user_ids"])
@@ -1634,9 +1732,13 @@ def apply_event(
                 ]:
                     for sub in sub_dict:
                         if sub["stream_id"] in stream_ids:
-                            subscribers = set(sub["subscribers"]) | user_ids
-                            sub["subscribers"] = sorted(subscribers)
+                            subscriber_key = (
+                                "subscribers" if "subscribers" in sub else "partial_subscribers"
+                            )
+                            subscribers = set(sub[subscriber_key]) | user_ids
+                            sub[subscriber_key] = sorted(subscribers)
         elif event["op"] == "peer_remove":
+            # Note: We don't update subscriber_count here, as with peer_add.
             if include_subscribers:
                 stream_ids = set(event["stream_ids"])
                 user_ids = set(event["user_ids"])
@@ -1648,8 +1750,11 @@ def apply_event(
                 ]:
                     for sub in sub_dict:
                         if sub["stream_id"] in stream_ids:
-                            subscribers = set(sub["subscribers"]) - user_ids
-                            sub["subscribers"] = sorted(subscribers)
+                            subscriber_key = (
+                                "subscribers" if "subscribers" in sub else "partial_subscribers"
+                            )
+                            subscribers = set(sub[subscriber_key]) - user_ids
+                            sub[subscriber_key] = sorted(subscribers)
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":
@@ -1662,13 +1767,17 @@ def apply_event(
         # This means that the state resulting from fetch_initial_state + apply_events will not
         # match the state of a hypothetical fetch_initial_state fetch that included the fully
         # updated data. This is intended and not a bug.
-        if slim_presence:
+        if simplified_presence_events:
+            user_key = next(iter(event["presences"].keys()))
+            user_id = user_key
+            slim_presence = True
+        elif slim_presence:
             user_key = str(event["user_id"])
+            user_id = event["user_id"]
         else:
             user_key = event["email"]
-        state["presences"][user_key] = get_presence_for_user(event["user_id"], slim_presence)[
-            user_key
-        ]
+            user_id = event["user_id"]
+        state["presences"][user_key] = get_presence_for_user(user_id, slim_presence)[user_key]
     elif event["type"] == "update_message":
         # We don't return messages in /register, so we don't need to
         # do anything for content updates, but we may need to update
@@ -1762,7 +1871,19 @@ def apply_event(
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_emoji":
-        state["realm_emoji"] = event["realm_emoji"]
+        if event["op"] == "update":
+            # Legacy whole-list event for clients without
+            # the individual_emoji_changes capability.
+            state["realm_emoji"] = event["realm_emoji"]
+        elif event["op"] == "add":
+            state["realm_emoji"][event["emoji"]["id"]] = event["emoji"]
+        elif event["op"] == "update_one":
+            emoji_id = event["emoji_id"]
+            for key in RealmEmojiUpdateData.model_fields:
+                if key in event["data"]:
+                    state["realm_emoji"][emoji_id][key] = event["data"][key]
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_export":
         # These realm export events are only available to
         # administrators, and aren't included in page_params.
@@ -1785,23 +1906,12 @@ def apply_event(
             state["realm_linkifiers"] = event["realm_linkifiers"]
     elif event["type"] == "realm_playgrounds":
         state["realm_playgrounds"] = event["realm_playgrounds"]
-    elif event["type"] == "update_display_settings":
-        if event["setting_name"] != "timezone":
-            assert event["setting_name"] in UserProfile.display_settings_legacy
-        state[event["setting_name"]] = event["setting"]
-    elif event["type"] == "update_global_notifications":
-        assert event["notification_name"] in UserProfile.notification_settings_legacy
-        state[event["notification_name"]] = event["setting"]
+
     elif event["type"] == "user_settings":
         # time zone setting is not included in property_types dict because
         # this setting is not a part of UserBaseSettings class.
         if event["property"] != "timezone":
             assert event["property"] in UserProfile.property_types
-        if event["property"] in {
-            **UserProfile.display_settings_legacy,
-            **UserProfile.notification_settings_legacy,
-        }:
-            state[event["property"]] = event["value"]
         state["user_settings"][event["property"]] = event["value"]
     elif event["type"] == "invites_changed":
         pass
@@ -1909,10 +2019,17 @@ def apply_event(
             for channel_folder in state["channel_folders"]:
                 if channel_folder["id"] == event["channel_folder_id"]:
                     channel_folder.update(event["data"])
+        elif event["op"] == "reorder":
+            order_mapping = {_[1]: _[0] for _ in enumerate(event["order"])}
+            for channel_folder in state["channel_folders"]:
+                channel_folder["order"] = order_mapping[channel_folder["id"]]
+            state["channel_folders"].sort(key=lambda folder: folder["order"])
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "has_zoom_token":
         state["has_zoom_token"] = event["value"]
+    elif event["type"] == "has_webex_token":
+        state["has_webex_token"] = event["value"]
     elif event["type"] == "web_reload_client":
         # This is an unlikely race, where the queue was created with a
         # previous Tornado process, which restarted, and subsequently
@@ -1924,6 +2041,38 @@ def apply_event(
     elif event["type"] == "restart":
         # The Tornado process restarted.  This has no effect; we ignore it.
         pass
+    elif event["type"] == "device":
+        if event["op"] == "add":
+            state["devices"][str(event["device_id"])] = {
+                "push_key_id": None,
+                "push_token_id": None,
+                "pending_push_token_id": None,
+                "push_token_last_updated_timestamp": None,
+                "push_registration_error_code": None,
+            }
+        elif event["op"] == "remove":
+            state["devices"].pop(str(event["device_id"]), None)
+        elif event["op"] == "update":
+            if str(event["device_id"]) not in state["devices"]:
+                return
+            if "push_key_id" in event:
+                state["devices"][str(event["device_id"])]["push_key_id"] = event["push_key_id"]
+            if "push_token_id" in event:
+                state["devices"][str(event["device_id"])]["push_token_id"] = event["push_token_id"]
+            if "pending_push_token_id" in event:
+                state["devices"][str(event["device_id"])]["pending_push_token_id"] = event[
+                    "pending_push_token_id"
+                ]
+            if "push_token_last_updated_timestamp" in event:
+                state["devices"][str(event["device_id"])]["push_token_last_updated_timestamp"] = (
+                    event["push_token_last_updated_timestamp"]
+                )
+            if "push_registration_error_code" in event:
+                state["devices"][str(event["device_id"])]["push_registration_error_code"] = event[
+                    "push_registration_error_code"
+                ]
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     else:
         raise AssertionError("Unexpected event type {}".format(event["type"]))
 
@@ -1937,12 +2086,15 @@ class ClientCapabilities(TypedDict):
     bulk_message_deletion: NotRequired[bool]
     user_avatar_url_field_optional: NotRequired[bool]
     stream_typing_notifications: NotRequired[bool]
-    user_settings_object: NotRequired[bool]
     linkifier_url_template: NotRequired[bool]
     user_list_incomplete: NotRequired[bool]
     include_deactivated_groups: NotRequired[bool]
     archived_channels: NotRequired[bool]
     empty_topic_name: NotRequired[bool]
+    simplified_presence_events: NotRequired[bool]
+    individual_emoji_changes: NotRequired[bool]
+    # Deprecated and no longer has any effect
+    user_settings_object: NotRequired[bool]
 
 
 DEFAULT_CLIENT_CAPABILITIES = ClientCapabilities(notification_settings_null=False)
@@ -1958,7 +2110,7 @@ def do_events_register(
     presence_last_update_id_fetched_by_client: int | None = None,
     presence_history_limit_days: int | None = None,
     event_types: Sequence[str] | None = None,
-    queue_lifespan_secs: int = 0,
+    idle_queue_timeout: int | Literal["mobile"] | None = None,
     all_public_streams: bool = False,
     include_subscribers: bool | Literal["partial"] = True,
     include_streams: bool = True,
@@ -1979,12 +2131,13 @@ def do_events_register(
         "user_avatar_url_field_optional", False
     )
     stream_typing_notifications = client_capabilities.get("stream_typing_notifications", False)
-    user_settings_object = client_capabilities.get("user_settings_object", False)
     linkifier_url_template = client_capabilities.get("linkifier_url_template", False)
     user_list_incomplete = client_capabilities.get("user_list_incomplete", False)
     include_deactivated_groups = client_capabilities.get("include_deactivated_groups", False)
     archived_channels = client_capabilities.get("archived_channels", False)
     empty_topic_name = client_capabilities.get("empty_topic_name", False)
+    simplified_presence_events = client_capabilities.get("simplified_presence_events", False)
+    individual_emoji_changes = client_capabilities.get("individual_emoji_changes", False)
 
     if fetch_event_types is not None:
         event_types_set: set[str] | None = set(fetch_event_types)
@@ -2007,7 +2160,6 @@ def do_events_register(
             client_gravatar=client_gravatar,
             linkifier_url_template=linkifier_url_template,
             user_avatar_url_field_optional=user_avatar_url_field_optional,
-            user_settings_object=user_settings_object,
             user_list_incomplete=user_list_incomplete,
             archived_channels=archived_channels,
             # These presence params are a noop, because presence is not included.
@@ -2020,6 +2172,7 @@ def do_events_register(
             include_streams=include_streams,
             spectator_requested_language=spectator_requested_language,
             include_deactivated_groups=include_deactivated_groups,
+            simplified_presence_events=simplified_presence_events,
         )
 
         post_process_state(
@@ -2037,38 +2190,41 @@ def do_events_register(
 
     # Note that we pass event_types, not fetch_event_types here, since
     # that's what controls which future events are sent.
-    queue_id = request_event_queue(
+    result = request_event_queue(
         user_profile,
         user_client,
         apply_markdown,
         client_gravatar,
         slim_presence,
-        queue_lifespan_secs,
+        idle_queue_timeout,
         event_types,
         all_public_streams,
         narrow=legacy_narrow,
         bulk_message_deletion=bulk_message_deletion,
         stream_typing_notifications=stream_typing_notifications,
-        user_settings_object=user_settings_object,
         pronouns_field_type_supported=pronouns_field_type_supported,
         linkifier_url_template=linkifier_url_template,
         user_list_incomplete=user_list_incomplete,
         include_deactivated_groups=include_deactivated_groups,
         archived_channels=archived_channels,
         empty_topic_name=empty_topic_name,
+        simplified_presence_events=simplified_presence_events,
+        individual_emoji_changes=individual_emoji_changes,
     )
 
-    if queue_id is None:
+    if result is None:
         raise JsonableError(_("Could not allocate event queue"))
+
+    queue_id = result.queue_id
 
     ret = fetch_initial_state_data(
         user_profile,
         realm=realm,
         event_types=event_types_set,
         queue_id=queue_id,
+        idle_queue_timeout_secs=result.idle_queue_timeout_secs,
         client_gravatar=client_gravatar,
         user_avatar_url_field_optional=user_avatar_url_field_optional,
-        user_settings_object=user_settings_object,
         slim_presence=slim_presence,
         presence_last_update_id_fetched_by_client=presence_last_update_id_fetched_by_client,
         presence_history_limit_days=presence_history_limit_days,
@@ -2079,6 +2235,7 @@ def do_events_register(
         user_list_incomplete=user_list_incomplete,
         include_deactivated_groups=include_deactivated_groups,
         archived_channels=archived_channels,
+        simplified_presence_events=simplified_presence_events,
     )
 
     # Apply events that came in while we were fetching initial data
@@ -2094,6 +2251,7 @@ def do_events_register(
         linkifier_url_template=linkifier_url_template,
         user_list_incomplete=user_list_incomplete,
         include_deactivated_groups=include_deactivated_groups,
+        simplified_presence_events=simplified_presence_events,
     )
 
     post_process_state(
@@ -2156,10 +2314,8 @@ def post_process_state(
         # Reformat recent_private_conversations to be a list of dictionaries, rather than a dict.
         ret["recent_private_conversations"] = sorted(
             (
-                dict(
-                    **value,
-                )
-                for (recipient_id, value) in ret["raw_recent_private_conversations"].items()
+                {"user_ids": sorted(user_id_set), "max_message_id": value}
+                for (user_id_set, value) in ret["raw_recent_private_conversations"].items()
             ),
             key=lambda x: -x["max_message_id"],
         )

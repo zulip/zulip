@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import * as inbox_util from "./inbox_util.ts";
@@ -123,7 +123,15 @@ export function handle_topic_updates(
     }, 0);
 }
 
-export function toggle_topic_visibility_policy(message: Message): void {
+export function toggle_topic_visibility_policy(
+    message:
+        | Message
+        | {
+              type: Message["type"];
+              stream_id: number;
+              topic: string;
+          },
+): void {
     if (message.type !== "stream") {
         return;
     }

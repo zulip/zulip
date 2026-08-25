@@ -10,7 +10,7 @@ def set_users_for_existing_scheduledemails(
     apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
 ) -> None:
     ScheduledEmail = apps.get_model("zerver", "ScheduledEmail")
-    for email in ScheduledEmail.objects.all():
+    for email in ScheduledEmail.objects.all().iterator():
         if email.user is not None:
             email.users.add(email.user)
         email.save()

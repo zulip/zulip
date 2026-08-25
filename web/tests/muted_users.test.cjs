@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user} = require("./lib/example_user.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -40,18 +41,18 @@ test("add_and_remove_mutes", () => {
 });
 
 test("get_unmuted_users", () => {
-    const hamlet = {
+    const hamlet = make_user({
         user_id: 1,
         full_name: "King Hamlet",
-    };
-    const cordelia = {
+    });
+    const cordelia = make_user({
         user_id: 2,
         full_name: "Cordelia, Lear's Daughter",
-    };
-    const othello = {
+    });
+    const othello = make_user({
         user_id: 3,
         full_name: "Othello, Moor of Venice",
-    };
+    });
 
     muted_users.add_muted_user(hamlet.user_id);
     muted_users.add_muted_user(cordelia.user_id);
@@ -67,9 +68,8 @@ test("get_mutes", () => {
     assert.deepEqual(muted_users.get_muted_users(), []);
     muted_users.add_muted_user(6, 1577836800);
     muted_users.add_muted_user(4, 1577836800);
-    const all_muted_users = muted_users
-        .get_muted_users()
-        .sort((a, b) => a.date_muted - b.date_muted);
+    const all_muted_users = muted_users.get_muted_users();
+    all_muted_users.sort((a, b) => a.date_muted - b.date_muted);
 
     assert.deepEqual(all_muted_users, [
         {
@@ -95,7 +95,7 @@ test("initialize", () => {
 
     muted_users.initialize(muted_users_params);
 
-    assert.deepEqual(muted_users.get_muted_users().sort(), [
+    assert.deepEqual(muted_users.get_muted_users(), [
         {
             date_muted: 1577836800000,
             date_muted_str: "Jan 1, 2020",

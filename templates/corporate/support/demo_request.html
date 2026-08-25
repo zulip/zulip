@@ -15,61 +15,91 @@
             <fieldset class="support-request">
                 <div class="input-box support-form-field">
                     <label for="request_demo_form_full_name" class="inline-block label-title">Full name</label>
-                    <input id="request_demo_form_full_name" class="required" type="text" name="full_name" maxlength="{{ MAX_INPUT_LENGTH }}" required />
+                    <input id="request_demo_form_full_name" class="required" type="text" name="full_name" maxlength="{{ MAX_INPUT_LENGTH }}" value="{{ form.full_name.value() or '' }}" required />
+                    {% for error in form.full_name.errors %}
+                    <p class="help-inline text-error">{{ error }}</p>
+                    {% endfor %}
                 </div>
                 <div class="input-box support-form-field">
                     <label for="request_demo_form_email" class="inline-block label-title">Email</label>
-                    <input id="request_demo_form_email" class="required" type="email" name="email" required />
+                    <input id="request_demo_form_email" class="required" type="email" name="email" value="{{ form.email.value() or '' }}" required />
+                    {% for error in form.email.errors %}
+                    <p class="help-inline text-error">{{ error }}</p>
+                    {% endfor %}
                 </div>
                 <div class="input-box support-form-field">
                     <label for="request_demo_form_role" class="inline-block label-title">Your role</label>
-                    <input id="request_demo_form_role" class="required" type="text" name="role" maxlength="{{ MAX_INPUT_LENGTH }}" required />
+                    <input id="request_demo_form_role" class="required" type="text" name="role" maxlength="{{ MAX_INPUT_LENGTH }}" value="{{ form.role.value() or '' }}" required />
+                    {% for error in form.role.errors %}
+                    <p class="help-inline text-error">{{ error }}</p>
+                    {% endfor %}
                 </div>
                 <div class="input-box support-form-field">
                     <label for="request_demo_form_organization_name" class="inline-block label-title">Organization name</label>
-                    <input id="request_demo_form_organization_name" class="required" type="text" name="organization_name" maxlength="{{ MAX_INPUT_LENGTH }}" required />
+                    <input id="request_demo_form_organization_name" class="required" type="text" name="organization_name" maxlength="{{ MAX_INPUT_LENGTH }}" value="{{ form.organization_name.value() or '' }}" required />
+                    {% for error in form.organization_name.errors %}
+                    <p class="help-inline text-error">{{ error }}</p>
+                    {% endfor %}
                 </div>
                 <div class="input-box support-form-field">
                     <label for="request_demo_form_organization_type" class="inline-block label-title">Organization type</label>
                     <select id="request_demo_form_organization_type" name="organization_type" class="required">
                         {% for org_type in SORTED_ORG_TYPE_NAMES %}
                             <option
-                              value="{{ org_type }}">
+                              value="{{ org_type }}"
+                              {% if form.organization_type.value() == org_type %}selected{% endif %}>
                                 {{ org_type }}
                             </option>
                         {% endfor %}
                     </select>
+                    {% for error in form.organization_type.errors %}
+                    <p class="help-inline text-error">{{ error }}</p>
+                    {% endfor %}
                 </div>
                 <div class="input-box support-form-field">
                     <label for="request_demo_form_organization_website" class="inline-block label-title">Organization website</label>
-                    <input id="request_demo_form_organization_website" class="required" type="url" name="organization_website" required />
+                    <input id="request_demo_form_organization_website" class="required" type="url" name="organization_website" value="{{ form.organization_website.value() or '' }}" required />
+                    {% for error in form.organization_website.errors %}
+                    <p class="help-inline text-error">{{ error }}</p>
+                    {% endfor %}
                 </div>
                 <div class="input-box support-form-field">
                     <label for="request_demo_form_expected_user_count" class="inline-block label-title">Expected number of users (approximate range)</label>
-                    <input id="request_demo_form_expected_user_count" class="required" type="text" name="expected_user_count" maxlength="{{ MAX_INPUT_LENGTH }}" required />
+                    <input id="request_demo_form_expected_user_count" class="required" type="text" name="expected_user_count" maxlength="{{ MAX_INPUT_LENGTH }}" value="{{ form.expected_user_count.value() or '' }}" required />
+                    {% for error in form.expected_user_count.errors %}
+                    <p class="help-inline text-error">{{ error }}</p>
+                    {% endfor %}
                 </div>
                 <div class="input-box support-form-field">
                     <label for="request_demo_form_type_of_hosting" class="inline-block label-title">Are you interested in Zulip Cloud (SaaS) or self-hosting Zulip?</label>
                     <select id="request_demo_form_type_of_hosting" name="type_of_hosting" class="required">
-                        <option value="" disabled selected>Select an option</option>
+                        <option value="" disabled {% if not form.type_of_hosting.value() %}selected{% endif %}>Select an option</option>
                         {% for hosting_option in TYPE_OF_HOSTING_OPTIONS %}
                             <option
-                              value="{{ hosting_option }}">
+                              value="{{ hosting_option }}"
+                              {% if form.type_of_hosting.value() == hosting_option %}selected{% endif %}>
                                 {{ hosting_option }}
                             </option>
                         {% endfor %}
                     </select>
+                    {% for error in form.type_of_hosting.errors %}
+                    <p class="help-inline text-error">{{ error }}</p>
+                    {% endfor %}
                 </div>
                 <div class="input-box support-form-field">
                     <label for="request_demo_form_message" class="inline-block label-title">How can we help?</label>
-                    <textarea id="request_demo_form_message" name="message" cols="100" rows="5" required></textarea>
+                    <textarea id="request_demo_form_message" name="message" cols="100" rows="5" required>{{ form.message.value() or '' }}</textarea>
+                    {% for error in form.message.errors %}
+                    <p class="help-inline text-error">{{ error }}</p>
+                    {% endfor %}
                 </div>
 
-                <div class="register-button-box">
+                <div class="register-button-box {% if 'captcha' in form.fields %}altcha-button-box{% endif %}">
                     <button class="register-button support-submit-button" type="submit">
                         <span>Submit</span>
                         <object class="loader" type="image/svg+xml" data="{{ static('images/loading/loader-white.svg') }}"></object>
                     </button>
+                    {% include 'zerver/altcha_form_field.html' %}
                 </div>
             </fieldset>
         </form>

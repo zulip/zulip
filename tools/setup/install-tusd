@@ -2,18 +2,18 @@
 set -eu
 
 # This should be kept in sync with puppet/zulip/manifests/common.pp
-version=2.8.0
+version=2.9.1
 arch="$(uname -m)"
 
 case $arch in
     x86_64)
         tarball="tusd_linux_amd64"
-        sha256=e13c8adc9bed4c993a72f60140f688736058d2c3f4a18fb6e59ca26e829fb93b
+        sha256=140066be543e40493abd1fda1d1e33ab7fa0e8b9a61d247130f6777e64bf28f6
         ;;
 
     aarch64)
         tarball="tusd_linux_arm64"
-        sha256=089eb6d144df7cc5e10ac611a18f407308aedb3f9024a78fa01cb60ba99005a9
+        sha256=c9c46eba6e46b8062f863af6a5423f6f72b5157939d967087cd9b6d7c6bd19cf
         ;;
 esac
 

@@ -75,7 +75,6 @@ for msg in result["messages"]:
         "edit_history",
         "topic_links",
         "avatar_url",
-        "recipient_id",
         "content_type",
         "client",
         "sender_realm_str",

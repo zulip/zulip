@@ -1,5 +1,4 @@
 import copy
-import zlib
 from collections.abc import Iterable
 from datetime import datetime
 from email.headerregistry import Address
@@ -31,7 +30,7 @@ class RawReactionRow(TypedDict):
 def sew_messages_and_reactions(
     messages: list[dict[str, Any]], reactions: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
-    """Given a iterable of messages and reactions stitch reactions
+    """Given an iterable of messages and reactions stitch reactions
     into messages.
     """
     # Add all messages with empty reaction item
@@ -64,14 +63,14 @@ def sew_messages_and_submessages(
 
 
 def extract_message_dict(message_bytes: bytes) -> dict[str, Any]:
-    return orjson.loads(zlib.decompress(message_bytes))
+    return orjson.loads(message_bytes)
 
 
 def stringify_message_dict(message_dict: dict[str, Any]) -> bytes:
-    return zlib.compress(orjson.dumps(message_dict))
+    return orjson.dumps(message_dict)
 
 
-@cache_with_key(to_dict_cache_key, timeout=3600 * 24)
+@cache_with_key(to_dict_cache_key, timeout=3600 * 24, pickled_tupled=False)
 def message_to_encoded_cache(message: Message, realm_id: int | None = None) -> bytes:
     return MessageDict.messages_to_encoded_cache([message], realm_id)[message.id]
 
@@ -82,15 +81,12 @@ def update_message_cache(
     """Updates the message as stored in the to_dict cache (for serving
     messages)."""
     items_for_remote_cache = {}
-    message_ids = []
     changed_messages_to_dict = MessageDict.messages_to_encoded_cache(changed_messages, realm_id)
     for msg_id, msg in changed_messages_to_dict.items():
-        message_ids.append(msg_id)
-        key = to_dict_cache_key_id(msg_id)
-        items_for_remote_cache[key] = (msg,)
+        items_for_remote_cache[to_dict_cache_key_id(msg_id)] = msg
 
     cache_set_many(items_for_remote_cache)
-    return message_ids
+    return list(changed_messages_to_dict.keys())
 
 
 def save_message_rendered_content(message: Message, content: str) -> str:
@@ -166,7 +162,6 @@ class MessageDict:
         client_gravatar: bool,
         allow_empty_topic_name: bool,
         realm: Realm,
-        user_recipient_id: int | None,
     ) -> None:
         """
         NOTE: This function mutates the objects in
@@ -189,7 +184,6 @@ class MessageDict:
                 skip_copy=True,
                 can_access_sender=can_access_sender,
                 realm_host=realm.host,
-                is_incoming_1_to_1=obj["recipient_id"] == user_recipient_id,
             )
 
     @staticmethod
@@ -203,7 +197,6 @@ class MessageDict:
         skip_copy: bool = False,
         can_access_sender: bool,
         realm_host: str,
-        is_incoming_1_to_1: bool,
     ) -> dict[str, Any]:
         """
         By default, we make a shallow copy of the incoming dict to avoid
@@ -249,13 +242,6 @@ class MessageDict:
         else:
             obj["content_type"] = "text/x-markdown"
 
-        if is_incoming_1_to_1 and "sender_recipient_id" in obj:
-            # For an incoming 1:1 DM, the recipient’s own recipient_id is
-            # useless to the recipient themselves. Substitute the sender’s
-            # recipient_id, so the recipient can use recipient_id as documented
-            # to uniquely represent the set of 2 users in this conversation.
-            obj["recipient_id"] = obj["sender_recipient_id"]
-
         for item in obj.get("edit_history", []):
             if "prev_rendered_content_version" in item:
                 del item["prev_rendered_content_version"]
@@ -267,7 +253,6 @@ class MessageDict:
 
         if not keep_rendered_content:
             del obj["rendered_content"]
-        obj.pop("sender_recipient_id")
         del obj["sender_realm_id"]
         del obj["sender_avatar_source"]
         del obj["sender_delivery_email"]
@@ -372,12 +357,18 @@ class MessageDict:
         row is a row from a .values() call, and it needs to have
         all the relevant fields populated
         """
+
+        def get_message_topic(row: dict[str, Any]) -> str:
+            if row["recipient__type"] == Recipient.STREAM:
+                return row[DB_TOPIC_NAME]
+            return ""
+
         return MessageDict.build_message_dict(
             message_id=row["id"],
             last_edit_time=row["last_edit_time"],
             edit_history_json=row["edit_history"],
             content=row["content"],
-            topic_name=row[DB_TOPIC_NAME],
+            topic_name=get_message_topic(row),
             date_sent=row["date_sent"],
             rendered_content=row["rendered_content"],
             rendered_content_version=row["rendered_content_version"],
@@ -487,7 +478,6 @@ class MessageDict:
             "full_name",
             "delivery_email",
             "email",
-            "recipient_id",
             "realm__string_id",
             "avatar_source",
             "avatar_version",
@@ -502,7 +492,6 @@ class MessageDict:
         for obj in objs:
             sender_id = obj["sender_id"]
             user_row = sender_dict[sender_id]
-            obj["sender_recipient_id"] = user_row["recipient_id"]
             obj["sender_full_name"] = user_row["full_name"]
             obj["sender_email"] = user_row["email"]
             obj["sender_delivery_email"] = user_row["delivery_email"]
@@ -530,7 +519,7 @@ class MessageDict:
 
         if recipient_type == Recipient.STREAM:
             display_type = "stream"
-        elif recipient_type in (Recipient.DIRECT_MESSAGE_GROUP, Recipient.PERSONAL):
+        elif recipient_type == Recipient.DIRECT_MESSAGE_GROUP:
             assert not isinstance(display_recipient, str)
             display_type = "private"
             if len(display_recipient) == 1:

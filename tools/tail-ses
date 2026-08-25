@@ -90,7 +90,7 @@ def get_ses_arn(session: boto3.session.Session, args: argparse.Namespace) -> str
 
 @contextmanager
 def our_sqs_queue(session: boto3.session.Session, ses_topic_arn: str) -> Iterator[tuple[str, str]]:
-    (_, _, _, region, account_id, topic_name) = ses_topic_arn.split(":")
+    (_, _, _, region, account_id, _topic_name) = ses_topic_arn.split(":")
 
     sqs: SQSClient = session.client("sqs")
     queue_name = "tail-ses-" + secrets.token_hex(10)

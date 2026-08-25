@@ -1,6 +1,11 @@
+// See the Zulip URL spec at https://zulip.com/api/zulip-urls
+
+import {type NarrowTerm, narrow_operator_schema} from "./state_data.ts";
+import * as util from "./util.ts";
+
 export function get_hash_category(hash?: string): string {
     // given "#channels/subscribed", returns "channels"
-    return hash ? hash.replace(/^#/, "").split(/\//)[0]! : "";
+    return hash ? hash.replace(/^#/, "").split(/\//, 1)[0]! : "";
 }
 
 export function get_hash_section(hash?: string): string {
@@ -42,7 +47,7 @@ export function is_same_server_message_link(url: string): boolean {
         get_hash_category(url) === "narrow" &&
         (get_hash_section(url) === "channel" || get_hash_section(url) === "dm") &&
         get_nth_hash_section(url, -2) === "near" &&
-        /^\d+$/.test(get_nth_hash_section(url, -1))
+        util.is_numeric_string(get_nth_hash_section(url, -1))
     );
 }
 
@@ -66,6 +71,7 @@ export function is_overlay_hash(hash: string | undefined): boolean {
         "search-operators",
         "about-zulip",
         "scheduled",
+        "reminders",
         "user",
     ];
     const main_hash = get_hash_category(hash);
@@ -116,7 +122,10 @@ export function is_in_specified_hash_category(hash_categories: string[]): boolea
     return hash_categories.includes(main_hash);
 }
 
-export function is_an_allowed_web_public_narrow(operator: string, operand: string): boolean {
+export function is_an_allowed_web_public_narrow(
+    operator: NarrowTerm["operator"],
+    operand: NarrowTerm["operand"],
+): boolean {
     if (operator === "is" && operand === "resolved") {
         return true;
     }
@@ -126,6 +135,9 @@ export function is_an_allowed_web_public_narrow(operator: string, operand: strin
 export const allowed_web_public_narrow_operators = [
     "channels",
     "channel",
+    // This is sent as an anchor to the server rather
+    // than a narrow operator, but is part of the fragment.
+    "date",
     "streams",
     "stream",
     "topic",
@@ -171,7 +183,11 @@ export function is_spectator_compatible(hash: string): boolean {
         for (let i = 0; i < hash_components.length; i += 2) {
             const hash_section = hash_components[i]!.replace(/^-/, "");
             const second_hash_section = hash_components[i + 1]!;
-            if (!is_an_allowed_web_public_narrow(hash_section, second_hash_section)) {
+            const operator = narrow_operator_schema.safeParse(hash_section);
+            if (
+                !operator.success ||
+                !is_an_allowed_web_public_narrow(operator.data, second_hash_section)
+            ) {
                 return false;
             }
         }

@@ -20,7 +20,6 @@ class zulip::postgresql_backups {
       File['/usr/local/bin/env-wal-g'],
       Package[
         $zulip::postgresql_common::postgresql,
-        'python3-dateutil',
       ],
     ],
   }

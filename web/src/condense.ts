@@ -1,9 +1,11 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_message_length_toggle from "../templates/message_length_toggle.hbs";
 
+import {$t} from "./i18n.ts";
 import * as message_flags from "./message_flags.ts";
+import type {MessageList} from "./message_list.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
@@ -23,15 +25,39 @@ This library implements two related, similar concepts:
 
 */
 
-export function show_message_expander($row: JQuery): void {
+const state: {
+    message_list: MessageList | undefined;
+    has_unread_cutoff_by_message_id: Set<number>;
+} = {
+    message_list: undefined,
+    has_unread_cutoff_by_message_id: new Set<number>(),
+};
+
+export function show_message_expander(
+    $row: JQuery,
+    tooltip_template_id: string | null = "message-expander-tooltip-template",
+    toggle_button_label: string = $t({defaultMessage: "Show more"}),
+): void {
     $row.find(".message_length_controller").html(
-        render_message_length_toggle({toggle_type: "expander"}),
+        render_message_length_toggle({
+            toggle_type: "expander",
+            label_text: toggle_button_label,
+            tooltip_template_id,
+        }),
     );
 }
 
-export function show_message_condenser($row: JQuery): void {
+export function show_message_condenser(
+    $row: JQuery,
+    tooltip_template_id: string | null = "message-condenser-tooltip-template",
+    toggle_button_label: string = $t({defaultMessage: "Show less"}),
+): void {
     $row.find(".message_length_controller").html(
-        render_message_length_toggle({toggle_type: "condenser"}),
+        render_message_length_toggle({
+            toggle_type: "condenser",
+            label_text: toggle_button_label,
+            tooltip_template_id,
+        }),
     );
 }
 
@@ -170,6 +196,11 @@ export function condense_and_collapse(elems: JQuery): void {
         return;
     }
 
+    if (message_lists.current !== state.message_list) {
+        state.message_list = message_lists.current;
+        state.has_unread_cutoff_by_message_id = new Set();
+    }
+
     // For unread messages, we allow them to expand to most of a
     // desktop monitor's height, with stricter limits for mobile web
     // devices, especially in landscape mode.
@@ -222,13 +253,29 @@ export function condense_and_collapse(elems: JQuery): void {
     // changing the layout of the page, which is more performanant.
     // More information here: https://web.dev/avoid-large-complex-layouts-and-layout-thrashing/#avoid-layout-thrashing
     for (const {elem, $content, message, message_height} of rows_to_resize) {
-        const height_cutoff = message.unread ? height_cutoff_unread : height_cutoff_read;
+        // Track which messages were unread when initially rendered so that subsequent
+        // re-renders don't collapse the message while user is reading it.
+        if (message.unread) {
+            state.has_unread_cutoff_by_message_id.add(message.id);
+        }
+        const height_cutoff = state.has_unread_cutoff_by_message_id.has(message.id)
+            ? height_cutoff_unread
+            : height_cutoff_read;
         const long_message = message_height > height_cutoff;
         if (long_message) {
             // All long messages are flagged as such.
             $content.addClass("could-be-condensed");
         } else {
             $content.removeClass("could-be-condensed");
+        }
+
+        // Completely hide the message and replace it with a "Show more"
+        // button if the user has collapsed it. This check must come first
+        // so that collapsed takes priority over condensed state.
+        if (message.collapsed) {
+            $content.addClass("collapsed");
+            show_message_expander($(elem));
+            continue;
         }
 
         // If message.condensed is defined, then the user has manually
@@ -249,13 +296,6 @@ export function condense_and_collapse(elems: JQuery): void {
         } else {
             $content.removeClass("condensed");
             hide_message_length_toggle($(elem));
-        }
-
-        // Completely hide the message and replace it with a "Show more"
-        // button if the user has collapsed it.
-        if (message.collapsed) {
-            $content.addClass("collapsed");
-            show_message_expander($(elem));
         }
     }
 }

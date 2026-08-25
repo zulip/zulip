@@ -1,0 +1,33 @@
+{
+    "receiver": "ops-zulip",
+    "status": "firing",
+    "groupLabels": {},
+    "commonLabels": {
+        "alertname": "High CPU Temperature",
+        "severity": "critical"
+    },
+    "commonAnnotations": {
+        "summary": "High CPU core temperature"
+    },
+    "externalURL": "http://ops1:9093",
+    "version": "4",
+    "groupKey": "{}/{}:{}",
+    "alerts": [
+        {
+            "status": "firing",
+            "labels": {
+                "alertname": "High CPU Temperature",
+                "host": "andromeda",
+                "severity": "critical"
+            },
+            "annotations": {
+                "description": "CPU core temperature is 34.75C",
+                "topic": "andromeda",
+                "summary": "High CPU core temperature"
+            },
+            "startsAt": "2020-02-06T00:17:58.432911368Z",
+            "endsAt": "0001-01-01T00:00:00Z",
+            "fingerprint": "a1bc48475b20e73d"
+        }
+    ]
+}

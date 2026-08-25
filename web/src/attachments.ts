@@ -1,4 +1,4 @@
-import {z} from "zod";
+import * as z from "zod/mini";
 
 export const attachment_schema = z.object({
     id: z.number(),
@@ -6,12 +6,7 @@ export const attachment_schema = z.object({
     path_id: z.string(),
     size: z.number(),
     create_time: z.number(),
-    messages: z.array(
-        z.object({
-            id: z.number(),
-            date_sent: z.number(),
-        }),
-    ),
+    message_ids: z.array(z.number()),
 });
 
 const attachments_schema = z.array(attachment_schema);

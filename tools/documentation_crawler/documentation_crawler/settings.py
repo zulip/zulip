@@ -14,7 +14,7 @@ NEWSPIDER_MODULE = "documentation_crawler.spiders"
 COMMANDS_MODULE = "documentation_crawler.commands"
 LOG_LEVEL = "WARNING"
 DOWNLOAD_TIMEOUT = 15
-
+DOWNLOAD_VERIFY_CERTIFICATES = True
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENT = (

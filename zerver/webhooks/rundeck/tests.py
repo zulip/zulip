@@ -2,10 +2,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class RundeckHookTests(WebhookTestCase):
-    CHANNEL_NAME = "Rundeck"
     TOPIC_NAME = "Global Log Filter Usage"
-    URL_TEMPLATE = "/api/v1/external/rundeck?&api_key={api_key}&stream={stream}"
-    WEBHOOK_DIR_NAME = "rundeck"
 
     def test_start_message(self) -> None:
         expected_message = "[Global Log Filter Usage](http://localhost:4440/project/welcome-project-community/job/show/a0296d93-4b10-48d7-8b7d-86ad3f603b85) execution [#3](http://localhost:4440/project/welcome-project-community/execution/show/3) for welcome-project-community has started. :running:"

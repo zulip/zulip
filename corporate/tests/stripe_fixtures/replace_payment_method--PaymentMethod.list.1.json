@@ -44,11 +44,13 @@
         "wallet": null
       },
       "created": 1000000000,
-      "customer": "cus_NORMALIZED",
+      "customer": "replace_payment_method--Customer.create.1.json",
+      "customer_account": null,
       "id": "replace_payment_method--Customer.retrieve.7.json",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",
+      "shared_payment_granted_token": null,
       "type": "card"
     },
     {
@@ -95,11 +97,13 @@
         "wallet": null
       },
       "created": 1000000000,
-      "customer": "cus_NORMALIZED",
+      "customer": "replace_payment_method--Customer.create.1.json",
+      "customer_account": null,
       "id": "replace_payment_method--Customer.retrieve.1.json",
       "livemode": false,
       "metadata": {},
       "object": "payment_method",
+      "shared_payment_granted_token": null,
       "type": "card"
     }
   ],

@@ -16,7 +16,7 @@ class kandra::prometheus::uwsgi {
     cleanup_after  => [Service[supervisor]],
   }
 
-  kandra::firewall_allow { 'uwsgi_exporter': port => '9238' }
+  kandra::teleport::prometheus_app { 'uwsgi_exporter': port => '9238' }
   file { "${zulip::common::supervisor_conf_dir}/prometheus_uwsgi_exporter.conf":
     ensure  => file,
     require => [

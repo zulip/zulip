@@ -71,8 +71,8 @@ def main() -> None:
         for metric_id, query in metrics.items():
             try:
                 update_metric(metric_id, query, page_id, oauth_token)
-            except Exception as e:
-                logging.exception(e)
+            except Exception:
+                logging.exception("Error while updating metric")
         time.sleep(30)
 
 

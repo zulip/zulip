@@ -1,0 +1,17 @@
+---
+import RelativeSteps from "./RelativeSteps.astro";
+import SettingsSteps from "./SettingsSteps.astro";
+
+const {target} = Astro.props;
+const [navigation_link_type, ...parts] = target.split("/");
+
+if (navigation_link_type !== "settings" && navigation_link_type !== "relative") {
+    throw new Error("Invalid navigation link type. Only `settings` or `relative` is allowed.");
+}
+---
+
+{navigation_link_type === "settings" ? (
+    <SettingsSteps setting_key={parts[0]} />
+) : (
+    <RelativeSteps link_type={parts[0]} key={parts[1]} />
+)}

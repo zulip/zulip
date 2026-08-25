@@ -1,7 +1,9 @@
 # Documenting REST API endpoints
 
 This document explains the system for documenting [Zulip's REST
-API](https://zulip.com/api/rest).
+API](https://zulip.com/api/rest). See also the [API design
+documentation](../processes/api-design.md) which covers how to safely
+make changes to the Zulip API.
 
 Zulip's API documentation is an essential resource both for users and
 for the developers of Zulip's mobile and terminal apps. Our vision is
@@ -30,7 +32,7 @@ Our API documentation is defined by a few sets of files:
   [OpenAPI description](openapi.md) at
   `zerver/openapi/zulip.yaml`.
 - The documentation is written the same Markdown framework that powers
-  our [help center docs](helpcenter.md), with some special
+  our [integration docs](integrations.md), with some special
   extensions for rendering nice code blocks and example
   responses. Most API endpoints share a common template,
   `api_docs/api-doc-template.md`, which renders the
@@ -110,6 +112,19 @@ include **Changes** notes for all feature level updates documented
 in the [API changelog](https://zulip.com/api/changelog), see
 `api_docs/changelog.md`, that reference the endpoint.
 
+The description itself should always describe the behavior of
+current servers, so that a reader never needs to consult a
+**Changes** note to understand it. The **Changes** notes exist for
+understanding the behavior of older servers, starting from that of
+current servers. So when documenting a change to existing behavior,
+write the note as a diff going backward in time, giving only the
+details of the old behavior: for example, "Before Zulip 12.0
+(feature level 483), the server did not automatically remove legacy
+registrations", rather than "As of Zulip 12.0 (feature level 483),
+the server now automatically removes...". The forward framing
+misleadingly suggests that the note carries all the details of the
+new behavior, when those belong in the main description.
+
 Endpoints that only administrators can use should be tagged with the
 custom `x-requires-administrator` field in the OpenAPI definition.
 
@@ -169,7 +184,7 @@ def render_message(client: Client) -> None:
 ```
 
 This is an actual Python function which will be run as part of the
-`tools/test-api` test suite. The `validate_against_opanapi_schema`
+`tools/test-api` test suite. The `validate_against_openapi_schema`
 function will verify that the result of that request is as defined in
 the examples in `zerver/openapi/zulip.yaml`.
 
@@ -258,13 +273,13 @@ above.
 
    Once you understand that, the best way to determine the supported
    arguments for an API endpoint is to find the corresponding URL
-   pattern in `zprojects/urls.py`, look up the backend function for
+   pattern in `zproject/urls.py`, look up the backend function for
    that endpoint in `zerver/views/`, and inspect its keyword-only
    arguments.
 
    You can check your formatting using these helpful tools.
 
-   - `tools/check-openapi` will verify the syntax of `zerver/openapi/zulip.yaml`.
+   - `tools/check-openapi.ts` will verify the syntax of `zerver/openapi/zulip.yaml`.
    - `tools/test-backend zerver/tests/test_openapi.py`; this test compares
      your documentation against the code and can find many common
      mistakes in how arguments are declared.
@@ -316,7 +331,7 @@ above.
 
 1. Finally, if the API docs page of the endpoint doesn't follow the
    common API docs template in
-   `api_docs/api-docs-template.md`, then add its custom
+   `api_docs/api-doc-template.md`, then add its custom
    Markdown file under `api_docs/`. However, it is a goal
    to minimize the number of files that diverse from the common
    template, so only do this if there's a good reason.
@@ -352,6 +367,66 @@ above.
    **Changes**: New in Zulip 11.0 (feature level ZF-1f4a39).
    ```
 
+   For a change to existing behavior, make sure the main description
+   describes the behavior of current servers, and write the note as
+   a diff going backward in time, describing only the old behavior
+   (see [above](#title-and-description)):
+
+   ```yaml
+   **Changes**: Before Zulip 11.0 (feature level ZF-1f4a39),
+   this parameter was ignored for direct messages.
+   ```
+
+1. Proofread your new documentation in its rendered HTML, including
+   all links! Unmerged changelog entries are conveniently previewed on
+   `/api/changelog`.
+
+## Redirecting an existing article
+
+From time to time, we might want to rename an article in the REST API
+documentation. This change will break incoming links, including links
+in published Zulip blog posts, links in other branches of the
+repository that haven't been rebased, and more importantly links from
+previous versions of Zulip.
+
+To fix these broken links, you can easily add a URL redirect in:
+`zerver/lib/url_redirects.py`.
+
+For REST API documentation, you will either need to rename the file,
+or you will need to update the endpoint's `operationId` in
+`zerver/openapi/zulip.yaml`. Then, you need to add a new `URLRedirect`
+to the `API_DOCUMENTATION_REDIRECTS` list in `url_redirects.py`:
+
+```python
+API_DOCUMENTATION_REDIRECTS: List[URLRedirect] = [
+    # Add URL redirects for REST API documentation here:
+    URLRedirect("/api/delete-stream", "/api/archive-stream"),
+    ...
+```
+
+You should still check for references to the old URL in your branch
+and replace those with the new URL (e.g., `git grep "/api/foo"`).
+One exception to this are links with the old URL that were included
+in the content of `zulip_update_announcements`, which can be found
+in `zerver/lib/zulip_update_announcements.py`. It's preferable to
+have the source code accurately reflect what was sent to users in
+those [Zulip update announcements][zulip-updates], so these should
+not be replaced with the new URL.
+
+If you have the Zulip development environment set up, you can manually
+test your changes by loading the old URL in your browser (e.g.,
+`http://localhost:9991/api/foo`), and confirming that it redirects to
+the new url (e.g., `http://localhost:9991/api`/bar`).
+
+There is also an automated test in `zerver/tests/test_urls.py` that
+checks all the URL redirects, which you can run from the command line:
+
+```console
+./tools/test-backend zerver.tests.test_urls.URLRedirectTest
+```
+
+[zulip-updates]: https://zulip.com/help/configure-automated-notices#zulip-update-announcements
+
 ## Why a custom system?
 
 Given that our documentation is written in large part using the
@@ -366,7 +441,7 @@ it? There's several major benefits to this system:
   version, with the key variables (like the Zulip server URL) already
   pre-substituted for the user.
 - We're able to share implementation language and visual styling with
-  our Help Center, which is especially useful for the extensive
+  our help center, which is especially useful for the extensive
   non-REST API documentation pages (e.g., our bot framework).
 
 Using the standard OpenAPI format gives us flexibility, though; if we

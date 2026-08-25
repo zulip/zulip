@@ -15,7 +15,6 @@
             border: 1px solid var(--color-hotkey-hint);
             border-radius: 3px;
             color: var(--color-hotkey-hint);
-            text-align: center;
             opacity: 0.8;
         }
     }
@@ -26,46 +25,6 @@
         .enter_sends_minor {
             color: hsl(0deg 0% 80%);
         }
-    }
-
-    /* Extend the 'light-border' TippyJS theme, which is intended for
-       popovers/menus that should use default background colors, to use
-       our dark theme colors in Zulip's dark theme.
-     */
-    .tippy-box[data-theme~="light-border"] {
-        .tippy-content a,
-        p {
-            color: hsl(236deg 33% 90%);
-        }
-    }
-
-    .tippy-box:not([data-theme]) {
-        background: hsl(0deg 0% 0%);
-
-        &[data-placement^="top"] > .tippy-arrow::before {
-            border-top-color: hsl(0deg 0% 0%);
-        }
-
-        &[data-placement^="bottom"] > .tippy-arrow::before {
-            border-bottom-color: hsl(0deg 0% 0%);
-        }
-
-        &[data-placement^="left"] > .tippy-arrow::before {
-            border-left-color: hsl(0deg 0% 0%);
-        }
-
-        &[data-placement^="right"] > .tippy-arrow::before {
-            border-right-color: hsl(0deg 0% 0%);
-        }
-    }
-
-    .tippy-box[data-theme="dropdown-widget"] {
-        background-color: hsl(240deg 5% 16%);
-        border: 1px solid hsl(0deg 0% 0%);
-        box-shadow:
-            0 7px 13px hsl(0deg 0% 0% / 35%),
-            0 5px 8px hsl(0deg 0% 0% / 32%),
-            0 2px 4px hsl(0deg 0% 0% / 20%);
     }
 
     .dropdown-list-delete {
@@ -91,10 +50,8 @@
     button:disabled:not(.action-button, .icon-button, .info-density-button),
     option:disabled,
     select:disabled,
-    textarea:disabled,
-    input:disabled,
-    input:not([type="radio"]):read-only,
-    textarea:read-only,
+    input:disabled:not(.modal_text_input),
+    input:not([type="radio"], .modal_text_input):read-only,
     #organization-permissions .dropdown-widget-button:disabled,
     #organization-settings .dropdown-widget-button:disabled {
         color: inherit;
@@ -104,24 +61,6 @@
     button.info-density-button:disabled {
         color: inherit;
         opacity: 0.4;
-    }
-
-    & input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    input[type="number"],
-    input[type="url"],
-    input[type="date"],
-    textarea,
-    select,
-    .pill-container,
-    .user-status-content-wrapper,
-    .custom-time-input-value,
-    #organization-permissions .dropdown-widget-button,
-    #organization-settings .dropdown-widget-button {
-        background-color: hsl(0deg 0% 0% / 20%);
-        border-color: hsl(0deg 0% 0% / 60%);
-        color: inherit;
     }
 
     .popover-filter-input-wrapper .popover-filter-input:focus {
@@ -135,7 +74,8 @@
         color: hsl(236deg 33% 90%);
     }
 
-    .pill-container.not-editable-by-user {
+    .pill-container.not-editable-by-user,
+    .group_setting_disabled .pill-container {
         opacity: 0.5;
     }
 
@@ -150,35 +90,8 @@
         }
     }
 
-    & input[type="text"]:focus,
-    input[type="email"]:focus,
-    input[type="number"]:focus,
-    textarea:focus,
-    textarea.new_message_textarea:focus,
-    #compose_recipient_box:focus {
+    textarea.schedule-reminder-note:focus {
         border-color: hsl(0deg 0% 0% / 90%);
-    }
-
-    /* Not that .message_row (below) needs to be more contrast on dark theme */
-    .message-feed .recipient_row,
-    .message_row,
-    .overlay-message-row .overlay-message-info-box,
-    .preview_message_area {
-        border-color: hsl(0deg 0% 0% / 40%);
-    }
-
-    & div.overlay .flex.overlay-content > .overlay-container,
-    #settings_page,
-    .informational-overlays .overlay-content {
-        box-shadow: 0 0 30px hsl(212deg 32% 7%);
-    }
-
-    #draft_overlay,
-    #scheduled_messages_overlay_container,
-    #message-edit-history-overlay-container {
-        .flex.overlay-content > .overlay-container {
-            box-shadow: 0 0 30px hsl(213deg 31% 0%);
-        }
     }
 
     .popover hr,
@@ -186,59 +99,12 @@
         opacity: 0.2;
     }
 
-    .zoom-in {
-        #topics_header {
-            background-color: var(--color-background);
-        }
-    }
-
-    .group-row.active,
-    .stream-row.active {
-        background-color: hsl(0deg 0% 0% / 20%);
-    }
-
-    .stream-row,
-    .group-row {
-        /* This is for coluring the plus sign SVGs in stream-list UI */
-        /* public */
-        .check:not(.checked) svg {
-            fill: hsl(218deg 14% 33%);
-        }
-
-        /* private */
-        .disabled svg {
-            opacity: 0.5;
-        }
-
-        /* public :hover */
-        .check:not(.checked, .disabled):hover svg {
-            fill: hsl(230deg 11% 67%);
-        }
-    }
-
-    #recent_view_table {
-        .zulip-icon-user {
-            opacity: 0.7;
-        }
-    }
-
-    #recent_view
-        .change_visibility_policy
-        .visibility-status-icon:not(.recent-view-row-topic-menu):hover {
-        filter: invert(1);
+    #recent-view-content-table {
+        border-bottom-width: 1px;
     }
 
     .drafts-container .header-body .delete-drafts-group > *:focus {
         background-color: hsl(228deg 11% 17%);
-    }
-
-    & .overlay-messages-header,
-    .grey-box,
-    .white-box,
-    .stream-email,
-    #generate-integration-url-modal .integration-url,
-    .table-striped tbody tr:nth-child(odd) th {
-        background-color: hsl(0deg 0% 0% / 20%);
     }
 
     .table-striped tbody tr:nth-child(even) td {
@@ -248,14 +114,6 @@
             hsl(0deg 0% 0%) 20%,
             var(--color-background-modal)
         );
-    }
-
-    .subscriber-list-box,
-    .subscriber-list-box .subscriber_list_container .subscriber-list td,
-    .member-list-box,
-    .member-list-box .member_list_container .member-list td,
-    #subscription_overlay .settings-radio-input-parent {
-        border-color: hsl(0deg 0% 0% / 20%);
     }
 
     .overlay-message-row
@@ -270,15 +128,8 @@
         box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 40%);
     }
 
-    .upgrade-tip,
-    .upgrade-or-sponsorship-tip,
-    .tip,
-    .invite-stream-notice {
+    .tip {
         color: inherit;
-    }
-
-    #request-progress-status-banner {
-        background-color: hsl(212deg 32% 14%);
     }
 
     .alert.home-error-bar {
@@ -354,57 +205,12 @@
         }
     }
 
-    #user-profile-modal {
-        #default-section {
-            .default-field {
-                .name {
-                    color: hsl(236deg 33% 90%);
-                }
-            }
-        }
-
-        #content {
-            .field-section {
-                .name {
-                    color: hsl(236deg 33% 90%);
-                }
-            }
-        }
-
-        .subscription-group-list,
-        .subscription-stream-list,
-        .subscription-stream-list .user-stream-list tr,
-        .subscription-group-list .user-group-list tr {
-            border-color: hsl(0deg 0% 0% / 40%);
-        }
-
-        .manage-profile-tab-footer {
-            &.modal__footer_wrapper {
-                border-top: 1px solid hsl(0deg 0% 100% / 20%);
-            }
-        }
-    }
-
     .top-messages-logo {
         opacity: 0.7;
     }
 
-    .history-limited-box,
-    .all-messages-search-caution {
+    .history-limited-box {
         background-color: hsl(0deg 0% 0% / 20%);
-    }
-
-    #feedback_container {
-        border-color: hsl(0deg 0% 0% / 50%);
-
-        & a:hover {
-            color: hsl(0deg 0% 100%);
-        }
-    }
-
-    /* Search highlight used in both topics and rendered_markdown */
-    .highlight {
-        background-color: hsl(51deg 100% 23%);
     }
 
     .searching-for-more-topics img {
@@ -420,7 +226,6 @@
         color: hsl(200deg 79% 66%);
     }
 
-    #request-progress-status-banner .loading-indicator,
     #loading_older_messages_indicator,
     #recent_view_loading_messages_indicator {
         & path {
@@ -429,7 +234,7 @@
     }
 
     & a:not(:active):focus,
-    button:not(.action-button, .icon-button):focus,
+    button:not(.action-button, .icon-button):focus-visible,
     i.fa:focus,
     i.zulip-icon:focus,
     [role="button"]:focus {
@@ -439,55 +244,6 @@
     .color_animated_button {
         .zulip-icon {
             color: hsl(0deg 0% 100%);
-        }
-    }
-
-    /* Widgets: Poll */
-    .poll-widget {
-        .poll-vote {
-            color: hsl(185deg 35% 65%);
-            border-color: hsl(185deg 35% 35%);
-
-            &:hover {
-                color: hsl(185deg 50% 70%);
-                border-color: hsl(185deg 40% 40%);
-                background-color: hsl(185deg 20% 20%);
-            }
-
-            &:focus {
-                color: hsl(185deg 50% 65%);
-                border-color: hsl(185deg 40% 50%);
-                background-color: hsl(185deg 40% 35%);
-            }
-        }
-
-        .poll-names {
-            color: hsl(236deg 15% 70%);
-        }
-    }
-
-    /* Widgets: Todo */
-    .todo-widget {
-        & label.checkbox {
-            & input[type="checkbox"] {
-                ~ .custom-checkbox {
-                    border-color: hsl(185deg 40% 45%);
-                    opacity: 0.7;
-                }
-
-                &:hover ~ .custom-checkbox {
-                    background-color: hsl(185deg 20% 20%);
-                    border-color: hsl(185deg 40% 35%);
-                }
-
-                &:checked ~ .custom-checkbox {
-                    background-color: hsl(185deg 40% 45%);
-                }
-
-                &:focus ~ .custom-checkbox {
-                    outline-color: hsl(0deg 0% 100% / 0%);
-                }
-            }
         }
     }
 
@@ -505,19 +261,32 @@
         }
     }
 
-    #read_receipts_modal .read_receipts_list li {
-        &:hover {
-            background-color: hsl(0deg 0% 100% / 5%);
-        }
-
-        &:active,
-        &:focus {
-            background-color: hsl(0deg 0% 100% / 10%);
-        }
-    }
-
     .help_link_widget:hover {
         color: inherit;
+    }
+
+    #uppy-editor .uppy-ImageCropper {
+        /* Uppy cropper canvas has some CSS properties set for the background that
+        do not look good for dark theme. When using Uppy Dashboard, this can be
+        solved by passing `theme` field with value as true in config options.
+        However we are not using that plugin so we need to provide our own dark
+        theme CSS for this detail.
+
+        Link for source from where the CSS properties are taken -
+        https://github.com/transloadit/uppy/blob/b7605df9402e4db9b02828bf24558e21eae76637/packages/%40uppy/image-editor/src/style.scss#L123
+        and https://github.com/transloadit/uppy/blob/b7605df9402e4db9b02828bf24558e21eae76637/packages/%40uppy/image-editor/src/style.scss#L133 */
+        .cropper-modal {
+            opacity: 0.7;
+            background-color: hsl(0deg 0% 0%);
+        }
+
+        .cropper-view-box {
+            background: repeating-conic-gradient(
+                    hsl(0deg 1.18% 16.67%) 0% 25%,
+                    hsl(0deg 0% 0%) 0% 50%
+                )
+                50%/16px 16px;
+        }
     }
 }
 

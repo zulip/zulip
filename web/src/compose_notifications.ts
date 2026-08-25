@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_automatic_new_visibility_policy_banner from "../templates/compose_banner/automatic_new_visibility_policy_banner.hbs";
@@ -8,6 +8,7 @@ import render_message_sent_banner from "../templates/compose_banner/message_sent
 import render_unmute_topic_banner from "../templates/compose_banner/unmute_topic_banner.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import type {SentMessageData} from "./compose.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
@@ -59,7 +60,7 @@ export function notify_above_composebox(
     above_composebox_narrow_url: string | null,
     link_msg_id: number,
     message_recipient: MessageRecipient | null,
-    link_text: string | null,
+    action_button_text: string | null,
 ): void {
     const $notification = $(
         render_message_sent_banner({
@@ -68,7 +69,7 @@ export function notify_above_composebox(
             above_composebox_narrow_url,
             link_msg_id,
             message_recipient,
-            link_text,
+            action_button_text,
         }),
     );
     // We pass in include_unmute_banner as false because we don't want to
@@ -78,7 +79,7 @@ export function notify_above_composebox(
 }
 
 export function notify_automatic_new_visibility_policy(
-    message: Message,
+    message: Message | (SentMessageData & {type: "stream"}),
     data: {automatic_new_visibility_policy: number; id: number},
 ): void {
     const followed =
@@ -108,7 +109,9 @@ export function notify_automatic_new_visibility_policy(
 
 // Note that this returns values that are not HTML-escaped, for use in
 // Handlebars templates that will do further escaping.
-function get_message_recipient(message: Message): MessageRecipient {
+function get_message_recipient(
+    message: Message | (SentMessageData & {type: "stream"}),
+): MessageRecipient {
     if (message.type === "stream") {
         const channel_message_recipient: MessageRecipient = {
             message_type: "channel",
@@ -149,7 +152,7 @@ function get_message_recipient(message: Message): MessageRecipient {
     return direct_message_recipient;
 }
 
-export function get_muted_narrow(message: Message): string | undefined {
+export function get_muted_narrow(message: Message | SentMessageData): string | undefined {
     if (
         message.type === "stream" &&
         stream_data.is_muted(message.stream_id) &&
@@ -175,10 +178,7 @@ export function should_jump_to_sent_message_conversation(message: Message): bool
 
     const current_filter = narrow_state.filter();
     const is_conversation_view =
-        current_filter === undefined
-            ? false
-            : current_filter.is_conversation_view() ||
-              current_filter.is_conversation_view_with_near();
+        current_filter === undefined ? false : current_filter.is_conversation_view();
     const $row = message_lists.current.get_row(message.id);
     if (is_conversation_view && $row.length > 0) {
         // If our message is in the current conversation view, we do
@@ -220,6 +220,20 @@ function should_show_narrow_to_recipient_banner(message: Message): boolean {
     return false;
 }
 
+function show_scroll_to_view_banner(link_msg_id: number): void {
+    const banner_text = $t({defaultMessage: "Sent! Scroll down to view your message."});
+    notify_above_composebox(
+        banner_text,
+        compose_banner.CLASSNAMES.sent_scroll_to_view,
+        // Don't display a URL on hover for the "Scroll to bottom" link.
+        null,
+        link_msg_id,
+        null,
+        $t({defaultMessage: "Scroll down"}),
+    );
+    compose_banner.set_scroll_to_message_banner_message_id(link_msg_id);
+}
+
 export function notify_local_mixes(
     messages: Message[],
     need_user_to_scroll: boolean,
@@ -253,32 +267,8 @@ export function notify_local_mixes(
             continue;
         }
 
-        const jump_to_sent_message_conversation = should_jump_to_sent_message_conversation(message);
-        const show_narrow_to_recipient_banner = should_show_narrow_to_recipient_banner(message);
-
         const link_msg_id = message.id;
-
-        if (!jump_to_sent_message_conversation && !show_narrow_to_recipient_banner) {
-            if (need_user_to_scroll) {
-                const banner_text = $t({defaultMessage: "Sent!"});
-                const link_text = $t({defaultMessage: "Scroll down to view your message."});
-                notify_above_composebox(
-                    banner_text,
-                    compose_banner.CLASSNAMES.sent_scroll_to_view,
-                    // Don't display a URL on hover for the "Scroll to bottom" link.
-                    null,
-                    link_msg_id,
-                    null,
-                    link_text,
-                );
-                compose_banner.set_scroll_to_message_banner_message_id(link_msg_id);
-            }
-
-            // This is the HAPPY PATH--for most messages we do nothing
-            // other than maybe sending the above message.
-            continue;
-        }
-
+        const show_narrow_to_recipient_banner = should_show_narrow_to_recipient_banner(message);
         if (show_narrow_to_recipient_banner) {
             const banner_text = $t({
                 defaultMessage: "Sent! Your message is outside your current view.",
@@ -291,6 +281,17 @@ export function notify_local_mixes(
                 get_message_recipient(message),
                 null,
             );
+            continue;
+        }
+
+        const jump_to_sent_message_conversation = should_jump_to_sent_message_conversation(message);
+        if (!jump_to_sent_message_conversation) {
+            if (need_user_to_scroll) {
+                show_scroll_to_view_banner(link_msg_id);
+            }
+
+            // This is the HAPPY PATH--for most messages we do nothing
+            // other than maybe showing the above banner.
             continue;
         }
 
@@ -311,7 +312,9 @@ export function notify_local_mixes(
     }
 }
 
-function get_above_composebox_narrow_url(message: Message): string {
+function get_above_composebox_narrow_url(
+    message: Message | (SentMessageData & {type: "stream"}),
+): string {
     let above_composebox_narrow_url;
     if (message.type === "stream") {
         above_composebox_narrow_url = hash_util.by_stream_topic_url(
@@ -412,7 +415,7 @@ export function reify_message_id(opts: {old_id: number; new_id: number}): void {
 
     // If a message ID that we're currently storing (as a link) has changed,
     // update that link as well
-    for (const e of $("#compose_banners a")) {
+    for (const e of $("#compose_banners [data-message-id]")) {
         const $elem = $(e);
         const message_id = Number($elem.attr("data-message-id"));
 
@@ -438,17 +441,13 @@ export function initialize(opts: {
             e.preventDefault();
         },
     );
-    $("#compose_banners").on(
-        "click",
-        ".sent_scroll_to_view .above_compose_banner_action_link",
-        (e) => {
-            assert(message_lists.current !== undefined);
-            const message_id = Number($(e.currentTarget).attr("data-message-id"));
-            message_lists.current.select_id(message_id);
-            on_click_scroll_to_selected();
-            compose_banner.clear_message_sent_banners(false);
-            e.stopPropagation();
-            e.preventDefault();
-        },
-    );
+    $("#compose_banners").on("click", ".sent_scroll_to_view .action-button", (e) => {
+        assert(message_lists.current !== undefined);
+        const message_id = Number($(e.currentTarget).attr("data-message-id"));
+        message_lists.current.select_id(message_id);
+        on_click_scroll_to_selected();
+        compose_banner.clear_message_sent_banners(false);
+        e.stopPropagation();
+        e.preventDefault();
+    });
 }

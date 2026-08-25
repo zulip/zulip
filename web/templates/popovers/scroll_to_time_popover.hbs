@@ -1,0 +1,26 @@
+<div class="popover-menu" id="scroll-to-time-popover" data-simplebar data-simplebar-tab-index="-1">
+    <ul role="menu" class="popover-menu-list">
+        <li role="none" class="text-item popover-menu-list-item">
+            <span class="popover-header-name">{{t "Scroll to" }}</span>
+        </li>
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="popover-menu-link" id="scroll_to_oldest" tabindex="0">
+                <span class="popover-menu-label">{{t "Oldest message" }}</span>
+            </a>
+        </li>
+        {{#each suggested_dates}}
+            <li role="none" class="link-item popover-menu-list-item">
+                <a role="menuitem" class="popover-menu-link scroll-to-suggested-date" data-iso-date="{{this.iso_date_string}}" tabindex="0">
+                    <span class="popover-menu-label">{{this.label}}</span>
+                </a>
+            </li>
+        {{/each}}
+        <li role="separator" class="popover-menu-separator"></li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" class="popover-menu-link" id="scroll_to_custom" tabindex="0">
+                <span class="popover-menu-label">{{t "Custom" }}</span>
+            </a>
+        </li>
+    </ul>
+</div>

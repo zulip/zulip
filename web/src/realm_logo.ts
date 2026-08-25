@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as channel from "./channel.ts";
 import * as settings_data from "./settings_data.ts";
@@ -19,7 +19,7 @@ export function build_realm_logo_widget(upload_function: UploadFunction, is_nigh
 
     const $delete_button_elem = $(logo_section_id + " .image-delete-button");
     const $file_input_elem = $<HTMLInputElement>(logo_section_id + " .image_file_input");
-    const $file_input_error_elem = $(logo_section_id + " .image_file_input_error");
+    const $file_input_error_elem = $(logo_section_id + "-error");
     const $upload_button_elem = $(logo_section_id + " .image_upload_button");
 
     const get_file_input = function (): JQuery<HTMLInputElement> {
@@ -52,6 +52,7 @@ export function build_realm_logo_widget(upload_function: UploadFunction, is_nigh
         $upload_button_elem.expectOne(),
         upload_function,
         realm.max_logo_file_size_mib,
+        "realm_logo",
     );
 }
 
@@ -98,7 +99,7 @@ export function render(): void {
     $realm_logo.on("load", () => {
         const logo_width = $realm_logo.width();
         if (logo_width) {
-            $("html").css(
+            $(":root").css(
                 "--realm-logo-current-width",
                 logo_width / user_settings.web_font_size_px + "em",
             );

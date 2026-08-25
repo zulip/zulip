@@ -1,7 +1,7 @@
 <div
   class="main-view-banner {{banner_type}} {{classname}}"
-  {{#if user_id}}data-user-id="{{user_id}}"{{/if}}
-  {{#if stream_id}}data-stream-id="{{stream_id}}"{{/if}}
+  {{#unless (eq user_id undefined)}}data-user-id="{{user_id}}"{{/unless}}
+  {{#unless (eq stream_id undefined)}}data-stream-id="{{stream_id}}"{{/unless}}
   {{#if (or topic_name is_empty_string_topic)}}data-topic-name="{{topic_name}}"{{/if}}>
     <div class="main-view-banner-elements-wrapper">
         {{#if banner_text}}
@@ -19,6 +19,6 @@
     {{#if hide_close_button}}
     {{!-- hide_close_button is null by default, and false if explicitly set as false. --}}
     {{else}}
-    <a role="button" class="zulip-icon zulip-icon-close main-view-banner-close-button"></a>
+    <a role="button" class="zulip-icon zulip-icon-close main-view-banner-close-button" tabindex="0" aria-label="{{t 'Dismiss' }}"></a>
     {{/if}}
 </div>

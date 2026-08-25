@@ -1,15 +1,13 @@
-{% extends "zerver/portico.html" %}
-{% set entrypoint = "landing-page" %}
+{% extends "zerver/marketing_page.html" %}
 
 {% set PAGE_TITLE = "The Zulip team" %}
 
 {% set PAGE_DESCRIPTION = "Zulip has the most active open-source
-development community of any team chat software, with over 1100 code
-contributors, and more than 75 with 100+ commits." %}
+development community of any team chat software, with over 1,500 code
+contributors, and 97+ people with 100+ commits." %}
 
-{% block portico_content %}
 
-{% include 'zerver/landing_nav.html' %}
+{% block marketing_content %}
 
 <div class="portico-landing why-page">
     <div class="hero bg-pycon drone">
@@ -24,50 +22,104 @@ contributors, and more than 75 with 100+ commits." %}
         <div class="padded-content markdown">
             <div class="inner-content team">
                 <p>
-                    Over 1000 people have contributed to the Zulip
+                    Over 1,500 people have contributed to the Zulip
                     codebase, from high school students to 30 year
                     industry veterans, from people launching new careers
                     to people looking for community. Meet the team
                     below!
                 </p>
 
-                <h1 id="the-core-team">The core team at Kandra Labs</h1>
-                <div class="team-profiles">
-                    <!-- Tim -->
-                    <div class="profile bdfl">
-                        <div class="profile-picture">
-                            <img src="{{ static('images/landing-page/team/tim.png') }}" alt="" />
-                        </div>
-                        <div class="profile-information">
-                            <div class="profile-name">Tim Abbott</div>
-                            <div class="profile-role">Founder and project leader</div>
-                            <div class="profile-description">
-                                <p>
-                                    Before Zulip, Tim was a founder and CTO of
-                                    Ksplice, which provided rebootless linux
-                                    kernel updates (a feat many previously thought
-                                    impossible) to over 100,000 production
-                                    servers. He was also the youngest ever
-                                    Architect at Oracle, one of the most senior
-                                    engineers at Dropbox and has been active in
-                                    the open source community for over a
-                                    decade. Tim has three degrees from MIT, and
-                                    lives in San Francisco with his wife and
-                                    three daughters.
-                                </p>
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <h1 id="the-zulip-foundation">The Zulip Foundation</h1>
                 <p>
-                    Kandra Labs provides commercial Zulip hosting and on-premises support
-                    at <a href="https://zulip.com/plans/">https://zulip.com</a>,
-                    and employs the core developers of the project. It was
-                    started in June 2016 to help sustain the growth of the Zulip
-                    project. Kandra Labs is funded by
-                    an <a href="https://seedfund.nsf.gov/">SBIR grant</a> from
-                    the US National Science Foundation.
+                    Zulip is stewarded by the <a
+                    href="https://blog.zulip.com/2026/05/15/announcing-zulip-foundation/">Zulip
+                    Foundation</a>, with a mission of developing the best
+                    possible team chat experience, with a particular focus on
+                    public-interest organizations and communities. The Zulip
+                    Foundation fully owns Kandra Labs, the company responsible
+                    for <a href="/plans/#cloud">hosting</a>,
+                    <a href="/plans/#self-hosted">supporting</a>, and improving
+                    Zulip for use across all industries.
+                </p>
+
+                <h2>Board of Directors</h2>
+                <ul>
+                    <li>
+                        Tim Abbott, Zulip’s founder, and project leader from 2015
+                        to May 2026.
+                    </li>
+                    <li>
+                        Greg Price, Zulip's long-time mobile team lead, who had
+                        a cofounder-like role from 2017 to May 2026.
+                    </li>
+                    <li>
+                        Alya Abbott, Zulip’s long-time product lead, who had a
+                        cofounder-like role from 2021 to May 2026.
+                    </li>
+                    <li>
+                        Josh Triplett, a leader in the Rust programming
+                        language, experienced in open source, and a
+                        <a href="https://zulip.com/case-studies/rust/">major advocate</a>
+                        for Zulip.
+                    </li>
+                </ul>
+
+                <h2>Advisory Board</h2>
+                <ul>
+                    <li>
+                        Jeremy Avigad, a Professor of Philosophy and Mathematical
+                        Sciences at Carnegie Mellon University and Director of the
+                        NSF Institute for Computer-Aided Reasoning in Mathematics.
+                        He is a founding member of the
+                        <a href="https://leanprover.zulipchat.com/">Lean Community organization</a>,
+                        for which Zulip has hosted more than two million messages
+                        to date.
+                    </li>
+                    <li>
+                        Nick Bergson-Shilcock, the CEO and cofounder of the
+                        <a href="https://www.recurse.com/">Recurse Center</a>,
+                        a programming retreat based in New York whose community of
+                        3,000+ alums has run on Zulip since 2013.
+                    </li>
+                    <li>
+                        Puneeth Chaganti, an OCaml developer working on core
+                        ecosystem tooling, and a mentor for
+                        <a href="https://zulip.readthedocs.io/en/latest/outreach/overview.html">
+                            Zulip's Google Summer of Code program
+                        </a>
+                        since 2018.
+                    </li>
+                    <li>
+                        Andrew Sutherland, mathematician and senior researcher at
+                        the Massachusetts Institute of Technology, and President
+                        of the Number Theory Foundation. He is a leading advocate
+                        of Zulip for research collaborations, including the
+                        <a href="https://www.lmfdb.org/">L-functions and Modular Forms Database</a>.
+                    </li>
+                    <li>
+                        Alex Vandiver, who led Zulip's infrastructure team from
+                        2020 to May 2026.
+                    </li>
+                    <li>
+                        Hazel Weakly, a former Director of the
+                        <a href="https://haskell.foundation/">Haskell Foundation</a>
+                        Board, open source and community advocate, and a Fellow of
+                        the <a href="https://nivenly.org/">Nivenly Foundation</a>.
+                    </li>
+                </ul>
+
+                <h1 id="the-core-team">The core team</h1>
+                <p>
+                    The Kandra Labs team is a group of amazing people who have
+                    numerous years of professional experience working on Zulip,
+                    and tens of thousands of Zulip commits between them. They
+                    frequently ship major improvements end-to-end across every
+                    facet of the product.
+                </p>
+                <p>
+                    Zulip’s strength is its culture and incredibly disciplined
+                    development process. If that sounds exciting, take a look at
+                    our <a href="/jobs/">job openings</a>!
                 </p>
 
                 <!-- Contributors -->
@@ -130,47 +182,6 @@ contributors, and more than 75 with 100+ commits." %}
                         <div class="contributors-grid"></div>
                     </div>
                 </div>
-
-                <!-- Compiled using lodash -->
-                <script type="text/template" id="contributors-template">
-                    <div class="person">
-                        <a href="<%= profile_url %>" target="_blank" rel="noopener noreferrer" class="no-underline">
-                            <div class="avatar">
-                                <img class="avatar_img" src="<%= avatar %>" alt="{{ _('Avatar') }}" />
-                            </div>
-                            <div class='info'>
-                                <b><%= name %></b><br />
-                                <%= commits %> <%= commits === 1 ? 'commit' : 'commits' %>
-                            </div>
-                        </a>
-                    </div>
-                </script>
-
-                <script type="text/template" id="loading-template">
-                    <p class="tab-loading">
-                        Loading…
-                    </p>
-                </script>
-
-                <script type="text/template" id="total-count-template">
-                    <p class="contributor-count">
-                        <%= contributor_count %> total contributors
-                        (<%= hundred_plus_contributor_count %> with 100+ commits;
-                         <%= twenty_plus_contributor_count %> with 20+ commits)
-                    </p>
-                </script>
-
-                <script type="text/template" id="count-template">
-                    <p class="contributor-count">
-                        <%= contributor_count %> contributors
-                        (<%= hundred_plus_contributor_count %> with 100+ commits) to
-                        <% repo_list.forEach(function(repo_name, index) { %>
-                        <a href="<%= repo_url_list[index] %>" target="_blank" rel="noopener noreferrer">
-                            zulip/<%= repo_name %><% if (index < repo_list.length - 1) { %>, <% } %>
-                        </a>
-                            <% }); %>
-                    </p>
-                </script>
 
                 <p class="last-updated">
                     Last updated: {{ date }}. <a href="https://zulip.readthedocs.io/en/latest/contributing/counting-contributions.html" target="_blank" rel="noopener noreferrer">Methodology</a>.

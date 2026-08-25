@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_reply_recipient_label from "../templates/reply_recipient_label.hbs";
@@ -14,13 +14,20 @@ import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as stream_data from "./stream_data.ts";
+import type {StreamSubscription} from "./sub_store.ts";
 import * as util from "./util.ts";
 
+// `label_text` is a flat, pre-formatted string used by the call-creation
+// paths in compose_call_ui.ts to build a meeting/room name.
+// The reply-button template uses the structured `stream` / `topic_display_name`
+// fields instead, so it can render the decorated channel icon.
 type RecipientLabel = {
     label_text: string;
     has_empty_string_topic?: boolean;
-    stream_name?: string;
+    stream?: StreamSubscription;
+    topic_display_name?: string;
     is_dm_with_self?: boolean;
+    user_ids?: number[];
 };
 
 function get_stream_recipient_label(stream_id: number, topic: string): RecipientLabel | undefined {
@@ -28,9 +35,10 @@ function get_stream_recipient_label(stream_id: number, topic: string): Recipient
     const topic_display_name = util.get_final_topic_display_name(topic);
     if (stream) {
         const recipient_label: RecipientLabel = {
-            label_text: "#" + stream.name + " > " + topic_display_name,
+            label_text: `#${stream.name} > ${topic_display_name}`,
             has_empty_string_topic: topic === "",
-            stream_name: stream.name,
+            stream,
+            topic_display_name,
         };
         return recipient_label;
     }
@@ -48,6 +56,7 @@ function get_direct_message_recipient_label(user_ids: number[]): RecipientLabel 
     const recipient_label: RecipientLabel = {
         label_text,
         is_dm_with_self,
+        user_ids,
     };
     return recipient_label;
 }
@@ -102,7 +111,12 @@ export function get_recipient_label(
             return get_stream_recipient_label(stream_id, topic);
         }
         if (user_ids_string !== undefined) {
+            // Check for validity of user ids to avoid any errors in case user
+            // narrowed to an incorrect URL.
             const user_ids = people.user_ids_string_to_ids_array(user_ids_string);
+            if (!people.is_valid_user_ids(user_ids)) {
+                return undefined;
+            }
             return get_direct_message_recipient_label(user_ids);
         }
         // Show the standard button text for empty narrows without
@@ -123,32 +137,35 @@ export function get_recipient_label(
 }
 
 // Exported for tests
-export let update_reply_button_state = (disable = false): void => {
+export let update_reply_button_state = (): void => {
+    const $compose_reply_button_wrapper = $(
+        "#legacy-closed-compose-box .compose-reply-button-wrapper",
+    );
+    const stream_id_str = $compose_reply_button_wrapper.attr("data-stream-id");
+    const user_ids_string = $compose_reply_button_wrapper.attr("data-user-ids-string");
+
+    let disable = false;
+    if (stream_id_str !== undefined) {
+        disable = should_disable_compose_reply_button_for_stream(
+            Number.parseInt(stream_id_str, 10),
+        );
+    } else if (user_ids_string !== undefined) {
+        disable = should_disable_compose_reply_button_for_direct_message(user_ids_string);
+    }
+
     $(".compose_reply_button").attr("disabled", disable ? "disabled" : null);
     if (disable) {
-        if (maybe_get_selected_message_stream_id() !== undefined) {
-            $("#compose_buttons .compose-reply-button-wrapper").attr(
-                "data-reply-button-type",
-                "stream_disabled",
-            );
+        if (stream_id_str !== undefined) {
+            $compose_reply_button_wrapper.attr("data-reply-button-type", "stream_disabled");
         } else {
-            $("#compose_buttons .compose-reply-button-wrapper").attr(
-                "data-reply-button-type",
-                "direct_disabled",
-            );
+            $compose_reply_button_wrapper.attr("data-reply-button-type", "direct_disabled");
         }
         return;
     }
     if (narrow_state.is_message_feed_visible()) {
-        $("#compose_buttons .compose-reply-button-wrapper").attr(
-            "data-reply-button-type",
-            "selected_message",
-        );
+        $compose_reply_button_wrapper.attr("data-reply-button-type", "selected_message");
     } else {
-        $("#compose_buttons .compose-reply-button-wrapper").attr(
-            "data-reply-button-type",
-            "selected_conversation",
-        );
+        $compose_reply_button_wrapper.attr("data-reply-button-type", "selected_conversation");
     }
 };
 
@@ -156,57 +173,40 @@ export function rewire_update_reply_button_state(value: typeof update_reply_butt
     update_reply_button_state = value;
 }
 
-function maybe_get_selected_message_stream_id(): number | undefined {
-    if (message_lists.current?.visibly_empty()) {
-        return undefined;
+function update_new_conversation_button(data_attribute_string: "stream" | "non-specific"): void {
+    $("#new_conversation_button").attr("data-conversation-type", data_attribute_string);
+}
+
+function should_disable_compose_reply_button_for_stream(stream_id: number): boolean {
+    if (page_params.is_spectator) {
+        return false;
     }
-    const selected_message = message_lists.current?.selected_message();
-    if (!selected_message?.is_stream) {
-        return undefined;
+    const stream = stream_data.get_sub_by_id(stream_id);
+    return stream !== undefined && !stream_data.can_post_messages_in_stream(stream);
+}
+
+// Exported for tests
+export function should_disable_compose_reply_button_for_direct_message(
+    user_ids_string: string,
+): boolean {
+    return !message_util.user_can_send_direct_message(user_ids_string);
+}
+
+export function update_buttons(update_type?: string): void {
+    update_new_conversation_button(update_type === "stream" ? "stream" : "non-specific");
+    // We omit recipient_information here, so update_reply_button derives
+    // the reply target from the current message list: the selected
+    // message, or the narrowed conversation in an empty view. (The Inbox
+    // and Recent Conversations views instead pass the reply target from
+    // their focused row.)
+    update_reply_button();
+}
+
+export function maybe_update_buttons_for_dm_recipient(): void {
+    const filter = narrow_state.filter();
+    if (filter?.contains_only_private_messages()) {
+        update_buttons("direct");
     }
-    return selected_message.stream_id;
-}
-
-function should_disable_compose_reply_button_for_stream(): boolean {
-    const stream_id = maybe_get_selected_message_stream_id();
-    if (stream_id !== undefined && !page_params.is_spectator) {
-        const stream = stream_data.get_sub_by_id(stream_id);
-        if (stream && !stream_data.can_post_messages_in_stream(stream)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-function update_buttons(disable_reply?: boolean): void {
-    update_reply_button_state(disable_reply);
-}
-
-export function update_buttons_for_private(): void {
-    const pm_ids_string = narrow_state.pm_ids_string();
-
-    let disable_reply;
-
-    if (!pm_ids_string || message_util.user_can_send_direct_message(pm_ids_string)) {
-        disable_reply = false;
-    } else {
-        // disable the [Message X] button when in a private narrow
-        // if the user cannot dm the current recipient
-        disable_reply = true;
-    }
-
-    $("#new_conversation_button").attr("data-conversation-type", "direct");
-    update_buttons(disable_reply);
-}
-
-export function update_buttons_for_stream_views(): void {
-    $("#new_conversation_button").attr("data-conversation-type", "stream");
-    update_buttons(should_disable_compose_reply_button_for_stream());
-}
-
-export function update_buttons_for_non_specific_views(): void {
-    $("#new_conversation_button").attr("data-conversation-type", "non-specific");
-    update_buttons(should_disable_compose_reply_button_for_stream());
 }
 
 function set_reply_button_label(label: string): void {
@@ -215,25 +215,74 @@ function set_reply_button_label(label: string): void {
 
 export function set_standard_text_for_reply_button(): void {
     set_reply_button_label($t({defaultMessage: "Compose message"}));
+    const $compose_reply_button_wrapper = $(
+        "#legacy-closed-compose-box .compose-reply-button-wrapper",
+    );
+    // Clear any stale recipient context from a previous reply target.
+    $compose_reply_button_wrapper.removeAttr("data-stream-id");
+    $compose_reply_button_wrapper.removeAttr("data-user-ids-string");
+    $compose_reply_button_wrapper.removeAttr("data-reply-button-type");
+    // Reset the stale disabled state if the reply button was
+    // previously disabled.
+    $(".compose_reply_button").attr("disabled", null);
 }
 
-export function update_recipient_text_for_reply_button(
+export function update_reply_button_with_recipient_context(
     recipient_information?: ReplyRecipientInformation,
 ): void {
     const recipient_label = get_recipient_label(recipient_information);
+    const $compose_reply_button_wrapper = $(
+        "#legacy-closed-compose-box .compose-reply-button-wrapper",
+    );
     if (recipient_label !== undefined) {
         const empty_string_topic_display_name = util.get_final_topic_display_name("");
         const rendered_recipient_label = render_reply_recipient_label({
             has_empty_string_topic: recipient_label.has_empty_string_topic,
-            channel_name: recipient_label.stream_name,
+            stream: recipient_label.stream,
+            topic_display_name: recipient_label.topic_display_name,
             is_dm_with_self: recipient_label.is_dm_with_self,
             empty_string_topic_display_name,
             label_text: recipient_label.label_text,
         });
+        // We store the recipient state so that update_reply_button_state
+        // can use that information without re-examining the message list
+        // or narrow state. The state is reset/unset by
+        // set_standard_text_for_reply_button().
+        if (recipient_label.stream) {
+            // Channel message recipient.
+            $compose_reply_button_wrapper.removeAttr("data-user-ids-string");
+            $compose_reply_button_wrapper.attr(
+                "data-stream-id",
+                recipient_label.stream.stream_id.toString(),
+            );
+        } else if (recipient_label.user_ids) {
+            // Direct message recipient.
+            $compose_reply_button_wrapper.removeAttr("data-stream-id");
+            $compose_reply_button_wrapper.attr(
+                "data-user-ids-string",
+                recipient_label.user_ids.join(","),
+            );
+        } else {
+            // Fallback case: recipient label from display_reply_to
+            // text when we couldn't decode user IDs from the narrow
+            // URL. We can't check permissions, so we leave the
+            // button enabled.
+            $compose_reply_button_wrapper.removeAttr("data-stream-id");
+            $compose_reply_button_wrapper.removeAttr("data-user-ids-string");
+        }
         $("#left_bar_compose_reply_button_big").html(rendered_recipient_label);
     } else {
         set_standard_text_for_reply_button();
     }
+}
+
+// This should be called when updating the reply button so that
+// update_reply_button_with_recipient_context() runs before
+// update_reply_button_state(), ensuring that the button wrapper
+// contains the relevant recipient metadata.
+export function update_reply_button(recipient_information?: ReplyRecipientInformation): void {
+    update_reply_button_with_recipient_context(recipient_information);
+    update_reply_button_state();
 }
 
 export function initialize(): void {
@@ -243,15 +292,7 @@ export function initialize(): void {
             // message_selected events can occur with Recent Conversations
             // open due to the combined feed view loading in the background,
             // so we only update if message feed is visible.
-            update_recipient_text_for_reply_button();
-
-            // Disable compose reply button if the selected message is a stream
-            // message and the user is not allowed to post in the stream the message
-            // belongs to.
-            if (maybe_get_selected_message_stream_id() !== undefined) {
-                update_buttons_for_stream_views();
-                update_buttons_for_non_specific_views();
-            }
+            update_reply_button();
         }
     });
 

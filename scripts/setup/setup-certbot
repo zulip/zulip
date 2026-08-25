@@ -16,7 +16,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 method=webroot
-args="$(getopt -o '' --long help,email:,method:,skip-symlink,agree-tos -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,email:,method:,agree-tos -n "$0" -- "$@")"
 eval "set -- $args"
 agree_tos=()
 while true; do
@@ -29,10 +29,6 @@ while true; do
         --method)
             method="$2"
             shift
-            shift
-            ;;
-        --skip-symlink)
-            skip_symlink=1
             shift
             ;;
         --agree-tos)
@@ -77,61 +73,40 @@ case "$method" in
         ;;
 esac
 
-# Check for a supported OS release.
-if [ -f /etc/os-release ]; then
-    os_info="$(
-        . /etc/os-release
-        printf '%s\n' "$ID" "$ID_LIKE"
-    )"
-    {
-        read -r os_id
-        read -r os_id_like || true
-    } <<<"$os_info"
+# If we aren't being run interactively, default to keeping the
+# existing certificate (rather than burning through a renewal)
+# If run interactively, certbot will prompt.
+default_keep=()
+if [ ! -t 0 ]; then
+    default_keep=(--keep-until-expiring)
 fi
 
-set -x
+# We need to know _which_ domain is Zulip's, in the symlink deploy
+# hook, so we pass this down
+export ZULIP_DOMAIN="$DOMAIN"
 
-case " $os_id $os_id_like " in
-    *' debian '*)
-        apt-get update
-        apt-get install -y certbot
-        ;;
-    *' rhel '*)
-        yum install -y certbot
-        ;;
-esac
+# Certbot does not run deploy hooks on new certificates
+# (certbot/certbot#9978) so we will need to fake it if so
+if [ -d "/etc/letsencrypt/live/$DOMAIN/" ]; then
+    needs_hooks=0
+else
+    needs_hooks=1
+fi
 
-# We don't use --no-interactive, because certbot needs to ask the user
-# to agree to the Let's Encrypt Subscriber Agreement (aka ToS).
-# Passing --force-interactive suppresses a warning, but also brings up
-# an annoying prompt we stifle with --no-eff-email.
 certbot certonly "${method_args[@]}" \
     "${HOSTNAMES[@]}" -m "$EMAIL" \
     "${agree_tos[@]}" \
-    --force-interactive --no-eff-email
+    "${default_keep[@]}" \
+    --no-eff-email
 
-symlink_with_backup() {
-    if [ -e "$2" ]; then
-        # If the user is setting up our automatic certbot-management on a
-        # system that already has certs for Zulip, use some extra caution
-        # to keep the old certs available.
-        mv -f --backup=numbered "$2" "$2".setup-certbot || true
+# "certbot certonly" before version 3.2.0 does not run deploy hooks,
+# so we fake running them.
+if [ "$needs_hooks" = "1" ]; then
+    export RENEWED_DOMAINS="$*"
+    if [ "$method" == "webroot" ]; then
+        for deploy_hook in /etc/letsencrypt/renewal-hooks/deploy/*; do
+            "$deploy_hook"
+        done
     fi
-    ln -nsf "$1" "$2"
-}
-
-if [ -z "$skip_symlink" ]; then
-    CERT_DIR=/etc/letsencrypt/live/"$DOMAIN"
-    symlink_with_backup "$CERT_DIR"/privkey.pem /etc/ssl/private/zulip.key
-    symlink_with_backup "$CERT_DIR"/fullchain.pem /etc/ssl/certs/zulip.combined-chain.crt
 fi
-
-# "certbot certonly" does not run deploy hooks, so reload nginx if
-# need be to pick up the new certificate.
-case "$method" in
-    webroot)
-        service nginx reload
-        ;;
-esac
-
 echo "Certbot SSL certificate configuration succeeded."

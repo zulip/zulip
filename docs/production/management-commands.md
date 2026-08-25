@@ -10,6 +10,15 @@ users will need to contact support for situations requiring them.
 
 ## Running management commands
 
+:::{important}
+
+If you are using [Docker](docker.md), management commands are run
+inside the container; see {doc}`docker:how-to/compose-commands` for
+Docker Compose deployments and {doc}`docker:how-to/helm-commands`
+for Helm deployments.
+
+:::
+
 Start by logging in as the `zulip` user on the Zulip server. Then run
 them as follows:
 
@@ -138,7 +147,7 @@ There are dozens of useful management commands under
   For most purposes, deactivating users is preferred, since that does not
   alter message history for other users.
   See the `./manage.py delete_user --help` documentation for details.
-- `./manage.py clear_auth_rate_limit_history`: If a user failed authentication
+- `./manage.py reset_authentication_attempt_count`: If a user failed authentication
   attempts too many times and further attempts are disallowed by the rate limiter,
   this can be used to reset the limit.
 
@@ -186,6 +195,6 @@ upgrade.
 [writing-bots]: https://zulip.com/api/writing-bots
 [integrations]: https://zulip.com/integrations
 [zulip-api]: https://zulip.com/api/rest
-[webhook-integrations]: https://zulip.com/api/incoming-webhooks-overview
+[webhook-integrations]: ../webhooks/incoming-webhooks-overview.md
 [management-commands-dev]: ../subsystems/management-commands.md
 [django-management]: https://docs.djangoproject.com/en/5.0/ref/django-admin/#django-admin-and-manage-py

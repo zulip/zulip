@@ -31,12 +31,18 @@ def create_linkifier(
     *,
     pattern: str,
     url_template: str,
+    example_input: str | None = None,
+    reverse_template: str | None = None,
+    alternative_url_templates: Json[list[str]] | None = None,
 ) -> HttpResponse:
     try:
         linkifier_id = do_add_linkifier(
             realm=user_profile.realm,
             pattern=pattern,
             url_template=url_template,
+            example_input=example_input,
+            reverse_template=reverse_template,
+            alternative_url_templates=alternative_url_templates,
             acting_user=user_profile,
         )
         return json_success(request, data={"id": linkifier_id})
@@ -64,6 +70,9 @@ def update_linkifier(
     filter_id: PathOnly[int],
     pattern: str,
     url_template: str,
+    example_input: str | None = None,
+    reverse_template: str | None = None,
+    alternative_url_templates: Json[list[str]] | None = None,
 ) -> HttpResponse:
     try:
         do_update_linkifier(
@@ -71,6 +80,9 @@ def update_linkifier(
             id=filter_id,
             pattern=pattern,
             url_template=url_template,
+            example_input=example_input,
+            reverse_template=reverse_template,
+            alternative_url_templates=alternative_url_templates,
             acting_user=user_profile,
         )
         return json_success(request)

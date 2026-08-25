@@ -1,6 +1,7 @@
 from collections.abc import Set as AbstractSet
 from unittest import mock
 
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.alert_words import do_add_alert_words
@@ -14,6 +15,7 @@ from zerver.lib.soft_deactivation import (
     do_soft_deactivate_users,
     get_soft_deactivated_users_for_catch_up,
     get_users_for_soft_deactivation,
+    queue_soft_reactivation,
     reactivate_user_if_soft_deactivated,
 )
 from zerver.lib.stream_subscription import get_subscriptions_for_send_message
@@ -87,12 +89,13 @@ class UserSoftDeactivationTests(ZulipTestCase):
             self.example_user("polonius"),
             self.example_user("desdemona"),
             self.example_user("shiva"),
+            self.example_user("imported_user"),
         ]
         client, _ = Client.objects.get_or_create(name="website")
         query = "/some/random/endpoint"
         last_visit = timezone_now()
         count = 150
-        for user_profile in UserProfile.objects.all():
+        for user_profile in UserProfile.objects.all().iterator():
             UserActivity.objects.get_or_create(
                 user_profile=user_profile,
                 client=client,
@@ -103,7 +106,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
         filter_kwargs = dict(user_profile__realm=get_realm("zulip"))
         users_to_deactivate = get_users_for_soft_deactivation(-1, filter_kwargs)
 
-        self.assert_length(users_to_deactivate, 10)
+        self.assert_length(users_to_deactivate, 11)
         for user in users_to_deactivate:
             self.assertTrue(user in users)
 
@@ -137,6 +140,37 @@ class UserSoftDeactivationTests(ZulipTestCase):
             user.refresh_from_db()
             self.assertFalse(user.long_term_idle)
 
+    def test_soft_reactivation_uses_deferred_work_queue_by_default(self) -> None:
+        user = self.example_user("hamlet")
+        with mock.patch("zerver.lib.soft_deactivation.queue_event_on_commit") as mock_queue:
+            queue_soft_reactivation(user.id)
+        mock_queue.assert_called_once_with(
+            "deferred_work", {"type": "soft_reactivate", "user_profile_id": user.id}
+        )
+
+    @override_settings(DEDICATED_SOFT_REACTIVATION_QUEUE=True)
+    def test_soft_reactivation_uses_dedicated_queue_when_enabled(self) -> None:
+        user = self.example_user("hamlet")
+
+        # With the option enabled, reactivations route to the dedicated queue.
+        with mock.patch("zerver.lib.soft_deactivation.queue_event_on_commit") as mock_queue:
+            queue_soft_reactivation(user.id)
+        mock_queue.assert_called_once_with(
+            "soft_reactivation", {"type": "soft_reactivate", "user_profile_id": user.id}
+        )
+
+        # And the dedicated queue's worker reactivates the user end to end.
+        self.subscribe(user, "Denmark")
+        self.send_stream_message(user, "Denmark")
+        with self.assertLogs(logger_string, level="INFO"):
+            do_soft_deactivate_users([user])
+        user.refresh_from_db()
+        self.assertTrue(user.long_term_idle)
+        with self.captureOnCommitCallbacks(execute=True):
+            queue_soft_reactivation(user.id)
+        user.refresh_from_db()
+        self.assertFalse(user.long_term_idle)
+
     def test_get_users_for_catch_up(self) -> None:
         users = [
             self.example_user("hamlet"),
@@ -149,15 +183,16 @@ class UserSoftDeactivationTests(ZulipTestCase):
             self.example_user("polonius"),
             self.example_user("desdemona"),
             self.example_user("shiva"),
+            self.example_user("imported_user"),
         ]
-        for user_profile in UserProfile.objects.all():
+        for user_profile in UserProfile.objects.all().iterator():
             user_profile.long_term_idle = True
             user_profile.save(update_fields=["long_term_idle"])
 
         filter_kwargs = dict(realm=get_realm("zulip"))
         users_to_catch_up = get_soft_deactivated_users_for_catch_up(filter_kwargs)
 
-        self.assert_length(users_to_catch_up, 10)
+        self.assert_length(users_to_catch_up, 11)
         for user in users_to_catch_up:
             self.assertTrue(user in users)
 
@@ -188,7 +223,9 @@ class UserSoftDeactivationTests(ZulipTestCase):
         already_received = UserMessage.objects.filter(message_id=message_id).count()
 
         with self.assertLogs(logger_string, level="INFO") as m:
-            do_catch_up_soft_deactivated_users(users)
+            do_catch_up_soft_deactivated_users(
+                UserProfile.objects.filter(id__in=[user.id for user in users])
+            )
         self.assertEqual(
             m.output, [f"INFO:{logger_string}:Caught up {len(users)} soft-deactivated users"]
         )
@@ -325,7 +362,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
         self.assertNotEqual(idle_user_msg_list[-1].content, message)
-        with self.assert_database_query_count(7):
+        with self.assert_database_query_count(8):
             reactivate_user_if_soft_deactivated(long_term_idle_user)
         self.assertFalse(long_term_idle_user.long_term_idle)
         self.assertEqual(
@@ -337,6 +374,40 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         self.assertEqual(idle_user_msg_list[-1].content, message)
         long_term_idle_user.refresh_from_db()
         self.assertEqual(long_term_idle_user.last_active_message_id, message_id)
+
+    def test_reactivate_user_skips_backfill_if_already_reactivated(self) -> None:
+        # A stale in-memory long_term_idle must not trigger a second backfill:
+        # the lock re-read sees the flag already cleared and bails out.
+        user = self.example_user("hamlet")
+        self.subscribe(user, "Denmark")
+        self.send_stream_message(user, "Denmark")
+        with self.assertLogs(logger_string, level="INFO"):
+            do_soft_deactivate_users([user])
+        user.refresh_from_db()
+        self.assertTrue(user.long_term_idle)
+
+        # Clear the flag in the database directly, leaving our copy stale.
+        UserProfile.objects.filter(id=user.id).update(long_term_idle=False)
+        self.assertTrue(user.long_term_idle)
+
+        with mock.patch("zerver.lib.soft_deactivation.add_missing_messages") as mock_backfill:
+            result = reactivate_user_if_soft_deactivated(user)
+        mock_backfill.assert_not_called()
+        self.assertIsNone(result)
+        self.assertFalse(user.long_term_idle)
+
+    def test_reactivate_is_noop_for_active_user(self) -> None:
+        # A user who is not long-term-idle takes the fast path: no row lock,
+        # no backfill, and no database queries at all.
+        user = self.example_user("hamlet")
+        self.assertFalse(user.long_term_idle)
+        with (
+            mock.patch("zerver.lib.soft_deactivation.add_missing_messages") as mock_backfill,
+            self.assert_database_query_count(0),
+        ):
+            result = reactivate_user_if_soft_deactivated(user)
+        self.assertIsNone(result)
+        mock_backfill.assert_not_called()
 
     def test_add_missing_messages(self) -> None:
         recipient_list = [self.example_user("hamlet"), self.example_user("iago")]
@@ -444,7 +515,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         self.subscribe(long_term_idle_user, stream_name)
         sent_message_list.append(send_fake_message("Test message 7", stream))
         # Again unsubscribe from stream and send a message.
-        # This will make sure that if initially in a unsubscribed state
+        # This will make sure that if initially in an unsubscribed state
         # a consecutive subscribe/unsubscribe doesn't misbehave.
         self.unsubscribe(long_term_idle_user, stream_name)
         send_fake_message("Test message 8", stream)
@@ -769,7 +840,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         )
 
         # Test UserMessage row is created while user is deactivated if there
-        # is a alert word in message.
+        # is an alert word in message.
         do_add_alert_words(long_term_idle_user, ["test_alert_word"])
         assert_stream_message_sent_to_idle_user("Testing test_alert_word")
 

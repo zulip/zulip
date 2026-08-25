@@ -1,18 +1,20 @@
 {{! Stream sidebar rows }}
-
-<li class="narrow-filter{{#if is_muted}} out_of_home_view{{/if}}" data-stream-id="{{id}}">
-    <div class="bottom_left_row">
-        <div class="subscription_block selectable_sidebar_block {{#if hide_unread_count}}hide_unread_counts{{/if}}">
+<li {{#if for_modal}}id="more-topics-modal" {{/if}}class="narrow-filter{{#if is_muted}} out_of_home_view{{/if}}" data-stream-id="{{id}}">
+    <div class="bottom_left_row channel-header">
+        <a href="{{url}}" class="subscription_block selectable_sidebar_block" draggable="false">
 
             <span class="stream-privacy-original-color-{{id}} stream-privacy filter-icon" style="color: {{color}}">
                 {{> stream_privacy . }}
             </span>
 
-            <a href="{{url}}" class="stream-name">{{name}}</a>
+            <span class="stream-name">{{name}}</span>
 
             <div class="left-sidebar-controls">
+                <div class="channel-search-topics-button" tabindex="0" data-tippy-content="{{t 'Search topics' }}" data-stream-id="{{id}}">
+                    <i class="zulip-icon zulip-icon-search" aria-hidden="true"></i>
+                </div>
                 {{#if can_post_messages}}
-                <div class="channel-new-topic-button tippy-zulip-tooltip hidden-for-spectators auto-hide-left-sidebar-overlay" data-tippy-content="{{t 'New topic'}}" data-stream-id="{{id}}">
+                <div class="channel-new-topic-button hidden-for-spectators auto-hide-left-sidebar-overlay" tabindex="0"  data-tippy-content="{{#if (or is_empty_topic_only_channel cannot_create_topics_in_channel)}}{{t 'New message'}}{{else}}{{t 'Start a new topic'}}{{/if}}" data-stream-id="{{id}}">
                     <i class="channel-new-topic-icon zulip-icon zulip-icon-square-plus" aria-hidden="true"></i>
                 </div>
                 {{/if}}
@@ -26,7 +28,8 @@
                 </span>
             </div>
 
-            <span class="sidebar-menu-icon stream-sidebar-menu-icon"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
-        </div>
+            <span class="sidebar-menu-icon stream-sidebar-menu-icon" tabindex="0"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
+        </a>
     </div>
+    {{#if for_modal}}<div class="topic-list-scroll-container" data-simplebar data-simplebar-tab-index="-1"></div>{{/if}}
 </li>

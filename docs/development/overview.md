@@ -8,7 +8,7 @@ of available RAM**.
 
 Installing the Zulip development environment requires downloading several hundred
 megabytes of dependencies, so you will need an **active, reasonably fast,
-internet connection throughout the entire installation processes.** You can
+internet connection throughout the entire installation process.** You can
 [configure a proxy][configure-proxy] if you need one.
 
 ## Recommended setup

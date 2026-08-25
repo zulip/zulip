@@ -39,8 +39,8 @@ def edit_draft(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    draft_id: PathOnly[int],
     draft: Json[DraftData],
+    draft_id: PathOnly[int],
 ) -> HttpResponse:
     do_edit_draft(draft_id, draft, user_profile)
     return json_success(request)

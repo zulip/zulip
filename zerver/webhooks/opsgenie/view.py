@@ -1,4 +1,5 @@
 from django.http import HttpRequest, HttpResponse
+from pydantic import Json
 
 from zerver.decorator import webhook_view
 from zerver.lib.response import json_success
@@ -32,10 +33,12 @@ def api_opsgenie_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
+    eu_region: Json[bool] = False,
 ) -> HttpResponse:
     # construct the body of the message
     info = {
         "additional_info": "",
+        "url_region": "eu." if eu_region else "",
         "alert_type": payload["action"].tame(check_string),
         "alert_id": payload["alert"]["alertId"].tame(check_string),
         "integration_name": payload["integrationName"].tame(check_string),
@@ -71,7 +74,7 @@ def api_opsgenie_webhook(
         info["additional_info"] += bullet_template.format(key=display_name, value=value)
 
     body_template = """
-[Opsgenie alert for {integration_name}](https://app.opsgenie.com/alert/V2#/show/{alert_id}):
+[Opsgenie alert for {integration_name}](https://app.{url_region}opsgenie.com/alert/V2#/show/{alert_id}):
 * **Type**: {alert_type}
 {additional_info}
 """.strip()

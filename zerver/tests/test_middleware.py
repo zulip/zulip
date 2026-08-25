@@ -4,6 +4,7 @@ from unittest.mock import patch
 from bs4 import BeautifulSoup
 from django.http import HttpResponse
 
+from zerver.actions.realm_settings import do_set_realm_property
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.request import RequestNotes
 from zerver.lib.test_classes import ZulipTestCase
@@ -32,8 +33,6 @@ class SlowQueryTest(ZulipTestCase):
         self.assertFalse(is_slow_query(2, "/activity"))
         self.assertFalse(is_slow_query(2, "/realm_activity/whatever"))
         self.assertFalse(is_slow_query(2, "/user_activity/whatever"))
-        self.assertFalse(is_slow_query(9, "/accounts/webathena_kerberos_login/"))
-        self.assertTrue(is_slow_query(11, "/accounts/webathena_kerberos_login/"))
 
     def test_slow_query_log(self) -> None:
         self.log_data["time_started"] = time.time() - self.SLOW_QUERY_TIME
@@ -84,57 +83,7 @@ class OpenGraphTest(ZulipTestCase):
         for substring in not_in_description:
             self.assertNotIn(substring, open_graph_description)
 
-    def test_admonition_and_link(self) -> None:
-        # restrict-wildcard-mentions starts with an {!admin-only.md!},
-        # and has a link in the first paragraph.
-        self.check_title_and_description(
-            "/help/restrict-wildcard-mentions",
-            "Restrict wildcard mentions | Zulip help center",
-            [
-                "Organization administrators can configure who is allowed to use wildcard mentions ",
-                "more than 15 participants. | This permission can be granted to any combination of roles, ",
-            ],
-            [
-                "Restrict wildcard mentions",
-                "feature is only available",
-                "Related articles",
-                "DMs, mentions, and alerts",
-            ],
-        )
-
-    def test_settings_tab(self) -> None:
-        # deactivate-your-account starts with {settings_tab|account-and-privacy}
-        self.check_title_and_description(
-            "/help/deactivate-your-account",
-            "Deactivate your account | Zulip help center",
-            [
-                "Deactivating your Zulip account in one organization will have no effect "
-                "on any other Zulip accounts you may have. | Once you deactivate your account"
-            ],
-            ["Approve by clicking", "  ", "\n"],
-        )
-
-    def test_tabs(self) -> None:
-        # logging-out starts with {start_tabs}
-        self.check_title_and_description(
-            "/help/logging-out",
-            "Logging out | Zulip help center",
-            # Ideally we'd do something better here
-            [
-                "Your feedback helps us make Zulip better for everyone! Please contact us with"
-                " questions, suggestions, and feature requests."
-            ],
-            ["Click on the gear"],
-        )
-
     def test_index_pages(self) -> None:
-        self.check_title_and_description(
-            "/help/",
-            "Zulip help center",
-            ["Welcome to the Zulip"],
-            [],
-        )
-
         self.check_title_and_description(
             "/api/",
             "Zulip API documentation",
@@ -144,14 +93,16 @@ class OpenGraphTest(ZulipTestCase):
                     "guide should help you find the API you need:"
                 )
             ],
-            [],
+            # This is added to maintain coverage for the not_in_description
+            # block since we might want to keep using that for future tests.
+            ["No such article."],
         )
 
     def test_nonexistent_page(self) -> None:
         self.check_title_and_description(
-            "/help/not-a-real-page",
-            # Probably we should make this "Zulip Help Center"
-            "No such article. | Zulip help center",
+            "/api/not-a-real-page",
+            # Probably we should make this "Zulip help center"
+            "No such article. | Zulip API documentation",
             [
                 "No such article.",
                 "Your feedback helps us make Zulip better for everyone! Please contact us",
@@ -179,8 +130,7 @@ class OpenGraphTest(ZulipTestCase):
             "* note-3\n\n"
             "Enjoy!"
         )
-        realm.description = description
-        realm.save(update_fields=["description"])
+        do_set_realm_property(realm, "description", description, acting_user=None)
 
         self.check_title_and_description(
             "/login/",
@@ -212,9 +162,7 @@ class OpenGraphTest(ZulipTestCase):
         realm.icon_source = "U"
         realm.save(update_fields=["icon_source"])
         icon_url = f"https://foo.s3.amazonaws.com/{realm.id}/realm/icon.png?version={1}"
-        with patch(
-            "zerver.lib.realm_icon.upload_backend.get_realm_icon_url", return_value=icon_url
-        ):
+        with patch("zerver.lib.realm_icon.get_uploaded_realm_icon_url", return_value=icon_url):
             response = self.client_get("/login/")
         self.assertEqual(response.status_code, 200)
 

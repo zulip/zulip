@@ -17,6 +17,7 @@ class ErrorCode(Enum):
     BAD_NARROW = auto()
     CANNOT_DEACTIVATE_LAST_USER = auto()
     MISSING_HTTP_EVENT_HEADER = auto()
+    CHANNEL_ALREADY_EXISTS = auto()
     STREAM_DOES_NOT_EXIST = auto()
     UNAUTHORIZED_PRINCIPAL = auto()
     UNSUPPORTED_WEBHOOK_EVENT_TYPE = auto()
@@ -30,7 +31,7 @@ class ErrorCode(Enum):
     INVALID_MARKDOWN_INCLUDE_STATEMENT = auto()
     REQUEST_CONFUSING_VAR = auto()
     INVALID_API_KEY = auto()
-    INVALID_ZOOM_TOKEN = auto()
+    INVALID_VIDEO_CALL_PROVIDER_TOKEN = auto()
     UNKNOWN_ZOOM_USER = auto()
     UNAUTHENTICATED_USER = auto()
     NONEXISTENT_SUBDOMAIN = auto()
@@ -59,6 +60,14 @@ class ErrorCode(Enum):
     CANNOT_ADMINISTER_CHANNEL = auto()
     REMOTE_SERVER_VERIFICATION_SECRET_NOT_PREPARED = auto()
     HOSTNAME_ALREADY_IN_USE_BOUNCER_ERROR = auto()
+    INVALID_BOUNCER_PUBLIC_KEY = auto()
+    REQUEST_EXPIRED = auto()
+    PUSH_SERVICE_NOT_CONFIGURED = auto()
+    NO_ACTIVE_PUSH_DEVICE = auto()
+    FAILED_TO_CONNECT_BOUNCER = auto()
+    INTERNAL_SERVER_ERROR_ON_BOUNCER = auto()
+    ADMIN_ACTION_REQUIRED = auto()
+    PERMISSION_DENIED = auto()
 
 
 class JsonableError(Exception):
@@ -171,6 +180,20 @@ class UnauthorizedError(JsonableError):
         return extra_headers_dict
 
 
+class ChannelExistsError(JsonableError):
+    code = ErrorCode.CHANNEL_ALREADY_EXISTS
+    http_status_code = 409
+    data_fields = ["channel_name"]
+
+    def __init__(self, channel_name: str) -> None:
+        self.channel_name = channel_name
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Channel '{channel_name}' already exists")
+
+
 class StreamDoesNotExistError(JsonableError):
     code = ErrorCode.STREAM_DOES_NOT_EXIST
     data_fields = ["stream"]
@@ -207,6 +230,19 @@ class IncompatibleParametersError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Unsupported parameter combination: {parameters}")
+
+
+class MissingDependentParameterError(JsonableError):
+    data_fields = ["required_parameter", "set_parameter"]
+
+    def __init__(self, required_parameter: str, set_parameter: str) -> None:
+        self.required_parameter = required_parameter
+        self.set_parameter = set_parameter
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("{required_parameter} is required when {set_parameter} is set.")
 
 
 class CannotDeactivateLastUserError(JsonableError):
@@ -246,7 +282,9 @@ class RateLimitedError(JsonableError):
     @staticmethod
     @override
     def msg_format() -> str:
-        return _("API usage exceeded rate limit")
+        return _(
+            "API usage exceeded rate limit; see https://zulip.com/api/http-headers#rate-limiting-response-headers"
+        )
 
     @property
     @override
@@ -275,18 +313,6 @@ class InvalidJSONError(JsonableError):
         return _("Malformed JSON")
 
 
-class OrganizationMemberRequiredError(JsonableError):
-    code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
-
-    def __init__(self) -> None:
-        pass
-
-    @staticmethod
-    @override
-    def msg_format() -> str:
-        return _("Must be an organization member")
-
-
 class OrganizationAdministratorRequiredError(JsonableError):
     code: ErrorCode = ErrorCode.UNAUTHORIZED_PRINCIPAL
 
@@ -309,6 +335,18 @@ class OrganizationOwnerRequiredError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Must be an organization owner")
+
+
+class BotRequiredError(JsonableError):
+    code: ErrorCode = ErrorCode.PERMISSION_DENIED
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Must be a bot user")
 
 
 class AuthenticationFailedError(JsonableError):
@@ -496,11 +534,6 @@ class InvalidSubdomainError(JsonableError):
         return _("Invalid subdomain")
 
 
-class ZephyrMessageAlreadySentError(Exception):
-    def __init__(self, message_id: int) -> None:
-        self.message_id = message_id
-
-
 class InvitationError(JsonableError):
     code = ErrorCode.INVITATION_FAILED
     data_fields = [
@@ -533,6 +566,46 @@ class DirectMessageInitiationError(JsonableError):
     @override
     def msg_format() -> str:
         return _("You do not have permission to initiate direct message conversations.")
+
+
+class MessagesNotAllowedInEmptyTopicError(JsonableError):
+    data_fields = ["empty_topic_display_name"]
+
+    def __init__(self, empty_topic_display_name: str) -> None:
+        self.empty_topic_display_name = empty_topic_display_name
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _(
+            "Sending messages to the {empty_topic_display_name} is not allowed in this channel."
+        )
+
+
+class TopicsNotAllowedError(JsonableError):
+    data_fields = ["empty_topic_display_name"]
+
+    def __init__(self, empty_topic_display_name: str) -> None:
+        self.empty_topic_display_name = empty_topic_display_name
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Only the {empty_topic_display_name} topic is allowed in this channel.")
+
+
+class CannotSetTopicsPolicyError(JsonableError):
+    data_fields = ["empty_topic_display_name"]
+
+    def __init__(self, empty_topic_display_name: str) -> None:
+        self.empty_topic_display_name = empty_topic_display_name
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _(
+            "To enable this configuration, all messages in this channel must be in the {empty_topic_display_name} topic. Consider renaming or deleting other topics."
+        )
 
 
 class DirectMessagePermissionError(JsonableError):
@@ -776,3 +849,60 @@ class DeliveryTimeNotInFutureError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Scheduled delivery time must be in the future.")
+
+
+class SlackImportInvalidFileError(Exception):
+    """
+    An error that is raised during the Slack import process
+    and is intended to be shown to the user.
+    """
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
+
+
+class InvalidBouncerPublicKeyError(JsonableError):
+    code = ErrorCode.INVALID_BOUNCER_PUBLIC_KEY
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Invalid bouncer_public_key")
+
+
+class RequestExpiredError(JsonableError):
+    code = ErrorCode.REQUEST_EXPIRED
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Request expired")
+
+
+class InvalidEncryptedPushRegistrationError(JsonableError):
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Invalid encrypted_push_registration")
+
+
+class PushServiceNotConfiguredError(JsonableError):
+    code = ErrorCode.PUSH_SERVICE_NOT_CONFIGURED
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Server is not configured to use push notification service.")

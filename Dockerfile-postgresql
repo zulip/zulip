@@ -4,7 +4,7 @@
 #     docker buildx create --name multiarch --use
 #
 # To build:
-#     docker buildx build --platform linux/amd64,linux/arm64 \
+#     docker buildx build --pull --platform linux/amd64,linux/arm64 \
 #       -f ./Dockerfile-postgresql -t zulip/zulip-postgresql:14 --push .
 
 # Currently the PostgreSQL images do not support automatic upgrading of

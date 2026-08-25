@@ -1,15 +1,40 @@
 # https://zulip.readthedocs.io/en/latest/subsystems/email.html#testing-in-a-real-email-client
 import configparser
 import logging
-from collections.abc import MutableSequence, Sequence
+import smtplib
+from collections.abc import Sequence
 from email.message import Message
+from typing import Any
 
+import tenacity
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail.backends.smtp import EmailBackend
-from django.core.mail.message import EmailMessage
+from django.core.mail.message import EmailAlternative, EmailMessage
 from django.template import loader
+from django.utils.timezone import now as timezone_now
 from typing_extensions import override
+
+MAX_CONNECTION_TRIES = 3
+
+# SMTPException is a subclass of OSError, so retry on connection-level
+# errors (ConnectionError, TimeoutError) and SMTPServerDisconnected
+# (dropped connection), but not on SMTP protocol errors like
+# SMTPAuthenticationError, SMTPRecipientsRefused, or SMTPDataError.
+smtp_connection_backoff = tenacity.retry(
+    wait=tenacity.wait_exponential_jitter(),
+    retry=tenacity.retry_if_exception(
+        lambda exc: (
+            isinstance(exc, OSError)
+            and (
+                not isinstance(exc, smtplib.SMTPException)
+                or isinstance(exc, smtplib.SMTPServerDisconnected)
+            )
+        )
+    ),
+    stop=tenacity.stop_after_attempt(MAX_CONNECTION_TRIES),
+    reraise=True,
+)
 
 
 def get_forward_address() -> str:
@@ -73,18 +98,19 @@ class EmailLogBackEnd(EmailBackend):
 
         for email_message in email_messages:
             assert isinstance(email_message, EmailMultiAlternatives)
-            assert isinstance(email_message.alternatives[0][0], str)
-            # Here, we replace the email addresses used in development
-            # with chat.zulip.org, so that web email providers like Gmail
+            # Here, we replace the image URLs used in development with
+            # chat.zulip.org URLs, so that web email providers like Gmail
             # will be able to fetch the illustrations used in the emails.
-            html_alternative = (
-                email_message.alternatives[0][0].replace(
+            assert isinstance(email_message.alternatives[0], EmailAlternative)
+            original_content = email_message.alternatives[0].content
+            original_mimetype = email_message.alternatives[0].mimetype
+            assert isinstance(original_content, str)
+            email_message.alternatives[0] = EmailAlternative(
+                content=original_content.replace(
                     localhost_email_images_base_url, czo_email_images_base_url
                 ),
-                email_message.alternatives[0][1],
+                mimetype=original_mimetype,
             )
-            assert isinstance(email_message.alternatives, MutableSequence)
-            email_message.alternatives[0] = html_alternative
 
             email_message.to = [get_forward_address()]
 
@@ -109,3 +135,42 @@ class EmailLogBackEnd(EmailBackend):
                 email_log_url = settings.ROOT_DOMAIN_URI + "/emails"
                 logging.info("Emails sent in development are available at %s", email_log_url)
         return num_sent
+
+
+class PersistentSMTPEmailBackend(EmailBackend):
+    @override
+    def open(self, **kwargs: Any) -> bool:
+        if super().open(**kwargs):
+            self.opened_at = timezone_now()
+        # Always return False so that Django's send_messages does not
+        # auto-close the connection after sending.
+        return False
+
+    @smtp_connection_backoff
+    def ensure_connected(self) -> None:
+        """Open the connection if needed, and validate that it is
+        still alive, reconnecting if necessary."""
+        self.open()
+        self._validate_or_reconnect()
+
+    def _validate_or_reconnect(self) -> None:
+        """Validate that the existing SMTP connection is still alive,
+        reconnecting if necessary. Called with backoff protection,
+        not from open()."""
+        status = None
+        time_elapsed = (timezone_now() - self.opened_at).total_seconds() / 60
+        if (
+            settings.EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES is None
+            or time_elapsed <= settings.EMAIL_MAX_CONNECTION_LIFETIME_IN_MINUTES
+        ):
+            # No-op to ensure that we don't return a connection that has been
+            # closed by the mail server.
+            try:
+                assert self.connection is not None
+                status = self.connection.noop()[0]
+            except Exception:
+                pass
+        if status is None or status != 250:
+            # Close and connect again.
+            super().close()
+            self.open()

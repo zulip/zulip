@@ -16,7 +16,7 @@ from zerver.actions.custom_profile_fields import try_update_realm_custom_profile
 from zerver.actions.message_send import check_send_message
 from zerver.actions.presence import do_update_user_presence
 from zerver.actions.streams import do_change_stream_folder
-from zerver.actions.user_settings import do_change_user_setting
+from zerver.actions.user_settings import do_change_avatar_fields, do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.event_schema import check_web_reload_client_event
 from zerver.lib.events import fetch_initial_state_data, post_process_state
@@ -35,7 +35,10 @@ from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot
+from zerver.tornado.django_api import EventQueueData
 from zerver.tornado.event_queue import (
+    DEFAULT_EVENT_QUEUE_TIMEOUT_SECS,
+    MOBILE_EVENT_QUEUE_TIMEOUT_SECS,
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
     get_client_info_for_message_event,
@@ -66,6 +69,19 @@ class EventsEndpointTest(ZulipTestCase):
 
         self.assertEqual(m.call_args.kwargs["narrow"], [["stream", "devel"], ["is", "mentioned"]])
 
+    def test_invalid_narrow(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        narrow = [["stream", "devel", True]]
+        payload = dict(narrow=orjson.dumps(narrow).decode())
+        result = self.api_post(hamlet, "/api/v1/register", payload)
+        self.assert_json_error(result, "narrow[0] is too long (limit: 2 items)")
+
+        narrow = [["stream"]]
+        payload = dict(narrow=orjson.dumps(narrow).decode())
+        result = self.api_post(hamlet, "/api/v1/register", payload)
+        self.assert_json_error(result, "narrow[0] is too short (minimum 2 items)")
+
     def test_events_register_endpoint(self) -> None:
         # This test is intended to get minimal coverage on the
         # events_register code paths
@@ -78,14 +94,21 @@ class EventsEndpointTest(ZulipTestCase):
             result = self.api_post(user, "/api/v1/register")
         self.assert_json_error(result, "Could not allocate event queue")
 
-        return_event_queue = "15:11"
+        return_event_queue = EventQueueData(queue_id="15:11", idle_queue_timeout_secs=600)
         return_user_events: list[dict[str, Any]] = []
 
         # We choose realm_emoji somewhat randomly--we want
         # a "boring" event type for the purpose of this test.
         event_type = "realm_emoji"
-        empty_realm_emoji_dict: dict[str, Any] = {}
-        test_event = dict(id=6, type=event_type, realm_emoji=empty_realm_emoji_dict)
+        test_realm_emoji: dict[str, Any] = {
+            "id": "1",
+            "name": "spain",
+            "source_url": "http://example.com/",
+            "still_url": None,
+            "deactivated": False,
+            "author_id": user.id,
+        }
+        test_event = dict(id=6, type=event_type, op="add", emoji=test_realm_emoji)
 
         # Test that call is made to deal with a returning soft deactivated user.
         with (
@@ -107,7 +130,7 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(result_dict["queue_id"], "15:11")
 
         # Now start simulating returning actual data
-        return_event_queue = "15:12"
+        return_event_queue.queue_id = "15:12"
         return_user_events = [test_event]
 
         with stub_event_queue_user_events(return_event_queue, return_user_events):
@@ -120,10 +143,10 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(result_dict["queue_id"], "15:12")
 
         # sanity check the data relevant to our event
-        self.assertEqual(result_dict["realm_emoji"], {})
+        self.assertEqual(result_dict["realm_emoji"], {"1": test_realm_emoji})
 
         # Now test with `fetch_event_types` not matching the event
-        return_event_queue = "15:13"
+        return_event_queue.queue_id = "15:13"
         with stub_event_queue_user_events(return_event_queue, return_user_events):
             result = self.api_post(
                 user,
@@ -159,8 +182,46 @@ class EventsEndpointTest(ZulipTestCase):
 
         # Check that the realm_emoji data is in there.
         self.assertIn("realm_emoji", result_dict)
-        self.assertEqual(result_dict["realm_emoji"], {})
+        self.assertEqual(result_dict["realm_emoji"], {"1": test_realm_emoji})
         self.assertEqual(result_dict["queue_id"], "15:13")
+
+    def test_idle_queue_timeout(self) -> None:
+        user = self.example_user("hamlet")
+
+        # Verify response includes idle_queue_timeout_secs.
+        queue_data = EventQueueData(
+            queue_id="1", idle_queue_timeout_secs=DEFAULT_EVENT_QUEUE_TIMEOUT_SECS
+        )
+        with stub_event_queue_user_events(queue_data, []):
+            result = self.api_post(user, "/api/v1/register")
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(result_dict["idle_queue_timeout_secs"], DEFAULT_EVENT_QUEUE_TIMEOUT_SECS)
+
+        # "mobile" is accepted.
+        queue_data = EventQueueData(
+            queue_id="2", idle_queue_timeout_secs=MOBILE_EVENT_QUEUE_TIMEOUT_SECS
+        )
+        with stub_event_queue_user_events(queue_data, []):
+            result = self.api_post(
+                user,
+                "/api/v1/register",
+                {"idle_queue_timeout": orjson.dumps("mobile").decode()},
+            )
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(result_dict["idle_queue_timeout_secs"], MOBILE_EVENT_QUEUE_TIMEOUT_SECS)
+
+        # Explicit integer value is accepted.
+        queue_data = EventQueueData(queue_id="3", idle_queue_timeout_secs=3600)
+        with stub_event_queue_user_events(queue_data, []):
+            result = self.api_post(user, "/api/v1/register", {"idle_queue_timeout": 3600})
+        result_dict = self.assert_json_success(result)
+        self.assertEqual(result_dict["idle_queue_timeout_secs"], 3600)
+
+        # Invalid string value is rejected.
+        result = self.api_post(
+            user, "/api/v1/register", {"idle_queue_timeout": orjson.dumps("invalid").decode()}
+        )
+        self.assert_json_error_contains(result, "idle_queue_timeout")
 
     def test_events_register_spectators(self) -> None:
         # Verify that POST /register works for spectators, but not for
@@ -328,6 +389,7 @@ class GetEventsTest(ZulipTestCase):
         email = user_profile.email
         recipient_user_profile = self.example_user("othello")
         recipient_email = recipient_user_profile.email
+        recipient = self.get_dm_group_recipient(user_profile, recipient_user_profile)
         self.login_user(user_profile)
 
         result = self.tornado_call(
@@ -403,7 +465,7 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(events[0]["local_message_id"], local_id)
         self.assertEqual(events[0]["message"]["display_recipient"][0]["is_mirror_dummy"], False)
         self.assertEqual(events[0]["message"]["display_recipient"][1]["is_mirror_dummy"], False)
-        self.assertEqual(events[0]["message"]["recipient_id"], recipient_user_profile.recipient_id)
+        self.assertEqual(events[0]["message"]["recipient_id"], recipient.id)
 
         last_event_id = events[0]["id"]
         local_id = "10.02"
@@ -436,7 +498,7 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(events[0]["type"], "message")
         self.assertEqual(events[0]["message"]["sender_email"], email)
         self.assertEqual(events[0]["local_message_id"], local_id)
-        self.assertEqual(events[0]["message"]["recipient_id"], recipient_user_profile.recipient_id)
+        self.assertEqual(events[0]["message"]["recipient_id"], recipient.id)
 
         # Test that the received message in the receiver's event queue
         # exists and does not contain a local id
@@ -457,15 +519,18 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(recipient_events[0]["message"]["sender_email"], email)
         self.assertTrue("local_message_id" not in recipient_events[0])
         # Incoming DMs show the recipient_id that outgoing DMs would.
-        self.assertEqual(recipient_events[0]["message"]["recipient_id"], user_profile.recipient_id)
+        self.assertEqual(events[0]["message"]["recipient_id"], recipient.id)
         self.assertEqual(recipient_events[1]["type"], "message")
         self.assertEqual(recipient_events[1]["message"]["sender_email"], email)
         self.assertTrue("local_message_id" not in recipient_events[1])
-        self.assertEqual(recipient_events[1]["message"]["recipient_id"], user_profile.recipient_id)
+        self.assertEqual(recipient_events[1]["message"]["recipient_id"], recipient.id)
 
     def test_get_events_narrow(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
+
+        do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
         def get_message(apply_markdown: bool, client_gravatar: bool) -> dict[str, Any]:
             result = self.tornado_call(
@@ -543,6 +608,166 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(message["display_recipient"], "Denmark")
         self.assertEqual(message["content"], "<p><strong>hello</strong></p>")
         self.assertEqual(message["avatar_url"], None)
+
+    def test_get_events_guest_narrow_unsubscribed_stream(self) -> None:
+        guest = self.example_user("polonius")
+        hamlet = self.example_user("hamlet")
+        self.login_user(guest)
+
+        stream_name = "public_events_stream"
+        self.subscribe(hamlet, stream_name)
+
+        result = self.tornado_call(
+            get_events,
+            guest,
+            dict(
+                apply_markdown=orjson.dumps(True).decode(),
+                client_gravatar=orjson.dumps(True).decode(),
+                event_types=orjson.dumps(["message"]).decode(),
+                narrow=orjson.dumps([["stream", stream_name]]).decode(),
+                user_client="website",
+                dont_block=orjson.dumps(True).decode(),
+            ),
+        )
+        self.assert_json_success(result)
+        queue_id = orjson.loads(result.content)["queue_id"]
+
+        def get_events_for_queue() -> list[dict[str, Any]]:
+            result = self.tornado_call(
+                get_events,
+                guest,
+                {
+                    "queue_id": queue_id,
+                    "user_client": "website",
+                    "last_event_id": -1,
+                    "dont_block": orjson.dumps(True).decode(),
+                },
+            )
+            self.assert_json_success(result)
+            return orjson.loads(result.content)["events"]
+
+        # A guest does not receive events for messages in a public
+        # channel they are not subscribed to, even with a narrow
+        # matching the message.
+        self.send_stream_message(hamlet, stream_name, "secret message")
+        self.assert_length(get_events_for_queue(), 0)
+
+        # Once subscribed, the guest receives message events.
+        self.subscribe(guest, stream_name)
+        self.send_stream_message(hamlet, stream_name, "public message")
+        events = get_events_for_queue()
+        self.assert_length(events, 1)
+        self.assertEqual(events[0]["type"], "message")
+        self.assertEqual(events[0]["message"]["content"], "<p>public message</p>")
+
+    def test_get_events_guest_narrow_unsubscribed_web_public_stream(self) -> None:
+        guest = self.example_user("polonius")
+        hamlet = self.example_user("hamlet")
+        self.login_user(guest)
+
+        stream_name = "web_public_events_stream"
+        self.make_stream(stream_name, guest.realm, is_web_public=True)
+        self.subscribe(hamlet, stream_name)
+
+        result = self.tornado_call(
+            get_events,
+            guest,
+            dict(
+                apply_markdown=orjson.dumps(True).decode(),
+                client_gravatar=orjson.dumps(True).decode(),
+                event_types=orjson.dumps(["message"]).decode(),
+                narrow=orjson.dumps([["stream", stream_name]]).decode(),
+                user_client="website",
+                dont_block=orjson.dumps(True).decode(),
+            ),
+        )
+        self.assert_json_success(result)
+        queue_id = orjson.loads(result.content)["queue_id"]
+
+        # A guest can read web-public channels without subscribing.
+        self.send_stream_message(hamlet, stream_name, "web-public message")
+        result = self.tornado_call(
+            get_events,
+            guest,
+            {
+                "queue_id": queue_id,
+                "user_client": "website",
+                "last_event_id": -1,
+                "dont_block": orjson.dumps(True).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        events = orjson.loads(result.content)["events"]
+        self.assert_length(events, 1)
+        self.assertEqual(events[0]["type"], "message")
+        self.assertEqual(events[0]["message"]["content"], "<p>web-public message</p>")
+
+    def test_get_events_all_public_streams_after_guest_demotion(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        self.assertFalse(hamlet.is_guest)
+        self.login_user(hamlet)
+
+        stream_name = "public_events_stream"
+        self.subscribe(iago, stream_name)
+
+        result = self.tornado_call(
+            get_events,
+            hamlet,
+            dict(
+                apply_markdown=orjson.dumps(True).decode(),
+                client_gravatar=orjson.dumps(True).decode(),
+                event_types=orjson.dumps(["message"]).decode(),
+                all_public_streams=orjson.dumps(True).decode(),
+                user_client="website",
+                dont_block=orjson.dumps(True).decode(),
+            ),
+        )
+        self.assert_json_success(result)
+        queue_id = orjson.loads(result.content)["queue_id"]
+
+        last_event_id = -1
+
+        def get_new_events() -> list[dict[str, Any]]:
+            nonlocal last_event_id
+            result = self.tornado_call(
+                get_events,
+                hamlet,
+                {
+                    "queue_id": queue_id,
+                    "user_client": "website",
+                    "last_event_id": last_event_id,
+                    "dont_block": orjson.dumps(True).decode(),
+                },
+            )
+            self.assert_json_success(result)
+            events = orjson.loads(result.content)["events"]
+            if events:
+                last_event_id = events[-1]["id"]
+            return events
+
+        # As a member with an `all_public_streams` queue, hamlet
+        # receives messages for public channels he is not subscribed
+        # to.
+        self.send_stream_message(iago, stream_name, "member message")
+        events = get_new_events()
+        self.assert_length(events, 1)
+        self.assertEqual(events[0]["message"]["content"], "<p>member message</p>")
+
+        # After hamlet's role is changed to guest, the same queue no
+        # longer receives messages for public channels he is not
+        # subscribed to.
+        do_change_user_role(hamlet, UserProfile.ROLE_GUEST, acting_user=None, notify=False)
+        self.send_stream_message(iago, stream_name, "secret message")
+        self.assert_length(get_new_events(), 0)
+
+        # Once subscribed, the guest receives message events again.
+        self.subscribe(hamlet, stream_name)
+        self.send_stream_message(iago, stream_name, "subscribed message")
+        events = get_new_events()
+        self.assert_length(events, 1)
+        self.assertEqual(events[0]["type"], "message")
+        self.assertEqual(events[0]["message"]["content"], "<p>subscribed message</p>")
 
     def test_bogus_queue_id(self) -> None:
         user = self.example_user("hamlet")
@@ -661,7 +886,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
     # Admin users have access to all bots in the realm_bots field
     def test_realm_bots_admin(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.set_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertTrue(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
         self.assertGreater(len(result["realm_bots"]), 2)
@@ -730,12 +955,16 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
     def test_user_avatar_url_field_optional(self) -> None:
         hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
         users = [
             self.example_user("iago"),
             self.example_user("cordelia"),
             self.example_user("ZOE"),
             self.example_user("othello"),
         ]
+
+        do_change_avatar_fields(hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        do_change_avatar_fields(aaron, UserProfile.AVATAR_FROM_JDENTICON, acting_user=None)
 
         for user in users:
             user.long_term_idle = True
@@ -779,35 +1008,11 @@ class FetchInitialStateDataTest(ZulipTestCase):
         for user_dict in raw_users.values():
             if user_dict["user_id"] in gravatar_users_id:
                 self.assertIsNone(user_dict["avatar_url"])
-            else:
+            elif user_dict["user_id"] in long_term_idle_users_ids:
                 self.assertFalse("avatar_url" in user_dict)
-
-    def test_user_settings_based_on_client_capabilities(self) -> None:
-        hamlet = self.example_user("hamlet")
-        result = fetch_initial_state_data(
-            user_profile=hamlet,
-            realm=hamlet.realm,
-            user_settings_object=True,
-        )
-        self.assertIn("user_settings", result)
-        for prop in UserProfile.property_types:
-            self.assertNotIn(prop, result)
-            self.assertIn(prop, result["user_settings"])
-
-        result = fetch_initial_state_data(
-            user_profile=hamlet,
-            realm=hamlet.realm,
-            user_settings_object=False,
-        )
-        self.assertIn("user_settings", result)
-        for prop in UserProfile.property_types:
-            if prop in {
-                **UserProfile.display_settings_legacy,
-                **UserProfile.notification_settings_legacy,
-            }:
-                # Only legacy settings are included in the top level.
-                self.assertIn(prop, result)
-            self.assertIn(prop, result["user_settings"])
+            else:
+                # avatar source is Jdenticon
+                self.assertIsNotNone(user_dict["avatar_url"])
 
     def test_realm_linkifiers_based_on_client_capabilities(self) -> None:
         user = self.example_user("iago")
@@ -894,7 +1099,6 @@ class ClientDescriptorsTest(ZulipTestCase):
             queue_timeout=0,
             realm_id=realm.id,
             user_profile_id=hamlet.id,
-            user_recipient_id=hamlet.recipient_id,
         )
 
         client = allocate_client_descriptor(queue_data)
@@ -931,6 +1135,127 @@ class ClientDescriptorsTest(ZulipTestCase):
         dct = client_info[client.event_queue.id]
         self.assertEqual(dct["is_sender"], True)
 
+    def test_get_client_info_for_narrow_guest(self) -> None:
+        polonius = self.example_user("polonius")
+        realm = polonius.realm
+
+        queue_data = dict(
+            all_public_streams=False,
+            apply_markdown=True,
+            client_gravatar=True,
+            client_type_name="website",
+            event_types=["message"],
+            last_connection_time=time.time(),
+            queue_timeout=0,
+            realm_id=realm.id,
+            user_profile_id=polonius.id,
+            narrow=[["stream", "whatever"]],
+        )
+
+        client = allocate_client_descriptor(queue_data)
+
+        # A guest's client in realm_clients_all_streams is skipped,
+        # identified via `realm_guest_user_ids`.
+        message_event = dict(
+            realm_id=realm.id,
+            stream_name="whatever",
+            realm_guest_user_ids=[polonius.id],
+        )
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[],
+        )
+        self.assert_length(client_info, 0)
+
+        # As a subscriber, the guest user instead receives the event
+        # via `users`, with their user-specific flags.
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[dict(id=polonius.id, flags=["mentioned"])],
+        )
+        self.assert_length(client_info, 1)
+        dct = client_info[client.event_queue.id]
+        self.assertEqual(dct["client"].user_profile_id, polonius.id)
+        self.assertEqual(dct["flags"], ["mentioned"])
+
+    def test_get_client_info_for_all_public_streams_guest(self) -> None:
+        polonius = self.example_user("polonius")
+        realm = polonius.realm
+
+        queue_data = dict(
+            all_public_streams=True,
+            apply_markdown=True,
+            client_gravatar=True,
+            client_type_name="website",
+            event_types=["message"],
+            last_connection_time=time.time(),
+            queue_timeout=0,
+            realm_id=realm.id,
+            user_profile_id=polonius.id,
+        )
+
+        client = allocate_client_descriptor(queue_data)
+
+        # A guest's client in realm_clients_all_streams is skipped,
+        # identified via `realm_guest_user_ids`.
+        message_event = dict(
+            realm_id=realm.id,
+            stream_name="whatever",
+            realm_guest_user_ids=[polonius.id],
+        )
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[],
+        )
+        self.assert_length(client_info, 0)
+
+        # As a subscriber, the guest user instead receives the event
+        # via `users`, with their user-specific flags.
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[dict(id=polonius.id, flags=["mentioned"])],
+        )
+        self.assert_length(client_info, 1)
+        dct = client_info[client.event_queue.id]
+        self.assertEqual(dct["client"].user_profile_id, polonius.id)
+        self.assertEqual(dct["flags"], ["mentioned"])
+
+    def test_get_client_info_for_all_public_streams_guest_web_public(self) -> None:
+        polonius = self.example_user("polonius")
+        realm = polonius.realm
+
+        queue_data = dict(
+            all_public_streams=True,
+            apply_markdown=True,
+            client_gravatar=True,
+            client_type_name="website",
+            event_types=["message"],
+            last_connection_time=time.time(),
+            queue_timeout=0,
+            realm_id=realm.id,
+            user_profile_id=polonius.id,
+        )
+
+        client = allocate_client_descriptor(queue_data)
+
+        # For a web-public channel, a guest's client in
+        # realm_clients_all_streams is not skipped, since guests can
+        # read web-public channels without subscribing.
+        message_event = dict(
+            realm_id=realm.id,
+            stream_name="whatever",
+            is_web_public=True,
+            realm_guest_user_ids=[polonius.id],
+        )
+        client_info = get_client_info_for_message_event(
+            message_event,
+            users=[],
+        )
+        self.assert_length(client_info, 1)
+        dct = client_info[client.event_queue.id]
+        self.assertEqual(dct["client"].user_profile_id, polonius.id)
+        self.assertEqual(dct["flags"], [])
+
     def test_get_client_info_for_normal_users(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
@@ -949,7 +1274,6 @@ class ClientDescriptorsTest(ZulipTestCase):
                 queue_timeout=0,
                 realm_id=realm.id,
                 user_profile_id=hamlet.id,
-                user_recipient_id=hamlet.recipient_id,
             )
 
             client = allocate_client_descriptor(queue_data)
@@ -997,12 +1321,10 @@ class ClientDescriptorsTest(ZulipTestCase):
                 self,
                 *,
                 user_profile_id: int,
-                user_recipient_id: int | None,
                 apply_markdown: bool,
                 client_gravatar: bool,
             ) -> None:
                 self.user_profile_id = user_profile_id
-                self.user_recipient_id = user_recipient_id
                 self.apply_markdown = apply_markdown
                 self.client_gravatar = client_gravatar
                 self.client_type_name = "whatever"
@@ -1021,28 +1343,24 @@ class ClientDescriptorsTest(ZulipTestCase):
 
         client1 = MockClient(
             user_profile_id=hamlet.id,
-            user_recipient_id=hamlet.recipient_id,
             apply_markdown=True,
             client_gravatar=False,
         )
 
         client2 = MockClient(
             user_profile_id=hamlet.id,
-            user_recipient_id=hamlet.recipient_id,
             apply_markdown=False,
             client_gravatar=False,
         )
 
         client3 = MockClient(
             user_profile_id=hamlet.id,
-            user_recipient_id=hamlet.recipient_id,
             apply_markdown=True,
             client_gravatar=True,
         )
 
         client4 = MockClient(
             user_profile_id=hamlet.id,
-            user_recipient_id=hamlet.recipient_id,
             apply_markdown=False,
             client_gravatar=True,
         )
@@ -1080,7 +1398,6 @@ class ClientDescriptorsTest(ZulipTestCase):
                 # NOTE: Some of these fields are clutter, but some
                 #       will be useful when we let clients specify
                 #       that they can compute their own gravatar URLs.
-                sender_recipient_id=sender.recipient_id,
                 sender_email=sender.email,
                 sender_delivery_email=sender.delivery_email,
                 sender_realm_id=sender.realm_id,
@@ -1211,7 +1528,6 @@ class ReloadWebClientsTest(ZulipTestCase):
             queue_timeout=0,
             realm_id=realm.id,
             user_profile_id=hamlet.id,
-            user_recipient_id=hamlet.recipient_id,
         )
         client = allocate_client_descriptor(queue_data)
 
@@ -1241,7 +1557,7 @@ class FetchQueriesTest(ZulipTestCase):
         self.login_user(user)
 
         with (
-            self.assert_database_query_count(46),
+            self.assert_database_query_count(48),
             mock.patch("zerver.lib.events.always_want") as want_mock,
         ):
             fetch_initial_state_data(user, realm=user.realm)
@@ -1252,7 +1568,11 @@ class FetchQueriesTest(ZulipTestCase):
             custom_profile_fields=1,
             default_streams=1,
             default_stream_groups=1,
+            device=1,
             drafts=1,
+            giphy=0,
+            klipy=0,
+            tenor=0,
             message=1,
             muted_topics=1,
             muted_users=1,
@@ -1277,6 +1597,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_user_groups=2,
             realm_user_settings_defaults=1,
             recent_private_conversations=1,
+            reminders=1,
             saved_snippets=1,
             scheduled_messages=1,
             starred_messages=1,
@@ -1287,14 +1608,11 @@ class FetchQueriesTest(ZulipTestCase):
             # 3 of the 9 queries here are shared with other event types
             # as mentioned above.
             subscription=9,
-            update_display_settings=0,
-            update_global_notifications=0,
             update_message_flags=7,
             user_settings=0,
             user_status=1,
             user_topic=1,
             video_calls=0,
-            giphy=0,
         )
 
         wanted_event_types = {item[0][0] for item in want_mock.call_args_list}
@@ -1303,7 +1621,7 @@ class FetchQueriesTest(ZulipTestCase):
 
         for event_type in sorted(wanted_event_types):
             count = expected_counts[event_type]
-            with self.assert_database_query_count(count):
+            with self.subTest(event_type=event_type), self.assert_database_query_count(count):
                 if event_type == "update_message_flags":
                     event_types = ["update_message_flags", "message"]
                 else:

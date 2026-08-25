@@ -1,4 +1,5 @@
 import sys
+from email.message import EmailMessage
 from mimetypes import add_type
 from mimetypes import guess_extension as guess_extension
 from mimetypes import guess_type as guess_type
@@ -9,6 +10,7 @@ EXTRA_MIME_TYPES = [
     ("audio/wav", ".wav"),
     ("audio/webm", ".weba"),
     ("image/apng", ".apng"),
+    ("video/quicktime", ".mov"),
 ]
 
 if sys.version_info < (3, 11):  # nocoverage
@@ -22,14 +24,20 @@ for mime_type, extension in EXTRA_MIME_TYPES:
     add_type(mime_type, extension)
 
 
-INLINE_MIME_TYPES = [
-    "application/pdf",
+AUDIO_INLINE_MIME_TYPES = [
     "audio/aac",
     "audio/flac",
     "audio/mp4",
     "audio/mpeg",
+    "audio/vnd.wave",
     "audio/wav",
     "audio/webm",
+    "audio/x-wav",
+]
+
+INLINE_MIME_TYPES = [
+    *AUDIO_INLINE_MIME_TYPES,
+    "application/pdf",
     "image/apng",
     "image/avif",
     "image/gif",
@@ -38,8 +46,15 @@ INLINE_MIME_TYPES = [
     "image/webp",
     "text/plain",
     "video/mp4",
+    "video/quicktime",
     "video/webm",
     # To avoid cross-site scripting attacks, DO NOT add types such
     # as application/xhtml+xml, application/x-shockwave-flash,
     # image/svg+xml, text/html, or text/xml.
 ]
+
+
+def bare_content_type(content_type: str) -> str:
+    fake_msg = EmailMessage()
+    fake_msg["content-type"] = content_type
+    return fake_msg.get_content_type()

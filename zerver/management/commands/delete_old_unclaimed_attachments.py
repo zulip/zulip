@@ -76,27 +76,25 @@ class Command(ZulipBaseCommand):
     def clean_attachment_upload_backend(self, dry_run: bool = True) -> None:
         cutoff = timezone_now() - timedelta(minutes=5)
         print(f"Removing extra files in storage black-end older than {cutoff.isoformat()}")
-        to_delete = []
-        for file_path, modified_at in all_message_attachments(include_thumbnails=True):
-            if file_path.startswith("thumbnail/"):
-                path_id = split_thumbnail_path(file_path)[0]
-            else:
-                path_id = file_path
-            if Attachment.objects.filter(path_id=path_id).exists():
-                continue
-            if ArchivedAttachment.objects.filter(path_id=path_id).exists():
-                continue
-            if modified_at > cutoff:
-                # We upload files to the backend storage and _then_
-                # make the database entry, so must give some leeway to
-                # recently-added files which do not have DB rows.
-                continue
-            print(f"* {file_path} modified at {modified_at}")
-            if dry_run:
-                continue
-            to_delete.append(file_path)
-            if len(to_delete) > 1000:
-                delete_message_attachments(to_delete)
-                to_delete = []
-        if not dry_run and len(to_delete) > 0:
-            delete_message_attachments(to_delete)
+        with delete_message_attachments(raw_paths=True) as delete_one:
+            for file_path, modified_at in all_message_attachments(include_thumbnails=True):
+                if file_path.startswith("thumbnail/"):
+                    path_id = split_thumbnail_path(file_path)[0]
+                else:
+                    path_id = file_path
+                if Attachment.objects.filter(path_id=path_id).exists():
+                    continue
+                if ArchivedAttachment.objects.filter(path_id=path_id).exists():
+                    continue
+                if modified_at > cutoff:
+                    # We upload files to the backend storage and _then_
+                    # make the database entry, so must give some leeway to
+                    # recently-added files which do not have DB rows.
+                    continue
+                print(f"* {file_path} modified at {modified_at}")
+                if dry_run:
+                    continue
+
+                # This operates on raw paths due to the raw_paths=True
+                # on the contextmanager above.
+                delete_one(file_path)

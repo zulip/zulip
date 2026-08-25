@@ -43,9 +43,11 @@
   },
   "created": 1000000000,
   "customer": null,
+  "customer_account": null,
   "id": "billing_page_permissions--Customer.retrieve.1.json",
   "livemode": false,
   "metadata": {},
   "object": "payment_method",
+  "shared_payment_granted_token": null,
   "type": "card"
 }

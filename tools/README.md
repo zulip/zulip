@@ -4,4 +4,4 @@ Note that tools that are also useful in production belong in
 `scripts/` or should be Django management commands.
 
 For more details, see
-https://zulip.readthedocs.io/en/latest/overview/directory-structure.html.
+https://zulip.readthedocs.io/en/latest/subsystems/directory-structure.html.

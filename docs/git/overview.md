@@ -19,7 +19,7 @@ with these details in mind:
   pull requests from becoming out of date with the main line of development,
   you should rebase your feature branch prior to submitting a pull request, and
   as needed thereafter. If you're unfamiliar with how to rebase a pull request,
-  [read this excellent guide][github-rebase-pr].
+  [read this excellent guide][edx-howto-rebase-pr].
 
   We use this strategy in order to avoid the extra commits that appear
   when another branch is merged, that clutter the commit history (it's
@@ -57,7 +57,7 @@ Git workflow, or if you'd like a Git refresher.
 
 [github-help-draft-pr]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests#draft-pull-requests
 [gitbook-rebase]: https://git-scm.com/book/en/v2/Git-Branching-Rebasing
-[github-rebase-pr]: https://github.com/openedx/edx-platform/wiki/How-to-Rebase-a-Pull-Request
+[edx-howto-rebase-pr]: https://web.archive.org/web/20240204225038/https://github.com/openedx/edx-platform/wiki/How-to-Rebase-a-Pull-Request
 [github-zulip]: https://github.com/zulip/
 [github-zulip-zulip]: https://github.com/zulip/zulip/
 [continuous-integration]: ../testing/continuous-integration.md

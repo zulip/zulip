@@ -1,17 +1,11 @@
-{% extends "zerver/portico.html" %}
-{% set entrypoint = "landing-page" %}
+{% extends "zerver/marketing_page.html" %}
 
 {% set PAGE_TITLE = "Use cases and customer stories | Zulip" %}
 
 {% set PAGE_DESCRIPTION = "Learn how our customers are using Zulip." %}
 
-{% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-{% endblock %}
 
-{% block portico_content %}
-
-{% include 'zerver/landing_nav.html' %}
+{% block marketing_content %}
 
 <div class="portico-landing plans why-page solutions-page for-companies">
     <div class="hero bg-companies">

@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_user_topic_ui_row from "../templates/user_topic_ui_row.hbs";

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euxo pipefail
 
-version="3.1.8"
-sha256=5a38743492ba21f708df447b1ca0ac07ceff9715d9604aa2303f6dda795d096e
+version="4.0.6"
+sha256=d0048944763c18f91bc67e043aafa64c2c53f6246547c9474311efbc05ccfe66
 
 tmpdir="$(mktemp -d)"
 trap 'rm -r "$tmpdir"' EXIT
@@ -13,5 +13,5 @@ sha256sum -c <<<"$sha256 $tarball"
 tar -xzf "$tarball"
 cd "pgroonga-$version"
 
-make -j "$(nproc)" HAVE_MSGPACK=1
-make install
+meson setup build .
+meson install -C build

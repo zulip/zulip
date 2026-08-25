@@ -71,6 +71,7 @@ class UserMessageNotificationsData:
         stream_wildcard_mention_in_followed_topic_user_ids: set[int],
         muted_sender_user_ids: set[int],
         all_bot_user_ids: set[int],
+        push_device_registered_user_ids: set[int] | None,
     ) -> "UserMessageNotificationsData":
         if user_id in all_bot_user_ids:
             # Don't send any notifications to bots
@@ -126,29 +127,55 @@ class UserMessageNotificationsData:
             and "stream_wildcard_mentioned" in flags
         )
 
-        dm_push_notify = user_id not in dm_mention_push_disabled_user_ids and private_message
+        # TODO/compatibility: `push_device_registered_user_ids` is None when
+        # `process_message_event`/`process_message_update_event` handles events
+        # prior to the introduction of `push_device_registered_user_ids` field in the events.
+        # We hardcode `push_device_registered` to True as the check is meant for newer events.
+        #
+        # Remove the `if` block when one can no longer directly upgrade from 11.x to main.
+        if push_device_registered_user_ids is None:
+            push_device_registered = True  # nocoverage
+        else:
+            push_device_registered = user_id in push_device_registered_user_ids
+
+        dm_push_notify = (
+            push_device_registered
+            and user_id not in dm_mention_push_disabled_user_ids
+            and private_message
+        )
         mention_push_notify = (
-            user_id not in dm_mention_push_disabled_user_ids and "mentioned" in flags
+            push_device_registered
+            and user_id not in dm_mention_push_disabled_user_ids
+            and "mentioned" in flags
         )
         topic_wildcard_mention_push_notify = (
-            user_id in topic_wildcard_mention_user_ids
+            push_device_registered
+            and user_id in topic_wildcard_mention_user_ids
             and user_id not in dm_mention_push_disabled_user_ids
             and "topic_wildcard_mentioned" in flags
         )
         stream_wildcard_mention_push_notify = (
-            user_id in stream_wildcard_mention_user_ids
+            push_device_registered
+            and user_id in stream_wildcard_mention_user_ids
             and user_id not in dm_mention_push_disabled_user_ids
             and "stream_wildcard_mentioned" in flags
         )
         topic_wildcard_mention_in_followed_topic_push_notify = (
-            user_id in topic_wildcard_mention_in_followed_topic_user_ids
+            push_device_registered
+            and user_id in topic_wildcard_mention_in_followed_topic_user_ids
             and user_id not in dm_mention_push_disabled_user_ids
             and "topic_wildcard_mentioned" in flags
         )
         stream_wildcard_mention_in_followed_topic_push_notify = (
-            user_id in stream_wildcard_mention_in_followed_topic_user_ids
+            push_device_registered
+            and user_id in stream_wildcard_mention_in_followed_topic_user_ids
             and user_id not in dm_mention_push_disabled_user_ids
             and "stream_wildcard_mentioned" in flags
+        )
+        online_push_enabled = push_device_registered and user_id in online_push_user_ids
+        stream_push_notify = push_device_registered and user_id in stream_push_user_ids
+        followed_topic_push_notify = (
+            push_device_registered and user_id in followed_topic_push_user_ids
         )
         return cls(
             user_id=user_id,
@@ -160,10 +187,10 @@ class UserMessageNotificationsData:
             mention_push_notify=mention_push_notify,
             topic_wildcard_mention_push_notify=topic_wildcard_mention_push_notify,
             stream_wildcard_mention_push_notify=stream_wildcard_mention_push_notify,
-            online_push_enabled=user_id in online_push_user_ids,
-            stream_push_notify=user_id in stream_push_user_ids,
+            online_push_enabled=online_push_enabled,
+            stream_push_notify=stream_push_notify,
             stream_email_notify=user_id in stream_email_user_ids,
-            followed_topic_push_notify=user_id in followed_topic_push_user_ids,
+            followed_topic_push_notify=followed_topic_push_notify,
             followed_topic_email_notify=user_id in followed_topic_email_user_ids,
             topic_wildcard_mention_in_followed_topic_push_notify=topic_wildcard_mention_in_followed_topic_push_notify,
             topic_wildcard_mention_in_followed_topic_email_notify=topic_wildcard_mention_in_followed_topic_email_notify,
@@ -177,7 +204,7 @@ class UserMessageNotificationsData:
     # (or edited a message) triggering the event for which we need to
     # determine notifiability.
     def trivially_should_not_notify(self, acting_user_id: int) -> bool:
-        """Common check for reasons not to trigger a notification that arex
+        """Common check for reasons not to trigger a notification that are
         independent of users' notification settings and thus don't
         depend on what type of notification (email/push) it is.
         """
@@ -267,15 +294,23 @@ def user_allows_notifications_in_StreamTopic(
     visibility_policy: int,
     stream_specific_setting: bool | None,
     global_setting: bool,
+    channel_specific_setting_overrides_mute: bool,
 ) -> bool:
     """
     Captures the hierarchy of notification settings, where visibility policy is considered first,
     followed by stream-specific settings, and the global-setting in the UserProfile is the fallback.
+
+    When `channel_specific_setting_overrides_mute` is True (currently used for
+    `wildcard_mentions_notify` setting), `stream_specific_setting` overrides
+    channel mute, but not topic mute.
     """
-    if stream_is_muted and visibility_policy != UserTopic.VisibilityPolicy.UNMUTED:
+    # Muted topics always suppress notifications, regardless of other settings.
+    if visibility_policy == UserTopic.VisibilityPolicy.MUTED:
         return False
 
-    if visibility_policy == UserTopic.VisibilityPolicy.MUTED:
+    if stream_is_muted and visibility_policy != UserTopic.VisibilityPolicy.UNMUTED:
+        if channel_specific_setting_overrides_mute and stream_specific_setting is not None:
+            return stream_specific_setting
         return False
 
     if stream_specific_setting is not None:
@@ -351,9 +386,18 @@ def get_mentioned_user_group(
 
     # We now want to calculate the name of the smallest user group mentioned among
     # all these messages.
+    # Deduplicate IDs while preserving message order.
+    unique_user_group_ids = list(dict.fromkeys(mentioned_user_group_ids))
+    user_groups_by_id = {
+        user_group.id: user_group
+        for user_group in NamedUserGroup.objects.filter(
+            id__in=unique_user_group_ids, realm_for_sharding=user_profile.realm
+        )
+    }
+
     smallest_user_group_size = math.inf
-    for user_group_id in mentioned_user_group_ids:
-        current_user_group = NamedUserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
+    for user_group_id in unique_user_group_ids:
+        current_user_group = user_groups_by_id[user_group_id]
         current_mentioned_user_group = MentionedUserGroup(
             id=current_user_group.id,
             name=current_user_group.name,

@@ -22,6 +22,7 @@ from scripts.lib.zulip_tools import (
     overwrite_symlink,
     release_deployment_lock,
     su_to_zulip,
+    upgrade_script_arg_parser,
 )
 
 config_file = get_config_file()
@@ -38,7 +39,7 @@ os.umask(0o22)
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip-from-git: %(message)s", level=logging.INFO)
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument("refname", help="Git reference, e.g. a branch, tag, or commit ID.")
 git_ref = parser.add_mutually_exclusive_group()
 git_ref.add_argument(
@@ -49,6 +50,14 @@ git_ref.add_argument(
     action="store_true",
     help="Provided branch name has been pushed directly to /srv/zulip.git already",
 )
+
+# Any unknown options are passed through verbatim to upgrade-zulip-stage-2
+# and on to upgrade-zulip-stage-3. To make those passthrough options
+# discoverable, when the user runs --help we show a combined help that
+# also documents the stage-3 options.
+if {"-h", "--help"} & set(sys.argv[1:]):
+    argparse.ArgumentParser(parents=[parser, upgrade_script_arg_parser()]).parse_args(["--help"])
+
 args, extra_options = parser.parse_known_args()
 
 refname = args.refname
@@ -148,28 +157,34 @@ try:
         )
 
     # Generate the deployment directory via git worktree from our local repository.
-    try:
-        fullref = f"refs/tags/{refname}"
-        commit_hash = subprocess.check_output(
-            ["git", "rev-parse", "--verify", fullref],
+    try_refs = [
+        f"refs/tags/{refname}",
+        f"refs/heads/{refname}" if args.local_ref else f"refs/remotes/origin/{refname}",
+    ]
+    for ref in try_refs:
+        result = subprocess.run(
+            ["git", "rev-parse", "--verify", ref],
             preexec_fn=su_to_zulip,
             text=True,
+            stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
-        ).strip()
-    except subprocess.CalledProcessError as e:
-        if e.returncode == 128:
-            # Try in the origin namespace, or local heads if --local-ref
-            if args.local_ref:
-                fullref = f"refs/heads/{refname}"
-            else:
-                fullref = f"refs/remotes/origin/{refname}"
-            commit_hash = subprocess.check_output(
-                ["git", "rev-parse", "--verify", fullref],
-                preexec_fn=su_to_zulip,
-                text=True,
-                stderr=subprocess.DEVNULL,
-            ).strip()
+            check=False,
+        )
+        if result.returncode == 0:
+            fullref = ref
+            commit_hash = result.stdout.strip()
+            break
+        elif result.returncode != 128:
+            result.check_returncode()
+    else:
+        logging.error(
+            "Failed to resolve %s as a tag or %s branch name!",
+            refname,
+            "local" if args.local_ref else "remote",
+        )
+        sys.exit(1)
     refname = fullref
+
     subprocess.check_call(
         ["git", "worktree", "add", "--detach", deploy_path, refname],
         stdout=subprocess.DEVNULL,

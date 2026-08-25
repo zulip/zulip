@@ -8,7 +8,7 @@ to how we communicate on GitHub issues and pull requests, but other pages in
 this section go into greater detail about expectations that are specific to pull
 requests.
 
-We are deeply committed to maintaining a respectful, collaborative atmosphere in
+We are deeply committed to maintaining a respectful, collaborative atmosphere
 across all interactions in the Zulip community. To get a feel for what that
 means to us, please review the [code of conduct](../code-of-conduct.md) for our
 community.

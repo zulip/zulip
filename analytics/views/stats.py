@@ -1,7 +1,7 @@
 import logging
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from typing import Annotated, Any, Optional, TypeAlias, TypeVar, cast
+from typing import Annotated, Any, Optional, TypeAlias, TypeVar
 
 from django.conf import settings
 from django.db.models import QuerySet
@@ -105,7 +105,7 @@ def stats(request: HttpRequest) -> HttpResponse:
     realm = request.user.realm
     if request.user.is_guest:
         # TODO: Make @zulip_login_required pass the UserProfile so we
-        # can use @require_member_or_admin
+        # can use @require_human_non_guest_user
         raise JsonableError(_("Not allowed for guest users"))
     return render_stats(request, "", realm, analytics_ready=is_analytics_ready(realm))
 
@@ -182,7 +182,7 @@ def get_chart_data_for_stream(
     start: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
     end: Annotated[datetime | None, BeforeValidator(to_utc_datetime)] = None,
 ) -> HttpResponse:
-    stream, ignored_sub = access_stream_by_id(
+    stream, _sub = access_stream_by_id(
         user_profile,
         stream_id,
         require_content_access=False,
@@ -449,21 +449,16 @@ def do_get_chart_data(
         # table.
         assert server is not None
         assert aggregate_table is RemoteInstallationCount or aggregate_table is RemoteRealmCount
-        aggregate_table_remote = cast(
-            type[RemoteInstallationCount] | type[RemoteRealmCount], aggregate_table
-        )  # https://stackoverflow.com/questions/68540528/mypy-assertions-on-the-types-of-types
-        if not aggregate_table_remote.objects.filter(server=server).exists():
+        if not aggregate_table.objects.filter(server=server).exists():
             raise JsonableError(
                 _("No analytics data available. Please contact your server administrator.")
             )
         if start is None:
-            first = (
-                aggregate_table_remote.objects.filter(server=server).order_by("remote_id").first()
-            )
+            first = aggregate_table.objects.filter(server=server).order_by("remote_id").first()
             assert first is not None
             start = first.end_time
         if end is None:
-            last = aggregate_table_remote.objects.filter(server=server).order_by("remote_id").last()
+            last = aggregate_table.objects.filter(server=server).order_by("remote_id").last()
             assert last is not None
             end = last.end_time
     else:
@@ -599,13 +594,13 @@ def client_label_map(name: str) -> str:
     if name == "ZulipTerminal":
         return "Terminal app"
     if name == "ZulipAndroid":
-        return "Old Android app"
+        return "Ancient Android app"
     if name == "ZulipiOS":
-        return "Old iOS app"
+        return "Ancient iOS app"
     if name == "ZulipMobile":
-        return "Mobile app (React Native)"
+        return "Old mobile app (React Native)"
     if name in ["ZulipFlutter", "ZulipMobile/flutter"]:
-        return "Mobile app beta (Flutter)"
+        return "Mobile app (Flutter)"
     if name in ["ZulipPython", "API: Python"]:
         return "Python API"
     if name.startswith("Zulip") and name.endswith("Webhook"):
@@ -619,9 +614,9 @@ def rewrite_client_arrays(value_arrays: dict[str, list[int]]) -> dict[str, list[
         mapped_label = client_label_map(label)
         if mapped_label in mapped_arrays:
             for i in range(len(array)):
-                mapped_arrays[mapped_label][i] += value_arrays[label][i]
+                mapped_arrays[mapped_label][i] += array[i]
         else:
-            mapped_arrays[mapped_label] = [value_arrays[label][i] for i in range(len(array))]
+            mapped_arrays[mapped_label] = array.copy()
     return mapped_arrays
 
 

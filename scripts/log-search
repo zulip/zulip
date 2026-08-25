@@ -7,6 +7,7 @@ import logging
 import os
 import re
 import signal
+import statistics
 import sys
 from datetime import date, datetime, timedelta, timezone
 from enum import Enum, auto
@@ -83,7 +84,7 @@ def parser() -> argparse.ArgumentParser:
     filtering.add_argument(
         "--all-lines",
         "-L",
-        help="Show all matching lines; equivalent to -suemtpr",
+        help="Show all matching lines; equivalent to -suaemtpr",
         action="store_true",
     )
     filtering.add_argument("--static", "-s", help="Include static file paths", action="store_true")
@@ -110,10 +111,16 @@ def parser() -> argparse.ArgumentParser:
         "-C",
         help="Only include requests whose client/user-agent contains this string",
     )
+    filtering.add_argument(
+        "--extra",
+        "-X",
+        help="Only include requests whose logline includes this in [extra] flags",
+    )
 
     output = parser.add_argument_group("Output")
     output.add_argument("--full-line", "-F", help="Show full matching line", action="store_true")
     output.add_argument("--timeline", "-T", help="Show start, end, and gaps", action="store_true")
+    output.add_argument("--stats", "-S", help="Compute and show statistics", action="store_true")
     return parser
 
 
@@ -165,9 +172,9 @@ PYTHON_LOG_LINE_RE = re.compile(
       (?P<method> [A-Z]+ ) \s+
       (?P<code> \d+ ) \s+
       (?P<duration> \S+ ) \s+ # This can be "217ms" or "1.7s"
-      ( \( [^)]+ \) \s+ )*
+      ( \( (?P<perf> [^)]+ ) \) \s+ )*
       (?P<full_path> (?P<path> /\S* ) ) \s+
-      .*   # Multiple extra things can go here
+      (?P<extra> .* )   # Multiple extra things can go here
       \(
         (?P<user>
            ( (?P<user_id> \d+ ) | unauth )
@@ -187,6 +194,7 @@ class FilterType(Enum):
     HOSTNAME = auto()
     CLIENT_IP = auto()
     USER_ID = auto()
+    AUTHED = auto()
     METHOD = auto()
     PATH = auto()
     STATUS = auto()
@@ -207,6 +215,10 @@ def main() -> None:
 
     use_color = sys.stdout.isatty()
     lowered_terms = [term.lower() for term in substr_terms]
+    if args.stats:
+        durations: list[int] | None = []
+    else:
+        durations = None
     try:
         for logfile_name in reversed(logfile_names):
             with maybe_gzip(logfile_name) as logfile:
@@ -232,6 +244,7 @@ def main() -> None:
                             args,
                             filter_types=filter_types,
                             use_color=use_color,
+                            durations=durations,
                         )
     except BrokenPipeError:
         # Python flushes standard streams on exit; redirect remaining output
@@ -241,6 +254,19 @@ def main() -> None:
         sys.exit(1)
     except KeyboardInterrupt:
         sys.exit(signal.SIGINT + 128)
+
+    if durations is not None:
+        # Prepend [0] to make the percentiles 1-indexed, instead of 0-indexed
+        percentiles = [0, *statistics.quantiles(durations, n=100)]
+        print()
+        print(f"Total requests: {len(durations)}")
+        print(f"Min duration:   {min(durations):>5}ms")
+        print(f"p50 duration:   {int(percentiles[50]):>5}ms")
+        print(f"p75 duration:   {int(percentiles[75]):>5}ms")
+        print(f"p90 duration:   {int(percentiles[90]):>5}ms")
+        print(f"p95 duration:   {int(percentiles[95]):>5}ms")
+        print(f"p99 duration:   {int(percentiles[99]):>5}ms")
+        print(f"Max duration:   {max(durations):>5}ms")
 
 
 def parse_logfile_names(args: argparse.Namespace) -> list[str]:
@@ -361,6 +387,17 @@ def parse_filters(
             else:
                 filter_func = lambda m, t=filter_term: f"{m['date']} {m['time']}".startswith(t)
             filter_type = FilterType.DATETIME
+        elif filter_term in ["authed", "unauthed"]:
+            if args.nginx:
+                raise parser().error("Cannot parse user-ids with nginx logs; try without --nginx")
+            filter_type = FilterType.USER_ID
+            if filter_term == "authed":
+                filter_func = lambda m, t=None: m["user_id"] is not None and m["user_id"] != ""
+                filter_term = None
+                filter_types.add(FilterType.AUTHED)
+            else:
+                filter_func = lambda m, t=None: m["user_id"] is None
+                filter_term = "(unauth@"
         elif re.match(r"[a-z0-9]([a-z0-9-]*[a-z0-9])?$", filter_term.lower()):
             filter_term = filter_term.lower()
             if args.nginx:
@@ -388,11 +425,18 @@ def parse_filters(
             parser().error("Supplied the same time of value more than once, which cannot match!")
         filter_types.add(filter_type)
         filter_funcs.append(filter_func)
-        filter_terms.append(filter_term)
+        if filter_term is not None:
+            filter_terms.append(filter_term)
 
     if args.client:
         filter_funcs.append(lambda m, t=args.client: t in m["user_agent"])
         filter_terms.append(args.client)
+
+    if args.extra:
+        if args.nginx:
+            raise parser().error("nginx logs do not contain [extra] data; try without --nginx")
+        filter_funcs.append(lambda m, t=args.extra: t in m["extra"])
+        filter_terms.append(args.extra)
 
     return (filter_types, filter_funcs, filter_terms)
 
@@ -437,8 +481,16 @@ def print_line(
     args: argparse.Namespace,
     filter_types: set[FilterType],
     use_color: bool,
+    durations: list[int] | None = None,
 ) -> None:
     global last_match_end
+
+    if match["duration"].endswith("ms"):
+        duration_ms = int(match["duration"].removesuffix("ms"))
+    else:
+        duration_ms = int(float(match["duration"].removesuffix("s")) * 1000)
+    if durations is not None:
+        durations.append(duration_ms)
 
     if args.full_line:
         print(match.group(0))
@@ -518,10 +570,18 @@ def print_line(
             print(logline_start.time().isoformat(timespec="milliseconds") + " (start)")
         last_match_end = logline_end
 
+    if args.nginx:
+        show_user = False
+    elif FilterType.AUTHED in filter_types:
+        show_user = True
+    elif FilterType.USER_ID in filter_types:
+        show_user = False
+    else:
+        show_user = True
     parts = [
         ts,
         f"{duration_ms:>5}ms",
-        f"{user_id:7}" if not args.nginx and FilterType.USER_ID not in filter_types else None,
+        f"{user_id:7}" if show_user else None,
         f"{match['ip']:39}" if FilterType.CLIENT_IP not in filter_types else None,
         indicator + match["code"],
         f"{match['method']:6}",

@@ -16,6 +16,15 @@ The `zulip-puppet-apply` command will display the configuration
 changes it will make and prompt for you to confirm you'd like to make
 those changes, before executing them (if you approve).
 
+:::{important}
+
+If you are using [Docker](docker.md), see
+{doc}`docker:how-to/compose-settings` and
+{doc}`docker:reference/environment-vars` for configuring
+`zulip.conf` via `CONFIG_*` environment variables.
+
+:::
+
 ### Truthy values
 
 When a setting refers to "set to true" or "set to false", the values
@@ -104,13 +113,43 @@ SSL/TLS termination.
 Set to the port number if you [prefer to listen on a port other than
 443](deployment.md#using-an-alternate-port).
 
+#### `nginx_server_name`
+
+Sets the [`server_name`][nginx_server_name] directive on Zulip's
+nginx `server` blocks; by default it is unset, so they match any
+hostname. Set it if you run other software alongside Zulip whose
+nginx configuration would otherwise claim requests meant for Zulip.
+List every hostname Zulip is served on, separated by spaces,
+including those on its TLS certificate; otherwise automatic
+certificate renewal will fail.
+
+If Zulip is served on more than one hostname, or on a hostname plus
+several subdomains, list them all; nginx's `server_name` supports a
+trailing wildcard for matching subdomains. For example, to serve
+Zulip on both `example.com` and any subdomain of it:
+
+```ini
+[application_server]
+nginx_server_name = example.com *.example.com
+```
+
+[nginx_server_name]: https://nginx.org/en/docs/http/server_names.html
+
+#### `nginx_worker_processes`
+
+Adjusts the [`worker_processes`][nginx_worker_processes] setting in
+the nginx server. This defaults to `auto`, which nginx treats as the
+number of available CPU cores.
+
+[nginx_worker_processes]: https://nginx.org/en/docs/ngx_core_module.html#worker_processes
+
 #### `nginx_worker_connections`
 
 Adjust the [`worker_connections`][nginx_worker_connections] setting in
 the nginx server. This defaults to 10000; increasing it allows more
-concurrent connections per CPU core, at the cost of more memory
-consumed by NGINX. This number, times the number of CPU cores, should
-be more than twice the concurrent number of users.
+concurrent connections per worker process, at the cost of more memory
+consumed by nginx. This number, times the number of worker processes
+(above), should be more than twice the concurrent number of users.
 
 [nginx_worker_connections]: http://nginx.org/en/docs/ngx_core_module.html#worker_connections
 
@@ -124,10 +163,23 @@ memory (currently 3.5GiB) to run a single-server Zulip installation in
 the multiprocess mode.
 
 Set explicitly to true or false to override the automatic
-calculation. This override is useful both Docker systems (where the
-above algorithm might see the host's memory, not the container's)
-and/or when using remote servers for postgres, memcached, redis, and
-RabbitMQ.
+calculation. This override is useful for Docker systems, where the
+above algorithm will see the host's memory size, not the container's,
+unless a [memory limit is set][docker-memory-limit], as well as when
+using remote servers for PostgreSQL, memcached, Redis, and RabbitMQ.
+
+[docker-memory-limit]: https://docs.docker.com/reference/compose-file/deploy/#memory
+
+#### `dedicated_soft_reactivation_queue`
+
+When a long-term-idle user returns, Zulip backfills the message-history
+rows that were skipped while they were idle; this "soft reactivation"
+can take many seconds. By default it runs in the shared `deferred_work`
+queue, alongside jobs such as data exports that can take minutes. Set
+this to true to process soft reactivations in a dedicated queue (and, in
+multiprocess mode, a dedicated worker process), so they aren't delayed
+behind such jobs. This costs an additional worker process, so it is most
+useful on large servers; smaller servers should leave it disabled.
 
 #### `rolling_restart`
 
@@ -221,6 +273,20 @@ the message to fail to send.
 
 Set to the port number for the KaTeX server; defaults to port 9700.
 
+#### `custom_ca_path`
+
+If you use a custom certificate authority for your authentication
+provider, you will need to provide the certificate of the signing CA
+so Zulip can successfully make requests to it.
+
+Set this to the fully-qualified path to the `.crt` file containing the
+PEM-encoded CA certificate to trust; we suggest storing this in
+`/etc/zulip/`.
+
+Setting this path also means that Zulip will use the operating
+system's CA certificate store, and not its built-in one. There may be
+minor differences in trusted root CA sets.
+
 ### `[postgresql]`
 
 #### `effective_io_concurrency`
@@ -236,7 +302,10 @@ setting](https://www.postgresql.org/docs/current/runtime-config-connection.html#
 #### `random_page_cost`
 
 Override PostgreSQL's [`random_page_cost`
-setting](https://www.postgresql.org/docs/current/runtime-config-query.html#GUC-RANDOM-PAGE-COST)
+setting](https://www.postgresql.org/docs/current/runtime-config-query.html#GUC-RANDOM-PAGE-COST).
+Zulip defaults this value to 1.1, which is an appropriate value for
+SSDs; if your server uses spinning disks, you should set this back to
+the upstream default of 4.0.
 
 #### `replication_primary`
 
@@ -304,7 +373,7 @@ value. Also supported is "[S3 Reduced Redundancy][s3-rr]", by setting
 
 What compression method to use when storing backups; defaults to `lz4`, which is
 fast but does not compress particularly well. Other options are `lzma`, `zstd`,
-and `brotl`; `lzma` provides the best (and slowest) compression, while `zstd`
+and `brotli`; `lzma` provides the best (and slowest) compression, while `zstd`
 and `brotli` are middling compromises.
 
 #### `missing_dictionaries`
@@ -361,6 +430,48 @@ Set to a true value to enable object size reporting in memcached. This incurs a
 small overhead for every store or delete operation, but allows a
 memcached_exporter to report precise item size distribution.
 
+### `[tornado_sharding]`
+
+Keys in this section are used to configure how many Tornado instances
+are started, and which users are mapped to which of those instances.
+Each Tornado instance listens on a separate port, starting at 9800 and
+proceeding upwards from there. A single Tornado instance can usually
+handle 1000-1500 concurrent active users, depending on message sending
+volume.
+
+Individual organizations may be assigned to ports, either via their
+subdomain names, or their fully-qualified hostname (for [organizations
+using `REALM_HOSTS`](multiple-organizations.md#other-hostnames)):
+
+```ini
+[tornado_sharding]
+9800 = realm-a realm-b
+9801 = realm-c
+9802 = realm-host.example.net
+```
+
+Organizations can also be assigned to ports via regex over their
+fully-qualified hostname:
+
+```ini
+[tornado_sharding]
+9800_regex = ^realm-(a|b)\.example\.com$
+9801_regex = ^other(-option)?\.example.com$
+```
+
+Extremely large organizations can be distributed across multiple
+Tornado shards by joining the ports in the key with `_`:
+
+```ini
+[tornado_sharding]
+9800 = small-realm
+9801_9802 = very-large-realm
+```
+
+After running `scripts/zulip-puppet-apply`, a separate step to run
+`scripts/refresh-sharding-and-restart` is required for any sharding
+changes to take effect.
+
 ### `[loadbalancer]`
 
 #### `ips`
@@ -381,10 +492,13 @@ not_ send any requests to Zulip which came in unencrypted.
 
 ### `[http_proxy]`
 
+See "[Customizing the outgoing HTTP
+proxy](deployment.md#customizing-the-outgoing-http-proxy)" for general
+instructions on the outgoing proxy.
+
 #### `host`
 
-The hostname or IP address of an [outgoing HTTP `CONNECT`
-proxy](deployment.md#customizing-the-outgoing-http-proxy). Defaults to
+The hostname or IP address of an outgoing HTTP `CONNECT`. Defaults to
 `localhost` if unspecified.
 
 #### `port`
@@ -403,6 +517,12 @@ Because Camo includes logic to deny access to private subnets, routing
 its requests through Smokescreen is generally not necessary. Set to
 true or false to override the default, which uses the proxy only if
 it is not the default of Smokescreen on a local host.
+
+#### `allow_addresses`, `allow_ranges`, `deny_addresses`, `deny_ranges`
+
+Comma-separated lists of IP addresses or CIDR range rules. All
+private IP addresses (e.g., 127.0.0.0/8, 192.168.0.0/16) are denied by
+default; allow rules override deny rules.
 
 ### `[sentry]`
 

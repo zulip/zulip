@@ -3,7 +3,7 @@
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_rest_api_view
-from zerver.lib.email_notifications import convert_html_to_markdown
+from zerver.lib.markdown.from_html import convert_html_to_markdown
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_string

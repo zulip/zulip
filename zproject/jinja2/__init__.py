@@ -25,6 +25,11 @@ def environment(**options: Any) -> Environment:
         # default_page_params is provided here for responses where
         # zulip_default_context is not run, including the 404.html and
         # 500.html error pages.
+        #
+        # Note that we can't use detect the user's language using
+        # get_language here, since this is only run once during
+        # process initialization. This is functionally OK, in that
+        # these error pages are translated on the server.
         default_page_params=DEFAULT_PAGE_PARAMS,
         static=staticfiles_storage.url,
         url=reverse,

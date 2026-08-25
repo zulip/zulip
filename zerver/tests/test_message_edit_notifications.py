@@ -3,27 +3,33 @@ from typing import Any
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.push_notifications import get_apns_badge_count, get_apns_badge_count_future
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
-from zerver.models import Subscription, UserPresence, UserTopic
+from zerver.models import Device, Subscription, UserPresence, UserTopic
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream
 from zerver.tornado.event_queue import maybe_enqueue_notifications
 
 
 class EditMessageSideEffectsTest(ZulipTestCase):
-    def _assert_update_does_not_notify_anybody(self, message_id: int, content: str) -> None:
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        cordelia = self.example_user("cordelia")
+        self.register_push_device(cordelia.id)
+
+    def _assert_update_does_not_notify_anybody(self, message_id: int, **request: str | int) -> None:
         url = "/json/messages/" + str(message_id)
 
-        request = dict(
-            content=content,
-        )
-
-        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m:
+        with (
+            mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m,
+            self.captureOnCommitCallbacks(execute=True),
+        ):
             result = self.client_patch(url, request)
 
         self.assert_json_success(result)
@@ -75,7 +81,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         return message_id
 
     def _get_queued_data_for_message_update(
-        self, message_id: int, content: str, expect_short_circuit: bool = False
+        self, *, message_id: int, expect_short_circuit: bool = False, **request: str
     ) -> dict[str, Any]:
         """
         This function updates a message with a post to
@@ -95,10 +101,6 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         queuing the final messages.
         """
         url = "/json/messages/" + str(message_id)
-
-        request = dict(
-            content=content,
-        )
 
         with (
             mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m,
@@ -222,6 +224,37 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         original_content = "hello @**Cordelia, Lear's daughter**"
         updated_content = "re-mention @**Cordelia, Lear's daughter**"
         self._send_and_update_message(original_content, updated_content, expect_short_circuit=True)
+
+    def test_no_push_device_registered(self) -> None:
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+
+        # We're interested to test the push notification behaviour when
+        # the user has no push device registered. Disable email notification.
+        do_change_user_setting(
+            cordelia, "enable_offline_email_notifications", False, acting_user=None
+        )
+        self.assertTrue(cordelia.enable_offline_push_notifications)
+        Device.objects.filter(push_token_id__isnull=False).delete()
+
+        original_content = "no mention"
+        updated_content = "now we mention @**Cordelia, Lear's daughter**"
+        notification_message_data = self._send_and_update_message(original_content, updated_content)
+
+        message_id = notification_message_data["message_id"]
+        info = notification_message_data["info"]
+
+        expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
+            user_id=cordelia.id,
+            acting_user_id=hamlet.id,
+            message_id=message_id,
+            mention_email_notify=False,
+            mention_push_notify=False,
+            already_notified={},
+        )
+
+        self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
+        self.assert_length(info["queue_messages"], 0)
 
     def _turn_on_stream_push_for_cordelia(self) -> None:
         """
@@ -632,6 +665,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self, mock_push_notifications: mock.MagicMock
     ) -> None:
         mentioned_user = self.example_user("iago")
+        self.register_push_device(mentioned_user.id)
         self.assertEqual(get_apns_badge_count(mentioned_user), 0)
         self.assertEqual(get_apns_badge_count_future(mentioned_user), 0)
 
@@ -677,6 +711,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         mentioned_user = self.example_user("iago")
         mentioned_user.enable_stream_push_notifications = True
         mentioned_user.save()
+        self.register_push_device(mentioned_user.id)
 
         self.assertEqual(get_apns_badge_count(mentioned_user), 0)
         self.assertEqual(get_apns_badge_count_future(mentioned_user), 0)
@@ -692,3 +727,58 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         self.assertEqual(get_apns_badge_count(mentioned_user), 0)
         self.assertEqual(get_apns_badge_count_future(mentioned_user), 1)
+
+    def _send_notifiable_message_and_login_editor(self) -> int:
+        message_id = self._login_and_send_original_stream_message(
+            content="hello @**Cordelia, Lear's daughter**",
+        )
+
+        iago = self.example_user("iago")
+        self.subscribe(iago, "Scotland")
+        self.login_user(iago)
+        return message_id
+
+    # The next three tests cover notifications for topic and channel
+    # edits. It seems obvious that such edits cannot notify anyone,
+    # but historically we had such bugs - see #39888.
+    def test_topic_edit_does_not_notify_anybody(self) -> None:
+        message_id = self._send_notifiable_message_and_login_editor()
+
+        self._assert_update_does_not_notify_anybody(
+            message_id=message_id,
+            topic="new topic",
+        )
+
+    def test_channel_edit_does_not_notify_anybody(self) -> None:
+        message_id = self._send_notifiable_message_and_login_editor()
+
+        self._assert_update_does_not_notify_anybody(
+            message_id=message_id,
+            stream_id=self.get_stream_id("Denmark"),
+        )
+
+    def test_content_edit_that_also_moves_topic_notifies(self) -> None:
+        message_id = self._login_and_send_original_stream_message(content="no mention")
+
+        info = self._get_queued_data_for_message_update(
+            message_id=message_id,
+            content="now we mention @**Cordelia, Lear's daughter**",
+            topic="new topic",
+        )
+
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
+            user_id=cordelia.id,
+            acting_user_id=hamlet.id,
+            message_id=message_id,
+            mention_email_notify=True,
+            mention_push_notify=True,
+            already_notified={},
+        )
+        self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
+
+        queue_names = [queue_message["queue_name"] for queue_message in info["queue_messages"]]
+        self.assertEqual(
+            queue_names, ["missedmessage_mobile_notifications", "missedmessage_emails"]
+        )

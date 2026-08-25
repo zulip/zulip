@@ -11,6 +11,7 @@ import orjson
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpRequest, HttpResponse
+from django.test import RequestFactory
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -118,8 +119,7 @@ class DecoratorTestCase(ZulipTestCase):
         self.assertEqual(parse_client(get_req_with_client), ("test_client_2", None))
 
     def test_unparsable_user_agent(self) -> None:
-        request = HttpRequest()
-        request.POST["param"] = "test"
+        request = RequestFactory().post("/", {"param": "test"})
         request.META["HTTP_USER_AGENT"] = "mocked should fail"
         with (
             mock.patch("zerver.middleware.parse_client", side_effect=JsonableError("message")) as m,
@@ -423,18 +423,16 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         request._body = b"{}"
         request.content_type = "text/plain"
 
-        with mock.patch(
-            "zerver.decorator.webhook_unsupported_events_logger.exception"
-        ) as mock_exception:
+        with self.assertLogs("zulip.zerver.webhooks.unsupported") as unsupported_log:
             exception_msg = "The 'test_event' event isn't currently supported by the ClientName webhook; ignoring"
             with self.assertRaisesRegex(UnsupportedWebhookEventTypeError, exception_msg):
                 my_webhook_raises_exception(request)
 
-        mock_exception.assert_called_once()
-        self.assertIsInstance(mock_exception.call_args.args[0], UnsupportedWebhookEventTypeError)
-        self.assertEqual(mock_exception.call_args.args[0].event_type, "test_event")
-        self.assertEqual(mock_exception.call_args.args[0].msg, exception_msg)
-        self.assertEqual(mock_exception.call_args.kwargs, {"extra": {"request": request}})
+        self.assert_length(unsupported_log.records, 1)
+        assert isinstance(unsupported_log.records[0].msg, UnsupportedWebhookEventTypeError)
+        self.assertEqual(unsupported_log.records[0].msg.event_type, "test_event")
+        self.assertEqual(unsupported_log.records[0].msg.msg, exception_msg)
+        self.assertEqual(unsupported_log.records[0].request, request)  # type: ignore[attr-defined] # added via extra
 
     def test_authenticated_rest_api_view_with_non_webhook_view(self) -> None:
         @authenticated_rest_api_view()
@@ -499,7 +497,7 @@ class RateLimitTestCase(ZulipTestCase):
         expect_rate_limit: bool,
         check_web_view: bool = False,
     ) -> None:
-        META = {"REMOTE_ADDR": remote_addr, "PATH_INFO": "test"}
+        META = {"REMOTE_ADDR": remote_addr, "PATH_INFO": "test", "HTTP_USER_AGENT": client_name}
 
         request = HostRequestMock(host="zulip.testserver", client_name=client_name, meta_data=META)
         view_func = self.ratelimited_web_view if check_web_view else self.ratelimited_json_view
@@ -608,7 +606,7 @@ class DeactivatedRealmTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(result, "Not logged in", status_code=401)
@@ -625,7 +623,7 @@ class DeactivatedRealmTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(
@@ -638,7 +636,7 @@ class DeactivatedRealmTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(
@@ -677,7 +675,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         api_key = user_profile.api_key
         url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
-        data = self.webhook_fixture_data("jira", "created_v2")
+        data = self.webhook_fixture_data("jira", "issue_created")
         result = self.client_post(url, data, content_type="application/json")
         self.assert_json_error_contains(
             result, "This organization has been deactivated", status_code=401
@@ -764,7 +762,7 @@ class InactiveUserTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(result, "Not logged in", status_code=401)
@@ -779,7 +777,7 @@ class InactiveUserTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(result, "Account is deactivated", status_code=401)
@@ -790,7 +788,7 @@ class InactiveUserTest(ZulipTestCase):
             {
                 "type": "private",
                 "content": "Test message",
-                "to": self.example_email("othello"),
+                "to": orjson.dumps([self.example_email("othello")]).decode(),
             },
         )
         self.assert_json_error_contains(result, "Account is deactivated", status_code=401)
@@ -879,7 +877,7 @@ class InactiveUserTest(ZulipTestCase):
 
         api_key = user_profile.api_key
         url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
-        data = self.webhook_fixture_data("jira", "created_v2")
+        data = self.webhook_fixture_data("jira", "issue_created")
         result = self.client_post(url, data, content_type="application/json")
         self.assert_json_error_contains(result, "Account is deactivated", status_code=401)
 
@@ -1244,8 +1242,8 @@ class TestAuthenticatedJsonViewDecorator(ZulipTestCase):
         )
 
     def _do_test(self, user_email: str) -> "TestHttpResponse":
-        data = {"password": initial_password(user_email)}
-        return self.client_post(r"/accounts/webathena_kerberos_login/", data)
+        data = {"status_text": "working"}
+        return self.client_post(r"/json/users/me/status", data)
 
 
 class TestPublicJsonViewDecorator(ZulipTestCase):

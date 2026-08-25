@@ -13,6 +13,16 @@ PostgreSQL][upgrade-postgresql] supported by their version of Zulip.
 
 ## Separate PostgreSQL database
 
+:::{important}
+
+If you are using [Docker](docker.md), see
+{doc}`docker:how-to/compose-existing-services` for using an external
+PostgreSQL with Docker Compose, or
+{doc}`docker:how-to/helm-existing-services` for the Helm chart's
+`externalPostgresql` configuration.
+
+:::
+
 It is possible to run Zulip against a PostgreSQL database which is not on the
 primary application server. There are two possible flavors of this -- using a
 managed PostgreSQL instance from a cloud provider, or separating the PostgreSQL
@@ -23,43 +33,49 @@ server onto a separate (but still Zulip-managed) server for scaling purposes.
 You can use a database-as-a-service like Amazon RDS for the Zulip database. The
 experience is slightly degraded, in that most providers don't include useful
 dictionary files in their installations, and don't provide a way to provide them
-yourself, resulting in a degraded [full-text search][fts] experience around
-issues dictionary files are relevant (e.g., stemming).
+yourself. [Full-text search][fts] will be less useful, due to the inferior
+stemming rules that the built-in dictionaries provide.
 
 [fts]: ../subsystems/full-text-search.md
+
+#### Step 1: Choose database name and username
+
+Zulip defaults to a database user named `zulip` and a database named `zulip`.
+It does support alternate values for those -- for instance, if required by
+convention of your central database server.
 
 #### Step 1: Set up Zulip
 
 Follow the [standard install instructions](install.md), with modified `install`
-arguments:
+arguments -- providing an updated `--puppet-classes`, as well as the database
+and user names, and the version of the remote PostgreSQL server.
 
 ```bash
 ./zulip-server-*/scripts/setup/install --certbot \
     --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME \
     --puppet-classes=zulip::profile::standalone_nodb,zulip::process_fts_updates \
-    --postgresql-missing-dictionaries
+    --postgresql-database-name=zulip \
+    --postgresql-database-user=zulip \
+    --postgresql-version=YOUR_SERVERS_POSTGRESQL_VERSION
 ```
 
-#### Step 2: Create the PostgreSQL database
+#### Step 3: Create the PostgreSQL database
 
 Access an administrative `psql` shell on your PostgreSQL database, and
-run the commands in `scripts/setup/create-db.sql` to:
+run the commands in `scripts/setup/create-db.sql`. This will:
 
 - Create a database called `zulip` with `C.UTF-8` collation.
 - Create a user called `zulip` with full rights on that database.
-- Log in with the `zulip` user to create a schema called `zulip` in the `zulip`
-  database. You might have to grant `create` privileges first for the `zulip`
-  user to do this.
 
-If you cannot run that SQL directly, you should perform the equivalent actions
-in the service's web UI.
+If you cannot run that SQL directly, or need to use different database
+or usernames, you should perform the equivalent actions.
 
 Depending on how authentication works for your PostgreSQL installation, you may
 also need to set a password for the Zulip user, generate a client certificate,
 or similar; consult the documentation for your database provider for the
 available options.
 
-#### Step 3: Configure Zulip to use the PostgreSQL database
+#### Step 4: Configure Zulip to use the PostgreSQL database
 
 In `/etc/zulip/settings.py` on your Zulip server, configure the
 following settings with details for how to connect to your PostgreSQL
@@ -77,14 +93,6 @@ follows:
 
 ```ini
 postgres_password = abcd1234
-```
-
-Set the remote server's PostgreSQL version in `/etc/zulip/zulip.conf`:
-
-```ini
-[postgresql]
-# Set this to match the version running on your remote PostgreSQL server
-version = 17
 ```
 
 Now complete the installation by running the following commands.
@@ -154,7 +162,7 @@ Set the remote server's PostgreSQL version in `/etc/zulip/zulip.conf`:
 ```ini
 [postgresql]
 # Set this to match the version running on your remote PostgreSQL server
-version = 17
+version = 18
 ```
 
 Now complete the installation by running the following commands.

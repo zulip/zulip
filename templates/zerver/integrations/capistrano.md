@@ -20,8 +20,8 @@ Get Zulip notifications for your Capistrano deploys!
           desc "Post a message to Zulip after deploy"
           task :humbug do
             run_locally "echo 'I just deployed to #{stage}! :tada:' | zulip-send \
-            --user capistrano-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
-            --site={{ api_url }} \
+            --user capistrano-bot@{{ display_host }} --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5 \
+            --site={{ zulip_url }} \
             --stream commits --subject deployments || true"
           end
         end

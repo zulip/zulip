@@ -5,6 +5,7 @@
 maxdepth: 3
 ---
 
+directory-structure
 dependencies
 settings
 html-css
@@ -21,6 +22,7 @@ performance
 realms
 management-commands
 schema-migrations
+database-concurrency
 hashchange-system
 emoji
 onboarding-steps
@@ -31,10 +33,7 @@ client
 logging
 typing-indicators
 django-upgrades
-release-checklist
-api-release-checklist
 input-pills
-presence
 unread_messages
 billing
 widgets

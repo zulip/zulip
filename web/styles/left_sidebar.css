@@ -5,6 +5,7 @@
     font-size: inherit;
     font-weight: var(--font-weight-sidebar-heading);
     letter-spacing: var(--letter-spacing-sidebar-heading);
+    line-height: 20px;
     /* Override heading margin from Bootstrap. */
     margin: 0;
     /* Show an ellipsis on a heading when
@@ -12,6 +13,28 @@
        or controls in the row. */
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#left-sidebar .input-element-wrapper:not(.left-sidebar-search-section),
+#user-profile-modal .stream-list-container .input-element-wrapper,
+#user-profile-modal .group-list-container .input-element-wrapper {
+    /* We normalize this based on Firefox's 31px-tall input,
+       raising Chrome's (28px) and Safari's (30px) to all
+       match, so that `top:` and other offset values are
+       identical relative to input elements. This value
+       is taken up by the grid-template definition in
+       inputs.css. We don't do this on the sidebar search, though,
+       so that it matches the height of the filter at the top of the
+       right sidebar. Normalizing the height isn't essential here,
+       as there are no sticky headers offset from the filter input. */
+    --input-element-row-height: 1.9375em;
+
+    .input-element {
+        /* And to keep the visual space of the input identical,
+           we stretch to the height of the grid row above. */
+        align-self: stretch;
+    }
 }
 
 #left-sidebar .unread_count {
@@ -23,6 +46,20 @@
     cursor: pointer;
 }
 
+.visibility-policy-icon {
+    display: flex;
+    align-items: center;
+
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: 1px;
+    }
+}
+
 #left-sidebar-navigation-list .filter-icon i {
     color: var(--color-left-sidebar-navigation-icon);
 }
@@ -32,22 +69,50 @@
     margin-right: var(--left-sidebar-right-margin);
 }
 
-#streams_inline_icon,
-.streams_filter_icon {
-    color: var(--color-left-sidebar-heads-up-icon);
+.add-stream-icon-container {
+    grid-area: add-channel;
+    display: grid;
+    margin: 2px;
     border-radius: 3px;
+    color: var(--color-sidebar-action);
+
+    /* The section-header variant is an <a>, so without this rule the
+       generic `a:focus` rule in zulip.css would shift the icon to the
+       interactive link color when focused. Re-state the default color
+       here so it stays consistent with the <span>/<div> sibling
+       buttons. */
+    &:focus,
+    &:focus-visible {
+        color: var(--color-sidebar-action);
+    }
 
     &:hover {
-        color: var(--color-left-sidebar-heads-up-icon-hover);
-        background-color: var(
-            --background-color-left-sidebar-heads-up-icon-hover
-        );
+        color: var(--color-sidebar-action-hover);
+        background-color: var(--color-background-sidebar-action-hover);
         cursor: pointer;
     }
-}
 
-.streams_filter_icon.web_public {
-    margin-right: 10px;
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+        /* `!important` overrides the `.dark-theme:root
+           a:not(:active):focus` rule in dark_theme.css, which would
+           otherwise set this anchor's focus outline to grey. */
+        outline-color: var(--color-outline-focus) !important;
+    }
+
+    .add_stream_icon {
+        /* We display as flex to center the icon while
+           keeping the entire highlighted area clickable. */
+        display: flex;
+        place-items: center center;
+
+        &::before {
+            /* To horizontally center the icon within the
+               flex, though, we need this margin adjustment. */
+            margin: 0 auto;
+        }
+    }
 }
 
 .masked_unread_count {
@@ -61,6 +126,40 @@
     width: var(--left-sidebar-single-digit-unread-width);
 }
 
+#left-sidebar-navigation-list .selected-home-view {
+    &.hide-unread-messages-count {
+        .masked_unread_count {
+            display: flex;
+            grid-area: markers-and-unreads;
+            /* Adding margin-right aligns the .masked_unread_count  */
+            /* with the rest of the masked unread counts. */
+            margin-right: var(--left-sidebar-unread-offset);
+            justify-self: end;
+            visibility: visible;
+        }
+
+        .unread_count {
+            visibility: hidden;
+        }
+        /* When message summary count is 0, we dont want to show unread_count or masked_unread_count. */
+        .unread_count.hide + .masked_unread_count {
+            visibility: hidden;
+        }
+
+        /* Suppress the unread-count dot and show
+           the unread count on hover. */
+        &:hover {
+            .masked_unread_count {
+                visibility: hidden;
+            }
+
+            .unread_count:not(:empty) {
+                visibility: visible;
+            }
+        }
+    }
+}
+
 #stream_filters {
     overflow: visible;
     margin-bottom: 5px;
@@ -68,7 +167,7 @@
     font-weight: normal;
 
     .topic_search_section {
-        margin: 3px 0 3px var(--left-sidebar-toggle-width-offset);
+        margin: 3px 0;
     }
 
     & li {
@@ -85,13 +184,30 @@
         }
     }
 
-    .stream-with-count.hide_unread_counts {
+    .stream-with-count.hide_unread_counts,
+    .stream-list-subsection-header.hide_unread_counts,
+    .show-inactive-or-muted-channels.hide_unread_counts {
         .masked_unread_count {
             display: flex;
         }
 
         .unread_count {
             display: none;
+        }
+
+        /* When count is 0, we dont want to show unread_count or masked_unread_count. */
+        .unread_count.hide + .masked_unread_count {
+            display: none;
+        }
+
+        &:hover {
+            .masked_unread_count {
+                display: none;
+            }
+
+            .unread_count:not(.hide) {
+                display: inline;
+            }
         }
     }
 
@@ -108,7 +224,8 @@
     }
 
     .stream-expanded {
-        .channel-new-topic-button {
+        .channel-new-topic-button,
+        .channel-search-topics-button {
             display: flex;
         }
 
@@ -128,20 +245,6 @@
         }
     }
 
-    .has-unmuted-unreads.hide_unread_counts {
-        .masked_unread_count {
-            display: none;
-        }
-
-        .unread_count {
-            display: inline;
-        }
-    }
-
-    .inactive_stream:not(.active-filter) {
-        opacity: 0.5;
-    }
-
     .toggle_stream_mute {
         margin-right: 3px;
         opacity: 0.5;
@@ -152,26 +255,55 @@
     }
 }
 
-.left-sidebar-navigation-area {
-    & li a {
-        &:hover {
-            text-decoration: none;
-        }
+.left-sidebar-navigation-icon-container,
+.left-sidebar-navigation-label-container {
+    &:hover {
+        text-decoration: none;
     }
 }
 
-#left_sidebar_scroll_container {
-    outline: none;
-    overflow: hidden auto;
-    position: relative;
-    z-index: 0;
-    width: 100%;
+.direct-message-section-bottom-divider-container {
+    display: block;
+    margin-right: var(--left-sidebar-right-margin);
+    padding: var(--left-sidebar-direct-messages-bottom-divider-padding) 0;
+    position: sticky;
+    top: var(--line-height-sidebar-row-prominent);
+    background: var(--color-background);
+    z-index: 3;
+}
 
-    .direct-messages-container {
-        margin-left: 0;
+.direct-message-section-bottom-divider {
+    opacity: 1 !important; /* override .dark-theme:root hr */
+    border-color: var(--color-left-sidebar-direct-messages-bottom-divider);
+    border-width: 0.5px;
+    margin: 0;
+}
+
+#left-sidebar-modal-content #direct-messages-modal,
+#left-sidebar-modal-content #more-topics-modal {
+    display: grid;
+    grid-template:
+        "section-header" minmax(0, max-content)
+        "conversation-list" minmax(0, 1fr) / minmax(0, 1fr);
+    max-height: 100%;
+}
+
+#left-sidebar-modal-content #direct-messages-modal {
+    #direct-messages-modal-section-header,
+    .dm-list {
+        margin-right: var(--left-sidebar-right-margin);
+    }
+
+    .dm-list {
+        margin-bottom: var(--left-sidebar-bottom-scrolling-buffer);
+    }
+
+    &.no-display {
+        display: none;
     }
 }
 
+#direct-messages-modal-section-header,
 #direct-messages-section-header {
     grid-template-columns:
         0 var(--left-sidebar-header-icon-toggle-width) 0 minmax(0, 1fr)
@@ -179,20 +311,27 @@
             --left-sidebar-vdots-width
         )
         0;
-    grid-template-rows: var(--line-height-sidebar-row-prominent);
     cursor: pointer;
     white-space: nowrap;
-    border-radius: 4px;
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    transition: box-shadow 150ms ease-out;
 
-    /* Prevent hover styles set on other rows when zoomed in. */
-    &:not(.zoom-in):hover {
-        background-color: var(--color-background-hover-narrow-filter);
-        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+    /* The active direct messages section has a different background color */
+    &:not(.active-direct-messages-section) {
+        background-color: var(--color-background);
+    }
 
-        .left-sidebar-title,
-        .sidebar-heading-icon {
-            opacity: var(--opacity-sidebar-heading-hover);
-        }
+    &.sidebar-header-drop-shadow {
+        box-shadow: var(--box-shadow-sidebar-sticky-header-drop);
+    }
+
+    /* Combine hover border with drop shadow since CSS box-shadow doesn't stack. */
+    &:not(.zoom-in):hover.sidebar-header-drop-shadow {
+        box-shadow:
+            inset 0 0 0 1px var(--color-shadow-sidebar-row-hover),
+            var(--box-shadow-sidebar-sticky-header-drop);
     }
 
     #toggle-direct-messages-section-icon {
@@ -218,10 +357,10 @@
         }
     }
 
-    #compose-new-direct-message,
-    #show-all-direct-messages {
-        color: var(--color-left-sidebar-heads-up-icon);
-        display: none;
+    .compose-new-direct-message,
+    .show-all-direct-messages {
+        color: var(--color-sidebar-action);
+        display: flex;
         align-items: center;
         justify-content: center;
         text-decoration: none;
@@ -230,11 +369,43 @@
         grid-row: 1 / 1;
 
         &:hover {
-            color: var(--color-left-sidebar-heads-up-icon-hover);
-            background-color: var(
-                --background-color-left-sidebar-heads-up-icon-hover
-            );
+            color: var(--color-sidebar-action-hover);
+            background-color: var(--color-background-sidebar-action-hover);
         }
+    }
+}
+
+#direct-messages-section-header {
+    display: grid;
+    align-items: center;
+    /* This extends the general pattern of left sidebar rows, but includes a
+       second grid row for placing filter boxes. */
+    grid-template-areas:
+        "starting-offset   starting-anchor-element  icon-content-gap  row-content       controls          markers-and-unreads  ending-anchor-element  ending-offset"
+        "filter-container  filter-container         filter-container  filter-container  filter-container  filter-container     filter-container       filter-container";
+    grid-template-rows: var(--line-height-sidebar-row-prominent) minmax(
+            0,
+            max-content
+        );
+
+    &:hover,
+    &.highlighted_row {
+        border-radius: 4px;
+    }
+
+    &:hover {
+        background-color: var(--color-background-hover-narrow-filter);
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+
+        .left-sidebar-title,
+        .sidebar-heading-icon {
+            opacity: var(--opacity-sidebar-heading-hover);
+        }
+    }
+
+    .compose-new-direct-message,
+    .show-all-direct-messages {
+        display: none;
 
         @media (hover: none) {
             display: flex;
@@ -242,20 +413,334 @@
     }
 
     &.hover-over-dm-section,
-    &.zoom-in,
     &:hover {
-        #compose-new-direct-message,
-        #show-all-direct-messages {
+        .compose-new-direct-message,
+        .show-all-direct-messages {
             display: flex;
         }
     }
 }
 
-.direct-messages-container {
+#direct-messages-modal-section-header {
+    display: grid;
+    align-items: center;
+    /* This is a simplified version of left sidebar rows, and includes a
+       second grid row for placing filter boxes. */
+    grid-template:
+        "starting-offset   row-content       controls          markers-and-unreads ending-offset" var(
+            --line-height-sidebar-row-prominent
+        )
+        "filter-container  filter-container  filter-container  filter-container    filter-container"
+        minmax(0, max-content)
+        / 0.6em minmax(0, 1fr) minmax(0, max-content) minmax(0, max-content)
+        var(--left-sidebar-vdots-width);
+}
+
+.spectator-view #left-sidebar-search {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+#left-sidebar-search {
+    display: grid;
+    grid-template-areas: "filter-container add-channel channel-folders-option";
+    grid-template-columns:
+        minmax(0, 1fr) var(--left-sidebar-header-icon-width)
+        auto;
+    position: sticky;
+    top: 0;
+    background: var(--color-background);
+    /* Must be padding not margin so that the sticky headers don't show behind it */
+    padding: 0 var(--left-sidebar-right-margin)
+        var(--sidebar-filter-bottom-spacing) 5px;
+
+    &.no-display {
+        display: none;
+    }
+
+    .channel-folders-sidebar-menu-icon {
+        grid-area: channel-folders-option;
+        display: grid;
+        /* width excluding left & right margin */
+        width: calc(var(--left-sidebar-vdots-width) - 3px);
+        cursor: pointer;
+        place-items: center center;
+        border-radius: 3px;
+        margin: 2px 2px 2px 1px;
+        color: var(--color-vdots-visible);
+
+        & i.zulip-icon {
+            font-size: 1.0625em;
+        }
+
+        &:hover {
+            color: var(--color-vdots-hover);
+            background-color: var(--color-background-sidebar-action-hover);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--color-outline-focus);
+            outline-offset: -2px;
+        }
+    }
+}
+
+.stream-list-subsection-header {
+    display: grid;
+    align-items: center;
+    /* There's no three-dot menu here, but we still want the markers to line-up with
+       markers in other rows that do have three-dot menus. */
+    grid-template:
+        "arrow row-content add-channel markers-and-unreads three-dot-placeholder" var(
+            --line-height-sidebar-row-prominent
+        )
+        / var(--right-sidebar-header-icon-toggle-width) minmax(0, 1fr) minmax(
+            0,
+            max-content
+        )
+        minmax(0, max-content) var(--left-sidebar-vdots-width);
+    cursor: pointer;
+    background-color: var(--color-background);
+    position: sticky;
+    /* height of DM header + 1px divider line and its top/bottom padding */
+    top: calc(
+        var(--line-height-sidebar-row-prominent) + 1px + 2 *
+            var(--left-sidebar-direct-messages-bottom-divider-padding)
+    );
+    /* Must be more than .sidebar-topic-check and less than #left-sidebar-search
+       and #direct-messages-section-header */
+    z-index: 2;
+    color: var(--color-text-default);
+    /* There seems to be a bug where when the header returns to normal position after
+       being sticky, it's 0.5px below its actual position and thus overlaps the channel
+       below. This extra margin prevents that overlap. */
+    margin-bottom: 1px;
+    transition: box-shadow 150ms ease-out;
+
+    &.sidebar-header-drop-shadow {
+        box-shadow: var(--box-shadow-sidebar-sticky-header-drop);
+    }
+
+    .markers-and-unreads {
+        display: flex;
+        align-items: center;
+    }
+
+    .unread_count,
+    .masked_unread_count {
+        margin-right: var(--left-sidebar-unread-offset);
+    }
+
+    .add-stream-icon-container {
+        text-decoration: none;
+        grid-auto-columns: var(--left-sidebar-header-icon-width);
+        /* -4px for the 2px top and bottom padding in .add-stream-icon-container */
+        grid-template-rows: calc(
+            var(--line-height-sidebar-row-prominent) - 4px
+        );
+    }
+
+    .add_stream_icon {
+        visibility: hidden;
+    }
+
+    .add-stream-icon-container:focus-visible .add_stream_icon,
+    &:focus-within .add_stream_icon,
+    &.highlighted_row .add_stream_icon {
+        visibility: visible;
+    }
+
+    /* We only set the border radius on the hover/popover/highlighted states,
+       so as to prevent the background on highlighted channels
+       from bleeding through. */
+    &:hover,
+    &:has(.left_sidebar_menu_icon_visible),
+    &.highlighted_row {
+        border-radius: 4px;
+    }
+
+    &:hover {
+        background-color: var(--color-background-hover-narrow-filter);
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+
+        .left-sidebar-title,
+        .stream-list-section-toggle {
+            opacity: var(--opacity-sidebar-heading-hover);
+        }
+
+        .add_stream_icon {
+            visibility: visible;
+        }
+
+        /* Combine hover border with drop shadow since CSS box-shadow doesn't stack. */
+        &.sidebar-header-drop-shadow {
+            box-shadow:
+                inset 0 0 0 1px var(--color-shadow-sidebar-row-hover),
+                var(--box-shadow-sidebar-sticky-header-drop);
+        }
+    }
+
+    &:has(.left_sidebar_menu_icon_visible) {
+        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+        background-color: var(--color-background-hover-narrow-filter);
+
+        .left-sidebar-title,
+        .stream-list-section-toggle {
+            opacity: var(--opacity-sidebar-heading-hover);
+        }
+    }
+
+    .stream-list-section-toggle {
+        color: var(--color-text-sidebar-heading);
+        opacity: var(--opacity-sidebar-heading-icon);
+        justify-self: center;
+    }
+}
+
+.stream-list-toggle-inactive-or-muted-channels {
+    padding-left: var(--left-sidebar-toggle-width-offset);
+
+    .show-inactive-or-muted-channels,
+    .hide-inactive-or-muted-channels {
+        /* Override the action heading font size, so that em measurements
+        on child elements are sized properly */
+        font-size: var(--base-font-size-px);
+        /* We also want the count text to be the normal font style. */
+        font-variant: inherit;
+        padding: 0;
+
+        .stream-list-toggle-inactive-or-muted-channels-text {
+            font-size: var(--font-size-sidebar-action-heading);
+            font-variant: var(--font-variant-sidebar-action-heading);
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+}
+
+.stream-list-section-container:not(.showing-inactive-or-muted) {
+    .inactive-or-muted-in-channel-folder:not(
+        .active-filter,
+        :has(.active-sub-filter)
+    ) {
+        display: none;
+    }
+
+    .stream-list-toggle-inactive-or-muted-channels {
+        .hide-inactive-or-muted-channels {
+            display: none;
+        }
+    }
+}
+
+#streams_list.is_searching {
+    .show-inactive-or-muted-channels,
+    .hide-inactive-or-muted-channels {
+        display: none;
+    }
+
+    .inactive-or-muted-in-channel-folder {
+        display: block;
+    }
+}
+
+.stream-list-section-container.showing-inactive-or-muted {
+    .stream-list-toggle-inactive-or-muted-channels {
+        .show-inactive-or-muted-channels {
+            display: none;
+        }
+    }
+}
+
+/* Sections with inactive/muted channels have a button to toggle
+   showing them. If there's only one inactive/muted channel, and
+   it's currently highlighted (.stream-expanded), then we want to
+   always show it, which means there aren't any inactive/muted
+   channels left to toggle visibility for. So we should hide the
+   toggle button.
+
+   (Checking for any .inactive-or-muted-in-channel-folder without
+   .stream-expanded in a .stream-list-section-container, and if none
+   then hide .stream-list-toggle-inactive-or-muted-channels). */
+.stream-list-section-container:not(
+    :has(.inactive-or-muted-in-channel-folder:not(.stream-expanded))
+) {
+    .stream-list-toggle-inactive-or-muted-channels {
+        display: none;
+    }
+}
+
+.show-inactive-or-muted-channels,
+.hide-inactive-or-muted-channels {
+    display: grid;
+    grid-template:
+        "icon content markers-and-unreads three-dot-placeholder" auto
+        / 1.5em minmax(0, 1fr) minmax(0, max-content) var(
+            --left-sidebar-vdots-width
+        );
+    align-items: center;
+
+    .markers-and-unreads {
+        margin-right: var(--left-sidebar-unread-offset);
+    }
+
+    .zulip-icon-collapse,
+    .zulip-icon-expand {
+        grid-area: icon;
+        /* 2px at 16px/1em to properly vertically center it */
+        margin-top: 0.125em;
+    }
+
+    .stream-list-toggle-inactive-or-muted-channels-text {
+        grid-area: content;
+    }
+}
+
+.stream-list-section {
+    margin: 0;
+}
+
+.stream-list-section-container.no-display {
+    display: none;
+}
+
+#streams_list .stream-list-section-container.collapsed {
+    .narrow-filter:not(.stream-expanded),
+    .stream-list-toggle-inactive-or-muted-channels,
+    &.hide-topic-bracket ul.topic-list.topic-list-has-topics::before,
+    &.hide-topic-bracket ul.topic-list.topic-list-has-topics::after {
+        display: none;
+    }
+}
+
+/* Only show section header unread counts when the section is collapsed,
+   when the header is being hovered over, when keyboard focus is inside
+   the header, or when the header is the current arrow-key target. */
+#streams_list .stream-list-section-container:not(.collapsed) {
+    .stream-list-subsection-header:not(
+        :hover,
+        :focus-within,
+        .highlighted_row
+    ) {
+        .unread_count,
+        .masked_unread_count {
+            visibility: hidden;
+        }
+    }
+
+    .stream-list-subsection-header:not(:hover, :focus-within, .highlighted_row)
+        .unread_mention_info {
+        display: none;
+    }
+}
+
+.direct-messages-container.zoomed-out {
     /* Properly offset all the grid rows
        in the DM section. */
     margin-right: var(--left-sidebar-right-margin);
+}
 
+.direct-messages-container,
+#left-sidebar-modal-content {
     & ul.dm-list {
         list-style-type: none;
         font-weight: 400;
@@ -264,9 +749,11 @@
         line-height: var(--line-height-sidebar-row-prominent);
 
         & li.dm-list-item {
-            & a {
+            .dm-box,
+            .dm-name {
                 text-decoration: none;
                 color: inherit;
+                outline: none;
             }
 
             .zulip-icon:not(.user-circle) {
@@ -277,16 +764,18 @@
 
         & li#show-more-direct-messages {
             color: var(--color-text-sidebar-action-heading);
-            font-size: var(--font-size-sidebar-action-heading);
-            font-weight: var(--font-weight-sidebar-action-heading);
-            letter-spacing: var(--letter-spacing-sidebar-action-heading);
-            font-variant: var(--font-variant-sidebar-action-heading);
-            text-transform: var(--text-transform-sidebar-action-heading);
             cursor: pointer;
             /* The 'more conversations' line has no icons,
                so vertically align the text with the unread
                count, when one appears there. */
             align-items: baseline;
+
+            .dm-name {
+                font-size: var(--font-size-sidebar-action-heading);
+                font-weight: var(--font-weight-sidebar-action-heading);
+                font-variant: var(--font-variant-sidebar-action-heading);
+                text-transform: var(--text-transform-sidebar-action-heading);
+            }
 
             &:hover {
                 background-color: var(
@@ -336,10 +825,32 @@
     }
 }
 
+.stream-list-section-toggle {
+    &:focus {
+        outline: 0;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
+}
+
+/* Arrow-key sidebar navigation focuses the toggle icon inside a
+   section header row while also applying .highlighted_row to the row
+   itself. Suppress the inner outline in that case to avoid showing
+   two nested focus rings on the same row. The IDs are needed to win
+   over the ID-scoped :focus-visible rules on the Views and DM
+   toggle icons above. */
+.highlighted_row #toggle-direct-messages-section-icon:focus-visible,
+.highlighted_row #toggle-top-left-navigation-area-icon:focus-visible,
+.highlighted_row .stream-list-section-toggle:focus-visible {
+    outline: 0;
+}
+
 .active-direct-messages-section {
     background-color: var(--color-background-active-narrow-filter);
 
-    #direct-messages-section-header {
+    &#direct-messages-section-header {
         border-radius: 4px 4px 0 0;
     }
 
@@ -354,16 +865,29 @@
        state that might show a highlight. */
     border-radius: 4px;
 
+    /* Always show the box-shadow outline on hover and
+       an open left-sidebar menu (vdots) */
     &:hover,
     &:has(.left_sidebar_menu_icon_visible) {
-        background-color: var(--color-background-hover-narrow-filter);
         box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
+    }
 
-        .sidebar-topic-check {
-            background-color: var(
-                --color-background-opaque-hover-narrow-filter
-            );
+    /* However, only adjust the background colors outside of active
+       filters, whose colors are more intense in light and dark mode
+       than the hover-narrow-filter color values. */
+    &:not(.active-sub-filter) {
+        &:hover,
+        &:has(.left_sidebar_menu_icon_visible) {
+            background-color: var(--color-background-hover-narrow-filter);
+
+            .sidebar-topic-check {
+                background-color: var(--color-background-hover-narrow-filter);
+            }
         }
+    }
+
+    &:has(.zoomed-new-topic):hover {
+        background: var(--color-background-sidebar-action-heading-hover);
     }
 
     &:has(.sidebar-topic-action-heading):hover {
@@ -389,12 +913,14 @@
     }
 }
 
-#stream_filters .narrow-filter:has(a.stream-name:focus-visible),
-#stream_filters .narrow-filter.highlighted_stream {
-    &.active-filter > .bottom_left_row {
-        background-color: var(--color-background-hover-narrow-filter);
-    }
+.stream-list-toggle-inactive-or-muted-channels.highlighted_row,
+.stream-list-toggle-inactive-or-muted-channels:focus-visible {
+    outline: 2px solid var(--color-outline-focus);
+    outline-offset: -2px;
+    background-color: var(--color-background-sidebar-action-heading-hover);
+}
 
+#stream_filters .narrow-filter:has(a.subscription_block:focus-visible) {
     & > .bottom_left_row {
         outline: 2px solid var(--color-outline-focus);
         outline-offset: -2px;
@@ -402,23 +928,107 @@
 
     &.active-filter .topic-list .bottom_left_row {
         background-color: var(--color-background-active-narrow-filter);
+
+        .sidebar-topic-check {
+            background-color: var(--color-background-active-narrow-filter);
+        }
     }
 
-    .bottom_left_row:not(.active-sub-filter) {
+    &:not(.active-filter) {
         background-color: var(--color-background-hover-narrow-filter);
+        border-radius: 4px;
+
+        .sidebar-topic-check {
+            background-color: var(--color-background-hover-narrow-filter);
+        }
+    }
+}
+
+#views-label-container,
+#direct-messages-section-header,
+#direct-messages-modal-section-header,
+.stream-list-subsection-header,
+.top_left_row,
+.bottom_left_row {
+    &.highlighted_row {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
     }
 }
 
 #stream_filters
     .narrow-filter
     .topic-list
-    .bottom_left_row:has(a.sidebar-topic-name:focus-visible),
-#direct-messages-list
-    .dm-list
-    .bottom_left_row:has(a.conversation-partners:focus-visible) {
+    .bottom_left_row:has(a.topic-box:focus-visible),
+#more-topics-modal .bottom_left_row:has(a.topic-box:focus-visible),
+#direct-messages-list .dm-list .bottom_left_row:has(a.dm-box:focus-visible),
+#modal-direct-messages-list .bottom_left_row:has(a.dm-box:focus-visible),
+#show-more-direct-messages:has(a.dm-name:focus-visible),
+#subscribe-to-more-streams:has(.subscribe-more-link:focus-visible),
+#login-to-more-streams:has(.subscribe-more-link:focus-visible) {
     outline: 2px solid var(--color-outline-focus);
     outline-offset: -2px;
     background-color: var(--color-background-hover-narrow-filter);
+
+    .sidebar-topic-check {
+        /* 2px of the original 4px padding is now the outline, don't draw over that */
+        padding-left: 2px;
+        background-color: var(--color-background-hover-narrow-filter);
+    }
+}
+
+#left-sidebar-topic-search-hint {
+    /* Match the outer spacing used by #subscribe-to-more-streams so
+       icon and label align with that row's icon and label. */
+    margin-right: var(--left-sidebar-right-margin);
+}
+
+.left-sidebar-topic-search-hint-link {
+    /* Padding on the link (which fills the row) keeps the focus ring
+       spanning the full row width. */
+    padding-left: var(--left-sidebar-toggle-width-offset);
+    display: grid;
+    grid-template:
+        "icon . text" minmax(var(--line-height-sidebar-row-prominent), auto)
+        / var(--left-sidebar-icon-column-width)
+        var(--left-sidebar-icon-content-gap)
+        minmax(0, 1fr);
+    align-items: center;
+    border-radius: 4px;
+    cursor: pointer;
+
+    /* Override the global a:hover / a:focus rule in zulip.css that
+       adds underline and changes the color to the generic link color. */
+    &,
+    &:hover,
+    &:focus {
+        color: var(--color-text-sidebar-row);
+        text-decoration: none;
+    }
+
+    &:hover {
+        background-color: var(--color-background-hover-narrow-filter);
+    }
+
+    /* Match the inset outline used by .highlighted_row so Tab and
+       arrow key focus look identical and don't clip outside the row. */
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+    }
+
+    .zulip-icon {
+        grid-area: icon;
+        justify-self: center;
+        opacity: 0.7;
+    }
+
+    .left-sidebar-topic-search-hint-label {
+        grid-area: text;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
 }
 
 #stream_filters .narrow-filter,
@@ -426,6 +1036,7 @@
     a.stream-name:focus,
     a.sidebar-topic-name:focus,
     a.conversation-partners:focus,
+    a.dm-box:focus,
     a.sidebar-topic-action-heading:focus {
         outline: none;
         text-decoration: none;
@@ -444,6 +1055,7 @@
         0;
     padding-left: var(--left-sidebar-toggle-width-offset);
     border-radius: 4px;
+    text-decoration: none;
 
     &:hover {
         background: var(--color-background-sidebar-action-heading-hover);
@@ -466,6 +1078,7 @@
         line-height: 1;
         color: var(--color-text-sidebar-action-heading);
         text-decoration: none;
+        outline: none;
     }
 
     .subscribe-more-label {
@@ -499,11 +1112,6 @@
     }
 }
 
-#subscribe-to-more-streams,
-#login-to-mmore-streams {
-    text-decoration: none;
-}
-
 ul.filters {
     list-style-type: none;
     margin-left: 0;
@@ -522,7 +1130,10 @@ ul.filters {
             text-decoration: none;
         }
     }
+}
 
+#more-topics-modal .topic-list,
+ul.filters {
     .sidebar-topic-action-heading {
         &:focus {
             color: var(--color-text-sidebar-action-heading);
@@ -535,7 +1146,8 @@ ul.filters {
     }
 
     .has-only-muted-unreads {
-        .unread_count {
+        .unread_count,
+        .masked_unread_count {
             opacity: var(--opacity-left-sidebar-muted);
         }
 
@@ -546,7 +1158,7 @@ ul.filters {
 
     .has-only-muted-mentions {
         .unread_mention_info {
-            opacity: var(--opacity-left-sidebar-muted);
+            opacity: var(--opacity-left-sidebar-muted-mentions);
         }
 
         &:hover .unread_mention_info {
@@ -596,6 +1208,12 @@ ul.filters {
             opacity: var(--opacity-left-sidebar-muted);
         }
 
+        .unread_mention_info {
+            /* Default opacity for this icon is too close to
+               --opacity-left-sidebar-muted */
+            opacity: var(--opacity-left-sidebar-muted-mentions);
+        }
+
         &:hover {
             .stream-privacy,
             .stream-name,
@@ -632,14 +1250,14 @@ li.active-sub-filter {
     color: var(--color-text-active-narrow-filter);
     background-color: var(--color-background-active-narrow-filter);
 
+    /* These hover styles effectively push back on non-active-filter
+       styles, which would otherwise present the less-intense
+       --color-background-hover-narrow-filter colors. */
     &:hover {
         background-color: var(--color-background-active-narrow-filter);
 
         .sidebar-topic-check {
-            /* This variable is only set and used in dark mode. */
-            background-color: var(
-                --color-background-opaque-hover-active-narrow-filter
-            );
+            background-color: var(--color-background-active-narrow-filter);
         }
     }
 
@@ -652,7 +1270,26 @@ li.active-sub-filter {
     }
 }
 
-#stream_filters .narrow-filter.active-filter {
+.top_left_mentions,
+#direct-messages-section-header,
+#direct-messages-modal-section-header,
+.dm-list-item {
+    /* To highlight the background when a new unread arrives,
+       we set the background on the .new-unread class. */
+    &.new-unread {
+        background-color: var(--color-background-active-narrow-filter);
+    }
+    /* The background-color transition is maintained by this class,
+       which ensures an immediate opening transition, and lingers
+       some time longer beyond the CSS Animation on the unread count,
+       ensuring a smooth transition back to the normal background
+       color on the sidebar row that's been targeted. */
+    &.new-unread-highlight {
+        transition: background-color 1s ease-in-out;
+    }
+}
+
+.top_left_mentions #stream_filters .narrow-filter.active-filter {
     .topic-list .filter-topics,
     > .bottom_left_row {
         background-color: var(--color-background-active-narrow-filter);
@@ -669,50 +1306,119 @@ li.active-sub-filter {
     justify-content: center;
 
     .left-sidebar-navigation-condensed-item {
-        /* 24px minimum width from Vlad's design.
-           however, we want to permit growing and
-           shrinking to keep icons reasonably spaced
-           across different information-density
-           settings. */
-        flex: 1 1 24px;
+        /* 26px minimum width gives a bit more
+           breathing room for unread markers when
+           unreads are displayed.
+           However, we want to permit growing but
+           not shrinking to keep icons reasonably
+           spaced across different information-density
+           settings. So we convert this value to ems:
+           26px at 16px/1em. */
+        flex: 1 0 1.625em;
         /* Unset padding from individual top_left items */
         padding: 0;
         border-radius: 4px;
         /* Set a positioning context for the unread dot. */
         position: relative;
 
-        .unread_count {
-            position: absolute;
-        }
-
-        /* Show the same styles when each item is
-           hovered or, via the keyboard, the `<a>`
-           element within receives focus. */
-        &:hover,
-        &:focus-within {
-            background: var(--color-background-navigation-item-hover);
-
+        &:not(.top_left_condensed_unread_marker) {
             .unread_count {
-                /* 6px at 12px/1em */
-                top: -0.5em;
-                right: -0.5em;
-                background: var(--color-background-unread-counter-no-alpha);
+                position: absolute;
+            }
+
+            /* Show the same styles when each item is
+               hovered or, via the keyboard, the `<a>`
+               element within receives focus. */
+            &:hover,
+            &:focus-within {
+                background: var(--color-background-navigation-item-hover);
+
+                .unread_count {
+                    /* 6px at 12px/1em */
+                    top: -0.5em;
+                    right: -0.5em;
+                    background: var(--color-background-unread-counter-no-alpha);
+                }
+            }
+
+            &:not(:hover) .unread_count {
+                /* .unread_count has its based font-size set to 12px at 14px/em. */
+                /* 2px, 6px at 12px/1em */
+                top: 0.1667em;
+                /* With positioning, we center the dot over the icon
+                   by subtracting half its width from the 50% mark. */
+                right: calc(50% - 0.25em);
+                /* But then we shift it left the em equivalent of half
+                   the icon width (15px/2) plus 2px. This keeps the
+                   unread dot in correct proximity to the view icon,
+                   no matter how the row flexes or what information-
+                   density values a user has set. 9.5px at 12px/1em.
+
+                   We set this and its scaled counterpart as variables
+                   for use in the pulse-unread animation to maintain the
+                   dot's correct position relative to the view icon. */
+                --unread-dot-x-offset: 0.7917em;
+                /* To make sure the unread dot appears to scale from the
+                   offset dot's center in collapsed Views, we need to
+                   adjust the translateX offset by the same amount we
+                   scale. calc() does not play nicely with animations,
+                   so it's critical that we calculate this value here,
+                   well before its needed. */
+                --unread-dot-x-offset-scaled: calc(
+                    var(--unread-dot-x-offset) / var(--pulse-unread-scale-max)
+                );
+
+                transform: translateX(var(--unread-dot-x-offset));
+                width: 0.5em;
+                height: 0.5em;
+                padding: 0;
+                color: transparent;
+                background-color: var(--color-background-unread-counter-dot);
             }
         }
 
-        &:not(:hover) .unread_count {
-            /* .unread_count has its based font-size set to 12px at 14px/em. */
-            /* 2px, 6px at 12px/1em */
-            top: 0.1667em;
-            right: 0.1667em;
-            width: 0.5em;
-            height: 0.5em;
-            padding: 0;
-            color: transparent;
-            background-color: var(--color-background-unread-counter-dot);
+        /* Hide the unread dot, assuming that message
+           counts are not hidden. */
+        &.selected-home-view .unread_count {
+            display: none;
         }
 
         &.top_left_starred_messages .unread_count {
+            display: none;
+        }
+
+        &.top_left_condensed_unread_marker {
+            /* Flex to just the unread's width, to keep the
+               unreads aligned on the righthand side with others
+               up and down the left sidebar. */
+            flex: 0 0 auto;
+            display: flex;
+            align-content: center;
+
+            &:has(.unread_count:empty) {
+                /* When the unread count is empty (no unreads),
+                   we flex shut to 0 across the board so the
+                   unread count takes up no space. */
+                flex: 0 0 0;
+            }
+
+            .unread_count:not(:empty) {
+                margin: 0 var(--left-sidebar-unread-offset);
+                align-self: center;
+            }
+        }
+    }
+
+    &.hide-unread-messages-count {
+        /* Restore the unread dot when message counts
+           are hidden, unless there are no unreads,
+           of course. */
+        .selected-home-view .unread_count:not(:empty) {
+            display: block;
+        }
+        /* We suppress the entire unread area
+           for users who prefer masked unreads. */
+        .top_left_condensed_unread_marker {
             display: none;
         }
     }
@@ -748,7 +1454,7 @@ li.active-sub-filter {
 }
 
 #left-sidebar-navigation-list {
-    margin-bottom: var(--left-sidebar-sections-vertical-gutter);
+    margin-bottom: 0;
     display: grid;
     line-height: var(--line-height-sidebar-row);
     /* Explicitly ensure parity with the line-height
@@ -783,17 +1489,6 @@ li.active-sub-filter {
 
 .sidebar-menu-icon.hide {
     visibility: hidden;
-}
-
-/* Don't show the scheduled messages item... */
-li.top_left_scheduled_messages {
-    display: none;
-    /* ...unless there are scheduled messages to show. */
-    &.show-with-scheduled-messages {
-        /* Use display: grid to preserve the grid
-           layout when visible. */
-        display: grid;
-    }
 }
 
 .left-sidebar-navigation-label-container {
@@ -937,7 +1632,6 @@ li.top_left_scheduled_messages {
 
 /* New grid definitions here. */
 #views-label-container,
-.zoom-in #hide-more-direct-messages,
 .top_left_row,
 .left-sidebar-navigation-label-container,
 .dm-box,
@@ -977,22 +1671,66 @@ li.top_left_scheduled_messages {
     }
 }
 
-#direct-messages-section-header,
-#streams_header,
-#topics_header {
-    display: grid;
-    align-items: center;
-    /* This extends the general pattern of left sidebar rows, but includes a
-       second grid row for placing filter boxes. This pattern keeps the box
-       aligned with the text content in `row-content` and includes the
-       `ending-anchor-element` space.
+.left-sidebar-filter-input-container {
+    display: block;
+    margin-bottom: 5px;
+    grid-area: filter-container;
 
-       There is currently no filter box on DM rows, but we can prepare for
-       that now by having it share this grid template. Its row and column
-       definitions have the final say about dimensions and placement. */
-    grid-template-areas:
-        "starting-offset starting-anchor-element icon-content-gap row-content controls   markers-and-unreads ending-anchor-element ending-offset"
-        ".               filter-box              filter-box       filter-box  filter-box filter-box          filter-box            .            ";
+    .filter-input,
+    .filter-topics {
+        grid-area: filter-input;
+    }
+
+    /* Keep topic filters to a single line, and show
+       an ellipsis when the input loses focus. */
+    #left-sidebar-filter-topic-input {
+        flex-wrap: nowrap;
+
+        .pill {
+            flex-shrink: 0;
+        }
+
+        .input {
+            white-space: nowrap;
+            overflow: hidden;
+        }
+    }
+}
+
+#left-sidebar-navigation-area:has(.selected-home-view.top-left-active-filter)
+    .top_left_condensed_unread_marker {
+    /* Hide the condensed unread marker when the home view is active,
+       since the home view row already shows the unread count. */
+    display: none;
+}
+
+#views-label-container.showing-condensed-navigation,
+.left-sidebar.zoom-in #views-label-container {
+    /* Use a next-sibling combinator (+) to use CSS to show and hide
+        filter rows as needed, based on the narrow. */
+    + #left-sidebar-navigation-list {
+        /* In the condensed state, we don't want to generate
+            auto rows, or there will be a footprint where the
+            expanded nav sits. */
+        grid-auto-rows: unset;
+        /* When the navigation area is condensed, hide all
+            the rows in the full navigation list... */
+        & .top_left_row {
+            display: none;
+        }
+        /* ...except when there is an active filter in place:
+            that row should still be shown. */
+        & .top_left_row.top-left-active-filter {
+            display: grid;
+            /* In the absence of auto rows in the condensed state,
+                we set an explicit height on the active filter. */
+            height: var(--line-height-sidebar-row);
+        }
+    }
+
+    .zulip-icon-heading-triangle-right {
+        rotate: 0deg;
+    }
 }
 
 #views-label-container {
@@ -1014,44 +1752,6 @@ li.top_left_scheduled_messages {
         .left-sidebar-title,
         .sidebar-heading-icon {
             opacity: var(--opacity-sidebar-heading-hover);
-        }
-    }
-
-    &.showing-expanded-navigation {
-        /* When the expanded navigation is visible,
-           hide the condensed navigation's controls. */
-        #left-sidebar-navigation-list-condensed,
-        .left-sidebar-navigation-menu-icon {
-            display: none;
-        }
-        /* Give the sidebar title through the end of the markers
-           area, if needed. */
-        .left-sidebar-title {
-            grid-column: row-content-start / markers-and-unreads-end;
-        }
-    }
-
-    /* Use a next-sibling combinator (+) to use CSS to show and hide
-       filter rows as needed, based on the narrow. */
-    &.showing-condensed-navigation {
-        + #left-sidebar-navigation-list {
-            /* In the condensed state, we don't want to generate
-               auto rows, or there will be a footprint where the
-               expanded nav sits. */
-            grid-auto-rows: unset;
-            /* When the navigation area is condensed, hide all
-               the rows in the full navigation list... */
-            & .top_left_row {
-                display: none;
-            }
-            /* ...except when there is an active filter in place:
-               that row should still be shown. */
-            & .top_left_row.top-left-active-filter {
-                display: grid;
-                /* In the absence of auto rows in the condensed state,
-                   we set an explicit height on the active filter. */
-                height: var(--line-height-sidebar-row);
-            }
         }
     }
 
@@ -1091,7 +1791,10 @@ li.top_left_scheduled_messages {
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-right: 2px;
+        /* These margin and padding values should be
+           coordinated with those on .sidebar-menu-icon. */
+        margin: 2px 2px 2px 1px;
+        padding-left: 1px;
         border-radius: 3px;
         color: var(--color-vdots-visible);
 
@@ -1102,7 +1805,40 @@ li.top_left_scheduled_messages {
     }
 }
 
+.left-sidebar:not(.zoom-in) #views-label-container.showing-expanded-navigation {
+    /* When the expanded navigation is visible,
+        hide the condensed navigation's controls. */
+    #left-sidebar-navigation-list-condensed,
+    .left-sidebar-navigation-menu-icon {
+        display: none;
+    }
+    /* Give the sidebar title through the end of the markers
+        area, if needed. */
+    .left-sidebar-title {
+        grid-column: row-content-start / markers-and-unreads-end;
+    }
+}
+
+/* When we collapsed the views section because we're zoomed in, hide
+   the condensed navigation's controls (except the unread counter). */
+.left-sidebar.zoom-in #views-label-container {
+    grid-template-columns:
+        0 var(--left-sidebar-header-icon-toggle-width)
+        0 minmax(0, 1fr) 0 minmax(0, max-content) var(
+            --left-sidebar-vdots-width
+        )
+        0;
+
+    .left-sidebar-navigation-condensed-item:not(
+        .top_left_condensed_unread_marker
+    ),
+    .left-sidebar-navigation-menu-icon {
+        display: none;
+    }
+}
+
 .subscription_block {
+    user-select: text;
     grid-template-columns:
         var(--left-sidebar-toggle-width-offset) var(
             --left-sidebar-icon-column-width
@@ -1114,6 +1850,22 @@ li.top_left_scheduled_messages {
         minmax(0, max-content)
         var(--left-sidebar-vdots-width) 0;
     white-space: nowrap;
+    text-decoration: none;
+    color: inherit;
+
+    &:hover,
+    &:active {
+        opacity: 1;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    &:not(:active):focus {
+        text-decoration: none;
+        border: none;
+        outline: none;
+        color: inherit;
+    }
 
     .stream-privacy {
         grid-area: starting-anchor-element;
@@ -1177,6 +1929,26 @@ li.top_left_scheduled_messages {
         var(--left-sidebar-icon-content-gap)
         minmax(0, 1fr) minmax(0, max-content) minmax(0, max-content)
         var(--left-sidebar-vdots-width) 0;
+    text-decoration: none;
+    color: inherit;
+
+    &:hover,
+    &:active {
+        opacity: 1;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    &:not(:active):focus {
+        text-decoration: none;
+        border: none;
+        outline: none;
+        color: inherit;
+    }
+}
+
+.topic-box {
+    user-select: text;
 }
 
 .searching-for-more-topics {
@@ -1211,7 +1983,12 @@ li.top_left_scheduled_messages {
         overflow-wrap: break-word;
 
         line-height: var(--line-height-sidebar-topic-inner);
-        margin: var(--spacing-top-bottom-sidebar-topic-inner) 0;
+        /* To avoid clipping the tops of certain characters,
+           we set the top space with padding. But to make the
+           line-clamp effect work, we set the bottom space
+           with margin. */
+        padding-top: var(--spacing-top-bottom-sidebar-topic-inner);
+        margin: 0 0 var(--spacing-top-bottom-sidebar-topic-inner) 0;
     }
 }
 
@@ -1251,23 +2028,8 @@ li.top_left_scheduled_messages {
     }
 }
 
-.direct-messages-list-filter {
-    grid-area: filter-box;
-    padding-right: var(--line-height-sidebar-row-prominent);
-}
-
-.topic-list-filter {
-    grid-area: filter-box;
-    padding-right: var(--line-height-sidebar-row-prominent);
-    box-shadow: none;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
-#left-sidebar-filter-topic-input:placeholder-shown
-    + #clear_search_topic_button {
-    visibility: hidden;
+.filter-topics {
+    font-weight: initial;
 }
 
 .searching-for-more-topics img {
@@ -1289,8 +2051,13 @@ li.top_left_scheduled_messages {
     /* As a grid item, adjust the checkmark's z-index here so
        that the background color appears above the grouping
        bracket's bottom line. Its value must less than
-       the z-index set on the #streams_header selector. */
+       the z-index set on .stream-list-subsection-header */
     z-index: 1;
+    /* To correct an edge case where a resolved topic is
+       the last in a list of topics, we set the app background
+       color on it to keep the closing topic bracket from
+       getting too close to the checkmark. */
+    background-color: var(--color-background);
 }
 
 .left-sidebar-controls {
@@ -1299,6 +2066,7 @@ li.top_left_scheduled_messages {
     /* We won't know in advance how many controls a given
        row has, but this allows grid to generate as many
        as needed, sized to a shared icon width. */
+    grid-auto-flow: column;
     grid-auto-columns: var(--left-sidebar-header-icon-width);
     grid-template-rows: var(--line-height-sidebar-row-prominent);
     place-content: stretch stretch;
@@ -1339,21 +2107,82 @@ li.top_left_scheduled_messages {
     align-self: baseline;
 }
 
-.channel-new-topic-button {
+#more-topics-modal .topic-box {
+    grid-template:
+        "starting-offset starting-anchor-element icon-content-gap row-content controls markers-and-unreads ending-anchor-element ending-offset"
+        var(--line-height-sidebar-row-prominent)
+        ".               .                       .                row-content .        .                   .                     .            "
+        auto
+        / var(--input-icon-starting-offset) var(
+            --left-sidebar-icon-column-width
+        )
+        var(--left-sidebar-icon-content-gap) minmax(0, 1fr) minmax(
+            0,
+            max-content
+        )
+        minmax(0, max-content) var(--left-sidebar-vdots-width) 0;
+}
+
+.zoomed-new-topic {
+    display: grid;
+    grid-template:
+        "starting-offset starting-anchor-element icon-content-gap row-content ending-offset"
+        var(--line-height-sidebar-row-prominent)
+        ".               .                       .                row-content ."
+        auto
+        / var(--input-icon-starting-offset) var(
+            --left-sidebar-icon-column-width
+        )
+        var(--left-sidebar-icon-content-gap)
+        minmax(0, 1fr)
+        0;
+    color: var(--color-text-sidebar-action-heading);
+
+    .topic-list-new-topic-icon {
+        grid-area: starting-anchor-element;
+        place-self: center end;
+    }
+
+    .new-topic-label {
+        grid-area: row-content;
+        margin-top: -0.06em;
+        font-size: var(--font-size-sidebar-action-heading);
+        font-weight: var(--font-weight-sidebar-action-heading);
+        font-variant: var(--font-variant-sidebar-action-heading);
+        font-feature-settings: var(
+            --font-feature-settings-sidebar-action-heading
+        );
+        text-transform: var(--text-transform-sidebar-action-heading);
+    }
+
+    &:not(:active):focus {
+        text-decoration: none;
+        border: none;
+        outline: none;
+    }
+
+    &:hover,
+    &:focus-visible {
+        border-radius: 4px;
+        text-decoration: none;
+        color: var(--color-text-sidebar-action-heading);
+    }
+}
+
+.channel-new-topic-button,
+.channel-search-topics-button {
     /* display: flex; is set on visible channels and
        channel-row hovers. */
     display: none;
     align-items: center;
     justify-content: center;
-    color: var(--color-left-sidebar-heads-up-icon);
+    color: var(--color-sidebar-action);
     margin: 2px 0;
     border-radius: 3px;
 
     &:hover {
-        color: var(--color-left-sidebar-heads-up-icon-hover);
-        background-color: var(
-            --background-color-left-sidebar-heads-up-icon-hover
-        );
+        color: var(--color-sidebar-action-hover);
+        background-color: var(--color-background-sidebar-action-hover);
     }
 }
 
@@ -1365,6 +2194,10 @@ li.top_left_scheduled_messages {
 
 .bottom_left_row .sidebar-menu-icon {
     grid-area: ending-anchor-element;
+}
+
+.stream-list-subsection-header .sidebar-menu-icon {
+    grid-area: three-dot-placeholder;
 }
 
 .stream-name {
@@ -1385,8 +2218,13 @@ li.top_left_scheduled_messages {
     overflow-wrap: break-word;
 
     line-height: var(--line-height-sidebar-topic-inner);
-    margin: var(--spacing-top-bottom-sidebar-topic-inner) 0;
-    padding: 0 var(--left-sidebar-before-unread-count-padding) 0 0;
+    /* To avoid clipping the tops of certain characters,
+       we set the top space with padding. But to make the
+       line-clamp effect work, we set the bottom space
+       with margin. */
+    padding: var(--spacing-top-bottom-sidebar-topic-inner)
+        var(--left-sidebar-before-unread-count-padding) 0 0;
+    margin-bottom: var(--spacing-top-bottom-sidebar-topic-inner);
 }
 
 /*
@@ -1394,7 +2232,8 @@ li.top_left_scheduled_messages {
     positioning.  We should fix that.
 */
 .bottom_left_row .sidebar-menu-icon,
-.top_left_row .sidebar-menu-icon {
+.top_left_row .sidebar-menu-icon,
+.stream-list-section-container .sidebar-menu-icon {
     display: none;
     cursor: pointer;
     /* Use a flex container to handle
@@ -1410,6 +2249,9 @@ li.top_left_scheduled_messages {
        centering regime for the row. */
     align-self: stretch;
     border-radius: 3px;
+    /* These margin and padding values should be
+       coordinated with those on
+       .left-sidebar-navigation-menu-icon. */
     margin: 2px 2px 2px 1px;
     /* This helps horizontally align the vdots,
        given the reduced margin-left above. */
@@ -1443,17 +2285,31 @@ li.top_left_scheduled_messages {
     }
 }
 
+.bottom_left_row .sidebar-menu-icon,
+.bottom_left_row .channel-new-topic-button,
+.top_left_row .sidebar-menu-icon,
+.stream-list-section-container .sidebar-menu-icon {
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+    }
+}
+
 /*
-    When you hover over list items, we hover
-    the vdots in light gray.
+    When you hover over or keyboard-highlight a list
+    item's menu icon, we give it a purple background.
 
     The stream icon should always display when
-    any topic is hovered, which is why it gets
-    a more specific selector here.
+    any topic is hovered/highlighted, which is why
+    it gets a more specific selector here.
 */
-#stream_filters li:hover .stream-sidebar-menu-icon,
-.top_left_row:hover .sidebar-menu-icon,
-.bottom_left_row:hover .sidebar-menu-icon,
+#stream_filters
+    li:is(:hover, :focus-within, :has(.highlighted_row))
+    .stream-sidebar-menu-icon,
+.top_left_row:is(:hover, :focus-within, .highlighted_row) .sidebar-menu-icon,
+.bottom_left_row:is(:hover, :focus-within, .highlighted_row) .sidebar-menu-icon,
+#stream_filters
+    .stream-list-subsection-header:is(:hover, :focus-within, .highlighted_row)
+    .sidebar-menu-icon,
 .app-main .column-left .left-sidebar .left_sidebar_menu_icon_visible {
     /* We push against `display: none` with
        `display: flex` because the sidebar vdots
@@ -1499,7 +2355,7 @@ ul.topic-list.topic-list-has-topics::after {
     /* 12px at 16px/1em */
     bottom: 0.75em;
     left: 16px;
-    width: 12px;
+    width: 4px;
     border-bottom: 1px solid var(--color-topic-indent-border);
     pointer-events: none;
 }
@@ -1510,19 +2366,23 @@ ul.topic-list:has(.show-more-topics)::after {
     width: 18px;
 }
 
-#stream_filters
-    .narrow-filter
+#stream_filters .narrow-filter,
+#more-topics-modal {
     .topic-list
-    .bottom_left_row:has(a.sidebar-topic-action-heading:focus-visible) {
-    outline: 2px solid var(--color-outline-focus);
-    outline-offset: -2px;
-    background-color: var(--color-background-hover-narrow-filter);
+        .bottom_left_row:has(
+            a.sidebar-topic-action-heading:focus-visible,
+            a.zoomed-new-topic:focus-visible
+        ) {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+        background-color: var(--color-background-hover-narrow-filter);
+    }
 }
 
 /* The grouping border should not be shown
-   on zoomed-in views. */
-.zoom-in .topic-list.topic-list-has-topics::before,
-.zoom-in .topic-list.topic-list-has-topics::after {
+   in the more topics modal. */
+#more-topics-modal .topic-list.topic-list-has-topics::before,
+#more-topics-modal .topic-list.topic-list-has-topics::after {
     border: 0;
 }
 
@@ -1530,9 +2390,19 @@ li.topic-list-item {
     position: relative;
     padding-right: 5px;
     margin-left: var(--left-sidebar-toggle-width-offset);
+
+    &:has(.zoomed-new-topic) {
+        /* We set a margin equal to starting-offset of filter-input to match
+           its alignment */
+        margin-left: calc(
+            var(--left-sidebar-toggle-width-offset) -
+                var(--input-icon-starting-offset)
+        );
+    }
 }
 
 .dm-box {
+    user-select: text;
     grid-template-columns:
         var(--left-sidebar-toggle-width-offset) [action-heading-start] var(
             --left-sidebar-icon-column-width
@@ -1575,299 +2445,6 @@ li.topic-list-item {
     }
 }
 
-/* Since direct-messages-sticky-header also has the `input-append`
-   class accompanying it. The display property of that class will
-   overwrite display: none if we don't have a more specific CSS
-   rule. It will also overwrite `display: none` even if `.zoom-out`
-   properties are declared after the `.input-append` properties since
-   the latter is more specific. */
-#direct-messages-sticky-header.zoom-out,
-.zoom-out {
-    #topics_header {
-        display: none;
-    }
-
-    .zoom-out-hide {
-        display: none;
-    }
-}
-
-#topics_header {
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    grid-template-columns:
-        [topics-content-area-start] var(--left-sidebar-toggle-width-offset)
-        0 0 minmax(0, 1fr) 0
-        max-content 0 var(--left-sidebar-vdots-width)
-        [topics-content-area-end] var(--left-sidebar-right-margin);
-    grid-template-rows:
-        [topics-content-area-start] var(--line-height-sidebar-row-prominent)
-        [topics-content-area-end];
-    padding-top: var(--left-sidebar-sections-vertical-gutter);
-    color: hsl(0deg 0% 43%);
-    background-color: var(--color-background);
-    /* With quiet unreads, we want the BACK TO CHANNELS
-       and unread count to share a common baseline. */
-    line-height: var(--line-height-sidebar-row);
-    align-items: baseline;
-
-    .show-all-streams {
-        grid-area: topics-content-area;
-        padding-left: var(--left-sidebar-toggle-width-offset);
-        font-size: var(--font-size-sidebar-action-heading);
-        font-weight: var(--font-weight-sidebar-action-heading);
-        font-variant: var(--font-variant-sidebar-action-heading);
-        text-transform: var(--text-transform-sidebar-action-heading);
-        color: var(--color-text-sidebar-action-heading);
-        text-decoration: none;
-
-        &:hover {
-            background-color: var(
-                --color-background-sidebar-action-heading-hover
-            );
-            box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
-            border-radius: 4px;
-        }
-    }
-
-    .unread_count {
-        grid-area: markers-and-unreads;
-        /* Extra margin for unreads. */
-        margin-right: var(--left-sidebar-unread-offset);
-
-        &:empty {
-            margin-right: 0;
-        }
-    }
-}
-
-#streams_header {
-    grid-template-columns:
-        var(--left-sidebar-toggle-width-offset) 0 0 minmax(0, 1fr) minmax(
-            0,
-            max-content
-        )
-        minmax(0, max-content) var(--left-sidebar-vdots-width)
-        0;
-    /* Keep the stream-search area rows collapsed. */
-    grid-template-rows: var(--line-height-sidebar-row-prominent) 0 0;
-    cursor: pointer;
-    margin: var(--left-sidebar-sections-vertical-gutter)
-        var(--left-sidebar-right-margin) 3px 0;
-    position: sticky;
-    /* Keep sticky within SimpleBar context. The -0.25px
-    offset ensures that no gap is present between the
-    direct-messages-section-header and the streams-header */
-    top: -0.25px;
-    z-index: 2;
-    background-color: var(--color-background);
-
-    &.showing-stream-search-section {
-        /* Open up the stream-search rows. The 3px gap + 7px
-           row maintains space with the streams list
-           below. */
-        grid-template-rows: var(--line-height-sidebar-row-prominent) auto 7px;
-        row-gap: 3px;
-
-        /* When the search section is showing, switch
-           off the hover effects on the row. */
-        &:hover {
-            background-color: var(--color-background);
-            box-shadow: unset;
-        }
-    }
-
-    .left-sidebar-title {
-        grid-area: row-content;
-    }
-
-    .heading-markers-and-unreads {
-        grid-area: markers-and-unreads;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        grid-gap: 5px;
-        /* Extra margin for unreads. */
-        margin-right: var(--left-sidebar-unread-offset);
-
-        &:has(.unread_count:empty) {
-            margin-right: 0;
-        }
-    }
-
-    #filter_streams_tooltip {
-        display: none;
-        align-items: center;
-        justify-content: center;
-        grid-row: 1 / 1;
-        margin: 2px 0;
-
-        @media (hover: none) {
-            display: flex;
-        }
-    }
-
-    #add_streams_tooltip {
-        grid-row: 1 / 1;
-        margin: 2px 0;
-    }
-
-    #streams_inline_icon {
-        display: none;
-        align-items: center;
-        justify-content: center;
-        /* Ensure the clickable area grows to
-           the height of the controls grid. */
-        height: 100%;
-
-        @media (hover: none) {
-            display: flex;
-        }
-    }
-
-    &:hover,
-    &.showing-streams-popover {
-        /* We only set the border radius on the hover/popover states,
-           so as to prevent the background on highlighted channels
-           from bleeding through. */
-        border-radius: 4px;
-        background-color: var(--color-background-opaque-hover-narrow-filter);
-        box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
-
-        .left-sidebar-title,
-        .sidebar-heading-icon {
-            opacity: var(--opacity-sidebar-heading-hover);
-        }
-
-        #filter_streams_tooltip,
-        #streams_inline_icon {
-            display: flex;
-        }
-    }
-
-    .stream_search_section {
-        grid-area: filter-box;
-        white-space: nowrap;
-    }
-
-    .stream-list-filter {
-        grid-area: filter-box;
-        padding-right: var(--line-height-sidebar-row-prominent);
-    }
-
-    &.hide_unread_counts {
-        .unread_count,
-        .unread_count.hide,
-        .masked_unread_count {
-            display: none;
-        }
-
-        /* When an empty unread count is hidden,
-           hide the masked unread count, too. */
-        .unread_count.hide + .masked_unread_count {
-            display: none;
-        }
-
-        .masked_unread_count {
-            display: flex;
-        }
-
-        &:hover {
-            .unread_count {
-                display: block;
-            }
-
-            .hide,
-            .masked_unread_count {
-                display: none;
-            }
-        }
-    }
-}
-
-.stream_search_section,
-.direct-messages-search-section {
-    .direct-messages-list-filter:placeholder-shown
-        + #clear-direct-messages-search-button {
-        visibility: hidden;
-    }
-
-    .stream-list-filter:placeholder-shown + #clear_search_stream_button {
-        visibility: hidden;
-    }
-}
-
-/* Prepare an adjusted grid for the logged-out state,
-   one that reassigns the vdots space to markers and
-   controls. */
-.spectator-view #streams_header {
-    grid-template-columns:
-        var(--left-sidebar-toggle-width-offset) 0 0 minmax(0, 1fr) 0
-        minmax(var(--left-sidebar-vdots-width), max-content) 0 0;
-    margin-right: var(--left-sidebar-right-margin);
-
-    /* With markers and controls now sized the same
-       as the ordinary vdots area (but allowed to grow,
-       care of `minmax(30px, max-content)`, should
-       additional logged-out icons be added in the
-       future), let's center the icon in that area,
-       just like vdots would be. */
-    .heading-markers-and-unreads {
-        justify-content: center;
-    }
-}
-
-.streams_subheader {
-    /* 14px at 16px/1em */
-    font-size: 0.875em;
-    font-weight: normal;
-    /* 16px line-height at 0.8em (11.2px at 14px legacy em) */
-    line-height: 1.4286em;
-    letter-spacing: 0.04em;
-    padding-left: var(--left-sidebar-toggle-width-offset);
-    cursor: pointer;
-    text-align: center;
-    margin-right: var(--left-sidebar-right-margin);
-
-    & .streams-subheader-wrapper {
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        left: 0.5em;
-        right: 0.5em;
-        color: var(--color-text-sidebar-base);
-    }
-
-    & .streams-subheader-wrapper::before,
-    .streams-subheader-wrapper::after {
-        content: " ";
-        flex: 1 1;
-        vertical-align: middle;
-        margin: auto;
-        border-top: 1px solid var(--color-border-sidebar-subheader);
-    }
-
-    & .streams-subheader-wrapper::before {
-        margin-right: 0.2em;
-    }
-
-    & .streams-subheader-wrapper::after {
-        margin-left: 0.2em;
-    }
-
-    .streams-subheader-name {
-        opacity: 0.4;
-    }
-}
-
-.direct-messages-list-filter,
-.stream-list-filter {
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
 .zero_count {
     visibility: hidden;
 }
@@ -1876,76 +2453,292 @@ li.topic-list-item {
     margin-right: 30px;
 }
 
-.zoom-in {
-    .narrow-filter > .bottom_left_row {
-        position: sticky;
-        /* We subtract a quarter pixel of space to correct
-           for possible bleedthrough under certain viewing
-           conditions (e.g., external monitors.) This same
-           technique is used on #streams_header. */
-        top: calc(
-            var(--left-sidebar-sections-vertical-gutter) +
-                var(--line-height-sidebar-row-prominent) - 0.25px
-        );
-        z-index: 2;
-        padding-bottom: 1px;
-        background-color: var(--color-background);
+#more-topics-modal > .channel-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding-bottom: 1px;
+    background-color: var(--color-background);
 
-        &:hover {
-            /* Prevent hover styles set on other rows. */
-            box-shadow: none;
-            background-color: var(--color-background);
-        }
+    &:hover {
+        /* Prevent hover styles set on other rows. */
+        box-shadow: none;
+        background-color: var(--color-background);
     }
 
-    #streams_header,
-    #subscribe-to-more-streams,
-    #login-to-more-streams,
-    .show-more-topics {
+    /* We avoid putting the box-shadow around both
+        the channel row and the filter input it contains,
+        as there is no hover effect on channel rows when
+        zoomed in, making a preserve-the-hover-outline
+        effect here moot. */
+    &:has(.left_sidebar_menu_icon_visible) {
+        box-shadow: none;
+    }
+
+    .subscription_block:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+        border-radius: 4px;
+        background-color: var(--color-background-hover-narrow-filter);
+    }
+}
+
+#more-topics-modal .bottom_left_row:last-of-type {
+    /* Needed for the scroll container to not cut off the hover border */
+    margin-bottom: 5px;
+}
+
+.top_left_row.hidden-by-filters {
+    display: none !important;
+}
+
+#left-sidebar-navigation-area.hidden-by-filters {
+    display: none;
+}
+
+#left-sidebar.direct-messages-hidden-by-filters,
+.spectator-view {
+    #direct-messages-section-header {
         display: none;
     }
 
-    &.direct-messages-container ul.dm-list {
+    .direct-message-section-bottom-divider-container {
+        display: none;
+    }
+
+    .stream-list-subsection-header {
+        top: 0;
+    }
+}
+
+#left-sidebar.zoom-in {
+    #left_sidebar_scroll_container {
+        /* Hidden instead of display: none so that we scroll to the
+        correct height more easily as it becomes visible again */
+        visibility: hidden;
+    }
+
+    #left-sidebar-search {
+        display: none;
+    }
+}
+
+/* Show the DM header when zoomed into topics, visible behind
+   the back button area */
+#left-sidebar.zoom-in-topics #direct-messages-section-header {
+    visibility: visible;
+}
+
+#left-sidebar-modal {
+    /* Hidden instead of display: none so that we scroll to the
+       correct height more easily as it becomes visible again */
+    visibility: hidden;
+}
+
+/* The two modals have different top paddings */
+#left-sidebar.zoom-in-conversations #left-sidebar-modal,
+#left-sidebar.direct-messages-hidden-by-filters #left-sidebar-modal,
+.spectator-view #left-sidebar-modal {
+    .left-sidebar-modal-close-area {
+        padding-top: var(--left-sidebar-modal-close-area-padding-top);
+    }
+
+    #left-sidebar-modal-content {
+        height: calc(
+            100dvh - var(--navbar-fixed-height) -
+                var(--left-sidebar-modal-close-area-padding-top) -
+                var(--left-sidebar-modal-close-area-height)
+        );
+        box-shadow:
+            0 -0.2em 0.75em 0 var(--color-left-sidebar-inner-box-shadow),
+            0 -2.5em 1em 0 var(--color-left-sidebar-middle-box-shadow),
+            0 -4em 1em 0 var(--color-left-sidebar-outer-box-shadow);
+    }
+
+    .left-sidebar-modal-close-area:focus-visible + #left-sidebar-modal-content {
+        box-shadow:
+            0 -0.2em 0.75em 0 var(--color-left-sidebar-inner-box-shadow),
+            0 -2.5em 1em 0 var(--color-left-sidebar-middle-box-shadow-hover),
+            0 -4em 1em 0 var(--color-left-sidebar-outer-box-shadow-hover);
+    }
+
+    /* Don't show hover style on touch screens */
+    @media (hover: hover) and (pointer: fine) {
+        .left-sidebar-modal-close-area:hover + #left-sidebar-modal-content {
+            box-shadow:
+                0 -0.2em 0.75em 0 var(--color-left-sidebar-inner-box-shadow),
+                0 -2.5em 1em 0 var(--color-left-sidebar-middle-box-shadow-hover),
+                0 -4em 1em 0 var(--color-left-sidebar-outer-box-shadow-hover);
+        }
+    }
+}
+
+/* The topic menu leaves space to see the DM section (if it's visible) by
+   padding the sidebar row height to the close section's upper padding. */
+body:not(.spectator-view)
+    #left-sidebar:not(.direct-messages-hidden-by-filters).zoom-in-topics
+    #left-sidebar-modal {
+    .left-sidebar-modal-close-area {
+        /* Avoid annoying flash of gray in the close area
+           on iOS/iPadOS */
+        -webkit-tap-highlight-color: transparent;
+        padding-top: calc(
+            var(--left-sidebar-modal-close-area-padding-top) +
+                var(--line-height-sidebar-row-prominent)
+        );
+    }
+
+    #left-sidebar-modal-content {
+        height: calc(
+            100dvh - var(--navbar-fixed-height) -
+                var(--left-sidebar-modal-close-area-padding-top) -
+                var(--left-sidebar-modal-close-area-height) -
+                var(--line-height-sidebar-row-prominent)
+        );
+        box-shadow:
+            0 -0.2em 0.75em 0 var(--color-left-sidebar-inner-box-shadow),
+            0 -2.5em 1em 0 var(--color-left-sidebar-middle-box-shadow),
+            0 -5.5em 1em 0 var(--color-left-sidebar-outer-box-shadow);
+    }
+
+    .left-sidebar-modal-close-area:focus-visible + #left-sidebar-modal-content {
+        box-shadow:
+            0 -0.2em 0.75em 0 var(--color-left-sidebar-inner-box-shadow),
+            0 -2.5em 1em 0 var(--color-left-sidebar-middle-box-shadow-hover),
+            0 -5.5em 1em 0 var(--color-left-sidebar-outer-box-shadow-hover);
+    }
+
+    /* Don't show hover style on touch screens */
+    @media (hover: hover) and (pointer: fine) {
+        .left-sidebar-modal-close-area:hover + #left-sidebar-modal-content {
+            box-shadow:
+                0 -0.2em 0.75em 0 var(--color-left-sidebar-inner-box-shadow),
+                0 -2.5em 1em 0 var(--color-left-sidebar-middle-box-shadow-hover),
+                0 -5.5em 1em 0 var(--color-left-sidebar-outer-box-shadow-hover);
+        }
+    }
+}
+
+@container app (width <= $cq_ml_min) {
+    .left-sidebar-modal-close-area .zulip-icon-close {
+        margin-right: 5px;
+    }
+}
+
+#left-sidebar.zoom-in-topics #left-sidebar-modal,
+#left-sidebar.zoom-in-conversations #left-sidebar-modal {
+    position: absolute;
+    visibility: visible;
+    left: 0;
+    top: var(--navbar-fixed-height);
+    width: var(--left-sidebar-width);
+
+    .left-sidebar-modal-close-area {
+        position: relative;
+        z-index: 1;
+        height: var(--left-sidebar-modal-close-area-height);
+        display: flex;
+        margin: 0 10px;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9375em; /* 15px at 16px/em */
+        font-weight: 600;
+        letter-spacing: 0.75px;
+
+        &:hover {
+            cursor: pointer;
+        }
+
+        .left-sidebar-modal-back {
+            display: flex;
+            align-items: center;
+        }
+    }
+
+    #direct-messages-modal-section-header,
+    .channel-header {
+        margin-top: 5px;
+        grid-area: section-header;
+    }
+
+    .modal-direct-messages-list,
+    .topic-list-scroll-container {
+        grid-area: conversation-list;
+    }
+
+    .channel-header {
+        /* Override the usual hover behavior for the first row (topic name and search bar)
+        and its popover. */
+        box-shadow: none;
+        background-color: var(--color-background);
+        /* For the scrollbar */
+        margin-right: var(--left-sidebar-right-margin);
+    }
+
+    #left-sidebar-modal-content {
+        padding: 0 0 5px 5px;
+        background: var(--color-background);
+        border-radius: 6px 6px 0 0;
+    }
+
+    .left-sidebar-modal-close-area:focus-visible {
+        outline: none;
+    }
+
+    /* Remove extra left spacing */
+    .subscription_block {
+        grid-template-columns:
+            0.5em var(--left-sidebar-icon-column-width) var(
+                --left-sidebar-icon-content-gap
+            )
+            minmax(0, 1fr) minmax(0, max-content) minmax(0, max-content) var(
+                --left-sidebar-vdots-width
+            )
+            0;
+    }
+
+    .topic-list {
         margin-bottom: var(--left-sidebar-bottom-scrolling-buffer);
     }
 
-    #hide-more-direct-messages {
-        grid-template-columns: inherit;
-        grid-column: 1 / -1;
-        line-height: var(--line-height-sidebar-row);
-        text-decoration: none;
-        color: inherit;
+    .topic-list-item {
+        padding-right: 0;
+        margin-right: var(--left-sidebar-right-margin);
+    }
 
-        .hide-more-direct-messages-text {
-            color: var(--color-text-sidebar-action-heading);
-            font-size: var(--font-size-sidebar-action-heading);
-            font-weight: var(--font-weight-sidebar-action-heading);
-            font-variant: var(--font-variant-sidebar-action-heading);
-            text-transform: var(--text-transform-sidebar-action-heading);
+    /* Override default margin when in the modal. */
+    .topic-list,
+    .topic-list-item {
+        margin-left: 0;
+    }
+
+    /* Always show the new topic button and header menu icon for the modal view. */
+    .channel-new-topic-button {
+        display: flex;
+    }
+
+    .channel-header .sidebar-menu-icon {
+        display: flex;
+        color: var(--color-vdots-visible);
+    }
+}
+
+#left-sidebar-menu-popover {
+    /* No hover effect on the label */
+    .display-style-selector-header:hover {
+        background: inherit;
+        cursor: default;
+    }
+
+    .popover-menu-link:not(.display-style-selector-header) {
+        display: grid;
+        grid-template: "left-icon row-content" auto / 1.125em minmax(
+                max-content,
+                1fr
+            );
+        align-items: center;
+
+        .popover-menu-label {
             grid-area: row-content;
         }
-
-        &:hover {
-            background-color: var(
-                --color-background-sidebar-action-heading-hover
-            );
-            box-shadow: inset 0 0 0 1px var(--color-shadow-sidebar-row-hover);
-            border-radius: 4px;
-        }
-    }
-
-    .direct-messages-search-section {
-        grid-column: filter-box;
-        margin: 5px 0 5px var(--left-sidebar-toggle-width-offset);
-    }
-
-    .zoom-in-hide {
-        display: none;
-    }
-
-    .zoom-in-sticky {
-        position: sticky;
-        top: 0;
-        z-index: 1;
     }
 }

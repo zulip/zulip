@@ -1,4 +1,4 @@
-#### Messages
+## Messages
 
 * [Send a message](/api/send-message)
 * [Upload a file](/api/upload-file)
@@ -18,20 +18,24 @@
 * [Mark messages in a channel as read](/api/mark-stream-as-read)
 * [Mark messages in a topic as read](/api/mark-topic-as-read)
 * [Get a message's read receipts](/api/get-read-receipts)
+* [Get temporary URL for an uploaded file](/api/get-file-temporary-url)
+* [Check thumbnail status](/api/check-thumbnail-status)
 * [Report a message](/api/report-message)
 
-#### Scheduled messages
+## Scheduled messages
 
 * [Get scheduled messages](/api/get-scheduled-messages)
 * [Create a scheduled message](/api/create-scheduled-message)
 * [Edit a scheduled message](/api/update-scheduled-message)
 * [Delete a scheduled message](/api/delete-scheduled-message)
 
-#### Message reminders
+## Message reminders
 
 * [Create a message reminder](/api/create-message-reminder)
+* [Get reminders](/api/get-reminders)
+* [Delete a reminder](/api/delete-reminder)
 
-#### Drafts
+## Drafts
 
 * [Get drafts](/api/get-drafts)
 * [Create drafts](/api/create-drafts)
@@ -42,25 +46,27 @@
 * [Edit a saved snippet](/api/edit-saved-snippet)
 * [Delete a saved snippet](/api/delete-saved-snippet)
 
-#### Navigation views
+## Navigation views
 
 * [Get all navigation views](/api/get-navigation-views)
 * [Add a navigation view](/api/add-navigation-view)
 * [Update the navigation view](/api/edit-navigation-view)
 * [Remove a navigation view](/api/remove-navigation-view)
 
-#### Channels
+## Channels
 
 * [Get subscribed channels](/api/get-subscriptions)
 * [Subscribe to a channel](/api/subscribe)
 * [Unsubscribe from a channel](/api/unsubscribe)
 * [Get subscription status](/api/get-subscription-status)
 * [Get channel subscribers](/api/get-subscribers)
-* [Update subscription settings](/api/update-subscription-settings)
+* [Get a user's subscribed channels](/api/get-user-channels)
+* [Update a subscription setting](/api/update-subscription-property)
+* [Bulk update subscription settings](/api/update-subscription-settings)
 * [Get all channels](/api/get-streams)
 * [Get a channel by ID](/api/get-stream-by-id)
 * [Get channel ID](/api/get-stream-id)
-* [Create a channel](/api/create-stream)
+* [Create a channel](/api/create-channel)
 * [Update a channel](/api/update-stream)
 * [Archive a channel](/api/archive-stream)
 * [Get channel's email address](/api/get-stream-email-address)
@@ -72,9 +78,10 @@
 * [Remove a default channel](/api/remove-default-stream)
 * [Create a channel folder](/api/create-channel-folder)
 * [Get channel folders](/api/get-channel-folders)
+* [Reorder channel folders](/api/patch-channel-folders)
 * [Update a channel folder](/api/update-channel-folder)
 
-#### Users
+## Users
 
 * [Get a user](/api/get-user)
 * [Get a user by email](/api/get-user-by-email)
@@ -88,6 +95,11 @@
 * [Reactivate a user](/api/reactivate-user)
 * [Get a user's status](/api/get-user-status)
 * [Update your status](/api/update-status)
+* [Update user status](/api/update-status-for-user)
+* [Update your profile data](/api/update-profile-data)
+* [Remove your profile data](/api/remove-profile-data)
+* [Upload your profile picture](/api/upload-avatar)
+* [Delete your profile picture](/api/delete-avatar)
 * [Set "typing" status](/api/set-typing-status)
 * [Set "typing" status for message editing](/api/set-typing-status-for-message-edit)
 * [Get a user's presence](/api/get-user-presence)
@@ -110,8 +122,11 @@
 * [Get all alert words](/api/get-alert-words)
 * [Add alert words](/api/add-alert-words)
 * [Remove alert words](/api/remove-alert-words)
+* [Regenerate your API key](/api/regenerate-api-key)
+* [Get a bot's API key](/api/get-bot-api-key)
+* [Regenerate a bot's API key](/api/regenerate-bot-api-key)
 
-#### Invitations
+## Invitations
 
 * [Get all invitations](/api/get-invites)
 * [Send invitations](/api/send-invites)
@@ -120,7 +135,7 @@
 * [Revoke an email invitation](/api/revoke-email-invite)
 * [Revoke a reusable invitation link](/api/revoke-invite-link)
 
-#### Server & organizations
+## Server & organizations
 
 * [Get server settings](/api/get-server-settings)
 * [Get linkifiers](/api/get-linkifiers)
@@ -137,24 +152,55 @@
 * [Reorder custom profile fields](/api/reorder-custom-profile-fields)
 * [Create a custom profile field](/api/create-custom-profile-field)
 * [Update realm-level defaults of user settings](/api/update-realm-user-settings-defaults)
+* [Get allowed domains](/api/get-realm-domains)
+* [Add an allowed domain](/api/add-realm-domain)
+* [Update an allowed domain](/api/patch-realm-domain)
+* [Remove an allowed domain](/api/delete-realm-domain)
 * [Get all data exports](/api/get-realm-exports)
 * [Create a data export](/api/export-realm)
 * [Get data export consent state](/api/get-realm-export-consents)
+* [Delete a data export](/api/delete-realm-export)
+* [Test welcome bot custom message](/api/test-welcome-bot-custom-message)
+* [Deactivate an organization](/api/deactivate-realm)
 
-#### Real-time events
+## Real-time events
 
 * [Real time events API](/api/real-time-events)
 * [Register an event queue](/api/register-queue)
 * [Get events from an event queue](/api/get-events)
 * [Delete an event queue](/api/delete-queue)
 
-#### Specialty endpoints
+## Interactive bots
 
-* [Fetch an API key (production)](/api/fetch-api-key)
-* [Fetch an API key (development only)](/api/dev-fetch-api-key)
+* [Get a bot's stored data](/api/get-bot-storage)
+* [Update a bot's stored data](/api/update-bot-storage)
+* [Remove a bot's stored data](/api/remove-bot-storage)
+
+## Video call integrations
+
+* [Create BigBlueButton video call](/api/create-big-blue-button-video-call)
+* [Create Constructor Groups video call](/api/create-constructor-groups-video-call)
+* [Create Nextcloud Talk video call](/api/create-nextcloud-talk-video-call)
+* [Create Webex video call](/api/create-webex-video-call)
+
+## Mobile push notifications
+
+* [Register a logged-in device](/api/register-client-device)
+* [Remove a registered device](/api/remove-client-device)
+* [Send an E2EE test notification to mobile device(s)](/api/e2ee-test-notify)
+* [Register E2EE push device](/api/register-push-device)
+* [Register E2EE push device to bouncer](/api/register-remote-push-device)
+* [Mobile notifications](/api/mobile-notifications)
 * [Send a test notification to mobile device(s)](/api/test-notify)
 * [Add an APNs device token](/api/add-apns-token)
 * [Remove an APNs device token](/api/remove-apns-token)
 * [Add an FCM registration token](/api/add-fcm-token)
 * [Remove an FCM registration token](/api/remove-fcm-token)
-* [Create BigBlueButton video call](/api/create-big-blue-button-video-call)
+
+## Specialty endpoints
+
+* [Fetch an API key (production)](/api/fetch-api-key)
+* [Fetch an API key (development only)](/api/dev-fetch-api-key)
+* [Fetch an API key (JWT)](/api/jwt-fetch-api-key)
+* [List users (development only)](/api/dev-list-users)
+* [Outgoing webhook payloads](/api/outgoing-webhook-payload)

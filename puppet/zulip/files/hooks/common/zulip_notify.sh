@@ -29,12 +29,18 @@ deploy_environment=$(crudini --get /etc/zulip/zulip.conf machine deploy_type || 
 # shellcheck disable=SC2034
 commit_count=$(git rev-list "${from}..${to}" | wc -l)
 
+# Sending the notification is best-effort: a failure to deliver it
+# (e.g. the bot lacks posting permission, or the server is
+# unreachable) must never abort a deploy, so we swallow the error
+# after logging it.
 zulip_send() {
-    uv run --no-sync zulip-send \
+    if ! uv run --no-sync zulip-send \
         --site "$zulip_notify_server" \
         --user "$zulip_notify_bot_email" \
         --api-key "$zulip_api_key" \
         --stream "$zulip_notify_stream" \
         --subject "$deploy_environment deploy" \
-        --message "$1"
+        --message "$1"; then
+        echo "zulip_notify: Failed to send deploy notification; continuing anyway."
+    fi
 }

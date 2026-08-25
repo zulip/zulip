@@ -46,10 +46,10 @@ Here are the top things to know:
 - **Cloning a repository creates a working copy.** Every working copy has a
   `.git` subdirectory, which contains its own Git repository. The `.git`
   subdirectory also tracks the _index_, a staging area for changes that will
-  become part of the next commit. All files outside of `.git` is the _working
+  become part of the next commit. All files outside of `.git` are the _working
   tree_.
 
-- **Files tracked with Git have possible three states: committed, modified, and
+- **Files tracked with Git have three possible states: committed, modified, and
   staged.** Committed files are those safely stored in your local `.git`
   repository/database. Staged files have changes and have been marked for
   inclusion in the next commit; they are part of the index. Modified files have
@@ -60,5 +60,5 @@ Here are the top things to know:
   to the _index_ (that is _stage_) with `git add`. _Commit_ to the HEAD of the
   current branch with `git commit`.
 
-[gitbook-basics]: https://git-scm.com/book/en/v2/Getting-Started-Git-Basics
+[gitbook-basics]: https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository
 [understanding-git]: https://web.mit.edu/nelhage/Public/git-slides-2009.pdf

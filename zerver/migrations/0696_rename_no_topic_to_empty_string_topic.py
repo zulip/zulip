@@ -110,7 +110,7 @@ def move_messages_from_no_topic_to_empty_string_topic(
         email__iexact=settings.NOTIFICATION_BOT, realm=internal_realm
     )
 
-    for realm in Realm.objects.all():
+    for realm in Realm.objects.all().iterator():
         with transaction.atomic(durable=True):
             # Uses index "zerver_message_realm_recipient_subject"
             channel_ids_with_empty_string_topic = set(

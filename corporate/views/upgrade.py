@@ -13,7 +13,7 @@ from corporate.lib.decorator import (
     authenticated_remote_server_management_endpoint,
 )
 from corporate.models.plans import CustomerPlan
-from zerver.decorator import require_organization_member, zulip_login_required
+from zerver.decorator import require_billing_access, zulip_login_required
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.models import UserProfile
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 billing_logger = logging.getLogger("corporate.stripe")
 
 
-@require_organization_member
+@require_billing_access
 @typed_endpoint
 def upgrade(
     request: HttpRequest,
@@ -68,7 +68,7 @@ def upgrade(
             license_management,
             licenses,
         )
-        raise e
+        raise
     except Exception:
         billing_logger.exception("Uncaught exception in billing:", stack_info=True)
         error_message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
@@ -118,7 +118,7 @@ def remote_realm_upgrade(
             license_management,
             licenses,
         )
-        raise e
+        raise
     except Exception:  # nocoverage
         billing_logger.exception("Uncaught exception in billing:", stack_info=True)
         error_message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
@@ -168,7 +168,7 @@ def remote_server_upgrade(
             license_management,
             licenses,
         )
-        raise e
+        raise
     except Exception:  # nocoverage
         billing_logger.exception("Uncaught exception in billing:", stack_info=True)
         error_message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)

@@ -2,10 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class CrashlyticsHookTests(WebhookTestCase):
-    CHANNEL_NAME = "crashlytics"
-    URL_TEMPLATE = "/api/v1/external/crashlytics?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "crashlytics"
-
     def test_crashlytics_verification_message(self) -> None:
         expected_topic_name = "Setup"
         expected_message = "Webhook has been successfully configured."

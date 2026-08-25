@@ -1,15 +1,15 @@
 import autosize from "autosize";
-import $ from "jquery";
+import {isSameDay} from "date-fns";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
-import * as internal_url from "../shared/src/internal_url.ts";
-import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_bookend from "../templates/bookend.hbs";
 import render_login_to_view_image_button from "../templates/login_to_view_image_button.hbs";
 import render_message_group from "../templates/message_group.hbs";
 import render_message_list from "../templates/message_list.hbs";
 import render_recipient_row from "../templates/recipient_row.hbs";
+import render_revealed_message_hide_button from "../templates/revealed_message_hide_button.hbs";
 import render_single_message from "../templates/single_message.hbs";
 
 import * as activity from "./activity.ts";
@@ -18,10 +18,13 @@ import * as compose_fade from "./compose_fade.ts";
 import * as condense from "./condense.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as internal_url from "./internal_url.ts";
 import * as message_edit from "./message_edit.ts";
 import type {MessageList} from "./message_list.ts";
+import * as message_list_hover from "./message_list_hover.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_reminder from "./message_reminder.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
@@ -33,18 +36,18 @@ import * as people from "./people.ts";
 import * as popovers from "./popovers.ts";
 import * as reactions from "./reactions.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
+import * as resolved_topic from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
-import * as settings_data from "./settings_data.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_color from "./stream_color.ts";
 import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 import * as submessage from "./submessage.ts";
-import {is_same_day} from "./time_zone_util.ts";
 import * as timerender from "./timerender.ts";
 import type {TopicLink} from "./types.ts";
 import * as typing_data from "./typing_data.ts";
 import * as typing_events from "./typing_events.ts";
+import * as ui_util from "./ui_util.ts";
 import * as user_topics from "./user_topics.ts";
 import type {AllVisibilityPolicies} from "./user_topics.ts";
 import * as util from "./util.ts";
@@ -65,6 +68,7 @@ export type MessageContainer = {
     modified: boolean;
     edited: boolean;
     moved: boolean;
+    widget_edited: boolean;
     msg: Message;
     sender_is_bot: boolean;
     sender_is_guest: boolean;
@@ -73,17 +77,16 @@ export type MessageContainer = {
     small_avatar_url: string;
     status_message: string | false;
     stream_url?: string;
-    subscribed?: boolean;
     pm_with_url?: string;
     timestr: string;
     topic_url?: string;
-    unsubscribed?: boolean;
     want_date_divider: boolean;
+    want_subscription_status_divider: boolean;
 };
 
 export type MessageGroup = {
     bookend_top?: boolean;
-    date: string;
+    date_html: string;
     date_unchanged: boolean;
     message_containers: MessageContainer[];
     message_group_id: string;
@@ -97,7 +100,7 @@ export type MessageGroup = {
           is_topic_editable: boolean;
           is_web_public: boolean;
           just_unsubscribed?: boolean;
-          match_topic: string | undefined;
+          match_topic_html: string | undefined;
           recipient_bar_color: string;
           stream_id: number;
           stream_name?: string;
@@ -134,15 +137,18 @@ type RenderingPlan = {
     append_messages: MessageContainer[];
 };
 
+type BoundaryMessageContainerInfo = {
+    message_group: MessageGroup;
+    message_container: MessageContainer;
+};
+
 function same_day(earlier_msg: Message | undefined, later_msg: Message | undefined): boolean {
     if (earlier_msg === undefined || later_msg === undefined) {
         return false;
     }
-    return is_same_day(
-        earlier_msg.timestamp * 1000,
-        later_msg.timestamp * 1000,
-        timerender.display_time_zone,
-    );
+    return isSameDay(earlier_msg.timestamp * 1000, later_msg.timestamp * 1000, {
+        in: timerender.display_tz,
+    });
 }
 
 function same_year(earlier_msg: Message | undefined, later_msg: Message | undefined): boolean {
@@ -186,20 +192,55 @@ function clear_group_date(group: MessageGroup): void {
     group.date_unchanged = false;
 }
 
-function clear_message_date_divider(message_container: MessageContainer): void {
-    // see update_message_date_divider for how
-    // these get set
+function clear_message_divider(message_container: MessageContainer): void {
+    // want_date_divider is set by update_date_divider and
+    // want_subscription_status_divider by set_subscription_dividers_and_markers;
+    // reset both here.
     message_container.want_date_divider = false;
+    message_container.want_subscription_status_divider = false;
     message_container.date_divider_html = undefined;
 }
 
-function update_message_date_divider(opts: {
+function was_moved_from_another_channel(message: Message): boolean {
+    // A moved message's `historical` flag reflects the channel it was
+    // originally sent to, so it says nothing about the user's
+    // subscription history in the current channel.
+    if (message.type !== "stream") {
+        return false;
+    }
+    // edit_history is newest-first, so the oldest stream-move entry's
+    // prev_stream is the original channel; a message moved back there
+    // has a meaningful flag again.
+    const original_stream_id = message.edit_history?.findLast(
+        (entry) => entry.prev_stream !== undefined,
+    )?.prev_stream;
+    return original_stream_id !== undefined && original_stream_id !== message.stream_id;
+}
+
+function wants_subscription_divider(
+    prev_historical: boolean | undefined,
+    message: Message,
+    message_was_moved: boolean,
+): boolean {
+    // A continuation message shows an inline subscription divider when its
+    // `historical` flag differs from the previous meaningful one, i.e. the
+    // user (un)subscribed between them. A moved message's flag is
+    // meaningless here, so it never shows one; callers pass the
+    // already-computed moved status to avoid recomputing it.
+    return (
+        !message_was_moved &&
+        prev_historical !== undefined &&
+        prev_historical !== message.historical
+    );
+}
+
+function update_date_divider(opts: {
     prev_msg_container: MessageContainer | undefined;
     curr_msg_container: MessageContainer;
 }): void {
     Object.assign(
         opts.curr_msg_container,
-        get_message_date_divider_data({
+        get_date_divider_data({
             prev_message: opts.prev_msg_container?.msg,
             curr_message: opts.curr_msg_container.msg,
             display_year: !same_year(opts.curr_msg_container.msg, opts.prev_msg_container?.msg),
@@ -207,7 +248,7 @@ function update_message_date_divider(opts: {
     );
 }
 
-function get_message_date_divider_data(opts: {
+function get_date_divider_data(opts: {
     prev_message: Message | undefined;
     curr_message: Message;
     display_year: boolean;
@@ -233,7 +274,7 @@ function get_message_date_divider_data(opts: {
     };
 }
 
-function get_timestr(message: Message): string {
+export function get_timestr(message: Message): string {
     const time = new Date(message.timestamp * 1000);
     return timerender.stringify_time(time);
 }
@@ -274,7 +315,8 @@ function get_users_for_recipient_row(message: Message): RecipientRowUser[] {
         return util.strcmp(a.full_name, b.full_name);
     }
 
-    return users.sort(compare_by_name);
+    users.sort(compare_by_name);
+    return users;
 }
 
 let message_id_to_focus_after_processing_message_events:
@@ -355,17 +397,16 @@ type SubscriptionMarkers = {
     subscribed?: boolean;
     just_unsubscribed?: boolean;
 };
-function populate_group_from_message(
+export function populate_group_from_message(
     message: Message,
     date_unchanged: boolean,
     year_changed: boolean,
-    subscription_markers: SubscriptionMarkers | undefined,
 ): MessageGroup {
     const is_stream = message.is_stream;
     const is_private = message.is_private;
     const display_recipient = message.display_recipient;
     const message_group_id = _.uniqueId("message_group_");
-    const date = get_group_display_date(message, year_changed);
+    const date_html = get_group_display_date(message, year_changed);
 
     // Each searched message is a self-contained result,
     // so we always display date in the recipient bar for those messages.
@@ -374,72 +415,43 @@ function populate_group_from_message(
         assert(message.type === "stream");
         // stream messages have string display_recipient
         assert(typeof display_recipient === "string");
-        const color = stream_data.get_color(message.stream_id);
-        const recipient_bar_color = stream_color.get_recipient_bar_color(color);
-        const stream_privacy_icon_color = stream_color.get_stream_privacy_icon_color(color);
-        const invite_only = stream_data.is_invite_only_by_stream_id(message.stream_id);
-        const is_web_public = stream_data.is_web_public(message.stream_id);
+        const stream_id = message.stream_id;
         const topic = message.topic;
-        const topic_display_name = util.get_final_topic_display_name(topic);
-        const is_empty_string_topic = topic === "";
-        const match_topic = util.get_match_topic(message);
-        const stream_url = hash_util.channel_url_by_user_setting(message.stream_id);
-        const is_archived = stream_data.is_stream_archived(message.stream_id);
-        const topic_url = internal_url.by_stream_topic_url(
-            message.stream_id,
-            message.topic,
-            sub_store.maybe_get_stream_name,
-            message.id,
-        );
-
-        const sub = sub_store.get(message.stream_id);
-        let stream_id;
-        if (sub === undefined) {
-            // Hack to handle unusual cases like the tutorial where
-            // the streams used don't actually exist in the subs
-            // module.  Ideally, we'd clean this up by making the
-            // tutorial populate stream_settings_ui.ts "properly".
-            stream_id = -1;
-        } else {
-            stream_id = sub.stream_id;
-        }
-
-        const is_subscribed = stream_data.is_subscribed(stream_id);
-        const topic_is_resolved = resolved_topic.is_resolved(topic);
-        const visibility_policy = user_topics.get_topic_visibility_policy(stream_id, topic);
-        // The following field is not specific to this group, but this is the
-        // easiest way we've figured out for passing the data to the template rendering.
-        const all_visibility_policies = user_topics.all_visibility_policies;
-
-        const topic_links = message.topic_links;
-
+        const sub = sub_store.get(stream_id);
+        assert(sub !== undefined);
         return {
             message_group_id,
             message_containers: [],
             is_stream,
             ...get_topic_edit_properties(message),
-            user_can_resolve_topic: settings_data.user_can_resolve_topic(),
-            ...subscription_markers,
-            date,
+            user_can_resolve_topic: stream_data.can_resolve_topics(sub),
+            date_html,
             display_recipient,
             date_unchanged,
-            topic_links,
+            topic_links: message.topic_links,
             topic,
-            topic_display_name,
-            is_empty_string_topic,
-            recipient_bar_color,
-            stream_privacy_icon_color,
-            invite_only,
-            is_web_public,
-            match_topic,
-            stream_url,
-            is_archived,
-            topic_url,
+            topic_display_name: util.get_final_topic_display_name(topic),
+            is_empty_string_topic: topic === "",
+            recipient_bar_color: stream_color.get_recipient_bar_color(sub.color),
+            stream_privacy_icon_color: stream_color.get_stream_privacy_icon_color(sub.color),
+            invite_only: sub.invite_only,
+            is_web_public: sub.is_web_public,
+            match_topic_html: util.get_match_topic(message),
+            stream_url: hash_util.channel_url_by_user_setting(stream_id),
+            is_archived: sub.is_archived,
+            topic_url: internal_url.by_stream_topic_url(
+                stream_id,
+                topic,
+                sub_store.maybe_get_stream_name,
+                message.id,
+            ),
             stream_id,
-            is_subscribed,
-            topic_is_resolved,
-            visibility_policy,
-            all_visibility_policies,
+            is_subscribed: sub.subscribed,
+            topic_is_resolved: resolved_topic.is_resolved(topic),
+            visibility_policy: user_topics.get_topic_visibility_policy(stream_id, topic),
+            // The following field is not specific to this group, but this is the
+            // easiest way we've figured out for passing the data to the template rendering.
+            all_visibility_policies: user_topics.all_visibility_policies,
             always_display_date,
         };
     }
@@ -454,7 +466,7 @@ function populate_group_from_message(
         is_stream,
         is_private,
         ...get_topic_edit_properties(message),
-        date,
+        date_html,
         date_unchanged,
         display_recipient,
         pm_with_url: message.pm_with_url,
@@ -545,6 +557,7 @@ export class MessageListView {
         edited: boolean;
         moved: boolean;
         modified: boolean;
+        widget_edited: boolean;
     } {
         let last_edit_timestamp;
         if (message.local_edit_timestamp !== undefined) {
@@ -553,13 +566,18 @@ export class MessageListView {
             last_edit_timestamp = message.last_edit_timestamp;
         }
         const last_moved_timestamp = message.last_moved_timestamp;
+        const widget_edited = submessage.is_widget_edited(message);
 
         return {
             last_edit_timestamp,
             last_moved_timestamp,
-            edited: last_edit_timestamp !== undefined,
+            edited: last_edit_timestamp !== undefined || widget_edited,
             moved: last_moved_timestamp !== undefined,
-            modified: last_edit_timestamp !== undefined || last_moved_timestamp !== undefined,
+            modified:
+                last_edit_timestamp !== undefined ||
+                last_moved_timestamp !== undefined ||
+                widget_edited,
+            widget_edited,
         };
     }
 
@@ -588,6 +606,7 @@ export class MessageListView {
         edited: boolean;
         moved: boolean;
         modified: boolean;
+        widget_edited: boolean;
     } {
         const is_typing = typing_data.is_message_editing(message.id);
         if (is_typing) {
@@ -601,7 +620,7 @@ export class MessageListView {
         /*
             If the message needs to be hidden because the sender was muted, we do
             a few things:
-            1. Hide the sender avatar and name.
+            1. Replace the sender's avatar with that of a muted sender and name them as "Muted sender".
             2. Hide reactions on that message.
             3. Do not give a background color to that message even if it mentions the
                current user.
@@ -637,10 +656,7 @@ export class MessageListView {
             // mention (which is the only other option for `mentioned` being true).
             if (message.mentioned_me_directly && is_user_mention) {
                 // Highlight messages having personal mentions only in DMs and subscribed streams.
-                if (
-                    message.type === "private" ||
-                    stream_data.is_user_subscribed(message.stream_id, people.my_current_user_id())
-                ) {
+                if (message.type === "private" || stream_data.is_subscribed(message.stream_id)) {
                     mention_classname = "direct_mention";
                 } else {
                     mention_classname = undefined;
@@ -651,7 +667,7 @@ export class MessageListView {
         } else {
             mention_classname = undefined;
         }
-        let include_sender = existing_include_sender && !is_hidden;
+        let include_sender = existing_include_sender;
         if (is_revealed) {
             // If the message is to be revealed, we show the sender anyways, because the
             // the first message in the group (which would hold the sender) can still be
@@ -666,7 +682,9 @@ export class MessageListView {
             message.sender_id,
         );
 
-        const small_avatar_url = people.small_avatar_url(message);
+        const small_avatar_url = is_hidden
+            ? people.get_muted_user_avatar_url()
+            : people.small_avatar_url(message);
         let background_color;
         if (message.type === "stream") {
             background_color = stream_data.get_color(message.stream_id);
@@ -691,18 +709,24 @@ export class MessageListView {
 
     maybe_add_subscription_marker_to_group(
         group: MessageGroup,
-        last_message: Message | undefined,
+        prev_historical: boolean | undefined,
         first_message: Message,
+        first_message_was_moved: boolean,
     ): void {
-        const markers = this.get_possible_group_subscription_markers(last_message, first_message);
+        const markers = this.get_possible_group_subscription_markers(
+            prev_historical,
+            first_message,
+            first_message_was_moved,
+        );
         if (markers) {
             Object.assign(group, markers);
         }
     }
 
     get_possible_group_subscription_markers(
-        last_message: Message | undefined,
+        prev_historical: boolean | undefined,
         first_message: Message,
+        first_message_was_moved: boolean,
     ): SubscriptionMarkers | undefined {
         // The `historical` flag is present on messages which were
         // sent a time when the current user was not subscribed to the
@@ -715,11 +739,15 @@ export class MessageListView {
         if (!this.list.data.filter.has_operator("channel")) {
             return undefined;
         }
-        if (last_message === undefined) {
+        // A moved message's flag reflects its original channel, so a
+        // boundary involving one tells us nothing about subscription
+        // changes here. prev_historical already skips moved messages;
+        // guard the group's first message too.
+        if (prev_historical === undefined || first_message_was_moved) {
             return undefined;
         }
 
-        const last_subscribed = !last_message.historical;
+        const last_subscribed = !prev_historical;
         const first_subscribed = !first_message.historical;
         assert(first_message.type === "stream");
         const stream_id = first_message.stream_id;
@@ -744,6 +772,189 @@ export class MessageListView {
         return undefined;
     }
 
+    get_boundary_message_info_with_meaningful_historical(
+        position: "oldest" | "newest",
+    ): BoundaryMessageContainerInfo | undefined {
+        // Returns the oldest or newest rendered message container info whose
+        // `historical` flag is meaningful in the current channel, or
+        // undefined if there is none.
+        //
+        // Moved messages are skipped because their `historical` flag does not
+        // represent the subscription state of this channel. This method is
+        // used when prepending/appending messages, so it walks from the
+        // requested boundary rather than flattening all rendered containers;
+        // in the common case it finds a meaningful message immediately.
+        const message_groups =
+            position === "oldest" ? this._message_groups : this._message_groups.toReversed();
+
+        for (const message_group of message_groups) {
+            const meaningful_container =
+                position === "oldest"
+                    ? message_group.message_containers.find(
+                          (message_container) =>
+                              !was_moved_from_another_channel(message_container.msg),
+                      )
+                    : message_group.message_containers.findLast(
+                          (message_container) =>
+                              !was_moved_from_another_channel(message_container.msg),
+                      );
+
+            if (meaningful_container !== undefined) {
+                return {
+                    message_container: meaningful_container,
+                    message_group,
+                };
+            }
+        }
+
+        return undefined;
+    }
+
+    update_oldest_rendered_subscription_representation(prev_historical: boolean): void {
+        // Set the oldest rendered meaningful container's divider/marker against
+        // the prepended messages; the walk over the new groups did not cover
+        // this boundary.
+        //
+        // The container is meaningful, hence never moved, so it passes `false`
+        // for message_was_moved below.
+        const boundary_message_container_info =
+            this.get_boundary_message_info_with_meaningful_historical("oldest");
+        if (boundary_message_container_info === undefined) {
+            return;
+        }
+        const {message_group, message_container} = boundary_message_container_info;
+
+        const is_first_container_in_group =
+            message_group.message_containers[0] === message_container;
+
+        if (!is_first_container_in_group) {
+            // A continuation within its group: shown as an inline divider.
+            message_container.want_subscription_status_divider = wants_subscription_divider(
+                prev_historical,
+                message_container.msg,
+                false,
+            );
+            return;
+        }
+
+        // Starts its group: the change is shown as a group marker.
+        this.maybe_add_subscription_marker_to_group(
+            message_group,
+            prev_historical,
+            message_container.msg,
+            false,
+        );
+
+        const is_oldest_rendered_group = message_group === this._message_groups[0];
+
+        if (!is_oldest_rendered_group) {
+            // This group can't merge with the prepended content, so no divider.
+            message_container.want_subscription_status_divider = false;
+            return;
+        }
+
+        // The oldest rendered group may merge with the prepended content, so
+        // set the divider speculatively; merge_message_groups() clears it if
+        // the merge does not happen.
+        message_container.want_subscription_status_divider = wants_subscription_divider(
+            prev_historical,
+            message_container.msg,
+            false,
+        );
+    }
+
+    set_subscription_dividers_and_markers(
+        new_message_groups: MessageGroup[],
+        where: "top" | "bottom",
+    ): void {
+        // Walk the newly built groups in order, setting each container's
+        // inline subscription-status divider and each group's bookend marker.
+        // Both mark the same thing -- the `historical` flag flipping between
+        // two adjacent meaningful messages, i.e. the user (un)subscribed
+        // between them -- shown inline between two messages or as a bookend
+        // at a group boundary.
+        //
+        // prev_historical holds the last meaningful flag as we walk. A message
+        // moved here from another channel carries its original channel's flag,
+        // so it is skipped and does not advance prev_historical, preserving a
+        // real transition around a moved message rather than hiding it.
+        //
+        // The boundary against the already-rendered messages is handled after
+        // the loop, since that container may merge into a neighbouring group.
+
+        const is_prepend = where === "top";
+        let prev_historical = is_prepend
+            ? undefined
+            : this.get_boundary_message_info_with_meaningful_historical("newest")?.message_container
+                  .msg.historical;
+        const newest_rendered_historical = is_prepend ? undefined : prev_historical;
+
+        // The first new container is the boundary against the already-rendered
+        // messages when appending; cache whether it was moved during the walk
+        // so the post-loop boundary step need not recompute it.
+        const first_message_container = new_message_groups[0]?.message_containers[0];
+        let first_message_was_moved = false;
+
+        // Record a container's subscription change as a bookend marker when it
+        // starts its group, or as an inline divider when it is a continuation,
+        // then advance prev_historical past meaningful messages.
+        const set_subscription_representation = (
+            group: MessageGroup,
+            message_container: MessageContainer,
+            starts_message_group: boolean,
+        ): void => {
+            const message = message_container.msg;
+            const message_was_moved = was_moved_from_another_channel(message);
+            if (message_container === first_message_container) {
+                first_message_was_moved = message_was_moved;
+            }
+            if (starts_message_group) {
+                this.maybe_add_subscription_marker_to_group(
+                    group,
+                    prev_historical,
+                    message,
+                    message_was_moved,
+                );
+                message_container.want_subscription_status_divider = false;
+            } else {
+                message_container.want_subscription_status_divider = wants_subscription_divider(
+                    prev_historical,
+                    message,
+                    message_was_moved,
+                );
+            }
+            if (!message_was_moved) {
+                prev_historical = message.historical;
+            }
+        };
+
+        for (const message_group of new_message_groups) {
+            for (const [index, message_container] of message_group.message_containers.entries()) {
+                set_subscription_representation(message_group, message_container, index === 0);
+            }
+        }
+
+        // The boundary between new and already-rendered messages
+        // may be merged into a single group by merge_message_groups():
+        //
+        // * when prepending, the oldest rendered container may merge into the
+        //   last new group, so update (divider/marker) against the incoming messages;
+        // * when appending, the first new container may merge into the newest
+        //   rendered group, so set its divider against the newest rendered flag.
+        //
+        // Update the subscription representation at the boundary. Either is
+        // speculative: merge_message_groups() clears it if no merge takes place.
+        if (is_prepend && prev_historical !== undefined) {
+            this.update_oldest_rendered_subscription_representation(prev_historical);
+        } else if (first_message_container !== undefined) {
+            first_message_container.want_subscription_status_divider = wants_subscription_divider(
+                newest_rendered_historical,
+                first_message_container.msg,
+                first_message_was_moved,
+            );
+        }
+    }
+
     build_message_groups(messages: Message[]): MessageGroup[] {
         const new_message_groups: MessageGroup[] = [];
 
@@ -764,7 +975,6 @@ export class MessageListView {
                 message_for_next_group,
                 same_day(message_for_next_group, prev_message),
                 !same_year(message_for_next_group, prev_message),
-                this.get_possible_group_subscription_markers(prev_message, message_for_next_group),
             );
         };
 
@@ -779,40 +989,37 @@ export class MessageListView {
         for (const message of messages) {
             const message_reactions = reactions.get_message_reactions(message);
             message.message_reactions = message_reactions;
+            message.reminders = message_reminder.get_reminders(message.id) ?? [];
 
             // These will be used to build the message container
             let include_recipient = false;
-            let subscribed;
-            let unsubscribed;
             let stream_url;
             let topic_url;
             let pm_with_url;
             let include_sender;
             let want_date_divider;
             let date_divider_html;
+            const want_subscription_status_divider = false;
             const year_changed = !same_year(message, prev_message_container?.msg);
 
             if (
                 prev_message_container &&
                 util.same_recipient(prev_message_container.msg, message) &&
-                this.collapse_messages &&
-                prev_message_container.msg.historical === message.historical
+                this.collapse_messages
             ) {
-                const date_divider_data = get_message_date_divider_data({
+                const divider_data = get_date_divider_data({
                     prev_message: prev_message_container.msg,
                     curr_message: message,
                     display_year: year_changed,
                 });
-                want_date_divider = date_divider_data.want_date_divider;
-                date_divider_html = date_divider_data.date_divider_html;
+                want_date_divider = divider_data.want_date_divider;
+                date_divider_html = divider_data.date_divider_html;
             } else {
                 finish_group();
                 start_group(prev_message_container?.msg, message);
                 want_date_divider = false;
                 date_divider_html = undefined;
                 include_recipient = true;
-                subscribed = false;
-                unsubscribed = false;
 
                 if (message.type === "stream") {
                     stream_url = hash_util.channel_url_by_user_setting(message.stream_id);
@@ -828,6 +1035,7 @@ export class MessageListView {
                 prev_message_container &&
                 !prev_message_container.status_message &&
                 same_day(prev_message_container.msg, message) &&
+                prev_message_container.msg.historical === message.historical &&
                 prev_message_container.msg.sender_id === message.sender_id
             ) {
                 include_sender = false;
@@ -840,12 +1048,11 @@ export class MessageListView {
             const message_container = {
                 msg: message,
                 include_recipient,
-                ...(subscribed && {subscribed}),
-                ...(unsubscribed && {unsubscribed}),
                 ...(stream_url && {stream_url}),
                 ...(topic_url && {topic_url}),
                 ...(pm_with_url && {pm_with_url}),
                 want_date_divider,
+                want_subscription_status_divider,
                 date_divider_html,
                 year_changed,
                 ...calculated_variables,
@@ -870,8 +1077,7 @@ export class MessageListView {
         second_group: MessageGroup | undefined,
     ): boolean {
         // join_message_groups will combine groups if they have the
-        // same_recipient and the view supports collapsing, otherwise
-        // it may add a subscription_marker if required.  It returns
+        // same_recipient and the view supports collapsing. It returns
         // true if the two groups were joined in to one and the
         // second_group should be ignored.
         if (first_group === undefined || second_group === undefined) {
@@ -882,16 +1088,13 @@ export class MessageListView {
         assert(first_msg_container !== undefined);
 
         // Join two groups into one.
-        if (
-            this.collapse_messages &&
-            same_recipient(last_msg_container, first_msg_container) &&
-            last_msg_container!.msg.historical === first_msg_container.msg.historical
-        ) {
+        if (this.collapse_messages && same_recipient(last_msg_container, first_msg_container)) {
             if (
                 !last_msg_container!.status_message &&
                 !first_msg_container.msg.is_me_message &&
                 same_day(last_msg_container?.msg, first_msg_container.msg) &&
-                same_sender(last_msg_container, first_msg_container)
+                same_sender(last_msg_container, first_msg_container) &&
+                first_msg_container.msg.historical === last_msg_container?.msg.historical
             ) {
                 first_msg_container.include_sender = false;
             }
@@ -901,13 +1104,6 @@ export class MessageListView {
             ];
             return true;
         }
-
-        // We may need to add a subscription marker after merging the groups.
-        this.maybe_add_subscription_marker_to_group(
-            second_group,
-            last_msg_container?.msg,
-            first_msg_container.msg,
-        );
 
         return false;
     }
@@ -952,12 +1148,12 @@ export class MessageListView {
 
         const was_joined = this.join_message_groups(first_group, second_group);
         if (was_joined) {
-            update_message_date_divider({
+            update_date_divider({
                 prev_msg_container,
                 curr_msg_container,
             });
         } else {
-            clear_message_date_divider(curr_msg_container);
+            clear_message_divider(curr_msg_container);
         }
 
         if (where === "top") {
@@ -985,6 +1181,11 @@ export class MessageListView {
                 update_group_date(second_group, curr_msg_container.msg, prev_msg_container?.msg);
                 // We could add an action to update the date row, but for now rerender the group.
                 message_actions.rerender_groups.push(second_group);
+            } else if (second_group.bookend_top) {
+                // We know there was no bookend_top before since we
+                // are adding messages to the top.
+                const rendered_bookend_html = render_bookend(second_group);
+                this.$list.prepend($(rendered_bookend_html));
             }
             message_actions.prepend_groups = new_message_groups;
             this._message_groups = [...new_message_groups, ...this._message_groups];
@@ -1038,9 +1239,9 @@ export class MessageListView {
         if (page_params.is_spectator) {
             // For images that fail to load due to being rate limited or being denied access
             // by server in general, we tell user to login to be able to view the image.
-            $message_rows.find(".message_inline_image img").on("error", (e) => {
+            $message_rows.find(".media-image-element").on("error", (e) => {
                 $(e.target)
-                    .closest(".message_inline_image")
+                    .closest(".message-media-preview-image")
                     .replaceWith($(render_login_to_view_image_button()));
             });
         }
@@ -1065,7 +1266,7 @@ export class MessageListView {
         const id = rows.id($row);
         message_edit.maybe_show_edit($row, id);
 
-        submessage.process_submessages({
+        submessage.render_submessage({
             $row,
             message_id: id,
         });
@@ -1074,8 +1275,22 @@ export class MessageListView {
     _get_message_template(message_container: MessageContainer): string {
         const msg_reactions = reactions.get_message_reactions(message_container.msg);
         message_container.msg.message_reactions = msg_reactions;
+        message_container.msg.reminders =
+            message_reminder.get_reminders(message_container.msg.id) ?? [];
+        let invite_only;
+        let is_web_public;
+        let is_archived;
+        if (message_container.msg.is_stream) {
+            const stream_id = message_container.msg.stream_id;
+            invite_only = stream_data.is_invite_only_by_stream_id(stream_id);
+            is_web_public = stream_data.is_web_public(stream_id);
+            is_archived = stream_data.is_stream_archived_by_id(stream_id);
+        }
         const msg_to_render = {
             ...message_container,
+            invite_only,
+            is_web_public,
+            is_archived,
             message_list_id: this.list.id,
         };
         return render_single_message(msg_to_render);
@@ -1126,7 +1341,7 @@ export class MessageListView {
 
     render(
         messages: Message[],
-        where: string,
+        where: "top" | "bottom",
         messages_are_new = false,
     ): {need_user_to_scroll: boolean} | undefined {
         // This function processes messages into chunks with separators between them,
@@ -1170,12 +1385,11 @@ export class MessageListView {
 
         const new_message_groups = this.build_message_groups(messages);
         const message_containers = new_message_groups.flatMap((group) => group.message_containers);
+        this.set_subscription_dividers_and_markers(new_message_groups, where);
         const message_actions = this.merge_message_groups(new_message_groups, where);
         const new_dom_elements = [];
         let $rendered_groups;
         let $dom_messages;
-        let $last_message_row;
-        let $last_group_row;
 
         for (const message_container of message_containers) {
             this.set_edited_notice_locations(message_container);
@@ -1228,8 +1442,8 @@ export class MessageListView {
 
         // Insert new messages in to the last message group
         if (message_actions.append_messages.length > 0) {
-            $last_message_row = this.$list.find(".message_row").last().expectOne();
-            $last_group_row = rows.get_message_recipient_row($last_message_row);
+            const $last_message_row = this.$list.find(".message_row").last().expectOne();
+            const $last_group_row = rows.get_message_recipient_row($last_message_row);
             $dom_messages = $(
                 message_actions.append_messages
                     .map((message_container) => this._get_message_template(message_container))
@@ -1282,12 +1496,6 @@ export class MessageListView {
 
         restore_scroll_position();
 
-        const last_message_group = this._message_groups.at(-1);
-        if (last_message_group !== undefined) {
-            list.last_message_historical =
-                last_message_group.message_containers.at(-1)!.msg.historical;
-        }
-
         list.update_trailing_bookend();
 
         if (list === message_lists.current) {
@@ -1331,7 +1539,7 @@ export class MessageListView {
     _new_messages_height(rendered_elems: JQuery[]): number {
         let new_messages_height = 0;
 
-        for (const $elem of rendered_elems.reverse()) {
+        for (const $elem of rendered_elems.toReversed()) {
             // Sometimes there are non-DOM elements in rendered_elems; only
             // try to get the heights of actual trs.
             if ($elem.is("div")) {
@@ -1466,7 +1674,6 @@ export class MessageListView {
         if (clear_table) {
             this.clear_table();
         }
-        this.list.last_message_historical = false;
 
         this._render_win_start = 0;
         this._render_win_end = 0;
@@ -1522,14 +1729,12 @@ export class MessageListView {
         //   of the bottom of the currently rendered window and the
         //   bottom of the window does not abut the end of the
         //   message list
-        if (
-            !(
-                (selected_idx - this._render_win_start < this._RENDER_THRESHOLD &&
-                    this._render_win_start !== 0) ||
-                (this._render_win_end - selected_idx <= this._RENDER_THRESHOLD &&
-                    this._render_win_end !== this.list.num_items())
-            )
-        ) {
+        if (!(
+            (selected_idx - this._render_win_start < this._RENDER_THRESHOLD &&
+                this._render_win_start !== 0) ||
+            (this._render_win_end - selected_idx <= this._RENDER_THRESHOLD &&
+                this._render_win_end !== this.list.num_items())
+        )) {
             return false;
         }
 
@@ -1602,36 +1807,13 @@ export class MessageListView {
         );
     }
 
-    _rerender_header(message_containers: MessageContainer[]): void {
-        // Given a list of messages that are in the **same** message group,
-        // rerender the header / recipient bar of the messages. This method
-        // should only be called with rerender_messages as the rerendered
-        // header may need to be updated for the "sticky_header" class.
-        if (message_containers.length === 0) {
-            return;
-        }
-
-        const $first_row = this.get_row(message_containers[0]!.msg.id);
-
-        // We may not have the row if the stream or topic was muted
-        if ($first_row.length === 0) {
-            return;
-        }
-
-        const $recipient_row = rows.get_message_recipient_row($first_row);
-        const $header = $recipient_row.find(".message_header");
-        const message_group_id = $recipient_row.attr("id")!;
-
-        // Since there might be multiple dates within the message
-        // group, it's important to look up the original/full message
-        // group rather than doing an artificial rerendering of the
-        // message header from the set of message containers passed in
-        // here.
-        const group = this._find_message_group(message_group_id);
-        if (group === undefined) {
-            blueslip.error("Could not find message group for rerendering headers");
-            return;
-        }
+    _rerender_header(group: MessageGroup): void {
+        // Rerender the header / recipient bar of the given message group,
+        // rebuilding it from the authoritative group passed in. This
+        // method should only be called with rerender_messages as the
+        // rerendered header may need to be updated for the "sticky_header"
+        // class.
+        const $header = $(`#${CSS.escape(group.message_group_id)}`).find(".message_header");
 
         // TODO: It's possible that we no longer need this populate
         // call; it was introduced in an earlier version of this code
@@ -1647,7 +1829,6 @@ export class MessageListView {
                 group.message_containers[0]!.msg,
                 group.date_unchanged,
                 group.message_containers[0]!.year_changed,
-                undefined,
             ),
             // We don't want `populate_group_from_message` to generate a
             // new id. We also preserve the message containers, since this
@@ -1663,7 +1844,7 @@ export class MessageListView {
     _rerender_message(
         message_container: MessageContainer,
         opts: {message_content_edited: boolean; is_revealed: boolean},
-    ): void {
+    ): JQuery {
         const {message_content_edited, is_revealed} = opts;
         const $row = this.get_row(message_container.msg.id);
         const was_selected = this.list.selected_message() === message_container.msg;
@@ -1683,13 +1864,22 @@ export class MessageListView {
         if (message_content_edited) {
             $rendered_msg.addClass("fade-in-message");
         }
-        this._post_process($rendered_msg);
+        if ($row.hasClass("preview_mode")) {
+            // We'll render the preview area after we've
+            // rendered the message edit content in this new row.
+            $rendered_msg.addClass("show_preview");
+        }
         $row.replaceWith($rendered_msg);
+        this._post_process($rendered_msg);
+
+        message_list_hover.reapply_hover_on_row_replace($row, $rendered_msg, message_container.msg);
 
         // If this list not currently displayed, we don't need to select the message.
         if (was_selected && this.list === message_lists.current) {
             this.list.reselect_selected_id();
         }
+
+        return $rendered_msg;
     }
 
     reveal_hidden_message(message_id: number): void {
@@ -1699,6 +1889,29 @@ export class MessageListView {
             message_content_edited: false,
             is_revealed: true,
         });
+
+        const rendered_markdown = this._rows.get(message_id)!.find(".rendered_markdown")[0];
+        assert(rendered_markdown !== undefined);
+
+        // Me messages do not have a child element in `.rendered_markdown`,
+        // so we append the "Hide" button to the `.rendered_markdown` element.
+        const last_ele = rendered_markdown?.lastElementChild ?? rendered_markdown;
+        assert(last_ele instanceof Element);
+
+        // If the last element in the message row contains text, we add the hide button
+        // inline to the same element.
+        const should_display_inline = last_ele.nodeName === "P" || last_ele.nodeName === "SPAN";
+        const hide_button_fragment = ui_util.parse_html(
+            render_revealed_message_hide_button({
+                message_id,
+                is_inline_hide_button: should_display_inline,
+            }),
+        );
+        if (should_display_inline) {
+            last_ele.append(hide_button_fragment);
+        } else {
+            rendered_markdown.append(hide_button_fragment);
+        }
     }
 
     hide_revealed_message(message_id: number): void {
@@ -1729,34 +1942,59 @@ export class MessageListView {
             }
         }
 
-        const message_groups = [];
-        let current_group = [];
-
+        // Rerender each message row, collecting the distinct recipient
+        // bars they belong to by their row's rendered group id. The
+        // messages can span several bars -- even bars that share a
+        // recipient -- so the group id is what distinguishes the bars.
+        const rerendered_elements: HTMLElement[] = [];
+        const rerendered_group_ids = new Set<string>();
         for (const message_container of message_containers) {
-            if (
-                current_group.length === 0 ||
-                same_recipient(current_group.at(-1), message_container)
-            ) {
-                current_group.push(message_container);
-            } else {
-                message_groups.push(current_group);
-                current_group = [];
+            const $rendered = this._rerender_message(message_container, {
+                message_content_edited,
+                is_revealed: false,
+            });
+            rerendered_elements.push(...$rendered);
+            const $row = this.get_row(message_container.msg.id);
+            // The row may be absent, e.g. for a muted stream or topic, in
+            // which case there is no recipient bar to rerender.
+            if ($row.length === 0) {
+                continue;
             }
-            this._rerender_message(message_container, {message_content_edited, is_revealed: false});
+            const message_group_id = rows.get_message_recipient_row($row).attr("id");
+            if (message_group_id !== undefined) {
+                rerendered_group_ids.add(message_group_id);
+            }
         }
 
-        if (current_group.length > 0) {
-            message_groups.push(current_group);
+        // Only the current message list needs its condense/collapse
+        // state refreshed here; non-current lists get
+        // `condense_and_collapse` reapplied via `restore_rendered_list`
+        // in `message_view` when they're brought back into view.
+        if (this.list === message_lists.current && rerendered_elements.length > 0) {
+            condense.condense_and_collapse($(rerendered_elements));
         }
 
-        for (const messages_in_group of message_groups) {
-            this._rerender_header(messages_in_group);
+        // Now that every row is rerendered, rerender each affected bar's
+        // header once. We build a lookup map here rather than calling
+        // _find_message_group in the loop, since the latter does a
+        // linear search.
+        const message_groups_by_id = new Map(
+            this._message_groups.map((group) => [group.message_group_id, group]),
+        );
+        for (const message_group_id of rerendered_group_ids) {
+            const group = message_groups_by_id.get(message_group_id);
+            if (group === undefined) {
+                blueslip.error("Could not find message group for rerendering headers");
+                continue;
+            }
+            this._rerender_header(group);
         }
 
         if (message_lists.current === this.list && narrow_state.is_message_feed_visible()) {
             this.update_sticky_recipient_headers();
             maybe_restore_focus_to_message_edit_form();
         }
+        autosize.update(this.$list.find(".message_edit_content"));
     }
 
     append(
@@ -1787,7 +2025,7 @@ export class MessageListView {
     }
 
     prepend(messages: Message[]): void {
-        if (this._render_win_end - this._render_win_start === 0) {
+        if (this._render_win_end === this._render_win_start) {
             // If the message list previously contained no visible
             // messages, appending and prepending are equivalent, but
             // the prepend logic will throw an exception, so just
@@ -1888,6 +2126,7 @@ export class MessageListView {
         is_spectator: boolean,
         invite_only: boolean,
         is_web_public: boolean,
+        can_subscribe: boolean | undefined,
     ): void {
         // This is not the only place we render bookends; see also the
         // partial in message_group.hbs, which do not set is_trailing_bookend.
@@ -1902,6 +2141,7 @@ export class MessageListView {
                 is_trailing_bookend: true,
                 invite_only,
                 is_web_public,
+                can_subscribe,
             }),
         );
         this.$list.append($rendered_trailing_bookend);
@@ -2000,7 +2240,7 @@ export class MessageListView {
                 .attr("id")!;
             const group = this._find_message_group(message_group_id);
             if (group !== undefined) {
-                const rendered_date = group.date;
+                const rendered_date = group.date_html;
                 dom_updates.html_updates.push({
                     $element: $current_sticky_header.find(".recipient_row_date"),
                     rendered_date,
@@ -2027,7 +2267,8 @@ export class MessageListView {
                 navbar_bottom + header_props.height + margin_between_recipient_rows;
             if (header_props.top < partially_hidden_header_position) {
                 return -1;
-            } else if (header_props.top > sticky_or_about_to_be_sticky_header_position) {
+            }
+            if (header_props.top > sticky_or_about_to_be_sticky_header_position) {
                 return 1;
             }
             /* Headers between `partially_hidden_header_position` and `sticky_or_about_to_be_sticky_header_position`
@@ -2052,7 +2293,8 @@ export class MessageListView {
             if (diff === 0) {
                 $sticky_header = $(header);
                 break;
-            } else if (diff === 1) {
+            }
+            if (diff === 1) {
                 end = mid - 1;
             } else {
                 start = mid + 1;
@@ -2178,7 +2420,6 @@ export class MessageListView {
 
     show_messages_as_unread(message_ids: number[]): void {
         const $rows_to_show_as_unread = this.$list.find(".message_row").filter((_index, $row) => {
-            // eslint-disable-next-line unicorn/prefer-dom-node-dataset
             const message_id = Number.parseFloat($row.getAttribute("data-message-id")!);
             return message_ids.includes(message_id);
         });

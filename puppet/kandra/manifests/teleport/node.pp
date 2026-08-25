@@ -13,7 +13,8 @@ class kandra::teleport::node {
     owner  => 'root',
     group  => 'root',
     mode   => '0644',
-    notify => Service['teleport_node'],
+    before => Kandra::Teleport::Part['node'],
+    notify => Exec['reload teleport_node'],
   }
   concat::fragment { 'teleport_node_base':
     target  => '/etc/teleport_node.yaml',

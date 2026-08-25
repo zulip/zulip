@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
-const {unmock_module, zrequire} = require("./lib/namespace.cjs");
+const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -14,17 +14,15 @@ const {page_params} = require("./lib/zpage_params.cjs");
 page_params.request_language = "en";
 page_params.translation_data = {
     "Quote message": "Citer le message",
+    "Copy link to message": "Copier le lien vers le message",
     "Notification triggers": "Déclencheurs de notification",
     "You subscribed to channel {name}": "Vous n'êtes pas abonnés au canal {name}",
     "<p>The channel <b>{name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Channels page</z-link>.</p>":
         "<p>Le canal <b>{name}</b> n'existe pas.</p><p>Gérez vos abonnements <z-link>sur votre page canaux</z-link>.</p>",
 };
 
-// All of our other tests stub out i18n activity;
-// here we do a quick sanity check on the engine itself.
 // `i18n.ts` initializes FormatJS and is imported by
 // `templates.ts`.
-unmock_module("../src/i18n");
 const {$t, $t_html, get_language_name, get_language_list_columns, initialize} = zrequire("i18n");
 
 run_test("$t", () => {
@@ -43,7 +41,7 @@ run_test("$t", () => {
     );
 });
 
-run_test("$tr", () => {
+run_test("$t_html", () => {
     assert.equal(
         $t_html(
             {
@@ -61,18 +59,23 @@ run_test("$tr", () => {
 });
 
 run_test("t_tag", ({mock_template}) => {
+    // The Quote/Forward labels reach this template already translated, so
+    // assert on a label the template still translates itself.
     const args = {
         message_id: "99",
         should_display_quote_message: true,
-        editability_menu_item: true,
-        should_display_hide_option: true,
+        quote_message_menu_item: "Citer le message",
+        forward_message_menu_item: "Transférer le message",
+        show_quote_and_forward_hotkey_hints: true,
+        editability_menu_item: "Edit message",
         conversation_time_url:
             "http://zulip.zulipdev.com/#narrow/channel/101-devel/topic/testing/near/99",
     };
 
     mock_template("popovers/message_actions_popover.hbs", true, (data, html) => {
         assert.equal(data, args);
-        assert.ok(html.includes("Citer le message"));
+        assert.ok(html.includes("Copier le lien vers le message"));
+        return "<message-actions-popover-stub>";
     });
 
     require("../templates/popovers/message_actions_popover.hbs")(args);
@@ -80,8 +83,18 @@ run_test("t_tag", ({mock_template}) => {
 
 run_test("{{#tr}} to tag for translation", ({mock_template}) => {
     const args = {
-        notification_settings: {},
-        settings_object: {},
+        general_settings: [],
+        notification_settings: {
+            desktop_notification_settings: [],
+            mobile_notification_settings: [],
+            email_message_notification_settings: [],
+            other_email_settings: [],
+        },
+        custom_stream_specific_notification_settings: [],
+        email_notifications_batching_period_values: [],
+        settings_object: {
+            available_notification_sounds: [],
+        },
         settings_label: {
             desktop_icon_count_display:
                 "Unread count badge (appears in desktop sidebar and browser tab)",
@@ -91,6 +104,11 @@ run_test("{{#tr}} to tag for translation", ({mock_template}) => {
             automatically_unmute_topics_in_muted_streams_policy:
                 "Automatically unmute topics in muted channels",
         },
+        automatically_follow_topics_policy_values: {},
+        automatically_unmute_topics_in_muted_streams_policy_values: {},
+        resolved_topic_notice_auto_read_policy_values: {},
+        desktop_icon_count_display_values: {},
+        realm_name_in_email_notifications_policy_values: {},
     };
 
     // We're actually testing `notification_settings.hbs` here which
@@ -101,52 +119,36 @@ run_test("{{#tr}} to tag for translation", ({mock_template}) => {
     mock_template("settings/user_notification_settings.hbs", true, (data, html) => {
         assert.equal(data, args);
         assert.ok(html.includes("Déclencheurs de notification"));
+        return "<user-notification-settings-stub>";
     });
     require("../templates/settings/user_notification_settings.hbs")(args);
 });
 
 run_test("language_list", () => {
     const language_list = [
-        {
-            code: "en",
-            locale: "en",
-            name: "English",
-        },
-        {
-            code: "en-gb",
-            locale: "en_GB",
-            name: "British English",
-            percent_translated: 99,
-        },
-        {
-            code: "id",
-            locale: "id",
-            name: "Bahasa Indonesia",
-            percent_translated: 32,
-        },
+        {code: "bqi", locale: "bqi", name: "Luri (Bakhtiari)", percent_translated: 5},
+        {code: "cy", locale: "cy", name: "Cymraeg", percent_translated: 36},
+        {code: "en", locale: "en", name: "English"},
+        {code: "en-gb", locale: "en_GB", name: "British English", percent_translated: 99},
+        {code: "id", locale: "id", name: "Bahasa Indonesia", percent_translated: 32},
+        {code: "mn", locale: "mn", name: "Mongolian", percent_translated: 53},
+        {code: "pt", locale: "pt", name: "Português", percent_translated: 81},
+        {code: "si", locale: "si", name: "Sinhala", percent_translated: 20},
+        {code: "zh-hans", locale: "zh_Hans", name: "简体中文", percent_translated: 86},
     ];
     initialize({language_list});
     assert.equal(get_language_name("en"), "English");
 
     const successful_formatted_list = [
-        {
-            name: "English",
-            code: "en",
-            name_with_percent: "English",
-            selected: true,
-        },
-        {
-            name: "British English",
-            code: "en-gb",
-            name_with_percent: "British English (99%)",
-            selected: false,
-        },
-        {
-            name: "Bahasa Indonesia",
-            code: "id",
-            name_with_percent: "Bahasa Indonesia (32%)",
-            selected: false,
-        },
+        {code: "bqi", name_with_percent: "Bakhtiari (5%)", selected: false},
+        {code: "cy", name_with_percent: "Cymraeg (36%)", selected: false},
+        {code: "en", name_with_percent: "English (United States)", selected: true},
+        {code: "en-gb", name_with_percent: "English (United Kingdom) (99%)", selected: false},
+        {code: "id", name_with_percent: "Indonesia (32%)", selected: false},
+        {code: "mn", name_with_percent: "Монгол (53%)", selected: false},
+        {code: "pt", name_with_percent: "Português (Brasil) (81%)", selected: false},
+        {code: "si", name_with_percent: "සිංහල (20%)", selected: false},
+        {code: "zh-hans", name_with_percent: "中文（简体） (86%)", selected: false},
     ];
 
     const formatted_list = get_language_list_columns("en");

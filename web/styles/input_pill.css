@@ -4,8 +4,10 @@
     flex-wrap: wrap;
     min-width: 0;
 
+    background-color: var(--color-background-pill-container);
+
     padding: var(--outer-spacing-input-pill-container);
-    border: 1px solid hsl(0deg 0% 0% / 15%);
+    border: 1px solid var(--color-border-pill-container);
     border-radius: 4px;
     align-items: center;
 
@@ -32,9 +34,36 @@
         background-color: var(--color-background-input-pill);
         cursor: pointer;
 
+        /* Not focus-visible, because we want to support mouse+backpace to
+           delete pills */
         &:focus {
-            border-color: var(--color-focus-outline-input-pill);
+            /* Box shadow instead of border, because user pills have avatars
+               that extend all the way to the edge of the pill. */
+            box-shadow: 0 0 0 1px var(--color-focus-outline-input-pill) inset;
             outline: none;
+
+            /* For user pills with avatars, the avatar covers up the box
+               shadow, so we also have to make a border around the avatar. */
+            .pill-image-border {
+                border-right: none;
+                border-radius: 4px 0 0 4px;
+                border-color: var(--color-focus-outline-input-pill);
+            }
+        }
+
+        /* Ensure a hover state on pills that can be clicked
+           to reveal a user card. */
+        &.view_user_profile:hover {
+            background-color: var(--color-background-input-pill-hover);
+        }
+
+        .invited-user-name {
+            flex: 1;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 3px;
         }
 
         .pill-image {
@@ -51,10 +80,6 @@
             border: 1px solid;
             border-radius: 4px;
             border-color: var(--color-border-input-pill-image);
-        }
-
-        .zulip-icon {
-            padding-right: 2px;
         }
 
         .pill-label {
@@ -82,7 +107,6 @@
         .pill-close-button,
         .pill-expand-button {
             font-size: 0.7142em; /* 10px at 14px em */
-            text-decoration: none;
             /* Let the close button's box stretch,
                but no larger than the height of the
                banner box when the action button
@@ -97,8 +121,7 @@
                ::before content where the icon sits. */
             display: flex;
             align-items: center;
-            /* !important overrides `.dark-theme:root a:hover` */
-            color: var(--color-input-pill-close) !important;
+            color: var(--color-input-pill-close);
             opacity: 0.7;
         }
 
@@ -108,7 +131,7 @@
             height: var(--length-input-pill-exit);
             display: flex;
             justify-content: center;
-            margin-right: 2px;
+            margin-right: var(--length-input-pill-exit-margin);
             border-radius: 2px;
 
             &:hover {
@@ -134,8 +157,7 @@
             }
 
             .pill-close-button {
-                /* !important overrides `.dark-theme:root a:hover` */
-                color: var(--color-close-deactivated-user-pill) !important;
+                color: var(--color-close-deactivated-user-pill);
             }
 
             .exit:hover {
@@ -192,20 +214,14 @@
 
         min-width: 2px;
         overflow-wrap: anywhere;
+        flex: 1 1 auto;
 
         outline: none;
-
-        &.shake {
-            animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-            transform: translate3d(0, 0, 0);
-            backface-visibility: hidden;
-            perspective: 1000px;
-        }
     }
 
     &.not-editable-by-user {
         cursor: not-allowed;
-        background-color: hsl(0deg 0% 93%);
+        background-color: var(--color-background-pill-container-input-disabled);
 
         .pill {
             cursor: not-allowed;
@@ -218,28 +234,46 @@
 
     &.invalid {
         border-color: var(--color-invalid-input-border);
-        box-shadow: var(--color-invalid-input-box-shadow);
+        box-shadow: var(--invalid-input-box-shadow);
+    }
+}
+
+.person_picker {
+    .pill:hover {
+        background-color: var(--color-background-input-pill-hover);
     }
 }
 
 #compose-direct-recipient .pill-container {
     border: 1px solid var(--color-compose-recipient-box-border-color);
-    background-color: var(
-        --color-background-compose-direct-recipient-pill-container
-    );
 
     .input:first-child:empty::before {
         content: attr(data-no-recipients-text);
         opacity: 0.5;
     }
 
-    .pill + .input:empty::before {
-        content: attr(data-some-recipients-text);
-        opacity: 0.5;
-    }
-
     &:has(.input:focus) {
         border-color: var(--color-compose-recipient-box-has-focus);
+    }
+}
+
+.low-attention-recipient-row #compose-direct-recipient .pill-container {
+    &:has(.pill):not(:focus-within) {
+        /* In the low-attention state, prevent this from being
+           part of the flex layout on .pill-container when there
+           are already user pills (when the "Add user" text is
+           never displayed, as specified on the
+           .input:first-child:empty::before selector above).
+           We avoid doing this when there is focus inside the
+           pill container, so that typing in the recipient row
+           after narrowing to a DM conversation with `Ctrl + .`
+           doesn't create a palimpsest of text over the existing
+           user pill. */
+        #private_message_recipient {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
     }
 }
 
@@ -262,7 +296,6 @@
 .add-user-group-container .pill-container,
 .add_members_container .pill-container {
     width: 100%;
-    background-color: hsl(0deg 0% 100%);
 
     .input:first-child:empty::before {
         opacity: 0.5;
@@ -275,16 +308,60 @@
     flex-grow: 1;
 }
 
-.display_only_pill {
+.display_only_pill,
+.display_only_group_pill {
     /* Ensure middle alignment in table contexts. */
     vertical-align: middle;
+    /* Resetting these values to prevent unintended inheritance from .pill-container styles. */
+    padding: 0;
+    border: 0;
+
+    /* Particularly in light mode, pill colors are almost identical
+       to the settings modal background. We place a higher-contrast
+       outline on them accordingly. */
+    .pill,
+    .pill:focus {
+        outline: 1px solid var(--color-outline-low-attention-input-pill);
+        /* We offset the outline so that pills do not grow in size
+           when presented with an outline. */
+        outline-offset: -1px;
+
+        /* Display `(you)` with the same 5px padding to the right
+           as ordinary .pill-value text. */
+        .my_user_status {
+            padding-right: 5px;
+        }
+
+        /* Zero out the margin placed to the left of the bot icon,
+           and add in the 5px of padding to the right. Specificity
+           necessitates duplicating the .pill-label class here. */
+        .pill-label .zulip-icon-bot {
+            margin-left: 0;
+            padding-right: 5px;
+        }
+
+        .deactivated-user-icon {
+            padding-right: 5px;
+        }
+    }
+
+    .pill:focus {
+        /* We don't want to flash a focus outline
+               when clicking on display-only pills. */
+        box-shadow: unset;
+        /* We also suppress the border on the pill
+               image. */
+        .pill-image-border {
+            border: 0;
+        }
+    }
 }
 
 /* These pill are similar to .not-editable, but are meant to show
    profile cards when clicked. */
+.user-type-custom-field-pill-container > .display_only_pill,
 .panel_user_list > .pill-container,
 .creator_details > .display_only_pill {
-    background-color: hsl(0deg 0% 0% / 7%);
     gap: 2px;
     flex-wrap: nowrap;
 
@@ -297,8 +374,14 @@
         color: inherit;
     }
 
+    /* `settings.css` applies a :focus-within box-shadow to `.custom_user_field .pill-container`
+    and `.bot_owner_user_field .pill-container`.That effect conflicts with the unified pill
+    styling (no shadow), so we override it here. */
+    &:focus-within {
+        box-shadow: none;
+    }
+
     > .pill {
-        background-color: transparent;
         border: none;
         text-decoration: none;
 
@@ -315,6 +398,38 @@
             }
         }
     }
+}
+
+#user-profile-modal {
+    .user-type-custom-field-pill-container {
+        display: inline-flex;
+        gap: var(--vertical-spacing-input-pill)
+            var(--horizontal-spacing-input-pill);
+        max-width: 100%;
+        flex-wrap: wrap;
+
+        /* We override the `.pill-container` style defined in
+         `settings.css` to ensure it expands to full width, preventing
+        names in the pill from being cut off in the user profile modal. */
+        .pill-container {
+            max-width: 100%;
+        }
+
+        /* We're overriding the `.pill-value` style defined
+        in `settings.css` to ensure that names inside the pill
+        render fully and aren't cut off in the user profile modal. */
+        .pill-value {
+            max-width: 100%;
+        }
+    }
+}
+
+.group_entirely_not_subscribed .display_only_group_pill,
+.creator_details > .display_only_pill {
+    /* In places where the pills are not used in tables,
+       but instead alongside text, we revert back to the
+       baseline vertical alignment. */
+    vertical-align: baseline;
 }
 
 .creator_details > .display_only_pill.inline_with_text_pill {
@@ -344,28 +459,12 @@
 }
 
 .display_only_group_pill .zulip-icon-user-group {
-    font-size: 1.3571em; /* 19px at 14px / em */
-}
-
-@keyframes shake {
-    10%,
-    90% {
-        transform: translate3d(-1px, 0, 0);
-    }
-
-    20%,
-    80% {
-        transform: translate3d(2px, 0, 0);
-    }
-
-    30%,
-    50%,
-    70% {
-        transform: translate3d(-3px, 0, 0);
-    }
-
-    40%,
-    60% {
-        transform: translate3d(3px, 0, 0);
-    }
+    /* Reserve the same square box for the user-group
+       icon as on pill images. */
+    height: var(--height-input-pill);
+    width: var(--height-input-pill);
+    /* Center the icon in the box using flex. */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

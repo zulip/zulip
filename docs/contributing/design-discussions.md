@@ -99,8 +99,12 @@ questions you are looking for feedback on. Some advice:
   context for readers to understand your question, and include links
   to any relevant issues or in-progress PRs for additional background.
 
-- Post screenshots, and screen captures if there is an interaction that
+- Post screenshots, and perhaps a short video if there is an interaction that
   screenshots fail to show.
+
+  - Use the [guide on presenting visual
+    changes](../contributing/presenting-visual-changes.md) for guidance on what to
+    show, and how to capture precise Before/After screenshots when appropriate.
 
   - You may want to post a few screenshots of different options you’re
     considering.
@@ -110,9 +114,6 @@ questions you are looking for feedback on. Some advice:
 
   - Screen captures should demonstrate the feature with a minimal amount of
     extraneous content.
-
-  - See [here](../tutorials/screenshot-and-gif-software.md) for some
-    recommended tools.
 
 - Post a clear question or set of questions that you need help with. What
   specifically are you looking for feedback on?
@@ -161,7 +162,7 @@ design discussion:
   can serve as a good reset.
 
 If a conversation is going off-track and you are not sure how to fix it, please
-ping someone on the core team to intervene and help get the conversion into a
+ping someone on the core team to intervene and help get the conversation into a
 better state.
 
 ### Moving threads to the most appropriate channel
@@ -243,7 +244,7 @@ good use of everyone's time and attention, and getting useful feedback.
 
 ### From discussion to decision
 
-There is a number of factors that affect when it’s time to move a thread from
+There are a number of factors that affect when it’s time to move a thread from
 discussion to a decision. In part, this depends on how significant a commitment
 we are making with the decision at hand:
 

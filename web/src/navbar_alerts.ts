@@ -1,11 +1,12 @@
-import {addDays} from "date-fns";
-import $ from "jquery";
+import {addDays, differenceInCalendarDays} from "date-fns";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_navbar_banners_testing_popover from "../templates/popovers/navbar_banners_testing_popover.hbs";
 
 import * as banners from "./banners.ts";
 import type {AlertBanner} from "./banners.ts";
+import {is_browser_unsupported_old_version} from "./browser_support.ts";
 import type {ActionButton} from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as demo_organizations_ui from "./demo_organizations_ui.ts";
@@ -14,17 +15,19 @@ import * as feedback_widget from "./feedback_widget.ts";
 import {$t} from "./i18n.ts";
 import type {LocalStorage} from "./localstorage.ts";
 import {localstorage} from "./localstorage.ts";
+import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
+import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import {current_user, realm} from "./state_data.ts";
-import * as time_zone_util from "./time_zone_util.ts";
+import * as stream_data from "./stream_data.ts";
 import * as timerender from "./timerender.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
 import {user_settings} from "./user_settings.ts";
-import * as util from "./util.ts";
+import * as user_topics from "./user_topics.ts";
 
 function open_navbar_banner_and_resize(banner: AlertBanner): void {
     banners.open(banner, $("#navbar_alerts_wrapper"));
@@ -51,10 +54,8 @@ export function should_show_desktop_notifications_banner(ls: LocalStorage): bool
         // Spectators cannot receive desktop notifications, so never
         // request permissions to send them.
         !page_params.is_spectator &&
-        // notifications *basically* don't work on any mobile platforms, so don't
-        // event show the banners. This prevents trying to access things that
-        // don't exist like `Notification.permission`.
-        !util.is_mobile() &&
+        // Only show banners on UAs that do not include the Notification API.
+        desktop_notifications.has_notification_support() &&
         // if permission has not been granted yet.
         !desktop_notifications.granted_desktop_notifications_permission() &&
         // if permission is allowed to be requested (e.g. not in "denied" state).
@@ -110,10 +111,10 @@ export function maybe_toggle_empty_required_profile_fields_banner(): void {
             ...f,
             value: people.my_custom_profile_data(f.id)?.value,
         }))
-        .find((f) => f.required && !f.value);
+        .some((f) => f.required && !f.value);
     if (empty_required_profile_fields_exist) {
         open_navbar_banner_and_resize(PROFILE_MISSING_REQUIRED_FIELDS_BANNER);
-    } else if ($banner && $banner.attr("data-process") === "profile-missing-required-fields") {
+    } else if ($banner?.attr("data-process") === "profile-missing-required-fields") {
         close_navbar_banner_and_resize($banner);
     }
 }
@@ -131,11 +132,7 @@ export function should_show_organization_profile_incomplete_banner(timestamp: nu
 
     const today = new Date(Date.now());
     const time = new Date(timestamp * 1000);
-    const days_old = time_zone_util.difference_in_calendar_days(
-        today,
-        time,
-        timerender.display_time_zone,
-    );
+    const days_old = differenceInCalendarDays(today, time, {in: timerender.display_tz});
 
     if (days_old >= 15) {
         return true;
@@ -158,7 +155,7 @@ export function is_organization_profile_incomplete(): boolean {
 
 export function toggle_organization_profile_incomplete_banner(): void {
     const $banner = $("#navbar_alerts_wrapper").find(".banner");
-    if ($banner && $banner.attr("data-process") === "organization-profile-incomplete") {
+    if ($banner?.attr("data-process") === "organization-profile-incomplete") {
         close_navbar_banner_and_resize($banner);
         return;
     }
@@ -191,17 +188,17 @@ const DESKTOP_NOTIFICATIONS_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            attention: "primary",
+            variant: "solid",
             label: $t({defaultMessage: "Enable notifications"}),
             custom_classes: "request-desktop-notifications",
         },
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Customize notifications"}),
             custom_classes: "customize-desktop-notifications",
         },
         {
-            attention: "borderless",
+            variant: "text",
             label: $t({defaultMessage: "Never ask on this computer"}),
             custom_classes: "reject-desktop-notifications",
         },
@@ -219,7 +216,7 @@ const CONFIGURE_OUTGOING_MAIL_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Configuration instructions"}),
             custom_classes: "configure-outgoing-mail-instructions",
         },
@@ -230,16 +227,34 @@ const CONFIGURE_OUTGOING_MAIL_BANNER: AlertBanner = {
 
 const INSECURE_DESKTOP_APP_BANNER: AlertBanner = {
     process: "insecure-desktop-app",
-    intent: "danger",
+    intent: "warning",
     label: $t({
         defaultMessage:
-            "You are using an old version of the Zulip desktop app with known security bugs.",
+            "Zulip Desktop is not updating automatically. Please upgrade for security updates and other improvements.",
     }),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Download the latest version"}),
             custom_classes: "download-latest-zulip-version",
+        },
+    ],
+    close_button: true,
+    custom_classes: "navbar-alert-banner",
+};
+
+const UNSUPPORTED_BROWSER_BANNER: AlertBanner = {
+    process: "unsupported-browser",
+    intent: "warning",
+    label: $t({
+        defaultMessage:
+            "Because you're using an unsupported or very old browser, Zulip may not work as expected.",
+    }),
+    buttons: [
+        {
+            variant: "text",
+            label: $t({defaultMessage: "Learn more"}),
+            custom_classes: "unsupported-browser-learn-more",
         },
     ],
     close_button: true,
@@ -252,7 +267,7 @@ const PROFILE_MISSING_REQUIRED_FIELDS_BANNER: AlertBanner = {
     label: $t({defaultMessage: "Your profile is missing required fields."}),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Edit your profile"}),
             custom_classes: "edit-profile-required-fields",
         },
@@ -270,7 +285,7 @@ const ORGANIZATION_PROFILE_INCOMPLETE_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({
                 defaultMessage: "Edit profile",
             }),
@@ -289,12 +304,12 @@ const SERVER_NEEDS_UPGRADE_BANNER: AlertBanner = {
     }),
     buttons: [
         {
-            attention: "quiet",
+            variant: "subtle",
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "server-upgrade-learn-more",
         },
         {
-            attention: "borderless",
+            variant: "text",
             label: $t({defaultMessage: "Dismiss for a week"}),
             custom_classes: "server-upgrade-nag-dismiss",
         },
@@ -306,7 +321,7 @@ const SERVER_NEEDS_UPGRADE_BANNER: AlertBanner = {
 const bankruptcy_banner = (): AlertBanner => {
     const old_unreads_missing = unread.old_unreads_missing;
     const unread_msgs_count = unread.get_unread_message_count();
-    let label = "";
+    let label;
     if (old_unreads_missing) {
         label = $t(
             {
@@ -334,12 +349,12 @@ const bankruptcy_banner = (): AlertBanner => {
         label,
         buttons: [
             {
-                attention: "quiet",
+                variant: "subtle",
                 label: $t({defaultMessage: "Yes, please!"}),
                 custom_classes: "accept-bankruptcy",
             },
             {
-                attention: "borderless",
+                variant: "text",
                 label: $t({defaultMessage: "No, I'll catch up."}),
                 custom_classes: "banner-close-action",
             },
@@ -353,7 +368,7 @@ const demo_organization_deadline_banner = (): AlertBanner => {
     const days_remaining = demo_organizations_ui.get_demo_organization_deadline_days_remaining();
     let buttons: ActionButton[] = [
         {
-            attention: "borderless",
+            variant: "text",
             label: $t({defaultMessage: "Learn more"}),
             custom_classes: "demo-organizations-help",
         },
@@ -362,7 +377,7 @@ const demo_organization_deadline_banner = (): AlertBanner => {
         buttons = [
             ...buttons,
             {
-                attention: "quiet",
+                variant: "subtle",
                 label: $t({defaultMessage: "Convert"}),
                 custom_classes: "convert-demo-organization",
             },
@@ -374,10 +389,10 @@ const demo_organization_deadline_banner = (): AlertBanner => {
         label: $t(
             {
                 defaultMessage:
-                    "This demo organization will be automatically deleted in {days_remaining} days, unless it's converted into a permanent organization.",
+                    "This demo organization will be automatically deleted in {N, plural, one {# day} other {# days}}, unless it's converted into a permanent organization.",
             },
             {
-                days_remaining,
+                N: days_remaining,
             },
         ),
         buttons,
@@ -402,12 +417,12 @@ const time_zone_update_offer_banner = (): AlertBanner => {
         ),
         buttons: [
             {
-                attention: "quiet",
+                variant: "subtle",
                 label: $t({defaultMessage: "Yes, please!"}),
                 custom_classes: "accept-update-time-zone",
             },
             {
-                attention: "borderless",
+                variant: "text",
                 label: $t({defaultMessage: "No, don't ask again."}),
                 custom_classes: "decline-time-zone-update",
             },
@@ -417,6 +432,93 @@ const time_zone_update_offer_banner = (): AlertBanner => {
     };
 };
 
+const majority_messages_muted_banner = (percent_muted_messages: number): AlertBanner => {
+    const truncated_percent_muted_messages = Math.trunc(percent_muted_messages);
+    return {
+        process: "too-many-muted-messages",
+        intent: "warning",
+        label: $t(
+            {
+                defaultMessage:
+                    "{truncated_percent_muted_messages}% of your recent messages are muted, which may slow down the app.",
+            },
+            {
+                truncated_percent_muted_messages,
+            },
+        ),
+        buttons: [
+            {
+                variant: "subtle",
+                label: $t({defaultMessage: "Learn more"}),
+                custom_classes: "managing-muted-channels",
+            },
+            {
+                variant: "text",
+                label: $t({defaultMessage: "Dismiss for 3 months"}),
+                custom_classes: "dismiss-majority-messages-muted-banner",
+            },
+        ],
+        close_button: true,
+        custom_classes: "navbar-alert-banner",
+    };
+};
+
+export function check_and_show_muted_messages_banner(): void {
+    const ls = localstorage();
+    if (
+        localstorage.supported() &&
+        ls.get("majority_muted_messages_banner_dismissal_date") !== undefined
+    ) {
+        const last_dismissal_date = ls.get("majority_muted_messages_banner_dismissal_date");
+        assert(typeof last_dismissal_date === "number");
+        const today = Date.now();
+
+        if (
+            differenceInCalendarDays(last_dismissal_date, today, {in: timerender.display_tz}) <= 90
+        ) {
+            // If the user had previously dismissed the banner,
+            // wait for 3 months before showing the banner again.
+            return;
+        }
+    }
+
+    if (recent_view_messages_data.empty()) {
+        // If recent_view_messages_data is empty, even after the initial
+        // backfill for recent_view_messages_data is done, then there are
+        // no messages to check and the ratio calculation below
+        // would result in a division by zero.
+        return;
+    }
+
+    // We use all_messages_after_mute_filtering() here because
+    // recent_view_messages_data is initialized with muting disabled
+    // (excludes_muted_topics: false, excludes_muted_users: false).
+    // Therefore, this method returns all messages, effectively ignoring muting.
+    const all_messages = recent_view_messages_data.all_messages_after_mute_filtering();
+
+    // Exclude messages from channels the user is no longer subscribed to,
+    // so they don't affect the muted messages ratio calculation.
+    const messages = all_messages.filter(
+        (message) => message.type !== "stream" || stream_data.is_subscribed(message.stream_id),
+    );
+
+    const muted_messages = messages.filter(
+        (message) =>
+            muted_users.is_user_muted(message.sender_id) ||
+            (message.type === "stream" &&
+                !user_topics.is_topic_visible_in_home(message.stream_id, message.topic)),
+    );
+
+    const percent_muted_messages = (muted_messages.length / messages.length) * 100;
+    if (muted_messages.length >= 5000 && percent_muted_messages > 75) {
+        // If more than 75% of the loaded messages are muted, and that quantity exceeds
+        // at least 5000 messages, show the banner. We use an absolute number threshold
+        // to avoid showing the banner when there are very few messages loaded to have
+        // any impact on the performance.
+        open_navbar_banner_and_resize(majority_messages_muted_banner(percent_muted_messages));
+    }
+}
+
 export function initialize(): void {
     const ls = localstorage();
     const browser_time_zone = timerender.browser_time_zone();
@@ -424,13 +526,15 @@ export function initialize(): void {
         open_navbar_banner_and_resize(demo_organization_deadline_banner());
     } else if (page_params.insecure_desktop_app) {
         open_navbar_banner_and_resize(INSECURE_DESKTOP_APP_BANNER);
+    } else if (is_browser_unsupported_old_version()) {
+        open_navbar_banner_and_resize(UNSUPPORTED_BROWSER_BANNER);
     } else if (should_offer_to_update_timezone()) {
         open_navbar_banner_and_resize(time_zone_update_offer_banner());
     } else if (realm.server_needs_upgrade) {
         if (should_show_server_upgrade_banner(ls)) {
             open_navbar_banner_and_resize(SERVER_NEEDS_UPGRADE_BANNER);
         }
-    } else if (page_params.warn_no_email === true && current_user.is_admin) {
+    } else if (page_params.warn_no_email && current_user.is_admin) {
         // if email has not been set up and the user is the admin,
         // display a warning to tell them to set up an email server.
         open_navbar_banner_and_resize(CONFIGURE_OUTGOING_MAIL_BANNER);
@@ -509,6 +613,8 @@ export function initialize(): void {
         demo_organizations_ui.show_convert_demo_organization_modal();
     });
 
+    // NOTE: The `window.open()` click handlers are required over here since the
+    // the buttons component framework doesn't support link buttons as of now.
     $("#navbar_alerts_wrapper").on("click", ".demo-organizations-help", () => {
         window.open("https://zulip.com/help/demo-organizations", "_blank", "noopener,noreferrer");
     });
@@ -522,7 +628,7 @@ export function initialize(): void {
     });
 
     $("#navbar_alerts_wrapper").on("click", ".download-latest-zulip-version", () => {
-        window.open("https://zulip.com/download", "_blank", "noopener,noreferrer");
+        window.open("https://zulip.com/apps/", "_blank", "noopener,noreferrer");
     });
 
     $("#navbar_alerts_wrapper").on("click", ".edit-profile-required-fields", () => {
@@ -540,6 +646,30 @@ export function initialize(): void {
             "noopener,noreferrer",
         );
     });
+
+    $("#navbar_alerts_wrapper").on("click", ".unsupported-browser-learn-more", () => {
+        window.open("/help/supported-browsers", "_blank", "noopener,noreferrer");
+    });
+
+    $("#navbar_alerts_wrapper").on("click", ".managing-muted-channels", () => {
+        window.open(
+            "/help/mute-a-channel#managing-muted-channels",
+            "_blank",
+            "noopener,noreferrer",
+        );
+    });
+
+    $("#navbar_alerts_wrapper").on(
+        "click",
+        ".dismiss-majority-messages-muted-banner",
+        function (this: HTMLElement) {
+            const $banner = $(this).closest(".banner");
+            close_navbar_banner_and_resize($banner);
+            if (localstorage.supported()) {
+                ls.set("majority_muted_messages_banner_dismissal_date", Date.now());
+            }
+        },
+    );
 
     $("#navbar_alerts_wrapper").on(
         "click",
@@ -655,6 +785,10 @@ export function initialize(): void {
                 });
                 $popper.on("click", ".insecure-desktop-app", () => {
                     open_navbar_banner_and_resize(INSECURE_DESKTOP_APP_BANNER);
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+                $popper.on("click", ".unsupported-browser", () => {
+                    open_navbar_banner_and_resize(UNSUPPORTED_BROWSER_BANNER);
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
                 $popper.on("click", ".profile-missing-required-fields", () => {

@@ -15,6 +15,7 @@ from corporate.models.plans import CustomerPlan
 from version import ZULIP_VERSION
 from zerver.actions.create_user import do_create_user
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import change_user_is_active
 from zerver.lib.compatibility import LAST_SERVER_UPGRADE_TIME, is_outdated_server
 from zerver.lib.events import has_pending_sponsorship_request
@@ -27,10 +28,12 @@ from zerver.lib.test_helpers import (
     queries_captured,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.users import max_message_id_for_user
 from zerver.models import DefaultStream, Draft, Realm, UserActivity, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user
+from zerver.tornado.django_api import EventQueueData
 from zerver.worker.user_activity import UserActivityWorker
 
 if TYPE_CHECKING:
@@ -48,18 +51,20 @@ class HomeTest(ZulipTestCase):
         "embedded_bots_enabled",
         "furthest_read_time",
         "insecure_desktop_app",
+        "is_cloud_realm_with_discounted_plan",
         "is_spectator",
         "language_list",
         "login_page",
         "narrow",
         "narrow_stream",
         "no_event_queue",
+        "non_workplace_pricing_eligible",
         "page_type",
         "presence_history_limit_days_for_web_app",
         "promote_sponsoring_zulip",
+        "realm_rendered_description",
         "request_language",
         "show_try_zulip_modal",
-        "show_webathena",
         "state_data",
         "test_suite",
         "translation_data",
@@ -83,25 +88,33 @@ class HomeTest(ZulipTestCase):
         "custom_profile_fields",
         "delivery_email",
         "development_environment",
+        "devices",
         "drafts",
         "email",
         "event_queue_longpoll_timeout_seconds",
         "full_name",
+        "gif_rating_policy_options",
         "giphy_api_key",
-        "giphy_rating_options",
+        "has_webex_token",
         "has_zoom_token",
+        "idle_queue_timeout_secs",
         "is_admin",
         "is_guest",
         "is_moderator",
         "is_owner",
         "jitsi_server_url",
+        "klipy_api_key",
         "last_event_id",
         "max_avatar_file_size_mib",
+        "max_bulk_new_subscription_messages",
+        "max_channel_folder_description_length",
+        "max_channel_folder_name_length",
         "max_file_upload_size_mib",
         "max_icon_file_size_mib",
         "max_logo_file_size_mib",
         "max_message_id",
         "max_message_length",
+        "max_reminder_note_length",
         "max_stream_description_length",
         "max_stream_name_length",
         "max_topic_length",
@@ -111,17 +124,18 @@ class HomeTest(ZulipTestCase):
         "navigation_views",
         "never_subscribed",
         "onboarding_steps",
+        "password_max_length",
         "password_min_guesses",
         "password_min_length",
-        "password_max_length",
-        "presences",
         "presence_last_update_id",
+        "presences",
         "queue_id",
         "realm_allow_edit_history",
         "realm_allow_message_editing",
         "realm_authentication_methods",
         "realm_available_video_chat_providers",
         "realm_avatar_changes_disabled",
+        "realm_billing",
         "realm_bot_domain",
         "realm_bots",
         "realm_can_access_all_users_group",
@@ -142,12 +156,15 @@ class HomeTest(ZulipTestCase):
         "realm_can_move_messages_between_channels_group",
         "realm_can_move_messages_between_topics_group",
         "realm_can_resolve_topics_group",
+        "realm_can_set_delete_message_policy_group",
+        "realm_can_set_topics_policy_group",
         "realm_can_summarize_topics_group",
         "realm_create_multiuse_invite_group",
         "realm_create_private_stream_policy",
         "realm_create_public_stream_policy",
         "realm_create_web_public_stream_policy",
         "realm_date_created",
+        "realm_default_avatar_source",
         "realm_default_code_block_language",
         "realm_default_external_accounts",
         "realm_default_language",
@@ -171,24 +188,25 @@ class HomeTest(ZulipTestCase):
         "realm_enable_read_receipts",
         "realm_enable_spectator_access",
         "realm_filters",
-        "realm_giphy_rating",
+        "realm_gif_rating_policy",
         "realm_icon_source",
         "realm_icon_url",
         "realm_incoming_webhook_bots",
         "realm_inline_image_preview",
         "realm_inline_url_embed_preview",
         "realm_invite_required",
-        "realm_is_zephyr_mirror_realm",
         "realm_jitsi_server_url",
         "realm_linkifiers",
         "realm_logo_source",
         "realm_logo_url",
         "realm_mandatory_topics",
+        "realm_media_preview_size",
         "realm_message_content_allowed_in_email_notifications",
         "realm_message_content_delete_limit_seconds",
         "realm_message_content_edit_limit_seconds",
         "realm_message_edit_history_visibility_policy",
         "realm_message_retention_days",
+        "realm_moderation_request_channel_id",
         "realm_move_messages_between_streams_limit_seconds",
         "realm_move_messages_within_stream_limit_seconds",
         "realm_name",
@@ -198,28 +216,35 @@ class HomeTest(ZulipTestCase):
         "realm_night_logo_url",
         "realm_non_active_users",
         "realm_org_type",
+        "realm_owner_full_content_access",
         "realm_password_auth_enabled",
         "realm_plan_type",
         "realm_playgrounds",
         "realm_presence_disabled",
         "realm_push_notifications_enabled",
         "realm_push_notifications_enabled_end_timestamp",
+        "realm_require_e2ee_push_notifications",
         "realm_require_unique_names",
+        "realm_send_channel_events_messages",
         "realm_send_welcome_emails",
         "realm_signup_announcements_stream_id",
+        "realm_topics_policy",
         "realm_upload_quota_mib",
         "realm_uri",
         "realm_url",
         "realm_user_groups",
         "realm_user_settings_defaults",
         "realm_users",
+        "realm_uuid",
         "realm_video_chat_provider",
         "realm_waiting_period_threshold",
         "realm_want_advertise_in_communities_directory",
+        "realm_welcome_message_custom_text",
         "realm_wildcard_mention_policy",
+        "realm_workplace_users_group",
         "realm_zulip_update_announcements_stream_id",
-        "realm_moderation_request_channel_id",
         "recent_private_conversations",
+        "reminders",
         "saved_snippets",
         "scheduled_messages",
         "server_avatar_changes_disabled",
@@ -228,13 +253,14 @@ class HomeTest(ZulipTestCase):
         "server_generation",
         "server_inline_image_preview",
         "server_inline_url_embed_preview",
+        "server_jitsi_server_url",
         "server_max_deactivated_realm_deletion_days",
         "server_min_deactivated_realm_deletion_days",
-        "server_jitsi_server_url",
         "server_name_changes_disabled",
         "server_needs_upgrade",
         "server_presence_offline_threshold_seconds",
         "server_presence_ping_interval_seconds",
+        "server_report_message_types",
         "server_supported_permission_settings",
         "server_thumbnail_formats",
         "server_timestamp",
@@ -243,10 +269,10 @@ class HomeTest(ZulipTestCase):
         "server_typing_stopped_wait_period_milliseconds",
         "server_web_public_streams_enabled",
         "settings_send_digest_emails",
-        "realm_billing",
         "starred_messages",
         "stop_words",
         "subscriptions",
+        "tenor_api_key",
         "unread_msgs",
         "unsubscribed",
         "upgrade_text_for_wide_organization_logo",
@@ -290,7 +316,7 @@ class HomeTest(ZulipTestCase):
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
-        self.assert_length(cache_mock.call_args_list, 6)
+        self.assert_length(cache_mock.call_args_list, 7)
 
         html = result.content.decode()
 
@@ -306,16 +332,9 @@ class HomeTest(ZulipTestCase):
         # TODO: Inspect the page_params data further.
         # print(orjson.dumps(page_params, option=orjson.OPT_INDENT_2).decode())
         realm_bots_expected_keys = [
-            "api_key",
-            "avatar_url",
-            "bot_type",
             "default_all_public_streams",
             "default_events_register_stream",
             "default_sending_stream",
-            "email",
-            "full_name",
-            "is_active",
-            "owner_id",
             "services",
             "user_id",
         ]
@@ -323,18 +342,12 @@ class HomeTest(ZulipTestCase):
         self.assertCountEqual(page_params["state_data"]["realm_bots"][0], realm_bots_expected_keys)
 
     def test_home_demo_organization(self) -> None:
-        realm = get_realm("zulip")
-
-        # We construct a scheduled deletion date that's definitely in
-        # the future, regardless of how long ago the Zulip realm was
-        # created.
-        realm.demo_organization_scheduled_deletion_date = timezone_now() + timedelta(days=1)
-        realm.save()
-        self.login("hamlet")
+        demo_organization_owner = self.create_demo_organization_owner()
+        realm = demo_organization_owner.realm
 
         # Verify succeeds once logged-in
         with queries_captured(), patch("zerver.lib.cache.cache_set"):
-            result = self._get_home_page(stream="Denmark")
+            result = self._get_home_page(subdomain=realm.subdomain, stream="Zulip")
             self.check_rendered_logged_in_app(result)
 
         page_params = self._get_page_params(result)
@@ -369,18 +382,19 @@ class HomeTest(ZulipTestCase):
             "embedded_bots_enabled",
             "furthest_read_time",
             "insecure_desktop_app",
+            "is_cloud_realm_with_discounted_plan",
             "is_spectator",
             "language_cookie_name",
             "language_list",
             "login_page",
             "no_event_queue",
+            "non_workplace_pricing_eligible",
             "page_type",
             "presence_history_limit_days_for_web_app",
             "promote_sponsoring_zulip",
             "realm_rendered_description",
             "request_language",
             "show_try_zulip_modal",
-            "show_webathena",
             "state_data",
             "test_suite",
             "translation_data",
@@ -396,6 +410,37 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["show_try_zulip_modal"], True)
+
+    def test_home_has_llms_comment_when_web_public(self) -> None:
+        """
+        The homepage HTML includes a comment pointing LLMs to /llms.txt
+        when the realm has web-public streams enabled.
+        """
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "enable_spectator_access", True, acting_user=None)
+        # Use spectator (logged-out) view to ensure the comment renders in that path.
+        result = self.client_get("/")
+        self.assertEqual(result.status_code, 200)
+        html = result.content.decode()
+        self.assertIn("AI assistant:", html)
+        self.assertIn("/llms.txt", html)
+
+    def test_home_fallback_llms_comment_when_not_web_public(self) -> None:
+        """
+        The homepage HTML includes a fallback comment informing LLMs that
+        web-public channels are disabled when the realm does not allow
+        web-public stream access.
+        """
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "enable_spectator_access", False, acting_user=None)
+        # Login as a regular user to get a 200 even without spectator access.
+        self.login("hamlet")
+        result = self._get_home_page()
+        self.assertEqual(result.status_code, 200)
+        html = result.content.decode()
+        self.assertIn("AI assistant:", html)
+        self.assertNotIn("/llms.txt", html)
+        self.assertIn("does not have web-public channels", html)
 
     def test_realm_authentication_methods(self) -> None:
         realm = get_realm("zulip")
@@ -472,6 +517,15 @@ class HomeTest(ZulipTestCase):
 
         # Changing the plan_type to Standard grants access to AzureAD, but not SAML:
         do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
+        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_id")
+        CustomerPlan.objects.create(
+            customer=customer,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            next_invoice_date=timezone_now(),
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
+            status=CustomerPlan.ACTIVE,
+        )
 
         with self.settings(
             AUTHENTICATION_BACKENDS=(
@@ -585,16 +639,31 @@ class HomeTest(ZulipTestCase):
             self.check_rendered_logged_in_app(result)
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
+    def test_home_reload(self) -> None:
+        # When the client triggers a reload via ?state_data=deferred,
+        # the server should skip the expensive do_events_register()
+        # call and return state_data=None so the client fetches it
+        # via /json/register instead. See #36094.
+        self.login("hamlet")
+        result = self.client_get("/", {"state_data": "deferred"})
+        self.check_rendered_logged_in_app(result)
+
+        page_params = self._get_page_params(result)
+        self.assertIsNone(page_params["state_data"])
+        self.assertTrue(page_params["no_event_queue"])
+        self.assertFalse(page_params["is_spectator"])
+
+    @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_num_queries_for_realm_admin(self) -> None:
         # Verify number of queries for Realm admin isn't much higher than for normal users.
         self.login("iago")
         with (
-            self.assert_database_query_count(55),
+            self.assert_database_query_count(58),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page()
             self.check_rendered_logged_in_app(result)
-            self.assert_length(cache_mock.call_args_list, 7)
+            self.assert_length(cache_mock.call_args_list, 9)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")
@@ -621,20 +690,22 @@ class HomeTest(ZulipTestCase):
         self._get_home_page()
 
         # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(51):
+        with self.assert_database_query_count(53):
             result = self._get_home_page()
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode()
         self.assertIn("test_stream_7", html)
 
-    def _get_home_page(self, **kwargs: Any) -> "TestHttpResponse":
+    def _get_home_page(self, subdomain: str | None = None, **kwargs: Any) -> "TestHttpResponse":
+        queue_data = EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600)
         with (
-            patch("zerver.lib.events.request_event_queue", return_value=42),
+            patch("zerver.lib.events.request_event_queue", return_value=queue_data),
             patch("zerver.lib.events.get_user_events", return_value=[]),
         ):
-            result = self.client_get("/", dict(**kwargs))
-        return result
+            if subdomain:
+                return self.client_get("/", dict(**kwargs), subdomain=subdomain)
+            return self.client_get("/", dict(**kwargs))
 
     def _sanity_check(self, result: "TestHttpResponse") -> None:
         """
@@ -735,6 +806,34 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(
             user.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_MODERATORS
         )
+
+        # Test is_imported_stub is set to False when user accepts terms of service.
+        user.tos_version = "-1"
+        user.is_imported_stub = True
+        user.save()
+
+        result = self.client_post("/accounts/accept_terms/", {"terms": True})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/")
+
+        user = self.example_user("hamlet")
+        self.assertFalse(user.is_imported_stub)
+
+        # Test date_joined is set to the current time when user logs in for the
+        # first time.
+        user.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
+        user.save()
+
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            result = self.client_post("/accounts/accept_terms/", {"terms": True})
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/")
+
+        user = self.example_user("hamlet")
+        # Check that date_joined is updated to the time when user accepts ToS
+        # when logging in for the first time.
+        self.assertEqual(user.date_joined, now)
 
     def test_set_email_address_visibility_without_terms_of_service(self) -> None:
         self.login("hamlet")
@@ -895,12 +994,13 @@ class HomeTest(ZulipTestCase):
             users = page_params["state_data"][field]
             self.assertGreaterEqual(len(users), 3, field)
             for rec in users:
-                self.assertEqual(rec["user_id"], get_user(rec["email"], realm).id)
                 if field == "realm_bots":
+                    self.assertIn("user_id", rec)
                     self.assertNotIn("is_bot", rec)
-                    self.assertIn("is_active", rec)
-                    self.assertIn("owner_id", rec)
+                    self.assertNotIn("owner_id", rec)
+                    self.assertNotIn("is_active", rec)
                 else:
+                    self.assertEqual(rec["user_id"], get_user(rec["email"], realm).id)
                     self.assertIn("is_bot", rec)
                     self.assertNotIn("is_active", rec)
 
@@ -954,6 +1054,7 @@ class HomeTest(ZulipTestCase):
                         role=cross_realm_email_gateway_bot.role,
                         is_system_bot=True,
                         is_guest=False,
+                        is_imported_stub=False,
                     ),
                     dict(
                         avatar_version=cross_realm_notification_bot.avatar_version,
@@ -970,6 +1071,7 @@ class HomeTest(ZulipTestCase):
                         role=cross_realm_notification_bot.role,
                         is_system_bot=True,
                         is_guest=False,
+                        is_imported_stub=False,
                     ),
                     dict(
                         avatar_version=cross_realm_welcome_bot.avatar_version,
@@ -986,6 +1088,7 @@ class HomeTest(ZulipTestCase):
                         role=cross_realm_welcome_bot.role,
                         is_system_bot=True,
                         is_guest=False,
+                        is_imported_stub=False,
                     ),
                 ],
                 key=by_email,
@@ -1001,7 +1104,19 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["narrow_stream"], stream_name)
         self.assertEqual(page_params["narrow"], [dict(operator="stream", operand=stream_name)])
-        self.assertEqual(page_params["state_data"]["max_message_id"], -1)
+        # max_message_id is the user's global latest message id, not
+        # the narrow's; see local_message.ts for how it's consumed.
+        self.assertEqual(
+            page_params["state_data"]["max_message_id"],
+            max_message_id_for_user(user_profile),
+        )
+        # The mini-window's desktop-notification suppression is now
+        # applied client-side; the server returns the user's actual
+        # setting unchanged.
+        self.assertEqual(
+            page_params["state_data"]["user_settings"]["enable_desktop_notifications"],
+            user_profile.enable_desktop_notifications,
+        )
 
     @activate_push_notification_service()
     def test_has_pending_sponsorship_request(self) -> None:
@@ -1295,8 +1410,9 @@ class HomeTest(ZulipTestCase):
         self.login_user(user)
         result = self._get_home_page()
         self.check_rendered_logged_in_app(result)
+        queue_data = EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600)
         with (
-            patch("zerver.lib.events.request_event_queue", return_value=42),
+            patch("zerver.lib.events.request_event_queue", return_value=queue_data),
             patch("zerver.lib.events.get_user_events", return_value=[]),
         ):
             result = self.client_get("/de/")
@@ -1372,6 +1488,51 @@ class HomeTest(ZulipTestCase):
             page_params["state_data"]["realm_push_notifications_enabled_end_timestamp"],
             datetime_to_timestamp(end_timestamp),
         )
+
+    def test_invalid_default_language(self) -> None:
+        realm = get_realm("zulip")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        do_change_user_setting(cordelia, "default_language", "gl", acting_user=None)
+        do_change_user_setting(hamlet, "default_language", "no", acting_user=None)
+        do_set_realm_property(realm, "default_language", "pt-br", acting_user=None)
+
+        mocked_language_list = [
+            {"code": "de", "locale": "de", "name": "Deutsch", "percent_translated": 97},
+            {"code": "en", "locale": "en", "name": "English"},
+            {"code": "gl", "locale": "gl", "name": "galego", "percent_translated": 1},
+            {"code": "no", "locale": "no", "name": "norsk", "percent_translated": 1},
+            {
+                "code": "pt-br",
+                "locale": "pt_BR",
+                "name": "Português Brasileiro",
+                "percent_translated": 0,
+            },
+        ]
+
+        self.login_user(hamlet)
+        with patch("zerver.lib.i18n.get_language_list", return_value=mocked_language_list):
+            result = self._get_home_page()
+
+        state_data = self._get_page_params(result)["state_data"]
+        self.assertEqual(state_data["user_settings"]["default_language"], "en")
+        realm.refresh_from_db()
+        hamlet.refresh_from_db()
+        self.assertEqual(realm.default_language, "en")
+        self.assertEqual(hamlet.default_language, "en")
+
+        # Test the case when realm's default is a valid value
+        # but user's language is set to an invalid value.
+        do_set_realm_property(realm, "default_language", "de", acting_user=None)
+        self.login_user(cordelia)
+        self.assertEqual(cordelia.default_language, "gl")
+
+        with patch("zerver.lib.i18n.get_language_list", return_value=mocked_language_list):
+            result = self._get_home_page()
+        state_data = self._get_page_params(result)["state_data"]
+        self.assertEqual(state_data["user_settings"]["default_language"], "de")
+        cordelia.refresh_from_db()
+        self.assertEqual(cordelia.default_language, "de")
 
 
 class TestDocRedirectView(ZulipTestCase):

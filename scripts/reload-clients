@@ -31,6 +31,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--rate", type=int, help="Number of clients to reload per second", default=reload_rate
 )
+parser.add_argument("--background", action="store_true", help="Daemonize the process")
 
 args = parser.parse_args()
 reload_rate = args.rate
@@ -49,8 +50,24 @@ retry = Retry(total=3, backoff_factor=1, allowed_methods=Retry.DEFAULT_ALLOWED_M
 c = requests.Session()
 c.mount("http://", HTTPAdapter(max_retries=retry))
 
+log_filename = None
+if args.background:
+    # Double-fork to daemonize
+    pid = os.fork()
+    if pid > 0:
+        sys.exit(0)
+    os.setsid()
+    pid = os.fork()
+    if pid > 0:
+        sys.exit(0)
+    log_filename = "/var/log/zulip/reload-clients.log"
+
 logging.Formatter.converter = time.gmtime
-logging.basicConfig(format="%(asctime)s reload-clients: %(message)s", level=logging.INFO)
+logging.basicConfig(
+    format="%(asctime)s reload-clients: %(message)s",
+    level=logging.INFO,
+    filename=log_filename,
+)
 
 first = True
 server_total = 0
@@ -72,6 +89,7 @@ for port in get_tornado_ports(config_file):
                 f"http://127.0.0.1:{port}/api/internal/web_reload_clients",
                 data={"client_count": reload_rate * SECONDS_PER_BATCH, "secret": shared_secret},
                 timeout=5,
+                proxies={"http": ""},  # Make sure we don't go through Smokescreen
             )
             resp.raise_for_status()
             shard_total += resp.json()["sent_events"]

@@ -7,13 +7,12 @@ contains the Zulip backend (written in Python 3.x and Django), the
 web app (written in JavaScript and TypeScript) and our library of
 incoming webhook [integrations](https://zulip.com/integrations/)
 with other services and applications (see [the directory structure
-guide](directory-structure.md)).
+guide](../subsystems/directory-structure.md)).
 
-[Zulip Mobile](https://github.com/zulip/zulip-mobile) is the official
-mobile Zulip client supporting both iOS and Android, written in
-JavaScript with React Native, and [Zulip
-Desktop](https://github.com/zulip/zulip-desktop) is the official Zulip
-desktop client for macOS, Linux, and Windows.
+[Zulip Flutter](https://github.com/zulip/zulip-flutter) is the official
+mobile Zulip client supporting both iOS and Android, built with Flutter,
+and [Zulip Desktop](https://github.com/zulip/zulip-desktop) is the
+official Zulip desktop client for macOS, Linux, and Windows.
 [Zulip Terminal](https://github.com/zulip/zulip-terminal) is our
 official terminal-based client.
 
@@ -22,14 +21,13 @@ other glue code: [Python API
 bindings](https://github.com/zulip/python-zulip-api); [JavaScript API
 bindings](https://github.com/zulip/zulip-js); a [Hubot
 adapter](https://github.com/zulip/hubot-zulip); integrations with
-[Phabricator](https://github.com/zulip/phabricator-to-zulip),
 [Jenkins](https://github.com/zulip/zulip-jenkins-plugin),
 [Puppet](https://github.com/matthewbarr/puppet-zulip),
 [Redmine](https://github.com/zulip/zulip-redmine-plugin), and
 [Trello](https://github.com/zulip/trello-to-zulip);
 and [many more](https://github.com/zulip/).
 
-We use [Transifex](https://explore.transifex.com/zulip/zulip/) to do
+We use [Weblate](https://hosted.weblate.org/projects/zulip/) to do
 translations.
 
 In this overview, we'll mainly discuss the core Zulip server and web
@@ -54,9 +52,12 @@ chamber with its own users, channels, customizations, and so on. This
 means that one person might be a user of multiple Zulip realms. The
 administrators of an organization have a great deal of control over
 who can register an account, what permissions new users have, etc. For
-more on security considerations and options, see [the security model
-section](../production/security-model.md) and the [Zulip Help
-Center](https://zulip.com/help/).
+more on security considerations and options, see our [guide on securing
+your Zulip server][security-guide], [security overview][security-overview],
+and the [Zulip help center](https://zulip.com/help/).
+
+[security-overview]: https://zulip.com/security/
+[security-guide]: ../production/securing-your-zulip-server.md
 
 ## Components
 
@@ -109,7 +110,7 @@ feed.
 For more details on the frontend, see our documentation on
 [translation](../translating/translating.md),
 [templates](../subsystems/html-css.md#html-templates),
-[directory structure](directory-structure.md), and
+[directory structure](../subsystems/directory-structure.md), and
 [the static asset pipeline](../subsystems/html-css.md#static-asset-pipeline).
 
 [jinja2]: http://jinja.pocoo.org/
@@ -258,57 +259,3 @@ run on the Zulip servers themselves, and are included with the relevant
 component of the Zulip server (e.g.,
 `puppet/zulip/manifests/app_frontend_base.pp` installs a few under
 `/usr/lib/nagios/plugins/zulip_app_frontend`).
-
-## Glossary
-
-This section gives names for some of the elements in the Zulip UI used
-in Zulip development conversations. In general, our goal is to
-minimize the set of terminology listed here by giving elements
-self-explanatory names.
-
-- **bankruptcy**: When a user has been off Zulip for several days and
-  has hundreds of unread messages, they are prompted for whether
-  they want to mark all their unread messages as read. This is
-  called "declaring bankruptcy" (in reference to the concept in
-  finance).
-
-- **chevron**: A small downward-facing arrow next to a message's
-  timestamp, offering contextual options, e.g., "Reply", "Mute [this
-  topic]", or "Link to this conversation". To avoid visual clutter,
-  the chevron only appears in the web UI upon hover.
-
-- **ellipsis**: A small vertical three dot icon (technically called
-  as ellipsis-v), present in sidebars as a menu icon.
-  It offers contextual options for global filters (Combined feed
-  and Starred messages), channel filters and topics in left
-  sidebar and users in right sidebar. To avoid visual clutter
-  ellipsis only appears in the web UI upon hover.
-
-- **huddle**: What the codebase calls a "group direct message".
-
-- **message editing**: If the realm admin allows it, then after a user
-  posts a message, the user has a few minutes to click "Edit" and
-  change the content of their message. If they do, Zulip adds a
-  marker such as "EDITED" at the top of the message, visible to
-  anyone who can see the message.
-
-- **realm**: What the codebase calls an "organization" in the UI.
-
-- **recipient bar**: A visual indication of the context of a message
-  or group of messages, displaying the channel and topic or direct
-  message recipient list, at the top of a group of messages. A
-  typical 1-line message to a new recipient shows to the user as
-  three lines of content: first the recipient bar, second the
-  sender's name and avatar alongside the timestamp (and, on hover,
-  the star and the chevron), and third the message content. The
-  recipient bar is or contains hyperlinks to help the user narrow.
-
-- **star**: Zulip allows a user to mark any message they can see,
-  public or private, as "starred". A user can easily access messages
-  they've starred through the "Starred messages" link in the
-  left sidebar, or use "is:starred" as a narrow or a search
-  constraint. Whether a user has or has not starred a particular
-  message is private; other users and realm admins don't know
-  whether a message has been starred, or by whom.
-
-- **subject**: What the codebase calls a "topic" in many places.

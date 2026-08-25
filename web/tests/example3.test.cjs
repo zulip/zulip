@@ -2,7 +2,9 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
+const {make_message_list} = require("./lib/message_list.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -15,7 +17,7 @@ const {Filter} = zrequire("../src/filter");
 const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 
-set_realm({});
+set_realm(make_realm());
 
 const denmark_stream = make_stream({
     color: "blue",
@@ -26,7 +28,7 @@ const denmark_stream = make_stream({
 
 run_test("filter", () => {
     stream_data.clear_subscriptions();
-    stream_data.add_sub(denmark_stream);
+    stream_data.add_sub_for_tests(denmark_stream);
 
     const filter_terms = [
         {operator: "stream", operand: denmark_stream.stream_id.toString()},
@@ -70,7 +72,7 @@ const message_lists = zrequire("message_lists");
 
 run_test("narrow_state", () => {
     stream_data.clear_subscriptions();
-    stream_data.add_sub(denmark_stream);
+    stream_data.add_sub_for_tests(denmark_stream);
     message_lists.set_current(undefined);
 
     // As we often do, first make assertions about the starting
@@ -84,14 +86,8 @@ run_test("narrow_state", () => {
         {operator: "topic", operand: "copenhagen"},
     ];
 
-    const filter = new Filter(filter_terms);
-
     // And here is where we actually change state.
-    message_lists.set_current({
-        data: {
-            filter,
-        },
-    });
+    message_lists.set_current(make_message_list(filter_terms));
     assert.equal(narrow_state.stream_name(), "Denmark");
     assert.equal(narrow_state.topic(), "copenhagen");
 });

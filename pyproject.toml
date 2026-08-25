@@ -6,8 +6,8 @@ requires-python = ">=3.10"
 [dependency-groups]
 prod = [
   # Django itself
-  "django[argon2]==5.1.*",
-  "asgiref", # https://github.com/django/asgiref/pull/494
+  "django[argon2]==5.2.*",
+  "asgiref",
 
   # needed for NotRequired, ParamSpec
   "typing-extensions",
@@ -23,14 +23,10 @@ prod = [
   "regex",
 
   # Needed for manage.py
-  "ipython",
+  "ipython<9",  # 9.0.0 requires Python ≥ 3.11
 
   # Needed for image processing and thumbnailing
   "pyvips",
-
-  # Needed for building complex DB queries
-  "sqlalchemy==1.4.*",
-  "greenlet",
 
   # Needed for S3 file uploads and other AWS tools
   "boto3",
@@ -55,7 +51,7 @@ prod = [
   "firebase-admin",
 
   # Needed for the email mirror
-  "html2text",
+  "markdownify",
   "talon-core",
 
   # Needed for inlining the CSS in emails
@@ -75,9 +71,6 @@ prod = [
 
   # Needed for compression support in memcached via python-binary-memcached
   "django-bmemcached",
-
-  # Needed for zerver/tests/test_timestamp.py
-  "python-dateutil",
 
   # Needed for Redis
   "redis",
@@ -110,8 +103,8 @@ prod = [
   "dnspython",
 
   # Install Python Social Auth
-  "social-auth-app-django",
-  "social-auth-core[azuread]", # https://github.com/python-social-auth/social-core/pull/1025
+  "social-auth-app-django<6.0.0", # https://github.com/python-social-auth/social-app-django/issues/1020
+  "social-auth-core[saml]",
   "python3-saml",
 
   # For encrypting a login token to the desktop app
@@ -128,6 +121,9 @@ prod = [
 
   # For checking whether email of the user is from a disposable email provider.
   "disposable-email-domains",
+
+  # For validating that email domains can be IDNA-encoded.
+  "idna",
 
   # Needed for parsing YAML with JSON references from the REST API spec files
   "jsonref",
@@ -147,8 +143,7 @@ prod = [
   "requests-oauthlib",
 
   # For OpenAPI schema validation.
-  "openapi-core",
-  "werkzeug<3.1.2", # https://github.com/python-openapi/openapi-core/issues/938
+  "openapi-core>=0.23.1",
 
   # For reporting errors to sentry.io
   "sentry-sdk",
@@ -160,10 +155,11 @@ prod = [
   "pyuca",
 
   # Handle connection retries with exponential backoff
-  "backoff",
+  "tenacity",
 
   # Needed for reading bson files in rocketchat import tool
   "pymongo",
+  "python-bsonstream>=0.1.4",
 
   # Non-backtracking regular expressions
   "google-re2",
@@ -175,17 +171,17 @@ prod = [
   "django-scim2",
 
   # Circuit-breaking for outgoing services
-  "circuitbreaker",
+  "pybreaker",
 
   # Runtime monkeypatching of django-stubs generics
-  "django-stubs-ext",
+  "django-stubs-ext<6.1.0",  # 6.1.0 requires Python ≥ 3.11
 
   # Structured data representation with parsing.
   "pydantic",
   "annotated-types",
 
   # For requesting LLM API endpoints.
-  "litellm",
+  "openai",
 
   # Used for running the Zulip production Django server
   "uwsgi",
@@ -201,19 +197,51 @@ prod = [
 
   # For using Missing sentinel
   "pydantic-partials",
+
+  # For E2EE of push notifications
+  "pynacl",
+
+  # Character set detection for text/plain
+  "chardet",
+
+  # Better compression than zlib
+  "zstd",
+
+  # Internationalization
+  "pyicu",
+
+  # Backport datetime.fromisoformat fixes to Python < 3.11
+  "backports-datetime-fromisoformat; python_version < '3.11'",
+
+  # Used to parse User-Agent string for OS & browser names
+  "ua-parser[regex]>=1.0.2",
 ]
 docs = [
   # Needed to build RTD docs
-  "sphinx",
+  "sphinx<8.2",  # 8.2.0 requires Python ≥ 3.11
   "sphinx-rtd-theme",
-  "sphinx-design",
-
+  "sphinx-design<0.7",  # 0.7.0 requires Python ≥ 3.11
+  # Needed for copybutton
+  "sphinx-copybutton",
   # Needed to build Markdown docs
   "myst-parser",
+  "markdown-it-py<4",  # 4.0.0 requires Python ≥ 3.11
 ]
+
+# This group is for minimal CI / local release tooling; see tools/closed-by-commits
+release-tools = [
+   # Talks to GitHub
+   "PyGithub",
+   # And also to chat.zulip.org
+   "requests",
+   # For building a CLI
+   "typer",
+]
+
 dev = [
   { include-group = "prod" },
   { include-group = "docs" },
+  { include-group = "release-tools" },
 
   # moto s3 mock
   "moto[s3]",
@@ -262,15 +290,14 @@ dev = [
   "zulint",
 
   # For type checking
-  "mypy[faster-cache]~=1.15.0",  # https://github.com/typeddjango/django-stubs/issues/2696
+  "mypy[faster-cache]",
 
   "boto3-stubs[s3,ses,sns,sqs]",
-  "django-stubs",
+  "django-stubs<6.1.0",  # 6.1.0 requires Python ≥ 3.11
+  "google-re2-stubs",
   "lxml-stubs",
-  "SQLAlchemy[mypy]",
   "types-beautifulsoup4",
   "types-boto",
-  "types-chardet",
   "types-decorator",
   "types-defusedxml",
   "types-jsonschema",
@@ -281,13 +308,13 @@ dev = [
   "types-psycopg2",
   "types-Pygments",
   "types-pyOpenSSL",
-  "types-python-dateutil",
   "types-PyYAML",
   "types-redis",
   "types-regex",
   "types-requests",
   "types-requests-oauthlib",
   "types-uwsgi",
+  "types-zstd",
   "types-zxcvbn",
 
   # Needed for tools/check-thirdparty
@@ -307,16 +334,18 @@ dev = [
 ]
 
 [tool.uv]
-no-binary-package = ["lxml", "xmlsec"]
+exclude-newer = "24 hours"
+no-binary-package = [
+  # https://github.com/xmlsec/python-xmlsec/issues/320
+  "lxml",
+  "xmlsec",
+]
 
 [tool.uv.sources]
-# https://github.com/django/asgiref/pull/494
-asgiref = { url = "https://github.com/andersk/asgiref/archive/8a2717c14bce1b8dd37371c675ee3728e66c3fe3.zip" }
-
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
 # and chardet, cchardet: https://github.com/mailgun/talon/pull/239
 # and fix invalid escape sequences: https://github.com/mailgun/talon/pull/245
-talon-core = { url = "https://github.com/zulip/talon/archive/e87a64dccc3c5ee1b8ea157d4b6e15ecd46f2bed.zip", subdirectory = "talon-core" }
+talon-core = { git = "https://github.com/zulip/talon.git", subdirectory = "talon-core", rev = "e87a64dccc3c5ee1b8ea157d4b6e15ecd46f2bed" }
 
 # We integrate with these tightly, including fetching content not included in
 # the official PyPI release tarballs, such as logos, assets and documentation
@@ -324,11 +353,11 @@ talon-core = { url = "https://github.com/zulip/talon/archive/e87a64dccc3c5ee1b8e
 # version from Git rather than a PyPI release. Keeping everything in one
 # repository simplifies the process of implementing and documenting new bots for
 # new contributors.
-zulip = { url = "https://github.com/zulip/python-zulip-api/archive/9e131ac626976b9c3da6c11b6365b4939656f7c3.zip", subdirectory = "zulip" }
-zulip-bots = { url = "https://github.com/zulip/python-zulip-api/archive/0.9.0.zip", subdirectory = "zulip_bots" }
+zulip = { git = "https://github.com/zulip/python-zulip-api.git", subdirectory = "zulip" }
+zulip-bots = { git = "https://github.com/zulip/python-zulip-api.git", subdirectory = "zulip_bots" }
 
 # zulip's linting framework - zulint
-zulint = { url = "https://github.com/zulip/zulint/archive/9be0a32bf75a9d8738b005f0b880567fff64e943.zip" }
+zulint = { git = "https://github.com/zulip/zulint.git" }
 
 [tool.black]
 line-length = 100
@@ -353,18 +382,19 @@ cache_dir = "$MYPY_CONFIG_FILE_DIR/var/mypy-cache"
 strict = true
 disallow_subclassing_any = false
 disallow_untyped_calls = false
-disallow_untyped_decorators = false
 warn_return_any = false
 
 # Enable optional errors.
 enable_error_code = [
     "redundant-self",
+    "deprecated",
     "redundant-expr",
     "truthy-bool",
     "truthy-iterable",
     "ignore-without-code",
     "unused-awaitable",
     "explicit-override",
+    "exhaustive-match",
 ]
 
 # Display the codes needed for # type: ignore[code] annotations.
@@ -384,10 +414,11 @@ plugins = [
 
 [[tool.mypy.overrides]]
 module = [
-    "ahocorasick.*",
+    "ahocorasick.*", # https://github.com/WojciechMula/pyahocorasick/issues/214
+    "backports.datetime_fromisoformat.*",
     "bitfield.*",
     "bmemcached.*",
-    "circuitbreaker.*",
+    "bsonstream.*",
     "digitalocean.*",
     "django_auth_ldap.*",
     "django_bmemcached.*",
@@ -397,6 +428,7 @@ module = [
     "fakeldap.*",
     "firebase_admin.*",
     "gitlint.*",
+    "icu.*", # https://gitlab.pyicu.org/main/pyicu/-/issues/156
     "integrations.*",
     "jsonref.*",
     "ldap.*", # https://github.com/python-ldap/python-ldap/issues/368
@@ -405,9 +437,7 @@ module = [
     "pyoembed.*",
     "pyuca.*",
     "pyvips.*",
-    "re2.*",
     "scim2_filter_parser.attr_paths",
-    "social_django.*",
     "talon_core.*",
     "tlds.*",
     "two_factor.*",
@@ -430,7 +460,7 @@ target-version = "py310"
 
 [tool.ruff.lint]
 # See https://github.com/astral-sh/ruff#rules for error code definitions.
-select = [
+extend-select = [
     "ANN", # annotations
     "B", # bugbear
     "C4", # comprehensions
@@ -444,6 +474,7 @@ select = [
     "FURB", # refurbishing
     "G", # logging format
     "I", # import sorting
+    "INP", # implicit namespace package
     "INT", # gettext
     "ISC", # string concatenation
     "LOG", # logging
@@ -470,6 +501,7 @@ ignore = [
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
     "B007", # Loop control variable not used within the loop body
     "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
+    "BLE001", # Do not catch blind exception
     "C408", # Unnecessary `dict` call (rewrite as a literal)
     "COM812", # Trailing comma missing
     "DJ001", # Avoid using `null=True` on string-based fields
@@ -482,11 +514,13 @@ ignore = [
     "N806", # Variable in function should be lowercase
     "PERF203", # `try`-`except` within a loop incurs performance overhead
     "PLC0414", # Import alias does not rename original package
+    "PLC0415", # `import` should be at the top-level of a file
     "PLC1901", # `s == ""` can be simplified to `not s` as an empty string is falsey
     "PLR0911", # Too many return statements
     "PLR0912", # Too many branches
     "PLR0913", # Too many arguments to function call
     "PLR0915", # Too many statements
+    "PLR0917", # Too many positional arguments
     "PLR2004", # Magic value used in comparison
     "PLR5501", # Consider using `elif` instead of `else` then `if` to remove one indentation level
     "PLW0603", # Using the global statement is discouraged
@@ -515,10 +549,12 @@ ignore = [
     "TC002", # Move third-party import into a type-checking block
     "TC003", # Move standard library import into a type-checking block
     "TC006", # Add quotes to type expression in `typing.cast()`
+    "TRY002", # Create your own exception
+    "TRY004", # Prefer `TypeError` exception for invalid type
 ]
 
 [tool.ruff.lint.flake8-bandit]
-allowed-markup-calls = ["lxml.html.tostring"]
+allowed-markup-calls = ["bs4.BeautifulSoup.decode", "lxml.html.tostring"]
 
 [tool.ruff.lint.flake8-gettext]
 extend-function-names = ["gettext_lazy"]

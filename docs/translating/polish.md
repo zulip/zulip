@@ -48,13 +48,13 @@ You can set your own alert words for Zulip messages.
 
 > Możesz ustawić powiadomienia dla wybranych fraz w Zulipie.
 
-**Combined feed**: wszystkie wiadomości
+**Combined feed**: strumień mieszany
 
 example:
 
 You can see all messages in unmuted streams and topics with "Combined feed".
 
-> Możesz zobaczyć pełną listę wiadomości poprzez widok "Wszystkie wiadomości".
+> Możesz zobaczyć pełną listę wiadomości poprzez widok "Strumień mieszany".
 
 **bot**: bot
 

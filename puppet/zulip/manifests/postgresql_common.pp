@@ -13,8 +13,6 @@ class zulip::postgresql_common {
         'hunspell-en-us',
         # PostgreSQL Nagios check plugin
         'check-postgres',
-        # Python modules used in our monitoring/worker threads
-        'python3-dateutil', # TODO: use a virtualenv instead
       ]
       $postgresql_user_reqs = [
         Package[$postgresql],
@@ -35,9 +33,6 @@ class zulip::postgresql_common {
         # https://bucardo.org/check_postgres/
         # 'check-postgres',  # TODO
       ]
-      exec {'pip3_deps':
-        command => 'python3 -m pip install python-dateutil',
-      }
       group { 'ssl-cert':
         ensure => present,
       }

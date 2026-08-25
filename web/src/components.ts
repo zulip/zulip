@@ -1,7 +1,9 @@
-import $ from "jquery";
+import {$} from "jquery";
+import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as ui_util from "./ui_util.ts";
 
 /* USAGE:
     Toggle x = components.toggle({
@@ -21,6 +23,7 @@ export type Toggle = {
     disable_tab: (name: string) => void;
     enable_tab: (name: string) => void;
     value: () => string | undefined;
+    key: () => string | undefined;
     get: () => JQuery;
     goto: (name: string) => void;
     register_event_handlers: () => void;
@@ -79,6 +82,10 @@ export function toggle(opts: {
         if ($elem.hasClass("disabled")) {
             return false;
         }
+        if ($elem.css("display") === "none") {
+            return false;
+        }
+
         meta.$ind_tab.removeClass("selected");
 
         $elem.addClass("selected");
@@ -97,7 +104,7 @@ export function toggle(opts: {
     function maybe_go_left(): boolean {
         // Select the first non-disabled tab to the left, if any.
         let i = 1;
-        while (meta.idx - i >= 0) {
+        while (meta.idx >= i) {
             if (select_tab(meta.idx - i)) {
                 return true;
             }
@@ -132,6 +139,11 @@ export function toggle(opts: {
         handlers: {
             ArrowLeft: maybe_go_left,
             ArrowRight: maybe_go_right,
+            Enter(e?: JQuery.KeyDownEvent) {
+                assert(e !== undefined);
+                ui_util.convert_enter_to_click(e);
+                return true;
+            },
         },
     });
 
@@ -170,6 +182,14 @@ export function toggle(opts: {
         value() {
             if (meta.idx >= 0) {
                 return opts.values[meta.idx]!.label;
+            }
+            /* istanbul ignore next */
+            return undefined;
+        },
+
+        key() {
+            if (meta.idx >= 0) {
+                return opts.values[meta.idx]!.key;
             }
             /* istanbul ignore next */
             return undefined;

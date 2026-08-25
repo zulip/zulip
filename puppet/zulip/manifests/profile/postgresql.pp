@@ -2,6 +2,7 @@
 class zulip::profile::postgresql(Boolean $start = true) {
   include zulip::profile::base
   include zulip::postgresql_base
+  include zulip::systemd_daemon_reload
 
   $version = $zulip::postgresql_common::version
 
@@ -23,7 +24,7 @@ class zulip::profile::postgresql(Boolean $start = true) {
   $wal_buffers = zulipconf('postgresql', 'wal_buffers', undef)
   $min_wal_size = zulipconf('postgresql', 'min_wal_size', undef)
   $max_wal_size = zulipconf('postgresql', 'max_wal_size', undef)
-  $random_page_cost = zulipconf('postgresql', 'random_page_cost', undef)
+  $random_page_cost = zulipconf('postgresql', 'random_page_cost', '1.1')
   $effective_io_concurrency = zulipconf('postgresql', 'effective_io_concurrency', undef)
 
   $listen_addresses = zulipconf('postgresql', 'listen_addresses', undef)
@@ -54,7 +55,7 @@ class zulip::profile::postgresql(Boolean $start = true) {
       mode    => '0644',
       content => template("zulip/postgresql/${version}/postgresql.conf.template.erb"),
     }
-  } elsif $version in ['15', '16', '17'] {
+  } elsif $version in ['15', '16', '17', '18'] {
     $postgresql_conf_file = "${zulip::postgresql_base::postgresql_confdir}/conf.d/zulip.conf"
     file { $postgresql_conf_file:
       ensure  => file,
@@ -66,6 +67,25 @@ class zulip::profile::postgresql(Boolean $start = true) {
     }
   } else {
     fail("PostgreSQL ${version} not supported")
+  }
+
+  # PostgreSQL 18's io_method = io_uring requires a larger
+  # RLIMIT_MEMLOCK than systemd's default on Linux 6.14 and newer
+  if $facts['os']['family'] == 'Debian' {
+    file { '/etc/systemd/system/postgresql@.service.d':
+      ensure => directory,
+      owner  => 'root',
+      group  => 'root',
+      mode   => '0755',
+    }
+    file { '/etc/systemd/system/postgresql@.service.d/zulip.conf':
+      ensure => file,
+      owner  => 'root',
+      group  => 'root',
+      mode   => '0644',
+      source => 'puppet:///modules/zulip/postgresql/postgresql@.service.d/zulip.conf',
+      notify => [Exec['reload systemd'], Service['postgresql']],
+    }
   }
 
   if $replication_primary != undef and $replication_user != undef {
@@ -90,7 +110,7 @@ class zulip::profile::postgresql(Boolean $start = true) {
   }
   service { 'postgresql':
     ensure    => $start,
-    require   => $require,
+    require   => $require + [Exec['reload systemd']],
     subscribe => [ File[$postgresql_conf_file] ],
   }
 }

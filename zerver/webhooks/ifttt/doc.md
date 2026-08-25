@@ -32,7 +32,7 @@ in Zulip.
 
 {end_tabs}
 
-Congratulations! You're done!
+You're done! You should now receive notifications in Zulip.
 
 ### Related documentation
 

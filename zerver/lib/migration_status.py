@@ -51,10 +51,21 @@ STALE_MIGRATIONS = [
     ("zerver", "0026_delete_mituser"),
     ("zerver", "0027_realm_default_language"),
     ("zerver", "0028_userprofile_tos_version"),
-    # This migration was in python-social-auth, and was mistakenly removed
-    # from its `replaces` in
+    # These migrations were removed when `social_auth` was renamed to
+    # `social_django` in social-auth-app-django 0.0.1 (Zulip server 1.5.0), and
+    # were removed from `replaces` in
     # https://github.com/python-social-auth/social-app-django/pull/25
+    # https://github.com/python-social-auth/social-app-django/pull/900
+    ("default", "0001_initial"),
+    ("default", "0002_add_related_name"),
+    ("default", "0003_alter_email_max_length"),
+    ("default", "0004_auto_20160423_0400"),
     ("default", "0005_auto_20160727_2333"),
+    ("social_auth", "0001_initial"),
+    ("social_auth", "0002_add_related_name"),
+    ("social_auth", "0003_alter_email_max_length"),
+    ("social_auth", "0004_auto_20160423_0400"),
+    ("social_auth", "0005_auto_20160727_2333"),
     # This was a typo (twofactor for two_factor) corrected in
     # https://github.com/jazzband/django-two-factor-auth/pull/642
     ("twofactor", "0001_squashed_0008_delete_phonedevice"),

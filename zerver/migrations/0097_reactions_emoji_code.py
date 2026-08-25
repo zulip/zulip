@@ -17,7 +17,7 @@ def populate_new_fields(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor
         unified_reactions = orjson.loads(f.read())
 
     Reaction = apps.get_model("zerver", "Reaction")
-    for reaction in Reaction.objects.all():
+    for reaction in Reaction.objects.all().iterator():
         reaction.emoji_code = unified_reactions.get(reaction.emoji_name)
         if reaction.emoji_code is None:
             # If it's not present in the unified_reactions map, it's a realm emoji.

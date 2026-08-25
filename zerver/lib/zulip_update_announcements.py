@@ -19,6 +19,7 @@ from zerver.lib.message import SendMessageRequest, remove_single_newlines
 from zerver.lib.topic import messages_for_topic
 from zerver.models.realm_audit_logs import AuditLogEventType, RealmAuditLog
 from zerver.models.realms import Realm
+from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import UserProfile, get_system_bot
 
 
@@ -384,6 +385,259 @@ feature highlights in Zulip Server 10.0, and other Zulip project updates.
             deactivate_a_group_url="/help/deactivate-a-user-group",
         ),
     ),
+    ZulipUpdateAnnouncement(
+        level=17,
+        message="""
+Starting this week, you’ll get Zulip’s next-generation mobile app the next time
+your Zulip app is upgraded. The new app offers a sleek new design and a faster,
+smoother experience. Check out [the announcement post]({flutter_release_blog_post})
+for details and how to share your feedback.
+""".format(
+            flutter_release_blog_post="https://blog.zulip.com/2025/06/17/flutter-mobile-app-launched/",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=18,
+        message="""
+- You can now [schedule yourself a direct message
+  reminder]({schedule_a_reminder_url}) about a message you want to come back to.
+- Permissions to [move]({restrict_moving_messages_url}) and
+  [resolve]({restrict_resolving_topics_url}) topics can now be configured
+  separately for each channel.
+
+**Mobile updates**
+
+We've been hard at work adding the most highly
+[requested]({what_about_feature_x_url}) features to the next-generation mobile
+app released in June.
+- You can now [search for messages]({search_for_messages_url}) in the mobile
+  app.
+- You can now see other users' [availability]({availability_url}) and
+  [status]({view_a_status_url}), and toggle [invisible
+  mode]({invisible_mode_url}).
+- You can check [who reacted]({view_who_reacted_url}) to a message, and [when
+  each message was sent]({view_exact_time_url}).
+
+**Web and desktop updates**
+- There are two new options for [where you
+  navigate]({left_sidebar_channel_links_url}) by clicking on a channel name in
+  the left sidebar: a [list of topics]({list_of_topics_url}) in the channel, or
+  the top unread topic.
+""".format(
+            schedule_a_reminder_url="/help/schedule-a-reminder",
+            restrict_moving_messages_url="/help/restrict-moving-messages",
+            restrict_resolving_topics_url="/help/restrict-resolving-topics",
+            what_about_feature_x_url="https://blog.zulip.com/2025/06/17/flutter-mobile-app-launched/#what-about-insert-feature-here",
+            left_sidebar_channel_links_url="/help/left-sidebar#configure-where-channel-links-in-the-left-sidebar-go",
+            list_of_topics_url="/help/list-of-topics",
+            search_for_messages_url="/help/search-for-messages",
+            availability_url="/help/status-and-availability#availability",
+            view_a_status_url="/help/status-and-availability#view-a-status",
+            invisible_mode_url="/help/status-and-availability#toggle-invisible-mode",
+            view_who_reacted_url="/help/emoji-reactions#view-who-reacted-to-a-message",
+            view_exact_time_url="/help/view-the-exact-time-a-message-was-sent",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=19,
+        message="""
+- Zulip's topics help you keep conversations organized, but you may not need
+  topics in some channels (e.g., a social channel, or one with a narrow
+  purpose). For these situations, you can now [configure “general chat”
+  channels]({general_chat_channels_url}) without topics.
+
+**Web and desktop updates**
+- When viewing all topics in a channel in the left sidebar, you can now [filter
+  topics]({filter_by_whether_resolved_url}) by whether they are resolved.
+- Your [home view]({home_view_url}) menu now has an option to [mark as
+  read]({marking_messages_as_read_url}) all messages in muted topics or topics
+  you don't follow. Zulip is snappier when you don't have thousands of unread
+  messages.
+""".format(
+            general_chat_channels_url="/help/general-chat-channels",
+            home_view_url="/help/configure-home-view",
+            marking_messages_as_read_url="/help/marking-messages-as-read",
+            filter_by_whether_resolved_url="/help/resolve-a-topic#filter-by-whether-topics-are-resolved",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=20,
+        message="""
+- Administrators can now organize channels into [folders]({channel_folders_url})
+  (e.g., a dedicated folder for a team's channels), and
+  [sort]({reorder_channel_folders_url}) folders as needed. Channels are grouped
+  by folder in the [Inbox]({inbox_url}) view, and each person can
+  [decide]({configure_left_sidebar_folders_url}) whether to group channels by
+  folder in the left sidebar.
+- Administrators can now [configure]({configure_a_custom_welcome_message_url}) a
+  custom welcome message for new users. For example, you can describe the
+  purpose of important channels, and link to your guidelines for using Zulip.
+
+**Web and desktop updates**
+- A new filter in the upper left lets you filter everything in your [left
+  sidebar]({left_sidebar_url}).
+
+**Mobile updates**
+- You can now [set your status]({set_a_status_url}).
+- Android users can now [share]({share_and_upload_files_url}) files and text
+  from other applications into Zulip.
+- You can now [check]({read_receipts_url}) who has read a message.
+- You will now see autocomplete suggestions for mentioning
+  [user groups]({user_groups_url}), as well as users.
+
+""".format(
+            channel_folders_url="/help/channel-folders",
+            reorder_channel_folders_url="/help/manage-channel-folders#reorder-channel-folders",
+            inbox_url="/help/inbox",
+            configure_left_sidebar_folders_url="/help/channel-folders#configure-whether-channels-are-grouped-by-folder-in-the-left-sidebar",
+            left_sidebar_url="/help/left-sidebar",
+            configure_a_custom_welcome_message_url="/help/configure-a-custom-welcome-message",
+            set_a_status_url="/help/status-and-availability#set-a-status",
+            share_and_upload_files_url="/help/share-and-upload-files",
+            read_receipts_url="/help/read-receipts",
+            user_groups_url="/help/user-groups",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=21,
+        message=(
+            """
+We make many improvements to Zulip beyond what we can share here. Learn about
+additional feature highlights, and other Zulip project updates since March,
+in the [blog post]({blog_post_11_0_url}) announcing today's release of
+Zulip Server 11.0.
+"""
+            if settings.CORPORATE_ENABLED
+            else """
+We make many improvements to Zulip beyond what we can share here. Check out our
+[release announcement blog post]({blog_post_11_0_url}) to learn about additional
+feature highlights in Zulip Server 11.0, and other Zulip project updates.
+"""
+        ).format(
+            blog_post_11_0_url="https://blog.zulip.com/zulip-server-11-0",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=22,
+        message="""
+The [help center]({help_url}) has a new, modernized design, complete with
+light and dark theme. A search bar makes it easier to find the information you
+need, whether it's how to get started, specific features, best practices, or
+administrative capabilities.
+
+**Mobile updates**
+- You can now [browse]({browse_and_subscribe_url}) channels you're not
+  subscribed to, and subscribe.
+- You can now [delete messages]({delete_message_completely}), if you have
+  permission to do so.
+- Android users can now paste an image into a message, or insert a sticker from
+  the keyboard.
+""".format(
+            browse_and_subscribe_url="/help/introduction-to-channels#browse-and-subscribe-to-channels",
+            delete_message_completely="/help/delete-a-message#delete-a-message-completely",
+            help_url="/help/",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=23,
+        message="""
+**Web and desktop updates**
+- You can now [report]({report_a_message_url}) problematic messages if
+moderation requests are [enabled]({enable_moderation_requests_url}).
+- You can now [expand or collapse]({expand_or_collapse_sections_url}) all sections in the left sidebar, and
+[configure]({configure_inbox_folders_url}) whether channels are grouped by
+folder in the inbox view.
+""".format(
+            report_a_message_url="/help/report-a-message",
+            enable_moderation_requests_url="/help/enable-moderation-requests",
+            expand_or_collapse_sections_url="/help/left-sidebar#expand-or-collapse-sections",
+            configure_inbox_folders_url="/help/channel-folders#configure-whether-channels-are-grouped-by-folder-in-the-inbox-view",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=24,
+        message="""
+**Web and desktop updates**
+- The [recent conversations view]({recent_conversations_url}) has been
+redesigned, with a new option to [filter by folder]({filter_by_folder_url}).
+- [Search]({search_url}) typeahead now suggests topics across all your
+subscribed channels — no need to pick a channel first.
+
+**New organization settings**
+- [Size of image and video previews]({image_video_thumbnail_size_url}) in the message feed.
+- Configure [linkifiers]({linkifiers_url}) to also work in reverse: when you paste a URL that
+matches the linkifier, Zulip will automatically convert it to linkified text.
+- You can now create [custom profile fields]({custom_profile_fields_url}) for many types of external
+accounts, and allow them to be used for @-mention suggestions.
+- A new option for [default profile pictures for new
+users]({configure_default_profile_pictures_url}) looks great in both light and
+dark theme.
+
+Administrators can now [reset]({reset_settings_for_users_url}) any non-privacy
+user preference or notification setting to the [organization
+default]({configure_default_new_user_settings_url}), for everyone or just for
+users who haven't personally configured it.
+""".format(
+            recent_conversations_url="/help/recent-conversations",
+            filter_by_folder_url="/help/recent-conversations#filter-by-folder",
+            search_url="/help/search-for-messages",
+            image_video_thumbnail_size_url="/help/image-video-and-website-previews#configure-image-and-video-thumbnail-size",
+            linkifiers_url="/help/add-a-custom-linkifier",
+            custom_profile_fields_url="/help/custom-profile-fields",
+            configure_default_profile_pictures_url="/help/configure-default-profile-pictures",
+            reset_settings_for_users_url="/help/reset-settings-for-users",
+            configure_default_new_user_settings_url="/help/configure-default-new-user-settings",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=25,
+        message="""
+**Web and desktop updates**
+- You can now instantly [scroll to any date]({scroll_to_date_url}) in the
+message feed, whether you're viewing a conversation, a channel feed, search
+results, or anything else.
+- You can now [quote or forward]({quote_or_forward_url}) selected text from
+several messages at once using the `>` and `<` keyboard shortcuts.
+""".format(
+            scroll_to_date_url="/help/scroll-to-date",
+            quote_or_forward_url="/help/quote-or-forward-a-message",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=26,
+        message="""
+Zulip now [encrypts]({mobile_notifications_e2ee_url}) your push notifications
+end to end from the Zulip server to your mobile device when you use version
+30.0.272+ of the mobile app.
+
+**Web and desktop updates**
+- You can now [search]({search_your_important_messages_url}) for messages that
+mention any user with the `mentions:` filter.
+
+""".format(
+            mobile_notifications_e2ee_url="/help/mobile-notifications#end-to-end-encryption-e2ee-for-mobile-push-notifications",
+            search_your_important_messages_url="/help/search-for-messages#search-your-important-messages",
+        ),
+    ),
+    ZulipUpdateAnnouncement(
+        level=27,
+        message=(
+            """
+We make many improvements to Zulip beyond what we can share here. Learn about
+additional feature highlights, and other Zulip project updates since last
+August, in the [blog post]({blog_post_12_0_url}) announcing today's release of
+Zulip Server 12.0.
+"""
+            if settings.CORPORATE_ENABLED
+            else """
+We make many improvements to Zulip beyond what we can share here. Check out our
+[release announcement blog post]({blog_post_12_0_url}) to learn about additional
+feature highlights in Zulip Server 12.0, and other Zulip project updates.
+"""
+        ).format(
+            blog_post_12_0_url="https://blog.zulip.com/zulip-server-12-0",
+        ),
+    ),
 ]
 
 
@@ -408,12 +662,25 @@ def get_realms_behind_zulip_update_announcements_level(level: int) -> QuerySet[R
     return realms
 
 
+def get_topic_name_for_zulip_update_announcements(realm: Realm) -> str:
+    assert realm.zulip_update_announcements_stream is not None
+
+    with override_language(realm.default_language):
+        topic_name = str(realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME)
+
+    if (
+        realm.zulip_update_announcements_stream.topics_policy
+        == StreamTopicsPolicyEnum.empty_topic_only.value
+    ):
+        topic_name = ""
+
+    return topic_name
+
+
 def internal_prep_group_direct_message_for_old_realm(
     realm: Realm, sender: UserProfile
 ) -> SendMessageRequest | None:
     administrators = list(realm.get_human_admin_users())
-    with override_language(realm.default_language):
-        topic_name = str(realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME)
     if realm.zulip_update_announcements_stream is None:
         content = """
 Zulip now supports [configuring]({organization_settings_url}) a channel where Zulip will
@@ -425,6 +692,7 @@ a channel within one week, your organization will not miss any update messages.
             organization_settings_url="/#organization/organization-settings",
         )
     else:
+        topic_name = get_topic_name_for_zulip_update_announcements(realm)
         content = """
 Starting tomorrow, users in your organization will receive [updates]({zulip_update_announcements_help_url})
 about new Zulip features in #**{zulip_update_announcements_stream}>{topic_name}**.
@@ -466,14 +734,27 @@ def is_group_direct_message_sent_to_admins_within_days(realm: Realm, days: int) 
     return timezone_now() - group_direct_message_sent_on < timedelta(days=days)
 
 
+def is_realm_imported_from_other_product(realm: Realm) -> bool:
+    imported_audit_log = RealmAuditLog.objects.filter(
+        realm=realm, event_type=AuditLogEventType.REALM_IMPORTED
+    ).last()
+    if imported_audit_log is None:
+        return False
+
+    import_source = imported_audit_log.extra_data.get("import_source")
+    # Old AuditLog entries of this kind did not have import_source set. Let's just treat them
+    # like regular zulip imports.
+    return import_source is not None and import_source != "zulip"
+
+
 def internal_prep_zulip_update_announcements_stream_messages(
     current_level: int, latest_level: int, sender: UserProfile, realm: Realm
 ) -> list[SendMessageRequest | None]:
     message_requests = []
     stream = realm.zulip_update_announcements_stream
     assert stream is not None
-    with override_language(realm.default_language):
-        topic_name = str(realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME)
+    topic_name = get_topic_name_for_zulip_update_announcements(realm)
+
     while current_level < latest_level:
         content = get_zulip_update_announcements_message_for_level(level=current_level + 1)
         message_requests.append(
@@ -515,21 +796,32 @@ def send_messages_and_update_level(
     realm.save(update_fields=["zulip_update_announcements_level"])
 
 
-def send_zulip_update_announcements(skip_delay: bool) -> None:
+def send_zulip_update_announcements(skip_delay: bool, progress: bool = False) -> None:
     latest_zulip_update_announcements_level = get_latest_zulip_update_announcements_level()
-    for realm in get_realms_behind_zulip_update_announcements_level(
+    realms = get_realms_behind_zulip_update_announcements_level(
         level=latest_zulip_update_announcements_level
-    ):
+    )
+    if len(realms) == 0:
+        return
+
+    if progress:  # nocoverage
+        print(f"Sending update announcements to {len(realms)} realms")
+    for i, realm in enumerate(realms, start=1):
         try:
             send_zulip_update_announcements_to_realm(realm, skip_delay)
-        except Exception as e:  # nocoverage
-            logging.exception(e)
+        except Exception:  # nocoverage
+            logging.exception("Error while sending update announcements")
+        finally:
+            if progress and i % 50 == 0:  # nocoverage
+                print(f"Processed {i}/{len(realms)} realms...")
+    if progress:  # nocoverage
+        print("Done!")
 
 
-def send_zulip_update_announcements_to_realm(
-    realm: Realm, skip_delay: bool, realm_imported_from_other_product: bool = False
-) -> None:
+def send_zulip_update_announcements_to_realm(realm: Realm, skip_delay: bool) -> None:
     latest_zulip_update_announcements_level = get_latest_zulip_update_announcements_level()
+    realm_imported_from_other_product = is_realm_imported_from_other_product(realm)
+
     # Refresh the realm from the database and check its
     # properties, to protect against racing with another copy of
     # ourself.
@@ -576,18 +868,16 @@ def send_zulip_update_announcements_to_realm(
         # Wait for 24 hours after sending group DM to allow admins to change the
         # stream for zulip update announcements from it's default value if desired.
         if (
-            realm_zulip_update_announcements_level == 0
+            (realm_zulip_update_announcements_level == 0 or realm_imported_from_other_product)
             and is_group_direct_message_sent_to_admins_within_days(realm, days=1)
             and not skip_delay
         ):
             return
 
         # Send an introductory message just before the first update message.
-        with override_language(realm.default_language):
-            topic_name = str(realm.ZULIP_UPDATE_ANNOUNCEMENTS_TOPIC_NAME)
-
         stream = realm.zulip_update_announcements_stream
         assert stream.recipient_id is not None
+        topic_name = get_topic_name_for_zulip_update_announcements(realm)
         topic_has_messages = messages_for_topic(realm.id, stream.recipient_id, topic_name).exists()
 
         if not topic_has_messages:

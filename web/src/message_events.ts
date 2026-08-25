@@ -1,9 +1,7 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {z} from "zod";
-
-import * as resolved_topic from "../shared/src/resolved_topic.ts";
+import * as z from "zod/mini";
 
 import * as activity from "./activity.ts";
 import * as alert_words from "./alert_words.ts";
@@ -16,23 +14,32 @@ import * as compose_validate from "./compose_validate.ts";
 import * as direct_message_group_data from "./direct_message_group_data.ts";
 import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
-import type {Filter} from "./filter.ts";
+import type {RawLocalMessage} from "./echo.ts";
+import {Filter} from "./filter.ts";
+import * as lightbox from "./lightbox.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_edit_history from "./message_edit_history.ts";
 import * as message_events_util from "./message_events_util.ts";
 import * as message_helper from "./message_helper.ts";
+import type {LocalMessage} from "./message_helper.ts";
 import * as message_list_data_cache from "./message_list_data_cache.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_notifications from "./message_notifications.ts";
 import * as message_parser from "./message_parser.ts";
 import * as message_store from "./message_store.ts";
-import {type Message, type RawMessage, raw_message_schema} from "./message_store.ts";
+import {
+    type Message,
+    type MessageEditHistoryEntry,
+    type RawMessage,
+    raw_message_schema,
+} from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as narrow_state from "./narrow_state.ts";
 import * as pm_list from "./pm_list.ts";
 import * as recent_senders from "./recent_senders.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
+import * as resolved_topic from "./resolved_topic.ts";
 import type {UpdateMessageEvent} from "./server_event_types.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import * as starred_messages from "./starred_messages.ts";
@@ -194,19 +201,20 @@ export let update_views_filtered_on_message_property = (
                 url: "/json/messages",
                 data: {
                     message_ids: JSON.stringify(message_ids),
-                    narrow: JSON.stringify(filter.terms()),
+                    narrow: filter.get_stringified_narrow_for_server_query(),
                     allow_empty_topic_name: true,
                 },
                 success(data) {
                     const messages_to_add: Message[] = [];
                     const messages_to_remove = new Set(message_ids);
-                    for (const raw_message of z
+                    const {messages: raw_messages} = z
                         .object({messages: z.array(raw_message_schema)})
-                        .parse(data).messages) {
+                        .parse(data);
+                    for (const raw_message of raw_messages) {
                         messages_to_remove.delete(raw_message.id);
                         const message = message_store.get(raw_message.id);
                         messages_to_add.push(
-                            message ?? message_helper.process_new_message(raw_message),
+                            message ?? message_helper.process_new_server_message(raw_message),
                         );
                     }
                     msg_list.data.remove([...messages_to_remove]);
@@ -237,7 +245,7 @@ export let update_views_filtered_on_message_property = (
                     // we reach here but `message_helper.process_new_message`
                     // already handles that case.
                     for (const raw_message of parsed_data.messages) {
-                        message_helper.process_new_message(raw_message);
+                        message_helper.process_new_server_message(raw_message);
                     }
                     update_views_filtered_on_message_property(
                         message_ids,
@@ -286,14 +294,35 @@ export function rewire_update_views_filtered_on_message_property(
     update_views_filtered_on_message_property = value;
 }
 
-export function insert_new_messages(
-    raw_messages: RawMessage[],
-    sent_by_this_client: boolean,
-    deliver_locally: boolean,
-): Message[] {
-    const messages = raw_messages.map((raw_message) =>
-        message_helper.process_new_message(raw_message, deliver_locally),
-    );
+export type InsertNewMessagesOpts = {
+    sent_by_this_client: boolean;
+} & (
+    | {
+          type: "server_message";
+          raw_messages: RawMessage[];
+      }
+    | {
+          type: "local_message";
+          raw_messages: RawLocalMessage[];
+      }
+);
+
+export function insert_new_messages(opts: InsertNewMessagesOpts): Message[] {
+    const deliver_locally = opts.type === "local_message";
+    let messages: Message[];
+    let local_messages: LocalMessage[] | undefined = [];
+    if (opts.type === "server_message") {
+        messages = opts.raw_messages.map((raw_message) =>
+            message_helper.process_new_server_message(raw_message),
+        );
+    } else {
+        local_messages = opts.raw_messages.map((raw_message) =>
+            message_helper.process_new_local_message(raw_message),
+        );
+        // Local messages have extra data on them that we need to access in
+        // a few places, but otherwise we can treat them like regular messages.
+        messages = local_messages;
+    }
 
     const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
     direct_message_group_data.process_loaded_messages(messages);
@@ -349,7 +378,7 @@ export function insert_new_messages(
     // sent_by_this_client will be true if ANY of the messages
     // were sent by this client; notifications.notify_local_mixes
     // will filter out any not sent by us.
-    if (sent_by_this_client) {
+    if (opts.sent_by_this_client) {
         compose_notifications.notify_local_mixes(messages, need_user_to_scroll, {
             narrow_to_recipient(message_id) {
                 message_view.narrow_by_topic(message_id, {trigger: "outside_current_view"});
@@ -365,14 +394,14 @@ export function insert_new_messages(
     // tracking before we update the stream sidebar, to take advantage
     // of how stream_topic_history uses the echo data structures.
     if (deliver_locally) {
-        for (const message of messages) {
+        for (const message of local_messages) {
             echo.track_local_message(message);
         }
     }
 
     activity.set_received_new_messages(true);
     message_notifications.received_messages(messages);
-    stream_list.update_streams_sidebar();
+    stream_list.update_streams_sidebar_for_messages(messages);
     pm_list.update_private_messages();
 
     return messages;
@@ -386,6 +415,27 @@ function topic_resolve_toggled(new_topic: string, original_topic: string): boole
         return true;
     }
     return false;
+}
+
+function get_post_edit_topic(
+    topic_edited: boolean,
+    only_topic_case_changed: boolean,
+    event: UpdateMessageEvent,
+    new_topic: string | undefined,
+    anchor_message: Message | undefined,
+): string {
+    const pre_edit_topic = util.get_edit_event_orig_topic(event);
+    assert(pre_edit_topic !== undefined);
+
+    if (topic_edited || only_topic_case_changed) {
+        assert(new_topic !== undefined);
+        return new_topic;
+    }
+    if (anchor_message !== undefined) {
+        assert(anchor_message.type === "stream");
+        return anchor_message.topic;
+    }
+    return pre_edit_topic;
 }
 
 export function update_messages(events: UpdateMessageEvent[]): void {
@@ -418,7 +468,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             message_store.update_booleans(anchor_message, event.flags);
 
             if (event.rendered_content !== undefined) {
-                anchor_message.content = event.rendered_content;
+                message_store.update_message_content(anchor_message, event.rendered_content);
             }
 
             if (event.is_me_message !== undefined) {
@@ -457,7 +507,11 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 any_message_content_edited = true;
 
                 // Update raw_content, so that editing a few times in a row is fast.
-                anchor_message.raw_content = event.content;
+                message_store.maybe_update_raw_content(anchor_message.id, event.content);
+
+                // Editing a message may change the titles for linked
+                // media, so we must invalidate the asset map.
+                lightbox.invalidate_asset_map_of_message(event.message_id);
             }
 
             if (unread.update_message_for_mention(anchor_message, any_message_content_edited)) {
@@ -484,11 +538,17 @@ export function update_messages(events: UpdateMessageEvent[]): void {
         // A topic or stream edit may affect multiple messages, listed in
         // event.message_ids. event.message_id is still the first message
         // where the user initiated the edit.
-        const topic_edited = new_topic !== undefined;
+        const orig_topic = util.get_edit_event_orig_topic(event);
+        const only_topic_case_changed =
+            new_topic !== undefined &&
+            orig_topic !== undefined &&
+            util.lower_same(new_topic, orig_topic) &&
+            new_topic !== orig_topic;
+        const topic_edited = new_topic !== undefined && !only_topic_case_changed;
         const stream_changed = new_stream_id !== undefined;
         const stream_archived = old_stream === undefined;
 
-        if (!topic_edited && !stream_changed) {
+        if (!topic_edited && !stream_changed && !only_topic_case_changed) {
             // If the topic or stream of the anchor message was changed,
             // it will be rerendered if present in any rendered list.
             //
@@ -497,10 +557,33 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             if (anchor_message !== undefined) {
                 messages_to_rerender.push(anchor_message);
             }
+        } else if (only_topic_case_changed && !stream_changed) {
+            assert(old_stream_id !== undefined);
+            assert(orig_topic !== undefined);
+            assert(new_topic !== undefined);
+
+            // Update Inbox UI to reflect the new case.
+            unread.update_unread_topic_name_case(old_stream_id, orig_topic, new_topic);
+
+            // Update each message to reflect the new case.
+            for (const message_id of event.message_ids) {
+                const message = message_store.get(message_id);
+                if (message === undefined) {
+                    continue;
+                }
+                assert(message.type === "stream");
+
+                message.topic = new_topic;
+                assert(event.topic_links !== undefined);
+                message.topic_links = event.topic_links;
+                messages_to_rerender.push(message);
+            }
+
+            // Update name case in the sidebar.
+            stream_topic_history.update_topic_name_case(old_stream_id, orig_topic, new_topic);
         } else {
             // We must be moving stream messages.
             assert(old_stream_id !== undefined);
-            const orig_topic = util.get_edit_event_orig_topic(event);
             assert(orig_topic !== undefined);
 
             const going_forward_change =
@@ -508,7 +591,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 ["change_later", "change_all"].includes(event.propagate_mode);
 
             const compose_stream_id = compose_state.stream_id();
-            const current_filter = narrow_state.filter();
+            let current_filter = narrow_state.filter();
             const current_selected_id = message_lists.current?.selected_id();
             const selection_changed_topic =
                 message_lists.current !== undefined &&
@@ -529,9 +612,6 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                     local_cache_missing_messages = true;
                 }
             }
-            // The event.message_ids received from the server are not in sorted order.
-            // Sorts in ascending order.
-            event_messages.sort((a, b) => a.id - b.id);
 
             if (
                 going_forward_change &&
@@ -549,12 +629,30 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 }
 
                 compose_validate.warn_if_topic_resolved(true);
-                compose_validate.inform_if_topic_is_moved(orig_topic, old_stream_id);
+                compose_validate.inform_if_topic_is_moved(orig_topic, old_stream_id, event.user_id);
                 compose_fade.set_focused_recipient("stream");
             }
 
             if (going_forward_change) {
                 drafts.rename_stream_recipient(old_stream_id, orig_topic, new_stream_id, new_topic);
+            }
+
+            // Before editing the topic or stream on any message, update the
+            // topic links to point to the right place. This must run while
+            // the messages still have their old stream and topic, so that we
+            // can fetch their old records in the link maps.
+            if (topic_edited || stream_changed) {
+                message_store.process_topic_edit({
+                    message_ids: event.message_ids,
+                    new_stream_id: new_stream_id ?? old_stream_id,
+                    new_topic: get_post_edit_topic(
+                        topic_edited,
+                        only_topic_case_changed,
+                        event,
+                        new_topic,
+                        anchor_message,
+                    ),
+                });
             }
 
             for (const moved_message of event_messages) {
@@ -566,14 +664,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                      * history events. This logic ensures that all
                      * messages that were moved are displayed as such
                      * without a browser reload. */
-                    const edit_history_entry: {
-                        user_id: number | null;
-                        timestamp: number;
-                        stream?: number;
-                        prev_stream?: number;
-                        topic?: string;
-                        prev_topic?: string;
-                    } = {
+                    const edit_history_entry: MessageEditHistoryEntry = {
                         user_id: event.user_id,
                         timestamp: event.edit_timestamp,
                     };
@@ -656,7 +747,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 // Code further down takes care of the actual rerendering of
                 // messages within a narrow.
                 selection_changed_topic &&
-                current_filter?.has_topic(old_stream_id, orig_topic)
+                current_filter?.has_topic(String(old_stream_id), orig_topic)
             ) {
                 let new_filter = current_filter;
                 if (new_filter && stream_changed) {
@@ -692,9 +783,61 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                     // TODO: Update the cache instead of discarding it.
                     message_list_data_cache.remove(new_filter);
                     const terms = new_filter.terms();
+                    const old_topic_messages = message_lists.current!.all_messages();
+                    const old_topic_message_ids = old_topic_messages
+                        .map((msg) => msg.id)
+                        .filter((id) => !event.message_ids.includes(id));
+                    const is_old_topic_empty_locally = old_topic_message_ids.length === 0;
+                    const is_old_topic_empty_in_server =
+                        is_old_topic_empty_locally &&
+                        message_lists.current!.data.fetch_status.has_found_oldest() &&
+                        message_lists.current!.data.fetch_status.has_found_newest();
+                    let remove_current_hash_from_history = false;
+                    if (event.propagate_mode === "change_all" || is_old_topic_empty_in_server) {
+                        // If all the message in the topic were moved, we don't need to
+                        // keep the current hash in the history.
+                        remove_current_hash_from_history = true;
+                    } else if (current_filter.has_operator("with")) {
+                        // We don't know if all the messages from old topic were moved,
+                        // so we just update the `with` term in URL to avoid us navigating
+                        // back to the new narrow when user presses back button.
+                        //
+                        // If the `with` message was moved, we need to update the URL to
+                        // use a message from the old topic.
+                        const message_id = current_filter.message_id_operand("with")!;
+                        if (event.message_ids.includes(message_id)) {
+                            // At this point, we know that the `with` message was moved.
+                            if (!is_old_topic_empty_locally) {
+                                const old_topic_last_message_id = Math.max(
+                                    ...old_topic_message_ids,
+                                );
+                                current_filter = current_filter.filter_with_new_params({
+                                    operator: "with",
+                                    operand: old_topic_last_message_id.toString(),
+                                });
+                                message_view.update_hash_to_match_filter(
+                                    current_filter,
+                                    "stream/topic change",
+                                    true,
+                                );
+                            } else {
+                                // We don't have a local message for the current narrow,
+                                // so remove the `with` term from the hash to avoid back button bug.
+                                const terms_without_with_operator = terms.filter(
+                                    (term) => term.operator !== "with",
+                                );
+                                message_view.update_hash_to_match_filter(
+                                    new Filter(terms_without_with_operator),
+                                    "stream/topic change",
+                                    true,
+                                );
+                            }
+                        }
+                    }
                     const opts = {
                         trigger: "stream/topic change",
                         then_select_id: current_selected_id,
+                        remove_current_hash_from_history,
                     };
                     message_view.show(terms, opts);
                 }
@@ -777,23 +920,18 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             alert_words.process_message(anchor_message);
         }
 
-        if (topic_edited || stream_changed) {
-            // We must be moving stream messages.
+        if (topic_edited || stream_changed || only_topic_case_changed) {
+            // We must be moving stream messages or changing the case of a topic.
             assert(old_stream_id !== undefined);
-            let pre_edit_topic = util.get_edit_event_orig_topic(event);
+            const pre_edit_topic = util.get_edit_event_orig_topic(event);
             assert(pre_edit_topic !== undefined);
-
-            let post_edit_topic: string;
-            if (topic_edited) {
-                assert(new_topic !== undefined);
-                post_edit_topic = new_topic;
-            } else {
-                if (anchor_message !== undefined) {
-                    assert(anchor_message.type === "stream");
-                    pre_edit_topic = anchor_message.topic;
-                }
-                post_edit_topic = pre_edit_topic;
-            }
+            const post_edit_topic = get_post_edit_topic(
+                topic_edited,
+                only_topic_case_changed,
+                event,
+                new_topic,
+                anchor_message,
+            );
 
             // new_stream_id is undefined if this is only a topic edit.
             const post_edit_stream_id = new_stream_id ?? old_stream_id;

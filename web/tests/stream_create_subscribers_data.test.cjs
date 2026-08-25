@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user} = require("./lib/example_user.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -12,29 +13,29 @@ const stream_create_subscribers_data = zrequire("stream_create_subscribers_data"
 const current_user = {};
 set_current_user(current_user);
 
-const me = {
+const me = make_user({
     email: "me@zulip.com",
     full_name: "Zed", // Zed will sort to the top by virtue of being the current user.
     user_id: 400,
-};
+});
 
-const test_user101 = {
+const test_user101 = make_user({
     email: "test101@zulip.com",
     full_name: "Test User 101",
     user_id: 101,
-};
+});
 
-const test_user102 = {
+const test_user102 = make_user({
     email: "test102@zulip.com",
     full_name: "Test User 102",
     user_id: 102,
-};
+});
 
-const test_user103 = {
+const test_user103 = make_user({
     email: "test102@zulip.com",
     full_name: "Test User 103",
     user_id: 103,
-};
+});
 
 function test(label, f) {
     run_test(label, (helpers) => {

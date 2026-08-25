@@ -20,10 +20,10 @@ def report_message_backend(
     user_profile: UserProfile,
     message_id: int,
     *,
-    report_type: Annotated[str, check_string_in_validator(Realm.REPORT_MESSAGE_REASONS)],
     description: Annotated[
         str, StringConstraints(max_length=Realm.MAX_REPORT_MESSAGE_EXPLANATION_LENGTH)
     ] = "",
+    report_type: Annotated[str, check_string_in_validator(Realm.REPORT_MESSAGE_REASONS)],
 ) -> HttpResponse:
     if report_type == "other" and description == "":
         raise JsonableError(_("An explanation is required."))

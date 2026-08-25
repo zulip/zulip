@@ -7,13 +7,16 @@ from zerver.lib.exceptions import InvalidJSONError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.types import Validator
 from zerver.lib.validator import (
+    check_anything,
     check_bool,
     check_capped_string,
+    check_date,
     check_dict,
     check_dict_only,
     check_float,
     check_int,
     check_int_in,
+    check_iso_datetime,
     check_list,
     check_none_or,
     check_short_string,
@@ -323,19 +326,24 @@ class ValidatorTestCase(ZulipTestCase):
     def test_wild_value(self) -> None:
         x = to_wild_value("x", '{"a": 1, "b": ["c", false, null]}')
 
-        self.assertEqual(x, x)
+        with self.assertRaisesRegex(TypeError, r"^cannot compare WildValue$"):
+            self.assertEqual(x, x)
+
         self.assertTrue(x)
         self.assertEqual(len(x), 2)
         self.assertEqual(list(x.keys()), ["a", "b"])
-        self.assertEqual(list(x.values()), [1, ["c", False, None]])
-        self.assertEqual(list(x.items()), [("a", 1), ("b", ["c", False, None])])
+        self.assertEqual([v.tame(check_anything) for v in x.values()], [1, ["c", False, None]])
+        self.assertEqual(
+            [(k, v.tame(check_anything)) for k, v in x.items()],
+            [("a", 1), ("b", ["c", False, None])],
+        )
         self.assertTrue("a" in x)
-        self.assertEqual(x["a"], 1)
-        self.assertEqual(x.get("a"), 1)
-        self.assertEqual(x.get("z"), None)
+        self.assertEqual(x["a"].tame(check_int), 1)
+        self.assertEqual(x.get("a").tame(check_int), 1)
+        self.assertEqual(x.get("z").tame(check_none_or(check_int)), None)
         self.assertEqual(x.get("z", x["a"]).tame(check_int), 1)
         self.assertEqual(x["a"].tame(check_int), 1)
-        self.assertEqual(x["b"], x["b"])
+        self.assertEqual(x["b"].tame(check_anything), x["b"].tame(check_anything))
         self.assertTrue(x["b"])
         self.assertEqual(len(x["b"]), 3)
         self.assert_length(list(x["b"]), 3)
@@ -376,3 +384,63 @@ class ValidatorTestCase(ZulipTestCase):
 
         with self.assertRaisesRegex(InvalidJSONError, r"Malformed JSON"):
             to_wild_value("x", "invalidjson")
+
+    def test_check_date(self) -> None:
+        x: Any = "2024-01-02"
+        self.assertTrue(check_date("x", x))
+
+        x = 123
+        with self.assertRaisesRegex(ValidationError, r"x is not a string"):
+            check_date("x", x)
+
+        x = "2024-13-02"
+        with self.assertRaisesRegex(ValidationError, r"x is not a date"):
+            check_date("x", x)
+
+        x = "2024-1-2"
+        with self.assertRaisesRegex(ValidationError, r"x is not a date"):
+            check_date("x", x)
+
+    def test_check_iso_datetime(self) -> None:
+        x: Any = "2024-01-02"
+        self.assertTrue(check_iso_datetime("x", x))
+
+        x = 123
+        with self.assertRaisesRegex(ValidationError, r"x is not a string"):
+            check_iso_datetime("x", x)
+
+        x = "2024-13-02"
+        with self.assertRaisesRegex(ValidationError, r"is not an ISO 8601 datetime string"):
+            check_iso_datetime("x", x)
+
+        x = "2024-1-2"
+        with self.assertRaisesRegex(ValidationError, r"is not an ISO 8601 datetime string"):
+            check_iso_datetime("x", x)
+
+        x = "2024-02-13T09:15:00"
+        self.assertTrue(check_iso_datetime("x", x))
+
+        x = "2024-02-13T09:15"
+        self.assertTrue(check_iso_datetime("x", x))
+
+        x = "2024-02-13T09:15:00+04:00"
+        self.assertTrue(check_iso_datetime("x", x))
+
+        x = "2024-02-13T09:15:00Z"
+        self.assertTrue(check_iso_datetime("x", x))
+
+        x = "09:15:00"
+        with self.assertRaisesRegex(ValidationError, r"is not an ISO 8601 datetime string"):
+            check_iso_datetime("x", x)
+
+        x = "2024-02-13T9:15:00"
+        with self.assertRaisesRegex(ValidationError, r"is not an ISO 8601 datetime string"):
+            check_iso_datetime("x", x)
+
+        x = "2024-14-13T09:15:00"
+        with self.assertRaisesRegex(ValidationError, r"is not an ISO 8601 datetime string"):
+            check_iso_datetime("x", x)
+
+        x = "2024-02-13T25:15:00Z"
+        with self.assertRaisesRegex(ValidationError, r"is not an ISO 8601 datetime string"):
+            check_iso_datetime("x", x)

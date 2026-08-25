@@ -240,7 +240,7 @@ def parse_single_parameter(
         # metadata attached to Annotated. Note that we do not transform
         # param_type to its underlying type because the Annotated metadata might
         # still be needed by other parties like Pydantic.
-        ignored_type, *annotations = get_args(param_type)
+        _type, *annotations = get_args(param_type)
         for annotation in annotations:
             if not isinstance(annotation, ApiParamConfig):
                 continue
@@ -316,6 +316,7 @@ def parse_view_func_signature(
 ERROR_TEMPLATES = {
     "bool_parsing": _("{var_name} is not a boolean"),
     "bool_type": _("{var_name} is not a boolean"),
+    "dataclass_type": _("{var_name} does not have the expected format"),
     "datetime_parsing": _("{var_name} is not a date"),
     "datetime_type": _("{var_name} is not a date"),
     "dict_type": _("{var_name} is not a dict"),
@@ -338,6 +339,8 @@ ERROR_TEMPLATES = {
     "unexpected_keyword_argument": _('Argument "{argument}" at {var_name} is unexpected'),
     "string_pattern_mismatch": _("{var_name} has invalid format"),
     "string_fixed_length": _("{var_name} is not length {length}"),
+    "too_long": _("{var_name} is too long (limit: {max_length} items)"),
+    "too_short": _("{var_name} is too short (minimum {min_length} items)"),
 }
 
 
@@ -352,7 +355,7 @@ def parse_value_for_parameter(parameter: FuncParam[T], value: object) -> T:
         error = exc.errors()[0]
         # We require all Pydantic raised error types that we expect to be
         # explicitly handled here. The end result should either be a 400
-        # error with an translated message or an internal server error.
+        # error with a translated message or an internal server error.
         error_template = ERROR_TEMPLATES.get(error["type"])
         var_name = parameter.request_var_name + "".join(
             f"[{json.dumps(loc)}]" for loc in error["loc"]

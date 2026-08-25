@@ -1,12 +1,12 @@
+import autosize from "autosize";
 import ClipboardJS from "clipboard";
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as tippy from "tippy.js";
+import * as z from "zod/mini";
 
-import * as resolved_topic from "../shared/src/resolved_topic.ts";
 import render_wildcard_mention_not_allowed_error from "../templates/compose_banner/wildcard_mention_not_allowed_error.hbs";
-import render_delete_message_modal from "../templates/confirm_dialog/confirm_delete_message.hbs";
 import render_confirm_edit_messages from "../templates/confirm_dialog/confirm_edit_messages.hbs";
 import render_confirm_merge_topics_with_rename from "../templates/confirm_dialog/confirm_merge_topics_with_rename.hbs";
 import render_confirm_moving_messages_modal from "../templates/confirm_dialog/confirm_moving_messages.hbs";
@@ -20,10 +20,12 @@ import {detached_uploads_api_response_schema} from "./attachments.ts";
 import * as attachments_ui from "./attachments_ui.ts";
 import * as blueslip from "./blueslip.ts";
 import type {Typeahead} from "./bootstrap_typeahead.ts";
+import * as buttons from "./buttons.ts";
 import * as channel from "./channel.ts";
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
+import {compose_call_session_manager} from "./compose_call_session.ts";
 import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -34,23 +36,23 @@ import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import * as echo from "./echo.ts";
 import * as feedback_widget from "./feedback_widget.ts";
-import * as giphy_state from "./giphy_state.ts";
+import * as gif_state from "./gif_state.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
 import * as markdown from "./markdown.ts";
+import * as message_fetch_raw_content from "./message_fetch_raw_content.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_live_update from "./message_live_update.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
-import * as people from "./people.ts";
 import * as resize from "./resize.ts";
+import * as resolved_topic from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import * as saved_snippets_ui from "./saved_snippets_ui.ts";
-import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
@@ -58,7 +60,6 @@ import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as typing from "./typing.ts";
 import * as ui_report from "./ui_report.ts";
-import * as ui_util from "./ui_util.ts";
 import * as upload from "./upload.ts";
 import {the} from "./util.ts";
 import * as util from "./util.ts";
@@ -67,7 +68,7 @@ import * as util from "./util.ts";
 // textarea element which has the modified content.
 // Storing textarea makes it easy to get the current content.
 export const currently_editing_messages = new Map<number, JQuery<HTMLTextAreaElement>>();
-let currently_deleting_messages: number[] = [];
+const resized_edit_box_height = new Map<number, number>();
 let currently_topic_editing_message_ids: number[] = [];
 const currently_echoing_messages = new Map<number, EchoedMessageData>();
 
@@ -107,11 +108,18 @@ export function is_topic_editable(message: Message, edit_limit_seconds_buffer = 
         return false;
     }
 
-    if (message.type === "stream" && stream_data.is_stream_archived(message.stream_id)) {
+    if (message.type === "stream" && stream_data.is_stream_archived_by_id(message.stream_id)) {
         return false;
     }
 
-    if (!settings_data.user_can_move_messages_to_another_topic()) {
+    // Cannot edit topics only in the channel with topics disabled.
+    if (stream_data.is_empty_topic_only_channel(message.stream_id)) {
+        return false;
+    }
+
+    const stream = stream_data.get_sub_by_id(message.stream_id);
+    assert(stream !== undefined);
+    if (!stream_data.user_can_move_messages_within_channel(stream)) {
         return false;
     }
 
@@ -136,8 +144,19 @@ export function is_topic_editable(message: Message, edit_limit_seconds_buffer = 
     );
 }
 
+export function maybe_autosize_message_edit_box(): void {
+    const message_ids = resized_edit_box_height.keys();
+    for (const message_id of message_ids) {
+        const $edit_container = currently_editing_messages.get(message_id);
+        if ($edit_container) {
+            autosize($edit_container);
+        }
+    }
+    resized_edit_box_height.clear();
+}
+
 function is_widget_message(message: Message): boolean {
-    if (message.submessages && message.submessages.length > 0) {
+    if (message.submessages.length > 0) {
         return true;
     }
     return false;
@@ -188,7 +207,7 @@ export function is_content_editable(message: Message, edit_limit_seconds_buffer 
         return false;
     }
 
-    if (message.type === "stream" && stream_data.is_stream_archived(message.stream_id)) {
+    if (message.type === "stream" && stream_data.is_stream_archived_by_id(message.stream_id)) {
         return false;
     }
 
@@ -207,48 +226,12 @@ export function is_content_editable(message: Message, edit_limit_seconds_buffer 
     return false;
 }
 
-export function is_message_sent_by_my_bot(message: Message): boolean {
-    const user = people.get_by_user_id(message.sender_id);
-    if (!user.is_bot || user.bot_owner_id === null) {
-        // The message was not sent by a bot or the message was sent
-        // by a cross-realm bot which does not have an owner.
-        return false;
+export function remaining_content_edit_time(message: Message): number {
+    if (!is_content_editable(message)) {
+        return 0;
     }
-
-    return people.is_my_user_id(user.bot_owner_id);
-}
-
-export function get_deletability(message: Message): boolean {
-    if (message.type === "stream" && stream_data.is_stream_archived(message.stream_id)) {
-        return false;
-    }
-
-    if (settings_data.user_can_delete_any_message()) {
-        return true;
-    }
-
-    if (!message.sent_by_me && !is_message_sent_by_my_bot(message)) {
-        return false;
-    }
-    if (message.locally_echoed) {
-        return false;
-    }
-    if (!settings_data.user_can_delete_own_message()) {
-        return false;
-    }
-
-    if (realm.realm_message_content_delete_limit_seconds === null) {
-        // This means no time limit for message deletion.
-        return true;
-    }
-
-    if (
-        realm.realm_message_content_delete_limit_seconds + (message.timestamp - Date.now() / 1000) >
-        0
-    ) {
-        return true;
-    }
-    return false;
+    const limit_seconds = realm.realm_message_content_edit_limit_seconds ?? Infinity;
+    return limit_seconds + (message.timestamp - Date.now() / 1000);
 }
 
 export function is_stream_editable(message: Message, edit_limit_seconds_buffer = 0): boolean {
@@ -260,11 +243,13 @@ export function is_stream_editable(message: Message, edit_limit_seconds_buffer =
         return false;
     }
 
-    if (message.type === "stream" && stream_data.is_stream_archived(message.stream_id)) {
+    if (message.type === "stream" && stream_data.is_stream_archived_by_id(message.stream_id)) {
         return false;
     }
 
-    if (!settings_data.user_can_move_messages_between_streams()) {
+    const stream = stream_data.get_sub_by_id(message.stream_id);
+    assert(stream !== undefined);
+    if (!stream_data.user_can_move_messages_out_of_channel(stream)) {
         return false;
     }
 
@@ -290,6 +275,15 @@ export function is_stream_editable(message: Message, edit_limit_seconds_buffer =
 
 export function can_move_message(message: Message): boolean {
     return is_topic_editable(message) || is_stream_editable(message);
+}
+
+export function remaining_message_move_time(message: Message): number {
+    if (!can_move_message(message)) {
+        return 0;
+    }
+
+    const limit_seconds = realm.realm_move_messages_within_stream_limit_seconds ?? Infinity;
+    return limit_seconds + (message.timestamp - Date.now() / 1000);
 }
 
 export function stream_and_topic_exist_in_edit_history(
@@ -353,13 +347,15 @@ export function hide_message_edit_spinner($row: JQuery): void {
     $row.find(".message_edit_cancel").removeClass("message-edit-button-disabled");
 }
 
-export function show_message_edit_spinner($row: JQuery): void {
+export function show_message_edit_spinner($row: JQuery, keep_cancel_enabled = false): void {
     // Always show the white spinner like we
     // do for send button in compose box.
     loading.show_button_spinner($row.find(".loader"), true);
     $row.find(".message_edit_save span").addClass("showing-button-spinner");
     $row.find(".message_edit_save").addClass("message-edit-button-disabled");
-    $row.find(".message_edit_cancel").addClass("message-edit-button-disabled");
+    if (!keep_cancel_enabled) {
+        $row.find(".message_edit_cancel").addClass("message-edit-button-disabled");
+    }
 }
 
 export function show_topic_edit_spinner($row: JQuery): void {
@@ -369,6 +365,15 @@ export function show_topic_edit_spinner($row: JQuery): void {
     $(".topic_edit_save").hide();
     $(".topic_edit_cancel").hide();
     $(".topic_edit_spinner").show();
+}
+
+export function hide_topic_edit_spinner($row: JQuery): void {
+    const $spinner = $row.find(".topic_edit_spinner");
+    loading.destroy_indicator($spinner);
+    $spinner.css({height: ""});
+    $(".topic_edit_save").show();
+    $(".topic_edit_cancel").show();
+    $(".topic_edit_spinner").hide();
 }
 
 export function end_if_focused_on_inline_topic_edit(): void {
@@ -490,8 +495,8 @@ function update_inline_topic_edit_input_max_width(
     }
 }
 
-function handle_inline_topic_edit_change(this: HTMLInputElement): void {
-    const $inline_topic_edit_input = $(this);
+function handle_inline_topic_edit_change(elem: HTMLInputElement, stream_id: number): void {
+    const $inline_topic_edit_input = $(elem);
 
     update_inline_topic_edit_input_max_width($inline_topic_edit_input);
 
@@ -505,23 +510,46 @@ function handle_inline_topic_edit_change(this: HTMLInputElement): void {
     const $topic_edit_save_button = $inline_topic_edit_input
         .closest(".topic_edit_form")
         .find(".topic_edit_save");
-    if (realm.realm_mandatory_topics && util.is_topic_name_considered_empty(this.value)) {
+    if (
+        !stream_data.can_use_empty_topic(stream_id) &&
+        util.is_topic_name_considered_empty(elem.value)
+    ) {
         // When the topic is mandatory in a realm and the new topic is considered empty,
         // we disable the save button and show a tooltip with an error message.
-        ui_util.disable_element_and_add_tooltip(
-            $topic_edit_save_button,
-            $t({defaultMessage: "Topics are required in this organization."}),
-        );
+        $topic_edit_save_button.prop("disabled", true);
+        $topic_edit_save_button.addClass("topic-required");
         return;
     }
-    if ($topic_edit_save_button.parent().hasClass("disabled-tooltip")) {
-        // If we reach here, it means the save button was disabled previously
-        // and the user has started typing in the input field, probably to fix
-        // the error. So, we re-enable the save button and remove the tooltip.
-        ui_util.enable_element_and_remove_tooltip($topic_edit_save_button);
+
+    $topic_edit_save_button.removeClass("topic-required");
+
+    if (!stream_data.can_create_new_topics_in_stream(stream_id)) {
+        const topic_val = $inline_topic_edit_input.val()!;
+        const existing_topics_in_stream = stream_topic_history
+            .get_recent_topic_names(stream_id)
+            .map((topic) => topic.toLowerCase());
+        if (
+            !existing_topics_in_stream.includes(topic_val.trim().toLowerCase()) &&
+            stream_topic_history.has_history_for(stream_id)
+        ) {
+            $topic_edit_save_button.prop("disabled", true);
+            $topic_edit_save_button
+                .closest(".topic-edit-save-wrapper")
+                .attr(
+                    "data-tippy-content",
+                    compose_validate.CANNOT_CREATE_NEW_TOPIC_TOOLTIP_MESSAGE,
+                );
+            return;
+        }
     }
 
-    if (!realm.realm_mandatory_topics) {
+    // If we reach here, it means the save button was disabled previously
+    // and the user has started typing in the input field, probably to fix
+    // the error. So, we re-enable the save button.
+    $topic_edit_save_button.prop("disabled", false);
+    $topic_edit_save_button.closest(".topic-edit-save-wrapper").removeAttr("data-tippy-content");
+
+    if (stream_data.can_use_empty_topic(stream_id)) {
         const $topic_not_mandatory_placeholder = $(".inline-topic-edit-placeholder");
         $topic_not_mandatory_placeholder.toggleClass(
             "inline-topic-edit-placeholder-visible",
@@ -535,7 +563,8 @@ function timer_text(seconds_left: number): string {
     const seconds = seconds_left % 60;
     if (minutes >= 1) {
         return $t({defaultMessage: "{minutes} min to edit"}, {minutes: minutes.toString()});
-    } else if (seconds_left >= 10) {
+    }
+    if (seconds_left >= 10) {
         return $t(
             {defaultMessage: "{seconds} sec to edit"},
             {seconds: (seconds - (seconds % 5)).toString()},
@@ -566,6 +595,14 @@ function create_copy_to_clipboard_handler(
     });
 }
 
+// We store manually resized edit box height in case events rerender
+// the message list and restore it.
+function store_resized_height(message_id: number): (height: number) => void {
+    return (height) => {
+        resized_edit_box_height.set(message_id, height);
+    };
+}
+
 function edit_message($row: JQuery, raw_content: string): void {
     // Open the message-edit UI for a given message.
     //
@@ -575,7 +612,6 @@ function edit_message($row: JQuery, raw_content: string): void {
     assert(message_lists.current !== undefined);
     const message = message_lists.current.get(rows.id($row));
     assert(message !== undefined);
-    $row.find(".message_reactions").hide();
     condense.hide_message_length_toggle($row);
 
     // We potentially got to this function by clicking a button that implied the
@@ -602,7 +638,8 @@ function edit_message($row: JQuery, raw_content: string): void {
             is_editable,
             content: raw_content,
             file_upload_enabled,
-            giphy_enabled: giphy_state.is_giphy_enabled(),
+            giphy_enabled: gif_state.is_giphy_enabled(),
+            tenor_enabled: gif_state.is_tenor_enabled(),
             minutes_to_edit: Math.floor((realm.realm_message_content_edit_limit_seconds ?? 0) / 60),
             max_message_length: realm.max_message_length,
         }),
@@ -613,7 +650,13 @@ function edit_message($row: JQuery, raw_content: string): void {
     const $message_edit_content = $form.find<HTMLTextAreaElement>("textarea.message_edit_content");
     assert($message_edit_content.length === 1);
     currently_editing_messages.set(message.id, $message_edit_content);
-    message_lists.current.show_edit_message($row, $form);
+    const previous_height = resized_edit_box_height.get(message.id);
+    const do_autosize = previous_height === undefined;
+    message_lists.current.show_edit_message($row, $form, do_autosize);
+
+    if (previous_height) {
+        $(the($message_edit_content)).height(previous_height + "px");
+    }
 
     // Attach event handlers to `form` instead of `textarea` to allow
     // typeahead to call stopPropagation if it can handle the event
@@ -656,7 +699,10 @@ function edit_message($row: JQuery, raw_content: string): void {
         create_copy_to_clipboard_handler($row, the($copy_message), $message_edit_content);
     } else {
         $copy_message.remove();
-        resize.watch_manual_resize_for_element(the($message_edit_content));
+        resize.watch_manual_resize_for_element(
+            the($message_edit_content),
+            store_resized_height(message.id),
+        );
         composebox_typeahead.initialize_compose_typeahead($message_edit_content);
         compose_ui.handle_keyup(null, $message_edit_content);
         $message_edit_content.on("keydown", (event) => {
@@ -665,6 +711,10 @@ function edit_message($row: JQuery, raw_content: string): void {
         $message_edit_content.on("keyup", (event) => {
             compose_ui.handle_keyup(event, $message_edit_content);
         });
+        compose_tooltips.initialize_compose_tooltips(
+            `edit_message:${message.id}`,
+            ".message_edit .compose_button_tooltip",
+        );
     }
 
     // Add tooltip and timer
@@ -734,6 +784,16 @@ function start_edit_maintaining_scroll($row: JQuery, content: string): void {
     }
 }
 
+function setup_edit_form_widgets($row: JQuery): void {
+    const row_id = rows.id($row);
+    upload.setup_upload(upload.edit_config(row_id));
+    // Setup dropdown for saved snippets button in the current
+    // message edit control buttons tray.
+    saved_snippets_ui.setup_saved_snippets_dropdown_widget(
+        `.saved-snippets-message-edit-widget[data-message-id="${CSS.escape(row_id.toString())}"]`,
+    );
+}
+
 function start_edit_with_content(
     $row: JQuery,
     content: string,
@@ -743,13 +803,7 @@ function start_edit_with_content(
     if (edit_box_open_callback) {
         edit_box_open_callback();
     }
-    const row_id = rows.id($row);
-    upload.setup_upload(upload.edit_config(row_id));
-    // Setup dropdown for saved snippets button in the current
-    // message edit control buttons tray.
-    saved_snippets_ui.setup_saved_snippets_dropdown_widget(
-        `.saved-snippets-message-edit-widget[data-message-id="${CSS.escape(row_id.toString())}"]`,
-    );
+    setup_edit_form_widgets($row);
 }
 
 export function start($row: JQuery, edit_box_open_callback?: () => void): void {
@@ -770,25 +824,37 @@ export function start($row: JQuery, edit_box_open_callback?: () => void): void {
     }
 
     const msg_list = message_lists.current;
-    void channel.get({
-        url: "/json/messages/" + message.id,
-        data: {allow_empty_topic_name: true},
-        success(data) {
-            const {raw_content} = z.object({raw_content: z.string()}).parse(data);
+    message_fetch_raw_content.get_raw_content_for_single_message({
+        message_id: message.id,
+        on_success(raw_content) {
             if (message_lists.current === msg_list) {
-                message.raw_content = raw_content;
-                start_edit_with_content($row, message.raw_content, edit_box_open_callback);
+                start_edit_with_content($row, raw_content, edit_box_open_callback);
             }
+        },
+        on_error() {
+            // do nothing
         },
     });
 }
 
-function show_toggle_resolve_topic_spinner($row: JQuery): void {
-    const $spinner = $row.find(".toggle_resolve_topic_spinner");
-    loading.make_indicator($spinner);
-    $spinner.css({width: "1em"});
-    $row.find(".on_hover_topic_resolve, .on_hover_topic_unresolve").hide();
-    $row.find(".toggle_resolve_topic_spinner").show();
+function show_toggle_resolve_topic_spinner($row: JQuery, topic_is_resolved: boolean): void {
+    let $button: JQuery;
+    if (topic_is_resolved) {
+        // Since we don't show a separate unresolve topic button in the recipient bar,
+        // this code path is only reached when the user unresolves a topic using the
+        // "Mark as unresolved" option from the recipient bar topic actions menu.
+        $button = $row.find(".on-hover-unresolve-loading-indicator").expectOne();
+        $button.removeClass("hide");
+    } else {
+        $button = $row.find(".on_hover_topic_resolve").expectOne();
+    }
+    $button.addClass("loading-resolve-topic-state");
+    // While we call the show_button_loading_indicator method to
+    // show the spinner, we don't need to call the corresponding
+    // hide_button_loading_indicator method later in the code
+    // for a successful resolve request, as that results
+    // in a rerender of the message feed which replaces the button.
+    buttons.show_button_loading_indicator($button);
 }
 
 function get_resolve_topic_time_limit_error_string(
@@ -805,7 +871,8 @@ function get_resolve_topic_time_limit_error_string(
                 },
                 {N: time_limit},
             );
-        } else if (time_limit_unit === "hour") {
+        }
+        if (time_limit_unit === "hour") {
             return $t(
                 {
                     defaultMessage:
@@ -831,7 +898,8 @@ function get_resolve_topic_time_limit_error_string(
             },
             {N: time_limit},
         );
-    } else if (time_limit_unit === "hour") {
+    }
+    if (time_limit_unit === "hour") {
         return $t(
             {
                 defaultMessage:
@@ -859,7 +927,7 @@ function handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved: boole
         topic_is_resolved,
     );
 
-    const html_body = render_resolve_topic_time_limit_error_modal({
+    const modal_content_html = render_resolve_topic_time_limit_error_modal({
         topic_is_resolved,
         resolve_topic_time_limit_error_string,
     });
@@ -870,9 +938,9 @@ function handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved: boole
         modal_heading = $t_html({defaultMessage: "Could not resolve topic"});
     }
     dialog_widget.launch({
-        html_heading: modal_heading,
-        html_body,
-        html_submit_button: $t_html({defaultMessage: "Close"}),
+        modal_title_html: modal_heading,
+        modal_content_html,
+        modal_submit_button_text: $t({defaultMessage: "Close"}),
         on_click() {
             /* Nothing extra needs to happen when the dialog is closed. */
         },
@@ -883,12 +951,12 @@ function handle_resolve_topic_failure_due_to_time_limit(topic_is_resolved: boole
 
 function show_intro_resolve_topic_modal(topic_name: string, cb: () => void): void {
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Mark topic as resolved"}),
-        html_body: render_intro_resolve_topic_modal({topic_name}),
+        modal_title_html: $t_html({defaultMessage: "Mark topic as resolved"}),
+        modal_content_html: render_intro_resolve_topic_modal({topic_name}),
         id: "intro_resolve_topic_modal",
         on_click: cb,
-        html_submit_button: $t({defaultMessage: "Got it — Confirm"}),
-        html_exit_button: $t({defaultMessage: "Got it — Cancel"}),
+        modal_submit_button_text: $t({defaultMessage: "Got it — Confirm"}),
+        modal_exit_button_text: $t({defaultMessage: "Got it — Cancel"}),
     });
 }
 
@@ -940,7 +1008,7 @@ function do_toggle_resolve_topic(
     $row?: JQuery,
 ): void {
     if ($row) {
-        show_toggle_resolve_topic_spinner($row);
+        show_toggle_resolve_topic_spinner($row, topic_is_resolved);
     }
 
     const request = {
@@ -953,16 +1021,30 @@ function do_toggle_resolve_topic(
     void channel.patch({
         url: "/json/messages/" + message_id,
         data: request,
-        success() {
-            if ($row) {
-                const $spinner = $row.find(".toggle_resolve_topic_spinner");
-                loading.destroy_indicator($spinner);
-            }
-        },
         error(xhr) {
             if ($row) {
-                const $spinner = $row.find(".toggle_resolve_topic_spinner");
-                loading.destroy_indicator($spinner);
+                const $button = $row.find(".on_hover_topic_resolve");
+                buttons.hide_button_loading_indicator($button);
+                $button.removeClass("loading-resolve-topic-state");
+                // Remove any existing tippy instance on the button.
+                const reference: tippy.ReferenceElement = util.the($button);
+                if (reference._tippy) {
+                    reference._tippy.destroy();
+                }
+                const instance = tippy.default(util.the($button), {
+                    trigger: "manual",
+                    appendTo: () => document.body,
+                    onShow(instance) {
+                        instance.setContent(
+                            $t({defaultMessage: "Error: Could not resolve topic."}),
+                        );
+                    },
+                });
+                // Manually trigger the error tooltip, and remove it after 2 seconds.
+                instance.show();
+                setTimeout(() => {
+                    instance.destroy();
+                }, 2000);
             }
 
             if (xhr.responseJSON) {
@@ -974,7 +1056,7 @@ function do_toggle_resolve_topic(
 
                 if (report_errors_in_global_banner) {
                     const {msg} = z.object({msg: z.string()}).parse(xhr.responseJSON);
-                    ui_report.generic_embed_error(msg, 3500);
+                    ui_report.generic_embed_error(_.escape(msg), 3500);
                 }
             }
         },
@@ -983,18 +1065,18 @@ function do_toggle_resolve_topic(
 
 export function start_inline_topic_edit($recipient_row: JQuery): void {
     assert(message_lists.current !== undefined);
+    const msg_id = rows.id_for_recipient_row($recipient_row);
+    const message = message_lists.current.get(msg_id);
+    assert(message?.type === "stream");
     const $form = $(
         render_topic_edit_form({
             max_topic_length: realm.max_topic_length,
-            is_mandatory_topics: realm.realm_mandatory_topics,
+            is_mandatory_topics: !stream_data.can_use_empty_topic(message.stream_id),
             empty_string_topic_display_name: util.get_final_topic_display_name(""),
         }),
     );
     message_lists.current.show_edit_topic_on_recipient_row($recipient_row, $form);
     $(".topic_edit_spinner").hide();
-    const msg_id = rows.id_for_recipient_row($recipient_row);
-    const message = message_lists.current.get(msg_id);
-    assert(message?.type === "stream");
     const topic = message.topic;
     const $inline_topic_edit_input = $form.find<HTMLInputElement>("input.inline_topic_edit");
     $inline_topic_edit_input.val(topic).trigger("select").trigger("focus");
@@ -1010,9 +1092,11 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
         handle_inline_topic_edit_keydown($form, typeahead, event);
     });
 
-    $inline_topic_edit_input.on("input", handle_inline_topic_edit_change);
+    $inline_topic_edit_input.on("input", function (this: HTMLInputElement) {
+        handle_inline_topic_edit_change(this, message.stream_id);
+    });
 
-    if (!realm.realm_mandatory_topics) {
+    if (stream_data.can_use_empty_topic(message.stream_id)) {
         const $topic_not_mandatory_placeholder = $(".inline-topic-edit-placeholder");
 
         if (topic === "") {
@@ -1060,23 +1144,30 @@ export function end_message_row_edit($row: JQuery): void {
     if (message !== undefined && currently_editing_messages.has(message.id)) {
         typing.stop_message_edit_notifications(message.id);
         currently_editing_messages.delete(message.id);
+        resized_edit_box_height.delete(message.id);
         message_lists.current.hide_edit_message($row);
-        compose_call.abort_video_callbacks(message.id.toString());
+        compose_call_session_manager.abandon_session(message.id.toString());
     }
-    if ($row.find(".could-be-condensed").length > 0) {
+
+    if (message?.collapsed) {
+        condense.show_message_expander($row);
+    } else if ($row.find(".could-be-condensed").length > 0) {
         if ($row.find(".condensed").length > 0) {
             condense.show_message_expander($row);
         } else {
             condense.show_message_condenser($row);
         }
     }
-    $row.find(".message_reactions").show();
 
     // We have to blur out text fields, or else hotkeys.js
     // thinks we are still editing.
     $row.find(".message_edit").trigger("blur");
     // We should hide the editing typeahead if it is visible
     $row.find("input.message_edit_topic").trigger("blur");
+    // Hide the edit box tooltips
+    compose_tooltips.clean_up_compose_singleton_tooltip(
+        `edit_message:${$row.attr("data-message-id")}`,
+    );
 }
 
 export function end_message_edit(message_id: number): void {
@@ -1108,7 +1199,10 @@ export function try_save_inline_topic_edit($row: JQuery): void {
         return;
     }
 
-    if (realm.realm_mandatory_topics && util.is_topic_name_considered_empty(new_topic)) {
+    if (
+        !stream_data.can_use_empty_topic(message.stream_id) &&
+        util.is_topic_name_considered_empty(new_topic)
+    ) {
         // When the topic is mandatory in a realm and the new topic is considered
         // empty, we don't allow the user to save the topic. Instead, we show the
         // error visually via the invalid-input class and focus on the input field.
@@ -1122,8 +1216,8 @@ export function try_save_inline_topic_edit($row: JQuery): void {
     const stream_topics = stream_topic_history.get_recent_topic_names(stream_id);
     if (stream_topics.includes(new_topic)) {
         confirm_dialog.launch({
-            html_heading: $t_html({defaultMessage: "Merge with another topic?"}),
-            html_body: render_confirm_merge_topics_with_rename({
+            modal_title_html: $t_html({defaultMessage: "Merge with another topic?"}),
+            modal_content_html: render_confirm_merge_topics_with_rename({
                 topic_display_name: util.get_final_topic_display_name(new_topic),
                 is_empty_string_topic: new_topic === "",
             }),
@@ -1140,7 +1234,7 @@ export function do_save_inline_topic_edit($row: JQuery, message: Message, new_to
     show_topic_edit_spinner($row);
 
     if (message.locally_echoed) {
-        message = echo.edit_locally(message, {new_topic});
+        echo.edit_locally(message, {new_topic});
         assert(message_lists.current !== undefined);
         $row = message_lists.current.get_row(message.id);
         end_inline_topic_edit($row);
@@ -1197,7 +1291,10 @@ export function do_save_inline_topic_edit($row: JQuery, message: Message, new_to
                 );
                 return;
             }
-            loading.destroy_indicator($spinner);
+            hide_topic_edit_spinner($row);
+            const message = channel.xhr_error_message($t({defaultMessage: "Failed"}), xhr);
+            $row.find(".topic_edit_save").prop("disabled", true);
+            $row.find(".topic-edit-save-wrapper").attr("data-tippy-content", message);
         },
     });
 }
@@ -1216,7 +1313,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
     }
     const msg_list = message_lists.current;
     let message_id = rows.id($row);
-    let message = message_lists.current.get(message_id);
+    const message = message_lists.current.get(message_id);
     assert(message !== undefined);
     let changed = false;
     let edit_locally_echoed = false;
@@ -1254,7 +1351,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
     if (message.locally_echoed) {
         if (new_content !== message.raw_content) {
             // `edit_locally` handles the case where `new_topic/new_stream_id` is undefined
-            message = echo.edit_locally(message, {
+            echo.edit_locally(message, {
                 raw_content: new_content,
             });
             $row = message_lists.current.get_row(message_id);
@@ -1286,7 +1383,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
             collapsed: message.collapsed,
             alerted: message.alerted,
             mentioned: message.mentioned,
-            mentioned_me_directly: message.mentioned,
+            mentioned_me_directly: message.mentioned_me_directly,
         });
         edit_locally_echoed = true;
 
@@ -1295,7 +1392,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
         // the message is acknowledged by the server.
         message.local_edit_timestamp = Math.round(Date.now() / 1000);
 
-        message = echo.edit_locally(message, currently_echoing_messages.get(message_id)!);
+        echo.edit_locally(message, currently_echoing_messages.get(message_id)!);
 
         $row = message_lists.current.get_row(message_id);
         end_message_row_edit($row);
@@ -1329,7 +1426,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                 message_id = rows.id($row);
 
                 if (edit_locally_echoed) {
-                    let echoed_message = message_store.get(message_id);
+                    const echoed_message = message_store.get(message_id);
                     assert(echoed_message !== undefined);
                     const echo_data = currently_echoing_messages.get(message_id);
                     assert(echo_data !== undefined);
@@ -1338,7 +1435,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                     currently_echoing_messages.delete(message_id);
 
                     // Restore the original content.
-                    echoed_message = echo.edit_locally(echoed_message, {
+                    echo.edit_locally(echoed_message, {
                         content: echo_data.orig_content,
                         raw_content: echo_data.orig_raw_content,
                         mentioned: echo_data.mentioned,
@@ -1371,7 +1468,8 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                                 $container,
                             );
                             return;
-                        } else if (code === "EXPECTATION_MISMATCH") {
+                        }
+                        if (code === "EXPECTATION_MISMATCH") {
                             const message = $t({
                                 defaultMessage:
                                     "Error editing message: Message was edited by another client.",
@@ -1398,7 +1496,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
             }
         },
     });
-    // The message will automatically get replaced via message_list.update_message.
+    // The message will automatically get replaced via message_events.update_messages.
 }
 
 export function maybe_show_edit($row: JQuery, id: number): void {
@@ -1409,15 +1507,21 @@ export function maybe_show_edit($row: JQuery, id: number): void {
     if (currently_editing_messages.has(id)) {
         const $message_edit_content = currently_editing_messages.get(id);
         edit_message($row, $message_edit_content?.val() ?? "");
+        setup_edit_form_widgets($row);
+        if ($row.hasClass("show_preview")) {
+            show_preview_area($row);
+            $row.removeClass("show_preview");
+        }
     }
 }
 
 function warn_user_about_unread_msgs(last_sent_msg_id: number, num_unread: number): void {
     confirm_dialog.launch({
-        html_heading: $t({defaultMessage: "Edit your last message?"}),
-        html_body: render_confirm_edit_messages({
+        modal_title_html: $t({defaultMessage: "Edit your last message?"}),
+        modal_content_html: render_confirm_edit_messages({
             num_unread,
         }),
+        is_compact: true,
         on_click() {
             // Select the message we want to edit to mark messages between it and the
             // current selected id as read.
@@ -1487,73 +1591,6 @@ export function edit_last_sent_message(): void {
     });
 }
 
-export function delete_message(msg_id: number): void {
-    const html_body = render_delete_message_modal();
-
-    function do_delete_message(): void {
-        currently_deleting_messages.push(msg_id);
-        void channel.del({
-            url: "/json/messages/" + msg_id,
-            success() {
-                currently_deleting_messages = currently_deleting_messages.filter(
-                    (id) => id !== msg_id,
-                );
-                dialog_widget.hide_dialog_spinner();
-                dialog_widget.close();
-            },
-            error(xhr) {
-                currently_deleting_messages = currently_deleting_messages.filter(
-                    (id) => id !== msg_id,
-                );
-
-                dialog_widget.hide_dialog_spinner();
-                ui_report.error(
-                    $t_html({defaultMessage: "Error deleting message"}),
-                    xhr,
-                    $("#dialog_error"),
-                );
-            },
-        });
-    }
-
-    confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Delete message?"}),
-        html_body,
-        help_link: "/help/delete-a-message#delete-a-message-completely",
-        on_click: do_delete_message,
-        loading_spinner: true,
-    });
-}
-
-export function delete_topic(stream_id: number, topic_name: string, failures = 0): void {
-    void channel.post({
-        url: "/json/streams/" + stream_id + "/delete_topic",
-        data: {
-            topic_name,
-        },
-        success(data) {
-            const {complete} = z.object({complete: z.boolean()}).parse(data);
-            if (!complete) {
-                if (failures >= 9) {
-                    // Don't keep retrying indefinitely to avoid DoSing the server.
-                    return;
-                }
-
-                failures += 1;
-                /* When trying to delete a very large topic, it's
-                   possible for the request to the server to
-                   time out after making some progress. Retry the
-                   request, so that the user can just do nothing and
-                   watch the topic slowly be deleted.
-
-                   TODO: Show a nice loading indicator experience.
-                */
-                delete_topic(stream_id, topic_name, failures);
-            }
-        },
-    });
-}
-
 export function restore_edit_state_after_message_view_change(): void {
     assert(message_lists.current !== undefined);
     for (const [idx, $content] of currently_editing_messages) {
@@ -1592,13 +1629,13 @@ function handle_message_move_failure_due_to_time_limit(
         },
     );
 
-    const html_body = render_confirm_moving_messages_modal({
+    const modal_content_html = render_confirm_moving_messages_modal({
         messages_allowed_to_move_text,
         messages_not_allowed_to_move_text,
     });
     confirm_dialog.launch({
-        html_heading: $t_html({defaultMessage: "Move some messages?"}),
-        html_body,
+        modal_title_html: $t_html({defaultMessage: "Move some messages?"}),
+        modal_content_html,
         on_click: handle_confirm,
         loading_spinner: true,
         ...(on_hide_callback !== undefined && {on_hide: on_hide_callback}),
@@ -1611,7 +1648,13 @@ type ToastParams = {
 };
 
 function show_message_moved_toast(toast_params: ToastParams): void {
-    const new_stream_name = sub_store.maybe_get_stream_name(toast_params.new_stream_id);
+    const new_stream = sub_store.get(toast_params.new_stream_id);
+    if (new_stream === undefined) {
+        blueslip.error("Cannot find stream for message moved toast", {
+            stream_id: toast_params.new_stream_id,
+        });
+        return;
+    }
     const new_topic_display_name = util.get_final_topic_display_name(toast_params.new_topic_name);
     const is_empty_string_topic = toast_params.new_topic_name === "";
     const new_location_url = hash_util.by_stream_topic_url(
@@ -1621,7 +1664,7 @@ function show_message_moved_toast(toast_params: ToastParams): void {
     feedback_widget.show({
         populate($container) {
             const widget_body_html = render_message_moved_widget_body({
-                new_stream_name,
+                stream: new_stream,
                 new_topic_display_name,
                 new_location_url,
                 is_empty_string_topic,
@@ -1639,7 +1682,7 @@ export function move_topic_containing_message_to_stream(
     send_notification_to_new_thread: boolean,
     send_notification_to_old_thread: boolean,
     propagate_mode: string,
-    toast_params: ToastParams | undefined = undefined,
+    toast_params?: ToastParams,
 ): void {
     function reset_modal_ui(): void {
         currently_topic_editing_message_ids = currently_topic_editing_message_ids.filter(
@@ -1649,7 +1692,7 @@ export function move_topic_containing_message_to_stream(
     }
     if (currently_topic_editing_message_ids.includes(message_id)) {
         ui_report.client_error(
-            $t_html({defaultMessage: "A Topic Move already in progress."}),
+            $t_html({defaultMessage: "A topic move is already in progress."}),
             $("#move_topic_modal #dialog_error"),
         );
         return;
@@ -1803,15 +1846,7 @@ export function is_message_oldest_or_newest(
 
 export function show_preview_area($element: JQuery): void {
     const $row = rows.get_closest_row($element);
-
-    // Disable unneeded compose_control_buttons as we don't
-    // need them in preview mode.
-    $row.addClass("preview_mode");
-    $row.find(".preview_mode_disabled .compose_control_button").attr("tabindex", -1);
-
-    $row.find(".markdown_preview").hide();
-    $row.find(".undo_markdown_preview").show();
-
+    compose_ui.enter_preview_mode($row);
     render_preview_area($row);
 }
 
@@ -1833,14 +1868,5 @@ export function render_preview_area($row: JQuery): void {
 
 export function clear_preview_area($element: JQuery): void {
     const $row = rows.get_closest_row($element);
-
-    // While in preview mode we disable unneeded compose_control_buttons,
-    // so here we are re-enabling those compose_control_buttons
-    $row.removeClass("preview_mode");
-    $row.find(".preview_mode_disabled .compose_control_button").attr("tabindex", 0);
-
-    $row.find(".undo_markdown_preview").hide();
-    $row.find(".preview_message_area").hide();
-    $row.find(".preview_content").empty();
-    $row.find(".markdown_preview").show();
+    compose_ui.exit_preview_mode($row);
 }

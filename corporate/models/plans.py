@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models import CASCADE
+from django.db.models import CASCADE, Q
 from typing_extensions import override
 
 from corporate.models.customers import Customer, get_customer_by_realm
@@ -45,9 +45,19 @@ class CustomerPlanOffer(AbstractCustomerPlan):
     # ID of invoice sent when chose to 'Pay by invoice'.
     sent_invoice_id = models.CharField(max_length=255, null=True)
 
+    class Meta:
+        # Enforce that each customer has only one CONFIGURED plan offer at a time.
+        constraints = [
+            models.UniqueConstraint(
+                fields=["customer"],
+                condition=Q(status=1),  # CustomerPlanOffer.CONFIGURED
+                name="unique_configured_plan_offer_customer",
+            )
+        ]
+
     @override
     def __str__(self) -> str:
-        return f"{self.name} (status: {self.get_plan_status_as_text()})"
+        return f"{self.name} for {self.customer!r} (status: {self.get_plan_status_as_text()})"
 
     def get_plan_status_as_text(self) -> str:
         return {
@@ -185,9 +195,19 @@ class CustomerPlan(AbstractCustomerPlan):
     # TODO maybe override setattr to ensure billing_cycle_anchor, etc
     # are immutable.
 
+    class Meta:
+        # Enforce that each customer has only one NEVER_STARTED plan at a time.
+        constraints = [
+            models.UniqueConstraint(
+                fields=["customer"],
+                condition=Q(status=12),  # CustomerPlan.NEVER_STARTED
+                name="unique_never_started_plan_customer",
+            )
+        ]
+
     @override
     def __str__(self) -> str:
-        return f"{self.name} (status: {self.get_plan_status_as_text()})"
+        return f"{self.name} for {self.customer!r} (status: {self.get_plan_status_as_text()})"
 
     @staticmethod
     def name_from_tier(tier: int) -> str:

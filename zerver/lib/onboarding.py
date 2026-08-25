@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+from enum import Enum
+
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Count
@@ -7,14 +10,25 @@ from django.utils.translation import override as override_language
 from zerver.actions.create_realm import setup_realm_internal_bots
 from zerver.actions.message_send import (
     do_send_messages,
+    internal_prep_private_message,
     internal_prep_stream_message_by_name,
     internal_send_private_message,
 )
 from zerver.actions.reactions import do_add_reaction
+from zerver.lib.demo_organizations import get_scheduled_deletion_global_time
 from zerver.lib.emoji import get_emoji_data
+from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.message import SendMessageRequest, remove_single_newlines
 from zerver.models import Message, OnboardingUserMessage, Realm, UserProfile
+from zerver.models.groups import SystemGroups
+from zerver.models.recipients import Recipient
 from zerver.models.users import get_system_bot
+
+
+@dataclass
+class InitialDirectMessageIDs:
+    welcome_bot_intro_message_id: int
+    welcome_bot_custom_message_id: int | None
 
 
 def missing_any_realm_internal_bots() -> bool:
@@ -34,16 +48,42 @@ def create_if_missing_realm_internal_bots() -> None:
     If that is the case, it creates the missing realm internal bots.
     """
     if missing_any_realm_internal_bots():
-        for realm in Realm.objects.all():
+        for realm in Realm.objects.all().iterator():
             setup_realm_internal_bots(realm)
 
 
-def send_initial_direct_message(user: UserProfile) -> int:
+def get_custom_welcome_message_string(realm: Realm, welcome_message_custom_text: str) -> str:
+    # TODO: This could use silent_mention_syntax_for_user_group, but
+    # it's not worth doing a database query to get the NamedUserGroup,
+    # so some refactoring is required to do that.
+    mention_syntax = f"@_*{SystemGroups.ADMINISTRATORS}*"
+    fence = get_unused_fence(welcome_message_custom_text)
+    welcome_bot_custom_message_intro_string = _("A note from {admin_group_syntax}:").format(
+        admin_group_syntax=mention_syntax
+    )
+
+    welcome_bot_custom_message_string = f"""
+{welcome_bot_custom_message_intro_string}
+{fence}quote
+{welcome_message_custom_text}
+{fence}
+"""
+
+    return welcome_bot_custom_message_string
+
+
+def send_initial_direct_messages_to_user(
+    user: UserProfile,
+    *,
+    realm_creation: bool = False,
+    welcome_message_custom_text: str = "",
+) -> InitialDirectMessageIDs:
     # We adjust the initial Welcome Bot direct message for education organizations.
     education_organization = user.realm.org_type in (
         Realm.ORG_TYPES["education_nonprofit"]["id"],
         Realm.ORG_TYPES["education"]["id"],
     )
+    welcome_bot_messages = []
 
     # We need to override the language in this code path, because it's
     # called from account registration, which is a pre-account API
@@ -71,14 +111,19 @@ We also have a guide for [moving your organization to Zulip]({organization_setup
 """).format(organization_setup_url="/help/moving-to-zulip")
 
         demo_organization_warning_string = ""
-        # Add extra content about automatic deletion for demo organization owners.
-        if user.is_realm_owner and user.realm.demo_organization_scheduled_deletion_date is not None:
+        # Add extra content about automatic deletion for demo organization creators.
+        if (
+            realm_creation
+            and user.is_realm_owner
+            and user.realm.demo_organization_scheduled_deletion_date is not None
+        ):
             demo_organization_warning_string = _("""
-Note that this is a [demo organization]({demo_organization_help_url}) and
-will be **automatically deleted** in 30 days, unless it's [converted into
+This [demo organization]({demo_organization_help_url}) will be **automatically
+deleted** on {deletion_global_time}, unless it's [converted into
 a permanent organization]({convert_demo_organization_help_url}).
 """).format(
                 demo_organization_help_url="/help/demo-organizations",
+                deletion_global_time=get_scheduled_deletion_global_time(user.realm),
                 convert_demo_organization_help_url="/help/demo-organizations#convert-a-demo-organization-to-a-permanent-organization",
             )
 
@@ -92,6 +137,13 @@ them in your [Inbox](/#inbox).
         navigation_tour_video_string = _("""
 You can always come back to the [Welcome to Zulip video]({navigation_tour_video_url}) for a quick app overview.
 """).format(navigation_tour_video_url=settings.NAVIGATION_TOUR_VIDEO_URL)
+
+        welcome_bot_custom_message_string = ""
+        # Add welcome bot custom message.
+        if welcome_message_custom_text:
+            welcome_bot_custom_message_string = get_custom_welcome_message_string(
+                user.realm, welcome_message_custom_text
+            )
 
         content = _("""
 Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}
@@ -110,16 +162,38 @@ Hello, and welcome to Zulip!👋 {inform_about_tracked_onboarding_messages_text}
             demo_organization_text=demo_organization_warning_string,
         )
 
-    message_id = internal_send_private_message(
-        get_system_bot(settings.WELCOME_BOT, user.realm_id),
-        user,
-        remove_single_newlines(content),
-        # Note: Welcome bot doesn't trigger email/push notifications,
-        # as this is intended to be seen contextually in the application.
-        disable_external_notifications=True,
+    welcome_bot_messages.append(
+        internal_prep_private_message(
+            get_system_bot(settings.WELCOME_BOT, user.realm_id),
+            user,
+            remove_single_newlines(content),
+            # Note: Welcome bot doesn't trigger email/push notifications,
+            # as this is intended to be seen contextually in the application.
+            disable_external_notifications=True,
+        )
     )
-    assert message_id is not None
-    return message_id
+
+    if welcome_bot_custom_message_string:
+        welcome_bot_messages.append(
+            internal_prep_private_message(
+                get_system_bot(settings.WELCOME_BOT, user.realm_id),
+                user,
+                welcome_bot_custom_message_string,
+                disable_external_notifications=True,
+            )
+        )
+
+    sent_messages = do_send_messages(welcome_bot_messages)
+
+    welcome_bot_custom_message_id = None
+    welcome_bot_intro_message_id = sent_messages[0].message_id
+    if welcome_bot_custom_message_string:
+        welcome_bot_custom_message_id = sent_messages[1].message_id
+
+    return InitialDirectMessageIDs(
+        welcome_bot_intro_message_id=welcome_bot_intro_message_id,
+        welcome_bot_custom_message_id=welcome_bot_custom_message_id,
+    )
 
 
 def bot_commands(no_help_command: bool = False) -> str:
@@ -196,7 +270,7 @@ times, and more.
 Here are a few messages I understand: {bot_commands}
 
 Check out our [Getting started guide](/help/getting-started-with-zulip),
-or browse the [Help center](/help/) to learn more!
+or browse the [help center](/help/) to learn more!
 """).format(bot_commands=bot_commands(no_help_command=True))
     else:
         return _("""
@@ -210,8 +284,8 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     to welcome-bot, trigger the welcome-bot reply."""
     welcome_bot = get_system_bot(settings.WELCOME_BOT, send_request.realm.id)
     human_response_lower = send_request.message.content.lower()
-    human_user_recipient_id = send_request.message.sender.recipient_id
-    assert human_user_recipient_id is not None
+    assert send_request.message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP
+    conversation_recipient_id = send_request.message.recipient.id
     content = select_welcome_bot_response(human_response_lower)
     realm_id = send_request.realm.id
     commands = bot_commands()
@@ -220,7 +294,7 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
         and Message.objects.filter(
             realm_id=realm_id,
             sender_id=welcome_bot.id,
-            recipient_id=human_user_recipient_id,
+            recipient_id=conversation_recipient_id,
             content__icontains=commands,
         ).exists()
         # Uses index 'zerver_message_realm_sender_recipient'
@@ -240,8 +314,40 @@ def send_welcome_bot_response(send_request: SendMessageRequest) -> None:
     )
 
 
+class OnboardingMessageTypeEnum(Enum):
+    moving_messages = 1
+    welcome_to_zulip = 2
+    start_conversation = 3
+    experiments = 4
+    greetings = 5
+
+
 @transaction.atomic(savepoint=False)
-def send_initial_realm_messages(realm: Realm) -> None:
+def send_initial_realm_messages(
+    realm: Realm,
+    override_channel_name_map: dict[OnboardingMessageTypeEnum, str | None] | None = None,
+) -> None:
+    """
+    override_channel_name_map allows the caller to customize to which channels to send
+    specific categories of the initial messages. In this override dict, every category
+    from OnboardingMessageTypeEnum must be specified.
+
+    The caller can disable the sending of a specific category by mapping it to None
+    in override_channel_name_map.
+    """
+
+    if override_channel_name_map is not None:
+        channel_name_map = override_channel_name_map
+    else:
+        channel_name_map = {
+            OnboardingMessageTypeEnum.moving_messages: str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+            OnboardingMessageTypeEnum.welcome_to_zulip: str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+            OnboardingMessageTypeEnum.start_conversation: str(Realm.ZULIP_SANDBOX_CHANNEL_NAME),
+            OnboardingMessageTypeEnum.experiments: str(Realm.ZULIP_SANDBOX_CHANNEL_NAME),
+            OnboardingMessageTypeEnum.greetings: str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
+        }
+    assert set(channel_name_map.keys()) == set(OnboardingMessageTypeEnum)
+
     # Sends the initial messages for a new organization.
     #
     # Technical note: Each stream created in the realm creation
@@ -278,7 +384,7 @@ For example, this message is in the “{topic_name}” topic in the
 #**{zulip_discussion_channel_name}** channel, as you can see in the left sidebar
 and above.
 """).format(
-        zulip_discussion_channel_name=str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+        zulip_discussion_channel_name=channel_name_map[OnboardingMessageTypeEnum.welcome_to_zulip],
         topic_name=_("welcome to Zulip!"),
     )
 
@@ -330,7 +436,7 @@ Link to a conversation: #**{zulip_discussion_channel_name}>{topic_name}**
 ```
 """)
     ).format(
-        zulip_discussion_channel_name=str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
+        zulip_discussion_channel_name=channel_name_map[OnboardingMessageTypeEnum.welcome_to_zulip],
         topic_name=_("welcome to Zulip!"),
     )
 
@@ -352,66 +458,85 @@ This **greetings** topic is a great place to say “hi” :wave: to your teammat
     # Initial messages are configured below.
 
     # Advertising moving messages.
-    welcome_messages += [
-        {
-            "channel_name": str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME),
-            "topic_name": _("moving messages"),
-            "content": content,
-        }
-        for content in [
-            content1_of_moving_messages_topic_name,
-            content2_of_moving_messages_topic_name,
+    if (
+        moving_messages_channel_name := channel_name_map[OnboardingMessageTypeEnum.moving_messages]
+    ) is not None:
+        welcome_messages += [
+            {
+                "channel_name": moving_messages_channel_name,
+                "topic_name": _("moving messages"),
+                "content": content,
+            }
+            for content in [
+                content1_of_moving_messages_topic_name,
+                content2_of_moving_messages_topic_name,
+            ]
         ]
-    ]
 
     # Suggestion to test messaging features.
     # Dependency on knowing how to send messages.
-    welcome_messages += [
-        {
-            "channel_name": str(realm.ZULIP_SANDBOX_CHANNEL_NAME),
-            "topic_name": _("experiments"),
-            "content": content,
-        }
-        for content in [content1_of_experiments_topic_name, content2_of_experiments_topic_name]
-    ]
-
-    # Suggestion to start your first new conversation.
-    welcome_messages += [
-        {
-            "channel_name": str(realm.ZULIP_SANDBOX_CHANNEL_NAME),
-            "topic_name": _("start a conversation"),
-            "content": content,
-        }
-        for content in [
-            content1_of_start_conversation_topic_name,
-            content2_of_start_conversation_topic_name,
-            content3_of_start_conversation_topic_name,
+    if (
+        experiments_channel_name := channel_name_map[OnboardingMessageTypeEnum.experiments]
+    ) is not None:
+        welcome_messages += [
+            {
+                "channel_name": experiments_channel_name,
+                "topic_name": _("experiments"),
+                "content": content,
+            }
+            for content in [content1_of_experiments_topic_name, content2_of_experiments_topic_name]
         ]
-    ]
+
+    if (
+        start_conversation_channel_name := channel_name_map[
+            OnboardingMessageTypeEnum.start_conversation
+        ]
+    ) is not None:
+        # Suggestion to start your first new conversation.
+        welcome_messages += [
+            {
+                "channel_name": start_conversation_channel_name,
+                "topic_name": _("start a conversation"),
+                "content": content,
+            }
+            for content in [
+                content1_of_start_conversation_topic_name,
+                content2_of_start_conversation_topic_name,
+                content3_of_start_conversation_topic_name,
+            ]
+        ]
 
     # Suggestion to send first message as a hi to your team.
-    welcome_messages += [
-        {
-            "channel_name": str(Realm.DEFAULT_NOTIFICATION_STREAM_NAME),
-            "topic_name": _("greetings"),
-            "content": content,
-        }
-        for content in [content1_of_greetings_topic_name, content2_of_greetings_topic_name]
-    ]
-
-    # Main welcome message, this should be last.
-    welcome_messages += [
-        {
-            "channel_name": str(realm.ZULIP_DISCUSSION_CHANNEL_NAME),
-            "topic_name": _("welcome to Zulip!"),
-            "content": content,
-        }
-        for content in [
-            content1_of_welcome_to_zulip_topic_name,
-            content2_of_welcome_to_zulip_topic_name,
-            content3_of_welcome_to_zulip_topic_name,
+    if (
+        greetings_channel_name := channel_name_map[OnboardingMessageTypeEnum.greetings]
+    ) is not None:
+        welcome_messages += [
+            {
+                "channel_name": greetings_channel_name,
+                "topic_name": _("greetings"),
+                "content": content,
+            }
+            for content in [content1_of_greetings_topic_name, content2_of_greetings_topic_name]
         ]
-    ]
+
+    if (
+        welcome_to_zulip_channel_name := channel_name_map[
+            OnboardingMessageTypeEnum.welcome_to_zulip
+        ]
+    ) is not None:
+        # Main welcome message, this should be last.
+        welcome_messages += [
+            {
+                "channel_name": welcome_to_zulip_channel_name,
+                "topic_name": _("welcome to Zulip!"),
+                "content": content,
+            }
+            for content in [
+                content1_of_welcome_to_zulip_topic_name,
+                content2_of_welcome_to_zulip_topic_name,
+                content3_of_welcome_to_zulip_topic_name,
+            ]
+        ]
 
     # End of message declarations; now we actually send them.
 
@@ -451,7 +576,7 @@ This **greetings** topic is a great place to say “hi” :wave: to your teammat
     # We find the one of our just-sent greetings messages, and react to it.
     # This is a bit hacky, but works and is kinda a 1-off thing.
     greetings_message = (
-        Message.objects.select_for_update()
+        Message.objects.select_for_update(no_key=True)
         .filter(
             id__in=message_ids, content=remove_single_newlines(content1_of_greetings_topic_name)
         )

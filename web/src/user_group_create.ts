@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_change_user_group_info_modal from "../templates/user_group_settings/change_user_group_info_modal.hbs";
@@ -9,16 +9,17 @@ import * as group_permission_settings from "./group_permission_settings.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as loading from "./loading.ts";
-import * as resize from "./resize.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_data from "./settings_data.ts";
 import {realm} from "./state_data.ts";
 import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
 import * as ui_report from "./ui_report.ts";
+import {place_caret_at_end} from "./ui_util.ts";
 import * as user_group_components from "./user_group_components.ts";
 import * as user_group_create_members from "./user_group_create_members.ts";
 import * as user_group_create_members_data from "./user_group_create_members_data.ts";
 import * as user_groups from "./user_groups.ts";
+import {the} from "./util.ts";
 
 let created_group_name: string | undefined;
 
@@ -184,7 +185,6 @@ function clear_error_display(): void {
 export function show_new_user_group_modal(): void {
     $("#user-group-creation").removeClass("hide");
     $(".right .settings").hide();
-    resize.resize_settings_creation_overlay($("#groups_overlay_container"));
 
     user_group_create_members.build_widgets();
 
@@ -216,7 +216,7 @@ function create_user_group(): void {
         subgroups: JSON.stringify(subgroup_ids),
     };
     loading.make_indicator($("#user_group_creating_indicator"), {
-        text: $t({defaultMessage: "Creating group..."}),
+        text: $t({defaultMessage: "Creating group…"}),
     });
 
     const permission_settings = Object.keys(realm.server_supported_permission_settings.group);
@@ -333,11 +333,11 @@ export function set_up_handlers(): void {
         };
         const change_user_group_info_modal = render_change_user_group_info_modal(template_data);
         dialog_widget.launch({
-            html_heading: $t_html(
+            modal_title_html: $t_html(
                 {defaultMessage: "Rename {group_name} (<i>deactivated</i>)"},
                 {group_name: user_groups.get_display_group_name(group.name)},
             ),
-            html_body: change_user_group_info_modal,
+            modal_content_html: change_user_group_info_modal,
             id: "change_group_info_modal",
             loading_spinner: true,
             on_click: save_group_info,
@@ -345,6 +345,9 @@ export function set_up_handlers(): void {
                 $("#change_group_info_modal .dialog_submit_button")
                     .addClass("save-button")
                     .attr("data-group-id", group_id);
+            },
+            on_shown() {
+                place_caret_at_end(the($("#change_user_group_name")));
             },
             update_submit_disabled_state_on_change: true,
         });

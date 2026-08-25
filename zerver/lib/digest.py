@@ -3,6 +3,7 @@ import heapq
 import logging
 from collections import defaultdict
 from collections.abc import Collection, Iterator
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Any, TypeAlias
 
@@ -11,11 +12,14 @@ from django.db import transaction
 from django.db.models import Exists, OuterRef, QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from markupsafe import Markup
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.context_processors import common_context
 from zerver.lib.email_notifications import (
+    MessageListPayload,
     build_message_list,
+    get_channel_privacy_icon,
     message_content_allowed_in_missedmessage_emails,
 )
 from zerver.lib.logging_util import log_to_file
@@ -33,6 +37,7 @@ from zerver.models import (
     UserActivityInterval,
     UserMessage,
     UserProfile,
+    UserTopic,
 )
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.streams import get_active_streams
@@ -46,6 +51,13 @@ MAX_HOT_TOPICS_TO_BE_INCLUDED_IN_DIGEST = 4
 TopicKey: TypeAlias = tuple[int, str]
 
 
+@dataclass
+class DigestTeaserData:
+    participants: list[str]
+    count: int
+    first_few_messages: MessageListPayload
+
+
 class DigestTopic:
     def __init__(self, topic_key: TopicKey) -> None:
         self.topic_key = topic_key
@@ -56,6 +68,9 @@ class DigestTopic:
     def stream_id(self) -> int:
         # topic_key is (stream_id, topic_name)
         return self.topic_key[0]
+
+    def topic_name(self) -> str:
+        return self.topic_key[1]
 
     def add_message(self, message: Message) -> None:
         if len(self.sample_messages) < 2:
@@ -71,18 +86,18 @@ class DigestTopic:
     def diversity(self) -> int:
         return len(self.human_senders)
 
-    def teaser_data(self, user: UserProfile, stream_id_map: dict[int, Stream]) -> dict[str, Any]:
+    def teaser_data(self, user: UserProfile, stream_id_map: dict[int, Stream]) -> DigestTeaserData:
         teaser_count = self.num_human_messages - len(self.sample_messages)
         first_few_messages = build_message_list(
             user=user,
             messages=self.sample_messages,
             stream_id_map=stream_id_map,
         )
-        return {
-            "participants": sorted(self.human_senders),
-            "count": teaser_count,
-            "first_few_messages": first_few_messages,
-        }
+        return DigestTeaserData(
+            participants=sorted(self.human_senders),
+            count=teaser_count,
+            first_few_messages=first_few_messages,
+        )
 
 
 # Digests accumulate 2 types of interesting traffic for a user:
@@ -141,14 +156,14 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime) -> None:
         .filter(sent_recent_digest=False)
     )
 
-    user_ids = target_users.order_by("id").values_list("id", flat=True)
+    user_ids = list(target_users.order_by("id").values_list("id", flat=True))
 
     # We process batches of 30.  We want a big enough batch
     # to amortize work, but not so big that a single item
     # from the queue takes too long to process.
     chunk_size = 30
     for i in range(0, len(user_ids), chunk_size):
-        chunk_user_ids = list(user_ids[i : i + chunk_size])
+        chunk_user_ids = user_ids[i : i + chunk_size]
         queue_digest_user_ids(chunk_user_ids, cutoff)
         logger.info(
             "Queuing user_ids for potential digest: %s",
@@ -254,7 +269,7 @@ def gather_new_streams(
     realm: Realm,
     recently_created_streams: list[Stream],  # streams only need id and name
     can_access_public: bool,
-) -> tuple[int, dict[str, list[str]]]:
+) -> tuple[int, dict[str, list[Markup] | list[str]]]:
     if can_access_public:
         new_streams = [stream for stream in recently_created_streams if not stream.invite_only]
     else:
@@ -265,16 +280,49 @@ def gather_new_streams(
 
     for stream in new_streams:
         narrow_url = stream_narrow_url(realm, stream)
-        channel_link = f"<a href='{narrow_url}'>{stream.name}</a>"
+        channel_link = Markup(
+            "<a href='{narrow_url}'>{channel_privacy_icon}{stream_name}</a>"
+        ).format(
+            narrow_url=narrow_url,
+            channel_privacy_icon=get_channel_privacy_icon(stream),
+            stream_name=stream.name,
+        )
         channels_html.append(channel_link)
         channels_plain.append(stream.name)
 
     return len(new_streams), {"html": channels_html, "plain": channels_plain}
 
 
-def get_new_messages_count(user: UserProfile, threshold: datetime) -> int:
+def get_min_recent_message_id(realm_id: int, threshold: datetime) -> int | None:
+    # ID of the realm's earliest message at or after the threshold,
+    # or None if there are none.
+    return (
+        # Uses index: zerver_message_realm_date_sent
+        Message.objects.filter(realm_id=realm_id, date_sent__gte=threshold)
+        .order_by("date_sent")
+        .values_list("id", flat=True)
+        .first()
+    )
+
+
+def get_new_messages_count(user: UserProfile, min_recent_message_id: int | None) -> int:
+    if min_recent_message_id is None:
+        # No message was sent since the threshold.
+        return 0
+
+    # We filter on `message_id` for performance, so the planner drives
+    # from the unique (user_profile_id, message_id) index on `UserMessage`.
+    #
+    # Since we want "messages the user received since threshold",
+    # the intuition is to filter on `user_profile` and `message__date_sent`.
+    # When filtering without `message_id`, the planner drives from Message's
+    # `date_sent` index, which is not scoped to a user: it reads every message
+    # sent since threshold and joins against all UserMessage rows for the user
+    # to determine whether they received each message - which is too slow.
     count = UserMessage.objects.filter(
-        user_profile=user, message__date_sent__gte=threshold, message__sender__is_bot=False
+        user_profile=user,
+        message_id__gte=min_recent_message_id,
+        message__sender__is_bot=False,
     ).count()
     return count
 
@@ -339,10 +387,25 @@ def get_user_stream_map(user_ids: list[int], cutoff_date: datetime) -> dict[int,
     return dct
 
 
-def get_slim_stream_id_map(realm: Realm) -> dict[int, Stream]:
+def get_user_muted_topics_map(user_ids: list[int]) -> dict[int, set[tuple[int, str]]]:
+    # maps user_id -> {(stream_id, lowercased topic_name), ...};
+    # topic names are matched case-insensitively.
+    rows = UserTopic.objects.filter(
+        user_profile_id__in=user_ids,
+        visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+    ).values("user_profile_id", "stream_id", "topic_name")
+
+    dct: dict[int, set[tuple[int, str]]] = defaultdict(set)
+    for row in rows:
+        dct[row["user_profile_id"]].add((row["stream_id"], row["topic_name"].lower()))
+
+    return dct
+
+
+def get_slim_stream_id_map(stream_ids: set[int]) -> dict[int, Stream]:
     # "slim" because it only fetches the names of the stream objects,
     # suitable for passing into build_message_list.
-    streams = get_active_streams(realm).only("id", "name")
+    streams = Stream.objects.filter(id__in=stream_ids).only("id", "name")
     return {stream.id: stream for stream in streams}
 
 
@@ -360,11 +423,19 @@ def bulk_get_digest_context(
 
     maybe_clear_recent_topics_cache(realm.id, cutoff)
 
-    stream_id_map = get_slim_stream_id_map(realm)
     recently_created_streams = get_recently_created_streams(realm, cutoff_date)
 
     user_ids = [user.id for user in users]
     user_stream_map = get_user_stream_map(user_ids, cutoff_date)
+    stream_ids = set().union(*user_stream_map.values())
+    stream_id_map = get_slim_stream_id_map(stream_ids)
+    user_muted_topics_map = get_user_muted_topics_map(user_ids)
+
+    # ID of the realm's earliest message at or after the `cutoff`.
+    # Shared across all users, and computed lazily since it is only
+    # needed for users who have message content hidden in emails.
+    min_recent_message_id: int | None = None
+    have_min_recent_message_id = False
 
     for user in users:
         context = common_context(user)
@@ -390,15 +461,26 @@ def bulk_get_digest_context(
 
         if not message_content_allowed_in_missedmessage_emails(user):
             # Count new messages when message content is hidden in email notifications.
-            context["new_messages_count"] = get_new_messages_count(user, cutoff_date)
+            if not have_min_recent_message_id:
+                min_recent_message_id = get_min_recent_message_id(realm.id, cutoff_date)
+                have_min_recent_message_id = True
+            context["new_messages_count"] = get_new_messages_count(user, min_recent_message_id)
             context["hot_conversations"] = []
             context["show_message_content"] = False
         else:
             # Otherwise, get context data for hot conversations.
             stream_ids = user_stream_map[user.id]
+            muted_topics = user_muted_topics_map[user.id]
             recent_topics = []
             for stream_id in stream_ids:
-                recent_topics += get_recent_topics(realm.id, stream_id, cutoff_date)
+                recent_topics += [
+                    digest_topic
+                    for digest_topic in get_recent_topics(realm.id, stream_id, cutoff_date)
+                    # Topics the user has muted should not be featured
+                    # in their digest.
+                    if (digest_topic.stream_id(), digest_topic.topic_name().lower())
+                    not in muted_topics
+                ]
             hot_topics = get_hot_topics(recent_topics, stream_ids)
 
             context["hot_conversations"] = [

@@ -2,9 +2,16 @@
 
 const assert = require("node:assert/strict");
 
-const {set_global, mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
+const {make_message_list} = require("./lib/message_list.cjs");
+const {mock_channel_get} = require("./lib/mock_channel.cjs");
+const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
+
+const channel = mock_esm("../src/channel");
 
 const fake_buddy_list = {
     scroll_container_selector: "#whatever",
@@ -24,50 +31,42 @@ mock_esm("../src/buddy_list", {
     buddy_list: fake_buddy_list,
 });
 
-function mock_setTimeout() {
-    set_global("setTimeout", (func) => {
-        func();
-    });
-}
-
-const channel = mock_esm("../src/channel");
 const popovers = mock_esm("../src/popovers");
 const presence = mock_esm("../src/presence");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 
 const activity_ui = zrequire("activity_ui");
 const buddy_data = zrequire("buddy_data");
-const {Filter} = zrequire("../src/filter");
 const message_lists = zrequire("message_lists");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 
-const me = {
+const me = make_user({
     email: "me@zulip.com",
     user_id: 999,
     full_name: "Me Myself",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@zulip.com",
     user_id: 1,
     full_name: "Alice Smith",
-};
-const fred = {
+});
+const fred = make_user({
     email: "fred@zulip.com",
     user_id: 2,
     full_name: "Fred Flintstone",
-};
-const jill = {
+});
+const jill = make_user({
     email: "jill@zulip.com",
     user_id: 3,
     full_name: "Jill Hill",
-};
+});
 
 const all_user_ids = [alice.user_id, fred.user_id, jill.user_id, me.user_id];
 const ordered_user_ids = [me.user_id, alice.user_id, fred.user_id, jill.user_id];
@@ -89,18 +88,18 @@ function test(label, f) {
 function set_input_val(val) {
     $("input.user-list-filter").val(val);
     $("input.user-list-filter").trigger("input");
+    clock.runAll();
 }
 
 function stub_buddy_list_empty_list_message_lengths() {
-    $("#buddy-list-users-matching-view .empty-list-message").length = 0;
-    $("#buddy-list-other-users .empty-list-message").length = 0;
+    $.set_results("#buddy-list-users-matching-view .empty-list-message", []);
+    $.set_results("#buddy-list-other-users .empty-list-message", []);
 }
 
 test("clear_search with button", ({override}) => {
     override(presence, "get_status", () => "active");
     override(presence, "get_user_ids", () => all_user_ids);
     override(popovers, "hide_all", noop);
-    $("#buddy-list-loading-subscribers").css = noop;
 
     stub_buddy_list_empty_list_message_lengths();
 
@@ -114,14 +113,13 @@ test("clear_search with button", ({override}) => {
     override(fake_buddy_list, "populate", (user_ids) => {
         assert.deepEqual(user_ids, {all_user_ids: ordered_user_ids});
     });
-    $("#clear_search_people_button").trigger("click");
+    $("#userlist-header-search .input-close-filter-button").trigger("click");
     assert.equal($("input.user-list-filter").val(), "");
-    $("#clear_search_people_button").trigger("click");
+    $("#userlist-header-search .input-close-filter-button").trigger("click");
 });
 
 test("clear_search", ({override}) => {
     override(realm, "realm_presence_disabled", true);
-    $("#buddy-list-loading-subscribers").css = noop;
 
     override(popovers, "hide_all", noop);
     stub_buddy_list_empty_list_message_lengths();
@@ -142,24 +140,21 @@ test("fetch on search", async ({override}) => {
     override(fake_buddy_list, "populate", () => {
         populate_call_count += 1;
     });
-    $("#buddy-list-loading-subscribers").css = noop;
     override(popovers, "hide_all", noop);
     stub_buddy_list_empty_list_message_lengths();
 
-    const office = {stream_id: 23, name: "office", subscribed: true};
-    stream_data.add_sub(office);
-    message_lists.set_current({
-        data: {
-            filter: new Filter([{operator: "stream", operand: office.stream_id}]),
-        },
-    });
+    const office = make_stream({stream_id: 23, name: "office", subscribed: true});
+    stream_data.add_sub_for_tests(office);
+    message_lists.set_current(
+        make_message_list([{operator: "stream", operand: office.stream_id.toString()}]),
+    );
     let get_call_count = 0;
-    channel.get = () => {
+    mock_channel_get(channel, (opts) => {
         get_call_count += 1;
-        return {
+        opts.success({
             subscribers: [1, 2, 3, 4],
-        };
-    };
+        });
+    });
     // Only one fetch should happen.
     set_input_val("somevalu");
     set_input_val("somevalue");
@@ -168,25 +163,21 @@ test("fetch on search", async ({override}) => {
     assert.equal(populate_call_count, 1);
 
     // Now try updating the narrow and starting a new search, before the old search
-    // is resolved. We should make two requests but only only update populate the
+    // is resolved. We should make two requests but only populate the
     // buddy list for the second fetch (the first fetch returns early).
     get_call_count = 0;
     populate_call_count = 0;
-    const kitchen = {stream_id: 25, name: "kitchen", subscribed: true};
-    stream_data.add_sub(kitchen);
-    const living_room = {stream_id: 26, name: "living_room", subscribed: true};
-    stream_data.add_sub(living_room);
-    message_lists.set_current({
-        data: {
-            filter: new Filter([{operator: "stream", operand: kitchen.stream_id}]),
-        },
-    });
+    const kitchen = make_stream({stream_id: 25, name: "kitchen", subscribed: true});
+    stream_data.add_sub_for_tests(kitchen);
+    const living_room = make_stream({stream_id: 26, name: "living_room", subscribed: true});
+    stream_data.add_sub_for_tests(living_room);
+    message_lists.set_current(
+        make_message_list([{operator: "stream", operand: kitchen.stream_id.toString()}]),
+    );
     set_input_val("somevalue");
-    message_lists.set_current({
-        data: {
-            filter: new Filter([{operator: "stream", operand: living_room.stream_id}]),
-        },
-    });
+    message_lists.set_current(
+        make_message_list([{operator: "stream", operand: living_room.stream_id.toString()}]),
+    );
     set_input_val("somevalue");
     await activity_ui.await_pending_promise_for_testing();
     assert.equal(get_call_count, 2);
@@ -201,41 +192,42 @@ test("fetch on search", async ({override}) => {
 test("blur search right", ({override}) => {
     override(sidebar_ui, "show_userlist_sidebar", noop);
     override(popovers, "hide_all", noop);
-    mock_setTimeout();
 
-    $("input.user-list-filter").closest = (selector) => {
-        assert.equal(selector, ".app-main [class^='column-']");
-        return $.create("right-sidebar").addClass("column-right");
-    };
+    $("input.user-list-filter").set_closest_results(
+        ".app-main [class^='column-']",
+        $.create("right-sidebar").addClass("column-right"),
+    );
 
     $("input.user-list-filter").trigger("blur");
     assert.equal($("input.user-list-filter").is_focused(), false);
     activity_ui.initiate_search();
+    clock.runAll();
     assert.equal($("input.user-list-filter").is_focused(), true);
 });
 
 test("blur search left", ({override}) => {
     override(sidebar_ui, "show_streamlist_sidebar", noop);
     override(popovers, "hide_all", noop);
-    mock_setTimeout();
 
-    $("input.user-list-filter").closest = (selector) => {
-        assert.equal(selector, ".app-main [class^='column-']");
-        return $.create("right-sidebar").addClass("column-left");
-    };
+    $("input.user-list-filter").set_closest_results(
+        ".app-main [class^='column-']",
+        $.create("right-sidebar").addClass("column-left"),
+    );
 
     $("input.user-list-filter").trigger("blur");
     assert.equal($("input.user-list-filter").is_focused(), false);
     activity_ui.initiate_search();
+    clock.runAll();
     assert.equal($("input.user-list-filter").is_focused(), true);
 });
 
 test("filter_user_ids", ({override}) => {
-    const user_presence = {};
-    user_presence[alice.user_id] = "active";
-    user_presence[fred.user_id] = "active";
-    user_presence[jill.user_id] = "active";
-    user_presence[me.user_id] = "active";
+    const user_presence = {
+        [alice.user_id]: "active",
+        [fred.user_id]: "active",
+        [jill.user_id]: "active",
+        [me.user_id]: "active",
+    };
 
     override(presence, "get_status", (user_id) => user_presence[user_id]);
     override(presence, "get_user_ids", () => all_user_ids);

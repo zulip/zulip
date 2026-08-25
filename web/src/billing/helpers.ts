@@ -1,5 +1,5 @@
-import $ from "jquery";
-import {z} from "zod";
+import {$} from "jquery";
+import * as z from "zod/mini";
 
 import * as loading from "../loading.ts";
 import * as util from "../util.ts";
@@ -113,7 +113,7 @@ export function create_ajax_request(
                 // User session timed out, we need to login again.
                 const parsed = z.object({login_url: z.string()}).safeParse(xhr.responseJSON);
                 if (parsed.success) {
-                    window.location.href = parsed.data.login_url;
+                    window.location.assign(parsed.data.login_url);
                 }
             }
         },

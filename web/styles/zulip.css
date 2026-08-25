@@ -1,12 +1,16 @@
+#download-mac-alt {
+    margin-top: 10px;
+}
+
 html {
     overflow: hidden scroll;
-    overscroll-behavior: none;
+    overscroll-behavior-y: none;
     width: calc(100% - var(--disabled-scrollbar-width));
 }
 
 body,
 html {
-    height: 100%;
+    height: var(--full-height-dynamic-viewport);
     touch-action: manipulation;
 }
 
@@ -130,17 +134,6 @@ button {
     }
 }
 
-input,
-button,
-select,
-textarea {
-    font-family: "Source Sans 3 VF", sans-serif;
-    /* Disable bootstrap size CSS; we want to use our default font size on
-       body for input elements. */
-    line-height: normal;
-    font-size: inherit;
-}
-
 blockquote p {
     font-weight: normal;
 }
@@ -202,36 +195,41 @@ p.n-margin {
     margin: 0;
 }
 
-.history-limited-box {
-    color: hsl(16deg 60% 45%);
-    border: 1px solid hsl(16deg 60% 45%);
-    box-shadow: 0 0 2px hsl(16deg 60% 45%);
-}
+.all-messages-search-caution,
+.combined-feed-notice {
+    display: none;
 
-.all-messages-search-caution {
-    border: 1px solid hsl(192deg 19% 75% / 20%);
-    box-shadow: 0 0 2px hsl(192deg 19% 75% / 20%);
+    .all-messages-search-caution-info,
+    .combined-feed-notice-info {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+    }
 }
 
 .history-limited-box,
-.all-messages-search-caution {
-    border-radius: 4px;
-    display: none;
+.all-messages-search-caution,
+.combined-feed-notice {
     margin: 0 auto 12px;
     padding: 5px;
-    /* Difference should be 16px to accommodate the icon. */
-    /* This emulates hanging indent. */
-    padding-left: 26px;
-    text-indent: -10px;
-
-    .all-messages-search-caution-icon {
-        margin: 0 3px 0 1px;
-    }
 
     & p {
         margin: 0;
         padding: 4px;
     }
+}
+
+.history-limited-box {
+    border-radius: 4px;
+    display: none;
+    /* Difference should be 16px to accommodate the icon. */
+    /* This emulates hanging indent. */
+    padding-left: 26px;
+    text-indent: -10px;
+    color: hsl(16deg 60% 45%);
+    border: 1px solid hsl(16deg 60% 45%);
+    box-shadow: 0 0 2px hsl(16deg 60% 45%);
 }
 
 .messages-logo-svg {
@@ -242,7 +240,6 @@ p.n-margin {
     display: none;
 }
 
-.alert-zulip-logo,
 .top-messages-logo,
 .bottom-messages-logo {
     width: 1.7143em; /* 24px at 14px/em */
@@ -298,16 +295,23 @@ p.n-margin {
     }
 }
 
-#feedback_container {
-    display: none;
+#feedback-container-content-wrapper {
     position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
     width: 400px;
-    top: 0;
-    left: calc(50vw - 220px);
+    max-width: calc(100% - 20px);
     padding: 15px;
     background-color: var(--color-background-modal);
     border-radius: 5px;
     box-shadow: 0 0 30px hsl(0deg 0% 0% / 25%);
+    box-sizing: border-box;
+}
+
+#feedback_container {
+    display: none;
+    position: fixed;
+    width: 100%;
     z-index: 110;
 
     @container app (width < $cq_md_min) {
@@ -328,13 +332,22 @@ p.n-margin {
     & h3 {
         font-size: 16pt;
         margin-top: 2px;
+        font-weight: 300;
     }
 
     .exit-me {
-        font-size: 20pt;
-        font-weight: 200;
-        margin: 0 0 0 10px;
-        cursor: pointer;
+        margin: 0 0 0 5px;
+    }
+
+    .float-header {
+        display: flex;
+        align-items: center;
+    }
+
+    .feedback-button-container {
+        display: flex;
+        align-items: center;
+        margin-left: auto;
     }
 }
 
@@ -370,7 +383,7 @@ p.n-margin {
 
 .app {
     min-width: 100%;
-    min-height: 100%;
+    min-height: var(--full-height-dynamic-viewport);
     z-index: 99;
 }
 
@@ -582,7 +595,7 @@ body.has-overlay-scrollbar {
 
 .app-main {
     height: 100%;
-    min-height: 100%;
+    min-height: var(--full-height-dynamic-viewport);
 
     &::after {
         /* We use `content` values to determine
@@ -605,12 +618,13 @@ body.has-overlay-scrollbar {
     }
 
     .column-right .right-sidebar {
+        box-sizing: border-box;
         padding-left: var(--right-sidebar-left-spacing);
         width: var(--right-sidebar-width);
     }
 
     .column-middle {
-        min-height: 100%;
+        min-height: var(--full-height-dynamic-viewport);
         /* We need `overflow-y: visible` for sticky headers to work. */
     }
 }
@@ -667,11 +681,6 @@ body.has-overlay-scrollbar {
     position: relative;
 }
 
-textarea,
-input {
-    font-family: "Source Sans 3 VF", sans-serif;
-}
-
 /* Override browsers that use
    `cursor: default` */
 label,
@@ -680,15 +689,18 @@ button {
 }
 
 /* Override Bootstrap's fixed sizes for various elements */
-textarea,
 label {
     font-size: inherit;
     line-height: inherit;
 }
 
+button:focus {
+    outline: 0;
+}
+
 /* Bootstrap's focus outline uses -webkit-focus-ring-color which doesn't exist in Firefox */
 a:not(:active):focus,
-button:focus,
+button:focus-visible,
 label.checkbox input[type="checkbox"]:focus ~ .rendered-checkbox,
 i.fa:focus,
 i.zulip-icon:focus-visible,
@@ -698,23 +710,20 @@ i.zulip-icon:focus-visible,
 }
 
 /* List of text-like input types taken from Bootstrap */
-input {
+input:not(.input-element) {
     &[type="text"],
     &[type="password"],
-    &[type="datetime"],
-    &[type="datetime-local"],
-    &[type="date"],
-    &[type="month"],
-    &[type="time"],
-    &[type="week"],
-    &[type="number"],
     &[type="email"],
     &[type="url"],
-    &[type="search"],
-    &[type="tel"],
     &[type="color"] {
         font-size: inherit;
         height: 1.4em;
+        background-color: var(--color-background-legacy-input);
+        border-color: var(--color-border-legacy-input);
+
+        &:focus {
+            border-color: var(--color-border-legacy-input-focus);
+        }
     }
 }
 
@@ -722,12 +731,6 @@ li,
 .table th,
 .table td {
     line-height: inherit;
-}
-
-.bootstrap-btn {
-    font-size: inherit;
-    height: auto;
-    line-height: 100%;
 }
 
 /* Classes which style copy buttons */
@@ -754,17 +757,6 @@ li,
     height: 1em;
     backdrop-filter: blur(20px);
     outline: 1px solid var(--color-copy-button-square-bg-active);
-}
-
-#copy_generated_link_container {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-}
-
-#copy_generated_invite_link {
-    position: relative;
-    right: -30px;
 }
 
 /* Classes for hiding and showing controls */
@@ -799,7 +791,7 @@ strong {
 
 .buddy_list_tooltip_content {
     text-align: left;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
     /* 280px at 14px/1em */
     max-width: 20em;
 }
@@ -831,13 +823,26 @@ strong {
     position: relative;
 }
 
-.new_messages {
-    background-color: hsl(194deg 53% 79%);
+@keyframes pulse-unread {
+    /* Only unread dots in collapsed Views
+       have offset variables set; all others
+       will fall back to 0 (no offset). */
+    0% {
+        transform: scale(1) translateX(var(--unread-dot-x-offset, 0));
+    }
+
+    50% {
+        transform: scale(var(--pulse-unread-scale-max))
+            translateX(var(--unread-dot-x-offset-scaled, 0));
+    }
+
+    100% {
+        transform: scale(1) translateX(var(--unread-dot-x-offset, 0));
+    }
 }
 
-.new_messages,
-.new_messages_fadeout {
-    transition: background-color 3s ease-in-out;
+.new-unread .unread_count {
+    animation: 2s ease-in-out 2 pulse-unread;
 }
 
 .messagebox-content .slow-send-spinner {
@@ -858,7 +863,7 @@ strong {
 .copy-paste-text {
     /* Hide the text that we want copy paste to capture */
     position: absolute;
-    right: -99999px;
+    left: -99999px;
 }
 
 @keyframes rotate {
@@ -986,9 +991,10 @@ div.focused-message-list.is-conversation-view .recipient_row {
     flex: 1;
     line-height: 1.2142em;
     padding: 0 5px;
-    color: hsl(0deg 0% 33%);
+    color: var(--color-text-default);
     border-radius: 4px;
     border: 1px solid hsl(0deg 0% 80%);
+    font-family: inherit;
 
     transition:
         border-color linear 0.2s,
@@ -1027,6 +1033,12 @@ div.focused-message-list.is-conversation-view .recipient_row {
     border-width: 1px;
     border-style: solid;
     background-clip: padding-box;
+}
+
+.topic_edit_save,
+.topic_edit_cancel {
+    /* Adjust top and bottom padding to fit into the recipient row. */
+    padding: 0.125em 0.625em; /* 2px 10px at 16px/em */
 }
 
 .information-settings .user-profile-picture,
@@ -1219,12 +1231,12 @@ nav {
 }
 
 #loading_older_messages_indicator,
-#loading_newer_messages_indicator {
+#loading_more_indicator {
     margin: 10px;
 }
 
 #loading_older_messages_indicator_box_container,
-#loading_newer_messages_indicator_box_container {
+#loading_more_indicator_box_container {
     position: absolute;
     left: 50%;
 
@@ -1237,7 +1249,7 @@ nav {
 }
 
 #loading_older_messages_indicator_box,
-#loading_newer_messages_indicator_box {
+#loading_more_indicator_box {
     position: relative;
     left: -1.3571em; /* 50% of 38px = 19px at 14px/em */
     top: -3.0714em; /* -43px at 14px/em */
@@ -1281,23 +1293,14 @@ nav {
     text-align: center;
 }
 
-div.topic_edit_spinner,
-div.toggle_resolve_topic_spinner {
+div.topic_edit_spinner {
     display: flex;
     align-items: center;
     width: 1.2em; /* 18px at 15px/em  (from font size set in .message-header-contents) */
     height: 1.2em; /* 18px at 15px/em */
 }
 
-.on_hover_topic_unresolve,
-.on_hover_topic_resolve {
-    /* Matches the width set in `show_toggle_resolve_topic_spinner`,
-       to ensure spinner and resolve icon are the same width */
-    width: 1em;
-}
-
-div.topic_edit_spinner .loading_indicator_spinner,
-div.toggle_resolve_topic_spinner .loading_indicator_spinner {
+div.topic_edit_spinner .loading_indicator_spinner {
     width: 0.9333em; /* 14px at 15px/em  (from font size set in .message-header-contents) */
     height: 0.9333em; /* 14px at 15px/em */
 
@@ -1315,13 +1318,44 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     vertical-align: middle;
 }
 
-#multiuse_invite_link {
-    width: 100%;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    display: inline-block;
-    overflow: hidden;
-    vertical-align: bottom;
+.invite-user-modal-banners {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    &:has(.banner) {
+        /* Only apply bottom margin if there is a banner present. */
+        margin-bottom: 10px;
+    }
+
+    .banner-wrapper:empty {
+        /* Avoid unnecessary spacing between empty banner
+           wrappers due to the flex gap property. */
+        display: none;
+    }
+}
+
+.copy-invite-link-banner {
+    .banner-content {
+        white-space: nowrap;
+    }
+
+    .banner-label {
+        width: 100%;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+}
+
+@container banner (width >= 25em) {
+    #copy_generated_invite_link .action-button-label {
+        display: none;
+    }
+}
+
+.invite-tips-list {
+    /* Override default bottom margin of ul tags in bootstrap. */
+    margin-bottom: 0;
 }
 
 #invite-user-form .loading_indicator_spinner {
@@ -1339,21 +1373,27 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     width: 100%;
 }
 
+#invite_welcome_custom_message_text {
+    height: 8em;
+}
+
 .custom-time-input-value {
     width: 5ch;
     margin-right: 15px;
 
-    padding: 4px 6px;
-    color: hsl(0deg 0% 33%);
+    padding: var(--input-vertical-padding) var(--input-horizontal-padding);
+    color: var(--color-text-default);
     border-radius: 4px;
-    border: 1px solid hsl(0deg 0% 80%);
+    border: var(--input-border-width) solid var(--color-border-legacy-input);
+    background-color: var(--color-background-legacy-input);
     box-shadow: inset 0 1px 1px hsl(0deg 0% 0% / 7.5%);
     transition:
         border-color linear 0.2s,
         box-shadow linear 0.2s;
+    font-family: inherit;
 
     &:focus {
-        border-color: hsl(206deg 80% 62% / 80%);
+        border-color: var(--color-border-legacy-input-focus);
         outline: 0;
         box-shadow:
             inset 0 1px 1px hsl(0deg 0% 0% / 7.5%),
@@ -1376,14 +1416,25 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     font-size: 1.5em;
     font-weight: 400;
     line-height: inherit;
-    word-wrap: break-word;
+    margin: 10px 0;
+    overflow-wrap: break-word;
 }
 
 .empty-feed-notice-description {
     font-size: 1.1em;
 
     .search-query-word {
-        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+}
+
+.empty-feed-notice-action {
+    display: none;
+    font-size: 1.1em;
+
+    .search-shared-history {
+        display: inline-block;
+        margin-top: 10px;
     }
 }
 
@@ -1420,7 +1471,6 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     margin-right: 0;
 }
 
-/* FIXME: Combine this rule with the one in portico.css somehow? */
 #pw_strength {
     width: 100%;
     height: 10px;
@@ -1488,6 +1538,7 @@ div.toggle_resolve_topic_spinner .loading_indicator_spinner {
     .exit {
         font-size: 1.5rem;
         font-weight: 600;
+        font-family: inherit;
         background-color: transparent;
         border: none;
         position: absolute;
@@ -1805,7 +1856,9 @@ body:not(.spectator-view) {
     }
 
     .app-main .column-right.expanded .right-sidebar,
-    .app-main .column-left.expanded .left-sidebar {
+    .app-main .column-left.expanded .left-sidebar,
+    .app-main #left-sidebar.zoom-in-topics #left-sidebar-modal,
+    .app-main #left-sidebar.zoom-in-conversations #left-sidebar-modal {
         width: 100vw;
         max-width: 100%;
     }
@@ -2081,24 +2134,33 @@ body:not(.spectator-view) {
         justify-content: center;
         cursor: pointer;
 
-        &:hover #scroll-to-bottom-button {
-            background: hsl(240deg 96% 68%);
+        #scroll-to-bottom-button,
+        #scroll-to-bottom-button-underlay {
+            width: 2.5em; /* 40px at 16px em */
+            height: 2.5em; /* 40px at 16px em */
+            border-radius: 50%;
         }
 
         #scroll-to-bottom-button {
-            text-align: center;
-            width: 2.5em; /* 40px at 16px em */
-            height: 2.5em; /* 40px at 16px em */
-            background: hsl(240deg 96% 68% / 50%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-
-            & .scroll-to-bottom-icon {
-                color: hsl(0deg 0% 100%);
-                margin: 0 auto;
-                font-size: 1.3125em; /* 21px at 16px em */
+            > .zulip-icon {
+                /* We increase the icon size for better visibility */
+                font-size: 1.5em; /* 24px at 16px em */
             }
+
+            &:active {
+                clip-path: none;
+            }
+        }
+
+        #scroll-to-bottom-button-underlay {
+            position: absolute;
+            background-color: var(--color-background-stream-message-content);
+            opacity: 0.7;
+            z-index: -1;
+        }
+
+        &:hover #scroll-to-bottom-button {
+            backdrop-filter: blur(40px);
         }
     }
 }
@@ -2151,6 +2213,21 @@ body:not(.spectator-view) {
 }
 
 .dropdown-list-container {
+    /* For hidden searchbox dropdowns, when the user uses a click to open
+       the dropdown, we focus this container, so that the rest of the
+       keyboard navigation has the right container. That itself doesn't
+       introduce focus-visible. But hotkeys.ts uses a programmatic click
+       which goes through the same path and invokes focus-visible.
+    */
+    &:focus-visible {
+        outline: none;
+    }
+
+    .dropdown-list-viewport-padding {
+        padding-top: 4px;
+        padding-bottom: 4px;
+    }
+
     .dropdown-list-wrapper {
         /* Sync with `max-height` in dropdown_widget. */
         max-height: 210px;
@@ -2160,6 +2237,10 @@ body:not(.spectator-view) {
         .dropdown-list {
             list-style: none;
             margin: 0;
+
+            .zulip-icon-preview {
+                font-size: 1.125em;
+            }
         }
     }
 
@@ -2173,8 +2254,11 @@ body:not(.spectator-view) {
     }
 
     .dropdown-list .dropdown-list-item-common-styles {
-        position: relative;
-        display: flex;
+        display: grid;
+        grid-template:
+            "item-label" min-content
+            "item-description" minmax(0, min-content)
+            / minmax(0, 1fr);
         color: var(--color-dropdown-item);
         padding: 3px 10px 3px 8px;
         font-weight: 400;
@@ -2184,33 +2268,72 @@ body:not(.spectator-view) {
            vertically centered properly. */
         line-height: 1.214;
 
-        .channel-privacy-type-icon {
+        .decorated-channel-name-wrapper,
+        .dropdown-list-item-direct-message,
+        .dropdown-list-item-setting-disabled-option,
+        .dropdown-list-item-channel-mapping {
+            grid-area: item-label;
+            display: flex;
+            gap: var(--dropdown-list-item-label-icon-gap);
+
+            .zulip-icon {
+                font-size: 0.9375em; /* 15px at 16px/1em */
+            }
+        }
+
+        .decorated-channel-name-wrapper .channel-privacy-type-icon,
+        .dropdown-list-item-icon {
             line-height: 1.214;
-            font-size: 0.93em;
-            /* We set only the width so that flexbox
-            can do its work to properly center,
-            regardless of the height. */
-            width: 0.93em;
-            padding-right: 5px;
-            /* Override the [data-tippy-root] style in
-               `tooltips.css`.
-               Because we are manually holding icon
-               alignment to the first/only line of a
-               channel, we make this adjustment here.
-               Calculated by eye to look good at 12px-20px. */
-            top: 0.05em;
         }
 
-        .dropdown-list-delete,
-        .dropdown-list-edit {
-            position: absolute;
-            top: 0;
-            right: 5px;
+        .dropdown-list-item-channel-mapping .zulip-icon {
+            position: relative;
+            /* Calculated from visual inspection
+               to look good for 12px-20px font sizes. */
+            top: 0.1467em; /* 2.2px at 15px/1em */
+        }
+
+        .dropdown-list-item-description {
+            grid-area: item-description;
+        }
+
+        .dropdown-list-item-name {
+            grid-area: item-label;
+            display: grid;
+            grid-template:
+                "item-text item-buttons" minmax(0, auto)
+                "item-text .           " minmax(0, auto) / minmax(0, 1fr)
+                minmax(0, auto);
+            align-items: center;
+
+            &:has(.dropdown-list-buttons) {
+                grid-template-rows: 1.75em minmax(0, auto);
+                align-items: start;
+
+                .dropdown-list-text-neutral {
+                    padding-top: 0.2em;
+                    align-self: start;
+                }
+            }
+
+            .dropdown-list-text-neutral {
+                grid-area: item-text;
+                align-self: center;
+            }
+        }
+
+        /* This correctly places neutral text items
+           appearing without a wrapping
+           `.dropdown-list-item-name` class. */
+        .dropdown-list-text-neutral {
+            grid-area: item-label;
+            align-self: center;
+        }
+
+        .dropdown-list-buttons {
+            grid-area: item-buttons;
+            display: flex;
             visibility: hidden;
-        }
-
-        .dropdown-list-edit {
-            right: 30px;
         }
 
         &:focus,
@@ -2221,44 +2344,89 @@ body:not(.spectator-view) {
             outline: none;
 
             .dropdown-list-delete,
-            .dropdown-list-edit {
+            .dropdown-list-edit,
+            .dropdown-list-manage-folder {
                 visibility: visible;
+            }
+        }
+    }
+
+    .list-item {
+        border-radius: 4px;
+        margin: 0 4px;
+        position: relative;
+        color: var(--color-dropdown-item);
+
+        &:focus,
+        &.current_selection {
+            outline: none;
+            background-color: var(
+                --background-color-current-selection-dropdown-item
+            );
+
+            &:not(.highlight_value):hover {
+                background-color: transparent;
+            }
+        }
+
+        &:focus::before,
+        &.current_selection::before {
+            content: "";
+            position: absolute;
+            left: -3px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background-color: var(--color-outline-focus);
+            border-radius: 4px;
+        }
+
+        .dropdown-list-item-common-styles {
+            padding: 5px 6px;
+            border-radius: 4px;
+        }
+
+        &.highlight_value {
+            background-color: var(
+                --background-color-current-setting-dropdown-item
+            );
+
+            .dropdown-list-text-selected,
+            .setting-disabled-option-text {
+                color: var(--color-current-setting-dropdown-item);
+            }
+        }
+    }
+
+    &.folder_id-dropdown-list-container,
+    &.new_channel_folder_id-dropdown-list-container {
+        width: calc(var(--modal-input-width) * 0.75);
+
+        /* Alignment adjustments on the channel-folder selector. */
+        .dropdown-list .dropdown-list-item-name {
+            /* We hold the first row height to 28px at 16px/1em
+               for the sake of the buttons plus their padding.
+               Unlike the base rules above, we apply this to rows
+               without buttons, too, so that the "None" row is the
+               same height as the folder rows. */
+            grid-template-rows: 1.75em minmax(0, auto);
+            /* We also align everything to start, so that we can
+               offset the text from the top to align it with the
+               buttons. */
+            align-items: start;
+
+            .dropdown-list-text-neutral {
+                /* 0.2em is an eyeballed value that keeps the buttons
+                   well aligned with the first/only line of text. */
+                padding-top: 0.2em;
+                align-self: start;
             }
         }
     }
 }
 
-.dropdown-list-container .list-item {
-    color: var(--color-dropdown-item);
-
-    &:focus,
-    &.current_selection {
-        background-color: var(--background-color-active-dropdown-item);
-        outline: none;
-    }
-}
-
-.inbox-filter-dropdown-list-container,
-.recent-view-filter-dropdown-list-container {
-    overflow: visible;
-
-    .list-item {
-        &:focus {
-            border-radius: 4px;
-            outline: 1px solid var(--color-outline-focus) !important;
-            outline-offset: -2px;
-            background-color: transparent;
-        }
-
-        &.current_user_setting {
-            background-color: var(--background-color-active-dropdown-item);
-            outline: none;
-        }
-    }
-}
-
-.dropdown-list-item-common-styles .dropdown-list-bold-selected {
-    font-weight: 700;
+.dropdown-list-item-common-styles .dropdown-list-text-selected {
+    font-weight: 600;
 }
 
 #scheduled_messages_overlay .error-icon-message-recipient {
@@ -2267,7 +2435,6 @@ body:not(.spectator-view) {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    flex-grow: 1;
     color: var(--color-failed-message-send-icon);
 
     .zulip-icon {
@@ -2305,7 +2472,8 @@ body:not(.spectator-view) {
         text-decoration: none;
     }
 
-    &:hover {
+    &:hover,
+    .navbar-item.active-navbar-menu & {
         background-color: var(--color-header-button-hover);
     }
 
@@ -2363,12 +2531,18 @@ body:not(.spectator-view) {
                avatar in the navbar from being lower by a pixel. */
             display: block;
         }
+
+        &:has(.avatar-loaded) {
+            background-color: transparent;
+            border-color: transparent;
+        }
     }
 }
 
 .default-language-display,
 .empty-topic-display,
-.empty-topic-placeholder-display::placeholder {
+.empty-topic-placeholder-display::placeholder,
+.drafts-unknown-msg-header-field {
     font-style: italic;
 }
 
@@ -2389,5 +2563,42 @@ body:not(.spectator-view) {
         border-radius: 10px;
         bottom: -2px;
         right: -2px;
+    }
+}
+
+.scroll-to-time {
+    &:focus:not(:focus-visible) {
+        /* Avoid outline on click */
+        outline: none;
+    }
+}
+
+.input-validation-shake {
+    animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+@keyframes shake {
+    10%,
+    90% {
+        transform: translate3d(-1px, 0, 0);
+    }
+
+    20%,
+    80% {
+        transform: translate3d(2px, 0, 0);
+    }
+
+    30%,
+    50%,
+    70% {
+        transform: translate3d(-4px, 0, 0);
+    }
+
+    40%,
+    60% {
+        transform: translate3d(4px, 0, 0);
     }
 }

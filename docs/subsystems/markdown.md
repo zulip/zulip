@@ -262,15 +262,13 @@ accurate.
 - Disable line-numbering within fenced code blocks -- the `<table>`
   output confused our web client code.
 
-### Other
+### Headings
 
-- Disable headings, both `# foo` and `== foo ==` syntax: they don't
-  make much sense for chat messages.
+- Enable headings with syntax `# foo` (syntax `== foo ==` is unsupported).
+
+### Other
 
 - Disabled images with `![]()` (images from links are shown as an inline
   preview).
-
-- Allow embedding any avatar as a tiny (list bullet size) image. This
-  is used primarily by version control integrations.
 
 - We added the `~~~ quote` block quote syntax.

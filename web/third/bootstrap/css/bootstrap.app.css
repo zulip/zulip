@@ -34,34 +34,6 @@ button {
 p {
   margin: 0 0 10px;
 }
-h1,
-h2,
-h3,
-h4 {
-  margin: 10px 0;
-  font-family: inherit;
-  font-weight: bold;
-  line-height: 20px;
-  color: inherit;
-  text-rendering: optimizelegibility;
-}
-h1,
-h2,
-h3 {
-  line-height: 40px;
-}
-h1 {
-  font-size: 38.5px;
-}
-h2 {
-  font-size: 31.5px;
-}
-h3 {
-  font-size: 24.5px;
-}
-h4 {
-  font-size: 17.5px;
-}
 ul,
 ol {
   padding: 0;
@@ -114,6 +86,19 @@ input:focus:invalid:focus {
   -webkit-border-radius: 4px;
   -moz-border-radius: 4px;
   border-radius: 4px;
+}
+.alert.alert-error {
+  background-color: #f2dede;
+  border-color: #eed3d7;
+  color: #b94a48;
+}
+.alert.alert-success {
+  background-color: #dff0d8;
+  border-color: #d6e9c6;
+  color: #468847;
+}
+.alert.alert-success h4 {
+  color: #468847;
 }
 .alert,
 .alert h4 {

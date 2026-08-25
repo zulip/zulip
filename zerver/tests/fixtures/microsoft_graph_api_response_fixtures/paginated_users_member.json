@@ -1,0 +1,47 @@
+{
+    "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#users",
+    "@odata.nextLink": "https://graph.microsoft.com/v1.0/users?$filter=userType+eq+%27Member%27&$top=3&$skiptoken=RFNwdAoAAQAAAAAAAAAAFAAAAAIjPrZtIj1IsyACv_n3ZLsBAAAAAAAAAAAAAAAAAAAXMS4yLjg0MC4xMTM1NTYuMS40LjIzMzEGAAAAAAABttbVt5Wq-0aI2xDyNlaWGwG9AAAAAQAAAAA",
+    "value": [
+        {
+            "businessPhones": [
+                "16508158245"
+            ],
+            "displayName": "Alya Abbott",
+            "givenName": "Alya",
+            "jobTitle": null,
+            "mail": "alya@ZulipChat.onmicrosoft.com",
+            "mobilePhone": null,
+            "officeLocation": null,
+            "preferredLanguage": "en",
+            "surname": "Abbott",
+            "userPrincipalName": "alya@ZulipChat.onmicrosoft.com",
+            "id": "3c6ee395-529d-4681-b5f7-582c707570f6"
+        },
+        {
+            "businessPhones": [],
+            "displayName": "Pieter K",
+            "givenName": "Pieter",
+            "jobTitle": null,
+            "mail": "pieterk@ZulipChat.onmicrosoft.com",
+            "mobilePhone": null,
+            "officeLocation": null,
+            "preferredLanguage": null,
+            "surname": "K",
+            "userPrincipalName": "pieterk@ZulipChat.onmicrosoft.com",
+            "id": "88cbf3c2-0810-4d32-aa19-863c12bf7be9"
+        },
+        {
+            "businessPhones": [],
+            "displayName": "Cordelia",
+            "givenName": "Cordelia",
+            "jobTitle": null,
+            "mail": "cordelia@ZulipChat.onmicrosoft.com",
+            "mobilePhone": null,
+            "officeLocation": null,
+            "preferredLanguage": null,
+            "surname": null,
+            "userPrincipalName": "cordelia@ZulipChat.onmicrosoft.com",
+            "id": "bcbf26d8-e24a-4298-b6fd-d2320ff09fa5"
+        }
+    ]
+}

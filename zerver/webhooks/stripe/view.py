@@ -1,13 +1,14 @@
 # Webhooks for external integrations.
 import time
 from collections.abc import Sequence
+from dataclasses import dataclass
 
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
-from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.timestamp import datetime_to_global_time, timestamp_to_datetime
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_bool, check_int, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message
@@ -27,8 +28,6 @@ ALL_EVENT_TYPES = [
     "charge.dispute.created",
     "charge.failed",
     "charge.succeeded",
-    "charge.succeeded",
-    "customer.created",
     "customer.created",
     "customer.deleted",
     "customer.discount.created",
@@ -41,7 +40,6 @@ ALL_EVENT_TYPES = [
     "invoice.updated",
     "invoice.payment_failed",
     "invoiceitem.created",
-    "charge.refund.updated",
     "charge.refund.updated",
 ]
 
@@ -86,6 +84,10 @@ def topic_and_body(payload: WildValue) -> tuple[str, str]:
         topic_name = customer_id
     body = None
 
+    def charge_object_type(charge_id: str) -> str:
+        # Legacy ACH-style payments report object_type "charge" but use a "py_" id prefix.
+        return "payment" if charge_id.startswith("py_") else "charge"
+
     def update_string(blacklist: Sequence[str] = []) -> str:
         assert "previous_attributes" in payload["data"]
         previous_attributes = set(payload["data"]["previous_attributes"].keys()).difference(
@@ -102,8 +104,11 @@ def topic_and_body(payload: WildValue) -> tuple[str, str]:
         )
 
     def default_body(update_blacklist: Sequence[str] = []) -> str:
+        id = object_["id"].tame(check_string)
+        type = object_["object"].tame(check_string)
         body = "{resource} {verbed}".format(
-            resource=linkified_id(object_["id"].tame(check_string)), verbed=event.replace("_", " ")
+            resource=linkified_id(id, type),
+            verbed=event.replace("_", " "),
         )
         if event == "updated":
             return body + update_string(blacklist=update_blacklist)
@@ -129,8 +134,10 @@ def topic_and_body(payload: WildValue) -> tuple[str, str]:
         if resource == "charge":
             if not topic_name:  # only in legacy fixtures
                 topic_name = "charges"
+            object_id = object_["id"].tame(check_string)
+            charge_type = charge_object_type(object_id)
             body = "{resource} for {amount} {verbed}".format(
-                resource=linkified_id(object_["id"].tame(check_string)),
+                resource=linkified_id(object_id, charge_type),
                 amount=amount_string(
                     object_["amount"].tame(check_int), object_["currency"].tame(check_string)
                 ),
@@ -145,9 +152,13 @@ def topic_and_body(payload: WildValue) -> tuple[str, str]:
             )
         if resource == "refund":
             topic_name = "refunds"
+            id = object_["id"].tame(check_string)
+            type = object_["object"].tame(check_string)
+            charge_id = object_["charge"].tame(check_string)
+            charge_type = charge_object_type(charge_id)
             body = "A {resource} for a {charge} of {amount} was updated.".format(
-                resource=linkified_id(object_["id"].tame(check_string), lower=True),
-                charge=linkified_id(object_["charge"].tame(check_string), lower=True),
+                resource=linkified_id(id, type, lower=True),
+                charge=linkified_id(charge_id, charge_type, lower=True),
                 amount=amount_string(
                     object_["amount"].tame(check_int), object_["currency"].tame(check_string)
                 ),
@@ -317,51 +328,58 @@ def amount_string(amount: int, currency: str) -> str:
     return decimal_amount + f" {currency.upper()}"
 
 
-def linkified_id(object_id: str, lower: bool = False) -> str:
-    names_and_urls: dict[str, tuple[str, str | None]] = {
-        # Core resources
-        "ch": ("Charge", "charges"),
-        "cus": ("Customer", "customers"),
-        "dp": ("Dispute", "disputes"),
-        "du": ("Dispute", "disputes"),
-        "file": ("File", "files"),
-        "link": ("File link", "file_links"),
-        "pi": ("Payment intent", "payment_intents"),
-        "po": ("Payout", "payouts"),
-        "prod": ("Product", "products"),
-        "re": ("Refund", "refunds"),
-        "tok": ("Token", "tokens"),
-        # Payment methods
-        # payment methods have URL prefixes like /customers/cus_id/sources
-        "ba": ("Bank account", None),
-        "card": ("Card", None),
-        "src": ("Source", None),
-        # Billing
-        # coupons have a configurable id, but the URL prefix is /coupons
-        # discounts don't have a URL, I think
-        "in": ("Invoice", "invoices"),
-        "ii": ("Invoice item", "invoiceitems"),
-        # products are covered in core resources
-        # plans have a configurable id, though by default they are created with this pattern
-        # 'plan': ('Plan', 'plans'),
-        "sub": ("Subscription", "subscriptions"),
-        "si": ("Subscription item", "subscription_items"),
-        # I think usage records have URL prefixes like /subscription_items/si_id/usage_record_summaries
-        "mbur": ("Usage record", None),
-        # Undocumented :|
-        "py": ("Payment", "payments"),
-        "pyr": ("Refund", "refunds"),  # Pseudo refunds. Not fully tested.
-        # Connect, Fraud, Orders, etc not implemented
-    }
-    name, url_prefix = names_and_urls[object_id.split("_")[0]]
-    if lower:  # nocoverage
+@dataclass
+class DisplayInfo:
+    name: str
+    url_prefix: str | None = None
+
+
+STRIPE_OBJECT_TYPES: dict[str, DisplayInfo] = {
+    # CORE RESOURCES
+    "charge": DisplayInfo("Charge", "charges"),
+    "customer": DisplayInfo("Customer", "customers"),
+    "dispute": DisplayInfo("Dispute", "disputes"),
+    "file": DisplayInfo("File", "files"),
+    "file_link": DisplayInfo("File link", "file_links"),
+    "payment_intent": DisplayInfo("Payment intent", "payment_intents"),
+    "payout": DisplayInfo("Payout", "payouts"),
+    "product": DisplayInfo("Product", "products"),
+    "refund": DisplayInfo("Refund", "refunds"),
+    "token": DisplayInfo("Token", "tokens"),
+    # PAYMENT METHODS
+    # Payment methods have URL prefixes like /customers/cus_id/sources.
+    "bank_account": DisplayInfo("Bank account"),
+    "card": DisplayInfo("Card"),
+    "source": DisplayInfo("Source"),
+    # BILLING
+    # Coupons have a configurable id, but the URL prefix is /coupons.
+    # It's not clear if discounts have a URL.
+    "invoice": DisplayInfo("Invoice", "invoices"),
+    "invoiceitem": DisplayInfo("Invoice item", "invoiceitems"),
+    # Products are covered in core resources.
+    # Plans have a configurable id, though by default they are created with this pattern:
+    # 'plan': ('Plan', 'plans').
+    "subscription": DisplayInfo("Subscription", "subscriptions"),
+    "subscription_item": DisplayInfo("Subscription item", "subscription_items"),
+    # Usage records seem to have URL prefixes like /subscription_items/si_id/usage_record_summaries.
+    "usage_record": DisplayInfo("Usage record"),
+    # UNDOCUMENTED
+    "payment": DisplayInfo("Payment", "payments"),
+    # Connect, Fraud, Orders, etc not implemented.
+}
+
+
+def linkified_id(id: str, type: str, lower: bool = False) -> str:
+    display_info = STRIPE_OBJECT_TYPES[type]
+    name = display_info.name
+    if lower:
         name = name.lower()
-    if url_prefix is None:  # nocoverage
+    if display_info.url_prefix is None:  # nocoverage
         return name
-    return f"[{name}](https://dashboard.stripe.com/{url_prefix}/{object_id})"
+    return f"[{name}](https://dashboard.stripe.com/{display_info.url_prefix}/{id})"
 
 
 def stringify(value: object) -> str:
     if isinstance(value, int) and value > 1500000000 and value < 2000000000:
-        return timestamp_to_datetime(value).strftime("%b %d, %Y, %H:%M:%S %Z")
+        return datetime_to_global_time(timestamp_to_datetime(value))
     return str(value)

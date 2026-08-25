@@ -1,7 +1,7 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import SimpleBar from "simplebar";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_read_receipts from "../templates/read_receipts.hbs";
 import render_read_receipts_modal from "../templates/read_receipts_modal.hbs";
@@ -49,7 +49,9 @@ export function fetch_read_receipts(message_id: number): void {
     }
 
     if (!has_initial_data) {
-        loading.make_indicator($("#read_receipts_modal .loading_indicator"));
+        loading.make_indicator($("#read_receipts_modal .loading_indicator"), {
+            abs_positioned: true,
+        });
     }
 
     void channel.get({

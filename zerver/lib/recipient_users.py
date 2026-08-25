@@ -3,9 +3,10 @@ from collections.abc import Sequence
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.users import has_inaccessible_users
 from zerver.models import DirectMessageGroup, Recipient, UserProfile
 from zerver.models.recipients import (
-    get_direct_message_group,
     get_direct_message_group_hash,
     get_or_create_direct_message_group,
 )
@@ -38,36 +39,6 @@ def get_recipient_from_user_profiles(
     # Make sure the sender is included in the group direct messages.
     recipient_profiles_map[sender.id] = sender
     user_ids = list(recipient_profiles_map)
-
-    # Important note: We are transitioning 1:1 DMs and self DMs to use
-    # DirectMessageGroup as the Recipient type. If a
-    # DirectMessageGroup exists for the collection of user IDs, it is
-    # guaranteed to contain that entire DM conversation. If none
-    # exists, we use the legacy personal recipient (which may or may
-    # not exist). Once the migration completes, this code path should
-    # just call get_or_create_direct_message_group.
-    if len(recipient_profiles_map) <= 2:
-        direct_message_group = get_direct_message_group(user_ids)
-        if direct_message_group:
-            # Use the existing direct message group as the preferred recipient.
-            return Recipient(
-                id=direct_message_group.recipient_id,
-                type=Recipient.DIRECT_MESSAGE_GROUP,
-                type_id=direct_message_group.id,
-            )
-
-        # if no direct message group recipient exists, we need to
-        # force the direct message to be a personal internally.
-        del recipient_profiles_map[sender.id]
-        if len(recipient_profiles_map) == 1:
-            [recipient_user_profile] = recipient_profiles_map.values()
-        else:
-            recipient_user_profile = sender
-        return Recipient(
-            id=recipient_user_profile.recipient_id,
-            type=Recipient.PERSONAL,
-            type_id=recipient_user_profile.id,
-        )
 
     if create:
         direct_message_group = get_or_create_direct_message_group(user_ids)
@@ -131,3 +102,11 @@ def recipient_for_user_profiles(
     return get_recipient_from_user_profiles(
         recipient_profiles, forwarded_mirror_message, forwarder_user_profile, sender, create=create
     )
+
+
+def check_sender_can_access_recipients(
+    sender: UserProfile, user_profiles: Sequence[UserProfile]
+) -> None:
+    recipient_user_ids = [user.id for user in user_profiles]
+    if has_inaccessible_users(recipient_user_ids, sender):
+        raise JsonableError(_("You do not have permission to access some of the recipients."))

@@ -1,0 +1,9 @@
+{
+    "type": "version",
+    "version": 1,
+    "info": {
+        "generator": "mattermost-server",
+        "version": "11.1.0 (d3ed703dc8330684952eb8d49a375bac6ea7b0c6, enterprise: false)",
+        "created": "2026-01-21T20:36:00.923742433+07:00"
+    }
+}

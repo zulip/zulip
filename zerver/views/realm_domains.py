@@ -28,8 +28,8 @@ def create_realm_domain(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    domain: str,
     allow_subdomains: Json[bool],
+    domain: str,
 ) -> HttpResponse:
     domain = domain.strip().lower()
     try:
@@ -52,8 +52,8 @@ def patch_realm_domain(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    domain: PathOnly[str],
     allow_subdomains: Json[bool],
+    domain: PathOnly[str],
 ) -> HttpResponse:
     try:
         realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)

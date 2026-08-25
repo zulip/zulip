@@ -3,11 +3,14 @@
 const assert = require("node:assert/strict");
 
 const events = require("./lib/events.cjs");
+const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 const event_fixtures = events.fixtures;
@@ -27,11 +30,19 @@ const {electron_bridge} = mock_esm("../src/electron_bridge", {
     electron_bridge: {},
 });
 const theme = mock_esm("../src/theme");
+const emoji_frequency = mock_esm("../src/emoji_frequency");
 const emoji_picker = mock_esm("../src/emoji_picker");
 const gear_menu = mock_esm("../src/gear_menu");
+mock_esm("../src/inbox_ui", {
+    complete_rerender: noop,
+});
 const information_density = mock_esm("../src/information_density");
 const linkifiers = mock_esm("../src/linkifiers");
 const compose_recipient = mock_esm("../src/compose_recipient");
+mock_esm("../src/compose_validate", {
+    validate_and_update_send_button_status: noop,
+    warn_if_guest_in_dm_recipient: noop,
+});
 const message_events = mock_esm("../src/message_events", {
     update_views_filtered_on_message_property: noop,
     update_current_view_for_topic_visibility: noop,
@@ -49,6 +60,9 @@ const realm_icon = mock_esm("../src/realm_icon");
 const realm_logo = mock_esm("../src/realm_logo");
 const realm_playground = mock_esm("../src/realm_playground");
 const reload = mock_esm("../src/reload");
+const message_reminder = mock_esm("../src/message_reminder");
+const reminders_overlay_ui = mock_esm("../src/reminders_overlay_ui");
+const navigation_views = mock_esm("../src/navigation_views");
 const saved_snippets = mock_esm("../src/saved_snippets");
 const saved_snippets_ui = mock_esm("../src/saved_snippets_ui");
 const scheduled_messages = mock_esm("../src/scheduled_messages");
@@ -73,10 +87,11 @@ const settings_realm_user_settings_defaults = mock_esm(
 );
 const settings_realm_domains = mock_esm("../src/settings_realm_domains");
 const settings_streams = mock_esm("../src/settings_streams");
-const settings_users = mock_esm("../src/settings_users");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
 const stream_data = mock_esm("../src/stream_data");
-const stream_list = mock_esm("../src/stream_list");
+const stream_list = mock_esm("../src/stream_list", {
+    update_collapsed_state_on_show_channel_folders_change: noop,
+});
 const stream_settings_components = mock_esm("../src/stream_settings_components");
 const stream_settings_data = mock_esm("../src/stream_settings_data");
 const stream_settings_ui = mock_esm("../src/stream_settings_ui");
@@ -89,6 +104,7 @@ const submessage = mock_esm("../src/submessage");
 mock_esm("../src/left_sidebar_navigation_area", {
     update_starred_count() {},
     update_scheduled_messages_row() {},
+    update_reminders_row() {},
     handle_home_view_changed() {},
 });
 const typing_events = mock_esm("../src/typing_events");
@@ -97,7 +113,6 @@ const unread_ui = mock_esm("../src/unread_ui");
 const user_events = mock_esm("../src/user_events");
 const user_group_edit = mock_esm("../src/user_group_edit");
 const overlays = mock_esm("../src/overlays");
-mock_esm("../src/giphy");
 const {Filter} = zrequire("filter");
 const {initialize: initialize_realm_user_settings_defaults} = zrequire(
     "realm_user_settings_defaults",
@@ -105,7 +120,7 @@ const {initialize: initialize_realm_user_settings_defaults} = zrequire(
 const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
@@ -120,6 +135,7 @@ message_lists.current = {
     rerender_view: noop,
     data: {
         get_messages_sent_by_user: () => [],
+        get_messages_involving_user: () => [],
         filter: new Filter([]),
     },
 };
@@ -128,6 +144,7 @@ const cached_message_list = {
     rerender_view: noop,
     data: {
         get_messages_sent_by_user: () => [],
+        get_messages_involving_user: () => [],
     },
 };
 message_lists.all_rendered_message_lists = () => [cached_message_list, message_lists.current];
@@ -137,9 +154,11 @@ page_params.test_suite = false;
 
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
+const channel_folders = zrequire("channel_folders");
 const emoji = zrequire("emoji");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
+const pm_conversations = zrequire("pm_conversations");
 const presence = zrequire("presence");
 const user_status = zrequire("user_status");
 const onboarding_steps = zrequire("onboarding_steps");
@@ -163,7 +182,20 @@ people.add_active_user(me);
 people.add_active_user(test_user);
 people.initialize_current_user(me.user_id);
 
-message_store.update_message_cache(test_message);
+const bot_user = {
+    email: "the-bot@example.com",
+    user_id: 42,
+    full_name: "The Bot",
+    bot_type: 1,
+    is_active: true,
+    bot_owner_id: test_user.user_id,
+};
+people.add_active_user(bot_user);
+
+message_store.update_message_cache({
+    type: "server_message",
+    message: test_message,
+});
 
 const realm_emoji = {};
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
@@ -189,6 +221,37 @@ run_test("alert_words", ({override}) => {
     assert.deepEqual(alert_words.get_word_list(), [{word: "lunch"}, {word: "fire"}]);
     assert.ok(alert_words.has_alert_word("fire"));
     assert.ok(alert_words.has_alert_word("lunch"));
+});
+
+run_test("navigation_views", ({override}) => {
+    const add_event = event_fixtures.navigation_view__add;
+    {
+        const stub = make_stub();
+        override(navigation_views, "add_navigation_view", stub.f);
+
+        dispatch(add_event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, add_event.navigation_view);
+    }
+    const update_event = event_fixtures.navigation_view__update;
+    {
+        const stub = make_stub();
+        override(navigation_views, "update_navigation_view", stub.f);
+
+        dispatch(update_event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, update_event.fragment);
+    }
+
+    const remove_event = event_fixtures.navigation_view__remove;
+    {
+        const stub = make_stub();
+        override(navigation_views, "remove_navigation_view", stub.f);
+
+        dispatch(remove_event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, remove_event.fragment);
+    }
 });
 
 run_test("saved_snippets", ({override}) => {
@@ -236,23 +299,25 @@ run_test("attachments", ({override}) => {
 
 run_test("user groups", ({override}) => {
     let event = event_fixtures.user_group__add;
-    user_groups.add({
-        id: 1,
-        name: "Backend",
-        creator_id: null,
-        date_created: 1596713966,
-        description: "Backend folks",
-        members: [1, 2, 4],
-        is_system_group: false,
-        direct_subgroup_ids: [3, 5],
-        can_add_members_group: 16,
-        can_join_group: 16,
-        can_leave_group: 15,
-        can_manage_group: 16,
-        can_mention_group: 11,
-        can_remove_members_group: 16,
-        deactivated: false,
-    });
+    user_groups.add(
+        make_user_group({
+            id: 1,
+            name: "Backend",
+            creator_id: null,
+            date_created: 1596713966,
+            description: "Backend folks",
+            members: [1, 2, 4],
+            is_system_group: false,
+            direct_subgroup_ids: [3, 5],
+            can_add_members_group: 16,
+            can_join_group: 16,
+            can_leave_group: 15,
+            can_manage_group: 16,
+            can_mention_group: 11,
+            can_remove_members_group: 16,
+            deactivated: false,
+        }),
+    );
 
     {
         const user_group_settings_ui_stub = make_stub();
@@ -360,7 +425,10 @@ run_test("default_streams", ({override}) => {
 });
 
 run_test("onboarding_steps", () => {
-    onboarding_steps.initialize({onboarding_steps: []}, () => {});
+    onboarding_steps.initialize(
+        {onboarding_steps: []},
+        {show_message_view() {}, update_recipient_row_attention_level() {}},
+    );
     const event = event_fixtures.onboarding_steps;
     const one_time_notices = new Set();
     for (const onboarding_step of event.onboarding_steps) {
@@ -371,7 +439,7 @@ run_test("onboarding_steps", () => {
 });
 
 run_test("invites_changed", ({override}) => {
-    $.create("#admin-invites-list", {children: ["stub"]});
+    $.set_results("#admin-invites-list", ["stub"]);
     const event = event_fixtures.invites_changed;
     const stub = make_stub();
     override(settings_invites, "set_up", stub.f);
@@ -422,10 +490,8 @@ run_test("presence", ({override}) => {
     override(activity_ui, "update_presence_info", stub.f);
     dispatch(event);
     assert.equal(stub.num_calls, 1);
-    const args = stub.get_args("user_id", "presence", "server_time");
-    assert_same(args.user_id, event.user_id);
-    assert_same(args.presence, event.presence);
-    assert_same(args.server_time, event.server_timestamp);
+    const args = stub.get_args("presences");
+    assert_same(args.presences, event.presences);
 });
 
 run_test("reaction", ({override}) => {
@@ -433,6 +499,7 @@ run_test("reaction", ({override}) => {
     {
         const stub = make_stub();
         override(reactions, "add_reaction", stub.f);
+        override(emoji_frequency, "update_emoji_frequency_on_add_reaction_event", noop);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("event");
@@ -444,11 +511,36 @@ run_test("reaction", ({override}) => {
     {
         const stub = make_stub();
         override(reactions, "remove_reaction", stub.f);
+        override(emoji_frequency, "update_emoji_frequency_on_remove_reaction_event", noop);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("event");
         assert_same(args.event.emoji_name, event.emoji_name);
         assert_same(args.event.message_id, event.message_id);
+    }
+});
+
+run_test("reminders", ({override}) => {
+    override(reminders_overlay_ui, "rerender", noop);
+    override(reminders_overlay_ui, "remove_reminder_id", noop);
+
+    let event = event_fixtures.reminders__add;
+    {
+        const stub = make_stub();
+        override(message_reminder, "add_reminders", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("reminders");
+        assert_same(args.reminders, event.reminders);
+    }
+    event = event_fixtures.reminders__remove;
+    {
+        const stub = make_stub();
+        override(message_reminder, "remove_reminder", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("reminder_id");
+        assert_same(args.reminder_id, event.reminder_id);
     }
 });
 
@@ -487,6 +579,95 @@ run_test("scheduled_messages", ({override}) => {
     }
 });
 
+run_test("channel_folders", ({override}) => {
+    channel_folders.initialize({channel_folders: []});
+
+    let event = event_fixtures.channel_folder__add;
+    {
+        const stub = make_stub();
+        override(stream_ui_updates, "update_folder_dropdown_visibility", stub.f);
+
+        dispatch(event);
+
+        assert.equal(stub.num_calls, 1);
+        const folders = channel_folders.get_channel_folders();
+        assert.equal(folders.length, 1);
+        assert.equal(folders[0].id, event.channel_folder.id);
+        assert.equal(folders[0].name, event.channel_folder.name);
+    }
+
+    event = event_fixtures.channel_folder__update;
+    {
+        const stub = make_stub();
+        override(stream_settings_ui, "update_channel_folder_name", stub.f);
+        override(stream_list, "update_streams_sidebar", stub.f);
+        override(stream_settings_ui, "reset_dropdown_set_to_archived_folder", stub.f);
+        const update_dropdown_visibility_stub = make_stub();
+        override(
+            stream_ui_updates,
+            "update_folder_dropdown_visibility",
+            update_dropdown_visibility_stub.f,
+        );
+
+        dispatch(event);
+
+        assert.equal(stub.num_calls, 3);
+        assert.equal(update_dropdown_visibility_stub.num_calls, 1);
+        const folders = channel_folders.get_channel_folders(true);
+        const args = stub.get_args("folder_id");
+        assert_same(args.folder_id, event.channel_folder_id);
+
+        assert.equal(folders.length, 1);
+        assert.equal(folders[0].id, event.channel_folder_id);
+        assert.equal(folders[0].name, event.data.name);
+        assert.equal(folders[0].description, event.data.description);
+        assert.equal(
+            folders[0].rendered_description,
+            event.data.rendered_description.replace("<p>", "").replace("</p>", ""),
+        );
+        assert.equal(folders[0].is_archived, event.data.is_archived);
+    }
+
+    event = event_fixtures.channel_folder__reorder;
+    {
+        const folder_1 = {
+            name: "Folder 1",
+            description: "",
+            rendered_description: "",
+            creator_id: null,
+            date_created: 1596710000,
+            id: 2,
+            is_archived: false,
+        };
+        const folder_2 = {
+            name: "Folder 2",
+            description: "",
+            rendered_description: "",
+            creator_id: null,
+            date_created: 1596720000,
+            id: 3,
+            is_archived: false,
+        };
+        channel_folders.add(folder_1);
+        channel_folders.add(folder_2);
+        const stub = make_stub();
+        override(stream_list, "update_streams_sidebar", stub.f);
+
+        dispatch(event);
+
+        assert.equal(stub.num_calls, 1);
+        const folders = channel_folders.get_channel_folders(true);
+        assert.equal(folders.length, 3);
+
+        // new order is [2, 3, 1]
+        assert.equal(folder_1.order, 0);
+        assert.equal(folder_2.order, 1);
+    }
+
+    blueslip.expect("error", "Unexpected event type channel_folder/other");
+    server_events_dispatch.dispatch_normal_event({type: "channel_folder", op: "other"});
+});
+
 run_test("realm settings", ({override}) => {
     override(current_user, "is_admin", true);
     override(realm, "realm_date_created", new Date("2023-01-01Z"));
@@ -500,9 +681,8 @@ run_test("realm settings", ({override}) => {
     override(gear_menu, "rerender", noop);
     override(narrow_title, "redraw_title", noop);
     override(navbar_alerts, "toggle_organization_profile_incomplete_banner", noop);
-    override(compose_recipient, "update_topic_inputbox_on_mandatory_topics_change", noop);
+    override(compose_recipient, "update_topic_inputbox_on_topics_policy_change", noop);
     override(compose_recipient, "update_compose_area_placeholder_text", noop);
-    override(compose_recipient, "check_posting_policy_for_compose_box", noop);
 
     function test_electron_dispatch(event, fake_send_event) {
         with_overrides(({override}) => {
@@ -514,12 +694,10 @@ run_test("realm settings", ({override}) => {
     // realm
     function test_realm_boolean(event, parameter_name) {
         override(realm, parameter_name, true);
-        event = {...event};
-        event.value = false;
+        event = {...event, value: false};
         dispatch(event);
         assert.equal(realm[parameter_name], false);
-        event = {...event};
-        event.value = true;
+        event = {...event, value: true};
         dispatch(event);
         assert.equal(realm[parameter_name], true);
     }
@@ -538,9 +716,6 @@ run_test("realm settings", ({override}) => {
     });
     assert_same(realm.realm_name, "new_realm_name");
 
-    event = event_fixtures.realm__update__mandatory_topics;
-    test_realm_boolean(event, "realm_mandatory_topics");
-
     event = event_fixtures.realm__update__org_type;
     dispatch(event);
     assert_same(realm.realm_org_type, 50);
@@ -550,6 +725,12 @@ run_test("realm settings", ({override}) => {
 
     event = event_fixtures.realm__update__disallow_disposable_email_addresses;
     test_realm_boolean(event, "realm_disallow_disposable_email_addresses");
+
+    event = event_fixtures.realm__update__moderation_request_channel_id;
+    dispatch(event);
+    assert_same(realm.realm_moderation_request_channel_id, 43);
+    // make sure to reset for future tests
+    override(realm, "realm_moderation_request_channel_id", -1);
 
     event = event_fixtures.realm__update__new_stream_announcements_stream_id;
     dispatch(event);
@@ -570,21 +751,13 @@ run_test("realm settings", ({override}) => {
     dispatch(event);
     assert_same(realm.realm_default_code_block_language, "javascript");
 
-    let update_called = false;
-    stream_ui_updates.update_stream_privacy_choices = (property) => {
-        assert_same(property, "can_create_web_public_channel_group");
-        update_called = true;
-    };
     event = event_fixtures.realm__update__enable_spectator_access;
     dispatch(event);
     assert_same(realm.realm_enable_spectator_access, true);
-    assert_same(update_called, true);
 
-    let update_stream_privacy_choices_called = false;
-    stream_ui_updates.update_stream_privacy_choices = (property) => {
-        assert_same(property, "can_create_public_channel_group");
-        update_stream_privacy_choices_called = true;
-    };
+    event = event_fixtures.realm__update__media_preview_size;
+    dispatch(event);
+    assert_same(realm.realm_media_preview_size, 150);
 
     event = event_fixtures.realm__update_dict__default;
     override(realm, "realm_create_multiuse_invite_group", 1);
@@ -599,6 +772,7 @@ run_test("realm settings", ({override}) => {
     override(realm, "realm_can_move_messages_between_topics_group", 1);
     override(realm, "realm_can_move_messages_between_topics_group", 5);
     override(realm, "realm_direct_message_permission_group", 1);
+    override(realm, "realm_topics_policy", "allow_empty_topic");
     override(realm, "realm_plan_type", 2);
     override(realm, "realm_upload_quota_mib", 5000);
     override(realm, "max_file_upload_size_mib", 10);
@@ -637,10 +811,10 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_can_move_messages_between_topics_group, 3);
     assert_same(realm.realm_can_resolve_topics_group, 1);
     assert_same(realm.realm_direct_message_permission_group, 3);
+    assert_same(realm.realm_topics_policy, "disable_empty_topic");
     assert_same(realm.realm_plan_type, 3);
     assert_same(realm.realm_upload_quota_mib, 50000);
     assert_same(realm.max_file_upload_size_mib, 1024);
-    assert_same(update_stream_privacy_choices_called, true);
     assert_same(add_subscribers_element_updated, true);
 
     event = event_fixtures.realm__update_dict__icon;
@@ -667,7 +841,11 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_night_logo_source, "U");
 
     event = event_fixtures.realm__deactivated;
-    set_global("location", {});
+    set_global("location", {
+        assign(href) {
+            this.href = href;
+        },
+    });
     dispatch(event);
     assert_same(window.location.href, "/accounts/deactivated/");
 });
@@ -675,8 +853,12 @@ run_test("realm settings", ({override}) => {
 run_test("realm_bot add", ({override}) => {
     const event = event_fixtures.realm_bot__add;
     const bot_stub = make_stub();
+    override(current_user, "user_id", test_user.user_id);
     override(bot_data, "add", bot_stub.f);
-    override(settings_bots, "render_bots", noop);
+    override(settings_bots, "redraw_your_bots_list", noop);
+    override(settings_bots, "toggle_bot_config_download_container", noop);
+    override(settings_bots, "update_lock_icon_in_sidebar", noop);
+
     dispatch(event);
 
     assert.equal(bot_stub.num_calls, 1);
@@ -688,7 +870,9 @@ run_test("realm_bot delete", ({override}) => {
     const event = event_fixtures.realm_bot__delete;
     const bot_stub = make_stub();
     override(bot_data, "del", bot_stub.f);
-    override(settings_bots, "render_bots", noop);
+    override(settings_bots, "redraw_your_bots_list", noop);
+    override(settings_bots, "toggle_bot_config_download_container", noop);
+    override(settings_bots, "update_lock_icon_in_sidebar", noop);
 
     dispatch(event);
     assert.equal(bot_stub.num_calls, 1);
@@ -700,7 +884,6 @@ run_test("realm_bot update", ({override}) => {
     const event = event_fixtures.realm_bot__update;
     const bot_stub = make_stub();
     override(bot_data, "update", bot_stub.f);
-    override(settings_bots, "render_bots", noop);
 
     dispatch(event);
 
@@ -711,8 +894,6 @@ run_test("realm_bot update", ({override}) => {
 });
 
 run_test("realm_emoji", ({override}) => {
-    const event = event_fixtures.realm_emoji__update;
-
     const ui_func_names = [
         [settings_emoji, "populate_emoji"],
         [emoji_picker, "rebuild_catalog"],
@@ -727,9 +908,10 @@ run_test("realm_emoji", ({override}) => {
     }
 
     // Make sure we start with nothing...
-    emoji.update_emojis([]);
+    assert_same(emoji.get_server_realm_emoji_data(), {});
     assert.equal(emoji.get_realm_emoji_url("spain"), undefined);
 
+    let event = event_fixtures.realm_emoji__add;
     dispatch(event);
 
     // Now emoji.js knows about the spain emoji.
@@ -738,6 +920,14 @@ run_test("realm_emoji", ({override}) => {
     // Make sure our UI modules all got dispatched the same simple way.
     for (const stub of ui_stubs) {
         assert.equal(stub.num_calls, 1);
+        assert.equal(stub.last_call_args.length, 0);
+    }
+
+    event = event_fixtures.realm_emoji__update_one;
+    dispatch(event);
+    assert.equal(emoji.get_realm_emoji_url("spain"), undefined);
+    for (const stub of ui_stubs) {
+        assert.equal(stub.num_calls, 2);
         assert.equal(stub.last_call_args.length, 0);
     }
 });
@@ -786,6 +976,7 @@ run_test("add_realm_user_redraw_logic", ({override}) => {
 
     override(settings_account, "maybe_update_deactivate_account_button", noop);
     override(settings_exports, "update_export_consent_data_and_redraw", noop);
+    override(pm_list, "update_private_messages", noop);
 
     const check_should_redraw_new_user_stub = make_stub();
     // make_stub().f returns true by default, so it's already doing what we want.
@@ -805,8 +996,11 @@ run_test("realm_user", ({override}) => {
     override(settings_account, "maybe_update_deactivate_account_button", noop);
     override(activity_ui, "check_should_redraw_new_user", noop);
     override(settings_exports, "update_export_consent_data_and_redraw", noop);
+    const pm_list_stub = make_stub();
+    override(pm_list, "update_private_messages", pm_list_stub.f);
     let event = event_fixtures.realm_user__add;
     dispatch({...event});
+    assert.equal(pm_list_stub.num_calls, 1);
     const added_person = people.get_by_user_id(event.person.user_id);
     // sanity check a few individual fields
     assert.equal(added_person.full_name, "Test User");
@@ -816,7 +1010,7 @@ run_test("realm_user", ({override}) => {
     // manipulation
     assert.deepEqual(added_person, event.person);
 
-    assert.ok(people.is_active_user_for_popover(event.person.user_id));
+    assert.ok(people.is_active_user_or_system_bot(event.person.user_id));
 
     event = event_fixtures.realm_user__update;
     const stub = make_stub();
@@ -829,13 +1023,13 @@ run_test("realm_user", ({override}) => {
     // Test bot related functions are being called.
     const add_bot_stub = make_stub();
     event = event_fixtures.realm_user__add_bot;
-    override(settings_users, "redraw_bots_list", add_bot_stub.f);
+    override(settings_bots, "redraw_all_bots_list", add_bot_stub.f);
     dispatch({...event});
     assert.equal(add_bot_stub.num_calls, 1);
 
     const update_bot_stub = make_stub();
     event = event_fixtures.realm_user__update;
-    override(settings_users, "update_bot_data", update_bot_stub.f);
+    override(settings_bots, "update_bot_data", update_bot_stub.f);
     dispatch(event);
     assert.equal(update_bot_stub.num_calls, 1);
     args = update_bot_stub.get_args("update_user_id", "update_bot_data");
@@ -843,7 +1037,10 @@ run_test("realm_user", ({override}) => {
 
     override(settings_data, "user_can_access_all_other_users", () => false);
     event = event_fixtures.realm_user__remove;
+    // The second and third update_private_messages calls are from
+    // dispatching realm_user__add_bot above and this remove event.
     dispatch(event);
+    assert.equal(pm_list_stub.num_calls, 3);
     const removed_person = people.get_by_user_id(event.person.user_id);
     assert.equal(removed_person.full_name, "translated: Unknown user");
 });
@@ -1005,7 +1202,7 @@ run_test("stream_typing_message_edit", ({override}) => {
 });
 
 run_test("user_settings", ({override}) => {
-    settings_preferences.set_default_language_name = () => {};
+    settings_preferences.set_default_language = () => {};
     let event = event_fixtures.user_settings__default_language;
     override(user_settings, "default_language", "en");
     override(settings_preferences, "update_page", noop);
@@ -1016,13 +1213,10 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__web_escape_navigates_to_home_view;
     override(user_settings, "web_escape_navigates_to_home_view", false);
-    let toggled = [];
-    $("#go-to-home-view-hotkey-help").toggleClass = (cls) => {
-        toggled.push(cls);
-    };
+    $("#keyboard-shortcuts .go-to-home-view-hotkey-help").addClass("notdisplayed");
     dispatch(event);
+    assert.ok(!$("#go-to-home-view-hotkey-help").hasClass("notdisplayed"));
     assert_same(user_settings.web_escape_navigates_to_home_view, true);
-    assert_same(toggled, ["notdisplayed"]);
 
     let called = false;
     message_lists.current.rerender = () => {
@@ -1051,13 +1245,10 @@ run_test("user_settings", ({override}) => {
 
     event = event_fixtures.user_settings__high_contrast_mode;
     override(user_settings, "high_contrast_mode", false);
-    toggled = [];
-    $("body").toggleClass = (cls) => {
-        toggled.push(cls);
-    };
+    $("body").removeClass("high-contrast");
     dispatch(event);
     assert_same(user_settings.high_contrast_mode, true);
-    assert_same(toggled, ["high-contrast"]);
+    assert.ok($("body").hasClass("high-contrast"));
 
     event = event_fixtures.user_settings__web_mark_read_on_scroll_policy;
     override(user_settings, "web_mark_read_on_scroll_policy", 3);
@@ -1129,12 +1320,12 @@ run_test("user_settings", ({override}) => {
         event = event_fixtures.user_settings__web_home_view_recent_topics;
         override(user_settings, "web_home_view", "all_messages");
         dispatch(event);
-        assert.equal(user_settings.web_home_view, "recent_topics");
+        assert.equal(user_settings.web_home_view, "recent");
     }
 
     {
         event = event_fixtures.user_settings__web_home_view_all_messages;
-        override(user_settings, "web_home_view", "recent_topics");
+        override(user_settings, "web_home_view", "recent");
         dispatch(event);
         assert.equal(user_settings.web_home_view, "all_messages");
     }
@@ -1184,6 +1375,22 @@ run_test("user_settings", ({override}) => {
     dispatch(event);
     assert_same(user_settings.starred_message_counts, true);
 
+    event = event_fixtures.user_settings__web_inbox_show_channel_folders;
+    dispatch(event);
+    assert_same(user_settings.web_inbox_show_channel_folders, false);
+
+    event = event_fixtures.user_settings__web_left_sidebar_show_channel_folders;
+    override(stream_list, "build_stream_list", noop);
+    override(user_settings, "web_left_sidebar_show_channel_folders", true);
+    dispatch(event);
+    assert_same(user_settings.web_left_sidebar_show_channel_folders, false);
+
+    event = event_fixtures.user_settings__web_left_sidebar_unreads_count_summary;
+    override(stream_list, "update_unread_counts_visibility", noop);
+    override(user_settings, "web_left_sidebar_unreads_count_summary", true);
+    dispatch(event);
+    assert_same(user_settings.web_left_sidebar_unreads_count_summary, false);
+
     event = event_fixtures.user_settings__receives_typing_notifications;
     override(user_settings, "receives_typing_notifications", false);
     dispatch(event);
@@ -1215,7 +1422,7 @@ run_test("user_settings", ({override}) => {
     {
         const stub = make_stub();
         event = event_fixtures.user_settings__web_stream_unreads_count_display_policy;
-        override(stream_list, "update_dom_unread_counts_visibility", stub.f);
+        override(stream_list, "build_stream_list", stub.f);
         override(user_settings, "web_stream_unreads_count_display_policy", 1);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
@@ -1354,6 +1561,8 @@ run_test("delete_message", ({override}) => {
     const stream_topic_history_stub = make_stub();
     override(stream_topic_history, "remove_messages", stream_topic_history_stub.f);
 
+    override(emoji_frequency, "update_emoji_frequency_on_messages_deletion", noop);
+
     dispatch(event);
 
     let args;
@@ -1369,6 +1578,65 @@ run_test("delete_message", ({override}) => {
     assert_same(args.opts.topic_name, "topic1");
     assert_same(args.opts.num_messages, 1);
     assert_same(args.opts.max_removed_msg_id, 1337);
+});
+
+run_test("delete_message_private", ({override}) => {
+    const user4 = make_user({user_id: 4, email: "user4@example.com", full_name: "User 4"});
+    people.add_active_user(user4);
+
+    const dm = {
+        id: 501,
+        type: "private",
+        to_user_ids: "4,20",
+        display_recipient: [{id: user4.user_id}, {id: me.user_id}],
+        sender_id: 4,
+        content: "hi",
+    };
+    message_store.update_message_cache({type: "server_message", message: dm});
+
+    override(unread_ops, "process_read_messages_event", noop);
+    override(emoji_frequency, "update_emoji_frequency_on_messages_deletion", noop);
+    override(message_events, "remove_messages", noop);
+
+    const maybe_remove_stub = make_stub();
+    override(pm_conversations.recent, "maybe_remove", maybe_remove_stub.f);
+    const update_private_messages_stub = make_stub();
+    override(pm_list, "update_private_messages", update_private_messages_stub.f);
+
+    dispatch({
+        type: "delete_message",
+        message_type: "private",
+        message_ids: [dm.id],
+    });
+
+    // We derive the conversation (excluding our own id, 20) from the
+    // deleted message and refresh the direct messages sidebar.
+    assert.equal(maybe_remove_stub.num_calls, 1);
+    const args = maybe_remove_stub.get_args("user_ids", "num_messages");
+    assert_same(args.user_ids, [user4.user_id]);
+    assert_same(args.num_messages, 1);
+    assert.equal(update_private_messages_stub.num_calls, 1);
+});
+
+run_test("delete_message_private_not_cached", ({override}) => {
+    // When none of the deleted messages are in our local cache, we can't
+    // identify the conversation, so we take no DM-specific action.
+    override(unread_ops, "process_read_messages_event", noop);
+    override(emoji_frequency, "update_emoji_frequency_on_messages_deletion", noop);
+    override(message_events, "remove_messages", noop);
+
+    const maybe_remove_stub = make_stub();
+    override(pm_conversations.recent, "maybe_remove", maybe_remove_stub.f, {
+        unused: false,
+    });
+
+    dispatch({
+        type: "delete_message",
+        message_type: "private",
+        message_ids: [99999],
+    });
+
+    assert.equal(maybe_remove_stub.num_calls, 0);
 });
 
 run_test("user_status", ({override}) => {
@@ -1445,6 +1713,8 @@ run_test("server_event_dispatch_op_errors", () => {
     server_events_dispatch.dispatch_normal_event({type: "realm_bot", op: "other"});
     blueslip.expect("error", "Unexpected event type realm_domains/other");
     server_events_dispatch.dispatch_normal_event({type: "realm_domains", op: "other"});
+    blueslip.expect("error", "Unexpected event type realm_emoji/other");
+    server_events_dispatch.dispatch_normal_event({type: "realm_emoji", op: "other"});
     blueslip.expect("error", "Unexpected event type realm_user/other");
     server_events_dispatch.dispatch_normal_event({type: "realm_user", op: "other"});
     blueslip.expect("error", "Unexpected event type stream/other");

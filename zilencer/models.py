@@ -1,16 +1,17 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from typing import Literal
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Max, Q, QuerySet, UniqueConstraint
+from django.db.models import F, Max, Q, QuerySet, UniqueConstraint
+from django.db.models.functions import Lower
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from analytics.models import BaseCount
 from zerver.lib.rate_limiter import RateLimitedObject
-from zerver.lib.rate_limiter import rules as rate_limiter_rules
 from zerver.models import AbstractPushDeviceToken, AbstractRealmAuditLog, Realm, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 
@@ -95,7 +96,12 @@ class RemoteZulipServer(models.Model):
 
 
 class RemotePushDeviceToken(AbstractPushDeviceToken):
-    """Like PushDeviceToken, but for a device connected to a remote server."""
+    """Class for storing legacy non-E2EE mobile push
+    tokens. Deprecated in favor of RemotePushDevice, which is designed
+    for E2EE mobile notifications.
+
+    Like PushDeviceToken, but for a device connected to a remote server.
+    """
 
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)
     # The user id on the remote server for this device
@@ -105,13 +111,43 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
     remote_realm = models.ForeignKey("RemoteRealm", on_delete=models.SET_NULL, null=True)
 
     class Meta:
-        unique_together = [
+        constraints = [
             # These indexes rely on the property that in Postgres,
             # NULL != NULL in the context of unique indexes, so multiple
             # rows with the same values in these columns can exist
             # if one of them is NULL.
-            ("server", "user_id", "kind", "token"),
-            ("server", "user_uuid", "kind", "token"),
+            models.UniqueConstraint(
+                "server_id",
+                "user_id",
+                "kind",
+                Lower(F("token")),
+                name="zilencer_remotepushdevicetoken_apns_server_user_id_kind_token",
+                condition=Q(kind=1),
+            ),
+            models.UniqueConstraint(
+                "server_id",
+                "user_id",
+                "kind",
+                "token",
+                name="zilencer_remotepushdevicetoken_fcm_server_user_id_kind_token",
+                condition=Q(kind=2),
+            ),
+            models.UniqueConstraint(
+                "server_id",
+                "user_uuid",
+                "kind",
+                Lower(F("token")),
+                name="zilencer_remotepushdevicetoken_apns_server_uuid_kind_token",
+                condition=Q(kind=1),
+            ),
+            models.UniqueConstraint(
+                "server_id",
+                "user_uuid",
+                "kind",
+                "token",
+                name="zilencer_remotepushdevicetoken_fcm_server_uuid_kind_token",
+                condition=Q(kind=2),
+            ),
         ]
 
     @override
@@ -145,7 +181,7 @@ class RemoteRealm(models.Model):
         choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
     )
 
-    # The fields below are analogical to RemoteZulipServer fields.
+    # The fields below are analogous to RemoteZulipServer fields.
 
     last_updated = models.DateTimeField("last updated", auto_now=True)
     last_request_datetime = models.DateTimeField(null=True)
@@ -272,6 +308,12 @@ class PreregistrationRemoteServerBillingUser(AbstractRemoteServerBillingUser):
     next_page = models.TextField(null=True)
 
     created_user = models.ForeignKey(RemoteServerBillingUser, null=True, on_delete=models.SET_NULL)
+
+
+RemoteServerDeactivationReasonType = Literal[
+    "owner_request",
+    "tos_violation",
+]
 
 
 class RemoteZulipServerAuditLog(AbstractRealmAuditLog):
@@ -493,7 +535,7 @@ class RateLimitedRemoteZulipServer(RateLimitedObject):
 
     @override
     def rules(self) -> list[tuple[int, int]]:
-        return rate_limiter_rules[self.domain]
+        return settings.RATE_LIMITING_RULES[self.domain]
 
 
 @dataclass
@@ -587,3 +629,55 @@ def has_stale_audit_log(server: RemoteZulipServer) -> bool:
         return True
 
     return False
+
+
+class RemotePushDevice(models.Model):
+    """Core bouncer server table storing registrations to receive
+    mobile push notifications via the bouncer server.
+
+    Each row corresponds to an install of the app registered
+    to receive mobile push notifications for a specific realm.
+    """
+
+    # Unique identifier assigned by the bouncer for this registration.
+    device_id = models.BigAutoField(primary_key=True)
+
+    # Realm that the account is associated with. Both Cloud and
+    # self-hosted are supported; exactly one of these will be null.
+    realm = models.ForeignKey(Realm, on_delete=models.CASCADE, null=True)
+    remote_realm = models.ForeignKey(RemoteRealm, on_delete=models.CASCADE, null=True)
+
+    # The token that uniquely identifies the app instance to the
+    # FCM/APNs servers. There will be duplicates in this table when a
+    # device is logged into multiple Zulip realms.
+    #
+    # FCM and APNs don't specify a maximum token length, so we only enforce
+    # that they're at most the maximum FCM / APNs payload size of 4096 bytes.
+    token = models.CharField(max_length=4096)
+    # ID to reference the `token`.
+    token_id = models.BigIntegerField()
+
+    class TokenKind(models.TextChoices):
+        APNS = "apns", "APNs"
+        FCM = "fcm", "FCM"
+
+    token_kind = models.CharField(max_length=4, choices=TokenKind.choices)
+
+    # If the token is expired, the date when the bouncer learned it
+    # was expired via an error from the FCM/APNs server. Used to
+    # support delayed deletion. Null if the bouncer believes this
+    # token is still valid.
+    expired_time = models.DateTimeField(null=True)
+
+    # Contains the app id of the device if and only if token_kind is APNs.
+    ios_app_id = models.TextField(null=True)
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(
+                # The unique index created is used by a query in
+                # 'do_register_remote_push_device'.
+                fields=["token_id", "realm", "remote_realm"],
+                name="unique_remote_push_device_token_id_realm_remote_realm",
+            ),
+        ]

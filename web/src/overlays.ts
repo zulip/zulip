@@ -1,6 +1,7 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as blueslip from "./blueslip.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as overlay_util from "./overlay_util.ts";
 
 type Hook = () => void;
@@ -73,6 +74,10 @@ export function scheduled_messages_open(): boolean {
     return open_overlay_name === "scheduled";
 }
 
+export function reminders_open(): boolean {
+    return open_overlay_name === "reminders";
+}
+
 export function message_edit_history_open(): boolean {
     return open_overlay_name === "message_edit_history";
 }
@@ -119,6 +124,7 @@ export function open_overlay(opts: OverlayOptions): void {
     opts.$overlay.attr("aria-hidden", "false");
     $(".app").attr("aria-hidden", "true");
     $("#navbar-fixed-container").attr("aria-hidden", "true");
+    opts.$overlay.trigger("focus");
 }
 
 export function close_overlay(name: string): void {
@@ -146,6 +152,10 @@ export function close_overlay(name: string): void {
     $(".app").attr("aria-hidden", "false");
     $("#navbar-fixed-container").attr("aria-hidden", "false");
 
+    // Prevent a bug where a blank settings section appears
+    // when the settings panel is reopened.
+    $(".settings-section").removeClass("show");
+
     active_overlay.close_handler();
     overlay_util.enable_scrolling();
 }
@@ -169,7 +179,7 @@ export function initialize(): void {
     $("body").on("click", "div.overlay, div.overlay .exit", (e) => {
         let $target = $(e.target);
 
-        if (document.getSelection()?.type === "Range") {
+        if (mouse_drag.is_drag(e)) {
             return;
         }
 
@@ -193,5 +203,140 @@ export function initialize(): void {
 
         e.preventDefault();
         e.stopPropagation();
+    });
+}
+
+export function trap_focus_for_settings_overlay(): void {
+    $("#settings_overlay_container").on("keydown", (e) => {
+        if (e.key !== "Tab") {
+            return;
+        }
+
+        const two_column_mode =
+            Number.parseInt($("#settings_content").css("--column-count"), 10) === 2;
+        const $settings_overlay_container = $("#settings_overlay_container");
+        let visible_focusable_elements;
+        if (two_column_mode) {
+            visible_focusable_elements =
+                overlay_util.get_visible_focusable_elements_in_overlay_container(
+                    $settings_overlay_container,
+                );
+        } else {
+            const $right_section = $settings_overlay_container.find(".content-wrapper");
+            const $left_section = $settings_overlay_container.find(".sidebar-wrapper");
+            if ($right_section.hasClass("show")) {
+                const $settings_panel = $right_section.find(".settings-section.show");
+                visible_focusable_elements =
+                    overlay_util.get_visible_focusable_elements_in_overlay_container(
+                        $settings_panel,
+                    );
+            } else {
+                visible_focusable_elements =
+                    overlay_util.get_visible_focusable_elements_in_overlay_container($left_section);
+            }
+        }
+
+        if (visible_focusable_elements.length === 0) {
+            return;
+        }
+
+        if (e.shiftKey) {
+            if (document.activeElement === visible_focusable_elements[0]) {
+                e.preventDefault();
+                visible_focusable_elements.at(-1)!.focus();
+            }
+        } else {
+            if (document.activeElement === visible_focusable_elements.at(-1)) {
+                e.preventDefault();
+                visible_focusable_elements[0]!.focus();
+            }
+        }
+    });
+
+    $("#channels_overlay_container, #groups_overlay_container").on("keydown", (e) => {
+        if (e.key !== "Tab") {
+            return;
+        }
+
+        const $overlay = $(e.currentTarget);
+        const two_column_mode =
+            Number.parseInt(
+                $overlay.find(".two-pane-settings-container").css("--column-count"),
+                10,
+            ) === 2;
+        let visible_focusable_elements;
+        if (two_column_mode) {
+            visible_focusable_elements =
+                overlay_util.get_visible_focusable_elements_in_overlay_container($overlay);
+        } else {
+            const $right_section = $overlay.find(".right");
+            const $left_section = $overlay.find(".left");
+            if ($right_section.hasClass("show")) {
+                visible_focusable_elements =
+                    overlay_util.get_visible_focusable_elements_in_overlay_container(
+                        $right_section,
+                    );
+            } else {
+                visible_focusable_elements =
+                    overlay_util.get_visible_focusable_elements_in_overlay_container($left_section);
+            }
+        }
+
+        if (visible_focusable_elements.length === 0) {
+            return;
+        }
+
+        if (e.shiftKey) {
+            if (document.activeElement === visible_focusable_elements[0]) {
+                e.preventDefault();
+                visible_focusable_elements.at(-1)!.focus();
+            }
+        } else {
+            if (document.activeElement === visible_focusable_elements.at(-1)) {
+                e.preventDefault();
+                visible_focusable_elements[0]!.focus();
+            }
+        }
+    });
+
+    $(".overlay[data-overlay='informationalOverlays']").on("keydown", (e) => {
+        if (e.key !== "Tab") {
+            return;
+        }
+
+        const $overlay = $(e.currentTarget);
+        const visible_focusable_elements =
+            overlay_util.get_visible_focusable_elements_in_overlay_container($overlay);
+
+        if (visible_focusable_elements.length === 0) {
+            return;
+        }
+
+        if (e.shiftKey) {
+            if (document.activeElement === visible_focusable_elements[0]) {
+                e.preventDefault();
+                visible_focusable_elements.at(-1)!.focus();
+            }
+        } else {
+            if (document.activeElement === visible_focusable_elements.at(-1)) {
+                e.preventDefault();
+                visible_focusable_elements[0]!.focus();
+            }
+        }
+    });
+
+    const overlay_focus_trap_selector =
+        "#draft_overlay, #reminders-overlay, #scheduled_messages_overlay, #message-history-overlay, #about-zulip";
+    $("body").on("keydown", overlay_focus_trap_selector, function (this: HTMLElement, e) {
+        if (e.key !== "Tab") {
+            return;
+        }
+
+        const visible_focusable_elements =
+            overlay_util.get_visible_focusable_elements_in_overlay_container($(this));
+
+        if (overlay_util.wrap_overlay_tab_focus(e.shiftKey, visible_focusable_elements)) {
+            e.preventDefault();
+        }
     });
 }

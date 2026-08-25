@@ -1,0 +1,91 @@
+---
+title: Use a custom certificate
+---
+
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import DesktopSidebarSettingsMenu from "../include/_DesktopSidebarSettingsMenu.mdx";
+
+By default, Zulip requests a generally-accepted certificate during the
+server install process, for the server's public hostname. In some
+cases, a server administrator may choose not to use that feature, in
+which case your Zulip server may be using a self-signed
+certificate. This is most common for Zulip servers not connected to
+the public internet.
+
+## Web
+
+Most browsers will show a warning if you try to connect to a Zulip server
+with a self-signed certificate.
+
+If you are absolutely, 100% sure that the Zulip server you are connecting to
+is supposed to have a self-signed certificate, click through the warnings
+and follow the instructions on-screen.
+
+If you are less than 100% sure, contact your server
+administrator. Accepting a malicious self-signed certificate would
+give a stranger full access to your Zulip account, including your
+username and password.
+
+## Desktop
+
+Zulip Desktop uses the operating system's certificate store, like your web
+browser.
+
+<Tabs>
+  <TabItem label="macOS">
+    <Steps>
+      1. Hit `Cmd` + `Space` to bring up Spotlight Search, type **Keychain
+         Access**, and press Enter.
+      1. From the **File** menu, choose **Import Items...**
+      1. Navigate to the certificate file, then click **Open**.
+      1. Right-click the newly-added certificate, and click **Get Info** from
+         the context menu.
+      1. Expand the **Trust** section.
+      1. Select **Always Trust** for the **Secure Sockets Layer (SSL)** option.
+      1. Close the window.  You will be prompted for your password to verify
+         the change.
+      1. Restart the Zulip Desktop application.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Windows">
+    On Windows, Zulip Desktop shares the certificate store with
+    Google Chrome, so you can add certificates to it from inside
+    Chrome.
+
+    <Steps>
+      1. Open Google Chrome.
+      1. From the Chrome menu (⋮) in the top-right, select **Settings**.
+      1. In the **Privacy and Security** section, click **Security**.
+      1. Scroll down to and click **Manage Certificates**.
+      1. Select the **Trusted Root Certification Authorities** tab.
+      1. Select **Import...**
+      1. Navigate to the certificate file, then click **Open**.
+      1. Select **Done**.
+      1. Restart the Zulip Desktop application.
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Linux">
+    The required packages and steps vary by distribution; see the Chromium
+    documentation for [detailed documentation][linux].  On most systems,
+    once the `nss` tools are installed, the command to trust the
+    certificate is:
+
+    ```bash "path/to/certificate.pem"
+    certutil -d sql:$HOME/.pki/nssdb -A -t "P,," -n zulip \
+      -i path/to/certificate.pem
+    ```
+
+    You will need to restart the Zulip Desktop application to pick up the
+    new certificate.
+  </TabItem>
+</Tabs>
+
+[linux]: https://chromium.googlesource.com/chromium/src.git/+/main/docs/linux/cert_management.md
+
+## Related articles
+
+* [Installing SSL certificates](https://zulip.readthedocs.io/en/stable/production/ssl-certificates.html)

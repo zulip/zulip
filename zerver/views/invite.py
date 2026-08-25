@@ -1,4 +1,4 @@
-import re
+import email.utils
 from typing import Annotated
 
 from django.conf import settings
@@ -6,7 +6,7 @@ from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from pydantic import Json
+from pydantic import Json, StringConstraints
 
 from confirmation import settings as confirmation_settings
 from zerver.actions.invites import (
@@ -17,14 +17,22 @@ from zerver.actions.invites import (
     do_revoke_user_invite,
     do_send_user_invite_email,
 )
-from zerver.decorator import require_member_or_admin
+from zerver.decorator import require_human_non_guest_user
 from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, get_streams_to_which_user_cannot_add_subscribers
 from zerver.lib.typed_endpoint import ApiParamConfig, PathOnly, typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator
+from zerver.lib.types import Invitee
 from zerver.lib.user_groups import UserGroupMembershipDetails, access_user_group_for_update
-from zerver.models import MultiuseInvite, NamedUserGroup, PreregistrationUser, Stream, UserProfile
+from zerver.models import (
+    MultiuseInvite,
+    NamedUserGroup,
+    PreregistrationUser,
+    Realm,
+    Stream,
+    UserProfile,
+)
 
 # Convert INVITATION_LINK_VALIDITY_DAYS into minutes.
 # Because mypy fails to correctly infer the type of the validator, we want this constant
@@ -57,6 +65,9 @@ def access_invite_by_id(user_profile: UserProfile, invite_id: int) -> Preregistr
     if prereg_user.referred_by is None or prereg_user.referred_by.realm != user_profile.realm:
         raise JsonableError(_("No such invitation"))
 
+    if prereg_user.status != 0:
+        raise JsonableError(_("Invitation already used or deactivated."))
+
     if prereg_user.referred_by_id != user_profile.id:
         check_role_based_permissions(prereg_user.invited_as, user_profile, require_admin=True)
     return prereg_user
@@ -84,7 +95,7 @@ def access_streams_for_invite(stream_ids: list[int], user_profile: UserProfile) 
 
     for stream_id in stream_ids:
         try:
-            (stream, sub) = access_stream_by_id(user_profile, stream_id)
+            (stream, _sub) = access_stream_by_id(user_profile, stream_id)
         except JsonableError:
             raise JsonableError(
                 _("Invalid channel ID {channel_id}. No invites were sent.").format(
@@ -121,22 +132,28 @@ def access_user_groups_for_invite(
     return user_groups
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def invite_users_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    invitee_emails_raw: Annotated[str, ApiParamConfig("invitee_emails")],
-    invite_expires_in_minutes: Json[int | None] = INVITATION_LINK_VALIDITY_MINUTES,
+    group_ids: Json[list[int]] | None = None,
+    include_realm_default_subscriptions: Json[bool] = False,
     invite_as: Annotated[
         Json[int],
         check_int_in_validator(list(PreregistrationUser.INVITE_AS.values())),
     ] = PreregistrationUser.INVITE_AS["MEMBER"],
+    invite_expires_in_minutes: Json[int | None] = INVITATION_LINK_VALIDITY_MINUTES,
+    invitee_emails_raw: Annotated[str, ApiParamConfig("invitee_emails")],
     notify_referrer_on_join: Json[bool] = True,
     stream_ids: Json[list[int]],
-    group_ids: Json[list[int]] | None = None,
-    include_realm_default_subscriptions: Json[bool] = False,
+    welcome_message_custom_text: Annotated[
+        str | None,
+        StringConstraints(
+            max_length=Realm.MAX_REALM_WELCOME_MESSAGE_CUSTOM_TEXT_LENGTH,
+        ),
+    ] = None,
 ) -> HttpResponse:
     if not user_profile.can_invite_users_by_email():
         # Guest users case will not be handled here as it will
@@ -155,10 +172,13 @@ def invite_users_backend(
     if not invitee_emails_raw:
         raise JsonableError(_("You must specify at least one email address."))
 
-    invitee_emails = get_invitee_emails_set(invitee_emails_raw)
+    invitee_emails = get_invitees_set(invitee_emails_raw)
 
     streams = access_streams_for_invite(stream_ids, user_profile)
     user_groups = access_user_groups_for_invite(group_ids, user_profile)
+
+    if welcome_message_custom_text is not None and not user_profile.is_realm_admin:
+        raise JsonableError(_("Must be an organization administrator"))
 
     skipped = do_invite_users(
         user_profile,
@@ -169,6 +189,7 @@ def invite_users_backend(
         invite_expires_in_minutes=invite_expires_in_minutes,
         include_realm_default_subscriptions=include_realm_default_subscriptions,
         invite_as=invite_as,
+        welcome_message_custom_text=welcome_message_custom_text,
     )
 
     if skipped:
@@ -186,43 +207,51 @@ def invite_users_backend(
 
 
 def get_invitee_emails_set(invitee_emails_raw: str) -> set[str]:
-    invitee_emails_list = set(re.split(r"[,\n]", invitee_emails_raw))
-    invitee_emails = set()
-    for email in invitee_emails_list:
-        is_email_with_name = re.search(r"<(?P<email>.*)>", email)
-        if is_email_with_name:
-            email = is_email_with_name.group("email")
-        invitee_emails.add(email.strip())
-    return invitee_emails
+    return {
+        email_addr
+        for name, email_addr in email.utils.getaddresses(
+            invitee_emails_raw.split("\n"), strict=False
+        )
+    } - {""}
 
 
-@require_member_or_admin
+def get_invitees_set(invitee_emails_raw: str) -> set[Invitee]:
+    return {
+        Invitee(email=email, full_name=full_name)
+        for full_name, email in email.utils.getaddresses(
+            invitee_emails_raw.split("\n"), strict=False
+        )
+        if email
+    }
+
+
+@require_human_non_guest_user
 def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     all_users = do_get_invites_controlled_by_user(user_profile)
     return json_success(request, data={"invites": all_users})
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def revoke_user_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
     prereg_user = access_invite_by_id(user_profile, invite_id)
-    do_revoke_user_invite(prereg_user)
+    do_revoke_user_invite(prereg_user, acting_user=user_profile)
     return json_success(request)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def revoke_multiuse_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
     invite = access_multiuse_invite_by_id(user_profile, invite_id)
-    do_revoke_multi_use_invite(invite)
+    do_revoke_multi_use_invite(invite, acting_user=user_profile)
     return json_success(request)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def resend_user_invite_email(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
@@ -232,20 +261,26 @@ def resend_user_invite_email(
     return json_success(request)
 
 
-@require_member_or_admin
+@require_human_non_guest_user
 @typed_endpoint
 def generate_multiuse_invite_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    invite_expires_in_minutes: Json[int | None] = INVITATION_LINK_VALIDITY_MINUTES,
+    group_ids: Json[list[int]] | None = None,
+    include_realm_default_subscriptions: Json[bool] = False,
     invite_as: Annotated[
         Json[int],
         check_int_in_validator(list(PreregistrationUser.INVITE_AS.values())),
     ] = PreregistrationUser.INVITE_AS["MEMBER"],
+    invite_expires_in_minutes: Json[int | None] = INVITATION_LINK_VALIDITY_MINUTES,
     stream_ids: Json[list[int]] | None = None,
-    group_ids: Json[list[int]] | None = None,
-    include_realm_default_subscriptions: Json[bool] = False,
+    welcome_message_custom_text: Annotated[
+        str | None,
+        StringConstraints(
+            max_length=Realm.MAX_REALM_WELCOME_MESSAGE_CUSTOM_TEXT_LENGTH,
+        ),
+    ] = None,
 ) -> HttpResponse:
     if stream_ids is None:
         stream_ids = []
@@ -266,6 +301,9 @@ def generate_multiuse_invite_backend(
     streams = access_streams_for_invite(stream_ids, user_profile)
     user_groups = access_user_groups_for_invite(group_ids, user_profile)
 
+    if welcome_message_custom_text is not None and not user_profile.is_realm_admin:
+        raise JsonableError(_("Must be an organization administrator"))
+
     invite_link = do_create_multiuse_invite_link(
         user_profile,
         invite_as,
@@ -273,5 +311,6 @@ def generate_multiuse_invite_backend(
         include_realm_default_subscriptions,
         streams,
         user_groups,
+        welcome_message_custom_text,
     )
     return json_success(request, data={"invite_link": invite_link})

@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as browser_history from "./browser_history.ts";
 import * as components from "./components.ts";
@@ -20,6 +20,7 @@ export function setup_toggler(): void {
             {label: $t({defaultMessage: "General"}), key: "general"},
             {label: $t({defaultMessage: "Personal"}), key: "personal"},
             {label: $t({defaultMessage: "Subscribers"}), key: "subscribers"},
+            {label: $t({defaultMessage: "Permissions"}), key: "permissions"},
         ],
         callback(_name, key) {
             $(".stream_section").hide();
@@ -32,6 +33,7 @@ export function setup_toggler(): void {
                 const hash = hash_util.channels_settings_edit_url(sub, select_tab);
                 browser_history.update(hash);
             }
+            $("#stream_settings").toggleClass("subscribers-tab-active", key === "subscribers");
         },
     });
 }

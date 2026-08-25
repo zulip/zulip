@@ -1,51 +1,182 @@
+from enum import Enum
+
 from django.conf import settings
 from django.utils.translation import gettext as _
 
+from zerver.lib.display_recipient import get_display_recipient
+from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
-from zerver.lib.message import truncate_content
+from zerver.lib.message import get_user_mentions_for_display, truncate_content
 from zerver.lib.message_cache import MessageDict
-from zerver.lib.url_encoding import near_message_url, topic_narrow_url
+from zerver.lib.topic_link_util import (
+    TOPIC_LINK_SYNTAX_FOR_DISPLAY,
+    escape_invalid_stream_topic_characters,
+)
+from zerver.lib.types import UserDisplayRecipient
+from zerver.lib.url_encoding import message_link_url, stream_message_url
 from zerver.models import Message, Stream, UserProfile
+from zerver.models.scheduled_jobs import ScheduledMessage
+from zerver.tornado.django_api import send_event_on_commit
 
 
-def get_reminder_formatted_content(message: Message, current_user: UserProfile) -> str:
-    if message.is_stream_message():
+def normalize_note_text(body: str) -> str:
+    # Similar to zerver.lib.message.normalize_body
+    body = body.rstrip().lstrip("\n")
+
+    if len(body) > settings.MAX_REMINDER_NOTE_LENGTH:
+        raise JsonableError(
+            _("Maximum reminder note length: {max_length} characters").format(
+                max_length=settings.MAX_REMINDER_NOTE_LENGTH
+            )
+        )
+
+    return body
+
+
+class ReminderRecipientType(Enum):
+    CHANNEL = "channel"
+    PRIVATE = "private"
+    NOTE_TO_SELF = "note to self"
+
+
+def get_reminder_formatted_content(
+    message: Message, current_user: UserProfile, note: str | None = None
+) -> str:
+    if note:
+        note = normalize_note_text(note)
+
+    format_recipient_type_key: ReminderRecipientType
+    user_silent_mention = silent_mention_syntax_for_user(message.sender)
+    conversation_url = message_link_url(current_user.realm, MessageDict.wide_dict(message))
+
+    if message.is_channel_message:
         # We don't need to check access here since we already have the message
         # whose access has already been checked by the caller.
         stream = Stream.objects.get(
             id=message.recipient.type_id,
             realm=current_user.realm,
         )
-        narrow_link = topic_narrow_url(
-            realm=current_user.realm,
-            stream=stream,
-            topic_name=message.topic_name(),
+        url = stream_message_url(
+            realm=None,
+            message={
+                "id": message.id,
+                "stream_id": stream.id,
+                "display_recipient": stream.name,
+                "topic": message.topic_name(),
+            },
+            conversation_link=True,
+            include_base_url=False,
         )
-        content = _(
-            "You requested a reminder for the following message sent to [{stream_name} > {topic_name}]({narrow_link})."
-        ).format(
-            stream_name=stream.name,
-            topic_name=message.topic_name(),
-            narrow_link=narrow_link,
+        escape = escape_invalid_stream_topic_characters
+        topic_pretty_link = TOPIC_LINK_SYNTAX_FOR_DISPLAY.format(
+            channel_name=escape(stream.name),
+            topic_name=escape(message.topic_name()),
+        )
+        if note:
+            content = _(
+                "You requested a reminder for the following message. Note:\n > {note}"
+            ).format(
+                note=note,
+            )
+        else:
+            content = _("You requested a reminder for the following message.")
+
+        format_recipient_type_key = ReminderRecipientType.CHANNEL
+        context = dict(
+            user_silent_mention=user_silent_mention,
+            conversation_url=conversation_url,
+            topic_pretty_link=f"[{topic_pretty_link}]({url})",
         )
     else:
-        content = _("You requested a reminder for the following direct message.")
+        if note:
+            content = _(
+                "You requested a reminder for the following direct message. Note:\n > {note}"
+            ).format(
+                note=note,
+            )
+        else:
+            content = _("You requested a reminder for the following direct message.")
+        recipients: list[UserProfile | UserDisplayRecipient] = [
+            user
+            for user in get_display_recipient(message.recipient)
+            if user["id"] != message.sender.id
+        ]
+
+        if not recipients:
+            format_recipient_type_key = ReminderRecipientType.NOTE_TO_SELF
+            context = dict(
+                conversation_url=conversation_url,
+            )
+        else:
+            format_recipient_type_key = ReminderRecipientType.PRIVATE
+            list_of_recipient_mentions = get_user_mentions_for_display(recipients)
+            context = dict(
+                user_silent_mention=user_silent_mention,
+                conversation_url=conversation_url,
+                list_of_recipient_mentions=list_of_recipient_mentions,
+            )
 
     # Format the message content as a quote.
     content += "\n\n"
-    content += _("{user_silent_mention} [said]({conversation_url}):").format(
-        user_silent_mention=silent_mention_syntax_for_user(message.sender),
-        conversation_url=near_message_url(current_user.realm, MessageDict.wide_dict(message)),
-    )
-    content += "\n"
-    fence = get_unused_fence(content)
-    quoted_message = "{fence}quote\n{msg_content}\n{fence}"
-    content += quoted_message
-    length_without_message_content = len(content.format(fence=fence, msg_content=""))
-    max_length = settings.MAX_MESSAGE_LENGTH - length_without_message_content
-    msg_content = truncate_content(message.content, max_length, "\n[message truncated]")
-    return content.format(
-        fence=fence,
-        msg_content=msg_content,
-    )
+
+    REMINDER_FORMAT = {
+        ReminderRecipientType.CHANNEL: {
+            "widget": _(
+                "{user_silent_mention} [sent]({conversation_url}) a {widget} in {topic_pretty_link}."
+            ),
+            "text": _("{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"),
+        },
+        ReminderRecipientType.PRIVATE: {
+            "widget": _(
+                "{user_silent_mention} [sent]({conversation_url}) a {widget} to {list_of_recipient_mentions}."
+            ),
+            "text": _(
+                "{user_silent_mention} [said]({conversation_url}) to {list_of_recipient_mentions}:"
+            ),
+        },
+        ReminderRecipientType.NOTE_TO_SELF: {
+            "widget": _("You [sent]({conversation_url}) yourself a {widget}."),
+            "text": _("You [sent]({conversation_url}) a note to yourself:"),
+        },
+    }
+
+    if message.content.startswith("/poll"):
+        context.update(widget="poll")
+        content += REMINDER_FORMAT[format_recipient_type_key]["widget"].format_map(context)
+    elif message.content.startswith("/todo"):
+        context.update(widget="todo list")
+        content += REMINDER_FORMAT[format_recipient_type_key]["widget"].format_map(context)
+    else:
+        content += REMINDER_FORMAT[format_recipient_type_key]["text"].format_map(context)
+        content += "\n"
+        fence = get_unused_fence(content)
+        quoted_message = "{fence}quote\n{msg_content}\n{fence}"
+        length_without_message_content = len(
+            content + quoted_message.format(fence=fence, msg_content="")
+        )
+        max_length = settings.MAX_MESSAGE_LENGTH - length_without_message_content
+        msg_content = truncate_content(message.content, max_length, "\n[message truncated]")
+        content += quoted_message.format(
+            fence=fence,
+            msg_content=msg_content,
+        )
+    return content
+
+
+def access_reminder(user_profile: UserProfile, reminder_id: int) -> ScheduledMessage:
+    try:
+        return ScheduledMessage.objects.get(
+            id=reminder_id, sender=user_profile, delivery_type=ScheduledMessage.REMIND
+        )
+    except ScheduledMessage.DoesNotExist:
+        raise ResourceNotFoundError(_("Reminder does not exist"))
+
+
+def notify_remove_reminder(user_profile: UserProfile, reminder_id: int) -> None:
+    event = {
+        "type": "reminders",
+        "op": "remove",
+        "reminder_id": reminder_id,
+    }
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])

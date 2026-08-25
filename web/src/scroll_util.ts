@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import SimpleBar from "simplebar";
 
 import * as util from "./util.ts";
@@ -25,7 +25,8 @@ export function get_scroll_element($element: JQueryOrZJQuery): JQuery {
     const sb = SimpleBar.instances.get(element);
     if (sb) {
         return $(sb.getScrollElement()!);
-    } else if ("simplebar" in element.dataset) {
+    }
+    if (element.hasAttribute("data-simplebar")) {
         // The SimpleBar mutation observer hasn’t processed this element yet.
         // Create the SimpleBar early in case we need to add event listeners.
         return $(new SimpleBar(element, {tabIndex: -1}).getScrollElement()!);
@@ -101,4 +102,8 @@ export function scroll_element_into_container(
     }
 
     $container.scrollTop(($container.scrollTop() ?? 0) + delta);
+}
+
+export function get_left_sidebar_scroll_container(): JQuery {
+    return get_scroll_element($("#left_sidebar_scroll_container"));
 }

@@ -1,8 +1,7 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as compose_pm_pill from "./compose_pm_pill.ts";
-import * as people from "./people.ts";
-import {realm} from "./state_data.ts";
+import * as stream_data from "./stream_data.ts";
 import * as sub_store from "./sub_store.ts";
 
 let message_type: "stream" | "private" | undefined;
@@ -10,6 +9,7 @@ let recipient_edited_manually = false;
 let is_content_unedited_restored_draft = false;
 let last_focused_compose_type_input: HTMLTextAreaElement | undefined;
 let preview_render_count = 0;
+let is_processing_forward_message = false;
 
 // We use this variable to keep track of whether user has viewed the topic resolved
 // banner for the current compose session, for a narrow. This prevents the banner
@@ -85,6 +85,14 @@ export function set_preview_render_count(count: number): void {
     preview_render_count = count;
 }
 
+export function set_is_processing_forward_message(val: boolean): void {
+    is_processing_forward_message = val;
+}
+
+export function get_is_processing_forward_message(): boolean {
+    return is_processing_forward_message;
+}
+
 export function composing(): boolean {
     // This is very similar to get_message_type(), but it returns
     // a boolean.
@@ -93,7 +101,9 @@ export function composing(): boolean {
 
 function get_or_set(
     input_selector: string,
-    keep_leading_whitespace?: boolean,
+    // For the compose box, it's important to preserve leading spaces,
+    // but not newlines.
+    keep_leading_spaces?: boolean,
     no_trim?: boolean,
 ): (newval?: string) => string {
     // We can't hoist the assignment of '$elem' out of this lambda,
@@ -107,8 +117,9 @@ function get_or_set(
         }
         if (no_trim) {
             return oldval;
-        } else if (keep_leading_whitespace) {
-            return oldval.trimEnd();
+        }
+        if (keep_leading_spaces) {
+            return oldval.trimEnd().replace(/^(\r?\n)+/, "");
         }
         return oldval.trim();
     };
@@ -225,24 +236,19 @@ export function focus_in_empty_compose(
     return false;
 }
 
-export function private_message_recipient_emails(): string;
-export function private_message_recipient_emails(value: string): undefined;
-export function private_message_recipient_emails(value?: string): string | undefined {
-    if (typeof value === "string") {
-        compose_pm_pill.set_from_emails(value);
-        return undefined;
-    }
+export function private_message_recipient_emails(): string {
     return compose_pm_pill.get_emails();
 }
 
-export function private_message_recipient_ids(): number[];
-export function private_message_recipient_ids(value: number[]): undefined;
-export function private_message_recipient_ids(value?: number[]): number[] | undefined {
-    if (value === undefined) {
-        return compose_pm_pill.get_user_ids();
-    }
-    compose_pm_pill.set_from_user_ids(value);
-    return undefined;
+export function private_message_recipient_ids(): number[] {
+    return compose_pm_pill.get_user_ids();
+}
+
+// This sets new user ids with `skip_pill_callbacks=true`.
+// If anything in `UserPillWidget.onPillCreate` is desired, call
+// that directly after calling `set_private_message_recipient_ids`.
+export function set_private_message_recipient_ids(value: number[]): void {
+    compose_pm_pill.set_from_user_ids(value, true);
 }
 
 export function has_message_content(): boolean {
@@ -260,22 +266,10 @@ export function has_savable_message_content(): boolean {
 
 export function has_full_recipient(): boolean {
     if (message_type === "stream") {
-        const has_topic = topic() !== "" || !realm.realm_mandatory_topics;
+        const has_topic = topic() !== "" || stream_data.can_use_empty_topic(stream_id());
         return stream_id() !== undefined && has_topic;
     }
     return private_message_recipient_ids().length > 0;
-}
-
-export function update_email(user_id: number, new_email: string): void {
-    let reply_to = private_message_recipient_emails();
-
-    if (!reply_to) {
-        return;
-    }
-
-    reply_to = people.update_email_in_reply_to(reply_to, user_id, new_email);
-
-    private_message_recipient_emails(reply_to);
 }
 
 let _can_restore_drafts = true;

@@ -1,5 +1,6 @@
 from django.db import models
-from django.db.models import CASCADE
+from django.db.models import CASCADE, F, Q
+from django.db.models.functions import Lower
 
 from zerver.models.users import UserProfile
 
@@ -39,4 +40,19 @@ class PushDeviceToken(AbstractPushDeviceToken):
     user = models.ForeignKey(UserProfile, db_index=True, on_delete=CASCADE)
 
     class Meta:
-        unique_together = ("user", "kind", "token")
+        constraints = [
+            models.UniqueConstraint(
+                "user_id",
+                "kind",
+                Lower(F("token")),
+                name="zerver_pushdevicetoken_apns_user_kind_token",
+                condition=Q(kind=AbstractPushDeviceToken.APNS),
+            ),
+            models.UniqueConstraint(
+                "user_id",
+                "kind",
+                "token",
+                name="zerver_pushdevicetoken_fcm_user_kind_token",
+                condition=Q(kind=AbstractPushDeviceToken.FCM),
+            ),
+        ]

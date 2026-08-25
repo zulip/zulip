@@ -2,75 +2,81 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const {page_params} = require("./lib/zpage_params.cjs");
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
 });
 
+const buddy_data = zrequire("buddy_data");
 const people = zrequire("people");
 const presence = zrequire("presence");
 const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});
 
 const OFFLINE_THRESHOLD_SECS = 200;
 
-const me = {
+const me = make_user({
     email: "me@zulip.com",
     user_id: 101,
     full_name: "Me Myself",
-};
+});
 
-const alice = {
+const alice = make_user({
     email: "alice@zulip.com",
     user_id: 1,
     full_name: "Alice Smith",
-};
+});
 
-const fred = {
+const fred = make_user({
     email: "fred@zulip.com",
     user_id: 2,
     full_name: "Fred Flintstone",
-};
+});
 
-const sally = {
+const sally = make_user({
     email: "sally@example.com",
     user_id: 3,
     full_name: "Sally Jones",
-};
+});
 
-const zoe = {
+const zoe = make_user({
     email: "zoe@example.com",
     user_id: 6,
     full_name: "Zoe Yang",
-};
+    // User created via the API who never logged in.
+    // In production, such users have no date_joined field.
+    date_joined: undefined,
+});
 
-const bot = {
+const bot = make_bot({
     email: "bot@zulip.com",
     user_id: 7,
     full_name: "The Bot",
-    is_bot: true,
-};
+});
 
-const john = {
+const john = make_user({
     email: "john@zulip.com",
     user_id: 8,
     full_name: "John Doe",
     // Second 77.
     date_joined: "1970-01-01 00:01:15 UTC",
-};
+});
 
-const jane = {
+const jane = make_user({
     email: "jane@zulip.com",
     user_id: 9,
     full_name: "Jane Doe",
-};
+});
 
 people.add_active_user(me);
 people.add_active_user(alice);
@@ -154,52 +160,46 @@ test("status_from_raw", () => {
     });
 });
 
+test("sort_users", () => {
+    const user_ids = [alice.user_id, fred.user_id, jane.user_id];
+
+    const now = 5000;
+
+    const presences = {
+        [alice.user_id.toString()]: {active_timestamp: now},
+        [fred.user_id.toString()]: {active_timestamp: now},
+        [jane.user_id.toString()]: {active_timestamp: now},
+    };
+
+    presence.initialize({presences, server_timestamp: now});
+    assert.deepEqual(user_ids, [alice.user_id, fred.user_id, jane.user_id]);
+
+    presence.presence_info.delete(alice.user_id);
+
+    buddy_data.sort_users(user_ids, new Set());
+    assert.deepEqual(user_ids, [fred.user_id, jane.user_id, alice.user_id]);
+});
+
 test("set_presence_info", () => {
-    const presences = {};
     const now = 5000;
     const recent = now + 1 - OFFLINE_THRESHOLD_SECS;
     const a_while_ago = now - OFFLINE_THRESHOLD_SECS * 2;
 
     const unknown_user_id = 999;
 
-    presences[alice.user_id.toString()] = {
-        active_timestamp: recent,
+    const presences = {
+        [alice.user_id.toString()]: {active_timestamp: recent},
+        [fred.user_id.toString()]: {active_timestamp: a_while_ago, idle_timestamp: now},
+        [me.user_id.toString()]: {active_timestamp: now},
+        [sally.user_id.toString()]: {active_timestamp: a_while_ago},
+        [john.user_id.toString()]: {idle_timestamp: a_while_ago},
+        [jane.user_id.toString()]: {idle_timestamp: now},
+        // Unknown user ids can also be in the presence data.
+        [unknown_user_id.toString()]: {idle_timestamp: now},
+        [inaccessible_user_id.toString()]: {idle_timestamp: now},
     };
 
-    presences[fred.user_id.toString()] = {
-        active_timestamp: a_while_ago,
-        idle_timestamp: now,
-    };
-
-    presences[me.user_id.toString()] = {
-        active_timestamp: now,
-    };
-
-    presences[sally.user_id.toString()] = {
-        active_timestamp: a_while_ago,
-    };
-
-    presences[john.user_id.toString()] = {
-        idle_timestamp: a_while_ago,
-    };
-
-    presences[jane.user_id.toString()] = {
-        idle_timestamp: now,
-    };
-
-    // Unknown user ids can also be in the presence data.
-    presences[unknown_user_id.toString()] = {
-        idle_timestamp: now,
-    };
-
-    presences[inaccessible_user_id.toString()] = {
-        idle_timestamp: now,
-    };
-
-    const params = {};
-    params.presences = presences;
-    params.server_timestamp = now;
-    presence.initialize(params);
+    presence.initialize({presences, server_timestamp: now});
 
     assert.deepEqual(presence.presence_info.get(alice.user_id), {
         status: "active",
@@ -226,6 +226,8 @@ test("set_presence_info", () => {
     });
     assert.equal(presence.get_status(zoe.user_id), "offline");
     assert.equal(presence.last_active_date(zoe.user_id), undefined);
+    assert.strictEqual(zoe.date_joined, undefined);
+    assert.strictEqual(presence.presence_info.get(zoe.user_id).last_active, undefined);
 
     assert.ok(!presence.presence_info.has(bot.user_id));
     assert.equal(presence.get_status(bot.user_id), "offline");
@@ -249,6 +251,32 @@ test("set_presence_info", () => {
     assert.equal(presence.presence_info.get(inaccessible_user_id), undefined);
 });
 
+test("get_status", ({override}) => {
+    page_params.realm_users = [];
+
+    const current_user = me;
+
+    presence.presence_info.set(alice.user_id, {status: "active"});
+    presence.presence_info.set(fred.user_id, {status: "active"});
+    presence.presence_info.set(sally.user_id, {status: "idle"});
+    presence.presence_info.set(zoe.user_id, {status: "active"});
+
+    assert.equal(presence.get_status(alice.user_id), "active");
+    assert.equal(presence.get_status(sally.user_id), "idle");
+    assert.equal(presence.get_status(fred.user_id), "active");
+
+    override(user_settings, "presence_enabled", false);
+    assert.equal(presence.get_status(current_user.user_id), "offline");
+    override(user_settings, "presence_enabled", true);
+    assert.equal(presence.get_status(current_user.user_id), "active");
+
+    presence.presence_info.delete(zoe.user_id);
+    assert.equal(presence.get_status(zoe.user_id), "offline");
+
+    presence.presence_info.set(alice.user_id, {status: "whatever"});
+    assert.equal(presence.get_status(alice.user_id), "whatever");
+});
+
 test("missing values", () => {
     /*
         When a user does not have a relevant active timestamp,
@@ -258,11 +286,7 @@ test("missing values", () => {
     */
     const now = 2000000;
     const a_bit_ago = now - 5;
-    const presences = {};
-
-    presences[zoe.user_id.toString()] = {
-        idle_timestamp: a_bit_ago,
-    };
+    const presences = {[zoe.user_id.toString()]: {idle_timestamp: a_bit_ago}};
 
     presence.set_info(presences, now);
 
@@ -284,12 +308,8 @@ test("missing values", () => {
 });
 
 test("big realms", ({override_rewire}) => {
-    const presences = {};
     const now = 5000;
-
-    presences[sally.user_id.toString()] = {
-        active_timestamp: now,
-    };
+    const presences = {[sally.user_id.toString()]: {active_timestamp: now}};
 
     // Make it seem like realm has a lot of people, in
     // which case we will not provide default values for
@@ -315,10 +335,8 @@ test("update_info_from_event", () => {
     let info;
 
     info = {
-        website: {
-            status: "active",
-            timestamp: 500,
-        },
+        active_timestamp: 500,
+        idle_timestamp: 500,
     };
 
     presence.presence_info.delete(alice.user_id);
@@ -330,10 +348,8 @@ test("update_info_from_event", () => {
     });
 
     info = {
-        mobile: {
-            status: "idle",
-            timestamp: 510,
-        },
+        active_timestamp: 500,
+        idle_timestamp: 500,
     };
     presence.update_info_from_event(alice.user_id, info, 510);
 
@@ -343,10 +359,8 @@ test("update_info_from_event", () => {
     });
 
     info = {
-        mobile: {
-            status: "idle",
-            timestamp: 1000,
-        },
+        active_timestamp: 500,
+        idle_timestamp: 1000,
     };
     presence.update_info_from_event(alice.user_id, info, 1000);
 
@@ -354,4 +368,40 @@ test("update_info_from_event", () => {
         status: "idle",
         last_active: 1000,
     });
+});
+
+test("user_last_seen_response_schema", () => {
+    // Modern format with both timestamps.
+    const with_both_timestamps = {
+        result: "success",
+        msg: "",
+        server_timestamp: 1656958540,
+        presence: {
+            active_timestamp: 1656958520,
+            idle_timestamp: 1656958530,
+        },
+    };
+    const parsed_both = presence.user_last_seen_response_schema.safeParse(with_both_timestamps);
+    assert.ok(parsed_both.success);
+    assert.equal(parsed_both.data.server_timestamp, 1656958540);
+    assert.equal(parsed_both.data.presence?.active_timestamp, 1656958520);
+    assert.equal(parsed_both.data.presence?.idle_timestamp, 1656958530);
+
+    // Only active_timestamp present; idle_timestamp may be omitted
+    // if the user has only ever been active.
+    const with_active_only = {
+        result: "success",
+        msg: "",
+        presence: {active_timestamp: 1656958520},
+    };
+    const parsed_active = presence.user_last_seen_response_schema.safeParse(with_active_only);
+    assert.ok(parsed_active.success);
+    assert.equal(parsed_active.data.presence?.active_timestamp, 1656958520);
+    assert.equal(parsed_active.data.presence?.idle_timestamp, undefined);
+
+    // No presence data.
+    const without_presence = {result: "success", msg: ""};
+    const parsed_none = presence.user_last_seen_response_schema.safeParse(without_presence);
+    assert.ok(parsed_none.success);
+    assert.equal(parsed_none.data.presence, undefined);
 });

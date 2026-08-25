@@ -24,7 +24,8 @@
   "created": 1000000000,
   "currency": "usd",
   "custom_fields": null,
-  "customer": "cus_NORMALIZED",
+  "customer": "upgrade_to_fixed_price_plus_plan--Customer.create.1.json",
+  "customer_account": null,
   "customer_address": null,
   "customer_email": "hamlet@zulip.com",
   "customer_name": null,
@@ -35,7 +36,7 @@
   "default_payment_method": null,
   "default_source": null,
   "default_tax_rates": [],
-  "description": null,
+  "description": "If paying by bank transfer outside of the US, use the OUR option for who should pay bank transfer fees, to make sure that your invoice is paid in full.",
   "discounts": [],
   "due_date": 1000000000,
   "effective_at": null,
@@ -101,5 +102,5 @@
   "total_excluding_tax": 0,
   "total_pretax_credit_amounts": [],
   "total_taxes": [],
-  "webhooks_delivered_at": 1000000000
+  "webhooks_delivered_at": null
 }

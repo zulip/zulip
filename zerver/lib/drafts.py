@@ -1,7 +1,9 @@
 import time
 from collections.abc import Callable
+from dataclasses import dataclass
+from datetime import datetime
 from functools import wraps
-from typing import Annotated, Any, Concatenate, Literal
+from typing import Annotated, Concatenate, Literal
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
@@ -13,7 +15,10 @@ from typing_extensions import ParamSpec
 from zerver.lib.addressee import get_user_profiles_by_ids
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.message import normalize_body, truncate_topic
-from zerver.lib.recipient_users import recipient_for_user_profiles
+from zerver.lib.recipient_users import (
+    check_sender_can_access_recipients,
+    recipient_for_user_profiles,
+)
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.typed_endpoint import RequiredStringConstraint
@@ -21,6 +26,14 @@ from zerver.models import Draft, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
 ParamT = ParamSpec("ParamT")
+
+
+@dataclass
+class ValidatedDraftData:
+    recipient_id: int | None
+    topic: str
+    content: str
+    last_edit_time: datetime
 
 
 class DraftData(BaseModel):
@@ -35,7 +48,7 @@ class DraftData(BaseModel):
 
 def further_validated_draft_dict(
     draft_dict: DraftData, user_profile: UserProfile
-) -> dict[str, Any]:
+) -> ValidatedDraftData:
     """Take a DraftData object that was already validated by the @typed_endpoint
     decorator then further sanitize, validate, and transform it.
     Ultimately return this "further validated" draft dict.
@@ -63,21 +76,26 @@ def further_validated_draft_dict(
             raise JsonableError(_("Topic must not contain null bytes"))
         if len(to) != 1:
             raise JsonableError(_("Must specify exactly 1 channel ID for channel messages"))
-        stream, sub = access_stream_by_id(user_profile, to[0])
+        stream, _sub = access_stream_by_id(user_profile, to[0])
         recipient_id = stream.recipient_id
     elif draft_dict.type == "private" and len(to) != 0:
         to_users = get_user_profiles_by_ids(set(to), user_profile.realm)
+        # Since recipient_for_user_profiles creates the
+        # DirectMessageGroup object, and thus Subscription objects
+        # granting the sender access to the recipients, we need to
+        # check access before calling it.
+        check_sender_can_access_recipients(user_profile, to_users)
         try:
             recipient_id = recipient_for_user_profiles(to_users, False, None, user_profile).id
         except ValidationError as e:  # nocoverage
             raise JsonableError(e.messages[0])
 
-    return {
-        "recipient_id": recipient_id,
-        "topic": topic_name,
-        "content": content,
-        "last_edit_time": last_edit_time,
-    }
+    return ValidatedDraftData(
+        recipient_id=recipient_id,
+        topic=topic_name,
+        content=content,
+        last_edit_time=last_edit_time,
+    )
 
 
 def draft_endpoint(
@@ -109,10 +127,10 @@ def do_create_drafts(drafts: list[DraftData], user_profile: UserProfile) -> list
         draft_objects.append(
             Draft(
                 user_profile=user_profile,
-                recipient_id=valid_draft_dict["recipient_id"],
-                topic=valid_draft_dict["topic"],
-                content=valid_draft_dict["content"],
-                last_edit_time=valid_draft_dict["last_edit_time"],
+                recipient_id=valid_draft_dict.recipient_id,
+                topic=valid_draft_dict.topic,
+                content=valid_draft_dict.content,
+                last_edit_time=valid_draft_dict.last_edit_time,
             )
         )
 
@@ -138,10 +156,10 @@ def do_edit_draft(draft_id: int, draft: DraftData, user_profile: UserProfile) ->
     except Draft.DoesNotExist:
         raise ResourceNotFoundError(_("Draft does not exist"))
     valid_draft_dict = further_validated_draft_dict(draft, user_profile)
-    draft_object.content = valid_draft_dict["content"]
-    draft_object.topic = valid_draft_dict["topic"]
-    draft_object.recipient_id = valid_draft_dict["recipient_id"]
-    draft_object.last_edit_time = valid_draft_dict["last_edit_time"]
+    draft_object.content = valid_draft_dict.content
+    draft_object.topic = valid_draft_dict.topic
+    draft_object.recipient_id = valid_draft_dict.recipient_id
+    draft_object.last_edit_time = valid_draft_dict.last_edit_time
 
     with transaction.atomic(durable=True):
         draft_object.save()

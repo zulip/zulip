@@ -1,0 +1,21 @@
+{{> inbox_folder_row
+  name=name
+  header_id=header_id
+  is_header_visible=is_header_visible
+  is_dm_header=false
+  is_collapsed=is_collapsed
+  has_unread_mention=has_unread_mention
+  unread_count=unread_count
+  }}
+<div class="inbox-streams-container inbox-folder-components">
+    {{#each stream_rows}}
+        <div id="{{stream_key}}" class="inbox-folder-channel">
+            {{> inbox_row stream_row}}
+            <div class="inbox-topic-container">
+                {{#each topic_rows}}
+                    {{> inbox_row .}}
+                {{/each}}
+            </div>
+        </div>
+    {{/each}}
+</div>

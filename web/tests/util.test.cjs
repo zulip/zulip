@@ -3,20 +3,21 @@
 const assert = require("node:assert/strict");
 
 const _ = require("lodash");
-const MockDate = require("mockdate");
 
-const {set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
+const {clock, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const blueslip = zrequire("blueslip");
 const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 
 set_global("document", {});
 const util = zrequire("util");
+const {get_retry_backoff_seconds} = zrequire("retry_backoff");
 
 initialize_user_settings({user_settings: {}});
 
@@ -125,6 +126,45 @@ run_test("dumb_strcmp", ({override}) => {
     assert.equal(strcmp("a", "b"), -1);
     assert.equal(strcmp("c", "c"), 0);
     assert.equal(strcmp("z", "y"), 1);
+});
+
+run_test("compare_stream_by_archived_then_name", () => {
+    const make_archived_stream = (name) => ({name, is_archived: true});
+    const make_non_archived_stream = (name) => ({name, is_archived: false});
+
+    let streams = [
+        make_non_archived_stream("beta"),
+        make_archived_stream("zeta"),
+        make_non_archived_stream("delta"),
+        make_archived_stream("alpha"),
+        make_non_archived_stream("alpha"),
+        make_archived_stream("beta"),
+    ];
+
+    const sorted_streams = streams.toSorted((a, b) =>
+        util.compare_stream_by_archived_then_name(a, b),
+    );
+
+    // archived streams are placed at the end after sorting.
+    assert.deepEqual(sorted_streams, [
+        make_non_archived_stream("alpha"),
+        make_non_archived_stream("beta"),
+        make_non_archived_stream("delta"),
+        make_archived_stream("alpha"),
+        make_archived_stream("beta"),
+        make_archived_stream("zeta"),
+    ]);
+
+    // Intl.Collator sorts "ä" near "a", placing "ärger" before "zeta".
+    streams = [make_non_archived_stream("zeta"), make_non_archived_stream("ärger")];
+
+    const sorted_locale_aware = streams.toSorted((a, b) =>
+        util.compare_stream_by_archived_then_name(a, b),
+    );
+    assert.deepEqual(sorted_locale_aware, [
+        make_non_archived_stream("ärger"),
+        make_non_archived_stream("zeta"),
+    ]);
 });
 
 run_test("get_edit_event_orig_topic", () => {
@@ -322,18 +362,26 @@ run_test("filter_by_word_prefix_match", () => {
     // stream-hyphen_underscore/slash, we require `-` in the set of
     // characters for it to match.
     assert.deepEqual(util.filter_by_word_prefix_match(values, "hyphe", item_to_string), []);
-    assert.deepEqual(util.filter_by_word_prefix_match(values, "hyphe", item_to_string, /[\s/_-]/), [
-        0,
-    ]);
-    assert.deepEqual(util.filter_by_word_prefix_match(values, "hyphe", item_to_string, /[\s-]/), [
-        0,
-    ]);
+    assert.deepEqual(
+        util.filter_by_word_prefix_match(values, "hyphe", item_to_string, /[\s/_-]/),
+        [0],
+    );
+    assert.deepEqual(
+        util.filter_by_word_prefix_match(values, "hyphe", item_to_string, /[\s-]/),
+        [0],
+    );
 
     // Similarly `_` must be in the set of allowed characters to match "underscore".
-    assert.deepEqual(util.filter_by_word_prefix_match(values, "unders", item_to_string, /[\s_]/), [
-        0,
-    ]);
+    assert.deepEqual(
+        util.filter_by_word_prefix_match(values, "unders", item_to_string, /[\s_]/),
+        [0],
+    );
     assert.deepEqual(util.filter_by_word_prefix_match(values, "unders", item_to_string, /\s/), []);
+});
+
+run_test("prefix_match", () => {
+    assert.ok(util.prefix_match({value: "VIEWS", search_term: "V"}));
+    assert.ok(!util.prefix_match({value: "VIEWS", search_term: "I"}));
 });
 
 run_test("get_string_diff", () => {
@@ -367,10 +415,6 @@ run_test("format_array_as_list", () => {
         util.format_array_as_list(array, "long", "conjunction"),
         "apple, banana, and orange",
     );
-    assert.equal(
-        util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
-        "<b>apple</b>, <b>banana</b>, and <b>orange</b>",
-    );
 
     // Conjunction format
     assert.equal(
@@ -389,10 +433,6 @@ run_test("format_array_as_list", () => {
             util.format_array_as_list(array, "long", "conjunction"),
             "apple, banana, orange",
         );
-        assert.equal(
-            util.format_array_as_list_with_highlighted_elements(array, "long", "conjunction"),
-            "<b>apple</b>, <b>banana</b>, <b>orange</b>",
-        );
 
         assert.equal(
             util.format_array_as_list_with_conjunction(array, "narrow"),
@@ -410,18 +450,18 @@ run_test("get_remaining_time", () => {
     // Set a random start time
     const start_time = new Date(1000).getTime();
     // Set current time to 400ms ahead of the start time
-    MockDate.set(start_time + 400);
+    clock.setSystemTime(start_time + 400);
     const duration = 500;
     let expected_remaining_time = 100;
     assert.equal(util.get_remaining_time(start_time, duration), expected_remaining_time);
 
     // When current time is greater than start time + duration
     // Set current time to 100ms after the start time + duration
-    MockDate.set(start_time + duration + 100);
+    clock.setSystemTime(start_time + duration + 100);
     expected_remaining_time = 0;
     assert.equal(util.get_remaining_time(start_time, duration), expected_remaining_time);
 
-    MockDate.reset();
+    clock.reset();
 });
 
 run_test("get_custom_time_in_minutes", () => {
@@ -435,7 +475,7 @@ run_test("get_custom_time_in_minutes", () => {
     blueslip.expect("error", "Unexpected custom time unit: invalid");
     assert.equal(util.get_custom_time_in_minutes("invalid", time_input), time_input);
     /// NaN time input returns NaN
-    const invalid_time_input = Number.NaN;
+    const invalid_time_input = NaN;
     assert.equal(util.get_custom_time_in_minutes("hours", invalid_time_input), invalid_time_input);
 });
 
@@ -448,7 +488,7 @@ run_test("check_and_validate_custom_time_input", () => {
 
     const input_is_nan = "24abc";
     checked_input = util.check_time_input(input_is_nan);
-    assert.equal(checked_input, Number.NaN);
+    assert.equal(checked_input, NaN);
     assert.equal(util.validate_custom_time_input(checked_input), false);
 
     const input_is_negative = "-24";
@@ -505,10 +545,10 @@ run_test("compare_a_b", () => {
     };
     const unsorted = [user2, user1, user4, user3];
 
-    const sorted_by_id = [...unsorted].sort((a, b) => util.compare_a_b(a.id, b.id));
+    const sorted_by_id = unsorted.toSorted((a, b) => util.compare_a_b(a.id, b.id));
     assert.deepEqual(sorted_by_id, [user1, user2, user3, user4]);
 
-    const sorted_by_name = [...unsorted].sort((a, b) => util.compare_a_b(a.name, b.name));
+    const sorted_by_name = unsorted.toSorted((a, b) => util.compare_a_b(a.name, b.name));
     assert.deepEqual(sorted_by_name, [user2, user4, user3, user1]);
 });
 
@@ -554,21 +594,31 @@ run_test("get_retry_backoff_seconds", () => {
 
     // Shorter backoff scale
     // First retry should be between 1-2 seconds.
-    let backoff = util.get_retry_backoff_seconds(xhr_500_error, 1, true);
+    let backoff = get_retry_backoff_seconds(xhr_500_error, 1, true);
     assert.ok(backoff >= 1);
     assert.ok(backoff < 3);
     // 100th retry should be between 16-32 seconds.
-    backoff = util.get_retry_backoff_seconds(xhr_500_error, 100, true);
+    backoff = get_retry_backoff_seconds(xhr_500_error, 100, true);
     assert.ok(backoff >= 16);
     assert.ok(backoff <= 32);
 
     // Longer backoff scale
     // First retry should be between 1-2 seconds.
-    backoff = util.get_retry_backoff_seconds(xhr_500_error, 1);
+    backoff = get_retry_backoff_seconds(xhr_500_error, 1);
     assert.ok(backoff >= 1);
     assert.ok(backoff <= 3);
     // 100th retry should be between 45-90 seconds.
-    backoff = util.get_retry_backoff_seconds(xhr_500_error, 100);
+    backoff = get_retry_backoff_seconds(xhr_500_error, 100);
+    assert.ok(backoff >= 45);
+    assert.ok(backoff <= 90);
+
+    // Slower backoff scale
+    // First retry should be between 2-4 seconds.
+    backoff = get_retry_backoff_seconds(xhr_500_error, 1, false, true);
+    assert.ok(backoff >= 2);
+    assert.ok(backoff <= 4);
+    // 100th retry should be between 45-90 seconds.
+    backoff = get_retry_backoff_seconds(xhr_500_error, 100, false, true);
     assert.ok(backoff >= 45);
     assert.ok(backoff <= 90);
 
@@ -582,10 +632,10 @@ run_test("get_retry_backoff_seconds", () => {
         },
     };
     // First retry should be greater than the retry-after value.
-    backoff = util.get_retry_backoff_seconds(xhr_rate_limit_error, 1);
+    backoff = get_retry_backoff_seconds(xhr_rate_limit_error, 1);
     assert.ok(backoff >= 28.706807374954224);
     // 100th retry should be between 45-90 seconds.
-    backoff = util.get_retry_backoff_seconds(xhr_rate_limit_error, 100);
+    backoff = get_retry_backoff_seconds(xhr_rate_limit_error, 100);
     assert.ok(backoff >= 45);
     assert.ok(backoff <= 90);
 });
@@ -598,4 +648,64 @@ run_test("sha256_hash", async ({override}) => {
     override(window, "isSecureContext", true);
     hash = await util.sha256_hash(data);
     assert.equal(hash, expected_hash);
+});
+
+run_test("call_function_periodically", () => {
+    let num_set_timeout_calls = 0;
+    let num_callback_calls = 0;
+
+    set_global("setTimeout", (callbacK_function, delay) => {
+        assert.equal(delay, 42);
+
+        num_set_timeout_calls += 1;
+        if (num_set_timeout_calls === 100) {
+            return;
+        }
+        callbacK_function();
+    });
+
+    function callback_func() {
+        num_callback_calls += 1;
+    }
+
+    util.call_function_periodically(callback_func, 42);
+    assert.equal(num_set_timeout_calls, 100);
+    assert.equal(num_callback_calls, 99);
+});
+
+run_test("unique_array_insert", () => {
+    const array = [{a: "foo", b: "bar"}];
+    util.unique_array_insert(array, {c: "beep", d: "boop"});
+    assert.deepEqual(array, [
+        {a: "foo", b: "bar"},
+        {c: "beep", d: "boop"},
+    ]);
+    util.unique_array_insert(array, {c: "beep", d: "boop"});
+    util.unique_array_insert(array, {a: "foo", b: "bar"});
+    assert.deepEqual(array, [
+        {a: "foo", b: "bar"},
+        {c: "beep", d: "boop"},
+    ]);
+});
+
+run_test("parse_youtube_start_time", () => {
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/VIDEO_ID?t=120"), 120);
+    assert.equal(
+        util.parse_youtube_start_time("https://www.youtube.com/watch?v=VIDEO_ID&t=150"),
+        150,
+    );
+    assert.equal(
+        util.parse_youtube_start_time("https://www.youtube.com/watch?v=VIDEO_ID"),
+        undefined,
+    );
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/VIDEO_ID?t=1h"), 3600);
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/VIDEO_ID?t=1h1m1s"), 3661);
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/VIDEO_ID?t=1m1s"), 61);
+    assert.equal(
+        util.parse_youtube_start_time("https://www.youtube.com/watch?v=VIDEO_ID&start=100"),
+        100,
+    );
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/ID?t=1m"), 60);
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/ID?t=1h30m"), 5400);
+    assert.equal(util.parse_youtube_start_time("https://youtu.be/ID?t=invalid"), undefined);
 });

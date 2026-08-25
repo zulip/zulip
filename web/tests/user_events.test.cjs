@@ -2,9 +2,13 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
+const {make_bot, make_user} = require("./lib/example_user.cjs");
+const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const message_live_update = mock_esm("../src/message_live_update");
 const navbar_alerts = mock_esm("../src/navbar_alerts");
@@ -13,8 +17,24 @@ const settings_account = mock_esm("../src/settings_account", {
     update_email() {},
     update_full_name() {},
     update_account_settings_display() {},
+    update_role_text() {},
+    set_user_own_role_dropdown_value() {},
+    add_or_remove_owner_from_role_dropdown() {},
+    update_user_own_role_dropdown_state() {},
 });
-const settings_users = mock_esm("../src/settings_users", {
+const settings_preferences = mock_esm("../src/settings_preferences", {
+    update_user_list_style_preview_name() {},
+    update_user_list_style_preview_avatar() {},
+});
+const settings_bots = mock_esm("../src/settings_bots", {
+    redraw_your_bots_list() {},
+    toggle_bot_config_download_container() {},
+});
+mock_esm("../src/settings_panel_menu", {
+    hide_default_streams_list_for_guest() {},
+    update_imported_users_tab() {},
+});
+mock_esm("../src/settings_users", {
     update_user_data() {},
     update_view_on_deactivate() {},
     update_view_on_reactivate() {},
@@ -23,7 +43,6 @@ mock_esm("../src/user_profile", {
     update_profile_modal_ui() {},
     update_user_custom_profile_fields() {},
 });
-const stream_events = mock_esm("../src/stream_events");
 
 const buddy_list = mock_esm("../src/buddy_list", {
     BuddyList: class {
@@ -31,17 +50,21 @@ const buddy_list = mock_esm("../src/buddy_list", {
     },
 });
 
+const compose_pm_pill = mock_esm("../src/compose_pm_pill", {
+    update_user_pill_active_status() {},
+});
+mock_esm("../src/compose_recipient", {
+    update_user_name_in_compose() {},
+});
+const pm_list = mock_esm("../src/pm_list", {
+    update_private_messages() {},
+});
+
 const buddy_data = new buddy_list.BuddyList();
 buddy_list.buddy_list = buddy_data;
 
 mock_esm("../src/activity_ui", {
     redraw() {},
-});
-mock_esm("../src/compose_state", {
-    update_email() {},
-});
-mock_esm("../src/pm_list", {
-    update_private_messages() {},
 });
 mock_esm("../src/settings", {
     update_lock_icon_in_sidebar() {},
@@ -60,25 +83,28 @@ mock_esm("../src/settings_realm_user_settings_defaults", {
     maybe_disable_widgets() {},
 });
 mock_esm("../src/settings_streams", {
-    maybe_disable_widgets() {},
+    rerender_default_streams_for_role_change() {},
 });
 
+const bot_data = zrequire("bot_data");
+const message_lists = zrequire("message_lists");
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
 const {set_current_user, set_realm} = zrequire("state_data");
+const {initialize_user_settings} = zrequire("user_settings");
 const user_events = zrequire("user_events");
 
 const current_user = {};
 set_current_user(current_user);
-set_realm({});
+set_realm(make_realm());
+initialize_user_settings({user_settings: {default_language: "en"}});
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
-    is_admin: true,
     role: settings_config.user_role_values.member.code,
-};
+});
 
 function initialize() {
     people.init();
@@ -91,12 +117,12 @@ initialize();
 run_test("updates", ({override}) => {
     let person;
 
-    const isaac = {
+    const isaac = make_user({
         email: "isaac@example.com",
         delivery_email: null,
         user_id: 32,
         full_name: "Isaac Newton",
-    };
+    });
     people.add_active_user(isaac);
 
     override(navbar_alerts, "maybe_toggle_empty_required_profile_fields_banner", noop);
@@ -159,23 +185,51 @@ run_test("updates", ({override}) => {
         full_name = full_name_arg;
     };
 
+    const $navbar_title = $("#message_view_header .message-header-navbar-title");
+
+    // The navbar title lists the participants of the current DM narrow,
+    // so renaming one of them refreshes its text in place.
+    people.add_valid_user_id(isaac.user_id);
+    message_lists.set_current(make_message_list([{operator: "dm", operand: [isaac.user_id]}]));
+    $navbar_title.text("Isaac Newton");
+
     user_events.update_person({user_id: isaac.user_id, full_name: "Sir Isaac"});
     person = people.get_by_email(isaac.email);
     assert.equal(person.full_name, "Sir Isaac");
     assert.equal(person.is_admin, true);
     assert.equal(user_id, isaac.user_id);
     assert.equal(full_name, "Sir Isaac");
+    assert.equal($navbar_title.text(), "Sir Isaac");
+
+    // Renaming someone the title does not mention leaves it untouched.
+    user_events.update_person({user_id: me.user_id, full_name: "Me Interim"});
+    assert.equal($navbar_title.text(), "Sir Isaac");
+
+    message_lists.set_current(undefined);
+
+    user_events.update_person({
+        user_id: me.user_id,
+        role: settings_config.user_role_values.guest.code,
+    });
+    assert.ok(current_user.is_guest);
 
     user_events.update_person({
         user_id: me.user_id,
         role: settings_config.user_role_values.member.code,
     });
+    assert.ok(!current_user.is_guest);
     assert.ok(!current_user.is_admin);
+
+    let user_list_style_preview_name;
+    settings_preferences.update_user_list_style_preview_name = (full_name_arg) => {
+        user_list_style_preview_name = full_name_arg;
+    };
 
     user_events.update_person({user_id: me.user_id, full_name: "Me V2"});
     assert.equal(people.my_full_name(), "Me V2");
     assert.equal(user_id, me.user_id);
     assert.equal(full_name, "Me V2");
+    assert.equal(user_list_style_preview_name, "Me V2");
 
     user_events.update_person({user_id: isaac.user_id, new_email: "newton@example.com"});
     person = people.get_by_user_id(isaac.user_id);
@@ -188,9 +242,17 @@ run_test("updates", ({override}) => {
     assert.equal(person.full_name, "Me V2");
 
     let avatar_url;
+    let inserted_or_moved_user_ids;
     message_live_update.update_avatar = (user_id_arg, avatar_url_arg) => {
         user_id = user_id_arg;
         avatar_url = avatar_url_arg;
+    };
+    buddy_data.insert_or_move = (user_ids_arg) => {
+        inserted_or_moved_user_ids = user_ids_arg;
+    };
+    let user_list_style_preview_avatar_url;
+    settings_preferences.update_user_list_style_preview_avatar = (avatar_url_arg) => {
+        user_list_style_preview_avatar_url = avatar_url_arg;
     };
 
     user_events.update_person({user_id: isaac.user_id, full_name: "Sir Isaac"});
@@ -199,6 +261,9 @@ run_test("updates", ({override}) => {
     assert.equal(person.is_admin, true);
     assert.equal(user_id, isaac.user_id);
     assert.equal(full_name, "Sir Isaac");
+    // The user list style preview shows the current user's name, so
+    // renaming someone else must not update it.
+    assert.equal(user_list_style_preview_name, "Me V2");
 
     person = people.get_by_email(isaac.email);
     assert.equal(person.delivery_email, null);
@@ -218,12 +283,18 @@ run_test("updates", ({override}) => {
     assert.equal(person.full_name, "Sir Isaac");
     assert.equal(user_id, isaac.user_id);
     assert.equal(person.avatar_url, avatar_url);
+    assert.deepEqual(inserted_or_moved_user_ids, [isaac.user_id]);
+    // The user list style preview shows the current user's avatar, so
+    // another user's avatar change must not update it.
+    assert.equal(user_list_style_preview_avatar_url, undefined);
 
     user_events.update_person({user_id: me.user_id, avatar_url: "http://gravatar.com/789456"});
     person = people.get_by_email(me.email);
     assert.equal(person.full_name, "Me V2");
     assert.equal(user_id, me.user_id);
     assert.equal(person.avatar_url, avatar_url);
+    assert.deepEqual(inserted_or_moved_user_ids, [me.user_id]);
+    assert.equal(user_list_style_preview_avatar_url, "http://gravatar.com/789456");
 
     user_events.update_person({user_id: me.user_id, timezone: "UTC"});
     person = people.get_by_email(me.email);
@@ -257,43 +328,108 @@ run_test("updates", ({override}) => {
     assert.ok(updated);
     assert.ok(confirm_banner_hidden);
 
-    const test_bot = {
+    const test_bot = make_bot({
         email: "test-bot@example.com",
         user_id: 35,
         full_name: "Test Bot",
-        is_bot: true,
         bot_owner_id: isaac.id,
-    };
+    });
     people.add_active_user(test_bot);
+    bot_data.add({
+        default_all_public_streams: true,
+        default_events_register_stream: "register stream test",
+        default_sending_stream: "sending stream test",
+        user_id: 35,
+        services: [],
+    });
 
     user_events.update_person({user_id: test_bot.user_id, bot_owner_id: me.user_id});
     person = people.get_by_email(test_bot.email);
     assert.equal(person.bot_owner_id, me.user_id);
 
-    let user_removed_from_streams = false;
-    stream_events.remove_deactivated_user_from_all_streams = (user_id) => {
-        assert.equal(user_id, isaac.user_id);
-        user_removed_from_streams = true;
-    };
     buddy_list.BuddyList.insert_or_move = noop;
+
+    // Test that UI elements are updated when a user is deactivated/reactivated
+    let pm_list_updated = false;
+    let compose_pill_updated = false;
+    let expected_user_id = isaac.user_id;
+    let expected_is_active;
+
+    pm_list.update_private_messages = () => {
+        pm_list_updated = true;
+    };
+    compose_pm_pill.update_user_pill_active_status = (user, is_active) => {
+        compose_pill_updated = true;
+        assert.equal(user.user_id, expected_user_id);
+        assert.equal(is_active, expected_is_active);
+    };
+
+    // Deactivate a user and verify UI updates are triggered
+    expected_is_active = false;
     user_events.update_person({user_id: isaac.user_id, is_active: false});
     assert.ok(!people.is_person_active(isaac.user_id));
-    assert.ok(user_removed_from_streams);
+    assert.ok(pm_list_updated);
+    assert.ok(compose_pill_updated);
 
+    // Reset flags and test reactivation
+    pm_list_updated = false;
+    compose_pill_updated = false;
+
+    // Reactivate the user and verify UI updates are triggered again
+    expected_is_active = true;
     user_events.update_person({user_id: isaac.user_id, is_active: true});
     assert.ok(people.is_person_active(isaac.user_id));
-
-    stream_events.remove_deactivated_user_from_all_streams = noop;
+    assert.ok(pm_list_updated);
+    assert.ok(compose_pill_updated);
 
     let bot_data_updated = false;
-    settings_users.update_bot_data = (user_id) => {
+    settings_bots.update_bot_data = (user_id) => {
         assert.equal(user_id, test_bot.user_id);
         bot_data_updated = true;
     };
+
+    // Reset flags and test bot deactivation
+    pm_list_updated = false;
+    compose_pill_updated = false;
+
+    expected_is_active = false;
+    expected_user_id = test_bot.user_id;
     user_events.update_person({user_id: test_bot.user_id, is_active: false});
     assert.equal(bot_data_updated, true);
+    assert.ok(pm_list_updated);
+    assert.ok(compose_pill_updated);
 
+    // Reset flags and test bot reactivation
     bot_data_updated = false;
+    pm_list_updated = false;
+    compose_pill_updated = false;
+
+    expected_is_active = true;
     user_events.update_person({user_id: test_bot.user_id, is_active: true});
     assert.ok(bot_data_updated);
+    assert.ok(pm_list_updated);
+    assert.ok(compose_pill_updated);
+
+    const imported_user = {
+        email: "imoreted-user@example.com",
+        delivery_email: null,
+        user_id: 33,
+        full_name: "Imported user",
+        is_imported_stub: true,
+    };
+    people.add_active_user(imported_user);
+    user_events.update_person({user_id: imported_user.user_id, is_imported_stub: false});
+
+    // A non-common narrow (here sender: combined with is:) shows a search
+    // bar, not a name, so renaming the user must leave the title alone.
+    message_lists.set_current(
+        make_message_list([
+            {operator: "is", operand: "starred"},
+            {operator: "sender", operand: isaac.user_id},
+        ]),
+    );
+    $navbar_title.text("placeholder");
+    user_events.update_person({user_id: isaac.user_id, full_name: "Sir Isaac Newton"});
+    assert.equal($navbar_title.text(), "placeholder");
+    message_lists.set_current(undefined);
 });

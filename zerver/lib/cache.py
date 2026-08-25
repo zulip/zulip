@@ -69,7 +69,17 @@ def update_cached_cache_key_prefixes() -> list[str]:
             continue
         with open(filename) as f:
             found_prefixes.add(f.readline().removesuffix("\n"))
-    caches["default"].set("cache_key_prefixes", list(found_prefixes), timeout=60 * 60 * 24)  # 24h
+
+    # We reach into the bmemcached client directly to do this set
+    # *without* compression, so that changes in our choice of
+    # bmemcached compression algorithm are always
+    # backwards-compatible.
+    caches["default"]._cache.set(  # type: ignore[attr-defined] # not in stubs
+        caches["default"].make_key("cache_key_prefixes"),
+        list(found_prefixes),
+        60 * 60 * 24,  # 24h
+        compress_level=0,
+    )
     return list(found_prefixes)
 
 
@@ -148,6 +158,7 @@ def cache_with_key(
     keyfunc: Callable[ParamT, str],
     cache_name: str | None = None,
     timeout: int | None = None,
+    pickled_tupled: bool = True,
 ) -> Callable[[Callable[ParamT, ReturnT]], Callable[ParamT, ReturnT]]:
     """Decorator which applies Django caching to a function.
 
@@ -168,9 +179,12 @@ def cache_with_key(
                 log_invalid_cache_keys(stack_trace, [key])
                 return func(*args, **kwargs)
 
-            # Values are singleton tuples so that we can distinguish
-            # a result of None from a missing key.
-            if val is not None:
+            # Values are singleton tuples so that we can distinguish a
+            # result of None from a missing key.  Setting
+            # pickled_tupled=False avoids pickling the result (if it's
+            # a raw string or bytes) at the cost of losing this
+            # distinction.
+            if val is not None and pickled_tupled:
                 return val[0]
 
             val = func(*args, **kwargs)
@@ -180,7 +194,9 @@ def cache_with_key(
                     stack_info=True,
                 )
             else:
-                cache_set(key, val, cache_name=cache_name, timeout=timeout)
+                cache_set(
+                    key, val, cache_name=cache_name, timeout=timeout, pickled_tupled=pickled_tupled
+                )
 
             return val
 
@@ -220,17 +236,23 @@ def validate_cache_key(key: str, auto_prepend_prefix: bool = True) -> None:
 
 
 def cache_set(
-    key: str, val: Any, cache_name: str | None = None, timeout: int | None = None
+    key: str,
+    val: Any,
+    cache_name: str | None = None,
+    timeout: int | None = None,
+    pickled_tupled: bool = True,
 ) -> None:
     final_key = KEY_PREFIX + key
     validate_cache_key(final_key)
 
     remote_cache_stats_start()
     cache_backend = get_cache_backend(cache_name)
+    if pickled_tupled:
+        val = (val,)
     try:
-        cache_backend.set(final_key, (val,), timeout=timeout)
-    except MemcachedException as e:
-        logger.exception(e)
+        cache_backend.set(final_key, val, timeout=timeout)
+    except MemcachedException:
+        logger.exception("Error while storing to cache")
     remote_cache_stats_finish()
 
 
@@ -284,8 +306,8 @@ def cache_set_many(
     remote_cache_stats_start()
     try:
         get_cache_backend(cache_name).set_many(items, timeout=timeout)
-    except MemcachedException as e:
-        logger.exception(e)
+    except MemcachedException:
+        logger.exception("Error while storing to cache")
     remote_cache_stats_finish()
 
 
@@ -380,20 +402,33 @@ def generic_bulk_cached_fetch(
     setter: Callable[[CacheItemT], CompressedItemT],
     id_fetcher: Callable[[ItemT], ObjKT],
     cache_transformer: Callable[[ItemT], CacheItemT],
+    pickled_tupled: bool = True,
 ) -> dict[ObjKT, CacheItemT]:
     if len(object_ids) == 0:
         # Nothing to fetch.
         return {}
 
+    if pickled_tupled:
+        return generic_bulk_cached_fetch(
+            cache_key_function,
+            query_function,
+            object_ids,
+            extractor=lambda val: extractor(val[0]),
+            setter=lambda val: (setter(val),),
+            id_fetcher=id_fetcher,
+            cache_transformer=cache_transformer,
+            pickled_tupled=False,
+        )
+
     cache_keys: dict[ObjKT, str] = {}
     for object_id in object_ids:
         cache_keys[object_id] = cache_key_function(object_id)
 
-    cached_objects_compressed: dict[str, tuple[CompressedItemT]] = safe_cache_get_many(
+    cached_objects_compressed: dict[str, CompressedItemT] = safe_cache_get_many(
         [cache_keys[object_id] for object_id in object_ids],
     )
 
-    cached_objects = {key: extractor(val[0]) for key, val in cached_objects_compressed.items()}
+    cached_objects = {key: extractor(val) for key, val in cached_objects_compressed.items()}
     needed_ids = [
         object_id for object_id in object_ids if cache_keys[object_id] not in cached_objects
     ]
@@ -404,11 +439,11 @@ def generic_bulk_cached_fetch(
     else:
         db_objects = []
 
-    items_for_remote_cache: dict[str, tuple[CompressedItemT]] = {}
+    items_for_remote_cache: dict[str, CompressedItemT] = {}
     for obj in db_objects:
         key = cache_keys[id_fetcher(obj)]
         item = cache_transformer(obj)
-        items_for_remote_cache[key] = (setter(item),)
+        items_for_remote_cache[key] = setter(item)
         cached_objects[key] = item
     if len(items_for_remote_cache) > 0:
         safe_cache_set_many(items_for_remote_cache)
@@ -500,6 +535,8 @@ realm_user_dict_fields: list[str] = [
     "bot_type",
     "long_term_idle",
     "email_address_visibility",
+    "is_imported_stub",
+    "is_deleted",
 ]
 
 
@@ -525,6 +562,10 @@ def active_user_ids_cache_key(realm_id: int) -> str:
 
 def active_non_guest_user_ids_cache_key(realm_id: int) -> str:
     return f"active_non_guest_user_ids:{realm_id}"
+
+
+def active_guest_user_ids_cache_key(realm_id: int) -> str:
+    return f"active_guest_user_ids:{realm_id}"
 
 
 def get_realm_system_groups_cache_key(realm_id: int) -> str:
@@ -571,14 +612,16 @@ def delete_user_profile_caches(user_profiles: Iterable["UserProfile"], realm_id:
     cache_delete_many(user_profile_key_iterator())
 
 
-def delete_display_recipient_cache(user_profile: "UserProfile") -> None:
+def delete_display_recipient_cache(user_profiles: list["UserProfile"]) -> None:
     from zerver.models import Subscription  # We need to import here to avoid cyclic dependency.
 
-    recipient_ids = Subscription.objects.filter(user_profile=user_profile).values_list(
+    recipient_ids = Subscription.objects.filter(user_profile__in=user_profiles).values_list(
         "recipient_id", flat=True
     )
     keys = [display_recipient_cache_key(rid) for rid in recipient_ids]
-    keys.append(single_user_display_recipient_cache_key(user_profile.id))
+    keys.extend(
+        [single_user_display_recipient_cache_key(user_profile.id) for user_profile in user_profiles]
+    )
     cache_delete_many(keys)
 
 
@@ -591,6 +634,40 @@ def changed(update_fields: Sequence[str] | None, fields: list[str]) -> bool:
     return any(f in update_fields_set for f in fields)
 
 
+def bulk_flush_users(
+    *,
+    user_profiles: list["UserProfile"],
+    realm: "Realm",
+    update_fields: Sequence[str] | None = None,
+) -> None:
+    delete_user_profile_caches(user_profiles, realm.id)
+
+    cache_keys_to_delete = set()
+    if changed(update_fields, realm_user_dict_fields):
+        cache_keys_to_delete.add(realm_user_dicts_cache_key(realm.id))
+
+    if changed(update_fields, ["is_active"]):
+        cache_keys_to_delete.add(active_user_ids_cache_key(realm.id))
+        cache_keys_to_delete.add(active_non_guest_user_ids_cache_key(realm.id))
+        cache_keys_to_delete.add(active_guest_user_ids_cache_key(realm.id))
+
+    if changed(update_fields, ["role"]):
+        cache_keys_to_delete.add(active_non_guest_user_ids_cache_key(realm.id))
+        cache_keys_to_delete.add(active_guest_user_ids_cache_key(realm.id))
+
+    # Invalidate our bots_in_realm info dict if any bot has
+    # changed the fields in the dict or become (in)active
+    if changed(update_fields, bot_dict_fields):
+        for user_profile in user_profiles:
+            if user_profile.is_bot:
+                cache_keys_to_delete.add(bot_dicts_in_realm_cache_key(realm.id))
+
+    cache_delete_many(list(cache_keys_to_delete))
+
+    if changed(update_fields, ["email", "full_name", "id", "is_mirror_dummy"]):
+        delete_display_recipient_cache(user_profiles)
+
+
 # Called by models/users.py to flush the user_profile cache whenever we save
 # a user_profile object
 def flush_user_profile(
@@ -600,27 +677,9 @@ def flush_user_profile(
     **kwargs: object,
 ) -> None:
     user_profile = instance
-    delete_user_profile_caches([user_profile], user_profile.realm_id)
-
-    # Invalidate our active_users_in_realm info dict if any user has changed
-    # the fields in the dict or become (in)active
-    if changed(update_fields, realm_user_dict_fields):
-        cache_delete(realm_user_dicts_cache_key(user_profile.realm_id))
-
-    if changed(update_fields, ["is_active"]):
-        cache_delete(active_user_ids_cache_key(user_profile.realm_id))
-        cache_delete(active_non_guest_user_ids_cache_key(user_profile.realm_id))
-
-    if changed(update_fields, ["role"]):
-        cache_delete(active_non_guest_user_ids_cache_key(user_profile.realm_id))
-
-    if changed(update_fields, ["email", "full_name", "id", "is_mirror_dummy"]):
-        delete_display_recipient_cache(user_profile)
-
-    # Invalidate our bots_in_realm info dict if any bot has
-    # changed the fields in the dict or become (in)active
-    if user_profile.is_bot and changed(update_fields, bot_dict_fields):
-        cache_delete(bot_dicts_in_realm_cache_key(user_profile.realm_id))
+    bulk_flush_users(
+        user_profiles=[user_profile], realm=user_profile.realm, update_fields=update_fields
+    )
 
 
 def flush_muting_users_cache(*, instance: "MutedUser", **kwargs: object) -> None:
@@ -653,6 +712,7 @@ def flush_realm(
         cache_delete(realm_alert_words_cache_key(realm.id))
         cache_delete(realm_alert_words_automaton_cache_key(realm.id))
         cache_delete(active_non_guest_user_ids_cache_key(realm.id))
+        cache_delete(active_guest_user_ids_cache_key(realm.id))
         cache_delete(realm_rendered_description_cache_key(realm))
         cache_delete(realm_text_description_cache_key(realm))
     elif changed(update_fields, ["description"]):

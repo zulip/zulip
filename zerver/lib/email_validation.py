@@ -2,6 +2,7 @@ from collections.abc import Callable
 from email.errors import HeaderParseError
 from email.headerregistry import Address
 
+import idna
 from django.core import validators
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
@@ -72,7 +73,7 @@ def get_realm_email_validator(realm: Realm) -> Callable[[str], None]:
             return
 
         while len(domain) > 0:
-            subdomain, sep, domain = domain.partition(".")
+            _subdomain, _sep, domain = domain.partition(".")
             if domain in allowed_subdomains:
                 return
 
@@ -103,6 +104,17 @@ def validate_email_is_valid(
     except ValidationError:
         return _("Invalid address.")
 
+    # Django's EmailValidator is looser than IDNA 2008 about what it
+    # accepts in a domain, and also accepts RFC 5321 address-literal
+    # domains (user@[192.168.0.1]) which we don't want to deliver to.
+    # Require the domain to IDNA-encode cleanly, which is what SMTP
+    # delivery will need to do.
+    try:
+        domain = Address(addr_spec=email).domain
+        idna.encode(domain, uts46=True)
+    except (HeaderParseError, ValueError, idna.IDNAError):
+        return _("Invalid address.")
+
     try:
         validate_email_allowed_in_realm(email)
     except DomainNotAllowedForRealmError:
@@ -122,6 +134,8 @@ def email_reserved_for_system_bots_error(email: str) -> str:
 def get_existing_user_errors(
     target_realm: Realm,
     emails: set[str],
+    *,
+    allow_inactive_mirror_dummies: bool,
     verbose: bool = False,
 ) -> dict[str, tuple[str, bool]]:
     """
@@ -166,7 +180,7 @@ def get_existing_user_errors(
             # HAPPY PATH!  Most people invite users that don't exist yet.
             return
 
-        if existing_user_profile.is_mirror_dummy:
+        if existing_user_profile.is_mirror_dummy and allow_inactive_mirror_dummies:
             if existing_user_profile.is_active:
                 raise AssertionError("Mirror dummy user is already active!")
             return
@@ -193,7 +207,7 @@ def get_existing_user_errors(
 
 
 def validate_email_not_already_in_realm(
-    target_realm: Realm, email: str, verbose: bool = True
+    target_realm: Realm, email: str, *, allow_inactive_mirror_dummies: bool, verbose: bool = True
 ) -> None:
     """
     NOTE:
@@ -204,10 +218,15 @@ def validate_email_not_already_in_realm(
         for any endpoint that takes multiple emails,
         such as the "invite" interface.
     """
-    error_dict = get_existing_user_errors(target_realm, {email}, verbose)
+    error_dict = get_existing_user_errors(
+        target_realm,
+        {email},
+        allow_inactive_mirror_dummies=allow_inactive_mirror_dummies,
+        verbose=verbose,
+    )
 
     # Loop through errors, the only key should be our email.
     for key, error_info in error_dict.items():
         assert key == email
-        msg, deactivated = error_info
+        msg, _deactivated = error_info
         raise ValidationError(msg)

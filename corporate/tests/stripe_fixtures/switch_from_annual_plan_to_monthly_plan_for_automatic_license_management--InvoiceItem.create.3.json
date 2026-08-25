@@ -1,15 +1,17 @@
 {
   "amount": 36610,
   "currency": "usd",
-  "customer": "cus_NORMALIZED",
+  "customer": "switch_from_annual_plan_to_monthly_plan_for_automatic_license_management--Customer.create.1.json",
+  "customer_account": null,
   "date": 1000000000,
-  "description": "Additional license (Feb 2, 2012 - Jan 2, 2013)",
+  "description": "Additional Zulip Cloud Standard license",
   "discountable": false,
   "discounts": [],
   "id": "switch_from_annual_plan_to_monthly_plan_for_automatic_license_management--InvoiceItem.create.3.json",
-  "invoice": "in_NORMALIZED",
+  "invoice": "switch_from_annual_plan_to_monthly_plan_for_automatic_license_management--Invoice.create.2.json",
   "livemode": false,
   "metadata": {},
+  "net_amount": 36610,
   "object": "invoiceitem",
   "parent": null,
   "period": {
@@ -26,6 +28,7 @@
   },
   "proration": false,
   "quantity": 5,
+  "quantity_decimal": "5",
   "tax_rates": [],
   "test_clock": null
 }

@@ -1,4 +1,4 @@
-from typing import Any
+from dataclasses import dataclass
 
 from django.utils.translation import gettext as _
 
@@ -7,7 +7,12 @@ from zerver.lib.exceptions import JsonableError
 from zerver.models import UserProfile
 
 
-def process_zcommands(content: str, user_profile: UserProfile) -> dict[str, Any]:
+@dataclass
+class ZCommandResult:
+    msg: str = ""
+
+
+def process_zcommands(content: str, user_profile: UserProfile) -> ZCommandResult:
     def change_mode_setting(
         setting_name: str, switch_command: str, setting: str, setting_value: int
     ) -> str:
@@ -25,11 +30,11 @@ def process_zcommands(content: str, user_profile: UserProfile) -> dict[str, Any]
     command = content.removeprefix("/")
 
     if command == "ping":
-        return {}
+        return ZCommandResult()
     elif command == "dark":
         if user_profile.color_scheme == UserProfile.COLOR_SCHEME_DARK:
-            return dict(msg="You are still in dark theme.")
-        return dict(
+            return ZCommandResult(msg="You are still in dark theme.")
+        return ZCommandResult(
             msg=change_mode_setting(
                 setting_name="dark theme",
                 switch_command="light",
@@ -39,8 +44,8 @@ def process_zcommands(content: str, user_profile: UserProfile) -> dict[str, Any]
         )
     elif command == "light":
         if user_profile.color_scheme == UserProfile.COLOR_SCHEME_LIGHT:
-            return dict(msg="You are still in light theme.")
-        return dict(
+            return ZCommandResult(msg="You are still in light theme.")
+        return ZCommandResult(
             msg=change_mode_setting(
                 setting_name="light theme",
                 switch_command="dark",
@@ -50,8 +55,8 @@ def process_zcommands(content: str, user_profile: UserProfile) -> dict[str, Any]
         )
     elif command == "fluid-width":
         if user_profile.fluid_layout_width:
-            return dict(msg="You are still in fluid width mode.")
-        return dict(
+            return ZCommandResult(msg="You are still in fluid width mode.")
+        return ZCommandResult(
             msg=change_mode_setting(
                 setting_name="fluid-width mode",
                 switch_command="fixed-width",
@@ -61,8 +66,8 @@ def process_zcommands(content: str, user_profile: UserProfile) -> dict[str, Any]
         )
     elif command == "fixed-width":
         if not user_profile.fluid_layout_width:
-            return dict(msg="You are still in fixed width mode.")
-        return dict(
+            return ZCommandResult(msg="You are still in fixed width mode.")
+        return ZCommandResult(
             msg=change_mode_setting(
                 setting_name="fixed-width mode",
                 switch_command="fluid-width",

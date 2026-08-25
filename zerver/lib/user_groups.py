@@ -7,7 +7,7 @@ from django.db import connection, transaction
 from django.db.models import F, Q, QuerySet, Value
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from django_cte import With
+from django_cte import CTE, with_cte
 from psycopg2.sql import SQL, Literal
 
 from zerver.lib.exceptions import (
@@ -33,7 +33,7 @@ from zerver.models import (
     UserGroupMembership,
     UserProfile,
 )
-from zerver.models.groups import SystemGroups
+from zerver.models.groups import SystemGroups, get_realm_system_groups_name_dict
 from zerver.models.realm_audit_logs import AuditLogEventType
 
 
@@ -119,11 +119,19 @@ def get_user_group_by_id_in_realm(
     """
     try:
         if for_read:
-            user_group = NamedUserGroup.objects.get(id=user_group_id, realm=realm)
+            user_group = NamedUserGroup.objects.get(id=user_group_id, realm_for_sharding=realm)
         else:
-            user_group = NamedUserGroup.objects.select_for_update().get(
-                id=user_group_id, realm=realm
-            )
+            user_group = NamedUserGroup.objects.select_for_update(
+                # We never fully DELETE NamedUserGroup rows; however, we do want this getter
+                # to prevent the addition of new users to the group while we hold the lock,
+                # to block with hypothetical other codepath that might try to modify memberships
+                # without taking an appropriate explicit lock.
+                # Ideally, we would wish to also prevent the deletion of group memberships for the
+                # duration of the lock even if the transaction doing the deletion forgets to take
+                # its own FOR UPDATE lock on this group, but SELECT FOR UPDATE does not offer
+                # that possibility. We accept this as a limitation for now.
+                no_key=False,
+            ).get(id=user_group_id, realm_for_sharding=realm)
 
         if not allow_deactivated and user_group.deactivated:
             raise JsonableError(_("User group is deactivated."))
@@ -132,11 +140,31 @@ def get_user_group_by_id_in_realm(
         raise JsonableError(_("Invalid user group"))
 
 
+def user_group_ids_to_user_groups(
+    user_group_ids: list[int], realm: Realm, *, allow_deactivated: bool = False
+) -> list[NamedUserGroup]:
+    user_groups = NamedUserGroup.objects.filter(id__in=user_group_ids, realm_for_sharding=realm)
+    if not allow_deactivated:
+        user_groups = user_groups.exclude(deactivated=True)
+
+    found_group_ids = {user_group.id for user_group in user_groups}
+
+    for user_group_id in user_group_ids:
+        if user_group_id not in found_group_ids:
+            raise JsonableError(
+                _("Invalid user group ID: {user_group_id}").format(user_group_id=user_group_id)
+            )
+
+    return list(user_groups)
+
+
 def get_system_user_group_by_name(group_name: str, realm_id: int) -> NamedUserGroup:
     if group_name not in SystemGroups.GROUP_DISPLAY_NAME_MAP:
         raise JsonableError(_("Invalid system group name."))
 
-    return NamedUserGroup.objects.get(name=group_name, realm_id=realm_id, is_system_group=True)
+    return NamedUserGroup.objects.get(
+        name=group_name, realm_for_sharding_id=realm_id, is_system_group=True
+    )
 
 
 def access_user_group_to_read_membership(user_group_id: int, realm: Realm) -> NamedUserGroup:
@@ -192,17 +220,7 @@ def access_user_group_for_update(
     raise JsonableError(_("Insufficient permission"))
 
 
-def access_user_group_for_deactivation(
-    user_group_id: int, user_profile: UserProfile
-) -> NamedUserGroup:
-    """
-    Main security check / access function for whether the acting
-    user has permission to deactivate a given user group.
-    """
-    user_group = access_user_group_for_update(
-        user_group_id, user_profile, permission_setting="can_manage_group"
-    )
-
+def check_user_group_can_be_deactivated(user_group: NamedUserGroup) -> list[dict[str, Any]]:
     objections: list[dict[str, Any]] = []
     supergroup_ids = (
         user_group.direct_supergroups.exclude(named_user_group=None)
@@ -251,7 +269,7 @@ def access_user_group_for_deactivation(
         )
 
     for group in NamedUserGroup.objects.filter(
-        realm_id=user_group.realm_id, deactivated=False
+        realm_for_sharding_id=user_group.realm_id, deactivated=False
     ).filter(group_setting_query):
         objection_settings = []
         for setting_name in NamedUserGroup.GROUP_PERMISSION_SETTINGS:
@@ -275,6 +293,20 @@ def access_user_group_for_deactivation(
     if objection_settings:
         objections.append(dict(type="realm", settings=objection_settings))
 
+    return objections
+
+
+def access_user_group_for_deactivation(
+    user_group_id: int, user_profile: UserProfile
+) -> NamedUserGroup:
+    """
+    Main security check / access function for whether the acting
+    user has permission to deactivate a given user group.
+    """
+    user_group = access_user_group_for_update(
+        user_group_id, user_profile, permission_setting="can_manage_group"
+    )
+    objections = check_user_group_can_be_deactivated(user_group)
     if len(objections) > 0:
         raise CannotDeactivateGroupInUseError(objections)
     return user_group
@@ -309,7 +341,12 @@ def lock_subgroups_with_respect_to_supergroup(
         recursive_subgroups = list(
             get_recursive_subgroups_for_groups(
                 potential_subgroup_ids, acting_user.realm
-            ).select_for_update(nowait=True)
+            ).select_for_update(
+                nowait=True,
+                # We want to prevent insertion of new memberships to these rows while
+                # the lock is held.
+                no_key=False,
+            )
         )
         # TODO: This select_for_update query is subject to deadlocking, and
         # better error handling is needed. We may use
@@ -326,7 +363,10 @@ def lock_subgroups_with_respect_to_supergroup(
         else:
             assert permission_setting is not None
             potential_supergroup = access_user_group_for_update(
-                potential_supergroup_id, acting_user, permission_setting=permission_setting
+                potential_supergroup_id,
+                acting_user,
+                permission_setting=permission_setting,
+                allow_deactivated=True,
             )
         # We avoid making a separate query for user_group_ids because the
         # recursive query already returns those user groups.
@@ -428,11 +468,13 @@ def update_or_create_user_group_for_setting(
 
     from zerver.lib.users import user_ids_to_users
 
-    member_users = user_ids_to_users(direct_members, realm, allow_deactivated=False)
+    member_users = user_ids_to_users(
+        direct_members, realm, allow_deactivated=False, allow_bots=True
+    )
     user_group.direct_members.set(member_users)
 
-    potential_subgroups = NamedUserGroup.objects.select_for_update().filter(
-        realm=realm, id__in=direct_subgroups
+    potential_subgroups = NamedUserGroup.objects.select_for_update(no_key=True).filter(
+        realm_for_sharding=realm, id__in=direct_subgroups
     )
     group_ids_found = [group.id for group in potential_subgroups]
     group_ids_not_found = [
@@ -458,14 +500,14 @@ def update_or_create_user_group_for_setting(
 
 def access_user_group_api_value_for_setting(
     setting_user_group: int | UserGroupMembersData,
-    user_profile: UserProfile,
+    realm: Realm,
     *,
     setting_name: str,
     permission_configuration: GroupPermissionSetting,
 ) -> NamedUserGroup | UserGroupMembersData:
     if isinstance(setting_user_group, int):
         named_user_group = get_user_group_by_id_in_realm(
-            setting_user_group, user_profile.realm, for_read=False, for_setting=True
+            setting_user_group, realm, for_read=False, for_setting=True
         )
         check_setting_configuration_for_system_groups(
             named_user_group, setting_name, permission_configuration
@@ -495,7 +537,7 @@ def access_user_group_for_setting(
     """
     user_group_api_value_for_setting = access_user_group_api_value_for_setting(
         setting_user_group,
-        user_profile,
+        user_profile.realm,
         setting_name=setting_name,
         permission_configuration=permission_configuration,
     )
@@ -590,30 +632,31 @@ def get_group_setting_value_for_register_api(
 
 
 def get_members_and_subgroups_of_groups(
-    group_ids: set[int],
+    group_ids: Iterable[int],
 ) -> dict[int, UserGroupMembersData]:
     user_members = (
         UserGroupMembership.objects.filter(user_group_id__in=group_ids)
         .exclude(user_profile__is_active=False)
         .annotate(
             member_type=Value("user"),
+            group_id=F("user_group_id"),
+            member_id=F("user_profile_id"),
         )
-        .values_list("member_type", "user_group_id", "user_profile_id")
     )
 
-    group_subgroups = (
-        GroupGroupMembership.objects.filter(supergroup_id__in=group_ids)
-        .annotate(
-            member_type=Value("group"),
-        )
-        .values_list("member_type", "supergroup_id", "subgroup_id")
+    group_subgroups = GroupGroupMembership.objects.filter(supergroup_id__in=group_ids).annotate(
+        member_type=Value("group"),
+        group_id=F("supergroup_id"),
+        member_id=F("subgroup_id"),
     )
 
     group_members_dict: dict[int, UserGroupMembersData] = dict()
     for group_id in group_ids:
         group_members_dict[group_id] = UserGroupMembersData(direct_members=[], direct_subgroups=[])
 
-    all_members = user_members.union(group_subgroups)
+    all_members = user_members.union(group_subgroups).values_list(
+        "member_type", "group_id", "member_id"
+    )
     for member_type, group_id, member_id in all_members:
         members_dict = group_members_dict[group_id]
         if member_type == "user":
@@ -653,9 +696,10 @@ def user_groups_in_realm_serialized(
     """
     anonymous_group_ids: set[int] = set()
     if not fetch_anonymous_group_membership:
-        realm_groups = NamedUserGroup.objects.filter(realm=realm)
+        realm_groups_query = NamedUserGroup.objects.filter(realm_for_sharding=realm)
         if not include_deactivated_groups:
-            realm_groups = realm_groups.filter(deactivated=False)
+            realm_groups_query = realm_groups_query.filter(deactivated=False)
+        realm_groups = list(realm_groups_query)
     else:
         groups = UserGroup.objects.filter(realm=realm).select_related("named_user_group")
         realm_groups = []
@@ -776,23 +820,29 @@ def get_direct_memberships_of_users(user_group: UserGroup, members: list[UserPro
 
 
 def get_recursive_subgroups_union_for_groups(user_group_ids: list[int]) -> QuerySet[UserGroup]:
-    cte = With.recursive(
-        lambda cte: UserGroup.objects.filter(id__in=user_group_ids)
-        .values(group_id=F("id"))
-        .union(
-            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
+    cte = CTE.recursive(
+        lambda cte: (
+            UserGroup.objects.filter(id__in=user_group_ids)
+            .values(group_id=F("id"))
+            .union(
+                cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
+                    group_id=F("id")
+                )
+            )
         )
     )
-    return cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
+    return with_cte(cte, select=cte.join(UserGroup, id=cte.col.group_id))
 
 
 def get_recursive_supergroups_union_for_groups(user_group_ids: list[int]) -> QuerySet[UserGroup]:
-    cte = With.recursive(
-        lambda cte: UserGroup.objects.filter(id__in=user_group_ids)
-        .values(group_id=F("id"))
-        .union(cte.join(UserGroup, direct_subgroups=cte.col.group_id).values(group_id=F("id")))
+    cte = CTE.recursive(
+        lambda cte: (
+            UserGroup.objects.filter(id__in=user_group_ids)
+            .values(group_id=F("id"))
+            .union(cte.join(UserGroup, direct_subgroups=cte.col.group_id).values(group_id=F("id")))
+        )
     )
-    return cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
+    return with_cte(cte, select=cte.join(UserGroup, id=cte.col.group_id))
 
 
 def get_recursive_subgroups(user_group_id: int) -> QuerySet[UserGroup]:
@@ -803,14 +853,18 @@ def get_recursive_strict_subgroups(user_group: UserGroup) -> QuerySet[NamedUserG
     # Same as get_recursive_subgroups but does not include the
     # user_group passed.
     direct_subgroup_ids = user_group.direct_subgroups.all().values("id")
-    cte = With.recursive(
-        lambda cte: NamedUserGroup.objects.filter(id__in=direct_subgroup_ids)
-        .values(group_id=F("id"))
-        .union(
-            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
+    cte = CTE.recursive(
+        lambda cte: (
+            NamedUserGroup.objects.filter(id__in=direct_subgroup_ids)
+            .values(group_id=F("id"))
+            .union(
+                cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
+                    group_id=F("id")
+                )
+            )
         )
     )
-    return cte.join(NamedUserGroup, id=cte.col.group_id).with_cte(cte)
+    return with_cte(cte, select=cte.join(NamedUserGroup, id=cte.col.group_id))
 
 
 def get_recursive_group_members(user_group_id: int) -> QuerySet[UserProfile]:
@@ -823,16 +877,16 @@ def get_recursive_group_members_union_for_groups(
     return UserProfile.objects.filter(
         is_active=True,
         direct_groups__in=get_recursive_subgroups_union_for_groups(user_group_ids),
-    )
+    ).distinct()
 
 
 def get_recursive_membership_groups(user_profile: UserProfile) -> QuerySet[UserGroup]:
-    cte = With.recursive(
+    cte = CTE.recursive(
         lambda cte: user_profile.direct_groups.values(group_id=F("id")).union(
             cte.join(UserGroup, direct_subgroups=cte.col.group_id).values(group_id=F("id"))
         )
     )
-    return cte.join(UserGroup, id=cte.col.group_id).with_cte(cte)
+    return with_cte(cte, select=cte.join(UserGroup, id=cte.col.group_id))
 
 
 def user_has_permission_for_group_setting(
@@ -842,6 +896,12 @@ def user_has_permission_for_group_setting(
     *,
     direct_member_only: bool = False,
 ) -> bool:
+
+    if setting_config.allow_internet_group:
+        system_groups_name_dict = get_realm_system_groups_name_dict(user.realm_id)
+        if system_groups_name_dict[user_group_id] == SystemGroups.EVERYONE_ON_INTERNET:
+            return True
+
     if not setting_config.allow_everyone_group and user.is_guest:
         return False
 
@@ -895,43 +955,47 @@ def get_subgroup_ids(user_group: UserGroup, *, direct_subgroup_only: bool = Fals
 def get_recursive_subgroups_for_groups(
     user_group_ids: Iterable[int], realm: Realm
 ) -> QuerySet[NamedUserGroup]:
-    cte = With.recursive(
-        lambda cte: NamedUserGroup.objects.filter(id__in=user_group_ids, realm=realm)
-        .values(group_id=F("id"))
-        .union(
-            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(group_id=F("id"))
+    cte = CTE.recursive(
+        lambda cte: (
+            NamedUserGroup.objects.filter(id__in=user_group_ids, realm_for_sharding=realm)
+            .values(group_id=F("id"))
+            .union(
+                cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
+                    group_id=F("id")
+                )
+            )
         )
     )
-    recursive_subgroups = cte.join(NamedUserGroup, id=cte.col.group_id).with_cte(cte)
+    recursive_subgroups = with_cte(cte, select=cte.join(NamedUserGroup, id=cte.col.group_id))
     return recursive_subgroups
 
 
 def get_root_id_annotated_recursive_subgroups_for_groups(
     user_group_ids: Iterable[int], realm_id: int
-) -> QuerySet[NamedUserGroup]:
+) -> QuerySet[UserGroup]:
     # Same as get_recursive_subgroups_for_groups but keeps track of
     # each group root_id and annotates it with that group.
 
-    cte = With.recursive(
-        lambda cte: UserGroup.objects.filter(id__in=user_group_ids, realm=realm_id)
-        .values(group_id=F("id"), root_id=F("id"))
-        .union(
-            cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
-                group_id=F("id"), root_id=cte.col.root_id
+    cte = CTE.recursive(
+        lambda cte: (
+            UserGroup.objects.filter(id__in=user_group_ids, realm=realm_id)
+            .values(group_id=F("id"), root_id=F("id"))
+            .union(
+                cte.join(NamedUserGroup, direct_supergroups=cte.col.group_id).values(
+                    group_id=F("id"), root_id=cte.col.root_id
+                )
             )
         )
     )
-    recursive_subgroups = (
-        cte.join(UserGroup, id=cte.col.group_id).with_cte(cte).annotate(root_id=cte.col.root_id)
+    recursive_subgroups = with_cte(cte, select=cte.join(UserGroup, id=cte.col.group_id)).annotate(
+        root_id=cte.col.root_id
     )
 
     return recursive_subgroups
 
 
 def get_role_based_system_groups_dict(realm: Realm) -> dict[str, NamedUserGroup]:
-    system_groups = NamedUserGroup.objects.filter(realm=realm, is_system_group=True).select_related(
-        "usergroup_ptr"
-    )
+    system_groups = NamedUserGroup.objects.filter(realm_for_sharding=realm, is_system_group=True)
     system_groups_name_dict = {}
     for group in system_groups:
         system_groups_name_dict[group.name] = group
@@ -1137,7 +1201,7 @@ def get_system_user_group_for_user(user_profile: UserProfile) -> NamedUserGroup:
     system_user_group_name = NamedUserGroup.SYSTEM_USER_GROUP_ROLE_MAP[user_profile.role]["name"]
 
     system_user_group = NamedUserGroup.objects.get(
-        name=system_user_group_name, realm=user_profile.realm, is_system_group=True
+        name=system_user_group_name, realm_for_sharding=user_profile.realm, is_system_group=True
     )
     return system_user_group
 
@@ -1219,6 +1283,9 @@ def check_user_has_permission_by_role(
     if system_group_name == SystemGroups.NOBODY:
         return False
 
+    if system_group_name == SystemGroups.EVERYONE_ON_INTERNET:
+        return True
+
     if system_group_name == SystemGroups.EVERYONE:
         return True
 
@@ -1249,3 +1316,103 @@ def check_any_user_has_permission_by_role(
             return True
 
     return False
+
+
+def check_group_membership_management_permissions_with_admins_only(
+    groups_to_check_permissions: list[NamedUserGroup],
+    realm: Realm,
+    system_groups_name_dict: dict[str, NamedUserGroup],
+) -> bool:
+    system_groups_with_admin_only_permissions = {
+        system_groups_name_dict[SystemGroups.NOBODY].id,
+        system_groups_name_dict[SystemGroups.OWNERS].id,
+        system_groups_name_dict[SystemGroups.ADMINISTRATORS].id,
+    }
+
+    if realm.can_manage_all_groups_id not in system_groups_with_admin_only_permissions:
+        return False
+
+    for group in groups_to_check_permissions:
+        for setting_name in NamedUserGroup.MEMBERSHIP_MANAGEMENT_SETTINGS:
+            if (
+                getattr(group, setting_name + "_id")
+                not in system_groups_with_admin_only_permissions
+            ):
+                return False
+    return True
+
+
+def validate_group_membership_management_setting(
+    user_group: NamedUserGroup,
+    setting_name: str,
+    setting_value: int | UserGroupMembersData,
+    realm: Realm,
+    system_groups_name_dict: dict[str, NamedUserGroup],
+) -> None:
+    system_groups_with_admin_only_permissions = {
+        system_groups_name_dict[SystemGroups.NOBODY].id,
+        system_groups_name_dict[SystemGroups.OWNERS].id,
+        system_groups_name_dict[SystemGroups.ADMINISTRATORS].id,
+    }
+
+    # If setting is being set to one of the nobody, owners or admins system groups then
+    # we do not check further. Otherwise, we check if the group being updated is
+    # used for workplace_users_group.
+    if (
+        isinstance(setting_value, int)
+        and setting_value in system_groups_with_admin_only_permissions
+    ):
+        return
+
+    # The group being updated is the same as workplace_users_group.
+    if realm.workplace_users_group_id == user_group.id:
+        raise JsonableError(
+            _(
+                "'{setting_name}' must be restricted to organization administrators for groups used in 'workplace_users_group'."
+            ).format(setting_name=setting_name)
+        )
+
+    # The group being updated is one of the subgroups of workplace_users_group.
+    if user_group.id in get_subgroup_ids(realm.workplace_users_group):
+        raise JsonableError(
+            _(
+                "'{setting_name}' must be restricted to organization administrators for groups used in 'workplace_users_group'."
+            ).format(setting_name=setting_name)
+        )
+
+
+def validate_can_manage_all_groups(
+    can_manage_all_groups: int | UserGroupMembersData, realm: Realm
+) -> None:
+    system_groups_name_dict = get_role_based_system_groups_dict(realm)
+    system_groups_with_admin_only_permissions = {
+        system_groups_name_dict[SystemGroups.NOBODY].id,
+        system_groups_name_dict[SystemGroups.OWNERS].id,
+        system_groups_name_dict[SystemGroups.ADMINISTRATORS].id,
+    }
+
+    # If setting is being set to one of the nobody, owners or admins
+    # system groups then we do not check further. Otherwise, we check
+    # if any non-system group is being used for workplace_users_group.
+    if (
+        isinstance(can_manage_all_groups, int)
+        and can_manage_all_groups in system_groups_with_admin_only_permissions
+    ):
+        return
+
+    workplace_users_group = realm.workplace_users_group
+    error_message = _(
+        "'can_manage_all_groups' must be restricted to organization administrators when 'workplace_users_group' includes user-defined groups."
+    )
+    if hasattr(workplace_users_group, "named_user_group"):
+        if realm.workplace_users_group.named_user_group.is_system_group:
+            return
+
+        raise JsonableError(error_message)
+
+    # Since we cannot update subgroups of a system group, it is enough to check
+    # if any non-system group is a direct subgroup of workplace_users_group.
+    subgroups_of_workplace_users_group = workplace_users_group.direct_subgroups.all()
+    for subgroup in subgroups_of_workplace_users_group:
+        if not subgroup.is_system_group:
+            raise JsonableError(error_message)

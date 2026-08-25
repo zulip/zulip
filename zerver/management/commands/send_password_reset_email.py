@@ -45,7 +45,7 @@ class Command(ZulipBaseCommand):
                     raise CommandError(
                         "You have to pass -u/--users or -a/--all-users or --entire-server."
                     )
-                raise error
+                raise
         if options["only_never_logged_in"]:
             users = users.filter(tos_version=-1)
 

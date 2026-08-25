@@ -31,7 +31,7 @@ async function test_add_new_profile_field(page: Page): Promise<void> {
     );
     assert.strictEqual(
         await common.get_text_from_selector(page, `${profile_field_row} span.profile_field_type`),
-        "Text (short)",
+        "Short text",
     );
 }
 
@@ -57,7 +57,7 @@ async function test_edit_profile_field(page: Page): Promise<void> {
     );
     assert.strictEqual(
         await common.get_text_from_selector(page, `${profile_field_row} span.profile_field_type`),
-        "Text (short)",
+        "Short text",
     );
 }
 
@@ -70,7 +70,7 @@ async function test_delete_custom_profile_field(page: Page): Promise<void> {
     );
     assert.strictEqual(
         await common.get_text_from_selector(page, ".micromodal .dialog_submit_button"),
-        "Confirm",
+        "Delete",
     );
     await page.click(".micromodal .dialog_submit_button");
     await common.wait_for_micromodal_to_close(page);
@@ -94,4 +94,4 @@ async function test_custom_profile(page: Page): Promise<void> {
     await test_delete_custom_profile_field(page);
 }
 
-common.run_test(test_custom_profile);
+await common.run_test(test_custom_profile);

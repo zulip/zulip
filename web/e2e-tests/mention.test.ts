@@ -33,7 +33,10 @@ async function test_mention(page: Page): Promise<void> {
     assert.ok(stream_size > threshold);
     await page.click("#compose-send-button");
 
-    await page.waitForSelector("#compose_banners .wildcard_warning", {visible: true});
+    await page.waitForSelector(
+        "#compose_banners .wildcard_warning .main-view-banner-action-button",
+        {visible: true},
+    );
     await page.click("#compose_banners .wildcard_warning .main-view-banner-action-button");
     await page.waitForSelector(".wildcard_warning", {hidden: true});
 
@@ -43,4 +46,4 @@ async function test_mention(page: Page): Promise<void> {
     ]);
 }
 
-common.run_test(test_mention);
+await common.run_test(test_mention);

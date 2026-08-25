@@ -41,7 +41,12 @@ Usage: ./manage.py deliver_scheduled_emails
                     job = (
                         ScheduledEmail.objects.filter(scheduled_timestamp__lte=timezone_now())
                         .prefetch_related("users")
-                        .select_for_update(skip_locked=True)
+                        .select_for_update(
+                            skip_locked=True,
+                            # These rows will later be deleted, so take a FOR UPDATE
+                            # lock.
+                            no_key=False,
+                        )
                         .order_by("scheduled_timestamp")
                         .first()
                     )

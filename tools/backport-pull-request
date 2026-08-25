@@ -60,6 +60,8 @@ query($pr_id:Int!) {
 '
 )"
 
+[ -n "$merge_commit" ] || fail "PR #$pr_id is not merged into 'main'. Merge it first before backporting."
+
 # We cannot trust the "commits" count on the PR, since only part of it
 # may get merged, or it may have commits squashed during the merge.
 # Walk backwards on `main` from the merge commit we found, checking

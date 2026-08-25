@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const channel = mock_esm("../src/channel");
 
@@ -23,7 +23,7 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
 
     mock_esm("../src/list_widget", {
         create(_container, words, opts) {
-            assert.deepEqual(words, [{word: "foo"}, {word: "bar"}]);
+            assert.deepEqual(words, [{word: "bar"}, {word: "foo"}]);
             for (const word of words) {
                 opts.modifier_html(word);
             }
@@ -36,6 +36,7 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
         assert.ok(["foo", "bar"].includes(args.alert_word.word));
         // do a super easy sanity check
         assert.ok(html.includes("alert_word_listing"));
+        return "<alert-word-settings-item-stub>";
     });
 
     assert.equal(alert_words_ui.loaded, false);
@@ -49,8 +50,7 @@ run_test("rerender_alert_words_ui", ({mock_template}) => {
     assert.equal(list_widget_create_called, true);
 });
 
-run_test("remove_alert_word", ({override_rewire}) => {
-    override_rewire(alert_words_ui, "rerender_alert_words_ui", noop);
+run_test("remove_alert_word", () => {
     alert_words_ui.set_up_alert_words();
 
     const $word_list = $("#alert-words-table");
@@ -91,7 +91,7 @@ run_test("remove_alert_word", ({override_rewire}) => {
     assert.ok($alert_word_status_banner.hasClass("banner-danger"));
     assert.equal(
         $alert_word_status_banner_label.text(),
-        `translated HTML: Error removing alert word <b>translated: zot</b>!`,
+        `translated: Error removing alert word <b>translated: zot</b>!`,
     );
 
     // test success
@@ -99,6 +99,6 @@ run_test("remove_alert_word", ({override_rewire}) => {
     assert.ok($alert_word_status_banner.hasClass("banner-success"));
     assert.equal(
         $alert_word_status_banner_label.text(),
-        `translated HTML: Alert word <b>translated: zot</b> removed successfully!`,
+        `translated: Alert word <b>translated: zot</b> removed successfully!`,
     );
 });

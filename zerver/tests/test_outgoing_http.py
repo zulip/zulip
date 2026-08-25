@@ -2,12 +2,15 @@ import os
 from typing import Any
 from unittest import mock
 
+import botocore.utils
 import requests
 import responses
+from django.test import override_settings
 from requests.adapters import HTTPAdapter
 from typing_extensions import override
 from urllib3.util import Retry
 
+from zerver.apps import skip_smokescreen_proxy_for_boto3
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.test_classes import ZulipTestCase
 
@@ -44,11 +47,14 @@ class RequestMockWithTimeoutAsHeader(responses.RequestsMock):
         return super()._on_request(adapter, request, **kwargs)
 
 
+# The general forcing of requests through Smokescreen only happens
+# when DEVELOPMENT=False
+@override_settings(DEVELOPMENT=False)
 class TestOutgoingHttp(ZulipTestCase):
     def test_headers(self) -> None:
         with RequestMockWithProxySupport() as mock_requests:
             mock_requests.add(responses.GET, "http://example.com/")
-            OutgoingSession(role="testing", timeout=1, headers={"X-Foo": "bar"}).get(
+            OutgoingSession(role="testing", timeout=1, headers={"X-Foo": "bar"}, proxies={}).get(
                 "http://example.com/"
             )
             self.assert_length(mock_requests.calls, 1)
@@ -57,8 +63,42 @@ class TestOutgoingHttp(ZulipTestCase):
             self.assertFalse("X-Smokescreen-Role" in headers)
             self.assertEqual(headers["X-Foo"], "bar")
 
+    def test_proxy_headers_config(self) -> None:
+        with (
+            RequestMockWithProxySupport() as mock_requests,
+            mock.patch("zerver.lib.outgoing_http.get_config") as get_config,
+        ):
+            get_config.side_effect = ("localhost", "4242")
+            mock_requests.add(responses.GET, "http://localhost:4242/")
+            OutgoingSession(role="testing", timeout=1, headers={"X-Foo": "bar"}).get(
+                "http://example.com/"
+            )
+            self.assert_length(mock_requests.calls, 1)
+            headers = mock_requests.calls[0].request.headers
+            self.assertEqual(headers["X-Smokescreen-Role"], "testing")
+
+    def test_proxy_headers_no_config(self) -> None:
+        with (
+            RequestMockWithProxySupport() as mock_requests,
+            mock.patch("zerver.lib.outgoing_http.get_config") as get_config,
+        ):
+            get_config.side_effect = ("", "")
+            mock_requests.add(responses.GET, "http://example.com/")
+            OutgoingSession(role="testing", timeout=1).get("http://example.com/")
+
+    def test_proxy_headers_proxy_override(self) -> None:
+        with (
+            RequestMockWithProxySupport() as mock_requests,
+            mock.patch("zerver.lib.outgoing_http.get_config") as get_config,
+        ):
+            get_config.side_effect = ("localhost", "4242")
+            mock_requests.add(responses.GET, "http://proxy-host:4343/")
+            OutgoingSession(
+                role="testing", timeout=1, proxies={"http": "http://proxy-host:4343"}
+            ).get("http://example.com/")
+
     @mock.patch.dict(os.environ, {"http_proxy": "http://localhost:4242"})
-    def test_proxy_headers(self) -> None:
+    def test_proxy_headers_env(self) -> None:
         with RequestMockWithProxySupport() as mock_requests:
             mock_requests.add(responses.GET, "http://localhost:4242/")
             OutgoingSession(role="testing", timeout=1, headers={"X-Foo": "bar"}).get(
@@ -116,3 +156,28 @@ class TestOutgoingHttp(ZulipTestCase):
         self.assertEqual(session.adapters["http://"].max_retries.total, 5)
         assert isinstance(session.adapters["https://"], HTTPAdapter)
         self.assertEqual(session.adapters["https://"].max_retries.total, 5)
+
+
+class TestBoto3SmokescreenBypass(ZulipTestCase):
+    # boto3 is set up at startup to bypass the Smokescreen proxy; see
+    # skip_smokescreen_proxy_for_boto3 for why.
+    @mock.patch.dict(os.environ, {"http_proxy": "http://smokescreen.example:4750"})
+    def test_skip_smokescreen_proxy_for_boto3(self) -> None:
+        # Restore botocore's global state however the test exits, so the
+        # bypass doesn't leak into other tests in this process.
+        original = botocore.utils.should_bypass_proxies
+        self.addCleanup(setattr, botocore.utils, "should_bypass_proxies", original)
+
+        imds_url = "http://169.254.169.254/latest/api/token"
+
+        # Without the setup done by skip_smokescreen_proxy_for_boto3, boto3
+        # would route IMDS requests through Smokescreen.
+        self.assertEqual(
+            botocore.utils.get_environ_proxies(imds_url),
+            {"http": "http://smokescreen.example:4750"},
+        )
+
+        skip_smokescreen_proxy_for_boto3()
+
+        # After the patch, boto3 bypasses Smokescreen and connects directly.
+        self.assertEqual(botocore.utils.get_environ_proxies(imds_url), {})

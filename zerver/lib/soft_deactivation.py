@@ -1,7 +1,7 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
 import logging
 from collections import defaultdict
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from typing import Any, TypedDict
 
 import sentry_sdk
@@ -151,6 +151,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
 
     """
     assert user_profile.last_active_message_id is not None
+    assert user_profile.long_term_idle
     all_stream_subs = list(
         Subscription.objects.filter(
             user_profile=user_profile, recipient__type=Recipient.STREAM
@@ -318,7 +319,22 @@ def do_auto_soft_deactivate_users(inactive_for_days: int, realm: Realm | None) -
 
 
 def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> UserProfile | None:
-    if user_profile.long_term_idle:
+    if not user_profile.long_term_idle:
+        return None
+
+    with transaction.atomic(savepoint=False):
+        # Lock the row and re-read the flag so concurrent reactivations of the
+        # same user run the expensive backfill at most once.
+        locked_user = (
+            UserProfile.objects.select_for_update(no_key=True)
+            .only("id", "long_term_idle")
+            .get(id=user_profile.id)
+        )
+        if not locked_user.long_term_idle:
+            # Another caller reactivated this user while we waited; sync our copy.
+            user_profile.long_term_idle = False
+            return None
+
         add_missing_messages(user_profile)
         user_profile.long_term_idle = False
         user_profile.save(update_fields=["long_term_idle"])
@@ -330,7 +346,6 @@ def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> UserProfil
         )
         logger.info("Soft reactivated user %s", user_profile.id)
         return user_profile
-    return None
 
 
 def get_users_for_soft_deactivation(
@@ -344,13 +359,13 @@ def get_users_for_soft_deactivation(
             **filter_kwargs,
         )
         .values("user_profile_id")
-        .annotate(last_visit=Max("last_visit"))
+        .annotate(max_last_visit=Max("last_visit"))
     )
     today = timezone_now()
     user_ids_to_deactivate = [
         user_activity["user_profile_id"]
         for user_activity in users_activity
-        if (today - user_activity["last_visit"]).days > inactive_for_days
+        if (today - user_activity["max_last_visit"]).days > inactive_for_days
     ]
     users_to_deactivate = list(UserProfile.objects.filter(id__in=user_ids_to_deactivate))
     return users_to_deactivate
@@ -364,25 +379,23 @@ def do_soft_activate_users(users: list[UserProfile]) -> list[UserProfile]:
     ]
 
 
-def do_catch_up_soft_deactivated_users(users: Iterable[UserProfile]) -> list[UserProfile]:
-    users_caught_up = []
+def do_catch_up_soft_deactivated_users(users: QuerySet[UserProfile]) -> None:
+    users_caught_up = 0
     failures = []
-    for user_profile in users:
-        if user_profile.long_term_idle:
-            with sentry_sdk.isolation_scope() as scope:
-                scope.set_user({"id": str(user_profile.id)})
-                try:
-                    add_missing_messages(user_profile)
-                    users_caught_up.append(user_profile)
-                except Exception:  # nocoverage
-                    logger.exception(
-                        "Failed to catch up %d@%s", user_profile.id, user_profile.realm.string_id
-                    )
-                    failures.append(user_profile)
-    logger.info("Caught up %d soft-deactivated users", len(users_caught_up))
+    for user_profile in users.iterator():
+        with sentry_sdk.isolation_scope() as scope:
+            scope.set_user({"id": str(user_profile.id)})
+            try:
+                add_missing_messages(user_profile)
+                users_caught_up += 1
+            except Exception:  # nocoverage
+                logger.exception(
+                    "Failed to catch up %d@%s", user_profile.id, user_profile.realm.string_id
+                )
+                failures.append(user_profile)
+    logger.info("Caught up %d soft-deactivated users", users_caught_up)
     if failures:
         logger.error("Failed to catch up %d soft-deactivated users", len(failures))  # nocoverage
-    return users_caught_up
 
 
 def get_soft_deactivated_users_for_catch_up(filter_kwargs: Any) -> QuerySet[UserProfile]:
@@ -400,7 +413,10 @@ def queue_soft_reactivation(user_profile_id: int) -> None:
         "type": "soft_reactivate",
         "user_profile_id": user_profile_id,
     }
-    queue_event_on_commit("deferred_work", event)
+    if settings.DEDICATED_SOFT_REACTIVATION_QUEUE:
+        queue_event_on_commit("soft_reactivation", event)
+    else:
+        queue_event_on_commit("deferred_work", event)
 
 
 def soft_reactivate_if_personal_notification(

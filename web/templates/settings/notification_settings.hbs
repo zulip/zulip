@@ -1,10 +1,13 @@
 <form class="notification-settings-form">
     <div class="general_notifications {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
         <div class="subsection-header">
-            <h3>{{t "Notification triggers" }}</h3>
-            {{> settings_save_discard_widget section_name="general-notify-settings" show_only_indicator=(not for_realm_settings) }}
+            <h3 class="settings-subsection-title">{{t "Notification triggers" }}</h3>
+            {{#if for_realm_settings}}
+                {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
+            {{/if}}
+            {{> settings_save_discard_widget section_name="general-notify-settings" show_save_discard_buttons=for_realm_settings }}
         </div>
-        <p>{{t "Configure how Zulip notifies you about new messages. In muted channels, channel notification settings apply only to unmuted topics." }}</p>
+        <p>{{t "Configure how Zulip notifies you about new messages." }}</p>
         <table class="notification-table table table-bordered wrapped-table">
             <thead>
                 <tr>
@@ -73,10 +76,10 @@
     <div class="topic_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header">
-            <h3>{{t "Topic notifications" }}
+            <h3 class="settings-subsection-title">{{t "Topic notifications" }}
                 {{> ../help_link_widget link="/help/topic-notifications" }}
             </h3>
-            {{> settings_save_discard_widget section_name="topic-notifications-settings" show_only_indicator=(not for_realm_settings) }}
+            {{> settings_save_discard_widget section_name="topic-notifications-settings" show_save_discard_buttons=for_realm_settings }}
         </div>
         <p>
             {{#tr}}
@@ -90,10 +93,13 @@
             <label for="{{prefix}}automatically_follow_topics_policy" class="settings-field-label">
                 {{ settings_label.automatically_follow_topics_policy }}
                 {{> ../help_link_widget link="/help/follow-a-topic" }}
+                {{#if for_realm_settings}}
+                    {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
+                {{/if}}
             </label>
             <select name="automatically_follow_topics_policy" class="setting_automatically_follow_topics_policy prop-element settings_select bootstrap-focus-style"
               id="{{prefix}}automatically_follow_topics_policy" data-setting-widget-type="number">
-                {{> dropdown_options_widget option_values=automatically_follow_topics_policy_values}}
+                {{> dropdown_options_widget option_values=(object_values automatically_follow_topics_policy_values)}}
             </select>
         </div>
 
@@ -101,23 +107,32 @@
           setting_name="automatically_follow_topics_where_mentioned"
           is_checked=(lookup settings_object "automatically_follow_topics_where_mentioned")
           label=(lookup settings_label "automatically_follow_topics_where_mentioned")
-          prefix=prefix}}
+          prefix=prefix
+          show_reset_button=for_realm_settings}}
 
         <div class="input-group">
             <label for="{{prefix}}automatically_unmute_topics_in_muted_streams_policy" class="settings-field-label">
                 {{ settings_label.automatically_unmute_topics_in_muted_streams_policy }}
                 {{> ../help_link_widget link="/help/mute-a-topic" }}
+                {{#if for_realm_settings}}
+                    {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
+                {{/if}}
             </label>
             <select name="automatically_unmute_topics_in_muted_streams_policy" class="setting_automatically_unmute_topics_in_muted_streams_policy prop-element settings_select bootstrap-focus-style"
               id="{{prefix}}automatically_unmute_topics_in_muted_streams_policy" data-setting-widget-type="number">
-                {{> dropdown_options_widget option_values=automatically_unmute_topics_in_muted_streams_policy_values}}
+                {{> dropdown_options_widget option_values=(object_values automatically_unmute_topics_in_muted_streams_policy_values)}}
             </select>
         </div>
 
         <div class="input-group">
-            <label for="{{prefix}}resolved_topic_notice_auto_read_policy" class="settings-field-label">{{t "Automatically mark resolved topic notices as read" }}</label>
+            <label for="{{prefix}}resolved_topic_notice_auto_read_policy" class="settings-field-label">
+                {{t "Automatically mark resolved topic notices as read" }}
+                {{#if for_realm_settings}}
+                    {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
+                {{/if}}
+            </label>
             <select name="resolved_topic_notice_auto_read_policy" class="setting_resolved_topic_notice_auto_read_policy prop-element settings_select bootstrap-focus-style" id="{{prefix}}resolved_topic_notice_auto_read_policy" data-setting-widget-type="string">
-                {{> dropdown_options_widget option_values=resolved_topic_notice_auto_read_policy_values}}
+                {{> dropdown_options_widget option_values=(object_values resolved_topic_notice_auto_read_policy_values)}}
             </select>
         </div>
     </div>
@@ -125,16 +140,23 @@
     <div class="desktop_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header">
-            <h3>{{t "Desktop message notifications" }}
+            <h3 class="settings-subsection-title">{{t "Desktop message notifications" }}
                 {{> ../help_link_widget link="/help/desktop-notifications" }}
             </h3>
-            {{> settings_save_discard_widget section_name="desktop-message-settings" show_only_indicator=(not for_realm_settings) }}
+            {{> settings_save_discard_widget section_name="desktop-message-settings" show_save_discard_buttons=for_realm_settings }}
         </div>
 
-        <div class="desktop-notification-settings-banners"></div>
+        {{#if (eq prefix "user_")}}
+        <div class="desktop-notification-settings-banners banner-wrapper"></div>
+        {{/if}}
 
         {{#unless for_realm_settings}}
-        <p><a class="send_test_notification">{{t "Send a test notification" }}</a></p>
+        {{> ../components/action_button
+          label=(t "Send a test notification")
+          variant="subtle"
+          intent="neutral"
+          custom_classes="send_test_notification"
+          }}
         {{/unless}}
 
         {{#each notification_settings.desktop_notification_settings}}
@@ -142,32 +164,42 @@
               setting_name=this
               is_checked=(lookup ../settings_object this)
               label=(lookup ../settings_label this)
-              prefix=../prefix}}
+              prefix=../prefix
+              show_reset_button=../for_realm_settings}}
         {{/each}}
 
-        <label for="{{prefix}}notification_sound">
-            {{t "Notification sound" }}
-        </label>
-
-        <div class="input-group input-element-with-control {{#unless enable_sound_select}}control-label-disabled{{/unless}}">
-            <select name="notification_sound" class="setting_notification_sound prop-element settings_select bootstrap-focus-style" id="{{prefix}}notification_sound" data-setting-widget-type="string"
-              {{#unless enable_sound_select}}
-              disabled
-              {{/unless}}>
-                <option value="none">{{t "None" }}</option>
-                {{#each settings_object.available_notification_sounds}}
-                    <option value="{{ this }}">{{ this }}</option>
-                {{/each}}
-            </select>
-            <span class="play_notification_sound">
-                <i class="notification-sound-icon fa fa-play-circle" aria-label="{{t 'Play sound' }}"></i>
-            </span>
+        <div class="input-group">
+            <label for="{{prefix}}notification_sound" class="settings-field-label">
+                {{t "Notification sound" }}
+                {{#if for_realm_settings}}
+                    {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
+                {{/if}}
+            </label>
+            <div class="input-element-with-control {{#unless enable_sound_select}}control-label-disabled{{/unless}}">
+                <select name="notification_sound" class="setting_notification_sound prop-element settings_select bootstrap-focus-style" id="{{prefix}}notification_sound" data-setting-widget-type="string"
+                  {{#unless enable_sound_select}}
+                  disabled
+                  {{/unless}}>
+                    <option value="none">{{t "None" }}</option>
+                    {{#each settings_object.available_notification_sounds}}
+                        <option value="{{ this }}">{{ this }}</option>
+                    {{/each}}
+                </select>
+                <span class="play_notification_sound">
+                    <i class="notification-sound-icon fa fa-play-circle" aria-label="{{t 'Play sound' }}"></i>
+                </span>
+            </div>
         </div>
 
         <div class="input-group">
-            <label for="{{prefix}}desktop_icon_count_display" class="settings-field-label">{{ settings_label.desktop_icon_count_display }}</label>
+            <label for="{{prefix}}desktop_icon_count_display" class="settings-field-label">
+                {{ settings_label.desktop_icon_count_display }}
+                {{#if for_realm_settings}}
+                    {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
+                {{/if}}
+            </label>
             <select name="desktop_icon_count_display" class="setting_desktop_icon_count_display prop-element settings_select bootstrap-focus-style" id="{{prefix}}desktop_icon_count_display" data-setting-widget-type="number">
-                {{> dropdown_options_widget option_values=desktop_icon_count_display_values}}
+                {{> dropdown_options_widget option_values=(object_values desktop_icon_count_display_values)}}
             </select>
         </div>
     </div>
@@ -175,17 +207,13 @@
     <div class="mobile_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header">
-            <h3>{{t "Mobile message notifications" }}
+            <h3 class="settings-subsection-title">{{t "Mobile message notifications" }}
                 {{> ../help_link_widget link="/help/mobile-notifications" }}
             </h3>
-            {{> settings_save_discard_widget section_name="mobile-message-settings" show_only_indicator=(not for_realm_settings) }}
+            {{> settings_save_discard_widget section_name="mobile-message-settings" show_save_discard_buttons=for_realm_settings }}
         </div>
         {{#unless realm_push_notifications_enabled}}
-        <div class="tip">
-            {{#tr}}
-                Mobile push notifications are not enabled on this server. <z-link>Learn more</z-link>
-                {{#*inline "z-link"}}<a href="/help/mobile-notifications#enabling-push-notifications-for-self-hosted-servers" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-            {{/tr}}
+        <div class="mobile-push-notifications-banner-container banner-wrapper">
         </div>
         {{/unless}}
 
@@ -195,23 +223,27 @@
               is_checked=(lookup ../settings_object this)
               is_disabled=(lookup ../disabled_notification_settings this)
               label=(lookup ../settings_label this)
-              prefix=../prefix}}
+              prefix=../prefix
+              show_reset_button=../for_realm_settings}}
         {{/each}}
     </div>
 
     <div class="email_message_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header">
-            <h3>{{t "Email message notifications" }}
+            <h3 class="settings-subsection-title">{{t "Email message notifications" }}
                 {{> ../help_link_widget link="/help/email-notifications" }}
             </h3>
-            {{> settings_save_discard_widget section_name="email-message-settings" show_only_indicator=(not for_realm_settings) }}
+            {{> settings_save_discard_widget section_name="email-message-settings" show_save_discard_buttons=for_realm_settings }}
         </div>
 
         <div class="input-group time-limit-setting">
 
             <label for="{{prefix}}email_notifications_batching_period_seconds" class="settings-field-label">
                 {{t "Delay before sending message notification emails" }}
+                {{#if for_realm_settings}}
+                    {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
+                {{/if}}
             </label>
             <select name="email_notifications_batching_period_seconds" class="setting_email_notifications_batching_period_seconds prop-element settings_select bootstrap-focus-style" id="{{prefix}}email_notifications_batching_period_seconds" data-setting-widget-type="time-limit">
                 {{#each email_notifications_batching_period_values}}
@@ -232,9 +264,14 @@
         </div>
 
         <div class="input-group">
-            <label for="{{prefix}}realm_name_in_email_notifications_policy" class="settings-field-label">{{ settings_label.realm_name_in_email_notifications_policy }}</label>
+            <label for="{{prefix}}realm_name_in_email_notifications_policy" class="settings-field-label">
+                {{ settings_label.realm_name_in_email_notifications_policy }}
+                {{#if for_realm_settings}}
+                    {{> ../components/icon_button icon="reset" intent="neutral" custom_classes="reset-user-setting-to-default" data-tippy-content=(t "Reset users to default") aria-label=(t "Reset users to default") }}
+                {{/if}}
+            </label>
             <select name="realm_name_in_email_notifications_policy" class="setting_realm_name_in_email_notifications_policy prop-element settings_select bootstrap-focus-style" id="{{prefix}}realm_name_in_email_notifications_policy" data-setting-widget-type="number">
-                {{> dropdown_options_widget option_values=realm_name_in_email_notifications_policy_values}}
+                {{> dropdown_options_widget option_values=(object_values realm_name_in_email_notifications_policy_values)}}
             </select>
         </div>
 
@@ -244,22 +281,24 @@
               is_checked=(lookup ../settings_object this)
               label=(lookup ../settings_label this)
               is_disabled=(lookup ../disabled_notification_settings this)
-              prefix=../prefix}}
+              prefix=../prefix
+              show_reset_button=../for_realm_settings}}
         {{/each}}
     </div>
 
     <div class="other_email_notifications m-10 {{#if for_realm_settings}}settings-subsection-parent{{else}}subsection-parent{{/if}}">
 
         <div class="subsection-header">
-            <h3>{{t "Other emails" }}</h3>
-            {{> settings_save_discard_widget section_name="other-emails-settings" show_only_indicator=(not for_realm_settings) }}
+            <h3 class="settings-subsection-title">{{t "Other emails" }}</h3>
+            {{> settings_save_discard_widget section_name="other-emails-settings" show_save_discard_buttons=for_realm_settings }}
         </div>
         {{#each notification_settings.other_email_settings}}
             {{> settings_checkbox
               setting_name=this
               is_checked=(lookup ../settings_object this)
               label=(lookup ../settings_label this)
-              prefix=../prefix}}
+              prefix=../prefix
+              show_reset_button=../for_realm_settings}}
         {{/each}}
     </div>
 </form>

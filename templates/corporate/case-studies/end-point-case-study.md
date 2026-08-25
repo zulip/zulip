@@ -14,7 +14,7 @@ Jensen](https://www.endpointdev.com/team/jon-jensen/). “Zulip’s UI makes it 
 to access all the information you need, without being too cluttered.”
 
 
-> “Zulip’s UI makes it easy to access all the info you need.”
+> Zulip’s UI makes it easy to access all the info you need.
 >
 > — [Jon Jensen](https://www.endpointdev.com/team/jon-jensen/), CTO of End Point
 
@@ -42,8 +42,8 @@ channels you’re in, the harder it is to use,” which was a show-stopper for a
 consulting company with hundreds of ongoing projects.
 
 
-> “Slack’s interface was too slow and clunky, and the more channels you’re in,
-> the harder it is to use.”
+> Slack’s interface was too slow and clunky, and the more channels you’re in,
+> the harder it is to use.
 >
 > — [Jon Jensen](https://www.endpointdev.com/team/jon-jensen/), CTO of End Point
 
@@ -52,7 +52,7 @@ explored all the leading open-source team chat products. They found that while
 Mattermost and Rocket.Chat were similar to Slack (but felt less polished), Zulip
 stood out. “Zulip had all the modern features we were looking for, like
 reliable, flexible notifications. At the same time, the [extensive keyboard
-shortcuts](/help/keyboard-shortcuts) and the ‘Combined feed’
+shortcuts](/help/keyboard-shortcuts) and the ‘All messages’
 view offered a UI that the IRC fans loved.”
 
 When End Point moved to Zulip, it was an immediate improvement over the
@@ -77,7 +77,7 @@ subscribed to most of them. Joanne takes advantage of per-channel flexibility fo
 notifications, turning on notification sounds just for low-traffic channels where
 every message is important.
 
-> “Zulip is my lifeline.”
+> Zulip is my lifeline.
 >
 > — [Joanne Tipton](https://www.endpointdev.com/team/joanne-tipton/), Senior Team Manager at End Point
 
@@ -85,12 +85,12 @@ every message is important.
 the Immersive & Geospatial division, joined End Point the day before the move to
 Zulip. Zulip has always been a core tool for his work at End  Point, and he has
 built his workflows on Zulip’s [integrations](/integrations/). “With the
-[Jenkins CI integration](/integrations/doc/jenkins), I can see when a job has
+[Jenkins CI integration](/integrations/jenkins), I can see when a job has
 finished building and is ready to deploy,” Alejandro says. “I use this 100s of
 times per week.”
 
 
-> “I use Zulip’s Jenkins CI integration 100s of times per week.”
+> I use Zulip’s Jenkins CI integration 100s of times per week.
 >
 > — [Alejandro Ramon](https://www.endpointdev.com/team/alejandro-ramon/),
 > Director of Immersive & Geospatial division at End Point
@@ -117,10 +117,10 @@ Jensen](https://www.endpointdev.com/team/jon-jensen/) has experienced them all.
 “It is amazing that companies would use Teams in its current state,” Jon says, a
 bit exasperated. “The UI is slow and inconsistent, and you have to do so much
 clicking to get anywhere. Compared to Zulip, it’s missing key features like the
-‘Combined feed’ view and topics.”
+‘All messages’ view and topics.”
 
-> “It is amazing that companies would use Teams in its current state. The UI is
-> slow and inconsistent, and compared to Zulip, it’s missing key features.”
+> It is amazing that companies would use Teams in its current state. The UI is
+> slow and inconsistent, and compared to Zulip, it’s missing key features.
 >
 > — [Jon Jensen](https://www.endpointdev.com/team/jon-jensen/), CTO of End Point
 
@@ -132,8 +132,8 @@ to offices and hallways. Thankfully, this is not a problem at End Point, Jon
 says. “Zulip removes much of the pain that makes people not want to use team
 chat apps. We love it."
 
->  “Zulip removes much of the pain that makes people not want to use team chat
->  apps. We love it.”
+> Zulip removes much of the pain that makes people not want to use team chat
+> apps. We love it.
 >
 > — [Jon Jensen](https://www.endpointdev.com/team/jon-jensen/), CTO of End Point
 

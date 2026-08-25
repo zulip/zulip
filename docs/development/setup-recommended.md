@@ -44,7 +44,6 @@ the internet.)
 
 :::{tab-item} Windows
 :sync: os-windows
-:name: windows-10-or-11
 
 - Windows 64-bit (Windows 10 recommended)
 - hardware virtualization enabled (VT-x or AMD-V)
@@ -60,14 +59,20 @@ the internet.)
 :::{tab-item} Ubuntu/Debian
 :sync: os-ubuntu
 
-- Ubuntu 22.04, or 24.04
-- Debian 12
+- Ubuntu 22.04, 24.04, or 26.04
+- Debian 12 or 13
   :::
 
 :::{tab-item} Fedora
 :sync: os-fedora
 
 - tested for Fedora 36
+  :::
+
+:::{tab-item} Arch
+:sync: os-arch
+
+- Arch Linux (rolling release)
   :::
 
 :::{tab-item} Other Linux
@@ -111,11 +116,14 @@ installation method described here. We require version 0.67.6+ of WSL 2.
 
 1. [Install WSL
    2](https://docs.microsoft.com/en-us/windows/wsl/setup/environment),
-   which includes installing an Ubuntu WSL distribution. Using an
-   existing distribution will probably work, but [a fresh
-   distribution](#rebuilding-the-development-environment) is
-   recommended if you previously installed other software in your WSL
-   environment that might conflict with the Zulip environment.
+   which includes installing an Ubuntu WSL distribution.
+
+1. **Create a new WSL instance for Zulip development**.
+   You can refer [this article](https://cloudbytes.dev/snippets/how-to-install-multiple-instances-of-ubuntu-in-wsl2)
+   for instructions on how to do so. Using an existing instance will
+   probably work, but a fresh distribution is recommended if you
+   previously installed other software like `node` in your WSL environment that
+   might conflict with the Zulip environment.
 
 1. It is required to enable `systemd` for WSL 2 to manage the database, cache and other services.
    To configure it, please follow [these instructions](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#systemd-support).
@@ -176,15 +184,20 @@ WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 
 1. Install [Vagrant][vagrant-dl] (latest).
 2. Install [Docker Desktop](https://docs.docker.com/desktop/mac/install/) (latest).
-3. Open the Docker desktop app's settings panel, and choose `osxfs (legacy)` under "Choose file sharing implementation for your containers."
-   :::
+
+:::{note}
+We recommend installing the latest version of Docker Desktop. If for some
+reason you must run an older version of Docker Desktop, you might need to uncheck
+"Use gRPC FUSE for file sharing" to use `osxfs (legacy)` file sharing before
+attempting to provision.
+:::
 
 :::{tab-item} Ubuntu/Debian
 :sync: os-ubuntu
 
 ##### 1. Install Vagrant, Docker, and Git
 
-Install vagrant:
+Install Vagrant:
 
 ```console
 $ wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
@@ -197,6 +210,13 @@ Install Docker and Git:
 ```console
 $ sudo apt install docker.io git
 ```
+
+If you had previously installed and removed an older version of
+Docker, an [Ubuntu
+bug](https://bugs.launchpad.net/ubuntu/+source/docker.io/+bug/1844894)
+may prevent Docker from being automatically enabled and started after
+installation. In that case, you'll need to enable and start it
+manually, as described below.
 
 ```{include} setup/install-docker.md
 
@@ -218,6 +238,34 @@ official `docker-ce` package in their repositories. They provide the package
 `moby-engine` which you can choose instead. In case you prefer the official
 docker distribution, you can follow
 [their documentation to install Docker on Fedora](https://docs.docker.com/engine/install/fedora/).
+
+```{include} setup/install-docker.md
+
+```
+
+:::
+
+:::{tab-item} Arch
+:sync: os-arch
+
+##### 1. Install Vagrant, Docker, and Git
+
+Install Docker and Git from the official repositories:
+
+```console
+$ sudo pacman -S --needed docker git
+```
+
+Vagrant is not packaged in Arch's official repositories. Install it
+from the [AUR](https://wiki.archlinux.org/title/Arch_User_Repository)
+(for example with an AUR helper such as `yay` or `paru`):
+
+```console
+$ yay -S vagrant
+```
+
+Alternatively, you can download the binary from
+[HashiCorp](https://developer.hashicorp.com/vagrant/install).
 
 ```{include} setup/install-docker.md
 
@@ -297,7 +345,7 @@ $ vagrant plugin install vagrant-vbguest
 $ vagrant up --provider=virtualbox
 ```
 
-```{include} setup/vagrant-up.md
+```{include} setup/vagrant-up-details.md
 
 ```
 
@@ -314,12 +362,8 @@ normal and is not a problem.
 :::{tab-item} macOS
 :sync: os-mac
 
-Change into the zulip directory and tell Vagrant to start the Zulip
-development environment with `vagrant up`:
+```{include} setup/vagrant-up.md
 
-```console
-$ cd zulip
-$ vagrant up --provider=docker
 ```
 
 **Important note**: There is a [known upstream issue on
@@ -329,11 +373,11 @@ other errors. The temporary fix is to open the Docker desktop app's
 settings panel, and choose `osxfs (legacy)` under "Choose file sharing
 implementation for your containers." Once Docker restarts, you should
 be able to successfully run `vagrant up --provider=docker`. Back in
-Docker, you can return to using VirtioFS for better system performance
-while developing, but you may need to revert to `osxfs (legacy)`
+Docker, you should return to using VirtioFS so that your files sync
+properly while developing, but you may need to revert to `osxfs (legacy)`
 whenever you need to re-provision.
 
-```{include} setup/vagrant-up.md
+```{include} setup/vagrant-up-details.md
 
 ```
 
@@ -346,15 +390,11 @@ whenever you need to re-provision.
 :::{tab-item} Ubuntu/Debian
 :sync: os-ubuntu
 
-Change into the zulip directory and tell Vagrant to start the Zulip
-development environment with `vagrant up`:
+```{include} setup/vagrant-up.md
 
-```console
-$ cd zulip
-$ vagrant up --provider=docker
 ```
 
-```{include} setup/vagrant-up.md
+```{include} setup/vagrant-up-details.md
 
 ```
 
@@ -367,15 +407,28 @@ $ vagrant up --provider=docker
 :::{tab-item} Fedora
 :sync: os-fedora
 
-Change into the zulip directory and tell Vagrant to start the Zulip
-development environment with `vagrant up`:
+```{include} setup/vagrant-up.md
 
-```console
-$ cd zulip
-$ vagrant up --provider=docker
 ```
 
+```{include} setup/vagrant-up-details.md
+
+```
+
+```{include} setup/vagrant-ssh.md
+
+```
+
+:::
+
+:::{tab-item} Arch
+:sync: os-arch
+
 ```{include} setup/vagrant-up.md
+
+```
+
+```{include} setup/vagrant-up-details.md
 
 ```
 
@@ -456,6 +509,15 @@ to open VS Code connected to your WSL environment. See the [Remote development i
 
 :::{tab-item} Fedora
 :sync: os-fedora
+
+```{include} setup/vscode-vagrant.md
+
+```
+
+:::
+
+:::{tab-item} Arch
+:sync: os-arch
 
 ```{include} setup/vscode-vagrant.md
 
@@ -546,6 +608,15 @@ help.
 
 :::
 
+:::{tab-item} Arch
+:sync: os-arch
+
+```{include} setup/vagrant-update.md
+
+```
+
+:::
+
 ::::
 
 #### Rebuilding the development environment
@@ -590,6 +661,15 @@ help.
 
 :::{tab-item} Fedora
 :sync: os-fedora
+
+```{include} setup/vagrant-rebuild.md
+
+```
+
+:::
+
+:::{tab-item} Arch
+:sync: os-arch
 
 ```{include} setup/vagrant-rebuild.md
 
@@ -653,6 +733,15 @@ Alternatively, you can use a command to terminate/shutdown your WSL2 environment
 
 :::
 
+:::{tab-item} Arch
+:sync: os-arch
+
+```{include} setup/vagrant-halt.md
+
+```
+
+:::
+
 ::::
 
 #### Resuming the development environment
@@ -702,6 +791,15 @@ $ source .venv/bin/activate
 
 :::{tab-item} Fedora
 :sync: os-fedora
+
+```{include} setup/vagrant-resume.md
+
+```
+
+:::
+
+:::{tab-item} Arch
+:sync: os-arch
 
 ```{include} setup/vagrant-resume.md
 
@@ -802,6 +900,19 @@ WSL instance) is also usually helpful.
 
 :::{tab-item} Fedora
 :sync: os-fedora
+
+```{include} setup/shared-vagrant-errors.md
+
+```
+
+```{include} setup/unix-troubleshoot.md
+
+```
+
+:::
+
+:::{tab-item} Arch
+:sync: os-arch
 
 ```{include} setup/shared-vagrant-errors.md
 

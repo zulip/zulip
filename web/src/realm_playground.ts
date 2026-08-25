@@ -1,11 +1,9 @@
-import assert from "minimalistic-assert";
-import type {z} from "zod";
-
-import * as typeahead from "../shared/src/typeahead.ts";
+import type * as z from "zod/mini";
 
 import {$t} from "./i18n.ts";
 import * as pygments_data from "./pygments_data.ts";
 import type {realm_playground_schema} from "./state_data.ts";
+import * as typeahead from "./typeahead.ts";
 import * as util from "./util.ts";
 
 export type RealmPlayground = z.output<typeof realm_playground_schema>;
@@ -35,14 +33,16 @@ export function get_playground_info_for_languages(lang: string): RealmPlayground
     return map_language_to_playground_info.get(lang);
 }
 
+export function get_aliases_for_pretty_name(pretty_name: string): string[] {
+    return map_pygments_pretty_name_to_aliases.get(pretty_name) ?? [];
+}
+
 function sort_pygments_pretty_names_by_priority(
     comparator_func: (a: string, b: string) => number,
 ): void {
-    const priority_sorted_pygments_data = Object.entries(pygments_data.langs).sort(([a], [b]) =>
-        comparator_func(a, b),
-    );
+    const priority_sorted_pygments_data = Object.entries(pygments_data.langs);
+    priority_sorted_pygments_data.sort(([a], [b]) => comparator_func(a, b));
     for (const [alias, data] of priority_sorted_pygments_data) {
-        assert(data !== undefined);
         const pretty_name = data.pretty_name;
         // JS Map remembers the original order of insertion of keys.
         if (map_pygments_pretty_name_to_aliases.has(pretty_name)) {
@@ -61,7 +61,7 @@ function sort_pygments_pretty_names_by_priority(
 // to also be pygments languages! retain_unique_language_aliases will
 // deduplicate them.
 export function get_pygments_typeahead_list_for_composebox(): string[] {
-    const playground_pygment_langs = [...map_language_to_playground_info.keys()];
+    const playground_pygment_langs = map_language_to_playground_info.keys();
     const pygment_langs = Object.keys(pygments_data.langs);
 
     return [...playground_pygment_langs, ...pygment_langs];
@@ -74,6 +74,8 @@ export function get_pygments_typeahead_list_for_settings(query: string): Map<str
 
     // Adds a typeahead that allows selecting a custom language, by adding a
     // "Custom language" label in the first position of the typeahead list.
+    // Selecting this option registers the query as typed, diacritics
+    // included; the matcher strips diacritics on both sides instead.
     const clean_query = typeahead.clean_query_lowercase(query);
     if (clean_query !== "") {
         language_labels.set(
@@ -82,8 +84,7 @@ export function get_pygments_typeahead_list_for_settings(query: string): Map<str
         );
     }
 
-    const playground_pygment_langs = [...map_language_to_playground_info.keys()];
-    for (const lang of playground_pygment_langs) {
+    for (const lang of map_language_to_playground_info.keys()) {
         language_labels.set(lang, $t({defaultMessage: "Custom language: {query}"}, {query: lang}));
     }
 

@@ -1,0 +1,35 @@
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import KeyboardTip from "../../components/KeyboardTip.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+import MobileMenu from "../include/_MobileMenu.mdx";
+
+import StarIcon from "~icons/zulip-icon/star";
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <Steps>
+      1. Click on <StarIcon /> **Starred messages**
+         (or <StarIcon /> if the **views**
+         section is collapsed) in the left sidebar.
+    </Steps>
+
+    <ZulipTip>
+      You can also [search your starred messages](/help/search-for-messages)
+      using the `is:starred` filter.
+    </ZulipTip>
+
+    <KeyboardTip>
+      Use <kbd>\*</kbd> to view your starred messages.
+    </KeyboardTip>
+  </TabItem>
+
+  <TabItem label="Mobile">
+    <FlattenedSteps>
+      <MobileMenu />
+
+      1. Tap <StarIcon /> **Starred messages**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>

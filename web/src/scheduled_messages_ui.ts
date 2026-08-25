@@ -1,7 +1,5 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
-
-import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
@@ -21,7 +19,7 @@ type ScheduledMessageComposeArgs =
       }
     | {
           message_type: "private";
-          private_message_recipient: string;
+          private_message_recipient_ids: number[];
           content: string;
           keep_composebox_empty: boolean;
       };
@@ -45,56 +43,46 @@ function narrow_via_edit_scheduled_message(compose_args: ScheduledMessageCompose
             {trigger: "edit scheduled message"},
         );
     } else {
-        message_view.show([{operator: "dm", operand: compose_args.private_message_recipient}], {
+        const user_ids = compose_args.private_message_recipient_ids;
+        message_view.show([{operator: "dm", operand: user_ids}], {
             trigger: "edit scheduled message",
         });
     }
 }
 
 export function open_scheduled_message_in_compose(
-    scheduled_msg: ScheduledMessage,
+    scheduled_message: ScheduledMessage,
     should_narrow_to_recipient?: boolean,
 ): void {
     let compose_args;
-    let narrow_args;
 
-    if (scheduled_msg.type === "stream") {
+    if (scheduled_message.type === "stream") {
         compose_args = {
             message_type: "stream" as const,
-            stream_id: scheduled_msg.to,
-            topic: scheduled_msg.topic,
-            content: scheduled_msg.content,
+            stream_id: scheduled_message.to,
+            topic: scheduled_message.topic,
+            content: scheduled_message.content,
         };
-        narrow_args = compose_args;
     } else {
-        const recipient_ids = scheduled_msg.to.filter(
+        const recipient_ids = scheduled_message.to.filter(
             (recipient_id) => !people.get_by_user_id(recipient_id).is_inaccessible_user,
-        );
-        const recipient_emails = recipient_ids.map(
-            (recipient_id) => people.get_by_user_id(recipient_id).email,
         );
         compose_args = {
             message_type: "private" as const,
             private_message_recipient_ids: recipient_ids,
-            content: scheduled_msg.content,
-            keep_composebox_empty: true,
-        };
-        // Narrow filters still use emails for PMs, though we'll
-        // eventually want to migrate that as well.
-        narrow_args = {
-            message_type: "private" as const,
-            private_message_recipient: recipient_emails.join(","),
-            content: scheduled_msg.content,
+            content: scheduled_message.content,
             keep_composebox_empty: true,
         };
     }
 
     if (should_narrow_to_recipient) {
-        narrow_via_edit_scheduled_message(narrow_args);
+        narrow_via_edit_scheduled_message(compose_args);
     }
 
     compose_actions.start(compose_args);
-    scheduled_messages.set_selected_schedule_timestamp(scheduled_msg.scheduled_delivery_timestamp);
+    scheduled_messages.set_selected_schedule_timestamp(
+        scheduled_message.scheduled_delivery_timestamp,
+    );
 }
 
 function show_message_unscheduled_banner(scheduled_delivery_timestamp: number): void {
@@ -102,17 +90,13 @@ function show_message_unscheduled_banner(scheduled_delivery_timestamp: number): 
         new Date(scheduled_delivery_timestamp * 1000),
         "time",
     );
-    const unscheduled_banner_html = render_compose_banner({
-        banner_type: compose_banner.WARNING,
-        banner_text: $t({
+    compose_banner.show_warning_message(
+        $t({
             defaultMessage: "This message is no longer scheduled to be sent.",
         }),
-        button_text: $t({defaultMessage: "Schedule for {deliver_at}"}, {deliver_at}),
-        classname: compose_banner.CLASSNAMES.unscheduled_message,
-    });
-    compose_banner.append_compose_banner_to_banner_list(
-        $(unscheduled_banner_html),
+        compose_banner.CLASSNAMES.unscheduled_message,
         $("#compose_banners"),
+        {button_text: $t({defaultMessage: "Schedule for {deliver_at}"}, {deliver_at})},
     );
 }
 
@@ -120,12 +104,12 @@ export function edit_scheduled_message(
     scheduled_message_id: number,
     should_narrow_to_recipient = true,
 ): void {
-    const scheduled_msg = scheduled_messages.scheduled_messages_data.get(scheduled_message_id);
-    assert(scheduled_msg !== undefined);
+    const scheduled_message = scheduled_messages.scheduled_messages_by_id.get(scheduled_message_id);
+    assert(scheduled_message !== undefined);
 
     scheduled_messages.delete_scheduled_message(scheduled_message_id, () => {
-        open_scheduled_message_in_compose(scheduled_msg, should_narrow_to_recipient);
-        show_message_unscheduled_banner(scheduled_msg.scheduled_delivery_timestamp);
+        open_scheduled_message_in_compose(scheduled_message, should_narrow_to_recipient);
+        show_message_unscheduled_banner(scheduled_message.scheduled_delivery_timestamp);
     });
 }
 

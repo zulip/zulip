@@ -52,7 +52,7 @@ development environment to receive webhook events from Stripe.
   Stripe.
 - With `tools/run-dev` stopped, you can run `./manage.py
 populate_billing_realms` to populate different billing states, both
-  Cloud and Self-hosted, with various initial plans and billing schedules.
+  Cloud and self-hosted, with various initial plans and billing schedules.
 - Feel free to modify `populate_billing_realms` to add more states if they
   seem useful in your testing. After running the command, you will see a list of
   populated organizations.
@@ -62,11 +62,11 @@ populate_billing_realms` to populate different billing states, both
   - Login as the only available user.
   - Go to `/billing`.
 - Populated `RemoteZulipServer` customers can be accessed by going to
-  `http://selfhosting.localhost:9991/serverlogin/` and providing the
+  `http://selfhosting.zulipdev.com:9991/serverlogin/` and providing the
   credentials in the login form for the server state you wish to
   test. The credentials are printed in the terminal by `./manage.py
 populate_billing_realms`.
-- Populated `RemoteRealm` customers can be accessed simply by follow
+- Populated `RemoteRealm` customers can be accessed simply by following
   their links printed in the terminal in the `./manage.py
 populate_billing_realms` output.
 

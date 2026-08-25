@@ -18,6 +18,8 @@ on:
       - web/postcss.config.js
       - web/third/**
       - web/webpack.config.ts
+      - zerver/apps.py
+      - zerver/checks.py
       - zerver/worker/queue_processors.py
       - zerver/lib/push_notifications.py
       - zerver/lib/storage.py
@@ -65,7 +67,9 @@ jobs:
           # cache action to work. It is owned by root currently.
           sudo chmod -R 0777 /__w/_temp/
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Create cache directories
         run: |
@@ -74,20 +78,23 @@ jobs:
           sudo chown -R github "${dirs[@]}"
 
       - name: Restore pnpm store
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        # zizmor: ignore[cache-poisoning]
         with:
           path: /__w/.pnpm-store
           key: v1-pnpm-store-jammy-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Restore uv cache
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        # zizmor: ignore[cache-poisoning]
         with:
           path: ~/.cache/uv
           key: uv-jammy-${{ hashFiles('uv.lock') }}
           restore-keys: uv-jammy-
 
       - name: Restore emoji cache
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        # zizmor: ignore[cache-poisoning]
         with:
           path: /srv/zulip-emoji-cache
           key: v1-emoji-jammy-${{ hashFiles('tools/setup/emoji/emoji_map.json') }}-${{ hashFiles('tools/setup/emoji/build_emoji') }}-${{ hashFiles('tools/setup/emoji/emoji_setup_utils.py') }}-${{ hashFiles('tools/setup/emoji/emoji_names.py') }}-${{ hashFiles('package.json') }}
@@ -97,7 +104,7 @@ jobs:
         run: ./tools/ci/production-build
 
       - name: Upload production build artifacts for install jobs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: production-tarball
           path: /tmp/production-build
@@ -119,7 +126,7 @@ jobs:
 
       - name: Report status to CZO
         if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
-        uses: zulip/github-actions-zulip/send-message@v1
+        uses: zulip/github-actions-zulip/send-message@f675f2b4eb2a95fae974215476dcb7ad8dfeff6b # v2.0.2
         with:
           api-key: ${{ secrets.ZULIP_BOT_KEY }}
           email: "github-actions-bot@chat.zulip.org"
@@ -149,10 +156,20 @@ jobs:
             os: noble
             extra-args: ""
 
+          - docker_image: zulip/ci:resolute
+            name: Ubuntu 26.04 production install
+            os: resolute
+            extra-args: ""
+
           - docker_image: zulip/ci:bookworm
             name: Debian 12 production install with custom db name and user
             os: bookworm
             extra-args: --test-custom-db
+
+          - docker_image: zulip/ci:trixie
+            name: Debian 13 production install
+            os: trixie
+            extra-args: ""
 
     name: ${{ matrix.name  }}
     container:
@@ -163,7 +180,7 @@ jobs:
 
     steps:
       - name: Download built production tarball
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: production-tarball
           path: /tmp
@@ -175,7 +192,7 @@ jobs:
           # cache action to work. It is owned by root currently.
           sudo chmod -R 0777 /__w/_temp/
 
-          # Since actions/download-artifact@v4 loses all the permissions
+          # Since actions/download-artifact@v6 loses all the permissions
           # of the tarball uploaded by the upload artifact fix those.
           chmod +x /tmp/production-upgrade-pg
           chmod +x /tmp/production-pgroonga
@@ -218,7 +235,7 @@ jobs:
 
       - name: Report status to CZO
         if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
-        uses: zulip/github-actions-zulip/send-message@v1
+        uses: zulip/github-actions-zulip/send-message@f675f2b4eb2a95fae974215476dcb7ad8dfeff6b # v2.0.2
         with:
           api-key: ${{ secrets.ZULIP_BOT_KEY }}
           email: "github-actions-bot@chat.zulip.org"
@@ -256,6 +273,12 @@ jobs:
           - docker_image: zulip/ci:noble-10.0
             name: 10.0 Version Upgrade
             os: noble
+          - docker_image: zulip/ci:trixie-11.0
+            name: 11.0 Version Upgrade
+            os: trixie
+          - docker_image: zulip/ci:resolute-12.0
+            name: 12.0 Version Upgrade
+            os: resolute
 
     name: ${{ matrix.name  }}
     container:
@@ -266,7 +289,7 @@ jobs:
 
     steps:
       - name: Download built production tarball
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: production-tarball
           path: /tmp
@@ -278,7 +301,7 @@ jobs:
           # cache action to work. It is owned by root currently.
           sudo chmod -R 0777 /__w/_temp/
 
-          # Since actions/download-artifact@v4 loses all the permissions
+          # Since actions/download-artifact@v6 loses all the permissions
           # of the tarball uploaded by the upload artifact fix those.
           chmod +x /tmp/production-upgrade
           chmod +x /tmp/production-verify
@@ -306,7 +329,7 @@ jobs:
 
       - name: Report status to CZO
         if: ${{ failure() && github.repository == 'zulip/zulip' && github.event_name == 'push' }}
-        uses: zulip/github-actions-zulip/send-message@v1
+        uses: zulip/github-actions-zulip/send-message@f675f2b4eb2a95fae974215476dcb7ad8dfeff6b # v2.0.2
         with:
           api-key: ${{ secrets.ZULIP_BOT_KEY }}
           email: "github-actions-bot@chat.zulip.org"
@@ -315,3 +338,17 @@ jobs:
           topic: ${{ steps.failure_report_string.outputs.topic }}
           type: "stream"
           content: ${{ steps.failure_report_string.outputs.content }}
+
+  required-jobs:
+    name: "Required jobs"
+    if: always()
+    needs:
+      - production_build
+      - production_install
+      - production_upgrade
+    runs-on: ubuntu-slim
+    steps:
+      - name: "Check required jobs"
+        run: jq 'with_entries(.value |= .result | select(.value | IN("success", "skipped") | not)) | if . != {} then halt_error end' <<<"$NEEDS"
+        env:
+          NEEDS: ${{ toJSON(needs) }}

@@ -4,7 +4,7 @@ You can choose from several convenient options for hosting Zulip:
 
 - Follow these instructions to **install a self-hosted Zulip server on a system
   of your choice**.
-- Use Zulip's [Docker image](deployment.md#zulip-in-docker).
+- Use Zulip's [Docker image](docker.md)
 - Use a preconfigured
   [DigitalOcean droplet](https://marketplace.digitalocean.com/apps/zulip?refcode=3ee45da8ee26)
 - Use [Zulip Cloud](https://zulip.com/plans/) hosting. Read our [guide to choosing between Zulip Cloud and
@@ -56,11 +56,17 @@ tarballs](https://download.zulip.com/server/SHA256SUMS.txt).
 
 ## Step 2: Install Zulip
 
-To set up Zulip with the most common configuration, run the installer as
-follows:
+To set up Zulip with the most common configuration, first become the
+`root` user, if you are not already:
 
 ```bash
-sudo -s  # If not already root
+[ "$(whoami)" != "root" ] && sudo -s
+```
+
+Then, run the installer, providing your email address and the public
+hostname that users will be able to access your server with:
+
+```bash
 ./zulip-server-*/scripts/setup/install --push-notifications --certbot \
     --email=YOUR_EMAIL --hostname=YOUR_HOSTNAME
 ```
@@ -85,11 +91,14 @@ of the failure, you can just rerun the script. For more information, see
 
 #### Installer options
 
-- `--email=it-team@example.com`: The email address for the **person or team who
-  maintains the Zulip installation**. Zulip users on your server will see this
-  as the contact email in automated emails, on help pages, on error pages, etc.
-  You can later configure a display name for your contact email with the
-  `ZULIP_ADMINISTRATOR` [setting][doc-settings].
+- `--email=it-team@example.com`: A **real email address for the person
+  or team who maintains the Zulip installation**. Zulip users on your
+  server will see this as the contact email in automated emails, on
+  help pages, on error pages, etc. If you use the [Mobile Push
+  Notification Service](mobile-push-notifications.md), this is used as
+  a point of contact. You can later configure a display name for your
+  contact email with the `ZULIP_ADMINISTRATOR`
+  [setting][doc-settings].
 
 - `--hostname=zulip.example.com`: The user-accessible domain name for this Zulip
   server, i.e., what users will type in their web browser. This becomes
@@ -127,7 +136,8 @@ of the failure, you can just rerun the script. For more information, see
 
 - `--self-signed-cert`: With this option, the Zulip installer
   generates a self-signed SSL certificate for the server. This isn't
-  suitable for production use, but may be convenient for testing.
+  suitable for production use (unless your server is [behind a reverse
+  proxy][reverse-proxy]), but may be convenient for testing.
 
 For advanced installer options, see our [deployment options][doc-deployment-options]
 documentation.
@@ -145,6 +155,7 @@ If you are importing data, stop here and return to the import instructions for
 [doc-ssl-manual]: ssl-certificates.md#manual-install
 [doc-deployment-options]: deployment.md#advanced-installer-options
 [zulip-backups]: export-and-import.md#backups
+[reverse-proxy]: reverse-proxies.md
 [slack-import]: https://zulip.com/help/import-from-slack
 [mattermost-import]: https://zulip.com/help/import-from-mattermost
 [rocketchat-import]: https://zulip.com/help/import-from-rocketchat
@@ -181,7 +192,8 @@ Learning more:
   server administrators. This extremely low-traffic list is for
   important announcements, including [new
   releases](../overview/release-lifecycle.md) and security issues.
-- Follow [Zulip on Twitter](https://twitter.com/zulip).
+- Follow us on [Mastodon](https://fosstodon.org/@zulip) or
+  [Bluesky](https://bsky.app/profile/zulip.bsky.social).
 - Learn how to [configure your Zulip server settings](settings.md).
 - Learn about [Backups, export and import](export-and-import.md)
   and [upgrading](upgrade.md) a production Zulip

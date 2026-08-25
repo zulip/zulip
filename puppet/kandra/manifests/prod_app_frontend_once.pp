@@ -3,6 +3,7 @@ class kandra::prod_app_frontend_once {
   include zulip::hooks::push_git_ref
   include zulip::hooks::zulip_notify
   include kandra::hooks::zulip_notify_schema_diff
+  include kandra::mirror_to_czo
 
   zulip::cron { 'update-first-visible-message-id':
     hour   => '7',
@@ -24,10 +25,5 @@ class kandra::prod_app_frontend_once {
     minute    => '*',
     command   => '/usr/lib/nagios/plugins/zulip_app_frontend/check_send_receive_time',
     use_proxy => false,
-  }
-  zulip::cron { 'check_user_zephyr_mirror_liveness':
-    hour    => '*',
-    minute  => '*',
-    command => '/usr/lib/nagios/plugins/zulip_zephyr_mirror/check_user_zephyr_mirror_liveness',
   }
 }

@@ -1,0 +1,52 @@
+{
+    "type": "direct_channel",
+    "direct_channel": {
+        "participants": [
+            {
+                "username": "nancy.sanders",
+                "notify_props": {
+                    "desktop": "default",
+                    "mobile": "default",
+                    "mark_unread": "all",
+                    "email": "default",
+                    "ignore_channel_mentions": "default",
+                    "channel_auto_follow_threads": "off"
+                }
+            },
+            {
+                "username": "lois.harper",
+                "notify_props": {
+                    "desktop": "default",
+                    "mobile": "default",
+                    "mark_unread": "all",
+                    "email": "default",
+                    "ignore_channel_mentions": "default",
+                    "channel_auto_follow_threads": "off"
+                }
+            },
+            {
+                "username": "adam.torres",
+                "notify_props": {
+                    "desktop": "default",
+                    "mobile": "default",
+                    "mark_unread": "all",
+                    "email": "default",
+                    "ignore_channel_mentions": "default",
+                    "channel_auto_follow_threads": "off"
+                }
+            },
+            {
+                "username": "keith.ryan",
+                "notify_props": {
+                    "desktop": "default",
+                    "mobile": "default",
+                    "mark_unread": "all",
+                    "email": "default",
+                    "ignore_channel_mentions": "default",
+                    "channel_auto_follow_threads": "off"
+                }
+            }
+        ],
+        "header": "tempore ipsa omnis sunt ut vel."
+    }
+}

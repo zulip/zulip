@@ -1,0 +1,330 @@
+---
+title: Import from Mattermost
+---
+
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+import ImportGetYourOrganizationStarted from "../include/_ImportGetYourOrganizationStarted.mdx";
+import ImportHowUsersWillLogIn from "../include/_ImportHowUsersWillLogIn.mdx";
+import ImportIntoASelfHostedServerDescription from "../include/_ImportIntoASelfHostedServerDescription.mdx";
+import ImportIntoASelfHostedServerInstructions from "../include/_ImportIntoASelfHostedServerInstructions.mdx";
+import ImportIntoAZulipCloudOrganization from "../include/_ImportIntoAZulipCloudOrganization.mdx";
+import ImportSelfHostedServerTips from "../include/_ImportSelfHostedServerTips.mdx";
+import ImportWorkspaceToZulip from "../include/_ImportWorkspaceToZulip.mdx";
+import ImportYourDataIntoZulip from "../include/_ImportYourDataIntoZulip.mdx";
+import ImportZulipCloudOrganizationWarning from "../include/_ImportZulipCloudOrganizationWarning.mdx";
+import ViewImportedUsers from "../include/_ViewImportedUsers.mdx";
+
+<ImportWorkspaceToZulip />
+
+## Import process overview
+
+To import your Mattermost organization into Zulip, you will need to take the
+following steps, which are described in more detail below:
+
+<Steps>
+  1. [Export your Mattermost data](#export-your-mattermost-data).
+  1. [Import your Mattermost data into Zulip](#import-your-data-into-zulip).
+  1. [Get your organization started with Zulip](#get-your-organization-started-with-zulip)!
+</Steps>
+
+## Import your organization from Mattermost into Zulip
+
+### Export your Mattermost data
+
+Mattermost's [bulk export tool](https://docs.mattermost.com/manage/bulk-export-tool.html)
+allows you to export all public and private channel messages.
+
+The instructions below correspond to various common ways Mattermost is installed; if
+yours isn't covered, [contact us](/help/contact-support) and we'll help you out.
+
+Replace `<username>` and `<server_ip>` with the appropriate values below.
+
+<Tabs>
+  <TabItem label="Default installation">
+    <Steps>
+      1. SSH into your Mattermost production server.
+         ```bash "<username>" "<server_ip>"
+         ssh <username>@<server_ip>
+         ```
+      1. Navigate to the `../server/bin/` directory in your Mattermost installation and
+         locate the `mmctl` executable. All subsequent `mmctl` commands are executed
+         using this executable.
+      1. Log in to a `mmctl` instance.
+         ```bash "<server_ip>"
+         mmctl auth login <server_ip>
+         ```
+         You’ll be prompted for a username (use your admin user), password, and for a
+         connection name. The connection name can be anything you want.
+      1. Create a full export of the server, including attached files.
+         ```bash
+         mmctl export create
+         ```
+         <ZulipNote>
+           If you're on version \< `7.3.0`, you need to include the `--attachments`
+           argument when calling the command above to export attachment files.
+         </ZulipNote>
+      1. List all of the exports on the server, and copy the name of the
+         latest one to your clipboard.
+         ```bash
+         mmctl export list
+         ```
+      1. Download the export file to the server, replacing `latest_export`
+         with the actual file name from the previous step and `/local/dir/`
+         with the download destination.
+         ```bash
+         mmctl export download latest_export.zip /local/dir/latest_export.zip
+         ```
+      1. Finally, copy the exported zip to your local computer.
+         ```bash "<username>" "<server_ip>"
+         scp <username>@<server_ip>:latest_export.zip /local/dir
+         ```
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Cloud instance">
+    <Steps>
+      1. Log in to your Mattermost cloud instance.
+      1. Navigate to the `../server/bin/` directory in your Mattermost installation and
+         locate the `mmctl` executable. All subsequent `mmctl` commands are executed
+         using this executable.
+      1. Log in to a `mmctl` instance.
+         ```bash "<server_ip>"
+         mmctl auth login <server_ip>
+         ```
+         You’ll be prompted for a username (use your admin user), password, and for a
+         connection name. The connection name can be anything you want.
+      1. Create a full export of the server, including attached files.
+         ```bash
+         mmctl export create
+         ```
+         <ZulipNote>
+           If you're on version \< `7.3.0`, you need to include the `--attachments`
+           argument when calling the command above to export attachment files.
+         </ZulipNote>
+      1. List all of the exports on the server, and copy the name of the
+         latest one to your clipboard.
+         ```bash
+         mmctl export list
+         ```
+      1. Download the export file to the server, replacing `latest_export`
+         with the actual file name from the previous step and `/local/dir/`
+         with the download destination.
+         ```bash
+         mmctl export download latest_export.zip /local/dir/latest_export.zip
+         ```
+      1. Finally, copy the exported zip file to your local computer.
+         ```bash "<username>" "<server_ip>"
+         scp <username>@<server_ip>:latest_export.zip /local/dir
+         ```
+    </Steps>
+  </TabItem>
+
+  <TabItem label="Docker">
+    <Steps>
+      1. SSH into the server hosting your Mattermost docker container.
+         ```bash "<username>" "<server_ip>"
+         ssh <username>@<server_ip>
+         ```
+
+      1. Navigate to the `../server/bin/` directory in your Mattermost installation and
+         locate the `mmctl` executable. All subsequent `mmctl` commands are executed
+         using this executable.
+
+      1. Create a full export of the server, including attached files.
+         ```bash
+         docker exec -it mattermost-docker_app_1 mmctl export create
+         ```
+         <ZulipNote>
+           If you're on version \< `7.3.0`, you need to include the `--attachments`
+           argument when calling the command above to export attachment files.
+         </ZulipNote>
+
+      1. List all of the exports on the server, and copy the name of the
+         latest one to your clipboard.
+         ```bash
+         docker exec -it mattermost-docker_app_1 mmctl export list
+         ```
+
+      1. Download the export file to the server, replacing `latest_export`
+         with the actual file name from the previous step and `/local/dir/`
+         with the download destination.
+         ```bash
+         docker exec -it mattermost-docker_app_1 mmctl export download latest_export.zip /local/dir/latest_export.zip
+         ```
+
+      1. Finally, copy the exported zip file to your local computer.
+         ```bash "<username>" "<server_ip>"
+         scp <username>@<server_ip>:latest_export.zip /local/dir
+         ```
+    </Steps>
+  </TabItem>
+
+  <TabItem label="GitLab Omnibus">
+    <Steps>
+      1. SSH into your GitLab Omnibus server.
+         ```bash "<username>" "<server_ip>"
+         ssh <username>@<server_ip>
+         ```
+      1. Create an export of all your Mattermost teams, as a tar file.
+         ```bash
+         cd /opt/gitlab/embedded/service/mattermost
+         sudo -u \
+             mattermost /opt/gitlab/embedded/bin/mattermost \
+             --config=/var/opt/gitlab/mattermost/config.json \
+             export bulk export.json --all-teams --attachments
+         mkdir -p exported_emoji
+         tar --transform 's|^|mattermost/|' -czf export.tar.gz \
+             data/ exported_emoji/ export.json
+         ```
+      1. Exit your shell on the GitLab Omnibus server.
+         ```bash
+         exit
+         ```
+      1. Finally, copy the exported tar file from GitLab Omnibus to your local computer.
+         ```bash "<username>" "<server_ip>"
+         scp <username>@<server_ip>:/opt/gitlab/embedded/bin/mattermost/export.tar.gz .
+         ```
+    </Steps>
+  </TabItem>
+</Tabs>
+
+### Import your data into Zulip
+
+<ImportYourDataIntoZulip />
+
+<Tabs>
+  <TabItem label="Zulip Cloud">
+    <ImportIntoAZulipCloudOrganization />
+
+    <ImportZulipCloudOrganizationWarning />
+  </TabItem>
+
+  <TabItem label="Self-hosted">
+    <ImportIntoASelfHostedServerDescription />
+
+    <FlattenedSteps>
+      <ImportIntoASelfHostedServerInstructions />
+
+      1. To import into an organization hosted on the root domain
+         (`EXTERNAL_HOST`) of the Zulip installation, run the following commands,
+         replacing `<team-name>` with the name of the Mattermost team you want to import.
+         <ImportSelfHostedServerTips />
+         ```bash "<team-name>"
+         cd /tmp
+         tar -xf mattermost_data.tar.gz
+         cd /home/zulip/deployments/current
+         ./scripts/stop-server
+         ./manage.py convert_mattermost_data /tmp/mattermost_data --output /tmp/converted_mattermost_data
+         ./manage.py import '' /tmp/converted_mattermost_data/<team-name>
+         ./scripts/start-server
+         ```
+         By default Mattermost teams will be converted into their own Zulip organizations,
+         to convert all Mattermost teams into one Zulip organization, run:
+         ```bash
+         ./manage.py convert_mattermost_data /tmp/mattermost_data --output /tmp/converted_mattermost_data --combine-teams-into-one-org
+         ```
+         <ZulipNote>
+           **Note**: With the `--combine-teams-into-one-org` option, admins in individual Mattermost
+           teams will be converted into admin users in the combined Zulip organization.
+         </ZulipNote>
+         Alternatively, to import into a custom subdomain, run:
+         ```bash "<team-name>" "<subdomain>"
+         cd /tmp
+         tar -xf mattermost_data.tar.gz
+         cd /home/zulip/deployments/current
+         ./scripts/stop-server
+         ./manage.py convert_mattermost_data /tmp/mattermost_data --output /tmp/converted_mattermost_data
+         ./manage.py import <subdomain> /tmp/converted_mattermost_data/<team-name>
+         ./scripts/start-server
+         ```
+      1. Follow [step 4](https://zulip.readthedocs.io/en/stable/production/install.html#step-4-configure-and-use)
+         of the guide for [installing a new Zulip
+         server](https://zulip.readthedocs.io/en/stable/production/install.html).
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="Self-hosted (cloud export)">
+    <ImportIntoASelfHostedServerDescription />
+
+    <FlattenedSteps>
+      <ImportIntoASelfHostedServerInstructions />
+
+      1. To import into an organization hosted on the root domain
+         (`EXTERNAL_HOST`) of the Zulip installation, run the following commands,
+         replacing `<team-name>` with the name of the Mattermost team you want to import.
+         <ImportSelfHostedServerTips />
+         ```bash "<team-name>"
+         unzip latest_export.zip -d /tmp/my_mattermost_export
+         mv /tmp/my_mattermost_export/import.jsonl /tmp/my_mattermost_export/export.json
+         cd /home/zulip/deployments/current
+         ./scripts/stop-server
+         ./manage.py convert_mattermost_data /tmp/my_mattermost_export --output /tmp/converted_mattermost_data
+         ./manage.py import '' /tmp/converted_mattermost_data/<team-name>
+         ./scripts/start-server
+         ```
+         Alternatively, to import into a custom subdomain, run:
+         ```bash "<team-name>" "<subdomain>"
+         unzip latest_export.zip -d /tmp/my_mattermost_export
+         mv /tmp/my_mattermost_export/import.jsonl /tmp/my_mattermost_export/export.json
+         cd /home/zulip/deployments/current
+         ./scripts/stop-server
+         ./manage.py convert_mattermost_data /tmp/my_mattermost_export --output /tmp/converted_mattermost_data
+         ./manage.py import <subdomain> /tmp/converted_mattermost_data/<team-name>
+         ./scripts/start-server
+         ```
+      1. Follow [step 4](https://zulip.readthedocs.io/en/stable/production/install.html#step-4-configure-and-use)
+         of the guide for [installing a new Zulip
+         server](https://zulip.readthedocs.io/en/stable/production/install.html).
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+#### Import details
+
+Whether you are using Zulip Cloud or self-hosting Zulip, here are a few notes to
+keep in mind about the import process:
+
+* Mattermost does not export workspace settings, so you will need to [configure
+  the settings for your Zulip organization](/help/customize-organization-settings).
+  This includes settings like [email
+  visibility](/help/configure-email-visibility),
+  [message editing permissions](/help/restrict-message-editing-and-deletion),
+  and [how users can join your organization](/help/restrict-account-creation).
+* Mattermost's user roles are mapped to Zulip's [user
+  roles](/help/user-roles) in the following way:
+  | Mattermost role    | Zulip role |
+  | ------------------ | ---------- |
+  | Team administrator | Owner      |
+  | Member             | Member     |
+* Mattermost's export tool does not support exporting user avatars or message
+  edit history.
+* Direct messages will only be imported from Mattermost workspaces containing
+  a single team. This is because Mattermost's data exports do not associate
+  direct messages with a specific Mattermost team.
+* Messages in threads are imported, but they are not explicitly marked as
+  being in a thread.
+
+## Get your organization started with Zulip
+
+<ImportGetYourOrganizationStarted />
+
+## Decide how users will log in
+
+<ImportHowUsersWillLogIn>
+  ### Allow users to log in with non-password authentication
+
+  ### Send password reset emails to all users
+
+  ### Manual password resets
+</ImportHowUsersWillLogIn>
+
+<ViewImportedUsers />
+
+## Related articles
+
+* [Choosing between Zulip Cloud and self-hosting](/help/zulip-cloud-or-self-hosting)
+* [Moving to Zulip](/help/moving-to-zulip)
+* [Getting started with Zulip](/help/getting-started-with-zulip)

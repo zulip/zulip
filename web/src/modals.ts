@@ -1,10 +1,12 @@
-import $ from "jquery";
+import {$} from "jquery";
 import Micromodal from "micromodal";
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as overlay_util from "./overlay_util.ts";
 import * as overlays from "./overlays.ts";
+import * as popovers from "./popovers.ts";
 
 type Hook = () => void;
 
@@ -125,7 +127,6 @@ export function open(
             // animation is complete. So, we manually add a class after the
             // animation is complete.
             $micromodal.addClass("modal--open");
-            $micromodal.removeClass("modal--opening");
 
             if (conf.on_shown) {
                 conf.on_shown();
@@ -140,6 +141,19 @@ export function open(
             if (conf.on_hidden) {
                 conf.on_hidden();
             }
+            Micromodal.removeModal(modal_id);
+        }
+    });
+
+    // Micromodal registers a document-level keydown handler that closes
+    // the modal on Escape. When a popover is open inside the modal,
+    // Escape should close just the popover, not the modal behind it.
+    // We intercept the event here so that Micromodal's handler never
+    // sees it when a popover is active.
+    $micromodal.on("keydown", (e) => {
+        if (e.key === "Escape" && popovers.any_active()) {
+            popovers.hide_all();
+            e.stopPropagation();
         }
     });
 
@@ -157,7 +171,7 @@ export function open(
            input inside the modal too far will weirdly close the modal.
            See https://github.com/ghosh/Micromodal/issues/505.
            Work around this with our own implementation. */
-        if (document.getSelection()?.type === "Range") {
+        if (mouse_drag.is_drag(e)) {
             return;
         }
         close(modal_id);

@@ -1,16 +1,35 @@
 {{#> modal_banner . }}
     <p class="banner_message">
-        {{#if few_unsubscribed_participants}}
+        {{#if (eq selected_propagate_mode "change_one")}}
             {{#tr}}
-                Some topic participants <z-user-names></z-user-names> are not subscribed to &nbsp;<z-stream></z-stream>.
-                {{#*inline "z-user-names"}}({{{unsubscribed_participant_formatted_names_list}}}){{/inline}}
-                {{#*inline "z-stream"}}<strong>{{> ../inline_decorated_channel_name stream=stream show_colored_icon=true}}</strong>{{/inline}}
+                Message sender <z-user-names></z-user-names> is not subscribed to <z-stream></z-stream>.
+                {{#*inline "z-user-names" ~}}
+                    (
+                    {{~#list_each unsubscribed_participant_names as |name| ~}}
+                    <b class="highlighted-element">{{name}}</b>
+                    {{~/list_each ~}}
+                    )
+                {{~/inline}}
+                {{#*inline "z-stream"}}<strong class="highlighted-element">{{> ../decorated_channel_name inline_with_text=true stream=stream}}</strong>{{/inline}}
+            {{/tr}}
+
+        {{else if few_unsubscribed_participants}}
+            {{#tr}}
+                Some topic participants <z-user-names></z-user-names> are not subscribed to <z-stream></z-stream>.
+                {{#*inline "z-user-names" ~}}
+                    (
+                    {{~#list_each unsubscribed_participant_names as |name| ~}}
+                    <b class="highlighted-element">{{name}}</b>
+                    {{~/list_each ~}}
+                    )
+                {{~/inline}}
+                {{#*inline "z-stream"}}<strong class="highlighted-element">{{> ../decorated_channel_name inline_with_text=true stream=stream}}</strong>{{/inline}}
             {{/tr}}
 
         {{else}}
             {{#tr}}
-                {n_unsubscribed_participants} topic participants are not subscribed to &nbsp;<z-stream></z-stream>.
-                {{#*inline "z-stream"}}<strong>{{> ../inline_decorated_channel_name stream=stream show_colored_icon=true}}</strong>{{/inline}}
+                {unsubscribed_participants_count} topic participants are not subscribed to <z-stream></z-stream>.
+                {{#*inline "z-stream"}}<strong class="highlighted-element">{{> ../decorated_channel_name inline_with_text=true stream=stream}}</strong>{{/inline}}
             {{/tr}}
         {{/if}}
     </p>

@@ -14,10 +14,10 @@ Facebook, and other apps you might consider? Zulip provides:
 - [A free version, discounted pricing, and full
   sponsorships](#free-version-discounted-pricing-and-full-sponsorships-available).
 
-> “The core of the Recurse Center is the community, and the core of our online
+> The core of the Recurse Center is the community, and the core of our online
 > community is Zulip… Switching to Zulip has turned out to be one of the best
 > decisions we’ve made, and it’s impossible to imagine RC today without it. No
-> other tool has a user experience that scales to a community of our size.”
+> other tool has a user experience that scales to a community of our size.
 >
 > — Nick Bergson-Shilcock, founder and CEO, [Recurse
 > Center](https://www.recurse.com/); [learn how the Recurse Center uses
@@ -50,10 +50,10 @@ experience makes it easier for them to participate async.
   <img class="text-image-in-row-image" src="/static/images/landing-page/research/streams_and_topics_day.png" alt="Illustration of channels and topics list in Zulip">
 </div>
 
-> “When we made the switch to [@zulip](https://twitter.com/zulip) a few months
+> When we made the switch to [@zulip](https://twitter.com/zulip) a few months
 > ago for chat, never in my wildest dreams did I imagine it was going to become
 > the beating heart of the community, and so quickly. It&#39;s a game changer.
-> 🧑‍💻🗨️👩‍💻”
+> 🧑‍💻🗨️👩‍💻
 
 > — Dan Allen (@mojavelinux), [June 29,
 2021](https://twitter.com/mojavelinux/status/1409702273400201217) &nbsp;
@@ -99,12 +99,12 @@ conversation.
 Participants can ask a question or kick off a new discussion without having to worry
 about interrupting.
 
->  “Zulip helped the FHIR community grow from a tiny group of dreamers to 500
->  active users sending 6000 messages per month, all driving the creation of
->  better healthcare standards. Zulip’s topic-based threading helps us manage
->  simultaneous discussions with clarity, ensuring the right people can pay
->  attention to the right messages. This makes our large-group discussion far
->  more manageable than what we’ve experienced with Skype and Slack.”
+> Zulip helped the FHIR community grow from a tiny group of dreamers to 500
+> active users sending 6000 messages per month, all driving the creation of
+> better healthcare standards. Zulip’s topic-based threading helps us manage
+> simultaneous discussions with clarity, ensuring the right people can pay
+> attention to the right messages. This makes our large-group discussion far
+> more manageable than what we’ve experienced with Skype and Slack.
 
 > — Grahame Grieve, founder, FHIR health care standards body
 
@@ -122,6 +122,13 @@ they'll bounce for the day, and eventually stop coming by altogether.
 Zulip's list of [recent conversations](/help/recent-conversations) offers a
 quick overview of what's been happening in your community. It's easy to scan the
 list of topics to find which ones you want to dive into.
+
+> I had never engaged with the Changelog podcast community in Slack because I
+> always got too overwhelmed with the linear flow of conversations. Topic based
+> systems are such a fresh breath of air.
+
+> — [Siddhartha Golu](https://www.siddharthagolu.com/),
+>   [Changelog](https://changelog.com/podcast) community member
 
 ### Many ways to participate
 
@@ -170,16 +177,16 @@ features.
 For full control over your data, follow our simple [installation
 instructions](https://zulip.readthedocs.io/en/stable/production/install.html) to
 host Zulip yourself. If you like, you can develop [custom
-integrations](/api/incoming-webhooks-overview) and
-[features](https://zulip.readthedocs.io/en/stable/production/modify.html). If
+integrations](https://zulip.readthedocs.io/en/latest/webhooks/incoming-webhooks-overview.html)
+and [features](https://zulip.readthedocs.io/en/stable/production/modify.html). If
 your needs change, you can always move [from self-hosting to Zulip
 Cloud](/help/move-to-zulip-cloud) or [the other
 way](https://zulip.readthedocs.io/en/stable/production/export-and-import.html#import-into-a-new-zulip-server).
 
-> "We just moved the Lichess team (~100 persons) to <a
+> We just moved the Lichess team (~100 persons) to <a
 > href="https://twitter.com/zulip">@zulip</a>, and I&#39;m loving it. The topics
 > in particular make it vastly superior to slack &amp; discord, when it comes to
-> dealing with many conversations. Zulip is also open-source!"
+> dealing with many conversations. Zulip is also open-source!
 
 > — <a href="https://twitter.com/ornicar">Thibault D (@ornicar)</a>
 
@@ -204,6 +211,10 @@ eligible for discounted pricing or full sponsorship.
 We’ve talked to hundreds of people about their experiences with
 community chat. Here are some reasons why folks choose Zulip over
 other apps you might consider for hosting your community.
+
+> Zulip makes all my Slack and Discord communities feel tedious by comparison.
+>
+> — AJ Kerrigan, [Changelog](https://changelog.com/podcast) community member
 
 ### Group chat apps (WhatsApp, Telegram, Signal, Messenger, etc.)
 
@@ -236,10 +247,10 @@ algorithms: even replies to a user's own post are by default resorted
 and partially hidden from them. From Meta's perspective, advertisers
 are the customers, and your attention is the product being sold.
 
->  “I highly recommend Zulip to other communities… Slack is a no-go for many due
->  to not being FLOSS, and I’m concerned about vendor lock-in if they were to
->  stop being so generous. Slack’s threading model is much worse than Zulip’s
->  IMO. The channels/topics flow is an incredibly intuitive way to keep track of
->  everything that is going on.”
-
+> I highly recommend Zulip to other communities… Slack is a no-go for many due
+> to not being FLOSS, and I’m concerned about vendor lock-in if they were to
+> stop being so generous. Slack’s threading model is much worse than Zulip’s
+> IMO. The channels/topics flow is an incredibly intuitive way to keep track of
+> everything that is going on.
+>
 > — RJ Ryan, Mixxx Developer

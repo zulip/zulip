@@ -1,0 +1,73 @@
+.resizable-box-handle {
+    position: absolute;
+    user-select: none;
+    touch-action: none;
+    background: transparent;
+
+    &.resizable-box-handle-top,
+    &.resizable-box-handle-bottom {
+        left: 0;
+        width: 100%;
+        height: var(--resizable-box-handle-size);
+        cursor: row-resize;
+    }
+
+    &.resizable-box-handle-left,
+    &.resizable-box-handle-right {
+        top: 0;
+        width: var(--resizable-box-handle-size);
+        height: 100%;
+        cursor: col-resize;
+    }
+
+    &.resizable-box-handle-top {
+        top: 0;
+    }
+
+    &.resizable-box-handle-bottom {
+        bottom: 0;
+    }
+
+    &.resizable-box-handle-left {
+        left: 0;
+    }
+
+    &.resizable-box-handle-right {
+        right: 0;
+    }
+
+    /* Corners sit above edges so they win pointer events in the
+       overlap region. */
+    &.resizable-box-handle-top-left,
+    &.resizable-box-handle-top-right,
+    &.resizable-box-handle-bottom-left,
+    &.resizable-box-handle-bottom-right {
+        width: var(--resizable-box-handle-size);
+        height: var(--resizable-box-handle-size);
+        z-index: 1;
+    }
+
+    &.resizable-box-handle-top-left {
+        top: 0;
+        left: 0;
+        cursor: nwse-resize;
+    }
+
+    &.resizable-box-handle-bottom-right {
+        bottom: 0;
+        right: 0;
+        cursor: nwse-resize;
+    }
+
+    &.resizable-box-handle-top-right {
+        top: 0;
+        right: 0;
+        cursor: nesw-resize;
+    }
+
+    &.resizable-box-handle-bottom-left {
+        bottom: 0;
+        left: 0;
+        cursor: nesw-resize;
+    }
+}

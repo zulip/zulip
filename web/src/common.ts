@@ -1,16 +1,18 @@
-import $ from "jquery";
+import {$} from "jquery";
 import * as tippy from "tippy.js";
 
 import {$t} from "./i18n.ts";
 import * as util from "./util.ts";
 
-export const status_classes = "alert-error alert-success alert-info alert-warning alert-loading";
+export const status_classes = "alert-error alert-success alert-info alert-warning";
 
 export function phrase_match(query: string, phrase: string): boolean {
     // match "tes" to "test" and "stream test" but not "hostess"
     return (" " + phrase.toLowerCase()).includes(" " + query.toLowerCase());
 }
 
+// Any changes to this function should be followed by a check for changes needed
+// to adjust_mac_kbd_tags of starlight_help/src/scripts/adjust_mac_kbd_tags.ts.
 const keys_map = new Map([
     ["Backspace", "Delete"],
     ["Enter", "Return"],
@@ -18,13 +20,16 @@ const keys_map = new Map([
     ["Alt", "⌥"],
 ]);
 
+// Any changes to this function should be followed by a check for changes needed
+// to adjust_mac_kbd_tags of starlight_help/src/scripts/adjust_mac_kbd_tags.ts.
 export function has_mac_keyboard(): boolean {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return /mac/i.test(navigator.platform);
 }
 
 // We convert the <kbd> tags used for keyboard shortcuts to mac equivalent
 // key combinations, when we detect that the user is using a mac-style keyboard.
+// Any changes to this function should be followed by a check for changes needed
+// to adjust_mac_kbd_tags of starlight_help/src/scripts/adjust_mac_kbd_tags.ts.
 export function adjust_mac_kbd_tags(kbd_elem_class: string): void {
     if (!has_mac_keyboard()) {
         return;
@@ -132,11 +137,11 @@ function toggle_password_visibility(
 
     if ($password_field.attr("type") === "password") {
         $password_field.attr("type", "text");
-        $(password_selector).removeClass("fa-eye-slash").addClass("fa-eye");
+        $(password_selector).removeClass("zulip-icon-hide").addClass("zulip-icon-show");
         label = $t({defaultMessage: "Hide password"});
     } else {
         $password_field.attr("type", "password");
-        $(password_selector).removeClass("fa-eye").addClass("fa-eye-slash");
+        $(password_selector).removeClass("zulip-icon-show").addClass("zulip-icon-hide");
         label = $t({defaultMessage: "Show password"});
     }
     set_password_toggle_label(password_selector, label, tippy_tooltips);
@@ -147,7 +152,7 @@ export function reset_password_toggle_icons(
     password_selector: string,
 ): void {
     $(password_field).attr("type", "password");
-    $(password_selector).removeClass("fa-eye").addClass("fa-eye-slash");
+    $(password_selector).removeClass("zulip-icon-show").addClass("zulip-icon-hide");
     const label = $t({defaultMessage: "Show password"});
     set_password_toggle_label(password_selector, label, true);
 }

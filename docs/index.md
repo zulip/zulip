@@ -1,31 +1,36 @@
-# Welcome to the Zulip documentation!
+# Zulip documentation overview
 
-Welcome! Zulip's documentation is split into four parts:
+Welcome! This is the documentation site for running [Zulip organized team
+chat](https://zulip.com) in production, contributing to the [Zulip open-source
+project](https://github.com/zulip), and generally learning how Zulip works under
+the hood.
 
-- [Help center documentation](https://zulip.com/help/), for users and
+The following pages may help you get started:
+
+- [Installation instructions](production/install.md) for setting up your Zulip
+  server.
+- [Contributing guide](contributing/contributing.md), with step-by-step
+  instructions on how to get started contributing code to Zulip.
+
+You may also want to check out:
+
+- [An overview](https://zulip.com/features/) of the features available in Zulip.
+- [Help center documentation](https://zulip.com/help/) for users and
   administrators of Zulip organizations.
-- [Installation documentation](production/install.md), for
-  installing and maintaining a production self-hosted Zulip installation.
-- [API documentation](https://zulip.com/api/), for writing
-  integrations or bots using the Zulip API.
-- [Contributor documentation](contributing/contributing.md), for
-  developing the Zulip software, translating, submitting bug reports,
-  or making other contributions to the project.
+- [API documentation](https://zulip.com/api/) for writing integrations or bots
+  using the Zulip API.
 
-Zulip has well over 150,000 words of documentation. If you can't find
-what you're looking for, please [let us
-know](https://zulip.com/development-community/)! Further information on
-the Zulip project and its features can be found at
-<https://zulip.com>.
+If there's any information you can't find, please drop by the
+[#documentation](https://chat.zulip.org/#narrow/channel/19-documentation)
+channel in the [Zulip development
+community](https://zulip.com/development-community/) and let us know! We work
+hard to make Zulip's documentation comprehensive and easy to follow.
 
-This site contains our installation and contributor documentation. If
-this is your first time here, you may want to start with [Production
-installation](production/install.md) or [Contributing guide](contributing/contributing.md).
-
-Contents:
+The documentation here is organized into the following sections:
 
 - {ref}`Overview <overview>`
 - {ref}`Zulip in production <zulip-in-production>`
+- {ref}`Incoming webhook integrations <webhook-integrations>`
 - {ref}`Contributing to Zulip <contributing-to-zulip>`
 - {ref}`Development environment <development-environment>`
 - {ref}`Developer tutorials <developer-tutorials>`
@@ -35,6 +40,8 @@ Contents:
 - {ref}`Writing documentation <writing-documentation>`
 - {ref}`Translating Zulip <translating>`
 - {ref}`Outreach programs <outreach>`
+
+## Documentation index
 
 (overview)=
 
@@ -57,6 +64,16 @@ maxdepth: 3
 production/index
 ```
 
+(webhook-integrations)=
+
+```{toctree}
+---
+maxdepth: 3
+---
+
+webhooks/index
+```
+
 (contributing-to-zulip)=
 
 ```{toctree}
@@ -65,6 +82,16 @@ maxdepth: 3
 ---
 
 contributing/index
+```
+
+(project-processes)=
+
+```{toctree}
+---
+maxdepth: 3
+---
+
+processes/index
 ```
 
 (development-environment)=

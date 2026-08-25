@@ -1,9 +1,28 @@
 import json
 import re
+from dataclasses import asdict, dataclass
 from typing import Any
 
 from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, SubMessage
+
+
+@dataclass
+class PollData:
+    question: str
+    options: list[str]
+
+
+@dataclass
+class TodoTaskData:
+    task: str
+    desc: str
+
+
+@dataclass
+class TodoData:
+    task_list_title: str
+    tasks: list[TodoTaskData]
 
 
 def get_widget_data(content: str) -> tuple[str | None, Any]:
@@ -16,12 +35,12 @@ def get_widget_data(content: str) -> tuple[str | None, Any]:
         if widget_type in valid_widget_types:
             remaining_content = content.replace(tokens[0], "", 1)
             extra_data = get_extra_data_from_widget_type(remaining_content, widget_type)
-            return widget_type, extra_data
+            return widget_type, asdict(extra_data)
 
     return None, None
 
 
-def parse_poll_extra_data(content: str) -> Any:
+def parse_poll_extra_data(content: str) -> PollData:
     # This is used to extract the question from the poll command.
     # The command '/poll question' will pre-set the question in the poll
     lines = content.splitlines()
@@ -35,14 +54,10 @@ def parse_poll_extra_data(content: str) -> Any:
         option = re.sub(r"(\s*[-*]?\s*)", "", line.strip(), count=1)
         if len(option) > 0:
             options.append(option)
-    extra_data = {
-        "question": question,
-        "options": options,
-    }
-    return extra_data
+    return PollData(question=question, options=options)
 
 
-def parse_todo_extra_data(content: str) -> Any:
+def parse_todo_extra_data(content: str) -> TodoData:
     # This is used to extract the task list title from the todo command.
     # The command '/todo Title' will pre-set the task list title
     lines = content.splitlines()
@@ -59,19 +74,15 @@ def parse_todo_extra_data(content: str) -> Any:
             # by the (first) `: ` substring
             task_data_array = task_data.split(": ", 1)
             tasks.append(
-                {
-                    "task": task_data_array[0].strip(),
-                    "desc": task_data_array[1].strip() if len(task_data_array) > 1 else "",
-                }
+                TodoTaskData(
+                    task=task_data_array[0].strip(),
+                    desc=task_data_array[1].strip() if len(task_data_array) > 1 else "",
+                )
             )
-    extra_data = {
-        "task_list_title": task_list_title,
-        "tasks": tasks,
-    }
-    return extra_data
+    return TodoData(task_list_title=task_list_title, tasks=tasks)
 
 
-def get_extra_data_from_widget_type(content: str, widget_type: str | None) -> Any:
+def get_extra_data_from_widget_type(content: str, widget_type: str | None) -> PollData | TodoData:
     if widget_type == "poll":
         return parse_poll_extra_data(content)
     else:

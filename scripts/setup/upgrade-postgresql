@@ -12,7 +12,7 @@ export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
 export LANGUAGE=C.UTF-8
 
-LATEST_SUPPORTED_VERSION=17
+LATEST_SUPPORTED_VERSION=18
 UPGRADE_TO=${1:-$LATEST_SUPPORTED_VERSION}
 UPGRADE_FROM=$(crudini --get /etc/zulip/zulip.conf postgresql version)
 ZULIP_PATH="$(dirname "$0")/../.."
@@ -37,7 +37,12 @@ fi
 # Django actually stores its data in.  We can only do that if the
 # database server is on the same host as the application server.
 if [ -d /home/zulip/deployments/current ]; then
-    DATA_IS_IN=$(su zulip -c '/home/zulip/deployments/current/manage.py shell -c "from django.db import connection; print(int(connection.cursor().connection.server_version/10000))"')
+    DATA_IS_IN=$(
+        su -s /usr/bin/env -- zulip \
+            DJANGO_SETTINGS_MODULE=zproject.settings \
+            uv run --directory=/home/zulip/deployments/current --no-sync \
+            python -c 'from django.db import connection; print(connection.cursor().connection.server_version // 10000)'
+    )
 
     if [ "$UPGRADE_FROM" != "$DATA_IS_IN" ]; then
         cat <<EOF
@@ -103,7 +108,7 @@ su postgres -c "/usr/lib/postgresql/$UPGRADE_TO/bin/vacuumdb --all --analyze-onl
 
 # Update extensions
 if [ -n "$SCRIPTS_PATH" ] && [ -f "$SCRIPTS_PATH/update_extensions.sql" ]; then
-    su postgres -c "psql $SCRIPTS_PATH/update_extensions.sql"
+    su postgres -c "psql --file $SCRIPTS_PATH/update_extensions.sql"
     rm "$SCRIPTS_PATH/update_extensions.sql"
 fi
 

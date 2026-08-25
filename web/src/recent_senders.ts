@@ -54,7 +54,7 @@ export function clear_for_testing(): void {
     topic_senders.clear();
 }
 
-function max_id_for_stream_topic_sender(opts: {
+export function max_id_for_stream_topic_sender(opts: {
     stream_id: number;
     topic: string;
     sender_id: number;
@@ -72,7 +72,7 @@ function max_id_for_stream_topic_sender(opts: {
     return id_tracker ? id_tracker.max_id() : -1;
 }
 
-function max_id_for_stream_sender(opts: {stream_id: number; sender_id: number}): number {
+export function max_id_for_stream_sender(opts: {stream_id: number; sender_id: number}): number {
     const {stream_id, sender_id} = opts;
     const sender_dict = stream_senders.get(stream_id);
     if (!sender_dict) {
@@ -190,7 +190,7 @@ export function process_topic_edit(opts: {
 export function update_topics_of_deleted_message_ids(message_ids: number[]): void {
     for (const message_id of message_ids) {
         const message = message_store.get(message_id);
-        if (!message || message.type !== "stream") {
+        if (message?.type !== "stream") {
             continue;
         }
 
@@ -241,12 +241,9 @@ export function get_topic_recent_senders(stream_id: number, topic: string): numb
         return list2.max_id() - list1.max_id();
     }
 
-    const sorted_senders = [...sender_dict.entries()].sort(by_max_message_id);
-    const recent_senders = [];
-    for (const item of sorted_senders) {
-        recent_senders.push(item[0]);
-    }
-    return recent_senders;
+    const sorted_senders = [...sender_dict];
+    sorted_senders.sort(by_max_message_id);
+    return Array.from(sorted_senders, (item) => item[0]);
 }
 
 export function process_private_message(opts: {

@@ -3,9 +3,13 @@
 // Setup
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
+const {page_params} = require("./lib/zpage_params.cjs");
 
 // Mocking and stubbing things
 set_global("document", "document-stub");
@@ -23,8 +27,11 @@ mock_esm("../src/message_list_view", {
     MessageListView,
 });
 mock_esm("../src/settings_data", {
-    user_has_permission_for_group_setting: () => true,
     user_can_access_all_other_users: () => true,
+    user_has_permission_for_group_setting: () => true,
+});
+const message_util = mock_esm("../src/message_util", {
+    user_can_send_direct_message: () => true,
 });
 
 const stream_data = zrequire("stream_data");
@@ -36,41 +43,48 @@ const {MessageList} = zrequire("message_list");
 const {MessageListData} = zrequire("message_list_data");
 const {set_current_user, set_realm} = zrequire("state_data");
 
-const current_user = {
+const current_user = make_user({
     email: "alice@zulip.com",
     user_id: 1,
     full_name: "Alice",
-};
+});
 set_current_user(current_user);
 people.add_active_user(current_user);
-people.add_active_user({
-    email: "bob@zulip.com",
-    user_id: 2,
-    full_name: "Bob",
-});
-people.add_active_user({
-    email: "zoe@zulip.com",
-    user_id: 3,
-    full_name: "Zoe",
-});
+people.add_active_user(
+    make_user({
+        email: "bob@zulip.com",
+        user_id: 2,
+        full_name: "Bob",
+    }),
+);
+people.add_active_user(
+    make_user({
+        email: "zoe@zulip.com",
+        user_id: 3,
+        full_name: "Zoe",
+    }),
+);
 people.initialize_current_user(1);
 
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
-set_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME});
+set_realm(make_realm({realm_empty_topic_display_name: REALM_EMPTY_TOPIC_DISPLAY_NAME}));
 
 // Helper test function
 function test_reply_label(expected_label) {
-    const label = $("#left_bar_compose_reply_button_big").html();
-    const prepend_text_length = "Message ".length;
     assert.equal(
-        label.slice(prepend_text_length),
+        $("#left_bar_compose_reply_button_big")
+            .html()
+            .replace(/^(translated: )?Message /, ""),
         expected_label,
-        "'" + label.slice(prepend_text_length),
-        Number("' did not match '") + expected_label + "'",
     );
 }
 
-run_test("reply_label", () => {
+run_test("reply_label", ({mock_template}) => {
+    mock_template(
+        "decorated_channel_name.hbs",
+        false,
+        (data) => `<rendered-channel-stub:${data.stream.name}>`,
+    );
     // Mocking up a test message list
     const filter = new Filter([]);
     const list = new MessageList({
@@ -80,18 +94,18 @@ run_test("reply_label", () => {
         }),
     });
     message_lists.current = list;
-    const stream_one = {
+    const stream_one = make_stream({
         subscribed: true,
         name: "first_stream",
         stream_id: 1,
-    };
-    stream_data.add_sub(stream_one);
-    const stream_two = {
+    });
+    stream_data.add_sub_for_tests(stream_one);
+    const stream_two = make_stream({
         subscribed: true,
         name: "second_stream",
         stream_id: 2,
-    };
-    stream_data.add_sub(stream_two);
+    });
+    stream_data.add_sub_for_tests(stream_two);
     list.add_messages(
         [
             {
@@ -161,10 +175,10 @@ run_test("reply_label", () => {
     );
 
     const expected_labels = [
-        "#first_stream &gt; first_topic",
-        "#first_stream &gt; second_topic",
-        "#second_stream &gt; third_topic",
-        "#second_stream &gt; second_topic",
+        "<rendered-channel-stub:first_stream> &gt; first_topic",
+        "<rendered-channel-stub:first_stream> &gt; second_topic",
+        "<rendered-channel-stub:second_stream> &gt; third_topic",
+        "<rendered-channel-stub:second_stream> &gt; second_topic",
         "Bob",
         "Bob, Zoe",
     ];
@@ -188,46 +202,171 @@ run_test("reply_label", () => {
     list.select_id(list.next());
     const label_html = $("#left_bar_compose_reply_button_big").html();
     assert.equal(
-        `Message #second_stream &gt; <span class="empty-topic-display">translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}</span>`,
         label_html,
+        `translated: Message <rendered-channel-stub:second_stream> &gt; <span class="empty-topic-display">translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}</span>`,
     );
 });
 
 run_test("empty_narrow", () => {
     message_lists.current.visibly_empty = () => true;
-    compose_closed_ui.update_recipient_text_for_reply_button();
+    compose_closed_ui.update_reply_button_with_recipient_context();
     const label = $("#left_bar_compose_reply_button_big").text();
     assert.equal(label, "translated: Compose message");
 });
 
-run_test("test_non_message_list_input", () => {
+run_test("test_non_message_list_input", ({mock_template}) => {
+    mock_template(
+        "decorated_channel_name.hbs",
+        false,
+        (data) => `<rendered-channel-stub:${data.stream.name}>`,
+    );
     message_lists.current = undefined;
     recent_view_util.is_visible = () => true;
-    const stream = {
+    const stream = make_stream({
         subscribed: true,
         name: "stream test",
         stream_id: 10,
-    };
-    stream_data.add_sub(stream);
+    });
+    stream_data.add_sub_for_tests(stream);
 
     // Channel and topic row.
-    compose_closed_ui.update_recipient_text_for_reply_button({
+    compose_closed_ui.update_reply_button_with_recipient_context({
         stream_id: stream.stream_id,
         topic: "topic test",
     });
-    test_reply_label("#stream test &gt; topic test");
+    test_reply_label("<rendered-channel-stub:stream test> &gt; topic test");
 
     // Direct message conversation with current user row.
-    compose_closed_ui.update_recipient_text_for_reply_button({
+    compose_closed_ui.update_reply_button_with_recipient_context({
         user_ids: [current_user.user_id],
     });
     let label = $("#left_bar_compose_reply_button_big").html();
-    assert.equal(label, "Message yourself");
+    assert.equal(label, "translated: Write yourself a note");
 
     // Invalid data for a the reply button text.
-    compose_closed_ui.update_recipient_text_for_reply_button({
+    compose_closed_ui.update_reply_button_with_recipient_context({
         invalid_field: "something unexpected",
     });
     label = $("#left_bar_compose_reply_button_big").text();
     assert.equal(label, "translated: Compose message");
+});
+
+run_test("recipient_label_text_for_call_creation", () => {
+    recent_view_util.is_visible = () => true;
+    message_lists.current = undefined;
+    const stream = make_stream({
+        subscribed: true,
+        name: "stream test",
+        stream_id: 11,
+    });
+    stream_data.add_sub_for_tests(stream);
+
+    assert.equal(
+        compose_closed_ui.get_recipient_label({
+            stream_id: stream.stream_id,
+            topic: "topic test",
+        })?.label_text,
+        "#stream test > topic test",
+    );
+
+    // Empty topic falls back to the realm's empty-topic display name.
+    assert.equal(
+        compose_closed_ui.get_recipient_label({
+            stream_id: stream.stream_id,
+            topic: "",
+        })?.label_text,
+        `#stream test > translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}`,
+    );
+});
+
+run_test("update_reply_button_state", ({override, override_rewire}) => {
+    const $compose_reply_wrapper = $("#legacy-closed-compose-box .compose-reply-button-wrapper");
+    const $reply_button = $(".compose_reply_button");
+
+    const postable_stream = make_stream({
+        subscribed: true,
+        name: "postable_stream",
+        stream_id: 20,
+    });
+    stream_data.add_sub_for_tests(postable_stream);
+
+    const restricted_stream = make_stream({
+        subscribed: true,
+        name: "restricted_stream",
+        stream_id: 21,
+    });
+    stream_data.add_sub_for_tests(restricted_stream);
+    override_rewire(
+        stream_data,
+        "can_post_messages_in_stream",
+        (stream) => stream.stream_id !== restricted_stream.stream_id,
+    );
+
+    // Reply button is enabled for stream where user can post.
+    message_lists.current = {};
+    $compose_reply_wrapper.attr("data-stream-id", postable_stream.stream_id.toString());
+    $compose_reply_wrapper.removeAttr("data-user-ids-string");
+    compose_closed_ui.update_reply_button_state();
+    assert.notEqual($reply_button.attr("disabled"), "disabled");
+    assert.equal($compose_reply_wrapper.attr("data-reply-button-type"), "selected_message");
+
+    // Reply button is disabled for stream where user cannot post.
+    $compose_reply_wrapper.attr("data-stream-id", restricted_stream.stream_id.toString());
+    compose_closed_ui.update_reply_button_state();
+    assert.equal($reply_button.attr("disabled"), "disabled");
+    assert.equal($compose_reply_wrapper.attr("data-reply-button-type"), "stream_disabled");
+
+    // Reply button is enabled for DM where user can send.
+    override(message_util, "user_can_send_direct_message", () => true);
+    $compose_reply_wrapper.removeAttr("data-stream-id");
+    $compose_reply_wrapper.attr("data-user-ids-string", "2");
+    compose_closed_ui.update_reply_button_state();
+    assert.notEqual($reply_button.attr("disabled"), "disabled");
+    assert.equal($compose_reply_wrapper.attr("data-reply-button-type"), "selected_message");
+
+    // Reply button is disabled for DM where user cannot send.
+    override(message_util, "user_can_send_direct_message", () => false);
+    compose_closed_ui.update_reply_button_state();
+    assert.equal($reply_button.attr("disabled"), "disabled");
+    assert.equal($compose_reply_wrapper.attr("data-reply-button-type"), "direct_disabled");
+
+    // No data attributes leads to enabled reply button.
+    message_lists.current = undefined;
+    $compose_reply_wrapper.removeAttr("data-stream-id");
+    $compose_reply_wrapper.removeAttr("data-user-ids-string");
+    compose_closed_ui.update_reply_button_state();
+    assert.notEqual($reply_button.attr("disabled"), "disabled");
+
+    // Button is not disabled for spectators.
+    page_params.is_spectator = true;
+    message_lists.current = {};
+    $compose_reply_wrapper.attr("data-stream-id", restricted_stream.stream_id.toString());
+    compose_closed_ui.update_reply_button_state();
+    assert.notEqual($reply_button.attr("disabled"), "disabled");
+    assert.equal($compose_reply_wrapper.attr("data-reply-button-type"), "selected_message");
+    page_params.is_spectator = false;
+});
+
+run_test("set_standard_text_resets_stale_state", ({override}) => {
+    const $compose_reply_wrapper = $("#legacy-closed-compose-box .compose-reply-button-wrapper");
+    const $reply_button = $(".compose_reply_button");
+
+    // Put the button in the "direct_disabled" state, with a recipient the
+    // user cannot message, so it carries a data-user-ids-string attribute.
+    override(message_util, "user_can_send_direct_message", () => false);
+    message_lists.current = {};
+    $compose_reply_wrapper.removeAttr("data-stream-id");
+    $compose_reply_wrapper.attr("data-user-ids-string", "2");
+    compose_closed_ui.update_reply_button_state();
+    assert.equal($reply_button.attr("disabled"), "disabled");
+    assert.equal($compose_reply_wrapper.attr("data-reply-button-type"), "direct_disabled");
+
+    // Resetting to the standard text must clear the recipient context along
+    // with the stale button type and disabled state, so the hover tooltip
+    // never sees "direct_disabled" without a data-user-ids-string attribute.
+    compose_closed_ui.set_standard_text_for_reply_button();
+    assert.equal($("#left_bar_compose_reply_button_big").text(), "translated: Compose message");
+    assert.equal($compose_reply_wrapper.attr("data-user-ids-string"), undefined);
+    assert.equal($compose_reply_wrapper.attr("data-reply-button-type"), undefined);
+    assert.notEqual($reply_button.attr("disabled"), "disabled");
 });

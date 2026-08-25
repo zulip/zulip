@@ -1,10 +1,10 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import PlotlyBar from "plotly.js/lib/bar";
-import Plotly from "plotly.js/lib/core";
+import Plotly from "plotly.js/lib/core"; // eslint-disable-line import-x/default
 import PlotlyPie from "plotly.js/lib/pie";
 import * as tippy from "tippy.js";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as blueslip from "../blueslip.ts";
 import {$t, $t_html} from "../i18n.ts";
@@ -52,12 +52,12 @@ type DataByTime<T> = {
 };
 
 // Define zod schemas for plotly
-const datum_schema: z.ZodType<Plotly.Datum> = z.any();
+const datum_schema: z.ZodMiniType<Plotly.Datum> = z.any();
 
 // Define a schema factory function for the utility generic type
-function instantiate_type_DataByEveryoneUser<T extends z.ZodTypeAny>(
+function instantiate_type_DataByEveryoneUser<T extends z.ZodMiniType>(
     schema: T,
-): z.ZodObject<{everyone: T; user: T}> {
+): z.ZodMiniObject<{everyone: T; user: T}> {
     return z.object({
         everyone: schema,
         user: schema,
@@ -75,27 +75,31 @@ const active_user_data = z.object({
     all_time: z.array(datum_schema),
 });
 
-const read_data_schema = instantiate_type_DataByEveryoneUser(
-    z.object({read: z.array(z.number())}),
-).extend({...common_data_schema.shape});
+const read_data_schema = z.object({
+    ...instantiate_type_DataByEveryoneUser(z.object({read: z.array(z.number())})).shape,
+    ...common_data_schema.shape,
+});
 
-const sent_data_schema = instantiate_type_DataByEveryoneUser(
-    z.object({
-        human: z.array(z.number()),
-        bot: z.array(z.number()),
-    }),
-).extend({...common_data_schema.shape});
+const sent_data_schema = z.object({
+    ...instantiate_type_DataByEveryoneUser(
+        z.object({
+            human: z.array(z.number()),
+            bot: z.array(z.number()),
+        }),
+    ).shape,
+    ...common_data_schema.shape,
+});
 
-const ordered_sent_data_schema = instantiate_type_DataByEveryoneUser(
-    z.record(z.array(z.number())),
-).extend({
+const ordered_sent_data_schema = z.object({
+    ...instantiate_type_DataByEveryoneUser(z.record(z.string(), z.array(z.number()))).shape,
     ...common_data_schema.shape,
     display_order: z.array(z.string()),
 });
 
-const user_count_data_schema = z
-    .object({everyone: active_user_data})
-    .extend({...common_data_schema.shape});
+const user_count_data_schema = z.object({
+    ...z.object({everyone: active_user_data}).shape,
+    ...common_data_schema.shape,
+});
 
 // Inferred types used in nested functions
 type SentData = z.infer<typeof sent_data_schema>;
@@ -118,10 +122,10 @@ const font_12pt = {
     color: "#000000",
 };
 
-let last_full_update = Number.POSITIVE_INFINITY;
+let last_full_update = Infinity;
 
-function handle_parse_server_stats_result<_, T>(
-    result: z.SafeParseReturnType<_, T>,
+function handle_parse_server_stats_result<T>(
+    result: z.core.util.SafeParseResult<T>,
 ): T | undefined {
     if (!result.success) {
         blueslip.warn(
@@ -509,10 +513,7 @@ function populate_messages_sent_over_time(raw_data: unknown): void {
     }
 
     // Generate traces
-    let date_formatter = function (date: Date): string {
-        return format_date(date, true);
-    };
-    let values = {me: data.user.human, human: data.everyone.human, bot: data.everyone.bot};
+    let date_formatter: (date: Date) => string;
 
     let info = aggregate_data(data, "day");
     date_formatter = function (date) {
@@ -530,7 +531,7 @@ function populate_messages_sent_over_time(raw_data: unknown): void {
     const weekly_traces = make_traces(info.dates, info.values, "bar", date_formatter);
 
     const dates = data.end_times.map((timestamp: number) => new Date(timestamp * 1000));
-    values = {
+    const values = {
         human: partial_sums(data.everyone.human),
         bot: partial_sums(data.everyone.bot),
         me: partial_sums(data.user.human),
@@ -735,10 +736,7 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
         });
     }
     label_values.sort((a, b) => b.value - a.value);
-    const labels: string[] = [];
-    for (const item of label_values) {
-        labels.push(item.label);
-    }
+    const labels = Array.from(label_values, (item) => item.label);
 
     function make_plot_data(
         time_series_data: Record<string, number[]>,
@@ -758,7 +756,7 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
                 annotations.values.push(plot_data.values[i]!);
                 annotations.labels.push(plot_data.labels[i]!);
                 annotations.text.push(
-                    "   " + plot_data.labels[i] + " (" + plot_data.percentages[i] + ")",
+                    " ".repeat(3) + plot_data.labels[i] + " (" + plot_data.percentages[i] + ")",
                 );
             }
         }
@@ -809,22 +807,22 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
     }
 
     if (data.end_times.length < 365) {
-        $("#pie_messages_sent_by_client button[data-time='year']").remove();
+        $("#messages_sent_by_client button[data-time='year']").remove();
         if (data.end_times.length < 30) {
-            $("#pie_messages_sent_by_client button[data-time='month']").remove();
+            $("#messages_sent_by_client button[data-time='month']").remove();
             if (data.end_times.length < 7) {
-                $("#pie_messages_sent_by_client button[data-time='week']").remove();
+                $("#messages_sent_by_client button[data-time='week']").remove();
             }
         }
     }
 
     function draw_plot(): void {
-        $("#id_messages_sent_by_client > div").removeClass("spinner");
+        $("#messages_sent_by_client_chart > div").removeClass("spinner");
         const data_ = plot_data[user_button][time_button];
         layout.height = layout.margin!.b! + data_.trace.x.length * 30;
         layout.xaxis = {range: [0, Math.max(...data_.trace.x) * 1.3]};
         void Plotly.newPlot(
-            "id_messages_sent_by_client",
+            "messages_sent_by_client_chart",
             [data_.trace, data_.trace_annotations],
             layout,
             {displayModeBar: false, staticPlot: true},
@@ -835,16 +833,16 @@ function populate_messages_sent_by_client(raw_data: unknown): void {
 
     // Click handlers
     function set_user_button($button: JQuery): void {
-        $("#pie_messages_sent_by_client button[data-user]").removeClass("selected");
+        $("#messages_sent_by_client button[data-user]").removeClass("selected");
         $button.addClass("selected");
     }
 
     function set_time_button($button: JQuery): void {
-        $("#pie_messages_sent_by_client button[data-time]").removeClass("selected");
+        $("#messages_sent_by_client button[data-time]").removeClass("selected");
         $button.addClass("selected");
     }
 
-    $("#pie_messages_sent_by_client button").on("click", function () {
+    $("#messages_sent_by_client button").on("click", function () {
         if ($(this).attr("data-user")) {
             set_user_button($(this));
             user_button = user_button_schema.parse($(this).attr("data-user"));
@@ -1268,10 +1266,7 @@ function populate_messages_read_over_time(raw_data: unknown): void {
     }
 
     // Generate traces
-    let date_formatter = function (date: Date): string {
-        return format_date(date, true);
-    };
-    let values = {me: data.user.read, everyone: data.everyone.read};
+    let date_formatter: (date: Date) => string;
 
     let info = aggregate_data(data, "day");
     date_formatter = function (date) {
@@ -1288,7 +1283,7 @@ function populate_messages_read_over_time(raw_data: unknown): void {
     const weekly_traces = make_traces(info.dates, info.values, "bar", date_formatter);
 
     const dates = data.end_times.map((timestamp: number) => new Date(timestamp * 1000));
-    values = {everyone: partial_sums(data.everyone.read), me: partial_sums(data.user.read)};
+    const values = {everyone: partial_sums(data.everyone.read), me: partial_sums(data.user.read)};
     date_formatter = function (date) {
         return format_date(date, true);
     };

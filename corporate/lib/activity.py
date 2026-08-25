@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from typing import Any
-from urllib.parse import urlencode
 
 from django.conf import settings
 from django.db import connection
@@ -19,7 +18,6 @@ from psycopg2.sql import Composable
 from corporate.models.licenses import LicenseLedger
 from corporate.models.plans import CustomerPlan
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.url_encoding import append_url_query_string
 from zerver.models import Realm
 from zilencer.models import (
     RemoteCustomerUserCount,
@@ -99,7 +97,7 @@ def dictfetchall(cursor: CursorWrapper) -> list[dict[str, Any]]:
 
 def format_optional_datetime(date: datetime | None, display_none: bool = False) -> str:
     if date:
-        return date.strftime("%Y-%m-%d %H:%M")
+        return date.replace(tzinfo=None).isoformat(" ", "minutes")
     elif display_none:
         return "None"
     else:
@@ -107,7 +105,7 @@ def format_optional_datetime(date: datetime | None, display_none: bool = False) 
 
 
 def format_datetime_as_date(date: datetime) -> str:
-    return date.strftime("%Y-%m-%d")
+    return date.date().isoformat()
 
 
 def format_none_as_zero(value: int | None) -> int:
@@ -117,11 +115,13 @@ def format_none_as_zero(value: int | None) -> int:
         return 0
 
 
-def user_activity_link(email: str, user_profile_id: int) -> Markup:
+def user_activity_link(link_text: str, user_profile_id: int) -> Markup:
     from corporate.views.user_activity import get_user_activity
 
     url = reverse(get_user_activity, kwargs=dict(user_profile_id=user_profile_id))
-    return Markup('<a href="{url}">{email}</a>').format(url=url, email=email)
+    if link_text == "":
+        return Markup('<a href="{url}"><i class="fa fa-user-circle"></i></a>').format(url=url)
+    return Markup('<a href="{url}">{link_text}</a>').format(url=url, link_text=link_text)
 
 
 def realm_activity_link(realm_str: str) -> Markup:
@@ -139,16 +139,12 @@ def realm_stats_link(realm_str: str) -> Markup:
 
 
 def user_support_link(email: str) -> Markup:
-    support_url = reverse("support")
-    query = urlencode({"q": email})
-    url = append_url_query_string(support_url, query)
+    url = reverse("support", query={"q": email})
     return Markup('<a href="{url}"><i class="fa fa-gear"></i></a>').format(url=url)
 
 
 def realm_support_link(realm_str: str) -> Markup:
-    support_url = reverse("support")
-    query = urlencode({"q": realm_str})
-    url = append_url_query_string(support_url, query)
+    url = reverse("support", query={"q": realm_str})
     return Markup('<a href="{url}">{realm}</i></a>').format(url=url, realm=realm_str)
 
 
@@ -166,9 +162,7 @@ def remote_installation_stats_link(server_id: int) -> Markup:
 
 
 def remote_installation_support_link(hostname: str) -> Markup:
-    support_url = reverse("remote_servers_support")
-    query = urlencode({"q": hostname})
-    url = append_url_query_string(support_url, query)
+    url = reverse("remote_servers_support", query={"q": hostname})
     return Markup('<a href="{url}"><i class="fa fa-gear"></i></a>').format(url=url)
 
 
@@ -255,7 +249,7 @@ def get_estimated_arr_and_rate_by_realm() -> tuple[dict[str, int], dict[str, str
 
     for plan in plans:
         assert plan.customer.realm is not None
-        latest_ledger_entry = plan.latest_ledger_entry[0]  # type: ignore[attr-defined] # attribute from prefetch_related query
+        latest_ledger_entry = plan.latest_ledger_entry[0]
         assert latest_ledger_entry is not None
         renewal_cents = RealmBillingSession(
             realm=plan.customer.realm
@@ -293,7 +287,7 @@ def get_plan_data_by_remote_server() -> dict[int, RemoteActivityPlanData]:  # no
         server_id = plan.customer.remote_server.id
         assert server_id is not None
 
-        latest_ledger_entry = plan.latest_ledger_entry[0]  # type: ignore[attr-defined] # attribute from prefetch_related query
+        latest_ledger_entry = plan.latest_ledger_entry[0]
         assert latest_ledger_entry is not None
 
         plan_data = get_remote_activity_plan_data(
@@ -343,7 +337,7 @@ def get_plan_data_by_remote_realm() -> dict[int, dict[int, RemoteActivityPlanDat
         server_id = plan.customer.remote_realm.server_id
         assert server_id is not None
 
-        latest_ledger_entry = plan.latest_ledger_entry[0]  # type: ignore[attr-defined] # attribute from prefetch_related query
+        latest_ledger_entry = plan.latest_ledger_entry[0]
         assert latest_ledger_entry is not None
 
         plan_data = get_remote_activity_plan_data(

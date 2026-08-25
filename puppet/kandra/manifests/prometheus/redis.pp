@@ -16,7 +16,7 @@ class kandra::prometheus::redis {
     cleanup_after  => [Service[supervisor]],
   }
 
-  kandra::firewall_allow { 'redis_exporter': port => '9121' }
+  kandra::teleport::prometheus_app { 'redis_exporter': port => '9121' }
   file { "${zulip::common::supervisor_conf_dir}/prometheus_redis_exporter.conf":
     ensure  => file,
     require => [

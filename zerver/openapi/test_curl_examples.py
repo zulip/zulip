@@ -25,9 +25,25 @@ from zerver.openapi.curl_param_value_generators import (
 from zerver.openapi.openapi import get_endpoint_from_operationid
 
 UNTESTED_GENERATED_CURL_EXAMPLES = {
+    # Requires organization-specific JWT_AUTH_KEYS configuration.
+    "jwt-fetch-api-key",
     # Would need push notification bouncer set up to test the
-    # generated curl example for this endpoint.
+    # generated curl example for the following three endpoints.
+    "e2ee-test-notify",
     "test-notify",
+    "register-remote-push-device",
+    # Having a message for a specific user available to test this endpoint
+    # is tricky for testing.
+    "delete-reminder",
+    # Video call endpoints that need the third-party call provider
+    # to be configured to test the curl example for the endpoint.
+    "create-constructor-groups-video-call",
+    "create-nextcloud-talk-video-call",
+    "create-webex-video-call",
+    # Successfully running this example would deactivate the "zulip"
+    # realm used by the test server, breaking the curl examples that
+    # run after it.
+    "deactivate-realm",
 }
 
 
@@ -39,8 +55,7 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
         extensions=[markdown_extension.makeExtension(api_url=realm.url + "/api")]
     )
 
-    # We run our curl tests in alphabetical order (except that we
-    # delay the deactivate-user test to the very end), since we depend
+    # We run our curl tests in alphabetical order since we depend
     # on "add" tests coming before "remove" tests in some cases.  We
     # should try to either avoid ordering dependencies or make them
     # very explicit.
@@ -81,8 +96,6 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
             # example, and then run that to test it.
 
             # Set AUTHENTICATION_LINE to default_authentication_line.
-            # Set this every iteration, because deactivate_own_user
-            # will override this for its test.
             AUTHENTICATION_LINE[0] = default_authentication_line
 
             curl_command_html = md_engine.convert(line.strip())
@@ -92,7 +105,7 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
 
             for curl_command_text in commands:
                 curl_command_text = curl_command_text.replace(
-                    "BOT_EMAIL_ADDRESS:BOT_API_KEY", AUTHENTICATION_LINE[0]
+                    "EMAIL_ADDRESS:API_KEY", AUTHENTICATION_LINE[0]
                 )
 
                 print("Testing {} ...".format(curl_command_text.split("\n")[0]))

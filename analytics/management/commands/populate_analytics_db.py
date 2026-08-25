@@ -26,7 +26,7 @@ from zerver.lib.stream_subscription import create_stream_subscription
 from zerver.lib.streams import get_default_values_for_stream_permission_group_settings
 from zerver.lib.timestamp import floor_to_day
 from zerver.lib.upload import upload_message_attachment_from_request
-from zerver.models import Client, Realm, RealmAuditLog, Recipient, Stream, UserProfile
+from zerver.models import Attachment, Client, Realm, RealmAuditLog, Recipient, Stream, UserProfile
 from zerver.models.groups import NamedUserGroup, SystemGroups, UserGroupMembership
 from zerver.models.realm_audit_logs import AuditLogEventType
 
@@ -68,6 +68,10 @@ class Command(ZulipBaseCommand):
         # associated with the "analytics" realm.
         do_drop_all_analytics_tables()
 
+        # Delete attachment added for summary statistic before deleting
+        # the Realm object.
+        Attachment.objects.filter(realm__string_id="analytics").delete()
+
         # This also deletes any objects with this realm as a foreign key
         Realm.objects.filter(string_id="analytics").delete()
 
@@ -88,10 +92,10 @@ class Command(ZulipBaseCommand):
         )
 
         owners_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.OWNERS, realm=realm, is_system_group=True
+            name=SystemGroups.OWNERS, realm_for_sharding=realm, is_system_group=True
         )
         guests_system_group = NamedUserGroup.objects.get(
-            name=SystemGroups.EVERYONE, realm=realm, is_system_group=True
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
         )
 
         shylock = create_user(
@@ -156,14 +160,13 @@ class Command(ZulipBaseCommand):
             end_times = time_range(
                 last_end_time, last_end_time, stat.frequency, len(next(iter(fixture_data.values())))
             )
-            if table == InstallationCount:
-                id_args: dict[str, Any] = {}
+            id_args: dict[str, Realm | UserProfile | Stream] = {}
             if table == RealmCount:
                 id_args = {"realm": realm}
             if table == UserCount:
                 id_args = {"realm": realm, "user": shylock}
             if table == StreamCount:
-                id_args = {"stream": stream, "realm": realm}
+                id_args = {"realm": realm, "stream": stream}
 
             for subgroup, values in fixture_data.items():
                 table._default_manager.bulk_create(
@@ -276,21 +279,21 @@ class Command(ZulipBaseCommand):
             property=stat.property, end_time=last_end_time, state=FillState.DONE
         )
 
-        website, created = Client.objects.get_or_create(name="website")
-        old_desktop, created = Client.objects.get_or_create(name="desktop app Linux 0.3.7")
-        android, created = Client.objects.get_or_create(name="ZulipAndroid")
-        iOS, created = Client.objects.get_or_create(name="ZulipiOS")
-        react_native, created = Client.objects.get_or_create(name="ZulipMobile")
-        flutter, created = Client.objects.get_or_create(name="ZulipFlutter")
-        API, created = Client.objects.get_or_create(name="API: Python")
-        zephyr_mirror, created = Client.objects.get_or_create(name="zephyr_mirror")
-        unused, created = Client.objects.get_or_create(name="unused")
-        long_webhook, created = Client.objects.get_or_create(name="ZulipLooooooooooongNameWebhook")
+        website, _created = Client.objects.get_or_create(name="website")
+        old_desktop, _created = Client.objects.get_or_create(name="desktop app Linux 0.3.7")
+        android, _created = Client.objects.get_or_create(name="ZulipAndroid")
+        iOS, _created = Client.objects.get_or_create(name="ZulipiOS")
+        react_native, _created = Client.objects.get_or_create(name="ZulipMobile")
+        flutter, _created = Client.objects.get_or_create(name="ZulipFlutter")
+        API, _created = Client.objects.get_or_create(name="API: Python")
+        irc_mirror, _created = Client.objects.get_or_create(name="irc_mirror")
+        unused, _created = Client.objects.get_or_create(name="unused")
+        long_webhook, _created = Client.objects.get_or_create(name="ZulipLooooooooooongNameWebhook")
 
         stat = COUNT_STATS["messages_sent:client:day"]
         user_data = {
             website.id: self.generate_fixture_data(stat, 2, 1, 1.5, 0.6, 8),
-            zephyr_mirror.id: self.generate_fixture_data(stat, 0, 0.3, 1.5, 0.6, 8),
+            irc_mirror.id: self.generate_fixture_data(stat, 0, 0.3, 1.5, 0.6, 8),
         }
         insert_fixture_data(stat, user_data, UserCount)
         realm_data = {
@@ -301,7 +304,7 @@ class Command(ZulipBaseCommand):
             react_native.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             flutter.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             API.id: self.generate_fixture_data(stat, 5, 5, 5, 0.6, 3),
-            zephyr_mirror.id: self.generate_fixture_data(stat, 1, 1, 3, 0.6, 3),
+            irc_mirror.id: self.generate_fixture_data(stat, 1, 1, 3, 0.6, 3),
             unused.id: self.generate_fixture_data(stat, 0, 0, 0, 0, 0),
             long_webhook.id: self.generate_fixture_data(stat, 5, 5, 2, 0.6, 3),
         }
@@ -314,7 +317,7 @@ class Command(ZulipBaseCommand):
             flutter.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             react_native.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             API.id: self.generate_fixture_data(stat, 50, 50, 5, 0.6, 3),
-            zephyr_mirror.id: self.generate_fixture_data(stat, 10, 10, 3, 0.6, 3),
+            irc_mirror.id: self.generate_fixture_data(stat, 10, 10, 3, 0.6, 3),
             unused.id: self.generate_fixture_data(stat, 0, 0, 0, 0, 0),
             long_webhook.id: self.generate_fixture_data(stat, 50, 50, 2, 0.6, 3),
         }

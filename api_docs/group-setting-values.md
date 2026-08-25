@@ -21,8 +21,8 @@ value**, which can take two forms:
 
 - An integer user group ID, which can be either a named user group
   visible in the UI or a [role-based system group](#system-groups).
-- An object with fields `direct_member_ids`, containing a list of
-  integer user IDs, and `direct_subgroup_ids`, containing a list of
+- An object with fields `direct_members`, containing a list of
+  integer user IDs, and `direct_subgroups`, containing a list of
   integer group IDs. The setting's value is the union of the
   identified collection of users and groups.
 
@@ -31,8 +31,8 @@ anonymous group. They function very much like a named user group
 object, and remove the naming and UI overhead involved in creating
 a visible user group just to store the value of a single setting.
 
-The server will canonicalize an object with an empty `direct_member_ids`
-list and a `direct_subgroup_ids` list that contains just a single group
+The server will canonicalize an object with an empty `direct_members`
+list and a `direct_subgroups` list that contains just a single group
 ID to the integer format.
 
 ## System groups

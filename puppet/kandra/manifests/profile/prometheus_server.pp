@@ -6,11 +6,18 @@ class kandra::profile::prometheus_server inherits kandra::profile::base {
 
   include kandra::prometheus::base
 
+  # Service discovery via Teleport
+  include kandra::teleport::tbot
+  include kandra::teleport::sd
+
   # This blackbox monitoring of the backup system runs locally
   include kandra::prometheus::wal_g
 
   # Ditto the Akamai logs
   include kandra::prometheus::akamai
+
+  # Ditto Weblate
+  include kandra::prometheus::weblate
 
   # The SES log ETL (writing to S3) runs on vector
   include kandra::ses_logs
@@ -69,6 +76,7 @@ class kandra::profile::prometheus_server inherits kandra::profile::base {
       File[$bin],
       File[$data_dir],
       File['/etc/prometheus/prometheus.yaml'],
+      Service['tbot'],
     ],
     owner   => 'root',
     group   => 'root',

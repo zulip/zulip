@@ -31,7 +31,7 @@ def check_add_realm_playground(
         pygments_language=pygments_language,
         url_template=url_template,
     )
-    # The additional validations using url_template_validaton
+    # The additional validations using url_template_validation
     # check_pygments_language, etc are included in full_clean.
     # Because we want to avoid raising ValidationError from this check_*
     # function, we do error handling here to turn it into a JsonableError.

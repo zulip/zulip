@@ -24,7 +24,14 @@
          "https://zulip.readthedocs.io/en/latest/translating/translating.html",
          "https://zulip.readthedocs.io/en/latest/subsystems/client.html",
          "https://zulip.readthedocs.io/en/latest/subsystems/logging.html",
-         "https://zulip.readthedocs.io/en/latest/subsystems/release-checklist.html"],
+         "https://zulip.readthedocs.io/en/latest/subsystems/dependencies.html"],
+      "topic-links": [
+        "https://example.com",
+        "https://zulip.com",
+        "https://chat.zulip.org",
+        "https://github.com/zulip",
+        "https://wikipedia.org"
+      ],
       "inline-code": [
         "`(reduce (fn [m [k v]] (assoc m v k)) {} {:b 2 :a 1 :c 3})`" ,
         "`select id, first-name, last-name from users where active = 1;`",
@@ -45,8 +52,8 @@
       ],
 
       "images": [
-            "[whale](/static/images/features/whale.png)\n",
-            "[twitter](/static/images/features/twitter.png)\n",
+            "[seahorse](/static/images/characters/seahorse.png)\n",
+            "[starr](/static/images/characters/starr.png)\n",
             "[topics](/static/images/story-tutorial/zulip-topic.png)\n",
             "[On_it!](/static/images/story-tutorial/zulip-compose.png)\n",
             "[streams](/static/images/story-tutorial/zulip-streams.png)\n",

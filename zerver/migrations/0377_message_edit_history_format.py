@@ -49,7 +49,7 @@ def backfill_message_edit_history_chunk(
     The range of message IDs to be processed is inclusive on both ends.
     """
     messages = (
-        message_model.objects.select_for_update()
+        message_model.objects.select_for_update(no_key=True)
         .only(
             "recipient",
             "recipient__type",

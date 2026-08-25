@@ -14,17 +14,20 @@ from pydantic.alias_generators import to_pascal
 from confirmation.models import Confirmation, ConfirmationKeyError, get_object_from_key
 from zerver.decorator import get_basic_credentials, validate_api_key
 from zerver.lib.exceptions import AccessDeniedError, JsonableError
-from zerver.lib.mime_types import INLINE_MIME_TYPES, guess_type
+from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_type
 from zerver.lib.rate_limiter import is_local_addr
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.upload import (
     RealmUploadQuotaError,
-    attachment_vips_source,
+    attachment_source,
     check_upload_within_quota,
     create_attachment,
     delete_message_attachment,
+    generate_message_upload_path,
+    get_upload_backend,
+    maybe_add_charset,
+    needs_charset_detection,
     sanitize_name,
-    upload_backend,
 )
 from zerver.models import ArchivedAttachment, Attachment, PreregistrationRealm, Realm, UserProfile
 
@@ -128,7 +131,7 @@ def handle_upload_pre_create_hook(
 
     # Determine the path_id to store it at
     file_name = sanitize_name(data.meta_data.get("filename", ""), strict=True)
-    path_id = upload_backend.generate_message_upload_path(str(user_profile.realm_id), file_name)
+    path_id = generate_message_upload_path(str(user_profile.realm_id), file_name)
     return tusd_json_response({"ChangeFileInfo": {"ID": path_id}})
 
 
@@ -155,6 +158,16 @@ def handle_upload_pre_finish_hook(
         if content_type is None:
             content_type = "application/octet-stream"
 
+    # Only open the object at all when charset detection actually needs to
+    # inspect its bytes. With the S3 backend, opening it starts a
+    # GetObject read that we'd otherwise hold open across the self-copy
+    # below. AWS S3 doesn't mind, but S3-compatible backends that lock per
+    # object (e.g. MinIO) hold a read lock for the life of an open
+    # GetObject, so the copy would block until that idle reader is torn
+    # down -- tens of seconds later.
+    if needs_charset_detection(content_type):
+        content_type = maybe_add_charset(content_type, attachment_source(path_id))
+
     if settings.LOCAL_UPLOADS_DIR is None:
         # We "copy" the file to itself to update the Content-Type,
         # Content-Disposition, and storage class of the data.  This
@@ -165,11 +178,12 @@ def handle_upload_pre_finish_hook(
             "realm_id": str(user_profile.realm_id),
         }
 
-        is_attachment = content_type not in INLINE_MIME_TYPES
+        is_attachment = bare_content_type(content_type) not in INLINE_MIME_TYPES
         content_disposition = content_disposition_header(is_attachment, filename) or "inline"
 
         from zerver.lib.upload.s3 import S3UploadBackend
 
+        upload_backend = get_upload_backend()
         assert isinstance(upload_backend, S3UploadBackend)
         key = upload_backend.uploads_bucket.Object(path_id)
         key.copy_from(
@@ -195,12 +209,16 @@ def handle_upload_pre_finish_hook(
                 StorageClass=settings.S3_UPLOADS_STORAGE_CLASS,
             )
 
+    # Open a fresh source for create_attachment/maybe_thumbnail to
+    # read from, now that the self-copy above (if any) has finished.
+    file_data = attachment_source(path_id)
+
     with transaction.atomic(durable=True):
         create_attachment(
             filename,
             path_id,
             content_type,
-            attachment_vips_source(path_id),
+            file_data,
             user_profile,
             user_profile.realm,
         )
@@ -320,7 +338,7 @@ def handle_tusd_hook(
         return reject_upload("Unauthenticated upload", 401)
     try:
         prereg_object = get_object_from_key(
-            key, [Confirmation.REALM_CREATION], mark_object_used=False
+            key, [Confirmation.NEW_REALM_USER_REGISTRATION], mark_object_used=False
         )
     except ConfirmationKeyError:
         return reject_upload("Unauthenticated upload", 401)

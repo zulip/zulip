@@ -19,6 +19,10 @@ sudo service rabbitmq-server start
 # Start the supervisor
 sudo service supervisor start
 
+# Disable interactive prompts from apt.
+echo 'Dpkg::Options { "--force-confdef" "--force-confold" }' >/etc/apt/apt.conf.d/noninteractive
+export DEBIAN_FRONTEND=noninteractive
+
 # Zulip releases before 2.1.8/3.5/4.4 have a bug in their
 # `upgrade-zulip` scripts, resulting in them exiting with status 0
 # unconditionally. We work around that by running

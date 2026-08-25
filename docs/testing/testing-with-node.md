@@ -30,7 +30,7 @@ in `web/tests`. Here is an example test from
         color: 'red',
         stream_id: id
     };
-    stream_data.add_sub('Denmark', sub);
+    stream_data.add_sub_for_tests('Denmark', sub);
     sub = stream_data.get_sub('Denmark');
     assert.equal(sub.color, 'red');
     sub = sub_store.get(id);
@@ -174,7 +174,7 @@ result.
 But often, one can write a more readable test by instead verifying
 the values of parameters in the context passed into the template
 rendering. The `mock_template` function in Zulip's testing library
-is designed to support this this.
+is designed to support this.
 
 We use `mock_template` in our unit tests to verify that the JS code is
 calling the template with the expected context data. And then we use

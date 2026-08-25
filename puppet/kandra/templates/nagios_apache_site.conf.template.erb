@@ -1,7 +1,7 @@
 <VirtualHost 127.0.0.1>
     ServerName nagios.teleport.<%= @default_host_domain %>
 
-    Header add Strict-Transport-Security "max-age=15768000"
+    Header add Strict-Transport-Security "max-age=31536000; includeSubdomains; preload"
     Header add X-Frame-Options DENY
 
     ScriptAlias /cgi-bin/nagios4 /usr/lib/cgi-bin/nagios4

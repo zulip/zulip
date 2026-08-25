@@ -179,7 +179,7 @@ BAD_HTML8 = """
 {{#each test}}
             {{#with this}}
             {{#if foobar}}
-                <div class="anything">{{{test}}}</div>
+                <div class="anything">{{{test_html}}}</div>
             {{/if}}
             {{#if foobar2}}
             {{> teststuff}}
@@ -192,7 +192,7 @@ GOOD_HTML8 = """
 {{#each test}}
     {{#with this}}
     {{#if foobar}}
-        <div class="anything">{{{test}}}</div>
+        <div class="anything">{{{test_html}}}</div>
     {{/if}}
     {{#if foobar2}}
     {{> teststuff}}

@@ -2,9 +2,11 @@
 
 const assert = require("node:assert/strict");
 
+const {mock_banners} = require("./lib/compose_banner.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 class ClipboardEvent {
     constructor({clipboardData}) {
@@ -36,7 +38,7 @@ const message_lists = mock_esm("../src/message_lists");
 const {set_realm} = zrequire("state_data");
 const compose_validate = zrequire("compose_validate");
 
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 
 message_lists.current = {
@@ -57,45 +59,45 @@ test("feature_check", ({override}) => {
 });
 
 test("config", () => {
-    assert.equal(upload.compose_config.textarea(), $("textarea#compose-textarea"));
+    assert.equal(upload.compose_config.textarea()[0], $("textarea#compose-textarea")[0]);
     assert.equal(
-        upload.compose_config.upload_banner_message("id_1"),
-        $("#compose_banners .upload_banner.file_id_1 .upload_msg"),
+        upload.compose_config.upload_banner_message("id_1")[0],
+        $("#compose_banners .upload_banner.file_id_1 .upload_msg")[0],
     );
     assert.equal(
-        upload.compose_config.upload_banner_cancel_button("id_2"),
-        $("#compose_banners .upload_banner.file_id_2 .upload_banner_cancel_button"),
+        upload.compose_config.upload_banner_cancel_button("id_2")[0],
+        $("#compose_banners .upload_banner.file_id_2 .upload_banner_cancel_button")[0],
     );
     assert.equal(
-        upload.compose_config.upload_banner_hide_button("id_2"),
-        $("#compose_banners .upload_banner.file_id_2 .main-view-banner-close-button"),
+        upload.compose_config.upload_banner_hide_button("id_2")[0],
+        $("#compose_banners .upload_banner.file_id_2 .main-view-banner-close-button")[0],
     );
     assert.equal(upload.compose_config.file_input_identifier(), "#compose input.file_input");
     assert.equal(upload.compose_config.source(), "compose-file-input");
-    assert.equal(upload.compose_config.drag_drop_container(), $("#compose"));
+    assert.equal(upload.compose_config.drag_drop_container()[0], $("#compose")[0]);
     assert.equal(
-        upload.compose_config.markdown_preview_hide_button(),
-        $("#compose .undo_markdown_preview"),
+        upload.compose_config.markdown_preview_hide_button()[0],
+        $("#compose .undo_markdown_preview")[0],
     );
 
     assert.equal(
-        upload.edit_config(1).textarea(),
-        $(`#edit_form_${CSS.escape(1)} textarea.message_edit_content`),
+        upload.edit_config(1).textarea()[0],
+        $(`#edit_form_${CSS.escape(1)} textarea.message_edit_content`)[0],
     );
 
     $(`#edit_form_${CSS.escape(2)}`).set_find_results(
         ".message_edit_save",
         $(".message_edit_save"),
     );
-    assert.equal(upload.edit_config(2).send_button(), $(".message_edit_save"));
+    assert.equal(upload.edit_config(2).send_button()[0], $(".message_edit_save")[0]);
 
     assert.equal(
         upload.edit_config(11).upload_banner_identifier("id_3"),
         `#edit_form_${CSS.escape(11)} .upload_banner.file_id_3`,
     );
     assert.equal(
-        upload.edit_config(75).upload_banner("id_60"),
-        $(`#edit_form_${CSS.escape(75)} .upload_banner.file_id_60`),
+        upload.edit_config(75).upload_banner("id_60")[0],
+        $(`#edit_form_${CSS.escape(75)} .upload_banner.file_id_60`)[0],
     );
 
     $(`#edit_form_${CSS.escape(2)} .upload_banner`).set_find_results(
@@ -103,8 +105,8 @@ test("config", () => {
         $(".upload_banner_cancel_button"),
     );
     assert.equal(
-        upload.edit_config(2).upload_banner_cancel_button("id_34"),
-        $(`#edit_form_${CSS.escape(2)} .upload_banner.file_id_34 .upload_banner_cancel_button`),
+        upload.edit_config(2).upload_banner_cancel_button("id_34")[0],
+        $(`#edit_form_${CSS.escape(2)} .upload_banner.file_id_34 .upload_banner_cancel_button`)[0],
     );
 
     $(`#edit_form_${CSS.escape(2)} .upload_banner`).set_find_results(
@@ -112,8 +114,10 @@ test("config", () => {
         $(".main-view-banner-close-button"),
     );
     assert.equal(
-        upload.edit_config(2).upload_banner_hide_button("id_34"),
-        $(`#edit_form_${CSS.escape(2)} .upload_banner.file_id_34 .main-view-banner-close-button`),
+        upload.edit_config(2).upload_banner_hide_button("id_34")[0],
+        $(
+            `#edit_form_${CSS.escape(2)} .upload_banner.file_id_34 .main-view-banner-close-button`,
+        )[0],
     );
 
     $(`#edit_form_${CSS.escape(22)} .upload_banner.file_id_234`).set_find_results(
@@ -121,8 +125,8 @@ test("config", () => {
         $(".upload_msg"),
     );
     assert.equal(
-        upload.edit_config(22).upload_banner_message("id_234"),
-        $(`#edit_form_${CSS.escape(22)} .upload_banner.file_id_234 .upload_msg`),
+        upload.edit_config(22).upload_banner_message("id_234")[0],
+        $(`#edit_form_${CSS.escape(22)} .upload_banner.file_id_234 .upload_msg`)[0],
     );
 
     assert.equal(
@@ -131,17 +135,17 @@ test("config", () => {
     );
     assert.equal(upload.edit_config(123).source(), "message-edit-file-input");
     assert.equal(
-        upload.edit_config(1).drag_drop_container(),
-        $(`#message-row-1-${CSS.escape(1)} .message_edit_form`),
+        upload.edit_config(1).drag_drop_container()[0],
+        $(`#message-row-1-${CSS.escape(1)} .message_edit_form`)[0],
     );
     assert.equal(
-        upload.edit_config(65).markdown_preview_hide_button(),
-        $(`#edit_form_${CSS.escape(65)} .undo_markdown_preview`),
+        upload.edit_config(65).markdown_preview_hide_button()[0],
+        $(`#edit_form_${CSS.escape(65)} .undo_markdown_preview`)[0],
     );
 });
 
 test("show_error_message", ({mock_template}) => {
-    $("#compose_banners .upload_banner").length = 0;
+    mock_banners();
 
     let banner_shown = false;
     mock_template("compose_banner/upload_banner.hbs", false, (data) => {
@@ -165,8 +169,7 @@ test("show_error_message", ({mock_template}) => {
 });
 
 test("upload_files", async ({mock_template, override, override_rewire}) => {
-    $("#compose_banners .upload_banner").remove = noop;
-    $("#compose_banners .upload_banner").length = 0;
+    mock_banners();
 
     let files = [
         {
@@ -189,7 +192,7 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
             remove_file_called = true;
         },
     };
-    let hide_upload_banner_called = false;
+    let hide_upload_banner_called;
     override_rewire(upload, "hide_upload_banner", (_uppy, config) => {
         hide_upload_banner_called = true;
         assert.equal(config.mode, "compose");
@@ -210,7 +213,6 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
         return "<banner-stub>";
     });
     override(realm, "max_file_upload_size_mib", 0);
-    $("#compose_banners .upload_banner .upload_msg").text("");
     await upload.upload_files(uppy, config, files);
     assert.ok(banner_shown);
 
@@ -228,11 +230,6 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
         markdown_preview_hide_button_clicked = true;
     });
     $("#compose-send-button").removeClass("disabled-message-send-controls");
-    $("#compose_banners .upload_banner").remove();
-    $("#compose .undo_markdown_preview").css = (property) => {
-        assert.equal(property, "display");
-        return "flex";
-    };
 
     banner_shown = false;
     mock_template("compose_banner/upload_banner.hbs", false, () => {
@@ -278,7 +275,7 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
         compose_ui_replace_syntax_called = true;
         assert.equal(old_syntax, "[translated: Uploading budapest.png…]()");
         assert.equal(new_syntax, "");
-        assert.equal($textarea, $("textarea#compose-textarea"));
+        assert.equal($textarea[0], $("textarea#compose-textarea")[0]);
     });
     $("#compose_banners .upload_banner.file_id_123 .upload_banner_cancel_button").trigger("click");
     assert.ok(remove_file_called);
@@ -448,46 +445,34 @@ test("copy_paste", ({override, override_rewire}) => {
 });
 
 test("uppy_events", ({override_rewire, mock_template}) => {
-    $("#compose_banners .upload_banner").length = 0;
+    mock_banners();
     override_rewire(compose_ui, "smart_insert_inline", noop);
     override_rewire(compose_validate, "validate_and_update_send_button_status", noop);
 
     const callbacks = {};
     let state = {};
+    let tus_options;
     const file = {
+        id: "uppy-copenhagen.png",
         name: "copenhagen.png",
+        type: "image/png",
         meta: {
             name: "copenhagen.png",
         },
     };
-    let uppy_set_file_state_called = false;
-    let uppy_set_file_meta_called = false;
 
     uppy_stub = function () {
         return {
             setMeta() {},
-            use() {},
+            use(_plugin, options) {
+                tus_options = options;
+            },
             on(event_name, callback) {
                 callbacks[event_name] = callback;
             },
             removeFile() {},
             getFiles() {
                 return [];
-            },
-            // This is currently only called in
-            // on_upload_success_callback, we return the modified name
-            // keeping in mind only that case. Although this isn't
-            // ideal, it seems better than the alternative of creating
-            // a file store in the tests.
-            getFile() {
-                return {
-                    ...file,
-                    name: "modified-name-copenhagen.png",
-                    meta: {
-                        ...file.meta,
-                        zulip_url: "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
-                    },
-                };
             },
             getState: () => ({
                 info: [
@@ -498,25 +483,29 @@ test("uppy_events", ({override_rewire, mock_template}) => {
                     },
                 ],
             }),
-            setFileState(_file_id, {name}) {
-                uppy_set_file_state_called = true;
-                assert.equal(name, "modified-name-copenhagen.png");
-            },
-            setFileMeta(_file_id, {zulip_url}) {
-                uppy_set_file_meta_called = true;
-                assert.equal(
-                    zulip_url,
-                    "/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png",
-                );
-            },
         };
     };
     upload.setup_upload(upload.compose_config);
     assert.equal(Object.keys(callbacks).length, 6);
 
+    // Simulate tus-js-client having recorded this upload in our
+    // InMemoryUrlStorage, which it does while uploading -- keyed by its
+    // `/api/v1/tus/...` upload URL. That URL is what upload-success uses
+    // to find the entry and store/recover the result.
+    const tus_upload_url = "/api/v1/tus/rue1c-MlMUjDAUdkRrEM4BTJ";
+    tus_options.urlStorage.urlStorage.set("fingerprint::1", {
+        uploadUrl: tus_upload_url,
+        metadata: {},
+        size: null,
+        creationTime: "",
+        urlStorageKey: "fingerprint::1",
+        parallelUploadUrls: null,
+    });
+
     const on_upload_success_callback = callbacks["upload-success"];
     let response = {
         status: 200,
+        uploadURL: tus_upload_url,
         body: {
             xhr: {
                 responseText: JSON.stringify({
@@ -533,9 +522,9 @@ test("uppy_events", ({override_rewire, mock_template}) => {
         assert.equal(old_syntax, "[translated: Uploading copenhagen.png…]()");
         assert.equal(
             new_syntax,
-            "[modified-name-copenhagen.png](/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png)",
+            "![modified-name-copenhagen.png](/user_uploads/4/cb/rue1c-MlMUjDAUdkRrEM4BTJ/copenhagen.png)",
         );
-        assert.equal($textarea, $("textarea#compose-textarea"));
+        assert.equal($textarea[0], $("textarea#compose-textarea")[0]);
     });
     let compose_ui_autosize_textarea_called = false;
     override_rewire(compose_ui, "autosize_textarea", () => {
@@ -545,8 +534,24 @@ test("uppy_events", ({override_rewire, mock_template}) => {
 
     assert.ok(compose_ui_replace_syntax_called);
     assert.ok(compose_ui_autosize_textarea_called);
-    assert.ok(uppy_set_file_state_called);
-    assert.ok(uppy_set_file_meta_called);
+
+    // Re-uploading the same file makes tus-js-client short-circuit to a
+    // HEAD request that returns no response body. We must still recover
+    // the URL and filename stored from the first upload above and insert
+    // the same syntax, rather than stalling on the placeholder. The
+    // replace_syntax override below continues to assert the same syntax.
+    compose_ui_replace_syntax_called = false;
+    const reupload_response = {
+        status: 200,
+        uploadURL: tus_upload_url,
+        body: {
+            xhr: {
+                responseText: "",
+            },
+        },
+    };
+    on_upload_success_callback(file, reupload_response);
+    assert.ok(compose_ui_replace_syntax_called);
 
     mock_template("compose_banner/upload_banner.hbs", false, (data) => {
         assert.equal(data.banner_type, "error");
@@ -559,7 +564,6 @@ test("uppy_events", ({override_rewire, mock_template}) => {
         message: "Some error message",
     };
     const on_info_visible_callback = callbacks["info-visible"];
-    $("#compose_banners .upload_banner .upload_msg").text("");
     compose_ui_replace_syntax_called = false;
     const on_restriction_failed_callback = callbacks["restriction-failed"];
     on_info_visible_callback();
@@ -567,7 +571,7 @@ test("uppy_events", ({override_rewire, mock_template}) => {
         compose_ui_replace_syntax_called = true;
         assert.equal(old_syntax, "[translated: Uploading copenhagen.png…]()");
         assert.equal(new_syntax, "");
-        assert.equal($textarea, $("textarea#compose-textarea"));
+        assert.equal($textarea[0], $("textarea#compose-textarea")[0]);
     });
     on_restriction_failed_callback(file, null, null);
     assert.ok(compose_ui_replace_syntax_called);
@@ -596,31 +600,23 @@ test("uppy_events", ({override_rewire, mock_template}) => {
     });
 
     const on_upload_error_callback = callbacks["upload-error"];
-    $("#compose_banners .upload_banner .upload_msg").text("");
+    const $error_msg = upload.compose_config.upload_banner_message(file.id);
     compose_ui_replace_syntax_called = false;
     response = {
         body: {
             msg: "Response message",
         },
     };
-    mock_template("compose_banner/upload_banner.hbs", false, (data) => {
-        assert.equal(data.banner_type, "error");
-        assert.equal(data.banner_text, "Response message");
-        return "<banner-stub>";
-    });
     on_upload_error_callback(file, null, response);
     assert.ok(compose_ui_replace_syntax_called);
+    assert.equal($error_msg.text(), "Response message");
 
+    // With no response body, we fall back to a generic error message.
     compose_ui_replace_syntax_called = false;
-    mock_template("compose_banner/upload_banner.hbs", false, (data) => {
-        assert.equal(data.banner_type, "error");
-        assert.equal(data.banner_text, "translated: An unknown error occurred.");
-        return "<banner-stub>";
-    });
     on_upload_error_callback(file, null, undefined);
     assert.ok(compose_ui_replace_syntax_called);
+    assert.equal($error_msg.text(), "translated: An unknown error occurred.");
 
-    $("#compose_banners .upload_banner .upload_msg").text("");
     assert.ok(hide_upload_banner_called);
     $("textarea#compose-textarea").val("user modified text");
     on_upload_error_callback(file, null);
@@ -671,7 +667,7 @@ test("main_file_drop_compose_mode", ({override, override_rewire}) => {
         },
     };
 
-    $(".message_edit_form form").last = () => ({length: 0});
+    $.set_results(".message_edit_form form", []);
 
     const drop_handler = $(".app, #navbar-fixed-container").get_on_handler("drop");
 
@@ -778,29 +774,21 @@ test("main_file_drop_edit_mode", ({override, override_rewire}) => {
         dropped_row_id = config.row;
         upload_files_called = true;
     });
-    $(".message_edit_form form").last = () => ({length: 1, [0]: "stub"});
     override(rows, "get_message_id", () => 40);
 
     // Edit box which registered the event handler no longer exists.
-    $drag_drop_container.closest = (element) => {
-        assert.equal(element, "html");
-        return {length: 0};
-    };
+    $drag_drop_container.set_closest_results("html", []);
 
     drop_handler(drop_event);
     assert.equal(upload_files_called, false);
 
-    $drag_drop_container.closest = (element) => {
-        assert.equal(element, "html");
-        return {length: 1};
-    };
+    $drag_drop_container.set_closest_results("html", $.create("html"));
 
     // Drag and dropped in one of the edit boxes. The event would be taken care of by
     // drag_drop_container event handlers.
 
     override(rows, "get_message_id", () => 40);
     // Edit box open
-    $(".message_edit_form form").last = () => ({length: 1, [0]: "stub"});
     drop_handler(drop_event);
     assert.equal(upload_files_called, true);
     assert.equal(dropped_row_id, 40);

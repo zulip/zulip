@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user} = require("./lib/example_user.cjs");
 const {set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -29,11 +30,13 @@ const alert_words = zrequire("alert_words");
 
 alert_words.initialize(params);
 
-people.add_active_user({
-    email: "tester@zulip.com",
-    full_name: "Tester von Tester",
-    user_id: 42,
-});
+people.add_active_user(
+    make_user({
+        email: "tester@zulip.com",
+        full_name: "Tester von Tester",
+        user_id: 42,
+    }),
+);
 
 people.initialize_current_user(42);
 

@@ -1,4 +1,8 @@
-<div class='pill {{#if deactivated}} deactivated-pill {{/if}}'{{#if user_id}}data-user-id="{{user_id}}"{{/if}}{{#if group_id}}data-user-group-id="{{group_id}}"{{/if}}{{#if stream_id}}data-stream-id="{{stream_id}}"{{/if}} tabindex=0>
+<div class='pill {{#if deactivated}} deactivated-pill {{/if~}}'
+  {{~#unless (eq user_id undefined)}}data-user-id="{{user_id}}"{{/unless~}}
+  {{~#unless (eq group_id undefined)}}data-user-group-id="{{group_id}}"{{/unless~}}
+  {{~#unless (eq stream_id undefined)}}data-stream-id="{{stream_id}}"{{/unless~}}
+  {{~#if data_syntax}}data-syntax="{{data_syntax}}"{{/if}} tabindex=0>
     {{#if has_image}}
     <img class="pill-image" src="{{img_src}}" />
     <div class="pill-image-border"></div>
@@ -7,20 +11,24 @@
     {{/if}}
     {{/if}}
     <span class="pill-label">
+        {{#if is_email_pill}}
+            {{~#if invited_user_name}}
+                <span class="invited-user-name">{{invited_user_name}}</span>
+            {{~/if~}}
+        {{/if}}
         <span class="pill-value">
             {{#if has_stream}}
-                {{~#if stream.invite_only ~}}
-                <i class="zulip-icon zulip-icon-lock channel-privacy-type-icon" aria-hidden="true"></i>
-                {{~ else if stream.is_web_public ~}}
-                <i class="zulip-icon zulip-icon-globe channel-privacy-type-icon" aria-hidden="true"></i>
-                {{~ else ~}}
-                <i class="zulip-icon zulip-icon-hashtag channel-privacy-type-icon" aria-hidden="true"></i>
-                {{~/if~}}
-            {{/if}}
-            {{#if is_empty_string_topic}}
-            {{sign}}topic: <span class="empty-topic-display">{{topic_display_name}}</span>
+                {{> decorated_channel_name stream=stream }}
             {{else}}
-            {{ display_value }}
+                {{#if is_combined_channel_topic}}
+                {{sign}}{{> decorated_channel_name stream=stream inline_with_text=true show_colored_icon=false}} &gt;<span {{#if is_empty_string_topic}}class="empty-topic-display"{{/if}}> {{topic_display_name}}</span>
+                {{else}}
+                {{#if is_empty_string_topic}}
+                {{sign}}topic:{{#if topic_display_name}}<span class="empty-topic-display"> {{topic_display_name}}</span>{{/if}}
+                {{else}}
+                {{~ display_value }}
+                {{/if}}
+                {{/if}}
             {{/if}}
         </span>
         {{~#if should_add_guest_user_indicator}}&nbsp;<i>({{t 'guest'}})</i>{{~/if~}}
@@ -36,12 +44,12 @@
     </span>
     {{#if show_expand_button}}
     <div class="expand">
-        <a role="button" class="zulip-icon zulip-icon-expand-both-diagonals pill-expand-button"></a>
+        <i role="button" class="zulip-icon zulip-icon-expand-both-diagonals pill-expand-button" aria-label="{{t 'Expand' }}"></i>
     </div>
     {{/if}}
     {{#unless disabled}}
     <div class="exit">
-        <a role="button" class="zulip-icon zulip-icon-close pill-close-button"></a>
+        <i role="button" class="zulip-icon zulip-icon-close pill-close-button" aria-label="{{t 'Remove' }}"></i>
     </div>
     {{/unless}}
 </div>

@@ -5,26 +5,17 @@ from contextlib import contextmanager
 from typing import IO, TYPE_CHECKING, Any
 from unittest import mock, skipUnless
 
-import dns.resolver
 import orjson
-from circuitbreaker import CircuitBreakerMonitor
+import time_machine
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from zerver.forms import email_is_not_mit_mailing_list
 from zerver.lib.cache import cache_delete
-from zerver.lib.rate_limiter import (
-    RateLimitedIPAddr,
-    RateLimitedUser,
-    RateLimiterLockingError,
-    get_tor_ips,
-)
+from zerver.lib.rate_limiter import RateLimitedIPAddr, RateLimitedUser, get_tor_ips_breaker
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import dns_txt_answer, ratelimit_rule
-from zerver.lib.zephyr import compute_mit_user_fullname
+from zerver.lib.test_helpers import ratelimit_rule
 from zerver.models import PushDeviceToken, UserProfile
 
 if settings.ZILENCER_ENABLED:
@@ -32,50 +23,6 @@ if settings.ZILENCER_ENABLED:
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
-
-
-class MITNameTest(ZulipTestCase):
-    def test_valid_hesiod(self) -> None:
-        with mock.patch(
-            "dns.resolver.resolve",
-            return_value=dns_txt_answer(
-                "starnine.passwd.ns.athena.mit.edu.",
-                "starnine:*:84233:101:Athena Consulting Exchange User,,,:/mit/starnine:/bin/bash",
-            ),
-        ):
-            self.assertEqual(
-                compute_mit_user_fullname(self.mit_email("starnine")),
-                "Athena Consulting Exchange User",
-            )
-        with mock.patch(
-            "dns.resolver.resolve",
-            return_value=dns_txt_answer(
-                "sipbexch.passwd.ns.athena.mit.edu.",
-                "sipbexch:*:87824:101:Exch Sipb,,,:/mit/sipbexch:/bin/athena/bash",
-            ),
-        ):
-            self.assertEqual(compute_mit_user_fullname("sipbexch@mit.edu"), "Exch Sipb")
-
-    def test_invalid_hesiod(self) -> None:
-        with mock.patch("dns.resolver.resolve", side_effect=dns.resolver.NXDOMAIN):
-            self.assertEqual(compute_mit_user_fullname("1234567890@mit.edu"), "1234567890@mit.edu")
-        with mock.patch("dns.resolver.resolve", side_effect=dns.resolver.NXDOMAIN):
-            self.assertEqual(compute_mit_user_fullname("ec-discuss@mit.edu"), "ec-discuss@mit.edu")
-
-    def test_mailinglist(self) -> None:
-        with mock.patch("dns.resolver.resolve", side_effect=dns.resolver.NXDOMAIN):
-            self.assertRaises(ValidationError, email_is_not_mit_mailing_list, "1234567890@mit.edu")
-        with mock.patch("dns.resolver.resolve", side_effect=dns.resolver.NXDOMAIN):
-            self.assertRaises(ValidationError, email_is_not_mit_mailing_list, "ec-discuss@mit.edu")
-
-    def test_notmailinglist(self) -> None:
-        with mock.patch(
-            "dns.resolver.resolve",
-            return_value=dns_txt_answer(
-                "starnine.pobox.ns.athena.mit.edu.", "POP IMAP.EXCHANGE.MIT.EDU starnine"
-            ),
-        ):
-            email_is_not_mit_mailing_list("sipbexch@mit.edu")
 
 
 class RateLimitTests(ZulipTestCase):
@@ -100,7 +47,6 @@ class RateLimitTests(ZulipTestCase):
     @override
     def tearDown(self) -> None:
         settings.RATE_LIMITING = False
-
         super().tearDown()
 
     def send_api_message(self, user: UserProfile, content: str) -> "TestHttpResponse":
@@ -134,13 +80,18 @@ class RateLimitTests(ZulipTestCase):
         self.assertTrue("X-RateLimit-Limit" in result.headers)
         self.assertTrue("X-RateLimit-Reset" in result.headers)
 
+    @ratelimit_rule(60, 200, domain="api_by_user")
     def test_ratelimit_decrease(self) -> None:
         user = self.example_user("hamlet")
         RateLimitedUser(user).clear_history()
-        result = self.send_api_message(user, "some stuff")
+        start_time = time.time()
+
+        with time_machine.travel(start_time, tick=False):
+            result = self.send_api_message(user, "some stuff")
         limit = int(result["X-RateLimit-Remaining"])
 
-        result = self.send_api_message(user, "some stuff 2")
+        with time_machine.travel(start_time + 0.001, tick=False):
+            result = self.send_api_message(user, "some stuff 2")
         newlimit = int(result["X-RateLimit-Remaining"])
         self.assertEqual(limit, newlimit + 1)
 
@@ -155,9 +106,9 @@ class RateLimitTests(ZulipTestCase):
             json = result.json()
             self.assertEqual(json.get("result"), "error")
             self.assertIn("API usage exceeded rate limit", json.get("msg"))
-            self.assertEqual(json.get("retry-after"), 0.5)
+            self.assertAlmostEqual(json.get("retry-after"), 0.195, places=2)
             self.assertTrue("Retry-After" in result.headers)
-            self.assertEqual(result["Retry-After"], "0.5")
+            self.assertAlmostEqual(float(result["Retry-After"]), 0.195, places=2)
 
         def user_facing_assert_func(result: "TestHttpResponse") -> None:
             self.assertEqual(result.status_code, 429)
@@ -171,7 +122,7 @@ class RateLimitTests(ZulipTestCase):
 
         start_time = time.time()
         for i in range(6):
-            with mock.patch("time.time", return_value=start_time + i * 0.1):
+            with time_machine.travel(start_time + i * 0.001, tick=False):
                 result = request_func()
             if i < 5:
                 self.assertNotEqual(result.status_code, 429)
@@ -181,7 +132,7 @@ class RateLimitTests(ZulipTestCase):
         # We simulate waiting a second here, rather than force-clearing our history,
         # to make sure the rate-limiting code automatically forgives a user
         # after some time has passed.
-        with mock.patch("time.time", return_value=start_time + 1.01):
+        with time_machine.travel(start_time + 1.01, tick=False):
             result = request_func()
 
             self.assertNotEqual(result.status_code, 429)
@@ -296,20 +247,8 @@ class RateLimitTests(ZulipTestCase):
         side_effect: Exception | None = None,
         read_data: Sequence[str] = ["1.2.3.4", "5.6.7.8"],
     ) -> Iterator[mock.Mock]:
-        # We need to reset the circuitbreaker before starting.  We
-        # patch the .opened property to be false, then call the
-        # function, so it resets to closed.
-        with (
-            mock.patch("builtins.open", mock.mock_open(read_data=orjson.dumps(["1.2.3.4"]))),
-            mock.patch(
-                "circuitbreaker.CircuitBreaker.opened", new_callable=mock.PropertyMock
-            ) as mock_opened,
-        ):
-            mock_opened.return_value = False
-            get_tor_ips()
-
-        # Having closed it, it's now cached.  Clear the cache.
-        assert CircuitBreakerMonitor.get("get_tor_ips").closed
+        # Reset the circuitbreaker and clear the cache before starting.
+        get_tor_ips_breaker.close()
         cache_delete("tor_ip_addresses:")
 
         builtin_open = open
@@ -397,19 +336,16 @@ class RateLimitTests(ZulipTestCase):
             ]
         )
 
-        self.assert_length(log_mock.output, 8)
         self.assertEqual(
-            log_mock.output[0:2],
+            log_mock.output,
             [
-                "WARNING:zerver.lib.rate_limiter:Failed to fetch TOR exit node list: {}".format(
-                    "File not found"
-                )
+                "WARNING:zerver.lib.rate_limiter:Failed to fetch TOR exit node list: File not found",
+                "WARNING:zerver.lib.rate_limiter:Failed to fetch TOR exit node list: Failures threshold reached, circuit breaker opened",
             ]
-            * 2,
-        )
-        self.assertIn(
-            'Failed to fetch TOR exit node list: Circuit "get_tor_ips" OPEN',
-            log_mock.output[3],
+            + 6
+            * [
+                "WARNING:zerver.lib.rate_limiter:Failed to fetch TOR exit node list: Timeout not elapsed yet, circuit breaker still open"
+            ],
         )
 
     @skipUnless(settings.ZILENCER_ENABLED, "requires zilencer")
@@ -442,23 +378,3 @@ class RateLimitTests(ZulipTestCase):
             )
         finally:
             self.DEFAULT_SUBDOMAIN = original_default_subdomain
-
-    def test_hit_ratelimiterlockingexception(self) -> None:
-        user = self.example_user("cordelia")
-        RateLimitedUser(user).clear_history()
-
-        with mock.patch(
-            "zerver.lib.rate_limiter.RedisRateLimiterBackend.incr_ratelimit",
-            side_effect=RateLimiterLockingError,
-        ):
-            with self.assertLogs("zerver.lib.rate_limiter", level="WARNING") as m:
-                result = self.send_api_message(user, "some stuff")
-                self.assertEqual(result.status_code, 429)
-            self.assertEqual(
-                m.output,
-                [
-                    "WARNING:zerver.lib.rate_limiter:Deadlock trying to incr_ratelimit for {}".format(
-                        f"RateLimitedUser:{user.id}:api_by_user"
-                    )
-                ],
-            )

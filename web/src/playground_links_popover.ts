@@ -1,6 +1,6 @@
-import $ from "jquery";
+import {$} from "jquery";
 import type * as tippy from "tippy.js";
-import * as url_template_lib from "url-template";
+import Template from "uri-template-lite";
 
 import render_playground_links_popover from "../templates/popovers/playground_links_popover.hbs";
 
@@ -43,7 +43,7 @@ function toggle_playground_links_popover(
             // We extract all the values out of playground_store map into
             // the playground_info array. Each element of the array is an
             // object with all properties the template needs for rendering.
-            const playground_info = [...playground_store.values()];
+            const playground_info = playground_store.values().toArray();
             playground_links_popover_instance = instance;
             instance.setContent(
                 ui_util.parse_html(render_playground_links_popover({playground_info})),
@@ -117,15 +117,13 @@ function register_click_handlers(): void {
             // a popover is shown.
             const extracted_code = $codehilite_div.find("code").text();
             if (playground_info.length === 1 && playground_info[0] !== undefined) {
-                const url_template = url_template_lib.parseTemplate(
-                    playground_info[0].url_template,
-                );
+                const url_template = new Template(playground_info[0].url_template);
                 const playground_url = url_template.expand({code: extracted_code});
                 window.open(playground_url, "_blank", "noopener,noreferrer");
             } else {
                 const playground_store = new Map<number, RealmPlaygroundWithURL>();
                 for (const playground of playground_info) {
-                    const url_template = url_template_lib.parseTemplate(playground.url_template);
+                    const url_template = new Template(playground.url_template);
                     const playground_url = url_template.expand({code: extracted_code});
                     playground_store.set(playground.id, {...playground, playground_url});
                 }

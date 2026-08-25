@@ -1,0 +1,83 @@
+---
+title: Deactivate or reactivate a bot
+---
+
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import AdminOnly from "../include/_AdminOnly.mdx";
+
+import UserCogIcon from "~icons/zulip-icon/user-cog";
+import UserPlusIcon from "~icons/zulip-icon/user-plus";
+import UserXIcon from "~icons/zulip-icon/user-x";
+
+By default, users can deactivate and reactivate the bots that they
+add. Organization admins can prevent users from reactivating bots by
+[restricting bot creation](/help/restrict-bot-creation).
+
+Organization administrators can also deactivate or reactivate any existing
+bot, regardless of who owns them.
+
+## Deactivate a bot
+
+<Tabs>
+  <TabItem label="Your bots">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/your-bots" />
+
+      1. In the **Actions** column, click the **deactivate bot** (<UserXIcon />)
+         icon for the bot you want to deactivate.
+      1. Approve by clicking **Deactivate**.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="All bots">
+    <AdminOnly />
+
+    <FlattenedSteps>
+      <NavigationSteps target="settings/bots" />
+
+      1. In the **Actions** column, click the **deactivate bot** (<UserXIcon />)
+         icon for the bot you want to deactivate.
+      1. Approve by clicking **Deactivate**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Reactivate a bot
+
+<Tabs>
+  <TabItem label="Your bots">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/your-bots" />
+
+      1. Select **Deactivated** from the dropdown above the **Bots** table.
+      1. In the **Actions** column, click the **reactivate bot** (<UserPlusIcon />)
+         icon for the bot you want to reactivate.
+      1. Approve by clicking **Confirm**.
+    </FlattenedSteps>
+  </TabItem>
+
+  <TabItem label="All bots">
+    <AdminOnly />
+
+    <FlattenedSteps>
+      <NavigationSteps target="settings/bots" />
+
+      1. Select **Deactivated** from the dropdown above the **Bots** table.
+      1. In the **Actions** column, click the **reactivate bot** (<UserPlusIcon />)
+         icon for the bot you want to reactivate.
+      1. Approve by clicking **Confirm**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Bots overview](/help/bots-overview)
+* [Integrations overview](/help/integrations-overview)
+* [Add a bot or integration](/help/add-a-bot-or-integration)
+* [Manage a bot](/help/manage-a-bot)
+* [Restrict bot creation](/help/restrict-bot-creation)
+* [View all bots in your organization](/help/view-all-bots-in-your-organization)

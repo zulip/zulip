@@ -1,0 +1,19 @@
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import KeyboardTip from "../../components/KeyboardTip.astro";
+
+Channels in collapsed sections will be included in your search.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <Steps>
+      1. Type the name of the channel you are looking for in the **Filter left
+         sidebar** box at the top of the left sidebar.
+    </Steps>
+
+    <KeyboardTip>
+      You can also use the <kbd>Q</kbd> keyboard shortcut to start searching for
+      a channel.
+    </KeyboardTip>
+  </TabItem>
+</Tabs>

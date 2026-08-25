@@ -1,10 +1,20 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
-import * as tippy from "tippy.js";
 
-import {LONG_HOVER_DELAY} from "./tippyjs.ts";
-import {parse_html} from "./ui_util.ts";
+import * as lightbox from "./lightbox.ts";
+import * as overlays from "./overlays.ts";
+import * as scroll_util from "./scroll_util.ts";
 import * as util from "./util.ts";
+
+// Stores the focused element ID when an overlay opens lightbox,
+// so focus can be restored when the overlay is reopened.
+let pending_restore_element_id: string | undefined;
+
+export function get_and_clear_pending_restore_element_id(): string | undefined {
+    const id = pending_restore_element_id;
+    pending_restore_element_id = undefined;
+    return id;
+}
 
 export type Context = {
     items_container_selector: string;
@@ -25,7 +35,7 @@ export function row_with_focus(context: Context): JQuery {
 export function activate_element(elem: HTMLElement, context: Context): void {
     $(`.${CSS.escape(context.box_item_selector)}`).removeClass("active");
     elem.classList.add("active");
-    elem.focus();
+    elem.focus({preventScroll: true});
 }
 
 export function get_focused_element_id(context: Context): string | undefined {
@@ -47,8 +57,12 @@ export function focus_on_sibling_element(context: Context): void {
 
     const $new_focus_element = get_element_by_id(elem_to_be_focused_id ?? "", context);
     if ($new_focus_element[0] !== undefined) {
-        assert($new_focus_element[0].children[0] instanceof HTMLElement);
-        activate_element($new_focus_element[0].children[0], context);
+        assert($new_focus_element[0].firstElementChild instanceof HTMLElement);
+        activate_element($new_focus_element[0].firstElementChild, context);
+        scroll_util.scroll_element_into_container(
+            $new_focus_element,
+            $(`.${CSS.escape(context.items_list_selector)}`),
+        );
     }
 }
 
@@ -56,22 +70,32 @@ export function modals_handle_events(event_key: string, context: Context): void 
     initialize_focus(event_key, context);
 
     // This detects up arrow key presses when the overlay
-    // is open and scrolls through.
-    if (event_key === "up_arrow" || event_key === "vim_up") {
+    // is open and scrolls through.  If the focused element
+    // extends above the visible area, first scroll to reveal
+    // more of it before moving focus to the previous one.
+    if (
+        (event_key === "up_arrow" || event_key === "vim_up") &&
+        !scroll_toward_visible(row_with_focus(context), "up", context) &&
+        row_before_focus(context).length > 0
+    ) {
         scroll_to_element(row_before_focus(context), context);
     }
 
     // This detects down arrow key presses when the overlay
-    // is open and scrolls through.
-    if (event_key === "down_arrow" || event_key === "vim_down") {
+    // is open and scrolls through.  If the focused element
+    // extends below the visible area, first scroll to reveal
+    // more of it before moving focus to the next one.
+    if (
+        (event_key === "down_arrow" || event_key === "vim_down") &&
+        !scroll_toward_visible(row_with_focus(context), "down", context) &&
+        row_after_focus(context).length > 0
+    ) {
         scroll_to_element(row_after_focus(context), context);
     }
 
     if (event_key === "backspace" || event_key === "delete") {
         context.on_delete();
-    }
-
-    if (event_key === "enter") {
+    } else if (event_key === "enter") {
         context.on_enter();
     }
 }
@@ -79,11 +103,25 @@ export function modals_handle_events(event_key: string, context: Context): void 
 export function set_initial_element(element_id: string | undefined, context: Context): void {
     if (element_id) {
         const current_element = util.the(get_element_by_id(element_id, context));
-        const focus_element = current_element.children[0];
+        const focus_element = current_element.firstElementChild;
         assert(focus_element instanceof HTMLElement);
         activate_element(focus_element, context);
-        util.the($(`.${CSS.escape(context.items_list_selector)}`)).scrollTop = 0;
+        scroll_util.scroll_element_into_container(
+            get_element_by_id(element_id, context),
+            $(`.${CSS.escape(context.items_list_selector)}`),
+        );
     }
+}
+
+// Like set_initial_element, but returns false instead of throwing
+// when the element no longer exists (e.g., deleted while lightbox
+// was open).
+export function try_set_initial_element(element_id: string, context: Context): boolean {
+    if (get_element_by_id(element_id, context).length === 0) {
+        return false;
+    }
+    set_initial_element(element_id, context);
+    return true;
 }
 
 function row_before_focus(context: Context): JQuery {
@@ -129,6 +167,22 @@ function initialize_focus(event_name: string, context: Context): void {
         return;
     }
 
+    const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
+
+    // Focus can leave the list while its selection persists -- e.g. the
+    // user clicks elsewhere in the overlay, which clears focus but leaves
+    // the active item visually highlighted. Resume navigation from that
+    // active item rather than restarting at the first or last one.
+    const $active_box = $(`.${CSS.escape(context.box_item_selector)}.active`);
+    if ($active_box.length > 0) {
+        activate_element(util.the($active_box), context);
+        scroll_util.scroll_element_into_container(
+            $active_box.parent(`.${CSS.escape(context.row_item_selector)}`),
+            $items_list,
+        );
+        return;
+    }
+
     const modal_items_ids = context.get_items_ids();
     const id = modal_items_ids.at(event_name === "up_arrow" ? -1 : 0);
     if (id === undefined) {
@@ -137,81 +191,118 @@ function initialize_focus(event_name: string, context: Context): void {
     }
 
     const $element = get_element_by_id(id, context);
-    const focus_element = util.the($element).children[0];
+    const focus_element = util.the($element).firstElementChild;
     assert(focus_element instanceof HTMLElement);
     activate_element(focus_element, context);
+    scroll_util.scroll_element_into_container($element, $items_list);
+    return;
+}
+
+// When a focused element is taller than the scroll viewport (e.g. a long
+// draft), pressing an arrow key should first scroll to reveal the hidden
+// portion of the element before moving focus to the next one.  Returns
+// true if the element extended beyond the viewport in the given direction
+// and we scrolled within it.
+//
+// We use a 1px threshold to avoid getting trapped by sub-pixel rounding:
+// at fractional scroll positions, row_top or row_bottom can be a fraction
+// like -0.3 that never reaches exactly 0, causing infinite negligible
+// scrolls that prevent moving to the adjacent element.
+const SCROLL_THRESHOLD = 1;
+
+function scroll_toward_visible(
+    $focused_row: JQuery,
+    direction: "up" | "down",
+    context: Context,
+): boolean {
+    if ($focused_row.length === 0) {
+        return false;
+    }
+
+    const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
+    const $scroll_container = scroll_util.get_scroll_element($items_list);
+
+    const row_offset = $focused_row.offset()?.top ?? 0;
+    const container_offset = $scroll_container.offset()?.top ?? 0;
+    const row_top = row_offset - container_offset;
+    const row_bottom = row_top + ($focused_row.innerHeight() ?? 0);
+    const container_height = $scroll_container.height() ?? 0;
+
+    if (direction === "down" && row_bottom > container_height + SCROLL_THRESHOLD) {
+        // Element extends below the visible area; scroll down by up to
+        // one viewport height, or just enough to reach the bottom.
+        const scroll_amount = Math.min(container_height, row_bottom - container_height);
+        $scroll_container.scrollTop(($scroll_container.scrollTop() ?? 0) + scroll_amount);
+        return true;
+    }
+
+    if (direction === "up" && row_top < -SCROLL_THRESHOLD) {
+        // Element extends above the visible area; scroll up by up to
+        // one viewport height, or just enough to reach the top.
+        const scroll_amount = Math.min(container_height, -row_top);
+        $scroll_container.scrollTop(($scroll_container.scrollTop() ?? 0) - scroll_amount);
+        return true;
+    }
+
+    return false;
 }
 
 function scroll_to_element($element: JQuery, context: Context): void {
     if ($element[0] === undefined) {
         return;
     }
-    if ($element[0].children[0] === undefined) {
+    if ($element[0].firstElementChild === null) {
         return;
     }
-    assert($element[0].children[0] instanceof HTMLElement);
-    activate_element($element[0].children[0], context);
+    assert($element[0].firstElementChild instanceof HTMLElement);
+    activate_element($element[0].firstElementChild, context);
 
     const $items_list = $(`.${CSS.escape(context.items_list_selector)}`);
-    const $items_container = $(`.${CSS.escape(context.items_container_selector)}`);
-    const $box_item = $(`.${CSS.escape(context.box_item_selector)}`);
-
-    // If focused element is first, scroll to the top.
-    if (util.the($box_item.first()).parentElement === $element[0]) {
-        util.the($items_list).scrollTop = 0;
-    }
-
-    // If focused element is last, scroll to the bottom.
-    if (util.the($box_item.last()).parentElement === $element[0]) {
-        util.the($items_list).scrollTop =
-            util.the($items_list).scrollHeight - ($items_list.height() ?? 0);
-    }
-
-    // If focused element is cut off from the top, scroll up halfway in modal.
-    if ($element.position().top < 55) {
-        // 55 is the minimum distance from the top that will require extra scrolling.
-        util.the($items_list).scrollTop -= util.the($items_list).clientHeight / 2;
-    }
-
-    // If focused element is cut off from the bottom, scroll down halfway in modal.
-    const dist_from_top = $element.position().top;
-    const total_dist = dist_from_top + $element[0].clientHeight;
-    const dist_from_bottom = util.the($items_container).clientHeight - total_dist;
-    if (dist_from_bottom < -4) {
-        // -4 is the min dist from the bottom that will require extra scrolling.
-        util.the($items_list).scrollTop += util.the($items_list).clientHeight / 2;
-    }
+    scroll_util.scroll_element_into_container($element, $items_list);
 }
 
 function get_element_by_id(id: string, context: Context): JQuery {
     return $(`.overlay-message-row[${CSS.escape(context.id_attribute_name)}='${CSS.escape(id)}']`);
 }
 
-export function initialize_restore_overlay_message_tooltip(): void {
-    tippy.default(".message_content.restore-overlay-message", {
-        delay: LONG_HOVER_DELAY,
-        placement: "top",
-        content(reference) {
-            const template_id = $(reference).attr("data-tooltip-template-id");
-            assert(template_id !== undefined);
-            const $template = $(`#${CSS.escape(template_id)}`);
-            return parse_html($template.html());
-        },
-        popperOptions: {
-            modifiers: [
-                {
-                    name: "preventOverflow",
-                    options: {
-                        // Prevent tooltip from overflowing the message list boundary.
-                        // If it overflows, tooltip uses bottom placement.
-                        // If it overflows from both top and bottom, tooltip is placed
-                        // at the top overlapping with message content.
-                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                        boundary: document.querySelector(".overlay-messages-list")!,
-                        altAxis: true,
-                    },
-                },
-            ],
-        },
-    });
+export function handle_overlay_media_click(
+    e: JQuery.ClickEvent,
+    overlay_name: string,
+    context?: Context,
+    reopen_overlay?: () => void,
+): boolean {
+    const $img = $(e.target).closest("img");
+    if ($img.length > 0) {
+        e.stopPropagation();
+        e.preventDefault();
+        open_lightbox_from_overlay($img, overlay_name, context, reopen_overlay);
+        return true;
+    }
+
+    const $video = $(e.target).closest("video");
+    if ($video.length > 0) {
+        e.stopPropagation();
+        e.preventDefault();
+        open_lightbox_from_overlay($video, overlay_name, context, reopen_overlay);
+        return true;
+    }
+
+    return false;
+}
+
+function open_lightbox_from_overlay(
+    $media: JQuery<HTMLMediaElement> | JQuery<HTMLImageElement>,
+    overlay_name: string,
+    context: Context | undefined,
+    reopen_overlay: (() => void) | undefined,
+): void {
+    if (context) {
+        pending_restore_element_id = get_focused_element_id(context);
+    }
+    overlays.close_overlay(overlay_name);
+    if (reopen_overlay) {
+        lightbox.handle_overlay_media_element_click($media, reopen_overlay);
+    } else {
+        lightbox.handle_inline_media_element_click($media, true);
+    }
 }

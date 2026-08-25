@@ -25,7 +25,7 @@ function make_msgs(msg_ids) {
 }
 
 function assert_contents(mld, msg_ids) {
-    const msgs = mld.all_messages();
+    const msgs = mld.all_messages_after_mute_filtering();
     assert.deepEqual(msgs, make_msgs(msg_ids));
 }
 
@@ -38,6 +38,12 @@ function assert_msg_ids(messages, msg_ids) {
 
 mock_esm("../src/people.ts", {
     maybe_get_user_by_id: noop,
+    pm_with_user_ids(msg) {
+        if (msg.type !== "private") {
+            return undefined;
+        }
+        return msg.to_user_ids.split(",").map(Number);
+    },
 });
 
 run_test("basics", () => {
@@ -95,16 +101,21 @@ run_test("basics", () => {
         {id: 4, sender_id: 6, type: "private", to_user_ids: "6,9,10"},
         {id: 6, sender_id: 6, type: "private", to_user_ids: "6, 11"},
     ];
+    // A DM 6 received but did not send -- in get_messages_involving_user
+    // but not get_messages_sent_by_user.
+    const dm_received_by_6 = {id: 7, sender_id: 11, type: "private", to_user_ids: "11,6"};
+    const msgs_involving_6 = [...msgs_sent_by_6, dm_received_by_6];
     const msgs_with_sender_ids = [
         {id: 1, sender_id: 1, type: "stream", stream_id: 1, topic: "random1"},
         {id: 3, sender_id: 4, type: "stream", stream_id: 1, topic: "random2"},
         {id: 5, sender_id: 2, type: "private", to_user_ids: "2,10,11"},
         {id: 8, sender_id: 11, type: "private", to_user_ids: "10"},
         {id: 9, sender_id: 11, type: "private", to_user_ids: "9"},
-        ...msgs_sent_by_6,
+        ...msgs_involving_6,
     ];
     mld.add_messages(msgs_with_sender_ids, true);
     assert.deepEqual(mld.get_messages_sent_by_user(6), msgs_sent_by_6);
+    assert.deepEqual(mld.get_messages_involving_user(6), msgs_involving_6);
 
     mld.clear();
     assert_contents(mld, []);
@@ -120,7 +131,7 @@ run_test("basics", () => {
     mld.change_message_id(125.01, 145);
     assert_contents(mld, [120, 130, 140, 145]);
 
-    for (const msg of mld.all_messages()) {
+    for (const msg of mld.all_messages_after_mute_filtering()) {
         msg.unread = false;
     }
 
@@ -129,9 +140,11 @@ run_test("basics", () => {
 });
 
 run_test("muting", () => {
+    const dm_filter = new Filter([{operator: "dm", operand: [1]}]);
     let mld = new MessageListData({
-        excludes_muted_topics: false,
-        filter: new Filter([{operator: "dm", operand: "alice@example.com"}]),
+        excludes_muted_topics: dm_filter.excludes_muted_topics(),
+        excludes_muted_users: dm_filter.excludes_muted_users(),
+        filter: dm_filter,
     });
 
     const msgs = [
@@ -140,19 +153,21 @@ run_test("muting", () => {
         // mentions override muting
         {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true},
 
-        // 10 = muted user, 9 = non-muted user, 11 = you
+        // 10,12 = muted users, 9 = non-muted user, 11 = you
         // muted to group direct message
-        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10},
+        {id: 4, type: "private", to_user_ids: "9,10", sender_id: 10},
         // non-muted to group direct message
-        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9},
+        {id: 5, type: "private", to_user_ids: "9,10", sender_id: 9},
         // muted to 1:1 direct message
-        {id: 6, type: "private", to_user_ids: "11", sender_id: 10},
+        {id: 6, type: "private", to_user_ids: "10", sender_id: 10},
         // non-muted to 1:1 direct message
-        {id: 7, type: "private", to_user_ids: "11", sender_id: 9},
+        {id: 7, type: "private", to_user_ids: "9", sender_id: 9},
         // 1:1 direct message to muted
         {id: 8, type: "private", to_user_ids: "10", sender_id: 11},
         // 1:1 direct message to non-muted
         {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
+        // group direct message with everyone muted
+        {id: 10, type: "private", to_user_ids: "10,12", sender_id: 10},
     ];
 
     user_topics.update_user_topics(
@@ -162,6 +177,7 @@ run_test("muting", () => {
         user_topics.all_visibility_policies.MUTED,
     );
     muted_users.add_muted_user(10);
+    muted_users.add_muted_user(12);
 
     // `messages_filtered_for_topic_mutes` should skip filtering
     // messages if `excludes_muted_topics` is false.
@@ -174,18 +190,20 @@ run_test("muting", () => {
     // Test actual behaviour of `messages_filtered_for_*` methods.
     mld.excludes_muted_topics = true;
     mld.filter = new Filter([{operator: "stream", operand: "general"}]);
+    mld.excludes_muted_users = mld.filter.excludes_muted_users();
     const res = mld.messages_filtered_for_topic_mutes(msgs);
     assert.deepEqual(res, [
         {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
         {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true}, // mentions override muting
 
         // `messages_filtered_for_topic_mutes` does not affect direct messages
-        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10},
-        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9},
-        {id: 6, type: "private", to_user_ids: "11", sender_id: 10},
-        {id: 7, type: "private", to_user_ids: "11", sender_id: 9},
+        {id: 4, type: "private", to_user_ids: "9,10", sender_id: 10},
+        {id: 5, type: "private", to_user_ids: "9,10", sender_id: 9},
+        {id: 6, type: "private", to_user_ids: "10", sender_id: 10},
+        {id: 7, type: "private", to_user_ids: "9", sender_id: 9},
         {id: 8, type: "private", to_user_ids: "10", sender_id: 11},
         {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
+        {id: 10, type: "private", to_user_ids: "10,12", sender_id: 10},
     ]);
 
     const res_user = mld.messages_filtered_for_user_mutes(msgs);
@@ -195,11 +213,11 @@ run_test("muting", () => {
         {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
         {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true},
         // muted to group direct message
-        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10},
+        {id: 4, type: "private", to_user_ids: "9,10", sender_id: 10},
         // non-muted to group direct message
-        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9},
+        {id: 5, type: "private", to_user_ids: "9,10", sender_id: 9},
         // non-muted to 1:1 direct message
-        {id: 7, type: "private", to_user_ids: "11", sender_id: 9},
+        {id: 7, type: "private", to_user_ids: "9", sender_id: 9},
         // 1:1 direct message to non-muted
         {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
     ]);
@@ -210,9 +228,9 @@ run_test("muting", () => {
     assert.deepEqual(filtered_messages, [
         {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
         {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true},
-        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10},
-        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9},
-        {id: 7, type: "private", to_user_ids: "11", sender_id: 9},
+        {id: 4, type: "private", to_user_ids: "9,10", sender_id: 10},
+        {id: 5, type: "private", to_user_ids: "9,10", sender_id: 9},
+        {id: 7, type: "private", to_user_ids: "9", sender_id: 9},
         {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
     ]);
 
@@ -231,7 +249,7 @@ run_test("muting", () => {
 
     let unmuted_messages_calls = 0;
     mld.unmuted_messages = (messages) => {
-        unmuted_messages_calls = unmuted_messages_calls + 1;
+        unmuted_messages_calls += 1;
         return messages;
     };
 

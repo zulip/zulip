@@ -107,7 +107,7 @@ class WalGPrometheusServer(BaseHTTPRequestHandler):
                 text=True,
                 env=modified_env,
             )
-            data = json.loads(backup_list_output)
+            data = json.loads(backup_list_output) if backup_list_output else []
             backup_count(len(data), {"bucket": bucket})
 
             backup_total_compressed_size_bytes(
@@ -141,8 +141,8 @@ class WalGPrometheusServer(BaseHTTPRequestHandler):
                     (t("finish_time") - t("start_time")) / timedelta(seconds=1), labels
                 )
             backup_ok(1)
-        except Exception as e:
-            logging.exception(e)
+        except Exception:
+            logging.exception("Error while getting backup information")
         finally:
             self.print_metrics()
             self.log_message(

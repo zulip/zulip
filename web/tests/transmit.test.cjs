@@ -2,6 +2,8 @@
 
 const assert = require("node:assert/strict");
 
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -133,10 +135,12 @@ run_test("topic wildcard mention not allowed", ({override}) => {
 
 run_test("reply_message_stream", ({override}) => {
     const social_stream_id = 555;
-    stream_data.add_sub({
-        name: "social",
-        stream_id: social_stream_id,
-    });
+    stream_data.add_sub_for_tests(
+        make_stream({
+            name: "social",
+            stream_id: social_stream_id,
+        }),
+    );
 
     const stream_message = {
         type: "stream",
@@ -149,20 +153,22 @@ run_test("reply_message_stream", ({override}) => {
     const content = "hello";
 
     let send_message_args;
+    const tracked_local_ids = [];
 
     override(channel, "post", ({data}) => {
         send_message_args = data;
+    });
+    override(sent_messages, "start_tracking_message", ({local_id}) => {
+        tracked_local_ids.push(local_id);
     });
 
     override(current_user, "user_id", 44);
     server_events_state.queue_id = 66;
     sent_messages.get_new_local_id = () => "99";
 
-    transmit.reply_message({
-        message: stream_message,
-        content,
-    });
+    transmit.reply_message(stream_message, content);
 
+    assert.deepEqual(tracked_local_ids, ["99"]);
     assert.deepEqual(send_message_args, {
         sender_id: 44,
         queue_id: 66,
@@ -175,11 +181,11 @@ run_test("reply_message_stream", ({override}) => {
 });
 
 run_test("reply_message_private", ({override}) => {
-    const fred = {
+    const fred = make_user({
         user_id: 3,
         email: "fred@example.com",
         full_name: "Fred Frost",
-    };
+    });
     people.add_active_user(fred);
 
     const pm_message = {
@@ -199,17 +205,14 @@ run_test("reply_message_private", ({override}) => {
     server_events_state.queue_id = 177;
     sent_messages.get_new_local_id = () => "199";
 
-    transmit.reply_message({
-        message: pm_message,
-        content,
-    });
+    transmit.reply_message(pm_message, content);
 
     assert.deepEqual(send_message_args, {
         sender_id: 155,
         queue_id: 177,
         local_id: "199",
         type: "private",
-        to: '["fred@example.com"]',
+        to: `[${fred.user_id}]`,
         content: "hello",
     });
 });
@@ -221,7 +224,5 @@ run_test("reply_message_errors", () => {
 
     blueslip.expect("error", "unknown message type");
 
-    transmit.reply_message({
-        message: bogus_message,
-    });
+    transmit.reply_message(bogus_message, "");
 });

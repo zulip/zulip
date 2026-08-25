@@ -1,19 +1,13 @@
-{% extends "zerver/portico.html" %}
-{% set entrypoint = "landing-page" %}
+{% extends "zerver/marketing_page.html" %}
 
 {% set PAGE_TITLE = "History of the Zulip project" %}
 
-{% set PAGE_DESCRIPTION = "Learn how Zulip grew from a small startup to become
-  the project with the most active open-source development community of any team
-  chat software." %}
+{% set PAGE_DESCRIPTION = "Learn how Zulip grew from a small startup to become a
+  foundation-stewarded project with the most active open-source development
+  community of any team chat software." %}
 
-{% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-{% endblock %}
 
-{% block portico_content %}
-
-{% include 'zerver/landing_nav.html' %}
+{% block marketing_content %}
 
 <div class="portico-landing why-page solutions-page">
     <div class="hero bg-pycon">

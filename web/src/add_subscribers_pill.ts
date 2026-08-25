@@ -1,8 +1,10 @@
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
 import * as input_pill from "./input_pill.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as loading from "./loading.ts";
 import type {User} from "./people.ts";
 import * as pill_typeahead from "./pill_typeahead.ts";
 import * as stream_pill from "./stream_pill.ts";
@@ -19,7 +21,7 @@ export function create_item_from_text(
     const funcs = [
         stream_pill.create_item_from_stream_name,
         user_group_pill.create_item_from_group_name,
-        user_pill.create_item_from_email,
+        user_pill.create_item_from_user_id,
     ];
     for (const func of funcs) {
         const item = func(text, current_items);
@@ -40,7 +42,7 @@ export function get_text_from_item(item: CombinedPill): string {
             text = user_group_pill.get_group_name_from_item(item);
             break;
         case "user":
-            text = user_pill.get_email_from_item(item);
+            text = user_pill.get_unique_full_name_from_item(item);
             break;
     }
     return text;
@@ -83,7 +85,8 @@ export function get_display_value_from_item(item: CombinedPill): string {
     if (item.type === "user_group") {
         const group = user_groups.get_user_group_from_id(item.group_id);
         return user_groups.get_display_group_name(group.name);
-    } else if (item.type === "stream") {
+    }
+    if (item.type === "stream") {
         return stream_pill.get_display_value_from_item(item);
     }
     assert(item.type === "user");
@@ -93,7 +96,8 @@ export function get_display_value_from_item(item: CombinedPill): string {
 export function generate_pill_html(item: CombinedPill): string {
     if (item.type === "user_group") {
         return user_group_pill.generate_pill_html(item);
-    } else if (item.type === "user") {
+    }
+    if (item.type === "user") {
         return user_pill.generate_pill_html(item);
     }
     assert(item.type === "stream");
@@ -103,6 +107,7 @@ export function generate_pill_html(item: CombinedPill): string {
 export function set_up_handlers_for_add_button_state(
     pill_widget: CombinedPillContainer | user_group_pill.UserGroupPillWidget,
     $pill_container: JQuery,
+    pill_update_callback?: () => void,
 ): void {
     const $pill_widget_input = $pill_container.find(".input");
     const $pill_widget_button = $pill_container.closest(".add-button-container").find("button");
@@ -110,11 +115,19 @@ export function set_up_handlers_for_add_button_state(
     $pill_widget_button.prop("disabled", true);
 
     // If all the pills are removed, disable the add button.
-    pill_widget.onPillRemove(() =>
-        $pill_widget_button.prop("disabled", pill_widget.items().length === 0),
-    );
+    pill_widget.onPillRemove(() => {
+        $pill_widget_button.prop("disabled", pill_widget.items().length === 0);
+        if (pill_update_callback) {
+            pill_update_callback();
+        }
+    });
     // If a pill is added, enable the add button.
-    pill_widget.onPillCreate(() => $pill_widget_button.prop("disabled", false));
+    pill_widget.onPillCreate(() => {
+        $pill_widget_button.prop("disabled", false);
+        if (pill_update_callback) {
+            pill_update_callback();
+        }
+    });
     // Disable the add button when there is no pending text that can be converted
     // into a pill and the number of existing pills is zero.
     $pill_widget_input.on("input", () =>
@@ -132,6 +145,8 @@ export function create({
     with_add_button,
     onPillCreateAction,
     onPillRemoveAction,
+    add_button_pill_update_callback,
+    onTextInputCallback,
 }: {
     $pill_container: JQuery;
     get_potential_subscribers: () => User[];
@@ -139,6 +154,8 @@ export function create({
     with_add_button: boolean;
     onPillCreateAction?: (pill_user_ids: number[]) => void;
     onPillRemoveAction?: (pill_user_ids: number[]) => void;
+    add_button_pill_update_callback?: () => void;
+    onTextInputCallback?: () => void;
 }): CombinedPillContainer {
     const pill_widget = input_pill.create<CombinedPill>({
         $container: $pill_container,
@@ -151,13 +168,29 @@ export function create({
 
     if (onPillCreateAction) {
         pill_widget.onPillCreate(() => {
-            onPillCreateAction(get_pill_user_ids(pill_widget));
+            void (async () => {
+                loading.make_indicator($(".add-subscriber-loading-spinner"), {
+                    height: 28, // 2em at 14px / 1em
+                });
+                const user_ids = await get_pill_user_ids(pill_widget);
+                onPillCreateAction(user_ids);
+                loading.destroy_indicator($(".add-subscriber-loading-spinner"));
+            })();
         });
     }
 
     if (onPillRemoveAction) {
         pill_widget.onPillRemove(() => {
-            onPillRemoveAction(get_pill_user_ids(pill_widget));
+            void (async () => {
+                const user_ids = await get_pill_user_ids(pill_widget);
+                onPillRemoveAction(user_ids);
+            })();
+        });
+    }
+
+    if (onTextInputCallback) {
+        pill_widget.onTextInputHook(() => {
+            onTextInputCallback();
         });
     }
 
@@ -181,7 +214,11 @@ export function create({
     });
 
     if (with_add_button) {
-        set_up_handlers_for_add_button_state(pill_widget, $pill_container);
+        set_up_handlers_for_add_button_state(
+            pill_widget,
+            $pill_container,
+            add_button_pill_update_callback,
+        );
     }
 
     return pill_widget;
@@ -202,9 +239,9 @@ export function append_user_group_from_name(
     user_group_pill.append_user_group(user_group, pill_widget);
 }
 
-function get_pill_user_ids(pill_widget: CombinedPillContainer): number[] {
+export async function get_pill_user_ids(pill_widget: CombinedPillContainer): Promise<number[]> {
     const user_ids = user_pill.get_user_ids(pill_widget);
-    const stream_user_ids = stream_pill.get_user_ids(pill_widget);
+    const stream_user_ids = await stream_pill.get_user_ids(pill_widget);
     const group_user_ids = user_group_pill.get_user_ids(pill_widget);
     return [...user_ids, ...stream_user_ids, ...group_user_ids];
 }
@@ -251,8 +288,22 @@ export function set_up_handlers({
     */
     function callback(): void {
         const pill_widget = get_pill_widget();
-        const pill_user_ids = get_pill_user_ids(pill_widget);
-        action({pill_user_ids});
+        void (async () => {
+            loading.make_indicator($(".add-subscriber-loading-spinner"), {
+                height: 28, // 2em at 14px / 1em
+            });
+            const pill_user_ids = await get_pill_user_ids(pill_widget);
+            // If we're no longer in the same view after fetching
+            // subscriber data, don't update the UI. We don't need
+            // to destroy the loading spinner because the tab re-renders
+            // every time it opens, and also there might be a new tab
+            // with a current loading spinner.
+            if (get_pill_widget() !== pill_widget) {
+                return;
+            }
+            loading.destroy_indicator($(".add-subscriber-loading-spinner"));
+            action({pill_user_ids});
+        })();
     }
 
     $parent_container.on("keyup", pill_selector, (e) => {

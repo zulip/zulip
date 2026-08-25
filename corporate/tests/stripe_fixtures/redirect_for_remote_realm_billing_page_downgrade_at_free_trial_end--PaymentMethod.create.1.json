@@ -43,9 +43,11 @@
   },
   "created": 1000000000,
   "customer": null,
+  "customer_account": null,
   "id": "redirect_for_remote_realm_billing_page_downgrade_at_free_trial_end--Customer.retrieve.1.json",
   "livemode": false,
   "metadata": {},
   "object": "payment_method",
+  "shared_payment_granted_token": null,
   "type": "card"
 }

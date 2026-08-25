@@ -28,8 +28,8 @@ For more information, checkout the [official documentation for WSL
 commands](https://learn.microsoft.com/en-us/windows/wsl/basic-commands#unregister-or-uninstall-a-linux-distribution)
 
 3. **Next, follow the setup instructions**, starting from [[Step 1:
-Install
-prerequisites]](/development/setup-recommended.md#step-1-install-prerequisites)
+   Install
+   prerequisites]](/development/setup-recommended.md#step-1-install-prerequisites)
 
 If you just want to rebuild the development database, the following is
 much faster:
@@ -39,4 +39,4 @@ $ ./tools/rebuild-dev-database
 ```
 
 For more details, see the [schema migration
-documentation](/subsystems/schema-migrations.md#schema-and-initial-data-changes).
+documentation](/subsystems/schema-migrations.md#local-schema-rebuilds).

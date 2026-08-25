@@ -1,4 +1,3 @@
-import zoneinfo
 from collections.abc import Sequence
 from datetime import datetime, timedelta, timezone
 
@@ -10,14 +9,14 @@ from typing_extensions import override
 
 from corporate.lib.stripe import get_latest_seat_count
 from zerver.actions.create_user import notify_new_user
+from zerver.actions.streams import do_set_stream_property
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.timezone import canonicalize_timezone
 from zerver.models import Message, Recipient, Stream, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_user_ids
-from zerver.models.streams import get_stream
+from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import get_system_bot
 from zerver.signals import JUST_CREATED_THRESHOLD, get_device_browser, get_device_os
 
@@ -52,9 +51,7 @@ class SendLoginEmailTest(ZulipTestCase):
             firefox_windows = (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
             )
-            user_tz = zoneinfo.ZoneInfo(canonicalize_timezone(user.timezone))
             mock_time = datetime(year=2018, month=1, day=1, tzinfo=timezone.utc)
-            reference_time = mock_time.astimezone(user_tz).strftime("%A, %B %d, %Y at %I:%M %p %Z")
             with time_machine.travel(mock_time, tick=False):
                 self.client_post(
                     "/accounts/login/", info=login_info, HTTP_USER_AGENT=firefox_windows
@@ -65,7 +62,7 @@ class SendLoginEmailTest(ZulipTestCase):
             subject = "New login from Firefox on Windows"
             self.assertEqual(mail.outbox[0].subject, subject)
             # local time is correct and in email's body
-            self.assertIn(reference_time, mail.outbox[0].body)
+            self.assertRegex(str(mail.outbox[0].body), r"Sun, Dec 31, 2017, 4:00[ \u202f]PM PST")
 
             # Try again with the 24h time format setting enabled for this user
             self.logout()  # We just logged in, we'd be redirected without this
@@ -76,7 +73,7 @@ class SendLoginEmailTest(ZulipTestCase):
                     "/accounts/login/", info=login_info, HTTP_USER_AGENT=firefox_windows
                 )
 
-            reference_time = mock_time.astimezone(user_tz).strftime("%A, %B %d, %Y at %H:%M %Z")
+            reference_time = "Sun, Dec 31, 2017, 16:00 PST"
             self.assertIn(reference_time, mail.outbox[1].body)
 
     def test_dont_send_login_emails_if_send_login_emails_is_false(self) -> None:
@@ -132,54 +129,100 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.user_agents = [
+            # Linux
             (
                 (
-                    "mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)"
-                    " Chrome/54.0.2840.59 Safari/537.36"
+                    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)"
+                    " Chrome/146.0.0.0 Safari/537.36"
                 ),
                 "Chrome",
                 "Linux",
             ),
             (
+                "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:149.0) Gecko/20100101 Firefox/149.0",
+                "Firefox",
+                "Ubuntu",
+            ),
+            (
                 (
-                    "mozilla/5.0 (windows nt 6.1; win64; x64) "
-                    " applewebkit/537.36 (khtml, like gecko)"
-                    " chrome/56.0.2924.87 safari/537.36"
+                    "Mozilla/5.0 (X11; Linux i686) AppleWebKit/535.7 (KHTML, like Gecko)"
+                    " Ubuntu/11.10 Chromium/16.0.912.77 Chrome/16.0.912.77 Safari/535.7"
+                ),
+                "Chromium",
+                "Ubuntu",
+            ),
+            # Windows
+            (
+                (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)"
+                    " Chrome/146.0.0.0 Safari/537.36"
                 ),
                 "Chrome",
                 "Windows",
             ),
             (
-                "mozilla/5.0 (windows nt 6.1; wow64; rv:51.0) gecko/20100101 firefox/51.0",
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:149.0) Gecko/20100101 Firefox/149.0",
                 "Firefox",
                 "Windows",
             ),
             (
-                "mozilla/5.0 (windows nt 6.1; wow64; trident/7.0; rv:11.0) like gecko",
+                "Mozilla/5.0 (Windows NT 10.0; Trident/7.0; rv:11.0) like Gecko",
                 "Internet Explorer",
                 "Windows",
             ),
             (
-                "Mozilla/5.0 (Android; Mobile; rv:27.0) Gecko/27.0 Firefox/27.0",
-                "Firefox",
-                "Android",
+                (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)"
+                    " Chrome/146.0.0.0 Safari/537.36 OPR/130.0.0.0"
+                ),
+                "Opera",
+                "Windows",
             ),
             (
                 (
-                    "Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X)"
-                    " AppleWebKit/602.1.50 (KHTML, like Gecko)"
-                    " CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1"
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)"
+                    " Chrome/146.0.0.0 Safari/537.36 Edg/147.0.3912.60"
                 ),
-                "Chrome",
+                "Edge",
+                "Windows",
+            ),
+            # Android
+            (
+                (
+                    "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko)"
+                    " Chrome/146.0.7680.178 Mobile Safari/537.36"
+                ),
+                "Chrome Mobile",
+                "Android",
+            ),
+            (
+                "Mozilla/5.0 (Android 16; Mobile; rv:149.0) Gecko/149.0 Firefox/149.0",
+                "Firefox Mobile",
+                "Android",
+            ),
+            # iOS
+            (
+                (
+                    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)"
+                    " CriOS/147.0.7727.47 Mobile/15E148 Safari/604.1"
+                ),
+                "Chrome Mobile iOS",
                 "iOS",
             ),
             (
                 (
-                    "Mozilla/5.0 (iPad; CPU OS 6_1_3 like Mac OS X)"
-                    " AppleWebKit/536.26 (KHTML, like Gecko)"
-                    " Version/6.0 Mobile/10B329 Safari/8536.25"
+                    "Mozilla/5.0 (iPhone; CPU iPhone OS 15_7_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)"
+                    " FxiOS/149.0 Mobile/15E148 Safari/605.1.15"
                 ),
-                "Safari",
+                "Firefox iOS",
+                "iOS",
+            ),
+            (
+                (
+                    "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)"
+                    " Version/26.0 Mobile/15E148 Safari/604.1"
+                ),
+                "Mobile Safari",
                 "iOS",
             ),
             (
@@ -187,27 +230,41 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
                     "Mozilla/5.0 (iPhone; CPU iPhone OS 6_1_4 like Mac OS X)"
                     " AppleWebKit/536.26 (KHTML, like Gecko) Mobile/10B350"
                 ),
-                None,
+                "Mobile Safari UI/WKWebView",
                 "iOS",
             ),
+            # iPad
             (
                 (
-                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)"
-                    " AppleWebKit/537.36 (KHTML, like Gecko)"
-                    " Chrome/56.0.2924.87 Safari/537.36"
+                    "Mozilla/5.0 (iPad; CPU OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko)"
+                    " Version/18.5 Mobile/15E148 Safari/604.1"
+                ),
+                "Mobile Safari",
+                "iOS",
+            ),
+            # macOS
+            (
+                (
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)"
+                    " Chrome/146.0.0.0 Safari/537.36"
                 ),
                 "Chrome",
                 "macOS",
             ),
             (
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 15.7; rv:149.0) Gecko/20100101 Firefox/149.0",
+                "Firefox",
+                "macOS",
+            ),
+            (
                 (
-                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6)"
-                    " AppleWebKit/602.3.12 (KHTML, like Gecko)"
-                    " Version/10.0.2 Safari/602.3.12"
+                    "Mozilla/5.0 (Macintosh; Intel Mac OS X 15_7_5) AppleWebKit/605.1.15 (KHTML, like Gecko)"
+                    " Version/26.0 Safari/605.1.15"
                 ),
                 "Safari",
                 "macOS",
             ),
+            # Miscellaneous
             ("ZulipAndroid/1.0", "Zulip", "Android"),
             ("ZulipMobile/1.0.12 (Android 7.1.1)", "Zulip", "Android"),
             ("ZulipMobile/0.7.1.1 (iOS 10.3.1)", "Zulip", "iOS"),
@@ -222,38 +279,11 @@ class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
             ),
             (
                 (
-                    "Mozilla/5.0 (X11; Linux i686) AppleWebKit/535.7 (KHTML, like Gecko)"
-                    " Ubuntu/11.10 Chromium/16.0.912.77 Chrome/16.0.912.77 Safari/535.7"
-                ),
-                "Chromium",
-                "Linux",
-            ),
-            (
-                (
-                    "Mozilla/5.0 (Windows NT 6.1; WOW64)"
-                    " AppleWebKit/537.36 (KHTML, like Gecko)"
-                    " Chrome/28.0.1500.52 Safari/537.36 OPR/15.0.1147.100"
-                ),
-                "Opera",
-                "Windows",
-            ),
-            (
-                (
-                    "Mozilla/5.0 (Windows NT 10.0; <64-bit tags>)"
-                    " AppleWebKit/<WebKit Rev> (KHTML, like Gecko)"
-                    " Chrome/<Chrome Rev> Safari/<WebKit Rev>"
-                    " Edge/<EdgeHTML Rev>.<Windows Build>"
-                ),
-                "Edge",
-                "Windows",
-            ),
-            (
-                (
-                    "Mozilla/5.0 (X11; CrOS x86_64 10895.56.0) AppleWebKit/537.36"
-                    " (KHTML, like Gecko) Chrome/69.0.3497.95 Safari/537.36"
+                    "Mozilla/5.0 (X11; CrOS x86_64 16503.74.0) AppleWebKit/537.36 (KHTML, like Gecko)"
+                    " Chrome/144.0.7559.172 Safari/537.36"
                 ),
                 "Chrome",
-                "ChromeOS",
+                "Chrome OS",
             ),
             ("", None, None),
         ]
@@ -286,6 +316,7 @@ class TestNotifyNewUser(ZulipTestCase):
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         actual_stream = Stream.objects.get(id=message.recipient.type_id)
         self.assertEqual(actual_stream.name, "core team")
+        self.assertEqual(message.topic_name(), "signups")
         self.assertIn(
             f"@_**Cordelia, Lear's daughter|{new_user.id}** joined this organization.",
             message.content,
@@ -296,6 +327,28 @@ class TestNotifyNewUser(ZulipTestCase):
         new_user.refresh_from_db()
         notify_new_user(new_user)
         self.assertEqual(self.get_message_count(), message_count + 1)
+
+    def test_notify_realm_of_new_user_in_empty_topic_only_channel(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        stream = get_stream("core team", realm)
+        realm.signup_announcements_stream = stream
+        realm.save(update_fields=["signup_announcements_stream"])
+        do_set_stream_property(
+            stream, "topics_policy", StreamTopicsPolicyEnum.empty_topic_only.value, iago
+        )
+
+        new_user = self.example_user("cordelia")
+        message_count = self.get_message_count()
+
+        notify_new_user(new_user)
+        self.assertEqual(self.get_message_count(), message_count + 1)
+        message = self.get_last_message()
+        self.assertEqual(message.topic_name(), "")
+        self.assertIn(
+            f"@_**Cordelia, Lear's daughter|{new_user.id}** joined this organization.",
+            message.content,
+        )
 
     def test_notify_realm_of_new_user_in_manual_license_management(self) -> None:
         realm = get_realm("zulip")

@@ -1,0 +1,128 @@
+---
+title: Writing tests for interactive bots
+---
+
+import ZulipNote from "../../components/ZulipNote.astro";
+
+This page gives an overview of the unit testing framework for interactive bots.
+Bots in the main
+[`python-zulip-api`](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots)
+repository are required to include a reasonable set of unit tests, so that
+future developers can easily refactor them.
+
+<ZulipNote>
+  Unit tests for bots make heavy use of mocking. If you want to get comfortable with mocking,
+  mocking strategies, etc. you should check out our
+  [mocking guide](https://zulip.readthedocs.io/en/latest/testing/testing-with-django.html#testing-with-mocks).
+</ZulipNote>
+
+## A simple example
+
+Let's have a look at a simple test suite for the
+[`helloworld`](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots/helloworld) bot.
+
+```python
+from zulip_bots.test_lib import StubBotTestCase
+
+class TestHelpBot(StubBotTestCase):
+    bot_name: str = "helloworld"
+
+    def test_bot(self) -> None:
+        dialog = [
+            ('', 'beep boop'),
+            ('help', 'beep boop'),
+            ('foo', 'beep boop'),
+        ]
+
+        self.verify_dialog(dialog)
+
+```
+
+The `helloworld` bot replies with "beep boop" to every message @-mentioning it.  We
+want our test to verify that the bot **actually** does that.
+
+Note that our helper method `verify_dialog` simulates the conversation for us, and
+we just need to set up a list of tuples with expected results.
+
+The best way to learn about bot tests is to read all the existing tests in the
+`bots` subdirectories.
+
+## Testing your test
+
+Once you have written a test suite, you want to verify that everything works as expected.
+
+* To test a bot in [Zulip's bot directory](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots):
+  `tools/test-bots <botname>`
+
+* To run all bot tests: `tools/test-bots`
+
+## Advanced testing
+
+This section shows advanced testing techniques for more complicated bots that have
+configuration files or interact with third-party APIs.
+*The code for the bot testing library can be found [here](https://github.com/zulip/python-zulip-api/blob/main/zulip_bots/zulip_bots/test_lib.py).*
+
+### Testing bots with config files
+
+Some bots, such as [Giphy](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots/giphy),
+support or require user configuration options to control how the bot works.
+
+To test such a bot, you can use the following pattern:
+
+```
+with self.mock_config_info(dict(api_key=12345)):
+    # self.verify_reply(...)
+```
+
+`mock_config_info()` replaces the actual step of reading configuration from the file
+system and gives your test "dummy data" instead.
+
+### Testing bots with internet access
+
+Some bots, such as [Giphy](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots/giphy),
+depend on a third-party service, such as the Giphy web app, in order to work. Because
+we want our test suite to be reliable and not add load to these third-party APIs, tests
+for these services need to have "test fixtures": sample HTTP request/response pairs to
+be used by the tests. You can specify which one to use in your test code using the
+following helper method:
+
+```
+with self.mock_http_conversation('test_fixture_name'):
+    # self.assert_bot_response(...)
+```
+
+`mock_http_conversation(fixture_name)` patches `requests.get` and returns the data specified
+in the file `fixtures/{fixture_name}.json`. Use the following JSON code as a skeleton for new
+fixtures:
+
+```json
+{
+  "request": {
+    "api_url": "http://api.example.com/",
+    "params": {
+    }
+  },
+  "response": {
+  },
+  "response-headers": {
+  }
+}
+```
+
+For an example, check out the [giphy bot](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots/giphy).
+
+<ZulipNote>
+  You can use [requestbin](https://requestbin.com/) or a similar
+  tool to capture payloads from the service your bot is interacting
+  with.
+</ZulipNote>
+
+### Examples
+
+Check out our [bots](https://github.com/zulip/python-zulip-api/tree/main/zulip_bots/zulip_bots/bots)
+to see examples of bot tests.
+
+## Related articles
+
+* [Writing bots](/help/writing-bots)
+* [Interactive bots API](/help/interactive-bots-api)

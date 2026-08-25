@@ -36,6 +36,11 @@ help you along.
   new major features that you have implemented. The sections of code you worked
   on should be more readable, better-tested, and have clearer documentation.
 
+Please note that outreach programs are not a competition. Different participants
+have different types of projects and progress will look different for each project.
+Your focus should be on making steady and consistent progress and continuously
+learning from your work.
+
 Don't forget to have fun! Spending a few months coding on open source is an
 amazing opportunity, and we hope you'll have a blast. Your acceptance to the
 program means that we are confident that if you put in the effort, your
@@ -111,10 +116,13 @@ You can find many examples in the
   twice a week, e.g., Tuesday and Friday. If you are working less than 20 hours
   per week, post a check-in at least once a week.
 
+  Swatches of low productivity are very common, so post your check-ins no matter
+  how much progress you've made. Regular communication helps your mentor keep up
+  with your progress. Mentors can also help you out if you are facing any difficulties.
+
 - **Where to post**: Unless your mentor or program administrator requests
-  otherwise, post your check-ins in the channel for your program
-  (e.g., [#GSoC](https://chat.zulip.org/#narrow/channel/14-GSoC) or
-  [#Outreachy](https://chat.zulip.org/#narrow/channel/391-Outreachy)), using your
+  otherwise, post your check-ins in the
+  [#checkins](https://chat.zulip.org/#narrow/channel/65-checkins) channel, using your
   name as the topic.
 
 - **What to include** in each check-in:
@@ -122,7 +130,9 @@ You can find many examples in the
   - The **status** of each ongoing project, e.g., in progress, awaiting feedback,
     addressing review feedback, stuck on something, blocked on other work, etc.
     To make your update easy to read, include brief descriptions of what you're
-    working on, not just issue/PR numbers.
+    working on, not just issue/PR numbers. Please also include what has changed
+    for each project since the last check-in. If nothing has changed, mention
+    that explicitly as well.
 
   - For projects where you are waiting on feedback, what **type of feedback** is
     needed (e.g., product review, next round of code review after initial

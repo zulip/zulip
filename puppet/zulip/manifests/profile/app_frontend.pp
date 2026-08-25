@@ -10,6 +10,7 @@ class zulip::profile::app_frontend {
   } else {
     $nginx_listen_port = zulipconf('application_server', 'nginx_listen_port', 443)
   }
+  $nginx_server_name = zulipconf('application_server', 'nginx_server_name', '')
   $ssl_dir = $facts['os']['family'] ? {
     'Debian' => '/etc/ssl',
     'RedHat' => '/etc/pki/tls',
@@ -30,39 +31,28 @@ class zulip::profile::app_frontend {
     notify  => Service['nginx'],
   }
 
-  # We used to install a cron job, but certbot now has a systemd cron
-  # that does better.  This can be removed once upgrading from 5.0 is
-  # no longer possible.
-  file { '/etc/cron.d/certbot-renew':
+  # Reload nginx after deploying a new cert.
+  file { '/etc/letsencrypt/renewal-hooks/deploy/001-nginx.sh':
+    # This was renumbered
     ensure => absent,
   }
-
-  # Reload nginx after deploying a new cert.
-  file { ['/etc/letsencrypt/renewal-hooks', '/etc/letsencrypt/renewal-hooks/deploy']:
-    ensure  => directory,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0755',
-    require => Package[certbot],
-  }
-  file { '/etc/letsencrypt/renewal-hooks/deploy/001-nginx.sh':
+  file { '/etc/letsencrypt/renewal-hooks/deploy/020-symlink.sh':
     ensure  => file,
     owner   => 'root',
     group   => 'root',
     mode    => '0755',
-    source  => 'puppet:///modules/zulip/letsencrypt/nginx-deploy-hook.sh',
-    require => Package[certbot],
+    source  => 'puppet:///modules/zulip/letsencrypt/020-symlink.sh',
+    require => [
+      Package[certbot],
+      File['/etc/letsencrypt/renewal-hooks/deploy'],
+    ]
   }
-  if ! $nginx_http_only {
-    exec { 'fix-standalone-certbot':
-      onlyif  => @(EOT),
-        test -L /etc/ssl/certs/zulip.combined-chain.crt &&
-        readlink /etc/ssl/certs/zulip.combined-chain.crt | grep -q /etc/letsencrypt/live/ &&
-        test -d /etc/letsencrypt/renewal &&
-        grep -qx "authenticator = standalone" /etc/letsencrypt/renewal/*.conf
-        | EOT
-      command => "${facts['zulip_scripts_path']}/lib/fix-standalone-certbot",
-    }
+  file { '/etc/letsencrypt/renewal-hooks/deploy/050-nginx.sh':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+    source => 'puppet:///modules/zulip/letsencrypt/050-nginx.sh',
   }
 
   # Restart the server regularly to avoid potential memory leak problems.
@@ -70,6 +60,6 @@ class zulip::profile::app_frontend {
     hour    => '6',
     minute  => '0',
     dow     => '0',
-    command => '/home/zulip/deployments/current/scripts/restart-server --fill-cache',
+    command => '/home/zulip/deployments/current/scripts/restart-server --fill-cache --skip-client-reloads',
   }
 }

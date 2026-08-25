@@ -10,7 +10,7 @@ def update_role(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> Non
     UserProfile.ROLE_REALM_ADMINISTRATOR = 200
     UserProfile.ROLE_MEMBER = 400
     UserProfile.ROLE_GUEST = 600
-    for user in UserProfile.objects.all():
+    for user in UserProfile.objects.all().iterator():
         if user.is_realm_admin:
             user.role = UserProfile.ROLE_REALM_ADMINISTRATOR
         elif user.is_guest:
@@ -24,7 +24,7 @@ def reverse_code(apps: StateApps, schema_editor: BaseDatabaseSchemaEditor) -> No
     UserProfile = apps.get_model("zerver", "UserProfile")
     UserProfile.ROLE_REALM_ADMINISTRATOR = 200
     UserProfile.ROLE_GUEST = 600
-    for user in UserProfile.objects.all():
+    for user in UserProfile.objects.all().iterator():
         if user.role == UserProfile.ROLE_REALM_ADMINISTRATOR:
             user.is_realm_admin = True
             user.save(update_fields=["is_realm_admin"])

@@ -39,8 +39,9 @@ audit.
 
 Self-hosted Zulip installations can choose whether to self-host their own AI
 models or use a third-party AI model API provider of their choice. Zulip’s AI
-integrations use the [LiteLLM](https://www.litellm.ai/) library, which makes it
-convenient to configure Zulip to use any popular AI model API provider.
+integrations use the [OpenAI Python SDK](https://github.com/openai/openai-python),
+which can be pointed at any OpenAI-compatible API endpoint, including those
+offered by most popular AI model API providers.
 
 - **Server settings**: You can control costs using `INPUT_COST_PER_GIGATOKEN`,
   `OUTPUT_COST_PER_GIGATOKEN`, and `MAX_PER_USER_MONTHLY_AI_COST` settings,

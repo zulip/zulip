@@ -8,6 +8,7 @@ import pwd
 import signal
 import subprocess
 import sys
+import time
 from collections.abc import Awaitable, Callable
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -23,7 +24,6 @@ from urllib.parse import urlsplit
 import aiohttp
 import aiohttp.web_fileresponse
 from aiohttp import hdrs, web
-from aiohttp.http_exceptions import BadStatusLine
 
 from scripts.lib.zulip_tools import CYAN, ENDC
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
@@ -66,16 +66,26 @@ parser.add_argument(
     help="Start app server in HTTPS mode, using reverse proxy",
 )
 parser.add_argument(
-    "--help-center", action="store_true", help="Build and host help center with search"
+    "--help-center-static-build",
+    action="store_true",
+    help="Host existing static build of help center with search",
 )
 parser.add_argument(
+    "-H",
     "--help-center-dev-server",
     action="store_true",
-    help="Run dev server for help center. Hot reload will work for this mode, but search will not work in the generated website.",
+    help="Run dev server for help center alongside the Zulip app. Hot reload will work for this mode, but search will not work in the generated website.",
+)
+parser.add_argument(
+    "--only-help-center",
+    action="store_true",
+    help="Run help center dev server on port 9991 without running the Zulip web app and related services",
 )
 add_provision_check_override_param(parser)
 options = parser.parse_args()
-help_center_dev_server_enabled = options.help_center_dev_server and not options.help_center
+help_center_dev_server_enabled = (
+    options.help_center_dev_server and not options.help_center_static_build
+)
 
 assert_provisioning_status_ok(options.skip_provision_check)
 
@@ -113,10 +123,16 @@ else:
         "runtornado",
         "--autoreload",
         "--immediate-reloads",
+        "--automated",
     ]
 
 manage_args = [f"--settings={settings_module}"]
 os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
+
+# Disable Djangos development server warning; we provide plenty of
+# warnings on this point in the documentation, which is a better place
+# to stop folks than the actual server.
+os.environ["DJANGO_RUNSERVER_HIDE_WARNING"] = "true"
 
 if options.behind_https_proxy:
     os.environ["BEHIND_HTTPS_PROXY"] = "1"
@@ -181,14 +197,14 @@ def server_processes() -> list[list[str]]:
         return main_cmds
 
     other_cmds = [
-        ["./manage.py", "process_queue", "--all", *manage_args],
+        ["./manage.py", "process_queue", "--all", *manage_args, "--automated"],
         [
             "env",
             "PGHOST=127.0.0.1",  # Force password authentication using .pgpass
             "./puppet/zulip/files/postgresql/process_fts_updates",
             "--quiet",
         ],
-        ["./manage.py", "deliver_scheduled_messages"],
+        ["./manage.py", "deliver_scheduled_messages", "--automated"],
         [
             "./manage.py",
             "runtusd",
@@ -248,29 +264,38 @@ SKIP_AUTO_HEADERS = {
 
 
 async def forward(upstream_port: int, request: web.Request) -> web.StreamResponse:
-    try:
-        upstream_response = await session.request(
-            request.method,
-            request.url.with_host("127.0.0.1").with_port(upstream_port),
-            headers=[
-                (key, value)
-                for key, value in request.headers.items()
-                if key not in HOP_BY_HOP_HEADERS
-            ],
-            data=request.content.iter_any() if request.body_exists else None,
-            allow_redirects=False,
-            auto_decompress=False,
-            skip_auto_headers=SKIP_AUTO_HEADERS,
-        )
-    except aiohttp.ClientError as error:
-        logging.error(
-            "Failed to forward %s %s to port %d: %s",
-            request.method,
-            request.url.path,
-            upstream_port,
-            error,
-        )
-        raise web.HTTPBadGateway from error
+    upstream_response: aiohttp.ClientResponse | None = None
+    request_started = time.time()
+    while upstream_response is None:
+        try:
+            upstream_response = await session.request(
+                request.method,
+                request.url.with_host("127.0.0.1").with_port(upstream_port),
+                headers=[
+                    (key, value)
+                    for key, value in request.headers.items()
+                    if key not in HOP_BY_HOP_HEADERS
+                ],
+                data=request.content.iter_any() if request.body_exists else None,
+                allow_redirects=False,
+                auto_decompress=False,
+                skip_auto_headers=SKIP_AUTO_HEADERS,
+            )
+        except aiohttp.ClientConnectorError as error:
+            if time.time() - request_started > 30:
+                logging.error("Backend on :%d did not respond to requests", upstream_port)
+                raise web.HTTPBadGateway from error
+            logging.info("Backend :%d is not up yet, sleeping and retrying", upstream_port)
+            await asyncio.sleep(0.5)
+        except aiohttp.ClientError as error:
+            logging.error(
+                "Failed to forward %s %s to port %d: %s",
+                request.method,
+                request.url.path,
+                upstream_port,
+                error,
+            )
+            raise web.HTTPBadGateway from error
 
     response = web.StreamResponse(status=upstream_response.status, reason=upstream_response.reason)
     response.headers.extend(
@@ -288,28 +313,52 @@ async def forward(upstream_port: int, request: web.Request) -> web.StreamRespons
     return response
 
 
-def run_help_center_dev_server(external_host: str) -> "subprocess.Popen[bytes]":
+def run_help_center_dev_server(
+    allowed_hosts: str, port: int = help_center_port
+) -> "subprocess.Popen[bytes]":
+    env = os.environ.copy()
+    env["ZULIP_WEB_APP_PROXY_PORT"] = str(proxy_port)
+
     return subprocess.Popen(
         [
             "/usr/local/bin/corepack",
             "pnpm",
             "dev",
-            f"--port={help_center_port}",
+            f"--port={port}",
             "--host",
-            f"--allowed-hosts={urlsplit(external_host).hostname}",
+            f"--allowed-hosts={allowed_hosts}",
         ],
-        cwd="help-beta",
+        cwd="starlight_help",
+        env=env,
     )
+
+
+def get_help_center_allowed_hosts() -> str:
+    import django
+
+    django.setup()
+    from django.conf import settings
+
+    hostnames = set()
+    # * is not a valid value for --allowed-hosts in vite.
+    # Ports are not allowed for --allowed-hosts in vite.
+    for host in settings.ALLOWED_HOSTS:
+        if host != "*":
+            hostname = urlsplit(f"//{host}").hostname
+            if hostname:
+                hostnames.add(hostname)
+
+    return ",".join(hostnames)
 
 
 @web.middleware
 async def help_center_middleware(
     request: web.Request, handler: Callable[[web.Request], Awaitable[web.StreamResponse]]
 ) -> web.StreamResponse:
-    if request.path.startswith("/help-beta"):
+    if request.path.startswith("/help"):
         try:
             filename = request.match_info["filename"]
-            name, ext = os.path.splitext(filename)
+            _name, ext = os.path.splitext(filename)
             if not ext:
                 filename = os.path.join(filename, "index.html")
             request.match_info["filename"] = filename
@@ -320,7 +369,7 @@ async def help_center_middleware(
 
 
 middlewares = []
-if options.help_center:
+if options.help_center_static_build:
     middlewares.append(help_center_middleware)
 
 app = web.Application(middlewares=middlewares)
@@ -331,20 +380,22 @@ def setup_routes(
 ) -> None:
     if enable_help_center:
         # Order of adding the rules matters. aiohttp will stop at the first
-        # match, and we want `/help-beta` to be matched before Django URIs.
+        # match, and we want `/help` to be matched before Django URIs.
         try:
-            app.router.add_static("/help-beta", "help-beta/dist")
+            app.router.add_static("/help", "starlight_help/dist")
         except ValueError:
             print("""Please run the build step for the help center before enabling it.
 The instructions for the build step can be found in the `./devtools`
-page. `/help-beta` urls will give you an error until you complete the
+page. `/help` urls will give you an error until you complete the
 build step and rerun `run-dev`.""")
     elif enable_help_center_dev_server:
+
+        async def redirect_help(request: web.Request) -> web.HTTPFound:
+            return web.HTTPFound(request.url.with_port(help_center_port))
+
         app.add_routes(
             [
-                web.route(
-                    hdrs.METH_ANY, r"/{path:(help-beta).*}", partial(forward, help_center_port)
-                ),
+                web.route(hdrs.METH_ANY, r"/{path:(help).*}", redirect_help),
             ]
         )
     app.add_routes(
@@ -360,6 +411,12 @@ build step and rerun `run-dev`.""")
 
 
 def print_listeners(external_host_url: str) -> None:
+    if options.only_help_center:
+        print(
+            f"\n{CYAN}Help center dev server running on:{ENDC} {external_host_url}/help\nZulip web app and other related services will not run in this mode."
+        )
+        return
+
     print(f"\nStarting Zulip on:\n\n\t{CYAN}{external_host_url}/{ENDC}\n\nInternal ports:")
     ports = [
         (proxy_port, "Development server proxy (connect here)"),
@@ -381,28 +438,7 @@ def print_listeners(external_host_url: str) -> None:
     print()
 
 
-def https_log_filter(record: logging.LogRecord) -> bool:
-    # aiohttp emits an exception with a traceback when receiving an
-    # https request (https://github.com/aio-libs/aiohttp/issues/8065).
-    # Abbreviate it to a one-line message.
-    if (
-        record.exc_info is not None
-        and isinstance(error := record.exc_info[1], BadStatusLine)
-        and error.message.startswith(
-            (
-                "Invalid method encountered:\n\n  b'\\x16",
-                'Invalid method encountered:\n\n  b"\\x16',
-            )
-        )
-    ):
-        record.msg = "Rejected https request (this development server only supports http)"
-        record.exc_info = None
-    return True
-
-
-logging.getLogger("aiohttp.server").addFilter(https_log_filter)
-
-runner: web.AppRunner
+runner: web.AppRunner | None = None
 children: list["subprocess.Popen[bytes]"] = []
 
 
@@ -424,17 +460,24 @@ async def serve() -> None:
     http_protocol = "https" if options.behind_https_proxy else "http"
     external_host_url = f"{http_protocol}://{external_host}"
 
+    if options.only_help_center:
+        help_center_allowed_hosts = get_help_center_allowed_hosts()
+        children.append(run_help_center_dev_server(help_center_allowed_hosts, proxy_port))
+        print_listeners(external_host_url)
+        return
+
     if options.test:
         do_one_time_webpack_compile()
     else:
         children.append(start_webpack_watcher())
 
     if help_center_dev_server_enabled:
-        children.append(run_help_center_dev_server(external_host_url))
+        help_center_allowed_hosts = get_help_center_allowed_hosts()
+        children.append(run_help_center_dev_server(help_center_allowed_hosts))
 
-    setup_routes(options.help_center, options.help_center_dev_server)
+    setup_routes(options.help_center_static_build, options.help_center_dev_server)
 
-    children.extend(subprocess.Popen(cmd) for cmd in server_processes())
+    children.extend(subprocess.Popen(cmd) for cmd in server_processes())  # noqa: ASYNC220
 
     session = aiohttp.ClientSession()
     runner = web.AppRunner(app, auto_decompress=False, handler_cancellation=True)
@@ -458,8 +501,9 @@ try:
         loop.add_signal_handler(s, loop.stop)
     loop.run_forever()
 finally:
-    loop.run_until_complete(runner.cleanup())
-    loop.run_until_complete(session.close())
+    if runner is not None:
+        loop.run_until_complete(runner.cleanup())
+        loop.run_until_complete(session.close())
 
     for child in children:
         child.terminate()

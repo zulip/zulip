@@ -1,38 +1,39 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json";
-import * as fenced_code from "../shared/src/fenced_code.ts";
 import render_compose from "../templates/compose.hbs";
-import render_message_feed_bottom_whitespace from "../templates/message_feed_bottom_whitespace.hbs";
 import render_message_feed_errors from "../templates/message_feed_errors.hbs";
 import render_navbar from "../templates/navbar.hbs";
 import render_try_zulip_modal from "../templates/try_zulip_modal.hbs";
+import render_view_bottom_loading_indicator from "../templates/view_bottom_loading_indicator.hbs";
 
 import * as about_zulip from "./about_zulip.ts";
 import * as activity from "./activity.ts";
 import * as activity_ui from "./activity_ui.ts";
 import * as add_stream_options_popover from "./add_stream_options_popover.ts";
 import * as alert_words from "./alert_words.ts";
-import {all_messages_data} from "./all_messages_data.ts";
 import * as audible_notifications from "./audible_notifications.ts";
 import * as banners from "./banners.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
+import {is_browser_unsupported_old_version} from "./browser_support.ts";
 import * as channel from "./channel.ts";
+import * as channel_folders from "./channel_folders.ts";
+import * as channel_folders_popover from "./channel_folders_popover.ts";
 import * as click_handlers from "./click_handlers.ts";
 import * as color_picker_popover from "./color_picker_popover.ts";
 import * as common from "./common.ts";
-import * as compose from "./compose.js";
+import * as compose from "./compose.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
 import * as compose_notifications from "./compose_notifications.ts";
 import * as compose_paste from "./compose_paste.ts";
 import * as compose_pm_pill from "./compose_pm_pill.ts";
 import * as compose_recipient from "./compose_recipient.ts";
 import * as compose_reply from "./compose_reply.ts";
-import * as compose_send_menu_popover from "./compose_send_menu_popover.js";
-import * as compose_setup from "./compose_setup.js";
+import * as compose_send_menu_popover from "./compose_send_menu_popover.ts";
+import * as compose_setup from "./compose_setup.ts";
 import * as compose_textarea from "./compose_textarea.ts";
 import * as compose_tooltips from "./compose_tooltips.ts";
 import * as compose_validate from "./compose_validate.ts";
@@ -48,12 +49,13 @@ import * as echo from "./echo.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as emojisets from "./emojisets.ts";
+import * as fenced_code from "./fenced_code.ts";
 import * as gear_menu from "./gear_menu.ts";
-import * as giphy from "./giphy.ts";
-import * as giphy_state from "./giphy_state.ts";
+import * as gif_picker_ui from "./gif_picker_ui.ts";
+import * as gif_state from "./gif_state.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import * as hashchange from "./hashchange.ts";
-import * as hotkey from "./hotkey.js";
+import * as hotkey from "./hotkey.ts";
 import * as i18n from "./i18n.ts";
 import * as inbox_ui from "./inbox_ui.ts";
 import * as information_density from "./information_density.ts";
@@ -63,6 +65,7 @@ import * as left_sidebar_navigation_area_popovers from "./left_sidebar_navigatio
 import * as left_sidebar_tooltips from "./left_sidebar_tooltips.ts";
 import * as lightbox from "./lightbox.ts";
 import * as linkifiers from "./linkifiers.ts";
+import * as loading_error from "./loading_error.ts";
 import * as local_message from "./local_message.ts";
 import * as markdown from "./markdown.ts";
 import * as markdown_config from "./markdown_config.ts";
@@ -72,11 +75,13 @@ import * as message_fetch from "./message_fetch.ts";
 import * as message_list_hover from "./message_list_hover.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_reminder from "./message_reminder.ts";
 import * as message_scroll from "./message_scroll.ts";
 import * as message_view from "./message_view.ts";
 import * as message_view_header from "./message_view_header.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as modals from "./modals.ts";
+import * as mouse_drag from "./mouse_drag.ts";
 import * as muted_users from "./muted_users.ts";
 import * as narrow_history from "./narrow_history.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -84,6 +89,7 @@ import * as narrow_title from "./narrow_title.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
 import * as navbar_help_menu from "./navbar_help_menu.ts";
 import * as navigate from "./navigate.ts";
+import * as navigation_views from "./navigation_views.ts";
 import * as onboarding_steps from "./onboarding_steps.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
@@ -91,6 +97,7 @@ import * as people from "./people.ts";
 import * as personal_menu_popover from "./personal_menu_popover.ts";
 import * as playground_links_popover from "./playground_links_popover.ts";
 import * as pm_conversations from "./pm_conversations.ts";
+import * as pm_conversations_util from "./pm_conversations_util.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
@@ -100,9 +107,12 @@ import * as pygments_data from "./pygments_data.ts";
 import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
 import * as realm_user_settings_defaults from "./realm_user_settings_defaults.ts";
+import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
-import * as reload_setup from "./reload_setup.js";
+import * as reload_setup from "./reload_setup.ts";
+import * as reminders_overlay_ui from "./reminders_overlay_ui.ts";
 import * as resize_handler from "./resize_handler.ts";
+import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as saved_snippets from "./saved_snippets.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
@@ -110,6 +120,7 @@ import * as scheduled_messages_ui from "./scheduled_messages_ui.ts";
 import * as scroll_bar from "./scroll_bar.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as search from "./search.ts";
+import {FETCH_EVENT_TYPES} from "./server_event_types.ts";
 import * as server_events from "./server_events.js";
 import * as server_events_state from "./server_events_state.ts";
 import * as settings from "./settings.ts";
@@ -149,7 +160,7 @@ import * as timerender from "./timerender.ts";
 import * as tippyjs from "./tippyjs.ts";
 import * as topic_list from "./topic_list.ts";
 import * as topic_popover from "./topic_popover.ts";
-import * as transmit from "./transmit.js";
+import * as transmit from "./transmit.ts";
 import * as typeahead_helper from "./typeahead_helper.ts";
 import * as typing from "./typing.ts";
 import * as unread from "./unread.ts";
@@ -168,7 +179,20 @@ import * as user_status_ui from "./user_status_ui.ts";
 import * as user_topic_popover from "./user_topic_popover.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
-import * as widgets from "./widgets.js";
+import * as watchdog from "./watchdog.ts";
+import * as widgets from "./widgets.ts";
+
+function update_page_loading_indicator_notice() {
+    const $unsupported_desktop_app_notice = $("#app-loading-unsupported-desktop-app");
+    if ($unsupported_desktop_app_notice.length > 0 && page_params.insecure_desktop_app) {
+        $unsupported_desktop_app_notice.removeAttr("hidden");
+        return;
+    }
+    const $unsupported_browser_notice = $("#app-loading-unsupported-browser");
+    if ($unsupported_browser_notice.length > 0 && is_browser_unsupported_old_version()) {
+        $unsupported_browser_notice.removeAttr("hidden");
+    }
+}
 
 // This is where most of our initialization takes place.
 // TODO: Organize it a lot better.  In particular, move bigger
@@ -179,7 +203,7 @@ import * as widgets from "./widgets.js";
    things jumping around slightly when the email address is shown. */
 
 function initialize_bottom_whitespace() {
-    $("#bottom_whitespace").html(render_message_feed_bottom_whitespace());
+    $("#bottom_whitespace").html(render_view_bottom_loading_indicator());
 }
 
 function initialize_navbar() {
@@ -187,9 +211,14 @@ function initialize_navbar() {
         embedded: page_params.narrow_stream !== undefined,
         user_avatar: current_user.avatar_url_medium,
         realm_icon_url: realm.realm_icon_url,
+        realm_name: realm.realm_name,
     });
 
     $("#header-container").html(rendered_navbar);
+    // Track when the image is loaded to updated CSS properties.
+    $("#header-container img.header-button-avatar-image").on("load", (e) => {
+        e.currentTarget.classList.add("avatar-loaded");
+    });
 }
 
 function initialize_compose_box() {
@@ -198,8 +227,10 @@ function initialize_compose_box() {
             render_compose({
                 embedded: $("#compose").attr("data-embedded") === "",
                 file_upload_enabled: realm.max_file_upload_size_mib > 0 && upload.feature_check(),
-                giphy_enabled: giphy_state.is_giphy_enabled(),
+                giphy_enabled: gif_state.is_giphy_enabled(),
                 max_stream_name_length: realm.max_stream_name_length,
+                tenor_enabled: gif_state.is_tenor_enabled(),
+                klipy_enabled: gif_state.is_klipy_enabled(),
                 max_topic_length: realm.max_topic_length,
                 empty_string_topic_display_name: util.get_final_topic_display_name(""),
             }),
@@ -345,7 +376,7 @@ export function initialize_kitchen_sink_stuff() {
                         message_lists.current
                             .all_messages()
                             .map((message) => message.id)
-                            .sort(),
+                            .toSorted((a, b) => a - b),
                     ),
                     found_in_dom: $row_from_dom.length,
                 });
@@ -386,8 +417,8 @@ function initialize_unread_ui() {
     unread_ui.register_update_unread_counts_hook((counts) =>
         stream_list.update_dom_with_unread_counts(counts),
     );
-    unread_ui.register_update_unread_counts_hook((counts) =>
-        pm_list.update_dom_with_unread_counts(counts),
+    unread_ui.register_update_unread_counts_hook((counts, skip_animations) =>
+        pm_list.update_dom_with_unread_counts(counts, skip_animations),
     );
     unread_ui.register_update_unread_counts_hook(() => topic_list.update());
     unread_ui.register_update_unread_counts_hook((counts) =>
@@ -395,7 +426,7 @@ function initialize_unread_ui() {
     );
     unread_ui.register_update_unread_counts_hook(inbox_ui.update);
 
-    unread_ui.initialize({notify_server_messages_read: unread_ops.notify_server_messages_read});
+    unread_ui.initialize({mark_narrow_as_read: unread_ops.mark_narrow_as_read});
 }
 
 export async function initialize_everything(state_data) {
@@ -432,10 +463,19 @@ export async function initialize_everything(state_data) {
     set_realm(state_data.realm);
     set_realm_billing(state_data.realm_billing);
 
+    if (page_params.narrow_stream !== undefined) {
+        // In the /?stream=X mini-window flow, the user's main Zulip
+        // window is the primary recipient of desktop notifications;
+        // suppress them here so the embedded window doesn't fire
+        // duplicate alerts.
+        state_data.user_settings.user_settings.enable_desktop_notifications = false;
+    }
+
     /* To store theme data for spectators, we need to initialize
        user_settings before setting the theme. Because information
        density is so fundamental, we initialize that first, however. */
     initialize_user_settings(state_data.user_settings);
+    mouse_drag.initialize();
     sidebar_ui.restore_sidebar_toggle_status();
     i18n.initialize({language_list: page_params.language_list});
     timerender.initialize();
@@ -444,6 +484,7 @@ export async function initialize_everything(state_data) {
         theme.initialize_theme_for_spectator();
     }
     thumbnail.initialize();
+    thumbnail.set_media_preview_size_css_variable();
     widgets.initialize();
     tippyjs.initialize();
     compose_tooltips.initialize();
@@ -451,17 +492,38 @@ export async function initialize_everything(state_data) {
     left_sidebar_tooltips.initialize();
     // This populates data for scheduled messages.
     scheduled_messages.initialize(state_data.scheduled_messages);
+    message_reminder.initialize(state_data.reminders);
+    navigation_views.initialize(state_data.navigation_views);
     scheduled_messages_ui.initialize();
+    reminders_overlay_ui.initialize();
     popover_menus.initialize();
     left_sidebar_navigation_area_popovers.initialize();
     user_topic_popover.initialize();
     topic_popover.initialize();
-    message_actions_popover.initialize();
+    const message_reminder_click_handler = (remind_message_id, target) => {
+        compose_send_menu_popover.open_schedule_message_menu(remind_message_id, target);
+    };
+    message_actions_popover.initialize({message_reminder_click_handler});
     compose_send_menu_popover.initialize();
 
     realm_user_settings_defaults.initialize(state_data.realm_settings_defaults);
+
+    // The user_group must be initialized before right sidebar
+    // module, so that we can tell whether user is member of
+    // user_group whose members are allowed to create multiuse
+    // invite. The user_group module must also be initialized
+    // before people module, so that can_access_all_users_group
+    // setting group can be used to check whether the user
+    // has permission to access all other users.
+    user_groups.initialize(state_data.user_groups);
+
     await people.initialize(current_user.user_id, state_data.people, state_data.user_groups);
     starred_messages.initialize(state_data.starred_messages);
+
+    // Must happen after people.initialize(). And also before
+    // settings.initialize(), as we check if the user owns any
+    // bot to show the lock icon for "Bots" panel
+    bot_data.initialize(state_data.bot);
 
     // The emoji module must be initialized before the right sidebar
     // module, so that we can display custom emoji in statuses.
@@ -470,10 +532,8 @@ export async function initialize_everything(state_data) {
         emoji_codes: generated_emoji_codes,
     });
 
-    // The user_group must be initialized before right sidebar
-    // module, so that we can tell whether user is member of
-    // user_group whose members are allowed to create multiuse invite.
-    user_groups.initialize(state_data.user_groups);
+    // Channel folders data must be initialized before left sidebar.
+    channel_folders.initialize(state_data.channel_folders);
 
     // These components must be initialized early, because other
     // modules' initialization has not been audited for whether they
@@ -495,6 +555,12 @@ export async function initialize_everything(state_data) {
             stream_list.update_streams_sidebar,
         );
     });
+    pm_conversations.set_update_dm_last_message_id((user_ids_string) => {
+        pm_conversations_util.update_dm_last_message_id(
+            user_ids_string,
+            pm_list.update_private_messages,
+        );
+    });
 
     realm_logo.initialize();
     message_lists.initialize();
@@ -509,7 +575,7 @@ export async function initialize_everything(state_data) {
         maybe_load_older_messages(first_unread_message_id) {
             recent_view_ui.set_backfill_in_progress(true);
             message_fetch.maybe_load_older_messages({
-                msg_list_data: all_messages_data,
+                msg_list_data: recent_view_messages_data,
                 recent_view: true,
                 // To have a hard anchor on our target of first unread message id,
                 // we pass it from here, otherwise it might get updated and lead to confusion.
@@ -523,7 +589,7 @@ export async function initialize_everything(state_data) {
     });
     alert_words.initialize(state_data.alert_words);
     saved_snippets.initialize(state_data.saved_snippets);
-    emojisets.initialize();
+    emojisets.initialize(user_settings.emojiset);
     scroll_bar.initialize();
     message_viewport.initialize();
     banners.initialize();
@@ -541,6 +607,9 @@ export async function initialize_everything(state_data) {
     user_group_edit.initialize();
     stream_edit_subscribers.initialize();
     stream_data.initialize(state_data.stream_data);
+    stream_data.set_channel_has_locally_available_topic(
+        stream_topic_history.channel_has_locally_available_topic,
+    );
     user_group_edit_members.initialize();
     stream_card_popover.initialize();
     pm_conversations.recent.initialize(state_data.pm_conversations);
@@ -550,14 +619,14 @@ export async function initialize_everything(state_data) {
     left_sidebar_navigation_area.initialize();
     stream_list_sort.initialize();
     stream_list.initialize({
-        on_stream_click(stream_id, trigger) {
+        show_channel_feed(stream_id, trigger) {
             const sub = sub_store.get(stream_id);
             sidebar_ui.hide_all();
             popovers.hide_all();
             message_view.show(
                 [
                     {
-                        operator: "stream",
+                        operator: "channel",
                         operand: sub.stream_id.toString(),
                     },
                 ],
@@ -574,9 +643,12 @@ export async function initialize_everything(state_data) {
     stream_popover.initialize();
     color_picker_popover.initialize();
     add_stream_options_popover.initialize();
+    channel_folders_popover.initialize();
     click_handlers.initialize();
     scheduled_messages_overlay_ui.initialize();
-    compose_paste.initialize();
+    compose_paste.initialize({
+        upload_pasted_file: upload.upload_pasted_file,
+    });
     overlays.initialize();
     invite.initialize();
     message_view_header.initialize();
@@ -586,12 +658,13 @@ export async function initialize_everything(state_data) {
         restart_get_events: server_events.restart_get_events,
     });
     server_events.initialize(state_data.server_events);
+    watchdog.initialize();
     user_status.initialize(state_data.user_status);
     compose_recipient.initialize();
     compose_pm_pill.initialize({
         on_pill_create_or_remove() {
             compose_recipient.update_compose_area_placeholder_text();
-            compose_recipient.check_posting_policy_for_compose_box();
+            compose_validate.validate_and_update_send_button_status();
         },
     });
     compose_closed_ui.initialize();
@@ -599,7 +672,6 @@ export async function initialize_everything(state_data) {
     drafts.initialize(); // Must happen before reload_setup.initialize()
     reload_setup.initialize();
     unread.initialize(state_data.unread);
-    bot_data.initialize(state_data.bot); // Must happen after people.initialize()
     message_fetch.initialize(() => {
         recent_view_ui.set_initial_message_fetch_status(false);
         recent_view_ui.revive_current_focus();
@@ -635,7 +707,7 @@ export async function initialize_everything(state_data) {
     unread_ops.initialize();
     gear_menu.initialize();
     navbar_help_menu.initialize();
-    giphy.initialize();
+    gif_picker_ui.initialize();
     presence.initialize(state_data.presence);
     settings_preferences.initialize();
     settings_notifications.initialize();
@@ -658,12 +730,12 @@ export async function initialize_everything(state_data) {
         }
     });
     activity_ui.initialize({
-        narrow_by_email(email) {
+        narrow_by_user_id(user_id) {
             message_view.show(
                 [
                     {
                         operator: "dm",
-                        operand: email,
+                        operand: [user_id],
                     },
                 ],
                 {trigger: "sidebar"},
@@ -694,7 +766,7 @@ export async function initialize_everything(state_data) {
             ];
 
             if (latest_msg_id !== undefined) {
-                narrow.push({operator: "with", operand: latest_msg_id});
+                narrow.push({operator: "with", operand: String(latest_msg_id)});
             }
 
             message_view.show(narrow, {trigger: "sidebar"});
@@ -713,11 +785,11 @@ export async function initialize_everything(state_data) {
     drafts_overlay_ui.initialize();
     // This needs to happen after activity_ui.initialize, so that user_filter
     // is defined. Also, must happen after people.initialize()
-    onboarding_steps.initialize(
-        state_data.onboarding_steps,
-        state_data.navigation_tour_video_url,
-        message_view.show,
-    );
+    onboarding_steps.initialize(state_data.onboarding_steps, {
+        show_message_view: message_view.show,
+        update_recipient_row_attention_level:
+            compose_recipient.update_recipient_row_attention_level,
+    });
     typing.initialize();
     starred_messages_ui.initialize();
     user_status_ui.initialize();
@@ -727,16 +799,17 @@ export async function initialize_everything(state_data) {
     desktop_integration.initialize();
 
     group_permission_settings.initialize();
+    overlays.trap_focus_for_settings_overlay();
 
     $("#app-loading").addClass("loaded");
 }
 
 function show_try_zulip_modal() {
-    const html_body = render_try_zulip_modal();
+    const modal_content_html = render_try_zulip_modal();
     dialog_widget.launch({
-        text_heading: i18n.$t({defaultMessage: "Welcome to the Zulip development community!"}),
-        html_body,
-        html_submit_button: i18n.$t({defaultMessage: "Let's go!"}),
+        modal_title_text: i18n.$t({defaultMessage: "Welcome to the Zulip development community!"}),
+        modal_content_html,
+        modal_submit_button_text: i18n.$t({defaultMessage: "Let's go!"}),
         on_click() {
             // Do nothing
         },
@@ -747,44 +820,101 @@ function show_try_zulip_modal() {
 }
 
 $(() => {
-    // Remove '?show_try_zulip_modal', if present.
+    update_page_loading_indicator_notice();
+
+    // Remove transient query parameters.
     const url = new URL(window.location.href);
+    let needs_url_cleanup = false;
     if (url.searchParams.has("show_try_zulip_modal")) {
         url.searchParams.delete("show_try_zulip_modal");
-        window.history.replaceState(window.history.state, "", url.toString());
+        needs_url_cleanup = true;
+    }
+    if (url.searchParams.has("state_data")) {
+        url.searchParams.delete("state_data");
+        needs_url_cleanup = true;
+    }
+    if (needs_url_cleanup) {
+        window.history.replaceState(window.history.state, "", url);
     }
 
-    if (page_params.is_spectator) {
-        if (page_params.show_try_zulip_modal) {
-            show_try_zulip_modal();
+    if (page_params.no_event_queue) {
+        // For spectators and client-triggered reloads, fetch
+        // state_data via the API rather than reading it from the
+        // (potentially very large) HTML response. For reloads, this
+        // avoids partial-transfer failures that leave users stuck on
+        // the loading screen. See #36094.
+        let data;
+        if (page_params.is_spectator) {
+            data = {
+                apply_markdown: true,
+                client_capabilities: JSON.stringify({
+                    notification_settings_null: true,
+                    bulk_message_deletion: true,
+                    user_avatar_url_field_optional: true,
+                    // Set this to true when stream typing notifications are implemented.
+                    stream_typing_notifications: false,
+                    user_settings_object: true,
+                    empty_topic_name: true,
+                    individual_emoji_changes: true,
+                }),
+                client_gravatar: false,
+            };
+        } else {
+            // Logged-in reload: request the same parameters the
+            // server-side do_events_register call uses for the initial
+            // page load. Keep these in sync with the call in
+            // zerver/lib/home.py.
+            data = {
+                apply_markdown: true,
+                client_gravatar: true,
+                slim_presence: true,
+                include_subscribers: "partial",
+                presence_history_limit_days: page_params.presence_history_limit_days_for_web_app,
+                fetch_event_types: JSON.stringify(FETCH_EVENT_TYPES),
+                client_capabilities: JSON.stringify({
+                    notification_settings_null: true,
+                    bulk_message_deletion: true,
+                    user_avatar_url_field_optional: true,
+                    stream_typing_notifications: true,
+                    linkifier_url_template: true,
+                    user_list_incomplete: true,
+                    include_deactivated_groups: true,
+                    archived_channels: true,
+                    empty_topic_name: true,
+                    simplified_presence_events: true,
+                    individual_emoji_changes: true,
+                }),
+            };
         }
-        const data = {
-            apply_markdown: true,
-            client_capabilities: JSON.stringify({
-                notification_settings_null: true,
-                bulk_message_deletion: true,
-                user_avatar_url_field_optional: true,
-                // Set this to true when stream typing notifications are implemented.
-                stream_typing_notifications: false,
-                user_settings_object: true,
-                empty_topic_name: true,
-            }),
-            client_gravatar: false,
-        };
-        channel.post({
-            url: "/json/register",
-            data,
-            success(response_data) {
-                const state_data = state_data_schema.parse(response_data);
-                initialize_everything(state_data);
-            },
-            error() {
-                $("#app-loading-middle-content").hide();
-                $("#app-loading-bottom-content").hide();
-                $(".app").hide();
-                $("#app-loading-error").css({visibility: "visible"});
-            },
-        });
+        let register_failures = 0;
+        function fetch_state_data() {
+            channel.post({
+                url: "/json/register",
+                data,
+                success(response_data) {
+                    const state_data = state_data_schema.parse(response_data);
+                    initialize_everything(state_data);
+                    if (page_params.show_try_zulip_modal) {
+                        show_try_zulip_modal();
+                    }
+                },
+                error(xhr) {
+                    register_failures += 1;
+                    if (register_failures <= 5) {
+                        const retry_delay_secs = get_retry_backoff_seconds(
+                            xhr,
+                            register_failures,
+                            false,
+                            true,
+                        );
+                        setTimeout(fetch_state_data, retry_delay_secs * 1000);
+                        return;
+                    }
+                    loading_error.show_loading_error();
+                },
+            });
+        }
+        fetch_state_data();
     } else {
         const state_data = page_params.state_data;
         assert(state_data !== null);

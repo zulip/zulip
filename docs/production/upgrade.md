@@ -31,9 +31,9 @@ Business](https://zulip.com/plans/#self-hosted), or reach out to
 
 :::{important}
 
-Be sure to follow the additional instructions if you're [using
-docker-zulip][docker-upgrade], have [patched Zulip](modify.md), or have
-[modified Zulip-managed configuration
+Be sure to follow the additional instructions if you're {doc}`using
+Docker <docker:how-to/compose-upgrading>`, have [patched
+Zulip](modify.md), or have [modified Zulip-managed configuration
 files](#preserving-local-changes-to-service-configuration-files).
 
 :::
@@ -91,8 +91,8 @@ If you run into any issues or need to roll back the upgrade, see the
 
 :::{important}
 
-If you are upgrading docker-zulip, please follow [these
-instructions](https://github.com/zulip/docker-zulip#upgrading-from-a-git-repository).
+If your deployment is using Docker, please follow {ref}`these
+instructions <docker:how-to/compose-upgrading:upgrading from a git repository>`.
 
 :::
 
@@ -115,16 +115,16 @@ To upgrade to a branch from Git, simply run:
 
 ```bash
 # Upgrade to an official release
-/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 9.4
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 11.5
 
 # Upgrade to a maintenance branch
-/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 9.x
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 11.x
 
 # Upgrade to the Zulip Cloud branch
 /home/zulip/deployments/current/scripts/upgrade-zulip-from-git zulip-cloud-current
 
 # Upgrade to the `main` branch
-/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 9.4
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git main
 ```
 
 Zulip will automatically fetch the relevant Git commit and upgrade to
@@ -322,6 +322,15 @@ include directories you can use, in different [contexts][context]:
 
 ## Upgrading PostgreSQL
 
+:::{important}
+
+If you are using [Docker](docker.md), PostgreSQL is upgraded via
+image bumps rather than the `upgrade-postgresql` script; see
+{doc}`docker:how-to/compose-upgrading` and
+{doc}`docker:reference/versioning`.
+
+:::
+
 The major version of PostgreSQL is upgraded separately from the Zulip
 server version. Further, the version of PostgreSQL included with a
 Zulip server is not linked to that of the host OS; the Zulip installer
@@ -369,9 +378,15 @@ To upgrade the version of PostgreSQL on the Zulip server:
 You should now be able to navigate to the Zulip server's URL and
 confirm everything is working correctly.
 
-[docker-upgrade]: https://github.com/zulip/docker-zulip#upgrading-the-zulip-container
-
 ## Upgrading the operating system
+
+:::{important}
+
+If you are using [Docker](docker.md), the operating system is part
+of the container image and is upgraded with it; the instructions
+below do not apply.
+
+:::
 
 When you upgrade the operating system on which Zulip is installed
 (e.g., Ubuntu 22.04 to Ubuntu 24.04), you need to take some additional
@@ -395,7 +410,7 @@ instructions for other supported platforms.
    ```
 
 1. One of Zulip's dependencies, RabbitMQ, is used to store deferred work
-   in queues. RabbitMQ's Ubuntu packaging has [problems][rabbitmq-bug]
+   in queues. RabbitMQ's Ubuntu packaging has [problems][ubuntu-rabbitmq-bug]
    upgrading from version 3.9 in Ubuntu 22.04 to 3.12 in Ubuntu
    24.04. To work around this bug, you'll need to uninstall
    `rabbitmq-server`, purging its database, before upgrading the OS;
@@ -413,7 +428,9 @@ instructions for other supported platforms.
       ```bash
       /home/zulip/deployments/current/manage.py process_queue --all
       ```
-      to process any events still in the queues. You can also decide
+      ...which will start all workers consuming any remaining events.
+      You should cancel this (with ^C) once `rabitmqctl list_queues`
+      shows that no queues contain events anymore. You can also decide
       to skip this step if you're OK losing a bit of data of the
       relevant type.
    1. As root, run `apt purge rabbitmq-server` to remove the RabbitMQ
@@ -470,7 +487,7 @@ instructions for other supported platforms.
 You should now be able to navigate to your Zulip server's URL and
 confirm everything is working correctly.
 
-[rabbitmq-bug]: https://bugs.launchpad.net/ubuntu/+source/rabbitmq-server/+bug/2074309
+[ubuntu-rabbitmq-bug]: https://bugs.launchpad.net/ubuntu/+source/rabbitmq-server/+bug/2074309
 
 ### Upgrading from Ubuntu 20.04 Focal to 22.04 Jammy
 
@@ -653,6 +670,83 @@ confirm everything is working correctly.
    20.04](#upgrading-from-ubuntu-1804-bionic-to-2004-focal), the next
    in chain of upgrades leading to a supported operating system.
 
+### Upgrading from Debian 12 to 13
+
+1. Upgrade your server to the latest `11.x` release.
+
+1. As the Zulip user, stop the Zulip server and run the following
+   to back up the system:
+
+   ```bash
+   /home/zulip/deployments/current/scripts/stop-server
+   /home/zulip/deployments/current/manage.py backup --output=/home/zulip/release-upgrade.backup.tar.gz
+   ```
+
+1. One of Zulip's dependencies, RabbitMQ, is used to store deferred work
+   in queues. RabbitMQ's Debian packaging has [problems][debian-rabbitmq-bug]
+   upgrading from version 3.10 in Debian 12 to 4.0 in Debian 13. To
+   work around this bug, you'll need to uninstall `rabbitmq-server`,
+   purging its database, before upgrading the OS; the steps after the
+   OS upgrade will reinstall the new version and configure it
+   properly. You can do this uninstallation process safely via the
+   following process:
+
+   1. As root, run:
+      ```bash
+      rabbitmqctl list_queues
+      ```
+      to check whether any of Zulip's RabbitMQ queues contain
+      unprocessed events.
+   1. If any queues contain events, you can run as the `zulip` user
+      ```bash
+      /home/zulip/deployments/current/manage.py process_queue --all
+      ```
+      ...which will start all workers consuming any remaining events.
+      You should cancel this (with ^C) once `rabitmqctl list_queues`
+      shows that no queues contain events anymore. You can also decide
+      to skip this step if you're OK losing a bit of data of the
+      relevant type.
+   1. As root, run `apt purge rabbitmq-server` to remove the RabbitMQ
+      package, including, critically, its database and configuration
+      state, which would otherwise cause installation of the Debian 13
+      package to crash.
+
+1. Follow [Debian's instructions to upgrade the OS][trixie-upgrade].
+
+   [trixie-upgrade]: https://www.debian.org/releases/trixie/release-notes/upgrading.en.html
+
+   When prompted for you how to upgrade configuration
+   files for services that Zulip manages like Redis, PostgreSQL,
+   nginx, and memcached, the best choice is `N` to keep the
+   currently installed version. But it's not important; the next
+   step will re-install Zulip's configuration in any case.
+
+1. Next, we need to reinstall the current version of Zulip, which
+   among other things will recompile Zulip's Python module
+   dependencies for your new version of Python and rewrite Zulip's
+   full-text search indexes to work with the upgraded dictionary
+   packages. This will also take care of re-installing and re-configuring
+   RabbitMQ which we removed earlier.
+
+   ```bash
+   rm -rf /srv/zulip-venv-cache/* /home/zulip/deployments/current/.venv /root/.cache/uv
+   /home/zulip/deployments/current/scripts/lib/upgrade-zulip-stage-2 \
+       /home/zulip/deployments/current/ --ignore-static-assets --audit-fts-indexes
+   ```
+
+1. As an additional step, you can also [upgrade the PostgreSQL version](#upgrading-postgresql).
+
+1. As root, restart the server:
+
+   ```bash
+   reboot
+   ```
+
+You should now be able to navigate to your Zulip server's URL and
+confirm everything is working correctly.
+
+[debian-rabbitmq-bug]: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1100165
+
 ### Upgrading from Debian 11 to 12
 
 1. Upgrade your server to the latest `7.x` release.
@@ -715,7 +809,7 @@ confirm everything is working correctly.
 
 3. Follow [Debian's instructions to upgrade the OS][bullseye-upgrade].
 
-   [bullseye-upgrade]: https://www.debian.org/releases/bullseye/amd64/release-notes/ch-upgrading.html
+   [bullseye-upgrade]: https://www.debian.org/releases/bullseye/amd64/release-notes.en.txt
 
    When prompted for you how to upgrade configuration
    files for services that Zulip manages like Redis, PostgreSQL,

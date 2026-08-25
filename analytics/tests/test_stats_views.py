@@ -562,7 +562,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data/realm/zulip", {"chart_name": "number_of_humans"}
         )
-        self.assert_json_error(result, "Must be an server administrator", 400)
+        self.assert_json_error(result, "Must be a server administrator", 400)
 
         user = self.example_user("hamlet")
         user.is_staff = True
@@ -588,7 +588,7 @@ class TestGetChartData(ZulipTestCase):
         result = self.client_get(
             "/json/analytics/chart_data/installation", {"chart_name": "number_of_humans"}
         )
-        self.assert_json_error(result, "Must be an server administrator", 400)
+        self.assert_json_error(result, "Must be a server administrator", 400)
 
         user = self.example_user("hamlet")
         user.is_staff = True
@@ -675,15 +675,15 @@ class TestMapArrays(ZulipTestCase):
             result,
             {
                 "Old desktop app": [32, 36, 39],
-                "Old iOS app": [1, 2, 3],
+                "Ancient iOS app": [1, 2, 3],
                 "Desktop app": [2, 5, 7],
-                "Mobile app (React Native)": [1, 2, 3],
-                "Mobile app beta (Flutter)": [2, 2, 2],
+                "Old mobile app (React Native)": [1, 2, 3],
+                "Mobile app (Flutter)": [2, 2, 2],
                 "Web app": [1, 2, 3],
                 "Python API": [2, 4, 6],
                 "SomethingRandom": [4, 5, 6],
                 "GitHub webhook": [7, 7, 9],
-                "Old Android app": [64, 63, 65],
+                "Ancient Android app": [64, 63, 65],
                 "Terminal app": [9, 10, 11],
             },
         )

@@ -1,27 +1,22 @@
-##### 2. Add yourself to the `docker` group:
+##### 2. Create the `docker` group and add yourself to it:
 
 ```console
-$ sudo adduser $USER docker
-Adding user `YOURUSERNAME' to group `docker' ...
-Adding user YOURUSERNAME to group docker
-Done.
+$ sudo groupadd docker
+$ sudo usermod -aG docker $USER
 ```
 
-You will need to reboot for this change to take effect. If it worked,
-you will see `docker` in your list of groups:
+You will need to log out and log back in (or reboot) for this change to take effect.
+If it worked, you will see `docker` in your list of groups:
 
 ```console
 $ groups | grep docker
 YOURUSERNAME adm cdrom sudo dip plugdev lpadmin sambashare docker
 ```
 
-##### 3. Make sure the Docker daemon is running:
+##### 3. Make sure the Docker daemon is running
 
-If you had previously installed and removed an older version of
-Docker, an [Ubuntu
-bug](https://bugs.launchpad.net/ubuntu/+source/docker.io/+bug/1844894)
-may prevent Docker from being automatically enabled and started after
-installation. You can check using the following:
+Docker runs as a background service (daemon), which must be running for Docker commands to work.
+You can check using the following:
 
 ```console
 $ systemctl status docker

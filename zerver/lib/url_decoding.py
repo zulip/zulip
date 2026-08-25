@@ -1,3 +1,5 @@
+# See the Zulip URL spec at https://zulip.com/api/zulip-urls
+
 from urllib.parse import unquote, urlsplit
 
 from django.conf import settings
@@ -86,7 +88,7 @@ def decode_hash_component(string: str) -> str:
 def decode_narrow_operand(operator: str, operand: str) -> str | int | list[int]:
     # These have the similar slug formatting for their operands which
     # contain object ID(s).
-    if operator in ["dm-including", "dm", "sender", "channel"]:
+    if operator in ["dm-including", "dm", "mentions", "sender", "channel"]:
         result = parse_recipient_slug(operand)
         return result[0] if isinstance(result, tuple) else ""
 
@@ -133,7 +135,7 @@ def parse_narrow_url(
             raw_operand = ""
         operand = decode_narrow_operand(operator, raw_operand)
 
-        if operand == "" and operator not in ["topic"]:
+        if operand == "" and operator != "topic":
             # The empty string is a valid topic (realm_empty_topic_display_name).
             #
             # Other empty string operands are invalid.

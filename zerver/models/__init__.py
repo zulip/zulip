@@ -7,6 +7,7 @@ from zerver.models.channel_folders import ChannelFolder as ChannelFolder
 from zerver.models.clients import Client as Client
 from zerver.models.custom_profile_fields import CustomProfileField as CustomProfileField
 from zerver.models.custom_profile_fields import CustomProfileFieldValue as CustomProfileFieldValue
+from zerver.models.devices import Device as Device
 from zerver.models.drafts import Draft as Draft
 from zerver.models.groups import GroupGroupMembership as GroupGroupMembership
 from zerver.models.groups import NamedUserGroup as NamedUserGroup

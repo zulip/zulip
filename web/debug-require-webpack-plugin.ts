@@ -4,14 +4,13 @@
 
 import path from "node:path";
 
-import type {ResolveRequest} from "enhanced-resolve";
 import webpack from "webpack";
 
 export default class DebugRequirePlugin implements webpack.WebpackPluginInstance {
     apply(compiler: webpack.Compiler): void {
         const resolved = new Map<string, Set<string>>();
         const nameSymbol = Symbol("DebugRequirePluginName");
-        type NamedRequest = ResolveRequest & {
+        type NamedRequest = {
             [nameSymbol]?: string | undefined;
         };
         let debugRequirePath: string | false = false;
@@ -20,7 +19,7 @@ export default class DebugRequirePlugin implements webpack.WebpackPluginInstance
             .for("normal")
             .tap("DebugRequirePlugin", (resolver) => {
                 resolver.getHook("beforeRawModule").tap("DebugRequirePlugin", (req) => {
-                    if (!(nameSymbol in req)) {
+                    if (!Object.hasOwn(req, nameSymbol)) {
                         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
                         (req as NamedRequest)[nameSymbol] = req.request;
                     }
@@ -30,7 +29,7 @@ export default class DebugRequirePlugin implements webpack.WebpackPluginInstance
                 resolver.getHook("beforeRelative").tap("DebugRequirePlugin", (req) => {
                     if (req.path !== false) {
                         const inPath = path.relative(compiler.context, req.path);
-                        if (!inPath.startsWith("../") && !(nameSymbol in req)) {
+                        if (!inPath.startsWith("../") && !Object.hasOwn(req, nameSymbol)) {
                             // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
                             (req as NamedRequest)[nameSymbol] = "./" + inPath;
                         }
@@ -38,21 +37,19 @@ export default class DebugRequirePlugin implements webpack.WebpackPluginInstance
                     return undefined!;
                 });
 
-                resolver
-                    .getHook("beforeResolved")
-                    .tap("DebugRequirePlugin", (req: ResolveRequest) => {
-                        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-                        const name = (req as NamedRequest)[nameSymbol];
-                        if (name !== undefined && req.path !== false) {
-                            const names = resolved.get(req.path);
-                            if (names) {
-                                names.add(name);
-                            } else {
-                                resolved.set(req.path, new Set([name]));
-                            }
+                resolver.getHook("beforeResolved").tap("DebugRequirePlugin", (req) => {
+                    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+                    const name = (req as NamedRequest)[nameSymbol];
+                    if (name !== undefined && req.path !== false) {
+                        const names = resolved.get(req.path);
+                        if (names) {
+                            names.add(name);
+                        } else {
+                            resolved.set(req.path, new Set([name]));
                         }
-                        return undefined!;
-                    });
+                    }
+                    return undefined!;
+                });
             });
 
         compiler.hooks.beforeCompile.tapPromise(
@@ -94,7 +91,8 @@ export default class DebugRequirePlugin implements webpack.WebpackPluginInstance
                                 if (m.resource === debugRequirePath) {
                                     hasDebugRequire = true;
                                 }
-                                for (const name of resolved.get(m.resource) ?? []) {
+                                const names = resolved.get(m.resource) ?? [];
+                                for (const name of names) {
                                     ids.push([
                                         m.rawRequest.slice(0, m.rawRequest.lastIndexOf("!") + 1) +
                                             name,
@@ -111,7 +109,7 @@ export default class DebugRequirePlugin implements webpack.WebpackPluginInstance
                         return source;
                     }
 
-                    ids.sort();
+                    ids.sort(([a], [b]) => Number(a > b) - Number(a < b));
                     return webpack.Template.asString([
                         source,
                         `__webpack_require__.debugRequireIds = ${JSON.stringify(

@@ -29,7 +29,7 @@ class Command(ZulipBaseCommand):
         target_realm = self.get_realm(options)
 
         if target_realm is None:
-            realms: Iterable[Realm] = Realm.objects.all()
+            realms: Iterable[Realm] = Realm.objects.all().iterator()
         else:
             realms = [target_realm]
 

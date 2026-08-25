@@ -62,14 +62,6 @@ class zulip::app_frontend_base {
 
   $loadbalancers = split(zulipconf('loadbalancer', 'ips', ''), ',')
   if $loadbalancers != [] {
-    file { '/etc/nginx/zulip-include/app.d/accept-loadbalancer.conf':
-      require => File['/etc/nginx/zulip-include/app.d'],
-      owner   => 'root',
-      group   => 'root',
-      mode    => '0644',
-      content => template('zulip/accept-loadbalancer.conf.template.erb'),
-      notify  => Service['nginx'],
-    }
     file { '/etc/nginx/zulip-include/app.d/keepalive-loadbalancer.conf':
       require => File['/etc/nginx/zulip-include/app.d'],
       owner   => 'root',
@@ -79,11 +71,17 @@ class zulip::app_frontend_base {
       notify  => Service['nginx'],
     }
   } else {
-    file { ['/etc/nginx/zulip-include/app.d/accept-loadbalancer.conf',
-            '/etc/nginx/zulip-include/app.d/keepalive-loadbalancer.conf']:
+    file { '/etc/nginx/zulip-include/app.d/keepalive-loadbalancer.conf':
       ensure => absent,
       notify => Service['nginx'],
     }
+  }
+  file { '/etc/nginx/zulip-include/app.d/accept-loadbalancer.conf':
+    # This moved to /etc/nginx/zulip-include/trusted-ip, via
+    # nginx.pp. This block can be removed once direct Zulip upgrades
+    # from Zulip 11 are no longer supported.
+    ensure => absent,
+    notify => Service['nginx'],
   }
   file { '/etc/nginx/zulip-include/app.d/healthcheck.conf':
     require => File['/etc/nginx/zulip-include/app.d'],
@@ -152,7 +150,7 @@ class zulip::app_frontend_base {
   # of memory.
   $queues_multiprocess_default = $zulip::common::total_memory_mb > 3800
   $queues_multiprocess = zulipconf('application_server', 'queue_workers_multiprocess', $queues_multiprocess_default)
-  $queues = [
+  $base_queues = [
     'deferred_work',
     'digest_emails',
     'email_mirror',
@@ -167,6 +165,12 @@ class zulip::app_frontend_base {
     'user_activity',
     'user_activity_interval',
   ]
+  # Soft reactivations normally share the deferred_work queue; larger
+  # servers can opt into a dedicated queue (and worker process) for them.
+  $queues = zulipconf('application_server', 'dedicated_soft_reactivation_queue', false) ? {
+    true    => $base_queues + ['soft_reactivation'],
+    default => $base_queues,
+  }
 
   if $zulip::common::total_memory_mb > 24000 {
     $uwsgi_default_processes = 16
@@ -203,10 +207,34 @@ class zulip::app_frontend_base {
 
   $tusd_server_listen = zulipconf('application_server', 'tusd_server_listen', '127.0.0.1')
 
+  # Supervisor sets this as HTTP_proxy/HTTPS_proxy in every process's
+  # environment, so that all outgoing requests go through Smokescreen;
+  # including those made directly by libraries rather than through
+  # OutgoingSession.
   if $proxy_host != '' and $proxy_port != '' {
     $proxy = "http://${proxy_host}:${proxy_port}"
   } else {
     $proxy = ''
+  }
+  $custom_ca_path = zulipconf('application_server','custom_ca_path', '')
+  if $custom_ca_path != '' {
+    file { '/usr/local/share/ca-certificates/custom-zulip-ca.crt':
+      ensure => file,
+      source => $custom_ca_path,
+      owner  => 'root',
+      group  => 'root',
+      mode   => '0644',
+      notify => Exec['update-ca-certificates'],
+    }
+    exec { 'update-ca-certificates':
+      command     => '/usr/sbin/update-ca-certificates',
+      require     => Package['ca-certificates'],
+      before      => File["${zulip::common::supervisor_conf_dir}/zulip.conf"],
+      refreshonly => true,
+    }
+    $ca_bundle=',REQUESTS_CA_BUNDLE="/etc/ssl/certs/ca-certificates.crt"'
+  } else {
+    $ca_bundle=''
   }
   file { "${zulip::common::supervisor_conf_dir}/zulip.conf":
     ensure  => file,
@@ -249,6 +277,15 @@ class zulip::app_frontend_base {
     owner  => 'zulip',
     group  => 'zulip',
     mode   => '0755',
+  }
+  # /home/zulip/uploads is documented as something administrators may
+  # replace with a symlink to a different storage location, so we use
+  # an exec with a `test -d` guard (which follows symlinks) rather
+  # than a file resource that would replace the symlink.
+  exec { 'create-uploads-dir':
+    command => 'install -d -o zulip -g zulip -m 0755 /home/zulip/uploads',
+    unless  => 'test -d /home/zulip/uploads',
+    path    => '/usr/bin:/bin',
   }
   file { [
     '/var/log/zulip/queue_error',

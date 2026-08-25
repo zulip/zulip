@@ -8,7 +8,7 @@ from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,
     authenticated_remote_server_management_endpoint,
 )
-from zerver.decorator import require_organization_member, zulip_login_required
+from zerver.decorator import require_billing_access, zulip_login_required
 from zerver.lib.response import json_success
 from zerver.models import UserProfile
 
@@ -67,7 +67,7 @@ def remote_server_sponsorship_page(
     return render(request, "corporate/billing/sponsorship.html", context=context)
 
 
-@require_organization_member
+@require_billing_access
 def sponsorship(
     request: HttpRequest,
     user: UserProfile,

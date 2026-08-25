@@ -13,7 +13,7 @@ gets resolved,” says Rush Stack maintainer [Pete
 Gonzalez](https://github.com/octogonz).
 
 
-> “With Zulip, we have a system that feels professional.”
+> With Zulip, we have a system that feels professional.
 >
 > — Rush Stack maintainer Pete Gonzalez
 
@@ -41,7 +41,7 @@ fix anything that might be incorrect or confusing, which is important for
 long-running discussions.”
 
 
-> “Zulip gives you control.”
+> Zulip gives you control.
 >
 > — Rush Stack maintainer Pete Gonzalez
 
@@ -70,8 +70,8 @@ to just 90 days of message history, which is unworkable for a community with a
 large knowledge base and long-running investigations.
 
 
-> “Of all the apps I tested, Zulip’s approach stood out as the best fit for how
-> we work.”
+> Of all the apps I tested, Zulip’s approach stood out as the best fit for how
+> we work.
 >
 > — Rush Stack maintainer Pete Gonzalez
 
@@ -88,8 +88,8 @@ feature requests or bug reports for a closed source product with an invisible
 engineering team.”
 
 
-> “New features are always being added, and with the team’s daily discussions
-> being public, I can see what they are working on and why.”
+> New features are always being added, and with the team’s daily discussions
+> being public, I can see what they are working on and why.
 >
 > — Rush Stack maintainer Pete Gonzalez
 
@@ -106,8 +106,8 @@ This view lists the topics being discussed, and is also the go-to for Pete to
 check in on what’s happening.
 
 
-> “The folks who make Zulip listen to customers, and the product continues to
-> improve.”
+> The folks who make Zulip listen to customers, and the product continues to
+> improve.
 >
 > — Rush Stack maintainer Pete Gonzalez
 

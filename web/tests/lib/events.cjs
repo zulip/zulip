@@ -1,5 +1,7 @@
 "use strict";
 
+const {Role} = require("./example_user.cjs");
+
 //  These events are not guaranteed to be perfectly
 //  representative of what the server sends.  We
 //  have a tool called check-schemas that tries
@@ -54,10 +56,18 @@ exports.test_streams = {
         is_web_public: false,
         message_retention_days: null,
         stream_post_policy: 1,
+        topics_policy: "inherit",
         can_administer_channel_group: 2,
+        can_create_topic_group: 2,
+        can_delete_any_message_group: 2,
+        can_delete_own_message_group: 2,
+        can_move_messages_out_of_channel_group: 2,
+        can_move_messages_within_channel_group: 2,
         can_send_message_group: 2,
         can_remove_subscribers_group: 2,
         is_recently_active: true,
+        default_push_notifications: false,
+        subscriber_count: 10,
     },
     test: {
         is_archived: false,
@@ -74,10 +84,18 @@ exports.test_streams = {
         is_announcement_only: false,
         message_retention_days: null,
         stream_post_policy: 1,
+        topics_policy: "inherit",
         can_administer_channel_group: 2,
+        can_create_topic_group: 2,
+        can_delete_any_message_group: 2,
+        can_delete_own_message_group: 2,
+        can_move_messages_out_of_channel_group: 2,
+        can_move_messages_within_channel_group: 2,
         can_send_message_group: 2,
         can_remove_subscribers_group: 2,
         is_recently_active: true,
+        default_push_notifications: false,
+        subscriber_count: 2,
     },
 };
 
@@ -127,14 +145,41 @@ exports.fixtures = {
             size: 4096,
             path_id: "path_id",
             create_time: fake_now,
-            messages: [
-                {
-                    id: 1000,
-                    date_sent: fake_now,
-                },
-            ],
+            message_ids: [1000],
         },
         upload_space_used: 90000,
+    },
+
+    channel_folder__add: {
+        type: "channel_folder",
+        op: "add",
+        channel_folder: {
+            id: 1,
+            name: "Frontend",
+            description: "Channels for frontend discussions",
+            rendered_description: "<p>Channels for frontend discussions</p>",
+            date_created: 1681662420,
+            creator_id: 10,
+            is_archived: false,
+        },
+    },
+
+    channel_folder__reorder: {
+        type: "channel_folder",
+        op: "reorder",
+        order: [2, 3, 1],
+    },
+
+    channel_folder__update: {
+        type: "channel_folder",
+        op: "update",
+        channel_folder_id: 1,
+        data: {
+            name: "New frontend",
+            description: "Channels for new frontend discussions",
+            rendered_description: "<p>Channels for new frontend discussions</p>",
+            is_archived: true,
+        },
     },
 
     channel_typing_edit_message__start: {
@@ -202,6 +247,11 @@ exports.fixtures = {
         topic: "topic1",
     },
 
+    has_webex_token: {
+        type: "has_webex_token",
+        value: true,
+    },
+
     has_zoom_token: {
         type: "has_zoom_token",
         value: true,
@@ -247,6 +297,29 @@ exports.fixtures = {
         ],
     },
 
+    navigation_view__add: {
+        type: "navigation_view",
+        op: "add",
+        navigation_view: {
+            fragment: "narrow/is/alerted",
+            is_pinned: true,
+            name: "Watched phrases",
+        },
+    },
+
+    navigation_view__remove: {
+        type: "navigation_view",
+        op: "remove",
+        fragment: "narrow/is/alerted",
+    },
+
+    navigation_view__update: {
+        type: "navigation_view",
+        op: "update",
+        fragment: "narrow/is/alerted",
+        data: {is_pinned: false},
+    },
+
     onboarding_steps: {
         type: "onboarding_steps",
         onboarding_steps: [
@@ -263,17 +336,12 @@ exports.fixtures = {
 
     presence: {
         type: "presence",
-        email: "alice@example.com",
-        user_id: 42,
-        presence: {
-            electron: {
-                status: "active",
-                timestamp: fake_now,
-                client: "electron",
-                pushable: false,
+        presences: {
+            42: {
+                active_timestamp: fake_now,
+                idle_timestamp: fake_now,
             },
         },
-        server_timestamp: fake_now,
     },
 
     reaction__add: {
@@ -284,11 +352,6 @@ exports.fixtures = {
         emoji_name: "airplane",
         emoji_code: "2708",
         user_id: test_user.user_id,
-        user: {
-            email: test_user.email,
-            full_name: test_user.full_name,
-            user_id: test_user.user_id,
-        },
     },
 
     reaction__remove: {
@@ -299,11 +362,6 @@ exports.fixtures = {
         emoji_name: "8ball",
         emoji_code: "1f3b1",
         user_id: test_user.user_id,
-        user: {
-            email: test_user.email,
-            full_name: test_user.full_name,
-            user_id: test_user.user_id,
-        },
     },
 
     realm__deactivated: {
@@ -347,11 +405,18 @@ exports.fixtures = {
         value: false,
     },
 
-    realm__update__mandatory_topics: {
+    realm__update__media_preview_size: {
         type: "realm",
         op: "update",
-        property: "mandatory_topics",
-        value: false,
+        property: "media_preview_size",
+        value: 150,
+    },
+
+    realm__update__moderation_request_channel_id: {
+        type: "realm",
+        op: "update",
+        property: "moderation_request_channel_id",
+        value: 43,
     },
 
     realm__update__name: {
@@ -418,6 +483,7 @@ exports.fixtures = {
             plan_type: 3,
             upload_quota_mib: 50000,
             max_file_upload_size_mib: 1024,
+            topics_policy: "disable_empty_topic",
         },
     },
 
@@ -455,17 +521,10 @@ exports.fixtures = {
         type: "realm_bot",
         op: "add",
         bot: {
-            email: "the-bot@example.com",
             user_id: 42,
-            avatar_url: "/some/path/to/avatar",
-            api_key: "SOME_KEY",
-            full_name: "The Bot",
-            bot_type: 1,
             default_all_public_streams: true,
             default_events_register_stream: "whatever",
             default_sending_stream: "whatever",
-            is_active: true,
-            owner_id: test_user.user_id,
             services: [],
         },
     },
@@ -483,7 +542,7 @@ exports.fixtures = {
         op: "update",
         bot: {
             user_id: 4321,
-            full_name: "The Bot Has A New Name",
+            default_sending_stream: "new-stream",
         },
     },
 
@@ -511,10 +570,26 @@ exports.fixtures = {
         domain: "ramen",
     },
 
-    realm_emoji__update: {
+    realm_emoji__add: {
         type: "realm_emoji",
-        op: "update",
-        realm_emoji: exports.test_realm_emojis,
+        op: "add",
+        emoji: {
+            id: "101",
+            name: "spain",
+            source_url: "/some/path/to/spain.gif",
+            still_url: "/some/path/to/spain.png",
+            deactivated: false,
+            author_id: test_user.user_id,
+        },
+    },
+
+    realm_emoji__update_one: {
+        type: "realm_emoji",
+        op: "update_one",
+        emoji_id: "101",
+        data: {
+            deactivated: true,
+        },
     },
 
     realm_export: {
@@ -528,7 +603,8 @@ exports.fixtures = {
                 deleted_timestamp: null,
                 failed_timestamp: null,
                 pending: true,
-                export_type: 1,
+                export_from_prior_server: false,
+                export_type: "public",
             },
         ],
     },
@@ -567,12 +643,12 @@ exports.fixtures = {
         op: "add",
         person: {
             ...test_user,
-            avatar_url: "/some/path/to/avatar",
+            avatar_url: `/avatar/${test_user.user_id}`,
             avatar_version: 1,
             is_admin: false,
             is_active: true,
             is_owner: false,
-            role: 400,
+            role: Role.MEMBER,
             is_bot: false,
             is_guest: false,
             profile_data: {},
@@ -587,12 +663,12 @@ exports.fixtures = {
         op: "add",
         person: {
             ...test_user,
-            avatar_url: "/some/path/to/avatar",
+            avatar_url: `/avatar/${test_user.user_id}`,
             avatar_version: 1,
             is_admin: false,
             is_active: true,
             is_owner: false,
-            role: 400,
+            role: Role.MEMBER,
             is_bot: true,
             is_guest: false,
             profile_data: {},
@@ -639,6 +715,29 @@ exports.fixtures = {
         op: "update",
         property: "presence_enabled",
         value: false,
+    },
+
+    reminders__add: {
+        type: "reminders",
+        op: "add",
+        reminders: [
+            {
+                reminder_id: 17,
+                type: "private",
+                to: [6],
+                content: "Hello there!",
+                rendered_content: "<p>Hello there!</p>",
+                scheduled_delivery_timestamp: 1681662420,
+                failed: false,
+                reminder_target_message_id: 213,
+            },
+        ],
+    },
+
+    reminders__remove: {
+        type: "reminders",
+        op: "remove",
+        reminder_id: 17,
     },
 
     restart: {
@@ -1161,7 +1260,28 @@ exports.fixtures = {
         type: "user_settings",
         op: "update",
         property: "web_home_view",
-        value: "recent_topics",
+        value: "recent",
+    },
+
+    user_settings__web_inbox_show_channel_folders: {
+        type: "user_settings",
+        op: "update",
+        property: "web_inbox_show_channel_folders",
+        value: false,
+    },
+
+    user_settings__web_left_sidebar_show_channel_folders: {
+        type: "user_settings",
+        op: "update",
+        property: "web_left_sidebar_show_channel_folders",
+        value: false,
+    },
+
+    user_settings__web_left_sidebar_unreads_count_summary: {
+        type: "user_settings",
+        op: "update",
+        property: "web_left_sidebar_unreads_count_summary",
+        value: false,
     },
 
     user_settings__web_line_height_percent: {

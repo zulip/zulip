@@ -1,6 +1,7 @@
-import $ from "jquery";
+import {$} from "jquery";
+import _ from "lodash";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import * as channel from "./channel.ts";
 import {electron_bridge} from "./electron_bridge.ts";
@@ -18,18 +19,17 @@ export const post_presence_response_schema = z.object({
     // For ping_only requests, these fields are not returned in the
     // response. If we're fetching presence data however, they should
     // all be present, and send_presence_to_server() will validate that.
-    server_timestamp: z.number().optional(),
-    zephyr_mirror_active: z.boolean().optional(),
-    presences: z
-        .record(
+    server_timestamp: z.optional(z.number()),
+    presences: z.optional(
+        z.record(
             z.string(),
             z.object({
                 active_timestamp: z.number(),
                 idle_timestamp: z.number(),
             }),
-        )
-        .optional(),
-    presence_last_update_id: z.number().optional(),
+        ),
+    ),
+    presence_last_update_id: z.optional(z.number()),
 });
 
 /* Keep in sync with views.py:update_active_status_backend() */
@@ -85,6 +85,8 @@ export function mark_client_idle(): void {
     // this data is fundamentally not timely.
     client_is_active = false;
 }
+
+export const mark_client_idle_later = _.debounce(mark_client_idle, DEFAULT_IDLE_TIMEOUT_MS);
 
 export function compute_active_status(): ActivityState {
     // The overall algorithm intent for the `status` field is to send
@@ -145,13 +147,6 @@ export let send_presence_to_server = (redraw?: () => void): void => {
         success(response) {
             const data = post_presence_response_schema.parse(response);
 
-            // Update Zephyr mirror activity warning
-            if (data.zephyr_mirror_active === false) {
-                $("#zephyr-mirror-error").addClass("show");
-            } else {
-                $("#zephyr-mirror-error").removeClass("show");
-            }
-
             set_new_user_input(false);
 
             if (redraw) {
@@ -189,18 +184,19 @@ export function mark_client_active(): void {
         client_is_active = true;
         send_presence_to_server();
     }
+    mark_client_idle_later();
 }
 
 export function initialize(): void {
-    $("html").on("mousemove", () => {
+    $(document).on("mousemove", () => {
         set_new_user_input(true);
     });
 
-    $(window).on("focus", mark_client_active);
-    $(window).idle({
-        idle: DEFAULT_IDLE_TIMEOUT_MS,
-        onIdle: mark_client_idle,
-        onActive: mark_client_active,
-        keepTracking: true,
-    });
+    $(window).on(
+        "focus keydown mousedown mousemove touchmove touchstart wheel",
+        mark_client_active,
+    );
+    if (client_is_active) {
+        mark_client_idle_later();
+    }
 }

@@ -1,4 +1,4 @@
-import type {z} from "zod";
+import type * as z from "zod/mini";
 
 import * as channel from "./channel.ts";
 import type {StateData, muted_user_schema} from "./state_data.ts";

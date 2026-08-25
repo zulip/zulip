@@ -17,7 +17,7 @@ from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import NamedUserGroup, Stream, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
-from zerver.models.users import active_non_guest_user_ids
+from zerver.models.users import active_non_guest_user_ids, active_user_ids
 
 
 class AccessStreamTest(ZulipTestCase):
@@ -85,17 +85,6 @@ class AccessStreamTest(ZulipTestCase):
         with self.assertRaisesRegex(JsonableError, "Invalid channel name 'new_private_stream'"):
             access_stream_by_name(sipbtest, stream.name)
 
-        # MIT realm users cannot access even public streams in their realm
-        with self.assertRaisesRegex(JsonableError, "Invalid channel ID"):
-            access_stream_by_id(sipbtest, mit_stream.id)
-        with self.assertRaisesRegex(JsonableError, "Invalid channel name 'mit_stream'"):
-            access_stream_by_name(sipbtest, mit_stream.name)
-
-        # But they can access streams they are subscribed to
-        self.subscribe_via_post(sipbtest, [mit_stream.name], subdomain="zephyr")
-        access_stream_by_id(sipbtest, mit_stream.id)
-        access_stream_by_name(sipbtest, mit_stream.name)
-
     def test_access_stream_allow_metadata_access_flag(self) -> None:
         """
         A comprehensive security test for the access_stream_by_* API functions.
@@ -140,7 +129,7 @@ class AccessStreamTest(ZulipTestCase):
             othello.realm, "user_profile_group", [othello, polonius], acting_user=othello
         )
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", is_system_group=True, realm=othello.realm
+            name="role:nobody", is_system_group=True, realm_for_sharding=othello.realm
         )
 
         do_change_stream_group_based_setting(
@@ -377,7 +366,7 @@ class AccessStreamTest(ZulipTestCase):
             True,
         )
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", realm=realm, is_system_group=True
+            name="role:nobody", realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             private_stream,
@@ -407,7 +396,7 @@ class AccessStreamTest(ZulipTestCase):
             True,
         )
         nobody_group = NamedUserGroup.objects.get(
-            name="role:nobody", realm=realm, is_system_group=True
+            name="role:nobody", realm_for_sharding=realm, is_system_group=True
         )
         do_change_stream_group_based_setting(
             private_stream,
@@ -456,8 +445,21 @@ class AccessStreamTest(ZulipTestCase):
         desdemona = self.example_user("desdemona")
         realm = aaron.realm
         public_stream = self.make_stream("public_stream", realm, invite_only=False)
+        web_public_stream = self.make_stream("web_public_stream", realm, is_web_public=True)
         nobody_system_group = NamedUserGroup.objects.get(
-            name="role:nobody", realm=realm, is_system_group=True
+            name="role:nobody", realm_for_sharding=realm, is_system_group=True
+        )
+
+        # Web public stream with no subscribers.
+        expected_web_public_user_ids = active_user_ids(realm.id)
+        self.assertCountEqual(
+            can_access_stream_metadata_user_ids(web_public_stream), expected_web_public_user_ids
+        )
+        bulk_access_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(
+            [web_public_stream]
+        )
+        self.assertCountEqual(
+            bulk_access_stream_metadata_user_ids[web_public_stream.id], expected_web_public_user_ids
         )
 
         # Public stream with no subscribers.
@@ -506,7 +508,9 @@ class AccessStreamTest(ZulipTestCase):
         )
 
         # Bot with admin privileges should also be part of the result.
-        do_change_user_role(test_bot, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=desdemona)
+        do_change_user_role(
+            test_bot, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=desdemona, notify=False
+        )
         expected_private_user_ids.add(test_bot.id)
         self.assertCountEqual(
             can_access_stream_metadata_user_ids(private_stream), expected_private_user_ids

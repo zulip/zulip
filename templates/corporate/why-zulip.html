@@ -1,5 +1,4 @@
-{% extends "zerver/portico.html" %}
-{% set entrypoint = "landing-page" %}
+{% extends "zerver/marketing_page.html" %}
 
 {% set PAGE_TITLE = "Why Zulip? Efficient communication with organized team chat." %}
 
@@ -7,13 +6,8 @@
   organized right. Follow the discussions that matter to you, easily and
   efficiently, in real time or asynchronously." %}
 
-{% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-{% endblock %}
 
-{% block portico_content %}
-
-{% include 'zerver/landing_nav.html' %}
+{% block marketing_content %}
 
 <div class="portico-landing why-page">
     <div class="hero bg-pycon why-zulip">
@@ -50,7 +44,7 @@
                 <a href="/for/business/" class="register-now button">Business</a>
                 <a href="/for/open-source/" class="register-now button">Open source</a>
                 <a href="/for/education/" class="register-now button">Education</a>
-                <a href="/for/events/" class="register-now button">Events and Conferences</a>
+                <a href="/for/events/" class="register-now button">Events and conferences</a>
                 <a href="/for/research/" class="register-now button">Research</a>
                 <a href="/for/communities/" class="register-now button">Communities</a>
             </div>

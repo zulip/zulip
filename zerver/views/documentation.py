@@ -6,8 +6,9 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
+import werkzeug
 from django.conf import settings
-from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
+from django.http import HttpRequest, HttpResponse
 from django.template import loader
 from django.template.response import TemplateResponse
 from django.views.generic import TemplateView
@@ -22,10 +23,10 @@ from zerver.lib.html_to_text import get_content_description
 from zerver.lib.integrations import (
     CATEGORIES,
     INTEGRATIONS,
-    META_CATEGORY,
     HubotIntegration,
+    IncomingWebhookIntegration,
+    Integration,
     PythonAPIIntegration,
-    WebhookIntegration,
     get_all_event_types_for_integration,
 )
 from zerver.lib.subdomains import get_subdomain
@@ -43,15 +44,21 @@ class DocumentationArticle:
     endpoint_method: str | None
 
 
-def add_api_url_context(context: dict[str, Any], request: HttpRequest) -> None:
+def add_api_url_context(
+    context: dict[str, Any], request: HttpRequest, is_zilencer_endpoint: bool = False
+) -> None:
     context.update(zulip_default_context(request))
+
+    if is_zilencer_endpoint:
+        context["api_url"] = (settings.ZULIP_SERVICES_URL or "https://push.zulipchat.com") + "/api"
+        return
 
     subdomain = get_subdomain(request)
     if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN or not settings.ROOT_DOMAIN_LANDING_PAGE:
         display_subdomain = subdomain
         html_settings_links = True
     else:
-        display_subdomain = "yourZulipDomain"
+        display_subdomain = "your-org"
         html_settings_links = False
 
     display_host = Realm.host_for_subdomain(display_subdomain)
@@ -59,12 +66,23 @@ def add_api_url_context(context: dict[str, Any], request: HttpRequest) -> None:
     api_url = settings.EXTERNAL_URI_SCHEME + api_url_scheme_relative
     zulip_url = settings.EXTERNAL_URI_SCHEME + display_host
 
+    context["display_subdomain"] = display_subdomain
+    context["display_host"] = display_host
     context["external_url_scheme"] = settings.EXTERNAL_URI_SCHEME
     context["api_url"] = api_url
     context["api_url_scheme_relative"] = api_url_scheme_relative
     context["zulip_url"] = zulip_url
 
     context["html_settings_links"] = html_settings_links
+
+
+def add_canonical_link_context(context: dict[str, Any], request: HttpRequest) -> None:
+    if request.path in ["/api/", "/policies/", "/integrations/"]:
+        # Root doc pages have a trailing slash in the canonical URL.
+        canonical_path = request.path
+    else:
+        canonical_path = request.path.removesuffix("/")
+    context["REL_CANONICAL_LINK"] = f"https://zulip.com{canonical_path}"
 
 
 class ApiURLView(TemplateView):
@@ -82,7 +100,6 @@ sidebar_links = XPath("//a[@href=$url]")
 class MarkdownDirectoryView(ApiURLView):
     path_template = ""
     policies_view = False
-    help_view = False
     api_doc_view = False
 
     def __init__(self, **kwargs: Any) -> None:
@@ -95,21 +112,20 @@ class MarkdownDirectoryView(ApiURLView):
         self._post_render_callbacks.append(callback)
 
     def get_path(self, article: str) -> DocumentationArticle:
+        # We don't want to allow relative pathnames in `article`
+        # as they could introduce security vulnerabilities.
+        article = werkzeug.utils.secure_filename(article)
+
         http_status = 200
         if article == "":
             article = "index"
-        elif article == "include/sidebar_index":
-            pass
         elif article == "api-doc-template":
             # This markdown template shouldn't be accessed directly.
             article = "missing"
             http_status = 404
-        elif "/" in article:
-            article = "missing"
-            http_status = 404
         elif len(article) > 100 or not re.match(r"^[0-9a-zA-Z_-]+$", article):
-            article = "missing"
-            http_status = 404
+            article = "missing"  # nocoverage
+            http_status = 404  # nocoverage
 
         path = self.path_template % (article,)
         endpoint_name = None
@@ -149,7 +165,7 @@ class MarkdownDirectoryView(ApiURLView):
                         endpoint_path=None,
                         endpoint_method=None,
                     )
-            elif self.help_view or self.policies_view:
+            elif self.policies_view:
                 article = "missing"
                 http_status = 404
                 path = self.path_template % (article,)
@@ -183,14 +199,7 @@ class MarkdownDirectoryView(ApiURLView):
                 settings.DEPLOY_ROOT, "templates", documentation_article.article_path
             )
 
-        if self.help_view:
-            context["page_is_help_center"] = True
-            context["doc_root"] = "/help/"
-            context["doc_root_title"] = "Help center"
-            sidebar_article = self.get_path("include/sidebar_index")
-            sidebar_index = sidebar_article.article_path
-            title_base = "Zulip help center"
-        elif self.policies_view:
+        if self.policies_view:
             context["page_is_policy_center"] = True
             context["doc_root"] = "/policies/"
             context["doc_root_title"] = "Terms and policies"
@@ -200,6 +209,9 @@ class MarkdownDirectoryView(ApiURLView):
             else:
                 sidebar_index = None
             title_base = "Zulip terms and policies"
+            # We don't add a rel-canonical link to self-hosted server policies docs.
+            if settings.CORPORATE_ENABLED:
+                add_canonical_link_context(context, self.request)
         elif self.api_doc_view:
             context["page_is_api_center"] = True
             context["doc_root"] = "/api/"
@@ -207,12 +219,14 @@ class MarkdownDirectoryView(ApiURLView):
             sidebar_article = self.get_path("sidebar_index")
             sidebar_index = sidebar_article.article_path
             title_base = "Zulip API documentation"
+            add_canonical_link_context(context, self.request)
         else:
             raise AssertionError("Invalid documentation view type")
 
         # The following is a somewhat hacky approach to extract titles from articles.
         endpoint_name = None
         endpoint_method = None
+        is_zilencer_endpoint = False
         if os.path.exists(article_absolute_path):
             with open(article_absolute_path) as article_file:
                 first_line = article_file.readlines()[0]
@@ -224,6 +238,7 @@ class MarkdownDirectoryView(ApiURLView):
                 assert endpoint_name is not None
                 assert endpoint_method is not None
                 article_title = get_openapi_summary(endpoint_name, endpoint_method)
+                is_zilencer_endpoint = endpoint_name.startswith("/remotes/")
             elif self.api_doc_view and "{generate_api_header(" in first_line:
                 api_operation = context["PAGE_METADATA_URL"].split("/api/")[1]
                 endpoint_name, endpoint_method = get_endpoint_from_operationid(api_operation)
@@ -255,7 +270,7 @@ class MarkdownDirectoryView(ApiURLView):
 
         # An "article" might require the api_url_context to be rendered
         api_url_context: dict[str, Any] = {}
-        add_api_url_context(api_url_context, self.request)
+        add_api_url_context(api_url_context, self.request, is_zilencer_endpoint)
         api_url_context["run_content_validators"] = True
         context["api_url_context"] = api_url_context
         if endpoint_name and endpoint_method:
@@ -267,12 +282,12 @@ class MarkdownDirectoryView(ApiURLView):
             sidebar_html = ""
         tree = html.fragment_fromstring(sidebar_html, create_parent=True)
         if not context.get("page_is_policy_center", False):
-            home_h1 = Element("h1")
-            home_link = SubElement(home_h1, "a")
+            home_h2 = Element("h2")
+            home_link = SubElement(home_h2, "a")
             home_link.attrib["class"] = "no-underline"
             home_link.attrib["href"] = context["doc_root"]
             home_link.text = context["doc_root_title"] + " home"
-            tree.insert(0, home_h1)
+            tree.insert(0, home_h2)
         url = context["doc_root"] + article
         # Remove ID attributes from sidebar headings so they don't conflict with index page headings
         headings = sidebar_headings(tree)
@@ -316,18 +331,6 @@ class MarkdownDirectoryView(ApiURLView):
         return result
 
 
-def add_integrations_context(context: dict[str, Any]) -> None:
-    alphabetical_sorted_categories = OrderedDict(sorted(CATEGORIES.items()))
-    alphabetical_sorted_integration = OrderedDict(sorted(INTEGRATIONS.items()))
-    enabled_integrations_count = sum(v.is_enabled() for v in INTEGRATIONS.values())
-    # Subtract 1 so saying "Over X integrations" is correct. Then,
-    # round down to the nearest multiple of 10.
-    integrations_count_display = ((enabled_integrations_count - 1) // 10) * 10
-    context["categories_dict"] = alphabetical_sorted_categories
-    context["integrations_dict"] = alphabetical_sorted_integration
-    context["integrations_count_display"] = integrations_count_display
-
-
 def add_integrations_open_graph_context(context: dict[str, Any], request: HttpRequest) -> None:
     path_name = request.path.rstrip("/").split("/")[-1]
     description = (
@@ -343,10 +346,7 @@ def add_integrations_open_graph_context(context: dict[str, Any], request: HttpRe
 
     elif path_name in CATEGORIES:
         category = CATEGORIES[path_name]
-        if path_name in META_CATEGORY:
-            context["PAGE_TITLE"] = f"{category} | Zulip integrations"
-        else:
-            context["PAGE_TITLE"] = f"{category} tools | Zulip integrations"
+        context["PAGE_TITLE"] = f"{category} | Zulip integrations"
         context["PAGE_DESCRIPTION"] = description
 
     elif path_name == "integrations":
@@ -354,43 +354,21 @@ def add_integrations_open_graph_context(context: dict[str, Any], request: HttpRe
         context["PAGE_DESCRIPTION"] = description
 
 
-class IntegrationView(ApiURLView):
-    template_name = "zerver/integrations/index.html"
-
-    @override
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        context: dict[str, Any] = super().get_context_data(**kwargs)
-        add_integrations_context(context)
-        add_integrations_open_graph_context(context, self.request)
-        add_google_analytics_context(context)
-        return context
-
-
-@typed_endpoint
-def integration_doc(request: HttpRequest, *, integration_name: PathOnly[str]) -> HttpResponse:
-    # FIXME: This check is jQuery-specific.
-    if request.headers.get("x-requested-with") != "XMLHttpRequest":
-        return HttpResponseNotFound()
-
-    try:
-        integration = INTEGRATIONS[integration_name]
-    except KeyError:
-        return HttpResponseNotFound()
-
+def build_integration_doc_html(integration: Integration, request: HttpRequest) -> str:
     context: dict[str, Any] = {}
     add_api_url_context(context, request)
 
     context["integration_name"] = integration.name
     context["integration_display_name"] = integration.display_name
-    if isinstance(integration, WebhookIntegration):
+    if isinstance(integration, IncomingWebhookIntegration):
         assert integration.url.startswith("api/")
         context["integration_url"] = integration.url.removeprefix("api")
         all_event_types = get_all_event_types_for_integration(integration)
         if all_event_types is not None:
             context["all_event_types"] = all_event_types
-    if isinstance(integration, HubotIntegration):
+    elif isinstance(integration, HubotIntegration):
         context["hubot_docs_url"] = integration.hubot_docs_url
-    if isinstance(integration, PythonAPIIntegration):
+    elif isinstance(integration, PythonAPIIntegration):
         context["config_file_path"] = (
             f"/usr/local/share/zulip/integrations/{integration.directory_name}/zulip_{integration.directory_name}_config.py"
         )
@@ -398,6 +376,113 @@ def integration_doc(request: HttpRequest, *, integration_name: PathOnly[str]) ->
             f"/usr/local/share/zulip/integrations/{integration.directory_name}"
         )
 
-    doc_html_str = render_markdown_path(integration.doc, context, integration_doc=True)
+    return render_markdown_path(integration.doc, context, integration_doc=True)
 
-    return HttpResponse(doc_html_str)
+
+def add_base_integrations_context(request: HttpRequest) -> dict[str, Any]:
+    context: dict[str, Any] = {}
+    add_integrations_open_graph_context(context, request)
+    add_canonical_link_context(context, request)
+    add_google_analytics_context(context)
+    return context
+
+
+def get_visible_integrations_for_category(category_slug: str) -> list[Integration]:
+    enabled = sorted(
+        (
+            integration
+            for integration in INTEGRATIONS.values()
+            if integration.is_enabled_in_catalog() and not integration.legacy
+        ),
+        key=lambda integration: integration.name,
+    )
+    if category_slug == "all":
+        return enabled
+
+    category = CATEGORIES.get(category_slug)
+    return [integration for integration in enabled if category in integration.categories]
+
+
+def add_catalog_integrations_context(request: HttpRequest, category_slug: str) -> dict[str, Any]:
+    enabled_integrations_count = sum(v.is_enabled_in_catalog() for v in INTEGRATIONS.values())
+    # Subtract 1 so saying "Over X integrations" is correct. Then,
+    # round down to the nearest multiple of 10.
+    integrations_count_display = ((enabled_integrations_count - 1) // 10) * 10
+
+    context = add_base_integrations_context(request)
+    context.update(
+        {
+            "categories_dict": OrderedDict(sorted(CATEGORIES.items())),
+            "integrations_count_display": integrations_count_display,
+            "selected_category_slug": category_slug,
+            "visible_integrations": get_visible_integrations_for_category(category_slug),
+        }
+    )
+    return context
+
+
+def get_categories_for_integration(integration: Integration) -> list[tuple[str, str]]:
+    display_to_slug = {display: slug for slug, display in CATEGORIES.items()}
+    result = []
+    for display_name in integration.categories:
+        slug = display_to_slug.get(display_name)
+        assert slug is not None
+        result.append((slug, display_name))
+
+    return result
+
+
+def add_doc_integrations_context(
+    request: HttpRequest, integration: Integration, return_category_slug: str
+) -> dict[str, Any]:
+    context = add_base_integrations_context(request)
+    context.update(
+        {
+            "selected_integration": integration,
+            "integration_doc_html": build_integration_doc_html(integration, request),
+            "integration_categories": get_categories_for_integration(integration),
+            "return_category_slug": return_category_slug,
+        }
+    )
+    return context
+
+
+@typed_endpoint
+def integrations_catalog(
+    request: HttpRequest,
+    *,
+    category_slug: PathOnly[str],
+) -> HttpResponse:
+    if category_slug != "all" and category_slug not in CATEGORIES:
+        return TemplateResponse(request, "404.html", status=404)
+
+    return TemplateResponse(
+        request,
+        "zerver/integrations/catalog.html",
+        context=add_catalog_integrations_context(request, category_slug),
+        status=200,
+    )
+
+
+@typed_endpoint
+def integrations_doc(
+    request: HttpRequest,
+    *,
+    integration_name: PathOnly[str],
+) -> HttpResponse:
+    integration = INTEGRATIONS.get(integration_name)
+    if integration is None or not integration.is_enabled_in_catalog():
+        return TemplateResponse(request, "404.html", status=404)
+
+    return_category_slug = request.GET.get("category", "all")
+    category_slugs = [category[0] for category in get_categories_for_integration(integration)]
+    # If we have an invalid slug, back to list points to the root integrations page.
+    if return_category_slug != "all" and return_category_slug not in category_slugs:
+        return_category_slug = "all"
+
+    return TemplateResponse(
+        request,
+        "zerver/integrations/doc.html",
+        context=add_doc_integrations_context(request, integration, return_category_slug),
+        status=200,
+    )

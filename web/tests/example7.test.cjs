@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 /*
 
@@ -75,12 +75,8 @@ const denmark_stream = make_stream({
 });
 
 run_test("unread_ops", ({override}) => {
-    $("#message_feed_container").css = (property) => {
-        assert.equal(property, "display");
-        return "block";
-    };
     stream_data.clear_subscriptions();
-    stream_data.add_sub(denmark_stream);
+    stream_data.add_sub_for_tests(denmark_stream);
     message_store.clear_for_testing();
     unread.declare_bankruptcy();
 
@@ -97,7 +93,10 @@ run_test("unread_ops", ({override}) => {
 
     // Make our test message appear to be unread, so that
     // we then need to subsequently process them as read.
-    message_store.update_message_cache(test_messages[0]);
+    message_store.update_message_cache({
+        type: "server_message",
+        message: test_messages[0],
+    });
     unread.process_loaded_messages(test_messages);
 
     // Make our message_viewport appear visible.

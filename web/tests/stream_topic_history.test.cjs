@@ -2,17 +2,16 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
+const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 
 const channel = mock_esm("../src/channel");
 const message_util = mock_esm("../src/message_util");
-mock_esm("../src/people.ts", {
-    maybe_get_user_by_id: noop,
-});
 
-const all_messages_data = zrequire("all_messages_data");
 const echo_state = zrequire("echo_state");
+const topic_list = zrequire("topic_list");
 const unread = zrequire("unread");
 const message_store = zrequire("message_store");
 const {set_realm} = zrequire("state_data");
@@ -20,7 +19,7 @@ const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const stream_topic_history_util = zrequire("stream_topic_history_util");
 
-set_realm({});
+set_realm(make_realm());
 
 stream_topic_history.set_update_topic_last_message_id(noop);
 
@@ -131,47 +130,15 @@ test("basics", () => {
     });
 });
 
-test("is_complete_for_stream_id", ({override_rewire}) => {
-    const sub = {
-        name: "devel",
-        stream_id: 444,
-        first_message_id: 1000,
-    };
-    stream_data.add_sub(sub);
-
-    override_rewire(all_messages_data, "all_messages_data", {
-        empty: () => false,
-        fetch_status: {
-            has_found_newest: () => true,
-        },
-        first: () => ({id: 5}),
-    });
-
-    assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), true);
-
-    // Now simulate a more recent message id.
-    all_messages_data.all_messages_data.first = () => ({id: sub.first_message_id + 1});
-
-    // Note that we'll return `true` here due to
-    // fetched_stream_ids having the stream_id now.
-    assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), true);
-
-    // But now clear the data to see what we'd have without
-    // the previous call.
-    stream_topic_history.reset();
-
-    assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), false);
-});
-
 test("server_history", () => {
-    const sub = {
+    const sub = make_stream({
         name: "devel",
         stream_id: 66,
-    };
+    });
     const stream_id = sub.stream_id;
-    stream_data.add_sub(sub);
+    stream_data.add_sub_for_tests(sub);
 
-    assert.equal(stream_topic_history.is_complete_for_stream_id(stream_id), false);
+    assert.equal(topic_list.is_full_topic_history_available(stream_id), false);
 
     stream_topic_history.add_message({
         stream_id,
@@ -190,8 +157,8 @@ test("server_history", () => {
     add_server_history();
 
     // Since we added history, now subsequent calls
-    // to is_complete_for_stream_id will return true.
-    assert.equal(stream_topic_history.is_complete_for_stream_id(stream_id), true);
+    // to is_full_topic_history_available will return true.
+    assert.equal(topic_list.is_full_topic_history_available(stream_id), true);
 
     let history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, ["local", "hist2", "hist1"]);
@@ -284,7 +251,10 @@ test("test_unread_logic", () => {
         msg.type = "stream";
         msg.stream_id = stream_id;
         msg.unread = true;
-        message_store.update_message_cache(msg);
+        message_store.update_message_cache({
+            type: "server_message",
+            message: msg,
+        });
     }
 
     unread.process_loaded_messages(msgs);
@@ -298,6 +268,7 @@ test("test_stream_has_topics", () => {
     const stream_id = 88;
 
     assert.equal(stream_topic_history.stream_has_topics(stream_id), false);
+    assert.equal(stream_topic_history.stream_has_locally_available_named_topics(stream_id), false);
 
     stream_topic_history.find_or_create(stream_id);
 
@@ -308,10 +279,86 @@ test("test_stream_has_topics", () => {
     stream_topic_history.add_message({
         stream_id,
         message_id: 888,
+        topic_name: "",
+    });
+
+    assert.equal(stream_topic_history.stream_has_topics(stream_id), true);
+    assert.equal(stream_topic_history.stream_has_locally_available_named_topics(stream_id), false);
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 888,
         topic_name: "whatever",
     });
 
     assert.equal(stream_topic_history.stream_has_topics(stream_id), true);
+    assert.equal(stream_topic_history.stream_has_locally_available_named_topics(stream_id), true);
+});
+
+test("channel_has_locally_available_topic", () => {
+    const stream_id = 90;
+
+    // Unknown stream returns false.
+    assert.equal(
+        stream_topic_history.channel_has_locally_available_topic(stream_id, "topic1"),
+        false,
+    );
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 901,
+        topic_name: "topic1",
+    });
+
+    assert.equal(
+        stream_topic_history.channel_has_locally_available_topic(stream_id, "topic1"),
+        true,
+    );
+    assert.equal(
+        stream_topic_history.channel_has_locally_available_topic(stream_id, "nonexistent"),
+        false,
+    );
+});
+
+test("test_stream_has_resolved_topics", () => {
+    const stream_id = 89;
+
+    assert.equal(
+        stream_topic_history.stream_has_locally_available_resolved_topics(stream_id),
+        false,
+    );
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 889,
+        topic_name: "✔ whatever",
+    });
+
+    assert.equal(
+        stream_topic_history.stream_has_locally_available_resolved_topics(stream_id),
+        true,
+    );
+});
+
+test("update_topic_name_case", () => {
+    const stream_id = 90;
+
+    // No history for this stream_id, should return without error.
+    stream_topic_history.update_topic_name_case(stream_id, "old topic", "new topic");
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 900,
+        topic_name: "known topic",
+    });
+
+    // Topic key is missing, should return without changing data.
+    stream_topic_history.update_topic_name_case(stream_id, "missing topic", "whatever");
+    assert.deepEqual(stream_topic_history.get_recent_topic_names(stream_id), ["known topic"]);
+
+    // Topic key is present, should update pretty name.
+    stream_topic_history.update_topic_name_case(stream_id, "known topic", "Known Topic");
+    assert.deepEqual(stream_topic_history.get_recent_topic_names(stream_id), ["Known Topic"]);
 });
 
 test("server_history_end_to_end", () => {
@@ -326,7 +373,6 @@ test("server_history_end_to_end", () => {
     ];
 
     let get_success_callback;
-    let get_error_callback;
     let on_success_called;
 
     channel.get = (opts) => {
@@ -334,7 +380,6 @@ test("server_history_end_to_end", () => {
         assert.deepEqual(opts.data, {allow_empty_topic_name: true});
         assert.ok(stream_topic_history.is_request_pending_for(stream_id));
         get_success_callback = opts.success;
-        get_error_callback = opts.error;
     };
 
     stream_topic_history_util.get_server_history(stream_id, noop);
@@ -343,9 +388,6 @@ test("server_history_end_to_end", () => {
     // for stream_id = 99. This function call adds coverage.
     stream_topic_history_util.get_server_history(stream_id, noop);
     assert.ok(stream_topic_history.is_request_pending_for(stream_id));
-
-    get_error_callback();
-    assert.ok(!stream_topic_history.is_request_pending_for(stream_id));
 
     stream_topic_history_util.get_server_history(stream_id, () => {
         on_success_called = true;
@@ -380,42 +422,27 @@ test("server_history_end_to_end", () => {
     assert.ok(on_success_called);
 });
 
-test("all_topics_in_cache", ({override}) => {
-    // Add a new stream with first_message_id set.
-    const general = {
-        name: "general",
-        stream_id: 21,
-        first_message_id: null,
+test("server_history_error", () => {
+    set_global("setTimeout", (f) => {
+        f();
+    });
+    stream_topic_history.reset();
+
+    const channel_id = 99;
+
+    let total_attempts = 0;
+    channel.get = (opts) => {
+        assert.equal(opts.url, "/json/users/me/99/topics");
+        assert.ok(stream_topic_history.is_request_pending_for(channel_id));
+        // This mocks error on each GET request.
+        opts.error();
+        total_attempts += 1;
     };
-    const messages = [
-        {id: 1, stream_id: 21},
-        {id: 2, stream_id: 21},
-        {id: 3, stream_id: 21},
-    ];
-    const sub = stream_data.create_sub_from_server_data(general);
 
-    assert.equal(stream_topic_history.all_topics_in_cache(sub), false);
-
-    all_messages_data.all_messages_data.clear();
-    all_messages_data.all_messages_data.add_messages(messages, true);
-
-    let has_found_newest = false;
-
-    override(
-        all_messages_data.all_messages_data.fetch_status,
-        "has_found_newest",
-        () => has_found_newest,
-    );
-
-    assert.equal(stream_topic_history.all_topics_in_cache(sub), false);
-    has_found_newest = true;
-    assert.equal(stream_topic_history.all_topics_in_cache(sub), true);
-
-    sub.first_message_id = 0;
-    assert.equal(stream_topic_history.all_topics_in_cache(sub), false);
-
-    sub.first_message_id = 2;
-    assert.equal(stream_topic_history.all_topics_in_cache(sub), true);
+    stream_topic_history_util.get_server_history(channel_id, noop);
+    // Verify that we stop after MAX_RETRIES attempt.
+    assert.deepEqual(total_attempts, stream_topic_history_util.MAX_RETRIES);
+    assert.ok(!stream_topic_history.is_request_pending_for(channel_id));
 });
 
 test("ask_server_for_latest_topic_data", () => {
@@ -424,19 +451,16 @@ test("ask_server_for_latest_topic_data", () => {
     });
     const stream_id = 1080;
 
-    let success_callback;
-    let get_message_request_triggered = false;
-    channel.get = (opts) => {
-        get_message_request_triggered = true;
-        assert.equal(opts.url, "/json/messages");
-        assert.deepEqual(opts.data, {
-            anchor: "newest",
-            narrow: '[{"operator":"stream","operand":1080},{"operator":"topic","operand":"Topic1"}]',
-            num_after: 0,
-            num_before: 1,
-            allow_empty_topic_name: true,
-        });
-        success_callback = opts.success;
+    let report_last_message_id;
+    let last_message_request_triggered = false;
+    message_util.get_last_message_id_in_narrow = (narrow, on_success, extra_request_data) => {
+        last_message_request_triggered = true;
+        assert.deepEqual(narrow, [
+            {operator: "channel", operand: 1080},
+            {operator: "topic", operand: "Topic1"},
+        ]);
+        assert.deepEqual(extra_request_data, {allow_empty_topic_name: true});
+        report_last_message_id = on_success;
     };
 
     stream_topic_history.add_message({
@@ -450,36 +474,24 @@ test("ask_server_for_latest_topic_data", () => {
     assert.deepEqual(history, ["topic1"]);
     assert.deepEqual(max_message_id, 101);
 
-    // Remove all cached messages from the topic. This sends a request to the server
-    // to check for the latest message id in the topic.
+    // Remove all cached messages from the topic. This asks the server for the
+    // latest message id in the topic.
     stream_topic_history.remove_messages({
         stream_id,
         topic_name: "Topic1",
         num_messages: 1,
         max_removed_msg_id: 104,
     });
-    assert.equal(get_message_request_triggered, true);
-    get_message_request_triggered = false;
+    assert.equal(last_message_request_triggered, true);
 
     // Until we process the response from the server,
     // the topic is not available.
     history = stream_topic_history.get_recent_topic_names(stream_id);
     assert.deepEqual(history, []);
 
-    // Simulate the server responses.
-    // Topic is empty.
-    success_callback({
-        messages: [],
-    });
-    history = stream_topic_history.get_recent_topic_names(stream_id);
-    assert.deepEqual(history, []);
-
-    // Topic has a different max_message_id.
-    success_callback({
-        messages: [{id: 102}],
-    });
-
-    // The topic is now available.
+    // The server reports a remaining message, so the topic becomes available
+    // again with that message's id.
+    report_last_message_id(102);
     history = stream_topic_history.get_recent_topic_names(stream_id);
     max_message_id = stream_topic_history.get_max_message_id(stream_id);
     assert.deepEqual(history, ["Topic1"]);

@@ -43,13 +43,16 @@ ZULIP_PATH=/root/zulip-latest
 mkdir -p "$ZULIP_PATH"
 tar -xf /tmp/zulip-server-test.tar.gz -C "$ZULIP_PATH" --strip-components=1
 
+# Disable interactive prompts from apt.
+echo 'Dpkg::Options { "--force-confdef" "--force-confold" }' >/etc/apt/apt.conf.d/noninteractive
+export DEBIAN_FRONTEND=noninteractive
+
 # Do an apt upgrade to start with an up-to-date machine
-APT_OPTIONS=(-o 'Dpkg::Options::=--force-confdef' -o 'Dpkg::Options::=--force-confold')
 apt-get update
 
-if ! apt-get dist-upgrade -y "${APT_OPTIONS[@]}"; then
+if ! apt-get dist-upgrade -y; then
     echo "\`apt-get dist-upgrade\`: Failure occurred while trying to perform distribution upgrade, Retrying..."
-    apt-get dist-upgrade -y "${APT_OPTIONS[@]}"
+    apt-get dist-upgrade -y
 fi
 
 os_info="$(

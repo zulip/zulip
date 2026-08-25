@@ -17,7 +17,7 @@ class kandra::profile::prod_app_frontend inherits kandra::profile::base {
 
   file { '/etc/nginx/sites-available/zulip':
     ensure  => file,
-    require => Package['nginx-full'],
+    require => [Package['nginx-full'], Exec['generate-default-snakeoil']],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
@@ -30,16 +30,6 @@ class kandra::profile::prod_app_frontend inherits kandra::profile::base {
     require => Package['nginx-full'],
     target  => '/etc/nginx/sites-available/zulip',
     notify  => Service['nginx'],
-  }
-
-  file { '/usr/lib/nagios/plugins/zulip_zephyr_mirror':
-    require => Package[$zulip::common::nagios_plugins],
-    recurse => true,
-    purge   => true,
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0755',
-    source  => 'puppet:///modules/kandra/nagios_plugins/zulip_zephyr_mirror',
   }
 
   # Prod has our Apple Push Notifications Service private key at

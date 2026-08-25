@@ -2,9 +2,12 @@
 
 const assert = require("node:assert/strict");
 
+const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 const {Filter} = zrequire("filter");
@@ -29,6 +32,15 @@ function MessageListView() {
         clear_rendering_state: noop,
         get_row: () => ({
             find(selector) {
+                if (selector === ".message_content") {
+                    return {
+                        hasClass(class_name) {
+                            assert.equal(class_name, "condensed");
+                            return false;
+                        },
+                    };
+                }
+
                 assert.equal(selector, ".message_controls .reaction_button");
                 return {
                     length: 1,
@@ -53,7 +65,10 @@ mock_esm("../src/hash_util", {
 });
 mock_esm("../src/stream_data", {
     is_subscribed: () => true,
-    is_stream_archived: () => false,
+    is_stream_archived_by_id: () => false,
+    get_sub_by_id: () => noop,
+    user_can_move_messages_within_channel: () => true,
+    is_empty_topic_only_channel: () => false,
 });
 mock_esm("../src/group_permission_settings", {
     get_group_permission_setting_config() {
@@ -62,44 +77,60 @@ mock_esm("../src/group_permission_settings", {
         };
     },
 });
+mock_esm("../src/timerender", {
+    display_time_zone: "UTC",
+    get_localized_date_or_time_for_format(date) {
+        // Return a simple date string for testing.
+        const d = new Date(date);
+        const months = [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+        ];
+        return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+    },
+});
 
 const current_user = {};
 set_current_user(current_user);
-const realm = {};
+const realm = make_realm();
 set_realm(realm);
 
 // Define test users
-const mike = {
+const mike = make_user({
     user_id: 1000,
     full_name: "Test Mike",
     email: "mike@example.com",
-    is_admin: false,
-    is_guest: false,
-};
+});
 
-const bob = {
+const bob = make_user({
     user_id: 2000,
     full_name: "Test Bob",
     email: "bob@example.com",
-    is_admin: false,
-    is_guest: false,
-};
+});
 
-const me = {
+const me = make_user({
     user_id: 999,
     full_name: "Test Myself",
     email: "me@example.com",
-    is_admin: false,
-    is_guest: false,
-};
+});
 
-const everyone = {
+const everyone = make_user_group({
     name: "role:everyone",
     id: 2,
     members: new Set([999, 1000, 2000]),
     is_system_group: true,
-    direct_subgroup_ids: new Set([]),
-};
+    direct_subgroup_ids: new Set(),
+});
 user_groups.initialize({realm_user_groups: [everyone]});
 
 // Helper functions:
@@ -160,8 +191,7 @@ function set_page_params_no_edit_restrictions({override}) {
 function test(label, f) {
     run_test(label, (helpers) => {
         // Stubs for calculate_timestamp_widths()
-        $("<div>").width = noop;
-        $("<div>").remove = noop;
+        $("<div>")[0].remove = noop;
 
         // Clear stuff for testing environment
         add_initialize_users();
@@ -198,6 +228,7 @@ test("my_message_all_actions", ({override}) => {
             unread: false,
             collapsed: false,
             not_spectator: true,
+            submessages: [],
             edit_history: [
                 {
                     prev_content: "Previous content",
@@ -209,7 +240,10 @@ test("my_message_all_actions", ({override}) => {
     ];
 
     add_message_with_view(list, messages);
-    const response = popover_menus_data.get_actions_popover_content_context(1);
+    const response = popover_menus_data.get_actions_popover_content_context(1, {
+        kind: "full_message",
+        hotkeys_agree: true,
+    });
     assert.equal(response.message_id, 1);
     assert.equal(response.stream_id, 1);
     assert.equal(response.editability_menu_item, "translated: Edit message");
@@ -219,11 +253,39 @@ test("my_message_all_actions", ({override}) => {
     assert.equal(response.should_display_collapse, true);
     assert.equal(response.should_display_uncollapse, false);
     assert.equal(response.should_display_add_reaction_option, true);
-    assert.equal(response.should_display_hide_option, false);
     assert.equal(response.conversation_time_url, "conversation_and_time_url");
     assert.equal(response.should_display_delete_option, true);
     assert.equal(response.should_display_read_receipts_option, true);
     assert.equal(response.should_display_quote_message, true);
+    assert.equal(response.show_quote_and_forward_hotkey_hints, true);
+
+    // A menu opened on a message the selection does not cover quotes just
+    // that message, which is not what > and < would do.
+    const diverging_response = popover_menus_data.get_actions_popover_content_context(1, {
+        kind: "full_message",
+        hotkeys_agree: false,
+    });
+    assert.equal(diverging_response.show_quote_and_forward_hotkey_hints, false);
+    assert.equal(response.quote_message_menu_item, "translated: Quote message");
+    assert.equal(response.forward_message_menu_item, "translated: Forward message");
+
+    // The Quote/Forward labels spell out what a text selection will act on.
+    const selection_response = popover_menus_data.get_actions_popover_content_context(1, {
+        kind: "message_selection",
+        quote_content: "selected text",
+    });
+    assert.equal(selection_response.quote_message_menu_item, "translated: Quote selection");
+    assert.equal(selection_response.forward_message_menu_item, "translated: Forward selection");
+
+    const messages_response = popover_menus_data.get_actions_popover_content_context(1, {
+        kind: "selected_messages",
+        message_ids: [1, 2],
+    });
+    assert.equal(messages_response.quote_message_menu_item, "translated: Quote selected messages");
+    assert.equal(
+        messages_response.forward_message_menu_item,
+        "translated: Forward selected messages",
+    );
 });
 
 test("not_my_message_view_actions", ({override}) => {
@@ -258,7 +320,10 @@ test("not_my_message_view_actions", ({override}) => {
 
     add_message_with_view(list, messages);
 
-    const response = popover_menus_data.get_actions_popover_content_context(1);
+    const response = popover_menus_data.get_actions_popover_content_context(1, {
+        kind: "full_message",
+        hotkeys_agree: true,
+    });
 
     assert.equal(response.view_source_menu_item, "translated: View original message");
     assert.equal(response.editability_menu_item, undefined);
@@ -302,8 +367,148 @@ test("not_my_message_view_source_and_move", ({override}) => {
 
     add_message_with_view(list, messages);
 
-    const response = popover_menus_data.get_actions_popover_content_context(1);
+    const response = popover_menus_data.get_actions_popover_content_context(1, {
+        kind: "full_message",
+        hotkeys_agree: true,
+    });
     assert.equal(response.view_source_menu_item, "translated: View original message");
     assert.equal(response.editability_menu_item, undefined);
     assert.equal(response.move_message_menu_item, "translated: Move messages");
+});
+
+// Helper to create a minimal message object with a given timestamp.
+function make_message(id, timestamp) {
+    return {id, timestamp};
+}
+
+function date_timestamp(date_string) {
+    return new Date(date_string + "T12:00:00").getTime() / 1000;
+}
+
+function make_messages_from_date_counts(date_counts) {
+    const messages = [];
+    let id = 1;
+    for (const {date, count} of date_counts) {
+        for (let i = 0; i < count; i += 1) {
+            messages.push(make_message(id, date_timestamp(date)));
+            id += 1;
+        }
+    }
+    return messages;
+}
+
+// Simulate a conversation with bursts separated by gaps.
+// Burst 1: Jan 5-7 (9 messages)
+// Gap: 20 days
+// Burst 2: Jan 27-28 (8 messages)
+// Gap: 15 days
+// Burst 3: Feb 12-14 (10 messages)
+// Gap: 25 days
+// Burst 4: Mar 11-12 (8 messages)
+const FOUR_MESSAGE_BURSTS = [
+    // Burst 1
+    {date: "2025-01-05", count: 3},
+    {date: "2025-01-06", count: 3},
+    {date: "2025-01-07", count: 3},
+    // Burst 2
+    {date: "2025-01-27", count: 4},
+    {date: "2025-01-28", count: 4},
+    // Burst 3
+    {date: "2025-02-12", count: 4},
+    {date: "2025-02-13", count: 3},
+    {date: "2025-02-14", count: 3},
+    // Burst 4
+    {date: "2025-03-11", count: 4},
+    {date: "2025-03-12", count: 4},
+];
+
+run_test("get_scroll_to_date_suggestions - empty messages", () => {
+    const result = popover_menus_data.get_scroll_to_date_suggestions([]);
+    assert.deepEqual(result, []);
+});
+
+run_test("get_scroll_to_date_suggestions - all messages today", () => {
+    const today = new Date();
+    const today_ts = today.getTime() / 1000;
+    const messages = [make_message(1, today_ts), make_message(2, today_ts + 60)];
+    const result = popover_menus_data.get_scroll_to_date_suggestions(messages);
+    assert.deepEqual(result, []);
+});
+
+run_test("get_scroll_to_date_suggestions - few unique dates", () => {
+    // With 3 unique dates (all in the past), all should be suggested.
+    const messages = [
+        make_message(1, date_timestamp("2025-01-10")),
+        make_message(2, date_timestamp("2025-01-10")),
+        make_message(3, date_timestamp("2025-02-15")),
+        make_message(4, date_timestamp("2025-03-20")),
+    ];
+    const result = popover_menus_data.get_scroll_to_date_suggestions(messages);
+    assert.equal(result.length, 3);
+    // Verify chronological order.
+    assert.ok(result[0].iso_date_string < result[1].iso_date_string);
+    assert.ok(result[1].iso_date_string < result[2].iso_date_string);
+});
+
+run_test("get_scroll_to_date_suggestions - many dates with gaps", () => {
+    const messages = make_messages_from_date_counts(FOUR_MESSAGE_BURSTS);
+
+    const result = popover_menus_data.get_scroll_to_date_suggestions(messages);
+    // We have 10 unique dates across 4 bursts; expect 3-4 suggestions.
+    assert.ok(result.length >= 3 && result.length <= 4);
+    // Verify chronological order.
+    for (let i = 1; i < result.length; i += 1) {
+        assert.ok(result[i - 1].iso_date_string < result[i].iso_date_string);
+    }
+    // The algorithm should prefer dates at the start of bursts (after gaps).
+    // Jan 27 has a 20-day gap before it, Feb 12 has a 15-day gap,
+    // Mar 11 has a 25-day gap — these should appear as suggestions.
+    const iso_dates = result.map((s) => s.iso_date_string.slice(0, 10));
+    // Burst-start dates (Jan 27, Feb 12, Mar 11) should be well represented.
+    const burst_starts = new Set(["2025-01-27", "2025-02-12", "2025-03-11"]);
+    const burst_start_count = iso_dates.filter((d) => burst_starts.has(d)).length;
+    assert.ok(burst_start_count >= 2, `Expected >=2 burst starts, got ${burst_start_count}`);
+});
+
+run_test("get_scroll_to_date_suggestions - single date in the past", () => {
+    const messages = [
+        make_message(1, date_timestamp("2025-06-15")),
+        make_message(2, date_timestamp("2025-06-15")),
+    ];
+    const result = popover_menus_data.get_scroll_to_date_suggestions(messages);
+    assert.equal(result.length, 1);
+});
+
+run_test("get_scroll_to_date_suggestions - excludes the clicked date", () => {
+    const messages = [
+        make_message(1, date_timestamp("2025-01-10")),
+        make_message(2, date_timestamp("2025-02-15")),
+        make_message(3, date_timestamp("2025-03-20")),
+    ];
+    const result = popover_menus_data.get_scroll_to_date_suggestions(
+        messages,
+        date_timestamp("2025-02-15"),
+    );
+    assert.equal(result.length, 2);
+    const dates = result.map((date) => date.iso_date_string.slice(0, 10));
+    assert.ok(!dates.includes("2025-02-15"));
+});
+
+run_test("get_scroll_to_date_suggestions - clicked slot is replaced not dropped", () => {
+    const messages = make_messages_from_date_counts(FOUR_MESSAGE_BURSTS);
+    const clicked_date = "2025-02-12";
+
+    const baseline = popover_menus_data.get_scroll_to_date_suggestions(messages);
+    const baseline_dates = baseline.map((s) => s.iso_date_string.slice(0, 10));
+    // The clicked date must be one the slicer would otherwise
+    // pick, or this test proves nothing.
+    assert.ok(baseline_dates.includes(clicked_date));
+
+    const filtered = popover_menus_data.get_scroll_to_date_suggestions(
+        messages,
+        date_timestamp(clicked_date),
+    );
+    const filtered_dates = filtered.map((date) => date.iso_date_string.slice(0, 10));
+    assert.equal(filtered.length, baseline.length);
+    assert.ok(!filtered_dates.includes(clicked_date));
 });

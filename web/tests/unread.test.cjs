@@ -4,6 +4,8 @@ const assert = require("node:assert/strict");
 
 const _ = require("lodash");
 
+const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -20,28 +22,28 @@ const {initialize_user_settings} = zrequire("user_settings");
 const user_settings = {};
 initialize_user_settings({user_settings});
 
-const me = {
+const me = make_user({
     email: "me@example.com",
     user_id: 30,
     full_name: "Me Myself",
-};
+});
 
-const anybody = {
+const anybody = make_user({
     email: "anybody@example.com",
     user_id: 999,
     full_name: "Any Body",
-};
+});
 people.add_active_user(me);
 people.add_active_user(anybody);
 people.initialize_current_user(me.user_id);
 
-const social = {
+const social = make_stream({
     stream_id: 200,
     name: "social",
     subscribed: true,
     is_muted: false,
-};
-stream_data.add_sub(social);
+});
+stream_data.add_sub_for_tests(social);
 
 function assert_zero_counts(counts) {
     assert.equal(counts.direct_message_count, 0);
@@ -94,7 +96,7 @@ test("changing_topics", () => {
     let count = unread.num_unread_for_topic(social.stream_id, "lunch");
     assert.equal(count, 0);
 
-    const stream_id = 100;
+    const stream_id = social.stream_id;
     const wrong_stream_id = 110;
 
     const message = {
@@ -112,8 +114,14 @@ test("changing_topics", () => {
         topic: "lunCH",
         unread: true,
     };
-    message_store.update_message_cache(message);
-    message_store.update_message_cache(other_message);
+    message_store.update_message_cache({
+        type: "server_message",
+        message,
+    });
+    message_store.update_message_cache({
+        type: "server_message",
+        message: other_message,
+    });
 
     assert.deepEqual(unread.get_read_message_ids([15, 16]), [15, 16]);
     assert.deepEqual(unread.get_unread_message_ids([15, 16]), []);
@@ -175,6 +183,11 @@ test("changing_topics", () => {
     assert.ok(unread.topic_has_any_unread(stream_id, "snack"));
     assert.ok(!unread.topic_has_any_unread(wrong_stream_id, "snack"));
 
+    unread.update_unread_topic_name_case(stream_id, "snack", "SnaCK");
+    const topic_counts = unread.get_unread_topics().topic_counts.get(stream_id);
+    assert.ok(topic_counts.has("SnaCK"));
+    assert.ok(!topic_counts.has("snack"));
+
     // Test defensive code.  Trying to update a message we don't know
     // about should be a no-op.
     event = {
@@ -191,9 +204,18 @@ test("changing_topics", () => {
         unread: true,
     };
 
-    message_store.update_message_cache(message);
-    message_store.update_message_cache(other_message);
-    message_store.update_message_cache(sticky_message);
+    message_store.update_message_cache({
+        type: "server_message",
+        message,
+    });
+    message_store.update_message_cache({
+        type: "server_message",
+        message: other_message,
+    });
+    message_store.update_message_cache({
+        type: "server_message",
+        message: sticky_message,
+    });
 
     unread.process_loaded_messages([sticky_message]);
     count = unread.num_unread_for_topic(stream_id, "sticky");
@@ -292,7 +314,10 @@ test("num_unread_for_topic", () => {
     let i;
     for (i = num_msgs; i > 0; i -= 1) {
         message.id = i;
-        message_store.update_message_cache(message);
+        message_store.update_message_cache({
+            type: "server_message",
+            message,
+        });
         unread.process_loaded_messages([message]);
     }
 
@@ -383,6 +408,49 @@ test("home_messages", () => {
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
+test("archived_stream", () => {
+    const rome = {
+        stream_id: 401,
+        name: "Rome",
+        subscribed: true,
+        is_muted: false,
+    };
+    sub_store.add_hydrated_sub(rome.stream_id, rome);
+
+    const denmark = {
+        stream_id: 501,
+        name: "Denmark",
+        subscribed: true,
+        is_muted: false,
+    };
+    sub_store.add_hydrated_sub(denmark.stream_id, denmark);
+
+    const rome_message = {
+        id: 15,
+        type: "stream",
+        stream_id: rome.stream_id,
+        topic: "lunch",
+        unread: true,
+    };
+
+    const denmark_message = {
+        id: 16,
+        type: "stream",
+        stream_id: denmark.stream_id,
+        topic: "lunch",
+        unread: true,
+    };
+    unread.process_loaded_messages([rome_message, denmark_message]);
+
+    let counts = unread.get_counts();
+    assert.equal(counts.home_unread_messages, 2);
+
+    // Now archive rome.
+    rome.is_archived = true;
+    counts = unread.get_counts();
+    assert.equal(counts.home_unread_messages, 1);
+});
+
 test("phantom_messages", () => {
     const message = {
         id: 999,
@@ -390,7 +458,10 @@ test("phantom_messages", () => {
         stream_id: 555,
         topic: "phantom",
     };
-    message_store.update_message_cache(message);
+    message_store.update_message_cache({
+        type: "server_message",
+        message,
+    });
     unread.mark_as_read(message.id);
     const counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
@@ -422,18 +493,18 @@ test("private_messages", () => {
 });
 
 test("private_messages", () => {
-    const alice = {
+    const alice = make_user({
         email: "alice@example.com",
         user_id: 101,
         full_name: "Alice",
-    };
+    });
     people.add_active_user(alice);
 
-    const bob = {
+    const bob = make_user({
         email: "bob@example.com",
         user_id: 102,
         full_name: "Bob",
-    };
+    });
     people.add_active_user(bob);
 
     assert.equal(unread.num_unread_for_user_ids_string(alice.user_id.toString()), 0);
@@ -718,7 +789,7 @@ test("topics with unread mentions", () => {
     assert.deepEqual(unread.get_topics_with_unread_mentions(999), new Set(["topic with mention"]));
     unread.mark_as_read(message_with_mention.id);
     assert.equal(unread.get_topics_with_unread_mentions(999).size, 0);
-    assert.deepEqual(unread.get_topics_with_unread_mentions(999), new Set([]));
+    assert.deepEqual(unread.get_topics_with_unread_mentions(999), new Set());
 });
 
 test("starring", () => {

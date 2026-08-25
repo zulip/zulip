@@ -21,7 +21,8 @@
       "enabled": false
     },
     "payment_method_update": {
-      "enabled": false
+      "enabled": false,
+      "payment_method_configuration": null
     },
     "subscription_cancel": {
       "cancellation_reason": {
@@ -42,12 +43,14 @@
       "enabled": false
     },
     "subscription_update": {
+      "billing_cycle_anchor": "unchanged",
       "default_allowed_updates": [],
       "enabled": false,
       "proration_behavior": "none",
       "schedule_at_period_end": {
         "conditions": []
-      }
+      },
+      "trial_update_behavior": "end_trial"
     }
   },
   "id": "stripe_billing_portal_urls_for_remote_realm--billing_portal.Configuration.create.2.json",
@@ -58,6 +61,7 @@
     "url": null
   },
   "metadata": {},
+  "name": null,
   "object": "billing_portal.configuration",
   "updated": 1000000000
 }

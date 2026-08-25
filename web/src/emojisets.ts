@@ -1,12 +1,13 @@
+// This module is shared with portico code (login/signup pages).
+// Do not import any web app-only modules here (e.g., user_settings, ui_init, etc.).
+// Only import modules that are available in both contexts.
+
 import octopus_url from "../../static/generated/emoji/images-google-64/1f419.png";
-import google_blob_sheet from "../generated/emoji/google-blob.webp";
 import google_sheet from "../generated/emoji/google.webp";
 import twitter_sheet from "../generated/emoji/twitter.webp";
 
 import * as blueslip from "./blueslip.ts";
-import {user_settings} from "./user_settings.ts";
 
-import google_blob_css from "!style-loader?injectType=lazyStyleTag!css-loader!../generated/emoji-styles/google-blob-sprite.css";
 import google_css from "!style-loader?injectType=lazyStyleTag!css-loader!../generated/emoji-styles/google-sprite.css";
 import twitter_css from "!style-loader?injectType=lazyStyleTag!css-loader!../generated/emoji-styles/twitter-sprite.css";
 
@@ -17,7 +18,6 @@ type EmojiSet = {
 
 const emojisets = new Map<string, EmojiSet>([
     ["google", {css: google_css, sheet: google_sheet}],
-    ["google-blob", {css: google_blob_css, sheet: google_blob_sheet}],
     ["twitter", {css: twitter_css, sheet: twitter_sheet}],
 ]);
 
@@ -96,8 +96,8 @@ export async function select(name: string): Promise<void> {
     current_emojiset = new_emojiset;
 }
 
-export function initialize(): void {
-    void select(user_settings.emojiset);
+export function initialize(emojiset_name: string): void {
+    void select(emojiset_name);
 
     // Load the octopus image in the background, so that the browser
     // will cache it for later use.  Note that we hardcode the octopus

@@ -611,19 +611,20 @@ InlineLexer.output = function(src, links, options) {
  */
 
 InlineLexer.prototype.inlineReplacement = function(regex, src, replace_func) {
-  var cap, out = "";
-  regex.lastIndex = 0;
-  if (cap = regex.exec(src)) {
+  var out = "";
+  var matcher = regex.matcher(src);
+  if (matcher.find()) {
     // Split before-match into its own segment and handle it separately
-    var match_idx = regex.lastIndex;
-    var before = src.substring(0, match_idx - cap[0].length);
+    var match_start = matcher.start(0);
+    var match_end = matcher.end(0);
+    var before = src.substring(0, match_start);
     before = this.output(before);
     out += before;
 
     // Consume all of the matched text
-    src = src.substring(match_idx);
+    src = src.substring(match_end);
 
-    out += replace_func(regex, cap.slice(1), cap[0]);
+    out += replace_func(regex, matcher);
   }
 
   return [src, out];
@@ -649,14 +650,17 @@ InlineLexer.prototype.output = function(src) {
 
     const regexes = this.options.get_linkifier_regexes ? this.options.get_linkifier_regexes() : [];
     regexes.forEach(function (regex) {
-      var ret = self.inlineReplacement(regex, src, function(regex, groups, match) {
+      var ret = self.inlineReplacement(regex, src, function(regex, matcher) {
         // Insert the created URL
-        href = self.linkifier(regex, groups, match);
+        href = self.linkifier(regex, matcher);
         if (href !== undefined) {
           href = escape(href);
-          return self.renderer.link(href, href, match);
+          var leading = matcher.group(1);
+          var link_text = matcher.group(2);
+          var trailing = matcher.group(matcher.groupCount());
+          return leading + self.renderer.link(href, href, link_text) + trailing;
         } else {
-          return match;
+          return matcher.group(0);
         }
       });
 
@@ -898,11 +902,11 @@ InlineLexer.prototype.timestamp = function (time) {
   return this.options.timestampHandler(time);
 };
 
-InlineLexer.prototype.linkifier = function (linkifier, matches, orig) {
+InlineLexer.prototype.linkifier = function (linkifier, matcher) {
   if (typeof this.options.linkifierHandler !== 'function')
     return;
 
-  return this.options.linkifierHandler(linkifier, matches);
+  return this.options.linkifierHandler(linkifier, matcher);
 };
 
 InlineLexer.prototype.usermention = function (username, orig, silent) {

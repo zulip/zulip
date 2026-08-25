@@ -4,6 +4,7 @@ import orjson
 import time_machine
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.users import do_change_user_role
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.user_status import (
     UserInfoDict,
@@ -181,18 +182,24 @@ class UserStatusTest(ZulipTestCase):
         )
 
     def update_status_and_assert_event(
-        self, payload: dict[str, Any], expected_event: dict[str, Any], num_events: int = 1
+        self,
+        *,
+        payload: dict[str, Any],
+        expected_event: dict[str, Any],
+        url: str = "/json/users/me/status",
+        num_events: int = 1,
     ) -> None:
         with self.capture_send_event_calls(expected_num_events=num_events) as events:
-            result = self.client_post("/json/users/me/status", payload)
+            result = self.client_post(url, payload)
         self.assert_json_success(result)
         if num_events == 1:
             self.assertEqual(events[0]["event"], expected_event)
         else:
-            self.assertEqual(events[2]["event"], expected_event)
+            self.assertEqual(events[1]["event"], expected_event)
 
     def test_endpoints(self) -> None:
         hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
         realm = hamlet.realm
         now = timezone_now()
 
@@ -254,13 +261,12 @@ class UserStatusTest(ZulipTestCase):
             expected_event=dict(
                 type="user_status", user_id=hamlet.id, away=True, status_text="on vacation"
             ),
-            num_events=4,
+            num_events=3,
         )
         self.assertEqual(
             user_status_info(hamlet),
             dict(away=True, status_text="on vacation"),
         )
-
         result = self.client_get(f"/json/users/{hamlet.id}/status")
         result_dict = self.assert_json_success(result)
         self.assertEqual(
@@ -340,7 +346,7 @@ class UserStatusTest(ZulipTestCase):
         self.update_status_and_assert_event(
             payload=dict(away=orjson.dumps(False).decode()),
             expected_event=dict(type="user_status", user_id=hamlet.id, away=False),
-            num_events=4,
+            num_events=3,
         )
         self.assertEqual(
             user_status_info(hamlet),
@@ -392,7 +398,7 @@ class UserStatusTest(ZulipTestCase):
         self.update_status_and_assert_event(
             payload=dict(away=orjson.dumps(True).decode()),
             expected_event=dict(type="user_status", user_id=hamlet.id, away=True),
-            num_events=4,
+            num_events=3,
         )
 
         # Setting away is a deprecated way of accessing a user's presence_enabled
@@ -430,3 +436,141 @@ class UserStatusTest(ZulipTestCase):
             result_dict["status"],
             {},
         )
+
+        #  No such user
+        result = self.client_post("/json/users/12345/status")
+        self.assert_json_error(result, "No such user")
+        payload = {
+            "status_text": "In a meeting",
+            "emoji_code": "1f4bb",
+            "emoji_name": "car",
+            "reaction_type": "realm_emoji",
+        }
+        # User does not have permission to set status for other users
+        self.login_user(hamlet)
+
+        result = self.client_post(f"/json/users/{iago.id}/status", payload)
+        self.assert_json_error(result, "Insufficient permission")
+
+        update_status_url = f"/json/users/{hamlet.id}/status"
+
+        # Login as admin Iago
+        self.login_user(iago)
+
+        # Server should remove emoji_code and reaction_type if emoji_name is empty.
+        self.update_status_and_assert_event(
+            payload=dict(
+                emoji_name="",
+            ),
+            url=update_status_url,
+            expected_event=dict(
+                type="user_status",
+                user_id=hamlet.id,
+                emoji_name="",
+                emoji_code="",
+                reaction_type=UserStatus.UNICODE_EMOJI,
+            ),
+        )
+
+        self.update_status_and_assert_event(
+            payload=dict(status_text="   at the beach  "),
+            url=update_status_url,
+            expected_event=dict(type="user_status", user_id=hamlet.id, status_text="at the beach"),
+        )
+        self.assertEqual(
+            user_status_info(hamlet),
+            dict(status_text="at the beach", away=True),
+        )
+
+        result = self.client_post(update_status_url, {})
+        self.assert_json_error(result, "Client did not pass any new values.")
+
+        # Try to omit emoji_name parameter but passing emoji_code --this should be an error.
+        result = self.client_post(
+            update_status_url, {"status_text": "In a meeting", "emoji_code": "1f4bb"}
+        )
+        self.assert_json_error(
+            result, "Client must pass emoji_name if they pass either emoji_code or reaction_type."
+        )
+
+        # Invalid emoji requests fail.
+        result = self.client_post(
+            update_status_url,
+            {"status_text": "In a meeting", "emoji_code": "1f4bb", "emoji_name": "invalid"},
+        )
+        self.assert_json_error(result, "Emoji 'invalid' does not exist")
+
+        result = self.client_post(
+            update_status_url,
+            {"status_text": "In a meeting", "emoji_code": "1f4bb", "emoji_name": "car"},
+        )
+        self.assert_json_error(result, "Invalid emoji name.")
+
+        result = self.client_post(
+            update_status_url,
+            {
+                "status_text": "In a meeting",
+                "emoji_code": "1f4bb",
+                "emoji_name": "car",
+                "reaction_type": "realm_emoji",
+            },
+        )
+        self.assert_json_error(result, "Invalid custom emoji.")
+
+        # Try a long message--this should be an error.
+        long_text = "x" * 61
+
+        result = self.client_post(update_status_url, dict(status_text=long_text))
+        self.assert_json_error(result, "status_text is too long (limit: 60 characters)")
+
+        # Server should fill emoji_code and reaction_type by emoji_name.
+        self.update_status_and_assert_event(
+            payload=dict(
+                emoji_name="car",
+            ),
+            url=update_status_url,
+            expected_event=dict(
+                type="user_status",
+                user_id=hamlet.id,
+                emoji_name="car",
+                emoji_code="1f697",
+                reaction_type=UserStatus.UNICODE_EMOJI,
+            ),
+        )
+        self.assertEqual(
+            user_status_info(hamlet),
+            dict(
+                away=True,
+                status_text="at the beach",
+                emoji_name="car",
+                emoji_code="1f697",
+                reaction_type=UserStatus.UNICODE_EMOJI,
+            ),
+        )
+
+        # Bot with admin privileges can set status for another user.
+        bot = self.create_test_bot("iago-bot", iago)
+        do_change_user_role(
+            bot, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=iago, notify=False
+        )
+
+        update_status_url = f"/api/v1/users/{hamlet.id}/status"
+
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.api_post(bot, update_status_url, {"status_text": "status by bot"})
+        self.assert_json_success(result)
+        self.assertEqual(
+            events[0]["event"],
+            dict(type="user_status", user_id=hamlet.id, status_text="status by bot"),
+        )
+        self.assertEqual(
+            user_status_info(hamlet)["status_text"],
+            "status by bot",
+        )
+
+        # Bot with non-admin privileges can't set status for another user.
+        do_change_user_role(bot, UserProfile.ROLE_MEMBER, acting_user=iago, notify=False)
+
+        with self.capture_send_event_calls(expected_num_events=0) as events:
+            result = self.api_post(bot, update_status_url, {"status_text": "new status by bot"})
+        self.assert_json_error(result, "Insufficient permission")

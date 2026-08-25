@@ -1,14 +1,11 @@
-import {Uppy} from "@uppy/core";
-import DragDrop from "@uppy/drag-drop";
-import Tus from "@uppy/tus";
-import "@uppy/core/dist/style.min.css";
-import "@uppy/drag-drop/dist/style.min.css";
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
+import {page_params as base_page_params} from "../base_page_params.ts";
 import * as common from "../common.ts";
+import * as emojisets from "../emojisets.ts";
 import {$t} from "../i18n.ts";
 import {password_quality, password_warning} from "../password_quality.ts";
 import * as settings_config from "../settings_config.ts";
@@ -19,6 +16,10 @@ import * as portico_modals from "./portico_modals.ts";
 import "altcha";
 
 $(() => {
+    // Initialize emoji rendering for login/signup pages
+    if (base_page_params.page_type === "login" && "realm_default_emojiset" in base_page_params) {
+        emojisets.initialize(base_page_params.realm_default_emojiset);
+    }
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.
 
@@ -66,7 +67,7 @@ $(() => {
         "#id_new_password2 ~ .password_visibility_toggle",
     );
 
-    $("#registration, #password_reset, #create_realm").validate({
+    $("#registration, #password_reset, #create_realm, #create_demo_realm").validate({
         rules: {
             password: {
                 password_strength: {
@@ -127,6 +128,10 @@ $(() => {
         }
 
         $("#timezone").val(new Intl.DateTimeFormat().resolvedOptions().timeZone);
+    }
+
+    if ($("#demo-realm-creation").length > 0) {
+        $("#demo-creator-timezone").val(new Intl.DateTimeFormat().resolvedOptions().timeZone);
     }
 
     $("#registration").on("submit", () => {
@@ -212,10 +217,10 @@ $(() => {
             $("#login_form .alert.alert-error").remove();
         },
         showErrors(error_map) {
-            if (error_map.password) {
+            if (error_map["password"]) {
                 $("#login_form .alert.alert-error").remove();
             }
-            this.defaultShowErrors!();
+            this.defaultShowErrors();
         },
     });
 
@@ -224,7 +229,7 @@ $(() => {
         void $.get(url, (response) => {
             const {msg} = z.object({msg: z.string()}).parse(response);
             if (msg !== "available") {
-                $("#id_team_subdomain_error_client").html(msg);
+                $("#id_team_subdomain_error_client").text(msg);
                 $("#id_team_subdomain_error_client").show();
             }
         });
@@ -283,7 +288,7 @@ $(() => {
         let selected_option_text;
 
         // These strings should be consistent with those defined for the same element in
-        // 'templates/zerver/register.html'.
+        // 'templates/zerver/create_user/new_user_email_address_visibility.html'.
         switch (selected_val) {
             case settings_config.email_address_visibility_values.admins_only.code: {
                 selected_option_text = $t({
@@ -319,8 +324,8 @@ $(() => {
         $("#new-user-email-address-visibility .current-selected-option").text(selected_option_text);
     });
 
-    $("#registration").on("click keypress", ".edit-realm-details", (e) => {
-        if (e.type === "keypress" && e.key !== "Enter") {
+    $("#registration").on("click keydown", ".edit-realm-details", (e) => {
+        if (e.type === "keydown" && e.key !== "Enter") {
             return;
         }
 
@@ -334,12 +339,20 @@ $(() => {
         $(e.target).hide();
     });
 
+    $("form.select-email-form").on("keydown", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            $(this).trigger("submit");
+        }
+    });
+
     $<HTMLSelectElement>("#how-realm-creator-found-zulip select").on("change", function () {
         const elements = new Map([
             ["other", "how-realm-creator-found-zulip-other"],
             ["ad", "how-realm-creator-found-zulip-where-ad"],
             ["existing_user", "how-realm-creator-found-zulip-which-organization"],
             ["review_site", "how-realm-creator-found-zulip-review-site"],
+            ["ai_chatbot", "how-realm-creator-found-zulip-which-ai-chatbot"],
         ]);
 
         const hideElement = (element: string): void => {
@@ -384,102 +397,45 @@ $(() => {
         altcha.addEventListener("statechange", ((ev: AltchaStateChangeEvent) => {
             if (ev.detail.state === "verified") {
                 $submit.prop("disabled", false);
+                // Hide checkbox on successful verification.
+                altcha.querySelector(".altcha")!.classList.add("altcha-checkbox-hidden");
+                altcha.style.opacity = "1";
+                // Animate hiding the altcha after a delay.
+                setTimeout(() => {
+                    altcha.style.transition = "opacity 1s ease-in-out";
+                    altcha.style.opacity = "0";
+                    altcha.style.pointerEvents = "none";
+                }, 1000);
             }
         }) as EventListener);
     }
 
-    if ($("#slack-import-drag-and-drop").length > 0) {
-        const key = $<HTMLInputElement>("#auth_key_for_file_upload").val();
-        const uppy = new Uppy({
-            autoProceed: true,
-            restrictions: {
-                maxNumberOfFiles: 1,
-                minNumberOfFiles: 1,
-                allowedFileTypes: [".zip", "application/zip"],
-            },
-            meta: {
-                key,
-            },
-            locale: {
-                strings: {
-                    youCanOnlyUploadFileTypes: $t({
-                        defaultMessage: "Upload your Slack export zip file.",
-                    }),
-                },
-                // Copied from
-                // https://github.com/transloadit/uppy/blob/d1a3345263b3421a06389aa2e84c66e894b3f29d/packages/%40uppy/utils/src/Translator.ts#L122
-                // since we don't want to override the default function.
-                // Defining pluralize is required by typescript.
-                pluralize(n: number): 0 | 1 {
-                    if (n === 1) {
-                        return 0;
-                    }
-                    return 1;
-                },
-            },
-        });
-        uppy.use(DragDrop, {
-            target: "#slack-import-drag-and-drop",
-            locale: {
-                strings: {
-                    // Override the default text for the drag and drop area.
-                    dropHereOr: $t({
-                        defaultMessage:
-                            "Drag and drop your Slack export file here, or click to browse.",
-                    }),
-                    // Required by typescript to define this.
-                    browse: $t({
-                        defaultMessage: "Browse",
-                    }),
-                },
-            },
-        });
-        uppy.use(Tus, {endpoint: "/api/v1/tus/"});
-        uppy.on("restriction-failed", (_file, error) => {
-            $("#slack-import-file-upload-error").text(error.message);
-        });
-        uppy.on("upload-error", (_file, error) => {
-            $("#slack-import-file-upload-error").text(error.message);
-        });
-        uppy.on("upload-success", (file, _response) => {
-            assert(file !== undefined);
-            $("#slack-import-start-upload-wrapper").removeClass("hidden");
-            $("#slack-import-uploaded-file-name").text(file.name!);
-            $("#slack-import-file-upload-error").text("");
-        });
-        // Reset uppy state to allow user replace existing uploaded file.
-        uppy.on("complete", () => {
-            uppy.clear();
-        });
-    }
-
-    if ($("#slack-import-poll-status").length > 0) {
-        const key = $<HTMLInputElement>("#auth_key_for_polling").val();
-        const pollInterval = 2000; // Poll every 2 seconds
-
-        let poll_id: ReturnType<typeof setTimeout> | undefined;
-        function checkImportStatus(): void {
-            $.get(`/json/realm/import/status/${key}`, {}, (response) => {
-                const {status, redirect} = z
-                    .object({status: z.string(), redirect: z.string().optional()})
-                    .parse(response);
-                $("#slack-import-poll-status").text(status);
-                if (poll_id && redirect !== undefined) {
-                    clearInterval(poll_id);
-                    window.location.assign(redirect);
-                }
-            });
+    if ($("a#deactivated-org-auto-redirect").length > 0) {
+        // Update the href of the deactivated organization auto-redirect link
+        // to include the current URL hash, if it exists.
+        const $deactivated_org_auto_redirect = $("a#deactivated-org-auto-redirect");
+        let new_org_url = $deactivated_org_auto_redirect.attr("href")!;
+        const url_hash = window.location.hash;
+        if (url_hash.startsWith("#")) {
+            // Ensure we don't double-add hashes and handle query parameters properly
+            const url = new URL(new_org_url);
+            url.hash = url_hash;
+            new_org_url = url.href;
         }
+        $deactivated_org_auto_redirect.attr("href", new_org_url);
 
-        // Start polling
-        poll_id = setInterval(checkImportStatus, pollInterval);
+        // This is a special case for the deactivated organization page,
+        // where we want to redirect to the login page after 5 seconds.
+        const interval_id = setInterval(() => {
+            const $countdown_elt = $("#deactivated-org-auto-redirect-countdown");
+            const current_countdown = Number($countdown_elt.text());
+            if (current_countdown > 0) {
+                $countdown_elt.text((current_countdown - 1).toString());
+            } else {
+                const new_org_url = $deactivated_org_auto_redirect.attr("href")!;
+                window.location.assign(new_org_url);
+                clearInterval(interval_id);
+            }
+        }, 1000);
     }
-
-    $("#cancel-slack-import").on("click", () => {
-        $("#cancel-slack-import-form").trigger("submit");
-    });
-
-    $("#slack-access-token").on("input", () => {
-        $("#update-slack-access-token").show();
-    });
 });

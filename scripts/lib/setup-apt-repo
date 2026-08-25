@@ -98,7 +98,7 @@ if ! apt-get -dy install "${pre_setup_deps[@]}"; then
 fi
 apt-get -y install "${pre_setup_deps[@]}"
 
-apt-key add "$LIST_PATH/"*.asc
+cp "$LIST_PATH/"*.asc /etc/apt/keyrings/
 cp "$LIST_PATH/$release.list" "$SOURCES_FILE"
 
 if [ -e "$LIST_PATH/custom.sh" ]; then

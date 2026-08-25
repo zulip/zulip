@@ -81,6 +81,10 @@ class PreregistrationUser(models.Model):
     groups = models.ManyToManyField("zerver.NamedUserGroup")
     invited_at = models.DateTimeField(auto_now=True)
     realm_creation = models.BooleanField(default=False)
+
+    # Custom text to be sent to created users in a welcome bot message.
+    welcome_message_custom_text = models.TextField(null=True)
+
     # Indicates whether the user needs a password.  Users who were
     # created via SSO style auth (e.g. GitHub/Google) generally do not.
     password_required = models.BooleanField(default=True)
@@ -114,6 +118,18 @@ class PreregistrationUser(models.Model):
 
     include_realm_default_subscriptions = models.BooleanField(default=True)
 
+    # Used in realm import flow to allow importer (the person
+    # whose email is set as PreregistrationRealm.email) to create
+    # a new user if an imported user with the matching
+    # email was not found.
+    is_realm_importer = models.BooleanField(default=False)
+
+    # Used in the SAML authentication flow to pass the external auth ID
+    # from the authentication step to user creation, so that an ExternalAuthID
+    # record can be created for the new user.
+    external_auth_method_name = models.CharField(max_length=100, null=True, default=None)
+    external_auth_id = models.CharField(max_length=255, null=True, default=None)
+
     class Meta:
         indexes = [
             models.Index(Upper("email"), name="upper_preregistration_email_idx"),
@@ -122,18 +138,27 @@ class PreregistrationUser(models.Model):
 
 def filter_to_valid_prereg_users(
     query: QuerySet[PreregistrationUser],
+    invitations_only: bool = False,
 ) -> QuerySet[PreregistrationUser]:
     """
-    If invite_expires_in_days is specified, we return only those PreregistrationUser
-    objects that were created at most that many days in the past.
+    Filters out PreregistrationUser objects that have been used or
+    revoked, or whose confirmation link has expired.
     """
     used_value = confirmation_settings.STATUS_USED
     revoked_value = confirmation_settings.STATUS_REVOKED
 
     query = query.exclude(status__in=[used_value, revoked_value])
-    return query.filter(
-        Q(confirmation__expiry_date=None) | Q(confirmation__expiry_date__gte=timezone_now())
+
+    confirmation_q = Q(confirmation__expiry_date=None) | Q(
+        confirmation__expiry_date__gte=timezone_now()
     )
+    if invitations_only:
+        # Imported here to avoid a circular import.
+        from confirmation.models import Confirmation
+
+        confirmation_q &= Q(confirmation__type=Confirmation.INVITATION)
+
+    return query.filter(confirmation_q)
 
 
 class MultiuseInvite(models.Model):
@@ -143,6 +168,9 @@ class MultiuseInvite(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
     invited_as = models.PositiveSmallIntegerField(default=PreregistrationUser.INVITE_AS["MEMBER"])
     include_realm_default_subscriptions = models.BooleanField(default=True)
+
+    # Custom text to be sent to created users in a welcome bot message.
+    welcome_message_custom_text = models.TextField(null=True)
 
     # status for tracking whether the invite has been revoked.
     # If revoked, set to confirmation.settings.STATUS_REVOKED.
@@ -170,3 +198,14 @@ class RealmReactivationStatus(models.Model):
     status = models.IntegerField(default=0)
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
+
+
+class RealmCreationStatus(models.Model):
+    # status: whether an object has been confirmed.
+    #   if confirmed, set to confirmation.settings.STATUS_USED
+    status = models.IntegerField(default=0)
+    date_created = models.DateTimeField(default=timezone_now)
+
+    # True just if we should presume the email address the user enters
+    # is theirs, and skip sending mail to it to confirm that.
+    presume_email_valid = models.BooleanField(default=False)

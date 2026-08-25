@@ -1,6 +1,6 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
-import {z} from "zod";
+import * as z from "zod/mini";
 
 import render_editing_notifications from "../templates/editing_notifications.hbs";
 import render_typing_notifications from "../templates/typing_notifications.hbs";
@@ -31,27 +31,26 @@ export const typing_user_schema = z.object({
     user_id: z.number(),
 });
 
-export const typing_event_schema = z
-    .object({
+export const typing_event_schema = z.intersection(
+    z.object({
         id: z.number(),
         op: z.enum(["start", "stop"]),
         type: z.literal("typing"),
-    })
-    .and(
-        z.discriminatedUnion("message_type", [
-            z.object({
-                message_type: z.literal("stream"),
-                sender: typing_user_schema,
-                stream_id: z.number(),
-                topic: z.string(),
-            }),
-            z.object({
-                message_type: z.literal("direct"),
-                recipients: z.array(typing_user_schema),
-                sender: typing_user_schema,
-            }),
-        ]),
-    );
+    }),
+    z.discriminatedUnion("message_type", [
+        z.object({
+            message_type: z.literal("stream"),
+            sender: typing_user_schema,
+            stream_id: z.number(),
+            topic: z.string(),
+        }),
+        z.object({
+            message_type: z.literal("direct"),
+            recipients: z.array(typing_user_schema),
+            sender: typing_user_schema,
+        }),
+    ]),
+);
 type TypingEvent = z.output<typeof typing_event_schema>;
 
 export const typing_edit_message_event_schema = z.object({
@@ -91,23 +90,15 @@ function get_users_typing_for_narrow(): number[] {
         return [];
     }
 
-    const terms = narrow_state.search_terms();
-    if (terms[0] === undefined) {
-        return [];
-    }
-
-    const first_term = terms[0];
-    if (first_term.operator === "dm") {
+    // Narrow has a filter with either "dm:" or "is:dm".
+    const current_filter = narrow_state.filter()!;
+    if (current_filter.has_operator("dm")) {
         // Get list of users typing in this conversation
-        const narrow_emails_string = first_term.operand;
-        // TODO: Create people.emails_strings_to_user_ids.
-        const narrow_user_ids_string = people.reply_to_to_user_ids_string(narrow_emails_string);
-        if (!narrow_user_ids_string) {
+        const narrow_user_ids = current_filter.terms_with_operator("dm")[0]!.operand;
+        if (!people.is_valid_bulk_user_ids_for_compose(narrow_user_ids, true)) {
+            // Narrowed to an invalid direct message recipient.
             return [];
         }
-        const narrow_user_ids = narrow_user_ids_string
-            .split(",")
-            .map((user_id_string) => Number.parseInt(user_id_string, 10));
         const group = [...narrow_user_ids, current_user.user_id];
         return typing_data.get_group_typists(group);
     }
@@ -159,7 +150,6 @@ function get_key(event: TypingEvent): string {
     }
     if (event.message_type === "direct") {
         const recipients = event.recipients.map((user) => user.user_id);
-        recipients.sort();
         return typing_data.get_direct_message_conversation_key(recipients);
     }
     throw new Error("Invalid typing notification type", event);

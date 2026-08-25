@@ -61,13 +61,6 @@ def get_event_checker(event: dict[str, Any]) -> Callable[[str, dict[str, Any]], 
     # Start by grabbing the event type.
     name = event["type"]
 
-    # This is a temporary workaround until a proper fix is implemented.
-    if name == "typing_edit_message":
-        if event["recipient"]["type"] == "channel":
-            name = "typing_edit_channel_message"
-        else:
-            name = "typing_edit_direct_message"
-
     # Handle things like AttachmentRemoveEvent
     if "op" in event:
         name += "_" + event["op"].title()
@@ -75,8 +68,12 @@ def get_event_checker(event: dict[str, Any]) -> Callable[[str, dict[str, Any]], 
     # Change to CamelCase
     name = name.replace("_", " ").title().replace(" ", "")
 
-    # And add the prefix.
-    name = "Event" + name
+    # Use ModernPresenceEvent type to check "presence" events
+    if name == "Presence":
+        name = "Modern" + name
+
+    # And add the suffix.
+    name = name + "Event"
 
     if not hasattr(event_schema, name):
         raise ValueError(f"We could not find {name} in event_schemas.py")
@@ -109,7 +106,7 @@ def verify_fixtures_are_sorted(names: list[str]) -> None:
             raise Exception(
                 f"""
                 Please keep your fixtures in order within
-                your events.js file.  The following
+                your events.cjs file.  The following
                 key is out of order
 
                 {names[i]}

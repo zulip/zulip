@@ -2,11 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class IFTTTHookTests(WebhookTestCase):
-    CHANNEL_NAME = "ifttt"
-    URL_TEMPLATE = "/api/v1/external/ifttt?stream={stream}&api_key={api_key}"
-    WEBHOOK_DIR_NAME = "ifttt"
-    VIEW_FUNCTION_NAME = "api_iftt_app_webhook"
-
     def test_ifttt_when_subject_and_body_are_correct(self) -> None:
         expected_topic_name = "Email sent from email@email.com"
         expected_message = "Email subject: Subject"

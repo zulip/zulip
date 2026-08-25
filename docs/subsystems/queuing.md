@@ -44,7 +44,7 @@ To add a new queue processor:
   `./manage.py process_queue --queue=user_activity`.
 
 - So that supervisord will know to run the queue processor in
-  production, you will need to add to the `queues` variable in
+  production, you will need to add to the `base_queues` variable in
   `puppet/zulip/manifests/app_frontend_base.pp`; the list there is
   used to generate `/etc/supervisor/conf.d/zulip.conf`.
 

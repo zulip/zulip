@@ -59,6 +59,19 @@ define contact {
        host_notification_commands      notify-host-by-zulip
 }
 
+define contact {
+       contact_name                    kandra-ops-in-czo-warnings
+       alias                           Notify kandra-ops on chat.zulip.org on warnings
+       service_notifications_enabled   1
+       host_notifications_enabled      0
+       service_notification_period     24x7
+       host_notification_period        24x7
+       service_notification_options    w,r
+       host_notification_options       n
+       service_notification_commands   notify-service-by-zulip
+       host_notification_commands      notify-host-by-zulip
+}
+
 ###############################################################################
 ###############################################################################
 #
@@ -77,6 +90,12 @@ define contactgroup{
         contactgroup_name       page_admins
         alias                   Nagios Administrators
         members                 monitoring,pager
+        }
+
+define contactgroup{
+        contactgroup_name       page_admins_and_warn_czo
+        alias                   Nagios Administrators
+        members                 monitoring,pager,kandra-ops-in-czo-warnings
         }
 
 define contactgroup{

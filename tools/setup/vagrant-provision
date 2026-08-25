@@ -1,17 +1,20 @@
 #!/usr/bin/env bash
-set -x
-set -e
-set -o pipefail
+set -euxo pipefail
 
 # Code should go here, rather than tools/provision, only if it is
 # something that we don't want to happen when running provision in a
 # development environment not using Vagrant.
 
+if [ -e /srv/zulip ]; then
+    # Backwards compatibility
+    ZULIP_PATH=/srv/zulip
+fi
+
 # Set the Ubuntu mirror
 [ ! "$UBUNTU_MIRROR" ] || sudo sed -i 's|http://\(\w*\.\)*archive\.ubuntu\.com/ubuntu/\? |'"$UBUNTU_MIRROR"' |' /etc/apt/sources.list
 
 # Set the MOTD on the system to have Zulip instructions
-sudo ln -nsf /srv/zulip/tools/setup/dev-motd /etc/update-motd.d/99-zulip-dev
+sudo ln -nsf "$ZULIP_PATH/tools/setup/dev-motd" /etc/update-motd.d/99-zulip-dev
 sudo rm -f /etc/update-motd.d/10-help-text /etc/update-motd.d/99-bento
 sudo dpkg --purge landscape-common
 sudo dpkg-divert --add --rename /etc/default/motd-news
@@ -31,7 +34,7 @@ export SKIP_VENV_SHELL_WARNING=1
 set +x
 
 # Check if the zulip directory is writable
-if [ ! -w /srv/zulip ]; then
+if [ ! -w "$ZULIP_PATH" ]; then
     echo "The vagrant user is unable to write to the zulip directory."
     echo "To fix this, run the following commands on the host machine:"
     # sudo is required since our uid is not 1000
@@ -45,11 +48,11 @@ if [ ! -w /srv/zulip ]; then
     exit 1
 fi
 # Provision the development environment
-ln -nsf /srv/zulip ~/zulip
-/srv/zulip/tools/provision
+ln -nsf "$ZULIP_PATH" ~/zulip
+"$ZULIP_PATH/tools/provision"
 
 # Run any custom provision hooks the user has configured
-if [ -f /srv/zulip/tools/custom_provision ]; then
-    chmod +x /srv/zulip/tools/custom_provision
-    /srv/zulip/tools/custom_provision
+if [ -f "$ZULIP_PATH/tools/custom_provision" ]; then
+    chmod +x "$ZULIP_PATH/tools/custom_provision"
+    "$ZULIP_PATH/tools/custom_provision"
 fi

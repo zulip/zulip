@@ -2,6 +2,7 @@
 
 const assert = require("node:assert/strict");
 
+const {make_realm} = require("./lib/example_realm.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -9,7 +10,7 @@ const settings_config = zrequire("settings_config");
 const {set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const realm = {realm_push_notifications_enabled: false};
+const realm = make_realm({realm_push_notifications_enabled: false});
 set_realm(realm);
 const user_settings = {};
 initialize_user_settings({user_settings});

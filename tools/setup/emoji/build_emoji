@@ -6,6 +6,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 from collections.abc import Iterator, Sequence
 from typing import Any
 
@@ -153,11 +154,7 @@ def get_square_size(emoji_data: Sequence[dict[str, Any]]) -> int:
 
 
 def generate_sprite_css_files(
-    cache_path: str,
-    emoji_data: list[dict[str, Any]],
-    emojiset: str,
-    alt_name: str,
-    fallback_emoji_data: Sequence[dict[str, Any]],
+    cache_path: str, emoji_data: list[dict[str, Any]], emojiset: str
 ) -> None:
     """
     Spritesheets are usually NxN squares.
@@ -236,27 +233,10 @@ def generate_sprite_css_files(
         f.write(
             SPRITE_CSS_FILE_TEMPLATE.format(
                 emojiset=emojiset,
-                alt_name=alt_name,
                 emoji_positions=emoji_positions,
                 background_size=background_size,
             ),
         )
-
-    # Google Classic stopped being supported in 2017. To be able to use other emoji, we
-    # fallback to Google Modern for any emoji not covered by Google Classic.
-    if emojiset == "google-blob":
-        extra_emoji_positions = ""
-        covered_emoji_codes = [
-            get_emoji_code(emoji) for emoji in emoji_data if emoji["has_img_google"]
-        ]
-        for emoji in fallback_emoji_data:
-            code = get_emoji_code(emoji)
-            if emoji["has_img_google"] and code not in covered_emoji_codes:
-                extra_emoji_positions += EMOJI_OVERRIDE_TEMPLATE.format(
-                    codepoint=code,
-                )
-        with open(SPRITE_CSS_PATH, "a") as f:
-            f.write(extra_emoji_positions)
 
     # The Twitter emoji team was laid off in 2022, so new emoji aren't supported.
     # https://github.com/twitter/twemoji/issues/570#issuecomment-1303422143.
@@ -295,32 +275,20 @@ def setup_emoji_farms(cache_path: str, emoji_data: list[dict[str, Any]]) -> None
         dst_file = os.path.join(target_emoji_farm, img_file_name)
         shutil.copy2(src_file, dst_file)
 
-    def setup_emoji_farm(
-        emojiset: str,
-        emoji_data: list[dict[str, Any]],
-        alt_name: str | None = None,
-        fallback_emoji_data: Sequence[dict[str, Any]] = [],
-    ) -> None:
-        # `alt_name` is an optional parameter that we use to avoid duplicating below
-        # code. It is only used while setting up google-blob emoji set as it is just
-        # a wrapper for an older version of emoji-datasource package due to which we
-        # need to use 'google' at some places in this code. It has no meaning for other
-        # emoji sets and is just equivalent to `emojiset`.
-        alt_name = alt_name or emojiset
-
+    def setup_emoji_farm(emojiset: str, emoji_data: list[dict[str, Any]]) -> None:
         # Copy individual emoji images from npm packages.
         src_emoji_farm = os.path.join(
-            NODE_MODULES_PATH, "emoji-datasource-" + emojiset, "img", alt_name, "64"
+            NODE_MODULES_PATH, "emoji-datasource-" + emojiset, "img", emojiset, "64"
         )
         target_emoji_farm = os.path.join(cache_path, "static", "images-" + emojiset + "-64")
         os.makedirs(target_emoji_farm, exist_ok=True)
         print(f"Copying individual {emojiset} image files...")
         for emoji_dict in emoji_data:
-            if emoji_dict["has_img_" + alt_name]:
+            if emoji_dict["has_img_" + emojiset]:
                 ensure_emoji_image(emoji_dict, src_emoji_farm, target_emoji_farm)
                 skin_variations = emoji_dict.get("skin_variations", {})
                 for img_info in skin_variations.values():
-                    if img_info["has_img_" + alt_name]:
+                    if img_info["has_img_" + emojiset]:
                         ensure_emoji_image(img_info, src_emoji_farm, target_emoji_farm)
 
         # Copy zulip.png to the emoji farm.
@@ -334,7 +302,7 @@ def setup_emoji_farms(cache_path: str, emoji_data: list[dict[str, Any]]) -> None
         output_img_file = os.path.join(target_emoji_farm, "1f419.png")
         shutil.copyfile(input_img_file, output_img_file)
 
-        generate_sprite_css_files(cache_path, emoji_data, emojiset, alt_name, fallback_emoji_data)
+        generate_sprite_css_files(cache_path, emoji_data, emojiset)
 
         print(f"Converting {emojiset} sheet to webp...")
         TARGET_EMOJI_SHEETS = os.path.join(cache_path, "web", "emoji")
@@ -344,29 +312,30 @@ def setup_emoji_farms(cache_path: str, emoji_data: list[dict[str, Any]]) -> None
             NODE_MODULES_PATH,
             f"emoji-datasource-{emojiset}",
             "img",
-            alt_name,
-            "sheets-256",
+            emojiset,
+            "sheets-clean",
             "64.png",
         )
         sheet_dst = os.path.join(TARGET_EMOJI_SHEETS, f"{emojiset}.webp")
-        # From libwebp: [Q is] between 0 and 100. For lossy, 0 gives
-        #   the smallest size and 100 the largest. For lossless, this
-        #   parameter is the amount of effort put into the
-        #   compression: 0 is the fastest but gives larger files
-        #   compared to the slowest, but best, 100.
-        subprocess.check_call(["vips", "copy", sheet_src, f"{sheet_dst}[lossless=true,Q=100]"])
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # First quantize the image to 256 colors (like sheets-256 in
+            # emoji-datasource); libvips can only do this when saving to a PNG.
+            quantized = os.path.join(tmpdir, "quantized.png")
+            subprocess.check_call(
+                ["vips", "copy", sheet_src, f"{quantized}[palette,dither=0,effort=10]"]
+            )
+
+            # From libwebp: [Q is] between 0 and 100. For lossy, 0 gives
+            #   the smallest size and 100 the largest. For lossless, this
+            #   parameter is the amount of effort put into the
+            #   compression: 0 is the fastest but gives larger files
+            #   compared to the slowest, but best, 100.
+            subprocess.check_call(["vips", "copy", quantized, f"{sheet_dst}[lossless,Q=100]"])
 
     # Set up standard emoji sets.
     for emojiset in ["google", "twitter"]:
         setup_emoji_farm(emojiset, emoji_data)
-
-    # Set up old Google "blobs" emoji set.
-    GOOGLE_BLOB_EMOJI_DATA_PATH = os.path.join(
-        NODE_MODULES_PATH, "emoji-datasource-google-blob", "emoji.json"
-    )
-    with open(GOOGLE_BLOB_EMOJI_DATA_PATH, "rb") as fp:
-        blob_emoji_data = orjson.loads(fp.read())
-    setup_emoji_farm("google-blob", blob_emoji_data, "google", emoji_data)
 
 
 def setup_old_emoji_farm(

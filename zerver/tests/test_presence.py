@@ -14,13 +14,7 @@ from zerver.lib.presence import format_legacy_presence_dict, get_presence_dict_b
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import make_client, reset_email_visibility_to_everyone_in_zulip_realm
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.models import (
-    PushDeviceToken,
-    UserActivity,
-    UserActivityInterval,
-    UserPresence,
-    UserProfile,
-)
+from zerver.models import PushDeviceToken, UserActivityInterval, UserPresence, UserProfile
 from zerver.models.realms import get_realm
 
 
@@ -581,46 +575,6 @@ class UserPresenceTests(ZulipTestCase):
         )
         self.assertEqual(filter_presence_idle_user_ids({user_profile.id}), [])
 
-    def test_no_mit(self) -> None:
-        """Zephyr mirror realms such as MIT never get a list of users"""
-        user = self.mit_user("espuser")
-        self.login_user(user)
-        result = self.client_post("/json/users/me/presence", {"status": "idle"}, subdomain="zephyr")
-        response_dict = self.assert_json_success(result)
-        self.assertEqual(response_dict["presences"], {})
-        self.assertEqual(response_dict["presence_last_update_id"], -1)
-
-    def test_mirror_presence(self) -> None:
-        """Zephyr mirror realms find out the status of their mirror bot"""
-        user_profile = self.mit_user("espuser")
-        self.login_user(user_profile)
-
-        def post_presence() -> dict[str, Any]:
-            result = self.client_post(
-                "/json/users/me/presence", {"status": "idle"}, subdomain="zephyr"
-            )
-            json = self.assert_json_success(result)
-            return json
-
-        json = post_presence()
-        self.assertEqual(json["zephyr_mirror_active"], False)
-
-        self._simulate_mirror_activity_for_user(user_profile)
-        json = post_presence()
-        self.assertEqual(json["zephyr_mirror_active"], True)
-
-    def _simulate_mirror_activity_for_user(self, user_profile: UserProfile) -> None:
-        last_visit = timezone_now()
-        client = make_client("zephyr_mirror")
-
-        UserActivity.objects.get_or_create(
-            user_profile=user_profile,
-            client=client,
-            query="get_events",
-            count=2,
-            last_visit=last_visit,
-        )
-
     def test_same_realm(self) -> None:
         espuser = self.mit_user("espuser")
         self.login_user(espuser)
@@ -661,7 +615,7 @@ class UserPresenceTests(ZulipTestCase):
 
         # Ensure date_joined was used as the fallback.
         self.assertEqual(
-            result_dict["presence"]["website"]["timestamp"],
+            result_dict["presence"]["active_timestamp"],
             datetime_to_timestamp(othello.date_joined),
         )
 
@@ -781,21 +735,32 @@ class SingleUserPresenceTests(ZulipTestCase):
             result = self.client_get(f"/json/users/{othello.id}/presence")
         self.assert_json_error(result, "Insufficient permission")
 
+        expected_keys = {"active_timestamp", "idle_timestamp", "website", "aggregated"}
+
         result = self.client_get(f"/json/users/{othello.id}/presence")
         result_dict = self.assert_json_success(result)
-        self.assertEqual(set(result_dict["presence"].keys()), {"website", "aggregated"})
+        self.assertEqual(set(result_dict["presence"].keys()), expected_keys)
+        self.assertIsInstance(result_dict["presence"]["active_timestamp"], int)
+        self.assertIsInstance(result_dict["presence"]["idle_timestamp"], int)
+        self.assertIsInstance(result_dict["server_timestamp"], float)
         self.assertEqual(set(result_dict["presence"]["website"].keys()), {"status", "timestamp"})
 
         # Then, we check everything works
         self.login("hamlet")
         result = self.client_get("/json/users/othello@zulip.com/presence")
         result_dict = self.assert_json_success(result)
-        self.assertEqual(set(result_dict["presence"].keys()), {"website", "aggregated"})
+        self.assertEqual(set(result_dict["presence"].keys()), expected_keys)
+        self.assertIsInstance(result_dict["presence"]["active_timestamp"], int)
+        self.assertIsInstance(result_dict["presence"]["idle_timestamp"], int)
+        self.assertIsInstance(result_dict["server_timestamp"], float)
         self.assertEqual(set(result_dict["presence"]["website"].keys()), {"status", "timestamp"})
 
         result = self.client_get(f"/json/users/{othello.id}/presence")
         result_dict = self.assert_json_success(result)
-        self.assertEqual(set(result_dict["presence"].keys()), {"website", "aggregated"})
+        self.assertEqual(set(result_dict["presence"].keys()), expected_keys)
+        self.assertIsInstance(result_dict["presence"]["active_timestamp"], int)
+        self.assertIsInstance(result_dict["presence"]["idle_timestamp"], int)
+        self.assertIsInstance(result_dict["server_timestamp"], float)
         self.assertEqual(set(result_dict["presence"]["website"].keys()), {"status", "timestamp"})
 
     def test_ping_only(self) -> None:
@@ -921,7 +886,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
         user = self.example_user("othello")
         self.login_user(user)
         validate_time = timezone_now()
-        result_dict = self._send_presence_for_aggregated_tests(user, "idle", validate_time)
+        self._send_presence_for_aggregated_tests(user, "idle", validate_time)
 
         with time_machine.travel(
             (validate_time + timedelta(seconds=settings.OFFLINE_THRESHOLD_SECS + 1)),

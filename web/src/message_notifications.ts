@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
@@ -11,6 +11,7 @@ import * as message_view from "./message_view.ts";
 import * as people from "./people.ts";
 import * as spoilers from "./spoilers.ts";
 import * as stream_data from "./stream_data.ts";
+import * as sub_store from "./sub_store.ts";
 import * as ui_util from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_topics from "./user_topics.ts";
@@ -89,16 +90,15 @@ function debug_notification_source_value(message: Message | TestNotificationMess
 }
 
 function get_notification_key(message: Message | TestNotificationMessage): string {
-    let key;
-
-    if (message.type === "private" || message.type === "test-notification") {
-        key = message.display_reply_to;
-    } else {
-        const stream_name = stream_data.get_stream_name_from_id(message.stream_id);
-        key = message.sender_full_name + " to " + stream_name + " > " + message.topic;
+    if (message.type === "test-notification") {
+        return `test:${message.display_reply_to}`;
     }
 
-    return key;
+    if (message.type === "private") {
+        return `dm:${message.to_user_ids}`;
+    }
+
+    return `channel:${message.sender_id}:${message.stream_id}:${message.topic}`;
 }
 
 function remove_sender_from_list_of_recipients(message: Message): string {
@@ -113,8 +113,6 @@ function get_notification_title(
 ): string {
     let title_prefix = message.sender_full_name;
     let title_suffix = "";
-    let other_recipients;
-    let other_recipients_translated;
 
     if (msg_count > 1) {
         title_prefix = $t(
@@ -126,9 +124,9 @@ function get_notification_title(
     switch (message.type) {
         case "private":
             if (message.display_recipient.length > 2) {
-                other_recipients = remove_sender_from_list_of_recipients(message);
+                const other_recipients = remove_sender_from_list_of_recipients(message);
                 // Same as compose_ui.compute_placeholder_text.
-                other_recipients_translated = util.format_array_as_list(
+                const other_recipients_translated = util.format_array_as_list(
                     other_recipients.split(", "),
                     "long",
                     "conjunction",
@@ -210,12 +208,20 @@ export function process_notification(notification: {
             notification_object.addEventListener("click", () => {
                 notification_object.close();
                 if (message.type !== "test-notification") {
-                    message_view.narrow_by_topic(message.id, {trigger: "notification"});
+                    // Narrowing to message's near view helps to handle the case
+                    // where a user clicked the notification, but before narrowing
+                    // the message deletion got processed.
+                    message_view.narrow_to_message_near(message, "notification");
                 }
                 window.focus();
             });
             notification_object.addEventListener("close", () => {
-                desktop_notifications.notice_memory.delete(key);
+                const current_notice_memory = desktop_notifications.notice_memory.get(key);
+                // This check helps avoid race between close event for current notification
+                // object and the previous notification_object close handler.
+                if (current_notice_memory?.obj === notification_object) {
+                    desktop_notifications.notice_memory.delete(key);
+                }
             });
         }
     }
@@ -225,6 +231,12 @@ export function message_is_notifiable(message: Message | TestNotificationMessage
     // Independent of the user's notification settings, are there
     // properties of the message that unconditionally mean we
     // shouldn't notify about it.
+    //
+    // NOTE: The muted channel block below checks
+    // wildcard_mentions_notify setting for maintainability, keeping the
+    // muting override logic in one place rather than duplicating it
+    // across should_send_*_notification. This should not be taken
+    // as precedent for adding other notification settings here.
 
     if (message.sent_by_me) {
         return false;
@@ -237,7 +249,8 @@ export function message_is_notifiable(message: Message | TestNotificationMessage
     }
 
     // @-<username> mentions take precedence over muted-ness. Note
-    // that @all mentions are still suppressed by muting.
+    // that @all mentions are still suppressed by muting unless the
+    // channel-specific wildcard_mentions_notify setting is enabled.
     if (message.mentioned_me_directly) {
         return true;
     }
@@ -250,17 +263,22 @@ export function message_is_notifiable(message: Message | TestNotificationMessage
         return true;
     }
 
+    if (message.type === "stream" && user_topics.is_topic_muted(message.stream_id, message.topic)) {
+        return false;
+    }
+
     // Messages to unmuted topics in muted streams may generate desktop notifications.
     if (
         message.type === "stream" &&
         stream_data.is_muted(message.stream_id) &&
         !user_topics.is_topic_unmuted(message.stream_id, message.topic)
     ) {
-        return false;
-    }
-
-    if (message.type === "stream" && user_topics.is_topic_muted(message.stream_id, message.topic)) {
-        return false;
+        // Now, only way a message can notify is if it's a wildcard mention
+        // with channel-specific wildcard_mentions_notify=true.
+        const sub = sub_store.get(message.stream_id);
+        if (!(message.mentioned && sub?.wildcard_mentions_notify === true)) {
+            return false;
+        }
     }
 
     // Everything else is on the table; next filter based on notification
