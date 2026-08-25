@@ -1,12 +1,17 @@
+import hashlib
+import re
 from unittest import mock
+from urllib.parse import parse_qs, urlsplit
 
 import orjson
 import responses
+from django.conf import settings
 from django.core.signing import Signer
 from django.http import HttpResponseRedirect
 from django.test import override_settings
 from typing_extensions import override
 
+from version import ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.url_encoding import append_url_query_string
 
@@ -374,14 +379,32 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
         self.user = self.example_user("hamlet")
         self.login_user(self.user)
         self.signer = Signer()
+        self.bigbluebutton_metadata = {
+            "bbb-origin": "Zulip",
+            "bbb-origin-version": ZULIP_VERSION,
+            "bbb-origin-server-name": self.user.realm.host,
+            "bbb-origin-server-common-name": self.user.realm.name,
+            "bbb-origin-tag": ZULIP_MERGE_BASE,
+            "bbb-context": self.user.realm.name,
+            "bbb-context-id": self.user.realm_id,
+            "bbb-context-name": self.user.realm.name,
+            "bbb-context-label": self.user.realm.string_id,
+            "bbb-recording-name": "a",
+        }
         self.signed_bbb_a_object = self.signer.sign_object(
             {
                 "meeting_id": "a",
                 "name": "a",
                 "lock_settings_disable_cam": True,
-                "bbb_origin": "Zulip",
-                "bbb_origin_version": "version.ZULIP_VERSION",
-                "bbb_origin_tag": "version.ZULIP_MERGE_BASE",
+                "moderator": self.user.id,
+            }
+        )
+        self.signed_bbb_a_object_with_metadata = self.signer.sign_object(
+            {
+                "meeting_id": "a",
+                "name": "a",
+                "lock_settings_disable_cam": True,
+                "metadata": self.bigbluebutton_metadata,
                 "moderator": self.user.id,
             }
         )
@@ -391,9 +414,6 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                 "meeting_id": "a",
                 "name": "a",
                 "lock_settings_disable_cam": True,
-                "bbb_origin": "Zulip",
-                "bbb_origin_version": "version.ZULIP_VERSION",
-                "bbb_origin_tag": "version.ZULIP_MERGE_BASE",
                 "moderator": self.example_user("cordelia").id,
             }
         )
@@ -403,11 +423,14 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
             mock.patch("zerver.views.video_calls.random.randint", return_value="1"),
             mock.patch("secrets.token_bytes", return_value=b"\x00" * 20),
         ):
-            with mock.patch("zerver.views.video_calls.random.randint", return_value="1"):
-                response = self.client_get(
-                    "/json/calls/bigbluebutton/create?meeting_name=general > meeting&voice_only=false"
-                )
+            response = self.client_get(
+                "/json/calls/bigbluebutton/create?meeting_name=general > meeting&voice_only=false"
+            )
             response_dict = self.assert_json_success(response)
+            metadata = {
+                **self.bigbluebutton_metadata,
+                "bbb-recording-name": "general > meeting",
+            }
             self.assertEqual(
                 response_dict["url"],
                 append_url_query_string(
@@ -418,9 +441,7 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                             "meeting_id": "zulip-1",
                             "name": "general > meeting",
                             "lock_settings_disable_cam": False,
-                            "bbb_origin": "Zulip",
-                            "bbb_origin_version": "version.ZULIP_VERSION",
-                            "bbb_origin_tag": "version.ZULIP_MERGE_BASE",
+                            "metadata": metadata,
                             "moderator": self.user.id,
                         }
                     ),
@@ -442,9 +463,7 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
                             "meeting_id": "zulip-1",
                             "name": "general > meeting",
                             "lock_settings_disable_cam": True,
-                            "bbb_origin": "Zulip",
-                            "bbb_origin_version": "version.ZULIP_VERSION",
-                            "bbb_origin_tag": "version.ZULIP_MERGE_BASE",
+                            "metadata": metadata,
                             "moderator": self.user.id,
                         }
                     ),
@@ -480,6 +499,45 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
             response["Location"],
             "https://bbb.example.com/bigbluebutton/api/join?meetingID=a&"
             "role=VIEWER&fullName=King%20Hamlet&createTime=0&checksum=52efaf64109ca4ec5a20a1d295f315af53f9e6ec30b50ed3707fd2909ac6bd94",
+        )
+
+    @responses.activate
+    def test_join_bigbluebutton_redirect_with_metadata(self) -> None:
+        responses.add(
+            responses.GET,
+            re.compile(r"^https://bbb\.example\.com/bigbluebutton/api/create\?.*"),
+            body="<response><returncode>SUCCESS</returncode><messageKey/><createTime>0</createTime></response>",
+        )
+        response = self.client_get(
+            "/calls/bigbluebutton/join",
+            {"bigbluebutton": self.signed_bbb_a_object_with_metadata},
+        )
+        self.assertEqual(response.status_code, 302)
+
+        create_url = responses.calls[0].request.url
+        assert create_url is not None
+        create_params, checksum = urlsplit(create_url).query.rsplit("&checksum=", 1)
+        secret = settings.BIG_BLUE_BUTTON_SECRET
+        assert secret is not None
+        expected_checksum = hashlib.sha256(("create" + create_params + secret).encode()).hexdigest()
+        self.assertEqual(checksum, expected_checksum)
+        self.assertEqual(
+            parse_qs(create_params, keep_blank_values=True),
+            {
+                "meetingID": ["a"],
+                "name": ["a"],
+                "lockSettingsDisableCam": ["True"],
+                "meta_bbb-origin": ["Zulip"],
+                "meta_bbb-origin-version": [ZULIP_VERSION],
+                "meta_bbb-origin-server-name": [self.user.realm.host],
+                "meta_bbb-origin-server-common-name": [self.user.realm.name],
+                "meta_bbb-origin-tag": [ZULIP_MERGE_BASE],
+                "meta_bbb-context": [self.user.realm.name],
+                "meta_bbb-context-id": [str(self.user.realm_id)],
+                "meta_bbb-context-name": [self.user.realm.name],
+                "meta_bbb-context-label": [self.user.realm.string_id],
+                "meta_bbb-recording-name": ["a"],
+            },
         )
 
     @responses.activate
