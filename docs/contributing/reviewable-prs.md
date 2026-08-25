@@ -88,7 +88,8 @@ description for your pull request, you will:
   The review process will go a lot more smoothly if points of uncertainty are
   explicitly laid out.
 - Include screenshots for all visual changes, so that they can be reviewed
-  without running your code. Be sure to follow our [guide on presenting visual changes](../contributing/presenting-visual-changes).
+  without running your code. Be sure to follow our
+  [guide on presenting visual changes](../contributing/presenting-visual-changes.md).
 
 If you have a question about a specific part of your code that you expect to be
 resolved during the review process, put it in a PR comment attached to a
