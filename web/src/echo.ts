@@ -646,6 +646,10 @@ export let message_send_error = (message_id: number, error_response: string): vo
     message.show_slow_send_spinner = false;
 
     show_message_failed(message_id, error_response);
+
+    // A failed send doesn't write to the draft model, so explicitly rerender
+    // the drafts overlay if it's open, to surface this message in the Outbox.
+    drafts.notify_draft_rerender();
 };
 
 export function rewire_message_send_error(value: typeof message_send_error): void {
@@ -689,7 +693,47 @@ export function display_slow_send_loading_spinner(message: Message): void {
     }
 }
 
+let resend_callbacks: ResendCallbacks | undefined;
+
+export function resend_message_by_draft_id(draft_id: string): void {
+    assert(resend_callbacks !== undefined);
+    const message = echo_state.get_message_waiting_for_ack_by_draft_id(draft_id);
+    if (message === undefined) {
+        // Shouldn't happen if the caller filtered for failed local echoes,
+        // but the echo may have been acked since the overlay was rendered.
+        blueslip.warn("resend_message_by_draft_id: no waiting message", {draft_id});
+        return;
+    }
+    const $row = message_lists.all_rendered_row_for_message_id(message.id);
+    resend_message(message, $row, resend_callbacks);
+}
+
+export function abort_messages_by_draft_ids(draft_ids: string[]): void {
+    // One deleteDrafts call so the draft-update listener fires once.
+    const messages_to_remove: LocalMessage[] = [];
+    for (const draft_id of draft_ids) {
+        const message = echo_state.get_message_waiting_for_ack_by_draft_id(draft_id);
+        if (message !== undefined) {
+            messages_to_remove.push(message);
+        }
+    }
+    for (const message of messages_to_remove) {
+        remove_locally_echoed_message(message);
+    }
+    drafts.draft_model.deleteDrafts(draft_ids);
+}
+
+export function get_local_echo_status_for_draft(draft_id: string): "failed" | "in_flight" | "none" {
+    const message = echo_state.get_message_waiting_for_ack_by_draft_id(draft_id);
+    if (message === undefined) {
+        return "none";
+    }
+    return message.failed_request ? "failed" : "in_flight";
+}
+
 export function initialize({on_send_message_success, send_message}: ResendCallbacks): void {
+    resend_callbacks = {on_send_message_success, send_message};
+
     function on_failed_action(
         selector: string,
         callback: (message: LocalMessage, $row: JQuery, callbacks: ResendCallbacks) => void,
