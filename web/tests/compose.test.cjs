@@ -404,6 +404,17 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
         override(sent_messages, "get_new_local_id", () => "loc-55");
 
+        // With no local echo, nothing is sending any more once the request
+        // fails, so the draft goes back to being an ordinary one.
+        override(drafts.draft_model, "getDraft", () => ({
+            content: "default message",
+            is_sending_saving: true,
+        }));
+        let edit_draft_args;
+        override(drafts.draft_model, "editDraft", (draft_id, edited_draft) => {
+            edit_draft_args = {draft_id, edited_draft};
+        });
+
         compose.send_message();
 
         const state = {
@@ -414,6 +425,10 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.deepEqual(stub_state, state);
         assert.ok(!echo_error_msg_checked);
         assert.ok(banner_rendered);
+        assert.deepEqual(edit_draft_args, {
+            draft_id: 100,
+            edited_draft: {content: "default message", is_sending_saving: false},
+        });
         assert.equal(fake_compose_box.textarea_val(), "default message");
         assert.ok(fake_compose_box.is_textarea_focused());
         assert.ok(!fake_compose_box.is_submit_button_spinner_visible());

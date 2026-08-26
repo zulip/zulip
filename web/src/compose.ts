@@ -164,6 +164,13 @@ export function send_message_success(
     }
 }
 
+function clear_is_sending_saving(draft_id: string): void {
+    const draft = drafts.draft_model.getDraft(draft_id);
+    assert(draft !== false);
+    draft.is_sending_saving = false;
+    drafts.draft_model.editDraft(draft_id, draft);
+}
+
 export let send_message = (): void => {
     // Changes here must also be kept in sync with echo.try_deliver_locally
     compose_state.set_recipient_edited_manually(false);
@@ -283,6 +290,9 @@ export let send_message = (): void => {
             // (Restoring this state is handled by clear_compose_box
             // for locally echoed messages.)
             compose_ui.hide_compose_spinner();
+
+            assert(draft_id !== undefined);
+            clear_is_sending_saving(draft_id);
             return;
         }
 
@@ -294,10 +304,7 @@ export let send_message = (): void => {
         drafts.sync_count();
 
         assert(draft_id !== undefined);
-        const draft = drafts.draft_model.getDraft(draft_id);
-        assert(draft !== false);
-        draft.is_sending_saving = false;
-        drafts.draft_model.editDraft(draft_id, draft);
+        clear_is_sending_saving(draft_id);
     }
 
     transmit.send_message(
@@ -454,10 +461,7 @@ function schedule_message_to_custom_date(): void {
             $banner_container,
             $("textarea#compose-textarea"),
         );
-        const draft = drafts.draft_model.getDraft(draft_id);
-        assert(draft !== false);
-        draft.is_sending_saving = false;
-        drafts.draft_model.editDraft(draft_id, draft);
+        clear_is_sending_saving(draft_id);
     };
 
     channel.post({
