@@ -1232,6 +1232,7 @@
 ul.modal-options-list {
     list-style: none;
     margin: 0;
+    overflow-wrap: anywhere;
 }
 
 .modal-option-content {

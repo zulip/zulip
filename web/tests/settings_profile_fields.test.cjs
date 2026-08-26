@@ -14,12 +14,14 @@ const DROPDOWN_ID = 3;
 const EXTERNAL_ACCOUNT_ID = 7;
 const PARAGRAPH_ID = 2;
 const USER_FIELD_ID = 6;
+const CHECKBOXES_ID = 9;
 
 const SHORT_TEXT_NAME = "Short text";
 const DROPDOWN_NAME = "Dropdown";
 const EXTERNAL_ACCOUNT_NAME = "External account";
 const PARAGRAPH_NAME = "Paragraph";
 const USER_FIELD_NAME = "Person";
+const CHECKBOXES_NAME = "Checkboxes";
 
 const custom_profile_field_types = {
     SHORT_TEXT: {
@@ -41,6 +43,10 @@ const custom_profile_field_types = {
     USER: {
         id: USER_FIELD_ID,
         name: USER_FIELD_NAME,
+    },
+    CHECKBOXES: {
+        id: CHECKBOXES_ID,
+        name: CHECKBOXES_NAME,
     },
 };
 

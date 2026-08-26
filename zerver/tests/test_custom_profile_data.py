@@ -172,8 +172,41 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         data["field_data"] = orjson.dumps(
             {
+                "0": {"text": "x" * 51, "order": "1"},
+                "1": {"text": "Java", "order": "2"},
+            }
+        ).decode()
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'field_data["text"] is too long (limit: 50 characters)')
+
+        data["field_data"] = orjson.dumps(
+            {
                 "0": {"text": "Python", "order": "1"},
                 "1": {"text": "Java", "order": "2"},
+            }
+        ).decode()
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
+    def test_create_checkboxes_field(self) -> None:
+        self.login("iago")
+        data: dict[str, str | int] = {}
+        data["name"] = "Favorite tools"
+        data["field_type"] = CustomProfileField.CHECKBOXES
+
+        data["field_data"] = orjson.dumps(
+            {
+                "0": {"text": "x" * 51, "order": "1"},
+                "1": {"text": "Git", "order": "2"},
+            }
+        ).decode()
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'field_data["text"] is too long (limit: 50 characters)')
+
+        data["field_data"] = orjson.dumps(
+            {
+                "0": {"text": "Docker", "order": "1"},
+                "1": {"text": "Git", "order": "2"},
             }
         ).decode()
         result = self.client_post("/json/realm/profile_fields", info=data)
@@ -889,14 +922,25 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             field_name, [invalid_user_id], f"Invalid user IDs: {invalid_user_id}"
         )
 
+    def test_update_invalid_checkboxes_field(self) -> None:
+        field_name = "Programming languages"
+        self.assert_error_update_invalid_value(field_name, [], f"{field_name} cannot be empty.")
+        self.assert_error_update_invalid_value(
+            field_name, ["0", "0"], f"{field_name} cannot have duplicate choices."
+        )
+        self.assert_error_update_invalid_value(
+            field_name, ["99"], f"'99' is not a valid choice for '{field_name}'."
+        )
+
     def test_update_profile_data_successfully(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
-        fields: list[tuple[str, str | list[int]]] = [
+        fields: list[tuple[str, str | list[int] | list[str]]] = [
             ("Phone number", "*short* text data"),
             ("Biography", "~~short~~ **long** text data"),
             ("Favorite food", "long short text data"),
             ("Favorite editor", "0"),
+            ("Programming languages", ["0", "1"]),
             ("Birthday", "1909-03-05"),
             ("Favorite website", "https://zulip.com"),
             ("Mentor", [self.example_user("cordelia").id]),
@@ -970,6 +1014,22 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             {
                 "id": field.id,
                 "value": "1",
+            }
+        ]
+
+        result = self.client_patch(
+            "/json/users/me/profile_data", {"data": orjson.dumps(data).decode()}
+        )
+        self.assert_json_success(result)
+
+    def test_update_checkboxes_field_successfully(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+        field = CustomProfileField.objects.get(name="Programming languages", realm=realm)
+        data = [
+            {
+                "id": field.id,
+                "value": ["0", "2"],
             }
         ]
 
@@ -1052,6 +1112,114 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertTrue(
             CustomProfileFieldValue.objects.filter(field_id=field.id, value="1").exists()
         )
+
+    def test_update_field_with_long_existing_choice(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+
+        long_text = "x" * 60
+        # Create directly, bypassing the view's length check, to seed a field
+        # with an option longer than the limit.
+        field = try_add_realm_custom_profile_field(
+            realm,
+            "Legacy dropdown",
+            CustomProfileField.DROPDOWN,
+            field_data={
+                "0": {"text": long_text, "order": "1"},
+                "1": {"text": "Short", "order": "2"},
+            },
+        )
+
+        # Renaming without resending choices succeeds.
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}", {"name": "Renamed dropdown"}
+        )
+        self.assert_json_success(result)
+
+        # Reordering an unchanged long option succeeds.
+        reordered = {
+            "0": {"text": long_text, "order": "2"},
+            "1": {"text": "Short", "order": "1"},
+        }
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            {"field_data": orjson.dumps(reordered).decode()},
+        )
+        self.assert_json_success(result)
+
+        # Adding a new under-limit option alongside the long one succeeds.
+        with_new_short = {
+            "0": {"text": long_text, "order": "1"},
+            "1": {"text": "Short", "order": "2"},
+            "2": {"text": "Also short", "order": "3"},
+        }
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            {"field_data": orjson.dumps(with_new_short).decode()},
+        )
+        self.assert_json_success(result)
+
+        # A new over-limit option is rejected.
+        with_new_long = {
+            "0": {"text": long_text, "order": "1"},
+            "1": {"text": "Short", "order": "2"},
+            "2": {"text": "y" * 51, "order": "3"},
+        }
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            {"field_data": orjson.dumps(with_new_long).decode()},
+        )
+        self.assert_json_error(result, 'field_data["text"] is too long (limit: 50 characters)')
+
+        # Editing the long option to a new over-limit value is rejected.
+        changed_long = {
+            "0": {"text": "z" * 51, "order": "1"},
+            "1": {"text": "Short", "order": "2"},
+        }
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            {"field_data": orjson.dumps(changed_long).decode()},
+        )
+        self.assert_json_error(result, 'field_data["text"] is too long (limit: 50 characters)')
+
+    def test_remove_checkboxes_field_options(self) -> None:
+        user = self.example_user("iago")
+        self.login_user(user)
+        realm = user.realm
+
+        field = CustomProfileField.objects.get(name="Programming languages", realm=realm)
+
+        hamlet = self.example_user("hamlet")
+        self.set_user_custom_profile_data(hamlet, [{"id": field.id, "value": ["0", "1"]}])
+
+        cordelia = self.example_user("cordelia")
+        self.set_user_custom_profile_data(cordelia, [{"id": field.id, "value": ["1"]}])
+
+        aaron = self.example_user("aaron")
+        self.set_user_custom_profile_data(aaron, [{"id": field.id, "value": ["0"]}])
+
+        new_field_data = {
+            "0": {"text": "Python", "order": "1"},
+            "2": {"text": "C++", "order": "3"},
+        }
+
+        payload = {
+            "name": "Programming languages",
+            "field_data": orjson.dumps(new_field_data).decode(),
+        }
+
+        result = self.client_patch(f"/json/realm/profile_fields/{field.id}", payload)
+        self.assert_json_success(result)
+
+        self.assertFalse(
+            CustomProfileFieldValue.objects.filter(user_profile=cordelia, field=field).exists()
+        )
+
+        hamlet_value = CustomProfileFieldValue.objects.get(user_profile=hamlet, field=field)
+        self.assertEqual(orjson.loads(hamlet_value.value), ["0"])
+
+        aaron_value = CustomProfileFieldValue.objects.get(user_profile=aaron, field=field)
+        self.assertEqual(orjson.loads(aaron_value.value), ["0"])
 
     def test_default_external_account_type_field(self) -> None:
         self.login("iago")
