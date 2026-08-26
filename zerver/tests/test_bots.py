@@ -61,19 +61,30 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot = get_user(email, realm)
         return bot
 
-    def assert_num_bots_equal(self, count: int) -> None:
-        result = self.client_get("/json/bots")
+    def assert_num_bots_equal(self, count: int, skip_openapi_validation: bool = False) -> None:
+        result = self.client_get("/json/bots", skip_openapi_validation=skip_openapi_validation)
         response_dict = self.assert_json_success(result)
         self.assert_length(response_dict["bots"], count)
 
     def create_bot(self, **extras: Any) -> dict[str, Any]:
+        # These are popped rather than declared as keyword-only
+        # parameters because several callers pass a `dict[str, object]`
+        # of bot settings with `**`, which mypy cannot check against
+        # narrower parameter types.
+        intentionally_undocumented = extras.pop("intentionally_undocumented", False)
+        skip_openapi_validation = extras.pop("skip_openapi_validation", False)
         bot_info = {
             "full_name": "The Bot of Hamlet",
             "short_name": "hambot",
             "bot_type": "1",
         }
         bot_info.update(extras)
-        result = self.client_post("/json/bots", bot_info)
+        result = self.client_post(
+            "/json/bots",
+            bot_info,
+            intentionally_undocumented=intentionally_undocumented,
+            skip_openapi_validation=skip_openapi_validation,
+        )
         response_dict = self.assert_json_success(result)
         return response_dict
 
@@ -147,20 +158,20 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     @override_settings(FAKE_EMAIL_DOMAIN="invaliddomain", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_add_bot_with_invalid_fake_email_domain(self) -> None:
         self.login("hamlet")
-        self.assert_num_bots_equal(0)
+        self.assert_num_bots_equal(0, skip_openapi_validation=True)
         bot_info = {
             "full_name": "The Bot of Hamlet",
             "short_name": "hambot",
             "bot_type": "1",
         }
-        result = self.client_post("/json/bots", bot_info)
+        result = self.client_post("/json/bots", bot_info, skip_openapi_validation=True)
 
         error_message = (
             "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
             "Please contact your server administrator."
         )
         self.assert_json_error(result, error_message)
-        self.assert_num_bots_equal(0)
+        self.assert_num_bots_equal(0, skip_openapi_validation=True)
 
     def test_add_bot_with_no_name(self) -> None:
         self.login("hamlet")
@@ -234,9 +245,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     @override_settings(FAKE_EMAIL_DOMAIN="fakedomain.com", REALM_HOSTS={"zulip": "127.0.0.1"})
     def test_add_bot_with_fake_email_domain(self) -> None:
         self.login("hamlet")
-        self.assert_num_bots_equal(0)
-        self.create_bot()
-        self.assert_num_bots_equal(1)
+        self.assert_num_bots_equal(0, skip_openapi_validation=True)
+        self.create_bot(skip_openapi_validation=True)
+        self.assert_num_bots_equal(1, skip_openapi_validation=True)
 
         email = "hambot-bot@fakedomain.com"
         self.get_bot_user(email)
@@ -244,9 +255,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     @override_settings(EXTERNAL_HOST="example.com")
     def test_add_bot_verify_subdomain_in_email_address(self) -> None:
         self.login("hamlet")
-        self.assert_num_bots_equal(0)
-        self.create_bot()
-        self.assert_num_bots_equal(1)
+        self.assert_num_bots_equal(0, skip_openapi_validation=True)
+        self.create_bot(skip_openapi_validation=True)
+        self.assert_num_bots_equal(1, skip_openapi_validation=True)
 
         email = "hambot-bot@zulip.example.com"
         self.get_bot_user(email)
@@ -256,9 +267,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     )
     def test_add_bot_host_used_as_domain_if_valid(self) -> None:
         self.login("hamlet")
-        self.assert_num_bots_equal(0)
-        self.create_bot()
-        self.assert_num_bots_equal(1)
+        self.assert_num_bots_equal(0, skip_openapi_validation=True)
+        self.create_bot(skip_openapi_validation=True)
+        self.assert_num_bots_equal(1, skip_openapi_validation=True)
 
         email = "hambot-bot@zulip.example.com"
         self.get_bot_user(email)
@@ -305,7 +316,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("hamlet")
         self.assert_num_bots_equal(0)
         with get_test_image_file("img.png") as fp:
-            self.create_bot(file=fp)
+            # Uploading an avatar makes this a multipart/form-data
+            # request, which the OpenAPI documentation for this
+            # endpoint does not describe.
+            self.create_bot(file=fp, intentionally_undocumented=True)
             profile = get_user(email, realm)
             # Make sure that avatar image that we've uploaded is same with avatar image in the server
             self.assertTrue(
