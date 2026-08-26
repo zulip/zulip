@@ -183,8 +183,12 @@ has some additional information.
 
 ## Writing tests
 
-Writing new tests is fairly easy. Most of the tests are placed in
-`test_stripe`. If you need do API calls to stripe, wrap the test
+Writing new tests is fairly easy. Billing tests live in
+`corporate/tests/`: `test_stripe` covers the Zulip Cloud billing
+flows, `test_stripe_remote_realm` and `test_stripe_remote_server`
+cover self-hosted realms and servers, `test_billing_lib` covers the
+helpers in `corporate/lib/stripe.py`, and `test_sponsorship` covers
+sponsorship requests. If you need to do API calls to stripe, wrap the test
 function in `@mock_stripe` and run `tools/test-backend TEST_NAME
 --generate-stripe-fixtures`. It will run all your calls and generate
 fixtures for any API calls to stripe, so that they can be used to
