@@ -387,6 +387,7 @@ def main() -> None:
             suites = [
                 "corporate.tests.test_sponsorship",
                 "corporate.tests.test_stripe",
+                "corporate.tests.test_stripe_remote_realm",
             ]
             full_suite = False
         print("-- Forcing serial mode for generating stripe fixtures.", flush=True)
