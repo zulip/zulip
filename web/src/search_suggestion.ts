@@ -869,6 +869,13 @@ function get_sent_by_me_suggestions(
     return [];
 }
 
+// Whether the text the user is typing, e.g. `to` or `-topi`, is a
+// partial `operator`.
+export function search_text_matches_operator(search_operand: string, operator: string): boolean {
+    const operand = search_operand.startsWith("-") ? search_operand.slice(1) : search_operand;
+    return common.phrase_match(operand, operator);
+}
+
 function get_operator_suggestions(
     last: NarrowCanonicalTermSuggestion,
     terms: NarrowCanonicalTerm[],
@@ -876,13 +883,7 @@ function get_operator_suggestions(
     if (!(last.operator === "search" || last.operator === "")) {
         return [];
     }
-    let last_operand = last.operand;
-
-    let negated = false;
-    if (last_operand.startsWith("-")) {
-        negated = true;
-        last_operand = last_operand.slice(1);
-    }
+    const negated = last.operand.startsWith("-");
 
     let canonicalized_operator_choices: NarrowCanonicalOperator[];
     let legacy_operator_choices: NarrowTerm["operator"][];
@@ -928,7 +929,7 @@ function get_operator_suggestions(
     });
 
     const choices = [...canonicalized_operator_choices, ...legacy_operator_choices].filter(
-        (choice) => common.phrase_match(last_operand, choice),
+        (choice) => search_text_matches_operator(last.operand, choice),
     );
 
     return choices.map((choice) => {
