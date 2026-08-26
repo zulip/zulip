@@ -2305,3 +2305,49 @@ class TestContactForms(ZulipTestCase):
             )
             self.assertIn("Subject: Not getting messages.", message.body)
             self.assertIn("Message:\nRunning into this weird issue", message.body)
+
+    def test_sales_support_request(self) -> None:
+        # Only organization administrators can contact sales.
+        self.login("hamlet")
+        result = self.client_get("/contact-sales/")
+        self.assertEqual(result.status_code, 404)
+
+        iago = self.example_user("iago")
+        self.login_user(iago)
+        result = self.client_get("/contact-sales/")
+        self.assert_in_success_response(
+            ["Contact sales", "Iago (iago@zulip.com)"],
+            result,
+        )
+
+        from django.core.mail import outbox
+
+        data = {
+            "organization_website": "example.com",
+            "expected_user_count": "50-100",
+            "message": "We'd like a quote.",
+        }
+
+        # An invalid submission re-renders the form and sends nothing.
+        result = self.client_post("/contact-sales/", {**data, "message": ""})
+        self.assert_in_success_response(["Contact sales"], result)
+        self.assert_length(outbox, 0)
+
+        result = self.client_post("/contact-sales/", data)
+        self.assert_in_success_response(["Thanks for contacting us!"], result)
+
+        self.assert_length(outbox, 1)
+        message = outbox[0]
+        self.assert_length(message.to, 1)
+        self.assertEqual(message.to[0], "sales@zulip.com")
+        self.assertEqual(message.subject, "Sales support request for Zulip Dev")
+        self.assertEqual(message.reply_to, ["iago@zulip.com"])
+        self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
+        self.assertIn("Sales support request <noreply-", self.email_display_from(message))
+        self.assertIn("Full name: Iago", message.body)
+        self.assertIn("Role: administrator", message.body)
+        self.assertIn("Organization type: Business", message.body)
+        self.assertIn("Organization website: https://example.com", message.body)
+        self.assertIn("Expected user count: 50-100", message.body)
+        self.assertIn("Message: We'd like a quote.", message.body)
+        self.assertIn("/activity/support?q=zulip", message.body)
