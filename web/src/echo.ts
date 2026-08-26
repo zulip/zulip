@@ -106,27 +106,13 @@ export type RawLocalMessage = MessageRequestObject & {
 
 export type PostMessageAPIData = z.output<typeof send_message_api_response_schema>;
 
-// These retry spinner functions return true if and only if the
-// spinner already is in the requested state, which can be used to
-// avoid sending duplicate requests.
-function show_retry_spinner($row: JQuery): boolean {
-    const $retry_spinner = $row.find(".refresh-failed-message");
-
-    if (!$retry_spinner.hasClass("rotating")) {
-        $retry_spinner.toggleClass("rotating", true);
-        return false;
-    }
-    return true;
+// No-ops when the message's row isn't rendered, so they can't dedupe resends.
+function show_retry_spinner($row: JQuery): void {
+    $row.find(".refresh-failed-message").toggleClass("rotating", true);
 }
 
-function hide_retry_spinner($row: JQuery): boolean {
-    const $retry_spinner = $row.find(".refresh-failed-message");
-
-    if ($retry_spinner.hasClass("rotating")) {
-        $retry_spinner.toggleClass("rotating", false);
-        return false;
-    }
-    return true;
+function hide_retry_spinner($row: JQuery): void {
+    $row.find(".refresh-failed-message").toggleClass("rotating", false);
 }
 
 function show_message_failed(message_id: number, _failed_msg: string): void {
@@ -171,10 +157,11 @@ export function resend_message(
     {on_send_message_success, send_message}: ResendCallbacks,
 ): void {
     message_store.update_message_content(message, message.raw_content!);
-    if (show_retry_spinner($row)) {
-        // retry already in progress
+    if (message.resend_in_progress) {
         return;
     }
+    message.resend_in_progress = true;
+    show_retry_spinner($row);
 
     message.resend = true;
 
@@ -186,6 +173,7 @@ export function resend_message(
         const data = send_message_api_response_schema.parse(raw_data);
         const message_id = data.id;
 
+        message.resend_in_progress = false;
         hide_retry_spinner($row);
 
         on_send_message_success(sent_message, data);
@@ -195,6 +183,7 @@ export function resend_message(
     }
 
     function on_error(response: string, _server_error_code: string): void {
+        message.resend_in_progress = false;
         message_send_error(message.id, response);
         setTimeout(() => {
             hide_retry_spinner($row);
