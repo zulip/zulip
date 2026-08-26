@@ -1,3 +1,4 @@
+import base64
 from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, Any
 from unittest import mock
@@ -5,6 +6,7 @@ from unittest import mock
 import orjson
 import time_machine
 from django.conf import settings
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -2170,3 +2172,136 @@ class TestSupportEndpoint(ZulipTestCase):
             )
             m.assert_called_once_with(hamlet, acting_user=self.example_user("iago"))
             self.assert_in_success_response([f"{hamlet_email} in zulip deleted"], result)
+
+
+class TestContactForms(ZulipTestCase):
+    def test_demo_request(self) -> None:
+        result = self.client_get("/request-demo/")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Request a demo"], result)
+
+        data = {
+            "full_name": "King Hamlet",
+            "email": "test@zulip.com",
+            "role": "Manager",
+            "organization_name": "Zulip",
+            "organization_type": "Business",
+            "organization_website": "https://example.com",
+            "expected_user_count": "10 (2 unpaid members)",
+            "type_of_hosting": "Zulip Cloud",
+            "message": "Need help!",
+        }
+
+        from django.core.mail import outbox
+
+        # A validation failure re-renders the form with the error
+        # displayed and the submitted values preserved.
+        result = self.client_post("/request-demo/", {**data, "email": "invalid"})
+        self.assert_in_success_response(
+            ["Enter a valid email address.", "King Hamlet", "Need help!"], result
+        )
+        self.assert_length(outbox, 0)
+
+        result = self.client_post("/request-demo/", data)
+        self.assert_in_success_response(["Thanks for contacting us!"], result)
+
+        self.assert_length(outbox, 1)
+
+        for message in outbox:
+            self.assert_length(message.to, 1)
+            self.assertEqual(message.to[0], "sales@zulip.com")
+            self.assertEqual(message.subject, "Demo request for Zulip")
+            self.assertEqual(message.reply_to, ["test@zulip.com"])
+            self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
+            self.assertIn("Zulip demo request <noreply-", self.email_display_from(message))
+            self.assertIn("Full name: King Hamlet", message.body)
+            self.assertIn("Zulip Cloud", message.body)
+
+    @override_settings(USING_CAPTCHA=True, ALTCHA_HMAC_KEY="secret")
+    def test_demo_request_with_captcha(self) -> None:
+        result = self.client_get("/request-demo/")
+        self.assert_in_success_response(["altcha-widget"], result)
+
+        data = {
+            "full_name": "King Hamlet",
+            "email": "test@zulip.com",
+            "role": "Manager",
+            "organization_name": "Zulip",
+            "organization_type": "Business",
+            "organization_website": "https://example.com",
+            "expected_user_count": "10 (2 unpaid members)",
+            "type_of_hosting": "Zulip Cloud",
+            "message": "Need help!",
+        }
+
+        from django.core.mail import outbox
+
+        # Without a solved captcha, the request is rejected, and no
+        # email is sent.
+        result = self.client_post("/request-demo/", data)
+        self.assert_in_success_response(["Validation failed, please try again."], result)
+        self.assert_length(outbox, 0)
+
+        # Fetch a challenge, to submit solutions for, mocking out
+        # the cryptographic validation of the payload.
+        challenge_data = self.assert_json_success(self.client_get("/json/antispam_challenge"))
+        captcha = base64.b64encode(
+            orjson.dumps({"challenge": challenge_data["challenge"]})
+        ).decode()
+
+        # A validation failure in some other field shows that field's
+        # error, preserves the typed input, and does not consume the
+        # solved challenge.
+        with mock.patch("zerver.lib.captcha.verify_solution", return_value=(True, None)) as verify:
+            result = self.client_post(
+                "/request-demo/", {**data, "email": "invalid", "captcha": captcha}
+            )
+            verify.assert_not_called()
+        self.assert_in_success_response(
+            ["Enter a valid email address.", "King Hamlet", "Need help!"], result
+        )
+        self.assert_length(outbox, 0)
+        self.assert_length(self.client.session["altcha_challenges"], 1)
+
+        # The same solved challenge is accepted on the corrected
+        # resubmission, and is then consumed.
+        with mock.patch("zerver.lib.captcha.verify_solution", return_value=(True, None)):
+            result = self.client_post("/request-demo/", {**data, "captcha": captcha})
+        self.assert_in_success_response(["Thanks for contacting us!"], result)
+        self.assert_length(outbox, 1)
+        self.assertEqual(self.client.session["altcha_challenges"], [])
+
+    def test_support_request(self) -> None:
+        user = self.example_user("hamlet")
+        self.assertIsNone(get_customer_by_realm(user.realm))
+
+        self.login_user(user)
+
+        result = self.client_get("/support/")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["Contact support"], result)
+
+        data = {
+            "request_subject": "Not getting messages.",
+            "request_message": "Running into this weird issue.",
+        }
+        result = self.client_post("/support/", data)
+        self.assert_in_success_response(["Thanks for contacting us!"], result)
+
+        from django.core.mail import outbox
+
+        self.assert_length(outbox, 1)
+
+        for message in outbox:
+            self.assert_length(message.to, 1)
+            self.assertEqual(message.to[0], "desdemona+admin@zulip.com")
+            self.assertEqual(message.subject, "Support request for zulip")
+            self.assertEqual(message.reply_to, ["hamlet@zulip.com"])
+            self.assertEqual(self.email_envelope_from(message), settings.NOREPLY_EMAIL_ADDRESS)
+            self.assertIn("Zulip support request <noreply-", self.email_display_from(message))
+            self.assertIn("Requested by: King Hamlet (Member)", message.body)
+            self.assertIn(
+                "Support URL: http://zulip.testserver/activity/support?q=zulip", message.body
+            )
+            self.assertIn("Subject: Not getting messages.", message.body)
+            self.assertIn("Message:\nRunning into this weird issue", message.body)
