@@ -13,6 +13,7 @@ const browser_history = mock_esm("../src/browser_history");
 const compose_notifications = mock_esm("../src/compose_notifications");
 const drafts = mock_esm("../src/drafts", {
     draft_model: {
+        deleteDrafts: noop,
         getDraft: () => false,
         editDraft: noop,
     },
@@ -129,6 +130,13 @@ run_test("process_from_server for differently rendered messages", ({override}) =
         messages_to_rerender = msgs;
     });
 
+    // The send response normally deletes this draft, but it can arrive
+    // after this event, or never.
+    let deleted_draft_ids;
+    override(drafts.draft_model, "deleteDrafts", (draft_ids) => {
+        deleted_draft_ids = draft_ids;
+    });
+
     // Test that we update all the booleans and the content of the message
     // in local echo.
     const old_value = "old_value";
@@ -137,6 +145,7 @@ run_test("process_from_server for differently rendered messages", ({override}) =
         [
             "100.1",
             {
+                draft_id: "reified-draft",
                 content: "<p>A client rendered message</p>",
                 timestamp: old_value,
                 is_me_message: old_value,
@@ -162,6 +171,7 @@ run_test("process_from_server for differently rendered messages", ({override}) =
     assert.equal(disparities.length, 1);
     assert.deepEqual(messages_to_rerender, [
         {
+            draft_id: "reified-draft",
             content: server_messages[0].content,
             timestamp: new_value,
             is_me_message: new_value,
@@ -169,6 +179,7 @@ run_test("process_from_server for differently rendered messages", ({override}) =
             topic_links: new_value,
         },
     ]);
+    assert.deepEqual(deleted_draft_ids, ["reified-draft"]);
 });
 
 run_test("process_from_server for messages to add to narrow", ({override}) => {

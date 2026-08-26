@@ -526,6 +526,7 @@ export function update_message_lists({old_id, new_id}: {old_id: number; new_id: 
 
 export function process_from_server(messages: ServerMessage[]): ServerMessage[] {
     const msgs_to_rerender_or_add_to_narrow = [];
+    const reified_draft_ids: string[] = [];
     // For messages that weren't locally echoed, we go through the
     // "main" codepath that doesn't have to id reconciliation.  We
     // simply return non-echo messages to our caller.
@@ -552,6 +553,8 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
             continue;
         }
 
+        // reify_message_id deletes draft_id from the message in place.
+        reified_draft_ids.push(client_message.draft_id);
         reify_message_id(local_id, message.id);
 
         if (message_store.get(message.id)?.failed_request) {
@@ -621,6 +624,11 @@ export function process_from_server(messages: ServerMessage[]): ServerMessage[] 
                 msg_list_data.add_messages(msgs_to_rerender_or_add_to_narrow);
             }
         }
+
+        // The send response deletes this draft too, but it can lose the race
+        // with this event, or never arrive when the send errored and the
+        // server accepted the message anyway, leaving a copy of a sent message.
+        drafts.draft_model.deleteDrafts(reified_draft_ids);
     }
 
     return non_echo_messages;
