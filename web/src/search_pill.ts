@@ -12,7 +12,11 @@ import * as input_pill from "./input_pill.ts";
 import type {InputPill, InputPillContainer} from "./input_pill.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
-import {type Suggestion, search_term_description_html} from "./search_suggestion.ts";
+import {
+    type Suggestion,
+    search_term_description_html,
+    search_text_matches_operator,
+} from "./search_suggestion.ts";
 import type {NarrowCanonicalTerm, NarrowTermSuggestion} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
@@ -186,8 +190,19 @@ function maybe_generate_combined_channel_topic_pill(
     };
 }
 
+// Whether the user is still typing out a `topic` operator, e.g. `to`
+// or `-topi`, as opposed to a topic operand like `topic:gen` or a bare
+// search term like `general`.
+function is_typing_topic_operator(text_query: string): boolean {
+    const last_term = Filter.parse(text_query).at(-1);
+    return (
+        last_term?.operator === "search" && search_text_matches_operator(last_term.operand, "topic")
+    );
+}
+
 export function generate_pills_html(suggestion: Suggestion, text_query: string): string {
     const search_terms = Filter.parse(suggestion);
+    const typing_topic_operator = is_typing_topic_operator(text_query);
 
     // This is used to track the index of the channel pill data
     // for a channel that is combined with the subsequent topic pill
@@ -221,30 +236,21 @@ export function generate_pills_html(suggestion: Suggestion, text_query: string):
             case "sender":
                 return search_user_pill_data_from_term(narrow_term);
             case "topic": {
-                // There are three variants of an empty operand:
+                // An empty operand represents "general chat", whether
+                // in an already formed pill or in a suggestion matching
+                // the text the user is typing, like `topic:gen`.
                 //
-                // (1) This is an already formed pill, i.e. not in the text input
-                // (`text_query`), or is not the last term in the text input, and
-                // therefore the empty operand represents "general chat".
-                //
-                // (2) The user has selected a topic operator, and thus has
-                // exactly `topic:` or `-topic:` written out, and it's appropriate
-                // to suggest the "general chat" operand.
-                //
-                // (3) We're suggesting `topic` as a potential operator to add, say
-                // if the user has typed `-to` so far. For that case, we want to
-                // suggest adding a topic operator, but the user hasn't done anything
-                // that would suggest we should further complete "general chat" as an
-                // operand for that topic operator.
+                // The exception is when we're suggesting `topic` as a
+                // potential operator to add, say if the user has typed
+                // `-to` so far. For that case, we want to suggest adding
+                // a topic operator, but the user hasn't done anything
+                // that would suggest we should further complete "general
+                // chat" as an operand for that topic operator.
                 if (
                     search_pill.operand === "" &&
-                    // not case 1
-                    text_query !== "" &&
                     index === search_terms.length - 1 &&
-                    // not case 2
-                    !text_query.trimEnd().endsWith("topic:")
+                    typing_topic_operator
                 ) {
-                    // case 3
                     return {
                         ...search_pill,
                         is_empty_string_topic: true,

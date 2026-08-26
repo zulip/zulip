@@ -419,6 +419,49 @@ run_test("generate_pills_html with an empty topic operand", ({mock_template, ove
     assert.ok(!html.includes("empty-topic-display"));
 });
 
+run_test("generate_pills_html for general chat suggestions", ({mock_template, override}) => {
+    mock_template("search_list_item.hbs", true, (_data, html) => html);
+    override(realm, "realm_empty_topic_display_name", "general chat");
+
+    const channel_topic_suggestion = `channel:${verona.stream_id} topic:`;
+
+    function assert_suggests_general_chat(suggestion, text_query) {
+        const html = search_pill.generate_pills_html(suggestion, text_query);
+        assert.ok(html.includes("empty-topic-display"));
+        assert.ok(html.includes("translated: general chat"));
+    }
+
+    function assert_suggests_topic_operator(suggestion, text_query) {
+        const html = search_pill.generate_pills_html(suggestion, text_query);
+        assert.ok(!html.includes("empty-topic-display"));
+        assert.ok(!html.includes("translated: general chat"));
+        assert.ok(html.includes("topic:"));
+    }
+
+    // An empty topic operand is rendered as general chat when it's an
+    // already formed pill, a bare `topic:` operator, a topic of a
+    // channel the user has typed, or matches the text the user is
+    // typing for the topic.
+    assert_suggests_general_chat(channel_topic_suggestion, "");
+    assert_suggests_general_chat(channel_topic_suggestion, "topic:");
+    assert_suggests_general_chat(channel_topic_suggestion, "-topic:");
+    assert_suggests_general_chat(channel_topic_suggestion, `channel:${verona.stream_id}`);
+    assert_suggests_general_chat(channel_topic_suggestion, "topic:gen");
+    assert_suggests_general_chat(channel_topic_suggestion, "topic:general chat");
+    assert_suggests_general_chat(channel_topic_suggestion, "general");
+    assert_suggests_general_chat(channel_topic_suggestion, "chat");
+
+    // But when the user is still typing the `topic` operator itself,
+    // we're suggesting the operator, not the general chat topic.
+    assert_suggests_topic_operator(channel_topic_suggestion, "to");
+    assert_suggests_topic_operator(channel_topic_suggestion, "Topic");
+    assert_suggests_topic_operator(`channel:${verona.stream_id} -topic:`, "-to");
+
+    // The operator suggestion only applies to the last term; an
+    // earlier empty topic term is always general chat.
+    assert_suggests_general_chat(`channel:${verona.stream_id} topic: has:link`, "to");
+});
+
 run_test("set_search_bar_contents with duplicate pills", () => {
     const duplicate_attachment_terms = [
         {
