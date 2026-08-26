@@ -385,6 +385,7 @@ def main() -> None:
     if options.generate_stripe_fixtures:
         if full_suite:
             suites = [
+                "corporate.tests.test_billing_lib",
                 "corporate.tests.test_sponsorship",
                 "corporate.tests.test_stripe",
                 "corporate.tests.test_stripe_remote_realm",
