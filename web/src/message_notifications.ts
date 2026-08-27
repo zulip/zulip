@@ -1,4 +1,5 @@
 import {$} from "jquery";
+import assert from "minimalistic-assert";
 
 import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
@@ -175,7 +176,8 @@ export function process_notification(notification: {
 
     const notice_memory = desktop_notifications.notice_memory.get(key);
     if (notice_memory) {
-        msg_count = notice_memory.msg_count + 1;
+        assert(notice_memory.data.type === "message");
+        msg_count = notice_memory.data.msg_count + 1;
     }
 
     const title = get_notification_title(message, msg_count);
@@ -205,8 +207,7 @@ export function process_notification(notification: {
             notification_options,
             key,
             title,
-            message_id: message.id,
-            msg_count,
+            data: {type: "message", message_id: message.id, msg_count},
             on_click,
         });
     }

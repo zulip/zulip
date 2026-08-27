@@ -2,13 +2,22 @@ import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import {electron_bridge} from "./electron_bridge.ts";
+import type {EmojiRenderingDetails} from "./emoji";
+
+export type NotifiedReaction = {
+    user_id: number;
+    emoji_detail: EmojiRenderingDetails;
+};
+
+export type NotificationData =
+    | {type: "message"; message_id: number; msg_count: number}
+    | {type: "reaction"; message_id: number; reactions: Map<string, NotifiedReaction>};
 
 type NoticeMemory = Map<
     string,
     {
         obj: Notification | ElectronBridgeNotification;
-        msg_count: number;
-        message_id: number;
+        data: NotificationData;
     }
 >;
 
@@ -73,11 +82,10 @@ export function create_notification(opts: {
     notification_options: NotificationOptions;
     key: string;
     title: string;
-    message_id: number;
-    msg_count: number;
+    data: NotificationData;
     on_click?: (() => void) | undefined;
 }): void {
-    const {notification_options, key, title, message_id, msg_count, on_click} = opts;
+    const {notification_options, key, title, data, on_click} = opts;
 
     assert(NotificationAPI !== undefined);
     const existing_notification = notice_memory.get(key);
@@ -87,8 +95,7 @@ export function create_notification(opts: {
     const notification_object = new NotificationAPI(title, notification_options);
     notice_memory.set(key, {
         obj: notification_object,
-        msg_count,
-        message_id,
+        data,
     });
 
     if (typeof notification_object.addEventListener === "function") {
@@ -141,7 +148,7 @@ export function permission_state(): string {
 
 export function close_notification(message_id: number): void {
     for (const [key, notice_mem_entry] of notice_memory) {
-        if (notice_mem_entry.message_id === message_id) {
+        if (notice_mem_entry.data.message_id === message_id) {
             notice_mem_entry.obj.close();
             notice_memory.delete(key);
         }
