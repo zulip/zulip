@@ -245,3 +245,28 @@ class TestChecks(ZulipTestCase):
 
     def test_checks_uploads_local_dir_valid(self) -> None:
         self.assert_check_with_error(None)
+
+    @override_settings(RUNNING_IN_DOCKER=False)
+    def test_check_jitsi_server_url(self) -> None:
+        self.assert_check_with_error(
+            "(zulip.E007) JITSI_SERVER_URL in /etc/zulip/settings.py is not a URL",
+            JITSI_SERVER_URL="example.jitsi.com",
+        )
+
+    @override_settings(RUNNING_IN_DOCKER=True)
+    def test_check_jitsi_server_url_in_docker(self) -> None:
+        self.assert_check_with_error(
+            "(zulip.E007) SETTING_JITSI_SERVER_URL in your Docker environment configuration is not a URL",
+            JITSI_SERVER_URL="jitsi[etc]",
+        )
+
+    @override_settings(RUNNING_IN_DOCKER=True, RUNNING_IN_HELM=True)
+    def test_check_jitsi_server_url_in_helm(self) -> None:
+        self.assert_check_with_error(
+            "(zulip.E007) zulip.environment.SETTING_JITSI_SERVER_URL in your Helm values is not a URL",
+            JITSI_SERVER_URL="example.com/jitsi",
+        )
+
+    @override_settings(JITSI_SERVER_URL="https://example.com/jitsi")
+    def test_check_jitsi_server_url_valid(self) -> None:
+        self.assert_check_with_error(None)
