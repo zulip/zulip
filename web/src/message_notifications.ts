@@ -175,7 +175,7 @@ export function process_notification(notification: {
 
     const notice_memory = desktop_notifications.notice_memory.get(key);
     if (notice_memory) {
-        msg_count = notice_memory.msg_count + 1;
+        msg_count = notice_memory.data.msg_count + 1;
     }
 
     const title = get_notification_title(message, msg_count);
@@ -204,8 +204,7 @@ export function process_notification(notification: {
         notification_options,
         key,
         title,
-        message_id: message.id,
-        msg_count,
+        data: {type: "message", message_id: message.id, msg_count},
         desktop_notify: notification.desktop_notify,
         on_click,
     });
