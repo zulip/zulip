@@ -811,6 +811,7 @@ def convert_slack_workspace_messages(
     thread_reply_counts = count_thread_replies(
         get_messages_iterator(slack_data_dir, added_channels, added_mpims, added_dms),
         convert_slack_threads,
+        slack_user_id_to_zulip_user_id,
     )
     all_messages = get_messages_iterator(slack_data_dir, added_channels, added_mpims, added_dms)
     logging.info("######### IMPORTING MESSAGES STARTED #########\n")
@@ -820,7 +821,7 @@ def convert_slack_workspace_messages(
     total_uploads: list[UploadRecordData] = []
     thread_counter: dict[str, int] = defaultdict(int)
     thread_map: dict[str, ThreadMetadata] = {}
-
+    skipped_messages_count_to_log: dict[str, int] = defaultdict(int)
     dump_file_id = 1
 
     subscriber_map = make_subscriber_map(
@@ -844,6 +845,7 @@ def convert_slack_workspace_messages(
             thread_counter,
             thread_map,
             thread_reply_counts,
+            skipped_messages_count_to_log,
         )
 
         message_json = dict(
@@ -861,6 +863,12 @@ def convert_slack_workspace_messages(
 
         dump_file_id += 1
 
+    for slack_user_id, skipped_message_count in skipped_messages_count_to_log.items():
+        logging.info(
+            "Skipped %s messages from user %s because the user is not converted.",
+            skipped_message_count,
+            slack_user_id,
+        )
     logging.info("######### IMPORTING MESSAGES FINISHED #########\n")
     return total_reactions, total_uploads, total_attachments
 
@@ -1056,7 +1064,9 @@ def is_slack_thread_message(convert_slack_threads: bool, message: ZerverFieldsT)
 
 
 def count_thread_replies(
-    all_messages: Iterator[ZerverFieldsT], convert_slack_threads: bool
+    all_messages: Iterator[ZerverFieldsT],
+    convert_slack_threads: bool,
+    slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
 ) -> dict[str, int]:
     """`get_thread_reply_notification` creates, for each thread parent, a
     cross-linking notification containing the number of thread replies and
@@ -1082,8 +1092,16 @@ def count_thread_replies(
         # user id is cached in thread_parent_map before its replies (which
         # may omit parent_user_id) look it up; see get_thread_key.
         thread_key = get_thread_key(message)
-        if not is_thread_parent_message(message):
-            thread_reply_counts[thread_key] += 1
+        if is_thread_parent_message(message):
+            continue
+
+        if get_message_sending_user(message) not in slack_user_id_to_zulip_user_id:
+            # channel_message_to_zerver_message skips replies whose sender
+            # wasn't converted, so counting them would promise the parent's
+            # reader replies that the thread topic doesn't contain.
+            continue
+
+        thread_reply_counts[thread_key] += 1
 
     return thread_reply_counts
 
@@ -1189,6 +1207,7 @@ def channel_message_to_zerver_message(
     thread_counter: dict[str, int],
     thread_map: dict[str, ThreadMetadata],
     thread_reply_counts: dict[str, int],
+    skipped_messages_count_to_log: dict[str, int],
 ) -> MessageConversionResult:
     zerver_message: list[ZerverFieldsT] = []
     zerver_usermessage: list[ZerverFieldsT] = []
@@ -1204,6 +1223,11 @@ def channel_message_to_zerver_message(
 
         slack_user_id = get_message_sending_user(message)
         assert slack_user_id
+
+        if slack_user_id not in slack_user_id_to_zulip_user_id:
+            skipped_messages_count_to_log[slack_user_id] += 1
+            continue
+
         subtype = message.get("subtype", False)
 
         raw_content = process_slack_block_and_attachment(

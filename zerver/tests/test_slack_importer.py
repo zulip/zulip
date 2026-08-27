@@ -259,7 +259,13 @@ class SlackImporter(ZulipTestCase):
         if "thread_reply_counts" in kwargs:
             thread_reply_counts = kwargs["thread_reply_counts"]
         else:
-            thread_reply_counts = count_thread_replies(iter(all_messages), convert_slack_threads)
+            thread_reply_counts = count_thread_replies(
+                iter(all_messages), convert_slack_threads, slack_user_id_to_zulip_user_id
+            )
+
+        skipped_messages_count_to_log: dict[str, int] = kwargs.get(
+            "skipped_messages_count_to_log", defaultdict(int)
+        )
 
         with mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4)):
             return channel_message_to_zerver_message(
@@ -278,6 +284,7 @@ class SlackImporter(ZulipTestCase):
                 thread_counter=thread_counter,
                 thread_map=thread_map,
                 thread_reply_counts=thread_reply_counts,
+                skipped_messages_count_to_log=skipped_messages_count_to_log,
             )
 
     @responses.activate
@@ -1408,7 +1415,10 @@ class SlackImporter(ZulipTestCase):
             do_download_and_export_upload_file=lambda request: None,
             thread_counter=defaultdict(int),
             thread_map={},
-            thread_reply_counts=count_thread_replies(iter(all_messages), False),
+            thread_reply_counts=count_thread_replies(
+                iter(all_messages), False, slack_user_id_to_zulip_user_id
+            ),
+            skipped_messages_count_to_log=defaultdict(int),
         )
 
         zerver_message = conversion_result.zerver_message
@@ -1492,6 +1502,45 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[9]["has_image"], True)
         self.assertEqual(zerver_message[9]["has_attachment"], True)
         self.assertTrue(zerver_message[9]["content"].startswith("Look!\n[Apple](/user_uploads/"))
+
+    def test_channel_message_to_zerver_message_skips_unconverted_senders(self) -> None:
+        # A Slack export can name users that weren't converted, e.g. ones
+        # whose account had no email address. Converting their messages would
+        # crash on the Zulip user ID lookup, so they're skipped and counted
+        # for the summary convert_slack_workspace_messages logs at the end.
+        skipped_messages_count_to_log: dict[str, int] = defaultdict(int)
+        all_messages = [
+            {
+                "text": "message from a converted user",
+                "user": "U061A5N1G",
+                "ts": "1434139102.000002",
+                "channel_name": "random",
+            },
+            {
+                "text": "first message from an unconverted user",
+                "user": "U0UNCONVERTED",
+                "ts": "1434139103.000002",
+                "channel_name": "random",
+            },
+            {
+                "text": "second message from an unconverted user",
+                "user": "U0UNCONVERTED",
+                "ts": "1434139104.000002",
+                "channel_name": "random",
+            },
+        ]
+
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
+            [],
+            all_messages=all_messages,
+            skipped_messages_count_to_log=skipped_messages_count_to_log,
+        )
+
+        self.assert_length(conversion_result.zerver_message, 1)
+        self.assertEqual(
+            conversion_result.zerver_message[0]["content"], "message from a converted user"
+        )
+        self.assertEqual(skipped_messages_count_to_log, {"U0UNCONVERTED": 2})
 
     def test_channel_message_to_zerver_message_with_threads(self) -> None:
         slack_recipient_name_to_zulip_recipient_id = {
@@ -1587,7 +1636,9 @@ class SlackImporter(ZulipTestCase):
         thread_counter: dict[str, int] = defaultdict(int)
         thread_map: dict[str, ThreadMetadata] = {}
         thread_reply_counts = count_thread_replies(
-            iter([parent_message, reply_message]), convert_slack_threads=True
+            iter([parent_message, reply_message]),
+            convert_slack_threads=True,
+            slack_user_id_to_zulip_user_id={"U066MTL5U": 5, "U061A5N1G": 24, "U061A1R2R": 43},
         )
 
         # First chunk holds only the parent; the reply arrives in the second.
@@ -2117,7 +2168,10 @@ message body text
             do_download_and_export_upload_file=lambda request: None,
             thread_counter=defaultdict(int),
             thread_map={},
-            thread_reply_counts=count_thread_replies(iter(all_messages), True),
+            thread_reply_counts=count_thread_replies(
+                iter(all_messages), True, slack_user_id_to_zulip_user_id
+            ),
+            skipped_messages_count_to_log=defaultdict(int),
         )
 
         zerver_message = conversion_result.zerver_message
@@ -2190,6 +2244,117 @@ To Do
 """.strip()
         self.assertEqual(zerver_message[4]["content"], expected_message_block_4)
         self.assertEqual(zerver_message[4]["sender"], slack_user_id_to_zulip_user_id["B06NWMNUQ3W"])
+
+    def test_thread_reply_count_excludes_unconverted_senders(self) -> None:
+        # The cross-linking notice on a thread's parent promises a reply
+        # count, so replies that conversion skips must not be counted; the
+        # thread topic wouldn't contain them.
+        slack_recipient_name_to_zulip_recipient_id = {"random": 2, "general": 1}
+        thread = [
+            {
+                "text": "thread message",
+                "user": "U061A5N1G",
+                "ts": "1434139102.000002",
+                "thread_ts": "1434139102.000002",
+                "channel_name": "random",
+            },
+            {
+                "text": "reply from a converted user",
+                "user": "U061A1R2R",
+                "ts": "1434139103.000002",
+                "parent_user_id": "U061A5N1G",
+                "thread_ts": "1434139102.000002",
+                "channel_name": "random",
+            },
+            {
+                "text": "reply from an unconverted user",
+                "user": "U0UNCONVERTED",
+                "ts": "1434139104.000002",
+                "parent_user_id": "U061A5N1G",
+                "thread_ts": "1434139102.000002",
+                "channel_name": "random",
+            },
+        ]
+
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
+            [],
+            all_messages=thread,
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
+        )
+
+        zerver_message = conversion_result.zerver_message
+        # The unconverted user's reply is skipped entirely.
+        self.assert_length(zerver_message, 2)
+
+        expected_topic_name = "2015-06-12 thread message"
+        thread_topic_link_syntax = get_stream_topic_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            expected_topic_name,
+        )
+        # One reply, not two.
+        self.assertEqual(
+            zerver_message[0]["content"],
+            f"thread message\n\n*1 reply in {thread_topic_link_syntax}*",
+        )
+
+    @mock.patch("zerver.data_import.slack.channel_message_to_zerver_message")
+    @mock.patch("zerver.data_import.slack.get_messages_iterator")
+    def test_convert_slack_workspace_messages_logs_skipped_senders(
+        self, mock_get_messages_iterator: mock.Mock, mock_message: mock.Mock
+    ) -> None:
+        # Messages skipped because their sender wasn't converted are counted
+        # per sender across every chunk, and summarized once at the end.
+        output_dir = os.path.join(settings.TEST_WORKER_DIR, "test-slack-import")
+        os.makedirs(output_dir, exist_ok=True)
+
+        time = float(timezone_now().timestamp())
+        # get_messages_iterator is called once to pre-count thread replies and
+        # again to walk the messages, so each call needs a fresh iterator.
+        mock_get_messages_iterator.side_effect = lambda *args: iter(
+            [{"id": 1, "ts": time}, {"id": 5, "ts": time}]
+        )
+
+        def skip_every_message(*args: Any) -> MessageConversionResult:
+            # skipped_messages_count_to_log is the last positional argument,
+            # and is shared across every chunk's conversion.
+            skipped_messages_count_to_log = args[-1]
+            skipped_messages_count_to_log["U0UNCONVERTED"] += 1
+            return MessageConversionResult(
+                zerver_message=[],
+                zerver_usermessage=[],
+                zerver_attachment=[],
+                uploads_list=[],
+                reaction_list=[],
+            )
+
+        mock_message.side_effect = skip_every_message
+
+        with self.assertLogs(level="INFO") as mock_log:
+            convert_slack_workspace_messages(
+                "./random_path",
+                [],
+                2,
+                {},
+                {},
+                {"random": ("c5", 1)},
+                {},
+                {},
+                {"zerver_subscription": []},
+                [],
+                [],
+                "domain",
+                output_dir=output_dir,
+                convert_slack_threads=False,
+                do_download_and_export_upload_file=lambda request: None,
+                chunk_size=1,
+            )
+
+        self.assertIn(
+            "INFO:root:Skipped 2 messages from user U0UNCONVERTED because the user is"
+            " not converted.",
+            mock_log.output,
+        )
 
     @mock.patch("zerver.data_import.slack.channel_message_to_zerver_message")
     @mock.patch("zerver.data_import.slack.get_messages_iterator")
