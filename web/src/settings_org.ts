@@ -252,6 +252,12 @@ function update_jitsi_server_url_custom_input(dropdown_val: string): void {
         dropdown_val === "custom",
     );
 
+    // Only warn when the server operator has JWT set up. Otherwise
+    // overriding the URL doesn't lose anything.
+    $("#realm_jitsi_server_url_jwt_warning").toggle(
+        dropdown_val === "custom" && realm.server_jitsi_jwt_configured,
+    );
+
     if (dropdown_val !== "custom") {
         return;
     }
