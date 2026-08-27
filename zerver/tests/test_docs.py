@@ -323,6 +323,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/zulip-cloud/", ["Zulip Cloud"])
         self._test("/security/", ["TLS encryption"])
         self._test("/use-cases/", ["Use cases and customer stories"])
+        self._test("/case-studies/", ["Case studies"])
         self._test("/why-zulip/", ["Why Zulip?"])
         # /for/... pages
         self._test("/for/open-source/", ["for open source projects"])
