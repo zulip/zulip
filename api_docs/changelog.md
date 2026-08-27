@@ -2831,14 +2831,16 @@ No changes; feature level used for Zulip 8.0 release.
 
 **Feature level 212**
 
-* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),
-  `PATCH /realm`: Added the `jitsi_server_url` field to the `realm` object,
-  allowing organizations to set a custom Jitsi Meet server. Previously, this
-  was only available as a server-level configuration.
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue)
+  `PATCH /realm`: Added the `jitsi_server_url` realm setting, allowing
+  organizations to set a custom Jitsi Meet server. Previously, this was
+  only available as a server-level configuration.
 
 * [`POST /register`](/api/register-queue): Added `server_jitsi_server_url`
-  fields to the `realm` object. The existing `jitsi_server_url` will now be
-  calculated as `realm_jitsi_server_url || server_jitsi_server_url`.
+  field to the response for the Jitsi Meet server-level configuration. The
+  existing `jitsi_server_url` field, which previously was the same value of
+  the new field, is now deprecated and will be calculated as
+  `realm_jitsi_server_url ?? server_jitsi_server_url`.
 
 **Feature level 211**
 
