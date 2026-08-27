@@ -13,6 +13,7 @@ from typing_extensions import override
 from zerver.checks import (
     check_auth_settings,
     check_external_host_setting,
+    check_jitsi_server_url,
     check_required_settings,
     check_uploads_settings,
 )
@@ -60,6 +61,7 @@ class ZerverConfig(AppConfig):
         register(check_external_host_setting)
         register(check_auth_settings)
         register(check_uploads_settings)
+        register(check_jitsi_server_url)
 
         if settings.SENTRY_DSN:  # nocoverage
             from zproject.config import get_config
