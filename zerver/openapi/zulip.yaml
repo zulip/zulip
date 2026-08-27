@@ -21312,7 +21312,7 @@ paths:
 
                           `null`, the default, means that the organization is using the should use the
                           server-level configuration, `server_jitsi_server_url`. A correct client
-                          supporting only the modern API should use `realm_jitsi_server_url ||
+                          supporting only the modern API should use `realm_jitsi_server_url ??
                           server_jitsi_server_url` to create calls.
 
                           **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
@@ -21909,14 +21909,14 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The base URL to be used to create Jitsi video calls. Equals
-                          `realm_jitsi_server_url || server_jitsi_server_url`.
+                          `realm_jitsi_server_url ?? server_jitsi_server_url`.
 
                           **Changes**: Deprecated in Zulip 8.0 (feature level 212) and will
                           eventually be removed. Previously, the Jitsi server to use was not
                           configurable on a per-realm basis, and this field contained the server's
                           configured Jitsi server. (Which is now provided as
                           `server_jitsi_server_url`). Clients supporting older versions should fall
-                          back to this field when creating calls: using `realm_jitsi_server_url ||
+                          back to this field when creating calls: using `realm_jitsi_server_url ??
                           server_jitsi_server_url` with newer servers and using `jitsi_server_url`
                           with servers below feature level 212.
                       development_environment:
