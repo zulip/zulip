@@ -16,6 +16,7 @@ import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as compose_fade from "./compose_fade.ts";
 import * as condense from "./condense.ts";
+import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as internal_url from "./internal_url.ts";
@@ -114,6 +115,7 @@ export type MessageGroup = {
           topic_is_resolved: boolean;
           topic_links: TopicLink[] | undefined;
           topic_url: string | undefined;
+          suppress_topic_tooltip: boolean;
           user_can_resolve_topic: boolean;
           visibility_policy: number | false;
           always_display_date: boolean;
@@ -125,6 +127,7 @@ export type MessageGroup = {
           is_private: true;
           pm_with_url: string;
           recipient_users: RecipientRowUser[];
+          suppress_dm_tooltip: boolean;
           always_display_date: boolean;
           is_dm_with_self: boolean;
       }
@@ -401,6 +404,7 @@ export function populate_group_from_message(
     message: Message,
     date_unchanged: boolean,
     year_changed: boolean,
+    current_filter?: Filter,
 ): MessageGroup {
     const is_stream = message.is_stream;
     const is_private = message.is_private;
@@ -446,6 +450,9 @@ export function populate_group_from_message(
                 message.id,
             ),
             stream_id,
+            suppress_topic_tooltip:
+                current_filter !== undefined &&
+                narrow_state.narrowed_by_topic_reply(current_filter),
             is_subscribed: sub.subscribed,
             topic_is_resolved: resolved_topic.is_resolved(topic),
             visibility_policy: user_topics.get_topic_visibility_policy(stream_id, topic),
@@ -471,6 +478,8 @@ export function populate_group_from_message(
         display_recipient,
         pm_with_url: message.pm_with_url,
         recipient_users: get_users_for_recipient_row(message),
+        suppress_dm_tooltip:
+            current_filter !== undefined && narrow_state.narrowed_by_pm_reply(current_filter),
         is_dm_with_self: people.is_direct_message_conversation_with_self(user_ids),
         display_reply_to_for_tooltip: message_store.get_pm_full_names(user_ids),
         always_display_date,
@@ -975,6 +984,7 @@ export class MessageListView {
                 message_for_next_group,
                 same_day(message_for_next_group, prev_message),
                 !same_year(message_for_next_group, prev_message),
+                this.list.data.filter,
             );
         };
 
@@ -1833,6 +1843,7 @@ export class MessageListView {
                 group.message_containers[0]!.msg,
                 group.date_unchanged,
                 group.message_containers[0]!.year_changed,
+                this.list.data.filter,
             ),
             // We don't want `populate_group_from_message` to generate a
             // new id. We also preserve the message containers, since this
