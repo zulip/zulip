@@ -39,6 +39,7 @@ from zerver.lib.markdown import (
     InlineInterestingLinkProcessor,
     MarkdownListPreprocessor,
     MessageRenderingResult,
+    TabIndentedListPreprocessor,
     clear_web_link_regex_for_testing,
     content_has_emoji_syntax,
     image_preview_enabled,
@@ -477,6 +478,80 @@ class MarkdownMiscTest(ZulipTestCase):
             self.assertEqual(render_tex("foo"), "<i>html</i>")
 
 
+class TabIndentedListPreprocessorTest(ZulipTestCase):
+    def test_single_level_nesting(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["- outer", "\t- inner"]
+        expected = ["- outer", "  - inner"]
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_multi_level_nesting(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["- outer", "\t- inner", "\t\t- deep"]
+        expected = ["- outer", "  - inner", "    - deep"]
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_numbered_list(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["1. outer", "\t1. inner"]
+        expected = ["1. outer", "  1. inner"]
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_numbered_list_with_double_digit_numbers(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["10. outer", "\t10. inner"]
+        expected = ["10. outer", "  10. inner"]
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_tabs_inside_fence_are_untouched(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["```", "- outer", "\t- inner", "```"]
+        self.assertEqual(preprocessor.run(original), original)
+
+    def test_tabs_for_non_list_item_is_not_converted(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        # An indented code block must be left untouched.
+        original = ["Here is some code:", "", "\tdef f():", "\t\treturn 1"]
+        self.assertEqual(preprocessor.run(original), original)
+
+    def test_tab_list_marker_without_preceding_list_context(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        # A tab + list-marker line is only converted if it directly
+        # continues a preceding list item. Without that context it
+        # must be left untouched so it still renders as an indented
+        # code block.
+        original = ["Some text", "", "\t- text"]
+        self.assertEqual(preprocessor.run(original), original)
+
+    def test_blockquoted_tab_nested_list(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["> - outer", "> \t- inner", "> \t\t- deep"]
+        expected = ["> - outer", ">   - inner", ">     - deep"]
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_nested_blockquoted_tab_list(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = [">> - outer", ">> \t- inner", ">> \t\t- deep"]
+        expected = [">> - outer", ">>   - inner", ">>     - deep"]
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_blockquoted_code_fence_tabs_are_untouched(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["> ```python", "> - outer", "> \t- inner", "> ```"]
+        self.assertEqual(preprocessor.run(original), original)
+
+    def test_indented_code_fence_tabs_are_untouched(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["   ```python", "   - outer", "   \t- inner", "   ```"]
+        self.assertEqual(preprocessor.run(original), original)
+
+    def test_mixed_spaces_and_tabs(self) -> None:
+        preprocessor = TabIndentedListPreprocessor()
+        original = ["- outer", "  \t- inner", "  \t\t- deep"]
+        expected = ["- outer", "    - inner", "      - deep"]
+        self.assertEqual(preprocessor.run(original), expected)
+
+
 class MarkdownListPreprocessorTest(ZulipTestCase):
     # We test that the preprocessor inserts blank lines at correct places.
     # We use <> to indicate that we need to insert a blank line here.
@@ -488,6 +563,11 @@ class MarkdownListPreprocessorTest(ZulipTestCase):
     def test_basic_list(self) -> None:
         preprocessor = MarkdownListPreprocessor()
         original, expected = self.split_message("List without a gap\n<>* One\n* Two")
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_basic_list_with_double_digit_numbers(self) -> None:
+        preprocessor = MarkdownListPreprocessor()
+        original, expected = self.split_message("List without a gap\n<>10. One\n11. Two")
         self.assertEqual(preprocessor.run(original), expected)
 
     def test_list_after_quotes(self) -> None:
