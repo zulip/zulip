@@ -5652,8 +5652,8 @@ paths:
                                         The URL of the custom Jitsi Meet server configured in this organization's
                                         settings.
 
-                                        `null`, the default, means that the organization is using the should use the
-                                        server-level configuration, `server_jitsi_server_url`.
+                                        `null`, the default, means that the organization is using the server-level
+                                        configuration, `server_jitsi_server_url`.
 
                                         **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
                                         available as a server-level configuration, and required a server restart to
@@ -21214,10 +21214,10 @@ paths:
                           The URL of the custom Jitsi Meet server configured in this organization's
                           settings.
 
-                          `null`, the default, means that the organization is using the should use the
-                          server-level configuration, `server_jitsi_server_url`. A correct client
-                          supporting only the modern API should use `realm_jitsi_server_url ??
-                          server_jitsi_server_url` to create calls.
+                          `null`, the default, means that the organization is using the server-level
+                          configuration, `server_jitsi_server_url`. A correct client supporting only
+                          the modern API should use `realm_jitsi_server_url ?? server_jitsi_server_url`
+                          to create calls.
 
                           **Changes**: New in Zulip 8.0 (feature level 212). Previously, this was only
                           available as a server-level configuration, which was available via the
