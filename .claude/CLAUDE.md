@@ -111,14 +111,8 @@ commit from other changes.
 
 ### 4. Verify Before Finalizing
 
-Run tests before making a commit. Always manage your time by running
-specific test collections, not the entire test suite:
-
-```bash
-# Includes mypy and typescript checkers
-./tools/lint path/to/changed/files.py
-./tools/test-backend zerver.tests.test_relevant_module
-```
+Run the linter and the relevant tests before making each commit; see
+"Testing Requirements" below for which ones.
 
 ## Before You Start
 
@@ -267,10 +261,14 @@ must include nice tests that follow our testing philosophy.
 
 ### Before Submitting:
 
+Manage your time by running specific backend test collections, not
+the entire suite; the node suite is fast enough to run in full.
+
 ```bash
-./tools/test-js-with-node       # JavaScript tests; full suite fast enough
-./tools/lint                    # Run all linters
-./tools/test-backend            # Python tests
+# Includes mypy and typescript checkers
+./tools/lint path/to/changed/files.py
+./tools/test-backend zerver.tests.test_relevant_module
+./tools/test-js-with-node
 ```
 
 A common failure mode is failing to have test coverage for error
