@@ -30,39 +30,12 @@ change should make the codebase more maintainable and easier to read.
 
 ### No detail is too small
 
-Zulip holds itself to a high bar for polish because users depend on
-this software daily, and because the project is built to last for
-decades. There is no category of "minor issue" that is acceptable
-to ship — if something is broken in any context where a user would
-encounter it, it must be fixed before merging. The project's
-extensive investment in testing, tooling, and review processes exists
-precisely so that these issues get caught and fixed, not so that they
-can be classified as low-priority and deferred.
-
-This philosophy extends to every aspect of the product:
-
-- **Visual precision matters.** Alignment, spacing, colors, and font
-  sizes must be consistent with similar existing UI. When making CSS
-  changes, you must demonstrate with pixel-precise before/after
-  comparisons that there are no unintended side effects.
-- **Every state matters.** UI must look correct in all its states:
-  hover, active, disabled, focused, selected, empty, overflowing.
-  Changes that could plausibly affect colors, contrast, or
-  theme-dependent imagery must work in both light and dark themes;
-  changes whose effect can't reasonably vary with theme (pure
-  geometry/typography — `font-size`, `line-height`, `margin`,
-  `padding`, `display`, `font-weight`, etc.) only need a single
-  theme verified.
-- **Every window size matters.** UI must look good from wide desktop
-  (1920px) down to narrow phone screens (480px).
-- **Every language matters.** Translated strings can be 1.5x longer
-  than English or half as short. UI must handle both extremes without
-  breaking layout. Think about right-to-left languages too.
-- **Every interaction path matters.** Keyboard navigation, screen
-  readers, permission levels, feature interactions (banners
-  overlapping, resolved topics, muted messages), and edge cases in
-  data (empty lists, very long names, single items vs. many) must all
-  be considered.
+There is no category of "minor issue" that is acceptable to ship —
+if something is broken in any state, size, theme, or language where
+a user would encounter it, it must be fixed before merging. If a fix
+would require a design decision, raise it as a question rather than
+shipping the broken state. The "Manual Testing for UI Changes"
+checklist below enumerates what to check.
 
 The right attitude is: "What could go wrong, and how do I verify that
 it doesn't?" not "It looks fine to me." **What isn't tested probably
@@ -345,6 +318,20 @@ catches issues that automated tests miss. **Treat this checklist as
 blocking, not advisory** — every applicable item must be verified
 before the change is ready.
 
+Most of these items don't need a human: the `/visual-test` skill can
+screenshot the UI at several window widths and in both themes, measure
+positions with `getBoundingClientRect()`, and drive keyboard
+navigation. Verify what you can that way before asking the user to
+test anything.
+
+When the skill can't run in your environment, much of the list can
+still be checked from code: `git grep` every selector you touched to
+see where else it applies, look for fixed widths or `white-space:
+nowrap` that a longer translated string would overflow, and read the
+keyboard-handling and permission code paths you changed. Then tell
+the user exactly which items you could not verify (rendered alignment,
+hover appearance) rather than a general "please test".
+
 **Visual appearance:**
 
 - Is the new UI consistent with similar elements (fonts, colors, sizes)?
@@ -354,10 +341,13 @@ before the change is ready.
   don't eyeball it.
 - Do clickable elements have hover behavior consistent with similar UI?
 - If elements can be disabled, does the disabled state look right?
+- Does every state look right: hover, active, disabled, focused,
+  selected, empty, overflowing?
 - Did the change accidentally affect other parts of the UI? Use
   `git grep` to check if modified CSS is used elsewhere. CSS changes
   are notorious for unintended consequences — check every page and
-  component that shares the selectors you modified.
+  component that shares the selectors you modified, and demonstrate
+  with pixel-precise before/after comparisons that there are none.
 - Check all of the above in both light and dark themes when the
   change could plausibly affect colors, contrast, or theme-dependent
   imagery. Pure geometry/typography changes (`font-size`,
@@ -372,11 +362,13 @@ before the change is ready.
   (1920px), typical laptop (1280px), tablet, and narrow phone (480px).
 - Would the UI break if translated strings were 1.5x longer than
   English? What if they were half as long? Both directions matter.
+  Think about right-to-left languages too.
 
 **Functionality:**
 
 - Are live updates working as expected?
 - Is keyboard navigation, including tabbing to interactive elements, working?
+- Do screen readers get sensible labels and roles for new elements?
 - If the feature affects the message view, try different narrows: topic,
   channel, Combined feed, direct messages.
 - If the feature affects the compose box, test both channel messages and
