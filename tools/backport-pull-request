@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
     cat >&2 <<EOF
-usage: $0 PULL_REQUEST_ID COMMIT_COUNT [REMOTE]
+usage: $0 PULL_REQUEST_ID
 
 Fetch the given GitHub pull request branch and backport it to
 the current branch using 'git cherry-pick -x'.
