@@ -147,6 +147,10 @@ Zulip has over 185,000 words of developer documentation. Before working on any a
 - Prefer writing code that is readable without explanation over heavily
   commented code using clever tricks. Comments should explain "why" when
   the reason isn't obvious, not narrate "what" the code does.
+- A comment must make sense to a reader who never saw the old code.
+  If it only makes sense as a contrast with how the code used to work
+  ("show the modal before rendering so that if rendering throws..."),
+  it describes the diff, and belongs in the commit message instead.
 - Use `em` units instead of `px` for computed CSS values that need to
   scale with font size. Pixel approximations break at different zoom
   levels and font-size settings.
