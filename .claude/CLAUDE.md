@@ -64,9 +64,6 @@ git log --oneline -20 -- path/to/file.py
 # Check for related issues on GitHub
 ```
 
-Always show existing similar code and explain how it works before proposing
-changes.
-
 ### 2. Propose an Approach
 
 Before writing code, explain the plan:
