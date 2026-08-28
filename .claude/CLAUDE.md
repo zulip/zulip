@@ -440,10 +440,9 @@ Before finalizing, verify:
 
 ### Process:
 
-- Always check if you're working on top of the latest upstream/main, and
-  fetch + rebase when starting a project so you're not using a stale branch.
-  If you're continuing a project, start by rebasing, resolving merge
-  conflicts carefully.
+- When starting or resuming work, `git fetch` and check whether the
+  branch is behind `upstream/main`; tell the user if so. Rebasing
+  their branch is their decision; don't run `git rebase` unless asked.
 - Don't make design or UX decisions silently. When a technical
   constraint forces a tradeoff, present the constraint and options
   to the user rather than picking one. Never remove features, hide
