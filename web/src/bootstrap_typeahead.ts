@@ -467,6 +467,7 @@ export class Typeahead<ItemType extends string | object> {
                     requestAnimationFrame(() => {
                         // This detects any overflows by default and adjusts
                         // the placement of typeahead.
+                        this.scrollHandler();
                         void instance.popperInstance?.update();
                     });
 
@@ -724,8 +725,21 @@ export class Typeahead<ItemType extends string | object> {
             const caret_viewport_top = element_rect.top + caret.top - scrollTop;
             const caret_viewport_bottom = caret_viewport_top + caret.height;
 
-            if (caret_viewport_bottom < 0 || caret_viewport_top > window.innerHeight) {
+            const sticky_header_bottom = 64;
+            const visible_top = Math.max(sticky_header_bottom, element_rect.top);
+            const visible_bottom = Math.min(window.innerHeight, element_rect.bottom);
+
+            if (caret_viewport_bottom <= visible_top || caret_viewport_top >= visible_bottom) {
                 this.hide();
+                return;
+            }
+
+            const safe_top = 140;
+            const popper_rect = this.instance?.popper.getBoundingClientRect();
+
+            if (popper_rect !== undefined && popper_rect.top < safe_top) {
+                this.instance?.setProps({placement: "bottom-start"});
+                void this.instance?.popperInstance?.update();
                 return;
             }
         }
