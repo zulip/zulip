@@ -154,6 +154,8 @@ Zulip has over 185,000 words of developer documentation. Before working on any a
 - JavaScript/TypeScript code must use `const` or `let`, never `var`.
 - Avoid lodash in favor of modern ECMAScript primitives where available,
   keeping in mind our browserlist.
+- Use `util.the($el)` instead of `$el[0]!` when a jQuery object should
+  hold exactly one element; it asserts that at runtime.
 - Prefer writing code that is readable without explanation over heavily
   commented code using clever tricks. Comments should explain "why" when
   the reason isn't obvious, not narrate "what" the code does.
