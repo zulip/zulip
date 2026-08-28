@@ -153,6 +153,7 @@ a PR (`.claude/skills/self-review/SKILL.md`).
 Zulip has over 185,000 words of developer documentation. Before working on any area:
 
 - Read documentation from docs/, starlight_help/src/content/docs/, and api_docs/.
+  `docs/subsystems/directory-structure.md` explains where code lives.
 - Read existing code in the area you're modifying.
 - Use `git grep` to find similar patterns in the codebase and read those.
 
@@ -316,25 +317,6 @@ Recommend pausing for discussion when:
 - Backend tests: https://zulip.readthedocs.io/en/latest/testing/testing-with-django.html
 - Code review: https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html
 - mypy guide: https://zulip.readthedocs.io/en/latest/testing/mypy.html
-
-## Repository Structure Quick Reference
-
-```
-zerver/           # Main Django app
-  models/         # Database models
-  views/          # API endpoints
-  lib/            # Shared utilities
-  tests/          # Backend tests
-  webhooks/       # Integration webhooks
-web/              # Frontend TypeScript/JavaScript
-  src/            # Main frontend code
-  styles/         # CSS
-  templates/      # Frontend HTML
-  tests/          # Frontend tests
-templates/        # Jinja2/Handlebars templates
-tools/            # Development and testing scripts
-docs/             # ReadTheDocs documentation source
-```
 
 ## Help Center Documentation
 
