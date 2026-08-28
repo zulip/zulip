@@ -140,6 +140,12 @@ Zulip has over 185,000 words of developer documentation. Before working on any a
   researching a problem, so names should communicate purpose clearly.
 - Keep everything well factored for maintainability. Avoid duplicating
   code, especially where access control or subtle correctness is involved.
+- Before writing a helper, `git grep` the shared modules (e.g.,
+  `web/src/util.ts`, `web/src/people.ts`, `web/src/message_util.ts`,
+  `zerver/lib/`) for an existing equivalent. "It mirrors an existing
+  pattern" justifies parallel structure, not duplicated code: if the
+  new function equals an existing one modulo a parameter, extract a
+  shared helper instead of copying.
 - Run `./tools/lint` to catch style issues before committing, including mypy issues.
 - JavaScript/TypeScript code must use `const` or `let`, never `var`.
 - Avoid lodash in favor of modern ECMAScript primitives where available,
