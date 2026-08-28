@@ -154,6 +154,11 @@ Zulip has over 185,000 words of developer documentation. Before working on any a
 - Don't reference line numbers (`filter.ts:493`) in comments, commit
   messages, or PR descriptions; they are wrong after the next edit
   above them. Reference symbol names instead.
+- Use the standard term for what the code does ("override the rule",
+  "set the color"), not a metaphor ("defeat", "pin"). When the
+  codebase already has a short idiom for a situation, such as
+  `/* Override bootstrap defaults */`, reuse it verbatim rather than
+  writing a longer explanation.
 - Use `em` units instead of `px` for computed CSS values that need to
   scale with font size. Pixel approximations break at different zoom
   levels and font-size settings.
