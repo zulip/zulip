@@ -138,6 +138,10 @@ Zulip has over 185,000 words of developer documentation. Before working on any a
 - **Use clear, greppable names** for functions, arguments, variables, and
   tests. Future developers will `git grep` for relevant terms when
   researching a problem, so names should communicate purpose clearly.
+- If a value's correctness hinges on a qualifier — local, cached,
+  approximate, lower bound — put that word in the name
+  (`local_message_count`, not `message_count`). A reader who has to be
+  told the caveat will eventually misuse the value.
 - Keep everything well factored for maintainability. Avoid duplicating
   code, especially where access control or subtle correctness is involved.
 - Before writing a helper, `git grep` the shared modules (e.g.,
