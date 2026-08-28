@@ -545,16 +545,6 @@ colors and backgrounds. Subtle properties like `line-height`, `margin`,
 miss but cause visible regressions. Check inherited properties too —
 e.g., a `body` rule's `line-height` or `margin` affects all descendants.
 
-## Key Documentation Links
-
-- Contributing guide: https://zulip.readthedocs.io/en/latest/contributing/contributing.html
-- Code style: https://zulip.readthedocs.io/en/latest/contributing/code-style.html
-- Commit discipline: https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html
-- Testing overview: https://zulip.readthedocs.io/en/latest/testing/testing.html
-- Backend tests: https://zulip.readthedocs.io/en/latest/testing/testing-with-django.html
-- Code review: https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html
-- mypy guide: https://zulip.readthedocs.io/en/latest/testing/mypy.html
-
 ## Help Center Documentation
 
 When making any user-facing change, **read
