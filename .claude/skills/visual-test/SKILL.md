@@ -280,6 +280,16 @@ full filename or `.test.ts` suffix. This starts a fresh test server
 on port 9981, runs the script, and saves screenshots to
 `var/puppeteer/`. The test database is reset between test files.
 
+If you are running outside the development environment, run the same
+command inside the container (see "Common Commands" in CLAUDE.md):
+
+```bash
+vagrant ssh -c 'cd ~/zulip && ./tools/test-js-with-puppeteer _claude_<feature>_test'
+```
+
+`var/` is shared with the host, so the screenshots land in
+`var/puppeteer/` on both sides.
+
 On **aarch64 (ARM) hosts**, you must set `PUPPETEER_EXECUTABLE_PATH`
 (see "Environment details" below):
 

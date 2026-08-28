@@ -576,3 +576,17 @@ If a tool complains that provision is outdated, run `./tools/provision`
 to fix it. Do not use `--skip-provision-check` to work around the
 error; the check exists because tests and linters depend on provisioned
 dependencies being current.
+
+If you are running outside the development environment (e.g., on a
+macOS host with the Vagrant/Docker setup), `./tools/` scripts won't
+run directly; run the same command inside the container instead:
+
+```bash
+vagrant ssh -c 'cd ~/zulip && ./tools/lint path/to/changed/files.py'
+```
+
+The checkout is shared with the host, so files you edit are already
+there and anything the command writes (test output, screenshots) is
+visible on both sides. If `vagrant ssh` fails with a Docker daemon
+error, Docker Desktop isn't running; ask the user to start it. These
+commands take minutes, so run them in the background.
