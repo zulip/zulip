@@ -214,6 +214,15 @@ coherent idea."** This is non-negotiable.
   When a commit is flagged as potentially droppable, verify all
   earlier commits work correctly without it.
 
+### Keep Unrelated Fixes Out of Feature PRs
+
+If, while building a feature, you find and fix a pre-existing bug or
+make a refactor that would be worth merging even if the feature never
+lands, submit it as its own PR. A small isolated PR gets real
+scrutiny; the same change as commit 1 of 6 in a large PR tends to be
+waved through. Prep commits that only make sense for the feature
+stay in the feature PR.
+
 ### Commit Message Format
 
 ```
