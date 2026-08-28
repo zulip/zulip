@@ -237,59 +237,6 @@ If a PR makes frontend changes, manually verify the affected UI
 using the checklist in `.claude/rules/ui-testing.md` (loaded
 automatically when you work on frontend files).
 
-## Common Pitfalls
-
-### Treating Known Issues as Acceptable
-
-A common failure mode is discovering a problem during verification
-and then noting it as a known limitation rather than fixing it. At
-Zulip, there is no category of "known minor issue" that is acceptable
-to ship. If it's broken in any state, size, theme, or language, it
-needs to be fixed.
-
-**Mitigation:** When you find any issue during verification, fix it
-before presenting the work. If a fix would require a design decision,
-raise it as a question rather than shipping the broken state.
-
-### Overconfident Code Generation
-
-You may generate code that looks correct but doesn't match Zulip patterns.
-
-**Mitigation:** Always show existing similar code first before implementing.
-
-### Incomplete Type Annotations
-
-Python code must be fully typed for mypy.
-
-**Mitigation:** Ensure all functions have complete type annotations. Run mypy
-(perhaps via the linter) to verify.
-
-### Missing Test Updates
-
-Tests must be in the same commit as the code they test.
-
-**Mitigation:** Include test updates in each commit. Show what tests need to
-change.
-
-### Verbose Commit Messages
-
-Zulip commits are concise -- say everything that's important for a
-reviewer to understand about the motivation for the work and changes,
-and nothing more. Avoid wordiness and details obvious to someone who
-is looking at the commit and its metadata (lists of filenames, etc).
-
-**Mitigation:** Keep summary under 72 characters. Body should explain why,
-not what.
-
-### Mixing Concerns
-
-Multiple changes in one commit makes review difficult.
-
-**Mitigation:** Each commit should do exactly one thing. Plan
-necessary refactoring and preparatory commits in advance of functional
-changes. You can split into good commits after the fact, but it's much
-faster and easier to just plan and write them well the first time.
-
 ## What Not To Do
 
 - Always check if you're working on top of the latest upstream/main, and
