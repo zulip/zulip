@@ -151,6 +151,9 @@ Zulip has over 185,000 words of developer documentation. Before working on any a
   If it only makes sense as a contrast with how the code used to work
   ("show the modal before rendering so that if rendering throws..."),
   it describes the diff, and belongs in the commit message instead.
+- Don't reference line numbers (`filter.ts:493`) in comments, commit
+  messages, or PR descriptions; they are wrong after the next edit
+  above them. Reference symbol names instead.
 - Use `em` units instead of `px` for computed CSS values that need to
   scale with font size. Pixel approximations break at different zoom
   levels and font-size settings.
