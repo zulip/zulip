@@ -7,26 +7,14 @@ contributors.
 
 ## Philosophy
 
-Zulip is a team chat application used by thousands of organizations,
-built to last for many years. It is developed by a vibrant open-source
-community, with maintainers who have consistently emphasized **high
-standards for codebase readability, code review, commit discipline,
-debuggability, automated testing, tooling, documentation, and all the
-other subtle details that together determine whether software is easy
-to understand, operate, and modify**.
-
-Zulip's engineering strategy is to **"move quickly without breaking
-things"**. This is possible because the project has invested years in
-testing, tooling, code structure, documentation, and development
-practices that catch bugs systematically rather than relying on
-individual vigilance. Maintainers spend most of their review time on
-product decisions and code structure/readability, not on chasing
-correctness issues — because the process is designed to prevent them.
-
-This means Zulip's coding philosophy is to **focus relentlessly on
-making the codebase easy to understand and difficult to make dangerous
-mistakes**. This applies equally to AI-generated contributions. Every
-change should make the codebase more maintainable and easier to read.
+Zulip is built to last for decades and holds a high bar for
+readability, commit discipline, testing, and documentation. Its
+engineering strategy is to "move quickly without breaking things":
+every change should make the codebase easier to understand and
+harder to make dangerous mistakes in. Maintainers expect to spend
+review time on product and structure questions, not on catching
+correctness issues, so the process below is designed to catch those
+first.
 
 ### No detail is too small
 
