@@ -156,6 +156,10 @@ Zulip has over 185,000 words of developer documentation. Before working on any a
   keeping in mind our browserlist.
 - Use `util.the($el)` instead of `$el[0]!` when a jQuery object should
   hold exactly one element; it asserts that at runtime.
+- Use class or ID selectors in jQuery and CSS, not bare tag selectors
+  (`$row.find("a")`) or attribute selectors (`[tabindex]`), which match
+  unintended elements and can't be grepped for. If no suitable class
+  exists, add one.
 - Prefer writing code that is readable without explanation over heavily
   commented code using clever tricks. Comments should explain "why" when
   the reason isn't obvious, not narrate "what" the code does.
