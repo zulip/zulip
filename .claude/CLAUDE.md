@@ -239,6 +239,16 @@ Fixes #123.
   and `Fixes #123.` in the final commit.
 - Never: `Partially fixes #123.` (GitHub ignores "partially")
 
+**Only claim what you verified:**
+
+- `Fixes #123.` on a bug report asserts the bug was reproduced and
+  the change resolves it. If you couldn't reproduce it, tell the user
+  rather than writing `Fixes`; they may be able to confirm it. Issues
+  that describe a feature rather than a bug need no reproduction.
+- The same applies to any claim in a commit message or PR description
+  about what the code does; state only what you checked by reading
+  the code, running it, or running tests.
+
 ### Rebasing Commits
 
 To change a commit that is not at HEAD (squash a fixup into it,
