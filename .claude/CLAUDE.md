@@ -289,6 +289,10 @@ tests.
 - A good failing test before implementing is good practice so your
   test and code can jointly verify each other.
 - Remember to always assert state is correctly updated, not just "success".
+- Name and comment tests by what they guarantee ("must not throw when
+  the list is empty"), not by the past failure they were written
+  after ("regression test for the empty-list crash"). The same goes
+  for commit messages.
 
 ### For Webhooks:
 
