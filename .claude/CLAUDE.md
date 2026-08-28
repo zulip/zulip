@@ -392,6 +392,11 @@ Before finalizing, verify:
 - [ ] No secrets or credentials are hardcoded
 - [ ] Documentation is updated if behavior changes
 - [ ] Refactoring is complete (`git grep` for remaining occurrences)
+- [ ] If a helper's return value or a shared data structure gained a
+      field, every consumer that destructures or rebuilds it was
+      audited, including sibling blocks in the same file that build
+      the same shape. TypeScript does not flag callers that silently
+      drop the new field.
 - [ ] Security audit of changes. Always check for XSS in UI changes
       and for incorrect access control in server changes.
 
