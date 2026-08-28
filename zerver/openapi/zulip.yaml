@@ -13151,7 +13151,7 @@ paths:
               properties:
                 subscriptions:
                   description: |
-                    A list of dictionaries containing information about the
+                    An array of objects containing information about the
                     channels that users will be subscribed to.
 
                     For each channel, there must be a key `name` and value
@@ -13176,7 +13176,9 @@ paths:
                           The [description](/help/change-the-channel-description)
                           to use for a new channel being created, in text/markdown format.
 
-                          See the help center article on [message formatting](/help/format-your-message-using-markdown) for details on Zulip-flavored Markdown.
+                          See the help center article on [message
+                          formatting](/help/format-your-message-using-markdown)
+                          for details on Zulip-flavored Markdown.
 
                           Clients should use the `max_stream_description_length` returned
                           by the [`POST /register`](/api/register-queue) endpoint to
