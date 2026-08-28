@@ -492,7 +492,9 @@ Recommend pausing for discussion when:
 
 - The approach involves security-sensitive code
 - Database migrations are needed (See `docs/subsystems/schema-migrations.md`).
-- The change affects many files (>10)
+- The change alters behavior in several subsystems at once (a
+  mechanical rename or type annotation sweep touching many files
+  does not count)
 - Performance implications are unclear
 - The feature design isn't fully specified
 - The API or data model design isn't fully specified
