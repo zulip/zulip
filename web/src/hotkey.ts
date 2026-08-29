@@ -623,6 +623,10 @@ function handle_popover_events(event_name: string): boolean {
 
 // Returns true if we handled it, false if the browser should.
 function process_enter_key(e: JQuery.KeyDownEvent): boolean {
+    if (overlays.lightbox_open() && lightbox.toggle_video_playback()) {
+        e.preventDefault();
+        return true;
+    }
     if ($(e.target).hasClass("trigger-click-on-enter")) {
         // If the target has the class "trigger-click-on-enter", explicitly
         // trigger a click event on it to call the associated click handler.
@@ -936,6 +940,13 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
         }
         if (event_name === "toggle_stream_subscription" && overlays.streams_open()) {
             stream_settings_ui.keyboard_sub();
+            return true;
+        }
+        if (
+            event_name === "spacebar" &&
+            overlays.lightbox_open() &&
+            lightbox.toggle_video_playback()
+        ) {
             return true;
         }
         if (event_name === "show_lightbox" && overlays.lightbox_open()) {
