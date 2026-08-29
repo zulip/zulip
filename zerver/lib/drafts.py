@@ -162,7 +162,7 @@ def do_edit_draft(draft_id: int, draft: DraftData, user_profile: UserProfile) ->
     draft_object.last_edit_time = valid_draft_dict.last_edit_time
 
     with transaction.atomic(durable=True):
-        draft_object.save()
+        draft_object.save(update_fields=["content", "topic", "recipient_id", "last_edit_time"])
 
         event = {"type": "drafts", "op": "update", "draft": draft_object.to_dict()}
         send_event_on_commit(user_profile.realm, event, [user_profile.id])
