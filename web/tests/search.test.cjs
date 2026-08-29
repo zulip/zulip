@@ -382,6 +382,43 @@ run_test("generate_pills_html with unknown channel", ({mock_template, override})
     assert.ok(html.includes("empty-topic-display"));
 });
 
+run_test("generate_pills_html with an empty topic operand", ({mock_template, override}) => {
+    mock_template("search_list_item.hbs", true, (_data, html) => html);
+    override(realm, "realm_empty_topic_display_name", "general chat");
+
+    const empty_topic_pill_value = `topic:<span class="empty-topic-display"> translated: general chat</span>`;
+
+    // With nothing typed into the search input, the `topic:` term comes
+    // from an existing pill, where an empty operand means "general chat".
+    let html = search_pill.generate_pills_html("topic:", "");
+    assert.ok(html.includes(empty_topic_pill_value));
+
+    // When another term is being typed after `topic:` (from an existing
+    // pill), the existing `topic:` term still represents an empty operand,
+    // so "general chat" is displayed for it.
+    html = search_pill.generate_pills_html("topic: zo", "zo");
+    assert.ok(html.includes(empty_topic_pill_value));
+
+    // Having typed `topic:` out in full, the user is picking an operand,
+    // so "general chat" is a useful completion. Trailing whitespace
+    // doesn't change that.
+    html = search_pill.generate_pills_html("topic:", "topic:");
+    assert.ok(html.includes(empty_topic_pill_value));
+    html = search_pill.generate_pills_html("topic:", "topic: ");
+    assert.ok(html.includes(empty_topic_pill_value));
+
+    // But when we're suggesting `topic` as an operator to add, for a
+    // partially typed operator, the user hasn't asked for an operand
+    // yet, so we suggest the bare operator.
+    html = search_pill.generate_pills_html("topic:", "to");
+    assert.ok(html.includes("topic:"));
+    assert.ok(!html.includes("empty-topic-display"));
+
+    html = search_pill.generate_pills_html("-topic:", "-to");
+    assert.ok(html.includes("-topic:"));
+    assert.ok(!html.includes("empty-topic-display"));
+});
+
 run_test("set_search_bar_contents with duplicate pills", () => {
     const duplicate_attachment_terms = [
         {
