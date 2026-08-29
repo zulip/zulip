@@ -7,6 +7,7 @@ from zerver.apps import flush_cache
 from zerver.lib.cache import (
     MEMCACHED_MAX_KEY_LENGTH,
     InvalidCacheKeyError,
+    bot_profile_cache_key,
     bulk_cached_fetch,
     cache_delete,
     cache_delete_many,
@@ -15,6 +16,7 @@ from zerver.lib.cache import (
     cache_set,
     cache_set_many,
     cache_with_key,
+    open_graph_description_cache_key,
     safe_cache_get_many,
     safe_cache_set_many,
     user_profile_by_id_cache_key,
@@ -331,3 +333,39 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
             id_fetcher=get_user_email,
         )
         self.assertEqual(result, {})
+
+
+class CacheKeyFunctionTest(ZulipTestCase):
+    def test_bot_profile_cache_key_includes_realm_id(self) -> None:
+        """bot_profile_cache_key must produce distinct keys for
+        different realm_id values, even when the email is the same."""
+        email = "notification-bot@zulip.com"
+        key_realm_1 = bot_profile_cache_key(email, 1)
+        key_realm_2 = bot_profile_cache_key(email, 2)
+        self.assertNotEqual(key_realm_1, key_realm_2)
+        self.assertIn(":1", key_realm_1)
+        self.assertIn(":2", key_realm_2)
+
+    def test_bot_profile_cache_key_strips_email(self) -> None:
+        """Leading/trailing whitespace in the email should not affect
+        the generated cache key."""
+        key_clean = bot_profile_cache_key("bot@zulip.com", 1)
+        key_padded = bot_profile_cache_key("  bot@zulip.com  ", 1)
+        self.assertEqual(key_clean, key_padded)
+
+    def test_open_graph_description_cache_key_includes_content(self) -> None:
+        """open_graph_description_cache_key must produce distinct keys
+        when the same URL serves different content."""
+        url = "/help/getting-started"
+        key_v1 = open_graph_description_cache_key(b"<p>Version 1</p>", url)
+        key_v2 = open_graph_description_cache_key(b"<p>Version 2</p>", url)
+        self.assertNotEqual(key_v1, key_v2)
+
+    def test_open_graph_description_cache_key_same_content_same_url(self) -> None:
+        """Identical content and URL should produce the same cache key."""
+        url = "/help/getting-started"
+        content = b"<p>Hello world</p>"
+        key_a = open_graph_description_cache_key(content, url)
+        key_b = open_graph_description_cache_key(content, url)
+        self.assertEqual(key_a, key_b)
+

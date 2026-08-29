@@ -497,7 +497,7 @@ def user_profile_delivery_email_cache_key(delivery_email: str, realm_id: int) ->
 
 
 def bot_profile_cache_key(email: str, realm_id: int) -> str:
-    return f"bot_profile:{hashlib.sha1(email.strip().encode()).hexdigest()}"
+    return f"bot_profile:{hashlib.sha1(email.strip().encode()).hexdigest()}:{realm_id}"
 
 
 def user_profile_by_id_cache_key(user_profile_id: int) -> str:
