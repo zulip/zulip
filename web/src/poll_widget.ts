@@ -6,12 +6,15 @@ import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 
 import * as blueslip from "./blueslip.ts";
+import * as composebox_typeahead from "./composebox_typeahead.ts";
 import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as markdown from "./markdown.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
 import type {PollWidgetOutboundData} from "./poll_data.ts";
 import {PollData, new_option_schema, question_schema, vote_schema} from "./poll_data.ts";
+import * as rendered_markdown from "./rendered_markdown.ts";
 import {ZulipWidgetContext} from "./widget_context.ts";
 import type {Event} from "./widget_data.ts";
 import type {AnyWidgetData, WidgetData} from "./widget_schema.ts";
@@ -113,7 +116,9 @@ export function render({
         const waiting = !is_my_poll && !has_question;
 
         $elem.find(".poll-question-header").toggle(!input_mode);
-        $elem.find(".poll-question-header").text(question);
+        const rendered_question = markdown.parse_non_message(question);
+        $elem.find(".poll-question-header").html(rendered_question);
+        rendered_markdown.update_elements($elem.find(".poll-question-header"));
         $elem.find(".poll-edit-question").toggle(can_edit);
         update_edit_controls();
 
@@ -192,12 +197,21 @@ export function render({
         const html = render_widgets_poll_widget({});
         $elem.html(html);
 
-        $elem.find("input.poll-question").on("keyup", (e) => {
+        const $poll_question_input = $elem.find<HTMLInputElement>("input.poll-question");
+        const $poll_option_input = $elem.find<HTMLInputElement>("input.poll-option");
+
+        composebox_typeahead.initialize_compose_typeahead($poll_question_input);
+        composebox_typeahead.initialize_compose_typeahead($poll_option_input);
+
+        $poll_question_input.on("keyup", (e) => {
             e.stopPropagation();
             update_edit_controls();
         });
 
-        $elem.find("input.poll-question").on("keydown", (e) => {
+        $poll_question_input.on("keydown", (e) => {
+            if (e.isDefaultPrevented()) {
+                return;
+            }
             e.stopPropagation();
 
             if (keydown_util.is_enter_event(e)) {
@@ -232,7 +246,10 @@ export function render({
             submit_option();
         });
 
-        $elem.find("input.poll-option").on("keyup", (e) => {
+        $poll_option_input.on("keyup", (e) => {
+            if (e.isDefaultPrevented()) {
+                return;
+            }
             e.stopPropagation();
             check_option_button();
 
@@ -242,7 +259,7 @@ export function render({
             }
 
             if (e.key === "Escape") {
-                $("input.poll-option").val("");
+                $poll_option_input.val("");
                 return;
             }
         });
@@ -266,9 +283,17 @@ export function render({
 
     function render_results(): void {
         const widget_data = poll_data.get_widget_data();
+        const options = widget_data.options.map((option) => ({
+            ...option,
+            option_html: markdown.parse_non_message(option.option),
+        }));
 
-        const html = render_widgets_poll_widget_results(widget_data);
+        const html = render_widgets_poll_widget_results({
+            ...widget_data,
+            options,
+        });
         $elem.find("ul.poll-widget").html(html);
+        rendered_markdown.update_elements($elem.find("ul.poll-widget"));
 
         $elem
             .find("button.poll-vote")

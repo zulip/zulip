@@ -10,7 +10,18 @@ const blueslip = require("./lib/zblueslip.cjs");
 const {$} = require("./lib/zjquery.cjs");
 
 mock_esm("../src/settings_data", {
-    user_can_access_all_other_users: () => true,
+    user_can_access_all_other_users() {
+        return true;
+    },
+});
+const composebox_typeahead = mock_esm("../src/composebox_typeahead", {
+    initialize_compose_typeahead() {},
+});
+const markdown = mock_esm("../src/markdown", {
+    parse_non_message: (raw) => `<p>${raw}</p>`,
+});
+const rendered_markdown = mock_esm("../src/rendered_markdown", {
+    update_elements() {},
 });
 
 const {PollData} = zrequire("poll_data");
@@ -282,7 +293,7 @@ run_test("activate another person poll", ({mock_template}) => {
 
     assert.equal($widget_elem.html(), "widgets/poll_widget");
     assert.equal($widget_option_container.html(), "widgets/poll_widget_results");
-    assert.equal($poll_question_header.text(), "What do you want?");
+    assert.equal($poll_question_header.html(), "<p>What do you want?</p>");
 
     {
         /* Testing data sent to server on adding option */
@@ -407,7 +418,7 @@ run_test("activate own poll", ({mock_template}) => {
 
     assert.equal($widget_elem.html(), "widgets/poll_widget");
     assert.equal($widget_option_container.html(), "widgets/poll_widget_results");
-    assert.equal($poll_question_header.text(), "Where to go?");
+    assert.equal($poll_question_header.html(), "<p>Where to go?</p>");
 
     {
         /* Testing data sent to server on editing question */
@@ -424,4 +435,106 @@ run_test("activate own poll", ({mock_template}) => {
         $poll_question_submit.trigger("click");
         assert.deepEqual(out_data, undefined);
     }
+});
+
+run_test("poll markdown rendering and typeahead", ({mock_template, override}) => {
+    let results_template_data;
+    mock_template("widgets/poll_widget.hbs", false, () => "widgets/poll_widget");
+    mock_template("widgets/poll_widget_results.hbs", false, (data) => {
+        results_template_data = data;
+        return "widgets/poll_widget_results";
+    });
+
+    let typeahead_initialized_count = 0;
+    override(composebox_typeahead, "initialize_compose_typeahead", () => {
+        typeahead_initialized_count += 1;
+    });
+
+    const parse_non_message_calls = [];
+    override(markdown, "parse_non_message", (raw) => {
+        parse_non_message_calls.push(raw);
+        return `<span class="rendered">${raw}</span>`;
+    });
+
+    const updated_elements = [];
+    override(rendered_markdown, "update_elements", ($elem) => {
+        updated_elements.push($elem);
+    });
+
+    const $widget_elem = $("<div>").addClass("widget-content");
+
+    const set_widget_find_result = (selector) => {
+        const $elem = $.create(selector);
+        $widget_elem.set_find_results(selector, $elem);
+        return $elem;
+    };
+
+    set_widget_find_result("button.poll-option");
+    set_widget_find_result("input.poll-option");
+    set_widget_find_result("ul.poll-widget");
+    set_widget_find_result("button.poll-question-check");
+    set_widget_find_result(".poll-edit-question");
+    const $poll_question_header = set_widget_find_result(".poll-question-header");
+    set_widget_find_result(".poll-question-bar");
+    set_widget_find_result(".poll-option-bar");
+    set_widget_find_result("button.poll-vote");
+    set_widget_find_result(".poll-please-wait");
+    set_widget_find_result("button.poll-question-remove");
+    set_widget_find_result("input.poll-question");
+
+    const activate_opts = {
+        message: {
+            sender_id: me.user_id,
+        },
+        any_data: {
+            widget_type: "poll",
+            extra_data: {
+                question: "What is your **favorite** option?",
+                options: ["Option **A**", "Option *B*"],
+            },
+        },
+    };
+
+    const {widget_data} = poll_widget.activate(activate_opts);
+    const render_opts = {
+        $elem: $widget_elem,
+        callback() {},
+        message: {
+            sender_id: me.user_id,
+        },
+        widget_data,
+        rerender: false,
+    };
+
+    poll_widget.render(render_opts);
+
+    // Verify typeahead was initialized for poll question and option inputs
+    assert.equal(typeahead_initialized_count, 2);
+
+    // Verify markdown.parse_non_message was called for question and options
+    assert.deepEqual(parse_non_message_calls, [
+        "What is your **favorite** option?",
+        "Option **A**",
+        "Option *B*",
+    ]);
+
+    // Verify question header HTML contains parsed markdown
+    assert.equal(
+        $poll_question_header.html(),
+        '<span class="rendered">What is your **favorite** option?</span>',
+    );
+
+    // Verify option_html was passed to template data
+    assert.equal(results_template_data.options.length, 2);
+    assert.equal(
+        results_template_data.options[0].option_html,
+        '<span class="rendered">Option **A**</span>',
+    );
+    assert.equal(
+        results_template_data.options[1].option_html,
+        '<span class="rendered">Option *B*</span>',
+    );
+
+    // Verify rendered_markdown.update_elements was called for question header and results list
+    assert.equal(updated_elements.length, 2);
 });
