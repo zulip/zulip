@@ -1742,11 +1742,18 @@ function set_recipient_from_typeahead(item: UserGroupPillData | UserPillData): v
     }
 }
 
-export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElement>): void {
-    const bootstrap_typeahead_input: TypeaheadInputElement = {
-        $element,
-        type: "textarea",
-    };
+export function initialize_compose_typeahead(
+    $element: JQuery<HTMLInputElement | HTMLTextAreaElement>,
+): void {
+    const bootstrap_typeahead_input: TypeaheadInputElement = $element.is("input")
+        ? {
+              $element: $element.find<HTMLInputElement>("*").addBack("input"),
+              type: "input",
+          }
+        : {
+              $element: $element.find<HTMLTextAreaElement>("*").addBack("textarea"),
+              type: "textarea",
+          };
 
     compose_ui.maybe_set_compose_textarea_typeahead(
         new Typeahead(bootstrap_typeahead_input, {
