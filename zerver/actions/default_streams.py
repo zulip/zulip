@@ -169,7 +169,7 @@ def do_change_default_stream_group_name(
         )
 
     group.name = new_group_name
-    group.save()
+    group.save(update_fields=["name"])
     notify_default_stream_groups(realm)
 
 
@@ -177,7 +177,7 @@ def do_change_default_stream_group_description(
     realm: Realm, group: DefaultStreamGroup, new_description: str
 ) -> None:
     group.description = new_description
-    group.save()
+    group.save(update_fields=["description"])
     notify_default_stream_groups(realm)
 
 
