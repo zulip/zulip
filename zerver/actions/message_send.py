@@ -1214,6 +1214,20 @@ def do_send_messages(
         user_ids = send_request.active_user_ids | set(user_flags.keys())
         sender_id = send_request.message.sender_id
 
+        if (
+            send_request.message.is_channel_message
+            and sender_id not in user_ids
+            and not send_request.message.sender.is_bot
+        ):
+            # One can send to a channel without being subscribed to it, in
+            # which case the sender gets no UserMessage row and so would not
+            # otherwise hear about their own message. Send them the event
+            # anyway, so their client can display the message without having
+            # to refetch it. We use the flags that fetching this message
+            # would report, since that is what the message is for them.
+            user_ids.add(sender_id)
+            user_flags[sender_id] = ["read", "historical"]
+
         # We make sure the sender is listed first in the `users` list;
         # this results in the sender receiving the message first if
         # there are thousands of recipients, decreasing perceived latency.
