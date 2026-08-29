@@ -1379,6 +1379,7 @@ class UserSignUpTest(ZulipTestCase):
         full_name: str = "New user's name",
         realm: Realm | None = None,
         subdomain: str | None = None,
+        **extra_reg_kwargs: Any,
     ) -> Union[UserProfile, "TestHttpResponse"]:
         """Common test function for signup tests.  It is a goal to use this
         common function for all signup tests to avoid code duplication; doing
@@ -1409,7 +1410,11 @@ class UserSignUpTest(ZulipTestCase):
         # Pick a password and agree to the ToS. This should create our
         # account, log us in, and redirect to the app.
         result = self.submit_reg_form_for_user(
-            email, password, full_name=full_name, **client_kwargs
+            email,
+            password,
+            full_name=full_name,
+            **client_kwargs,
+            **extra_reg_kwargs,
         )
 
         if result.status_code == 200:
@@ -1551,31 +1556,17 @@ class UserSignUpTest(ZulipTestCase):
         Check if the default language of new user is set using the browser locale
         """
         email = self.nonreg_email("newguy")
-        password = "newpassword"
         timezone = "America/Denver"
         realm = get_realm("zulip")
         do_set_realm_property(realm, "default_language", "de", acting_user=None)
 
-        result = self.client_post("/accounts/home/", {"email": email})
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
+        user_profile = self.verify_signup(
+            email=email,
+            timezone=timezone,
+            HTTP_ACCEPT_LANGUAGE="fr,en;q=0.9",
         )
-        result = self.client_get(result["Location"])
-        self.assert_in_response("check your email", result)
+        assert isinstance(user_profile, UserProfile)
 
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
-
-        # Pick a password and agree to the ToS.
-        result = self.submit_reg_form_for_user(
-            email, password, timezone=timezone, HTTP_ACCEPT_LANGUAGE="fr,en;q=0.9"
-        )
-        self.assertEqual(result.status_code, 302)
-
-        user_profile = self.nonreg_user("newguy")
         self.assertNotEqual(user_profile.default_language, realm.default_language)
         self.assertEqual(user_profile.default_language, "fr")
         self.assertEqual(user_profile.timezone, timezone)
@@ -1585,28 +1576,15 @@ class UserSignUpTest(ZulipTestCase):
 
     def test_default_language_with_unsupported_browser_locale(self) -> None:
         email = self.nonreg_email("newguy")
-        password = "newpassword"
         realm = get_realm("zulip")
         do_set_realm_property(realm, "default_language", "de", acting_user=None)
 
-        result = self.client_post("/accounts/home/", {"email": email})
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
+        user_profile = self.verify_signup(
+            email=email,
+            HTTP_ACCEPT_LANGUAGE="en-IND",
         )
-        result = self.client_get(result["Location"])
-        self.assert_in_response("check your email", result)
+        assert isinstance(user_profile, UserProfile)
 
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
-
-        # Pick a password and agree to the ToS.
-        result = self.submit_reg_form_for_user(email, password, HTTP_ACCEPT_LANGUAGE="en-IND")
-        self.assertEqual(result.status_code, 302)
-
-        user_profile = self.nonreg_user("newguy")
         self.assertEqual(user_profile.default_language, realm.default_language)
         from django.core.mail import outbox
 
@@ -1618,30 +1596,15 @@ class UserSignUpTest(ZulipTestCase):
         is the default twenty_four_hour_time of the realm.
         """
         email = self.nonreg_email("newguy")
-        password = "newpassword"
         realm = get_realm("zulip")
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         do_set_realm_user_default_setting(
             realm_user_default, "twenty_four_hour_time", True, acting_user=None
         )
 
-        result = self.client_post("/accounts/home/", {"email": email})
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
-        )
-        result = self.client_get(result["Location"])
-        self.assert_in_response("check your email", result)
+        user_profile = self.verify_signup(email=email)
+        assert isinstance(user_profile, UserProfile)
 
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
-
-        result = self.submit_reg_form_for_user(email, password)
-        self.assertEqual(result.status_code, 302)
-
-        user_profile = self.nonreg_user("newguy")
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         self.assertEqual(
             user_profile.twenty_four_hour_time, realm_user_default.twenty_four_hour_time
@@ -1649,34 +1612,19 @@ class UserSignUpTest(ZulipTestCase):
 
     def test_email_address_visibility_for_new_user(self) -> None:
         email = self.nonreg_email("newguy")
-        password = "newpassword"
         realm = get_realm("zulip")
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         self.assertEqual(
             realm_user_default.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS
         )
 
-        result = self.client_post("/accounts/home/", {"email": email})
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
+        user_profile = self.verify_signup(
+            email=email,
+            email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
         )
-        result = self.client_get(result["Location"])
-        self.assert_in_response("check your email", result)
-
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
-
-        # Pick a password and agree to the ToS.
-        result = self.submit_reg_form_for_user(
-            email, password, email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
-        )
-        self.assertEqual(result.status_code, 302)
+        assert isinstance(user_profile, UserProfile)
 
         # Realm-level default is overridden by the value passed during signup.
-        user_profile = self.nonreg_user("newguy")
         self.assertEqual(
             user_profile.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
         )
@@ -1848,26 +1796,15 @@ class UserSignUpTest(ZulipTestCase):
     def test_signup_with_email_address_race(self) -> None:
         """
         The check for if an email is in use can race with other user
-        creation; it is caught by database uniqueness rules.  Verify
+        creation; it is caught by database uniqueness rules. Verify
         that that is transformed into a redirect to log into the
         account.
         """
         email = "newguy@zulip.com"
-        password = "newpassword"
 
         self.client_post("/accounts/home/", {"email": email})
         confirmation_url = self.get_confirmation_url_from_outbox(email)
         self.client_get(confirmation_url)
-        self.client_post(
-            "/accounts/register/",
-            {
-                "password": password,
-                "key": find_key_by_email(email),
-                "terms": True,
-                "full_name": "New Guy",
-                "from_confirmation": "1",
-            },
-        )
         with patch("zerver.actions.create_user.create_user", side_effect=IntegrityError):
             result = self.submit_reg_form_for_user(email, "easy", full_name="New Guy")
         self.assertEqual(result.status_code, 302)
@@ -1896,16 +1833,7 @@ class UserSignUpTest(ZulipTestCase):
         # Check if user is subscribed to the streams of default
         # stream group as well as default streams.
         email = self.nonreg_email("newguy")
-        password = "newpassword"
         realm = get_realm("zulip")
-
-        result = self.client_post("/accounts/home/", {"email": email})
-        self.assertEqual(result.status_code, 302)
-        result = self.client_get(result["Location"])
-
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
 
         default_streams = set()
 
@@ -1927,7 +1855,11 @@ class UserSignUpTest(ZulipTestCase):
             group1_streams.append(stream)
         do_create_default_stream_group(realm, "group 1", "group 1 description", group1_streams)
 
-        result = self.submit_reg_form_for_user(email, password, default_stream_groups=["group 1"])
+        user_profile = self.verify_signup(
+            email=email,
+            default_stream_groups=["group 1"],
+        )
+        assert isinstance(user_profile, UserProfile)
         self.check_user_subscribed_only_to_streams("newguy", default_streams | set(group1_streams))
 
     def test_signup_stream_subscriber_count(self) -> None:
@@ -2035,16 +1967,7 @@ class UserSignUpTest(ZulipTestCase):
         # Check if user is subscribed to the streams of default
         # stream groups as well as default streams.
         email = self.nonreg_email("newguy")
-        password = "newpassword"
         realm = get_realm("zulip")
-
-        result = self.client_post("/accounts/home/", {"email": email})
-        self.assertEqual(result.status_code, 302)
-        result = self.client_get(result["Location"])
-
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
 
         DefaultStream.objects.filter(realm=realm).delete()
         default_streams = []
@@ -2065,9 +1988,11 @@ class UserSignUpTest(ZulipTestCase):
             group2_streams.append(stream)
         do_create_default_stream_group(realm, "group 2", "group 2 description", group2_streams)
 
-        result = self.submit_reg_form_for_user(
-            email, password, default_stream_groups=["group 1", "group 2"]
+        user_profile = self.verify_signup(
+            email=email,
+            default_stream_groups=["group 1", "group 2"],
         )
+        assert isinstance(user_profile, UserProfile)
         self.check_user_subscribed_only_to_streams(
             "newguy", set(default_streams + group1_streams + group2_streams)
         )
@@ -2075,7 +2000,6 @@ class UserSignUpTest(ZulipTestCase):
     def test_signup_without_user_settings_from_another_realm(self) -> None:
         hamlet_in_zulip = self.example_user("hamlet")
         email = hamlet_in_zulip.delivery_email
-        password = "newpassword"
         subdomain = "lear"
         realm = get_realm("lear")
 
@@ -2091,18 +2015,14 @@ class UserSignUpTest(ZulipTestCase):
         OnboardingStep.objects.filter(user=hamlet_in_zulip).delete()
         OnboardingStep.objects.create(user=hamlet_in_zulip, onboarding_step="intro_resolve_topic")
 
-        result = self.client_post("/accounts/home/", {"email": email}, subdomain=subdomain)
-        self.assertEqual(result.status_code, 302)
-        result = self.client_get(result["Location"], subdomain=subdomain)
-
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url, subdomain=subdomain)
-        self.assertEqual(result.status_code, 200)
-        result = self.submit_reg_form_for_user(
-            email, password, source_realm_id="", HTTP_HOST=subdomain + ".testserver"
+        hamlet = self.verify_signup(
+            email=email,
+            realm=realm,
+            subdomain=subdomain,
+            source_realm_id="",
         )
+        assert isinstance(hamlet, UserProfile)
 
-        hamlet = get_user(self.example_email("hamlet"), realm)
         self.assertEqual(hamlet.left_side_userlist, False)
         self.assertEqual(hamlet.default_language, "en")
         self.assertEqual(hamlet.emojiset, "google")
