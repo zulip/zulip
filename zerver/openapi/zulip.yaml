@@ -31086,13 +31086,13 @@ components:
       example: ["message"]
     Narrow:
       description: |
-        A JSON-encoded array of arrays of length 2 indicating the
+        A JSON-encoded array of terms indicating the
         [narrow filter(s)](/api/construct-narrow) for which you'd
         like to receive events for.
 
         For example, to receive events for direct messages (including
         group direct messages) received by the user, one can use
-        `"narrow": [["is", "dm"]]`.
+        `"narrow": [{"operator": "is", "operand": "dm"}]`.
 
         Unlike the API for [fetching messages](/api/get-messages),
         this narrow parameter is simply a filter on messages that the
@@ -31100,7 +31100,7 @@ components:
         they are a recipient of a direct message).
 
         This means that a client that requests a `narrow` filter of
-        `[["channel", "Denmark"]]` will receive events for new messages
+        `[{"operator": "channel", "operand": "Denmark"}]` will receive events for new messages
         sent to that channel while the user is subscribed to that
         channel. The client will not receive any message events at all
         if the user is not subscribed to `"Denmark"`.
@@ -31117,11 +31117,31 @@ components:
         of search/narrow filter documentation.
       type: array
       items:
-        type: array
-        items:
-          type: string
+        oneOf:
+          - type: object
+            required:
+              - operator
+              - operand
+            additionalProperties: false
+            properties:
+              operator:
+                type: string
+              operand:
+                oneOf:
+                  - type: string
+                  - type: integer
+                  - type: array
+                    items:
+                      type: integer
+              negated:
+                type: boolean
+          - type: array
+            items:
+              type: string
+            minItems: 2
+            maxItems: 2
       default: []
-      example: [["channel", "Denmark"]]
+      example: [{"operator": "channel", "operand": "Denmark"}]
     AllPublicChannels:
       description: |
         Whether you would like to request message events from all public
