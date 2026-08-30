@@ -972,6 +972,7 @@ class SingleSubscription(BaseModel):
     creator_id: int | None
     date_created: int
     default_push_notifications: bool
+    mandatory_email_notifications: bool
     description: str
     first_message_id: int | None
     is_recently_active: bool

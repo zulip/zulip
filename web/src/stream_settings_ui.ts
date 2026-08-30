@@ -245,6 +245,15 @@ export function update_default_push_notifications_setting(
     stream_ui_updates.update_setting_element(sub, "default_push_notifications");
 }
 
+export function update_mandatory_email_notifications_setting(
+    sub: StreamSubscription,
+    new_value: boolean,
+): void {
+    stream_data.update_mandatory_email_notifications(sub, new_value);
+    stream_ui_updates.update_setting_element(sub, "mandatory_email_notifications");
+    stream_ui_updates.update_mandatory_email_notification_checkboxes(sub);
+}
+
 export function update_stream_permission_group_setting(
     setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
@@ -1049,6 +1058,10 @@ function setup_page(callback: () => void): void {
             push_notifications_tooltip: realm.realm_push_notifications_enabled
                 ? undefined
                 : $t({defaultMessage: "Mobile push notifications are not enabled on this server."}),
+            disable_mandatory_email_notifications: !current_user.is_admin,
+            mandatory_email_notifications_tooltip: current_user.is_admin
+                ? undefined
+                : $t({defaultMessage: "Only organization administrators can edit this setting."}),
             empty_string_topic_display_name: util.get_final_topic_display_name(""),
         };
 

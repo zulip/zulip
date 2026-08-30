@@ -482,6 +482,7 @@ def send_subscription_add_events(
                 message_retention_days=stream_dict["message_retention_days"],
                 name=stream_dict["name"],
                 default_push_notifications=stream_dict["default_push_notifications"],
+                mandatory_email_notifications=stream_dict["mandatory_email_notifications"],
                 rendered_description=stream_dict["rendered_description"],
                 stream_id=stream_dict["stream_id"],
                 stream_post_policy=stream_dict["stream_post_policy"],
@@ -1189,6 +1190,13 @@ def do_change_subscription_property(
     if property_name == "in_home_view":
         database_property_name = "is_muted"
         database_value = not value
+
+    if (
+        property_name == "email_notifications"
+        and value is False
+        and stream.mandatory_email_notifications
+    ):
+        raise JsonableError(_("Email notifications are required for this channel."))
 
     old_value = getattr(sub, database_property_name)
     setattr(sub, database_property_name, database_value)

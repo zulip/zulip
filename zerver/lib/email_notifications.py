@@ -33,12 +33,14 @@ from zerver.lib.notification_data import get_mentioned_user_group
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, send_future_email
 from zerver.lib.soft_deactivation import soft_reactivate_if_personal_notification
+from zerver.lib.streams import user_can_unsubscribe_from_stream
 from zerver.lib.tex import change_katex_to_raw_latex
 from zerver.lib.timestamp import format_datetime_to_string
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.topic import get_topic_display_name, get_topic_resolution_and_bare_name
 from zerver.lib.url_encoding import (
     direct_message_group_narrow_url,
+    encode_hash_component,
     message_link_url,
     stream_narrow_url,
     topic_narrow_url,
@@ -595,7 +597,9 @@ def do_send_missedmessage_events_reply_in_zulip(
                 }
             )
         assert message.recipient.type == Recipient.STREAM
-        stream = Stream.objects.only("id", "name").get(id=message.recipient.type_id)
+        stream = Stream.objects.only("id", "name", "mandatory_email_notifications").get(
+            id=message.recipient.type_id
+        )
         narrow_url = message_link_url(
             user_profile.realm, MessageDict.wide_dict(message), conversation_link=not mention
         )
@@ -607,6 +611,23 @@ def do_send_missedmessage_events_reply_in_zulip(
             topic_name=display_topic_name,
             topic_resolved=topic_resolved,
         )
+        if (
+            stream.mandatory_email_notifications
+            and NotificationTriggers.STREAM_EMAIL in unique_triggers
+        ):
+            context.update(
+                mandatory_email_notifications=True,
+                user_can_unsubscribe_from_channel=user_can_unsubscribe_from_stream(
+                    user_profile, stream
+                ),
+                unsubscribe_channel_url=(
+                    f"{user_profile.realm.url}/#channels/{stream.id}/"
+                    f"{encode_hash_component(stream.name)}/personal"
+                ),
+                deactivate_account_help_url=(
+                    f"{user_profile.realm.url}/help/deactivate-or-reactivate-a-user"
+                ),
+            )
         synthetic_root_message_id = prepare_synthetic_root_message_id(
             Recipient.STREAM, message.recipient_id, topic_name=display_topic_name
         )

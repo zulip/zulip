@@ -303,6 +303,7 @@ def update_stream_backend(
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
     default_push_notifications: Json[bool] | None = None,
+    mandatory_email_notifications: Json[bool] | None = None,
     description: ChannelDescription = None,
     folder_id: Json[int | None] | MissingType = Missing,
     history_public_to_subscribers: Json[bool] | None = None,
@@ -446,6 +447,16 @@ def update_stream_backend(
             raise JsonableError(_("Insufficient permission"))
         do_set_stream_property(
             stream, "default_push_notifications", default_push_notifications, user_profile
+        )
+
+    if mandatory_email_notifications is not None:
+        if not user_profile.is_realm_admin:
+            raise JsonableError(_("Insufficient permission"))
+        do_set_stream_property(
+            stream,
+            "mandatory_email_notifications",
+            mandatory_email_notifications,
+            user_profile,
         )
 
     if is_archived is not None and not is_archived:
@@ -700,6 +711,7 @@ def create_channel(
     can_send_message_group: Json[int | UserGroupMembersData] | None = None,
     can_subscribe_group: Json[int | UserGroupMembersData] | None = None,
     default_push_notifications: Json[bool] = False,
+    mandatory_email_notifications: Json[bool] = False,
     description: ChannelDescription = None,
     folder_id: Json[int] | None = None,
     history_public_to_subscribers: Json[bool] | None = None,
@@ -756,6 +768,9 @@ def create_channel(
     if default_push_notifications and not user_profile.is_realm_admin:
         raise JsonableError(_("Insufficient permission"))
 
+    if mandatory_email_notifications and not user_profile.is_realm_admin:
+        raise JsonableError(_("Insufficient permission"))
+
     group_settings_map = stream_group_settings_map[name]
     new_channel, created = create_stream_if_needed(
         realm,
@@ -766,6 +781,7 @@ def create_channel(
         is_web_public=is_web_public,
         message_retention_days=parsed_message_retention_days,
         default_push_notifications=default_push_notifications,
+        mandatory_email_notifications=mandatory_email_notifications,
         anonymous_group_membership=anonymous_group_membership,
         acting_user=user_profile,
         can_add_subscribers_group=group_settings_map["can_add_subscribers_group"],
@@ -851,6 +867,7 @@ def add_subscriptions_backend(
     can_send_message_group: Json[int | UserGroupMembersData] | None = None,
     can_subscribe_group: Json[int | UserGroupMembersData] | None = None,
     default_push_notifications: Json[bool] = False,
+    mandatory_email_notifications: Json[bool] = False,
     folder_id: Json[int] | None = None,
     history_public_to_subscribers: Json[bool] | None = None,
     invite_only: Json[bool] = False,
@@ -878,6 +895,9 @@ def add_subscriptions_backend(
     if default_push_notifications and not user_profile.is_realm_admin:
         raise JsonableError(_("Insufficient permission"))
 
+    if mandatory_email_notifications and not user_profile.is_realm_admin:
+        raise JsonableError(_("Insufficient permission"))
+
     for stream_obj in streams_raw:
         # 'color' field is optional
         # check for its presence in the streams_raw first
@@ -901,6 +921,7 @@ def add_subscriptions_backend(
             stream_dict_copy["topics_policy"] = validated_topics_policy.value
         stream_dict_copy["folder"] = folder
         stream_dict_copy["default_push_notifications"] = default_push_notifications
+        stream_dict_copy["mandatory_email_notifications"] = mandatory_email_notifications
 
         stream_dicts.append(stream_dict_copy)
 
