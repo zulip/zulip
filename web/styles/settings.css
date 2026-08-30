@@ -138,7 +138,7 @@ a.help_link_widget {
         pointer-events: none;
     }
 }
-
+#email_field_container,
 #change_email_button,
 #change_password {
     min-width: 0;
