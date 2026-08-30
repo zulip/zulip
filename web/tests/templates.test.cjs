@@ -87,6 +87,17 @@ run_test("tooltip_hotkey_hints", () => {
     assert.equal(html, expected_html);
 });
 
+run_test("tooltip_hotkey_hints mobile", ({override}) => {
+    const args = {
+        hotkey_one: "Ctrl",
+        hotkey_two: "C",
+    };
+
+    override(navigator, "userAgent", "Mozilla/5.0 (Linux; Android 10; Mobile)");
+    const html = require("./templates/tooltip_hotkey_hints.hbs")(args);
+    assert.equal(html, "\n");
+});
+
 run_test("popover_hotkey_hints", () => {
     const args = {
         hotkey_one: "Ctrl",

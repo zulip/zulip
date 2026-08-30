@@ -7,6 +7,7 @@ import * as common from "./common.ts";
 import {default_html_elements, intl} from "./i18n.ts";
 import {postprocess_content} from "./postprocess_content.ts";
 import {user_settings} from "./user_settings.ts";
+import {is_mobile} from "./util.ts";
 
 const orig_escape_expression = Handlebars.Utils.escapeExpression;
 const orig_is_empty = Handlebars.Utils.isEmpty;
@@ -249,6 +250,9 @@ Handlebars.registerHelper("numberFormat", (number: number) => number.toLocaleStr
 
 Handlebars.registerHelper("tooltip_hotkey_hints", (...args) => {
     args.pop(); // Handlebars options
+    if (is_mobile()) {
+        return "";
+    }
     const hotkeys: string[] = args;
     let hotkey_hints = "";
     common.adjust_mac_hotkey_hints(hotkeys);
