@@ -41,7 +41,7 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_human_non_guest_user, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
-from zerver.lib.bot_config import set_bot_config
+from zerver.lib.bot_config import get_merged_bot_config, set_bot_config
 from zerver.lib.demo_organizations import check_demo_organization_has_set_email
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
@@ -97,6 +97,7 @@ from zerver.lib.users import (
 )
 from zerver.lib.utils import generate_api_key
 from zerver.models import Service, Stream, UserProfile
+from zerver.models.bots import get_bot_services
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
@@ -572,11 +573,26 @@ def patch_bot_backend(
             if service_interface is not None or service_payload_url is not None:
                 raise JsonableError(_("Service fields cannot be updated on embedded bots."))
             if config_data is not None:
+                merged_config_data = get_merged_bot_config(bot, config_data)
+                existing_service = get_bot_services(bot.id)[0]
+                check_valid_bot_config(
+                    bot.bot_type,
+                    existing_service.name,
+                    merged_config_data,
+                )
                 do_update_bot_config_data(bot, config_data)
         case UserProfile.INCOMING_WEBHOOK_BOT:
             if service_interface is not None or service_payload_url is not None:
                 raise JsonableError(_("Incoming-webhook bots have no service fields to update."))
             if config_data is not None:
+                merged_config_data = get_merged_bot_config(bot, config_data)
+                proposed_integration_id = merged_config_data.get("integration_id")
+                if proposed_integration_id is not None:
+                    check_valid_bot_config(
+                        bot.bot_type,
+                        proposed_integration_id,
+                        merged_config_data,
+                    )
                 do_update_bot_config_data(bot, config_data)
         case UserProfile.DEFAULT_BOT:
             if (
