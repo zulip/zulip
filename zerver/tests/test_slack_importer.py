@@ -1859,6 +1859,152 @@ first reply
         # The reply keeps its own 8800-character share.
         self.assertTrue(first_reply_content.endswith(f"{'b' * 8780}\n[message truncated]"))
 
+    def test_thread_broadcast_reply_is_echoed_to_the_main_topic(self) -> None:
+        # A thread reply sent with Slack's "Also send to #channel" option is
+        # imported into the thread's topic like any other reply, plus an echo
+        # in the main import topic linking back to it.
+        slack_recipient_name_to_zulip_recipient_id = {"random": 2, "general": 1}
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["thread_with_broadcast_reply"],
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
+        )
+
+        zerver_message = conversion_result.zerver_message
+        self.assert_length(zerver_message, 4)
+
+        expected_thread_topic_name = "2015-06-12 thread message"
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_topic_name)
+
+        broadcasted_echo, broadcast_reply = zerver_message[2], zerver_message[3]
+
+        # The reply itself lands in the thread topic, like any other reply.
+        broadcasted_echo_message_link_syntax = get_message_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            MAIN_SLACK_IMPORT_TOPIC,
+            broadcasted_echo["id"],
+        )
+        self.assertEqual(
+            broadcast_reply["content"],
+            f"everyone should see this\n\n*Also sent to {broadcasted_echo_message_link_syntax}*",
+        )
+        self.assertEqual(broadcast_reply[EXPORT_TOPIC_NAME], expected_thread_topic_name)
+
+        # The echo goes to the main topic and links to the reply in its thread.
+        broadcast_reply_link_syntax = get_message_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            expected_thread_topic_name,
+            broadcast_reply["id"],
+        )
+        expected_echo_content = f"""
+*replied to a Slack thread: {broadcast_reply_link_syntax}*
+
+everyone should see this
+""".strip()
+        self.assertEqual(broadcasted_echo["content"], expected_echo_content)
+        self.assertEqual(broadcasted_echo[EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(
+            broadcasted_echo["recipient"],
+            slack_recipient_name_to_zulip_recipient_id["random"],
+        )
+        self.assertEqual(broadcasted_echo["sender"], broadcast_reply["sender"])
+        self.assertEqual(broadcasted_echo["date_sent"], broadcast_reply["date_sent"])
+        self.assertGreater(broadcasted_echo["id"], broadcast_reply["id"])
+
+    def test_thread_broadcast_echo_gets_its_own_usermessages(self) -> None:
+        # Without UserMessage rows of its own, the echo would be imported but
+        # visible to nobody. run_channel_message_to_zerver_message_with_fixtures
+        # mocks build_usermessages out, so call the conversion directly.
+        all_messages = orjson.loads(
+            self.fixture_data(
+                "thread_with_broadcast_reply.json",
+                type="slack_fixtures/exported_messages_fixtures",
+            )
+        )
+        user_data = orjson.loads(
+            self.fixture_data("users.json", type="slack_fixtures/exported_messages_fixtures")
+        )
+
+        conversion_result = channel_message_to_zerver_message(
+            1,
+            user_data,
+            {"U066MTL5U": 5, "U061A5N1G": 24, "U061A1R2R": 43},
+            {"random": 2, "general": 1},
+            all_messages,
+            [],
+            {2: {24, 43}},
+            {"random": ("c5", 2), "general": ("c6", 1)},
+            "domain",
+            set(),
+            convert_slack_threads=True,
+            do_download_and_export_upload_file=lambda request: None,
+            thread_counter=defaultdict(int),
+            thread_map={},
+            thread_reply_counts=count_thread_replies(
+                iter(all_messages), True, {"U066MTL5U": 5, "U061A5N1G": 24, "U061A1R2R": 43}
+            ),
+            skipped_messages_count_to_log=defaultdict(int),
+        )
+
+        zerver_message = conversion_result.zerver_message
+        broadcast_reply, broadcasted_echo = zerver_message[2], zerver_message[3]
+
+        message_ids_with_usermessages = {
+            usermessage["message"] for usermessage in conversion_result.zerver_usermessage
+        }
+        self.assertSetEqual(
+            message_ids_with_usermessages,
+            {message["id"] for message in zerver_message},
+        )
+        self.assertEqual(
+            [
+                usermessage["user_profile"]
+                for usermessage in conversion_result.zerver_usermessage
+                if usermessage["message"] == broadcasted_echo["id"]
+            ],
+            [24, 43],
+        )
+        self.assertEqual(
+            [
+                usermessage["user_profile"]
+                for usermessage in conversion_result.zerver_usermessage
+                if usermessage["message"] == broadcast_reply["id"]
+            ],
+            [24, 43],
+        )
+
+    def test_thread_messages_without_broadcast_are_not_echoed(self) -> None:
+        # Only replies marked with the thread_broadcast subtype are echoed;
+        # an ordinary thread stays entirely in its own topic.
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
+            [],
+            all_messages=[
+                {
+                    "text": "thread message",
+                    "user": "U061A5N1G",
+                    "ts": "1434139102.000002",
+                    "thread_ts": "1434139102.000002",
+                    "channel_name": "random",
+                },
+                {
+                    "text": "first reply",
+                    "user": "U061A1R2R",
+                    "ts": "1434139103.000002",
+                    "parent_user_id": "U061A5N1G",
+                    "thread_ts": "1434139102.000002",
+                    "channel_name": "random",
+                },
+            ],
+            slack_recipient_name_to_zulip_recipient_id={"random": 2, "general": 1},
+        )
+
+        zerver_message = conversion_result.zerver_message
+        self.assert_length(zerver_message, 2)
+        for message in zerver_message:
+            self.assertNotIn("replied to a Slack thread", message["content"])
+
     def test_convert_thread_topic_name_cut_off(self) -> None:
         slack_recipient_name_to_zulip_recipient_id = {
             "random": 2,
@@ -2768,7 +2914,7 @@ To Do
             message=message,
             domain_name=domain_name,
             realm_id=realm_id,
-            message_id=message_id,
+            message_ids={message_id},
             slack_user_id=slack_user_id,
             users=users,
             slack_user_id_to_zulip_user_id=slack_user_id_to_zulip_user_id,

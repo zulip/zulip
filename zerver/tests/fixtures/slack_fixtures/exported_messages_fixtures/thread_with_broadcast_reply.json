@@ -1,0 +1,31 @@
+[
+    {
+        "text": "thread message",
+        "user": "U061A5N1G",
+        "ts": "1434139102.000002",
+        "thread_ts": "1434139102.000002",
+        "channel_name": "random"
+    },
+    {
+        "text": "first reply",
+        "user": "U061A1R2R",
+        "ts": "1434139103.000002",
+        "parent_user_id": "U061A5N1G",
+        "thread_ts": "1434139102.000002",
+        "channel_name": "random"
+    },
+    {
+        "subtype": "thread_broadcast",
+        "text": "everyone should see this",
+        "user": "U061A1R2R",
+        "ts": "1434139104.000002",
+        "thread_ts": "1434139102.000002",
+        "root": {
+            "text": "thread message",
+            "user": "U061A5N1G",
+            "ts": "1434139102.000002",
+            "thread_ts": "1434139102.000002"
+        },
+        "channel_name": "random"
+    }
+]
