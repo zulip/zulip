@@ -112,7 +112,7 @@ def do_check_topic_drift(
     formatted_messages = []
     for msg in messages:
         if msg.sender.is_bot:
-            continue # nocoverage
+            continue  # nocoverage
         sender_name = msg.sender.full_name
         content = msg.content
         formatted_messages.append(f"[{sender_name}]: {content}")
