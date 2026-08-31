@@ -292,9 +292,12 @@ input {
     align-items: center;
     justify-content: center;
     align-self: stretch;
-    /* TODO: Re-express the 30.5px value here
+    /* Size with min-width rather than flex-basis, which Firefox
+       leaves out of the buttons wrappers' intrinsic width.
+       TODO: Re-express the 30.5px values here
        as part of information density work. */
-    flex: 0 0 30.5px;
+    flex: 0 0 auto;
+    min-width: 30.5px;
     min-height: 30.5px;
     border-radius: 3px;
     border: 1px solid var(--color-border-zulip-button);
@@ -339,6 +342,15 @@ input {
     /* Reserve space for the focus outline to prevent it from being cut off */
     margin-right: 2px;
     margin-bottom: var(--markdown-interelement-space-px);
+}
+
+.poll-question-buttons-wrapper,
+.todo-task-list-title-buttons-wrapper {
+    display: flex;
+    /* Keep the pair of buttons on one line; the bar wraps them as
+       a single unit instead. */
+    flex: 0 0 auto;
+    gap: 5px;
 }
 
 .poll-widget-header-area,
