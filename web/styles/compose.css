@@ -1816,9 +1816,15 @@ textarea.new_message_textarea {
                DM picker, which does not participate in
                the subgrid above used for channel icons. */
             align-self: center;
+            /* Zero out line-height so that `align-self`
+               is respected without a `top` adjustment
+               (zeroed out below). */
+            line-height: 0;
 
             .zulip-icon {
                 color: var(--privacy-icon-color-original);
+                /* Let `align-self: center` do its thing. */
+                top: 0;
             }
         }
 
