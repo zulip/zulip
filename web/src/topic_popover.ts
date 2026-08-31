@@ -24,6 +24,7 @@ import * as stream_popover from "./stream_popover.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import * as tippyjs from "./tippyjs.ts";
+import * as topic_drift from "./topic_drift.ts";
 import * as topic_link_util from "./topic_link_util.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread_ops from "./unread_ops.ts";
@@ -302,6 +303,12 @@ function register_popover_menu(target: string, placement: tippy.Placement): void
 
                 $popper.one("click", ".sidebar-popover-summarize-topic", () => {
                     message_summary.get_narrow_summary(stream_id, topic_name);
+
+                    popover_menus.hide_current_popover_if_visible(instance);
+                });
+
+                $popper.one("click", ".sidebar-popover-improve-topic-title", () => {
+                    topic_drift.improve_topic_title_interactive(stream_id, topic_name);
 
                     popover_menus.hide_current_popover_if_visible(instance);
                 });
