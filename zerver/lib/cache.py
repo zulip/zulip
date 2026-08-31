@@ -778,7 +778,9 @@ def to_dict_cache_key(message: "Message", realm_id: int | None = None) -> str:
 
 
 def open_graph_description_cache_key(content: bytes, request_url: str) -> str:
-    return f"open_graph_description_path:{hashlib.sha1(request_url.encode()).hexdigest()}"
+    content_hash = hashlib.sha1(content).hexdigest()
+    url_hash = hashlib.sha1(request_url.encode()).hexdigest()
+    return f"open_graph_description_path:{url_hash}:{content_hash}"
 
 
 def zoom_server_access_token_cache_key(account_id: str) -> str:
