@@ -481,7 +481,7 @@ def patch_bot_backend(
     default_sending_stream: str | None = None,
     full_name: str | None = None,
     role: Json[RoleParamType] | None = None,
-    service_interface: Json[int] = 1,
+    service_interface: Json[int] | None = None,
     service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
     short_name: str | None = None,
 ) -> HttpResponse:
@@ -559,8 +559,9 @@ def patch_bot_backend(
         case UserProfile.OUTGOING_WEBHOOK_BOT:
             if config_data is not None:
                 raise JsonableError(_("Outgoing-webhook bots have no config data to update."))
-            if service_payload_url is not None:
+            if service_interface is not None:
                 check_valid_interface_type(service_interface)
+            if service_interface is not None or service_payload_url is not None:
                 do_update_outgoing_webhook_service(
                     bot,
                     interface=service_interface,
@@ -568,17 +569,21 @@ def patch_bot_backend(
                     acting_user=user_profile,
                 )
         case UserProfile.EMBEDDED_BOT:
-            if service_payload_url is not None:
+            if service_interface is not None or service_payload_url is not None:
                 raise JsonableError(_("Service fields cannot be updated on embedded bots."))
             if config_data is not None:
                 do_update_bot_config_data(bot, config_data)
         case UserProfile.INCOMING_WEBHOOK_BOT:
-            if service_payload_url is not None:
+            if service_interface is not None or service_payload_url is not None:
                 raise JsonableError(_("Incoming-webhook bots have no service fields to update."))
             if config_data is not None:
                 do_update_bot_config_data(bot, config_data)
         case UserProfile.DEFAULT_BOT:
-            if service_payload_url is not None or config_data is not None:
+            if (
+                service_interface is not None
+                or service_payload_url is not None
+                or config_data is not None
+            ):
                 raise JsonableError(_("Generic bots have no service or config data to update."))
         case _:  # nocoverage
             raise JsonableError(_("Unexpected bot type."))
