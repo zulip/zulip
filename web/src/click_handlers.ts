@@ -20,6 +20,7 @@ import * as hash_util from "./hash_util.ts";
 import * as hashchange from "./hashchange.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_recap from "./message_recap.ts";
 import * as message_store from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as mouse_drag from "./mouse_drag.ts";
@@ -27,6 +28,7 @@ import * as narrow_state from "./narrow_state.ts";
 import * as navigate from "./navigate.ts";
 import {page_params} from "./page_params.ts";
 import * as pm_list from "./pm_list.ts";
+import * as popovers from "./popovers.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popover_menus_data from "./popover_menus_data.ts";
 import * as reactions from "./reactions.ts";
@@ -1157,5 +1159,12 @@ export function initialize(): void {
     $(document).on("click", ".request-sponsorship", (e) => {
         e.preventDefault();
         window.open("/sponsorship/", "_blank", "noopener,noreferrer");
+    });
+
+    $(document).on("click", ".message-recap-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        popovers.hide_all();
+        message_recap.show_message_recap();
     });
 }
