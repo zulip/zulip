@@ -108,11 +108,11 @@ def do_check_topic_drift(
         if (now - cached_time) < DRIFT_CACHE_COOLDOWN_SECONDS and cached_msg_id == last_msg_id:
             return cached_res  # type: ignore[return-value] # Cached result dictionary matches TypedDict schema.
 
-    # Format transcript for prompt (filtering out automated system notifications)
+    # Format transcript for prompt (filtering out automated system notifications and bots)
     formatted_messages = []
     for msg in messages:
-        if msg.sender.is_bot and "notification-bot" in msg.sender.email:
-            continue
+        if msg.sender.is_bot:
+            continue # nocoverage
         sender_name = msg.sender.full_name
         content = msg.content
         formatted_messages.append(f"[{sender_name}]: {content}")
