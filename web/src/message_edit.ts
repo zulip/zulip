@@ -113,7 +113,13 @@ export let notify_old_thread_default = false;
 export let notify_new_thread_default = true;
 
 export function is_topic_editable(message: Message, edit_limit_seconds_buffer = 0): boolean {
-    if (!is_message_editable_ignoring_permissions(message) || message.type !== "stream") {
+    if (
+        !is_message_editable_ignoring_permissions(message) ||
+        // Messages where we're currently locally echoing an edit not
+        // yet acknowledged by the server.
+        currently_echoing_messages.has(message.id) ||
+        message.type !== "stream"
+    ) {
         return false;
     }
 
@@ -191,17 +197,15 @@ export function is_message_editable_ignoring_permissions(message: Message): bool
         return false;
     }
 
-    // Messages where we're currently locally echoing an edit not yet acknowledged
-    // by the server.
-    if (currently_echoing_messages.has(message.id)) {
-        return false;
-    }
     return true;
 }
 
 export function is_content_editable(message: Message, edit_limit_seconds_buffer = 0): boolean {
     if (
         !is_message_editable_ignoring_permissions(message) ||
+        // Messages where we're currently locally echoing an edit not
+        // yet acknowledged by the server.
+        currently_echoing_messages.has(message.id) ||
         !realm.realm_allow_message_editing ||
         !message.sent_by_me ||
         is_widget_message(message)
@@ -234,7 +238,13 @@ export function remaining_content_edit_time(message: Message): number {
 }
 
 export function is_stream_editable(message: Message, edit_limit_seconds_buffer = 0): boolean {
-    if (!is_message_editable_ignoring_permissions(message) || message.type !== "stream") {
+    if (
+        !is_message_editable_ignoring_permissions(message) ||
+        // Messages where we're currently locally echoing an edit not
+        // yet acknowledged by the server.
+        currently_echoing_messages.has(message.id) ||
+        message.type !== "stream"
+    ) {
         return false;
     }
 
