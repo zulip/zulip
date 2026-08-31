@@ -1120,7 +1120,7 @@ def get_thread_reply_notification(
 def create_topic_name_for_message(
     added_channels: AddedChannelsT,
     channel_name: str | None,
-    content: str,
+    topic_name_content: str,
     convert_slack_threads: bool,
     is_direct_message_type: bool,
     message: ZerverFieldsT,
@@ -1146,7 +1146,9 @@ def create_topic_name_for_message(
         # Send the thread parent message to the main import topic; the
         # cross-linking notice to the thread topic is appended by
         # get_thread_reply_notification.
-        thread_topic_name = get_zulip_thread_topic_name(content, thread_ts_datetime, thread_counter)
+        thread_topic_name = get_zulip_thread_topic_name(
+            topic_name_content, thread_ts_datetime, thread_counter
+        )
 
         thread_map[thread_key] = ThreadMetadata(
             topic_link_syntax=get_stream_topic_link_syntax(
@@ -1269,18 +1271,22 @@ def channel_message_to_zerver_message(
         has_attachment = file_info["has_attachment"]
         has_image = file_info["has_image"]
 
+        # Part of the thread topic name is based on the message content. Use the
+        # raw content before we add attachment URLs to reduce the likelihood of
+        # generating topic names with URLs.
+        unannotated_content = content
+        content = "\n".join([part for part in [content, file_info["content"]] if part != ""])
+
         topic_name = create_topic_name_for_message(
             added_channels=added_channels,
             channel_name=channel_name,
-            content=content,
+            topic_name_content=unannotated_content,
             convert_slack_threads=convert_slack_threads,
             is_direct_message_type=is_direct_message_type,
             message=message,
             thread_counter=thread_counter,
             thread_map=thread_map,
         )
-
-        content = "\n".join([part for part in [content, file_info["content"]] if part != ""])
 
         content += get_thread_reply_notification(
             convert_slack_threads, message, thread_map, thread_reply_counts
