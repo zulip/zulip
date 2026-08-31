@@ -2024,6 +2024,75 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         service_payload_url = orjson.loads(result.content)["service_payload_url"]
         self.assertEqual(service_payload_url, "http://foo.bar2.com")
 
+    def test_patch_default_bot_rejects_service_and_config_fields(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+
+        expected_error = "Generic bots have no service or config data to update."
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"service_payload_url": orjson.dumps("http://foo.bar.com").decode()},
+        )
+        self.assert_json_error(result, expected_error)
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"key": "value"}).decode()},
+        )
+        self.assert_json_error(result, expected_error)
+
+    def test_patch_embedded_bot_rejects_service_fields(self) -> None:
+        self.create_test_bot(
+            short_name="embeddedservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="followup",
+            config_data=orjson.dumps({"key": "value"}).decode(),
+        )
+        bot = self.get_bot_user("embeddedservicebot-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"service_payload_url": orjson.dumps("http://embedded.example.com").decode()},
+        )
+        self.assert_json_error(result, "Service fields cannot be updated on embedded bots")
+
+    def test_patch_incoming_webhook_bot_rejects_service_fields(self) -> None:
+        self.login("hamlet")
+        self.create_bot(
+            full_name="My Bot",
+            short_name="mybot",
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+        )
+        bot = self.get_bot_user("mybot-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"service_payload_url": orjson.dumps("http://foo.bar.com").decode()},
+        )
+        self.assert_json_error(result, "Incoming-webhook bots have no service fields to update.")
+
+    def test_patch_outgoing_webhook_bot_rejects_config_data(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
+            "payload_url": orjson.dumps("http://foo.bar.com").decode(),
+            "interface_type": Service.GENERIC,
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"key": "value"}).decode()},
+        )
+        self.assert_json_error(result, "Outgoing-webhook bots have no config data to update.")
+
     @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
     def test_patch_bot_config_data(self, mock_validate_config: MagicMock) -> None:
         self.create_test_bot(

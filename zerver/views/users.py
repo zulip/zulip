@@ -555,18 +555,33 @@ def patch_bot_backend(
             bot, default_all_public_streams, acting_user=user_profile
         )
 
-    if service_payload_url is not None:
-        check_valid_interface_type(service_interface)
-        assert service_interface is not None
-        do_update_outgoing_webhook_service(
-            bot,
-            interface=service_interface,
-            base_url=service_payload_url,
-            acting_user=user_profile,
-        )
-
-    if config_data is not None:
-        do_update_bot_config_data(bot, config_data)
+    match bot.bot_type:
+        case UserProfile.OUTGOING_WEBHOOK_BOT:
+            if config_data is not None:
+                raise JsonableError(_("Outgoing-webhook bots have no config data to update."))
+            if service_payload_url is not None:
+                check_valid_interface_type(service_interface)
+                do_update_outgoing_webhook_service(
+                    bot,
+                    interface=service_interface,
+                    base_url=service_payload_url,
+                    acting_user=user_profile,
+                )
+        case UserProfile.EMBEDDED_BOT:
+            if service_payload_url is not None:
+                raise JsonableError(_("Service fields cannot be updated on embedded bots."))
+            if config_data is not None:
+                do_update_bot_config_data(bot, config_data)
+        case UserProfile.INCOMING_WEBHOOK_BOT:
+            if service_payload_url is not None:
+                raise JsonableError(_("Incoming-webhook bots have no service fields to update."))
+            if config_data is not None:
+                do_update_bot_config_data(bot, config_data)
+        case UserProfile.DEFAULT_BOT:
+            if service_payload_url is not None or config_data is not None:
+                raise JsonableError(_("Generic bots have no service or config data to update."))
+        case _:  # nocoverage
+            raise JsonableError(_("Unexpected bot type."))
 
     if len(request.FILES) == 0:
         pass
