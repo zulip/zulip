@@ -69,7 +69,17 @@ class TopicDriftTestCase(ZulipTestCase):
         self.assert_json_error(response, "Insufficient permission")
 
     def test_check_drift_short_topic_skips_llm(self) -> None:
-        # Only 1 message in topic -> should return has_drift=False without querying LLM
+        # 0 messages in topic -> should return has_drift=False without querying LLM
+        response = self.client_post(
+            "/json/topics/check_drift",
+            {"stream_id": self.stream_id, "topic_name": "Empty Topic"},
+        )
+        self.assertEqual(response.status_code, 200)
+        data = self.assert_json_success(response)
+        self.assertFalse(data["has_drift"])
+        self.assertIsNone(data["suggested_title"])
+
+        # 1 message in topic -> should return has_drift=False without querying LLM
         self.send_stream_message(
             self.user,
             self.channel_name,
