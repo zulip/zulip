@@ -17,6 +17,7 @@ from zerver.lib.remote_server import (
     send_json_to_push_bouncer,
     send_server_data_to_push_bouncer,
 )
+from zerver.lib.types import AnalyticsDataUploadLevel
 
 if settings.DEVELOPMENT:
     SECRETS_FILENAME = "zproject/dev-secrets.conf"
@@ -70,9 +71,12 @@ that registration and saving the updated secret in
             raise CommandError(
                 "ZULIP_SERVICES_URL is not set; was the default incorrectly overridden in /etc/zulip/settings.py?"
             )
-        if not settings.ZULIP_SERVICE_PUSH_NOTIFICATIONS:
+        # Every Zulip service requires uploading at least basic metadata,
+        # so an upload level of NONE means no service is enabled.
+        if settings.ANALYTICS_DATA_UPLOAD_LEVEL == AnalyticsDataUploadLevel.NONE:
             raise CommandError(
-                "Please set ZULIP_SERVICE_PUSH_NOTIFICATIONS to True in /etc/zulip/settings.py"
+                "No Zulip services are enabled; please enable one, such as by setting"
+                " ZULIP_SERVICE_PUSH_NOTIFICATIONS to True in /etc/zulip/settings.py"
             )
 
         if options["deactivate"]:
