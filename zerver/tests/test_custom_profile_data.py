@@ -266,6 +266,14 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         data["field_data"] = orjson.dumps(
             {
+                "subtype": 123,
+            }
+        ).decode()
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'field_data["subtype"]["dict[str,str]"] is not a dict')
+
+        data["field_data"] = orjson.dumps(
+            {
                 "subtype": "123",
             }
         ).decode()
