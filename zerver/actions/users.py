@@ -57,6 +57,7 @@ from zerver.lib.users import (
 )
 from zerver.lib.workplace_users import check_any_group_used_for_workplace_users_group
 from zerver.models import (
+    BotConfigData,
     Draft,
     GroupGroupMembership,
     NamedUserGroup,
@@ -843,7 +844,11 @@ def do_update_outgoing_webhook_service(
 
 
 @transaction.atomic(durable=True)
-def do_update_bot_config_data(bot_profile: UserProfile, config_data: dict[str, str]) -> None:
+def do_update_bot_config_data(
+    bot_profile: UserProfile, config_data: dict[str, str], *, replace: bool = False
+) -> None:
+    if replace:
+        BotConfigData.objects.filter(bot_profile=bot_profile).delete()
     for key, value in config_data.items():
         set_bot_config(bot_profile, key, value)
     updated_config_data = get_bot_config(bot_profile)

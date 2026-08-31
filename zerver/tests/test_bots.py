@@ -2165,8 +2165,231 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         )
         self.assert_json_error(result, "Outgoing-webhook bots have no config data to update.")
 
+    def test_patch_incoming_webhook_bot_config_data_without_integration(self) -> None:
+        self.login("hamlet")
+        self.create_bot(
+            full_name="My Bot",
+            short_name="mybot",
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+        )
+        bot = self.get_bot_user("mybot-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"key": "value"}).decode()},
+        )
+        self.assert_json_success(result)
+
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    def test_patch_incoming_webhook_bot_rejects_invalid_config_data(self) -> None:
+        self.login("hamlet")
+        self.create_bot(
+            full_name="My Stripe Bot",
+            short_name="my-stripe",
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            service_name="stripe",
+            config_data=orjson.dumps({"stripe_api_key": "sample-api-key"}).decode(),
+        )
+        bot = self.get_bot_user("my-stripe-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"stripe_api_key": "_invalid_key"}).decode()},
+        )
+        self.assert_json_error(
+            result,
+            "Invalid stripe_api_key value _invalid_key "
+            '(stripe_api_key starts with a "_" and is hence invalid.)',
+        )
+
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    def test_patch_incoming_webhook_bot_rejects_unknown_config_key(self) -> None:
+        self.login("hamlet")
+        self.create_bot(
+            full_name="My Stripe Bot",
+            short_name="my-stripe",
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            service_name="stripe",
+            config_data=orjson.dumps({"stripe_api_key": "sample-api-key"}).decode(),
+        )
+        bot = self.get_bot_user("my-stripe-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {
+                "config_data": orjson.dumps(
+                    {"stripe_api_key": "sample-api-key", "unexpected": "value"}
+                ).decode()
+            },
+        )
+        self.assert_json_error(result, "Unexpected configuration parameters: {'unexpected'}")
+        stored_config = get_bot_config(bot)
+        self.assertEqual(
+            stored_config, {"integration_id": "stripe", "stripe_api_key": "sample-api-key"}
+        )
+
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    def test_patch_incoming_webhook_bot_change_integration_id_missing_config(self) -> None:
+        self.login("hamlet")
+        self.create_bot(
+            full_name="My Hello Bot",
+            short_name="my-hello",
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            service_name="helloworld",
+        )
+        bot = self.get_bot_user("my-hello-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"integration_id": "stripe"}).decode()},
+        )
+        self.assert_json_error(
+            result,
+            "Missing configuration parameters: {'stripe_api_key'}",
+        )
+        self.assertEqual(get_bot_config(bot)["integration_id"], "helloworld")
+
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    def test_patch_incoming_webhook_bot_change_integration_id_success(self) -> None:
+        self.login("hamlet")
+        self.create_bot(
+            full_name="My Hello Bot",
+            short_name="my-hello",
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            service_name="helloworld",
+        )
+        bot = self.get_bot_user("my-hello-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {
+                "config_data": orjson.dumps(
+                    {"integration_id": "stripe", "stripe_api_key": "sample-api-key"}
+                ).decode()
+            },
+        )
+        self.assert_json_success(result)
+        stored_config = get_bot_config(bot)
+        self.assertEqual(stored_config["integration_id"], "stripe")
+        self.assertEqual(stored_config["stripe_api_key"], "sample-api-key")
+
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    def test_patch_incoming_webhook_bot_switch_to_integration_without_config_options(
+        self,
+    ) -> None:
+        self.login("hamlet")
+        self.create_bot(
+            full_name="My Stripe Bot",
+            short_name="my-stripe",
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            service_name="stripe",
+            config_data=orjson.dumps({"stripe_api_key": "sample-api-key"}).decode(),
+        )
+        bot = self.get_bot_user("my-stripe-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"integration_id": "helloworld"}).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertEqual(get_bot_config(bot), {"integration_id": "helloworld"})
+
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    def test_patch_incoming_webhook_bot_integration_id_alone_is_not_a_config_option(
+        self,
+    ) -> None:
+        self.login("hamlet")
+        self.create_bot(
+            full_name="My Stripe Bot",
+            short_name="my-stripe",
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            service_name="stripe",
+            config_data=orjson.dumps({"stripe_api_key": "sample-api-key"}).decode(),
+        )
+        bot = self.get_bot_user("my-stripe-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"integration_id": "stripe"}).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertEqual(get_bot_config(bot)["integration_id"], "stripe")
+
     @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
-    def test_patch_bot_config_data(self, mock_validate_config: MagicMock) -> None:
+    def test_patch_embedded_bot_config_data_without_existing_config(
+        self, mock_validate_config: MagicMock
+    ) -> None:
+        self.create_test_bot(
+            short_name="embeddedbot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="giphy",
+        )
+        bot = self.get_bot_user("embeddedbot-bot@zulip.testserver")
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"key": "value"}).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertEqual(get_bot_config(bot)["key"], "value")
+
+    def test_patch_embedded_bot_rejects_config_data_when_handler_has_no_config(
+        self,
+    ) -> None:
+        self.create_test_bot(
+            short_name="embeddedbot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="converter",
+        )
+        bot = self.get_bot_user("embeddedbot-bot@zulip.testserver")
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"key": "value"}).decode()},
+        )
+        self.assert_json_error(result, "This embedded bot doesn't use bot config.")
+        with self.assertRaises(ConfigError):
+            get_bot_config(bot)
+
+    def test_patch_embedded_bot_config_data_without_validate_config(self) -> None:
+        # The followup bot has a .conf template but its handler does
+        # not define validate_config, so the template alone determines
+        # which keys are accepted.
+        self.create_test_bot(
+            short_name="embeddedbot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="followup",
+            config_data=orjson.dumps({"stream": "followup"}).decode(),
+        )
+        bot = self.get_bot_user("embeddedbot-bot@zulip.testserver")
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"stream": "engineering-followup"}).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertEqual(get_bot_config(bot), {"stream": "engineering-followup"})
+
+    def test_patch_embedded_bot_rejects_unknown_config_key_without_validate_config(
+        self,
+    ) -> None:
+        self.create_test_bot(
+            short_name="embeddedbot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="followup",
+            config_data=orjson.dumps({"stream": "followup"}).decode(),
+        )
+        bot = self.get_bot_user("embeddedbot-bot@zulip.testserver")
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"unexpected": "value"}).decode()},
+        )
+        self.assert_json_error(result, "Unexpected configuration parameters: {'unexpected'}")
+        self.assertEqual(get_bot_config(bot), {"stream": "followup"})
+
+    @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
+    def test_patch_embedded_bot_config_data(self, mock_validate_config: MagicMock) -> None:
         self.create_test_bot(
             "test",
             self.example_user("hamlet"),
@@ -2181,6 +2404,27 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_success(result)
         config_data = orjson.loads(result.content)["config_data"]
         self.assertEqual(config_data, orjson.loads(bot_info["config_data"]))
+
+    @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
+    def test_patch_embedded_bot_rejects_unknown_config_key(
+        self, mock_validate_config: MagicMock
+    ) -> None:
+        self.create_test_bot(
+            "test",
+            self.example_user("hamlet"),
+            full_name="Bot with config data",
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="giphy",
+            config_data=orjson.dumps({"key": "12345678"}).decode(),
+        )
+        email = "test-bot@zulip.testserver"
+        bot = self.get_bot_user(email)
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"unexpected": "value"}).decode()},
+        )
+        self.assert_json_error(result, "Unexpected configuration parameters: {'unexpected'}")
+        self.assertEqual(get_bot_config(bot), {"key": "12345678"})
 
     @override_settings(BOT_CONFIG_SIZE_LIMIT=20)
     @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
