@@ -2,12 +2,10 @@ from datetime import datetime, timezone
 from unittest import mock
 
 import time_machine
-from django.conf import settings
 from openai.resources.chat.completions import Completions
 from openai.types.chat import ChatCompletion
 from typing_extensions import override
 
-from analytics.models import UserCount
 from zerver.actions.message_flags import do_mark_all_as_read
 from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.lib.test_classes import ZulipTestCase
@@ -122,7 +120,7 @@ class MessagesRecapTestCase(ZulipTestCase):
             data = self.assert_json_success(response)
             self.assertTrue(data["has_unreads"])
             self.assertIn("Hamlet", data["recap"])
-            self.assertIn("href=\"#narrow/channel/", data["recap"])
+            self.assertIn('href="#narrow/channel/', data["recap"])
 
     def test_recap_credit_limit_exceeded(self) -> None:
         with self.settings(

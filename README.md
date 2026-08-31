@@ -71,7 +71,7 @@ From inside the development environment (`vagrant ssh` or container):
    - **Left Sidebar**: Click **"Message recap"** under the views list.
    - **Inbox View**: Click the **"Recap"** button (with the magic wand icon) in the Inbox search/filter bar.
 4. An interactive modal dialog opens displaying an AI-generated summary of unread messages grouped by channel and topic.
-5. Click on any reference link (e.g. `[link]` / `[message]`) inside the recap to jump directly to the target message in its conversation feed!
+5. Click on any reference link (e.g., `[link]` / `[message]`) inside the recap to jump directly to the target message in its conversation feed!
 
 ### Testing via API / cURL:
 ```bash
@@ -90,7 +90,7 @@ curl -s -X GET "http://localhost:9991/api/v1/messages/recap" -u "hamlet@zulip.co
 
 #### A. Automatic Detection (On Message Send)
 1. Navigate to any stream topic that contains messages (e.g., `#support > blue desktop wasn't linking erratically`).
-2. Post a new message discussing a completely different topic (e.g. *"Should we switch our database cache to Redis? What TTL should we use?"*).
+2. Post a new message discussing a completely different topic (e.g., *"Should we switch our database cache to Redis? What TTL should we use?"*).
 3. Immediately after posting, the backend analyzes recent messages for topic drift.
 4. If drift is detected, a **Topic Drift Warning Banner** appears above the compose box:
    > ⚠️ *Topic discussion seems to have drifted. Suggested new title: "Redis Database Caching"*
@@ -147,4 +147,4 @@ Run the full backend test suite:
 ## 7. Technical Documentation
 
 For the comprehensive design document covering architecture, link generation, latency/cost/scale optimizations, and production considerations, please see:
-- [**`implementation.md`**](file:///Users/akshay/CMU/sem1/MLIP/zulip/implementation.md)
+- [**`implementation.md`**](implementation.md)

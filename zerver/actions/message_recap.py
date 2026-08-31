@@ -1,4 +1,3 @@
-import time
 from collections import defaultdict
 from typing import Any, Literal
 
@@ -50,9 +49,7 @@ def format_messages_for_recap_prompt(
             topic_name = get_topic_from_message_info(msg)
             conv_key = (f"#{channel_name}", topic_name)
         else:
-            recipient_names = ", ".join(
-                r["full_name"] for r in msg["display_recipient"]
-            )
+            recipient_names = ", ".join(r["full_name"] for r in msg["display_recipient"])
             conv_key = ("Direct Messages", recipient_names)
         conversations[conv_key].append(msg)
 
@@ -66,9 +63,7 @@ def format_messages_for_recap_prompt(
             sender = msg["sender_full_name"]
             content = msg["content"]
             link_url = get_message_link(msg)
-            section_lines.append(
-                f"- [Message {msg_id}] {sender}: {content} (Link: {link_url})"
-            )
+            section_lines.append(f"- [Message {msg_id}] {sender}: {content} (Link: {link_url})")
             metadata.append({"id": msg_id, "sender": sender, "link": link_url})
         formatted_sections.append("\n".join(section_lines))
 
@@ -174,5 +169,7 @@ def do_generate_recap(user_profile: UserProfile) -> str | None:
     recap_content = response.choices[0].message.content
     assert recap_content is not None
 
-    rendered_recap = markdown_convert(recap_content, message_realm=user_profile.realm).rendered_content
+    rendered_recap = markdown_convert(
+        recap_content, message_realm=user_profile.realm
+    ).rendered_content
     return rendered_recap

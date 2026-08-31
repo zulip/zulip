@@ -106,7 +106,7 @@ def do_check_topic_drift(
     if cache_key in _drift_cache:
         cached_time, cached_msg_id, cached_res = _drift_cache[cache_key]
         if (now - cached_time) < DRIFT_CACHE_COOLDOWN_SECONDS and cached_msg_id == last_msg_id:
-            return cached_res  # type: ignore[return-value]
+            return cached_res  # type: ignore[return-value] # Cached result dictionary matches TypedDict schema.
 
     # Format transcript for prompt (filtering out automated system notifications)
     formatted_messages = []
@@ -127,11 +127,11 @@ def do_check_topic_drift(
         "Topic drift occurs when recent messages diverge from the original topic title to discuss a different subject, "
         "technology, question, or new topic.\n\n"
         "Instructions:\n"
-        f"1. Current Topic Title: \"{topic_name}\"\n"
+        f'1. Current Topic Title: "{topic_name}"\n'
         f"2. Channel: #{stream.name}\n"
         "3. If the recent messages have diverged onto a new subject that no longer matches the current topic title, "
-        "set \"has_drift\" to true and suggest a concise, accurate \"suggested_title\" (max 50 chars, plain text).\n"
-        "4. If the conversation is still relevant to the current topic title, set \"has_drift\" to false and \"suggested_title\" to null.\n"
+        'set "has_drift" to true and suggest a concise, accurate "suggested_title" (max 50 chars, plain text).\n'
+        '4. If the conversation is still relevant to the current topic title, set "has_drift" to false and "suggested_title" to null.\n'
         "5. Output ONLY valid JSON matching this schema:\n"
         "{\n"
         '  "has_drift": boolean,\n'
@@ -215,7 +215,10 @@ def do_check_topic_drift(
     }
 
     logger.info("TOPIC_DRIFT final evaluated result: %s", result)
-    print(f"[TOPIC_DRIFT] decision: has_drift={has_drift}, suggested_title='{suggested_title}'", flush=True)
+    print(
+        f"[TOPIC_DRIFT] decision: has_drift={has_drift}, suggested_title='{suggested_title}'",
+        flush=True,
+    )
 
     _drift_cache[cache_key] = (now, last_msg_id, result)
     return result

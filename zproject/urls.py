@@ -84,11 +84,10 @@ from zerver.views.message_flags import (
     update_message_flags,
     update_message_flags_for_narrow,
 )
+from zerver.views.message_recap import get_messages_recap
 from zerver.views.message_report import report_message_backend
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
-from zerver.views.message_recap import get_messages_recap
 from zerver.views.message_summary import get_messages_summary
-from zerver.views.topic_drift import check_topic_drift_backend
 from zerver.views.muted_users import mute_user, unmute_user
 from zerver.views.navigation_views import (
     add_navigation_view,
@@ -210,6 +209,7 @@ from zerver.views.streams import (
 )
 from zerver.views.submessage import process_submessage
 from zerver.views.thumbnail import backend_serve_thumbnail, check_thumbnail_status
+from zerver.views.topic_drift import check_topic_drift_backend
 from zerver.views.tusd import handle_tusd_hook
 from zerver.views.typing import send_message_edit_notification_backend, send_notification_backend
 from zerver.views.unsubscribe import email_unsubscribe
