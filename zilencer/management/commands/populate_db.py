@@ -96,6 +96,7 @@ from zilencer.views import update_remote_realm_data_for_server
 settings.ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
 settings.ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = False
 settings.ZULIP_SERVICE_SECURITY_ALERTS = False
+settings.ZULIP_SERVICE_ADVERTISE_REALM = False
 settings.ANALYTICS_DATA_UPLOAD_LEVEL = AnalyticsDataUploadLevel.NONE
 settings.USING_TORNADO = False
 # Disable using memcached caches to avoid 'unsupported pickle
