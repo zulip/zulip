@@ -1296,7 +1296,9 @@ textarea.new_message_textarea {
             transition-property: background-color, border-color;
         }
 
-        #compose_select_recipient_widget .channel-privacy-type-icon {
+        #compose_select_recipient_widget
+            .channel-privacy-type-icon
+            .zulip-icon {
             transition: var(--compose-recipient-row-transition);
             transition-delay: var(--compose-recipient-row-transition-delay);
             transition-property: color;
@@ -1386,11 +1388,11 @@ textarea.new_message_textarea {
     }
 
     #compose_select_recipient_widget {
-        .channel-privacy-type-icon.zulip-icon {
+        .channel-privacy-type-icon .zulip-icon {
             color: var(--privacy-icon-color-modified);
         }
 
-        &:hover .channel-privacy-type-icon.zulip-icon {
+        &:hover .channel-privacy-type-icon .zulip-icon {
             color: var(--privacy-icon-color-original);
         }
 
