@@ -86,7 +86,9 @@ from zerver.views.message_flags import (
 )
 from zerver.views.message_report import report_message_backend
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
+from zerver.views.message_recap import get_messages_recap
 from zerver.views.message_summary import get_messages_summary
+from zerver.views.topic_drift import check_topic_drift_backend
 from zerver.views.muted_users import mute_user, unmute_user
 from zerver.views.navigation_views import (
     add_navigation_view,
@@ -427,6 +429,13 @@ v1_api_and_json_patterns = [
         DELETE=delete_message_backend,
     ),
     rest_path(
+        "messages/recap",
+        GET=(
+            get_messages_recap,
+            {"intentionally_undocumented"},
+        ),
+    ),
+    rest_path(
         "messages/summary",
         GET=(
             get_messages_summary,
@@ -564,6 +573,13 @@ v1_api_and_json_patterns = [
     rest_path("streams/<int:stream_id>/email_address", GET=get_stream_email_address),
     # Delete topic in stream
     rest_path("streams/<int:stream_id>/delete_topic", POST=delete_in_topic),
+    rest_path(
+        "topics/check_drift",
+        POST=(
+            check_topic_drift_backend,
+            {"intentionally_undocumented"},
+        ),
+    ),
     rest_path("default_streams", POST=add_default_stream, DELETE=remove_default_stream),
     rest_path("default_stream_groups/create", POST=create_default_stream_group),
     rest_path(
