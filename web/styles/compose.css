@@ -1307,12 +1307,18 @@ textarea.new_message_textarea {
         0.35em;
     align-items: baseline;
 
-    /* TODO: Add fiddly icon adjustments here. */
+    /* TODO: Abstract the channel-picker CSS to avoid
+       the duplications here. */
+    .decorated-channel-name-wrapper {
+        display: grid;
+        grid-area: select-label;
+        grid-template-columns: subgrid;
+        gap: 0;
+    }
+
     .channel-privacy-type-icon {
         grid-area: privacy-icon;
-        font-size: 0.95em;
-        margin-top: -0.0579em; /* Eyeball work; 1.1px at 19px/1em */
-        align-self: center;
+        font-size: 0.9375em;
         height: 1em;
         width: 1em;
         color: var(--privacy-icon-color-modified);
@@ -1342,6 +1348,7 @@ textarea.new_message_textarea {
 
 #skinned-topic-box {
     display: grid;
+    align-self: start;
     grid-template-columns: minmax(0, 1fr) auto;
 }
 
