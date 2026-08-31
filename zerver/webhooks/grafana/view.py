@@ -147,55 +147,47 @@ def api_grafana_webhook(
 
         return json_success(request)
 
+    # Grafana 7.0 alerts:
+    # https://grafana.com/docs/grafana/v7.0/alerting/notifications/#webhook
+    topic_name = OLD_TOPIC_TEMPLATE.format(alert_title=payload["title"].tame(check_string))
+
+    eval_matches_text = ""
+    if "evalMatches" in payload and payload["evalMatches"] is not None:
+        for match in payload["evalMatches"]:
+            eval_matches_text += "**{}:** {}\n".format(
+                match["metric"].tame(check_string),
+                match["value"].tame(check_none_or(check_union([check_int, check_float]))),
+            )
+
+    message_text = ""
+    if "message" in payload:
+        message_text = payload["message"].tame(check_string) + "\n\n"
+
+    state = payload["state"].tame(
+        check_string_in(["no_data", "paused", "alerting", "ok", "pending", "unknown"])
+    )
+    if state == "alerting":
+        alert_status = ALERT_STATUS_TEMPLATE.format(alert_icon=":alert:", alert_state=state.upper())
+    elif state == "ok":
+        alert_status = ALERT_STATUS_TEMPLATE.format(
+            alert_icon=":squared_ok:", alert_state=state.upper()
+        )
     else:
-        # Grafana 7.0 alerts:
-        # https://grafana.com/docs/grafana/v7.0/alerting/notifications/#webhook
-        topic_name = OLD_TOPIC_TEMPLATE.format(alert_title=payload["title"].tame(check_string))
+        alert_status = ALERT_STATUS_TEMPLATE.format(alert_icon=":info:", alert_state=state.upper())
 
-        eval_matches_text = ""
-        if "evalMatches" in payload and payload["evalMatches"] is not None:
-            for match in payload["evalMatches"]:
-                eval_matches_text += "**{}:** {}\n".format(
-                    match["metric"].tame(check_string),
-                    match["value"].tame(check_none_or(check_union([check_int, check_float]))),
-                )
+    body = OLD_MESSAGE_TEMPLATE.format(
+        alert_message=message_text,
+        alert_status=alert_status,
+        rule_name=payload["ruleName"].tame(check_string),
+        rule_url=payload["ruleUrl"].tame(check_string),
+        eval_matches=eval_matches_text,
+    )
 
-        message_text = ""
-        if "message" in payload:
-            message_text = payload["message"].tame(check_string) + "\n\n"
-
-        state = payload["state"].tame(
-            check_string_in(["no_data", "paused", "alerting", "ok", "pending", "unknown"])
-        )
-        if state == "alerting":
-            alert_status = ALERT_STATUS_TEMPLATE.format(
-                alert_icon=":alert:", alert_state=state.upper()
-            )
-        elif state == "ok":
-            alert_status = ALERT_STATUS_TEMPLATE.format(
-                alert_icon=":squared_ok:", alert_state=state.upper()
-            )
-        else:
-            alert_status = ALERT_STATUS_TEMPLATE.format(
-                alert_icon=":info:", alert_state=state.upper()
-            )
-
-        body = OLD_MESSAGE_TEMPLATE.format(
-            alert_message=message_text,
-            alert_status=alert_status,
-            rule_name=payload["ruleName"].tame(check_string),
-            rule_url=payload["ruleUrl"].tame(check_string),
-            eval_matches=eval_matches_text,
+    if "imageUrl" in payload:
+        body += "\n[Click to view visualization]({visualization})".format(
+            visualization=payload["imageUrl"].tame(check_string)
         )
 
-        if "imageUrl" in payload:
-            body += "\n[Click to view visualization]({visualization})".format(
-                visualization=payload["imageUrl"].tame(check_string)
-            )
-
-        body = body.strip()
-
-        # send the message
-        check_send_webhook_message(request, user_profile, topic_name, body, state)
-
-        return json_success(request)
+    body = body.strip()
+    check_send_webhook_message(request, user_profile, topic_name, body, state)
+    return json_success(request)
