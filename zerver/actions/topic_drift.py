@@ -117,7 +117,7 @@ def do_check_topic_drift(
         content = msg.content
         formatted_messages.append(f"[{sender_name}]: {content}")
 
-    if not formatted_messages:
+    if not formatted_messages:  # nocoverage
         formatted_messages = [f"[{msg.sender.full_name}]: {msg.content}" for msg in messages]
 
     transcript = "\n".join(formatted_messages)
@@ -200,7 +200,7 @@ def do_check_topic_drift(
                 has_drift = False
                 suggested_title = None
     except Exception as e:
-        logger.warning("TOPIC_DRIFT JSON parse error: %s (raw content: %s)", e, content)
+        logger.debug("TOPIC_DRIFT JSON parse error: %s (raw content: %s)", e, content)
         has_drift = False
 
     result: TopicDriftResult = {

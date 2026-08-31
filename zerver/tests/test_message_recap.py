@@ -40,6 +40,11 @@ class MessagesRecapTestCase(ZulipTestCase):
             content="Please check it out and leave comments.",
             topic_name=self.topic_name,
         )
+        self.send_personal_message(
+            self.other_user,
+            self.user,
+            content="Hey Iago, check out this update.",
+        )
 
         not_last_day_of_any_month = datetime(2025, 2, 18, 1, tzinfo=timezone.utc)
         self.mocked_time_patcher = time_machine.travel(not_last_day_of_any_month, tick=False)

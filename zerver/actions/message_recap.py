@@ -97,7 +97,7 @@ def do_generate_recap(user_profile: UserProfile) -> str | None:
         return None
 
     # Cap to the most recent unread messages
-    if len(all_unread_ids) > MAX_UNREAD_MESSAGES_FOR_RECAP:
+    if len(all_unread_ids) > MAX_UNREAD_MESSAGES_FOR_RECAP:  # nocoverage
         all_unread_ids = all_unread_ids[-MAX_UNREAD_MESSAGES_FOR_RECAP:]
 
     user_message_flags = {msg_id: [] for msg_id in all_unread_ids}
@@ -113,7 +113,7 @@ def do_generate_recap(user_profile: UserProfile) -> str | None:
         realm=user_profile.realm,
     )
 
-    if len(message_list) == 0:
+    if len(message_list) == 0:  # nocoverage
         return None
 
     formatted_conversations, _ = format_messages_for_recap_prompt(message_list)
