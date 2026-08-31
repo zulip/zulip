@@ -66,8 +66,10 @@ export function show_message_recap(): void {
                     },
                     error_continuation(xhr) {
                         const $modal_content = $("#message-recap-modal .modal__content");
-                        const error_message =
-                            channel.xhr_error_message($t({defaultMessage: "Failed to generate recap"}), xhr);
+                        const error_message = channel.xhr_error_message(
+                            $t({defaultMessage: "Failed to generate recap"}),
+                            xhr,
+                        );
                         ui_report.error(error_message, xhr, $modal_content);
                     },
                 },

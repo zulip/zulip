@@ -1,10 +1,12 @@
 # Implementation Report: LLM-Enabled Features for Zulip
+
 **Course:** 17-445/17-645/17-745 Machine Learning in Production  
-**Assignment:** Individual Assignment 1: Building LLM-enabled Features for a Product  
+**Assignment:** Individual Assignment 1: Building LLM-enabled Features for a Product
 
 ---
 
 ## Demo Video Links
+
 - **Feature 1 (Message Recap) & Feature 2 (Topic Title Improver) Video:** [(Google Drive Link to Demo Video)](https://drive.google.com/drive/folders/1aSEvk1AmbyjFEE37krOTLbl6MXHnUGPj?usp=drive_link)
 
 ---
@@ -12,6 +14,7 @@
 ## Feature 1: Message Recap
 
 ### 1. Overview & Objective
+
 Zulip organizes communication into channels (streams) and topics. When users return after being away, reviewing dozens or hundreds of unread messages across multiple topics is time-consuming. The **Message Recap** feature generates a concise, multi-conversation summary of all unread messages for the user on a single page, complete with clickable deep-links directly navigating to original messages.
 
 ---
@@ -19,6 +22,7 @@ Zulip organizes communication into channels (streams) and topics. When users ret
 ### 2. Backend Implementation
 
 #### Key Files & Code Pointers:
+
 - **`zerver/views/message_recap.py`**: Contains the API endpoint `get_messages_recap`. Handles authentication, AI permission verification (`can_summarize_topics()`), monthly AI credit limit enforcement, and error reporting.
 - **`zerver/actions/message_recap.py`**: Implements the core business logic `do_generate_recap()`:
   - Fetches all unread messages for the user using `get_raw_unread_data()`.
@@ -31,7 +35,9 @@ Zulip organizes communication into channels (streams) and topics. When users ret
 - **`zerver/tests/test_message_recap.py`**: Automated test suite verifying recap generation, link generation, permission checks, and AI credit limits.
 
 #### How Message Links are Created:
+
 To ensure the LLM outputs 100% valid navigation links, the backend pre-computes relative Zulip narrow URLs before invoking the model:
+
 1. For channel/stream messages, `get_message_link()` calls `stream_message_url(realm=None, message=msg, include_base_url=False)`, producing:
    `#narrow/channel/{stream_id}-{stream_name}/topic/{encoded_topic}/near/{message_id}`
 2. For direct messages, it calls `encode_user_ids()` to construct:
@@ -42,6 +48,7 @@ To ensure the LLM outputs 100% valid navigation links, the backend pre-computes 
 ---
 
 ### 3. Frontend Integration
+
 - **`web/src/message_recap.ts`**: Launches the interactive `dialog_widget` modal with a live loading spinner (`loading.make_indicator`), fetches `/json/messages/recap`, renders the returned HTML, and hooks click handlers to dismiss the modal and jump directly to messages when links are clicked.
 - **`web/templates/message_recap.hbs`**: Handlebars template using the `{{rendered_markdown recap_markdown}}` helper.
 - **`web/src/click_handlers.ts`**: Global delegated click listener on `.message-recap-button` to open the recap modal from anywhere in the UI.
@@ -53,13 +60,15 @@ To ensure the LLM outputs 100% valid navigation links, the backend pre-computes 
 ## Feature 2: Topic Title Improver
 
 ### 1. Overview & Objective
-In Zulip, topic threads frequently evolve away from their original titles as discussions progress (e.g., an initial thread titled *"Server Deployment"* transitions into a deep technical debate on *"Database Index Optimization"*). The **Topic Title Improver** feature uses an LLM to detect topic drift soon after it occurs—specifically when a user posts a message—and suggests an improved, representative topic title with a 1-click action to update the topic.
+
+In Zulip, topic threads frequently evolve away from their original titles as discussions progress (e.g., an initial thread titled _"Server Deployment"_ transitions into a deep technical debate on _"Database Index Optimization"_). The **Topic Title Improver** feature uses an LLM to detect topic drift soon after it occurs—specifically when a user posts a message—and suggests an improved, representative topic title with a 1-click action to update the topic.
 
 ---
 
 ### 2. Backend Implementation
 
 #### Key Files & Code Pointers:
+
 - **`zerver/views/topic_drift.py`**: Exposes `POST /json/topics/check_drift` (and `POST /api/v1/topics/check_drift`). Validates authentication, channel permissions, and user credit quotas.
 - **`zerver/actions/topic_drift.py`**: Implements `do_check_topic_drift()`:
   - Fetches the last up to 15 messages in the topic using `messages_for_topic()`.
@@ -87,6 +96,7 @@ In Zulip, topic threads frequently evolve away from their original titles as dis
 ### 4. Frontend Integration
 
 #### Key Files & Code Pointers:
+
 - **`web/src/topic_drift.ts`**:
   - `check_topic_drift_for_sent_message(stream_id, topic_name, message_id)`: Asynchronously evaluates drift when a message is posted.
   - `show_topic_drift_banner(data)`: Renders an interactive warning compose banner using `render_compose_banner` with the drift reason and a 1-click **"Rename topic to '[suggested_title]'"** action button.

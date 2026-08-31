@@ -44,13 +44,18 @@ export function rename_topic_to_suggested(
             },
             success() {
                 // Clear any drift warning banners
-                $(`#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.topic_drift_suggestion)}`).remove();
+                $(
+                    `#compose_banners .${CSS.escape(compose_banner.CLASSNAMES.topic_drift_suggestion)}`,
+                ).remove();
                 if (on_complete) {
                     on_complete();
                 }
             },
             error(xhr) {
-                const error_message = channel.xhr_error_message($t({defaultMessage: "Failed to rename topic"}), xhr);
+                const error_message = channel.xhr_error_message(
+                    $t({defaultMessage: "Failed to rename topic"}),
+                    xhr,
+                );
                 ui_report.client_error(error_message, $("#compose_banners"));
             },
         });
@@ -77,7 +82,7 @@ export function show_topic_drift_banner(data: TopicDriftResponse): void {
         ? $t(
               {
                   defaultMessage:
-                      "Topic drift detected: {reason} Suggested new title: \"{suggested_title}\"",
+                      'Topic drift detected: {reason} Suggested new title: "{suggested_title}"',
               },
               {
                   reason: data.reason,
@@ -87,7 +92,7 @@ export function show_topic_drift_banner(data: TopicDriftResponse): void {
         : $t(
               {
                   defaultMessage:
-                      "Topic discussion seems to have drifted. Suggested new title: \"{suggested_title}\"",
+                      'Topic discussion seems to have drifted. Suggested new title: "{suggested_title}"',
               },
               {
                   suggested_title,
@@ -96,7 +101,7 @@ export function show_topic_drift_banner(data: TopicDriftResponse): void {
 
     const button_text = $t(
         {
-            defaultMessage: "Rename topic to \"{suggested_title}\"",
+            defaultMessage: 'Rename topic to "{suggested_title}"',
         },
         {
             suggested_title,
@@ -164,13 +169,11 @@ export function check_topic_drift_for_sent_message(
     });
 }
 
-export function improve_topic_title_interactive(
-    stream_id: number,
-    topic_name: string,
-): void {
+export function improve_topic_title_interactive(stream_id: number, topic_name: string): void {
     dialog_widget.launch({
         modal_title_text: $t({defaultMessage: "Improve Topic Title (AI)"}),
-        modal_content_html: "<div id='topic-drift-modal-content'><div id='topic-drift-loading-container'></div></div>",
+        modal_content_html:
+            "<div id='topic-drift-modal-content'><div id='topic-drift-loading-container'></div></div>",
         close_on_submit: true,
         id: "improve-topic-title-modal",
         footer_minor_text: $t({

@@ -1,40 +1,38 @@
 {{#if has_drift}}
 <div class="topic-drift-modal-container">
-    <div class="alert alert-warning" style="margin-bottom: 16px; border-radius: 4px; padding: 10px 14px;">
+    <div class="alert alert-warning">
         <strong>{{t "Topic drift detected!" }}</strong>
-        <p style="margin: 4px 0 0 0;">{{#if reason}}{{reason}}{{else}}{{t "Recent messages in this conversation have drifted onto a new subject."}}{{/if}}</p>
+        <p>{{#if reason}}{{reason}}{{else}}{{t "Recent messages in this conversation have drifted onto a new topic." }}{{/if}}</p>
     </div>
-    <div class="input-group" style="margin-bottom: 18px;">
-        <label for="suggested-topic-title-input" style="font-weight: 600; display: block; margin-bottom: 6px;">
+    <div class="input-group">
+        <label for="suggested-topic-title-input">
             {{t "Suggested new topic title:" }}
         </label>
         <input
-            type="text"
-            id="suggested-topic-title-input"
-            class="input-element modal_text_input"
-            value="{{suggested_title}}"
-            maxlength="60"
-            style="width: 100%; box-sizing: border-box; padding: 8px 12px; font-size: 14px; border: 1px solid var(--color-outline); border-radius: 4px;"
-        />
+          type="text"
+          id="suggested-topic-title-input"
+          class="input-element modal_text_input"
+          value="{{suggested_title}}"
+          maxlength="60"
+          />
     </div>
-    <div style="text-align: right;">
+    <div class="topic-drift-actions">
         <button
-            type="button"
-            id="apply-improved-topic-title-btn"
-            class="button rounded sea-green"
-            style="padding: 7px 16px; font-weight: 500; font-size: 14px; cursor: pointer;"
-        >
-            <i class="fa fa-pencil" aria-hidden="true" style="margin-right: 6px;"></i>
+          type="button"
+          id="apply-improved-topic-title-btn"
+          class="button rounded sea-green"
+          >
+            <i class="fa fa-pencil" aria-hidden="true"></i>
             {{t "Update Topic Title" }}
         </button>
     </div>
 </div>
 {{else}}
-<div class="topic-drift-no-drift-container" style="padding: 10px 0;">
-    <div class="alert alert-success" style="border-radius: 4px; padding: 12px 16px;">
-        <i class="fa fa-check-circle" aria-hidden="true" style="margin-right: 6px; font-size: 16px;"></i>
+<div class="topic-drift-no-drift-container">
+    <div class="alert alert-success">
+        <i class="fa fa-check-circle" aria-hidden="true"></i>
         <strong>{{t "Topic title is accurate!" }}</strong>
-        <p style="margin: 6px 0 0 0;">{{t "The discussion matches" }} '<strong>{{current_title}}</strong>'. {{t "No drift was detected in recent messages." }}</p>
+        <p>{{t "The discussion matches" }} '<strong>{{current_title}}</strong>'. {{t "No drift was detected in recent messages." }}</p>
     </div>
 </div>
 {{/if}}
