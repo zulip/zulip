@@ -182,7 +182,7 @@ def do_check_topic_drift(
     content = response.choices[0].message.content
     assert content is not None
 
-    logger.info("TOPIC_DRIFT raw LLM response for topic '%s': %s", topic_name, content)
+    logger.debug("TOPIC_DRIFT raw LLM response for topic '%s': %s", topic_name, content)
 
     has_drift = False
     suggested_title: str | None = None
@@ -213,7 +213,7 @@ def do_check_topic_drift(
         "message_id": last_msg_id,
     }
 
-    logger.info("TOPIC_DRIFT final evaluated result: %s", result)
+    logger.debug("TOPIC_DRIFT final evaluated result: %s", result)
 
     _drift_cache[cache_key] = (now, last_msg_id, result)
     return result
