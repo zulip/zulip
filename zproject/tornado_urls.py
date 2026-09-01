@@ -23,6 +23,11 @@ api_and_json_patterns = [
     ),
 ]
 
+# Tornado serves only API endpoints, and this configuration lacks the
+# URL names that Zulip's HTML error pages reverse.
+handler404 = "zerver.tornado.views.json_not_found"
+handler500 = "zerver.tornado.views.json_internal_server_error"
+
 urlpatterns = [
     path("api/v1/", include(api_and_json_patterns)),
     path("json/", include(api_and_json_patterns)),

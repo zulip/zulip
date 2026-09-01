@@ -1,6 +1,6 @@
 import autosize from "autosize";
 import ClipboardJS from "clipboard";
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
@@ -347,13 +347,15 @@ export function hide_message_edit_spinner($row: JQuery): void {
     $row.find(".message_edit_cancel").removeClass("message-edit-button-disabled");
 }
 
-export function show_message_edit_spinner($row: JQuery): void {
+export function show_message_edit_spinner($row: JQuery, keep_cancel_enabled = false): void {
     // Always show the white spinner like we
     // do for send button in compose box.
     loading.show_button_spinner($row.find(".loader"), true);
     $row.find(".message_edit_save span").addClass("showing-button-spinner");
     $row.find(".message_edit_save").addClass("message-edit-button-disabled");
-    $row.find(".message_edit_cancel").addClass("message-edit-button-disabled");
+    if (!keep_cancel_enabled) {
+        $row.find(".message_edit_cancel").addClass("message-edit-button-disabled");
+    }
 }
 
 export function show_topic_edit_spinner($row: JQuery): void {
@@ -561,7 +563,8 @@ function timer_text(seconds_left: number): string {
     const seconds = seconds_left % 60;
     if (minutes >= 1) {
         return $t({defaultMessage: "{minutes} min to edit"}, {minutes: minutes.toString()});
-    } else if (seconds_left >= 10) {
+    }
+    if (seconds_left >= 10) {
         return $t(
             {defaultMessage: "{seconds} sec to edit"},
             {seconds: (seconds - (seconds % 5)).toString()},
@@ -781,6 +784,16 @@ function start_edit_maintaining_scroll($row: JQuery, content: string): void {
     }
 }
 
+function setup_edit_form_widgets($row: JQuery): void {
+    const row_id = rows.id($row);
+    upload.setup_upload(upload.edit_config(row_id));
+    // Setup dropdown for saved snippets button in the current
+    // message edit control buttons tray.
+    saved_snippets_ui.setup_saved_snippets_dropdown_widget(
+        `.saved-snippets-message-edit-widget[data-message-id="${CSS.escape(row_id.toString())}"]`,
+    );
+}
+
 function start_edit_with_content(
     $row: JQuery,
     content: string,
@@ -790,13 +803,7 @@ function start_edit_with_content(
     if (edit_box_open_callback) {
         edit_box_open_callback();
     }
-    const row_id = rows.id($row);
-    upload.setup_upload(upload.edit_config(row_id));
-    // Setup dropdown for saved snippets button in the current
-    // message edit control buttons tray.
-    saved_snippets_ui.setup_saved_snippets_dropdown_widget(
-        `.saved-snippets-message-edit-widget[data-message-id="${CSS.escape(row_id.toString())}"]`,
-    );
+    setup_edit_form_widgets($row);
 }
 
 export function start($row: JQuery, edit_box_open_callback?: () => void): void {
@@ -864,7 +871,8 @@ function get_resolve_topic_time_limit_error_string(
                 },
                 {N: time_limit},
             );
-        } else if (time_limit_unit === "hour") {
+        }
+        if (time_limit_unit === "hour") {
             return $t(
                 {
                     defaultMessage:
@@ -890,7 +898,8 @@ function get_resolve_topic_time_limit_error_string(
             },
             {N: time_limit},
         );
-    } else if (time_limit_unit === "hour") {
+    }
+    if (time_limit_unit === "hour") {
         return $t(
             {
                 defaultMessage:
@@ -1139,7 +1148,10 @@ export function end_message_row_edit($row: JQuery): void {
         message_lists.current.hide_edit_message($row);
         compose_call_session_manager.abandon_session(message.id.toString());
     }
-    if ($row.find(".could-be-condensed").length > 0) {
+
+    if (message?.collapsed) {
+        condense.show_message_expander($row);
+    } else if ($row.find(".could-be-condensed").length > 0) {
         if ($row.find(".condensed").length > 0) {
             condense.show_message_expander($row);
         } else {
@@ -1222,7 +1234,7 @@ export function do_save_inline_topic_edit($row: JQuery, message: Message, new_to
     show_topic_edit_spinner($row);
 
     if (message.locally_echoed) {
-        message = echo.edit_locally(message, {new_topic});
+        echo.edit_locally(message, {new_topic});
         assert(message_lists.current !== undefined);
         $row = message_lists.current.get_row(message.id);
         end_inline_topic_edit($row);
@@ -1301,7 +1313,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
     }
     const msg_list = message_lists.current;
     let message_id = rows.id($row);
-    let message = message_lists.current.get(message_id);
+    const message = message_lists.current.get(message_id);
     assert(message !== undefined);
     let changed = false;
     let edit_locally_echoed = false;
@@ -1339,7 +1351,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
     if (message.locally_echoed) {
         if (new_content !== message.raw_content) {
             // `edit_locally` handles the case where `new_topic/new_stream_id` is undefined
-            message = echo.edit_locally(message, {
+            echo.edit_locally(message, {
                 raw_content: new_content,
             });
             $row = message_lists.current.get_row(message_id);
@@ -1380,7 +1392,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
         // the message is acknowledged by the server.
         message.local_edit_timestamp = Math.round(Date.now() / 1000);
 
-        message = echo.edit_locally(message, currently_echoing_messages.get(message_id)!);
+        echo.edit_locally(message, currently_echoing_messages.get(message_id)!);
 
         $row = message_lists.current.get_row(message_id);
         end_message_row_edit($row);
@@ -1414,7 +1426,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                 message_id = rows.id($row);
 
                 if (edit_locally_echoed) {
-                    let echoed_message = message_store.get(message_id);
+                    const echoed_message = message_store.get(message_id);
                     assert(echoed_message !== undefined);
                     const echo_data = currently_echoing_messages.get(message_id);
                     assert(echo_data !== undefined);
@@ -1423,7 +1435,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                     currently_echoing_messages.delete(message_id);
 
                     // Restore the original content.
-                    echoed_message = echo.edit_locally(echoed_message, {
+                    echo.edit_locally(echoed_message, {
                         content: echo_data.orig_content,
                         raw_content: echo_data.orig_raw_content,
                         mentioned: echo_data.mentioned,
@@ -1456,7 +1468,8 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                                 $container,
                             );
                             return;
-                        } else if (code === "EXPECTATION_MISMATCH") {
+                        }
+                        if (code === "EXPECTATION_MISMATCH") {
                             const message = $t({
                                 defaultMessage:
                                     "Error editing message: Message was edited by another client.",
@@ -1494,6 +1507,11 @@ export function maybe_show_edit($row: JQuery, id: number): void {
     if (currently_editing_messages.has(id)) {
         const $message_edit_content = currently_editing_messages.get(id);
         edit_message($row, $message_edit_content?.val() ?? "");
+        setup_edit_form_widgets($row);
+        if ($row.hasClass("show_preview")) {
+            show_preview_area($row);
+            $row.removeClass("show_preview");
+        }
     }
 }
 

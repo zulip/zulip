@@ -56,7 +56,8 @@ function same_recipient(a: Recipient | null, b: Recipient | null): boolean {
         if (a.message_type === "direct" && b.message_type === "direct") {
             // direct message recipients
             return _.isEqual(a.ids, b.ids);
-        } else if (a.message_type === "stream" && b.message_type === "stream") {
+        }
+        if (a.message_type === "stream" && b.message_type === "stream") {
             // stream recipients
             return same_stream_and_topic(a, b);
         }

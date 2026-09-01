@@ -111,8 +111,10 @@ export function update_emoji_frequency_on_messages_deletion(message_ids: number[
             continue;
         }
         assert(message !== undefined);
-        const message_reactions = [...message.clean_reactions.values()];
-        const emoji_ids = message_reactions.map((reaction) => reaction.local_id);
+        const emoji_ids = message.clean_reactions
+            .values()
+            .map((reaction) => reaction.local_id)
+            .toArray();
 
         emoji_frequency_data.remove_message_reactions({
             message_id,

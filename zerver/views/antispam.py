@@ -6,26 +6,18 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponseBase
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
-from pydantic import BaseModel
 
+from zerver.lib.captcha import captcha_enabled
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint_without_parameters
-
-
-class AltchaPayload(BaseModel):
-    algorithm: str
-    challenge: str
-    number: int
-    salt: str
-    signature: str
 
 
 @typed_endpoint_without_parameters
 def get_challenge(
     request: HttpRequest,
 ) -> HttpResponseBase:
-    if not settings.USING_CAPTCHA or not settings.ALTCHA_HMAC_KEY:  # nocoverage
+    if not captcha_enabled():  # nocoverage
         raise JsonableError(_("Challenges are not enabled."))
 
     now = timezone_now()
@@ -47,7 +39,7 @@ def get_challenge(
             *session_challenges,
             (challenge.challenge, expires.timestamp()),
         ]
-        return json_success(request, data=challenge.__dict__)
-    except Exception as e:  # nocoverage
-        logging.exception(e)
+        return json_success(request, data=challenge.to_dict())
+    except Exception:  # nocoverage
+        logging.exception("Error while generating challenge")
         raise JsonableError(_("Failed to generate challenge"))

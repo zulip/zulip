@@ -1,8 +1,11 @@
+from dataclasses import dataclass
 from datetime import datetime
 
+from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
+from zerver.lib.exceptions import AnomalousWebhookPayloadError
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
@@ -53,6 +56,29 @@ ALL_EVENT_TYPES = LEGACY_EVENT_TYPES + NEW_EVENT_TYPES
 def get_global_time(dt_str: str) -> str:
     dt = datetime.fromisoformat(dt_str)
     return datetime_to_global_time(dt)
+
+
+# The fields that this webhook needs from a Grafana 7.0 alert payload.
+@dataclass
+class GrafanaLegacyAlert:
+    title: str
+    state: str
+    rule_name: str
+    rule_url: str
+
+
+def parse_legacy_alert(payload: WildValue) -> GrafanaLegacyAlert:
+    """Parses the fields that this webhook needs from a Grafana 7.0
+    alert payload, raising ValidationError if any is missing or is
+    not the type that we expect.
+    """
+    title = payload["title"].tame(check_string)
+    state = payload["state"].tame(
+        check_string_in(["no_data", "paused", "alerting", "ok", "pending", "unknown"])
+    )
+    rule_name = payload["ruleName"].tame(check_string)
+    rule_url = payload["ruleUrl"].tame(check_string)
+    return GrafanaLegacyAlert(title, state, rule_name, rule_url)
 
 
 @webhook_view("Grafana", all_event_types=ALL_EVENT_TYPES)
@@ -147,55 +173,52 @@ def api_grafana_webhook(
 
         return json_success(request)
 
-    else:
+    try:
         # Grafana 7.0 alerts:
         # https://grafana.com/docs/grafana/v7.0/alerting/notifications/#webhook
-        topic_name = OLD_TOPIC_TEMPLATE.format(alert_title=payload["title"].tame(check_string))
+        legacy_alert = parse_legacy_alert(payload)
+    except ValidationError:
+        # The payload did not include the expected fields for either
+        # current or legacy Grafana webhooks.
+        raise AnomalousWebhookPayloadError
 
-        eval_matches_text = ""
-        if "evalMatches" in payload and payload["evalMatches"] is not None:
-            for match in payload["evalMatches"]:
-                eval_matches_text += "**{}:** {}\n".format(
-                    match["metric"].tame(check_string),
-                    match["value"].tame(check_none_or(check_union([check_int, check_float]))),
-                )
+    topic_name = OLD_TOPIC_TEMPLATE.format(alert_title=legacy_alert.title)
 
-        message_text = ""
-        if "message" in payload:
-            message_text = payload["message"].tame(check_string) + "\n\n"
+    eval_matches_text = ""
+    if "evalMatches" in payload and payload["evalMatches"] is not None:
+        for match in payload["evalMatches"]:
+            eval_matches_text += "**{}:** {}\n".format(
+                match["metric"].tame(check_string),
+                match["value"].tame(check_none_or(check_union([check_int, check_float]))),
+            )
 
-        state = payload["state"].tame(
-            check_string_in(["no_data", "paused", "alerting", "ok", "pending", "unknown"])
+    message_text = ""
+    if "message" in payload:
+        message_text = payload["message"].tame(check_string) + "\n\n"
+
+    state = legacy_alert.state
+    if state == "alerting":
+        alert_status = ALERT_STATUS_TEMPLATE.format(alert_icon=":alert:", alert_state=state.upper())
+    elif state == "ok":
+        alert_status = ALERT_STATUS_TEMPLATE.format(
+            alert_icon=":squared_ok:", alert_state=state.upper()
         )
-        if state == "alerting":
-            alert_status = ALERT_STATUS_TEMPLATE.format(
-                alert_icon=":alert:", alert_state=state.upper()
-            )
-        elif state == "ok":
-            alert_status = ALERT_STATUS_TEMPLATE.format(
-                alert_icon=":squared_ok:", alert_state=state.upper()
-            )
-        else:
-            alert_status = ALERT_STATUS_TEMPLATE.format(
-                alert_icon=":info:", alert_state=state.upper()
-            )
+    else:
+        alert_status = ALERT_STATUS_TEMPLATE.format(alert_icon=":info:", alert_state=state.upper())
 
-        body = OLD_MESSAGE_TEMPLATE.format(
-            alert_message=message_text,
-            alert_status=alert_status,
-            rule_name=payload["ruleName"].tame(check_string),
-            rule_url=payload["ruleUrl"].tame(check_string),
-            eval_matches=eval_matches_text,
+    body = OLD_MESSAGE_TEMPLATE.format(
+        alert_message=message_text,
+        alert_status=alert_status,
+        rule_name=legacy_alert.rule_name,
+        rule_url=legacy_alert.rule_url,
+        eval_matches=eval_matches_text,
+    )
+
+    if "imageUrl" in payload:
+        body += "\n[Click to view visualization]({visualization})".format(
+            visualization=payload["imageUrl"].tame(check_string)
         )
 
-        if "imageUrl" in payload:
-            body += "\n[Click to view visualization]({visualization})".format(
-                visualization=payload["imageUrl"].tame(check_string)
-            )
-
-        body = body.strip()
-
-        # send the message
-        check_send_webhook_message(request, user_profile, topic_name, body, state)
-
-        return json_success(request)
+    body = body.strip()
+    check_send_webhook_message(request, user_profile, topic_name, body, state)
+    return json_success(request)

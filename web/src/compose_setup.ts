@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -312,7 +312,7 @@ export function initialize(): void {
                 onboarding_steps.post_onboarding_step_as_read("visibility_policy_banner");
                 return;
             }
-            window.location.href = "/#settings/notifications";
+            window.location.assign("/#settings/notifications");
         },
     );
 
@@ -752,12 +752,12 @@ export function initialize(): void {
         if (topic.length > realm.max_topic_length) {
             topic = topic.slice(0, realm.max_topic_length);
             compose_state.topic(topic);
-            $("input#stream_message_recipient_topic").addClass("shake");
+            $("input#stream_message_recipient_topic").addClass("input-validation-shake");
         }
     }
 
     $("input#stream_message_recipient_topic").on("animationend", function () {
-        $(this).removeClass("shake");
+        $(this).removeClass("input-validation-shake");
     });
 
     $("input#stream_message_recipient_topic").on("input", () => {

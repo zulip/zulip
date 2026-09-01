@@ -1,6 +1,6 @@
 import ClipboardJS from "clipboard";
 import {parseISO} from "date-fns";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
@@ -9,6 +9,7 @@ import render_user_card_popover from "../templates/popovers/user_card/user_card_
 import render_user_card_popover_for_deleted_user from "../templates/popovers/user_card/user_card_popover_for_deleted_user.hbs";
 import render_user_card_popover_for_unknown_user from "../templates/popovers/user_card/user_card_popover_for_unknown_user.hbs";
 
+import * as activity_ui from "./activity_ui.ts";
 import * as blueslip from "./blueslip.ts";
 import * as browser_history from "./browser_history.ts";
 import * as buddy_data from "./buddy_data.ts";
@@ -140,6 +141,7 @@ function get_popover_classname(
 user_sidebar.hide = function () {
     PopoverMenu.prototype.hide.call(this);
     current_user_sidebar_user_id = undefined;
+    activity_ui.set_user_card_open(false);
 };
 
 const user_card_popovers = {
@@ -706,14 +708,10 @@ function toggle_sidebar_user_card_popover($target: JQuery): void {
         "compose_private_message",
         "user_sidebar",
         "left",
-        false,
-        (instance) => {
-            /* See comment in get_props_for_popover_centering for explanation of this. */
-            $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
-        },
     );
 
     current_user_sidebar_user_id = user.user_id;
+    activity_ui.set_user_card_open(true);
 }
 
 function register_click_handlers(): void {

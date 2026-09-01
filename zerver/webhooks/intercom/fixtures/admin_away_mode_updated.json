@@ -6,8 +6,8 @@
         "item": {
             "type": "admin",
             "id": 1234567,
-            "name": "John Doe",
-            "email": "admin@example.com",
+            "name": "Bo Williams",
+            "email": "bwilliams@example.com",
             "job_title": null,
             "away_mode_enabled": true,
             "away_mode_reassign": false,

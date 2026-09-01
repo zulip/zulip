@@ -12,7 +12,7 @@ const {make_user} = require("./lib/example_user.cjs");
 const {$t} = require("./lib/i18n.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 set_global("navigator", {});
 
@@ -850,6 +850,18 @@ run_test("format_text - bulleted and numbered lists", ({override_rewire}) => {
     compose_ui.format_text($textarea, "bulleted");
     assert.equal(get_textarea_state(), "<\n- first_item\n\n- second_item\n\n- third_item>");
 
+    // Toggling off a bulleted list that contains blank lines between items
+    // should strip markers, not prepend new ones.
+    init_textarea_state("<- first_item\n\n- second_item\n\n- third_item>");
+    compose_ui.format_text($textarea, "bulleted");
+    assert.equal(get_textarea_state(), "<first_item\n\nsecond_item\n\nthird_item>");
+
+    // Converting a numbered list to a bulleted list should replace the
+    // markers, not stack them (e.g. "- 1. item").
+    init_textarea_state("<1. first_item\n2. second_item>");
+    compose_ui.format_text($textarea, "bulleted");
+    assert.equal(get_textarea_state(), "<- first_item\n- second_item>");
+
     // Toggling off bulleted list
     init_textarea_state("<- first_item\n- second_item>");
     compose_ui.format_text($textarea, "bulleted");
@@ -895,6 +907,18 @@ run_test("format_text - bulleted and numbered lists", ({override_rewire}) => {
     init_textarea_state("<\nfirst_item\n\nsecond_item\n\nthird_item>");
     compose_ui.format_text($textarea, "numbered");
     assert.equal(get_textarea_state(), "<\n1. first_item\n\n2. second_item\n\n3. third_item>");
+
+    // Toggling off a numbered list that contains blank lines between items
+    // should strip markers, not prepend new ones.
+    init_textarea_state("<1. first_item\n\n2. second_item\n\n3. third_item>");
+    compose_ui.format_text($textarea, "numbered");
+    assert.equal(get_textarea_state(), "<first_item\n\nsecond_item\n\nthird_item>");
+
+    // Converting a bulleted list to a numbered list should replace the
+    // markers, not stack them (e.g. "1. - item").
+    init_textarea_state("<- first_item\n- second_item>");
+    compose_ui.format_text($textarea, "numbered");
+    assert.equal(get_textarea_state(), "<1. first_item\n2. second_item>");
 
     // Toggling off numbered list
     init_textarea_state("<1. first_item\n2. second_item>");
@@ -1546,4 +1570,25 @@ run_test("handle_list_indent", ({override}) => {
         assert.ok(compose_ui.handle_list_indent($t, true));
         assert.equal($t[0].value, "  1. Item 1");
     }
+});
+
+run_test("maybe_set_compose_textarea_typeahead ignores edit box typeaheads", () => {
+    // First, set up the compose box's typeahead.
+    const $compose_textarea = $("textarea#compose-textarea");
+    $compose_textarea.set_matches("textarea#compose-textarea", true);
+    const compose_typeahead = {
+        input_element: {$element: $compose_textarea, type: "textarea"},
+    };
+    compose_ui.maybe_set_compose_textarea_typeahead(compose_typeahead);
+    assert.equal(compose_ui.compose_textarea_typeahead, compose_typeahead);
+
+    // A message-edit box's typeahead must not overwrite the compose
+    // box's typeahead.
+    const $message_edit_content = $(".message_edit_content");
+    $message_edit_content.set_matches("textarea#compose-textarea", false);
+    const edit_typeahead = {
+        input_element: {$element: $message_edit_content, type: "textarea"},
+    };
+    compose_ui.maybe_set_compose_textarea_typeahead(edit_typeahead);
+    assert.equal(compose_ui.compose_textarea_typeahead, compose_typeahead);
 });

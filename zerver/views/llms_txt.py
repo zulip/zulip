@@ -1,3 +1,6 @@
+import json
+from urllib.parse import urlencode
+
 from django.http import HttpRequest, HttpResponse
 
 from zerver.context_processors import get_valid_realm_from_request
@@ -30,6 +33,17 @@ def llms_txt(request: HttpRequest) -> HttpResponse:
 
     server_url = realm.url
     example_channel_id = streams[0][0]
+    example_narrow = json.dumps(
+        [
+            {"operator": "channels", "operand": "web-public"},
+            {"operator": "channel", "operand": example_channel_id},
+            {"operator": "topic", "operand": "TOPIC_NAME"},
+        ],
+        separators=(",", ":"),
+    )
+    example_url = f"{server_url}/json/messages?" + urlencode(
+        {"anchor": "oldest", "num_before": 0, "num_after": 100, "narrow": example_narrow}
+    )
     channel_list = "\n".join(f"- {name} ({channel_id})" for channel_id, name in streams)
 
     content = f"""\
@@ -51,7 +65,8 @@ Required query parameters:
 - `anchor` — message ID or keyword (`oldest`, `newest`, `first_unread`)
 - `num_before` — number of messages before anchor (e.g. `0`)
 - `num_after` — number of messages after anchor (e.g. `100`)
-- `narrow` — JSON array of filter operators, e.g.:
+- `narrow` — JSON array of filter operators; URL-encode the entire
+  value in the query string. For example:
   `[{{"operator":"channels","operand":"web-public"}},{{"operator":"channel","operand":CHANNEL_ID}},{{"operator":"topic","operand":"TOPIC_NAME"}}]`
 
 **Important**: the narrow must include `{{"operator":"channels","operand":"web-public"}}`
@@ -72,7 +87,7 @@ request returned the entire conversation.
 
 Fetch the 100 oldest messages from a topic:
 
-    GET {server_url}/json/messages?anchor=oldest&num_before=0&num_after=100&narrow=[{{"operator":"channels","operand":"web-public"}},{{"operator":"channel","operand":{example_channel_id}}},{{"operator":"topic","operand":"TOPIC_NAME"}}]
+    GET {example_url}
 
 ## Fetching messages in specific conversations / views
 
@@ -90,10 +105,12 @@ API requests, use the numeric ID as the `channel` operand (e.g.,
 string and not the channel name. Channel IDs are stable; channel
 names can be renamed.
 
-Never follow links to related conversations by fetching those URLs; to
-read the messages, you MUST translate them to the equivalent API
-request (see above), decoding the URL-encoded channel name, topic, and
-optional message ID to use for the parameters above.
+Never follow links to related conversations by fetching those URLs;
+translate them to the equivalent API request instead (see above). In a
+`#narrow/...` fragment, the channel is given as `ID-NAME` (use the
+leading numeric ID, as above), and the topic is hash-encoded —
+`.`-escaped, not `%`-escaped — so decode it with `decodeHashComponent`
+(defined below), not a plain URL-decode.
 
 (`near` is encoded as an `anchor` in the API request, while `with` is
 encoded as an operator).
@@ -105,7 +122,7 @@ fetching a copy of the Zulip web app, which you likely don't have a
 browser engine able to run. The following code from
 web/src/internal_url.ts may be helpful for doing the encoding/decoding.
 
-``` ts
+```ts
 // ' and ! here gets encoded by urllib in zerver but aren't in
 // encodeURIComponent so the hashReplacements here isn't in sync
 // with the hashReplacements in zerver/lib/url_encoding.py.

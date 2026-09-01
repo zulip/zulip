@@ -9,7 +9,7 @@ const {make_bot, make_user} = require("./lib/example_user.cjs");
 const {mock_esm, zrequire, set_global} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 const hash_util = zrequire("hash_util");
@@ -891,6 +891,30 @@ run_test("show_search_stopwords", ({mock_template, override}) => {
             expected_search_data,
         ),
     );
+
+    // Stop word exclusion is case insensitive.
+    const expected_search_data_capitalization_case = {
+        has_stop_word: true,
+        query_words: [
+            {query_word: "What", is_stop_word: true},
+            {query_word: "ABOUT", is_stop_word: true},
+            {query_word: "Grail", is_stop_word: false},
+        ],
+    };
+    current_filter = set_filter([
+        ["stream", streamA_id.toString()],
+        ["search", "What ABOUT Grail"],
+    ]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: No search results.",
+            undefined,
+            undefined,
+            expected_search_data_capitalization_case,
+        ),
+    );
 });
 
 run_test("show_invalid_narrow_message", ({mock_template}) => {
@@ -1101,14 +1125,16 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
     };
     message_lists.current = list;
     $("#navbar-fixed-container").set_height(50);
+    $(".message_header").set_height(30);
     // Date jumps should place the selected message below the sticky
-    // message header, increasing the target scroll offset by 40px.
+    // message header, increasing the target scroll offset by the
+    // header's measured height (30px here).
 
     const in_range = new Date(150 * 1000).toISOString();
     message_view.fast_track_current_msg_list_to_anchor("date", in_range);
     assert.deepEqual(selected, {
         id: 102,
-        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 90},
+        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 80},
     });
 
     list.data.fetch_status.finish_older_batch({
@@ -1120,7 +1146,7 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
     message_view.fast_track_current_msg_list_to_anchor("date", before_range);
     assert.deepEqual(selected, {
         id: 101,
-        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 90},
+        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 80},
     });
 
     // If we have not found the oldest message, and the anchor timestamp is
@@ -1160,7 +1186,7 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
             then_scroll: true,
             from_scroll: false,
             force_rerender: true,
-            target_scroll_offset: 90,
+            target_scroll_offset: 80,
         },
     });
 
@@ -1193,7 +1219,7 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
             then_scroll: true,
             from_scroll: false,
             force_rerender: true,
-            target_scroll_offset: 90,
+            target_scroll_offset: 80,
         },
     });
 
@@ -1208,7 +1234,7 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
     message_view.fast_track_current_msg_list_to_anchor("date", future_range);
     assert.deepEqual(selected, {
         id: 104,
-        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 90},
+        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 80},
     });
     assert.equal(load_messages_calls, 0);
 

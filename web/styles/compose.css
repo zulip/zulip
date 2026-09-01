@@ -392,8 +392,8 @@
 }
 
 #message-content-container:has(
-        .new_message_textarea.textarea-approaching-limit
-    ),
+    .new_message_textarea.textarea-approaching-limit
+),
 .edit-content-container:has(.message_edit_content.textarea-approaching-limit) {
     box-shadow: 0 0 0 1pt
         var(--color-message-content-container-border-approaching-limit);
@@ -401,12 +401,12 @@
 
 #message-content-container:has(.new_message_textarea.textarea-over-limit.flash),
 #message-content-container:has(
-        .new_message_textarea.textarea-approaching-limit.flash
-    ),
+    .new_message_textarea.textarea-approaching-limit.flash
+),
 .edit-content-container:has(.message_edit_content.textarea-over-limit.flash),
 .edit-content-container:has(
-        .message_edit_content.textarea-approaching-limit.flash
-    ) {
+    .message_edit_content.textarea-approaching-limit.flash
+) {
     /* This should align with the timing in compose_validate.validate_message_length. */
     animation: message-limit-flash 0.5s ease-in-out 1;
 }
@@ -632,10 +632,12 @@
    the formatting bar via Tab. Scroller-button state
    silently updates despite their being hidden, and
    scroller buttons reappear once focus has moved out
-   of the formatting bar. */
+   of the formatting bar. Using :focus-visible (instead
+   of :focus-within) avoids hiding the buttons during a
+   mouse click, which would otherwise cause a blink. */
 .compose-scrolling-buttons-container:has(
-        .compose-scrollable-buttons:focus-within
-    ) {
+    .compose-scrollable-buttons :focus-visible
+) {
     .formatting-scroller-backward,
     .formatting-scroller-forward {
         opacity: 0;
@@ -1045,6 +1047,19 @@
     }
 }
 
+/* Show the focus outline on banner close buttons only for
+   keyboard navigation, not for mouse clicks.
+   TODO: These banners still use the legacy .main-view-banner
+   markup. We should migrate the compose and edit-form banners
+   to the modern banner and button components, which handle
+   keyboard vs. mouse focus correctly; this rule is an interim fix. */
+#compose_banners,
+.edit_form_banners {
+    .main-view-banner-close-button:focus:not(:focus-visible) {
+        outline: 0;
+    }
+}
+
 .upload_banner {
     overflow: hidden;
 
@@ -1168,13 +1183,6 @@ textarea.new_message_textarea {
 
         &.empty-topic-display::placeholder {
             color: var(--color-compose-recipient-box-text-color);
-        }
-
-        &.shake {
-            animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-            transform: translate3d(0, 0, 0);
-            backface-visibility: hidden;
-            perspective: 1000px;
         }
     }
 

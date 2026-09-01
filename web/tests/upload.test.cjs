@@ -6,7 +6,7 @@ const {mock_banners} = require("./lib/compose_banner.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 class ClipboardEvent {
     constructor({clipboardData}) {
@@ -192,7 +192,7 @@ test("upload_files", async ({mock_template, override, override_rewire}) => {
             remove_file_called = true;
         },
     };
-    let hide_upload_banner_called = false;
+    let hide_upload_banner_called;
     override_rewire(upload, "hide_upload_banner", (_uppy, config) => {
         hide_upload_banner_called = true;
         assert.equal(config.mode, "compose");

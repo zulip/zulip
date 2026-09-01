@@ -2,9 +2,6 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class AirbyteHookTests(WebhookTestCase):
-    STREAM_NAME = "airbyte"
-    FIXTURE_DIR_NAME = "airbyte"
-
     def test_airbyte_job_success(self) -> None:
         expected_topic = "Zulip Airbyte Integration - Google Sheets → Postgres"
 

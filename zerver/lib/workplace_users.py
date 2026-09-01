@@ -71,7 +71,13 @@ def realm_eligible_for_non_workplace_pricing(realm: Realm) -> bool:
     from corporate.models.plans import get_current_plan_by_realm
 
     customer_plan = get_current_plan_by_realm(realm)
-    assert customer_plan is not None
+
+    if customer_plan is None:
+        # Support staff have manually set a paid plan type for
+        # this realm, and we want them to be able to correctly
+        # configure their billing.
+        return True
+
     if customer_plan.fixed_price is not None:
         # Discounted pricing for non-workplace users is
         # currently incompatible with a fixed-price plan.
@@ -90,10 +96,13 @@ def realm_on_discounted_cloud_plan(realm: Realm) -> bool:
 
     from corporate.models.customers import get_customer_by_realm
 
-    # We can assume that an active plan will be present
-    # if realm is not on free or fully sponsored plan.
     customer = get_customer_by_realm(realm)
-    assert customer is not None
+
+    if customer is None:
+        # Support staff have manually set a paid plan type for
+        # this realm.
+        return False
+
     return customer.monthly_discounted_price > 0 or customer.annual_discounted_price > 0
 
 

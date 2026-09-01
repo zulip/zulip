@@ -11,7 +11,6 @@ const {page_params} = require("./lib/zpage_params.cjs");
 
 const desktop_notifications = mock_esm("../src/desktop_notifications");
 const unread = mock_esm("../src/unread");
-const util = mock_esm("../src/util");
 
 const {localstorage} = zrequire("localstorage");
 const navbar_alerts = zrequire("navbar_alerts");
@@ -40,7 +39,7 @@ test("should_show_desktop_notifications_banner", ({override}) => {
     // - The user has not said to never show banner on this device again.
     ls.set("dontAskForNotifications", undefined);
     page_params.is_spectator = false;
-    override(util, "is_mobile", () => false);
+    override(desktop_notifications, "has_notification_support", () => true);
     override(desktop_notifications, "granted_desktop_notifications_permission", () => false);
     override(desktop_notifications, "permission_state", () => "default");
     assert.equal(navbar_alerts.should_show_desktop_notifications_banner(ls), true);
@@ -50,10 +49,10 @@ test("should_show_desktop_notifications_banner", ({override}) => {
     assert.equal(navbar_alerts.should_show_desktop_notifications_banner(ls), false);
     ls.set("dontAskForNotifications", undefined);
 
-    // Don't ask for permission if device is mobile.
-    override(util, "is_mobile", () => true);
+    // Don't ask for permission if UA has no Notification API support.
+    override(desktop_notifications, "has_notification_support", () => false);
     assert.equal(navbar_alerts.should_show_desktop_notifications_banner(ls), false);
-    override(util, "is_mobile", () => false);
+    override(desktop_notifications, "has_notification_support", () => true);
 
     // Don't ask for permission if notification is denied by user.
     override(desktop_notifications, "permission_state", () => "denied");

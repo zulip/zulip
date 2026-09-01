@@ -15,7 +15,7 @@ const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const {set_current_user} = zrequire("state_data");
 const user_groups = zrequire("user_groups");
@@ -959,7 +959,7 @@ ${fence}`;
     assert.ok(message_lists.current.selected_id() !== 50);
 
     // If message text from some message is not highlighted(selected) when using the ">" hotkey
-    // to quote, then message_id passed to `respond_to_message` will be same as as the
+    // to quote, then message_id passed to `respond_to_message` will be same as the
     // id of the message having the pointer.
     const message_with_pointer = highlighted_message;
     override_rewire(compose_reply, "get_highlighted_message_ids", () => undefined);

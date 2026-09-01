@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -388,6 +388,14 @@ function create_stream(): void {
         ...group_setting_values,
     };
 
+    // Only present for admins, so guard against it being absent.
+    const $default_push_notifications = $<HTMLInputElement>("#id_new_default_push_notifications");
+    if ($default_push_notifications.length > 0) {
+        data["default_push_notifications"] = JSON.stringify(
+            $default_push_notifications.prop("checked"),
+        );
+    }
+
     assert(folder_widget !== undefined);
     const folder_id = folder_widget.value();
     if (folder_id !== settings_config.no_folder_selected) {
@@ -637,11 +645,27 @@ export function set_up_handlers(): void {
         }
     });
 
+    function handle_channel_name_length_limit(): void {
+        const $channel_input = $<HTMLInputElement>("input#create_stream_name");
+        let channel_name = $channel_input.val()!.trim();
+        if (channel_name.length > realm.max_stream_name_length) {
+            channel_name = channel_name.slice(0, realm.max_stream_name_length);
+            $channel_input.val(channel_name);
+            $channel_input.addClass("input-validation-shake");
+        }
+        stream_name_error.pre_validate(channel_name);
+    }
+    $("input#create_stream_name").on("animationend", function () {
+        $(this).removeClass("input-validation-shake");
+    });
     $container.on("input", "#create_stream_name", () => {
-        const stream_name = $<HTMLInputElement>("input#create_stream_name").val()!.trim();
-
-        // This is an inexpensive check.
-        stream_name_error.pre_validate(stream_name);
+        handle_channel_name_length_limit();
+    });
+    $container.on("paste", "#create_stream_name", () => {
+        /* setTimeout is needed to allow the pasted content to be
+           added to the input before checking the channel name length limit,
+           since the paste event fires before the input value is updated. */
+        setTimeout(handle_channel_name_length_limit, 0);
     });
 
     // Do not allow the user to enter newline characters while typing out the

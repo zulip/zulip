@@ -16,7 +16,7 @@ const bots = new Map<number, Bot>();
 const services = new Map<number, Services>();
 
 export function all_user_ids(): number[] {
-    return [...bots.keys()];
+    return bots.keys().toArray();
 }
 
 export function add(bot_data: ServerAddBotData): void {

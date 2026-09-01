@@ -5,7 +5,7 @@
         {{#each group_assigned_realm_permissions}}
             <div class="settings-subsection-parent {{subsection_key}} {{#if (eq assigned_permissions.length 0)}}hide{{/if}}">
                 <div class="subsection-header">
-                    <h3>{{subsection_heading}}</h3>
+                    <h3 class="settings-subsection-title">{{subsection_heading}}</h3>
                     {{> ../settings/settings_save_discard_widget show_save_discard_buttons=true }}
                 </div>
 

@@ -3,6 +3,8 @@ from collections.abc import Sequence
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
+from zerver.lib.exceptions import JsonableError
+from zerver.lib.users import has_inaccessible_users
 from zerver.models import DirectMessageGroup, Recipient, UserProfile
 from zerver.models.recipients import (
     get_direct_message_group_hash,
@@ -100,3 +102,11 @@ def recipient_for_user_profiles(
     return get_recipient_from_user_profiles(
         recipient_profiles, forwarded_mirror_message, forwarder_user_profile, sender, create=create
     )
+
+
+def check_sender_can_access_recipients(
+    sender: UserProfile, user_profiles: Sequence[UserProfile]
+) -> None:
+    recipient_user_ids = [user.id for user in user_profiles]
+    if has_inaccessible_users(recipient_user_ids, sender):
+        raise JsonableError(_("You do not have permission to access some of the recipients."))

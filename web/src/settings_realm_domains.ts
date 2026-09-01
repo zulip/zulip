@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_settings_admin_realm_domains_list from "../templates/settings/admin_realm_domains_list.hbs";
 import render_realm_domains_modal from "../templates/settings/realm_domains_modal.hbs";

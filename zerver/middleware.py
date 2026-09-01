@@ -299,8 +299,8 @@ class LogRequests(MiddlewareMixin):
 
         try:
             request_notes.client_name, request_notes.client_version = parse_client(request)
-        except JsonableError as e:
-            logging.exception(e)
+        except JsonableError:
+            logging.exception("Error while parsing client from request")
             request_notes.client_name = "Unparsable"
             request_notes.client_version = None
 

@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 set_global("document", {});
 class ClipboardEvent {}
@@ -521,7 +521,7 @@ run_test("misc things", () => {
     const input_stub = {
         to_$: () => ({
             removeClass(cls) {
-                assert.equal(cls, "shake");
+                assert.equal(cls, "input-validation-shake");
                 shake_class_removed = true;
             },
         }),

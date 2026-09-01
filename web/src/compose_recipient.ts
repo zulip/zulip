@@ -1,6 +1,6 @@
 /* Compose box module responsible for the message's recipient */
 
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
@@ -203,6 +203,9 @@ export function update_on_recipient_change(): void {
     update_narrow_to_recipient_visibility();
     compose_validate.warn_if_guest_in_dm_recipient();
     drafts.update_compose_draft_count();
+    // The validation run below only clears the error banners it owns,
+    // so clear stale upload error banners explicitly here.
+    compose_banner.clear_upload_errors();
     compose_validate.validate_and_update_send_button_status();
 
     // Clear the topic moved banner when the recipient
@@ -458,10 +461,13 @@ export function initialize(): void {
                     });
                 }
             }
-            const stream_items = [...stream_items_by_stream_id.values()].map((item) => item.stream);
+            const stream_items = stream_items_by_stream_id
+                .values()
+                .map((item) => item.stream)
+                .toArray();
             const sorted_streams = typeahead_helper.sort_streams(stream_items, filter_value);
-            const sorted_stream_items = sorted_streams.map(
-                (stream) => stream_items_by_stream_id.get(stream.stream_id)!,
+            const sorted_stream_items = sorted_streams.map((stream) =>
+                stream_items_by_stream_id.get(stream.stream_id)!,
             );
 
             if (non_stream_items.length > 0) {

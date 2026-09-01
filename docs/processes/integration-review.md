@@ -88,6 +88,14 @@ you should hand off to a different reviewer.)
   but needlessly isn't, or multi-minute transactions.
 - Audit logs and information destruction risks.
 
+### API documentation
+
+- Occasionally, we will want to merge the API and backend changes for
+  a new feature without also implementing that API/feature in the web
+  app. In this case, any new API endpoints should be labeled with the
+  `x-pending-web-implementation` tag and you'll want to open an issue
+  for the web app implementation of the feature so that it's tracked.
+
 ### Web app
 
 - Cross-site scripting bugs. Pay special attention to `{{{` in
@@ -100,6 +108,8 @@ you should hand off to a different reviewer.)
   workflows (not just settings).
 - Error handling that could make a future error/mistake worse. E.g.,
   anything touching the logic that reloads the web app.
+- API documentation reflects that the feature is implemented in the
+  web app; see API changes point above.
 
 ## Checklist
 
@@ -174,6 +184,6 @@ Some common mistakes to watch out for:
   typically, we squash the `merge-api-changelogs` commit when there's
   only one commit in a PR touching the API, to keep the history clean).
 
-- Merging a pull request with migrations without rebasing the the work
+- Merging a pull request with migrations without rebasing the work
   and running `tools/renumber-migrations`. PRs older than a couple
   weeks are very likely to have duplicate migration numbers.

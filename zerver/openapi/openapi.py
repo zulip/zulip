@@ -232,6 +232,13 @@ def get_curl_include_exclude(endpoint: str, method: str) -> list[dict[str, Any]]
     ]
 
 
+def check_web_app_pending_implementation(endpoint: str, method: str) -> bool:
+    """Fetch if the endpoint has note about web application implementation."""
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()].get(
+        "x-pending-web-implementation", False
+    )
+
+
 def check_requires_administrator(endpoint: str, method: str) -> bool:
     """Fetch if the endpoint requires admin config."""
     return openapi_spec.openapi()["paths"][endpoint][method.lower()].get(

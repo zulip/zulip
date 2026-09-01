@@ -3,9 +3,32 @@
     /* Exit buttons are sometimes Cancel, but sometimes
        other "Nah, forget it" actions. */
     --color-exit-button-text: hsl(0deg 0% 0%);
-    --color-exit-button-border: hsl(300deg 2% 11% / 30%);
     --color-exit-button-background: hsl(226deg 1% 42% / 20%);
     --color-exit-button-background-interactive: hsl(226deg 1% 42% / 27%);
+    --color-background-modal-confirm-button: light-dark(
+        hsl(240deg 80% 66%),
+        hsl(245deg 55% 50%)
+    );
+    --color-background-modal-confirm-button-hover: light-dark(
+        hsl(240deg 63% 59%),
+        hsl(245deg 60% 58%)
+    );
+    --color-background-modal-confirm-button-active: light-dark(
+        hsl(240deg 55% 51%),
+        hsl(245deg 65% 42%)
+    );
+    --color-text-modal-cancel-button: light-dark(
+        hsl(229deg 9% 36%),
+        hsl(229deg 10% 70%)
+    );
+    --color-background-modal-cancel-button-hover: light-dark(
+        hsl(229deg 9% 36% / 7%),
+        hsl(230deg 9% 60% / 14%)
+    );
+    --color-background-modal-cancel-button-active: light-dark(
+        hsl(229deg 9% 36% / 11%),
+        hsl(230deg 9% 60% / 18%)
+    );
 
     /* Since modals are also present in portico and billing pages, we define
        the modal related variables directly here in the modal.css — which is
@@ -206,8 +229,8 @@
     }
 }
 
-.modal__button:focus,
-.modal__button:hover {
+.modal__button:focus:not(.dialog_submit_button, .dialog_exit_button),
+.modal__button:hover:not(.dialog_submit_button, .dialog_exit_button) {
     transform: scale(1.05);
     /* The extremely subtle 1.05 scale can cause
        a gap to appear between the outline and
@@ -218,19 +241,46 @@
 }
 
 .dialog_exit_button {
-    color: var(--color-exit-button-text);
-    background: var(--color-exit-button-background);
-    border: 1px solid var(--color-exit-button-border);
+    color: var(--color-text-modal-cancel-button);
+    background: transparent;
 
     &:hover {
-        background: var(--color-exit-button-background-interactive);
+        background: var(--color-background-modal-cancel-button-hover);
+    }
+
+    &:active {
+        background: var(--color-background-modal-cancel-button-active);
     }
 }
 
 .dialog_submit_button {
     margin-left: 12px;
-    background-color: hsl(240deg 96% 68%);
+    background-color: var(--color-background-modal-confirm-button);
     color: hsl(0deg 0% 100%) !important;
+
+    &:hover {
+        background-color: var(--color-background-modal-confirm-button-hover);
+    }
+
+    &:active {
+        background-color: var(--color-background-modal-confirm-button-active);
+    }
+
+    &.dangerous_action_button {
+        background-color: var(--color-background-danger-solid-action-button);
+
+        &:hover {
+            background-color: var(
+                --color-background-danger-solid-action-button-hover
+            );
+        }
+
+        &:active {
+            background-color: var(
+                --color-background-danger-solid-action-button-active
+            );
+        }
+    }
 }
 
 .modal__tab-switcher-container {

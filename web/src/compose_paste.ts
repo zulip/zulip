@@ -1,5 +1,5 @@
 import isUrl from "is-url";
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import {insertTextIntoField} from "text-field-edit";
@@ -9,8 +9,10 @@ import * as compose_banner from "./compose_banner.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as people from "./people.ts";
 import * as stream_data from "./stream_data.ts";
 import * as topic_link_util from "./topic_link_util.ts";
+import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
 
 const MINIMUM_PASTE_SIZE_FOR_FILE_TREATMENT = 2000;
@@ -51,7 +53,7 @@ function image_to_zulip_markdown(
     // present on both Zulip and third-party Markdown images, but use
     // title as a fallback, since older-style Zulip image previews
     // only set title.
-    let alt = "";
+    let alt;
     if (node.classList.contains("inline-image")) {
         alt = node.getAttribute("alt") ?? "";
     } else {
@@ -106,8 +108,7 @@ function within_single_element(html_fragment: HTMLElement): boolean {
 // be removed (e.g., for headings that contain <br> and other tags in the fragment).
 // Empty nodes like comments or newline-only text should not be counted.
 function has_single_textful_child_node(html_fragment: HTMLElement): boolean {
-    let textful_nodes = 0;
-    textful_nodes = count_valid_text_nodes_upto([...html_fragment.childNodes], 2);
+    const textful_nodes = count_valid_text_nodes_upto([...html_fragment.childNodes], 2);
     if (textful_nodes >= 2) {
         return false;
     }
@@ -177,7 +178,7 @@ function is_from_excel(html_fragment: HTMLBodyElement): boolean {
         return false;
     }
 
-    if (!excel_namespaces.some((ns) => html_outer.includes(ns))) {
+    if (excel_namespaces.every((ns) => !html_outer.includes(ns))) {
         return false;
     }
 
@@ -233,7 +234,7 @@ function get_code_block_language(
     pre_element: HTMLElement,
     code_element_class_name: string,
 ): string {
-    let language = "";
+    let language;
     const parent_contains_lang_metadata =
         pre_element.parentElement?.classList.contains("zulip-code-block");
 
@@ -245,6 +246,8 @@ function get_code_block_language(
     }
     return language;
 }
+
+export const MENTION_SELECTOR = ".user-mention, .user-group-mention, .topic-mention";
 
 export function paste_handler_converter(
     paste_html: string,
@@ -264,7 +267,11 @@ export function paste_handler_converter(
     if (
         has_single_child_with_valid_text &&
         copied_html_fragment.firstElementChild !== null &&
-        !outer_elements_to_retain.includes(copied_html_fragment.firstElementChild.nodeName)
+        !outer_elements_to_retain.includes(copied_html_fragment.firstElementChild.nodeName) &&
+        // A mention anywhere in the selection (even wrapped in a <p> or
+        // nested inside .mention-content-wrapper) must reach the Turndown
+        // mention rule, so never take the plain-text fast path for it.
+        copied_html_fragment.querySelector(MENTION_SELECTOR) === null
     ) {
         // This will always return some text as it is already ensured
         // that such a text node exists in `has_single_textful_child_node`.
@@ -290,6 +297,61 @@ export function paste_handler_converter(
         codeBlockStyle: "fenced",
         headingStyle: "atx",
         br: "",
+    });
+    turndownService.addRule("mentions", {
+        filter(node) {
+            return node.nodeName === "SPAN" && node.matches(MENTION_SELECTOR);
+        },
+        replacement(_content, node) {
+            assert(node instanceof HTMLElement);
+            const is_silent = node.classList.contains("silent");
+            const is_group = node.classList.contains("user-group-mention");
+
+            // Group mentions use single-asterisk syntax (@*name* / @_*name*);
+            // user, topic, and wildcard mentions use double-asterisk.
+            const delimiter = is_group ? "*" : "**";
+            const prefix = (is_silent ? "@_" : "@") + delimiter;
+
+            const user_id = node.getAttribute("data-user-id");
+            if (
+                node.classList.contains("user-mention") &&
+                !node.classList.contains("channel-wildcard-mention") &&
+                user_id !== null
+            ) {
+                // Look up canonical full_name from the people store so the markdown
+                // doesn't depend on the display text (which can include suffixes
+                // like "(guest)" added by rendered_markdown.ts). Fall back to the
+                // id-only @**|id** syntax if the user can't be resolved locally;
+                // the backend will resolve it on send.
+                const user = people.maybe_get_user_by_id(Number(user_id), true);
+                if (user !== undefined) {
+                    return people.get_mention_syntax(
+                        user.full_name,
+                        Number(user_id),
+                        is_silent,
+                        true,
+                    );
+                }
+                return `${prefix}|${user_id}${delimiter}`;
+            }
+
+            const group_id = node.getAttribute("data-user-group-id");
+            if (is_group && group_id !== null) {
+                // System groups render with a display name (e.g. "Owners")
+                // that differs from the mention name (e.g. "role:owners"),
+                // so look up the canonical name instead of the display text.
+                const group = user_groups.maybe_get_user_group_from_id(Number(group_id));
+                if (group !== undefined) {
+                    return `${prefix}${group.name}${delimiter}`;
+                }
+            }
+
+            let name = (node.textContent ?? "").trim();
+            if (name.startsWith("@")) {
+                name = name.slice(1);
+            }
+            return `${prefix}${name}${delimiter}`;
+        },
     });
     turndownService.addRule("style", {
         filter: "style",
@@ -352,7 +414,7 @@ export function paste_handler_converter(
             content = content
                 .replace(/^\n+/, "") // remove leading newlines
                 .replace(/\n+$/, "\n") // replace trailing newlines with just a single one
-                .replaceAll(/\n/gm, "\n  "); // custom 2 space indent
+                .replaceAll("\n", "\n  "); // custom 2 space indent
             let prefix = "* ";
             const parent = node.parentElement;
             assert(parent !== null);
@@ -423,7 +485,7 @@ export function paste_handler_converter(
             let consecutive_empty_display_count = 0;
             for (const child of parent.children) {
                 const annotation_element = child.querySelector(
-                    '.katex-mathml annotation[encoding="application/x-tex"]',
+                    ':scope .katex-mathml annotation[encoding="application/x-tex"]',
                 );
                 if (annotation_element?.textContent) {
                     const katex_source = annotation_element.textContent.trim();
@@ -440,7 +502,7 @@ export function paste_handler_converter(
                         continue;
                     }
                     if (consecutive_empty_display_count === 0) {
-                        math_block_markdown += "\n\n\n";
+                        math_block_markdown += "\n".repeat(3);
                     } else {
                         math_block_markdown += "\n\n";
                     }
@@ -449,7 +511,8 @@ export function paste_handler_converter(
             }
             // Don't add extra newline at the end
             math_block_markdown = math_block_markdown.slice(0, -1);
-            return (math_block_markdown += "```");
+            math_block_markdown += "```";
+            return math_block_markdown;
         },
     });
 
@@ -575,7 +638,7 @@ export function paste_handler_converter(
                 let delimiter = "`";
                 const matches: string[] = code.match(/`+/gm) ?? [];
                 while (matches.includes(delimiter)) {
-                    delimiter = delimiter + "`";
+                    delimiter += "`";
                 }
 
                 return delimiter + extraSpace + code + extraSpace + delimiter;

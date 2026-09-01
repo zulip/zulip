@@ -1,5 +1,6 @@
 import os
 import re
+import warnings
 from dataclasses import dataclass
 from html import escape
 from textwrap import dedent
@@ -9,7 +10,7 @@ from unittest import mock
 import orjson
 import requests
 import responses
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
 from django.conf import settings
 from django.test import override_settings
 from markdown import Markdown
@@ -69,6 +70,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
 from zerver.lib.types import UserGroupMembersData
 from zerver.lib.upload import get_emoji_url, upload_message_attachment
+from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.models import Message, NamedUserGroup, RealmEmoji, RealmFilter, UserMessage, UserProfile
 from zerver.models.clients import get_client
@@ -758,6 +760,31 @@ class MarkdownLinkTest(ZulipTestCase):
         finally:
             clear_web_link_regex_for_testing()
 
+    def test_explicit_link_file(self) -> None:
+        # Regression test: explicit Markdown links like
+        # [text](file:///...) must respect ENABLE_FILE_LINKS just
+        # like bare file:// URLs do (see test_inline_file above).
+        # Previously this bypassed the setting because sanitize_url()
+        # unconditionally allowed the "file" scheme.
+        msg = "[click me](file:///etc/passwd)"
+
+        realm = do_create_realm(string_id="file_links_disabled_2", name="File links disabled")
+        self.assertEqual(
+            markdown_convert(msg, message_realm=realm).rendered_content,
+            "<p>[click me](file:///etc/passwd)</p>",
+        )
+        clear_web_link_regex_for_testing()
+
+        try:
+            with self.settings(ENABLE_FILE_LINKS=True):
+                realm = do_create_realm(string_id="file_links_enabled_2", name="File links enabled")
+                self.assertEqual(
+                    markdown_convert(msg, message_realm=realm).rendered_content,
+                    '<p><a href="file:///etc/passwd">click me</a></p>',
+                )
+        finally:
+            clear_web_link_regex_for_testing()
+
     def test_inline_bitcoin(self) -> None:
         msg = "To bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa or not to bitcoin"
         converted = markdown_convert_wrapper(msg)
@@ -1169,38 +1196,50 @@ class MarkdownEmbedsTest(ZulipTestCase):
             self.assertFalse(url_embed_preview_enabled(message, no_previews=True))
 
     def test_inline_dropbox(self) -> None:
+        # Image files are inlined directly, with no network request, so
+        # they render on the initial pass. The inlined image points at
+        # the raw file (raw=1 appended), while the link keeps the
+        # original URL.
         msg = "Look at how hilarious our old office was: https://www.dropbox.com/scl/fi/cbabl5ryv1veky9ehs603/IMG_0923.JPG?rlkey=24sfgf0k0dneebzf5tfccldg0"
-        image_info = {
-            "image": "https://www.dropbox.com/scl/fi/cbabl5ryv1veky9ehs603/IMG_0923.JPG?rlkey=24sfgf0k0dneebzf5tfccldg0&raw=1",
-        }
-        with mock.patch("zerver.lib.markdown.fetch_open_graph_image", return_value=image_info):
-            converted = markdown_convert_wrapper(msg)
-
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(
             converted,
             f"""<p>Look at how hilarious our old office was: <a href="https://www.dropbox.com/scl/fi/cbabl5ryv1veky9ehs603/IMG_0923.JPG?rlkey=24sfgf0k0dneebzf5tfccldg0">https://www.dropbox.com/scl/fi/cbabl5ryv1veky9ehs603/IMG_0923.JPG?rlkey=24sfgf0k0dneebzf5tfccldg0</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/scl/fi/cbabl5ryv1veky9ehs603/IMG_0923.JPG?rlkey=24sfgf0k0dneebzf5tfccldg0&amp;raw=1"><img src="{get_camo_url("https://www.dropbox.com/scl/fi/cbabl5ryv1veky9ehs603/IMG_0923.JPG?rlkey=24sfgf0k0dneebzf5tfccldg0&raw=1")}"></a></div>""",
         )
 
-        msg = "Look at my hilarious drawing folder: https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&st=dz5p1ytw"  # codespell:ignore fo
-        image_info = {
-            "image": "https://www.dropbox.com/static/metaserver/static/images/opengraph/opengraph-content-icon-folder-dropbox-landscape.png",
-        }
-        with mock.patch("zerver.lib.markdown.fetch_open_graph_image", return_value=image_info):
-            converted = markdown_convert_wrapper(msg)
-
+        # Folders are previewed via their OpenGraph image. That image is
+        # fetched asynchronously by the embed_links worker, so the initial
+        # render only registers the URL for preview, without a network
+        # request or an embed.
+        folder_url = "https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&st=dz5p1ytw"  # codespell:ignore fo
+        escaped_url = folder_url.replace("&", "&amp;")
+        rendered = markdown_convert(folder_url, message_realm=get_realm("zulip"))
         self.assertEqual(
-            converted,
-            """<p>Look at my hilarious drawing folder: <a href="https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw">https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw</a></p>\n<div class="message_embed"><a class="message_embed_image" href="https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw" style="background-image: url(&quot;https://external-content.zulipcdn.net/external_content/a301902b9942efb85cfe2a6f4bb07d76ba7b86de/68747470733a2f2f7777772e64726f70626f782e636f6d2f7374617469632f6d6574617365727665722f7374617469632f696d616765732f6f70656e67726170682f6f70656e67726170682d636f6e74656e742d69636f6e2d666f6c6465722d64726f70626f782d6c616e6473636170652e706e67&quot;)"></a><div class="data-container"><div class="message_embed_title"><a href="https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw" title="Dropbox folder">Dropbox folder</a></div><div class="message_embed_description">Click to open folder.</div></div></div>""",  # codespell:ignore fo
+            rendered.rendered_content,
+            f'<p><a href="{escaped_url}">{escaped_url}</a></p>',
+        )
+        self.assertEqual(rendered.links_for_preview, {folder_url})
+
+        # With the OpenGraph image supplied directly — as the embed_links
+        # worker would after fetching it — rendering produces the folder
+        # embed.
+        image = "https://www.dropbox.com/static/metaserver/static/images/opengraph/opengraph-content-icon-folder-dropbox-landscape.png"
+        rendered = markdown_convert(
+            folder_url,
+            message_realm=get_realm("zulip"),
+            url_embed_data={folder_url: UrlEmbedData(image=image)},
+        )
+        self.assertEqual(
+            rendered.rendered_content,
+            """<p><a href="https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw">https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw</a></p>\n<div class="message_embed"><a class="message_embed_image" href="https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw" style="background-image: url(&quot;https://external-content.zulipcdn.net/external_content/a301902b9942efb85cfe2a6f4bb07d76ba7b86de/68747470733a2f2f7777772e64726f70626f782e636f6d2f7374617469632f6d6574617365727665722f7374617469632f696d616765732f6f70656e67726170682f6f70656e67726170682d636f6e74656e742d69636f6e2d666f6c6465722d64726f70626f782d6c616e6473636170652e706e67&quot;)"></a><div class="data-container"><div class="message_embed_title"><a href="https://www.dropbox.com/scl/fo/ty22bx4thyhl9r89p839g/AAzfPX5IbiOb8wmxHvns2pM?rlkey=5pinfuoghias9cueq0zyhj2rp&amp;st=dz5p1ytw" title="Dropbox folder">Dropbox folder</a></div><div class="message_embed_description">Click to open folder.</div></div></div>""",  # codespell:ignore fo
         )
 
     def test_inline_dropbox_video(self) -> None:
+        # Video files are inlined directly, with no network request. As
+        # with images, the inlined video points at the raw file (raw=1
+        # appended), while the link keeps the original URL.
         msg = "Look at this video: https://www.dropbox.com/scl/fi/x8z01rodq1n6pgyznt1kh/SampleVideo_1280x720_1mb.mp4?rlkey=fiibsgnu06tms041vfzfopmos&st=kjtkea8h&dl=0"
-        image_info = {
-            "image": "https://www.dropbox.com/scl/fi/x8z01rodq1n6pgyznt1kh/SampleVideo_1280x720_1mb.mp4?rlkey=fiibsgnu06tms041vfzfopmos&st=kjtkea8h&dl=0&raw=1",
-        }
-        with mock.patch("zerver.lib.markdown.fetch_open_graph_image", return_value=image_info):
-            converted = markdown_convert_wrapper(msg)
-
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(
             converted,
             """<p>Look at this video: <a href="https://www.dropbox.com/scl/fi/x8z01rodq1n6pgyznt1kh/SampleVideo_1280x720_1mb.mp4?rlkey=fiibsgnu06tms041vfzfopmos&amp;st=kjtkea8h&amp;dl=0">https://www.dropbox.com/scl/fi/x8z01rodq1n6pgyznt1kh/SampleVideo_1280x720_1mb.mp4?rlkey=fiibsgnu06tms041vfzfopmos&amp;st=kjtkea8h&amp;dl=0</a></p>
@@ -1221,16 +1260,25 @@ class MarkdownEmbedsTest(ZulipTestCase):
         )
 
     def test_inline_dropbox_preview(self) -> None:
-        # Test photo album previews
-        msg = "https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5"
-        image_info = {
-            "image": "https://photos-6.dropbox.com/t/2/AAAlawaeD61TyNewO5vVi-DGf2ZeuayfyHFdNTNzpGq-QA/12/271544745/jpeg/1024x1024/2/_/0/5/baby-piglet.jpg/CKnjvYEBIAIgBygCKAc/tditp9nitko60n5/AADX03VAIrQlTl28CtujDcMla/0",
-        }
-        with mock.patch("zerver.lib.markdown.fetch_open_graph_image", return_value=image_info):
-            converted = markdown_convert_wrapper(msg)
-
+        # Photo album (/sc/) links are previewed as folders via their
+        # OpenGraph image, fetched asynchronously by the embed_links
+        # worker. The initial render only registers the URL for preview.
+        url = "https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5"
+        rendered = markdown_convert(url, message_realm=get_realm("zulip"))
         self.assertEqual(
-            converted,
+            rendered.rendered_content,
+            f'<p><a href="{url}">{url}</a></p>',
+        )
+        self.assertEqual(rendered.links_for_preview, {url})
+
+        image = "https://photos-6.dropbox.com/t/2/AAAlawaeD61TyNewO5vVi-DGf2ZeuayfyHFdNTNzpGq-QA/12/271544745/jpeg/1024x1024/2/_/0/5/baby-piglet.jpg/CKnjvYEBIAIgBygCKAc/tditp9nitko60n5/AADX03VAIrQlTl28CtujDcMla/0"
+        rendered = markdown_convert(
+            url,
+            message_realm=get_realm("zulip"),
+            url_embed_data={url: UrlEmbedData(image=image)},
+        )
+        self.assertEqual(
+            rendered.rendered_content,
             """<p><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5">https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5</a></p>
 <div class="message_embed"><a class="message_embed_image" href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5" style="background-image: url(&quot;https://external-content.zulipcdn.net/external_content/e7584a56d9ba7f2a2aee96ee1427a6b746eab5ff/68747470733a2f2f70686f746f732d362e64726f70626f782e636f6d2f742f322f4141416c6177616544363154794e65774f357656692d444766325a6575617966794846644e544e7a7047712d51412f31322f3237313534343734352f6a7065672f3130323478313032342f322f5f2f302f352f626162792d7069676c65742e6a70672f434b6e6a7659454249414967427967434b41632f7464697470396e69746b6f36306e352f41414458303356414972516c546c32384374756a44634d6c612f30&quot;)"></a><div class="data-container"><div class="message_embed_title"><a href="https://www.dropbox.com/sc/tditp9nitko60n5/03rEiZldy5" title="Dropbox folder">Dropbox folder</a></div><div class="message_embed_description">Click to open folder.</div></div></div>""",
         )
@@ -1239,8 +1287,7 @@ class MarkdownEmbedsTest(ZulipTestCase):
         # Make sure we're not overzealous in our conversion:
         url = "https://www.dropbox.com/static/images/home_logo.png"
         msg = f"Look at the new dropbox logo: {url}"
-        with mock.patch("zerver.lib.markdown.fetch_open_graph_image", return_value=None):
-            converted = markdown_convert_wrapper(msg)
+        converted = markdown_convert_wrapper(msg)
 
         camo_url = get_camo_url(url)
         self.assertEqual(
@@ -1255,29 +1302,60 @@ class MarkdownEmbedsTest(ZulipTestCase):
     def test_inline_dropbox_bad(self) -> None:
         # Don't fail on bad dropbox links
         msg = "https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM"
-        with mock.patch("zerver.lib.markdown.fetch_open_graph_image", return_value=None):
-            converted = markdown_convert_wrapper(msg)
+        converted = markdown_convert_wrapper(msg)
         self.assertEqual(
             converted,
             '<p><a href="https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM">https://zulip-test.dropbox.com/photos/cl/ROmr9K1XYtmpneM</a></p>',
         )
 
+    def test_inline_dropbox_file_deferred_preview(self) -> None:
+        # A non-image/non-video Dropbox file is previewed via its
+        # OpenGraph image. Rendering must not perform the fetch itself
+        # (which would risk do_convert's 5-second timeout); it registers
+        # the URL so the embed_links worker can fetch it asynchronously.
+        url = "https://www.dropbox.com/scl/fi/8xq0p2m4n6k8j1h3g5f7d/quarterly-report.pdf?dl=0"
+        rendered = markdown_convert(url, message_realm=get_realm("zulip"))
+        self.assertEqual(
+            rendered.rendered_content,
+            f'<p><a href="{url}">{url}</a></p>',
+        )
+        self.assertEqual(rendered.links_for_preview, {url})
+
+        image = "https://www.dropbox.com/static/metaserver/static/images/opengraph/opengraph-content-icon-file-dropbox-landscape.png"
+        rendered = markdown_convert(
+            url,
+            message_realm=get_realm("zulip"),
+            url_embed_data={url: UrlEmbedData(image=image)},
+        )
+        self.assertIn('title="Dropbox file"', rendered.rendered_content)
+        self.assertIn("Click to open file.", rendered.rendered_content)
+
+        # If the worker could not find an OpenGraph image (the fetch
+        # failed, or the page has no og:image), no embed is produced and
+        # the message renders as a plain link.
+        for missing_image in (None, UrlEmbedData(image=None)):
+            rendered = markdown_convert(
+                url,
+                message_realm=get_realm("zulip"),
+                url_embed_data={url: missing_image},
+            )
+            self.assertEqual(
+                rendered.rendered_content,
+                f'<p><a href="{url}">{url}</a></p>',
+            )
+
     def test_inline_dropbox_no_previews(self) -> None:
         # When previews are disabled (e.g., for channel descriptions),
-        # dropbox_media should not invoke fetch_open_graph_image, since
-        # network calls in that context can time out and abort rendering.
-        # Use a non-image/non-video file link so that, without the fix,
-        # dropbox_media would reach the fetch_open_graph_image call.
+        # Dropbox links must not be registered for preview, since the
+        # asynchronous fetch that follows would surface a preview in a
+        # context where previews are meant to be suppressed. Use a
+        # non-image/non-video file link, which is the case that would
+        # otherwise request a preview.
         url = "https://www.dropbox.com/scl/fi/8xq0p2m4n6k8j1h3g5f7d/quarterly-report.pdf?dl=0"
-        with mock.patch(
-            "zerver.lib.markdown.fetch_open_graph_image"
-        ) as mock_fetch_open_graph_image:
-            converted = markdown_convert(
-                url, message_realm=get_realm("zulip"), no_previews=True
-            ).rendered_content
-        mock_fetch_open_graph_image.assert_not_called()
+        rendered = markdown_convert(url, message_realm=get_realm("zulip"), no_previews=True)
+        self.assertEqual(rendered.links_for_preview, set())
         self.assertEqual(
-            converted,
+            rendered.rendered_content,
             f'<p><a href="{url}">{url}</a></p>',
         )
 
@@ -3896,7 +3974,127 @@ class MarkdownErrorTests(ZulipTestCase):
 
 
 class TestHtmlToMarkdown(ZulipTestCase):
-    def test_unicode(self) -> None:
+    def test_real_html(self) -> None:
+        self.assertEqual(convert_html_to_markdown("<p>Hello <b>world</b></p>"), "Hello **world**")
+
+    def test_html_entity_decoding(self) -> None:
         self.assertEqual(
             convert_html_to_markdown("a rose is not a ros&eacute;"), "a rose is not a rosé"
+        )
+
+    def test_unordered_lists(self) -> None:
+        html = "<ul><li>foo</li><li>bar</li></ul>"
+        self.assertEqual(convert_html_to_markdown(html), "* foo\n* bar")
+
+    def test_title_is_stripped(self) -> None:
+        html = "<html><head><title>Some title</title></head><body><p>Hello</p></body></html>"
+        self.assertEqual(convert_html_to_markdown(html), "Hello")
+
+    def test_atx_style_headings(self) -> None:
+        self.assertEqual(convert_html_to_markdown("<h1>Title</h1>"), "# Title")
+        self.assertEqual(convert_html_to_markdown("<h2>Sub</h2>"), "## Sub")
+
+    def test_external_img_with_alt(self) -> None:
+        # Zulip doesn't inline-render external images, so an external <img>
+        # must become a [label](url) link to render at all.
+        html = '<img src="http://example.com/img.png" alt="photo">'
+        self.assertEqual(convert_html_to_markdown(html), "[photo](http://example.com/img.png)")
+
+    def test_external_img_with_query_string(self) -> None:
+        # The query string is stripped from the filename label but kept in
+        # the URL, where it can be important (e.g. signed URLs).
+        html = '<img src="http://foo.com/image.png?12345">'
+        self.assertEqual(
+            convert_html_to_markdown(html), "[image.png](http://foo.com/image.png?12345)"
+        )
+
+    def test_external_img_without_alt_or_filename(self) -> None:
+        html = '<img src="https://example.com/?token=abc">'
+        self.assertEqual(convert_html_to_markdown(html), "https://example.com/?token=abc")
+
+    def test_external_img_alt_with_brackets(self) -> None:
+        # Brackets in link text break Zulip's escaping-free Markdown.
+        html = '<img src="http://x.com/a.png" alt="see [details]">'
+        self.assertEqual(convert_html_to_markdown(html), "[see details](http://x.com/a.png)")
+
+    def test_img_without_src(self) -> None:
+        self.assertEqual(convert_html_to_markdown('<img alt="logo">'), "logo")
+
+    def test_data_uri_img(self) -> None:
+        # Inline base64 data: images (e.g. email/canvas placeholders) aren't
+        # linkable and Zulip can't render them; emit the alt text, or nothing,
+        # rather than a bogus link or a dumped base64 blob.
+        data_uri = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+        self.assertEqual(convert_html_to_markdown(f'<img src="{data_uri}" alt="logo">'), "logo")
+        self.assertEqual(convert_html_to_markdown(f'<img src="{data_uri}">'), "")
+
+    def test_linked_external_img(self) -> None:
+        # Inside an <a>, only the image's label is emitted, so that the
+        # anchor doesn't end up with a nested link inside it.
+        html = '<a href="https://example.com"><img src="https://foo.com/a.png" alt="logo"></a>'
+        self.assertEqual(convert_html_to_markdown(html), "[logo](https://example.com)")
+
+    def test_linked_external_img_without_alt_or_filename(self) -> None:
+        # With no alt text or filename to fall back on, the image's bare
+        # src URL is emitted as the anchor's label.
+        html = '<a href="https://example.com"><img src="https://foo.com/?token=abc"></a>'
+        self.assertEqual(
+            convert_html_to_markdown(html), "[https://foo.com/?token=abc](https://example.com)"
+        )
+
+    def test_linked_external_img_alt_with_brackets(self) -> None:
+        html = (
+            '<a href="https://example.com"><img src="http://x.com/a.png" alt="see [details]"></a>'
+        )
+        self.assertEqual(convert_html_to_markdown(html), "[see details](https://example.com)")
+
+    def test_anchor_tag(self) -> None:
+        html = '<a href="http://example.com">click here</a>'
+        self.assertEqual(convert_html_to_markdown(html), "[click here](http://example.com)")
+
+    def test_bold_and_italic(self) -> None:
+        self.assertEqual(convert_html_to_markdown("<strong>bold</strong>"), "**bold**")
+        self.assertEqual(convert_html_to_markdown("<em>italic</em>"), "*italic*")
+
+    def test_special_characters_are_not_escaped(self) -> None:
+        html = "<p>snake_case_var and 2*3 stars</p>"
+        self.assertEqual(convert_html_to_markdown(html), "snake_case_var and 2*3 stars")
+
+    def test_bare_url_content(self) -> None:
+        # Message content (e.g. from the email mirror) is often a bare URL.
+        # convert_html_to_markdown suppresses BeautifulSoup's warning about
+        # such input; promote that warning to an error here so this test fails
+        # if the suppression is ever removed. The warning would also be fatal
+        # under the PYTHONWARNINGS=error policy CI runs with.
+        url = "https://www.youtube.com/watch?v=MRmGDhlMhNA"
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", MarkupResemblesLocatorWarning)
+            self.assertEqual(convert_html_to_markdown(url), url)
+
+    def test_no_unnecessary_paragraph_wrapping(self) -> None:
+        sentence = (
+            "The quick brown fox jumps over the lazy dog"
+            " again and again until the sentence is long. "
+        )
+        self.assertEqual(
+            convert_html_to_markdown("<p>" + sentence * 2 + "</p>"), (sentence * 2).strip()
+        )
+
+    def test_new_line_in_source_html(self) -> None:
+        html = (
+            "<p>Thanks for signing up for Acme. To get started, click the button\n"
+            "below and confirm your email address.</p>"
+        )
+        self.assertEqual(
+            convert_html_to_markdown(html),
+            "Thanks for signing up for Acme. To get started, click the button below and"
+            " confirm your email address.",
+        )
+
+    def test_explicit_line_break_is_preserved(self) -> None:
+        self.assertEqual(
+            convert_html_to_markdown("<p>line one<br>line two</p>"), "line one  \nline two"
+        )
+        self.assertEqual(
+            convert_html_to_markdown("<p>line one<br>\nline two</p>"), "line one  \nline two"
         )

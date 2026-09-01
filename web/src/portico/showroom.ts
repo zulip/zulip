@@ -1,5 +1,5 @@
 import Handlebars from "handlebars/runtime.js";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_banner from "../../templates/components/banner.hbs";
@@ -337,7 +337,7 @@ $(window).on("load", () => {
         $(".action-button .zulip-icon, .icon-button .zulip-icon").attr(
             "class",
             (_index, className) =>
-                className.replaceAll(/zulip-icon-[^\s]+/g, `zulip-icon-${icon_name}`),
+                className.replaceAll(/zulip-icon-[^\s]+/g, () => `zulip-icon-${icon_name}`),
         );
     });
 

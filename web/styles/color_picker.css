@@ -45,11 +45,13 @@
     background: var(--gradient-custom-swatch);
 }
 
-.color-picker-popover .message-header-contents {
+.color-picker-popover .message_header .message-header-contents {
+    grid-template-columns: minmax(0, 1fr) 0 0 auto 0 0;
     border: none;
 }
 
 .color_picker_confirm_button {
+    grid-area: controls;
     height: 100%;
 
     &:focus-visible {

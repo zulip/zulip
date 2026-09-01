@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import {Typeahead} from "./bootstrap_typeahead.ts";
@@ -111,7 +111,7 @@ function convert_search_text_to_terms(
             if (shake_pill_if_invalid) {
                 // The shake animation will show if there is any invalid term in the,
                 // search bar, even if it's not what the user just typed or selected.
-                $("#search_query").addClass("shake");
+                $("#search_query").addClass("input-validation-shake");
             }
             return undefined;
         }
@@ -430,7 +430,7 @@ export let exit_search = (opts: {keep_search_narrow_open: boolean}): void => {
         // we just keep the search bar open and don't do anything.
         return;
     } else {
-        window.location.href = filter.generate_redirect_url();
+        window.location.assign(filter.generate_redirect_url());
     }
     $("#search_query").trigger("blur");
     $(".app").trigger("focus");

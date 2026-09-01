@@ -1146,18 +1146,31 @@ def find_date_anchor(
     *,
     anchor_date: datetime,
     query: QuerySet[Message],
+    realm_id: int,
+    id_field: str,
 ) -> int | None:
-    first_after = (
-        query.filter(date_sent__gte=anchor_date)
+    """Finds the message to anchor on for a date, translating it into a
+    message ID so that the narrow search runs on the ID indexes.
+    """
+    boundary_id = (
+        Message.objects.filter(realm_id=realm_id, date_sent__gte=anchor_date)
         .order_by("date_sent", "id")
         .values_list("id", flat=True)
         .first()
     )
-    if first_after is not None:
-        return first_after
+
+    if boundary_id is not None:
+        first_after = (
+            query.filter(**{f"{id_field}__gte": boundary_id})
+            .order_by(id_field)
+            .values_list("id", flat=True)
+            .first()
+        )
+        if first_after is not None:
+            return first_after
 
     # If nothing is on/after the anchor date, fall back to the newest message.
-    newest = query.order_by("-date_sent", "-id").values_list("id", flat=True).first()
+    newest = query.order_by(f"-{id_field}").values_list("id", flat=True).first()
     return newest
 
 
@@ -1229,10 +1242,14 @@ def limit_query_to_range(
     anchored_to_left: bool,
     anchored_to_right: bool,
     first_visible_message_id: int,
+    id_field: str,
 ) -> QuerySet[Message]:
     """
     This code is actually generic enough that we could move it to a
     library, but our only caller for now is message search.
+
+    id_field is the message-id column to order and bound the range by;
+    see fetch_messages for why the table it comes from matters.
     """
     need_before_query = (not anchored_to_left) and (num_before > 0)
     need_after_query = (not anchored_to_right) and (num_after > 0)
@@ -1272,17 +1289,17 @@ def limit_query_to_range(
         before_query = query
 
         if not anchored_to_right:
-            before_query = before_query.filter(id__lte=before_anchor)
+            before_query = before_query.filter(**{f"{id_field}__lte": before_anchor})
 
-        before_query = before_query.order_by("-id")[:before_limit]
+        before_query = before_query.order_by(f"-{id_field}")[:before_limit]
 
     if need_after_query:
         after_query = query
 
         if not anchored_to_left:
-            after_query = after_query.filter(id__gte=after_anchor)
+            after_query = after_query.filter(**{f"{id_field}__gte": after_anchor})
 
-        after_query = after_query.order_by("id")[:after_limit]
+        after_query = after_query.order_by(id_field)[:after_limit]
 
     if before_query is not None and after_query is not None:
         return before_query.union(after_query, all=True)
@@ -1299,7 +1316,7 @@ def limit_query_to_range(
         # for something like `message_id = 42` is exactly what we want.  In other
         # cases, which could possibly be buggy API clients, at least we will
         # return at most one row here.
-        return query.filter(id=anchor)
+        return query.filter(**{id_field: anchor})
 
 
 MessageRowT = TypeVar("MessageRowT", bound=Sequence[Any])
@@ -1470,11 +1487,25 @@ def fetch_messages(
     if client_requested_message_ids is not None:
         query = query.filter(id__in=client_requested_message_ids)
     else:
+        if need_user_message:
+            # Order/bound the anchor search and pagination on the driving
+            # zerver_usermessage (user_profile_id, message_id) index. PostgreSQL
+            # won't push a zerver_message.id bound across the outer join, so
+            # using it would scan the user's whole history to reach an old
+            # anchor. The alias reuses the existing join rather than adding a
+            # second one.
+            query = query.alias(_range_message_id=F("usermessage__message_id"))
+            id_field = "_range_message_id"
+        else:
+            id_field = "id"
+
         if anchor_type == "date":
             assert isinstance(anchor_value, datetime)
             anchor_value = find_date_anchor(
                 anchor_date=anchor_value,
                 query=query,
+                realm_id=realm.id,
+                id_field=id_field,
             )
             # We did not find any message before or after the given timestamp,
             # which means there are no messages in this narrow.
@@ -1521,6 +1552,7 @@ def fetch_messages(
             anchored_to_left=anchored_to_left,
             anchored_to_right=anchored_to_right,
             first_visible_message_id=first_visible_message_id,
+            id_field=id_field,
         )
 
     values_query = query.values_list(

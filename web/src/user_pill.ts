@@ -86,6 +86,20 @@ export function get_unique_full_name_from_item(item: UserPill): string {
     return people.get_unique_full_name(item.full_name, item.user_id);
 }
 
+export function create_pill_data(person: User): UserPill {
+    return {
+        type: "user",
+        full_name: person.full_name,
+        user_id: person.user_id,
+        email: person.email,
+        img_src: people.small_avatar_url_for_person(person),
+        status_emoji_info: user_status.get_status_emoji(person.user_id),
+        should_add_guest_user_indicator: people.should_add_guest_user_indicator(person.user_id),
+        is_bot: person.is_bot,
+        deactivated: !people.is_person_active(person.user_id) && !person.is_inaccessible_user,
+    };
+}
+
 export function append_person(
     opts: {
         person: User;
@@ -93,23 +107,8 @@ export function append_person(
     },
     execute_oncreate_callback = true,
 ): void {
-    const person = opts.person;
     const pill_widget = opts.pill_widget;
-    const avatar_url = people.small_avatar_url_for_person(person);
-    const status_emoji_info = user_status.get_status_emoji(opts.person.user_id);
-
-    const pill_data: UserPill = {
-        type: "user",
-        full_name: person.full_name,
-        user_id: person.user_id,
-        email: person.email,
-        img_src: avatar_url,
-        status_emoji_info,
-        should_add_guest_user_indicator: people.should_add_guest_user_indicator(person.user_id),
-        is_bot: person.is_bot,
-        deactivated: !people.is_person_active(person.user_id) && !person.is_inaccessible_user,
-    };
-
+    const pill_data = create_pill_data(opts.person);
     pill_widget.appendValidatedData(pill_data, false, !execute_oncreate_callback);
     pill_widget.clear_text();
 }

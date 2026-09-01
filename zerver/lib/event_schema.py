@@ -149,7 +149,7 @@ def make_checker(base_model: type[BaseEvent]) -> Callable[[str, dict[str, object
         del event["id"]
         try:
             validate_with_model(event, base_model)
-        except Exception as e:  # nocoverage
+        except Exception:  # nocoverage
             print(f"""
 FAILURE:
 
@@ -170,7 +170,7 @@ Here is the event:
 """)
 
             PrettyPrinter(indent=4).pprint(event)
-            raise e
+            raise
 
     return f
 
@@ -645,6 +645,9 @@ def check_stream_update(
     elif prop == "folder_id":
         assert extra_keys == set()
         assert value is None or isinstance(value, int)
+    elif prop == "default_push_notifications":
+        assert extra_keys == set()
+        assert isinstance(value, bool)
     else:
         raise AssertionError(f"Unknown property: {prop}")
 

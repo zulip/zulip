@@ -126,6 +126,10 @@ class SendMessageRequest:
     rendering_result: MessageRenderingResult
     stream: Stream | None
     sender_muted_stream: bool | None
+    # Whether the sender may see the channel's name; controls whether the
+    # POST /messages response URL includes the channel name or only its
+    # ID. Always False for direct messages, where there is no channel.
+    sender_has_channel_metadata_access: bool
     local_id: str | None
     sender_queue_id: str | None
     realm: Realm
@@ -147,7 +151,7 @@ class SendMessageRequest:
     um_eligible_user_ids: set[int]
     long_term_idle_user_ids: set[int]
     default_bot_user_ids: set[int]
-    service_bot_tuples: list[tuple[int, int]]
+    message_triggered_bot_tuples: list[tuple[int, int]]
     all_bot_user_ids: set[int]
     push_device_registered_user_ids: set[int]
     # IDs of topic participants who should be notified of topic wildcard mention.
@@ -179,12 +183,15 @@ class SendMessageRequest:
     deliver_at: datetime | None = None
     delivery_type: str | None = None
     limit_unread_user_ids: set[int] | None = None
-    service_queue_events: dict[str, list[dict[str, Any]]] | None = None
+    message_triggered_bot_queue_events: dict[str, list[dict[str, Any]]] | None = None
     disable_external_notifications: bool = False
     automatic_new_visibility_policy: int | None = None
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None
     reminder_target_message_id: int | None = None
     reminder_note: str | None = None
+    # Computed during do_send_messages, for the POST /messages response.
+    message_url: str | None = None
+    message_link: str | None = None
 
 
 @dataclass

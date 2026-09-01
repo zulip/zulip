@@ -1,3 +1,7 @@
+import assert from "minimalistic-assert";
+import * as z from "zod/mini";
+
+import * as channel from "./channel.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
@@ -13,6 +17,50 @@ type DirectMessagePermissionHints = {
     is_known_empty_conversation: boolean;
     is_local_echo_safe: boolean;
 };
+
+const last_message_id_response_schema = z.object({
+    messages: z.array(
+        z.object({
+            id: z.number(),
+        }),
+    ),
+});
+
+export function get_last_message_id_in_narrow(
+    narrow: {operator: string; operand: unknown}[],
+    on_success: (last_message_id: number) => void,
+    extra_request_data: Record<string, unknown> = {},
+): void {
+    // Fetches the newest message matching the narrow and, if one exists,
+    // invokes `on_success` with its id.  Both stream_topic_history_util and
+    // pm_conversations_util use this to ask the server whether a topic or DM
+    // conversation still has any messages after a local deletion emptied it.
+    void channel.get({
+        url: "/json/messages",
+        data: {
+            narrow: JSON.stringify(narrow),
+            anchor: "newest",
+            num_before: 1,
+            num_after: 0,
+            ...extra_request_data,
+        },
+        success(raw_data) {
+            const {messages} = last_message_id_response_schema.parse(raw_data);
+            if (messages.length !== 1) {
+                return;
+            }
+
+            const last_message = messages[0];
+            assert(last_message !== undefined);
+            on_success(last_message.id);
+        },
+        error() {
+            // Ideally we would retry since we should always be able to get a
+            // success response from the server for this request, but for now
+            // we just ignore the error.
+        },
+    });
+}
 
 export function do_unread_count_updates(messages: Message[], expect_no_new_unreads = false): void {
     const any_new_unreads = unread.process_loaded_messages(messages, expect_no_new_unreads);

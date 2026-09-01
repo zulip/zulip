@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import type * as tippy from "tippy.js";
 
 import render_announce_stream_checkbox from "../templates/stream_settings/announce_stream_checkbox.hbs";
@@ -354,6 +354,17 @@ export function enable_or_disable_permission_settings_in_edit_panel(
     $stream_settings
         .find(".channel-folder-widget-container button")
         .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
+
+    const $default_push_notifications_setting = $stream_settings
+        .find("input[name='default_push_notifications']")
+        .closest(".settings-checkbox-wrapper");
+    const disable_push_notifications =
+        !realm.realm_push_notifications_enabled || !current_user.is_admin;
+    $default_push_notifications_setting.toggleClass(
+        "control-label-disabled",
+        disable_push_notifications,
+    );
+    $default_push_notifications_setting.find("input").prop("disabled", disable_push_notifications);
 
     if (!sub.can_change_stream_permissions_requiring_metadata_access) {
         settings_components.disable_group_permission_setting($permission_pill_container_elements);

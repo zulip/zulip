@@ -339,7 +339,7 @@ def log_unsupported_webhook_event(request: HttpRequest, summary: str) -> None:
     # really fit what a regular UnsupportedWebhookEventTypeError exception
     # represents.
     extra = {"request": request}
-    webhook_unsupported_events_logger.exception(summary, stack_info=True, extra=extra)
+    webhook_unsupported_events_logger.error(summary, stack_info=True, extra=extra)
 
 
 def log_exception_to_webhook_logger(request: HttpRequest, err: Exception) -> None:
@@ -354,11 +354,11 @@ def log_exception_to_webhook_logger(request: HttpRequest, err: Exception) -> Non
     # they are intentionally raised, and the stack_info between that
     # point and this one is not interesting.
     if isinstance(err, AnomalousWebhookPayloadError):
-        webhook_anomalous_payloads_logger.exception(err, extra=extra)
+        webhook_anomalous_payloads_logger.error(err, exc_info=err, extra=extra)
     elif isinstance(err, UnsupportedWebhookEventTypeError):
-        webhook_unsupported_events_logger.exception(err, extra=extra)
+        webhook_unsupported_events_logger.error(err, exc_info=err, extra=extra)
     else:
-        webhook_logger.exception(err, stack_info=True, extra=extra)
+        webhook_logger.error(err, exc_info=err, stack_info=True, extra=extra)
 
 
 def full_webhook_client_name(raw_client_name: str | None = None) -> str | None:
@@ -412,7 +412,7 @@ def webhook_view(
                     # the sender's fault, so tell the owner
                     notify_bot_owner_about_invalid_json(user_profile, webhook_client_name)
 
-                raise err
+                raise
 
         # Store the event types registered for this webhook as an attribute, which can be access
         # later conveniently in zerver.lib.test_classes.WebhookTestCase.
@@ -661,7 +661,7 @@ def require_server_admin_api(
         **kwargs: ParamT.kwargs,
     ) -> HttpResponse:
         if not request.user.is_staff:
-            raise JsonableError(_("Must be an server administrator"))
+            raise JsonableError(_("Must be a server administrator"))
         return view_func(request, *args, **kwargs)
 
     return _wrapped_view_func
@@ -828,7 +828,7 @@ def authenticated_rest_api_view(
                 return view_func(request, user_profile, *args, **kwargs)
             except Exception as err:
                 if not webhook_client_name:
-                    raise err
+                    raise
 
                 if not isinstance(err, JsonableError):
                     # An unexpected exception of some form -- log it
@@ -840,7 +840,7 @@ def authenticated_rest_api_view(
                     err.webhook_name = webhook_client_name
                     log_exception_to_webhook_logger(request, err)
 
-                raise err
+                raise
 
         return _wrapped_func_arguments
 

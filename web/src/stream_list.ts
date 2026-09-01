@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 import * as z from "zod/mini";
@@ -355,7 +355,8 @@ export function rewire_stream_list_section_container_html(
 function get_section_channel_plus_icon_url(section: StreamListSection): string | undefined {
     if (section.folder_id !== null) {
         return `#channels/folders/${section.folder_id}/new`;
-    } else if (section.id === "normal-streams") {
+    }
+    if (section.id === "normal-streams") {
         return "#channels/new";
     }
     return undefined;
@@ -589,16 +590,14 @@ export function rewire_update_stream_section_mention_indicators(
 }
 
 /* When viewing a channel in a collapsed folder, we show that active
-   highlighted channel in the left sidebar even though the folder is
-   collapsed. If there's an active highlighted topic within the
-   channel, we show it too. If there's no highlighted topic within the
-   channel, then we should treat this like an empty topic list and remove
-   the left bracket. */
+   highlighted channel in left sidebar even though the folder is collapsed.
+   If it has topics, keep the bracket visible. If the topic list is empty,
+   hide the bracket. */
 export let maybe_hide_topic_bracket = function (section_id: string): void {
     const $container = $(`#stream-list-${section_id}-container`);
     const is_collapsed = collapsed_sections.has(section_id);
-    const $highlighted_topic = $container.find(".topic-list-item.active-sub-filter");
-    $container.toggleClass("hide-topic-bracket", is_collapsed && $highlighted_topic.length === 0);
+    const $topic_items = $container.find(".topic-list-item");
+    $container.toggleClass("hide-topic-bracket", is_collapsed && $topic_items.length === 0);
 };
 
 export function rewire_maybe_hide_topic_bracket(value: typeof maybe_hide_topic_bracket): void {
@@ -1009,7 +1008,7 @@ export let update_dom_with_unread_counts = function (counts: FullUnreadCountsDat
         hidden_muted: 0,
     };
 
-    for (const [stream_id, stream_count_info] of counts.stream_count.entries()) {
+    for (const [stream_id, stream_count_info] of counts.stream_count) {
         const sub = sub_store.get(stream_id);
         assert(sub);
         if (sub.pin_to_top) {

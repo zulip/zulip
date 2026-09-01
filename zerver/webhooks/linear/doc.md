@@ -23,6 +23,11 @@ Get Linear notifications in Zulip!
 
 {!event-filtering-additional-feature.md!}
 
+!!! warn ""
+
+    **Note**: `comment` events are only supported for comments on
+    issues. Comments on Linear documents do not trigger notifications.
+
 ### Related documentation
 
 - [Linear webhook events documentation][linear-webhooks]

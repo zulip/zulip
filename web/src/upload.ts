@@ -1,7 +1,7 @@
 import type {Meta} from "@uppy/core";
 import {Uppy} from "@uppy/core";
 import Tus, {type TusBody} from "@uppy/tus";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -278,6 +278,11 @@ export let upload_files = (
     if (files.length === 0) {
         return;
     }
+
+    // A new upload attempt supersedes any error banner (e.g. "file too
+    // large") left over from a previous attempt, so we clear those here.
+    config.banner_container().find(".upload_banner.error").remove();
+
     if (realm.max_file_upload_size_mib === 0) {
         show_error_message(
             config,
@@ -427,10 +432,12 @@ class InMemoryUrlStorage {
         return undefined;
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     async findAllUploads(): Promise<PreviousUpload[]> {
-        return await Promise.resolve([...this.urlStorage.values()]);
+        return this.urlStorage.values().toArray();
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     async findUploadsByFingerprint(fingerprint: string): Promise<PreviousUpload[]> {
         const results = [];
 
@@ -441,7 +448,7 @@ class InMemoryUrlStorage {
             results.push(value);
         }
 
-        return await Promise.resolve(results);
+        return results;
     }
 
     async removeUpload(urlStorageKey: string): Promise<void> {
@@ -449,13 +456,14 @@ class InMemoryUrlStorage {
         await Promise.resolve();
     }
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     async addUpload(fingerprint: string, upload: PreviousUpload): Promise<string> {
         const id = Math.round(Math.random() * 1e12);
         const key = `${fingerprint}::${id}`;
 
         upload.urlStorageKey = key;
         this.urlStorage.set(key, upload);
-        return await Promise.resolve(key);
+        return key;
     }
 }
 
@@ -660,7 +668,7 @@ export function setup_upload(config: Config): Uppy<Meta, TusBody> {
             }
         }
 
-        const filtered_filename = upload_result.filename.replaceAll("[", "").replaceAll("]", "");
+        const filtered_filename = upload_result.filename.replaceAll(/[[\]]/g, "");
         let syntax_to_insert = "[" + filtered_filename + "](" + upload_result.url + ")";
         if (is_supported_image_type(file.type) || is_supported_audio_type(file.type)) {
             syntax_to_insert = "!" + syntax_to_insert;

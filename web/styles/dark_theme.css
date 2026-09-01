@@ -74,7 +74,8 @@
         color: hsl(236deg 33% 90%);
     }
 
-    .pill-container.not-editable-by-user {
+    .pill-container.not-editable-by-user,
+    .group_setting_disabled .pill-container {
         opacity: 0.5;
     }
 
@@ -96,12 +97,6 @@
     .popover hr,
     hr {
         opacity: 0.2;
-    }
-
-    #recent_view_table {
-        .zulip-icon-user {
-            opacity: 0.7;
-        }
     }
 
     #recent-view-content-table {
@@ -133,8 +128,7 @@
         box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 40%);
     }
 
-    .tip,
-    .invite-stream-notice {
+    .tip {
         color: inherit;
     }
 
@@ -217,11 +211,6 @@
 
     .history-limited-box {
         background-color: hsl(0deg 0% 0% / 20%);
-    }
-
-    /* Search highlight used in both topics and rendered_markdown */
-    .highlight {
-        background-color: hsl(51deg 100% 23%);
     }
 
     .searching-for-more-topics img {

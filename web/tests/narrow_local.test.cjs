@@ -431,3 +431,101 @@ test_fixture("final corner case", {
     },
     expected_msg_ids: [425],
 });
+
+// The `date` operator is a no-op predicate (see filter.ts), so msg_data
+// holds every local message; the operator just slices where we anchor.
+// maybe_add_local_messages resolves that anchor locally only when it can
+// be certain of the result. 1717977600 is the Unix time for midnight on
+// 2024-06-10 (tests run in UTC).
+const date_operand = "2024-06-10";
+const date_midnight = 1717977600;
+
+test_fixture("date with all local messages before it and newest found", {
+    // Every local message predates the date and we've found the newest,
+    // so nothing matches on/after the date; select the newest we have.
+    filter_terms: [{operator: "date", operand: date_operand}],
+    target_id: undefined,
+    unread_info: {
+        flavor: "not_found",
+    },
+    has_found_newest: true,
+    visibly_empty: false,
+    all_messages: [
+        {id: 10, topic: "whatever", timestamp: date_midnight - 200000},
+        {id: 11, topic: "whatever", timestamp: date_midnight - 100000},
+    ],
+    expected_id_info: {
+        target_id: undefined,
+        final_select_id: 11,
+        local_select_id: 11,
+    },
+    expected_msg_ids: [10, 11],
+});
+
+test_fixture("date with all local messages before it but newest not found", {
+    // Matching messages on/after the date may exist on the server, so we
+    // leave final_select_id undefined and defer to the server's anchor.
+    filter_terms: [{operator: "date", operand: date_operand}],
+    target_id: undefined,
+    unread_info: {
+        flavor: "not_found",
+    },
+    has_found_newest: false,
+    visibly_empty: false,
+    all_messages: [
+        {id: 20, topic: "whatever", timestamp: date_midnight - 200000},
+        {id: 21, topic: "whatever", timestamp: date_midnight - 100000},
+    ],
+    expected_id_info: {
+        target_id: undefined,
+        final_select_id: undefined,
+        local_select_id: undefined,
+    },
+    expected_msg_ids: [20, 21],
+});
+
+test_fixture("date with earliest local message already on/after it", {
+    // We can't rule out older matching messages on the server (#32150),
+    // so we defer to the server's anchor.
+    filter_terms: [{operator: "date", operand: date_operand}],
+    target_id: undefined,
+    unread_info: {
+        flavor: "not_found",
+    },
+    has_found_newest: true,
+    visibly_empty: false,
+    all_messages: [
+        {id: 30, topic: "whatever", timestamp: date_midnight + 100},
+        {id: 31, topic: "whatever", timestamp: date_midnight + 100000},
+    ],
+    expected_id_info: {
+        target_id: undefined,
+        final_select_id: undefined,
+        local_select_id: undefined,
+    },
+    expected_msg_ids: [30, 31],
+});
+
+test_fixture("date falling within the locally-loaded range", {
+    // We have local messages both before and on/after the date, but the
+    // superset cache need not be contiguous, so the first local message
+    // on/after the date may not be the narrow's true first such message;
+    // we defer to the server for the accurate anchor.
+    filter_terms: [{operator: "date", operand: date_operand}],
+    target_id: undefined,
+    unread_info: {
+        flavor: "not_found",
+    },
+    has_found_newest: true,
+    visibly_empty: false,
+    all_messages: [
+        {id: 40, topic: "whatever", timestamp: date_midnight - 100000},
+        {id: 41, topic: "whatever", timestamp: date_midnight + 100000},
+    ],
+    expected_id_info: {
+        target_id: undefined,
+        final_select_id: undefined,
+        local_select_id: undefined,
+    },
+    expected_msg_ids: [40, 41],
+});

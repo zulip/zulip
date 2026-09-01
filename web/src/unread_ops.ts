@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -24,6 +24,7 @@ import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import type {MessageDetails} from "./server_event_types.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as sub_store from "./sub_store.ts";
@@ -49,6 +50,11 @@ const FOLLOWUP_BATCH_SIZE = 1000;
 const MIN_MARK_AS_UNREAD_COUNT_KNOWN = 50;
 const MIN_MARK_AS_UNREAD_COUNT_LOWER_BOUND = 10;
 const UNREAD_COUNT_STEP_SIZE = 25;
+
+// How many times to retry a mark-as-read/unread request that fails with
+// a transient server (5xx) or network error before giving up and
+// reporting the failure.
+const MAX_UPDATE_READ_FLAGS_RETRIES = 5;
 
 // When you start Zulip, window_focused should be true, but it might not be the
 // case after a server-initiated reload.
@@ -190,10 +196,12 @@ function bulk_update_read_flags_for_narrow(
         anchor = "oldest",
         messages_read_till_now = 0,
         num_after = INITIAL_BATCH_SIZE,
+        attempt = 0,
     }: {
         anchor?: "newest" | "oldest" | "first_unread" | number;
         messages_read_till_now?: number;
         num_after?: number;
+        attempt?: number;
     } = {},
     caller_modal_id?: string,
 ): void {
@@ -295,6 +303,9 @@ function bulk_update_read_flags_for_narrow(
         },
         error(xhr) {
             let parsed;
+            // Network drop (status 0) and gateway/server errors deserve some
+            // retries with exponential backoff.
+            const is_transient_error = xhr.status === 0 || xhr.status >= 500;
             if (xhr.readyState === 0) {
                 // client cancelled the request
             } else if (
@@ -302,7 +313,9 @@ function bulk_update_read_flags_for_narrow(
                     .object({code: z.literal("RATE_LIMIT_HIT"), ["retry-after"]: z.number()})
                     .safeParse(xhr.responseJSON)).success
             ) {
-                // If we hit the rate limit, just continue without showing any error.
+                // If we hit the rate limit, just retry after the server-specified delay.
+                // This is self-resolving, so we retry indefinitely and don't count it
+                // against the transient-error retry budget.
                 const milliseconds_to_wait = 1000 * parsed.data["retry-after"];
                 setTimeout(() => {
                     bulk_update_read_flags_for_narrow(
@@ -316,14 +329,41 @@ function bulk_update_read_flags_for_narrow(
                         caller_modal_id,
                     );
                 }, milliseconds_to_wait);
+            } else if (is_transient_error && attempt < MAX_UPDATE_READ_FLAGS_RETRIES) {
+                const delay_secs = get_retry_backoff_seconds(xhr, attempt);
+                setTimeout(() => {
+                    bulk_update_read_flags_for_narrow(
+                        narrow,
+                        op,
+                        {
+                            anchor,
+                            messages_read_till_now,
+                            num_after,
+                            attempt: attempt + 1,
+                        },
+                        caller_modal_id,
+                    );
+                }, delay_secs * 1000);
             } else {
-                // TODO: Ideally this would be a ui_report.error();
-                // the user needs to know that our operation failed.
                 const operation = op === "add" ? "read" : "unread";
-                blueslip.error(`Failed to mark messages as ${operation}`, {
-                    status: xhr.status,
-                    body: xhr.responseText,
-                });
+                if (is_transient_error) {
+                    // The transient failure persisted past our retry budget,
+                    // so the server is likely having a real problem.
+                    blueslip.error(`Failed to mark messages as ${operation} after retries`, {
+                        status: xhr.status,
+                        body: xhr.responseText,
+                    });
+                } else {
+                    // Any other error -- a 4xx bad request (e.g. a malformed
+                    // narrow), or an unexpected/unparsable response -- is a
+                    // client-side problem that retrying won't fix.
+                    blueslip.error(`Failed to mark messages as ${operation}`, {
+                        status: xhr.status,
+                        body: xhr.responseText,
+                    });
+                }
+                // TODO: Ideally we would show an error to the user so they know
+                // the operation failed.
                 if (caller_modal_id && modals.is_active(caller_modal_id)) {
                     dialog_widget.hide_dialog_spinner();
                 }
@@ -423,7 +463,8 @@ export function mark_as_unread_from_here(message_id: number): void {
             do_mark_unread(undefined);
         }
         return;
-    } else if (prefer_local_ids) {
+    }
+    if (prefer_local_ids) {
         // Since we have the anchor message ID and the newest
         // messages, we know exactly which messages to mark as unread.
         if (locally_available_matching_message_ids.length < MIN_MARK_AS_UNREAD_COUNT_KNOWN) {
@@ -489,6 +530,7 @@ function do_mark_unread_by_narrow(
     messages_marked_unread_till_now = 0,
     num_after = INITIAL_BATCH_SIZE - 1,
     narrow: string,
+    attempt = 0,
 ): void {
     const opts = {
         anchor: message_id,
@@ -532,21 +574,23 @@ function do_mark_unread_by_narrow(
         },
         error(xhr) {
             handle_mark_unread_from_here_error(xhr, {
-                retry() {
+                retry(next_attempt) {
                     do_mark_unread_by_narrow(
                         message_id,
                         include_anchor,
                         messages_marked_unread_till_now,
                         num_after,
                         narrow,
+                        next_attempt,
                     );
                 },
+                attempt,
             });
         },
     });
 }
 
-function do_mark_unread_by_ids(message_ids_to_update: number[]): void {
+function do_mark_unread_by_ids(message_ids_to_update: number[], attempt = 0): void {
     // TODO: Add support for locally echoing when we're offline.
     void channel.post({
         url: "/json/messages/flags",
@@ -563,9 +607,10 @@ function do_mark_unread_by_ids(message_ids_to_update: number[]): void {
         },
         error(xhr) {
             handle_mark_unread_from_here_error(xhr, {
-                retry() {
-                    do_mark_unread_by_ids(message_ids_to_update);
+                retry(next_attempt) {
+                    do_mark_unread_by_ids(message_ids_to_update, next_attempt);
                 },
+                attempt,
             });
         },
     });
@@ -573,9 +618,12 @@ function do_mark_unread_by_ids(message_ids_to_update: number[]): void {
 
 function handle_mark_unread_from_here_error(
     xhr: JQuery.jqXHR<unknown>,
-    {retry}: {retry: () => void},
+    {retry, attempt}: {retry: (attempt: number) => void; attempt: number},
 ): void {
     let parsed;
+    // Network drop (status 0) and gateway/server errors deserve some
+    // retries with exponential backoff.
+    const is_transient_error = xhr.status === 0 || xhr.status >= 500;
     if (xhr.readyState === 0) {
         // client cancelled the request
     } else if (
@@ -583,13 +631,31 @@ function handle_mark_unread_from_here_error(
             .object({code: z.literal("RATE_LIMIT_HIT"), ["retry-after"]: z.number()})
             .safeParse(xhr.responseJSON)).success
     ) {
-        // If we hit the rate limit, just continue without showing any error.
+        // If we hit the rate limit, just retry after the server-specified
+        // delay. This is self-resolving, so we retry indefinitely and
+        // don't count it against the transient-error retry budget.
         const milliseconds_to_wait = 1000 * parsed.data["retry-after"];
-        setTimeout(retry, milliseconds_to_wait);
+        setTimeout(() => {
+            retry(0);
+        }, milliseconds_to_wait);
+    } else if (is_transient_error && attempt < MAX_UPDATE_READ_FLAGS_RETRIES) {
+        const delay_secs = get_retry_backoff_seconds(xhr, attempt);
+        setTimeout(() => {
+            retry(attempt + 1);
+        }, delay_secs * 1000);
+    } else if (is_transient_error) {
+        // The transient failure persisted past our retry budget, so the
+        // server is likely having a real problem.
+        // TODO: Ideally this would communicate the failure to the user.
+        blueslip.error("Unexpected error marking messages as unread after retries", {
+            status: xhr.status,
+            body: xhr.responseText,
+        });
     } else {
-        // TODO: Ideally, this case would communicate the
-        // failure to the user, with some manual retry
-        // offered, since the most likely cause is a 502.
+        // Any other error -- a 4xx bad request, or an unexpected/
+        // unparsable response -- is a client-side problem that retrying
+        // won't fix.
+        // TODO: Ideally this would communicate the failure to the user.
         blueslip.error("Unexpected error marking messages as unread", {
             status: xhr.status,
             body: xhr.responseText,
@@ -829,7 +895,7 @@ export function mark_all_as_read(modal_id?: string): void {
 
 export function mark_narrow_as_read(filter: Filter): void {
     bulk_update_read_flags_for_narrow(
-        [{operator: "is", operand: "unread", negated: false}, ...filter.terms()],
+        [{operator: "is", operand: "unread", negated: false}, ...filter.terms_for_server_query()],
         "add",
     );
 }

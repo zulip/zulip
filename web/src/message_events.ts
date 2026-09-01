@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
@@ -201,15 +201,16 @@ export let update_views_filtered_on_message_property = (
                 url: "/json/messages",
                 data: {
                     message_ids: JSON.stringify(message_ids),
-                    narrow: JSON.stringify(filter.terms()),
+                    narrow: filter.get_stringified_narrow_for_server_query(),
                     allow_empty_topic_name: true,
                 },
                 success(data) {
                     const messages_to_add: Message[] = [];
                     const messages_to_remove = new Set(message_ids);
-                    for (const raw_message of z
+                    const {messages: raw_messages} = z
                         .object({messages: z.array(raw_message_schema)})
-                        .parse(data).messages) {
+                        .parse(data);
+                    for (const raw_message of raw_messages) {
                         messages_to_remove.delete(raw_message.id);
                         const message = message_store.get(raw_message.id);
                         messages_to_add.push(
@@ -308,7 +309,7 @@ export type InsertNewMessagesOpts = {
 
 export function insert_new_messages(opts: InsertNewMessagesOpts): Message[] {
     const deliver_locally = opts.type === "local_message";
-    let messages: Message[] = [];
+    let messages: Message[];
     let local_messages: LocalMessage[] | undefined = [];
     if (opts.type === "server_message") {
         messages = opts.raw_messages.map((raw_message) =>
@@ -636,6 +637,24 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                 drafts.rename_stream_recipient(old_stream_id, orig_topic, new_stream_id, new_topic);
             }
 
+            // Before editing the topic or stream on any message, update the
+            // topic links to point to the right place. This must run while
+            // the messages still have their old stream and topic, so that we
+            // can fetch their old records in the link maps.
+            if (topic_edited || stream_changed) {
+                message_store.process_topic_edit({
+                    message_ids: event.message_ids,
+                    new_stream_id: new_stream_id ?? old_stream_id,
+                    new_topic: get_post_edit_topic(
+                        topic_edited,
+                        only_topic_case_changed,
+                        event,
+                        new_topic,
+                        anchor_message,
+                    ),
+                });
+            }
+
             for (const moved_message of event_messages) {
                 if (
                     realm.realm_message_edit_history_visibility_policy !==
@@ -785,10 +804,7 @@ export function update_messages(events: UpdateMessageEvent[]): void {
                         //
                         // If the `with` message was moved, we need to update the URL to
                         // use a message from the old topic.
-                        const message_id = Number.parseInt(
-                            current_filter.terms_with_operator("with")[0]!.operand,
-                            10,
-                        );
+                        const message_id = current_filter.message_id_operand("with")!;
                         if (event.message_ids.includes(message_id)) {
                             // At this point, we know that the `with` message was moved.
                             if (!is_old_topic_empty_locally) {

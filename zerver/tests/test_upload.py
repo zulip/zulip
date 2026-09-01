@@ -2,7 +2,7 @@ import os
 import re
 import tempfile
 from datetime import timedelta
-from io import StringIO
+from io import BytesIO, StringIO
 from unittest import mock
 from unittest.mock import patch
 from urllib.parse import quote
@@ -45,13 +45,14 @@ from zerver.lib.test_helpers import (
     get_test_image_file,
     ratelimit_rule,
 )
-from zerver.lib.upload import sanitize_name, upload_message_attachment
+from zerver.lib.upload import MAX_FILE_NAME_LENGTH, sanitize_name, upload_message_attachment
 from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import Attachment, Message, OnboardingStep, Realm, RealmDomain, UserProfile
 from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot, get_user_by_delivery_email
+from zerver.upload_handler import TEMPORARY_FILE_MAX_EXTENSION_LENGTH, truncate_filename_extension
 
 
 class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
@@ -229,7 +230,11 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             ("नाम में क्या रक्खा हे", "utf-8", "utf-8"),  # Enough to get 99% confidence UTF-8
             ("日本語", "iso2022_jp", "ISO-2022-JP"),  # Non-UTF-8 95% confidence
             ("\xa0" + " " * 30, "utf-8", "utf-8"),  # UTF-8 is only 87% confident
-            ("· ar aitheach a le chan ir ana s din tag", "L1", "ISO-8859-1"),  # 76% confidence
+            (
+                "´s - a a a a be den den den en en fva h ig ilan in kanandender lllinganger m mar ochar omer omer per sar ser sker sorararat st st t t t vinstatateretetetinttt f",
+                "L1",
+                "ISO-8859-1",
+            ),  # 74% confidence
             ("Aucune idée", "mac-roman", None),  # Short text in obscure formats is left unguessed
         ]
         self.login("hamlet")
@@ -1885,7 +1890,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
     def test_valid_icons(self) -> None:
         """
         A PUT request to /json/realm/icon with a valid file should return a URL
-        and actually create an realm icon.
+        and actually create a realm icon.
         """
         for fname, rfname in self.correct_files:
             with self.subTest(fname=fname):
@@ -2080,7 +2085,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     def test_valid_logos(self) -> None:
         """
         A PUT request to /json/realm/logo with a valid file should return a URL
-        and actually create an realm logo.
+        and actually create a realm logo.
         """
         for fname, rfname in self.correct_files:
             with self.subTest(fname=fname):
@@ -2249,6 +2254,51 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
             resize_mock.assert_called_once()
 
 
+class TemporaryFileUploadExtensionTests(ZulipTestCase):
+    def make_file(self, filename: str) -> BytesIO:
+        # We cannot use SimpleUploadedFile here, because Django truncates the
+        # name of an UploadedFile to 255 characters, which is precisely the
+        # sanitization we want to test happening without.
+        uploaded_file = BytesIO(b"zulip!")
+        uploaded_file.name = filename
+        return uploaded_file
+
+    def test_truncate_filename_extension(self) -> None:
+        self.assertEqual(truncate_filename_extension("test.txt"), "test.txt")
+        self.assertEqual(truncate_filename_extension("no_extension"), "no_extension")
+        self.assertEqual(truncate_filename_extension("tarball.tar.gz"), "tarball.tar.gz")
+
+        # A long extension is truncated, leaving the rest of the name alone.
+        truncated = truncate_filename_extension("test." + "a" * 300)
+        self.assertEqual(truncated, "test." + "a" * (TEMPORARY_FILE_MAX_EXTENSION_LENGTH - 1))
+
+        # Truncation happens on encoded bytes, and never leaves a character
+        # partially encoded. Each snowman takes 3 bytes, so 78 of them plus
+        # the "." fit in the 237 bytes available.
+        truncated = truncate_filename_extension("test." + "☃" * 200)
+        self.assertEqual(truncated, "test." + "☃" * 78)
+
+    def test_upload_file_with_long_extension(self) -> None:
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/user_uploads", {"file": self.make_file("test." + "a" * 300)}
+        )
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(
+            "test." + "a" * (TEMPORARY_FILE_MAX_EXTENSION_LENGTH - 1), response_dict["filename"]
+        )
+
+    def test_multipart_request_to_nonexistent_endpoint(self) -> None:
+        # Our logging middleware parses the request body looking for a
+        # "client" parameter before the URL has been resolved, so a filename
+        # too long to spool to disk raised an unhandled OSError (500), rather
+        # than the 404. See #39874 description for details.
+        result = self.client_post(
+            "/json/nonexistent_endpoint", {"file": self.make_file("test." + "a" * 300)}
+        )
+        self.assertEqual(result.status_code, 404)
+
+
 class SanitizeNameTests(ZulipTestCase):
     def test_file_name(self) -> None:
         self.assertEqual(sanitize_name("test.txt"), "test.txt")
@@ -2263,6 +2313,15 @@ class SanitizeNameTests(ZulipTestCase):
         self.assertEqual(
             sanitize_name('~/."\\`\\?*"u0`000ssh/test.t**{}ar.gz'), ".u0000sshtest.tar.gz"
         )
+
+    def test_long_file_name(self) -> None:
+        self.assertEqual(sanitize_name("a" * 300 + ".txt"), "a" * 251 + ".txt")
+        self.assertEqual(sanitize_name("test." + "a" * 300), "test." + "a" * 250)
+        # Truncation counts bytes, not characters.
+        self.assertEqual(sanitize_name("테" * 100 + ".txt"), "테" * 83 + ".txt")
+        # A single character can normalize to many more, so the result
+        # has to be measured after normalizing rather than before.
+        self.assertEqual(len(sanitize_name("ﷺ" * 79).encode()), MAX_FILE_NAME_LENGTH)
 
 
 class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):

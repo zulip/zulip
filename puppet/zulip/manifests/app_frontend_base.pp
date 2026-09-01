@@ -207,6 +207,10 @@ class zulip::app_frontend_base {
 
   $tusd_server_listen = zulipconf('application_server', 'tusd_server_listen', '127.0.0.1')
 
+  # Supervisor sets this as HTTP_proxy/HTTPS_proxy in every process's
+  # environment, so that all outgoing requests go through Smokescreen;
+  # including those made directly by libraries rather than through
+  # OutgoingSession.
   if $proxy_host != '' and $proxy_port != '' {
     $proxy = "http://${proxy_host}:${proxy_port}"
   } else {

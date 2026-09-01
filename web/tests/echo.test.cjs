@@ -7,7 +7,7 @@ const {make_stream} = require("./lib/example_stream.cjs");
 const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const browser_history = mock_esm("../src/browser_history");
 const compose_notifications = mock_esm("../src/compose_notifications");
@@ -64,6 +64,7 @@ message_lists.current = {
     },
     change_message_id: noop,
     add_messages: noop,
+    remove_and_rerender: noop,
 };
 const home_msg_list = {
     view: {
@@ -80,6 +81,7 @@ const home_msg_list = {
     preserver_rendered_state: true,
     change_message_id: noop,
     add_messages: noop,
+    remove_and_rerender: noop,
 };
 message_lists.all_rendered_message_lists = () => [home_msg_list, message_lists.current];
 message_lists.non_rendered_data = () => [];
@@ -87,6 +89,7 @@ message_lists.non_rendered_data = () => [];
 const echo = zrequire("echo");
 const echo_state = zrequire("echo_state");
 const people = zrequire("people");
+const pm_conversations = zrequire("pm_conversations");
 const {set_current_user} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
@@ -527,13 +530,13 @@ run_test("resend success clears the failed flag", ({override}) => {
     // local id, waiting to be retried.
     stored_messages.set(message.id, message);
 
-    const on_send_message_success = (msg, data) => {
+    const on_send_message_success = (_sent_message, data) => {
         // Mirror the store re-keying that compose.send_message_success ->
         // echo.reify_message_id performs once the server acks the resend.
-        stored_messages.delete(msg.id);
-        msg.id = data.id;
-        msg.locally_echoed = false;
-        stored_messages.set(data.id, msg);
+        stored_messages.delete(message.id);
+        message.id = data.id;
+        message.locally_echoed = false;
+        stored_messages.set(data.id, message);
     };
     const send_message = (_msg, on_success) => {
         on_success({id: server_id});
@@ -543,6 +546,67 @@ run_test("resend success clears the failed flag", ({override}) => {
 
     assert.equal(message.failed_request, false);
     assert.equal(stored_messages.get(server_id), message);
+});
+
+run_test("resend gives the success path a pre-send snapshot", ({override}) => {
+    // The resent message's event can beat its send response, and
+    // process_from_server reifies on arrival -- converting the message in
+    // place, so it no longer describes what we sent.
+    const stored_messages = new Map();
+    override(message_store, "get", (id) => stored_messages.get(id));
+    override(compose_notifications, "reify_message_id", noop);
+    override(hash_util, "search_terms_to_hash", noop);
+    override(browser_history, "update_current_history_state_data", noop);
+    override(message_lists, "all_rendered_message_lists", () => [
+        {
+            view: {rerender_messages: noop, change_message_id: noop},
+            data: {filter: {can_apply_locally: () => true}},
+            change_message_id: noop,
+            add_messages: noop,
+        },
+    ]);
+
+    const local_id = "320.01";
+    const server_id = 330;
+    const message = {
+        id: Number.parseFloat(local_id),
+        local_id,
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        raw_content: "retry me",
+        content: "<p>retry me</p>",
+        draft_id: "draft-320",
+        locally_echoed: true,
+        failed_request: true,
+    };
+    stored_messages.set(message.id, message);
+    echo_state.set_message_waiting_for_id(local_id, message);
+    echo_state._patch_waiting_for_ack(new Map([[local_id, message]]));
+
+    override(message_store, "reify_message_id", ({old_id, new_id}) => {
+        // Mirror the real conversion: re-key, and drop the local-echo fields.
+        delete message.draft_id;
+        stored_messages.delete(old_id);
+        stored_messages.set(new_id, message);
+    });
+
+    let sent_message;
+    const on_send_message_success = (msg) => {
+        sent_message = msg;
+    };
+    const send_message = (_request, on_success) => {
+        echo.process_from_server([{id: server_id, local_id, content: message.content}]);
+        on_success({id: server_id});
+    };
+
+    echo.resend_message(message, make_spinner_row(), {on_send_message_success, send_message});
+
+    // Confirm the ordering under test: reification ran before the response.
+    assert.equal(message.draft_id, undefined);
+    assert.equal(message.locally_echoed, false);
+    assert.equal(sent_message.draft_id, "draft-320");
+    assert.equal(sent_message.locally_echoed, true);
 });
 
 run_test("resend error re-marks a present message as failed", ({override}) => {
@@ -658,4 +722,82 @@ run_test("resend error on a message removed from the store doesn't crash", ({ove
     // The detached message was left untouched, since there was no stored entry
     // to mark as failed.
     assert.equal(message.failed_request, false);
+});
+
+run_test("abort_message clears the failed echo from echo_state", ({override}) => {
+    const local_id = "77.01";
+    const message = {
+        id: 77,
+        local_id,
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "test",
+        locally_echoed: true,
+        failed_request: true,
+    };
+    echo_state._patch_waiting_for_ack(new Map());
+    echo.track_local_message(message);
+    assert.equal(echo_state.get_message_waiting_for_id(local_id), message);
+    assert.equal(echo_state.get_message_waiting_for_ack(local_id), message);
+
+    const removed_ids = [];
+    override(message_lists.current, "remove_and_rerender", (ids) => {
+        removed_ids.push(...ids);
+    });
+
+    echo.abort_message(message);
+
+    assert.deepEqual(removed_ids, [77]);
+    assert.equal(echo_state.get_message_waiting_for_id(local_id), undefined);
+    assert.equal(echo_state.get_message_waiting_for_ack(local_id), undefined);
+});
+
+run_test("reify_message_id counts a sent direct message", ({override}) => {
+    // A sent DM is counted only once acked (on reification), mirroring how
+    // stream messages are added to stream_topic_history there.
+    const local_id_float = 104.01;
+
+    const iago = {user_id: 123, full_name: "Iago", email: "iago@zulip.com"};
+    const cordelia = {user_id: 21, full_name: "Cordelia", email: "cordelia@zulip.com"};
+    override(current_user, "user_id", iago.user_id);
+    const people_params = {
+        realm_users: [iago, cordelia],
+        realm_non_active_users: [],
+        cross_realm_bots: [],
+    };
+    const user_group_params = {
+        realm_user_groups: [
+            make_user_group({is_system_group: true, members: [iago.user_id, cordelia.user_id]}),
+        ],
+    };
+    people.init();
+    people.initialize(current_user.user_id, people_params, user_group_params);
+
+    override(markdown, "render", noop);
+    override(markdown, "get_topic_links", () => []);
+    override(message_store, "reify_message_id", noop);
+    override(compose_notifications, "reify_message_id", noop);
+
+    const message_request = {
+        private_message_recipient: cordelia.email,
+        to_user_ids: cordelia.user_id.toString(),
+        type: "private",
+        sender_email: iago.email,
+        sender_full_name: iago.full_name,
+        sender_id: iago.user_id,
+    };
+    echo.insert_local_message(message_request, local_id_float, (message_data) => {
+        const messages = message_data.raw_messages;
+        messages.map((message) => echo.track_local_message(message));
+        return messages;
+    });
+
+    const increment_stub = make_stub();
+    override(pm_conversations.recent, "increment_local_message_count", increment_stub.f);
+
+    echo.reify_message_id(local_id_float.toString(), 120);
+
+    assert.equal(increment_stub.num_calls, 1);
+    const {user_ids} = increment_stub.get_args("user_ids");
+    assert.deepEqual(user_ids, [cordelia.user_id]);
 });

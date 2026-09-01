@@ -113,6 +113,28 @@ SSL/TLS termination.
 Set to the port number if you [prefer to listen on a port other than
 443](deployment.md#using-an-alternate-port).
 
+#### `nginx_server_name`
+
+Sets the [`server_name`][nginx_server_name] directive on Zulip's
+nginx `server` blocks; by default it is unset, so they match any
+hostname. Set it if you run other software alongside Zulip whose
+nginx configuration would otherwise claim requests meant for Zulip.
+List every hostname Zulip is served on, separated by spaces,
+including those on its TLS certificate; otherwise automatic
+certificate renewal will fail.
+
+If Zulip is served on more than one hostname, or on a hostname plus
+several subdomains, list them all; nginx's `server_name` supports a
+trailing wildcard for matching subdomains. For example, to serve
+Zulip on both `example.com` and any subdomain of it:
+
+```ini
+[application_server]
+nginx_server_name = example.com *.example.com
+```
+
+[nginx_server_name]: https://nginx.org/en/docs/http/server_names.html
+
 #### `nginx_worker_processes`
 
 Adjusts the [`worker_processes`][nginx_worker_processes] setting in

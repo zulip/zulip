@@ -1,0 +1,8 @@
+{% if "captcha" in form.fields %}
+    {% if form.captcha.errors %}
+        {% for error in form.captcha.errors %}
+        <p class="help-inline text-error">{{ error }}</p>
+        {% endfor %}
+    {% endif %}
+    {{ form.captcha }}
+{% endif %}

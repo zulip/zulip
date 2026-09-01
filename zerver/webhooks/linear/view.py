@@ -154,7 +154,9 @@ def get_event_type(payload: WildValue) -> str | None:
         has_parent_id = "parentId" in payload["data"]
         return "issue" if not has_parent_id else "sub_issue"
     elif event_type == "Comment":
-        return "comment"
+        # Document comments also arrive as Comment events but carry
+        # no nested issue object to route a topic to.
+        return "comment" if "issue" in payload["data"] else None
     elif event_type in IGNORED_EVENTS:
         return None
 

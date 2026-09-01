@@ -33,7 +33,7 @@ async function copy_messages(
             if (partial_selection_config?.select_start_message_partially) {
                 const offset = partial_selection_config.start_text_node_offset!;
                 const start_message_text_node =
-                    get_message_node(start_message).querySelector(".message_content p")?.firstChild;
+                    get_message_node(start_message).querySelector("p")?.firstChild;
                 if (!(start_message_text_node instanceof Text)) {
                     throw new TypeError("Expected a Text node");
                 }
@@ -44,7 +44,7 @@ async function copy_messages(
             if (partial_selection_config?.select_end_message_partially) {
                 const offset = partial_selection_config.end_text_node_offset!;
                 const end_message_text_node =
-                    get_message_node(end_message).querySelector(".message_content p")?.firstChild;
+                    get_message_node(end_message).querySelector("p")?.firstChild;
                 if (!(end_message_text_node instanceof Text)) {
                     throw new TypeError("Expected a Text node");
                 }

@@ -68,7 +68,7 @@ def upgrade(
             license_management,
             licenses,
         )
-        raise e
+        raise
     except Exception:
         billing_logger.exception("Uncaught exception in billing:", stack_info=True)
         error_message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
@@ -118,7 +118,7 @@ def remote_realm_upgrade(
             license_management,
             licenses,
         )
-        raise e
+        raise
     except Exception:  # nocoverage
         billing_logger.exception("Uncaught exception in billing:", stack_info=True)
         error_message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)
@@ -168,7 +168,7 @@ def remote_server_upgrade(
             license_management,
             licenses,
         )
-        raise e
+        raise
     except Exception:  # nocoverage
         billing_logger.exception("Uncaught exception in billing:", stack_info=True)
         error_message = BillingError.CONTACT_SUPPORT.format(email=settings.ZULIP_ADMINISTRATOR)

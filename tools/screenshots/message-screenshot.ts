@@ -1,4 +1,4 @@
-/* global CSS */
+/* global CSS, zulip_test */
 
 import * as assert from "node:assert/strict";
 import * as fs from "node:fs";
@@ -66,7 +66,6 @@ async function run(): Promise<void> {
         await page.goto(`${realmUrl}/#narrow/id/${messageId}`, {
             waitUntil: "networkidle2",
         });
-        // eslint-disable-next-line no-undef
         const message_list_id = await page.evaluate(() => zulip_test.current_msg_list?.id);
         assert.ok(message_list_id !== undefined);
         const messageSelector = `#message-row-${message_list_id}-${CSS.escape(messageId)}`;

@@ -29,7 +29,7 @@ export const get_next_id_float = (function () {
             return undefined;
         }
 
-        if (local_id_float % 1 === 0) {
+        if (Number.isSafeInteger(local_id_float)) {
             // The logic to stop at 0.05 should prevent us from ever wrapping around
             // to the next integer.
             blueslip.error("Programming error");

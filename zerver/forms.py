@@ -1,10 +1,7 @@
-import base64
 import logging
 import re
 from typing import Any
 
-import orjson
-from altcha.v1 import verify_solution
 from django import forms
 from django.conf import settings
 from django.contrib.auth import authenticate, password_validation
@@ -12,10 +9,7 @@ from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm, Set
 from django.contrib.auth.tokens import PasswordResetTokenGenerator, default_token_generator
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from django.forms.renderers import BaseRenderer
 from django.http import HttpRequest
-from django.utils.html import format_html
-from django.utils.safestring import SafeString
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from markupsafe import Markup
@@ -25,6 +19,7 @@ from typing_extensions import override
 
 from zerver.actions.user_settings import do_change_password, do_change_user_setting
 from zerver.actions.users import do_send_password_reset_email
+from zerver.lib.captcha import CaptchaFormMixin
 from zerver.lib.email_validation import (
     email_allowed_for_realm,
     email_reserved_for_system_bots_error,
@@ -231,7 +226,7 @@ class RegistrationForm(HowFoundZulipFormMixin, RealmDetailsForm):
         return password
 
 
-class DemoRegistrationForm(HowFoundZulipFormMixin, forms.Form):
+class DemoRegistrationForm(CaptchaFormMixin, HowFoundZulipFormMixin, forms.Form):
     terms = forms.BooleanField(required=False)
     realm_type = forms.TypedChoiceField(
         coerce=int, choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()]
@@ -344,7 +339,7 @@ class ImportRealmOwnerSelectionForm(forms.Form):
     user_id = forms.IntegerField(required=False)
 
 
-class RealmCreationForm(RealmDetailsForm):
+class RealmCreationForm(CaptchaFormMixin, RealmDetailsForm):
     # This form determines whether users can create a new realm.
     email = forms.EmailField(
         validators=[email_not_system_bot, email_is_not_disposable], max_length=EMAIL_MAX_LENGTH
@@ -361,115 +356,6 @@ class RealmCreationForm(RealmDetailsForm):
     def clean_import_from(self) -> str:
         # Convert "" to "none".
         return self.cleaned_data["import_from"] or "none"
-
-
-class AltchaWidget(forms.TextInput):
-    @override
-    def render(
-        self,
-        name: str,
-        value: Any,
-        attrs: dict[str, Any] | None = None,
-        renderer: BaseRenderer | None = None,
-    ) -> SafeString:
-        return format_html(
-            (
-                "<altcha-widget"
-                '  name="captcha"'
-                '  challengeurl="/json/antispam_challenge"'
-                "  hidelogo"
-                "  hidefooter"
-                "  refetchonexpire"
-                '  style="{}"'
-                '  strings="{}"'
-                ">"
-            ),
-            "--altcha-max-width: 300px;",
-            orjson.dumps(
-                {
-                    "verified": _("Verified that you're a human user!"),
-                    "verifying": _("Verifying that you're not a bot…"),
-                }
-            ).decode(),
-        )
-
-
-def validate_captcha_payload(request: HttpRequest, captcha_payload: str) -> None:
-    if not settings.USING_CAPTCHA or not settings.ALTCHA_HMAC_KEY:  # nocoverage
-        raise forms.ValidationError(_("Challenges are not enabled."))
-
-    try:
-        ok, err = verify_solution(captcha_payload, settings.ALTCHA_HMAC_KEY, check_expires=True)
-        if not ok:
-            logging.warning("Invalid altcha solution: %s", err)
-            raise forms.ValidationError(_("Validation failed, please try again."))
-    except forms.ValidationError:
-        raise
-    except Exception as e:
-        logging.exception(e)
-        raise forms.ValidationError(_("Validation failed, please try again."))
-
-    captcha_data = orjson.loads(base64.b64decode(captcha_payload))
-    challenge = captcha_data["challenge"]
-    session_challenges = [e[0] for e in request.session.get("altcha_challenges", [])]
-    if challenge not in session_challenges:
-        logging.warning("Expired or replayed altcha solution")
-        raise forms.ValidationError(_("Validation failed, please try again."))
-
-    # Remove the successful solve from the session, to prevent replay
-    request.session["altcha_challenges"] = [
-        e for e in request.session.get("altcha_challenges", []) if e[0] != challenge
-    ]
-
-
-class CaptchaRealmCreationForm(RealmCreationForm):
-    captcha = forms.CharField(required=True, widget=AltchaWidget)
-
-    def __init__(
-        self,
-        *,
-        request: HttpRequest,
-        data: dict[str, Any] | None = None,
-        initial: dict[str, Any] | None = None,
-    ) -> None:
-        super().__init__(data=data, initial=initial)
-        self.request = request
-
-    @override
-    def clean(self) -> None:
-        super().clean()
-        if not self.data.get("captcha"):
-            self.add_error("captcha", _("Validation failed, please try again."))
-
-    def clean_captcha(self) -> str:
-        payload = self.data.get("captcha", "")
-        validate_captcha_payload(self.request, payload)
-        return payload
-
-
-class CaptchaDemoRegistrationForm(DemoRegistrationForm):
-    captcha = forms.CharField(required=True, widget=AltchaWidget)
-
-    def __init__(
-        self,
-        *,
-        request: HttpRequest,
-        data: dict[str, Any] | None = None,
-        initial: dict[str, Any] | None = None,
-    ) -> None:
-        super().__init__(data=data, initial=initial)
-        self.request = request
-
-    @override
-    def clean(self) -> None:
-        super().clean()
-        if not self.data.get("captcha"):
-            self.add_error("captcha", _("Validation failed, please try again."))
-
-    def clean_captcha(self) -> str:
-        payload = self.data.get("captcha", "")
-        validate_captcha_payload(self.request, payload)
-        return payload
 
 
 class LoggingSetPasswordForm(SetPasswordForm[UserProfile]):

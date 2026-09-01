@@ -1,5 +1,5 @@
 import flatpickr from "flatpickr";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -171,20 +171,14 @@ export function initialize_custom_user_type_fields(
 
             if (is_target_element_editable && !is_disabled) {
                 const $input = $pill_container.children(".input");
+                pill_typeahead.set_up_user($input, pills, {exclude_bots: true});
                 if (pill_update_handler) {
-                    const update_func = (): void => {
+                    pills.onPillCreate(() => {
                         pill_update_handler(field, pills);
-                    };
-                    const opts = {
-                        update_func,
-                        exclude_bots: true,
-                    };
-                    pill_typeahead.set_up_user($input, pills, opts);
+                    });
                     pills.onPillRemove(() => {
                         pill_update_handler(field, pills);
                     });
-                } else {
-                    pill_typeahead.set_up_user($input, pills, {exclude_bots: true});
                 }
             }
             user_pills.set(field.id, pills);

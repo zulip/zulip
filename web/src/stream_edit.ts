@@ -1,5 +1,5 @@
 import ClipboardJS from "clipboard";
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
@@ -187,29 +187,28 @@ export function save_stream_info(): void {
                 assert(data.new_name !== undefined);
                 const existing_stream = stream_data.get_sub_by_name(data.new_name);
 
+                let rendered_error;
                 if (existing_stream) {
                     const can_rename =
                         existing_stream.is_archived &&
                         stream_settings_data.get_sub_for_settings(existing_stream)
                             .can_change_name_description;
 
-                    const rendered_error = render_channel_name_conflict_error({
+                    rendered_error = render_channel_name_conflict_error({
                         stream_id: existing_stream.stream_id,
                         is_archived: existing_stream.is_archived,
                         show_rename: can_rename,
                         can_view_channel: true,
                     });
-
-                    $("#change_stream_name_error").html(rendered_error).show();
                 } else {
-                    const rendered_error = render_channel_name_conflict_error({
+                    rendered_error = render_channel_name_conflict_error({
                         stream_id: undefined,
                         is_archived: false,
                         show_rename: false,
                         can_view_channel: false,
                     });
-                    $("#change_stream_name_error").html(rendered_error).show();
                 }
+                $("#change_stream_name_error").html(rendered_error).show();
                 $("#change_stream_name").trigger("focus");
             }
         },
@@ -328,7 +327,7 @@ export function stream_settings(sub: StreamSubscription): StreamSetting[] {
                 stream_data.receives_notifications(sub.stream_id, notification_setting.data) &&
                 !realm_setting;
         } else {
-            is_checked = Boolean(sub[setting]) && !realm_setting;
+            is_checked = (sub[setting] ?? false) && !realm_setting;
         }
         return {
             name: setting,
@@ -462,6 +461,16 @@ export function set_up_channel_privacy_dropdown_widget(
     return channel_privacy_widget;
 }
 
+function get_push_notifications_tooltip(): string | undefined {
+    if (!realm.realm_push_notifications_enabled) {
+        return $t({defaultMessage: "Mobile push notifications are not enabled on this server."});
+    }
+    if (!current_user.is_admin) {
+        return $t({defaultMessage: "Only organization administrators can edit this setting."});
+    }
+    return undefined;
+}
+
 export function show_settings_for(node: HTMLElement): void {
     // Hide any tooltips or popovers before we rerender / change
     // currently displayed stream settings.
@@ -493,6 +502,7 @@ export function show_settings_for(node: HTMLElement): void {
         is_business_type_org:
             realm.realm_org_type === settings_config.all_org_type_values.business.code,
         is_admin: current_user.is_admin,
+        push_notifications_tooltip: get_push_notifications_tooltip(),
         org_level_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
         group_setting_labels: settings_config.all_group_setting_labels.stream,
         has_billing_access: settings_data.user_has_billing_access(),
@@ -586,7 +596,7 @@ export function get_stream_email_address(flags: string[], address: string): stri
 
     const flag_string = flags.map((flag) => "." + flag).join("");
 
-    return clean_address.replace("@", flag_string + "@");
+    return clean_address.replace("@", () => flag_string + "@");
 }
 
 function show_stream_email_address_modal(address: string, sub: StreamSubscription): void {
@@ -641,7 +651,8 @@ function show_stream_email_address_modal(address: string, sub: StreamSubscriptio
         function update_option_label(sender: User | CurrentUser | Bot): string {
             if (sender.user_id === people.EMAIL_GATEWAY_BOT.user_id) {
                 return "Email Gateway bot";
-            } else if (sender.user_id === current_user.user_id) {
+            }
+            if (sender.user_id === current_user.user_id) {
                 return $t({defaultMessage: "You"});
             }
             return sender.full_name;
@@ -1056,8 +1067,10 @@ export function initialize(): void {
                 $subsection,
                 sub,
             );
-            if ($subsection.attr("id") === "channel-subscription-permissions") {
-                assert(sub !== undefined);
+            if (
+                $subsection.attr("id") === "channel-subscription-permissions" &&
+                sub !== undefined
+            ) {
                 stream_ui_updates.update_can_create_topic_group_on_history_public_to_subscribers_change(
                     sub,
                 );

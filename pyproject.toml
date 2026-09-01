@@ -51,7 +51,7 @@ prod = [
   "firebase-admin",
 
   # Needed for the email mirror
-  "html2text",
+  "markdownify",
   "talon-core",
 
   # Needed for inlining the CSS in emails
@@ -174,7 +174,7 @@ prod = [
   "pybreaker",
 
   # Runtime monkeypatching of django-stubs generics
-  "django-stubs-ext",
+  "django-stubs-ext<6.1.0",  # 6.1.0 requires Python ≥ 3.11
 
   # Structured data representation with parsing.
   "pydantic",
@@ -293,7 +293,7 @@ dev = [
   "mypy[faster-cache]",
 
   "boto3-stubs[s3,ses,sns,sqs]",
-  "django-stubs",
+  "django-stubs<6.1.0",  # 6.1.0 requires Python ≥ 3.11
   "google-re2-stubs",
   "lxml-stubs",
   "types-beautifulsoup4",
@@ -342,9 +342,6 @@ no-binary-package = [
 ]
 
 [tool.uv.sources]
-# Python 3.14 support: https://github.com/disqus/django-bitfield/pull/137
-django-bitfield = { git = "https://github.com/disqus/django-bitfield.git" }
-
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
 # and chardet, cchardet: https://github.com/mailgun/talon/pull/239
 # and fix invalid escape sequences: https://github.com/mailgun/talon/pull/245
@@ -463,7 +460,7 @@ target-version = "py310"
 
 [tool.ruff.lint]
 # See https://github.com/astral-sh/ruff#rules for error code definitions.
-select = [
+extend-select = [
     "ANN", # annotations
     "B", # bugbear
     "C4", # comprehensions
@@ -477,6 +474,7 @@ select = [
     "FURB", # refurbishing
     "G", # logging format
     "I", # import sorting
+    "INP", # implicit namespace package
     "INT", # gettext
     "ISC", # string concatenation
     "LOG", # logging
@@ -503,6 +501,7 @@ ignore = [
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
     "B007", # Loop control variable not used within the loop body
     "B904", # Within an except clause, raise exceptions with raise ... from err or raise ... from None to distinguish them from errors in exception handling
+    "BLE001", # Do not catch blind exception
     "C408", # Unnecessary `dict` call (rewrite as a literal)
     "COM812", # Trailing comma missing
     "DJ001", # Avoid using `null=True` on string-based fields
@@ -521,6 +520,7 @@ ignore = [
     "PLR0912", # Too many branches
     "PLR0913", # Too many arguments to function call
     "PLR0915", # Too many statements
+    "PLR0917", # Too many positional arguments
     "PLR2004", # Magic value used in comparison
     "PLR5501", # Consider using `elif` instead of `else` then `if` to remove one indentation level
     "PLW0603", # Using the global statement is discouraged
@@ -549,6 +549,8 @@ ignore = [
     "TC002", # Move third-party import into a type-checking block
     "TC003", # Move standard library import into a type-checking block
     "TC006", # Add quotes to type expression in `typing.cast()`
+    "TRY002", # Create your own exception
+    "TRY004", # Prefer `TypeError` exception for invalid type
 ]
 
 [tool.ruff.lint.flake8-bandit]

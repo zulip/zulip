@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import * as banners from "./banners.ts";
 import type {Banner} from "./banners.ts";

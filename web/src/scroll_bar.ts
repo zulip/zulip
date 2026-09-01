@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import {user_settings} from "./user_settings.ts";
 

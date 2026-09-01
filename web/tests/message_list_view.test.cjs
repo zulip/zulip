@@ -6,7 +6,7 @@ const _ = require("lodash");
 
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 set_global("document", "document-stub");
 
@@ -344,6 +344,11 @@ test("rerender_messages rebuilds every distinct recipient bar", () => {
     view._rerender_header = (group) => {
         rerendered_group_ids.push(group.message_group_id);
     };
+
+    // rerender_messages re-applies autosize to any open edit textareas; with
+    // no message being edited, the lookup returns an empty set.
+    const empty_list_stub = $.set_results("empty-stub", []);
+    view.$list.set_find_results(".message_edit_content", empty_list_stub);
 
     view.rerender_messages([dm1.msg, dm2.msg, dm3.msg]);
 

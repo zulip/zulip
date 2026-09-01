@@ -464,7 +464,7 @@ else:
     TOR_EXIT_NODE_FILE_PATH = "/var/lib/zulip/tor-exit-nodes.json"
 
 if USING_CAPTCHA:
-    ALTCHA_HMAC_KEY = get_secret("altcha_hmac")
+    ALTCHA_HMAC_KEY = get_secret("altcha_hmac", "")
 else:
     ALTCHA_HMAC_KEY = ""
 
@@ -633,6 +633,13 @@ LOCALE_PATHS = (os.path.join(DEPLOY_ROOT, "locale"),)
 
 # We want all temporary uploaded files to be stored on disk.
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
+
+# Django's default handlers, with the temporary file handler replaced by our
+# subclass that does not crash on a filename with a very long extension.
+FILE_UPLOAD_HANDLERS = [
+    "django.core.files.uploadhandler.MemoryFileUploadHandler",
+    "zerver.upload_handler.ZulipTemporaryFileUploadHandler",
+]
 
 if DEVELOPMENT or "ZULIP_COLLECTING_STATIC" in os.environ:
     STATICFILES_DIRS = [os.path.join(DEPLOY_ROOT, "static")]

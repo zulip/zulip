@@ -1523,6 +1523,26 @@ class MattermostCombinedTeamsImportTest(MattermostImportTestBase):
         exported_bot_users = [user for user in mattermost_data["user"] if user.get("is_bot")]
         self.assert_length(exported_bot_users, len(self.BOT_EMAILS))
 
+    def test_combining_user_not_in_any_team(self) -> None:
+        # Mattermost exports "teams": null for users who are not a
+        # member of any team. Verify such users are passed through
+        # unchanged when combining teams, so that they are imported
+        # only as mirror dummies backfilled from their posts, just
+        # like in the non-combined code path.
+        user_object = {"type": "user", "user": {"username": "teamless.user", "teams": None}}
+        jsonl_line = json.dumps(user_object)
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            import_jsonl_path = os.path.join(tmp_dir, "import.jsonl")
+            with open(import_jsonl_path, "w") as f:
+                f.write(jsonl_line + "\n")
+
+            mattermost_data = mattermost_data_file_to_dict(
+                import_jsonl_path, combine_into_one_realm=True
+            )
+        self.assert_length(mattermost_data["user"], 1)
+        self.assertEqual(mattermost_data["user"][0], {"username": "teamless.user", "teams": None})
+
     def test_e2e_export_data_v11_6_0(self) -> None:
         # The assert functions here iterate over the exported Mattermost objects and checks
         # whether a corresponding Zulip object exists in the imported realm. So, If

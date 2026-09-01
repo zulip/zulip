@@ -20,6 +20,40 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 13.0
 
+**Feature level 509**
+
+* [`PATCH /messages/{message_id}`](/api/update-message): Fixed a bug where
+  passing the `stream_id` that the message is already in was processed as
+  a channel move.
+
+**Feature level 508**
+
+* [`POST /messages`](/api/send-message): Added `message_url` and
+  `message_link` fields to the response.
+
+**Feature level 507**
+
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`POST /channels/create`](/api/create-channel),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `default_push_notifications` boolean parameter that controls whether
+  mobile push notifications are enabled by default when a user first
+  subscribes to the channel, potentially overriding the user's [default
+  mobile notification
+  setting](/help/channel-notifications#configure-default-notifications-for-all-channels)
+  for channel messages. Only organization administrators can set or
+  modify this parameter.
+
+* [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
+  [`GET /streams`](/api/get-streams),
+  [`GET /streams/{stream_id}`](/api/get-stream-by-id): Added
+  `default_push_notifications` boolean field to channel objects, which
+  indicates whether mobile push notifications will be enabled by default
+  when a user first subscribes to the channel, potentially overriding the
+  user's [default mobile notification
+  setting](/help/channel-notifications#configure-default-notifications-for-all-channels)
+  for channel messages.
+
 **Feature level 506**
 
 * [`GET /export/realm`](/api/get-realm-exports),
@@ -29,10 +63,10 @@ format used by the Zulip server that they are interacting with.
   happened on a previous server, so its tarball is no longer stored
   on this server. This change was also backported to the Zulip 12.x
   series, at feature level 499.
-* `DELETE /export/realm/{export_id}`: Export records with the
-  `export_from_prior_server` field set to `true` cannot be deleted, as the
-  server has no exported data to delete for them. This change was also
-  backported to the Zulip 12.x series, at feature level 499.
+* [`DELETE /export/realm/{export_id}`](/api/delete-realm-export): Export
+  records with the `export_from_prior_server` field set to `true` cannot
+  be deleted, as the server has no exported data to delete for them. This
+  change was also backported to the Zulip 12.x series, at feature level 499.
 
 **Feature level 505**
 
@@ -80,10 +114,10 @@ releases.
   for records that were carried across a realm import; the export
   happened on a previous server, so its tarball is no longer stored
   on this server. Backported change from feature level 506.
-* `DELETE /export/realm/{export_id}`: Export records with the
-  `export_from_prior_server` field set to `true` cannot be deleted, as the
-  server has no exported data to delete for them. Backported change from feature
-  level 506.
+* [`DELETE /export/realm/{export_id}`](/api/delete-realm-export): Export
+  records with the `export_from_prior_server` field set to `true` cannot
+  be deleted, as the server has no exported data to delete for them.
+  Backported change from feature level 506.
 
 ## Changes in Zulip 12.0
 
@@ -287,9 +321,10 @@ No changes; API feature level used for the Zulip 12.0 release.
 **Feature level 476**
 
 * [`POST /realm/profile_fields`](/api/create-custom-profile-field),
-  [`GET /realm/profile_fields`](/api/get-custom-profile-fields) The
-  `display_in_profile_summary` parameter can now be set to true for the
-  `Paragraph` field type.
+  [`GET /realm/profile_fields`](/api/get-custom-profile-fields),
+  [`PATCH /realm/profile_fields/{field_id}`](/api/update-custom-profile-field)
+  The `display_in_profile_summary` parameter can now be set to true for
+  the `Paragraph` field type.
 
 **Feature level 475**
 
@@ -1620,9 +1655,9 @@ No changes; feature level used for Zulip 10.0 release.
   `server_max_deactivated_realm_deletion_days` fields for the permitted
   number of days before full data deletion of a deactivated organization
   on the server.
-* `POST /realm/deactivate`: Added `deletion_delay_days` parameter to
-  support setting when a full data deletion of the deactivated
-  organization may be done.
+* [`POST /realm/deactivate`](/api/deactivate-realm): Added
+  `deletion_delay_days` parameter to support setting when a full data
+  deletion of the deactivated organization may be done.
 
 **Feature level 331**
 
@@ -2008,9 +2043,11 @@ No changes; feature level used for Zulip 10.0 release.
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
   [`POST /realm/profile_fields`](/api/create-custom-profile-field),
-  [`GET /realm/profile_fields`](/api/get-custom-profile-fields): Added a new
-  parameter `editable_by_user` to custom profile field objects, which indicates whether
-  regular users can edit the value of the profile field on their own account.
+  [`GET /realm/profile_fields`](/api/get-custom-profile-fields),
+  [`PATCH /realm/profile_fields/{field_id}`](/api/update-custom-profile-field):
+  Added a new parameter `editable_by_user` to custom profile field objects,
+  which indicates whether regular users can edit the value of the profile
+  field on their own account.
 
 **Feature level 295**
 
@@ -2421,9 +2458,10 @@ No changes; feature level used for Zulip 9.0 release.
 
 **Feature level 252**
 
-* `PATCH /realm/profile_fields/{field_id}`: `name`, `hint`, `display_in_profile_summary`,
-  `required` and `field_data` fields are now optional during an update. Previously we
-  required the clients to populate the fields in the PATCH request even if there was
+* [`PATCH /realm/profile_fields/{field_id}`](/api/update-custom-profile-field):
+  `name`, `hint`, `display_in_profile_summary`, `required` and `field_data`
+  fields are now optional during an update. Previously we required the
+  clients to populate the fields in the PATCH request even if there was
   no change to those fields' values.
 
 **Feature level 251**
@@ -2486,10 +2524,11 @@ No changes; feature level used for Zulip 9.0 release.
 
 * [`POST /register`](/api/register-queue), [`GET /events`](/api/get-events),
   [`POST /realm/profile_fields`](/api/create-custom-profile-field),
-  [`GET /realm/profile_fields`](/api/get-custom-profile-fields): Added a new
-  parameter `required`, on custom profile field objects, indicating whether an
-  organization administrator has configured the field as something users should
-  be required to provide.
+  [`GET /realm/profile_fields`](/api/get-custom-profile-fields),
+  [`PATCH /realm/profile_fields/{field_id}`](/api/update-custom-profile-field):
+  Added a new parameter `required`, on custom profile field objects,
+  indicating whether an organization administrator has configured the
+  field as something users should be required to provide.
 
 **Feature level 243**
 
@@ -2792,14 +2831,16 @@ No changes; feature level used for Zulip 8.0 release.
 
 **Feature level 212**
 
-* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue),
-  `PATCH /realm`: Added the `jitsi_server_url` field to the `realm` object,
-  allowing organizations to set a custom Jitsi Meet server. Previously, this
-  was only available as a server-level configuration.
+* [`GET /events`](/api/get-events), [`POST /register`](/api/register-queue)
+  `PATCH /realm`: Added the `jitsi_server_url` realm setting, allowing
+  organizations to set a custom Jitsi Meet server. Previously, this was
+  only available as a server-level configuration.
 
 * [`POST /register`](/api/register-queue): Added `server_jitsi_server_url`
-  fields to the `realm` object. The existing `jitsi_server_url` will now be
-  calculated as `realm_jitsi_server_url || server_jitsi_server_url`.
+  field to the response for the Jitsi Meet server-level configuration. The
+  existing `jitsi_server_url` field, which previously was the same value of
+  the new field, is now deprecated and will be calculated as
+  `realm_jitsi_server_url ?? server_jitsi_server_url`.
 
 **Feature level 211**
 
@@ -3012,7 +3053,7 @@ No changes; feature level used for Zulip 8.0 release.
   `enable_followed_topic_desktop_notifications`
   and `enable_followed_topic_audible_notifications` to control whether a user
   receives email, push, wildcard mention, visual desktop and audible desktop
-  notifications, respectively, for messages sent to followed topics.
+  notifications, respectively, for messages sent to followed topics.
 
 **Feature level 188**
 
@@ -3400,10 +3441,11 @@ No changes; feature level used for Zulip 6.0 release.
 **Feature level 146**
 
 * [`POST /realm/profile_fields`](/api/create-custom-profile-field),
-[`GET /realm/profile_fields`](/api/get-custom-profile-fields): Added a
-new parameter `display_in_profile_summary`, which clients use to
-decide whether to display the field in a small/summary section of the
-user's profile.
+[`GET /realm/profile_fields`](/api/get-custom-profile-fields),
+[`PATCH /realm/profile_fields/{field_id}`](/api/update-custom-profile-field):
+Added a new parameter `display_in_profile_summary`, which clients use
+to decide whether to display the field in a small/summary section of
+the user's profile.
 
 **Feature level 145**
 

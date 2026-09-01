@@ -31,3 +31,14 @@ class AlertmanagerHookTests(WebhookTestCase):
             expected_message,
             "application/json",
         )
+
+    def test_single_alert_no_generator_url(self) -> None:
+        expected_topic_name = "andromeda"
+        expected_message = ":alert: **FIRING** CPU core temperature is 34.75C"
+
+        self.check_webhook(
+            "single_alert_no_url",
+            expected_topic_name,
+            expected_message,
+            "application/json",
+        )

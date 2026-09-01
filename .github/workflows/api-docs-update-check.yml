@@ -16,10 +16,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.x"
 
@@ -29,7 +31,7 @@ jobs:
 
       - name: Report status to CZO
         if: ${{ steps.run_check.outputs.fail == 'true' && github.repository == 'zulip/zulip'}}
-        uses: zulip/github-actions-zulip/send-message@v1
+        uses: zulip/github-actions-zulip/send-message@f675f2b4eb2a95fae974215476dcb7ad8dfeff6b # v2.0.2
         with:
           api-key: ${{ secrets.ZULIP_BOT_KEY }}
           email: "github-actions-bot@chat.zulip.org"
@@ -45,16 +47,20 @@ jobs:
 
   notify-if-api-docs-changed:
     runs-on: ubuntu-slim
+    # The failure message in tools/check-feature-level-updated says that
+    # its failure skips this job. Update that message if changing this
+    # dependency.
     needs: check-feature-level-updated
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.x"
 
@@ -69,7 +75,7 @@ jobs:
 
       - name: Report status to CZO
         if: ${{github.repository == 'zulip/zulip'}}
-        uses: zulip/github-actions-zulip/send-message@v1
+        uses: zulip/github-actions-zulip/send-message@f675f2b4eb2a95fae974215476dcb7ad8dfeff6b # v2.0.2
         with:
           api-key: ${{ secrets.ZULIP_BOT_KEY }}
           email: "github-actions-bot@chat.zulip.org"

@@ -9,7 +9,7 @@ const {make_user} = require("./lib/example_user.cjs");
 const {zrequire, mock_esm} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 const noop = function () {};
@@ -45,7 +45,8 @@ function override_typeahead_helper({mock_template, override_rewire}) {
     mock_template("typeahead_list_item.hbs", false, (args) => {
         if (args.stream) {
             return "<rendered-stream-stub>";
-        } else if (args.is_user_group) {
+        }
+        if (args.is_user_group) {
             return "<rendered-group-stub>";
         }
         assert.ok(args.is_person);
@@ -176,11 +177,6 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
         get_display_value_from_item: noop,
     });
 
-    let update_func_called = false;
-    function update_func() {
-        update_func_called = true;
-    }
-
     override(bootstrap_typeahead, "Typeahead", (input_element, config) => {
         assert.equal(input_element.$element, $fake_input);
         assert.ok(config.dropup);
@@ -215,9 +211,8 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
 
         (function test_source() {
             let expected_result = [];
-            let actual_result = [];
             const result = config.source(person_query);
-            actual_result = result.map((item) => item.user_id);
+            const actual_result = result.map((item) => item.user_id);
             expected_result = [...expected_result, ...person_items];
             expected_result = expected_result.map((item) => item.user_id);
             assert.deepEqual(actual_result, expected_result);
@@ -231,8 +226,6 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
             assert.equal(number_of_pills(), 0);
             config.updater(me_item, person_query);
             assert.equal(number_of_pills(), 1);
-
-            assert.ok(update_func_called);
         })();
 
         // input_pill_typeahead_called is set true if
@@ -240,7 +233,7 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
         input_pill_typeahead_called = true;
     });
 
-    pill_typeahead.set_up_user($fake_input, $pill_widget, {update_func});
+    pill_typeahead.set_up_user($fake_input, $pill_widget, {});
     assert.ok(input_pill_typeahead_called);
 });
 
@@ -267,11 +260,6 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
         get_text_from_item: noop,
         get_display_value_from_item: noop,
     });
-
-    let update_func_called = false;
-    function update_func() {
-        update_func_called = true;
-    }
 
     override(bootstrap_typeahead, "Typeahead", (input_element, config) => {
         assert.equal(input_element.$element, $fake_input);
@@ -321,8 +309,6 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
             assert.equal(number_of_pills(), 0);
             config.updater(denmark_item, stream_query);
             assert.equal(number_of_pills(), 1);
-
-            assert.ok(update_func_called);
         })();
 
         // input_pill_typeahead_called is set true if
@@ -330,7 +316,7 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
         input_pill_typeahead_called = true;
     });
 
-    pill_typeahead.set_up_stream($fake_input, $pill_widget, {update_func});
+    pill_typeahead.set_up_stream($fake_input, $pill_widget, {});
     assert.ok(input_pill_typeahead_called);
 });
 
@@ -454,11 +440,6 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
         get_text_from_item: noop,
         get_display_value_from_item: noop,
     });
-
-    let update_func_called = false;
-    function update_func() {
-        update_func_called = true;
-    }
 
     function mock_pill_removes(widget) {
         const pills = widget._get_pills_for_testing();
@@ -592,12 +573,11 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
             }
 
             let expected_result = [];
-            let actual_result = [];
             function is_group(item) {
                 return item.members;
             }
             result = config.source(person_query);
-            actual_result = result
+            const actual_result = result
                 .map((item) => {
                     if (is_group(item)) {
                         return item.id;
@@ -657,8 +637,6 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
                 config.updater(testers_item, group_query);
                 assert.equal(number_of_pills(), 3);
 
-                assert.ok(update_func_called);
-
                 // Clear pills for the next test.
                 mock_pill_removes($pill_widget);
                 $pill_widget.clear();
@@ -691,7 +669,7 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
         {user_group: true, stream: true},
         {user_group: true, user: true},
         {user: true, stream: true},
-        {user_group: true, stream: true, user: true, update_func},
+        {user_group: true, stream: true, user: true},
     ];
 
     for (const config of all_possible_opts) {
@@ -829,12 +807,11 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
 
         (function test_source() {
             let expected_result = [];
-            let actual_result = [];
             function is_group(item) {
                 return item.members;
             }
             const result = config.source(person_query);
-            actual_result = result
+            const actual_result = result
                 .map((item) => {
                     if (is_group(item)) {
                         return item.id;

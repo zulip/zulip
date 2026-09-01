@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 
 import render_cannot_send_direct_message_error from "../templates/compose_banner/cannot_send_direct_message_error.hbs";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
@@ -83,7 +83,10 @@ export function append_compose_banner_to_banner_list(
     $banner: JQuery,
     $list_container: JQuery,
 ): boolean {
-    if ($banner.hasClass("warning") && has_error()) {
+    // Suppress a warning only when its own container already shows an
+    // error; an error elsewhere (e.g. the compose box) must not hide a
+    // warning targeting a different container.
+    if ($banner.hasClass("warning") && has_error($list_container)) {
         return false;
     }
     scroll_util.get_content_element($list_container).append($banner);
@@ -137,7 +140,16 @@ function hide_compose_spinner(): void {
 }
 
 export function clear_errors(): void {
-    $(`#compose_banners .${CSS.escape(ERROR)}`).remove();
+    clear_validation_errors();
+    clear_upload_errors();
+}
+
+export function clear_validation_errors(): void {
+    $(`#compose_banners .${CSS.escape(ERROR)}:not(.upload_banner)`).remove();
+}
+
+export function clear_upload_errors(): void {
+    $(`#compose_banners .upload_banner.${CSS.escape(ERROR)}`).remove();
 }
 
 export function clear_warnings(): void {
@@ -205,6 +217,32 @@ export function show_error_message(
     if ($bad_input !== undefined) {
         $bad_input.trigger("focus").trigger("select");
     }
+}
+
+export function show_warning_message(
+    message: string,
+    classname: string,
+    $container: JQuery,
+    {
+        button_text = null,
+        stream_id = null,
+        topic_name = null,
+    }: {button_text?: string | null; stream_id?: number | null; topic_name?: string | null} = {},
+): boolean {
+    // The warning counterpart of show_error_message: same classname-dedupe,
+    // and like that function it intentionally does not support HTML messages.
+    // Returns whether the banner was appended.
+    $container.find(`.${CSS.escape(classname)}`).remove();
+
+    const new_row_html = render_compose_banner({
+        banner_type: WARNING,
+        stream_id,
+        topic_name,
+        banner_text: message,
+        button_text,
+        classname,
+    });
+    return append_compose_banner_to_banner_list($(new_row_html), $container);
 }
 
 export function cannot_send_direct_message_error(error_message: string): void {
@@ -276,8 +314,8 @@ export function show_unknown_zoom_user_error(email: string): void {
     append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
 }
 
-export function has_error(): boolean {
-    return $("#compose_banners .error").length > 0;
+export function has_error($list_container: JQuery): boolean {
+    return $list_container.find(`.${CSS.escape(ERROR)}`).length > 0;
 }
 
 export function show_convert_pasted_text_to_file_banner({

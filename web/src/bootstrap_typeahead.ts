@@ -151,7 +151,7 @@
  *   when a pill is deleted using the backspace key.
  * ============================================================ */
 
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import {insertTextIntoField} from "text-field-edit";
 import getCaretCoordinates from "textarea-caret";
@@ -225,7 +225,11 @@ export class Typeahead<ItemType extends string | object> {
     $container: JQuery;
     $menu: JQuery;
     $footer: JQuery;
-    source: (query: string, input_element: TypeaheadInputElement) => ItemType[];
+    source: (
+        query: string,
+        input_element: TypeaheadInputElement,
+        typeahead: Typeahead<ItemType>,
+    ) => ItemType[];
     dropup: boolean;
     automated: () => boolean;
     trigger_selection: (event: JQuery.KeyDownEvent) => boolean;
@@ -556,7 +560,7 @@ export class Typeahead<ItemType extends string | object> {
             return this.shown ? this.hide() : this;
         }
 
-        const items = this.source(this.query, this.input_element);
+        const items = this.source(this.query, this.input_element, this);
 
         if (items.length === 0 && this.shown) {
             this.hide();
@@ -996,10 +1000,17 @@ export class Typeahead<ItemType extends string | object> {
 /* TYPEAHEAD PLUGIN DEFINITION
  * =========================== */
 
-type TypeaheadOptions<ItemType> = {
+type TypeaheadOptions<ItemType extends string | object> = {
     item_html: (query: string) => (item: ItemType) => string | undefined;
     items?: number;
-    source: (query: string, input_element: TypeaheadInputElement) => ItemType[];
+    // The typeahead passes itself to source, so the callback can
+    // consult the state (e.g. `shown`) of the specific typeahead
+    // instance it is generating candidates for.
+    source: (
+        query: string,
+        input_element: TypeaheadInputElement,
+        typeahead: Typeahead<ItemType>,
+    ) => ItemType[];
     // optional options
     advanceKeys?: string[];
     automated?: () => boolean;

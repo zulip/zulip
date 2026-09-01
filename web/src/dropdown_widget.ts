@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
@@ -272,11 +272,11 @@ export class DropdownWidget {
             // Use the provided offset if we have enough space. Otherwise,
             // we overlap the top of dropdown with top of dropdown input.
             if (this.tippy_props?.offset === undefined) {
-                top_offset = -1 * dropdown_input_props.height;
+                top_offset = -dropdown_input_props.height;
             }
         } else if (bottom_space > top_space) {
             placement = "bottom-start";
-            top_offset = -1 * dropdown_input_props.height;
+            top_offset = -dropdown_input_props.height;
         }
 
         const offset: [number, number] = [left_offset, top_offset];
@@ -445,7 +445,9 @@ export class DropdownWidget {
                 // Keyboard handler
                 $popper.on("keydown", (e) => {
                     function trigger_element_focus($element: JQuery): void {
+                        // eslint-disable-next-line unicorn/no-late-event-control
                         e.preventDefault();
+                        // eslint-disable-next-line unicorn/no-late-event-control
                         e.stopPropagation();
                         // When bringing a non-visible element into view, scroll as minimum as possible.
                         $element[0]?.scrollIntoView({block: "nearest"});
@@ -459,7 +461,7 @@ export class DropdownWidget {
                     const list_items = this.list_widget.get_current_list();
                     if (
                         list_items.length === 0 &&
-                        !(e.key === "Escape") &&
+                        e.key !== "Escape" &&
                         !this.sticky_bottom_option
                     ) {
                         // Let the browser handle it.

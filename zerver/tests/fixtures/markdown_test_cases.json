@@ -93,7 +93,7 @@
     {
       "name": "fenced_complexly_nested_quote",
       "input": "I heard about this second hand...\n~~~ quote\n\nHe said:\n~~~ quote\nThe customer is complaining.\n\nThey looked at this code:\n``` \ndef hello(): print 'hello\n```\nThey would prefer:\n~~~\ndef hello()\n  puts 'hello'\nend\n~~~\n\nPlease advise.\n~~~\n\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n~~~",
-      "expected_output": "<p>I heard about this second hand...</p>\n<blockquote>\n<p>He said:</p>\n<blockquote>\n<p>The customer is complaining.</p>\n<p>They looked at this code:</p>\n<div class=\"codehilite\"><pre><span></span><code>def hello(): print &#39;hello\n</code></pre></div>\n<p>They would prefer:</p>\n</blockquote>\n<p>def hello()<br>\n  puts 'hello'<br>\nend</p>\n</blockquote>\n<p>Please advise.</p>\n<div class=\"codehilite\"><pre><span></span><code>She said:\n~~~ quote\nJust send them this:\n```\necho &quot;hello\n&quot;\n```\n</code></pre></div>",
+      "expected_output": "<p>I heard about this second hand...</p>\n<blockquote>\n<p>He said:</p>\n<blockquote>\n<p>The customer is complaining.</p>\n<p>They looked at this code:</p>\n<div class=\"codehilite\"><pre><span></span><code>def hello(): print 'hello\n</code></pre></div>\n<p>They would prefer:</p>\n</blockquote>\n<p>def hello()<br>\n  puts 'hello'<br>\nend</p>\n</blockquote>\n<p>Please advise.</p>\n<div class=\"codehilite\"><pre><span></span><code>She said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n</code></pre></div>",
       "text_content": "I heard about this second hand...\n[…]Please advise.\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n"
     },
     {
@@ -1025,19 +1025,19 @@
     {
       "name": "codeblock_hilite_shebang_feature_no_path_1",
       "input": "```\n#!python\nprint(\"Hello World\")\n```",
-      "expected_output": "<div class=\"codehilite\"><pre><span></span><code><span class=\"ch\">#!python</span>\n<span class=\"nb\">print</span><span class=\"p\">(</span><span class=\"s2\">&quot;Hello World&quot;</span><span class=\"p\">)</span>\n</code></pre></div>",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code><span class=\"ch\">#!python</span>\n<span class=\"nb\">print</span><span class=\"p\">(</span><span class=\"s2\">\"Hello World\"</span><span class=\"p\">)</span>\n</code></pre></div>",
       "marked_expected_output": "<div class=\"codehilite\"><pre><span></span><code>#!python\nprint(&quot;Hello World&quot;)\n</code></pre></div>"
     },
     {
       "name": "codeblock_hilite_shebang_feature_no_path_2",
       "input": "```\n:::python\nprint(\"Hello World\")\n```",
-      "expected_output": "<div class=\"codehilite\"><pre><span></span><code><span class=\"p\">:::</span><span class=\"n\">python</span>\n<span class=\"nb\">print</span><span class=\"p\">(</span><span class=\"s2\">&quot;Hello World&quot;</span><span class=\"p\">)</span>\n</code></pre></div>",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code><span class=\"p\">:::</span><span class=\"n\">python</span>\n<span class=\"nb\">print</span><span class=\"p\">(</span><span class=\"s2\">\"Hello World\"</span><span class=\"p\">)</span>\n</code></pre></div>",
       "marked_expected_output": "<div class=\"codehilite\"><pre><span></span><code>:::python\nprint(&quot;Hello World&quot;)\n</code></pre></div>"
     },
     {
       "name": "codeblock_hilite_shebang_feature_with_path",
       "input": "```\n#!/usr/bin/python\nprint(\"Hello World\")\n```",
-      "expected_output": "<div class=\"codehilite\"><pre><span></span><code><span class=\"ch\">#!/usr/bin/python</span>\n<span class=\"nb\">print</span><span class=\"p\">(</span><span class=\"s2\">&quot;Hello World&quot;</span><span class=\"p\">)</span>\n</code></pre></div>",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code><span class=\"ch\">#!/usr/bin/python</span>\n<span class=\"nb\">print</span><span class=\"p\">(</span><span class=\"s2\">\"Hello World\"</span><span class=\"p\">)</span>\n</code></pre></div>",
       "marked_expected_output": "<div class=\"codehilite\"><pre><span></span><code>#!/usr/bin/python\nprint(&quot;Hello World&quot;)\n</code></pre></div>"
     },
     {

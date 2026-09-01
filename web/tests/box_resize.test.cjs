@@ -83,14 +83,14 @@ run_test("cleanup removes the handles it added", () => {
 
     cleanup();
     assert.equal(box.children.length, 1);
-    assert.equal(box.children[0], existing_child);
+    assert.equal(box.firstElementChild, existing_child);
 });
 
 run_test("right handle grows width by 2 * dx and does not touch height", () => {
     const box = make_box();
     box.set_rect(100, 80);
     box_resize.make_resizable(box, ["right"]);
-    const handle = box.children[0];
+    const handle = box.firstElementChild;
 
     fire(handle, "pointerdown", {clientX: 50, clientY: 40});
     fire(handle, "pointermove", {clientX: 60, clientY: 45});
@@ -105,7 +105,7 @@ run_test("left handle grows width when pointer moves leftward", () => {
     const box = make_box();
     box.set_rect(100, 80);
     box_resize.make_resizable(box, ["left"]);
-    const handle = box.children[0];
+    const handle = box.firstElementChild;
 
     fire(handle, "pointerdown", {clientX: 50, clientY: 40});
     // Dragging the left edge 15px to the left: the box grows symmetrically
@@ -119,7 +119,7 @@ run_test("top handle grows height when pointer moves upward", () => {
     const box = make_box();
     box.set_rect(100, 80);
     box_resize.make_resizable(box, ["top"]);
-    const handle = box.children[0];
+    const handle = box.firstElementChild;
 
     fire(handle, "pointerdown", {clientX: 50, clientY: 40});
     fire(handle, "pointermove", {clientX: 50, clientY: 30});
@@ -133,7 +133,7 @@ run_test("corner handle grows both dimensions with correct signs", () => {
     const box = make_box();
     box.set_rect(200, 100);
     box_resize.make_resizable(box, ["top_left"]);
-    const handle = box.children[0];
+    const handle = box.firstElementChild;
 
     fire(handle, "pointerdown", {clientX: 50, clientY: 50});
     // Move 5 left, 8 up: both dx_sign and dy_sign are -1 for top_left,
@@ -151,7 +151,7 @@ run_test("on_resize callback fires once per pointermove after pointerdown", () =
     box_resize.make_resizable(box, ["bottom_right"], () => {
         call_count += 1;
     });
-    const handle = box.children[0];
+    const handle = box.firstElementChild;
 
     fire(handle, "pointerdown", {clientX: 0, clientY: 0});
     assert.equal(call_count, 0);
@@ -168,7 +168,7 @@ run_test("pointerup stops subsequent pointermove events from resizing", () => {
     const box = make_box();
     box.set_rect(100, 80);
     box_resize.make_resizable(box, ["right"]);
-    const handle = box.children[0];
+    const handle = box.firstElementChild;
 
     fire(handle, "pointerdown", {clientX: 50, clientY: 40});
     fire(handle, "pointermove", {clientX: 60, clientY: 40});
@@ -184,7 +184,7 @@ run_test("pointercancel stops subsequent pointermove events from resizing", () =
     const box = make_box();
     box.set_rect(100, 80);
     box_resize.make_resizable(box, ["right"]);
-    const handle = box.children[0];
+    const handle = box.firstElementChild;
 
     fire(handle, "pointerdown", {clientX: 50, clientY: 40});
     fire(handle, "pointermove", {clientX: 60, clientY: 40});
@@ -214,7 +214,7 @@ run_test("resize clamps to CSS min and max bounds during a single drag", () => {
 
     try {
         box_resize.make_resizable(box, ["right"]);
-        const handle = box.children[0];
+        const handle = box.firstElementChild;
 
         fire(handle, "pointerdown", {clientX: 50, clientY: 40});
 

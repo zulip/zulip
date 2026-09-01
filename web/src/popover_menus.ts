@@ -2,7 +2,7 @@
    TippyJS/Popper popover library from the legacy Bootstrap
    popovers system in popovers.js. */
 
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as tippy from "tippy.js";
 
@@ -28,6 +28,7 @@ type PopoverName =
     | "stream_settings"
     | "scroll_to_time"
     | "topics_menu"
+    | "topic_links"
     | "send_later"
     | "change_visibility_policy"
     | "personal_menu"
@@ -54,6 +55,7 @@ export const popover_instances: Record<PopoverName, tippy.Instance | null> = {
     stream_settings: null,
     scroll_to_time: null,
     topics_menu: null,
+    topic_links: null,
     send_later: null,
     change_visibility_policy: null,
     personal_menu: null,
@@ -258,15 +260,6 @@ export const default_popover_props: Partial<tippy.Props> = {
                         $tippy_box.attr("data-reference-hidden") !== undefined;
 
                     if ($tippy_box.hasClass("show-when-reference-hidden")) {
-                        // Show user card popover as an overlay if we are not sure about position of the
-                        // reference. This can happen when popover reference has been replaced or hidden.
-                        if (
-                            is_reference_outside_window &&
-                            $tippy_box.find("#user_card_popover").length > 0
-                        ) {
-                            $("body").append($("<div>").attr("id", "popover-overlay-background"));
-                            instance.setProps(get_props_for_popover_centering(instance.props));
-                        }
                         return;
                     }
 

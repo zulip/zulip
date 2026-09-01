@@ -1,5 +1,5 @@
 // We only use jquery for parsing.
-import $ from "jquery";
+import {$} from "jquery";
 
 import type {Message} from "./message_store.ts";
 

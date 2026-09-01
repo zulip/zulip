@@ -281,7 +281,7 @@ commit should just move the code, not translate it to TypeScript).
 TypeScript provides more accurate information to development tools,
 allowing for better refactoring, auto-completion and static analysis.
 TypeScript also uses the ES6 module system. See our documentation on
-[TypeScript static types](../testing/typescript).
+[TypeScript static types](../testing/typescript.md).
 
 Webpack does not ordinarily allow modules to be accessed directly from
 the browser console, but for debugging convenience, we have a custom

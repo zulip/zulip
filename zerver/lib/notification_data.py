@@ -134,7 +134,7 @@ class UserMessageNotificationsData:
         #
         # Remove the `if` block when one can no longer directly upgrade from 11.x to main.
         if push_device_registered_user_ids is None:
-            push_device_registered = True
+            push_device_registered = True  # nocoverage
         else:
             push_device_registered = user_id in push_device_registered_user_ids
 
@@ -386,11 +386,18 @@ def get_mentioned_user_group(
 
     # We now want to calculate the name of the smallest user group mentioned among
     # all these messages.
-    smallest_user_group_size = math.inf
-    for user_group_id in mentioned_user_group_ids:
-        current_user_group = NamedUserGroup.objects.get(
-            id=user_group_id, realm_for_sharding=user_profile.realm
+    # Deduplicate IDs while preserving message order.
+    unique_user_group_ids = list(dict.fromkeys(mentioned_user_group_ids))
+    user_groups_by_id = {
+        user_group.id: user_group
+        for user_group in NamedUserGroup.objects.filter(
+            id__in=unique_user_group_ids, realm_for_sharding=user_profile.realm
         )
+    }
+
+    smallest_user_group_size = math.inf
+    for user_group_id in unique_user_group_ids:
+        current_user_group = user_groups_by_id[user_group_id]
         current_mentioned_user_group = MentionedUserGroup(
             id=current_user_group.id,
             name=current_user_group.name,

@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -207,15 +207,17 @@ export function topics_seen_for(stream_id?: number): string[] {
 }
 
 export function get_language_matcher(query: string): (language: string) => boolean {
-    query = query.toLowerCase();
+    // Filtering is diacritics-agnostic: strip diacritics from both the query
+    // and the language name so ASCII and diacritic spellings match each other.
+    query = typeahead.remove_diacritics(query.toLowerCase());
     return function (language: string): boolean {
-        return language.includes(query);
+        return typeahead.remove_diacritics(language.toLowerCase()).includes(query);
     };
 }
 
 export function get_stream_matcher(query: string): (stream: StreamPillData) => boolean {
     // Case-insensitive.
-    query = typeahead.clean_query_lowercase(query, false);
+    query = typeahead.clean_query_lowercase(query);
     const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
     return function (stream: StreamPillData) {
@@ -224,7 +226,7 @@ export function get_stream_matcher(query: string): (stream: StreamPillData) => b
 }
 
 export function get_slash_matcher(query: string): (item: SlashCommand) => boolean {
-    query = typeahead.clean_query_lowercase(query, false);
+    query = typeahead.clean_query_lowercase(query);
     const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
     return function (item: SlashCommand) {
@@ -246,7 +248,7 @@ export function get_slash_matcher(query: string): (item: SlashCommand) => boolea
 }
 
 function get_topic_matcher(query: string): (topic: string) => boolean {
-    query = typeahead.clean_query_lowercase(query, false);
+    query = typeahead.clean_query_lowercase(query);
     const should_remove_diacritics = !typeahead.contains_diacritics(query);
 
     return function (topic: string): boolean {
@@ -482,7 +484,8 @@ export function tokenize_compose_str(s: string): string {
                 // Code block must start on a new line
                 if (i === 2) {
                     return s;
-                } else if (i > 2 && s[i - 3] === "\n") {
+                }
+                if (i > 2 && s[i - 3] === "\n") {
                     return s.slice(i - 2);
                 }
                 break;
@@ -497,7 +500,8 @@ export function tokenize_compose_str(s: string): string {
             case "_":
                 if (i === 0) {
                     return s;
-                } else if (/[\s"'(/<[{]/.test(s[i - 1]!)) {
+                }
+                if (/[\s"'(/<[{]/.test(s[i - 1]!)) {
                     return s.slice(i);
                 }
                 break;
@@ -710,19 +714,17 @@ function filter_persons<T>(
 }
 
 export function get_person_suggestion_for_topic_typeahead(query: string): UserPillData[] {
-    query = typeahead.clean_query_lowercase(query, false);
-    const should_remove_diacritics = !typeahead.contains_diacritics(query);
+    query = typeahead.clean_query_lowercase(query);
 
     const filterer = (person_items: UserPillData[]): UserPillData[] =>
         person_items.filter((item) =>
-            typeahead_helper.query_matches_person_name(query, item, should_remove_diacritics, true),
+            typeahead_helper.query_matches_person_name(query, item, true),
         );
 
     const current_narrow_participant_ids = message_lists.current?.data.participants.visible();
 
     let filtered_persons;
     let participants_people;
-    let dm_people;
 
     if (current_narrow_participant_ids) {
         // Check DM permissions for the user suggestion only, since we
@@ -743,7 +745,7 @@ export function get_person_suggestion_for_topic_typeahead(query: string): UserPi
     }
 
     if (!(filtered_persons && filtered_persons?.length >= 3)) {
-        dm_people = util.try_parse_as_truthy(
+        const dm_people = util.try_parse_as_truthy(
             pm_conversations
                 .get_partners()
                 .filter(
@@ -783,8 +785,7 @@ export function get_person_suggestions(
     opts: PersonSuggestionOpts,
     exclude_non_welcome_bots = false,
 ): (UserOrMentionPillData | UserGroupPillData)[] {
-    query = typeahead.clean_query_lowercase(query, false);
-    const should_remove_diacritics = !typeahead.contains_diacritics(query);
+    query = typeahead.clean_query_lowercase(query);
 
     let groups: UserGroup[];
     if (opts.filter_groups_for_mention) {
@@ -823,7 +824,7 @@ export function get_person_suggestions(
     }));
 
     const filtered_groups = group_pill_data.filter((item) =>
-        typeahead_helper.query_matches_group_name(query, item, should_remove_diacritics),
+        typeahead_helper.query_matches_group_name(query, item),
     );
 
     const user = people.get_from_unique_full_name(query);
@@ -880,7 +881,6 @@ export function get_person_suggestions(
             typeahead_helper.query_matches_person(
                 query,
                 item,
-                should_remove_diacritics,
                 undefined,
                 opts.allow_custom_profile_field_matching,
             ),
@@ -980,6 +980,7 @@ const ALLOWED_MARKDOWN_FEATURES = {
 export function get_candidates(
     query: string,
     input_element: TypeaheadInputElement,
+    typeahead_instance: Typeahead<TypeaheadSuggestion>,
 ): TypeaheadSuggestion[] {
     const split = split_at_cursor(query, input_element.$element);
     let current_token: string | boolean = tokenize_compose_str(split[0]);
@@ -994,7 +995,7 @@ export function get_candidates(
     // already-completed object.
 
     // We will likely want to extend this list to be more i18n-friendly.
-    const terminal_symbols = ",.;?!()[]> \u00A0\"'\n\t";
+    const terminal_symbols = ",.;?!()[]> \u{A0}\"'\n\t";
     if (rest !== "" && !terminal_symbols.includes(rest[0]!)) {
         return [];
     }
@@ -1008,7 +1009,7 @@ export function get_candidates(
         if (
             current_token.length === 3 &&
             !compose_ui.code_formatting_button_triggered &&
-            !compose_ui.compose_textarea_typeahead?.shown
+            !typeahead_instance.shown
         ) {
             return [];
         }
@@ -1126,19 +1127,50 @@ export function get_candidates(
             ];
         }
 
-        // Matches '#**stream name>some text' at the end of a split.
-        const stream_topic_regex = /#\*\*([^*>]+)>([^*\n]*)$/;
+        // Matches an in-progress (unterminated) '#**stream name>some text' mention
+        // where the closing '**' hasn't been typed yet.
+        const partial_stream_topic_regex = /#\*\*([^*>]+)>([^*\n]*)$/;
         // Matches '#>some text', which is a shortcut to
         // link to topics in the channel currently composing to.
         // `>` is enclosed in a capture group to use the below
         // code path for both syntaxes.
-        const shortcut_regex = /#(>)([^*\n]*)$/;
+        const topic_shortcut_regex = /#(>)([^*\n]*)$/;
         // Matches '[#channel](url)>some text' at the end of a split.
-        const fallback_stream_topic_regex = /(\[#)([^*>]+)]\(#[^)]*\)>([^*\n]*)$/;
-        const fallback_tokens = fallback_stream_topic_regex.exec(split[0]);
-        const stream_topic_tokens = stream_topic_regex.exec(split[0]);
-        const topic_shortcut_tokens = shortcut_regex.exec(split[0]);
-        const tokens = stream_topic_tokens ?? topic_shortcut_tokens ?? fallback_tokens;
+        const partial_fallback_stream_topic_regex = /(\[#)([^*>]+)]\(#[^)]*\)>([^*\n]*)$/;
+        // Matches a complete '#**stream name**' link, optionally followed
+        // by a topic query; reopening the typeahead here offers topic
+        // completion. The query must start immediately after the link —
+        // leading whitespace is rejected so an older link on the line
+        // can't match across message text and suppress other typeaheads.
+        // It excludes `>` to stay non-overlapping with topic_jump above.
+        const complete_stream_regex = /#\*\*([^*>]+)\*\*((?!\s)[^*>\n]*)$/;
+        // Matches the '[#channel](url)' fallback link for special characters.
+        const complete_fallback_stream_regex = /(\[#)([^*>]+)]\(#[^)]*\)((?!\s)[^*>\n]*)$/;
+        const partial_fallback_stream_topic_tokens = partial_fallback_stream_topic_regex.exec(
+            split[0],
+        );
+        const partial_stream_topic_tokens = partial_stream_topic_regex.exec(split[0]);
+        const topic_shortcut_tokens = topic_shortcut_regex.exec(split[0]);
+        // A complete link is a valid final form, so only trigger topic
+        // completion while the typeahead is already open (the reopen flow
+        // after picking a channel), not when the cursor lands after an
+        // existing link.
+        const typeahead_already_shown = compose_ui.compose_textarea_typeahead?.shown ?? false;
+        const complete_channel_link_tokens = typeahead_already_shown
+            ? complete_stream_regex.exec(split[0])
+            : null;
+        const complete_fallback_link_tokens = typeahead_already_shown
+            ? complete_fallback_stream_regex.exec(split[0])
+            : null;
+        const tokens =
+            partial_stream_topic_tokens ?? // #**channel>topic
+            topic_shortcut_tokens ?? // #>topic
+            partial_fallback_stream_topic_tokens ?? // [#channel](url)>topic
+            complete_channel_link_tokens ?? // #**channel**
+            complete_fallback_link_tokens; // [#channel](url)
+        const is_complete_channel_link =
+            tokens !== null &&
+            (tokens === complete_channel_link_tokens || tokens === complete_fallback_link_tokens);
         const should_begin_typeahead = tokens !== null;
         if (should_begin_typeahead) {
             completing = "topic_list";
@@ -1178,6 +1210,15 @@ export function get_candidates(
             }
             // If we aren't composing to a channel, `sub` would be undefined.
             if (sub !== undefined) {
+                if (
+                    is_complete_channel_link &&
+                    stream_data.is_empty_topic_only_channel(sub.stream_id)
+                ) {
+                    // This channel only allows the empty topic, so the
+                    // complete channel link is the final form; don't offer
+                    // topic completion.
+                    return [];
+                }
                 // We always show topic suggestions after the user types a stream, and let them
                 // pick between just showing the stream (the first option, when nothing follows ">")
                 // or adding a topic.
@@ -1278,9 +1319,8 @@ export function get_candidates(
 }
 
 export function content_item_html(
-    query: string,
+    _query: string,
 ): (item: TypeaheadSuggestion) => string | undefined {
-    const should_remove_diacritics = !typeahead.contains_diacritics(query);
     return function (item: TypeaheadSuggestion): string | undefined {
         switch (item.type) {
             case "emoji":
@@ -1290,7 +1330,6 @@ export function content_item_html(
             case "broadcast":
                 return typeahead_helper.render_person_or_user_group(item, {
                     query: token,
-                    should_remove_diacritics,
                 });
             case "slash":
                 return typeahead_helper.render_typeahead_item({
@@ -1415,7 +1454,7 @@ export function content_typeahead_selected(
         case "slash":
             beginning = beginning.slice(0, -token.length - 1) + "/" + item.name + " ";
             if (item.placeholder) {
-                beginning = beginning + item.placeholder;
+                beginning += item.placeholder;
                 highlight.start = item.name.length + 2;
                 highlight.end = highlight.start + item.placeholder.length;
             }
@@ -1431,16 +1470,22 @@ export function content_typeahead_selected(
                 sub && stream_data.is_empty_topic_only_channel(sub.stream_id);
             const is_greater_than_key_pressed = event?.type === "keydown" && event.key === ">";
 
-            // For empty topic only channel, skip showing topic typeahead and
-            // insert direct channel link.
-            if (is_empty_topic_only_channel && !is_greater_than_key_pressed) {
-                beginning += topic_link_util.get_stream_link_syntax(item.name);
-            } else if (topic_link_util.will_produce_broken_stream_topic_link(item.name)) {
-                // for stream links, we use markdown link syntax if the #**stream** syntax
-                // will generate a broken url.
-                beginning += topic_link_util.get_fallback_markdown_link(item.name) + ">";
+            // For an empty-topic-only channel, the user pressed ">" to
+            // explicitly request a topic, so insert the partial syntax to
+            // open topic completion.
+            if (is_empty_topic_only_channel && is_greater_than_key_pressed) {
+                if (topic_link_util.will_produce_broken_stream_topic_link(item.name)) {
+                    // for stream links, we use markdown link syntax if the #**stream** syntax
+                    // will generate a broken url.
+                    beginning += topic_link_util.get_fallback_markdown_link(item.name) + ">";
+                } else {
+                    beginning += "#**" + item.name + ">";
+                }
             } else {
-                beginning += "#**" + item.name + ">";
+                // Insert a complete channel link; the topic typeahead reopens
+                // to offer topic completion, so dismissing it leaves a valid
+                // link rather than broken `#**channel>` syntax.
+                beginning += topic_link_util.get_stream_link_syntax(item.name);
             }
 
             void compose_validate.warn_if_private_stream_is_linked(item, $textbox);
@@ -1463,7 +1508,7 @@ export function content_typeahead_selected(
             // If there is more text after the cursor, then don't
             // touch "rest" (i.e. do not add a closing fence)
             if (rest === "") {
-                beginning = beginning + "\n";
+                beginning += "\n";
                 rest = "\n" + beginning.slice(Math.max(0, backticks - 4), backticks).trim() + rest;
             }
             break;
@@ -1483,11 +1528,12 @@ export function content_typeahead_selected(
         }
         case "topic_list": {
             // If we use "Escape" we would want `#**design>this is a design topic` to be
-            // resolved to `#**design** this is a design topic`
+            // resolved to `#**design** this is a design topic`, i.e. a link to the
+            // channel followed by the partially typed topic as plain text.
             if (event?.key === "Escape") {
-                const topic_start_index = beginning.lastIndexOf(">");
-                const topic = beginning.slice(topic_start_index + 1);
-                beginning = beginning.slice(0, topic_start_index) + "** " + topic;
+                const syntax_start_index = beginning.lastIndexOf(item.used_syntax_prefix);
+                const stream_link = topic_link_util.get_stream_link_syntax(item.stream_data.name);
+                beginning = beginning.slice(0, syntax_start_index) + stream_link + " " + token;
                 break;
             }
 
@@ -1590,7 +1636,7 @@ export function should_suppress_topic_typeahead(
     const normalize = (topic: string): string =>
         util.get_final_topic_display_name(topic).trim().toLowerCase();
     const normalized_query = normalize(query);
-    if (!topics.some((topic) => normalize(topic) === normalized_query)) {
+    if (topics.every((topic) => normalize(topic) !== normalized_query)) {
         return false;
     }
     // Suppress only if every topic is either the one the user already
@@ -1657,7 +1703,7 @@ export function initialize_topic_edit_typeahead(
 }
 
 function get_footer_html(): string | false {
-    let tip_text = "";
+    let tip_text;
     switch (completing) {
         case "silent_mention":
             tip_text = $t({defaultMessage: "This silent mention won't trigger notifications."});
@@ -1702,7 +1748,7 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
         type: "textarea",
     };
 
-    compose_ui.set_compose_textarea_typeahead(
+    compose_ui.maybe_set_compose_textarea_typeahead(
         new Typeahead(bootstrap_typeahead_input, {
             items: max_num_items,
             dropup: true,
@@ -1737,7 +1783,8 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
                         item.language === realm.realm_default_code_block_language
                     ) {
                         return `<em>${$t({defaultMessage: "(default)"})}</em>`;
-                    } else if (item.language === "text") {
+                    }
+                    if (item.language === "text") {
                         return `<em>${$t({defaultMessage: "(no highlighting)"})}</em>`;
                     }
                 }
@@ -1883,7 +1930,8 @@ export function initialize({
         ): string | false {
             if (typeof item !== "string" && item.type === "user") {
                 return `<em>${$t({defaultMessage: "DM"})}</em>`;
-            } else if (!matching_items.includes(item)) {
+            }
+            if (!matching_items.includes(item)) {
                 return `<em>${$t({defaultMessage: "New"})}</em>`;
             }
             return false;

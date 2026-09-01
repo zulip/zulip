@@ -1,6 +1,6 @@
 <div id="channel-subscription-permissions" class="settings-subsection-parent">
-    <div class="channel-subscription-permissions-title-container {{#if is_stream_edit}}subsection-header{{/if}}">
-        <h4 class="stream_setting_subsection_title">{{t "Subscription permissions"}}</h4>
+    <div class="subsection-header">
+        <h3 class="settings-subsection-title">{{t "Subscription management"}}</h3>
         {{#if is_stream_edit}}
             {{> ../settings/settings_save_discard_widget section_name="subscription-permissions" show_save_discard_buttons=true}}
         {{/if}}
@@ -36,11 +36,26 @@
       setting_name="can_remove_subscribers_group"
       label=group_setting_labels.can_remove_subscribers_group
       prefix=prefix }}
+
+    {{#unless is_stream_edit}}
+        {{#if is_admin}}
+        <div class="default-push-notifications">
+            {{> ../settings/settings_checkbox
+              prefix=prefix
+              setting_name="default_push_notifications"
+              is_checked=false
+              is_disabled=disable_push_notifications
+              label=(t "Mobile push notifications enabled by default")
+              tooltip_message=push_notifications_tooltip
+              }}
+        </div>
+        {{/if}}
+    {{/unless}}
 </div>
 
 <div id="channel-messaging-permissions" class="settings-subsection-parent">
-    <div class="channel-messaging-permissions-title-container {{#if is_stream_edit}}subsection-header{{/if}}">
-        <h4 class="stream_setting_subsection_title">{{t "Messaging permissions"}}</h4>
+    <div class="subsection-header">
+        <h3 class="settings-subsection-title">{{t "Messaging permissions"}}</h3>
         {{#if is_stream_edit}}
             {{> ../settings/settings_save_discard_widget section_name="messaging-permissions" show_save_discard_buttons=true}}
         {{/if}}
@@ -68,8 +83,8 @@
 </div>
 
 <div id="channel-moderation-permissions" class="settings-subsection-parent">
-    <div class="channel-moderation-permissions-title-container {{#if is_stream_edit}}subsection-header{{/if}}">
-        <h4 class="stream_setting_subsection_title">{{t "Moderation permissions"}}</h4>
+    <div class="subsection-header">
+        <h3 class="settings-subsection-title">{{t "Moderation permissions"}}</h3>
         {{#if is_stream_edit}}
             {{> ../settings/settings_save_discard_widget section_name="moderation-permissions" show_save_discard_buttons=true}}
         {{/if}}
@@ -102,8 +117,8 @@
 </div>
 
 <div id="channel-administrative-permissions" class="settings-subsection-parent">
-    <div class="channel-administrative-permissions-title-container {{#if is_stream_edit}}subsection-header{{/if}}">
-        <h4 class="stream_setting_subsection_title">{{t "Administrative permissions"}}</h4>
+    <div class="subsection-header">
+        <h3 class="settings-subsection-title">{{t "Administrative permissions"}}</h3>
         {{#if is_stream_edit}}
             {{> ../settings/settings_save_discard_widget section_name="administrative-permissions" show_save_discard_buttons=true}}
         {{/if}}

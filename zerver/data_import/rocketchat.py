@@ -498,7 +498,7 @@ def process_message_attachment(
     user_id: int,
     zerver_attachment: list[AttachmentRecordData],
     uploads_list: list[UploadRecordData],
-    attachment_lookup: Callable[[str], None | tuple[dict[str, Any], Iterator[bytes]]],
+    attachment_lookup: Callable[[str], tuple[dict[str, Any], Iterator[bytes]] | None],
     output_dir: str,
 ) -> tuple[str, bool]:
     attachment_data = attachment_lookup(upload["_id"])
@@ -582,7 +582,7 @@ def process_raw_message_batch(
     total_reactions: list[ZerverFieldsT],
     uploads_list: list[UploadRecordData],
     zerver_attachment: list[AttachmentRecordData],
-    attachment_lookup: Callable[[str], None | tuple[dict[str, Any], Iterator[bytes]]],
+    attachment_lookup: Callable[[str], tuple[dict[str, Any], Iterator[bytes]] | None],
 ) -> None:
     def fix_mentions(
         content: str, mention_user_ids: set[int], rc_channel_mention_data: list[dict[str, str]]
@@ -739,7 +739,7 @@ def process_messages(
     total_reactions: list[ZerverFieldsT],
     uploads_list: list[UploadRecordData],
     zerver_attachment: list[AttachmentRecordData],
-    attachment_lookup: Callable[[str], None | tuple[dict[str, Any], Iterator[bytes]]],
+    attachment_lookup: Callable[[str], tuple[dict[str, Any], Iterator[bytes]] | None],
     output_dir: str,
 ) -> None:
     private_channels_set = {
@@ -1240,7 +1240,7 @@ def do_convert_data(rocketchat_data_dir: str, output_dir: str) -> None:
 
         chunk_index = _build_chunk_index(chunks_fh)
 
-        def attachment_lookup(file_id: str) -> None | tuple[dict[str, Any], Iterator[bytes]]:
+        def attachment_lookup(file_id: str) -> tuple[dict[str, Any], Iterator[bytes]] | None:
             if file_id not in upload_index:  # nocoverage
                 return None
 

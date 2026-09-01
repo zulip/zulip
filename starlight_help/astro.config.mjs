@@ -65,7 +65,7 @@ function createRedirectPlugin() {
                             // run-dev being run with `--only-help-center` flag.
                             if (redirectUrl.port !== proxyPort) {
                                 redirectUrl.port = proxyPort;
-                                res.writeHead(302, {Location: redirectUrl.toString()});
+                                res.writeHead(302, {Location: redirectUrl.href});
                                 res.end();
                                 return;
                             }
@@ -601,6 +601,7 @@ export default defineConfig({
                         "change-the-channel-description",
                         "pin-information",
                         "change-the-privacy-of-a-channel",
+                        "enable-mobile-notifications-by-default",
                         {
                             label: "Delete or archive a channel",
                             link: "/archive-a-channel",

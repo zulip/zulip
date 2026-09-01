@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -150,7 +150,6 @@ function get_key(event: TypingEvent): string {
     }
     if (event.message_type === "direct") {
         const recipients = event.recipients.map((user) => user.user_id);
-        recipients.sort();
         return typing_data.get_direct_message_conversation_key(recipients);
     }
     throw new Error("Invalid typing notification type", event);

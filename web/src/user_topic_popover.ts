@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import render_change_visibility_policy_popover from "../templates/popovers/change_visibility_policy_popover.hbs";
@@ -92,11 +92,11 @@ export function initialize(): void {
 
             popover_menus.focus_popover(instance);
 
-            $popper.on("change", "input[name='visibility-policy-select']", (e) => {
+            $popper.on("change", "input[name='visibility-policy-select']", function () {
                 const start_time = Date.now();
 
                 const visibility_policy = Number.parseInt(
-                    $(e.currentTarget).attr("data-visibility-policy")!,
+                    $(this).attr("data-visibility-policy")!,
                     10,
                 );
 
@@ -115,7 +115,7 @@ export function initialize(): void {
                         stream_id,
                         topic_name,
                     );
-                    const $prev_visibility_policy_input = $(e.currentTarget)
+                    const $prev_visibility_policy_input = $(this)
                         .parent()
                         .find(`input[data-visibility-policy="${prev_visibility_policy}"]`);
                     setTimeout(

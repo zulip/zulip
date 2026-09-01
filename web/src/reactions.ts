@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -388,7 +388,7 @@ export let insert_new_reaction = (
     // If the given reaction is the first reaction in a message, then we add
     // the whole message reactions section along with the new reaction.
     // Else, we insert the new reaction before the add reaction button.
-    if (message.clean_reactions.size - 1 === 0) {
+    if (message.clean_reactions.size === 1) {
         const $rows = message_lists.all_rendered_row_for_message_id(message.id);
         const reaction_section_context = {
             msg: {
@@ -516,7 +516,7 @@ export function get_emojis_used_by_user_for_message_id(message_id: number): stri
 
 export function get_message_reactions(message: Message): MessageCleanReaction[] {
     update_clean_reactions(message);
-    return [...message.clean_reactions.values()];
+    return message.clean_reactions.values().toArray();
 }
 
 export function generate_clean_reactions(
@@ -559,14 +559,17 @@ export function generate_clean_reactions(
 
     const clean_reactions = new Map<string, MessageCleanReaction>();
 
-    const reaction_counts_and_user_ids = [...distinct_reactions.keys()].map((local_id) => {
-        const user_ids = user_map.get(local_id);
-        assert(user_ids !== undefined);
-        return {
-            count: user_ids.length,
-            user_ids,
-        };
-    });
+    const reaction_counts_and_user_ids = distinct_reactions
+        .keys()
+        .map((local_id) => {
+            const user_ids = user_map.get(local_id);
+            assert(user_ids !== undefined);
+            return {
+                count: user_ids.length,
+                user_ids,
+            };
+        })
+        .toArray();
     const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
 
     for (const local_id of distinct_reactions.keys()) {
@@ -661,14 +664,14 @@ export function update_user_fields(
     // who reacted on a message might have changed, including due to
     // upvote/downvotes on ANY reaction in the message, because those
     // can change the correct value of should_display_reactors to use.
-    Object.assign(clean_reaction_object, {
-        ...clean_reaction_object,
-        ...build_reaction_data(
+    Object.assign(
+        clean_reaction_object,
+        build_reaction_data(
             clean_reaction_object.user_ids,
             clean_reaction_object.emoji_name,
             should_display_reactors,
         ),
-    });
+    );
 }
 
 type ReactionUserIdAndCount = {
@@ -677,10 +680,13 @@ type ReactionUserIdAndCount = {
 };
 
 function get_reaction_counts_and_user_ids(message: Message): ReactionUserIdAndCount[] {
-    return [...message.clean_reactions.values()].map((reaction) => ({
-        count: reaction.count,
-        user_ids: reaction.user_ids,
-    }));
+    return message.clean_reactions
+        .values()
+        .map((reaction) => ({
+            count: reaction.count,
+            user_ids: reaction.user_ids,
+        }))
+        .toArray();
 }
 
 export function get_vote_text(user_ids: number[], should_display_reactors: boolean): string {
@@ -726,7 +732,7 @@ export let update_vote_text_on_message = (message: Message): void => {
     update_clean_reactions(message);
     const reaction_counts_and_user_ids = get_reaction_counts_and_user_ids(message);
     const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
-    for (const [reaction, clean_reaction] of message.clean_reactions.entries()) {
+    for (const [reaction, clean_reaction] of message.clean_reactions) {
         const reaction_elem = find_reaction(message.id, clean_reaction.local_id);
         const vote_text = get_vote_text(clean_reaction.user_ids, should_display_reactors);
         const message_clean_reaction = message.clean_reactions.get(reaction);
@@ -748,7 +754,7 @@ export function update_user_full_name(user_id: number): void {
     // vote text may contain display names.
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         for (const message of msg_list.all_messages()) {
-            if ([...message.clean_reactions.values()].some((r) => r.user_ids.includes(user_id))) {
+            if (message.clean_reactions.values().some((r) => r.user_ids.includes(user_id))) {
                 update_vote_text_on_message(message);
             }
         }

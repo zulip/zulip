@@ -57,7 +57,7 @@ write, including tests and documentation, if you use the right process.
 
 ## Hello world walkthrough
 
-Check out [this detailed guide](incoming-webhooks-walkthrough) for
+Check out [this detailed guide](incoming-webhooks-walkthrough.md) for
 step-by-step instructions on developing an incoming webhook integration.
 
 ## Checklist
@@ -74,7 +74,8 @@ examples below are for an incoming webhook named `MyWebHook`.
   necessary helper functions.
 - `zerver/webhooks/mywebhook/fixtures/message_type.json`: A sample
   of payload data, from the third-party service, used by tests. Add
-  one fixture file per event type supported by your integration.
+  fixtures covering the event types and conditions your integration
+  supports.
 - `zerver/webhooks/mywebhook/tests.py`: Tests for your webhook.
 - `zerver/webhooks/mywebhook/doc.md`: End-user documentation explaining
   how to set up the integration.
@@ -134,12 +135,6 @@ configured! 🎉"
 - Sometimes it can be helpful to contact the third-party service if it
   appears they don't have an API or outgoing webhook you can use.
   Sometimes the API you're looking for is just not properly documented.
-- A helpful tool for testing your integration is [UltraHook](http://www.ultrahook.com/),
-  which allows you to receive webhook calls via your local Zulip
-  development environment. This enables you to do end-to-end testing with
-  live data from the third-party service you're integrating, and can help
-  you spot why something isn't working or if the service is using [custom
-  HTTP headers](incoming-webhooks-reference.md#custom-http-headers).
 
 ## URL specification
 

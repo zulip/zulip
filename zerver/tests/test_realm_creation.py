@@ -146,9 +146,9 @@ class DemoCreationTest(ZulipTestCase):
         result = self.client_get("/new/demo/")
         self.assert_not_in_success_response(["Validation failed"], result)
 
-        # Without the CAPTCHA value, we get an error
+        # Without the CAPTCHA value, we get a single error
         result = self.submit_demo_creation_form()
-        self.assert_in_success_response(["Validation failed, please try again."], result)
+        self.assertEqual(result.content.decode().count("Validation failed, please try again."), 1)
 
         # With an invalid value, we also get an error
         with self.assertLogs(level="WARNING") as logs:
@@ -173,7 +173,7 @@ class DemoCreationTest(ZulipTestCase):
         # If we override the validation, we get an error because it's not in the session
         payload = base64.b64encode(orjson.dumps({"challenge": "moose"})).decode()
         with (
-            patch("zerver.forms.verify_solution", return_value=(True, None)) as verify,
+            patch("zerver.lib.captcha.verify_solution", return_value=(True, None)) as verify,
             self.assertLogs(level="WARNING") as logs,
         ):
             result = self.submit_demo_creation_form(captcha=payload)
@@ -186,7 +186,7 @@ class DemoCreationTest(ZulipTestCase):
         result = self.client_get("/json/antispam_challenge")
         data = self.assert_json_success(result)
         self.assertEqual(data["algorithm"], "SHA-256")
-        self.assertEqual(data["max_number"], 500000)
+        self.assertEqual(data["maxNumber"], 500000)
         self.assertIn("signature", data)
         self.assertIn("challenge", data)
         self.assertIn("salt", data)
@@ -197,7 +197,7 @@ class DemoCreationTest(ZulipTestCase):
         # Update the payload so the challenge matches what is in the
         # session.  The real payload would have other keys.
         payload = base64.b64encode(orjson.dumps({"challenge": data["challenge"]})).decode()
-        with patch("zerver.forms.verify_solution", return_value=(True, None)) as verify:
+        with patch("zerver.lib.captcha.verify_solution", return_value=(True, None)) as verify:
             result = self.submit_demo_creation_form(captcha=payload)
             self.assertEqual(result.status_code, 302)
             verify.assert_called_once_with(payload, "secret", check_expires=True)
@@ -1149,11 +1149,11 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_get("/new/")
         self.assert_not_in_success_response(["Validation failed"], result)
 
-        # Without the CAPTCHA value, we get an error
+        # Without the CAPTCHA value, we get a single error
         result = self.submit_realm_creation_form(
             email, realm_subdomain=string_id, realm_name=realm_name
         )
-        self.assert_in_success_response(["Validation failed, please try again."], result)
+        self.assertEqual(result.content.decode().count("Validation failed, please try again."), 1)
 
         # With an invalid value, we also get an error
         with self.assertLogs(level="WARNING") as logs:
@@ -1183,7 +1183,7 @@ class RealmCreationTest(ZulipTestCase):
         # If we override the validation, we get an error because it's not in the session
         payload = base64.b64encode(orjson.dumps({"challenge": "moose"})).decode()
         with (
-            patch("zerver.forms.verify_solution", return_value=(True, None)) as verify,
+            patch("zerver.lib.captcha.verify_solution", return_value=(True, None)) as verify,
             self.assertLogs(level="WARNING") as logs,
         ):
             result = self.submit_realm_creation_form(
@@ -1198,7 +1198,7 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_get("/json/antispam_challenge")
         data = self.assert_json_success(result)
         self.assertEqual(data["algorithm"], "SHA-256")
-        self.assertEqual(data["max_number"], 500000)
+        self.assertEqual(data["maxNumber"], 500000)
         self.assertIn("signature", data)
         self.assertIn("challenge", data)
         self.assertIn("salt", data)
@@ -1209,7 +1209,19 @@ class RealmCreationTest(ZulipTestCase):
         # Update the payload so the challenge matches what is in the
         # session.  The real payload would have other keys.
         payload = base64.b64encode(orjson.dumps({"challenge": data["challenge"]})).decode()
-        with patch("zerver.forms.verify_solution", return_value=(True, None)) as verify:
+
+        # A failure in some other field does not consume the solved
+        # challenge; it is not even validated.
+        with patch("zerver.lib.captcha.verify_solution", return_value=(True, None)) as verify:
+            result = self.submit_realm_creation_form(
+                "invalid", realm_subdomain=string_id, realm_name=realm_name, captcha=payload
+            )
+            self.assert_in_success_response(["Enter a valid email address."], result)
+            verify.assert_not_called()
+        self.assert_length(self.client.session["altcha_challenges"], 1)
+
+        # The same solved challenge is accepted once the form is valid.
+        with patch("zerver.lib.captcha.verify_solution", return_value=(True, None)) as verify:
             result = self.submit_realm_creation_form(
                 email, realm_subdomain=string_id, realm_name=realm_name, captcha=payload
             )
@@ -1218,3 +1230,13 @@ class RealmCreationTest(ZulipTestCase):
 
         # And the challenge has been stripped out of the session
         self.assertEqual(self.client.session["altcha_challenges"], [])
+
+    @override_settings(OPEN_REALM_CREATION=True, USING_CAPTCHA=True, ALTCHA_HMAC_KEY="")
+    def test_create_realm_captcha_without_secret(self) -> None:
+        # With USING_CAPTCHA enabled but no altcha_hmac secret
+        # configured, the captcha is disabled entirely, rather than
+        # rendering a widget whose solutions the server could never
+        # validate.
+        result = self.client_get("/new/")
+        self.assertEqual(result.status_code, 200)
+        self.assert_not_in_success_response(["altcha-widget"], result)

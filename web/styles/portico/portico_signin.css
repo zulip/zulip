@@ -496,14 +496,14 @@ html {
 
     .alert {
         &:not(
-                #server-deactivate-error,
-                #server-login-error,
-                .alert-info,
-                .billing-page-success,
-                .upgrade-page-success,
-                .sponsorship-page-success,
-                #autopay-error
-            ) {
+            #server-deactivate-error,
+            #server-login-error,
+            .alert-info,
+            .billing-page-success,
+            .upgrade-page-success,
+            .sponsorship-page-success,
+            #autopay-error
+        ) {
             padding: 0;
             margin-bottom: 5px;
             font-weight: 600;
@@ -1790,7 +1790,8 @@ button#register_auth_button_gitlab {
 }
 
 #demo-realm-creation #demo-submit-button-container,
-#new-realm-creation #altcha-submit-button-container {
+#new-realm-creation #altcha-submit-button-container,
+.altcha-button-box {
     margin-bottom: 30px;
 }
 

@@ -15,6 +15,7 @@ from django.utils.timezone import now as timezone_now
 from confirmation.models import Confirmation
 from corporate.lib.stripe import get_latest_seat_count
 from zerver.actions.create_user import do_create_user, do_reactivate_user
+from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
 from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
 from zerver.actions.message_send import RecipientInfoResult, get_recipient_info
 from zerver.actions.muted_users import do_mute_user
@@ -63,11 +64,12 @@ from zerver.lib.users import (
     Account,
     access_user_by_id,
     access_user_by_id_including_cross_realm,
+    bulk_get_subscribers_of_target_user_subscriptions,
     check_can_access_user,
+    get_accessible_user_ids,
     get_accounts_for_email,
     get_cross_realm_dicts,
     get_inaccessible_user_ids,
-    get_users_involved_in_dms_with_target_users,
     user_ids_to_users,
 )
 from zerver.lib.utils import assert_is_not_none
@@ -999,7 +1001,7 @@ class PermissionTest(ZulipTestCase):
         empty_profile_data = []
         for field_name in fields:
             field = CustomProfileField.objects.get(name=field_name, realm=realm)
-            value: str | None | list[Any] = ""
+            value: str | list[Any] | None = ""
             if field.field_type == CustomProfileField.USER:
                 value = []
             empty_profile_data.append(
@@ -1737,7 +1739,7 @@ class UserProfileTest(ZulipTestCase):
         for onboarding_step in onboarding_steps_completed:
             OnboardingStep.objects.create(user=cordelia, onboarding_step=onboarding_step)
 
-        # Check that we didn't send an realm_user update events to
+        # Check that we didn't send any realm_user update events to
         # users; this work is happening before the user account is
         # created, so any changes will be reflected in the "add" event
         # introducing the user to clients.
@@ -1795,7 +1797,7 @@ class UserProfileTest(ZulipTestCase):
         realm_user_default.enter_sends = True
         realm_user_default.save()
 
-        # Check that we didn't send an realm_user update events to
+        # Check that we didn't send any realm_user update events to
         # users; this work is happening before the user account is
         # created, so any changes will be reflected in the "add" event
         # introducing the user to clients.
@@ -1821,7 +1823,7 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(cross_realm_bot.email, bot.email)
         self.assertEqual(cross_realm_bot.id, bot.id)
 
-        # Pass in the ID of a cross-realm bot but with a invalid realm,
+        # Pass in the ID of a cross-realm bot but with an invalid realm,
         # note that the realm should be irrelevant here
         cross_realm_bot = get_user_by_id_in_realm_including_cross_realm(bot.id, None)
         self.assertEqual(cross_realm_bot.email, bot.email)
@@ -2499,10 +2501,12 @@ class ActivateTest(ZulipTestCase):
         self.assertEqual(
             info_log.output,
             [
-                f"WARNING:zulip.send_email:ScheduledEmail {email_id} at {scheduled_at} "
-                "had empty users and address attributes: "
-                "{'template_prefix': 'zerver/emails/onboarding_zulip_topics', 'from_name': None, "
-                "'from_address': None, 'language': None, 'context': {}}"
+                (
+                    f"WARNING:zulip.send_email:ScheduledEmail {email_id} at {scheduled_at} "
+                    "had empty users and address attributes: "
+                    "{'template_prefix': 'zerver/emails/onboarding_zulip_topics', 'from_name': None, "
+                    "'from_address': None, 'language': None, 'context': {}}"
+                )
             ],
         )
 
@@ -2926,7 +2930,7 @@ class RecipientInfoTest(ZulipTestCase):
             um_eligible_user_ids=all_user_ids,
             long_term_idle_user_ids=set(),
             default_bot_user_ids=set(),
-            service_bot_tuples=[],
+            message_triggered_bot_tuples=[],
             all_bot_user_ids=set(),
             topic_participant_user_ids=set(),
             sender_muted_stream=False,
@@ -3149,9 +3153,9 @@ class RecipientInfoTest(ZulipTestCase):
         self.assertEqual(info.stream_push_user_ids, set())
         self.assertEqual(info.stream_wildcard_mention_user_ids, {othello.id})
 
-        # Add a service bot.
-        service_bot = do_create_user(
-            email="service-bot@zulip.com",
+        # Add a message-triggered bot.
+        message_triggered_bot = do_create_user(
+            email="message-triggered-bot@zulip.com",
             password="",
             realm=realm,
             full_name="",
@@ -3164,12 +3168,12 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
-            possibly_mentioned_user_ids={service_bot.id},
+            possibly_mentioned_user_ids={message_triggered_bot.id},
         )
         self.assertEqual(
-            info.service_bot_tuples,
+            info.message_triggered_bot_tuples,
             [
-                (service_bot.id, UserProfile.EMBEDDED_BOT),
+                (message_triggered_bot.id, UserProfile.EMBEDDED_BOT),
             ],
         )
 
@@ -3188,10 +3192,10 @@ class RecipientInfoTest(ZulipTestCase):
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
-            possibly_mentioned_user_ids={service_bot.id, normal_bot.id},
+            possibly_mentioned_user_ids={message_triggered_bot.id, normal_bot.id},
         )
         self.assertEqual(info.default_bot_user_ids, {normal_bot.id})
-        self.assertEqual(info.all_bot_user_ids, {normal_bot.id, service_bot.id})
+        self.assertEqual(info.all_bot_user_ids, {normal_bot.id, message_triggered_bot.id})
 
         # Now Hamlet follows the topic with the 'followed_topic_email_notifications',
         # 'followed_topic_push_notifications' and 'followed_topic_wildcard_mention_notify'
@@ -3588,7 +3592,7 @@ class GetProfileTest(ZulipTestCase):
         self.set_up_db_for_testing_user_access()
 
         self.login("polonius")
-        with self.assert_database_query_count(9):
+        with self.assert_database_query_count(6):
             result = orjson.loads(self.client_get("/json/users").content)
         accessible_users = result["members"]
         # The user can access 3 bot users and 7 human users.
@@ -3624,6 +3628,44 @@ class GetProfileTest(ZulipTestCase):
             accessible_user_ids, {polonius.id, iago.id, prospero.id, aaron.id, zoe.id, shiva.id}
         )
 
+    def test_get_accessible_user_ids(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        prospero = self.example_user("prospero")
+        aaron = self.example_user("aaron")
+        zoe = self.example_user("ZOE")
+        shiva = self.example_user("shiva")
+        polonius = self.example_user("polonius")
+
+        self.set_up_db_for_testing_user_access()
+
+        # Polonius can access:
+        # - hamlet and iago, common stream.
+        # - prospero and shiva, 1:1 Direct message with polonius.
+        # - aaron and zoe, common Direct message group.
+        self.assertEqual(
+            get_accessible_user_ids(polonius),
+            {polonius.id, prospero.id, zoe.id, shiva.id, aaron.id, hamlet.id, iago.id},
+        )
+
+        do_deactivate_user(shiva, acting_user=None)
+        do_deactivate_user(aaron, acting_user=None)
+        do_deactivate_user(hamlet, acting_user=None)
+
+        # By default, all deactivated partners are
+        # excluded. Active users remain accessible.
+        self.assertEqual(
+            get_accessible_user_ids(polonius),
+            {polonius.id, prospero.id, zoe.id, iago.id},
+        )
+
+        # The deactivated Direct message partners can be
+        # accessible using include_deactivated_users flag.
+        self.assertEqual(
+            get_accessible_user_ids(polonius, include_deactivated_users=True),
+            {polonius.id, prospero.id, zoe.id, shiva.id, aaron.id, iago.id},
+        )
+
     def test_get_user_dicts_with_ids(self) -> None:
         cordelia = self.example_user("cordelia")
         desdemona = self.example_user("desdemona")
@@ -3643,7 +3685,7 @@ class GetProfileTest(ZulipTestCase):
         accessible_user_ids_subset = [hamlet.id, iago.id, aaron.id, zoe.id, webhook_bot.id]
         inaccessible_user_ids_subset = [cordelia.id, desdemona.id]
         user_ids_to_fetch = accessible_user_ids_subset + inaccessible_user_ids_subset
-        with self.assert_database_query_count(9):
+        with self.assert_database_query_count(6):
             result = orjson.loads(
                 self.client_get(
                     "/json/users", {"user_ids": orjson.dumps(user_ids_to_fetch).decode()}
@@ -3712,7 +3754,7 @@ class GetProfileTest(ZulipTestCase):
             result = self.client_get(f"/json/users/{user.id}")
             self.assert_json_error(result, "Insufficient permission")
 
-        with self.settings(PARTIAL_USERS=True), self.assert_database_query_count(9):
+        with self.settings(PARTIAL_USERS=True), self.assert_database_query_count(6):
             result = self.client_get("/json/users")
         self.assert_json_success(result)
 
@@ -3782,68 +3824,106 @@ class GetProfileTest(ZulipTestCase):
         # no personal messages history between desdemona and polonius
         self.assertFalse(check_can_access_user(desdemona, polonius))
 
-    def test_get_users_involved_in_dms_excludes_deactivated_users(self) -> None:
+    def test_check_can_access_user_for_a_guest_with_themself(self) -> None:
+        """
+        Test that the behaviour and query count are the same
+        for both cases, a normal guest and a guest with limited user access,
+        when calling check_can_access_user() for a user on themself.
+        """
+        # A guest is not limited by default.
+        polonius = self.example_user("polonius")
+        with self.assert_database_query_count(0):
+            self.assertTrue(check_can_access_user(polonius, polonius))
+
+        # Give guests limited user access.
+        self.set_up_db_for_testing_user_access()
+        polonius = self.example_user("polonius")
+
+        # When guest has limited user access,
+        # query count should not increase.
+        with self.assert_database_query_count(0):
+            self.assertTrue(check_can_access_user(polonius, polonius))
+
+    def test_check_can_access_user_for_a_spectator(self) -> None:
+        # A spectator can always access users since spectators
+        # already have very limited access to users.
         hamlet = self.example_user("hamlet")
+        self.assertTrue(check_can_access_user(hamlet, None))
+
+    def test_bulk_get_subscribers_of_target_user_subscriptions(self) -> None:
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        desdemona = self.example_user("desdemona")
+        iago = self.example_user("iago")
+        prospero = self.example_user("prospero")
+        shiva = self.example_user("shiva")
+        zoe = self.example_user("ZOE")
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
-        realm = hamlet.realm
+        polonius = self.example_user("polonius")
+        imported_user = self.example_user("imported_user")
 
-        self.send_personal_message(hamlet, othello, "Hello othello!")
-        self.send_personal_message(hamlet, cordelia, "Hello cordelia!")
-        self.send_personal_message(othello, hamlet, "Hello back from othello!")
+        # Unsubscribe cordelia and polonius from their
+        # ONLY stream subscription, so we can be sure
+        # they are included/excluded only because of DM interactions.
+        self.unsubscribe(cordelia, "Verona")
+        self.unsubscribe(polonius, "Verona")
 
-        # Before deactivation, both users should be in DM participants
-        users_involved_before = get_users_involved_in_dms_with_target_users(
-            [hamlet], realm, include_deactivated_users=False
+        self.send_group_direct_message(hamlet, [cordelia, polonius, othello])
+        self.send_personal_message(aaron, cordelia)
+
+        do_deactivate_user(cordelia, acting_user=None)
+        do_deactivate_user(zoe, acting_user=None)
+
+        subscribers_dict = bulk_get_subscribers_of_target_user_subscriptions([hamlet, aaron])
+
+        # polonius shares a DirectMessage group with hamlet.
+        # The rest share a stream with hamlet.
+        hamlet_subscribers = {
+            polonius.id,
+            aaron.id,
+            hamlet.id,
+            othello.id,
+            desdemona.id,
+            iago.id,
+            prospero.id,
+            shiva.id,
+            imported_user.id,
+        }
+
+        # polonius does NOT share any subscription with aaron.
+        # The rest share a stream with aaron.
+        aaron_subscribers = {
+            aaron.id,
+            hamlet.id,
+            othello.id,
+            desdemona.id,
+            iago.id,
+            prospero.id,
+            shiva.id,
+        }
+
+        # By default, all deactivated subscribers, cordelia and zoe,
+        # are excluded.
+
+        self.assertEqual(hamlet_subscribers, subscribers_dict[hamlet.id])
+        self.assertEqual(aaron_subscribers, subscribers_dict[aaron.id])
+
+        # We use the flag to also include deactivated subscribers
+        # who share a DirectMessage (1:1 or group) subscription.
+        subscribers_dict = bulk_get_subscribers_of_target_user_subscriptions(
+            [hamlet, aaron], include_deactivated_users_for_dm_groups=True
         )
-        self.assertIn(othello.id, users_involved_before[hamlet.id])
-        self.assertIn(cordelia.id, users_involved_before[hamlet.id])
 
-        do_deactivate_user(othello, acting_user=None)
+        # Same subscribers as above BUT with cordelia,
+        # who shares a DirectMessage with hamlet and aaron,
+        # now included, since the flag is scoped to DM interaction.
+        # Deactivated stream subscribers (zoe) are still excluded.
+        hamlet_subscribers.add(cordelia.id)
+        aaron_subscribers.add(cordelia.id)
 
-        # After deactivation with include_deactivated_users=False,
-        # othello should be excluded
-        users_involved_after = get_users_involved_in_dms_with_target_users(
-            [hamlet], realm, include_deactivated_users=False
-        )
-        self.assertNotIn(othello.id, users_involved_after[hamlet.id])
-        self.assertIn(cordelia.id, users_involved_after[hamlet.id])
-
-        # With include_deactivated_users=True, othello should be included
-        users_involved_with_deactivated = get_users_involved_in_dms_with_target_users(
-            [hamlet], realm, include_deactivated_users=True
-        )
-        self.assertIn(othello.id, users_involved_with_deactivated[hamlet.id])
-        self.assertIn(cordelia.id, users_involved_with_deactivated[hamlet.id])
-
-    def test_get_users_involved_in_dms_with_dm_group_recipients(self) -> None:
-        hamlet = self.example_user("hamlet")
-        othello = self.example_user("othello")
-        cordelia = self.example_user("cordelia")
-        realm = hamlet.realm
-
-        self.send_personal_message(hamlet, othello, "Hello othello!")
-        self.send_personal_message(hamlet, cordelia, "Hello cordelia!")
-
-        users_involved = get_users_involved_in_dms_with_target_users(
-            [hamlet], realm, include_deactivated_users=False
-        )
-        self.assertIn(othello.id, users_involved[hamlet.id])
-        self.assertIn(cordelia.id, users_involved[hamlet.id])
-
-        do_deactivate_user(othello, acting_user=None)
-
-        users_involved_after = get_users_involved_in_dms_with_target_users(
-            [hamlet], realm, include_deactivated_users=False
-        )
-        self.assertNotIn(othello.id, users_involved_after[hamlet.id])
-        self.assertIn(cordelia.id, users_involved_after[hamlet.id])
-
-        users_involved_with_deactivated = get_users_involved_in_dms_with_target_users(
-            [hamlet], realm, include_deactivated_users=True
-        )
-        self.assertIn(othello.id, users_involved_with_deactivated[hamlet.id])
-        self.assertIn(cordelia.id, users_involved_with_deactivated[hamlet.id])
+        self.assertEqual(hamlet_subscribers, subscribers_dict[hamlet.id])
+        self.assertEqual(aaron_subscribers, subscribers_dict[aaron.id])
 
     def test_get_users_for_spectators(self) -> None:
         # Checks that spectators can fetch users data.
@@ -3891,6 +3971,38 @@ class GetProfileTest(ZulipTestCase):
             len(all_fetched_users),
             UserProfile.objects.filter(realm=hamlet.realm, is_bot=True).count(),
         )
+
+    def test_spectators_cannot_fetch_custom_profile_fields(self) -> None:
+        # Custom profile fields can hold personal information (phone
+        # numbers, birthdays, etc.), so spectators must never receive
+        # them, even if they pass include_custom_profile_fields=true.
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        phone_field = CustomProfileField.objects.get(name="Phone number", realm=realm)
+        sentinel_value = "spectator-must-not-see-this"
+        do_update_user_custom_profile_data_if_changed(
+            hamlet,
+            [{"id": phone_field.id, "value": sentinel_value}],
+            acting_user=None,
+            notify=False,
+        )
+
+        # A spectator passing the flag must not trigger the extra query
+        # for custom profile field values, and the response must not
+        # contain profile_data for any user.
+        with self.assert_database_query_count(4):
+            result = self.client_get("/json/users", {"include_custom_profile_fields": "true"})
+        self.assert_json_success(result)
+        self.assertNotIn(sentinel_value, result.content.decode())
+        for user in orjson.loads(result.content)["members"]:
+            self.assertNotIn("profile_data", user)
+
+        # Sanity check that authenticated users still receive the data,
+        # confirming the fix didn't break the intended behavior.
+        self.login("othello")
+        result = self.client_get("/json/users", {"include_custom_profile_fields": "true"})
+        self.assert_json_success(result)
+        self.assertIn(sentinel_value, result.content.decode())
 
 
 class DeleteUserTest(ZulipTestCase):

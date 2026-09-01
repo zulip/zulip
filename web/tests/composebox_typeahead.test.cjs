@@ -12,7 +12,7 @@ const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user, make_cross_realm_bot} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 let autosize_called;
 const REALM_EMPTY_TOPIC_DISPLAY_NAME = "general chat";
@@ -28,7 +28,7 @@ const compose_ui = mock_esm("../src/compose_ui", {
     },
     cursor_inside_code_block: () => false,
     set_code_formatting_button_triggered: noop,
-    set_compose_textarea_typeahead: noop,
+    maybe_set_compose_textarea_typeahead: noop,
 });
 const compose_validate = mock_esm("../src/compose_validate", {
     validate_message_length: () => true,
@@ -366,18 +366,18 @@ const light_command = {
 const light_command_item = slash_item(light_command);
 
 const name_to_codepoint = {};
-for (const [key, val] of emojis_by_name.entries()) {
+for (const [key, val] of emojis_by_name) {
     name_to_codepoint[key] = val.emoji_code;
 }
 
 const codepoint_to_name = {};
-for (const [key, val] of emojis_by_name.entries()) {
+for (const [key, val] of emojis_by_name) {
     codepoint_to_name[val.emoji_code] = key;
 }
 
 const emoji_codes = {
     name_to_codepoint,
-    names: [...emojis_by_name.keys()],
+    names: emojis_by_name.keys().toArray(),
     emoji_catalog: {},
     emoticon_conversions: {},
     codepoint_to_name,
@@ -389,7 +389,7 @@ emoji.initialize({
 });
 emoji.active_realm_emojis.clear();
 emoji.emojis_by_name.clear();
-for (const [key, val] of emojis_by_name.entries()) {
+for (const [key, val] of emojis_by_name) {
     emoji.emojis_by_name.set(key, val);
 }
 typeahead.set_frequently_used_emojis(
@@ -737,6 +737,18 @@ const broken_link_stream = stream_item(
         can_create_topic_group: members.id,
     }),
 );
+const empty_topic_only_stream = stream_item(
+    make_stream({
+        name: "Announce",
+        description: "A channel that only allows the empty topic",
+        stream_id: 7,
+        subscribed: true,
+        topics_policy: "empty_topic_only",
+        can_administer_channel_group: support.id,
+        can_add_subscribers_group: support.id,
+        can_create_topic_group: members.id,
+    }),
+);
 
 stream_data.add_sub_for_tests(sweden_stream);
 stream_data.add_sub_for_tests(denmark_stream);
@@ -744,6 +756,7 @@ stream_data.add_sub_for_tests(netherland_stream);
 stream_data.add_sub_for_tests(mobile_stream);
 stream_data.add_sub_for_tests(mobile_team_stream);
 stream_data.add_sub_for_tests(broken_link_stream);
+stream_data.add_sub_for_tests(empty_topic_only_stream);
 
 const make_emoji = (emoji_dict) => ({
     emoji_name: emoji_dict.name,
@@ -1139,38 +1152,67 @@ test("content_typeahead_selected", ({override}) => {
     ct.get_or_set_completing_for_tests("stream");
     let warned_for_stream_link = false;
     override(compose_validate, "warn_if_private_stream_is_linked", (linked_stream) => {
-        assert.ok(linked_stream === sweden_stream || linked_stream === broken_link_stream);
+        assert.ok(
+            linked_stream === sweden_stream ||
+                linked_stream === broken_link_stream ||
+                linked_stream === empty_topic_only_stream,
+        );
         warned_for_stream_link = true;
     });
 
+    // Selecting a channel inserts a complete channel link; the topic
+    // typeahead then reopens to offer topic completion (see the
+    // get_candidates tests), so no broken `#**channel>` syntax is left
+    // behind if the user dismisses it without picking a topic.
     query = "#swed";
     ct.get_or_set_token_for_testing("swed");
     actual_value = ct.content_typeahead_selected(sweden_stream, query, input_element);
-    expected_value = "#**Sweden>";
+    expected_value = "#**Sweden**";
     assert.equal(actual_value, expected_value);
 
     query = "Hello #swed";
     ct.get_or_set_token_for_testing("swed");
     actual_value = ct.content_typeahead_selected(sweden_stream, query, input_element);
-    expected_value = "Hello #**Sweden>";
+    expected_value = "Hello #**Sweden**";
     assert.equal(actual_value, expected_value);
 
     query = "#**swed";
     ct.get_or_set_token_for_testing("swed");
     actual_value = ct.content_typeahead_selected(sweden_stream, query, input_element);
-    expected_value = "#**Sweden>";
+    expected_value = "#**Sweden**";
     assert.equal(actual_value, expected_value);
 
+    // A channel name with special characters falls back to the markdown
+    // link syntax, still as a complete link.
     query = "#**A* al";
     ct.get_or_set_token_for_testing("A* al");
     actual_value = ct.content_typeahead_selected(broken_link_stream, query, input_element);
-    expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)>";
+    expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)";
     assert.equal(actual_value, expected_value);
 
     query = "#>";
     ct.get_or_set_token_for_testing("#");
     actual_value = ct.content_typeahead_selected(broken_link_stream, query, input_element);
-    expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)>";
+    expected_value = "[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)";
+    assert.equal(actual_value, expected_value);
+
+    // A channel that only allows the empty topic gets a complete channel
+    // link, and no topic typeahead is reopened for it.
+    query = "#Announ";
+    ct.get_or_set_token_for_testing("Announ");
+    actual_value = ct.content_typeahead_selected(empty_topic_only_stream, query, input_element);
+    expected_value = "#**Announce**";
+    assert.equal(actual_value, expected_value);
+
+    // Pressing ">" on such a channel still opens topic completion via the
+    // partial syntax, for the user who explicitly wants a topic link.
+    query = "#Announ";
+    ct.get_or_set_token_for_testing("Announ");
+    actual_value = ct.content_typeahead_selected(empty_topic_only_stream, query, input_element, {
+        type: "keydown",
+        key: ">",
+    });
+    expected_value = "#**Announce>";
     assert.equal(actual_value, expected_value);
 
     // topic_list
@@ -1324,6 +1366,138 @@ test("content_typeahead_selected", ({override}) => {
     );
     expected_value =
         "Hello [#A&#42; Algorithm > fast](#narrow/channel/6-A.2A-Algorithm/topic/fast) ";
+    assert.equal(actual_value, expected_value);
+
+    // Selecting a topic from the complete channel link form (the link
+    // inserted on channel selection, followed by the partially typed
+    // topic) rewrites the whole span into the full stream+topic link.
+    query = "Hello #**Sweden**plan";
+    ct.get_or_set_token_for_testing("plan");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "planning",
+            topic_display_name: "planning",
+            type: "topic_list",
+            used_syntax_prefix: "#**",
+            is_channel_link: false,
+            stream_data: {
+                name: "Sweden",
+            },
+        },
+        query,
+        input_element,
+    );
+    expected_value = "Hello #**Sweden>planning** ";
+    assert.equal(actual_value, expected_value);
+
+    // The same, but for the complete fallback markdown link form used
+    // for channel names with special characters.
+    query = "Hello [#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)fas";
+    ct.get_or_set_token_for_testing("fas");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "fast",
+            topic_display_name: "fast",
+            type: "topic_list",
+            used_syntax_prefix: "[#",
+            is_channel_link: false,
+            stream_data: {
+                name: "A* Algorithm",
+            },
+        },
+        query,
+        input_element,
+    );
+    expected_value =
+        "Hello [#A&#42; Algorithm > fast](#narrow/channel/6-A.2A-Algorithm/topic/fast) ";
+    assert.equal(actual_value, expected_value);
+
+    // Selecting the "(link to channel)" option from the complete link
+    // form keeps the channel link as-is, dropping any partially typed
+    // topic text.
+    query = "Hello #**Sweden**plan";
+    ct.get_or_set_token_for_testing("plan");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "Sweden",
+            topic_display_name: "Sweden",
+            type: "topic_list",
+            used_syntax_prefix: "#**",
+            is_channel_link: true,
+            stream_data: {
+                name: "Sweden",
+            },
+        },
+        query,
+        input_element,
+    );
+    expected_value = "Hello #**Sweden** ";
+    assert.equal(actual_value, expected_value);
+
+    // Escape resolves the partial stream+topic syntax to a channel
+    // link, keeping any partially typed topic as plain text.
+    query = "Hello #**Sweden>plan";
+    ct.get_or_set_token_for_testing("plan");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "planning",
+            topic_display_name: "planning",
+            type: "topic_list",
+            used_syntax_prefix: "#**",
+            is_channel_link: false,
+            stream_data: {
+                name: "Sweden",
+            },
+        },
+        query,
+        input_element,
+        {key: "Escape"},
+    );
+    expected_value = "Hello #**Sweden** plan";
+    assert.equal(actual_value, expected_value);
+
+    // Escape with the shortcut syntax for the channel being composed to.
+    compose_state.set_stream_id(sweden_stream.stream_id);
+    query = "Hello #>plan";
+    ct.get_or_set_token_for_testing("plan");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "planning",
+            topic_display_name: "planning",
+            type: "topic_list",
+            used_syntax_prefix: "#>",
+            is_channel_link: false,
+            stream_data: {
+                name: "Sweden",
+            },
+        },
+        query,
+        input_element,
+        {key: "Escape"},
+    );
+    expected_value = "Hello #**Sweden** plan";
+    assert.equal(actual_value, expected_value);
+
+    // Escape with the fallback markdown link syntax used for channel
+    // names that would produce broken `#**channel**` links.
+    query = "Hello [#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)>fast";
+    ct.get_or_set_token_for_testing("fast");
+    actual_value = ct.content_typeahead_selected(
+        {
+            topic: "fast",
+            topic_display_name: "fast",
+            type: "topic_list",
+            used_syntax_prefix: "[#",
+            is_channel_link: false,
+            stream_data: {
+                name: "A* Algorithm",
+            },
+        },
+        query,
+        input_element,
+        {key: "Escape"},
+    );
+    expected_value = "Hello [#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm) fast";
     assert.equal(actual_value, expected_value);
 
     // syntax
@@ -1602,13 +1776,8 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 assert.deepEqual(actual_value, expected_value);
 
                 function matcher(query, person) {
-                    query = typeahead.clean_query_lowercase(query, false);
-                    const should_remove_diacritics = !typeahead.contains_diacritics(query);
-                    return typeahead_helper.query_matches_person(
-                        query,
-                        person,
-                        should_remove_diacritics,
-                    );
+                    query = typeahead.clean_query_lowercase(query);
+                    return typeahead_helper.query_matches_person(query, person);
                 }
 
                 let query;
@@ -1698,7 +1867,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // Adds a `no break-space` at the end. This should fail
                 // if there wasn't any logic replacing `no break-space`
                 // with normal space.
-                query = "cordelia, lear's\u00A0";
+                query = "cordelia, lear's\u{A0}";
                 assert.equal(matcher(query, cordelia_item), true);
                 assert.equal(matcher(query, othello_item), false);
 
@@ -1714,7 +1883,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
 
                 options.query = "othello@zulip.com, cor";
                 appended_names = [];
-                actual_value = options.updater(cordelia_item, event);
+                options.updater(cordelia_item, event);
                 assert.deepEqual(appended_names, ["Cordelia, Lear's daughter"]);
 
                 const click_event = {type: "click", target: "#doesnotmatter"};
@@ -1722,7 +1891,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 // Focus lost (caused by the click event in the typeahead list)
                 $("#private_message_recipient").trigger("blur");
                 appended_names = [];
-                actual_value = options.updater(othello_item, click_event);
+                options.updater(othello_item, click_event);
                 assert.deepEqual(appended_names, ["Othello, the Moor of Venice"]);
 
                 cleared = false;
@@ -1808,6 +1977,13 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                 matcher = ct.get_language_matcher("py");
                 assert.equal(matcher("python"), true);
                 assert.equal(matcher("javascript"), false);
+
+                // Language matching is diacritics-agnostic: a diacritic query
+                // matches an ASCII language name and vice versa.
+                matcher = ct.get_language_matcher("café");
+                assert.equal(matcher("cafe"), true);
+                matcher = ct.get_language_matcher("cafe");
+                assert.equal(matcher("café"), true);
 
                 // options.sorter()
                 actual_value = typeahead.sort_emojis(
@@ -2274,6 +2450,33 @@ test("get_person_suggestion_for_topic_typeahead respects DM permissions", ({over
     assert.deepEqual(results, []);
 });
 
+test("get_person_suggestion_for_topic_typeahead: diacritic query prioritizes exact diacritic matches", ({
+    override,
+}) => {
+    // "Gael" has the shorter name, so the within-bucket tiebreaker would rank
+    // it above "Gaël Twin" -- only the diacritic-prefix bucket puts "Gaël
+    // Twin" first.
+    const gael_ascii = make_user({
+        full_name: "Gael",
+        user_id: 112,
+        email: "gael@zulip.com",
+    });
+    people.add_active_user(gael_ascii);
+
+    message_lists.current = undefined;
+    override(pm_conversations, "get_partners", () => [
+        gael.user_id,
+        gael_ascii.user_id,
+        lear.user_id,
+    ]);
+
+    const results = ct.get_person_suggestion_for_topic_typeahead("gaë");
+    assert.deepEqual(
+        results.map((result) => result.user.user_id),
+        [gael.user_id, gael_ascii.user_id],
+    );
+});
+
 test("begins_typeahead", ({override, override_rewire}) => {
     override(stream_topic_history_util, "get_server_history", noop);
 
@@ -2287,7 +2490,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     function get_values(input, rest) {
         // Stub out split_at_cursor that uses $(':focus')
         override_rewire(ct, "split_at_cursor", () => [input, rest]);
-        const values = ct.get_candidates(input, input_element);
+        const values = ct.get_candidates(input, input_element, {shown: false});
         return values;
     }
 
@@ -2669,6 +2872,12 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals("test ```a", []);
     assert_typeahead_equals("test\n```", []);
     assert_typeahead_equals("``c", []);
+    // But if the typeahead is already open (e.g. the user typed ```py
+    // and then deleted the "py"), a bare ``` keeps it open.
+    override_rewire(ct, "split_at_cursor", () => ["```", ""]);
+    const shown_typeahead_values = ct.get_candidates("```", input_element, {shown: true});
+    assert.ok(shown_typeahead_values.length > 0);
+    assert.equal(shown_typeahead_values[0].type, "syntax");
     // Languages filtered by a single letter is a very long list.
     // The typeahead displays languages sorted by popularity, so to
     // avoid typing out all of them here we'll just test that the
@@ -2754,6 +2963,51 @@ test("begins_typeahead", ({override, override_rewire}) => {
     );
     assert_typeahead_equals("#**Sweden>\n\nmore ice", typed_topics("Sweden", []));
 
+    // A complete channel link is a valid final form, so it only triggers
+    // topic completion while the typeahead is already open (the state
+    // right after a channel is selected). With the typeahead closed, the
+    // cursor merely sitting after a channel link offers nothing.
+    assert_typeahead_equals("#**Sweden**", []);
+
+    // The complete channel link inserted on channel selection reopens the
+    // topic typeahead, so the user can still pick a topic; selecting one
+    // rewrites the link into the partial-then-completed form. Typing after
+    // the link filters topics just like the `>` syntax does.
+    compose_ui.compose_textarea_typeahead = {shown: true};
+    assert_typeahead_equals(
+        "#**Sweden**",
+        typed_topics("Sweden", ["Sweden", ...sweden_topics_to_show]),
+    );
+    assert_typeahead_equals(
+        "#**Sweden**more ice",
+        typed_topics("Sweden", ["more ice", "even more ice"]),
+    );
+    assert_typeahead_equals(
+        "#**Sweden**totally new topic",
+        typed_topics("Sweden", ["totally new topic"], is_new_topic),
+    );
+    // A space immediately after the complete link means the user has
+    // moved on to the message body: the complete-link pattern doesn't
+    // match, and with no other token present there are no suggestions.
+    assert_typeahead_equals("#**Sweden** more ice", []);
+    // The pattern rejects leading whitespace, so tokens typed after a
+    // complete channel link on the same line get their own typeaheads.
+    assert.deepEqual(
+        get_values("#**Sweden** see #den", "").map((item) => item.name),
+        ["Denmark", "Sweden"],
+    );
+    // The timestamp typeahead also still runs after a channel link.
+    assert_typeahead_equals("#**Sweden** at <time:something", [
+        {
+            message: "translated: Mention a time-zone-aware time",
+            type: "time_jump",
+        },
+    ]);
+    // A channel that only allows the empty topic gets a complete channel
+    // link with no topic completion offered.
+    assert_typeahead_equals("#**Announce**", []);
+    compose_ui.compose_textarea_typeahead = undefined;
+
     // time_jump
     const time_jump = [
         {
@@ -2776,7 +3030,7 @@ test("begins_typeahead", ({override, override_rewire}) => {
     assert_typeahead_equals(":test", "ing", []);
     assert_typeahead_equals("```test", "ing", []);
     assert_typeahead_equals("~~~test", "ing", []);
-    const terminal_symbols = ",.;?!()[]> \u00A0\"'\n\t";
+    const terminal_symbols = ",.;?!()[]> \u{A0}\"'\n\t";
     for (const symbol of terminal_symbols.split()) {
         assert_typeahead_equals(
             "@othello",
@@ -2826,7 +3080,7 @@ test("tokenizing", () => {
 test("content_item_html", ({override_rewire}) => {
     ct.get_or_set_completing_for_tests("emoji");
     const emoji = {emoji_name: "person shrugging", emoji_url: "¯\\_(ツ)_/¯", type: "emoji"};
-    let th_render_typeahead_item_called = false;
+    let th_render_typeahead_item_called;
     override_rewire(typeahead_helper, "render_emoji", (item) => {
         assert.deepEqual(item, emoji);
         th_render_typeahead_item_called = true;

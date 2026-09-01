@@ -10,6 +10,7 @@ const user_topics = zrequire("user_topics");
 const muted_users = zrequire("muted_users");
 const people = zrequire("people");
 const pmc = zrequire("pm_conversations");
+const echo_state = zrequire("echo_state");
 const {set_current_user} = zrequire("state_data");
 
 const current_user = {};
@@ -59,6 +60,7 @@ function test(label, f) {
         pmc.clear_for_testing();
         user_topics.set_user_topics([]);
         muted_users.set_muted_users([]);
+        echo_state._patch_waiting_for_ack(new Map());
         people.initialize_current_user(me.user_id);
         f({override});
     });
@@ -80,11 +82,11 @@ test("insert_recent_private_message", () => {
 
     // Base data
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: "1", max_message_id: 100},
-        {user_ids_string: "3", max_message_id: 99},
-        {user_ids_string: "1,2", max_message_id: 98},
-        {user_ids_string: "1,2,3", max_message_id: 97},
-        {user_ids_string: "15", max_message_id: 96},
+        {user_ids_string: "1", max_message_id: 100, local_message_count: 0},
+        {user_ids_string: "3", max_message_id: 99, local_message_count: 0},
+        {user_ids_string: "1,2", max_message_id: 98, local_message_count: 0},
+        {user_ids_string: "1,2,3", max_message_id: 97, local_message_count: 0},
+        {user_ids_string: "15", max_message_id: 96, local_message_count: 0},
     ]);
 
     // Insert new messages (which should rearrange these entries).
@@ -97,11 +99,11 @@ test("insert_recent_private_message", () => {
     pmc.recent.insert([1], 555);
 
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: "1", max_message_id: 1000},
-        {user_ids_string: "1,2,3", max_message_id: 999},
-        {user_ids_string: "15", max_message_id: 101},
-        {user_ids_string: "3", max_message_id: 99},
-        {user_ids_string: "1,2", max_message_id: 98},
+        {user_ids_string: "1", max_message_id: 1000, local_message_count: 0},
+        {user_ids_string: "1,2,3", max_message_id: 999, local_message_count: 0},
+        {user_ids_string: "15", max_message_id: 101, local_message_count: 0},
+        {user_ids_string: "3", max_message_id: 99, local_message_count: 0},
+        {user_ids_string: "1,2", max_message_id: 98, local_message_count: 0},
     ]);
     assert.deepEqual(pmc.recent.get_strings(), ["1", "1,2,3", "15", "3", "1,2"]);
 });
@@ -141,11 +143,11 @@ test("muted_users", () => {
 
     // Base data
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: "1", max_message_id: 100},
-        {user_ids_string: "3", max_message_id: 99},
-        {user_ids_string: "1,2", max_message_id: 98},
-        {user_ids_string: "1,2,3", max_message_id: 97},
-        {user_ids_string: "15", max_message_id: 96},
+        {user_ids_string: "1", max_message_id: 100, local_message_count: 0},
+        {user_ids_string: "3", max_message_id: 99, local_message_count: 0},
+        {user_ids_string: "1,2", max_message_id: 98, local_message_count: 0},
+        {user_ids_string: "1,2,3", max_message_id: 97, local_message_count: 0},
+        {user_ids_string: "15", max_message_id: 96, local_message_count: 0},
     ]);
     assert.deepEqual(pmc.recent.get_strings(), ["1", "3", "1,2", "1,2,3", "15"]);
 
@@ -157,9 +159,9 @@ test("muted_users", () => {
     // 1:1 direct messages in which the other user hasn't been muted.
     // Direct message groups where there's at least one non-muted participant.
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: "3", max_message_id: 99},
-        {user_ids_string: "1,2,3", max_message_id: 97},
-        {user_ids_string: "15", max_message_id: 96},
+        {user_ids_string: "3", max_message_id: 99, local_message_count: 0},
+        {user_ids_string: "1,2,3", max_message_id: 97, local_message_count: 0},
+        {user_ids_string: "15", max_message_id: 96, local_message_count: 0},
     ]);
     assert.deepEqual(pmc.recent.get_strings(), ["3", "1,2,3", "15"]);
 });
@@ -183,4 +185,129 @@ test("has_conversation", ({override}) => {
     assert.ok(!pmc.recent.has_conversation("1,3"));
     assert.ok(!pmc.recent.has_conversation("2"));
     assert.ok(!pmc.recent.has_conversation("72"));
+});
+
+function local_message_count(user_ids_string) {
+    const conversation = pmc.recent.get().find((pm) => pm.user_ids_string === user_ids_string);
+    assert.ok(conversation !== undefined);
+    return conversation.local_message_count;
+}
+
+test("increment_local_message_count_and_remove", () => {
+    pmc.recent.initialize(params);
+
+    // initialize lists every conversation, each seeded with a zero count.
+    assert.deepEqual(pmc.recent.get_strings(), ["1", "3", "1,2", "1,2,3", "15"]);
+    assert.equal(local_message_count("1"), 0);
+    assert.equal(local_message_count("15"), 0);
+
+    // increment_local_message_count bumps the count of locally-known messages,
+    // without reordering the sidebar.
+    pmc.recent.increment_local_message_count([alice.user_id]);
+    pmc.recent.increment_local_message_count([alice.user_id]);
+    // The server sends [] for direct messages to oneself.
+    pmc.recent.increment_local_message_count([]);
+    assert.equal(local_message_count("1"), 2);
+    assert.equal(local_message_count("15"), 1);
+    assert.deepEqual(pmc.recent.get_strings(), ["1", "3", "1,2", "1,2,3", "15"]);
+
+    // remove drops a conversation from the sidebar regardless of its count.
+    pmc.recent.remove("3");
+    assert.ok(!pmc.recent.has_conversation("3"));
+    assert.deepEqual(pmc.recent.get_strings(), ["1", "1,2", "1,2,3", "15"]);
+
+    // Removing a conversation we don't have is a no-op.
+    pmc.recent.remove("999");
+    assert.deepEqual(pmc.recent.get_strings(), ["1", "1,2", "1,2,3", "15"]);
+});
+
+test("maybe_remove", () => {
+    pmc.recent.initialize(params);
+
+    const verified_conversations = [];
+    pmc.set_update_dm_last_message_id((user_ids_string) => {
+        verified_conversations.push(user_ids_string);
+    });
+
+    // Record two locally-known messages in Alice's 1:1 conversation.
+    pmc.recent.increment_local_message_count([alice.user_id]);
+    pmc.recent.increment_local_message_count([alice.user_id]);
+
+    // Deleting fewer messages than we know about proves the conversation is
+    // still non-empty, so we just decrement and never ask the server.
+    pmc.recent.maybe_remove([alice.user_id], 1);
+    assert.ok(pmc.recent.has_conversation(alice.user_id.toString()));
+    assert.deepEqual(verified_conversations, []);
+
+    // Deleting the rest leaves us with no locally-known messages, so we
+    // optimistically remove the conversation and verify with the server.
+    pmc.recent.maybe_remove([alice.user_id], 1);
+    assert.ok(!pmc.recent.has_conversation(alice.user_id.toString()));
+    assert.deepEqual(verified_conversations, [alice.user_id.toString()]);
+
+    // A self-DM (recipients sent as []) is keyed by our own user id.
+    pmc.recent.maybe_remove([], 1);
+    assert.ok(!pmc.recent.has_conversation(me.user_id.toString()));
+    assert.deepEqual(verified_conversations, [alice.user_id.toString(), me.user_id.toString()]);
+
+    // Deleting from a conversation we don't know about is a no-op.
+    pmc.recent.maybe_remove([alice.user_id], 1);
+    assert.deepEqual(verified_conversations, [alice.user_id.toString(), me.user_id.toString()]);
+});
+
+test("process_message counts only delivered messages", () => {
+    const key = alice.user_id.toString();
+    const dm = (id) => ({
+        type: "private",
+        id,
+        display_recipient: [{id: alice.user_id}, {id: me.user_id}],
+    });
+
+    // A delivered message (one received from the server, or one we sent
+    // once it is acked) creates the conversation and counts toward it.
+    pmc.process_message(dm(1001), true);
+    assert.ok(pmc.recent.has_conversation(key));
+    assert.equal(local_message_count(key), 1);
+
+    // A locally echoed message is recorded in the sidebar but not counted
+    // here; it is counted only once acked, in echo.reify_message_id, so a
+    // message we send is never counted twice.
+    pmc.process_message(dm(1002), false);
+    assert.equal(local_message_count(key), 1);
+
+    // A further delivered message bumps the count again.
+    pmc.process_message(dm(1003), true);
+    assert.equal(local_message_count(key), 2);
+});
+
+test("maybe_remove keeps a conversation with an unacked local echo", () => {
+    pmc.recent.initialize(params);
+
+    let server_checks = 0;
+    pmc.set_update_dm_last_message_id(() => {
+        server_checks += 1;
+    });
+
+    // One delivered message in Alice's DM, plus an unsent (e.g. failed)
+    // local echo that's still visible in the conversation.
+    pmc.recent.increment_local_message_count([alice.user_id]);
+    echo_state.set_message_waiting_for_ack("1.01", {
+        type: "private",
+        id: 1.01,
+        display_recipient: [{id: alice.user_id}, {id: me.user_id}],
+    });
+
+    // Deleting the delivered message drops the count to zero, but the
+    // pending echo keeps the row in the sidebar without a server check.
+    pmc.recent.maybe_remove([alice.user_id], 1);
+    assert.ok(pmc.recent.has_conversation(alice.user_id.toString()));
+    assert.equal(server_checks, 0);
+
+    // Once the echo is gone (the send succeeds or is cancelled), deleting
+    // again leaves no locally-known messages, so we remove the conversation
+    // and verify with the server after all.
+    echo_state._patch_waiting_for_ack(new Map());
+    pmc.recent.maybe_remove([alice.user_id], 1);
+    assert.ok(!pmc.recent.has_conversation(alice.user_id.toString()));
+    assert.equal(server_checks, 1);
 });

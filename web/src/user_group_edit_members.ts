@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
@@ -186,8 +186,7 @@ export function rerender_members_list({
 }
 
 type MemberLinkContext =
-    | {type: "user"; user: User}
-    | {type: "user_group"; id: number; name: string};
+    {type: "user"; user: User} | {type: "user_group"; id: number; name: string};
 
 function generate_members_added_contexts(
     newly_added_users: User[],

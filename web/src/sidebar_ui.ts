@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -17,7 +17,6 @@ import {ListCursor} from "./list_cursor.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_reminder from "./message_reminder.ts";
-import * as message_viewport from "./message_viewport.ts";
 import {page_params} from "./page_params.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -38,6 +37,25 @@ import * as util from "./util.ts";
 const LEFT_SIDEBAR_NAVIGATION_AREA_TITLE = $t({defaultMessage: "VIEWS"});
 
 export let left_sidebar_cursor: ListCursor<JQuery>;
+
+// Toggling a sidebar changes the message feed's width, causing rows to
+// reflow and shift vertically. Preserve the selected row's viewport
+// offset across the layout change to keep the user's reading position
+// stable.
+function toggle_sidebar_preserving_selected_row_offset(classname: string): void {
+    let saved_selected_row_offset: number | undefined;
+    if (message_lists.current !== undefined) {
+        const $selected_row = message_lists.current.selected_row();
+        if ($selected_row.length > 0) {
+            saved_selected_row_offset = $selected_row.get_offset_to_window().top;
+        }
+    }
+    $("body").toggleClass(classname);
+    if (saved_selected_row_offset !== undefined) {
+        assert(message_lists.current !== undefined);
+        message_lists.current.view.set_message_offset(saved_selected_row_offset);
+    }
+}
 
 function save_sidebar_toggle_status(): void {
     const ls = localstorage();
@@ -189,14 +207,14 @@ export function initialize(): void {
     $("body").on("click", ".login_button", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        window.location.href = spectators.build_login_link();
+        window.location.assign(spectators.build_login_link());
     });
 
     $("body").on("keydown", ".login_button", (e) => {
         if (e.key === "Enter") {
             e.preventDefault();
             e.stopPropagation();
-            window.location.href = spectators.build_login_link();
+            window.location.assign(spectators.build_login_link());
         }
     });
 
@@ -205,7 +223,7 @@ export function initialize(): void {
         e.stopPropagation();
 
         if (ui_util.matches_viewport_state("gte_xl_min")) {
-            $("body").toggleClass("hide-right-sidebar");
+            toggle_sidebar_preserving_selected_row_offset("hide-right-sidebar");
             if (!$("body").hasClass("hide-right-sidebar")) {
                 fix_invite_user_button_flicker();
             }
@@ -232,15 +250,7 @@ export function initialize(): void {
         e.stopPropagation();
 
         if (ui_util.matches_viewport_state("gte_md_min")) {
-            $("body").toggleClass("hide-left-sidebar");
-            if (
-                message_lists.current !== undefined &&
-                !ui_util.matches_viewport_state("gte_xl_min")
-            ) {
-                // We expand the middle column width between md and xl breakpoints when the
-                // left sidebar is hidden. This can cause the pointer to move out of view.
-                message_viewport.scroll_to_selected();
-            }
+            toggle_sidebar_preserving_selected_row_offset("hide-left-sidebar");
             // We recheck the scrolling-button status of the compose
             // box, which may change for users who've chosen to
             // use full width on wide screens.
@@ -564,9 +574,6 @@ function all_rows(): JQuery {
     const $collapsed_channels = $(
         ".stream-list-section-container.collapsed .narrow-filter:not(.stream-expanded) .bottom_left_row",
     );
-    const $hidden_topic_rows = $(
-        ".stream-list-section-container.collapsed .topic-list-item:not(.active-sub-filter).bottom_left_row",
-    );
 
     // Exclude toggle inactive / muted channels row from the list of rows if user is searching.
     const $toggle_inactive_or_muted_channels_row = $(
@@ -583,7 +590,6 @@ function all_rows(): JQuery {
         .not($inactive_or_muted_rows)
         .not($collapsed_views)
         .not($collapsed_channels)
-        .not($hidden_topic_rows)
         .not($toggle_inactive_or_muted_channels_row)
         .not($hidden_topic_search_hint_row);
 

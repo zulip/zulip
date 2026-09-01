@@ -8,7 +8,7 @@ const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const $ = require("./lib/zjquery.cjs");
+const {$} = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 // Mocking and stubbing things
@@ -249,6 +249,34 @@ run_test("test_non_message_list_input", ({mock_template}) => {
     });
     label = $("#left_bar_compose_reply_button_big").text();
     assert.equal(label, "translated: Compose message");
+});
+
+run_test("recipient_label_text_for_call_creation", () => {
+    recent_view_util.is_visible = () => true;
+    message_lists.current = undefined;
+    const stream = make_stream({
+        subscribed: true,
+        name: "stream test",
+        stream_id: 11,
+    });
+    stream_data.add_sub_for_tests(stream);
+
+    assert.equal(
+        compose_closed_ui.get_recipient_label({
+            stream_id: stream.stream_id,
+            topic: "topic test",
+        })?.label_text,
+        "#stream test > topic test",
+    );
+
+    // Empty topic falls back to the realm's empty-topic display name.
+    assert.equal(
+        compose_closed_ui.get_recipient_label({
+            stream_id: stream.stream_id,
+            topic: "",
+        })?.label_text,
+        `#stream test > translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}`,
+    );
 });
 
 run_test("update_reply_button_state", ({override, override_rewire}) => {

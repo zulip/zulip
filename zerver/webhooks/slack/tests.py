@@ -1,3 +1,4 @@
+import json
 from collections.abc import Callable
 from functools import wraps
 from typing import Concatenate
@@ -254,6 +255,13 @@ class SlackWebhookTests(WebhookTestCase):
         )
 
     @mock_slack_api_calls
+    def test_message_with_inaccessible_file(self) -> None:
+        message_body = """Message with a file shared from a Slack Connect channel
+*Slack file F12345678*"""
+        expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
+        self.check_webhook("message_with_inaccessible_file", EXPECTED_TOPIC, expected_message)
+
+    @mock_slack_api_calls
     def test_message_with_inline_code(self) -> None:
         message_body = "`asdasda this is a code block`"
         expected_message = EXPECTED_MESSAGE.format(user=USER, message=message_body)
@@ -437,6 +445,63 @@ To Do""".strip()
         _, _, actual_error_message = s.call_args[0]
 
         self.assertEqual(actual_error_message, user_facing_error_message)
+
+    @responses.activate
+    def test_user_info_api_response_no_real_name(self) -> None:
+        responses.add(
+            responses.GET,
+            "https://slack.com/api/users.info",
+            # In actuality, at least the "image_*" fields in the "profile" object
+            # will always be included. But, we only care about the missing
+            # "real_name" field in this case.
+            json.dumps({"ok": True, "user": {"profile": {}}}),
+        )
+        responses.add(
+            responses.GET,
+            "https://slack.com/api/conversations.info",
+            self.webhook_fixture_data("slack", "slack_conversations_info_api_response"),
+        )
+        user_id = "U06NU4E26M9"
+        expected_message = EXPECTED_MESSAGE.format(
+            user=f"Slack user {user_id}", message=MESSAGE_WITH_NORMAL_TEXT
+        )
+        self.check_webhook(
+            "message_with_normal_text",
+            EXPECTED_TOPIC,
+            expected_message,
+            content_type="application/json",
+        )
+
+    @responses.activate
+    def test_user_info_api_response_empty_real_name(self) -> None:
+        responses.add(
+            responses.GET,
+            "https://slack.com/api/users.info",
+            json.dumps(
+                {
+                    "ok": True,
+                    "user": {
+                        "real_name": "",
+                        "profile": {"real_name": ""},
+                    },
+                }
+            ),
+        )
+        responses.add(
+            responses.GET,
+            "https://slack.com/api/conversations.info",
+            self.webhook_fixture_data("slack", "slack_conversations_info_api_response"),
+        )
+        user_id = "U06NU4E26M9"
+        expected_message = EXPECTED_MESSAGE.format(
+            user=f"Slack user {user_id}", message=MESSAGE_WITH_NORMAL_TEXT
+        )
+        self.check_webhook(
+            "message_with_normal_text",
+            EXPECTED_TOPIC,
+            expected_message,
+            content_type="application/json",
+        )
 
 
 class SlackLegacyWebhookTests(WebhookTestCase):

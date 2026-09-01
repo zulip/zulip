@@ -92,6 +92,9 @@ export class MessageListData {
         this.add_messages_callback = callback;
     }
 
+    // Mute filtering for MessageListData objects depends on the values
+    // of this.excludes_muted_topics and this.excludes_muted_users. Note
+    // `recent_view_messages_data` never excludes anything by definition.
     all_messages_after_mute_filtering(): Message[] {
         return this._items;
     }

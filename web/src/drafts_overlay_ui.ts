@@ -1,5 +1,5 @@
 import ClipboardJS from "clipboard";
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -19,6 +19,7 @@ import {message_render_response_schema} from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as messages_overlay_ui from "./messages_overlay_ui.ts";
 import * as mouse_drag from "./mouse_drag.ts";
+import * as overlay_util from "./overlay_util.ts";
 import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import {postprocess_content} from "./postprocess_content.ts";
@@ -141,8 +142,8 @@ function remove_drafts($draft_rows: JQuery): void {
         show_delete_banner();
     }
 
-    if ($("#drafts_table .overlay-message-row").length === 0) {
-        $("#drafts_table .no-drafts").show();
+    if ($(".drafts-tab-pane .overlay-message-row").length === 0) {
+        $(".drafts-tab-pane .no-drafts").show();
     }
     update_rendered_drafts(
         $("#drafts-from-conversation .overlay-message-row").length > 0,
@@ -171,7 +172,7 @@ const keyboard_handling_context: messages_overlay_ui.Context = {
     get_items_ids() {
         const draft_ids: string[] = [];
         for (const row of document.querySelectorAll<HTMLElement>(
-            "#drafts_table .overlay-message-row",
+            ".drafts-tab-pane .overlay-message-row",
         )) {
             const id = row.dataset["draftId"];
             assert(id !== undefined);
@@ -330,8 +331,8 @@ function render_widgets(
         });
         $(".drafts-list").replaceWith($(rendered));
     }
-    if ($("#drafts_table .overlay-message-row").length > 0) {
-        $("#drafts_table .no-drafts").hide();
+    if ($(".drafts-tab-pane .overlay-message-row").length > 0) {
+        $(".drafts-tab-pane .no-drafts").hide();
         // Update possible dynamic elements.
         const $rendered_drafts = $drafts_table.find(
             ".message_content.rendered_markdown.restore-overlay-message",
@@ -534,8 +535,37 @@ export function initialize(): void {
         });
     });
 
-    $("body").on("focus", "#drafts_table .overlay-message-info-box", function (this: HTMLElement) {
-        messages_overlay_ui.activate_element(this, keyboard_handling_context);
+    $("body").on("focus", "#draft_overlay", (e) => {
+        if (!(e.target instanceof HTMLElement)) {
+            return;
+        }
+        const draft_row = e.target.closest(".overlay-message-info-box");
+        if (draft_row instanceof HTMLElement) {
+            // A draft gained focus; mark it as the selected draft.
+            messages_overlay_ui.activate_element(draft_row, keyboard_handling_context);
+        } else if (e.target.matches(overlay_util.OVERLAY_FOCUSABLE_SELECTOR)) {
+            // Another focusable element (e.g. a header button) gained focus;
+            // draft info-boxes are already handled by the branch above, so
+            // the `.overlay-message-info-box` part of the selector never
+            // matches here.
+            // Only clear the draft selection when the control was reached via
+            // keyboard (Tab), where both it and the draft would show a focus
+            // ring; a pointer click shows no ring on the control, so keep the
+            // selection.
+            if (e.target.matches(":focus-visible")) {
+                $("#drafts_table .overlay-message-info-box").removeClass("active");
+            }
+        } else {
+            // Focus landed on a non-interactive area. Return focus to the
+            // selected draft or the first one if none is selected, so that
+            // keyboard navigation continues from a draft.
+            const draft_to_focus =
+                $("#drafts_table .overlay-message-info-box.active")[0] ??
+                $("#drafts_table .overlay-message-info-box")[0];
+            if (draft_to_focus !== undefined) {
+                messages_overlay_ui.activate_element(draft_to_focus, keyboard_handling_context);
+            }
+        }
     });
     $("body").on(
         "click",

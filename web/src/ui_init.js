@@ -1,4 +1,4 @@
-import $ from "jquery";
+import {$} from "jquery";
 import _ from "lodash";
 import assert from "minimalistic-assert";
 
@@ -97,6 +97,7 @@ import * as people from "./people.ts";
 import * as personal_menu_popover from "./personal_menu_popover.ts";
 import * as playground_links_popover from "./playground_links_popover.ts";
 import * as pm_conversations from "./pm_conversations.ts";
+import * as pm_conversations_util from "./pm_conversations_util.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as popovers from "./popovers.ts";
@@ -375,7 +376,7 @@ export function initialize_kitchen_sink_stuff() {
                         message_lists.current
                             .all_messages()
                             .map((message) => message.id)
-                            .toSorted(),
+                            .toSorted((a, b) => a - b),
                     ),
                     found_in_dom: $row_from_dom.length,
                 });
@@ -552,6 +553,12 @@ export async function initialize_everything(state_data) {
             stream_id,
             topic_name,
             stream_list.update_streams_sidebar,
+        );
+    });
+    pm_conversations.set_update_dm_last_message_id((user_ids_string) => {
+        pm_conversations_util.update_dm_last_message_id(
+            user_ids_string,
+            pm_list.update_private_messages,
         );
     });
 
@@ -827,7 +834,7 @@ $(() => {
         needs_url_cleanup = true;
     }
     if (needs_url_cleanup) {
-        window.history.replaceState(window.history.state, "", url.toString());
+        window.history.replaceState(window.history.state, "", url);
     }
 
     if (page_params.no_event_queue) {

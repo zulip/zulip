@@ -13,7 +13,7 @@ from zerver.decorator import internal_api_view, process_client
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.queue import get_queue_client
 from zerver.lib.request import RequestNotes
-from zerver.lib.response import AsynchronousResponse, json_success
+from zerver.lib.response import AsynchronousResponse, json_response, json_success
 from zerver.lib.sessions import narrow_request_user
 from zerver.lib.typed_endpoint import ApiParamConfig, DocumentationStatus, typed_endpoint
 from zerver.models import UserProfile
@@ -36,6 +36,15 @@ def in_tornado_thread(f: Callable[P, T]) -> Callable[P, T]:
         return f(*args, **kwargs)
 
     return async_to_sync(wrapped)
+
+
+# Registered as handler404/handler500 by zproject/tornado_urls.py.
+def json_not_found(request: HttpRequest, exception: Exception) -> HttpResponse:
+    return json_response(res_type="error", msg=_("Not found"), status=404)
+
+
+def json_internal_server_error(request: HttpRequest) -> HttpResponse:
+    return json_response(res_type="error", msg=_("Internal server error"), status=500)
 
 
 @internal_api_view(True)

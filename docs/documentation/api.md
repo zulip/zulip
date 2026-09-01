@@ -112,6 +112,19 @@ include **Changes** notes for all feature level updates documented
 in the [API changelog](https://zulip.com/api/changelog), see
 `api_docs/changelog.md`, that reference the endpoint.
 
+The description itself should always describe the behavior of
+current servers, so that a reader never needs to consult a
+**Changes** note to understand it. The **Changes** notes exist for
+understanding the behavior of older servers, starting from that of
+current servers. So when documenting a change to existing behavior,
+write the note as a diff going backward in time, giving only the
+details of the old behavior: for example, "Before Zulip 12.0
+(feature level 483), the server did not automatically remove legacy
+registrations", rather than "As of Zulip 12.0 (feature level 483),
+the server now automatically removes...". The forward framing
+misleadingly suggests that the note carries all the details of the
+new behavior, when those belong in the main description.
+
 Endpoints that only administrators can use should be tagged with the
 custom `x-requires-administrator` field in the OpenAPI definition.
 
@@ -352,6 +365,16 @@ above.
 
    ```yaml
    **Changes**: New in Zulip 11.0 (feature level ZF-1f4a39).
+   ```
+
+   For a change to existing behavior, make sure the main description
+   describes the behavior of current servers, and write the note as
+   a diff going backward in time, describing only the old behavior
+   (see [above](#title-and-description)):
+
+   ```yaml
+   **Changes**: Before Zulip 11.0 (feature level ZF-1f4a39),
+   this parameter was ignored for direct messages.
    ```
 
 1. Proofread your new documentation in its rendered HTML, including

@@ -107,7 +107,6 @@
         .pill-close-button,
         .pill-expand-button {
             font-size: 0.7142em; /* 10px at 14px em */
-            text-decoration: none;
             /* Let the close button's box stretch,
                but no larger than the height of the
                banner box when the action button
@@ -122,8 +121,7 @@
                ::before content where the icon sits. */
             display: flex;
             align-items: center;
-            /* !important overrides `.dark-theme:root a:hover` */
-            color: var(--color-input-pill-close) !important;
+            color: var(--color-input-pill-close);
             opacity: 0.7;
         }
 
@@ -133,7 +131,7 @@
             height: var(--length-input-pill-exit);
             display: flex;
             justify-content: center;
-            margin-right: 2px;
+            margin-right: var(--length-input-pill-exit-margin);
             border-radius: 2px;
 
             &:hover {
@@ -159,8 +157,7 @@
             }
 
             .pill-close-button {
-                /* !important overrides `.dark-theme:root a:hover` */
-                color: var(--color-close-deactivated-user-pill) !important;
+                color: var(--color-close-deactivated-user-pill);
             }
 
             .exit:hover {
@@ -220,17 +217,11 @@
         flex: 1 1 auto;
 
         outline: none;
-
-        &.shake {
-            animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-            transform: translate3d(0, 0, 0);
-            backface-visibility: hidden;
-            perspective: 1000px;
-        }
     }
 
     &.not-editable-by-user {
         cursor: not-allowed;
+        background-color: var(--color-background-pill-container-input-disabled);
 
         .pill {
             cursor: not-allowed;
@@ -476,27 +467,4 @@
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-@keyframes shake {
-    10%,
-    90% {
-        transform: translate3d(-1px, 0, 0);
-    }
-
-    20%,
-    80% {
-        transform: translate3d(2px, 0, 0);
-    }
-
-    30%,
-    50%,
-    70% {
-        transform: translate3d(-3px, 0, 0);
-    }
-
-    40%,
-    60% {
-        transform: translate3d(3px, 0, 0);
-    }
 }

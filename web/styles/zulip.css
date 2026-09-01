@@ -332,6 +332,7 @@ p.n-margin {
     & h3 {
         font-size: 16pt;
         margin-top: 2px;
+        font-weight: 300;
     }
 
     .exit-me {
@@ -2243,28 +2244,6 @@ body:not(.spectator-view) {
         }
     }
 
-    &.folder_id-dropdown-list-container {
-        width: calc(var(--modal-input-width) * 0.75);
-
-        /* Alignment adjustments on channel-folder selector. */
-        .dropdown-list-item-name:has(.dropdown-list-buttons) {
-            /* We hold the first row height to 28px at 16px/1em
-               for the sake of the buttons plus their padding. */
-            grid-template-rows: 1.75em minmax(0, auto);
-            /* We also align everything to start, so that we can
-               offset the text from the top to align it with the
-               buttons. */
-            align-items: start;
-
-            .dropdown-list-text-neutral {
-                /* 0.2em is an eyeballed value that keeps the buttons
-                   well aligned with the first/only line of text. */
-                padding-top: 0.2em;
-                align-self: start;
-            }
-        }
-    }
-
     .no-dropdown-items {
         color: hsl(0deg 0% 60%);
         display: none;
@@ -2418,6 +2397,32 @@ body:not(.spectator-view) {
             }
         }
     }
+
+    &.folder_id-dropdown-list-container,
+    &.new_channel_folder_id-dropdown-list-container {
+        width: calc(var(--modal-input-width) * 0.75);
+
+        /* Alignment adjustments on the channel-folder selector. */
+        .dropdown-list .dropdown-list-item-name {
+            /* We hold the first row height to 28px at 16px/1em
+               for the sake of the buttons plus their padding.
+               Unlike the base rules above, we apply this to rows
+               without buttons, too, so that the "None" row is the
+               same height as the folder rows. */
+            grid-template-rows: 1.75em minmax(0, auto);
+            /* We also align everything to start, so that we can
+               offset the text from the top to align it with the
+               buttons. */
+            align-items: start;
+
+            .dropdown-list-text-neutral {
+                /* 0.2em is an eyeballed value that keeps the buttons
+                   well aligned with the first/only line of text. */
+                padding-top: 0.2em;
+                align-self: start;
+            }
+        }
+    }
 }
 
 .dropdown-list-item-common-styles .dropdown-list-text-selected {
@@ -2430,7 +2435,6 @@ body:not(.spectator-view) {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    flex-grow: 1;
     color: var(--color-failed-message-send-icon);
 
     .zulip-icon {
@@ -2566,5 +2570,35 @@ body:not(.spectator-view) {
     &:focus:not(:focus-visible) {
         /* Avoid outline on click */
         outline: none;
+    }
+}
+
+.input-validation-shake {
+    animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+}
+
+@keyframes shake {
+    10%,
+    90% {
+        transform: translate3d(-1px, 0, 0);
+    }
+
+    20%,
+    80% {
+        transform: translate3d(2px, 0, 0);
+    }
+
+    30%,
+    50%,
+    70% {
+        transform: translate3d(-4px, 0, 0);
+    }
+
+    40%,
+    60% {
+        transform: translate3d(4px, 0, 0);
     }
 }
