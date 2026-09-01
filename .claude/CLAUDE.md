@@ -166,13 +166,13 @@ Zulip has over 185,000 words of developer documentation. Before working on any a
 - Keep everything well factored for maintainability. Avoid duplicating
   code, especially where access control or subtle correctness is involved.
 - Run `./tools/lint` to catch style issues before committing, including mypy issues.
-- JavaScript/TypeScript code must use `const` or `let`, never `var`.
-- Avoid lodash in favor of modern ECMAScript primitives where available,
-  keeping in mind our browserlist.
 - Prefer writing code that is readable without explanation over heavily
   commented code using clever tricks. Comments should explain "why" when
   the reason isn't obvious, not narrate "what" the code does.
 - Comments should have a line to themself except for CSS px math.
+
+Frontend rules can be found in `.claude/rules/frontend.md` (loaded
+automatically when you work on frontend JS/TS and template files).
 
 CSS rules can be found in `.claude/rules/css.md` (loaded
 automatically when you work on CSS files).
@@ -294,11 +294,6 @@ faster and easier to just plan and write them well the first time.
 - Don't use `Any` type annotations without comments justifying it.
 - Don't use `cursor.execute()` with string formatting (SQL injection risk)
 - Don't use `.extra()` in Django without careful review and commenting
-- Don't use `onclick` attributes in HTML; use event delegation
-- Don't access DOM APIs (`document.documentElement.style`, `$()`
-  selectors for specific elements) without guarding for node test
-  environments, where the DOM is mocked minimally. Check that the
-  element exists before using it.
 - Don't create N+1 query patterns:
 
   ```python
