@@ -191,6 +191,24 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n``` quote\nYou are totally right! I'll get this fixed right away.\n```"
         self.check_webhook("issue_comment", TOPIC_ISSUE, expected_message)
 
+    def test_issue_comment_edited_msg(self) -> None:
+        # Both issue and PR comments come under the `issue_comment` event.
+        payload = orjson.loads(self.get_body("issue_comment__edited__unchanged"))
+        payload["comment"]["body"] = "The comment, after being edited."
+        comment_link = "[comment](https://github.com/Niloth-p/webhook-tester/pull/1#issuecomment-2555981590) on [PR #1](https://github.com/Niloth-p/webhook-tester/pull/1)"
+        expected_messages = {
+            "true": f"AnotherUser edited a {comment_link}.",
+            "false": f"AnotherUser edited a {comment_link}:\n\n``` quote\nThe comment, after being edited.\n```",
+        }
+        for compact_edit_format, expected_message in expected_messages.items():
+            self.url = self.build_webhook_url(compact_edit_format=compact_edit_format)
+            self.check_webhook(
+                "issue_comment__edited__unchanged",
+                "webhook-tester / PR #1 Generic issue title",
+                expected_message,
+                custom_payload=payload,
+            )
+
     def test_issue_comment_deleted_msg(self) -> None:
         expected_topic_name = "Scheduler / issue #5 This is a new issue"
         expected_message = "eeshangarg deleted a [comment](https://github.com/eeshangarg/Scheduler/issues/5#issuecomment-425164194) on [issue #5](https://github.com/eeshangarg/Scheduler/issues/5):\n\n``` quote\nThis is a comment on this new issue.\n```"
