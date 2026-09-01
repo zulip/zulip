@@ -171,7 +171,7 @@ run_test("empty_narrow_html", ({mock_template}) => {
         <button
           class="search-shared-history hidden-for-spectators action-button action-button-subtle-neutral"
           type="button">
-            translated: Search all public channels
+            translated: Search all channels
         </button>
     </div>
 </div>
@@ -765,6 +765,12 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
             undefined,
             true,
         ),
+    );
+    // The action widens the search to every channel the user can access,
+    // not just the public ones.
+    assert.equal(
+        $(".empty_feed_notice .search-shared-history").attr("data-url"),
+        "#narrow/channels/all/has/image",
     );
     current_filter = set_filter([
         ["has", "reaction"],

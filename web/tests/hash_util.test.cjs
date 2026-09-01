@@ -254,26 +254,26 @@ run_test("test_by_conversation_and_time_url", () => {
     );
 });
 
-run_test("test_search_public_streams_notice_url", () => {
+run_test("test_search_all_channels_notice_url", () => {
     function get_terms(url) {
         return hash_util.parse_narrow(url.split("/"));
     }
 
     assert.equal(
-        hash_util.search_public_streams_notice_url(get_terms("#narrow/search/abc")),
-        "#narrow/channels/public/search/abc",
+        hash_util.search_all_channels_notice_url(get_terms("#narrow/search/abc")),
+        "#narrow/channels/all/search/abc",
     );
 
     assert.equal(
-        hash_util.search_public_streams_notice_url(
+        hash_util.search_all_channels_notice_url(
             get_terms("#narrow/has/link/has/image/has/attachment"),
         ),
-        "#narrow/channels/public/has/link/has/image/has/attachment",
+        "#narrow/channels/all/has/link/has/image/has/attachment",
     );
 
     assert.equal(
-        hash_util.search_public_streams_notice_url(get_terms("#narrow/sender/15")),
-        "#narrow/channels/public/sender/15-Hamlet",
+        hash_util.search_all_channels_notice_url(get_terms("#narrow/sender/15")),
+        "#narrow/channels/all/sender/15-Hamlet",
     );
 });
 

@@ -655,7 +655,7 @@ export function show_empty_narrow_message(current_filter: Filter, invalid_narrow
         $(".empty_feed_notice .empty-feed-notice-action").show();
 
         const terms = current_filter.terms();
-        const update_hash = hash_util.search_public_streams_notice_url(terms);
+        const update_hash = hash_util.search_all_channels_notice_url(terms);
 
         $(".empty_feed_notice .search-shared-history").attr("data-url", update_hash);
     }
