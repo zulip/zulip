@@ -1,0 +1,20 @@
+{
+    "id": "1519311538035490958",
+    "type": 0,
+    "last_message_id": "1519675639756623994",
+    "flags": 0,
+    "last_pin_timestamp": "2026-06-24T12:20:02.743000+00:00",
+    "guild_id": "1519311536839983195",
+    "name": "general",
+    "parent_id": "1519311538035490956",
+    "rate_limit_per_user": 0,
+    "topic": null,
+    "position": 0,
+    "permission_overwrites": [],
+    "nsfw": false,
+    "icon_emoji": {
+        "id": null,
+        "name": "👋"
+    },
+    "theme_color": null
+}

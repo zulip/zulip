@@ -36,6 +36,7 @@ from zerver.data_import.import_util import (
     create_converted_data_files,
     get_attachment_path_and_content,
     get_domain_name_for_import,
+    get_unique_truncated_name,
     make_subscriber_map,
     make_user_messages,
 )
@@ -45,7 +46,6 @@ from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.export import do_common_export_processes
 from zerver.lib.import_realm import validate_and_resolve_relative_path
 from zerver.lib.markdown import IMAGE_EXTENSIONS
-from zerver.lib.message import truncate_content
 from zerver.lib.upload import sanitize_name
 from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
@@ -230,30 +230,19 @@ def convert_channel_data(
             raise Exception("unexpected value")
 
     initialize_stream_membership_dicts()
-    channel_name_count: dict[str, int] = {}
+    channel_name_counts: dict[str, int] = {}
     for channel_dict in channel_data_list:
         now = int(timezone_now().timestamp())
         # The "name" field is Mattermost channel's unique identifier.
         mattermost_channel_id = channel_dict["name"]
         stream_id = stream_id_mapper.get(mattermost_channel_id)
         invite_only = get_invite_only_value_from_channel_type(channel_dict["type"])
-        channel_display_name = truncate_content(
-            channel_dict["display_name"], Stream.MAX_NAME_LENGTH, "…"
+
+        channel_display_name = get_unique_truncated_name(
+            channel_dict["display_name"],
+            Stream.MAX_NAME_LENGTH,
+            channel_name_counts,
         )
-
-        if channel_display_name in channel_name_count:
-            channel_name_count[channel_display_name] += 1
-            collision = channel_name_count[channel_display_name]
-            count_string = f" ({collision})"
-
-            channel_display_name = (
-                truncate_content(
-                    channel_display_name, Stream.MAX_NAME_LENGTH - len(count_string), "…"
-                )
-                + count_string
-            )
-        else:
-            channel_name_count[channel_display_name] = 1
 
         realm["zerver_stream"].append(
             build_stream(
