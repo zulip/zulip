@@ -8,6 +8,7 @@ import {LazySet} from "./lazy_set.ts";
 import {page_params} from "./page_params.ts";
 import type {User} from "./people.ts";
 import * as people from "./people.ts";
+import * as presence from "./presence.ts";
 import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as sub_store from "./sub_store.ts";
 
@@ -344,6 +345,22 @@ export function get_subscriber_count(stream_id: number, include_bots = true): nu
         }
     }
     return count - bot_count;
+}
+
+export function get_online_subscriber_count(stream_id: number): number {
+    const count = subscriber_counts.get(stream_id);
+    if (count === undefined) {
+        blueslip.warn(`We called get_subscriber_count for an untracked stream: ${stream_id}`);
+        return 0;
+    }
+
+    let subscriber_count = 0;
+    for (const user_id of get_loaded_subscriber_subset(stream_id).keys()) {
+        if (!people.is_valid_bot_user(user_id) && presence.get_status(user_id) === "active") {
+            subscriber_count += 1;
+        }
+    }
+    return subscriber_count;
 }
 
 export function set_subscriber_count(stream_id: number, count: number): void {

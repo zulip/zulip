@@ -1095,6 +1095,13 @@ exports.fixtures = {
         value: true,
     },
 
+    user_settings__display_offline_users: {
+        type: "user_settings",
+        op: "update",
+        property: "display_offline_users",
+        value: 2,
+    },
+
     user_settings__email_address_visibility: {
         type: "user_settings",
         op: "update",

@@ -978,6 +978,7 @@ export function dispatch_normal_event(event) {
                 "default_language",
                 "demote_inactive_streams",
                 "display_emoji_reaction_users",
+                "display_offline_users",
                 "emojiset",
                 "enter_sends",
                 "fluid_layout_width",
@@ -1062,6 +1063,12 @@ export function dispatch_normal_event(event) {
                     break;
                 case "user_list_style":
                     settings_preferences.report_user_list_style_change(
+                        settings_preferences.user_settings_panel,
+                    );
+                    activity_ui.build_user_sidebar();
+                    break;
+                case "display_offline_users":
+                    settings_preferences.report_user_list_offline_user_style_change(
                         settings_preferences.user_settings_panel,
                     );
                     activity_ui.build_user_sidebar();

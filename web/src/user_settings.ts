@@ -73,6 +73,7 @@ export const user_settings_schema = z.object({
     translate_emoticons: z.boolean(),
     twenty_four_hour_time: z.boolean(),
     user_list_style: z.number(),
+    display_offline_users: z.number(),
     web_animate_image_previews: z.enum(["always", "on_hover", "never"]),
     web_channel_default_view: z.number(),
     web_escape_navigates_to_home_view: z.boolean(),
