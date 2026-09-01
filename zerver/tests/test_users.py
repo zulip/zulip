@@ -487,6 +487,11 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, "Invalid format!")
 
+        # Trailing whitespace should not bypass the pipe-digit check
+        req = dict(full_name="iago|72 ")
+        result = self.client_patch("/json/users/{}".format(self.example_user("hamlet").id), req)
+        self.assert_json_error(result, "Invalid format!")
+
     def test_allowed_format_complex(self) -> None:
         # Adding characters after r'|d+' doesn't break Markdown
         new_name = "Hello- 12iago|72k"

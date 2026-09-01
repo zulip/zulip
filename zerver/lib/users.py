@@ -67,7 +67,7 @@ def check_full_name(
     # sloppily-written parsers of our Markdown syntax for mentioning
     # users with ambiguous names, and likely have no real use, so we
     # ban them.
-    if re.search(r"\|\d+$", full_name_raw):
+    if re.search(r"\|\d+$", full_name):
         raise JsonableError(_("Invalid format!"))
 
     if require_unique_names(realm):
