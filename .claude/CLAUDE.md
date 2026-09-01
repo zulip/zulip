@@ -177,6 +177,9 @@ automatically when you work on frontend JS/TS and template files).
 CSS rules can be found in `.claude/rules/css.md` (loaded
 automatically when you work on CSS files).
 
+Python rules can be found in `.claude/rules/python.md` (loaded
+automatically when you work on .py files).
+
 See: https://zulip.readthedocs.io/en/latest/contributing/code-style.html
 
 ## Commit Discipline
@@ -288,24 +291,6 @@ changes. You can split into good commits after the fact, but it's much
 faster and easier to just plan and write them well the first time.
 
 ## What Not To Do
-
-### Code Quality:
-
-- Don't use `Any` type annotations without comments justifying it.
-- Don't use `cursor.execute()` with string formatting (SQL injection risk)
-- Don't use `.extra()` in Django without careful review and commenting
-- Don't create N+1 query patterns:
-
-  ```python
-  # BAD
-  for bar in bars:
-      foo = Foo.objects.get(id=bar.foo_id)
-
-  # GOOD
-  foos = {f.id: f for f in Foo.objects.filter(id__in=[b.foo_id for b in bars])}
-  ```
-
-### Process:
 
 - Always check if you're working on top of the latest upstream/main, and
   fetch + rebase when starting a project so you're not using a stale branch.
