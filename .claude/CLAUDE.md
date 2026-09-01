@@ -334,12 +334,16 @@ Recommend pausing for discussion when:
 
 ### For Bug Fixes
 
-1. Show the relevant code and explain what's happening
-2. Brainstorm theories for how the bug might be possible
+1. Look at the relevant code and brainstorm theories for
+   how the bug might be possible
+2. Provide a clear explanation for the bug, and ideally
+   provide steps for reproducing the bug on `main` in the
+   dev environment. Verify the cause of the bug before
+   suggesting a fix, unless a bug is very difficult to verify,
+   in which case say so and explain a hypothesis instead.
 3. Analyze and propose a fix with a clear explanation
 4. Write tests that would have caught this bug if possible
-5. Format as a single commit following commit guidelines
-6. Audit for whether the bug may exist elsewhere or might be
+5. Audit for whether the bug may exist elsewhere or might be
    re-introduced and propose appropriate changes to address if so.
 
 ### For New Features
@@ -347,8 +351,7 @@ Recommend pausing for discussion when:
 1. Read the relevant documentation in docs/
 2. Show similar existing features in the codebase
 3. Propose an implementation approach before coding
-4. Implement in minimal, coherent commits
-5. Each commit must pass tests independently
+4. Implement, following "Commit Discipline" above
 
 ### For Refactoring
 
