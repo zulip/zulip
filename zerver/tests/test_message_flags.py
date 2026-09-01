@@ -28,6 +28,7 @@ from zerver.lib.message import (
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
+from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_message import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
 from zerver.models import (
     Device,
@@ -43,6 +44,7 @@ from zerver.models.groups import NamedUserGroup
 from zerver.models.realms import get_realm
 from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import get_stream
+from zerver.worker.deferred_work import DeferredWorker
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -2135,6 +2137,153 @@ class MessageAccessTests(ZulipTestCase):
             bulk_access_stream_messages_query_count=1,
         )
         self.assert_length(filtered_messages, 2)
+
+
+class UnstarStreamMessagesTest(ZulipTestCase):
+    def test_unsubscribe_unstars_inaccessible_starred_messages(self) -> None:
+        """
+        Test that unsubscribing a user from a channel they lose content
+        access to unstars their starred messages in that channel, while
+        users retaining content access keep their stars.
+        """
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        prospero = self.example_user("prospero")
+        polonius = self.example_user("polonius")  # Guest user.
+
+        # A regular user unsubscribed from a private stream loses
+        # content access to it.
+        self.make_stream("private_stream", invite_only=True)
+        self.subscribe(hamlet, "private_stream")
+        private_message_id = self.send_stream_message(hamlet, "private_stream", "test message")
+        do_update_message_flags(hamlet, "add", "starred", [private_message_id])
+
+        # A realm admin unsubscribed from a private stream keeps metadata
+        # access but loses content access.
+        self.make_stream("admin_stream", invite_only=True)
+        self.subscribe(iago, "admin_stream")
+        admin_message_id = self.send_stream_message(iago, "admin_stream", "test message")
+        do_update_message_flags(iago, "add", "starred", [admin_message_id])
+
+        # A channel admin (via can_administer_channel_group) unsubscribed
+        # from a private stream keeps metadata access but loses content
+        # access.
+        channel_admin_stream = self.make_stream("channel_admin_stream", invite_only=True)
+        self.subscribe(othello, "channel_admin_stream")
+        do_change_stream_group_based_setting(
+            channel_admin_stream,
+            "can_administer_channel_group",
+            UserGroupMembersData(direct_members=[othello.id], direct_subgroups=[]),
+            acting_user=iago,
+        )
+        channel_admin_message_id = self.send_stream_message(
+            othello, "channel_admin_stream", "test message"
+        )
+        do_update_message_flags(othello, "add", "starred", [channel_admin_message_id])
+
+        # A user in can_subscribe_group unsubscribed from a private
+        # stream retains content access.
+        can_subscribe_stream = self.make_stream("can_subscribe_stream", invite_only=True)
+        self.subscribe(cordelia, "can_subscribe_stream")
+        do_change_stream_group_based_setting(
+            can_subscribe_stream,
+            "can_subscribe_group",
+            UserGroupMembersData(direct_members=[cordelia.id], direct_subgroups=[]),
+            acting_user=iago,
+        )
+        can_subscribe_message_id = self.send_stream_message(
+            cordelia, "can_subscribe_stream", "test message"
+        )
+        do_update_message_flags(cordelia, "add", "starred", [can_subscribe_message_id])
+
+        # A user unsubscribed from a private stream with no starred
+        # messages has nothing to unstar.
+        self.make_stream("no_starred_stream", invite_only=True)
+        self.subscribe(prospero, "no_starred_stream")
+        self.send_stream_message(prospero, "no_starred_stream", "test message")
+
+        # A regular user unsubscribed from a public stream retains
+        # content access to it, but a guest loses content access.
+        self.make_stream("public_stream")
+        self.subscribe(hamlet, "public_stream")
+        self.subscribe(polonius, "public_stream")
+        public_message_id = self.send_stream_message(hamlet, "public_stream", "test message")
+        do_update_message_flags(hamlet, "add", "starred", [public_message_id])
+        do_update_message_flags(polonius, "add", "starred", [public_message_id])
+
+        # The unstar work is queued on commit and processed by the
+        # deferred work worker.
+        with self.captureOnCommitCallbacks(execute=True):
+            self.unsubscribe(hamlet, "private_stream")
+            self.unsubscribe(iago, "admin_stream")
+            self.unsubscribe(othello, "channel_admin_stream")
+            self.unsubscribe(cordelia, "can_subscribe_stream")
+            self.unsubscribe(prospero, "no_starred_stream")
+            self.unsubscribe(hamlet, "public_stream")
+            self.unsubscribe(polonius, "public_stream")
+
+        # Users who lost content access have their starred messages unstarred.
+        self.assertFalse(
+            UserMessage.objects.get(
+                user_profile=hamlet, message_id=private_message_id
+            ).flags.starred
+        )
+        self.assertFalse(
+            UserMessage.objects.get(user_profile=iago, message_id=admin_message_id).flags.starred
+        )
+        self.assertFalse(
+            UserMessage.objects.get(
+                user_profile=othello, message_id=channel_admin_message_id
+            ).flags.starred
+        )
+        self.assertFalse(
+            UserMessage.objects.get(
+                user_profile=polonius, message_id=public_message_id
+            ).flags.starred
+        )
+
+        # Users who retained content access keep their stars.
+        self.assertTrue(
+            UserMessage.objects.get(
+                user_profile=cordelia, message_id=can_subscribe_message_id
+            ).flags.starred
+        )
+        self.assertTrue(
+            UserMessage.objects.get(user_profile=hamlet, message_id=public_message_id).flags.starred
+        )
+
+    def test_deferred_unstar_rechecks_content_access(self) -> None:
+        """
+        Starred messages are not unstarred if the user regains content
+        access to the channel before the queued unstar work runs.
+        """
+        hamlet = self.example_user("hamlet")
+        stream_name = "private_stream"
+        self.make_stream(stream_name, invite_only=True)
+        self.subscribe(hamlet, stream_name)
+
+        message_id = self.send_stream_message(hamlet, stream_name, "important message")
+        do_update_message_flags(hamlet, "add", "starred", [message_id])
+        um = UserMessage.objects.get(user_profile=hamlet, message_id=message_id)
+
+        with mock.patch("zerver.actions.streams.queue_event_on_commit") as mock_queue:
+            self.unsubscribe(hamlet, stream_name)
+
+        unstar_events = [
+            call.args[1]
+            for call in mock_queue.call_args_list
+            if call.args[1]["type"] == "unstar_inaccessible_stream_messages"
+        ]
+        self.assert_length(unstar_events, 1)
+
+        self.subscribe(hamlet, stream_name)
+        with self.capture_send_event_calls(expected_num_events=0):
+            DeferredWorker().consume(unstar_events[0])
+
+        um.refresh_from_db()
+        self.assertTrue(um.flags.starred)
 
 
 class PersonalMessagesFlagTest(ZulipTestCase):
