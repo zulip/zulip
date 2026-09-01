@@ -240,13 +240,18 @@ def get_issue_comment_body(helper: Helper) -> str:
     include_title = helper.include_title
     comment = payload["comment"]
     issue = payload["issue"]
+    message = (
+        None
+        if payload["action"].tame(check_string) == "edited" and helper.compact_edit_format
+        else comment["body"].tame(check_string)
+    )
 
     return get_pull_request_event_message(
         user_name=get_sender_name(helper),
         action=get_comment_action(payload),
         url=issue["html_url"].tame(check_string),
         number=issue["number"].tame(check_int),
-        message=comment["body"].tame(check_string),
+        message=message,
         title=issue["title"].tame(check_string) if include_title else None,
         type="PR" if is_pull_request_comment_event(payload) else "issue",
     )
