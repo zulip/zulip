@@ -240,9 +240,13 @@ def convert_channel_data(
             channel_dict["display_name"], Stream.MAX_NAME_LENGTH, "…"
         )
 
-        if channel_display_name in channel_name_count:
-            channel_name_count[channel_display_name] += 1
-            collision = channel_name_count[channel_display_name]
+        # Channel names which only differ in capitalization are a collision,
+        # because we treat them case-insensitively at the database level.
+        # So we use .lower() of the name for collision-detection purposes.
+        channel_display_name_lower = channel_display_name.lower()
+        while channel_display_name_lower in channel_name_count:
+            channel_name_count[channel_display_name_lower] += 1
+            collision = channel_name_count[channel_display_name_lower]
             count_string = f" ({collision})"
 
             channel_display_name = (
@@ -251,8 +255,14 @@ def convert_channel_data(
                 )
                 + count_string
             )
-        else:
-            channel_name_count[channel_display_name] = 1
+            # The new generated name could still collide with a pre-existing
+            # imported channel.  E.g. channels ["Foo (2)", "foo", "Foo"] will
+            # have a collision here while processing the "Foo" name.  This
+            # should be very rare, so we opt for an approach that keeps this
+            # code simple over prioritizing prettiness of the generated name -
+            # so "Foo" will be transformed into "Foo (2) (2)" in this rare case.
+            channel_display_name_lower = channel_display_name.lower()
+        channel_name_count[channel_display_name_lower] = 1
 
         realm["zerver_stream"].append(
             build_stream(
