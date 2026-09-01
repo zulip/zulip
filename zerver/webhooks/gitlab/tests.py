@@ -227,6 +227,38 @@ class GitlabHookTests(WebhookTestCase):
             "confidential_issue_hook__issue_reopened", expected_subject, expected_message
         )
 
+    def test_create_work_item_event_message(self) -> None:
+        expected_topic_name = "my-awesome-project / issue #1 Work Item title"
+        expected_message = "Tomasz Kolek created [issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/-/work_items/1) (assigned to Tomasz Kolek):\n\n``` quote\nWork Item description\n```"
+
+        self.check_webhook(
+            "work_item_hook__work_item_created", expected_topic_name, expected_message
+        )
+
+    def test_close_work_item_event_message(self) -> None:
+        expected_topic_name = "my-awesome-project / issue #1 Work Item title"
+        expected_message = "Tomasz Kolek closed [issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/-/work_items/1)."
+
+        self.check_webhook(
+            "work_item_hook__work_item_closed", expected_topic_name, expected_message
+        )
+
+    def test_reopen_work_item_event_message(self) -> None:
+        expected_topic_name = "my-awesome-project / issue #1 Work Item title"
+        expected_message = "Tomasz Kolek reopened [issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/-/work_items/1)."
+
+        self.check_webhook(
+            "work_item_hook__work_item_reopened", expected_topic_name, expected_message
+        )
+
+    def test_update_work_item_event_message(self) -> None:
+        expected_topic_name = "my-awesome-project / issue #1 Work Item title"
+        expected_message = "Tomasz Kolek updated [issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/-/work_items/1)."
+
+        self.check_webhook(
+            "work_item_hook__work_item_updated", expected_topic_name, expected_message
+        )
+
     def test_note_commit_event_message(self) -> None:
         expected_topic_name = "testing-zulip-gitlab-integration"
         expected_message = "Satyam Bansal [commented](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/commit/82689ddf00fd7bdadb5c2afb3b94bd555edc9d01#note_1406241063) on [82689ddf00f](https://gitlab.com/sbansal1999/testing-zulip-gitlab-integration/-/commit/82689ddf00fd7bdadb5c2afb3b94bd555edc9d01):\n``` quote\nWow what a beautiful commit.\n```"
