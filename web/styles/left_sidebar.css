@@ -1987,8 +1987,13 @@ li.active-sub-filter {
            we set the top space with padding. But to make the
            line-clamp effect work, we set the bottom space
            with margin. */
-        padding-top: var(--spacing-top-bottom-sidebar-topic-inner);
-        margin: 0 0 var(--spacing-top-bottom-sidebar-topic-inner) 0;
+        /* Emoji glyphs protrude above and below the standard
+           text em-box, so this spacing also keeps them clear
+           of the overflow: hidden boundary; the extra 2px
+           compensates for glyph overflow that sub-pixel
+           rounding can otherwise clip. */
+        padding-top: calc(var(--spacing-top-bottom-sidebar-topic-inner) + 2px);
+        margin: 0 0 calc(var(--spacing-top-bottom-sidebar-topic-inner) + 2px);
     }
 }
 
