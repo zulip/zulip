@@ -461,32 +461,11 @@ faster and easier to just plan and write them well the first time.
 
 ## Pull Request Guidelines
 
-### PR Description Should:
-
 When opening a pull request, prefix the PR title with `[ai]` (e.g.,
 `[ai] compose: Fix cursor position after emoji insertion.`). Use
-`upstream/main` as the base branch.
-
-Output the PR description in a markdown code block so that formatting
-(bold, headers, checkboxes, etc.) copy-pastes correctly into GitHub.
-
-1. Start with a `Fixes: #...` line linking the issue being addressed.
-2. Explain **why** the change is needed, not just what changed.
-3. Describe how you tested the change, using checkbox format for the
-   test plan (e.g., `- [x] ./tools/test-backend ...`).
-4. Include screenshots for UI changes.
-5. Link to relevant issues or discussions.
-6. Call out any open questions, concerns, or decisions you are uncertain
-   about, so they can be resolved during review.
-7. Include the self-review checklist from
-   `.github/pull_request_template.md` using checkbox format (`- [x]` /
-   `- [ ]`), checking off all applicable items.
-
-### PR Description Should Not:
-
-- Regurgitate information visible from the diff
-- Make claims you haven't double-checked
-- Express more certainty than is justified given the evidence
+`upstream/main` as the base branch. Use the `/pr-description` skill
+to write the PR description
+(`.claude/skills/pr-description/SKILL.md`).
 
 ## When to Pause and Discuss
 
