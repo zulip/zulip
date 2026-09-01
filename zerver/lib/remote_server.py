@@ -29,6 +29,8 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import queue_event_on_commit
+from zerver.lib.realm_description import get_realm_text_description
+from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.types import AnalyticsDataUploadLevel
 from zerver.models import Realm, RealmAuditLog
@@ -80,6 +82,17 @@ class RealmAuditLogDataForAnalytics(BaseModel):
     event_type: int
 
 
+class AdvertiseRealmData(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    description: str | None = None
+    icon_url: str
+    invite_required: bool
+    emails_restricted_to_domains: bool
+    has_web_public_streams: bool
+    is_demo_organization: bool
+
+
 class RealmDataForAnalytics(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -93,6 +106,10 @@ class RealmDataForAnalytics(BaseModel):
     is_system_bot_realm: bool = False
 
     authentication_methods: dict[str, bool] = Field(default_factory=dict)
+
+    # Sent only for realms that have opted in to get listed
+    # in the Zulip communities directory (zulip.com/communities).
+    advertise_realm_data: AdvertiseRealmData | None = None
 
     uuid: UUID4
     uuid_owner_secret: str
@@ -359,6 +376,31 @@ def build_analytics_data(
     return realm_count_data, installation_count_data, zerver_realmauditlog
 
 
+def get_advertise_realm_data(realm: Realm) -> AdvertiseRealmData | None:
+    """Metadata the bouncer needs to list a realm in the Zulip communities
+    directory.
+
+    Uploaded only for realms that have opted in, on servers that have
+    enabled ZULIP_SERVICE_ADVERTISE_REALM.
+    """
+    if not (
+        settings.ZULIP_SERVICE_ADVERTISE_REALM and realm.want_advertise_in_communities_directory
+    ):
+        return None
+
+    return AdvertiseRealmData(
+        # A realm with no description is not eligible to be listed, so
+        # avoid sending the placeholder that get_realm_text_description
+        # substitutes for an empty one.
+        description=get_realm_text_description(realm) if realm.description else None,
+        icon_url=urljoin(realm.url, get_realm_icon_url(realm)),
+        invite_required=realm.invite_required,
+        emails_restricted_to_domains=realm.emails_restricted_to_domains,
+        has_web_public_streams=realm.has_web_public_streams(),
+        is_demo_organization=realm.demo_organization_scheduled_deletion_date is not None,
+    )
+
+
 def get_realms_info_for_push_bouncer(realm_id: int | None = None) -> list[RealmDataForAnalytics]:
     realms = Realm.objects.order_by("id")
     if realm_id is not None:  # nocoverage
@@ -377,6 +419,7 @@ def get_realms_info_for_push_bouncer(realm_id: int | None = None) -> list[RealmD
             name=realm.name,
             authentication_methods=realm.authentication_methods_dict(),
             is_system_bot_realm=realm.string_id == settings.SYSTEM_BOT_REALM,
+            advertise_realm_data=get_advertise_realm_data(realm),
         )
         for realm in realms
     ]
