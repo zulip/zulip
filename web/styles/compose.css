@@ -1296,19 +1296,23 @@ textarea.new_message_textarea {
 }
 
 #skinned-channel-picker {
+    flex-grow: 1;
     display: grid;
-    /* Grid based on the open-compose channel picker. */
-    grid-template:
-        "lefthand-offset privacy-icon privacy-icon-gap channel-name righthand-offset" auto / 0.35em [select-label-start] auto 0.2em minmax(
-            0,
-            1fr
-        )
-        [select-label-end]
-        0.35em;
     align-items: baseline;
+    /* This is a bit of eyeball work, based on balancing
+       out the size and spatial relationships between the
+       privacy icon and the channel name, and the
+       surrounding negative space. */
+    /* 7px at 20px/1em; 4px at 20px/1em. */
+    grid-template:
+        "lefthand-offset privacy-icon privacy-icon-gap channel-name righthand-offset" auto
+        / 0.35em [select-label-start] auto var(
+            --dropdown-list-item-label-icon-gap
+        )
+        minmax(0, 1fr) [select-label-end] 0.35em;
 
     /* TODO: Abstract the channel-picker CSS to avoid
-       the duplications here. */
+       the duplications and various resets here. */
     .decorated-channel-name-wrapper {
         display: grid;
         grid-area: select-label;
@@ -1318,17 +1322,29 @@ textarea.new_message_textarea {
 
     .channel-privacy-type-icon {
         grid-area: privacy-icon;
-        font-size: 0.9375em;
-        height: 1em;
-        width: 1em;
+        font-size: 1em;
+        line-height: 0;
+        align-self: center;
         color: var(--privacy-icon-color-modified);
+
+        .zulip-icon {
+            position: static;
+            font-size: 1em;
+        }
     }
 
+    & > .channel-privacy-type-icon {
+        align-self: center;
+        line-height: 0;
+    }
+
+    .decorated-dm-label,
     .decorated-channel-name {
         grid-area: channel-name;
-        overflow-x: hidden;
-        text-wrap: nowrap;
+        overflow: hidden;
         text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--color-text-default);
     }
 }
 

@@ -252,7 +252,6 @@ export function update_recipient_row_on_skinned_compose(
 
     const user_ids_string = narrow_state.pm_ids_string();
     let user_ids: number[] = [];
-    let has_valid_user_ids = false;
 
     if (recipient_information?.user_ids) {
         user_ids = recipient_information?.user_ids;
@@ -260,7 +259,7 @@ export function update_recipient_row_on_skinned_compose(
         user_ids = people.user_ids_string_to_ids_array(user_ids_string);
     }
 
-    has_valid_user_ids = people.is_valid_user_ids(user_ids);
+    const has_valid_user_ids = people.is_valid_user_ids(user_ids);
 
     if (stream_id !== undefined && topic !== undefined) {
         // Update recipient row for stream/topic.
@@ -293,7 +292,7 @@ export function update_recipient_row_on_skinned_compose(
 
         $("#skinned-channel-picker").html(
             `<i class="zulip-icon zulip-icon-users channel-privacy-type-icon"></i>
-            <span class="decorated-channel-name">${direct_message_label}</span>`,
+            <span class="decorated-dm-label">${direct_message_label}</span>`,
         );
         if (dm_label.label_text) {
             $("#skinned-topic-box-label").text(dm_label.label_text);
