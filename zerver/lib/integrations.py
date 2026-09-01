@@ -669,7 +669,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
             ),
             WebhookUrlOption(
                 name="compact_edit_format",
-                label="Use a compact message format for edited issue and pull request descriptions",
+                label="Use a compact message format for edited issue, pull request, and discussion notifications",
                 input_type="checkbox_enabled",
             ),
         ],

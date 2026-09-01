@@ -446,30 +446,37 @@ class LazyContext(dict[str, str | int]):
 
 def get_discussion_body(helper: Helper) -> str:
     payload = helper.payload
-    action = get_discussion_action(payload)
+    action = get_discussion_action(payload, helper.compact_edit_format)
     DISCUSSION_TEMPLATE = DISCUSSION_TEMPLATES[action]
     context = LazyContext(helper)
     return DISCUSSION_TEMPLATE.format_map(context)
 
 
-def get_discussion_action(payload: WildValue) -> str:
+def get_discussion_action(payload: WildValue, compact_edit_format: bool) -> str:
     action = payload["action"].tame(check_string)
     if action in ("unlocked", "pinned", "unpinned", "reopened"):
         action = "generic_action"
     if action == "edited":
-        edited_field = "body" if "body" in payload["changes"] else "title"
-        action = f"edited_{edited_field}"
+        if "body" in payload["changes"]:
+            action = "generic_action" if compact_edit_format else "edited_body"
+        else:
+            action = "edited_title"
     return action
 
 
 def get_discussion_comment_body(helper: Helper) -> str:
     payload = helper.payload
+    message = (
+        None
+        if payload["action"].tame(check_string) == "edited" and helper.compact_edit_format
+        else payload["comment"]["body"].tame(check_string)
+    )
     return get_pull_request_event_message(
         user_name=get_sender_name(helper),
         action=get_comment_action(payload),
         url=payload["discussion"]["html_url"].tame(check_string),
         number=payload["discussion"]["number"].tame(check_int),
-        message=payload["comment"]["body"].tame(check_string),
+        message=message,
         title=payload["discussion"]["title"].tame(check_string) if helper.include_title else None,
         type="discussion",
     )
