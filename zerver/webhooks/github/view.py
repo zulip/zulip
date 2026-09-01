@@ -805,7 +805,7 @@ def get_pull_request_review_comment_body(helper: Helper) -> str:
     include_title = helper.include_title
     action = payload["action"].tame(check_string)
     message = None
-    if action == "created":
+    if action == "created" or (action == "edited" and not helper.compact_edit_format):
         message = payload["comment"]["body"].tame(check_string)
 
     title = "on #{} {}".format(

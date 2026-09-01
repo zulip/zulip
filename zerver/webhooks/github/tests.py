@@ -473,6 +473,24 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = ":speech_balloon: baxterthehacker created [PR review comment on #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692):\n\n``` quote\nMaybe you should use more emojji on this line.\n```"
         self.check_webhook("pull_request_review_comment", expected_topic_name, expected_message)
 
+    def test_pull_request_review_comment_edited_msg(self) -> None:
+        payload = orjson.loads(self.get_body("pull_request_review_comment"))
+        payload["action"] = "edited"
+        payload["changes"] = {"body": {"from": "The comment, before being edited."}}
+        comment_link = "[PR review comment](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692)"
+        expected_messages = {
+            "true": f":speech_balloon: baxterthehacker edited {comment_link}.",
+            "false": f":speech_balloon: baxterthehacker edited {comment_link}:\n\n``` quote\nMaybe you should use more emojji on this line.\n```",
+        }
+        for compact_edit_format, expected_message in expected_messages.items():
+            self.url = self.build_webhook_url(compact_edit_format=compact_edit_format)
+            self.check_webhook(
+                "pull_request_review_comment",
+                TOPIC_PR,
+                expected_message,
+                custom_payload=payload,
+            )
+
     def test_pull_request_locked(self) -> None:
         expected_message = "tushar912 has locked [PR #1](https://github.com/tushar912/public-repo/pull/1) as off-topic and limited conversation to collaborators."
         self.check_webhook("pull_request__locked", TOPIC_PR, expected_message)
