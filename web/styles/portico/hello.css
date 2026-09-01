@@ -622,6 +622,7 @@ ul {
     }
 
     .screen-2__desc a,
+    .screen-3__subtitle a,
     .screen-4__desc a {
         font-weight: 550;
         text-decoration: underline;
@@ -632,6 +633,7 @@ ul {
     }
 
     .screen-2__desc a:hover,
+    .screen-3__subtitle a:hover,
     .screen-4__desc a:hover {
         text-decoration-color: hsl(0deg 0% 100%);
         transition: none;
