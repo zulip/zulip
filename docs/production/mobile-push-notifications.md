@@ -324,11 +324,29 @@ installation:
   pages for your Zulip organization as well.
 
   (Some fields returned by this endpoint, like the organization icon
-  and description, are not included in uploaded metadata.)
+  and description, are not included in uploaded metadata, except as
+  described below for organizations that have asked to be listed in
+  the Zulip communities directory.)
 
 - The [organization type](https://zulip.com/help/organization-type)
   and creation date.
 - The number of user accounts with each role.
+
+If `ZULIP_SERVICE_ADVERTISE_REALM=True` is set in
+`/etc/zulip/settings.py`, additional metadata is uploaded for each
+organization whose administrators have given permission to be listed
+in the [Zulip communities
+directory](https://zulip.com/help/communities-directory), and only for
+those organizations:
+
+- The organization's description and icon, which are what the
+  directory displays.
+- Whether the organization requires an invitation to join, restricts
+  signups to particular email domains, has web-public channels, and is
+  a demo organization. These determine whether the organization meets
+  the [eligibility
+  criteria](https://zulip.com/help/communities-directory#eligibility)
+  for being listed.
 
 Our use of uploaded metadata is governed by the same [Terms of
 Service](https://zulip.com/policies/terms) and [Privacy
