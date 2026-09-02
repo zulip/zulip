@@ -1,17 +1,13 @@
 # Zulip Bitbucket integration
 
+Receive Bitbucket Cloud notifications in Zulip!
+
 Zulip supports both Git and Mercurial notifications from Bitbucket.
 
-!!! tip ""
+!!! warn ""
 
-    If you also configure a [custom profile
-    field](/help/custom-profile-fields) for Atlassian Cloud account IDs,
-    this integration will refer to Bitbucket users using
-    [Zulip silent mentions](/help/mention-a-user-or-group#silently-mention-a-user),
-    rather than their Bitbucket display name. See [how to find Atlassian
-    account IDs][atlassian-account-id].
-
-[atlassian-account-id]: https://developer.atlassian.com/cloud/automation/resources/how-to-get-user-account-IDs/
+    For Bitbucket Data Center webhooks, see the [Zulip Bitbucket
+    Data Center](/integrations/bitbucketdatacenter) integration.
 
 {start_tabs}
 
@@ -28,6 +24,17 @@ Zulip supports both Git and Mercurial notifications from Bitbucket.
    **Save**.
 
 {end_tabs}
+
+!!! tip ""
+
+    If you configure a [custom profile field](/help/custom-profile-fields)
+    in your Zulip organization for Atlassian Cloud account IDs,
+    this integration will refer to Bitbucket users using
+    [Zulip silent mentions](/help/mention-a-user-or-group#silently-mention-a-user),
+    rather than their Bitbucket display name. See [how to find Atlassian
+    account IDs][atlassian-account-id].
+
+[atlassian-account-id]: https://developer.atlassian.com/cloud/automation/resources/how-to-get-user-account-IDs/
 
 {!congrats.md!}
 
