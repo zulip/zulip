@@ -1255,6 +1255,10 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
     const modal_content_html = render_admin_human_form({
         user_id,
         email: person.delivery_email,
+        can_change_email:
+            current_user.is_admin &&
+            current_user.can_change_user_emails &&
+            realm.server_admins_can_change_user_emails,
         full_name: person.full_name,
         user_role_values: settings_config.user_role_values,
         is_active,
@@ -1352,15 +1356,19 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
             $<HTMLSelectOneElement>("select:not([multiple])#user-role-select").val()!.trim(),
             10,
         );
-        const $full_name = $("#edit-user-form").find("input[name='full_name']");
+        const $full_name = $("#edit-user-form").find<HTMLInputElement>("input[name='full_name']");
+        const $email = $("#edit-user-form").find<HTMLInputElement>("input[name='email']");
         const profile_data = get_human_profile_data(fields_user_pills);
 
         const url = "/json/users/" + encodeURIComponent(user_id);
-        const data = {
-            full_name: $full_name.val(),
+        const data: Record<string, string> = {
+            full_name: $full_name.val() ?? "",
             role: JSON.stringify(role),
             profile_data: JSON.stringify(profile_data),
         };
+        if ($email.length > 0 && $email.val() !== person.delivery_email) {
+            data["new_email"] = $email.val() ?? "";
+        }
 
         const $submit_button = $("#user-profile-modal .dialog_submit_button");
         const $cancel_button = $("#user-profile-modal .dialog_exit_button");

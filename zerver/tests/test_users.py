@@ -8,6 +8,7 @@ import orjson
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sessions.models import Session
+from django.core import mail
 from django.core.exceptions import ValidationError
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
@@ -28,6 +29,7 @@ from zerver.actions.user_settings import (
     do_change_avatar_fields,
     do_change_full_name,
     do_change_user_setting,
+    send_admin_email_change_notifications,
 )
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
@@ -1338,35 +1340,53 @@ class AdminChangeUserEmailTest(ZulipTestCase):
         self.assert_json_error(result, "Insufficient permission")
 
         self.set_user_role(realm_admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
-        result = self.client_patch(
-            f"/json/users/{cordelia.id}",
-            dict(new_email="invalid"),
-        )
-        self.assert_json_error(result, "Invalid new email address.")
-
-        result = self.client_patch(
-            f"/json/users/{UserProfile.objects.latest('id').id + 1}",
-            dict(new_email="new@zulip.com"),
-        )
-        self.assert_json_error(result, "No such user")
-
-        result = self.client_patch(
-            f"/json/users/{cordelia.id}",
-            dict(new_email=realm_admin.delivery_email),
-        )
-        self.assert_json_error(result, "New email value error: Already has an account.")
-
         result = self.client_patch(f"/json/users/{cordelia.id}", valid_params)
-        self.assert_json_success(result)
+        self.assert_json_error(result, "User not authorized to change user emails")
 
-        cordelia.refresh_from_db()
-        self.assertEqual(cordelia.delivery_email, "cordelia_new@zulip.com")
+        with self.settings(ADMINS_CAN_CHANGE_USER_EMAILS=True):
+            mail.outbox = []
+            result = self.client_patch(
+                f"/json/users/{cordelia.id}",
+                dict(new_email="invalid"),
+            )
+            self.assert_json_error(result, "Invalid new email address.")
 
-        last_realm_audit_log = RealmAuditLog.objects.last()
-        assert last_realm_audit_log is not None
-        self.assertEqual(last_realm_audit_log.event_type, AuditLogEventType.USER_EMAIL_CHANGED)
-        self.assertEqual(last_realm_audit_log.modified_user, cordelia)
-        self.assertEqual(last_realm_audit_log.acting_user, realm_admin)
+            result = self.client_patch(
+                f"/json/users/{UserProfile.objects.latest('id').id + 1}",
+                dict(new_email="new@zulip.com"),
+            )
+            self.assert_json_error(result, "No such user")
+
+            result = self.client_patch(
+                f"/json/users/{cordelia.id}",
+                dict(new_email=realm_admin.delivery_email),
+            )
+            self.assert_json_error(result, "New email value error: Already has an account.")
+
+            result = self.client_patch(f"/json/users/{cordelia.id}", valid_params)
+            self.assert_json_success(result)
+            self.assert_length(mail.outbox, 2)
+            self.assertEqual(mail.outbox[0].to, [cordelia.delivery_email])
+            self.assertEqual(mail.outbox[1].to, [valid_params["new_email"]])
+            self.assertIn("organization administrator", mail.outbox[0].body)
+            self.assertIn(cordelia.delivery_email, mail.outbox[0].body)
+            self.assertIn(valid_params["new_email"], mail.outbox[0].body)
+
+            cordelia.refresh_from_db()
+            self.assertEqual(cordelia.delivery_email, "cordelia_new@zulip.com")
+
+            last_realm_audit_log = RealmAuditLog.objects.last()
+            assert last_realm_audit_log is not None
+            self.assertEqual(last_realm_audit_log.event_type, AuditLogEventType.USER_EMAIL_CHANGED)
+            self.assertEqual(last_realm_audit_log.modified_user, cordelia)
+            self.assertEqual(last_realm_audit_log.acting_user, realm_admin)
+
+    def test_send_admin_email_change_notifications_skips_empty_email(self) -> None:
+        cordelia = self.example_user("cordelia")
+        mail.outbox = []
+        send_admin_email_change_notifications(cordelia, "", "new@zulip.com")
+        self.assert_length(mail.outbox, 1)
+        self.assertEqual(mail.outbox[0].to, ["new@zulip.com"])
 
 
 class AdminCreateUserTest(ZulipTestCase):
