@@ -24,7 +24,7 @@ I'm having a problem with this.
         self.check_webhook("issue_opened_without_assignee", self.TOPIC_NAME, expected_message)
 
     def test_issue_updated(self) -> None:
-        expected_message = """**test user** updated [#191 Found a bug](https://example.com).
+        expected_message = """**test2 user2** updated [#191 Found a bug](https://example.com).
 
 ~~~ quote
 I've started working on this issue. The problem seems to be in the authentication module.
