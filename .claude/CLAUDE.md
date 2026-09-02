@@ -7,62 +7,23 @@ contributors.
 
 ## Philosophy
 
-Zulip is a team chat application used by thousands of organizations,
-built to last for many years. It is developed by a vibrant open-source
-community, with maintainers who have consistently emphasized **high
-standards for codebase readability, code review, commit discipline,
-debuggability, automated testing, tooling, documentation, and all the
-other subtle details that together determine whether software is easy
-to understand, operate, and modify**.
-
-Zulip's engineering strategy is to **"move quickly without breaking
-things"**. This is possible because the project has invested years in
-testing, tooling, code structure, documentation, and development
-practices that catch bugs systematically rather than relying on
-individual vigilance. Maintainers spend most of their review time on
-product decisions and code structure/readability, not on chasing
-correctness issues — because the process is designed to prevent them.
-
-This means Zulip's coding philosophy is to **focus relentlessly on
-making the codebase easy to understand and difficult to make dangerous
-mistakes**. This applies equally to AI-generated contributions. Every
-change should make the codebase more maintainable and easier to read.
+Zulip is built to last for decades and holds a high bar for
+readability, commit discipline, testing, and documentation. Its
+engineering strategy is to "move quickly without breaking things":
+every change should make the codebase easier to understand and
+harder to make dangerous mistakes in. Maintainers expect to spend
+review time on product and structure questions, not on catching
+correctness issues, so the process below is designed to catch those
+first.
 
 ### No detail is too small
 
-Zulip holds itself to a high bar for polish because users depend on
-this software daily, and because the project is built to last for
-decades. There is no category of "minor issue" that is acceptable
-to ship — if something is broken in any context where a user would
-encounter it, it must be fixed before merging. The project's
-extensive investment in testing, tooling, and review processes exists
-precisely so that these issues get caught and fixed, not so that they
-can be classified as low-priority and deferred.
-
-This philosophy extends to every aspect of the product:
-
-- **Visual precision matters.** Alignment, spacing, colors, and font
-  sizes must be consistent with similar existing UI. When making CSS
-  changes, you must demonstrate with pixel-precise before/after
-  comparisons that there are no unintended side effects.
-- **Every state matters.** UI must look correct in all its states:
-  hover, active, disabled, focused, selected, empty, overflowing.
-  Changes that could plausibly affect colors, contrast, or
-  theme-dependent imagery must work in both light and dark themes;
-  changes whose effect can't reasonably vary with theme (pure
-  geometry/typography — `font-size`, `line-height`, `margin`,
-  `padding`, `display`, `font-weight`, etc.) only need a single
-  theme verified.
-- **Every window size matters.** UI must look good from wide desktop
-  (1920px) down to narrow phone screens (480px).
-- **Every language matters.** Translated strings can be 1.5x longer
-  than English or half as short. UI must handle both extremes without
-  breaking layout. Think about right-to-left languages too.
-- **Every interaction path matters.** Keyboard navigation, screen
-  readers, permission levels, feature interactions (banners
-  overlapping, resolved topics, muted messages), and edge cases in
-  data (empty lists, very long names, single items vs. many) must all
-  be considered.
+There is no category of "minor issue" that is acceptable to ship —
+if something is broken in any state, size, theme, or language where
+a user would encounter it, it must be fixed before merging. If a fix
+would require a design decision, raise it as a question rather than
+shipping the broken state. The "Manual Testing for UI Changes"
+checklist below enumerates what to check.
 
 The right attitude is: "What could go wrong, and how do I verify that
 it doesn't?" not "It looks fine to me." **What isn't tested probably
@@ -103,9 +64,6 @@ git log --oneline -20 -- path/to/file.py
 # Check for related issues on GitHub
 ```
 
-Always show existing similar code and explain how it works before proposing
-changes.
-
 ### 2. Propose an Approach
 
 Before writing code, explain the plan:
@@ -119,29 +77,8 @@ Before writing code, explain the plan:
 
 Structure changes as clean commits:
 
-- Backend and API changes (with tests and API doc changes documented
-  fully using our double-entry changelog system). When starting an API
-  change, reread `docs/documentation/api.md` to review the process for
-  documenting an API change. Run `tools/create-api-changelog`; it
-  generates an empty `api_docs/unmerged.d/ZF-XXXXXX.md` file (where
-  `XXXXXX` is a random hex string the tool picks for you) and stages
-  it for you. Document the changes in that file as an unordered list
-  (`*` bullets) of the additions or changes, formatted to match
-  `api_docs/changelog.md`. Don't add a `**Feature level**` heading;
-  the merge tooling emits that itself.
-  In the OpenAPI yaml (`zerver/openapi/zulip.yaml`), reference the same
-  filename stem in **Changes** notes, e.g.,
-  `**Changes**: New in Zulip 13.0 (feature level ZF-XXXXXX).` The merge
-  process matches the `Zulip <version> (feature level ZF-XXXXXX)` shape
-  and overwrites both the version and the placeholder with the real
-  release version and final feature level. Use the upcoming release's
-  version — the next major release after the latest one shipped (e.g.,
-  13.0 while 12.0 is the current release), which you can read from the
-  first `## Changes in Zulip X.Y` heading in `api_docs/changelog.md`.
-  You must keep the literal `New in Zulip X.Y` format, or the merge
-  tooling won't recognize the note and CI (`check-feature-level-updated`)
-  will fail with the `ZF-` placeholder still in the file. Never update
-  `API_FEATURE_LEVEL` manually.
+- Backend and API changes (with tests, and API documentation updated
+  as described in "Documenting API Changes" below).
 - Frontend UI changes (with tests and user-facing documentation
   updates). Remember to plan to use your visual test skill to check
   your work whenever you change web app code (HTML, CSS, JS).
@@ -153,14 +90,35 @@ commit from other changes.
 
 ### 4. Verify Before Finalizing
 
-Run tests before making a commit. Always manage your time by running
-specific test collections, not the entire test suite:
+Run the linter and the relevant tests before making each commit; see
+"Testing Requirements" below for which ones.
 
-```bash
-# Includes mypy and typescript checkers
-./tools/lint path/to/changed/files.py
-./tools/test-backend zerver.tests.test_relevant_module
-```
+## Documenting API Changes
+
+API doc changes must be documented fully using our double-entry
+changelog system. When starting an API change, reread
+`docs/documentation/api.md` to review the process for documenting an
+API change. Run `tools/create-api-changelog`; it generates an empty
+`api_docs/unmerged.d/ZF-XXXXXX.md` file (where `XXXXXX` is a random
+hex string the tool picks for you) and stages it for you. Document
+the changes in that file as an unordered list (`*` bullets) of the
+additions or changes, formatted to match `api_docs/changelog.md`.
+Don't add a `**Feature level**` heading; the merge tooling emits that
+itself.
+
+In the OpenAPI yaml (`zerver/openapi/zulip.yaml`), reference the same
+filename stem in **Changes** notes, e.g.,
+`**Changes**: New in Zulip 13.0 (feature level ZF-XXXXXX).` The merge
+process matches the `Zulip <version> (feature level ZF-XXXXXX)` shape
+and overwrites both the version and the placeholder with the real
+release version and final feature level. Use the upcoming release's
+version — the next major release after the latest one shipped (e.g.,
+13.0 while 12.0 is the current release), which you can read from the
+first `## Changes in Zulip X.Y` heading in `api_docs/changelog.md`.
+You must keep the literal `New in Zulip X.Y` format, or the merge
+tooling won't recognize the note and CI (`check-feature-level-updated`)
+will fail with the `ZF-` placeholder still in the file. Never update
+`API_FEATURE_LEVEL` manually.
 
 ## Before You Start
 
@@ -169,6 +127,7 @@ specific test collections, not the entire test suite:
 Zulip has over 185,000 words of developer documentation. Before working on any area:
 
 - Read documentation from docs/, starlight_help/src/content/docs/, and api_docs/.
+  `docs/subsystems/directory-structure.md` explains where code lives.
 - Read existing code in the area you're modifying.
 - Use `git grep` to find similar patterns in the codebase and read those.
 
@@ -179,15 +138,43 @@ Zulip has over 185,000 words of developer documentation. Before working on any a
 - **Use clear, greppable names** for functions, arguments, variables, and
   tests. Future developers will `git grep` for relevant terms when
   researching a problem, so names should communicate purpose clearly.
+- If a value's correctness hinges on a qualifier — local, cached,
+  approximate, lower bound — put that word in the name
+  (`local_message_count`, not `message_count`). A reader who has to be
+  told the caveat will eventually misuse the value.
 - Keep everything well factored for maintainability. Avoid duplicating
   code, especially where access control or subtle correctness is involved.
+- Before writing a helper, `git grep` the shared modules (e.g.,
+  `web/src/util.ts`, `web/src/people.ts`, `web/src/message_util.ts`,
+  `zerver/lib/`) for an existing equivalent. "It mirrors an existing
+  pattern" justifies parallel structure, not duplicated code: if the
+  new function equals an existing one modulo a parameter, extract a
+  shared helper instead of copying.
 - Run `./tools/lint` to catch style issues before committing, including mypy issues.
 - JavaScript/TypeScript code must use `const` or `let`, never `var`.
 - Avoid lodash in favor of modern ECMAScript primitives where available,
   keeping in mind our browserlist.
+- Use `util.the($el)` instead of `$el[0]!` when a jQuery object should
+  hold exactly one element; it asserts that at runtime.
+- Use class or ID selectors in jQuery and CSS, not bare tag selectors
+  (`$row.find("a")`) or attribute selectors (`[tabindex]`), which match
+  unintended elements and can't be grepped for. If no suitable class
+  exists, add one.
 - Prefer writing code that is readable without explanation over heavily
   commented code using clever tricks. Comments should explain "why" when
   the reason isn't obvious, not narrate "what" the code does.
+- A comment must make sense to a reader who never saw the old code.
+  If it only makes sense as a contrast with how the code used to work
+  ("show the modal before rendering so that if rendering throws..."),
+  it describes the diff, and belongs in the commit message instead.
+- Don't reference line numbers (`filter.ts:493`) in comments, commit
+  messages, or PR descriptions; they are wrong after the next edit
+  above them. Reference symbol names instead.
+- Use the standard term for what the code does ("override the rule",
+  "set the color"), not a metaphor ("defeat", "pin"). When the
+  codebase already has a short idiom for a situation, such as
+  `/* Override bootstrap defaults */`, reuse it verbatim rather than
+  writing a longer explanation.
 - Use `em` units instead of `px` for computed CSS values that need to
   scale with font size. Pixel approximations break at different zoom
   levels and font-size settings.
@@ -233,6 +220,15 @@ coherent idea."** This is non-negotiable.
   When a commit is flagged as potentially droppable, verify all
   earlier commits work correctly without it.
 
+### Keep Unrelated Fixes Out of Feature PRs
+
+If, while building a feature, you find and fix a pre-existing bug or
+make a refactor that would be worth merging even if the feature never
+lands, submit it as its own PR. A small isolated PR gets real
+scrutiny; the same change as commit 1 of 6 in a large PR tends to be
+waved through. Prep commits that only make sense for the feature
+stay in the feature PR.
+
 ### Commit Message Format
 
 ```
@@ -268,38 +264,21 @@ Fixes #123.
   and `Fixes #123.` in the final commit.
 - Never: `Partially fixes #123.` (GitHub ignores "partially")
 
-### Rebasing Commits (Non-Interactive)
+**Only claim what you verified:**
 
-Since `git rebase -i` requires an interactive editor, use
-`GIT_SEQUENCE_EDITOR` to supply the todo list via a script:
+- `Fixes #123.` on a bug report asserts the bug was reproduced and
+  the change resolves it. If you couldn't reproduce it, tell the user
+  rather than writing `Fixes`; they may be able to confirm it. Issues
+  that describe a feature rather than a bug need no reproduction.
+- The same applies to any claim in a commit message or PR description
+  about what the code does; state only what you checked by reading
+  the code, running it, or running tests.
 
-1. **Updating the HEAD commit:** If the commit you need to modify is
-   already at HEAD, just use `git commit --amend` directly. The
-   fixup+rebase workflow below is only needed for non-HEAD commits.
+### Rebasing Commits
 
-2. **Squashing fixups into existing commits:** Create fixup commits with
-   `git commit --fixup=<target-hash>`, then write a shell script that
-   outputs the desired todo (with `pick` and `fixup` lines in order)
-   and run:
-
-   ```bash
-   GIT_SEQUENCE_EDITOR=/path/to/todo-script.sh git rebase -i <base>
-   ```
-
-   Note: `--autosquash` alone without `-i` does **not** reorder or
-   squash anything.
-
-3. **Rewording commit messages:** Use `git format-patch` to export
-   commits as patch files, edit the message headers in the patch
-   files, then reapply:
-
-   ```bash
-   git format-patch <base> -o /tmp/patches/
-   # Edit the commit message in each /tmp/patches/000N-*.patch file
-   # (the message is between the Subject: line and the --- line)
-   git reset --hard <base>
-   git am /tmp/patches/*.patch
-   ```
+To change a commit that is not at HEAD (squash a fixup into it,
+reorder, or reword it), use the `/git-rebase` skill; `git rebase -i`
+needs an interactive editor and won't work directly.
 
 ## Testing Requirements
 
@@ -308,10 +287,14 @@ must include nice tests that follow our testing philosophy.
 
 ### Before Submitting:
 
+Manage your time by running specific backend test collections, not
+the entire suite; the node suite is fast enough to run in full.
+
 ```bash
-./tools/test-js-with-node       # JavaScript tests; full suite fast enough
-./tools/lint                    # Run all linters
-./tools/test-backend            # Python tests
+# Includes mypy and typescript checkers
+./tools/lint path/to/changed/files.py
+./tools/test-backend zerver.tests.test_relevant_module
+./tools/test-js-with-node
 ```
 
 A common failure mode is failing to have test coverage for error
@@ -331,6 +314,10 @@ tests.
 - A good failing test before implementing is good practice so your
   test and code can jointly verify each other.
 - Remember to always assert state is correctly updated, not just "success".
+- Name and comment tests by what they guarantee ("must not throw when
+  the list is empty"), not by the past failure they were written
+  after ("regression test for the empty-list crash"). The same goes
+  for commit messages.
 
 ### For Webhooks:
 
@@ -345,6 +332,20 @@ catches issues that automated tests miss. **Treat this checklist as
 blocking, not advisory** — every applicable item must be verified
 before the change is ready.
 
+Most of these items don't need a human: the `/visual-test` skill can
+screenshot the UI at several window widths and in both themes, measure
+positions with `getBoundingClientRect()`, and drive keyboard
+navigation. Verify what you can that way before asking the user to
+test anything.
+
+When the skill can't run in your environment, much of the list can
+still be checked from code: `git grep` every selector you touched to
+see where else it applies, look for fixed widths or `white-space:
+nowrap` that a longer translated string would overflow, and read the
+keyboard-handling and permission code paths you changed. Then tell
+the user exactly which items you could not verify (rendered alignment,
+hover appearance) rather than a general "please test".
+
 **Visual appearance:**
 
 - Is the new UI consistent with similar elements (fonts, colors, sizes)?
@@ -354,10 +355,13 @@ before the change is ready.
   don't eyeball it.
 - Do clickable elements have hover behavior consistent with similar UI?
 - If elements can be disabled, does the disabled state look right?
+- Does every state look right: hover, active, disabled, focused,
+  selected, empty, overflowing?
 - Did the change accidentally affect other parts of the UI? Use
   `git grep` to check if modified CSS is used elsewhere. CSS changes
   are notorious for unintended consequences — check every page and
-  component that shares the selectors you modified.
+  component that shares the selectors you modified, and demonstrate
+  with pixel-precise before/after comparisons that there are none.
 - Check all of the above in both light and dark themes when the
   change could plausibly affect colors, contrast, or theme-dependent
   imagery. Pure geometry/typography changes (`font-size`,
@@ -372,11 +376,13 @@ before the change is ready.
   (1920px), typical laptop (1280px), tablet, and narrow phone (480px).
 - Would the UI break if translated strings were 1.5x longer than
   English? What if they were half as long? Both directions matter.
+  Think about right-to-left languages too.
 
 **Functionality:**
 
 - Are live updates working as expected?
 - Is keyboard navigation, including tabbing to interactive elements, working?
+- Do screen readers get sensible labels and roles for new elements?
 - If the feature affects the message view, try different narrows: topic,
   channel, Combined feed, direct messages.
 - If the feature affects the compose box, test both channel messages and
@@ -387,33 +393,6 @@ before the change is ready.
   resolved/unresolved topics? Collapsed or muted messages?
 - Think about edge cases in data: empty lists, very long names, single
   items vs. hundreds, special characters in strings.
-
-### Puppeteer Visual Tests: Verifying Alignment
-
-When using Puppeteer to verify visual alignment, do not rely on
-eyeballing screenshots — especially small full-page ones. Instead:
-
-- Use `page.evaluate()` with `getBoundingClientRect()` to measure
-  actual pixel positions of the elements you need aligned, and print
-  them to the console. Compare the numbers.
-- Always take **both** a full-page screenshot and a zoomed clip of
-  the area of interest.
-- For zoomed clips, calculate the clip region from non-fixed elements;
-  fixed/sticky elements may report bounding-box positions that don't
-  match their visual location on the page.
-- Be aware that CSS nesting can scope styles to a specific parent
-  (e.g., `.parent .my-class`) — reusing the same class name in a
-  different context may not pick up the expected styles.
-- To verify keyboard-focus styles, use real keyboard navigation
-  (`page.keyboard.press`); programmatic `.focus()` doesn't reliably
-  trigger `:focus-visible` and may be overridden by view-level focus
-  management.
-- Focus rings drawn as `::before` / `::after` pseudo-elements aren't
-  visible in `getComputedStyle` of the focused element — verify them
-  in a screenshot, not via computed styles.
-- For visual changes, produce before/after screenshot pairs by writing
-  one test and running it twice with a `SCREENSHOT_SUFFIX` env var
-  (`-old` on `main`, `-updated` on your branch).
 
 ## Self-Review Checklist
 
@@ -432,65 +411,13 @@ Before finalizing, verify:
 - [ ] No secrets or credentials are hardcoded
 - [ ] Documentation is updated if behavior changes
 - [ ] Refactoring is complete (`git grep` for remaining occurrences)
+- [ ] If a helper's return value or a shared data structure gained a
+      field, every consumer that destructures or rebuilds it was
+      audited, including sibling blocks in the same file that build
+      the same shape. TypeScript does not flag callers that silently
+      drop the new field.
 - [ ] Security audit of changes. Always check for XSS in UI changes
       and for incorrect access control in server changes.
-
-Always output a recommend pull request summary+description that
-follow's Zulip's guidelines once you finish preparing a series of
-commits.
-
-## Common Pitfalls
-
-### Treating Known Issues as Acceptable
-
-A common failure mode is discovering a problem during verification
-and then noting it as a known limitation rather than fixing it. At
-Zulip, there is no category of "known minor issue" that is acceptable
-to ship. If it's broken in any state, size, theme, or language, it
-needs to be fixed.
-
-**Mitigation:** When you find any issue during verification, fix it
-before presenting the work. If a fix would require a design decision,
-raise it as a question rather than shipping the broken state.
-
-### Overconfident Code Generation
-
-You may generate code that looks correct but doesn't match Zulip patterns.
-
-**Mitigation:** Always show existing similar code first before implementing.
-
-### Incomplete Type Annotations
-
-Python code must be fully typed for mypy.
-
-**Mitigation:** Ensure all functions have complete type annotations. Run mypy
-(perhaps via the linter) to verify.
-
-### Missing Test Updates
-
-Tests must be in the same commit as the code they test.
-
-**Mitigation:** Include test updates in each commit. Show what tests need to
-change.
-
-### Verbose Commit Messages
-
-Zulip commits are concise -- say everything that's important for a
-reviewer to understand about the motivation for the work and changes,
-and nothing more. Avoid wordiness and details obvious to someone who
-is looking at the commit and its metadata (lists of filenames, etc).
-
-**Mitigation:** Keep summary under 72 characters. Body should explain why,
-not what.
-
-### Mixing Concerns
-
-Multiple changes in one commit makes review difficult.
-
-**Mitigation:** Each commit should do exactly one thing. Plan
-necessary refactoring and preparatory commits in advance of functional
-changes. You can split into good commits after the fact, but it's much
-faster and easier to just plan and write them well the first time.
 
 ## What Not To Do
 
@@ -521,10 +448,9 @@ faster and easier to just plan and write them well the first time.
 
 ### Process:
 
-- Always check if you're working on top of the latest upstream/main, and
-  fetch + rebase when starting a project so you're not using a stale branch.
-  If you're continuing a project, start by rebasing, resolving merge
-  conflicts carefully.
+- When starting or resuming work, `git fetch` and check whether the
+  branch is behind `upstream/main`; tell the user if so. Rebasing
+  their branch is their decision; don't run `git rebase` unless asked.
 - Don't make design or UX decisions silently. When a technical
   constraint forces a tradeoff, present the constraint and options
   to the user rather than picking one. Never remove features, hide
@@ -573,7 +499,9 @@ Recommend pausing for discussion when:
 
 - The approach involves security-sensitive code
 - Database migrations are needed (See `docs/subsystems/schema-migrations.md`).
-- The change affects many files (>10)
+- The change alters behavior in several subsystems at once (a
+  mechanical rename or type annotation sweep touching many files
+  does not count)
 - Performance implications are unclear
 - The feature design isn't fully specified
 - The API or data model design isn't fully specified
@@ -617,35 +545,6 @@ colors and backgrounds. Subtle properties like `line-height`, `margin`,
 miss but cause visible regressions. Check inherited properties too —
 e.g., a `body` rule's `line-height` or `margin` affects all descendants.
 
-## Key Documentation Links
-
-- Contributing guide: https://zulip.readthedocs.io/en/latest/contributing/contributing.html
-- Code style: https://zulip.readthedocs.io/en/latest/contributing/code-style.html
-- Commit discipline: https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html
-- Testing overview: https://zulip.readthedocs.io/en/latest/testing/testing.html
-- Backend tests: https://zulip.readthedocs.io/en/latest/testing/testing-with-django.html
-- Code review: https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html
-- mypy guide: https://zulip.readthedocs.io/en/latest/testing/mypy.html
-
-## Repository Structure Quick Reference
-
-```
-zerver/           # Main Django app
-  models/         # Database models
-  views/          # API endpoints
-  lib/            # Shared utilities
-  tests/          # Backend tests
-  webhooks/       # Integration webhooks
-web/              # Frontend TypeScript/JavaScript
-  src/            # Main frontend code
-  styles/         # CSS
-  templates/      # Frontend HTML
-  tests/          # Frontend tests
-templates/        # Jinja2/Handlebars templates
-tools/            # Development and testing scripts
-docs/             # ReadTheDocs documentation source
-```
-
 ## Help Center Documentation
 
 When making any user-facing change, **read
@@ -677,3 +576,17 @@ If a tool complains that provision is outdated, run `./tools/provision`
 to fix it. Do not use `--skip-provision-check` to work around the
 error; the check exists because tests and linters depend on provisioned
 dependencies being current.
+
+If you are running outside the development environment (e.g., on a
+macOS host with the Vagrant/Docker setup), `./tools/` scripts won't
+run directly; run the same command inside the container instead:
+
+```bash
+vagrant ssh -c 'cd ~/zulip && ./tools/lint path/to/changed/files.py'
+```
+
+The checkout is shared with the host, so files you edit are already
+there and anything the command writes (test output, screenshots) is
+visible on both sides. If `vagrant ssh` fails with a Docker daemon
+error, Docker Desktop isn't running; ask the user to start it. These
+commands take minutes, so run them in the background.

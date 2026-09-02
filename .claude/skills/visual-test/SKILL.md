@@ -242,6 +242,33 @@ console.log(`\n${results.length - failures.length}/${results.length} tests passe
 This keeps the test running through failures so you see all results,
 unlike `assert` which aborts on the first failure.
 
+#### Verifying alignment
+
+When using Puppeteer to verify visual alignment, do not rely on
+eyeballing screenshots — especially small full-page ones. Instead:
+
+- Use `page.evaluate()` with `getBoundingClientRect()` to measure
+  actual pixel positions of the elements you need aligned, and print
+  them to the console. Compare the numbers.
+- Always take **both** a full-page screenshot and a zoomed clip of
+  the area of interest.
+- For zoomed clips, calculate the clip region from non-fixed elements;
+  fixed/sticky elements may report bounding-box positions that don't
+  match their visual location on the page.
+- Be aware that CSS nesting can scope styles to a specific parent
+  (e.g., `.parent .my-class`) — reusing the same class name in a
+  different context may not pick up the expected styles.
+- To verify keyboard-focus styles, use real keyboard navigation
+  (`page.keyboard.press`); programmatic `.focus()` doesn't reliably
+  trigger `:focus-visible` and may be overridden by view-level focus
+  management.
+- Focus rings drawn as `::before` / `::after` pseudo-elements aren't
+  visible in `getComputedStyle` of the focused element — verify them
+  in a screenshot, not via computed styles.
+- For visual changes, produce before/after screenshot pairs by writing
+  one test and running it twice with a `SCREENSHOT_SUFFIX` env var
+  (`-old` on `main`, `-updated` on your branch).
+
 ### 2. Run the test
 
 ```bash
@@ -252,6 +279,16 @@ The runner matches test file names by prefix, so you don't need the
 full filename or `.test.ts` suffix. This starts a fresh test server
 on port 9981, runs the script, and saves screenshots to
 `var/puppeteer/`. The test database is reset between test files.
+
+If you are running outside the development environment, run the same
+command inside the container (see "Common Commands" in CLAUDE.md):
+
+```bash
+vagrant ssh -c 'cd ~/zulip && ./tools/test-js-with-puppeteer _claude_<feature>_test'
+```
+
+`var/` is shared with the host, so the screenshots land in
+`var/puppeteer/` on both sides.
 
 On **aarch64 (ARM) hosts**, you must set `PUPPETEER_EXECUTABLE_PATH`
 (see "Environment details" below):
