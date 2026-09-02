@@ -2,6 +2,9 @@
 
 Zulip supports both Git and Mercurial notifications from Bitbucket.
 
+For the webhooks used by Bitbucket Data Center, click
+[here](https://zulip.com/integrations/category/version-control).
+
 !!! tip ""
 
     If you also configure a [custom profile
