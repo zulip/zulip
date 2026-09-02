@@ -27,7 +27,7 @@
     );
     --color-background-modal-cancel-button-active: light-dark(
         hsl(229deg 9% 36% / 11%),
-        hsl(230deg 9% 60% / 18%)
+        hsl(0deg 0% 0% / 12%)
     );
 
     /* Since modals are also present in portico and billing pages, we define
