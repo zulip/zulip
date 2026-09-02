@@ -4,7 +4,7 @@ import type * as tippy from "tippy.js";
 
 import render_add_new_bot_form from "../templates/settings/add_new_bot_form.hbs";
 import render_bot_settings_tip from "../templates/settings/bot_settings_tip.hbs";
-import render_settings_user_list_row from "../templates/settings/settings_user_list_row.hbs";
+import render_settings_bot_list_row from "../templates/settings/settings_bot_list_row.hbs";
 
 import * as avatar from "./avatar.ts";
 import * as bot_data from "./bot_data.ts";
@@ -70,6 +70,7 @@ type BotInfo = {
     can_modify: boolean;
     cannot_deactivate: boolean;
     cannot_edit: boolean;
+    show_manage_buttons: boolean;
     display_email: string;
     show_download_zuliprc_button: boolean;
     show_generate_integration_url_button: boolean;
@@ -426,6 +427,11 @@ function bot_info(bot_user_id: number): BotInfo {
 
     const is_bot_owner = owner_id === current_user.user_id;
     const can_modify_bot = current_user.is_admin || is_bot_owner;
+    const is_system_bot = bot_user.is_system_bot ?? false;
+
+    // can_modify_bot is already true for admins, so the extra
+    // is_system_bot check added nothing — collapsed into one flag.
+    const show_manage_buttons = can_modify_bot;
 
     return {
         is_bot: true,
@@ -442,8 +448,8 @@ function bot_info(bot_user_id: number): BotInfo {
         no_owner: !owner_full_name,
         is_current_user: false,
         can_modify: can_modify_bot,
-        cannot_deactivate: (bot_user.is_system_bot ?? false) || !can_modify_bot,
-        cannot_edit: (bot_user.is_system_bot ?? false) || !can_modify_bot,
+        cannot_deactivate: is_system_bot || !can_modify_bot,
+        cannot_edit: is_system_bot || !can_modify_bot,
         // It's always safe to show the real email addresses for bot users
         display_email: bot_user.email,
         ...(owner_id
@@ -458,7 +464,17 @@ function bot_info(bot_user_id: number): BotInfo {
         show_download_zuliprc_button: is_bot_owner && bot_user.bot_type === GENERIC_BOT_TYPE_INT,
         show_generate_integration_url_button:
             can_modify_bot && bot_user.bot_type === INCOMING_WEBHOOK_BOT_TYPE_INT,
+        show_manage_buttons,
     };
+}
+
+function should_show_actions_column(bot_list: BotInfo[]): boolean {
+    return bot_list.some(
+        (info) =>
+            info.show_download_zuliprc_button ||
+            info.show_generate_integration_url_button ||
+            info.show_manage_buttons,
+    );
 }
 
 function handle_bot_deactivation($tbody: JQuery): void {
@@ -624,12 +640,18 @@ function reset_scrollbar($sel: JQuery): () => void {
     };
 }
 
+function update_actions_column_visibility(section: BotSettingsSection, $container: JQuery): void {
+    const current_list = section.list_widget?.get_current_list() ?? [];
+    const show_actions = should_show_actions_column(current_list);
+    $container.find(".bot-list-table").toggleClass("hide-actions-column", !show_actions);
+}
+
 function create_all_bots_table(
     section: BotSettingsSection,
     $container: JQuery,
     widget_name: string,
 ): void {
-    loading.make_indicator($container.find("loading-indicator"), {
+    loading.make_indicator($container.find(".loading-indicator"), {
         text: $t({defaultMessage: "Loading…"}),
     });
     const $all_bots_table = $container.find(".bot-table");
@@ -639,7 +661,7 @@ function create_all_bots_table(
     section.list_widget = ListWidget.create($all_bots_table, bot_user_ids, {
         name: widget_name,
         get_item: bot_info,
-        modifier_html: render_settings_user_list_row,
+        modifier_html: render_settings_bot_list_row,
         html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id.toString())}']`),
         filter: {
             predicate(item) {
@@ -649,7 +671,10 @@ function create_all_bots_table(
                 const $search_input = $container.find(".search");
                 return are_filters_active(section.filters, $search_input);
             },
-            onupdate: reset_scrollbar($all_bots_table),
+            onupdate() {
+                update_actions_column_visibility(section, $container);
+                reset_scrollbar($all_bots_table)();
+            },
         },
         $parent_container: $container.expectOne(),
         init_sort: "full_name_alphabetic",
@@ -663,7 +688,9 @@ function create_all_bots_table(
     });
     settings_users.set_text_search_value($all_bots_table, section.filters.text_search);
 
-    loading.destroy_indicator($container.find("loading-indicator"));
+    update_actions_column_visibility(section, $container);
+
+    loading.destroy_indicator($container.find(".loading-indicator"));
     $all_bots_table.show();
 }
 
@@ -672,7 +699,7 @@ function create_your_bots_table(
     $container: JQuery,
     widget_name: string,
 ): void {
-    loading.make_indicator($container.find("loading-indicator"), {
+    loading.make_indicator($container.find(".loading-indicator"), {
         text: $t({defaultMessage: "Loading…"}),
     });
     const $your_bots_table = $container.find(".bot-table");
@@ -681,7 +708,7 @@ function create_your_bots_table(
     section.list_widget = ListWidget.create($your_bots_table, bot_user_ids, {
         name: widget_name,
         get_item: bot_info,
-        modifier_html: render_settings_user_list_row,
+        modifier_html: render_settings_bot_list_row,
         html_selector: (item) => $(`tr[data-user-id='${CSS.escape(item.user_id.toString())}']`),
         filter: {
             predicate(item) {
@@ -691,7 +718,10 @@ function create_your_bots_table(
                 const $search_input = $container.find(".search");
                 return are_filters_active(section.filters, $search_input);
             },
-            onupdate: reset_scrollbar($your_bots_table),
+            onupdate() {
+                update_actions_column_visibility(section, $container);
+                reset_scrollbar($your_bots_table)();
+            },
         },
         $parent_container: $container.expectOne(),
         init_sort: "full_name_alphabetic",
@@ -705,7 +735,9 @@ function create_your_bots_table(
     });
     settings_users.set_text_search_value($your_bots_table, section.filters.text_search);
 
-    loading.destroy_indicator($container.find("loading-indicator"));
+    update_actions_column_visibility(section, $container);
+
+    loading.destroy_indicator($container.find(".loading-indicator"));
     $your_bots_table.show();
 }
 

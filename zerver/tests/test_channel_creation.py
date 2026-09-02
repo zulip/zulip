@@ -1,3 +1,5 @@
+from unittest import mock
+
 import orjson
 
 from zerver.actions.channel_folders import check_add_channel_folder
@@ -21,12 +23,15 @@ from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import reset_email_visibility_to_everyone_in_zulip_realm
 from zerver.lib.types import UserGroupMembersData, UserGroupMembersDict
 from zerver.models import (
+    GroupGroupMembership,
     Message,
     NamedUserGroup,
     Realm,
     Recipient,
     Stream,
     Subscription,
+    UserGroup,
+    UserGroupMembership,
     UserMessage,
     UserProfile,
 )
@@ -285,24 +290,36 @@ class TestCreateStreams(ZulipTestCase):
         channel_folder = check_add_channel_folder(
             user_profile.realm, "sports", "", acting_user=user_profile
         )
+        extra_post_data = {
+            "description": "test channel",
+            "folder_id": orjson.dumps(channel_folder.id).decode(),
+        }
+        for setting_name in Stream.stream_permission_group_settings:
+            extra_post_data[setting_name] = orjson.dumps(
+                {
+                    "direct_members": [cordelia.id],
+                    "direct_subgroups": [nobody_group.id],
+                }
+            ).decode()
+
         result = self.create_channel_via_post(
             user_profile,
             name="testchannel",
-            extra_post_data=dict(
-                description="test channel",
-                can_administer_channel_group=orjson.dumps(
-                    {
-                        "direct_members": [cordelia.id],
-                        "direct_subgroups": [nobody_group.id],
-                    }
-                ).decode(),
-                folder_id=orjson.dumps(channel_folder.id).decode(),
-            ),
+            extra_post_data=extra_post_data,
         )
         self.assert_json_success(result)
         stream = get_stream("testchannel", user_profile.realm)
         self.assertEqual(stream.name, "testchannel")
         self.assertEqual(stream.description, "test channel")
+        for setting_name in Stream.stream_permission_group_settings:
+            setting_value = getattr(stream, setting_name)
+            self.assertEqual(
+                list(setting_value.direct_members.all().values_list("id", flat=True)), [cordelia.id]
+            )
+            self.assertEqual(
+                list(setting_value.direct_subgroups.all().values_list("id", flat=True)),
+                [nobody_group.id],
+            )
 
         # Confirm channel created notification message in channel events topic.
         message = self.get_last_message()
@@ -1307,6 +1324,103 @@ class TestCreateStreams(ZulipTestCase):
         self.assertNotEqual(
             stream_1.can_add_subscribers_group_id, stream_2.can_add_subscribers_group_id
         )
+
+    def test_no_unused_anonymous_groups_for_names_differing_in_case(self) -> None:
+        """
+        Channel names are compared case-insensitively, so a single request
+        asking for names differing only in case creates just one channel.
+        The anonymous groups created for the other name are unused and are
+        deleted.
+        """
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+
+        extra_post_data = {
+            "can_add_subscribers_group": orjson.dumps(
+                {"direct_members": [cordelia.id], "direct_subgroups": []}
+            ).decode(),
+        }
+        original_group_ids = set(UserGroup.objects.filter(realm=realm).values_list("id", flat=True))
+
+        self.assert_json_success(
+            self.subscribe_via_post(hamlet, ["Design", "design"], extra_post_data)
+        )
+
+        # Every group created while processing the request is used by the
+        # one channel that was created.
+        stream = get_stream("Design", realm)
+        referenced_group_ids = {
+            getattr(stream, setting_name + "_id")
+            for setting_name in Stream.stream_permission_group_settings
+        }
+        new_group_ids = (
+            set(UserGroup.objects.filter(realm=realm).values_list("id", flat=True))
+            - original_group_ids
+        )
+        self.assertEqual(new_group_ids - referenced_group_ids, set())
+
+    def test_no_unused_anonymous_groups_when_channel_creation_races(self) -> None:
+        """
+        Two racing channel creation requests should not leave behind the
+        anonymous groups created by the request that loses the race.
+        """
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
+        )
+
+        # Both direct members and direct subgroups, so that the memberships
+        # of the unused groups need to be cleaned up too.
+        extra_post_data = {
+            "can_add_subscribers_group": orjson.dumps(
+                {"direct_members": [cordelia.id], "direct_subgroups": [moderators_group.id]}
+            ).decode(),
+        }
+        self.assert_json_success(self.subscribe_via_post(hamlet, ["new_stream"], extra_post_data))
+        stream = get_stream("new_stream", realm)
+        original_setting_ids = (
+            stream.can_administer_channel_group_id,
+            stream.can_add_subscribers_group_id,
+        )
+        original_group_ids = set(UserGroup.objects.filter(realm=realm).values_list("id", flat=True))
+        original_user_membership_count = UserGroupMembership.objects.count()
+        original_group_membership_count = GroupGroupMembership.objects.count()
+
+        # Simulate the race for the subscribe endpoint by making the
+        # existence check not see the channel that is already there.
+        with mock.patch("zerver.lib.streams.bulk_get_streams", return_value={}):
+            result = self.subscribe_via_post(hamlet, ["new_stream"], extra_post_data)
+        self.assert_json_success(result)
+
+        # And for the "/channels/create" endpoint, by making the name
+        # availability check not see it.
+        with mock.patch("zerver.views.streams.check_stream_name_available"):
+            result = self.api_post(
+                hamlet,
+                "/api/v1/channels/create",
+                {
+                    "name": "new_stream",
+                    "subscribers": orjson.dumps([hamlet.id]).decode(),
+                    **extra_post_data,
+                },
+            )
+        self.assert_json_success(result)
+        self.assertEqual(result.json()["id"], stream.id)
+
+        stream.refresh_from_db()
+        self.assertEqual(
+            (stream.can_administer_channel_group_id, stream.can_add_subscribers_group_id),
+            original_setting_ids,
+        )
+        self.assertEqual(
+            set(UserGroup.objects.filter(realm=realm).values_list("id", flat=True)),
+            original_group_ids,
+        )
+        self.assertEqual(UserGroupMembership.objects.count(), original_user_membership_count)
+        self.assertEqual(GroupGroupMembership.objects.count(), original_group_membership_count)
 
     def test_create_stream_with_default_push_notifications(self) -> None:
         """An admin can set default_push_notifications=True when creating a stream.

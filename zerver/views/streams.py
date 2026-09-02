@@ -112,7 +112,7 @@ from zerver.lib.user_groups import (
 from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.users import access_bot_by_id, bulk_access_users_by_email, bulk_access_users_by_id
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import ChannelFolder, Stream, UserMessage, UserProfile, UserTopic
+from zerver.models import ChannelFolder, Stream, UserGroup, UserMessage, UserProfile, UserTopic
 from zerver.models.groups import SystemGroups
 from zerver.models.streams import StreamTopicsPolicyEnum
 from zerver.models.users import get_system_bot
@@ -770,6 +770,9 @@ def create_channel(
         acting_user=user_profile,
         can_add_subscribers_group=group_settings_map["can_add_subscribers_group"],
         can_administer_channel_group=group_settings_map["can_administer_channel_group"],
+        can_create_topic_group=group_settings_map["can_create_topic_group"],
+        can_delete_any_message_group=group_settings_map["can_delete_any_message_group"],
+        can_delete_own_message_group=group_settings_map["can_delete_own_message_group"],
         can_move_messages_out_of_channel_group=group_settings_map[
             "can_move_messages_out_of_channel_group"
         ],
@@ -783,6 +786,16 @@ def create_channel(
         folder=folder,
         topics_policy=topics_policy_value,
     )
+
+    if not created:
+        # The anonymous groups created above can be deleted since
+        # they are not being used.
+        unused_group_ids = [
+            setting_value.id
+            for setting_value in group_settings_map.values()
+            if setting_value.id in anonymous_group_membership
+        ]
+        UserGroup.objects.filter(id__in=unused_group_ids).delete()
 
     if is_default_stream:
         do_add_default_stream(new_channel)
