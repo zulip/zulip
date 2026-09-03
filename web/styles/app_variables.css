@@ -1811,6 +1811,14 @@
         hsl(0deg 0% 80%),
         hsl(0deg 0% 33%)
     );
+    --color-background-rendered-markdown-time: light-dark(
+        hsl(0deg 0% 93%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --color-box-shadow-rendered-markdown-time: light-dark(
+        hsl(0deg 0% 80%),
+        hsl(0deg 0% 0% / 40%)
+    );
 
     /* Tab-switcher colors */
     /* The non-selected colors here are shared with numerous other
