@@ -2,6 +2,9 @@
 
 Zulip supports both Git and Mercurial notifications from Bitbucket.
 
+For the new-style webhooks used by self-hosted Bitbucket Server / Bitbucket
+Data Center, click [here](./bitbucket3).
+
 !!! tip ""
 
     If you also configure a [custom profile
