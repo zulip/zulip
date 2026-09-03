@@ -173,7 +173,9 @@ export function create({
                     height: 28, // 2em at 14px / 1em
                 });
                 const user_ids = await get_pill_user_ids(pill_widget);
-                onPillCreateAction(user_ids);
+                if (Array.isArray(user_ids)) {
+                    onPillCreateAction(user_ids);
+                }
                 loading.destroy_indicator($(".add-subscriber-loading-spinner"));
             })();
         });
@@ -183,6 +185,9 @@ export function create({
         pill_widget.onPillRemove(() => {
             void (async () => {
                 const user_ids = await get_pill_user_ids(pill_widget);
+                if (!Array.isArray(user_ids)) {
+                    return;
+                }
                 onPillRemoveAction(user_ids);
             })();
         });
@@ -239,9 +244,14 @@ export function append_user_group_from_name(
     user_group_pill.append_user_group(user_group, pill_widget);
 }
 
-export async function get_pill_user_ids(pill_widget: CombinedPillContainer): Promise<number[]> {
+export async function get_pill_user_ids(
+    pill_widget: CombinedPillContainer,
+): Promise<number[] | {failed_stream_id: number}> {
     const user_ids = user_pill.get_user_ids(pill_widget);
     const stream_user_ids = await stream_pill.get_user_ids(pill_widget);
+    if (!Array.isArray(stream_user_ids)) {
+        return stream_user_ids;
+    }
     const group_user_ids = user_group_pill.get_user_ids(pill_widget);
     return [...user_ids, ...stream_user_ids, ...group_user_ids];
 }
@@ -302,6 +312,9 @@ export function set_up_handlers({
                 return;
             }
             loading.destroy_indicator($(".add-subscriber-loading-spinner"));
+            if (!Array.isArray(pill_user_ids)) {
+                return;
+            }
             action({pill_user_ids});
         })();
     }

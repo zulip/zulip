@@ -57,9 +57,11 @@ export function get_stream_name_from_item(item: StreamPill): string {
     return stream.name;
 }
 
+// Returns the user ids the pills stand for, or the channel whose
+// subscribers could not be fetched.
 export async function get_user_ids(
     pill_widget: StreamPillWidget | CombinedPillContainer,
-): Promise<number[]> {
+): Promise<number[] | {failed_stream_id: number}> {
     const stream_ids = get_stream_ids(pill_widget);
     const results = await Promise.all(
         stream_ids.map(async (stream_id) =>
@@ -74,6 +76,11 @@ export async function get_user_ids(
         // Double check if the stream pill has been removed from the pill
         // widget while we were doing fetches.
         if (current_stream_ids_in_widget.includes(stream_id)) {
+            // The fetch failed, so we don't know who the subscribers
+            // of this channel are.
+            if (subscribers === null) {
+                return {failed_stream_id: stream_id};
+            }
             user_ids = [...user_ids, ...subscribers];
         }
     }
