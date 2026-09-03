@@ -257,10 +257,6 @@
         }
     }
 
-    .help_link_widget:hover {
-        color: inherit;
-    }
-
     #uppy-editor .uppy-ImageCropper {
         /* Uppy cropper canvas has some CSS properties set for the background that
         do not look good for dark theme. When using Uppy Dashboard, this can be
