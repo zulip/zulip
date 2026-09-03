@@ -356,6 +356,14 @@ test("maybe_fetch_stream_subscribers", async () => {
     );
     blueslip.reset();
 
+    // A bad request is not retried, so we get null even with retry.
+    blueslip.expect("error", "Bad request to fetch channel subscribers.");
+    assert.deepEqual(
+        await peer_data.get_subscribers_with_possible_fetch(india.stream_id, true),
+        null,
+    );
+    blueslip.reset();
+
     peer_data.clear_for_testing();
     mock_channel_get(channel, (opts) => {
         opts.error({readyState: 0});
@@ -619,6 +627,16 @@ test("get_unique_subscriber_count_for_streams", async () => {
     const count = await peer_data.get_unique_subscriber_count_for_streams([stream_id]);
 
     assert.equal(count, 2);
+
+    // If we only have partial data and the fetch fails, count what we have.
+    peer_data.clear_for_testing();
+    peer_data.set_subscribers(stream_id, [me.user_id, fred.user_id, bot_botson.user_id], false);
+    mock_channel_get(channel, (opts) => {
+        opts.error({status: 400, responseJSON: ""});
+    });
+    blueslip.expect("error", "Bad request to fetch channel subscribers.");
+    assert.equal(await peer_data.get_unique_subscriber_count_for_streams([stream_id]), 2);
+    blueslip.reset();
 });
 
 test("fetch_subscriptions_for_user", async () => {

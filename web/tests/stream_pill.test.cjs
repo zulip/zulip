@@ -7,8 +7,12 @@ const {make_realm} = require("./lib/example_realm.cjs");
 const {server_supported_permission_settings} = require("./lib/example_settings.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
-const {zrequire} = require("./lib/namespace.cjs");
+const {mock_channel_get} = require("./lib/mock_channel.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const blueslip = require("./lib/zblueslip.cjs");
+
+const channel = mock_esm("../src/channel");
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -77,6 +81,10 @@ const sweden_pill = {
     type: "stream",
     stream_id: sweden.stream_id,
 };
+const germany_pill = {
+    type: "stream",
+    stream_id: germany.stream_id,
+};
 
 const subs = [denmark, sweden, germany];
 for (const sub of subs) {
@@ -132,8 +140,26 @@ run_test("get_user_ids", async () => {
     const items = [denmark_pill, sweden_pill];
     const widget = {items: () => items};
 
-    const user_ids = await stream_pill.get_user_ids(widget);
-    assert.deepEqual(user_ids, [1, 2, 3, 4, 5, 77]);
+    assert.deepEqual(await stream_pill.get_user_ids(widget), {
+        status: "success",
+        user_ids: [1, 2, 3, 4, 5, 77],
+    });
+});
+
+run_test("get_user_ids_fetch_failed", async () => {
+    // Germany's subscribers have not been fetched, and the fetch
+    // fails with a bad request, so we don't know who they are.
+    const widget = {items: () => [denmark_pill, germany_pill]};
+    mock_channel_get(channel, (opts) => {
+        assert.equal(opts.url, `/json/streams/${germany.stream_id}/members`);
+        opts.error({status: 400, responseJSON: ""});
+    });
+    blueslip.expect("error", "Bad request to fetch channel subscribers.");
+    assert.deepEqual(await stream_pill.get_user_ids(widget), {
+        status: "failed",
+        failed_stream_id: germany.stream_id,
+    });
+    blueslip.reset();
 });
 
 run_test("get_stream_ids", () => {

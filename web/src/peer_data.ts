@@ -195,11 +195,6 @@ function get_loaded_subscriber_subset(stream_id: number): LazySet {
     return subscribers;
 }
 
-async function get_full_subscriber_set(stream_id: number, retry_on_failure: true): Promise<LazySet>;
-async function get_full_subscriber_set(
-    stream_id: number,
-    retry_on_failure: boolean,
-): Promise<LazySet | null>;
 async function get_full_subscriber_set(
     stream_id: number,
     retry_on_failure: boolean,
@@ -388,8 +383,9 @@ export async function get_subscribers_with_possible_fetch(
     // This function parallels `get_subscribers` but ensures we include all
     // subscribers, possibly fetching that data from the server.
     const subscribers = await get_full_subscriber_set(stream_id, retry_on_failure);
-    // This means the request failed, which can only happen if `retry_on_failure`
-    // is false.
+    // This means the request failed. Even with `retry_on_failure`, a
+    // bad request is not retried, since the channel was deleted or we
+    // lost access to it.
     if (subscribers === null) {
         return null;
     }
@@ -523,7 +519,7 @@ export async function get_unique_subscriber_count_for_streams(
     stream_ids: number[],
 ): Promise<number> {
     const valid_subscribers = new LazySet([]);
-    const promises: Record<number, Promise<LazySet>> = {};
+    const promises: Record<number, Promise<LazySet | null>> = {};
     for (const stream_id of stream_ids) {
         promises[stream_id] = get_full_subscriber_set(stream_id, true);
     }
@@ -531,7 +527,7 @@ export async function get_unique_subscriber_count_for_streams(
     for (const stream_id of stream_ids) {
         // If it's `null`, that means a request failed and we don't know the
         // full subscribers set, so just use whatever we have already.
-        const subscribers = await promises[stream_id]!;
+        const subscribers = (await promises[stream_id]!) ?? get_loaded_subscriber_subset(stream_id);
 
         for (const user_id of subscribers.keys()) {
             if (!people.is_valid_bot_user(user_id)) {
