@@ -1,9 +1,15 @@
-# CLAUDE.md - Guidelines for AI Contributions to Zulip
+# AGENTS.md - Guidelines for AI Contributions to Zulip
 
-This file provides guidance to Claude (and other AI coding assistants) for
-contributing to the Zulip codebase. These guidelines are designed to produce
+This file provides guidance to AI coding agents for contributing to
+the Zulip codebase. These guidelines are designed to produce
 contributions that meet the same high standards we expect from human
 contributors.
+
+Claude Code automatically uses `.claude/rules/` and `.claude/skills/`.
+If you are a different agent, read the files in these folders to see
+the rest of the agent instructions and when they're relevant. Rules
+are relevant for files listed in `paths:` at the top of the rule
+file. Skills explain when they're relevant in their `description`.
 
 ## Philosophy
 
