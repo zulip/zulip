@@ -130,8 +130,9 @@ Structure changes as clean commits:
   documentation can be found in `.claude/rules/api-changelog.md`
   (loaded automatically when you edit `zerver/openapi/zulip.yaml`).
 - Frontend UI changes (with tests and user-facing documentation
-  updates). Remember to plan to use your visual test skill to check
-  your work whenever you change web app code (HTML, CSS, JS).
+  updates). Remember to plan to use your visual test skill
+  (`.claude/skills/visual-test/SKILL.md`) to check your work whenever
+  you change web app code (HTML, CSS, JS).
 
 Each commit should be self-contained, highly readable and reviewable
 using `git show --color-moved`, and pass lint/tests independently. If
@@ -406,9 +407,10 @@ of truth for help center conventions, components, and structure.
 ## Zulip Chat Links
 
 When you encounter a Zulip narrow URL (e.g., from `chat.zulip.org` in a
-GitHub issue, PR, or user message), use the `/fetch-zulip-messages` skill
-to read the conversation. Do not use `WebFetch` — it cannot access Zulip
-message content.
+GitHub issue, PR, or user message), use the `/fetch-zulip-messages`
+skill (`.claude/skills/fetch-zulip-messages/SKILL.md`) to read the
+conversation. Do not use `WebFetch` — it cannot access Zulip message
+content.
 
 ## Common Commands
 
