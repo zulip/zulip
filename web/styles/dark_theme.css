@@ -123,11 +123,6 @@
         color: inherit;
     }
 
-    & time {
-        background: hsl(0deg 0% 0% / 20%);
-        box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 40%);
-    }
-
     .tip {
         color: inherit;
     }
