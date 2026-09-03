@@ -1548,26 +1548,26 @@ class SlackImporter(ZulipTestCase):
 
         ### THREAD 2 CONVERSATION ###
         # Test thread topic name contains message snippet
-        expected_thread_2_topic_name = "2015-06-12 message body text"
+        expected_thread_2_topic_name = "2018-10-18 another thread message"
         thread_2_topic_link_syntax = get_stream_topic_link_syntax(
             slack_recipient_name_to_zulip_recipient_id["random"],
             "random",
             expected_thread_2_topic_name,
         )
-        original_thread_2_message_1_content = "message body text"
+        original_thread_2_message_1_content = "another thread message"
         expected_thread_2_message_1_content = f"""
 {original_thread_2_message_1_content}
 
 *1 reply in {thread_2_topic_link_syntax}*
 """.strip()
 
-        self.assertEqual(zerver_message[1]["content"], expected_thread_2_message_1_content)
-        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(zerver_message[3]["content"], expected_thread_2_message_1_content)
+        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
 
         # Thread reply is in the correct thread topic
-        expected_thread_2_message_2_content = "random"
-        self.assertEqual(zerver_message[2]["content"], expected_thread_2_message_2_content)
-        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+        expected_thread_2_message_2_content = "another reply"
+        self.assertEqual(zerver_message[4]["content"], expected_thread_2_message_2_content)
+        self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
 
     def test_thread_cross_link_across_chunk_boundary(self) -> None:
         # A thread's parent message and its replies are not necessarily
