@@ -122,7 +122,7 @@ export function create({
                 latest_fetch_id += 1;
                 const fetch_id = latest_fetch_id;
                 loading.make_indicator($loading_spinner, {
-                    height: 56, // 4em at 14px / 1em
+                    height: 28, // 2em at 14px / 1em
                 });
                 const user_ids = await get_pill_user_ids(pill_widget);
                 if (fetch_id !== latest_fetch_id) {
@@ -205,7 +205,7 @@ export function set_up_handlers({
         const $loading_spinner = $parent_container.find(spinner_selector);
         void (async () => {
             loading.make_indicator($loading_spinner, {
-                height: 56, // 4em at 14px / 1em
+                height: 28, // 2em at 14px / 1em
             });
             const pill_user_ids = await get_pill_user_ids(pill_widget);
             // If we're no longer in the same view after fetching
