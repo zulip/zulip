@@ -30,39 +30,13 @@ change should make the codebase more maintainable and easier to read.
 
 ### No detail is too small
 
-Zulip holds itself to a high bar for polish because users depend on
-this software daily, and because the project is built to last for
-decades. There is no category of "minor issue" that is acceptable
-to ship — if something is broken in any context where a user would
-encounter it, it must be fixed before merging. The project's
-extensive investment in testing, tooling, and review processes exists
-precisely so that these issues get caught and fixed, not so that they
-can be classified as low-priority and deferred.
-
-This philosophy extends to every aspect of the product:
-
-- **Visual precision matters.** Alignment, spacing, colors, and font
-  sizes must be consistent with similar existing UI. When making CSS
-  changes, you must demonstrate with pixel-precise before/after
-  comparisons that there are no unintended side effects.
-- **Every state matters.** UI must look correct in all its states:
-  hover, active, disabled, focused, selected, empty, overflowing.
-  Changes that could plausibly affect colors, contrast, or
-  theme-dependent imagery must work in both light and dark themes;
-  changes whose effect can't reasonably vary with theme (pure
-  geometry/typography — `font-size`, `line-height`, `margin`,
-  `padding`, `display`, `font-weight`, etc.) only need a single
-  theme verified.
-- **Every window size matters.** UI must look good from wide desktop
-  (1920px) down to narrow phone screens (480px).
-- **Every language matters.** Translated strings can be 1.5x longer
-  than English or half as short. UI must handle both extremes without
-  breaking layout. Think about right-to-left languages too.
-- **Every interaction path matters.** Keyboard navigation, screen
-  readers, permission levels, feature interactions (banners
-  overlapping, resolved topics, muted messages), and edge cases in
-  data (empty lists, very long names, single items vs. many) must all
-  be considered.
+There is no category of "minor issue" that is acceptable to ship —
+if something is broken in any state, size, theme, or language where
+a user would encounter it, it must be fixed before merging. If a fix
+would require a design decision, raise it as a question rather than
+shipping the broken state. See `.claude/rules/ui-testing.md` for
+what to test for UI changes (the file loads automatically when you
+work on frontend files).
 
 The right attitude is: "What could go wrong, and how do I verify that
 it doesn't?" not "It looks fine to me." **What isn't tested probably
