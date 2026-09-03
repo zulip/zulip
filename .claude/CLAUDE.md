@@ -180,7 +180,7 @@ automatically when you work on CSS files).
 Python rules can be found in `.claude/rules/python.md` (loaded
 automatically when you work on .py files).
 
-See: https://zulip.readthedocs.io/en/latest/contributing/code-style.html
+See: `docs/contributing/code-style.md`
 
 ## Commit Discipline
 
@@ -362,13 +362,13 @@ Recommend pausing for discussion when:
 
 ## Key Documentation Links
 
-- Contributing guide: https://zulip.readthedocs.io/en/latest/contributing/contributing.html
-- Code style: https://zulip.readthedocs.io/en/latest/contributing/code-style.html
-- Commit discipline: https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html
-- Testing overview: https://zulip.readthedocs.io/en/latest/testing/testing.html
-- Backend tests: https://zulip.readthedocs.io/en/latest/testing/testing-with-django.html
-- Code review: https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html
-- mypy guide: https://zulip.readthedocs.io/en/latest/testing/mypy.html
+- Contributing guide: `docs/contributing/contributing.md`
+- Code style: `docs/contributing/code-style.md`
+- Commit discipline: `docs/contributing/commit-discipline.md`
+- Testing overview: `docs/testing/testing.md`
+- Backend tests: `docs/testing/testing-with-django.md`
+- Code review: `docs/contributing/code-reviewing.md`
+- mypy guide: `docs/testing/mypy.md`
 
 ## Repository Structure Quick Reference
 
