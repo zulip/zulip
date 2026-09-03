@@ -7,6 +7,7 @@ import * as loading from "./loading.ts";
 import type {User} from "./people.ts";
 import * as pill_typeahead from "./pill_typeahead.ts";
 import * as stream_pill from "./stream_pill.ts";
+import type {UserIdsFetchResult} from "./stream_pill.ts";
 import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_group_pill from "./user_group_pill.ts";
 import * as user_groups from "./user_groups.ts";
@@ -180,11 +181,13 @@ export function create({
                 loading.make_indicator($loading_spinner, {
                     height: 28, // 2em at 14px / 1em
                 });
-                const user_ids = await get_pill_user_ids(pill_widget);
+                const result = await get_pill_user_ids(pill_widget);
                 if (fetch_id !== latest_fetch_id) {
                     return;
                 }
-                onPillCreateAction(user_ids);
+                if (result.status === "success") {
+                    onPillCreateAction(result.user_ids);
+                }
                 loading.destroy_indicator($loading_spinner);
             })();
         });
@@ -193,8 +196,11 @@ export function create({
     if (onPillRemoveAction) {
         pill_widget.onPillRemove(() => {
             void (async () => {
-                const user_ids = await get_pill_user_ids(pill_widget);
-                onPillRemoveAction(user_ids);
+                const result = await get_pill_user_ids(pill_widget);
+                if (result.status === "failed") {
+                    return;
+                }
+                onPillRemoveAction(result.user_ids);
             })();
         });
     }
@@ -250,13 +256,21 @@ export function append_user_group_from_name(
     user_group_pill.append_user_group(user_group, pill_widget);
 }
 
-export async function get_pill_user_ids(pill_widget: CombinedPillContainer): Promise<number[]> {
-    const stream_user_ids = await stream_pill.get_user_ids(pill_widget);
+export async function get_pill_user_ids(
+    pill_widget: CombinedPillContainer,
+): Promise<UserIdsFetchResult> {
+    const stream_result = await stream_pill.get_user_ids(pill_widget);
+    if (stream_result.status === "failed") {
+        return stream_result;
+    }
     // Read the other pills only after waiting for subscriber data,
     // since pills may have been removed while we were waiting.
     const user_ids = user_pill.get_user_ids(pill_widget);
     const group_user_ids = user_group_pill.get_user_ids(pill_widget);
-    return [...user_ids, ...stream_user_ids, ...group_user_ids];
+    return {
+        status: "success",
+        user_ids: [...user_ids, ...stream_result.user_ids, ...group_user_ids],
+    };
 }
 
 export function set_up_handlers({
@@ -308,7 +322,7 @@ export function set_up_handlers({
             loading.make_indicator($loading_spinner, {
                 height: 28, // 2em at 14px / 1em
             });
-            const pill_user_ids = await get_pill_user_ids(pill_widget);
+            const result = await get_pill_user_ids(pill_widget);
             // If we're no longer in the same view after fetching
             // subscriber data, don't update the UI. We don't need
             // to destroy the loading spinner because the tab re-renders
@@ -318,7 +332,10 @@ export function set_up_handlers({
                 return;
             }
             loading.destroy_indicator($loading_spinner);
-            action({pill_user_ids});
+            if (result.status === "failed") {
+                return;
+            }
+            action({pill_user_ids: result.user_ids});
         })();
     }
 
