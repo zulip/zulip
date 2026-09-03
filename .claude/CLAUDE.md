@@ -5,6 +5,10 @@ contributing to the Zulip codebase. These guidelines are designed to produce
 contributions that meet the same high standards we expect from human
 contributors.
 
+When doing any work with AI assistants, it is crucial to follow our AI use
+policy and guidelines. Become familiar with this policy to ensure you are
+not violating it: "AI use policy and guidelines" section in `CONTRIBUTING.md`.
+
 ## Philosophy
 
 Zulip is a team chat application used by thousands of organizations,
