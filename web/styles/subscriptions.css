@@ -161,7 +161,7 @@
     }
 }
 
-.subscribers-heading {
+.settings-table-heading {
     display: flex;
     align-items: center;
 
@@ -169,10 +169,6 @@
         width: 100%;
         height: 100%;
     }
-}
-
-.add-group-member-loading-spinner {
-    align-self: center;
 }
 
 .member-list-box,
