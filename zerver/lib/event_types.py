@@ -676,6 +676,7 @@ class RealmUpdateEvent(BaseEvent):
 class RealmUser(BaseModel):
     user_id: int
     email: str
+    avatar_source: str
     avatar_url: str | None
     avatar_version: int
     full_name: str
