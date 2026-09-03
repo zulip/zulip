@@ -1860,6 +1860,7 @@ class UserProfileTest(ZulipTestCase):
                 full_name=user.full_name,
                 user_id=user.id,
                 # common fields
+                avatar_source=user.avatar_source,
                 avatar_version=1,
                 bot_owner_id=None,
                 bot_type=1,

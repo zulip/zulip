@@ -201,6 +201,7 @@ paths:
                                 nullable: true
                               role: {}
                               timezone: {}
+                              avatar_source: {}
                               avatar_url:
                                 nullable: true
                               avatar_version: {}
@@ -1309,6 +1310,7 @@ paths:
                                       "is_active": true,
                                       "date_joined": "2020-07-15T15:04:02.030833+00:00",
                                       "avatar_url": "https://secure.gravatar.com/avatar/c6b5578d4964bd9c5fae593c6868912a?d=identicon&version=1",
+                                      "avatar_source": "G",
                                       "profile_data": {},
                                       "is_imported_stub": false,
                                     },
@@ -11336,6 +11338,7 @@ paths:
                               "is_owner": false,
                               "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
+                              "avatar_source": "G",
                               "bot_type": null,
                               "timezone": "",
                               "is_bot": false,
@@ -11381,6 +11384,7 @@ paths:
                               "is_owner": false,
                               "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
+                              "avatar_source": "G",
                               "is_active": true,
                               "email": "hamlet@zulip.com",
                               "delivery_email": null,
@@ -11395,6 +11399,7 @@ paths:
                               "delivery_email": "iago-bot@zulipdev.com",
                               "is_active": true,
                               "avatar_url": "https://secure.gravatar.com/avatar/7328586831cdbb1627649bd857b1ee8c?d=identicon&version=1",
+                              "avatar_source": "G",
                               "is_admin": false,
                               "is_owner": false,
                               "role": 400,
@@ -11902,6 +11907,17 @@ paths:
 
                           **Changes**: New in Zulip 3.0 (feature level 10).
                         example: 1
+                      avatar_source:
+                        type: string
+                        description: |
+                          The avatar data source type for the requesting user. Valid values are:
+
+                          - "G" = Hosted by Gravatar
+                          - "J" = Generated using Jdenticon
+                          - "U" = Uploaded by user
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-cc70c1).
+                        example: "G"
                       email:
                         type: string
                         description: |
@@ -12033,6 +12049,7 @@ paths:
                     example:
                       {
                         "avatar_url": "https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1",
+                        "avatar_source": "G",
                         "avatar_version": 1,
                         "email": "iago@zulip.com",
                         "delivery_email": iago@zulip.com,
@@ -16732,6 +16749,7 @@ paths:
                             "is_owner": false,
                             "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
+                            "avatar_source": "G",
                             "is_active": true,
                             "email": "hamlet@zulip.com",
                             "delivery_email": null,
@@ -16873,6 +16891,7 @@ paths:
                             "is_owner": false,
                             "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
+                            "avatar_source": "G",
                             "is_active": true,
                             "email": "hamlet@zulip.com",
                             "delivery_email": null,
@@ -23025,6 +23044,7 @@ paths:
                                   nullable: true
                                 role: {}
                                 timezone: {}
+                                avatar_source: {}
                                 avatar_url:
                                   nullable: true
                                 avatar_version: {}
@@ -30278,6 +30298,7 @@ components:
               nullable: true
             role: {}
             timezone: {}
+            avatar_source: {}
             avatar_url:
               nullable: true
             avatar_version: {}
@@ -30427,6 +30448,16 @@ components:
             In Zulip 3.0 (feature level 18), if the client has the
             `user_avatar_url_field_optional` capability, this will be missing at
             the server's sole discretion.
+        avatar_source:
+          type: string
+          description: |
+            The avatar data source type for the user. Valid values are:
+
+            - "G" = Hosted by Gravatar
+            - "J" = Generated using Jdenticon
+            - "U" = Uploaded by user
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-cc70c1).
         avatar_version:
           type: integer
           description: |
