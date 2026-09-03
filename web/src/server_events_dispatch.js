@@ -1118,6 +1118,9 @@ export function dispatch_normal_event(event) {
                     settings_preferences.report_emojiset_change(
                         settings_preferences.user_settings_panel,
                     );
+                    // Refresh the cached status emoji display settings so
+                    // that the rerenders below pick up the new value.
+                    user_status.refresh_cached_display_settings_for_all_users();
                     // Rerender the whole message list UI
                     for (const msg_list of message_lists.all_rendered_message_lists()) {
                         msg_list.rerender();

@@ -1371,10 +1371,18 @@ run_test("user_settings", ({override}) => {
         override(settings_preferences, "report_emojiset_change", stub.f);
         override(activity_ui, "build_user_sidebar", noop);
         override(user_settings, "emojiset", "text");
+        user_status.set_status_emoji(event_fixtures.user_status__set_status_emoji);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert_same(called, true);
         assert_same(user_settings.emojiset, "google");
+        // The cached status emoji display settings have to be refreshed
+        // before build_user_sidebar rerenders from them.
+        assert.equal(
+            user_status.get_status_emoji(event_fixtures.user_status__set_status_emoji.user_id)
+                .emoji_alt_code,
+            false,
+        );
     }
 
     event = event_fixtures.user_settings__starred_message_counts;
