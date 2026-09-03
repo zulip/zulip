@@ -569,6 +569,21 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         legacy_names=["bitbucket2"],
     ),
     IncomingWebhookIntegration(
+        "bitbucketdatacenter",
+        ["version-control"],
+        [
+            WebhookScreenshotConfig(
+                "repo_push_update_single_branch.json",
+                bot_name="Bitbucket Data Center Bot",
+                channel="commits",
+            )
+        ],
+        logo="images/integrations/logos/bitbucket.svg",
+        display_name="Bitbucket Data Center",
+        url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
+        legacy_names=["bitbucket3"],
+    ),
+    IncomingWebhookIntegration(
         "buildbot", ["continuous-integration"], [WebhookScreenshotConfig("started.json")]
     ),
     IncomingWebhookIntegration(
