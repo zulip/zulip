@@ -222,10 +222,6 @@
         box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 33%);
     }
 
-    .collapse-settings-button:hover {
-        color: hsl(200deg 79% 66%);
-    }
-
     #loading_older_messages_indicator,
     #recent_view_loading_messages_indicator {
         & path {
