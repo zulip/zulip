@@ -21,15 +21,15 @@ class Bitbucket3HookTests(WebhookTestCase):
 
     # Core repo events:
     def test_commit_comment_added(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) commented on [508d1b67f1f](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/commits/508d1b67f1f8f3a25f543a030a7a178894aa9907):\n~~~ quote\nJust an arbitrary comment on a commit.\n~~~"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) commented on [508d1b67f1f](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/commits/508d1b67f1f8f3a25f543a030a7a178894aa9907):\n``` quote\nJust an arbitrary comment on a commit.\n```"""
         self.check_webhook("commit_comment_added", TOPIC, expected_message)
 
     def test_commit_comment_edited(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) edited their comment on [508d1b67f1f](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/commits/508d1b67f1f8f3a25f543a030a7a178894aa9907):\n~~~ quote\nJust an arbitrary comment on a commit. Nothing to see here...\n~~~"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) edited their comment on [508d1b67f1f](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/commits/508d1b67f1f8f3a25f543a030a7a178894aa9907):\n``` quote\nJust an arbitrary comment on a commit. Nothing to see here...\n```"""
         self.check_webhook("commit_comment_edited", TOPIC, expected_message)
 
     def test_commit_comment_deleted(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) deleted their comment on [508d1b67f1f](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/commits/508d1b67f1f8f3a25f543a030a7a178894aa9907):\n~~~ quote\n~~Just an arbitrary comment on a commit. Nothing to see here...~~\n~~~"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) deleted their comment on [508d1b67f1f](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/commits/508d1b67f1f8f3a25f543a030a7a178894aa9907):\n``` quote\n~~Just an arbitrary comment on a commit. Nothing to see here...~~\n```"""
         self.check_webhook("commit_comment_deleted", TOPIC, expected_message)
 
     def test_bitbucket3_repo_forked(self) -> None:
@@ -121,7 +121,7 @@ class Bitbucket3HookTests(WebhookTestCase):
     # Core PR events:
     def test_pr_opened_without_reviewers(self) -> None:
         expected_topic_name = "sandbox / PR #1 Branch1"
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) opened [PR #1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) from `branch1` to `master`:\n\n~~~ quote\n* Add file2.txt\r\n* Add file3.txt\n~~~"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) opened [PR #1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) from `branch1` to `master`:\n\n``` quote\n* Add file2.txt\r\n* Add file3.txt\n```"""
         self.check_webhook(
             "pull_request_opened_without_reviewers", expected_topic_name, expected_message
         )
@@ -151,19 +151,19 @@ class Bitbucket3HookTests(WebhookTestCase):
 
     def test_pr_opened_with_multiple_reviewers(self) -> None:
         expected_topic_name = "sandbox / PR #6 sample_file: Add sample_file.txt."
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) opened [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6) from `master` to `master` (assigned reviewers: [sougo](http://139.59.64.214:7990/users/sougo), [zura](http://139.59.64.214:7990/users/zura) and [shimura](http://139.59.64.214:7990/users/shimura)):\n\n~~~ quote\nAdd a simple text file for further testing purposes.\n~~~"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) opened [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6) from `master` to `master` (assigned reviewers: [sougo](http://139.59.64.214:7990/users/sougo), [zura](http://139.59.64.214:7990/users/zura) and [shimura](http://139.59.64.214:7990/users/shimura)):\n\n``` quote\nAdd a simple text file for further testing purposes.\n```"""
         self.check_webhook(
             "pull_request_opened_with_multiple_reviewers", expected_topic_name, expected_message
         )
 
     def test_pr_modified(self) -> None:
         expected_topic_name = "sandbox / PR #1 Branch1"
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) modified [PR #1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) (assigned reviewers: [shimura](http://139.59.64.214:7990/users/shimura)):\n\n~~~ quote\n* Add file2.txt\n* Add file3.txt\nBoth of these files would be important additions to the project!\n~~~"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) modified [PR #1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) (assigned reviewers: [shimura](http://139.59.64.214:7990/users/shimura)):\n\n``` quote\n* Add file2.txt\n* Add file3.txt\nBoth of these files would be important additions to the project!\n```"""
         self.check_webhook("pull_request_modified", expected_topic_name, expected_message)
 
     def test_pr_modified_with_include_title(self) -> None:
         expected_topic_name = "custom_topic"
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) modified [PR #1 Branch1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) (assigned reviewers: [shimura](http://139.59.64.214:7990/users/shimura)):\n\n~~~ quote\n* Add file2.txt\n* Add file3.txt\nBoth of these files would be important additions to the project!\n~~~"""
+        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) modified [PR #1 Branch1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) (assigned reviewers: [shimura](http://139.59.64.214:7990/users/shimura)):\n\n``` quote\n* Add file2.txt\n* Add file3.txt\nBoth of these files would be important additions to the project!\n```"""
         self.url = self.build_webhook_url(topic="custom_topic")
         self.check_webhook("pull_request_modified", expected_topic_name, expected_message)
 
@@ -240,16 +240,16 @@ class Bitbucket3HookTests(WebhookTestCase):
 
     # PR comment events:
     def test_pull_request_comment_added(self) -> None:
-        expected_message = """[zura](http://139.59.64.214:7990/users/zura) commented on [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6):\n\n~~~ quote\nThis seems like a pretty good idea.\n~~~"""
+        expected_message = """[zura](http://139.59.64.214:7990/users/zura) commented on [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6):\n\n``` quote\nThis seems like a pretty good idea.\n```"""
         expected_topic_name = "sandbox / PR #6 sample_file: Add sample_file.txt."
         self.check_webhook("pull_request_comment_added", expected_topic_name, expected_message)
 
     def test_pull_request_comment_edited(self) -> None:
-        expected_message = """[zura](http://139.59.64.214:7990/users/zura) edited their comment on [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6):\n\n~~~ quote\nThis seems like a pretty good idea. @shimura what do you think?\n~~~"""
+        expected_message = """[zura](http://139.59.64.214:7990/users/zura) edited their comment on [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6):\n\n``` quote\nThis seems like a pretty good idea. @shimura what do you think?\n```"""
         expected_topic_name = "sandbox / PR #6 sample_file: Add sample_file.txt."
         self.check_webhook("pull_request_comment_edited", expected_topic_name, expected_message)
 
     def test_pull_request_comment_deleted(self) -> None:
-        expected_message = """[zura](http://139.59.64.214:7990/users/zura) deleted their comment on [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6):\n\n~~~ quote\n~~This seems like a pretty good idea. @shimura what do you think?~~\n~~~"""
+        expected_message = """[zura](http://139.59.64.214:7990/users/zura) deleted their comment on [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6):\n\n``` quote\n~~This seems like a pretty good idea. @shimura what do you think?~~\n```"""
         expected_topic_name = "sandbox / PR #6 sample_file: Add sample_file.txt."
         self.check_webhook("pull_request_comment_deleted", expected_topic_name, expected_message)
