@@ -23,12 +23,14 @@
         </div>
     {{/unless}}
     <div class="settings_panel_list_header members-list-header">
-        <h3 class="settings-table-title">{{t "Members"}}</h3>
+        <div class="settings-table-heading">
+            <h3 class="settings-table-title">{{t "Members"}}</h3>
+            <div class="add-group-member-loading-spinner"></div>
+        </div>
         <div class="user_filters">
             {{> ../settings/filter_text_input placeholder=(t 'Filter') aria_label=(t 'Filter members') }}
         </div>
     </div>
-    <div class="add-group-member-loading-spinner"></div>
     <div class="member-list-box">
         {{> user_group_members_table .}}
     </div>
