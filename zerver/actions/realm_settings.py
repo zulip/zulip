@@ -27,7 +27,7 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.timezone import canonicalize_timezone
 from zerver.lib.types import UserGroupMembersData
 from zerver.lib.upload import delete_message_attachments
-from zerver.lib.user_counts import realm_user_count_by_role
+from zerver.lib.user_counts import realm_user_count_by_role, update_billing_records_if_needed
 from zerver.lib.user_groups import (
     convert_to_user_group_members_dict,
     get_group_setting_value_for_api,
@@ -285,15 +285,7 @@ def do_change_realm_permission_group_setting(
             },
         )
 
-        from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
-
-        maybe_enqueue_audit_log_upload(realm)
-
-        if settings.BILLING_ENABLED:
-            from corporate.lib.stripe import RealmBillingSession
-
-            billing_session = RealmBillingSession(user=acting_user, realm=realm)
-            billing_session.update_license_ledger_if_needed(event_time)
+        update_billing_records_if_needed(realm, user=acting_user, event_time=event_time)
 
 
 def parse_and_set_setting_value_if_required(
