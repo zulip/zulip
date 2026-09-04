@@ -167,9 +167,28 @@ Zulip has over 185,000 words of developer documentation. Before working on any a
   code, especially where access control or subtle correctness is involved.
 - Run `./tools/lint` to catch style issues before committing, including mypy issues.
 - Prefer writing code that is readable without explanation over heavily
-  commented code using clever tricks. Comments should explain "why" when
-  the reason isn't obvious, not narrate "what" the code does.
+  commented code using clever tricks.
+- Don't reference line numbers (e.g., `filter.ts:493`) in comments, commit
+  messages, or PR descriptions; they get stale when files are edited.
+  Reference symbol names instead.
+
+**Comments**
+
+- Comments should explain "why" when the reason isn't obvious, not
+  narrate "what" the code does.
 - Comments should have a line to themself except for CSS px math.
+- Comments should never describe the change being made or a bug
+  being fixed. They should read as if they were there all along.
+  Descriptions of the diff belong in the commit message instead.
+- Match comment density of nearby code and similar functions.
+  If similar code doesn't comment on something, don't comment
+  on it in new code.
+- Avoid metaphors in favor of clear descriptive language. Match
+  existing idioms verbatim for comments describing specific
+  situations (e.g., `/* Override bootstrap defaults */`) rather
+  than writing a new or longer explanation.
+
+**Further rules**
 
 Frontend rules can be found in `.claude/rules/frontend.md` (loaded
 automatically when you work on frontend JS/TS and template files).
