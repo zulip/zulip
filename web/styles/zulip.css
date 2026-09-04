@@ -238,15 +238,16 @@ p.n-margin {
 
 .bottom-messages-logo {
     display: none;
+    width: 1.7143em; /* 24px at 14px/em */
+    height: 1.7143em;
+    margin: 0 auto 0.8571em; /* 12px at 14px/em */
 }
 
 .top-messages-logo,
 .bottom-messages-logo {
-    width: 1.7143em; /* 24px at 14px/em */
-    height: 1.7143em;
-    margin: 0 auto 0.8571em; /* 12px at 14px/em */
-
-    & svg {
+    /* Only the logo itself; the loading spinner's svg is a deeper
+       descendant and keeps its own styling. */
+    & > svg {
         & circle {
             fill: var(--color-zulip-logo);
             stroke: var(--color-zulip-logo);
@@ -265,9 +266,69 @@ p.n-margin {
 }
 
 .top-messages-logo {
-    /* Since padding under message header is not transparent
-       we need to position it below the padding. */
-    padding-top: var(--header-padding-bottom);
+    /* The logo sits in a box between the navbar and the first recipient
+       bar. The box stays in place when the logo is hidden, so the
+       messages below never move. Together with the recipient bar's
+       margin-top, it is as tall as the filter row at the top of both
+       sidebars, so the first recipient bar lines up with the sidebar
+       section headers, and the box sits centered in the gap, with the
+       same space above and below it. The 18px logo overflows the box by
+       a fraction of a pixel. */
+    height: calc(
+        var(--sidebar-filter-row-height) - var(--header-padding-bottom)
+    );
+    /* The logo and the spinner containers, which loading.make_indicator
+       gives a width, all share the one cell, so the logo stays centered
+       whether or not a spinner is present. */
+    display: grid;
+    place-items: center;
+    /* Positioning context for the loading spinner. */
+    position: relative;
+
+    & > * {
+        grid-area: 1 / 1;
+    }
+
+    & > svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* Once the narrow's oldest message is fetched the logo goes away.
+       Only the logo is hidden; the page-load spinner below stays until
+       the initial fetch finishes. */
+    &.found-oldest > svg {
+        display: none;
+    }
+
+    /* While loading, a spinner ring is drawn centered on the logo: the
+       container's corner is placed at the logo's center, and the box is
+       pulled back by half the spinner's size. The ring in the spinner
+       SVG is 80% of the box, so a 28px box draws a 22.4px ring around
+       the 18px logo, close to the proportion of the original 38px
+       spinner around the 24px logo. This covers both the initial page
+       load and fetching older messages. */
+    #page_loading_indicator_box_container,
+    #loading_older_messages_indicator_box_container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+
+        /* Override the base rules in app_components.css, which would
+           require coordination with loading.make_indicator */
+        .loading_indicator_spinner {
+            height: 28px;
+            width: 28px;
+        }
+    }
+
+    #page_loading_indicator_box,
+    #loading_older_messages_indicator_box {
+        position: relative;
+        top: -14px; /* 50% of 28px */
+        left: -14px;
+        z-index: 1;
+    }
 }
 
 /* See https://web.dev/animations-guide/#triggers before adding any funny animation properties here. */
@@ -1230,12 +1291,10 @@ nav {
     font-family: "Source Code Pro", monospace;
 }
 
-#loading_older_messages_indicator,
 #loading_more_indicator {
     margin: 10px;
 }
 
-#loading_older_messages_indicator_box_container,
 #loading_more_indicator_box_container {
     position: absolute;
     left: 50%;
@@ -1248,30 +1307,10 @@ nav {
     }
 }
 
-#loading_older_messages_indicator_box,
 #loading_more_indicator_box {
     position: relative;
     left: -1.3571em; /* 50% of 38px = 19px at 14px/em */
     top: -3.0714em; /* -43px at 14px/em */
-    z-index: 1;
-    border-radius: 6px;
-}
-
-#page_loading_indicator {
-    margin: 10px auto;
-}
-
-#page_loading_indicator_box_container {
-    position: absolute;
-    left: 50%;
-}
-
-#page_loading_indicator_box {
-    position: relative;
-    /* 50% of 38px = 19px at 14px/1em */
-    left: -1.3571em;
-    /* -43px at 14px/1em */
-    top: -3.0714em;
     z-index: 1;
     border-radius: 6px;
 }

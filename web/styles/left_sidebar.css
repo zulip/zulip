@@ -24,15 +24,23 @@
        match, so that `top:` and other offset values are
        identical relative to input elements. This value
        is taken up by the grid-template definition in
-       inputs.css. We don't do this on the sidebar search, though,
-       so that it matches the height of the filter at the top of the
-       right sidebar. Normalizing the height isn't essential here,
-       as there are no sticky headers offset from the filter input. */
+       inputs.css. The sidebar search is normalized separately below. */
     --input-element-row-height: 1.9375em;
 
     .input-element {
         /* And to keep the visual space of the input identical,
            we stretch to the height of the grid row above. */
+        align-self: stretch;
+    }
+}
+
+/* Both sidebar filters share a row height, which the message feed
+   uses to line up with them (see .top-messages-logo). */
+.left-sidebar-search-section,
+#userlist-header-search {
+    --input-element-row-height: var(--sidebar-filter-input-height);
+
+    .input-element {
         align-self: stretch;
     }
 }
