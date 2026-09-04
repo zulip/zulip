@@ -168,6 +168,18 @@
     }
 }
 
+#admin-user-avatar-upload-widget {
+    /* Match the outline ring on #avatar in the user profile modal */
+    box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 20%);
+    /* Match #avatar so that the spacing between the two is identical */
+    display: inline-flex;
+
+    .image-block {
+        width: var(--user-profile-avatar-size);
+        height: var(--user-profile-avatar-size);
+    }
+}
+
 #user-avatar-source {
     font-size: 1em;
     z-index: 99;

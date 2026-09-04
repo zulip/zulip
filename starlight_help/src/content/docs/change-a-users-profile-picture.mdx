@@ -1,0 +1,94 @@
+---
+title: Change a user's profile picture
+---
+
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import AdminOnly from "../include/_AdminOnly.mdx";
+import ManageThisUser from "../include/_ManageThisUser.mdx";
+import ManageUserTabTip from "../include/_ManageUserTabTip.mdx";
+
+import CloseIcon from "~icons/zulip-icon/close";
+import UserCogIcon from "~icons/zulip-icon/user-cog";
+
+<AdminOnly />
+
+By default, users can [change their own profile
+picture](/help/change-your-profile-picture), though organization administrators
+can [restrict profile picture changes](/help/restrict-profile-picture-changes).
+
+Organization administrators can always change any user's profile picture, even
+when profile picture changes are restricted. This is useful for organizations
+that maintain a consistent style for profile pictures, or that need to replace
+a picture that is no longer appropriate.
+
+Deleting a user's profile picture resets it to the automatically generated
+picture in the style [configured](/help/configure-default-profile-pictures) by
+your organization.
+
+## Change a user's profile picture
+
+<Tabs>
+  <TabItem label="Via user profile">
+    <FlattenedSteps>
+      <ManageThisUser />
+
+      1. Click on the profile picture on the right, and choose an image to
+         upload.
+      1. Crop the image as desired, and click **Save changes**.
+    </FlattenedSteps>
+
+    <ManageUserTabTip />
+  </TabItem>
+
+  <TabItem label="Via organization settings">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/users" />
+
+      1. Find the user you would like to manage. Click the
+         **manage user** (<UserCogIcon />) icon
+         to the right of their name.
+      1. Click on the profile picture on the right, and choose an image to
+         upload.
+      1. Crop the image as desired, and click **Save changes**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Delete a user's profile picture
+
+<Tabs>
+  <TabItem label="Via user profile">
+    <FlattenedSteps>
+      <ManageThisUser />
+
+      1. Hover over the profile picture on the right, and click the <CloseIcon />
+         icon in the top right corner.
+      1. Approve by clicking **Confirm**.
+    </FlattenedSteps>
+
+    <ManageUserTabTip />
+  </TabItem>
+
+  <TabItem label="Via organization settings">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/users" />
+
+      1. Find the user you would like to manage. Click the
+         **manage user** (<UserCogIcon />) icon
+         to the right of their name.
+      1. Hover over the profile picture on the right, and click the <CloseIcon />
+         icon in the top right corner.
+      1. Approve by clicking **Confirm**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>
+
+## Related articles
+
+* [Manage a user](/help/manage-a-user)
+* [Change a user's name](/help/change-a-users-name)
+* [Restrict profile picture changes](/help/restrict-profile-picture-changes)
+* [Configure default profile pictures](/help/configure-default-profile-pictures)
