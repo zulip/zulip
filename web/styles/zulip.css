@@ -1276,7 +1276,7 @@ nav {
 
     /* The pulse only moves while the line is up, so that each time
        the line shows up the sweep starts over from the left edge. */
-    &.loading::after {
+    &:is(.loading, .fade-out)::after {
         animation: top-of-feed-loading-pulse 750ms ease-in-out infinite;
 
         @media (prefers-reduced-motion) {
