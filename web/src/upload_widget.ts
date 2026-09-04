@@ -191,7 +191,8 @@ function open_uppy_editor(
             assert(uppy_widget !== undefined);
             uppy_widget.getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!.save();
         },
-        post_render() {
+        // Uppy must be set after the modal is displayed so it fits the container
+        on_show() {
             set_up_uppy_widget(property_name);
             assert(uppy_widget !== undefined);
 
