@@ -294,10 +294,11 @@ p.n-margin {
         height: 18px;
     }
 
-    /* Once the narrow's oldest message is fetched the logo goes away.
+    /* Once the narrow's oldest message is fetched the logo goes away,
+       but not while the loading spinner drawn around it is still up.
        Only the logo is hidden; the page-load spinner below stays until
        the initial fetch finishes. */
-    &.found-oldest > svg {
+    &.found-oldest:not(.loading) > svg {
         display: none;
     }
 

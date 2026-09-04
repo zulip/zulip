@@ -49,7 +49,9 @@ function show_end_of_results_notice(): void {
 export function update_top_of_feed_logo(): void {
     // The logo is hidden once we have the narrow's oldest message. Only
     // the logo itself goes away (see the CSS); the page-load spinner
-    // drawn around it stays until the initial fetch finishes.
+    // drawn around it stays until the initial fetch finishes, and the
+    // loading indicator, which is kept on screen for a minimum time,
+    // takes the logo with it when it goes.
     const found_oldest = message_lists.current?.data.fetch_status.has_found_oldest() ?? false;
     $(".top-messages-logo").toggleClass("found-oldest", found_oldest);
 }
