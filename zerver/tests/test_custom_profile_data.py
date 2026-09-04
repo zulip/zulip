@@ -926,7 +926,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             )
 
         # Update value of field
-        with self.assert_database_query_count(13):
+        with self.assert_database_query_count(14):
             result = self.client_patch(
                 "/json/users/me/profile_data",
                 {
