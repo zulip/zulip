@@ -153,7 +153,7 @@ function sort_bot_owner(a: BotInfo, b: BotInfo): number {
 
     return util.compare_a_b(
         a.bot_owner_full_name.toLowerCase(),
-        b.bot_owner_full_name.toLocaleLowerCase(),
+        b.bot_owner_full_name.toLowerCase(),
     );
 }
 
