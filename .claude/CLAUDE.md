@@ -448,7 +448,20 @@ message content.
 git grep "pattern"          # Search codebase (use extensively!)
 ```
 
+Most of these commands take minutes, so run them in the background.
+
 If a tool complains that provision is outdated, run `./tools/provision`
 to fix it. Do not use `--skip-provision-check` to work around the
 error; the check exists because tests and linters depend on provisioned
 dependencies being current.
+
+If the development environment runs in a container (Vagrant/Docker),
+run `./tools/` commands inside it. Files and new screenshots will be
+accessible on both sides.
+
+```bash
+vagrant ssh -c 'cd ~/zulip && ./tools/lint path/to/changed/files.py'
+```
+
+If `vagrant ssh` fails with a Docker daemon error, Docker Desktop isn't
+running; ask the user to start it.
