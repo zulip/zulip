@@ -2,7 +2,6 @@ from collections import defaultdict
 from email.headerregistry import Address
 from typing import Any
 
-from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator, default_token_generator
 from django.db import transaction
 from django.db.models import Q
@@ -30,7 +29,6 @@ from zerver.lib.cache import bot_dict_fields, flush_user_profile
 from zerver.lib.create_user import create_user_profile
 from zerver.lib.event_types import BotServicesOutgoing
 from zerver.lib.invites import revoke_invites_generated_by_user
-from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.soft_deactivation import queue_soft_reactivation
@@ -47,7 +45,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.subscription_info import bulk_get_subscriber_peer_info
 from zerver.lib.types import UserGroupMembersData, UserProfileChangeDict
-from zerver.lib.user_counts import realm_user_count_by_role
+from zerver.lib.user_counts import realm_user_count_by_role, update_billing_records_if_needed
 from zerver.lib.user_groups import (
     convert_to_user_group_members_dict,
     get_system_user_group_for_user,
@@ -479,9 +477,6 @@ def do_deactivate_user(
     if not user_profile.is_active:
         return
 
-    if settings.BILLING_ENABLED:
-        from corporate.lib.stripe import RealmBillingSession
-
     if _cascade:
         # We need to deactivate bots before the target user, to ensure
         # that a failure partway through this function cannot result
@@ -536,10 +531,9 @@ def do_deactivate_user(
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
             },
         )
-        maybe_enqueue_audit_log_upload(user_profile.realm)
-        if settings.BILLING_ENABLED:
-            billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
-            billing_session.update_license_ledger_if_needed(event_time)
+        update_billing_records_if_needed(
+            user_profile.realm, user=user_profile, event_time=event_time
+        )
 
         transaction.on_commit(lambda: delete_user_sessions(user_profile))
 
@@ -705,22 +699,20 @@ def do_change_user_role(
     )
     role_changed_audit_log.save(update_fields=["extra_data"])
 
-    maybe_enqueue_audit_log_upload(user_profile.realm)
     # A guest becoming a non-guest or vice versa changes the number of licenses
     # regardless of any group, since guests are counted at a discount. Any other
     # role change only matters if it moved the user in or out of
     # realm.workplace_users_group, which the swap between the role based system
     # groups above does when either of them is that group or inside it.
-    if settings.BILLING_ENABLED and (
-        UserProfile.ROLE_GUEST in [old_value, value]
+    update_billing_records_if_needed(
+        user_profile.realm,
+        user=user_profile,
+        event_time=timezone_now(),
+        user_count_may_have_changed=UserProfile.ROLE_GUEST in [old_value, value]
         or check_any_group_used_for_workplace_users_group(
             user_profile.realm, [old_system_group, system_group]
-        )
-    ):
-        from corporate.lib.stripe import RealmBillingSession
-
-        billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
-        billing_session.update_license_ledger_if_needed(timezone_now())
+        ),
+    )
 
     send_stream_events_for_role_update(user_profile, previously_accessible_streams)
 
