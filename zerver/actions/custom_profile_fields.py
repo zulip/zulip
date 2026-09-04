@@ -31,6 +31,8 @@ def try_add_realm_default_custom_profile_field(
     required: bool = False,
     editable_by_user: bool = True,
     use_for_user_matching: bool = False,
+    *,
+    acting_user: UserProfile | None,
 ) -> CustomProfileField:
     field_data = DEFAULT_EXTERNAL_ACCOUNTS[field_subtype]
     custom_profile_field = CustomProfileField(
@@ -62,6 +64,8 @@ def try_add_realm_custom_profile_field(
     required: bool = False,
     editable_by_user: bool = True,
     use_for_user_matching: bool = False,
+    *,
+    acting_user: UserProfile | None,
 ) -> CustomProfileField:
     custom_profile_field = CustomProfileField(
         realm=realm,
@@ -87,7 +91,12 @@ def try_add_realm_custom_profile_field(
 
 
 @transaction.atomic(durable=True)
-def do_remove_realm_custom_profile_field(realm: Realm, field: CustomProfileField) -> None:
+def do_remove_realm_custom_profile_field(
+    realm: Realm,
+    field: CustomProfileField,
+    *,
+    acting_user: UserProfile | None,
+) -> None:
     """
     Deleting a field will also delete the user profile data
     associated with it in CustomProfileFieldValue model.
@@ -101,7 +110,7 @@ def do_remove_realm_custom_profile_fields(realm: Realm) -> None:
 
 
 def remove_custom_profile_field_value_if_required(
-    field: CustomProfileField, field_data: ProfileFieldData
+    field: CustomProfileField, field_data: ProfileFieldData, acting_user: UserProfile | None
 ) -> None:
     old_values = set(orjson.loads(field.field_data).keys())
     new_values = set(field_data.keys())
@@ -141,6 +150,8 @@ def try_update_realm_custom_profile_field(
     required: bool | None = None,
     editable_by_user: bool | None = None,
     use_for_user_matching: bool | None = None,
+    *,
+    acting_user: UserProfile | None,
 ) -> None:
     if name is not None:
         field.name = name
@@ -162,7 +173,7 @@ def try_update_realm_custom_profile_field(
         # If field_data is None, field_data is unchanged and there is no need for
         # comparing field_data values.
         if field_data is not None and field.field_type == CustomProfileField.DROPDOWN:
-            remove_custom_profile_field_value_if_required(field, field_data)
+            remove_custom_profile_field_value_if_required(field, field_data, acting_user)
 
         # If field.field_data is the default empty string, we will set field_data
         # to an empty dict.
@@ -173,7 +184,9 @@ def try_update_realm_custom_profile_field(
 
 
 @transaction.atomic(durable=True)
-def try_reorder_realm_custom_profile_fields(realm: Realm, order: Iterable[int]) -> None:
+def try_reorder_realm_custom_profile_fields(
+    realm: Realm, order: Iterable[int], *, acting_user: UserProfile | None
+) -> None:
     order_mapping = {_[1]: _[0] for _ in enumerate(order)}
     custom_profile_fields = CustomProfileField.objects.filter(realm=realm)
     for custom_profile_field in custom_profile_fields:
