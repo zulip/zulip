@@ -228,6 +228,15 @@ coherent idea."** This is non-negotiable.
   When a commit is flagged as potentially droppable, verify all
   earlier commits work correctly without it.
 
+### Open Independently Useful Fixes as Separate PRs
+
+If, while building a feature, you find and fix a pre-existing bug or
+make a refactor that would be worth merging even if the feature never
+lands, split this into its own PR. A small isolated PR gets more
+scrutiny than the same change as part of a large PR. Prep commits
+that mainly make sense in the context of the feature PR should stay
+in the feature's PR.
+
 ### Commit Message Format
 
 Use the `/commit-message` skill whenever you write or reword a
