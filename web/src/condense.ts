@@ -126,8 +126,10 @@ export function collapse(message: Message): void {
     message_flags.save_collapsed(message);
 
     const process_row = function process_row($row: JQuery): void {
-        $row.find(".message_content").addClass("collapsed");
-        show_message_expander($row);
+        if (!$row.hasClass("muted-message-sender")) {
+            $row.find(".message_content").addClass("collapsed");
+            show_message_expander($row);
+        }
     };
 
     for (const list of message_lists.all_rendered_message_lists()) {
@@ -296,6 +298,16 @@ export function condense_and_collapse(elems: JQuery): void {
         } else {
             $content.removeClass("condensed");
             hide_message_length_toggle($(elem));
+        }
+
+        // Completely hide the message and replace it with a "Show more"
+        // button if the user has collapsed it.
+        if (message.collapsed) {
+            const is_hidden = $(elem).hasClass("muted-message-sender");
+            if (!is_hidden) {
+                $content.addClass("collapsed");
+                show_message_expander($(elem));
+            }
         }
     }
 }
