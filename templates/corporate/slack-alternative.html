@@ -1,0 +1,332 @@
+{% extends "zerver/marketing_page.html" %}
+
+{% set PAGE_TITLE = "The organized, open-source Slack alternative | Zulip" %}
+
+{% set PAGE_DESCRIPTION = "Looking for a Slack alternative? Zulip's
+  topic-based threading keeps every conversation organized, so your team can
+  catch up and work asynchronously without missing what matters. Fully
+  open source, with easy import from Slack." %}
+
+
+{% block marketing_content %}
+
+<div class="portico-landing why-page solutions-page for-companies slack-alternative-page">
+    <div class="hero bg-pycon why-zulip slack-alternative-hero">
+        <div class="bg-dimmer"></div>
+        <div class="content">
+            <h1 class="center">The organized, open-source <br /> Slack alternative</h1>
+            <p>Learn how organized team chat will make your team more productive.</p>
+        </div>
+        <div class="hero-buttons center">
+            <a href="/new/?utm_source=zulip.com&amp;utm_medium=landing-page&amp;utm_campaign=slack-alternative&amp;utm_content=hero" class="button">
+                {{ _('Create organization') }}
+            </a>
+            <a href="/request-demo/?utm_source=zulip.com&amp;utm_medium=landing-page&amp;utm_campaign=slack-alternative&amp;utm_content=hero" class="button">
+                {{ _('Get a demo') }}
+            </a>
+            <a href="/help/import-from-slack?utm_source=zulip.com&amp;utm_medium=landing-page&amp;utm_campaign=slack-alternative&amp;utm_content=hero" class="button">
+                {{ _('Import from Slack') }}
+            </a>
+        </div>
+    </div>
+
+    <div class="glance-cards">
+        <div class="glance-card">
+            <h2>Will my team actually work better?</h2>
+            <ul>
+                <li><a href="#topics">Topics create a separate space for each conversation</a>, so discussions never get in each other's way.</li>
+                <li><a href="#async">Catch up efficiently</a>: read the conversations you care about, and skim or skip the rest.</li>
+                <li><a href="#async">Participate asynchronously</a>, replying in context even after hours or days away.</li>
+                <li><a href="#history">Your chat history becomes a knowledge base</a> for your team.</li>
+            </ul>
+        </div>
+        <div class="glance-card">
+            <h2>What am I committing to?</h2>
+            <ul>
+                <li><a href="#ownership">100% open-source software</a>, stewarded by the nonprofit Zulip Foundation.</li>
+                <li><a href="#history">Unlimited message history</a> on all paid plans, and no time limits on any plan.</li>
+                <li><a href="#ownership">Zulip Cloud is a fully managed solution</a>; self-hosting is available if you need it.</li>
+                <li><a href="#moving">Import your existing Slack workspace</a>, and keep your integrations running.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="feature-intro">
+        <p>
+            Slack made workplace chat mainstream, but as a team grows,
+            chat communication on Slack becomes disruptive, chaotic, and
+            ephemeral. Zulip's unique <a href="/why-zulip/">topic-based
+            threading</a> combines the best of email and chat to make
+            efficient communication possible.
+        </p>
+        <div class="intro_quote">
+            <blockquote>
+                Zulip is everything Slack is, but it's smarter and more powerful.
+                <div class="author">
+                    &mdash; <a href="https://www.theregister.com/2021/07/28/zulip_open_source_chat_collaboration_software/">Zulip review in <em>The Register</em></a>
+                </div>
+            </blockquote>
+        </div>
+    </div>
+
+    <div class="alternative-features">
+        <div class="feature-container" id="topics">
+            <div class="feature-half">
+                <div class="feature-text">
+                    <h2>Organized conversations, not tangled channels</h2>
+                    <ul>
+                        <li>
+                            <div class="list-content">
+                                In Slack, discussions are jumbled together in the channel, or tucked away in threads that are easy to miss.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="list-content">
+                                Like email threads, <a href="/help/introduction-to-topics">Zulip topics</a> create a separate space for each conversation, so discussions never get in each other's way, and a busy channel stays easy to follow.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="list-content">
+                                See each message in context, and if a conversation drifts, <a href="/help/move-content-to-another-topic">move messages</a> to a topic of their own or <a href="/help/resolve-a-topic">mark the topic ✓ resolved</a> when done.
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="intro_quote quote-in-feature-text">
+                        <blockquote>
+                            In fact now it seems strange to me to just fire off messages in Slack with no subject – that's chaos, madness. The genius of subject lines is that you can quickly and easily catch up on the messages you missed in your off-hours... This feature alone saves me hours a week.
+                            <div class="author">
+                                &mdash; <a href="https://www.theregister.com/2021/07/28/zulip_open_source_chat_collaboration_software/">Zulip review in <em>The Register</em></a>
+                            </div>
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-half">
+                <div class="feature-image">
+                    <img alt="{{ _('A Zulip channel with conversations organized by topic') }}" src="{{ static('images/landing-page/companies/organized-conversations.png') }}" />
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-container alternate-grid" id="async">
+            <div class="feature-half md-hide">
+                <div class="feature-image">
+                    <img class="wide-feature-image" alt="{{ _('The Zulip inbox, listing each conversation with unread messages') }}" src="{{ static('images/landing-page/engineers/inbox.png') }}" />
+                </div>
+            </div>
+            <div class="feature-half">
+                <div class="feature-text">
+                    <h2>Built for asynchronous work</h2>
+                    <ul>
+                        <li>
+                            <div class="list-content">
+                                Slack is designed around being online: unread counts pile up while you're away, and the conversation moves on without you.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="list-content">
+                                Zulip's <a href="/help/inbox">inbox</a> shows each conversation with unread messages. Read the ones you care about, skim or skip the rest, and reply in context even after hours or days away.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="list-content">
+                                Busy leaders and experts can participate on their own time, without incessant @-mentions clamoring for their attention. <a href="/help/follow-a-topic">Follow the topics</a> where your timely input is needed.
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="intro_quote quote-in-feature-text">
+                        <blockquote>
+                            Zulip's unique threading saves me well over an hour a day in working with our distributed team of engineers and PMs across 7+ time zones. We tried Slack, Mattermost, and other team chat products that claim to support threading, and nothing handles synchronous and asynchronous communication so intuitively.
+                            <div class="author">
+                                &mdash; Jacinda Shelly, CTO, <a href="https://www.doctorondemand.com/">Doctor on Demand</a>
+                            </div>
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-half md-display">
+                <div class="feature-image">
+                    <img class="wide-feature-image" alt="{{ _('The Zulip inbox, listing each conversation with unread messages') }}" src="{{ static('images/landing-page/engineers/inbox.png') }}" />
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-container" id="history">
+            <div class="feature-half">
+                <div class="feature-text">
+                    <h2>Your chat history becomes a knowledge base</h2>
+                    <ul>
+                        <li>
+                            <div class="list-content">
+                                In Slack, finding an old discussion means sifting through unrelated chatter. On Slack's free plan, messages older than 90 days are hidden, and content older than a year is deleted.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="list-content">
+                                With conversations organized by topic, you can review old discussions to understand past work, explanations, and decisions.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="list-content">
+                                Topics make it easy to find the right conversation with Zulip's <a href="/help/search-for-messages">powerful full-text search</a>, and you can <a href="/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere">link to a Zulip conversation</a> from emails, docs, issue trackers, or anywhere else.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="list-content">
+                                Zulip Cloud Free shows your 10,000 most recent messages. Older messages are preserved, and reappear when you upgrade. Zulip will <a href="/help/zulip-cloud-billing#will-you-switch-to-limiting-zulip-cloud-free-history-to-messages-sent-in-the-last-90-days-like-slack-has">never impose Slack-style time limits</a> on your history.
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="intro_quote quote-in-feature-text">
+                        <blockquote>
+                            Coupled with a culture of using Zulip in an organized way, it's difficult to overstate the impact it has on knowledge management... It is the essence of good UX design.
+                            <div class="author">
+                                &mdash; Max McCrea, co-founder of Monadical (<a href="https://monadical.com/posts/how-to-make-remote-work-part-two-zulip.html">blog post</a>)
+                            </div>
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-half">
+                <div class="feature-image">
+                    <img alt="" src="{{ static('images/landing-page/education/knowledge-repository.svg') }}" />
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-container alternate-grid" id="ownership">
+            <div class="feature-half md-hide">
+                <div class="feature-image">
+                    <img class="mirror-image" alt="" src="{{ static('images/landing-page/education/privacy.svg') }}" />
+                </div>
+            </div>
+            <div class="feature-half">
+                <div class="feature-text">
+                    <h2>Open source, without the lock-in</h2>
+                    <ul>
+                        <li>
+                            <div class="list-content">
+                                Zulip is <a href="https://github.com/zulip/zulip">100% open-source software</a>, with no "open core" catch, stewarded by the nonprofit <a href="/team/#the-zulip-foundation">Zulip Foundation</a>. The paid team provides leadership, expertise and support for by far the <a href="/team/">most active open-source development community</a> of any team chat software.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="list-content">
+                                <a href="/plans/">Zulip Cloud</a> is a fully managed solution, operated by the team that builds Zulip. Organizations with special requirements can also <a href="/self-hosting/">self-host</a> the same software.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="list-content">
+                                Move your data with our high quality <a href="/help/export-your-organization">export</a> and <a href="https://zulip.readthedocs.io/en/latest/production/export-and-import.html">import</a> tools; you are never locked into a proprietary tool.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="feature-half md-display">
+                <div class="feature-image">
+                    <img class="mirror-image" alt="" src="{{ static('images/landing-page/education/privacy.svg') }}" />
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-container" id="moving">
+            <div class="feature-half">
+                <div class="feature-text">
+                    <h2>Moving from Slack is easy</h2>
+                    <ul>
+                        <li>
+                            <div class="list-content">
+                                <a href="/help/import-from-slack">Import your existing organization from Slack</a>, including message history, users, channels, and custom emoji, or <a href="/new/">create a new organization</a> in minutes.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="list-content">
+                                Integrations written for Slack can post into Zulip via the <a href="/integrations/slack_incoming">Slack compatible webhook</a>, and Zulip has <a href="/integrations/">native integrations</a> for GitHub, Jira, PagerDuty, Sentry and hundreds of other tools.
+                            </div>
+                        </li>
+                        <li>
+                            <div class="list-content">
+                                Follow our step-by-step <a href="/help/moving-from-slack">guide to moving from Slack</a>. If you have any questions, please contact us at <a href="mailto:sales@zulip.com">sales@zulip.com</a>, or drop by our <a href="/development-community/">friendly development community at chat.zulip.org</a> to ask for help or suggest improvements!
+                            </div>
+                        </li>
+                    </ul>
+                    <div class="intro_quote quote-in-feature-text">
+                        <blockquote>
+                            We switched to Zulip after trying pretty much every chat app out there. And it's been amazing. The threading-by-topic system is genius. It keeps every conversation in its lane and makes catching up effortless.
+                            <div class="author">
+                                &mdash; Deepak Shukla, Founder and CEO of <a href="https://pearllemon.com/">Pearl Lemon</a>
+                            </div>
+                        </blockquote>
+                    </div>
+                </div>
+            </div>
+            <div class="feature-half">
+                <div class="feature-image">
+                    <div class="switch-art">
+                        <svg class="switch-art-slack" viewBox="0 0 122.8 122.8" aria-label="{{ _('Slack') }}" role="img">
+                            <path d="M25.8 77.6c0 7.1-5.8 12.9-12.9 12.9S0 84.7 0 77.6s5.8-12.9 12.9-12.9h12.9v12.9z" fill="#e01e5a"/>
+                            <path d="M32.3 77.6c0-7.1 5.8-12.9 12.9-12.9s12.9 5.8 12.9 12.9v32.3c0 7.1-5.8 12.9-12.9 12.9s-12.9-5.8-12.9-12.9V77.6z" fill="#e01e5a"/>
+                            <path d="M45.2 25.8c-7.1 0-12.9-5.8-12.9-12.9S38.1 0 45.2 0s12.9 5.8 12.9 12.9v12.9H45.2z" fill="#36c5f0"/>
+                            <path d="M45.2 32.3c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9H12.9C5.8 58.1 0 52.3 0 45.2s5.8-12.9 12.9-12.9h32.3z" fill="#36c5f0"/>
+                            <path d="M97 45.2c0-7.1 5.8-12.9 12.9-12.9s12.9 5.8 12.9 12.9-5.8 12.9-12.9 12.9H97V45.2z" fill="#2eb67d"/>
+                            <path d="M90.5 45.2c0 7.1-5.8 12.9-12.9 12.9s-12.9-5.8-12.9-12.9V12.9C64.7 5.8 70.5 0 77.6 0s12.9 5.8 12.9 12.9v32.3z" fill="#2eb67d"/>
+                            <path d="M77.6 97c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9-12.9-5.8-12.9-12.9V97h12.9z" fill="#ecb22e"/>
+                            <path d="M77.6 90.5c-7.1 0-12.9-5.8-12.9-12.9s5.8-12.9 12.9-12.9h32.3c7.1 0 12.9 5.8 12.9 12.9s-5.8 12.9-12.9 12.9H77.6z" fill="#ecb22e"/>
+                        </svg>
+                        <svg class="switch-art-arrow" viewBox="0 0 100 44" aria-hidden="true">
+                            <path d="M 5 30 C 22 8, 44 6, 60 20 S 84 34, 93 16" />
+                            <path d="M 81 12 L 94 14 L 90 27" />
+                        </svg>
+                        <img class="switch-art-zulip" alt="{{ _('Zulip') }}" src="{{ static('images/logo/zulip-icon-circle.svg') }}" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="switched-testimonials">
+        <h2>Teams that switched from Slack</h2>
+        <div class="switched-testimonials-grid">
+            <a class="switched-testimonial" href="/case-studies/end-point/">
+                <div class="switched-testimonial-text">
+                    Slack's interface was too slow and clunky, and the more channels you're in, the harder it is to use. Zulip's UI makes it easy to <strong>access all the information you need</strong>.
+                </div>
+                <div class="switched-testimonial-source">
+                    <strong>Jon Jensen</strong>, <i>CTO of End Point Dev</i>
+                </div>
+            </a>
+            <a class="switched-testimonial" href="/case-studies/semsee/">
+                <div class="switched-testimonial-text">
+                    I don't like going back to Slack now. It's just not as efficient a way to <strong>organize communication</strong>.
+                </div>
+                <div class="switched-testimonial-source">
+                    <strong>James van Lommel</strong>, <i>Director of Engineering at Semsee</i>
+                </div>
+            </a>
+            <a class="switched-testimonial" href="/case-studies/windborne/">
+                <div class="switched-testimonial-text">
+                    I love the application, and couldn't dream of going back to anything else. <strong>Slack and Discord just pale in comparison</strong>.
+                </div>
+                <div class="switched-testimonial-source">
+                    <strong>Nathan Kaplan</strong>, <i>Head of Global Launch Operations at WindBorne</i>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="why-zulip">
+        <div class="discounts-section">
+            <div class="register-buttons">
+                <a href="/new/?utm_source=zulip.com&amp;utm_medium=landing-page&amp;utm_campaign=slack-alternative&amp;utm_content=bottom" class="register-now button">{{ _('Create organization') }}</a>
+                <a href="/request-demo/?utm_source=zulip.com&amp;utm_medium=landing-page&amp;utm_campaign=slack-alternative&amp;utm_content=bottom" class="register-now button">{{ _('Get a demo') }}</a>
+                <a href="/help/import-from-slack?utm_source=zulip.com&amp;utm_medium=landing-page&amp;utm_campaign=slack-alternative&amp;utm_content=bottom" class="register-now button">{{ _('Import from Slack') }}</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="portico-pricing showing-cloud">
+        {% include "corporate/pricing_model.html" %}
+    </div>
+</div>
+
+{% endblock %}
