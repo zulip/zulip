@@ -68,15 +68,25 @@
             }
 
             .typeahead-content {
-                display: flex;
+                display: grid;
+                grid-template: "icon content" auto / max-content minmax(0, 1fr);
                 align-items: center;
                 overflow: hidden;
                 gap: 0.3571em;
+
+                &:not(:has(> .typeahead-image, > .emoji)) {
+                    grid-template: "content" auto / minmax(0, 1fr);
+                }
+
+                > .typeahead-image,
+                > .emoji {
+                    grid-area: icon;
+                }
             }
 
             .typeahead-text-container {
+                grid-area: content;
                 display: flex;
-                align-self: center;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
@@ -206,7 +216,6 @@
 
 /* For FontAwesome icons and zulip icons used in place of images for some users. */
 .typeahead-image {
-    flex: 0 0 auto;
     position: relative;
     height: 1.3125em; /* 21px at 16px/1em */
     width: 1.3125em; /* 21px at 16px/1em */
