@@ -268,6 +268,7 @@ class TestGuessZulipUserFromExternalAccount(ZulipTestCase):
             external_account_field_name,
             CustomProfileField.EXTERNAL_ACCOUNT,
             field_data={"subtype": "custom", "url_pattern": "https://other.com/%(username)s"},
+            acting_user=None,
         )
         self.set_user_external_account(self.hamlet, external_account_field, "octocat")
 
