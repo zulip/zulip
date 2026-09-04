@@ -1,0 +1,206 @@
+/* Styles for the /slack-alternative/ landing page. Everything here is
+   scoped under `.slack-alternative-page`; the page otherwise reuses the
+   shared marketing page styles for the hero, feature sections, and
+   pricing. */
+.slack-alternative-page {
+    --color-slack-alternative-accent: hsl(219deg 62% 45%);
+    --color-background-glance-card: hsl(0deg 0% 100%);
+    --color-shadow-glance-card: hsl(224deg 52% 12% / 18%);
+    --color-text-testimonial: hsl(233deg 14% 26%);
+    --color-text-testimonial-role: hsl(0deg 0% 40%);
+    --color-shadow-testimonial-hover: hsl(208deg 70% 25% / 25%);
+
+    /* A shorter hero, so the "at a glance" cards are visible without
+       scrolling. The selector repeats the page's classes to outrank
+       `.portico-landing.why-page .hero.why-zulip` in marketing_page.css,
+       which sets padding-bottom. */
+    &.portico-landing.why-page .hero.slack-alternative-hero {
+        padding: 140px 50px 90px;
+
+        @media (width < 900px) {
+            padding: 130px 0 80px;
+        }
+    }
+
+    .glance-cards {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+        max-width: 1000px;
+        margin: -50px auto 0;
+        padding: 0 20px;
+        position: relative;
+        z-index: 1;
+
+        @media (width < 768px) {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    .glance-card {
+        padding: 20px 24px 12px;
+        border-radius: 10px;
+        border-top: 5px solid var(--color-prominent-border);
+        background: var(--color-background-glance-card);
+        box-shadow: 0 4px 24px var(--color-shadow-glance-card);
+
+        h2 {
+            margin: 0 0 10px;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+    }
+
+    .feature-intro {
+        margin-top: 32px;
+    }
+
+    .alternative-features .feature-container {
+        padding: 24px 4vw;
+
+        /* Section headings are h2 so that the page has a single h1;
+           style them like the h1 headings on the other feature pages. */
+        .feature-text h2 {
+            font-size: 30px;
+            font-weight: 600;
+        }
+    }
+
+    .feature-text .intro_quote blockquote {
+        font-size: 17px;
+        margin-top: 24px;
+        margin-bottom: 0;
+    }
+
+    /* The inbox screenshot has room to breathe next to the async copy.
+       Outweigh the shared 400px feature-image img rule. */
+    .feature-image .wide-feature-image {
+        width: 560px;
+    }
+
+    /* Slack, a hand-drawn arrow, Zulip: the move in one picture. */
+    .switch-art {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        padding: 24px 0;
+    }
+
+    .switch-art-slack {
+        width: 80px;
+        height: 80px;
+        flex: none;
+    }
+
+    .switch-art-arrow {
+        width: 100px;
+        height: 46px;
+        flex: none;
+        fill: none;
+        stroke: var(--color-slack-alternative-accent);
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    /* Outweigh the shared 400px feature-image img rule. */
+    .switch-art .switch-art-zulip {
+        width: 86px;
+        height: 86px;
+        flex: none;
+    }
+
+    /* Testimonials, presented as the home page presents them:
+       speech bubbles with a tail, and a bold name + italic role.
+       The home page styles live in hello.css, which is in another
+       webpack bundle, so the bubble is drawn again here. */
+    .switched-testimonials {
+        max-width: 1100px;
+        margin: 24px auto 0;
+        padding: 0 20px;
+
+        h2 {
+            text-align: center;
+            font-weight: 600;
+            margin: 0 0 20px;
+        }
+    }
+
+    .switched-testimonials-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 24px 28px;
+
+        @media (width < 768px) {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    /* Specific enough to win over the shared `.portico-landing
+       a:not(.button)` link styles. */
+    .switched-testimonials a.switched-testimonial {
+        /* Stretch the bubble so all three fill the row's height and
+           the attribution lines align. */
+        display: flex;
+        flex-direction: column;
+
+        &,
+        &:hover {
+            text-decoration: none;
+            color: inherit;
+        }
+    }
+
+    .switched-testimonial-text {
+        position: relative;
+        flex: 1;
+        padding: 20px 24px 18px;
+        border-radius: 25px 25px 25px 0;
+        background: var(--color-background-box);
+        font-size: 18px;
+        line-height: 140%;
+        color: var(--color-text-testimonial);
+        transition: box-shadow 0.3s ease-out;
+
+        strong {
+            color: var(--color-slack-alternative-accent);
+            font-weight: 600;
+        }
+
+        &::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -14px;
+            width: 22px;
+            height: 14px;
+            background: var(--color-background-box);
+            clip-path: polygon(0 0, 100% 0, 0 100%);
+        }
+    }
+
+    .switched-testimonial:hover .switched-testimonial-text {
+        box-shadow: 0 8px 24px var(--color-shadow-testimonial-hover);
+    }
+
+    .switched-testimonial-source {
+        margin: 22px 0 0 4px;
+        font-size: 15px;
+
+        i {
+            color: var(--color-text-testimonial-role);
+        }
+    }
+}
