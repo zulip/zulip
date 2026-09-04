@@ -691,8 +691,15 @@ def do_change_user_role(
     do_send_user_group_members_update_event("add_members", system_group, [user_profile.id])
 
     if UserProfile.ROLE_MEMBER in [old_value, value]:
+        # The USER_ROLE_CHANGED entry above records the workplace users
+        # count once all the membership updates for this role change are
+        # done, so a WORKPLACE_USERS_COUNT_CHANGED entry recording the
+        # same count would be redundant.
         update_users_in_full_members_system_group(
-            user_profile.realm, [user_profile.id], acting_user=acting_user
+            user_profile.realm,
+            [user_profile.id],
+            acting_user=acting_user,
+            skip_workplace_users_count_audit_log=True,
         )
 
     # realm_user_count_by_role counts the workplace users from
