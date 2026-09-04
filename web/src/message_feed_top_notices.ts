@@ -2,6 +2,7 @@ import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import * as hash_util from "./hash_util.ts";
+import * as message_feed_loading from "./message_feed_loading.ts";
 import type {MessageList} from "./message_list.ts";
 import * as message_lists from "./message_lists.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -53,25 +54,35 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
         return;
     }
 
-    if (msg_list.data.fetch_status.has_found_oldest()) {
-        const filter = narrow_state.filter();
-        // Potentially display the notice that lets users know
-        // that not all messages were searched.  One could
-        // imagine including `filter.is_keyword_search()` in these
-        // conditions, but there's a very legitimate use case
-        // for moderation of searching for all messages sent
-        // by a potential spammer user.
-        if (filter?.may_have_incomplete_message_history(false)) {
-            show_end_of_results_notice();
+    message_feed_loading.run_when_top_of_feed_indicator_hidden(() => {
+        if (msg_list !== message_lists.current) {
+            return;
         }
-    }
 
-    if (msg_list.data.fetch_status.history_limited()) {
-        show_history_limit_notice();
-    }
+        if (msg_list.data.fetch_status.has_found_oldest()) {
+            const filter = narrow_state.filter();
+            // Potentially display the notice that lets users know
+            // that not all messages were searched.  One could
+            // imagine including `filter.is_keyword_search()` in these
+            // conditions, but there's a very legitimate use case
+            // for moderation of searching for all messages sent
+            // by a potential spammer user.
+            if (filter?.may_have_incomplete_message_history(false)) {
+                show_end_of_results_notice();
+            }
+        }
+
+        if (msg_list.data.fetch_status.history_limited()) {
+            show_history_limit_notice();
+        }
+    });
 }
 
 export function hide_top_of_narrow_notices(): void {
+    // A notice waiting for the loading indicator to go away must not
+    // show up after this; the empty-narrow banner, for one, hides the
+    // notices so that it can take their place.
+    message_feed_loading.cancel_run_when_top_of_feed_indicator_hidden();
     hide_end_of_results_notice();
     hide_history_limit_notice();
 }
