@@ -20,13 +20,14 @@ from zerver.actions.reactions import do_add_reaction
 from zerver.actions.realm_domains import do_add_realm_domain
 from zerver.actions.realm_linkifiers import do_add_linkifier
 from zerver.actions.realm_playgrounds import check_add_realm_playground
+from zerver.actions.user_settings import do_change_avatar_fields
 from zerver.lib.bot_storage import set_bot_storage
 from zerver.lib.events import do_events_register
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import read_test_image_file
+from zerver.lib.test_helpers import get_test_image_file, read_test_image_file
 from zerver.lib.types import ProfileFieldData
-from zerver.lib.upload import upload_message_attachment
+from zerver.lib.upload import upload_avatar_image, upload_message_attachment
 from zerver.models import Client, CustomProfileField, Message, NamedUserGroup, UserPresence
 from zerver.models.channel_folders import ChannelFolder
 from zerver.models.realms import RealmExport, get_realm
@@ -400,6 +401,33 @@ def deactivate_user() -> dict[str, object]:
         realm=get_realm("zulip"),
         acting_user=None,
     )
+    return {"user_id": user_profile.id}
+
+
+@openapi_param_value_generator(["/users/{user_id}/avatar:post"])
+def upload_avatar_for_user() -> dict[str, object]:
+    user_profile = do_create_user(
+        email="upload-avatar-test@zulip.com",
+        password=None,
+        full_name="Mr. Upload Avatar",
+        realm=get_realm("zulip"),
+        acting_user=None,
+    )
+    return {"user_id": user_profile.id}
+
+
+@openapi_param_value_generator(["/users/{user_id}/avatar:delete"])
+def delete_avatar_for_user() -> dict[str, object]:
+    user_profile = do_create_user(
+        email="delete-avatar-test@zulip.com",
+        password=None,
+        full_name="Mr. Delete Avatar",
+        realm=get_realm("zulip"),
+        acting_user=None,
+    )
+    with get_test_image_file("img.png") as image_file:
+        upload_avatar_image(image_file, user_profile, content_type="image/png")
+    do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER, acting_user=None)
     return {"user_id": user_profile.id}
 
 
