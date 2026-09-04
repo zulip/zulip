@@ -7,6 +7,7 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import * as activity_ui from "./activity_ui.ts";
+import * as avatar from "./avatar.ts";
 import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import {buddy_list} from "./buddy_list.ts";
@@ -192,10 +193,22 @@ export const update_person = function update(event: UserUpdate): void {
             current_user.avatar_source = event.avatar_source;
             current_user.avatar_url = url;
             current_user.avatar_url_medium = event.avatar_url_medium;
+
+            if (
+                $("#user-avatar-upload-widget .upload-spinner-background").css("visibility") ===
+                "visible"
+            ) {
+                const $avatar_img = $("#user-avatar-upload-widget .image-block");
+                $avatar_img.off(".avatar_img");
+                $avatar_img.one("load.avatar_img error.avatar_img", avatar.hide_avatar_spinner);
+            }
             $("#user-avatar-upload-widget .image-block").attr("src", event.avatar_url_medium);
             $("#personal-menu-dropdown .avatar-image, .header-button-avatar-image").attr(
                 "src",
                 `${event.avatar_url_medium}`,
+            );
+            $("#user-avatar-upload-widget .image-delete-button").toggle(
+                event.avatar_source === "U",
             );
             if (current_user.avatar_source === "G") {
                 $("#user-avatar-source").show();

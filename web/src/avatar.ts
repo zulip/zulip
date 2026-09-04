@@ -56,12 +56,12 @@ export function build_bot_edit_widget($target: JQuery): UploadWidget {
     );
 }
 
-function display_avatar_delete_complete(): void {
+export function hide_avatar_spinner(): void {
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
     $("#user-avatar-upload-widget .image-upload-text").show();
 }
 
-function display_avatar_delete_started(): void {
+export function show_avatar_spinner(): void {
     $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "visible"});
     $("#user-avatar-upload-widget .image-upload-text").hide();
     $("#user-avatar-upload-widget .image-delete-button").hide();
@@ -90,20 +90,21 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
         e.preventDefault();
         e.stopPropagation();
         function delete_user_avatar(): void {
-            display_avatar_delete_started();
+            // Start the spinner early because popup closes before success is received.
+            show_avatar_spinner();
             void channel.del({
                 url: "/json/users/me/avatar",
                 success() {
-                    display_avatar_delete_complete();
-
                     // Need to clear input because of a small edge case
                     // where you try to upload the same image you just deleted.
                     get_file_input().val("");
                     // Rest of the work is done via the user_events -> avatar_url event we will get
                 },
                 error() {
-                    display_avatar_delete_complete();
-                    $("#user-avatar-upload-widget .image-delete-button").show();
+                    hide_avatar_spinner();
+                    $("#user-avatar-upload-widget .image-delete-button").toggle(
+                        current_user.avatar_source === "U",
+                    );
                 },
             });
         }
