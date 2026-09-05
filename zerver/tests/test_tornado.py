@@ -162,9 +162,9 @@ class EventsTestCase(TornadoWebTestCase):
                 self.assert_length(cache_gets, 2)
                 self.assertEqual(
                     cache_gets[0],
-                    ("get", user_profile_narrow_by_id_cache_key(user_profile.id), None),
+                    ("gets", user_profile_narrow_by_id_cache_key(user_profile.id), None),
                 )
-                self.assertEqual(cache_gets[1][0], "get")
+                self.assertEqual(cache_gets[1][0], "gets")
                 assert isinstance(cache_gets[1][1], str)
                 self.assertTrue(cache_gets[1][1].startswith("get_client:"))
 
@@ -189,7 +189,7 @@ class EventsTestCase(TornadoWebTestCase):
                 self.assert_length(cache_gets, 1)
                 self.assertEqual(
                     cache_gets[0],
-                    ("get", user_profile_narrow_by_id_cache_key(user_profile.id), None),
+                    ("gets", user_profile_narrow_by_id_cache_key(user_profile.id), None),
                 )
                 # Client is cached in-process-memory, so doesn't even see
                 # a memcached hit
