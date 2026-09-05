@@ -1,0 +1,76 @@
+{
+  "object": "page",
+  "id": "337e31d6-4eb9-80fa-b299-c93680d85322",
+  "created_time": "2026-04-03T18:04:00.000Z",
+  "last_edited_time": "2026-04-03T18:07:00.000Z",
+  "created_by": {
+    "object": "user",
+    "id": "1d6d872b-594c-8129-818d-000250c7f19f"
+  },
+  "last_edited_by": {
+    "object": "user",
+    "id": "1d6d872b-594c-8129-818d-000250c7f19f"
+  },
+  "cover": null,
+  "icon": null,
+  "parent": {
+    "type": "page_id",
+    "page_id": "2f1e31d6-4eb9-80c7-8250-f8a76132adc2"
+  },
+  "in_trash": false,
+  "is_archived": false,
+  "is_locked": false,
+  "properties": {
+    "title": {
+      "id": "title",
+      "type": "title",
+      "title": [
+        {
+          "type": "text",
+          "text": {
+            "content": "Zulip Notion Test",
+            "link": null
+          },
+          "annotations": {
+            "bold": false,
+            "italic": false,
+            "strikethrough": false,
+            "underline": false,
+            "code": false,
+            "color": "default"
+          },
+          "plain_text": "Zulip Notion Test",
+          "href": null
+        }
+      ]
+    },
+    "Status": {
+      "id": "XGe%40",
+      "type": "select",
+      "select": {
+        "name": "In Progress"
+      }
+    },
+    "Priority": {
+      "id": "bDf%5B",
+      "type": "select",
+      "select": {
+        "name": "High"
+      }
+    },
+    "Deadline": {
+      "id": "DbAu",
+      "type": "formula",
+      "formula": {
+        "type": "date",
+        "date": {
+          "start": "2026-02-01"
+        }
+      }
+    }
+  },
+  "url": "https://www.notion.so/Zulip-Notion-Test-337e31d64eb980fab299c93680d85322",
+  "public_url": null,
+  "archived": false,
+  "request_id": "cbc1ec1c-f0c9-4b3c-852d-5c95353c21dd"
+}
