@@ -858,7 +858,7 @@ test("server_rendering_for_backend_only_syntax", ({override, mock_template}) => 
     const locally_rendered_content =
         '<p>Look at this screenshot: <a href="https://user-uploads.zulipdev.org/upload/image.png">https://user-uploads.zulipdev.org/upload/image.png</a></p>';
     const server_rendered_content =
-        '<p>Look at this screenshot: <a href="https://user-uploads.zulipdev.org/upload/image.png" target="_blank" rel="noopener noreferrer" title="https://user-uploads.zulipdev.org/upload/image.png"><img src="/thumbnail?url=user_uploads%2Fimage.png&amp;size=thumbnail"></a></p>';
+        '<p>Look at this screenshot: <a href="https://user-uploads.zulipdev.org/upload/image.png" target="_blank" rel="noopener noreferrer" title="https://user-uploads.zulipdev.org/upload/image.png" data-message-link-type="external_named_link"><img src="/thumbnail?url=user_uploads%2Fimage.png&amp;size=thumbnail"></a></p>';
 
     let post_calls = 0;
     const $content_element = $.create('[data-draft-id="id1"] .message_content');
