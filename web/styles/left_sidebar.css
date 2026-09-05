@@ -225,7 +225,8 @@
 
     .stream-expanded {
         .channel-new-topic-button,
-        .channel-search-topics-button {
+        .channel-search-topics-button,
+        .channel-expand-topics-chevron {
             display: flex;
         }
 
@@ -243,6 +244,12 @@
                 display: inline;
             }
         }
+    }
+
+    /* Overrides the rule above while a "topic:" search is showing its
+       results in place of the channel's own topic list. */
+    .hide-expand-topics-chevron .channel-expand-topics-chevron {
+        display: none;
     }
 
     .toggle_stream_mute {
@@ -2170,13 +2177,22 @@ li.active-sub-filter {
 }
 
 .channel-new-topic-button,
-.channel-search-topics-button {
+.channel-search-topics-button,
+.channel-expand-topics-chevron {
     /* display: flex; is set on visible channels and
        channel-row hovers. */
     display: none;
     align-items: center;
     justify-content: center;
     color: var(--color-sidebar-action);
+}
+
+/* Only these two are controls in their own right, with a highlight of
+   their own to match. The chevron beside them is not: the row it sits
+   on is what expands and collapses the topic list, so the row's own
+   hover highlight is the feedback, and the chevron takes none. */
+.channel-new-topic-button,
+.channel-search-topics-button {
     margin: 2px 0;
     border-radius: 3px;
 
@@ -2184,6 +2200,16 @@ li.active-sub-filter {
         color: var(--color-sidebar-action-hover);
         background-color: var(--color-background-sidebar-action-hover);
     }
+}
+
+.channel-expand-topics-chevron .zulip-icon-chevron-right {
+    transition: rotate 140ms linear;
+}
+
+.narrow-filter.topic-list-expanded
+    .channel-expand-topics-chevron
+    .zulip-icon-chevron-right {
+    rotate: 90deg;
 }
 
 .narrow-filter:hover {
