@@ -210,16 +210,19 @@ function assert_same(actual, expected) {
     assert.deepEqual(actual, expected);
 }
 
-run_test("alert_words", ({override}) => {
-    alert_words.initialize({alert_words: []});
+run_test("watched_phrases", ({override}) => {
+    alert_words.initialize({watched_phrases: []});
     assert.ok(!alert_words.has_alert_word("fire"));
     assert.ok(!alert_words.has_alert_word("lunch"));
 
     override(alert_words_ui, "rerender_alert_words_ui", noop);
-    const event = event_fixtures.alert_words;
+    const event = event_fixtures.watched_phrases;
     dispatch(event);
 
-    assert.deepEqual(alert_words.get_word_list(), [{word: "lunch"}, {word: "fire"}]);
+    assert.deepEqual(alert_words.get_word_list(), [
+        {word: "fire", automatically_follow_topics: true},
+        {word: "lunch", automatically_follow_topics: false},
+    ]);
     assert.ok(alert_words.has_alert_word("fire"));
     assert.ok(alert_words.has_alert_word("lunch"));
 });

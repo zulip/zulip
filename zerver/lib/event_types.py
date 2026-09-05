@@ -1275,6 +1275,16 @@ class UserTopicEvent(BaseEvent):
     visibility_policy: int
 
 
+class WatchedPhrase(BaseModel):
+    watched_phrase: str
+    automatically_follow_topics: bool
+
+
+class WatchedPhrasesEvent(BaseEvent):
+    type: Literal["watched_phrases"]
+    watched_phrases: list[WatchedPhrase]
+
+
 class WebReloadClientEvent(BaseEvent):
     type: Literal["web_reload_client"]
     immediate: bool

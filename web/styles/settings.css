@@ -1156,6 +1156,13 @@ input[type="checkbox"] {
     width: 70%;
 }
 
+#alert-word-settings {
+    & th.follow-topic,
+    td.follow-topic-cell {
+        text-align: center;
+    }
+}
+
 #alert-words-table {
     margin: 0;
 
