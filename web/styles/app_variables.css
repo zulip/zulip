@@ -1923,6 +1923,16 @@
         hsl(0deg 0% 0% / 30%),
         hsl(0deg 0% 100% / 35%)
     );
+    /* Remove-link-preview button and overlay */
+    --color-remove-preview-button: light-dark(
+        hsl(0deg 0% 20%),
+        hsl(0deg 0% 95%)
+    );
+    --color-remove-preview-button-hover: hsl(0deg 0% 100%);
+    --color-background-remove-preview-overlay: hsl(0deg 0% 0% / 40%);
+    --color-text-remove-preview-overlay: hsl(0deg 0% 100%);
+    --text-shadow-remove-preview-overlay-text:
+        0 0 4px hsl(0deg 0% 0% / 80%), 0 1px 2px hsl(0deg 0% 0%);
 
     /* Icon colors */
     --color-icon-bot: light-dark(
