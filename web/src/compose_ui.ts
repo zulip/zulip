@@ -1763,8 +1763,13 @@ export function rewire_apply_preview_render(value: typeof apply_preview_render):
 }
 
 // Separate from compose_state's render count, which the message-edit preview
-// shares and so must not be superseded from here.
-let embed_update_count = 0;
+// shares and so must not be superseded from here. Kept per preview, since the
+// compose box and each message-edit row render independently.
+const embed_update_counts = new WeakMap<HTMLElement, number>();
+
+function get_embed_update_count($preview_container: JQuery): number {
+    return embed_update_counts.get(util.the($preview_container)) ?? 0;
+}
 
 export function render_and_show_preview(
     $preview_container: JQuery,
@@ -1772,7 +1777,7 @@ export function render_and_show_preview(
     $preview_content_box: JQuery,
     content: string,
     show_spinner = true,
-    // Only the compose preview consumes the resulting event.
+    // The drafts overlay has no open preview to live-update.
     populate_url_embed_data = false,
 ): void {
     if (prevent_next_spinner) {
@@ -1781,7 +1786,7 @@ export function render_and_show_preview(
 
     const preview_render_count = compose_state.get_preview_render_count() + 1;
     compose_state.set_preview_render_count(preview_render_count);
-    const link_preview_update_count_at_request = embed_update_count;
+    const embed_update_count_at_request = get_embed_update_count($preview_container);
 
     if (content.length === 0) {
         apply_preview_render(
@@ -1837,7 +1842,7 @@ export function render_and_show_preview(
                 }
                 if (
                     populate_url_embed_data &&
-                    link_preview_update_count_at_request !== embed_update_count
+                    embed_update_count_at_request !== get_embed_update_count($preview_container)
                 ) {
                     // This response predates embeds an update already
                     // applied, so applying it would drop their cards.
@@ -1871,24 +1876,35 @@ export function render_and_show_preview(
     }
 }
 
-// Live-update the open compose preview with the embed_links worker's re-render.
-export function update_compose_preview_embeds(content: string, rendered_content: string): void {
-    const $preview_container = $("#compose");
+// Live-update one open preview with the embed_links worker's re-render. The
+// caller has already checked that the preview still shows this content.
+export function apply_embeds_to_preview(
+    $preview_container: JQuery,
+    content: string,
+    rendered_content: string,
+): void {
     if (!$preview_container.hasClass("preview_mode")) {
         return;
     }
-    if (content !== compose_state.message_content()) {
-        return;
-    }
     // Supersede any in-flight render whose response predates the embeds.
-    embed_update_count += 1;
+    embed_update_counts.set(
+        util.the($preview_container),
+        get_embed_update_count($preview_container) + 1,
+    );
     apply_preview_render(
         $preview_container,
-        $("#compose .markdown_preview_spinner"),
-        $("#compose .preview_content"),
+        $preview_container.find(".markdown_preview_spinner"),
+        $preview_container.find(".preview_content"),
         content,
         rendered_content,
         content,
         true,
     );
+}
+
+export function update_compose_preview_embeds(content: string, rendered_content: string): void {
+    if (content !== compose_state.message_content()) {
+        return;
+    }
+    apply_embeds_to_preview($("#compose"), content, rendered_content);
 }

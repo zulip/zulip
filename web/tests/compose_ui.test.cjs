@@ -1607,6 +1607,8 @@ run_test("update_compose_preview_embeds", ({override}) => {
         ".image-loading-placeholder",
         $.create("no-images", {elements: []}),
     );
+    $compose.set_find_results(".markdown_preview_spinner", $("#compose .markdown_preview_spinner"));
+    $compose.set_find_results(".preview_content", $preview_content);
 
     const content = "http://example.com/";
     const rendered_content = "<p>draft with an embed</p>";
@@ -1637,6 +1639,32 @@ run_test("update_compose_preview_embeds", ({override}) => {
     assert.equal(compose_state.get_preview_render_count(), render_count_before);
 });
 
+run_test("apply_embeds_to_preview updates any preview that is open", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+
+    const content = "http://example.com/";
+    const rendered_content = "<p>message with an embed</p>";
+    const already_shown = "<p>message without an embed</p>";
+
+    const $preview_content = $.create("edit-row .preview_content");
+    $preview_content.set_find_results(
+        ".image-loading-placeholder",
+        $.create("edit-row no-images", {elements: []}),
+    );
+    const $edit_row = $.create("edit-row");
+    $edit_row.set_find_results(".markdown_preview_spinner", $.create("edit-row spinner"));
+    $edit_row.set_find_results(".preview_content", $preview_content);
+
+    // The edit box is not previewing: nothing to update.
+    $preview_content.html(already_shown);
+    compose_ui.apply_embeds_to_preview($edit_row, content, rendered_content);
+    assert.equal($preview_content.html(), already_shown);
+
+    $edit_row.addClass("preview_mode");
+    compose_ui.apply_embeds_to_preview($edit_row, content, rendered_content);
+    assert.equal($preview_content.html(), rendered_content);
+});
+
 run_test("url_embed_data outlives an older render response", ({override}) => {
     override(rendered_markdown, "update_elements", noop);
 
@@ -1646,6 +1674,8 @@ run_test("url_embed_data outlives an older render response", ({override}) => {
         ".image-loading-placeholder",
         $.create("no-images", {elements: []}),
     );
+    $compose.set_find_results(".markdown_preview_spinner", $("#compose .markdown_preview_spinner"));
+    $compose.set_find_results(".preview_content", $preview_content);
     $compose.addClass("preview_mode");
 
     // The topic wildcard mention is backend-only syntax, so a spinner is
