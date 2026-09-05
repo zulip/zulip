@@ -373,6 +373,7 @@ def update_custom_profile_field() -> dict[str, object]:
         "Favorite IDE",
         CustomProfileField.DROPDOWN,
         field_data=field_data,
+        acting_user=None,
     )
     return {
         "field_id": field.id,
@@ -385,6 +386,7 @@ def delete_custom_profile_field() -> dict[str, object]:
         get_realm("zulip"),
         "Field to delete",
         CustomProfileField.SHORT_TEXT,
+        acting_user=None,
     )
     return {
         "field_id": field.id,
