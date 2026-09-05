@@ -18,8 +18,11 @@ import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as util from "./util.ts";
 
-type ScheduledMessageRenderContext = ScheduledMessage &
-    (
+type ScheduledMessageRenderContext = ScheduledMessage & {
+    split_message_count: number;
+    is_split_message: boolean;
+    split_message_ids: string;
+} & (
         | {
               is_stream: true;
               formatted_send_at_time: string;
@@ -38,24 +41,43 @@ type ScheduledMessageRenderContext = ScheduledMessage &
           }
     );
 
+function get_row_part_ids(row_scheduled_message_id: number): number[] {
+    const sorted_scheduled_messages = sort_scheduled_messages(
+        scheduled_messages.get_all_scheduled_messages(),
+    );
+    for (const group of group_split_scheduled_messages(sorted_scheduled_messages)) {
+        if (group.part_ids[0] === row_scheduled_message_id) {
+            return group.part_ids;
+        }
+    }
+    return [row_scheduled_message_id];
+}
+
+function edit_scheduled_message_row(row_scheduled_message_id: number): void {
+    const part_ids = get_row_part_ids(row_scheduled_message_id);
+    if (part_ids.length > 1) {
+        scheduled_messages_ui.undo_split_scheduled_messages(part_ids);
+    } else {
+        scheduled_messages_ui.edit_scheduled_message(row_scheduled_message_id);
+    }
+    overlays.close_overlay("scheduled");
+}
+
 export const keyboard_handling_context = {
     get_items_ids() {
-        const scheduled_messages_ids = [];
         const sorted_scheduled_messages = sort_scheduled_messages(
             scheduled_messages.get_all_scheduled_messages(),
         );
-        for (const scheduled_message of sorted_scheduled_messages) {
-            scheduled_messages_ids.push(scheduled_message.scheduled_message_id.toString());
-        }
-        return scheduled_messages_ids;
+        return group_split_scheduled_messages(sorted_scheduled_messages).map((group) =>
+            group.part_ids[0]!.toString(),
+        );
     },
     on_enter() {
         const focused_element_id = messages_overlay_ui.get_focused_element_id(this);
         if (focused_element_id === undefined) {
             return;
         }
-        scheduled_messages_ui.edit_scheduled_message(Number.parseInt(focused_element_id, 10));
-        overlays.close_overlay("scheduled");
+        edit_scheduled_message_row(Number.parseInt(focused_element_id, 10));
     },
     on_delete() {
         const focused_element_id = messages_overlay_ui.get_focused_element_id(this);
@@ -66,7 +88,10 @@ export const keyboard_handling_context = {
         messages_overlay_ui.focus_on_sibling_element(this);
         // We need to have a super responsive UI feedback here, so we remove the row from the DOM manually
         $focused_row.remove();
-        scheduled_messages.delete_scheduled_message(Number.parseInt(focused_element_id, 10));
+        const part_ids = get_row_part_ids(Number.parseInt(focused_element_id, 10));
+        for (const part_id of part_ids) {
+            scheduled_messages.delete_scheduled_message(part_id);
+        }
     },
     items_container_selector: "scheduled-messages-container",
     items_list_selector: "scheduled-messages-list",
@@ -85,11 +110,49 @@ export function handle_keyboard_events(event_key: string): void {
     messages_overlay_ui.modals_handle_events(event_key, keyboard_handling_context);
 }
 
+function group_split_scheduled_messages(
+    sorted_scheduled_messages: ScheduledMessage[],
+): {scheduled_msg: ScheduledMessage; part_ids: number[]; combined_rendered_content: string}[] {
+    const groups: {
+        scheduled_msg: ScheduledMessage;
+        part_ids: number[];
+        combined_rendered_content: string;
+    }[] = [];
+    const group_index_by_id = new Map<string, number>();
+
+    for (const scheduled_msg of sorted_scheduled_messages) {
+        const existing_index =
+            scheduled_msg.split_group_id === null
+                ? undefined
+                : group_index_by_id.get(scheduled_msg.split_group_id);
+        if (existing_index === undefined) {
+            if (scheduled_msg.split_group_id !== null) {
+                group_index_by_id.set(scheduled_msg.split_group_id, groups.length);
+            }
+            groups.push({
+                scheduled_msg,
+                part_ids: [scheduled_msg.scheduled_message_id],
+                combined_rendered_content: scheduled_msg.rendered_content,
+            });
+        } else {
+            const group = groups[existing_index]!;
+            group.part_ids.push(scheduled_msg.scheduled_message_id);
+            group.combined_rendered_content += scheduled_msg.rendered_content;
+        }
+    }
+    return groups;
+}
+
 function format(scheduled_messages: ScheduledMessage[]): ScheduledMessageRenderContext[] {
     const formatted_scheduled_msgs = [];
     const sorted_scheduled_messages = sort_scheduled_messages(scheduled_messages);
 
-    for (const scheduled_msg of sorted_scheduled_messages) {
+    for (const group of group_split_scheduled_messages(sorted_scheduled_messages)) {
+        const scheduled_msg = group.scheduled_msg;
+        const split_message_count = group.part_ids.length;
+        const is_split_message = split_message_count > 1;
+        const split_message_ids = group.part_ids.join(",");
+        const rendered_content = group.combined_rendered_content;
         let scheduled_msg_render_context;
         const time = new Date(scheduled_msg.scheduled_delivery_timestamp * 1000);
         const formatted_send_at_time = timerender.get_full_datetime(time, "time");
@@ -106,6 +169,10 @@ function format(scheduled_messages: ScheduledMessage[]): ScheduledMessageRenderC
 
             scheduled_msg_render_context = {
                 ...scheduled_msg,
+                rendered_content,
+                split_message_count,
+                is_split_message,
+                split_message_ids,
                 is_stream: true as const,
                 stream_id,
                 stream_name,
@@ -120,6 +187,10 @@ function format(scheduled_messages: ScheduledMessage[]): ScheduledMessageRenderC
             const recipients = people.format_recipients(user_ids_string, "long");
             scheduled_msg_render_context = {
                 ...scheduled_msg,
+                rendered_content,
+                split_message_count,
+                is_split_message,
+                split_message_ids,
                 is_stream: false as const,
                 is_dm_with_self: people.is_direct_message_conversation_with_self(scheduled_msg.to),
                 recipients,
@@ -170,10 +241,19 @@ export function rerender(): void {
 }
 
 export function remove_scheduled_message_id(scheduled_msg_id: number): void {
-    if (overlays.scheduled_messages_open()) {
-        $(
-            `#scheduled_messages_overlay .scheduled-message-row[data-scheduled-message-id=${scheduled_msg_id}]`,
-        ).remove();
+    if (!overlays.scheduled_messages_open()) {
+        return;
+    }
+    for (const row of $("#scheduled_messages_overlay .scheduled-message-row")) {
+        const $row = $(row);
+        const part_ids = ($row.attr("data-split-message-ids") ?? "")
+            .split(",")
+            .filter((id) => id !== "")
+            .map((id) => Number.parseInt(id, 10));
+        const row_id = Number.parseInt($row.attr("data-scheduled-message-id")!, 10);
+        if (row_id === scheduled_msg_id || part_ids.includes(scheduled_msg_id)) {
+            $row.remove();
+        }
     }
 }
 
@@ -199,8 +279,7 @@ export function initialize(): void {
             $(e.currentTarget).closest(".scheduled-message-row").attr("data-scheduled-message-id")!,
             10,
         );
-        scheduled_messages_ui.edit_scheduled_message(scheduled_msg_id);
-        overlays.close_overlay("scheduled");
+        edit_scheduled_message_row(scheduled_msg_id);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -211,7 +290,10 @@ export function initialize(): void {
             .attr("data-scheduled-message-id");
         assert(scheduled_msg_id !== undefined);
 
-        scheduled_messages.delete_scheduled_message(Number.parseInt(scheduled_msg_id, 10));
+        const part_ids = get_row_part_ids(Number.parseInt(scheduled_msg_id, 10));
+        for (const part_id of part_ids) {
+            scheduled_messages.delete_scheduled_message(part_id);
+        }
 
         e.stopPropagation();
         e.preventDefault();
