@@ -30,39 +30,13 @@ change should make the codebase more maintainable and easier to read.
 
 ### No detail is too small
 
-Zulip holds itself to a high bar for polish because users depend on
-this software daily, and because the project is built to last for
-decades. There is no category of "minor issue" that is acceptable
-to ship — if something is broken in any context where a user would
-encounter it, it must be fixed before merging. The project's
-extensive investment in testing, tooling, and review processes exists
-precisely so that these issues get caught and fixed, not so that they
-can be classified as low-priority and deferred.
-
-This philosophy extends to every aspect of the product:
-
-- **Visual precision matters.** Alignment, spacing, colors, and font
-  sizes must be consistent with similar existing UI. When making CSS
-  changes, you must demonstrate with pixel-precise before/after
-  comparisons that there are no unintended side effects.
-- **Every state matters.** UI must look correct in all its states:
-  hover, active, disabled, focused, selected, empty, overflowing.
-  Changes that could plausibly affect colors, contrast, or
-  theme-dependent imagery must work in both light and dark themes;
-  changes whose effect can't reasonably vary with theme (pure
-  geometry/typography — `font-size`, `line-height`, `margin`,
-  `padding`, `display`, `font-weight`, etc.) only need a single
-  theme verified.
-- **Every window size matters.** UI must look good from wide desktop
-  (1920px) down to narrow phone screens (480px).
-- **Every language matters.** Translated strings can be 1.5x longer
-  than English or half as short. UI must handle both extremes without
-  breaking layout. Think about right-to-left languages too.
-- **Every interaction path matters.** Keyboard navigation, screen
-  readers, permission levels, feature interactions (banners
-  overlapping, resolved topics, muted messages), and edge cases in
-  data (empty lists, very long names, single items vs. many) must all
-  be considered.
+There is no category of "minor issue" that is acceptable to ship —
+if something is broken in any state, size, theme, or language where
+a user would encounter it, it must be fixed before merging. If a fix
+would require a design decision, raise it as a question rather than
+shipping the broken state. See `.claude/rules/ui-testing.md` for
+what to test for UI changes (the file loads automatically when you
+work on frontend files).
 
 The right attitude is: "What could go wrong, and how do I verify that
 it doesn't?" not "It looks fine to me." **What isn't tested probably
@@ -103,9 +77,6 @@ git log --oneline -20 -- path/to/file.py
 # Check for related issues on GitHub
 ```
 
-Always show existing similar code and explain how it works before proposing
-changes.
-
 ### 2. Propose an Approach
 
 Before writing code, explain the plan:
@@ -134,14 +105,8 @@ commit from other changes.
 
 ### 4. Verify Before Finalizing
 
-Run tests before making a commit. Always manage your time by running
-specific test collections, not the entire test suite:
-
-```bash
-# Includes mypy and typescript checkers
-./tools/lint path/to/changed/files.py
-./tools/test-backend zerver.tests.test_relevant_module
-```
+Run the linter and the relevant tests before making each commit; see
+"Testing Requirements" below for instructions.
 
 Run through the `/self-review` skill's checklist before suggesting opening
 a PR (`.claude/skills/self-review/SKILL.md`).
@@ -153,6 +118,7 @@ a PR (`.claude/skills/self-review/SKILL.md`).
 Zulip has over 185,000 words of developer documentation. Before working on any area:
 
 - Read documentation from docs/, starlight_help/src/content/docs/, and api_docs/.
+  `docs/subsystems/directory-structure.md` explains where code lives.
 - Read existing code in the area you're modifying.
 - Use `git grep` to find similar patterns in the codebase and read those.
 
@@ -223,12 +189,14 @@ When writing tests, follow our testing philosophy in
 `.claude/rules/testing.md` (loaded automatically when you work on
 test files).
 
-### Before Submitting:
+Manage your time by running specific backend test collections, not
+the entire suite; the node suite is fast enough to run in full.
 
 ```bash
-./tools/test-js-with-node       # JavaScript tests; full suite fast enough
-./tools/lint                    # Run all linters
-./tools/test-backend            # Python tests
+# Includes mypy and typescript checkers
+./tools/lint path/to/changed/files.py
+./tools/test-backend zerver.tests.test_relevant_module
+./tools/test-js-with-node
 ```
 
 ### Manual Testing for UI Changes
@@ -236,59 +204,6 @@ test files).
 If a PR makes frontend changes, manually verify the affected UI
 using the checklist in `.claude/rules/ui-testing.md` (loaded
 automatically when you work on frontend files).
-
-## Common Pitfalls
-
-### Treating Known Issues as Acceptable
-
-A common failure mode is discovering a problem during verification
-and then noting it as a known limitation rather than fixing it. At
-Zulip, there is no category of "known minor issue" that is acceptable
-to ship. If it's broken in any state, size, theme, or language, it
-needs to be fixed.
-
-**Mitigation:** When you find any issue during verification, fix it
-before presenting the work. If a fix would require a design decision,
-raise it as a question rather than shipping the broken state.
-
-### Overconfident Code Generation
-
-You may generate code that looks correct but doesn't match Zulip patterns.
-
-**Mitigation:** Always show existing similar code first before implementing.
-
-### Incomplete Type Annotations
-
-Python code must be fully typed for mypy.
-
-**Mitigation:** Ensure all functions have complete type annotations. Run mypy
-(perhaps via the linter) to verify.
-
-### Missing Test Updates
-
-Tests must be in the same commit as the code they test.
-
-**Mitigation:** Include test updates in each commit. Show what tests need to
-change.
-
-### Verbose Commit Messages
-
-Zulip commits are concise -- say everything that's important for a
-reviewer to understand about the motivation for the work and changes,
-and nothing more. Avoid wordiness and details obvious to someone who
-is looking at the commit and its metadata (lists of filenames, etc).
-
-**Mitigation:** Keep summary under 72 characters. Body should explain why,
-not what.
-
-### Mixing Concerns
-
-Multiple changes in one commit makes review difficult.
-
-**Mitigation:** Each commit should do exactly one thing. Plan
-necessary refactoring and preparatory commits in advance of functional
-changes. You can split into good commits after the fact, but it's much
-faster and easier to just plan and write them well the first time.
 
 ## What Not To Do
 
@@ -369,25 +284,6 @@ Recommend pausing for discussion when:
 - Backend tests: https://zulip.readthedocs.io/en/latest/testing/testing-with-django.html
 - Code review: https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html
 - mypy guide: https://zulip.readthedocs.io/en/latest/testing/mypy.html
-
-## Repository Structure Quick Reference
-
-```
-zerver/           # Main Django app
-  models/         # Database models
-  views/          # API endpoints
-  lib/            # Shared utilities
-  tests/          # Backend tests
-  webhooks/       # Integration webhooks
-web/              # Frontend TypeScript/JavaScript
-  src/            # Main frontend code
-  styles/         # CSS
-  templates/      # Frontend HTML
-  tests/          # Frontend tests
-templates/        # Jinja2/Handlebars templates
-tools/            # Development and testing scripts
-docs/             # ReadTheDocs documentation source
-```
 
 ## Help Center Documentation
 
