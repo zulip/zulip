@@ -12,6 +12,7 @@ from collections.abc import Awaitable
 from contextlib import suppress
 from ssl import SSLContext, SSLError
 from typing import Any
+from urllib.parse import SplitResult
 
 from aiosmtpd.controller import UnthreadedController
 from aiosmtpd.handlers import Message as MessageHandler
@@ -152,6 +153,22 @@ class ZulipMessageHandler(MessageHandler):
             return "500 Server error"
 
 
+def parse_listen_address(listen: str) -> tuple[str, int]:
+    if listen.isdigit():
+        host, port = None, int(listen)
+    else:
+        r = SplitResult("", listen, "", "", "")
+        if r.port is None:
+            raise RuntimeError(f"{listen!r} does not have a valid port number.")
+        host, port = r.hostname, r.port
+    if host is None:
+        # With no address specified, bind the IPv6 wildcard address if
+        # IPv6 is available, since (with IPV6_V6ONLY disabled, as
+        # _create_server does) that accepts IPv4 connections as well.
+        host = "::" if socket.has_dualstack_ipv6() else "0.0.0.0"  # noqa: S104
+    return host, port
+
+
 class PermissionDroppingUnthreadedController(UnthreadedController):  # nocoverage
     @override
     def __init__(
@@ -175,9 +192,20 @@ class PermissionDroppingUnthreadedController(UnthreadedController):  # nocoverag
     def _create_server(self) -> Awaitable[asyncio.AbstractServer]:
         # Make the listen socket, then drop privileges before starting
         # the server
-        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        family, type_, proto, _, sockaddr = socket.getaddrinfo(
+            self.hostname,
+            self.port,
+            type=socket.SOCK_STREAM,
+            flags=socket.AI_PASSIVE,
+        )[0]
+        server_socket = socket.socket(family, type_, proto)
         server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        server_socket.bind((self.hostname, self.port))
+        if family == socket.AF_INET6:
+            # Also accept IPv4 connections when binding the IPv6
+            # wildcard address; this has no effect when binding a
+            # specific address.
+            server_socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
+        server_socket.bind(sockaddr)
         if os.geteuid() == 0:
             assert self.user_id is not None
             assert self.group_id is not None
@@ -205,7 +233,7 @@ class PermissionDroppingUnthreadedController(UnthreadedController):  # nocoverag
 def run_smtp_server(
     user: str | None, group: str | None, host: str, port: int, tls_context: SSLContext | None
 ) -> None:  # nocoverage
-    logger.info("Listening on %s:%d", host, port)
+    logger.info("Listening on %s:%d", f"[{host}]" if ":" in host else host, port)
     server = PermissionDroppingUnthreadedController(
         user=user,
         group=group,

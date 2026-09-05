@@ -12,6 +12,7 @@ class zulip::local_mailserver {
       before => Service[$zulip::common::supervisor_service],
     }
   }
+  $listen = zulipconf('email_gateway', 'listen', '')
   file { "${zulip::common::supervisor_conf_dir}/email-mirror.conf":
     ensure  => file,
     require => [

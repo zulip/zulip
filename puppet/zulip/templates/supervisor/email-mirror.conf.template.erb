@@ -1,5 +1,5 @@
 [program:zulip-email-server]
-command=nice -n15 /home/zulip/deployments/current/manage.py email_server --user zulip --group zulip
+command=nice -n15 /home/zulip/deployments/current/manage.py email_server --user zulip --group zulip<% if @listen != '' %> --listen <%= @listen %><% end %>
 environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=350                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
