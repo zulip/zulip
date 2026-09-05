@@ -1944,6 +1944,7 @@ class TestRealmAuditLog(ZulipTestCase):
             realm, "workplace_users_group", moderators_group, acting_user=None
         )
         realm.refresh_from_db()
+        now = timezone_now()
         do_change_user_role(
             user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None, notify=False
         )
@@ -1960,6 +1961,15 @@ class TestRealmAuditLog(ZulipTestCase):
             .filter(is_bot=False, is_active=True)
             .count(),
         )
+        # We skip creating WORKPLACE_USERS_COUNT_CHAGNED entry since
+        # USER_ROLE_CHANGED entry already has the correct user count.
+        self.assertFalse(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED,
+                event_time__gte=now,
+            ).exists()
+        )
 
         # Check when workplace_users_group is set to a system group
         # where just role counts are not enough and group membership
@@ -1968,6 +1978,7 @@ class TestRealmAuditLog(ZulipTestCase):
             realm, "workplace_users_group", full_members_group, acting_user=None
         )
         realm.refresh_from_db()
+        now = timezone_now()
         do_change_user_role(user_profile, UserProfile.ROLE_GUEST, acting_user=None, notify=False)
         role_changed_entry = RealmAuditLog.objects.filter(
             realm=realm,
@@ -1982,6 +1993,13 @@ class TestRealmAuditLog(ZulipTestCase):
             .filter(is_bot=False, is_active=True)
             .count(),
         )
+        self.assertFalse(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED,
+                event_time__gte=now,
+            ).exists()
+        )
 
         # Check with workplace_users_group set to an anonymous group.
         do_change_realm_permission_group_setting(
@@ -1991,6 +2009,7 @@ class TestRealmAuditLog(ZulipTestCase):
             acting_user=None,
         )
         realm.refresh_from_db()
+        now = timezone_now()
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None, notify=False)
         role_changed_entry = RealmAuditLog.objects.filter(
             realm=realm,
@@ -2004,6 +2023,13 @@ class TestRealmAuditLog(ZulipTestCase):
             get_recursive_group_members(realm.workplace_users_group_id)
             .filter(is_bot=False, is_active=True)
             .count(),
+        )
+        self.assertFalse(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                event_type=AuditLogEventType.WORKPLACE_USERS_COUNT_CHANGED,
+                event_time__gte=now,
+            ).exists()
         )
 
     def test_workplace_users_count_when_creating_user(self) -> None:
