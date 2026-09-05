@@ -159,7 +159,10 @@ export function update_profile_modal_ui(
         full_name?: string;
     },
 ): void {
-    if (!(modals.any_active() && modals.active_modal() === "#user-profile-modal")) {
+    // We check the length of the modal instead of checking the modal is active flag to determine if it exists.
+    // This is to prevent a race condition when a change arrives while the modal is still playing the open
+    // animation.
+    if ($("#user-profile-modal").length === 0) {
         return;
     }
     if (original_values?.user_id === undefined) {
@@ -178,6 +181,11 @@ export function update_profile_modal_ui(
         $("#avatar").css(
             "background-image",
             `url(${CSS.escape(people.medium_avatar_url_for_person(user))})`,
+        );
+        avatar.update_admin_user_avatar_widget(
+            people.medium_avatar_url_for_person(user),
+            user.avatar_source,
+            user.user_id,
         );
     }
     if (new_data.delivery_email !== undefined) {
@@ -1262,6 +1270,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
         hide_deactivate_button,
         user_is_only_organization_owner,
         max_user_name_length: people.MAX_USER_NAME_LENGTH,
+        user_avatar_url: people.medium_avatar_url_for_person(person),
     });
 
     $container.append($(modal_content_html));
@@ -1275,6 +1284,11 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
             .hide();
     }
     disable_user_role_dropdown_if_needed(person);
+
+    avatar.build_admin_user_avatar_widget(user_id, () => {
+        // Shows profile when cropper closes
+        show_user_profile(user_id, "manage-profile-tab");
+    });
 
     const custom_profile_field_form_selector = "#edit-user-form .custom-profile-field-form";
     $(custom_profile_field_form_selector).empty();

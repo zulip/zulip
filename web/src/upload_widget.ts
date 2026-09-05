@@ -180,6 +180,7 @@ function open_uppy_editor(
     $file_input: JQuery<HTMLInputElement>,
     $upload_button: JQuery,
     upload_function: UploadFunction,
+    on_hidden_callback?: () => void,
 ): void {
     const rendered_image_editor_modal = render_image_editor_modal();
     dialog_widget.launch({
@@ -191,7 +192,8 @@ function open_uppy_editor(
             assert(uppy_widget !== undefined);
             uppy_widget.getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!.save();
         },
-        post_render() {
+        // Uppy must be set after the modal is displayed so it fits the container
+        on_show() {
             set_up_uppy_widget(property_name);
             assert(uppy_widget !== undefined);
 
@@ -259,6 +261,7 @@ function open_uppy_editor(
             assert(uppy_widget !== undefined);
             uppy_widget.destroy();
             $file_input.val("");
+            on_hidden_callback?.();
         },
     });
 }
@@ -273,6 +276,7 @@ export function build_direct_upload_widget(
     upload_function: UploadFunction,
     max_file_upload_size: number,
     property_name: "realm_icon" | "realm_logo" | "user_avatar",
+    on_hidden_callback?: () => void,
 ): void {
     // default value of max uploaded file size
     function accept(): void {
@@ -282,7 +286,14 @@ export function build_direct_upload_widget(
         const files = util.the($file_input).files;
         assert(files !== null);
         assert(files[0] !== undefined);
-        open_uppy_editor(files[0], property_name, $file_input, $upload_button, upload_function);
+        open_uppy_editor(
+            files[0],
+            property_name,
+            $file_input,
+            $upload_button,
+            upload_function,
+            on_hidden_callback,
+        );
     }
 
     function clear(): void {

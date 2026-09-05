@@ -201,6 +201,7 @@ paths:
                                 nullable: true
                               role: {}
                               timezone: {}
+                              avatar_source: {}
                               avatar_url:
                                 nullable: true
                               avatar_version: {}
@@ -1309,6 +1310,7 @@ paths:
                                       "is_active": true,
                                       "date_joined": "2020-07-15T15:04:02.030833+00:00",
                                       "avatar_url": "https://secure.gravatar.com/avatar/c6b5578d4964bd9c5fae593c6868912a?d=identicon&version=1",
+                                      "avatar_source": "G",
                                       "profile_data": {},
                                       "is_imported_stub": false,
                                     },
@@ -11344,6 +11346,7 @@ paths:
                               "is_owner": false,
                               "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
+                              "avatar_source": "G",
                               "bot_type": null,
                               "timezone": "",
                               "is_bot": false,
@@ -11389,6 +11392,7 @@ paths:
                               "is_owner": false,
                               "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
+                              "avatar_source": "G",
                               "is_active": true,
                               "email": "hamlet@zulip.com",
                               "delivery_email": null,
@@ -11403,6 +11407,7 @@ paths:
                               "delivery_email": "iago-bot@zulipdev.com",
                               "is_active": true,
                               "avatar_url": "https://secure.gravatar.com/avatar/7328586831cdbb1627649bd857b1ee8c?d=identicon&version=1",
+                              "avatar_source": "G",
                               "is_admin": false,
                               "is_owner": false,
                               "role": 400,
@@ -11500,6 +11505,209 @@ paths:
                     description: |
                       A typical JSON response for when another user with the same
                       email address already exists in the realm:
+
+  /users/{user_id}/avatar:
+    post:
+      operationId: upload-avatar-for-user
+      summary: Upload a user's profile picture
+      tags: ["users"]
+      x-requires-administrator: true
+      description: |
+        Administrator endpoint for uploading a new [profile
+        picture](/help/change-your-profile-picture) for another user.
+
+        The maximum allowed file size is available in the `max_avatar_file_size_mib`
+        field in the [`POST /register`](/api/register-queue) response.
+
+        Unlike [`POST /users/me/avatar`](/api/upload-avatar), this endpoint can be
+        used in organizations that
+        [restrict profile picture changes](/help/restrict-profile-picture-changes),
+        and the target user may be
+        [deactivated](/help/deactivate-or-reactivate-a-user). Bot users cannot be
+        targeted.
+
+        **Changes**: New in Zulip 13.0 (feature level ZF-cc70c1).
+      x-parameter-description: |
+        The profile picture image file must be provided in the request's body
+        as multipart form data.
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  example: "zerver/tests/images/img.png"
+              required:
+                - file
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      avatar_url:
+                        type: string
+                        description: |
+                          The URL of the target user's new profile picture.
+                example:
+                  {
+                    "avatar_url": "/user_avatars/2/c4ce28dde2d44a08b2a72cb371fe78d99cffd7c4.png",
+                    "msg": "",
+                    "result": "success",
+                  }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when the request did not include
+                          exactly one file:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "You must upload exactly one avatar.",
+                            "result": "error",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when the uploaded file exceeds the
+                          maximum allowed size:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Uploaded file is larger than the allowed limit of 5 MiB",
+                            "result": "error",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when the uploaded file
+                          is not a supported image format:
+                        example:
+                          {
+                            "code": "BAD_IMAGE",
+                            "msg": "Invalid image format",
+                            "result": "error",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when `user_id` does not
+                          name a human user in the requester's organization:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "No such user",
+                            "result": "error",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when the requesting user is
+                          not allowed to administer the target user:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Insufficient permission",
+                            "result": "error",
+                          }
+    delete:
+      operationId: delete-avatar-for-user
+      summary: Delete a user's profile picture
+      tags: ["users"]
+      x-requires-administrator: true
+      description: |
+        Administrator endpoint for deleting another user's uploaded [profile
+        picture](/help/change-your-profile-picture), reverting to the
+        organization's [default style for profile
+        pictures](/help/configure-default-profile-pictures).
+
+        This endpoint is idempotent: if the target user has not uploaded a
+        custom profile picture, the request succeeds without making any
+        changes.
+
+        Unlike [`DELETE /users/me/avatar`](/api/delete-avatar), this endpoint can
+        be used in organizations that
+        [restrict profile picture changes](/help/restrict-profile-picture-changes),
+        and the target user may be
+        [deactivated](/help/deactivate-or-reactivate-a-user). Bot users cannot be
+        targeted.
+
+        **Changes**: New in Zulip 13.0 (feature level ZF-cc70c1).
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      avatar_url:
+                        type: string
+                        description: |
+                          The URL of the target user's profile picture, which now
+                          uses the organization's default style for profile
+                          pictures. Its format depends on whether that style is
+                          the default abstract design or Gravatar.
+                example:
+                  {
+                    "avatar_url": "/user_avatars/2/3a7bd3e2360a3d29eea436fcfb7e44c735d117c4.png",
+                    "msg": "",
+                    "result": "success",
+                  }
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when `user_id` does not
+                          name a human user in the requester's organization:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "No such user",
+                            "result": "error",
+                          }
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - description: |
+                          An example JSON response for when the requesting user is
+                          not allowed to administer the target user:
+                        example:
+                          {
+                            "code": "BAD_REQUEST",
+                            "msg": "Insufficient permission",
+                            "result": "error",
+                          }
+
   /users/{user_id}/reactivate:
     post:
       operationId: reactivate-user
@@ -11910,6 +12118,17 @@ paths:
 
                           **Changes**: New in Zulip 3.0 (feature level 10).
                         example: 1
+                      avatar_source:
+                        type: string
+                        description: |
+                          The avatar data source type for the requesting user. Valid values are:
+
+                          - "G" = Hosted by Gravatar
+                          - "J" = Generated using Jdenticon
+                          - "U" = Uploaded by user
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-cc70c1).
+                        example: "G"
                       email:
                         type: string
                         description: |
@@ -12041,6 +12260,7 @@ paths:
                     example:
                       {
                         "avatar_url": "https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1",
+                        "avatar_source": "G",
                         "avatar_version": 1,
                         "email": "iago@zulip.com",
                         "delivery_email": iago@zulip.com,
@@ -16740,6 +16960,7 @@ paths:
                             "is_owner": false,
                             "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
+                            "avatar_source": "G",
                             "is_active": true,
                             "email": "hamlet@zulip.com",
                             "delivery_email": null,
@@ -16881,6 +17102,7 @@ paths:
                             "is_owner": false,
                             "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
+                            "avatar_source": "G",
                             "is_active": true,
                             "email": "hamlet@zulip.com",
                             "delivery_email": null,
@@ -23033,6 +23255,7 @@ paths:
                                   nullable: true
                                 role: {}
                                 timezone: {}
+                                avatar_source: {}
                                 avatar_url:
                                   nullable: true
                                 avatar_version: {}
@@ -30286,6 +30509,7 @@ components:
               nullable: true
             role: {}
             timezone: {}
+            avatar_source: {}
             avatar_url:
               nullable: true
             avatar_version: {}
@@ -30435,6 +30659,16 @@ components:
             In Zulip 3.0 (feature level 18), if the client has the
             `user_avatar_url_field_optional` capability, this will be missing at
             the server's sole discretion.
+        avatar_source:
+          type: string
+          description: |
+            The avatar data source type for the user. Valid values are:
+
+            - "G" = Hosted by Gravatar
+            - "J" = Generated using Jdenticon
+            - "U" = Uploaded by user
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-cc70c1).
         avatar_version:
           type: integer
           description: |

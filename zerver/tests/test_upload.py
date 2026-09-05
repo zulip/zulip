@@ -26,6 +26,7 @@ from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
 from zerver.actions.user_settings import do_scrub_avatar_images
+from zerver.actions.users import do_deactivate_user
 from zerver.lib.attachments import validate_attachment_request
 from zerver.lib.avatar import (
     DEFAULT_AVATAR_FILE,
@@ -49,7 +50,16 @@ from zerver.lib.upload import MAX_FILE_NAME_LENGTH, sanitize_name, upload_messag
 from zerver.lib.upload.base import ZulipUploadBackend
 from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
-from zerver.models import Attachment, Message, OnboardingStep, Realm, RealmDomain, UserProfile
+from zerver.models import (
+    Attachment,
+    Message,
+    OnboardingStep,
+    Realm,
+    RealmAuditLog,
+    RealmDomain,
+    UserProfile,
+)
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.users import get_system_bot, get_user_by_delivery_email
 from zerver.upload_handler import TEMPORARY_FILE_MAX_EXTENSION_LENGTH, truncate_filename_extension
@@ -1819,6 +1829,198 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             get_static_avatar_url("false-bot@zulip.com", False)
         expected_error_message = "Unknown avatar file for: false-bot@zulip.com"
         self.assertEqual(str(e.exception), expected_error_message)
+
+    def test_admin_change_user_avatar_multiple_upload_failure(self) -> None:
+        """
+        Attempting to upload two files should fail.
+        """
+        # Log in as admin
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+        with get_test_image_file("img.png") as fp1, get_test_image_file("img.png") as fp2:
+            result = self.client_post(f"/json/users/{hamlet.id}/avatar", {"f1": fp1, "f2": fp2})
+        self.assert_json_error(result, "You must upload exactly one avatar.")
+
+    def test_admin_change_user_avatar_no_file_failure(self) -> None:
+        """
+        Calling this endpoint with no files should fail.
+        """
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+
+        result = self.client_post(f"/json/users/{hamlet.id}/avatar")
+        self.assert_json_error(result, "You must upload exactly one avatar.")
+
+    def test_admin_change_user_avatar_upload_file_size_error(self) -> None:
+        """
+        Calling this endpoint with a file above the size limit should fail.
+        """
+        self.login("iago")
+        hamlet = self.example_user("hamlet")
+
+        with (
+            get_test_image_file(self.correct_files[0][0]) as fp,
+            self.settings(MAX_AVATAR_FILE_SIZE_MIB=0),
+        ):
+            result = self.client_post(f"/json/users/{hamlet.id}/avatar", {"file": fp})
+        self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MiB")
+
+    def test_admin_change_user_avatar(self) -> None:
+        """
+        A POST request to /json/users/{user_id}/avatar from an administrator
+        should upload a profile picture for that user, recording the
+        administrator as the acting user. Deactivated users can be managed
+        this way as well.
+        """
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        do_set_realm_property(hamlet.realm, "avatar_changes_disabled", True, acting_user=None)
+        now = timezone_now()
+
+        self.login("iago")
+        with get_test_image_file("img.png") as image_file:
+            result = self.client_post(f"/json/users/{hamlet.id}/avatar", {"file": image_file})
+        response_dict = self.assert_json_success(result)
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_USER)
+        self.assertEqual(hamlet.avatar_version, 2)
+        self.assertEqual(response_dict["avatar_url"], avatar_url(hamlet))
+
+        # Check to see if both the admin and target are correct
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                event_type=AuditLogEventType.USER_AVATAR_SOURCE_CHANGED,
+                modified_user=hamlet,
+                acting_user=iago,
+                event_time__gte=now,
+            ).count(),
+            1,
+        )
+
+        # Check if admin can change a deactivated users avatar
+        do_deactivate_user(hamlet, acting_user=None)
+        with get_test_image_file("img.png") as image_file:
+            result = self.client_post(f"/json/users/{hamlet.id}/avatar", {"file": image_file})
+        response_dict = self.assert_json_success(result)
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_USER)
+        self.assertEqual(hamlet.avatar_version, 3)
+        self.assertEqual(response_dict["avatar_url"], avatar_url(hamlet))
+
+    def test_non_admin_cannot_change_user_avatar(self) -> None:
+        """
+        Users without administrative privileges cannot upload a profile
+        picture for another user.
+        """
+        cordelia = self.example_user("cordelia")
+        self.login("hamlet")
+        with get_test_image_file("img.png") as image_file:
+            result = self.client_post(f"/json/users/{cordelia.id}/avatar", {"file": image_file})
+        self.assert_json_error(result, "Insufficient permission")
+
+    def test_admin_delete_user_avatar(self) -> None:
+        """
+        A DELETE request to /json/users/{user_id}/avatar from an administrator
+        should delete that user's profile picture and return the URL
+        corresponding to the realm's default avatar source.
+        """
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+        hamlet.avatar_source = UserProfile.AVATAR_FROM_USER
+        hamlet.save()
+
+        do_set_realm_property(realm, "avatar_changes_disabled", True, acting_user=None)
+        # On deletion, hamlet's avatar should be Jdenticon generated.
+        do_set_realm_property(
+            realm, "default_avatar_source", Realm.AVATAR_FROM_JDENTICON, acting_user=None
+        )
+
+        self.login("iago")
+        result = self.client_delete(f"/json/users/{hamlet.id}/avatar")
+        response_dict = self.assert_json_success(result)
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+        self.assertEqual(hamlet.avatar_version, 2)
+        self.assertEqual(response_dict["avatar_url"], avatar_url(hamlet))
+
+        result = self.client_delete(f"/json/users/{hamlet.id}/avatar")
+        response_dict = self.assert_json_success(result)
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+        self.assertEqual(hamlet.avatar_version, 2)
+        self.assertEqual(response_dict["avatar_url"], avatar_url(hamlet))
+
+        # On deletion, cordelia's avatar should be a Gravatar.
+        do_set_realm_property(
+            realm, "default_avatar_source", Realm.AVATAR_FROM_GRAVATAR, acting_user=None
+        )
+
+        cordelia = self.example_user("cordelia")
+        cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
+        cordelia.save(update_fields=["avatar_source"])
+
+        result = self.client_delete(f"/json/users/{cordelia.id}/avatar")
+        response_dict = self.assert_json_success(result)
+
+        cordelia.refresh_from_db()
+        self.assertEqual(cordelia.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(cordelia.avatar_version, 2)
+        self.assertEqual(response_dict["avatar_url"], avatar_url(cordelia))
+
+        # Check if can delete a deactivated users avatar
+        cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
+        cordelia.save(update_fields=["avatar_source"])
+
+        do_deactivate_user(cordelia, acting_user=None)
+        result = self.client_delete(f"/json/users/{cordelia.id}/avatar")
+        response_dict = self.assert_json_success(result)
+
+        cordelia.refresh_from_db()
+        self.assertEqual(cordelia.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(cordelia.avatar_version, 3)
+        self.assertEqual(response_dict["avatar_url"], avatar_url(cordelia))
+
+    def test_non_admin_cannot_delete_user_avatar(self) -> None:
+        """
+        Users without administrative privileges cannot delete another
+        user's profile picture, and the target's avatar is left untouched.
+        """
+        hamlet = self.example_user("hamlet")
+        hamlet.avatar_source = UserProfile.AVATAR_FROM_USER
+        hamlet.save()
+
+        self.login("cordelia")
+        result = self.client_delete(f"/json/users/{hamlet.id}/avatar")
+        self.assert_json_error(result, "Insufficient permission")
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_USER)
+        self.assertEqual(hamlet.avatar_version, 1)
+
+    def test_admin_change_user_avatar_target_invalid_user(self) -> None:
+        """
+        Administrators may only manage the avatars of human users in their
+        own organization.
+        """
+        self.login("iago")
+
+        cross_realm_user = self.mit_user("sipbtest")
+        bot = self.example_user("default_bot")
+
+        for target in (cross_realm_user, bot):
+            with get_test_image_file("img.png") as image_file:
+                result = self.client_post(f"/json/users/{target.id}/avatar", {"file": image_file})
+            self.assert_json_error(result, "No such user")
+
+            result = self.client_delete(f"/json/users/{target.id}/avatar")
+            self.assert_json_error(result, "No such user")
+
+            target.refresh_from_db()
+            self.assertNotEqual(target.avatar_source, UserProfile.AVATAR_FROM_USER)
 
 
 class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
