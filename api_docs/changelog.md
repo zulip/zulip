@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 13.0
 
+**Feature level 511**
+
+* [`POST /messages/{message_id}/report`](/api/report-message): This endpoint
+  now returns an error if the message report fails to be sent to the
+  moderation request channel.
+
 **Feature level 510**
 
 * [`GET /events`](/api/get-events), [`GET /messages`](/api/get-messages),
