@@ -1379,3 +1379,31 @@ class ReorderCustomProfileFieldTest(CustomProfileFieldTestCase):
             "/json/realm/profile_fields", info={"order": orjson.dumps(order).decode()}
         )
         self.assert_json_error(result, "Invalid order mapping.")
+
+
+class CustomProfileFieldValidationTest(CustomProfileFieldTestCase):
+    def test_create_external_account_missing_or_invalid_subtype(self) -> None:
+        self.login("iago")
+        params = {
+            "name": "Social",
+            "field_type": CustomProfileField.EXTERNAL_ACCOUNT,
+            "field_data": orjson.dumps({}).decode(),
+        }
+        result = self.client_post("/json/realm/profile_fields", params)
+        self.assert_json_error(result, "subtype key is missing from field_data")
+
+    def test_is_default_external_field_missing_subtype(self) -> None:
+        from zerver.views.custom_profile_fields import is_default_external_field
+
+        result = is_default_external_field(CustomProfileField.EXTERNAL_ACCOUNT, {})
+        self.assertFalse(result)
+
+    def test_create_realm_custom_profile_field_invalid_subtype_type(self) -> None:
+        self.login("iago")
+        params = {
+            "name": "Social",
+            "field_type": CustomProfileField.EXTERNAL_ACCOUNT,
+            "field_data": orjson.dumps({"subtype": 123}).decode(),
+        }
+        result = self.client_post("/json/realm/profile_fields", params)
+        self.assert_json_error(result, 'field_data["subtype"]["dict[str,str]"] is not a dict')
