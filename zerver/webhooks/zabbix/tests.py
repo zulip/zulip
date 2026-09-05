@@ -13,6 +13,12 @@ class ZabbixHookTests(WebhookTestCase):
         expected_message = "PROBLEM (Average) alert on [www.example.com](https://zabbix.example.com/tr_events.php?triggerid=14032&eventid=10528):\n* Zabbix agent on www.example.com is unreachable for 5 minutes\n* Agent ping is Up (1)"
         self.check_webhook("zabbix_alert", expected_topic_name, expected_message)
 
+    def test_zabbix_alert_message_with_emoji(self) -> None:
+        self.url = self.build_webhook_url(include_emoji_indicators="true")
+        expected_topic_name = "www.example.com"
+        expected_message = ":yellow_circle: PROBLEM (Average) alert on [www.example.com](https://zabbix.example.com/tr_events.php?triggerid=14032&eventid=10528):\n* Zabbix agent on www.example.com is unreachable for 5 minutes\n* Agent ping is Up (1)"
+        self.check_webhook("zabbix_alert", expected_topic_name, expected_message)
+
     def test_zabbix_invalid_payload_with_missing_data(self) -> None:
         """
         Tests if invalid Zabbix payloads are handled correctly
