@@ -117,6 +117,10 @@
     .todo-task-list-title-header {
         font-size: 1.1em;
         font-weight: 600;
+        /* Zero out the margin inherited from Markdown styles;
+           we place the margin here on the header-area class,
+           making alignment of the flex items more predictable. */
+        margin-bottom: 0;
     }
 
     & li {
@@ -280,6 +284,9 @@ input {
 .poll-question-remove,
 .todo-task-list-title-check,
 .todo-task-list-title-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     align-self: stretch;
     /* TODO: Re-express the 30.5px value here
        as part of information density work. */
@@ -298,7 +305,20 @@ input {
 
 .poll-edit-question,
 .todo-edit-task-list-title {
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: inherit;
     color: var(--color-message-action-visible);
+    cursor: pointer;
+    /* We're going to offset this manually with margin-top,
+       in ems, so the icon looks good even if a question
+       or list title spans multiple lines. */
+    align-self: flex-start;
+    /* Give the icon its own flexbox, so it is sized
+       nicely relative to the icon box. */
+    display: flex;
+    margin-top: 0.25em; /* 4px at 16px/1em; this is eyeballed, but correct. */
 
     &:hover,
     &:focus-visible {
@@ -322,6 +342,11 @@ input {
     display: flex;
     align-items: baseline;
     gap: 5px;
+    /* Keep the expected margin under the heading, but place it
+       here on the header area, rather than the heading itself,
+       so the flexbox for aligning text and icon button is
+       unaffected. */
+    margin-bottom: var(--markdown-interelement-space-px);
 }
 
 .current-user-vote {
