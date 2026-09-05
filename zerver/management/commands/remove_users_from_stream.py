@@ -1,6 +1,7 @@
 from typing import Any
 
 from django.core.management.base import CommandParser
+from django.db import transaction
 from typing_extensions import override
 
 from zerver.actions.streams import bulk_remove_subscriptions
@@ -24,13 +25,14 @@ class Command(ZulipBaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
-        user_profiles = self.get_users(options, realm)
-        stream_name = options["stream"].strip()
-        stream = get_stream(stream_name, realm)
+        with transaction.atomic(savepoint=False):
+            user_profiles = self.get_users(options, realm, acquire_lock=True)
+            stream_name = options["stream"].strip()
+            stream = get_stream(stream_name, realm)
 
-        result = bulk_remove_subscriptions(realm, user_profiles, [stream], acting_user=None)
-        not_subscribed = result[1]
-        not_subscribed_users = {tup[0] for tup in not_subscribed}
+            result = bulk_remove_subscriptions(realm, user_profiles, [stream], acting_user=None)
+            not_subscribed = result[1]
+            not_subscribed_users = {tup[0] for tup in not_subscribed}
 
         for user_profile in user_profiles:
             if user_profile in not_subscribed_users:
