@@ -456,6 +456,7 @@ export default defineConfig({
                         "topic-notifications",
                         "follow-a-topic",
                         "dm-mention-alert-notifications",
+                        "reaction-notifications",
                         "mute-a-channel",
                         "mute-a-topic",
                         "mute-a-user",

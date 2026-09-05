@@ -30,6 +30,7 @@ const MAX_SEND_REACTION_RETRIES = 5;
 
 export type ReactionEvent = {
     message_id: number;
+    message_sender_id: number;
     user_id: number;
     reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     emoji_name: string;
@@ -66,11 +67,12 @@ export type RawReaction = {
 };
 
 function create_reaction(
-    message_id: number,
+    message: Message,
     rendering_details: EmojiRenderingDetails,
 ): ReactionEvent {
     return {
-        message_id,
+        message_id: message.id,
+        message_sender_id: message.sender_id,
         user_id: current_user.user_id,
         reaction_type: rendering_details.reaction_type,
         emoji_name: rendering_details.emoji_name,
@@ -92,7 +94,7 @@ function update_ui_and_send_reaction_ajax(
     const local_id = get_local_reaction_id(rendering_details);
     const has_reacted = current_user_has_reacted_to_emoji(message, local_id);
     const operation = has_reacted ? "remove" : "add";
-    const reaction = create_reaction(message.id, rendering_details);
+    const reaction = create_reaction(message, rendering_details);
 
     // To avoid duplicate requests to the server, we construct a
     // unique request ID combining the message ID and the local ID,
