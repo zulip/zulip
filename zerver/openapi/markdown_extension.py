@@ -271,6 +271,7 @@ INSECURE_OPERATIONS = [
     "/fetch_api_key:post",
     "/jwt/fetch_api_key:post",
     "/dev_list_users:get",
+    "/remotes/server/register/transfer:post",
 ]
 
 
@@ -329,6 +330,8 @@ def generate_curl_example(
             raise AssertionError(
                 "Unknown operation without a securityScheme. Please update insecure_operations."
             )
+    elif operation_security == [{"remoteServerAuth": []}]:
+        authentication_required = True
     else:
         raise AssertionError(
             "Unhandled securityScheme. Please update the code to handle this scheme."
