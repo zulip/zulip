@@ -58,6 +58,26 @@ export function update_message_in_all_views(
     }
 }
 
+export function update_media_previews_for_deleted_attachment(
+    message_ids: number[],
+    path_id: string,
+): void {
+    for (const message_id of message_ids) {
+        update_message_in_all_views(message_id, ($row) => {
+            for (const img of $row.find<HTMLImageElement>("img.media-image-element")) {
+                const src = img.getAttribute("src");
+                if (src?.includes(path_id)) {
+                    void (async () => {
+                        await fetch(src, {cache: "reload"});
+                        img.removeAttribute("src");
+                        img.setAttribute("src", src);
+                    })();
+                }
+            }
+        });
+    }
+}
+
 export function update_starred_view(message_id: number, new_value: boolean): void {
     const starred = new_value;
 
