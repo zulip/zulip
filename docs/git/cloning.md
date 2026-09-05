@@ -124,8 +124,9 @@ you create a pull request. While you wait for GitHub Actions jobs
 to run, you can start working on your next task. When the tests finish,
 you can create a pull request that you already know passes the tests.
 
-GitHub Actions will run all the jobs by default on your forked repository.
-You can check the `Actions` tab of your repository to see the builds.
+You can [manually run GitHub Actions jobs][github-manual-workflow] when you
+first push your new branch. Once you make a PR, GitHub Actions will run all
+the jobs automatically.
 
 [gitbook-rebase]: https://git-scm.com/book/en/v2/Git-Branching-Rebasing
 [github-help-add-ssh-key]: https://help.github.com/en/articles/adding-a-new-ssh-key-to-your-github-account
@@ -135,6 +136,7 @@ You can check the `Actions` tab of your repository to see the builds.
 [github-zulip]: https://github.com/zulip/
 [github-zulip-zulip]: https://github.com/zulip/zulip/
 [github-actions]: https://docs.github.com/en/actions
+[github-manual-workflow]: https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow#running-a-workflow
 [zulip-rtd-dev-first-time]: ../development/setup-recommended.md
 [zulip-rtd-dev-overview]: ../development/overview.md
 [zulip-rtd-tools-setup]: zulip-tools.md#set-up-git-repo-script
