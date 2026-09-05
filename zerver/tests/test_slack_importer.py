@@ -69,6 +69,7 @@ from zerver.data_import.slack import (
     slack_workspace_to_realm,
     users_to_zerver_userprofile,
 )
+from zerver.data_import.slack_message_conversion import get_optional_slack_field, get_user_full_name
 from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.mime_types import INLINE_MIME_TYPES
@@ -554,6 +555,93 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(get_user_timezone(user_timezone_none), "America/New_York")
         self.assertEqual(get_user_timezone(user_no_timezone), "America/New_York")
 
+    def test_get_optional_slack_field(self) -> None:
+        data = {
+            "real_name": "Jane Doe",
+            "padded_name": "  Jane Doe  ",
+            "blank_name": "",
+            "whitespace_name": "   ",
+            "null_name": None,
+            "deleted": False,
+            "icons": {"image_72": "https://example.com/avatar.png"},
+        }
+
+        self.assertEqual(get_optional_slack_field(data, "real_name", str), "Jane Doe")
+        # Surrounding whitespace is stripped, so that callers can use the
+        # value as a name directly.
+        self.assertEqual(get_optional_slack_field(data, "padded_name", str), "Jane Doe")
+
+        # A field Slack has no value for can reach us in any of these
+        # shapes; all of them mean the same thing.
+        self.assertIsNone(get_optional_slack_field(data, "blank_name", str))
+        self.assertIsNone(get_optional_slack_field(data, "whitespace_name", str))
+        self.assertIsNone(get_optional_slack_field(data, "null_name", str))
+        self.assertIsNone(get_optional_slack_field(data, "absent_name", str))
+
+        # A field of an unexpected type is treated as missing, rather than
+        # returned for the caller to trip over later.
+        self.assertIsNone(get_optional_slack_field(data, "icons", str))
+
+        # False and {} are values Slack meant to send, not missing ones.
+        self.assertEqual(get_optional_slack_field(data, "deleted", bool), False)
+        self.assertEqual(
+            get_optional_slack_field(data, "icons", dict),
+            {"image_72": "https://example.com/avatar.png"},
+        )
+
+    def test_get_user_full_name(self) -> None:
+        # Slack sets the name fields at the top level for some user
+        # types and inside "profile" for others, so both are consulted.
+        self.assertEqual(
+            get_user_full_name({"id": "U1", "name": "jane", "real_name": "Jane Doe"}), "Jane Doe"
+        )
+        self.assertEqual(
+            get_user_full_name({"id": "U1", "name": "jane", "profile": {"real_name": "Jane Doe"}}),
+            "Jane Doe",
+        )
+
+        # A better-suited field wins over a worse-suited one, wherever
+        # each of them happens to live.
+        self.assertEqual(
+            get_user_full_name(
+                {"id": "U1", "name": "jane", "profile": {"display_name": "Jane D."}}
+            ),
+            "Jane D.",
+        )
+        self.assertEqual(
+            get_user_full_name(
+                {
+                    "id": "U1",
+                    "name": "jane",
+                    "display_name": "Jane D.",
+                    "profile": {"real_name": "Jane Doe"},
+                }
+            ),
+            "Jane Doe",
+        )
+
+        # An empty or null name is skipped rather than imported as the
+        # user's name; Slack sends these for fields the user never set.
+        self.assertEqual(
+            get_user_full_name(
+                {"id": "U1", "name": "jane", "real_name": "", "profile": {"display_name": None}}
+            ),
+            "jane",
+        )
+
+        # Whether a user is deleted has no bearing on which name we use.
+        self.assertEqual(
+            get_user_full_name(
+                {"id": "U1", "name": "jane", "real_name": "Jane Doe", "deleted": True}
+            ),
+            "Jane Doe",
+        )
+
+        # Slack guarantees none of these fields, so we may end up with
+        # nothing to go on.
+        self.assertEqual(get_user_full_name({"id": "U1", "profile": {}}), "Slack user U1")
+        self.assertEqual(get_user_full_name({"id": "U1"}), "Slack user U1")
+
     @mock.patch("zerver.data_import.slack.get_data_file")
     @mock.patch("zerver.data_import.slack.get_messages_iterator")
     @responses.activate
@@ -826,6 +914,28 @@ class SlackImporter(ZulipTestCase):
                     "first_name": "Unknown Bot",
                 },
             },
+            # Slack guarantees neither a handle nor any of the name
+            # fields, so we have to be able to import a user with none.
+            # This user is also missing the `team_id` that an avatar URL
+            # is built from, despite having an `avatar_hash`.
+            {
+                "id": "U1NONAME00",
+                "deleted": False,
+                "is_mirror_dummy": False,
+                "profile": {
+                    "email": "nameless@example.com",
+                    "avatar_hash": "hash",
+                },
+            },
+            # The same, for a mirror dummy, whose email we synthesize
+            # from their handle.
+            {
+                "id": "U2NONAME00",
+                "team_id": "T5YFFM2QY",
+                "is_mirror_dummy": True,
+                "team_domain": "foreignteam",
+                "profile": {},
+            },
         ]
 
         mock_get_data_file.return_value = user_data
@@ -843,6 +953,8 @@ class SlackImporter(ZulipTestCase):
             "U1ZYFEC91": 8,
             "U1MBOTC81": 9,
             "U1RDFEC90": 10,
+            "U1NONAME00": 11,
+            "U2NONAME00": 12,
         }
         slack_data_dir = "./random_path"
         timestamp = int(timezone_now().timestamp())
@@ -880,7 +992,7 @@ class SlackImporter(ZulipTestCase):
         self.assertDictEqual(slack_user_id_to_zulip_user_id, test_slack_user_id_to_zulip_user_id)
         self.assert_length(avatar_list, 9)
 
-        self.assert_length(zerver_userprofile, 11)
+        self.assert_length(zerver_userprofile, 13)
 
         self.assertEqual(zerver_userprofile[0]["is_staff"], False)
         self.assertEqual(zerver_userprofile[0]["is_bot"], False)
@@ -996,6 +1108,27 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_userprofile[10]["avatar_source"], "J")
         self.assertEqual(zerver_userprofile[10]["is_bot"], True)
         self.assertEqual(zerver_userprofile[10]["bot_type"], UserProfile.DEFAULT_BOT)
+
+        # Test converting a user Slack gave us no name of any kind for.
+        self.assertEqual(
+            zerver_userprofile[11]["id"], test_slack_user_id_to_zulip_user_id["U1NONAME00"]
+        )
+        self.assertEqual(zerver_userprofile[11]["email"], "nameless@example.com")
+        self.assertEqual(zerver_userprofile[11]["full_name"], "Slack user U1NONAME00")
+        self.assertEqual(zerver_userprofile[11]["short_name"], "Slack user U1NONAME00")
+        # An `avatar_hash` alone isn't enough to build an avatar URL, so
+        # this user falls back to a generated avatar rather than to a URL
+        # with "None" in it.
+        self.assertEqual(zerver_userprofile[11]["avatar_source"], "J")
+
+        # The same for a mirror dummy, whose email we have to synthesize
+        # from a handle they don't have either.
+        self.assertEqual(
+            zerver_userprofile[12]["id"], test_slack_user_id_to_zulip_user_id["U2NONAME00"]
+        )
+        self.assertEqual(zerver_userprofile[12]["email"], "U2NONAME00@foreignteam.slack.com")
+        self.assertEqual(zerver_userprofile[12]["full_name"], "Slack user U2NONAME00")
+        self.assertEqual(zerver_userprofile[12]["is_mirror_dummy"], True)
 
     def test_build_defaultstream(self) -> None:
         realm_id = 1
