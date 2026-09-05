@@ -497,6 +497,10 @@ python_rules = RuleList(
                     "zproject/backends.py",
                     "@transaction.atomic(savepoint=True)  # intentional use of savepoint=True",
                 ),
+                (
+                    "zerver/lib/scim.py",
+                    "with transaction.atomic(savepoint=True):  # intentional use of savepoint=True",
+                ),
             },
         },
         *whitespace_rules,
