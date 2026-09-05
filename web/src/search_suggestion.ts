@@ -51,6 +51,14 @@ const channels_public_incompatible_patterns: TermPattern[] = [
     {operator: "channels", operand: "web-public"},
 ];
 
+// Shared by the "is:resolved" and "-is:resolved" suggestions.
+const is_resolved_incompatible_patterns: TermPattern[] = [
+    {operator: "is", operand: "resolved"},
+    {operator: "is", operand: "dm"},
+    {operator: "dm"},
+    {operator: "dm-including"},
+];
+
 // TODO: Expand this to support all available filters and its description.
 // Also, we generate some descriptions in filter.ts too, we should look to
 // refactor them together.
@@ -114,18 +122,8 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
         {operator: "is", operand: "resolved"},
     ],
     "dm-including": [{operator: "channel"}, {operator: "stream"}, {operator: "channels"}],
-    "is:resolved": [
-        {operator: "is", operand: "resolved"},
-        {operator: "is", operand: "dm"},
-        {operator: "dm"},
-        {operator: "dm-including"},
-    ],
-    "-is:resolved": [
-        {operator: "is", operand: "resolved"},
-        {operator: "is", operand: "dm"},
-        {operator: "dm"},
-        {operator: "dm-including"},
-    ],
+    "is:resolved": is_resolved_incompatible_patterns,
+    "-is:resolved": is_resolved_incompatible_patterns,
     "is:dm": [
         {operator: "is", operand: "dm"},
         {operator: "is", operand: "resolved"},
@@ -819,6 +817,22 @@ function get_is_filter_suggestions(
             {operator: last.operator, operand: "dm", negated: last.negated},
         ]);
         other_suggestions.push(is_dm);
+    }
+    // Suggest "-is:resolved" to anyone typing "is:unresolved".
+    //
+    // We skip a bare "is:" query, since it lists the operands
+    // for "is:" and should not offer a negated filter.
+    if (
+        last.operator === "is" &&
+        last.operand !== "" &&
+        common.phrase_match(last.operand, "unresolved")
+    ) {
+        const is_unresolved = format_as_suggestion([
+            {operator: last.operator, operand: "resolved", negated: !last.negated},
+        ]);
+        if (suggestions.includes(is_unresolved)) {
+            other_suggestions.push(is_unresolved);
+        }
     }
     const all_suggestions = [...special_filtered_suggestions, ...other_suggestions];
     return all_suggestions;
