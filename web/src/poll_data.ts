@@ -7,12 +7,15 @@ export type PollDataConfig = {
     is_my_poll: boolean;
     question: string;
     options: string[];
+    rendered_question_html?: string | undefined;
+    rendered_options_html?: string[] | undefined;
     comma_separated_names: (user_ids: number[]) => string;
     report_error_function: (msg: string, more_info?: Record<string, unknown>) => void;
 };
 
 export type PollOptionData = {
     option: string;
+    rendered_option_html: string;
     names: string;
     count: number;
     key: string;
@@ -21,6 +24,7 @@ export type PollOptionData = {
 
 type PollOption = {
     option: string;
+    rendered_option_html: string;
     user_id: number | string;
     votes: Map<number, number>;
 };
@@ -28,6 +32,7 @@ type PollOption = {
 export type WidgetData = {
     options: PollOptionData[];
     question: string;
+    rendered_question_html: string;
 };
 
 /*
@@ -46,14 +51,21 @@ export const new_option_schema = z.object({
     type: z.literal("new_option"),
     idx: z.number(),
     option: z.string(),
+    rendered_option_html: z.optional(z.string()),
 });
-type NewOption = {type: string; idx: number; option: string};
+type NewOption = {
+    type: string;
+    idx: number;
+    option: string;
+    rendered_option_html?: string | undefined;
+};
 
 export const question_schema = z.object({
     type: z.literal("question"),
     question: z.string(),
+    rendered_question_html: z.optional(z.string()),
 });
-type Question = {type: string; question: string};
+type Question = {type: string; question: string; rendered_question_html?: string | undefined};
 
 export const vote_schema = z.object({
     type: z.literal("vote"),
@@ -67,6 +79,8 @@ type Vote = {type: string; key: string; vote: number};
 export const poll_widget_extra_data_schema = z.object({
     question: z.optional(z.string()),
     options: z.optional(z.array(z.string())),
+    rendered_question_html: z.optional(z.string()),
+    rendered_options_html: z.optional(z.array(z.string())),
 });
 
 export type PollWidgetExtraData = z.infer<typeof poll_widget_extra_data_schema>;
@@ -89,6 +103,7 @@ export class PollData {
     me: number;
     is_my_poll: boolean;
     poll_question: string;
+    rendered_poll_question: string;
     input_mode: boolean;
     comma_separated_names: (user_ids: number[]) => string;
     report_error_function: (error_message: string) => void;
@@ -99,6 +114,8 @@ export class PollData {
         is_my_poll,
         question,
         options,
+        rendered_question_html,
+        rendered_options_html,
         comma_separated_names,
         report_error_function,
     }: PollDataConfig) {
@@ -106,18 +123,20 @@ export class PollData {
         this.me = current_user_id;
         this.is_my_poll = is_my_poll;
         this.poll_question = question;
+        this.rendered_poll_question = rendered_question_html ?? "";
         this.input_mode = is_my_poll; // for now
         this.comma_separated_names = comma_separated_names;
         this.report_error_function = report_error_function;
 
         if (question) {
-            this.set_question(question);
+            this.set_question(question, rendered_question_html);
         }
 
         for (const [i, option] of options.entries()) {
             this.handle_new_option_event("canned", {
                 idx: i,
                 option,
+                rendered_option_html: rendered_options_html?.[i],
                 type: "new_option",
             });
         }
@@ -137,7 +156,7 @@ export class PollData {
 
     handle_new_option_event(sender_id: string | number, data: NewOption): void {
         // All message readers may add a new option to the poll.
-        const {idx, option} = data;
+        const {idx, option, rendered_option_html} = data;
         const options = this.get_widget_data().options;
 
         // While the UI doesn't allow adding duplicate options
@@ -157,6 +176,7 @@ export class PollData {
 
         this.key_to_option.set(key, {
             option,
+            rendered_option_html: rendered_option_html ?? "",
             user_id: sender_id,
             votes,
         });
@@ -185,7 +205,7 @@ export class PollData {
             return;
         }
 
-        this.set_question(data.question);
+        this.set_question(data.question, data.rendered_question_html);
     }
 
     vote_event(key: string): Vote {
@@ -231,9 +251,10 @@ export class PollData {
         }
     }
 
-    set_question(new_question: string): void {
+    set_question(new_question: string, rendered_question_html?: string): void {
         this.input_mode = false;
         this.poll_question = new_question;
+        this.rendered_poll_question = rendered_question_html ?? "";
     }
 
     get_question(): string {
@@ -261,6 +282,7 @@ export class PollData {
 
             options.push({
                 option: obj.option,
+                rendered_option_html: obj.rendered_option_html,
                 names: this.comma_separated_names(voters),
                 count: voters.length,
                 key,
@@ -271,6 +293,7 @@ export class PollData {
         const widget_data = {
             options,
             question: this.poll_question,
+            rendered_question_html: this.rendered_poll_question,
         };
 
         return widget_data;
