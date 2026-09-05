@@ -1205,6 +1205,7 @@ export function dispatch_normal_event(event) {
 
         case "url_embed_data":
             compose_ui.update_compose_preview_embeds(event.content, event.rendered_content);
+            message_edit.update_preview_embeds(event.content, event.rendered_content);
             break;
 
         case "user_group":

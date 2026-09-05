@@ -272,8 +272,8 @@ def render_message_backend(
 ) -> HttpResponse:
     rendering_result = render_unsaved_message(user_profile, content)
 
-    # The message-edit preview and drafts overlay don't consume the
-    # url_embed_data event, so they leave this off.
+    # The drafts overlay has no open preview to live-update, so it
+    # leaves this off.
     if populate_url_embed_data and rendering_result.links_for_preview:
         url_embed_data = get_cached_embeds_and_enqueue_fetch(
             user_profile, content, rendering_result.links_for_preview

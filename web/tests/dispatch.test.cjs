@@ -45,6 +45,10 @@ mock_esm("../src/compose_validate", {
     warn_if_guest_in_dm_recipient: noop,
 });
 const condense = mock_esm("../src/condense");
+const message_edit = mock_esm("../src/message_edit", {
+    update_inline_topic_edit_ui() {},
+    update_preview_embeds() {},
+});
 const message_events = mock_esm("../src/message_events", {
     update_views_filtered_on_message_property: noop,
     update_current_view_for_topic_visibility: noop,
@@ -1085,9 +1089,13 @@ run_test("submessage", ({override}) => {
 run_test("url_embed_data", ({override}) => {
     const event = event_fixtures.url_embed_data;
     const stub = make_stub();
+    const message_edit_stub = make_stub();
     override(compose_ui, "update_compose_preview_embeds", stub.f);
+    override(message_edit, "update_preview_embeds", message_edit_stub.f);
     dispatch(event);
     assert.equal(stub.num_calls, 1);
+    // The message-edit preview consumes the same event.
+    assert.equal(message_edit_stub.num_calls, 1);
     const args = stub.get_args("content", "rendered_content");
     assert_same(args.content, event.content);
     assert_same(args.rendered_content, event.rendered_content);
