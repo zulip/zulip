@@ -4,12 +4,13 @@ import * as channel from "./channel.ts";
 import * as emoji from "./emoji.ts";
 import type {EmojiRenderingDetails} from "./emoji.ts";
 import type {StateData} from "./state_data.ts";
-import {user_settings} from "./user_settings.ts";
+import {type EmojiAnimationSetting, user_settings} from "./user_settings.ts";
 import {user_status_schema} from "./user_status_types.ts";
 
 export type UserStatus = z.infer<typeof user_status_schema>;
 export type UserStatusEmojiInfo = EmojiRenderingDetails & {
-    emoji_alt_code?: boolean;
+    emoji_alt_code: boolean;
+    emoji_animation_setting: EmojiAnimationSetting;
 };
 
 const user_status_event_schema = z.intersection(
@@ -95,13 +96,34 @@ export function set_status_emoji(event: UserStatusEvent): void {
     }
 
     user_status_emoji_info.set(opts.user_id, {
-        emoji_alt_code: user_settings.emojiset === "text",
+        ...current_display_settings(),
         ...emoji.get_emoji_details_for_rendering({
             emoji_name: opts.emoji_name,
             emoji_code: opts.emoji_code,
             reaction_type: opts.reaction_type,
         }),
     });
+}
+
+function current_display_settings(): {
+    emoji_alt_code: boolean;
+    emoji_animation_setting: EmojiAnimationSetting;
+} {
+    // These snapshot user settings that control how the emoji is
+    // displayed, rather than anything about the status itself.
+    return {
+        emoji_alt_code: user_settings.emojiset === "text",
+        emoji_animation_setting: user_settings.web_animate_image_previews,
+    };
+}
+
+export function refresh_cached_display_settings_for_all_users(): void {
+    // Templates render from these cached objects rather than
+    // regenerating them, so a change to either underlying setting has to
+    // be pushed in here before the affected views are rerendered.
+    for (const info of user_status_emoji_info.values()) {
+        Object.assign(info, current_display_settings());
+    }
 }
 
 export function initialize(params: StateData["user_status"]): void {
@@ -118,6 +140,7 @@ export function initialize(params: StateData["user_status"]): void {
 
         if (dct.emoji_name) {
             user_status_emoji_info.set(user_id, {
+                ...current_display_settings(),
                 ...emoji.get_emoji_details_for_rendering(dct),
             });
         }

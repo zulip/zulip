@@ -127,7 +127,7 @@ const current_user = {};
 set_current_user(current_user);
 const realm_user_settings_defaults = {};
 initialize_realm_user_settings_defaults({realm_user_settings_defaults});
-const user_settings = {};
+const user_settings = {web_animate_image_previews: "on_hover"};
 initialize_user_settings({user_settings});
 
 message_lists.update_recipient_bar_background_color = noop;
@@ -1337,6 +1337,13 @@ run_test("user_settings", ({override}) => {
         dispatch(event);
         assert.equal(user_settings.web_home_view, "inbox");
     }
+    // Every surface that displays custom emoji is rerendered for this
+    // setting; see the `web_animate_image_previews` case in
+    // server_events_dispatch.
+    override(activity_ui, "build_user_sidebar", noop);
+    override(pm_list, "update_private_messages", noop);
+    override(settings_emoji, "populate_emoji", noop);
+
     {
         event = event_fixtures.user_settings__web_animate_image_previews_always;
         override(user_settings, "web_animate_image_previews", "on_hover");
@@ -1365,10 +1372,18 @@ run_test("user_settings", ({override}) => {
         override(settings_preferences, "report_emojiset_change", stub.f);
         override(activity_ui, "build_user_sidebar", noop);
         override(user_settings, "emojiset", "text");
+        user_status.set_status_emoji(event_fixtures.user_status__set_status_emoji);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert_same(called, true);
         assert_same(user_settings.emojiset, "google");
+        // The cached status emoji display settings have to be refreshed
+        // before build_user_sidebar rerenders from them.
+        assert.equal(
+            user_status.get_status_emoji(event_fixtures.user_status__set_status_emoji.user_id)
+                .emoji_alt_code,
+            false,
+        );
     }
 
     event = event_fixtures.user_settings__starred_message_counts;
@@ -1733,6 +1748,7 @@ run_test("user_status", ({override}) => {
             reaction_type: "unicode_emoji",
             // Extra parameters that were added by `emoji.get_emoji_details_by_name`
             emoji_alt_code: false,
+            emoji_animation_setting: "on_hover",
         });
     }
 

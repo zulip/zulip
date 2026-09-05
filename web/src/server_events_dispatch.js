@@ -1053,10 +1053,19 @@ export function dispatch_normal_event(event) {
                     stream_list.update_streams_sidebar(true);
                     break;
                 case "web_animate_image_previews":
+                    // Refresh the cached status emoji display settings so
+                    // that the rerenders below pick up the new value.
+                    user_status.refresh_cached_display_settings_for_all_users();
                     // Rerender the whole message list UI
                     for (const msg_list of message_lists.all_rendered_message_lists()) {
                         msg_list.rerender();
                     }
+                    // Rerender the other surfaces that show custom emoji:
+                    // status emojis in the buddy and DM lists, and the
+                    // thumbnails in the custom emoji settings panel.
+                    activity_ui.build_user_sidebar();
+                    pm_list.update_private_messages();
+                    settings_emoji.populate_emoji();
                     break;
                 case "web_stream_unreads_count_display_policy":
                     stream_list.build_stream_list(true);
@@ -1110,6 +1119,9 @@ export function dispatch_normal_event(event) {
                     settings_preferences.report_emojiset_change(
                         settings_preferences.user_settings_panel,
                     );
+                    // Refresh the cached status emoji display settings so
+                    // that the rerenders below pick up the new value.
+                    user_status.refresh_cached_display_settings_for_all_users();
                     // Rerender the whole message list UI
                     for (const msg_list of message_lists.all_rendered_message_lists()) {
                         msg_list.rerender();

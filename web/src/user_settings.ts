@@ -89,6 +89,11 @@ export const user_settings_schema = z.object({
 });
 export type UserSettings = z.infer<typeof user_settings_schema>;
 
+// Rendering contexts that carry this setting through to a template
+// should use this type rather than `string`, since the templates
+// branch on the exact value.
+export type EmojiAnimationSetting = UserSettings["web_animate_image_previews"];
+
 export let user_settings: UserSettings;
 
 export function initialize_user_settings(params: StateData["user_settings"]): void {

@@ -15,6 +15,7 @@ import render_topic_link from "../templates/topic_link.hbs";
 import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
+import * as emoji from "./emoji.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as message_store from "./message_store.ts";
@@ -428,5 +429,43 @@ export const update_elements = ($content: JQuery): void => {
             })
             .contents()
             .unwrap();
+        return;
     }
+
+    if (user_settings.web_animate_image_previews === "always") {
+        // The server renders a realm emoji with its animated URL as the
+        // `src`, which is already what "always" asks for.
+        return;
+    }
+
+    // Otherwise show the still frame instead. The server tells us nothing
+    // about which emojis are animated -- it emits a bare
+    // `<img class="emoji" src="...">` -- so we recognize them by looking
+    // their source URL up among the realm's emojis. That table includes
+    // deactivated emojis, so old messages are covered too.
+    const stamp_hover_urls = user_settings.web_animate_image_previews === "on_hover";
+    $content.find<HTMLImageElement>("img.emoji").each(function () {
+        const $img = $(this);
+        const src = $img.attr("src");
+        if (src === undefined) {
+            return;
+        }
+
+        const emoji_obj = emoji.all_realm_emojis_by_url.get(src);
+        if (emoji_obj === undefined) {
+            return;
+        }
+        const {still_url} = emoji_obj;
+        if (still_url === null) {
+            // Not an animated emoji, so it has no still frame.
+            return;
+        }
+
+        if (stamp_hover_urls) {
+            // emoji_hover_animation.ts drives its swap off these.
+            $img.attr("data-still-url", still_url);
+            $img.attr("data-animated-url", emoji_obj.emoji_url);
+        }
+        $img.attr("src", still_url);
+    });
 };

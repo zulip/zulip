@@ -28,6 +28,7 @@ mock_cjs("clipboard", Clipboard);
 
 const realm_playground = mock_esm("../src/realm_playground");
 const copied_tooltip = mock_esm("../src/copied_tooltip");
+const emoji = mock_esm("../src/emoji", {all_realm_emojis_by_url: new Map()});
 
 const alert_words = zrequire("alert_words");
 const rm = zrequire("rendered_markdown");
@@ -136,6 +137,7 @@ const get_content_element = () => {
     $content.set_find_results("time", []);
     $content.set_find_results("span.timestamp-error", []);
     $content.set_find_results(".emoji", []);
+    $content.set_find_results("img.emoji", []);
     $content.set_find_results("div.spoiler-header", []);
     $content.set_find_results("div.codehilite", []);
     $content.set_find_results(".message_inline_video video", []);
@@ -161,6 +163,38 @@ const get_content_element = () => {
     });
     return $content;
 };
+
+function make_emoji_img(name, attrs) {
+    const $img = $.create(name);
+    for (const [key, value] of Object.entries(attrs)) {
+        $img.attr(key, value);
+    }
+    return $img;
+}
+
+// Render a single img.emoji with the given attributes through
+// update_elements(), under the given animation setting and realm emoji
+// lookup table, and return the (possibly mutated) image stub. We reset
+// the zjquery registry so this can be called once per scenario.
+function render_emoji_with_animation_setting(
+    {override},
+    {setting, attrs, realm_emojis_by_url = []},
+) {
+    $.clear_all_elements();
+    const $content = get_content_element();
+    // emojiset must not be "text", or update_elements returns before
+    // reaching the animation logic.
+    override(user_settings, "emojiset", "apple");
+    override(user_settings, "web_animate_image_previews", setting);
+    emoji.all_realm_emojis_by_url.clear();
+    for (const [url, emoji_obj] of realm_emojis_by_url) {
+        emoji.all_realm_emojis_by_url.set(url, emoji_obj);
+    }
+    const $img = make_emoji_img("img.emoji-test", attrs);
+    $content.set_find_results("img.emoji", $img);
+    rm.update_elements($content);
+    return $img;
+}
 
 run_test("misc_helpers", ({override}) => {
     const $elem = $.create("user-mention");
@@ -775,6 +809,105 @@ run_test("emoji", ({override}) => {
 
     // Set page parameters back so that test run order is independent
     override(user_settings, "emojiset", "apple");
+});
+
+run_test("img.emoji", (helpers) => {
+    const {override} = helpers;
+
+    // 'always' matches what the server already rendered, so the emojis
+    // are left completely alone -- note that this one is in the lookup
+    // table and would otherwise have been swapped.
+    let $img = render_emoji_with_animation_setting(helpers, {
+        setting: "always",
+        attrs: {src: "animated.png"},
+        realm_emojis_by_url: [
+            ["animated.png", {emoji_url: "animated.png", still_url: "still.png"}],
+        ],
+    });
+    assert.equal($img.attr("src"), "animated.png");
+    assert.equal($img.attr("data-still-url"), undefined);
+    assert.equal($img.attr("data-animated-url"), undefined);
+
+    // 'on_hover': show the still frame, and record both URLs so that
+    // emoji_hover_animation.ts can swap between them.
+    $img = render_emoji_with_animation_setting(helpers, {
+        setting: "on_hover",
+        attrs: {src: "animated.png"},
+        realm_emojis_by_url: [
+            ["animated.png", {emoji_url: "animated.png", still_url: "still.png"}],
+        ],
+    });
+    assert.equal($img.attr("src"), "still.png");
+    assert.equal($img.attr("data-still-url"), "still.png");
+    assert.equal($img.attr("data-animated-url"), "animated.png");
+
+    // 'never': show the still frame with no hover URLs, so it can never
+    // animate.
+    $img = render_emoji_with_animation_setting(helpers, {
+        setting: "never",
+        attrs: {src: "animated.png"},
+        realm_emojis_by_url: [
+            ["animated.png", {emoji_url: "animated.png", still_url: "still.png"}],
+        ],
+    });
+    assert.equal($img.attr("src"), "still.png");
+    assert.equal($img.attr("data-still-url"), undefined);
+    assert.equal($img.attr("data-animated-url"), undefined);
+
+    // An emoji missing from the lookup table is skipped; this is how a
+    // unicode emoji sprite or a re-uploaded emoji's old URL behaves.
+    $img = render_emoji_with_animation_setting(helpers, {
+        setting: "on_hover",
+        attrs: {src: "animated.png"},
+        realm_emojis_by_url: [],
+    });
+    assert.equal($img.attr("src"), "animated.png");
+    assert.equal($img.attr("data-still-url"), undefined);
+
+    // A realm emoji that isn't animated has no still frame to show.
+    $img = render_emoji_with_animation_setting(helpers, {
+        setting: "on_hover",
+        attrs: {src: "static-custom.png"},
+        realm_emojis_by_url: [
+            ["static-custom.png", {emoji_url: "static-custom.png", still_url: null}],
+        ],
+    });
+    assert.equal($img.attr("src"), "static-custom.png");
+    assert.equal($img.attr("data-still-url"), undefined);
+
+    // An image with no src at all can't be looked up.
+    $img = render_emoji_with_animation_setting(helpers, {
+        setting: "on_hover",
+        attrs: {},
+    });
+    assert.equal($img.attr("src"), undefined);
+    assert.equal($img.attr("data-still-url"), undefined);
+
+    // Every img.emoji in the content is processed, not just the first.
+    $.clear_all_elements();
+    const $content = get_content_element();
+    override(user_settings, "emojiset", "apple");
+    override(user_settings, "web_animate_image_previews", "on_hover");
+    emoji.all_realm_emojis_by_url.clear();
+    emoji.all_realm_emojis_by_url.set("first-animated.png", {
+        emoji_url: "first-animated.png",
+        still_url: "first-still.png",
+    });
+    emoji.all_realm_emojis_by_url.set("second-animated.png", {
+        emoji_url: "second-animated.png",
+        still_url: "second-still.png",
+    });
+
+    const $first_emoji = make_emoji_img("img.first-emoji", {src: "first-animated.png"});
+    const $second_emoji = make_emoji_img("img.second-emoji", {src: "second-animated.png"});
+    $content.set_find_results("img.emoji", [...$first_emoji, ...$second_emoji]);
+
+    rm.update_elements($content);
+
+    assert.equal($first_emoji.attr("src"), "first-still.png");
+    assert.equal($first_emoji.attr("data-animated-url"), "first-animated.png");
+    assert.equal($second_emoji.attr("src"), "second-still.png");
+    assert.equal($second_emoji.attr("data-animated-url"), "second-animated.png");
 });
 
 run_test("spoiler-header", () => {
