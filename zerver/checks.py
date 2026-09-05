@@ -6,6 +6,24 @@ from typing import Any
 from django.apps.config import AppConfig
 from django.conf import settings
 from django.core import checks
+from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
+
+
+def get_settings_error_message_strings(setting_name: str) -> tuple[str, str]:
+    # Even in Docker, MANUAL_CONFIGURATION means the admin
+    # manages /etc/zulip/settings.py themselves, so the SETTING_*
+    # environment variables are not where to make changes.
+    if settings.RUNNING_IN_HELM:
+        settings_location = "your Helm values"
+        setting_display_name = "zulip.environment.SETTING_" + setting_name
+    elif settings.RUNNING_IN_DOCKER and os.environ.get("MANUAL_CONFIGURATION") != "True":
+        settings_location = "your Docker environment configuration"
+        setting_display_name = "SETTING_" + setting_name
+    else:
+        settings_location = "/etc/zulip/settings.py"
+        setting_display_name = setting_name
+    return settings_location, setting_display_name
 
 
 def check_required_settings(
@@ -31,18 +49,7 @@ def check_required_settings(
         if value and value != default:
             continue
 
-        # Even in Docker, MANUAL_CONFIGURATION means the admin
-        # manages /etc/zulip/settings.py themselves, so the SETTING_*
-        # environment variables are not where to make changes.
-        if settings.RUNNING_IN_HELM:
-            settings_location = "your Helm values"
-            setting_display_name = "zulip.environment.SETTING_" + setting_name
-        elif settings.RUNNING_IN_DOCKER and os.environ.get("MANUAL_CONFIGURATION") != "True":
-            settings_location = "your Docker environment configuration"
-            setting_display_name = "SETTING_" + setting_name
-        else:
-            settings_location = "/etc/zulip/settings.py"
-            setting_display_name = setting_name
+        settings_location, setting_display_name = get_settings_error_message_strings(setting_name)
         if value:
             # The setting is still the example value from the
             # documentation, which the admin must replace -- saying
@@ -204,3 +211,36 @@ def check_uploads_settings(
             )
         ]
     return []
+
+
+def check_jitsi_server_url(
+    app_configs: Sequence[AppConfig] | None,
+    databases: Sequence[str] | None,
+    **kwargs: Any,
+) -> Iterable[checks.CheckMessage]:
+    # As of Zulip 12.0, the web app will not load if a server-level
+    # Jitsi Meet integration has been configured that is not a URL.
+    # A None value is the valid way to disable the integration. By
+    # default, the integration uses the SaaS https://meet.jit.si
+    # server.
+    jitsi_server_url = settings.JITSI_SERVER_URL
+    if jitsi_server_url is None or jitsi_server_url == "https://meet.jit.si":
+        return []
+
+    assert isinstance(jitsi_server_url, str)
+    validate = URLValidator()
+    try:
+        validate(jitsi_server_url)
+        return []
+    except ValidationError:
+        settings_location, setting_display_name = get_settings_error_message_strings(
+            "JITSI_SERVER_URL"
+        )
+        message = f"{setting_display_name} in {settings_location} is not a URL"
+        return [
+            checks.Error(
+                message,
+                obj="settings.JITSI_SERVER_URL",
+                id="zulip.E007",
+            )
+        ]
