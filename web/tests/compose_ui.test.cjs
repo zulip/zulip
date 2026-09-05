@@ -24,7 +24,12 @@ mock_esm("../src/message_lists", {
     current: {},
 });
 
+const rendered_markdown = mock_esm("../src/rendered_markdown");
+const channel = mock_esm("../src/channel");
+const loading = mock_esm("../src/loading");
+
 const compose_ui = zrequire("compose_ui");
+const compose_state = zrequire("compose_state");
 const linkifiers = zrequire("linkifiers");
 const stream_data = zrequire("stream_data");
 stream_data.set_channel_has_locally_available_topic(() => false);
@@ -1591,4 +1596,119 @@ run_test("maybe_set_compose_textarea_typeahead ignores edit box typeaheads", () 
     };
     compose_ui.maybe_set_compose_textarea_typeahead(edit_typeahead);
     assert.equal(compose_ui.compose_textarea_typeahead, compose_typeahead);
+});
+
+run_test("update_compose_preview_embeds", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+
+    const $compose = $("#compose");
+    const $preview_content = $("#compose .preview_content");
+    $preview_content.set_find_results(
+        ".image-loading-placeholder",
+        $.create("no-images", {elements: []}),
+    );
+    $compose.set_find_results(".markdown_preview_spinner", $("#compose .markdown_preview_spinner"));
+    $compose.set_find_results(".preview_content", $preview_content);
+
+    const content = "http://example.com/";
+    const rendered_content = "<p>draft with an embed</p>";
+    const already_shown = "<p>draft without an embed</p>";
+    $("textarea#compose-textarea").val(content);
+
+    // Not in preview mode: the update is ignored.
+    $compose.removeClass("preview_mode");
+    $preview_content.html(already_shown);
+    compose_ui.update_compose_preview_embeds(content, rendered_content);
+    assert.equal($preview_content.html(), already_shown);
+
+    // In preview mode but the draft changed since the fetch: ignored.
+    $compose.addClass("preview_mode");
+    $("textarea#compose-textarea").val("http://example.com/ edited");
+    compose_ui.update_compose_preview_embeds(content, rendered_content);
+    assert.equal($preview_content.html(), already_shown);
+
+    // In preview mode and the draft still matches: the embeds are applied.
+    $("textarea#compose-textarea").val(content);
+    compose_ui.update_compose_preview_embeds(content, rendered_content);
+    assert.equal($preview_content.html(), rendered_content);
+
+    // The message-edit preview shares this count, so disturbing it here
+    // would cancel an unrelated edit-box render.
+    const render_count_before = compose_state.get_preview_render_count();
+    compose_ui.update_compose_preview_embeds(content, rendered_content);
+    assert.equal(compose_state.get_preview_render_count(), render_count_before);
+});
+
+run_test("apply_embeds_to_preview updates any preview that is open", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+
+    const content = "http://example.com/";
+    const rendered_content = "<p>message with an embed</p>";
+    const already_shown = "<p>message without an embed</p>";
+
+    const $preview_content = $.create("edit-row .preview_content");
+    $preview_content.set_find_results(
+        ".image-loading-placeholder",
+        $.create("edit-row no-images", {elements: []}),
+    );
+    const $edit_row = $.create("edit-row");
+    $edit_row.set_find_results(".markdown_preview_spinner", $.create("edit-row spinner"));
+    $edit_row.set_find_results(".preview_content", $preview_content);
+
+    // The edit box is not previewing: nothing to update.
+    $preview_content.html(already_shown);
+    compose_ui.apply_embeds_to_preview($edit_row, content, rendered_content);
+    assert.equal($preview_content.html(), already_shown);
+
+    $edit_row.addClass("preview_mode");
+    compose_ui.apply_embeds_to_preview($edit_row, content, rendered_content);
+    assert.equal($preview_content.html(), rendered_content);
+});
+
+run_test("url_embed_data outlives an older render response", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+
+    const $compose = $("#compose");
+    const $preview_content = $("#compose .preview_content");
+    $preview_content.set_find_results(
+        ".image-loading-placeholder",
+        $.create("no-images", {elements: []}),
+    );
+    $compose.set_find_results(".markdown_preview_spinner", $("#compose .markdown_preview_spinner"));
+    $compose.set_find_results(".preview_content", $preview_content);
+    $compose.addClass("preview_mode");
+
+    // The topic wildcard mention is backend-only syntax, so a spinner is
+    // shown and only the render response tears it down.
+    const content = "@**topic** http://example.com/";
+    $("textarea#compose-textarea").val(content);
+    const with_embed = "<p>draft with an embed</p>";
+    const without_embed = "<p>draft without an embed</p>";
+
+    let render_success;
+    override(loading, "make_indicator", noop);
+    override(channel, "post", (payload) => {
+        render_success = payload.success;
+    });
+    compose_ui.render_and_show_preview(
+        $compose,
+        $("#compose .markdown_preview_spinner"),
+        $preview_content,
+        content,
+        true,
+        true,
+    );
+
+    compose_ui.update_compose_preview_embeds(content, with_embed);
+    assert.equal($preview_content.html(), with_embed);
+
+    let destroy_indicator_called = false;
+    override(loading, "destroy_indicator", () => {
+        destroy_indicator_called = true;
+    });
+    render_success({msg: "", result: "success", rendered: without_embed});
+
+    assert.equal($preview_content.html(), with_embed);
+    // Discarding the response must not also leave its spinner behind.
+    assert.ok(destroy_indicator_called);
 });

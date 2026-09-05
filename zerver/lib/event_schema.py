@@ -116,6 +116,7 @@ from zerver.lib.event_types import (
     UpdateMessageEvent,
     UpdateMessageFlagsAddEvent,
     UpdateMessageFlagsRemoveEvent,
+    UrlEmbedDataEvent,
     UserGroupAddEvent,
     UserGroupAddMembersEvent,
     UserGroupAddSubgroupsEvent,
@@ -235,6 +236,7 @@ check_typing_edit_message_start = make_checker(TypingEditMessageStartEvent)
 check_typing_edit_message_stop = make_checker(TypingEditMessageStopEvent)
 check_update_message_flags_add = make_checker(UpdateMessageFlagsAddEvent)
 check_update_message_flags_remove = make_checker(UpdateMessageFlagsRemoveEvent)
+check_url_embed_data = make_checker(UrlEmbedDataEvent)
 check_user_group_add = make_checker(UserGroupAddEvent)
 check_user_group_add_members = make_checker(UserGroupAddMembersEvent)
 check_user_group_add_subgroups = make_checker(UserGroupAddSubgroupsEvent)

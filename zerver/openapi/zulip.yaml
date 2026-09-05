@@ -3525,6 +3525,49 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent to a user when the server finishes fetching the
+                                [URL embed data](/help/image-video-and-website-previews) for
+                                content they asked it to render with
+                                `populate_url_embed_data`.
+
+                                Because fetching that data can be slow, the render response
+                                omits what the server did not already have; this event then
+                                delivers the content re-rendered with the fetched data, so the
+                                client can live-update what it is displaying. The event is sent
+                                only to the user who requested the render.
+
+                                Clients should apply `rendered_content` only if `content` still
+                                matches what they are displaying, since the user may have
+                                edited it while the data was being fetched.
+
+                                **Changes**: New in Zulip 13.0 (feature level ZF-4c56a7).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - url_embed_data
+                                content:
+                                  type: string
+                                  description: |
+                                    The raw Markdown content that was re-rendered.
+                                rendered_content:
+                                  type: string
+                                  description: |
+                                    That content re-rendered as HTML, with the fetched URL
+                                    embed data included.
+                              example:
+                                {
+                                  "type": "url_embed_data",
+                                  "content": "http://example.com/",
+                                  "rendered_content": '<p><a href="http://example.com/">http://example.com/</a></p>',
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent to a user when [message flags][message-flags] are added
                                 to messages.
 
@@ -9984,6 +10027,20 @@ paths:
               properties:
                 content:
                   $ref: "#/components/schemas/RequiredContent"
+                populate_url_embed_data:
+                  type: boolean
+                  default: false
+                  example: true
+                  description: |
+                    Whether the server should populate
+                    [URL embed data](/help/image-video-and-website-previews)
+                    for the links in `content`: data the server already has is
+                    included in `rendered`, and the rest is fetched
+                    asynchronously and delivered to the requesting user via a
+                    `url_embed_data` event once ready, so that a client
+                    displaying the rendered content can live-update it.
+
+                    **Changes**: New in Zulip 13.0 (feature level ZF-4c56a7).
               required:
                 - content
       responses:
