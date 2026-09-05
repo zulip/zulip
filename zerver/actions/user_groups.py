@@ -19,7 +19,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import UserGroupMembersData, UserGroupMembersDict
-from zerver.lib.user_counts import realm_user_count_by_role
+from zerver.lib.user_counts import realm_user_count_by_role, update_billing_records_if_needed
 from zerver.lib.user_groups import (
     convert_to_user_group_members_dict,
     get_group_setting_value_for_api,
@@ -375,9 +375,10 @@ def bulk_add_members_to_user_groups(
             },
         )
 
-        from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
-
-        maybe_enqueue_audit_log_upload(realm)
+        # acting_user is None for changes made by promote_new_full_members, and
+        # a support admin from another realm for changes made via /support;
+        # RealmBillingSession accepts both.
+        update_billing_records_if_needed(realm, user=acting_user, event_time=now)
 
     subscriber_ids_for_streams = get_user_ids_for_streams({stream.id for stream in streams})
     new_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
@@ -464,9 +465,10 @@ def bulk_remove_members_from_user_groups(
             },
         )
 
-        from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
-
-        maybe_enqueue_audit_log_upload(realm)
+        # acting_user is None for changes made by promote_new_full_members, and
+        # a support admin from another realm for changes made via /support;
+        # RealmBillingSession accepts both.
+        update_billing_records_if_needed(realm, user=acting_user, event_time=now)
 
     for user_group in user_groups:
         do_send_user_group_members_update_event("remove_members", user_group, user_profile_ids)
@@ -551,9 +553,10 @@ def add_subgroups_to_user_group(
             },
         )
 
-        from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
-
-        maybe_enqueue_audit_log_upload(realm)
+        # acting_user is None for changes made by promote_new_full_members, and
+        # a support admin from another realm for changes made via /support;
+        # RealmBillingSession accepts both.
+        update_billing_records_if_needed(realm, user=acting_user, event_time=now)
 
     subscriber_ids_for_streams = get_user_ids_for_streams({stream.id for stream in streams})
     new_stream_metadata_user_ids = bulk_can_access_stream_metadata_user_ids(streams)
@@ -642,9 +645,10 @@ def remove_subgroups_from_user_group(
             },
         )
 
-        from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
-
-        maybe_enqueue_audit_log_upload(realm)
+        # acting_user is None for changes made by promote_new_full_members, and
+        # a support admin from another realm for changes made via /support;
+        # RealmBillingSession accepts both.
+        update_billing_records_if_needed(realm, user=acting_user, event_time=now)
 
     do_send_subgroups_update_event("remove_subgroups", user_group, subgroup_ids)
 

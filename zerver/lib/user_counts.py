@@ -1,5 +1,7 @@
+from datetime import datetime
 from typing import Any
 
+from django.conf import settings
 from django.db.models import Count
 
 from zerver.lib.user_groups import get_recursive_group_members
@@ -87,3 +89,23 @@ def realm_user_count_by_role(realm: Realm) -> dict[str, Any]:
         RealmAuditLog.ROLE_COUNT_HUMANS: human_counts,
         RealmAuditLog.ROLE_COUNT_BOTS: bot_count,
     }
+
+
+def update_billing_records_if_needed(
+    realm: Realm,
+    *,
+    user: UserProfile | None,
+    event_time: datetime,
+    user_count_may_have_changed: bool = True,
+) -> None:
+    # Imported here because zerver.lib.remote_server imports
+    # zerver.actions.realm_settings, which imports this module.
+    from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
+
+    maybe_enqueue_audit_log_upload(realm)
+
+    if settings.BILLING_ENABLED and user_count_may_have_changed:
+        from corporate.lib.stripe import RealmBillingSession
+
+        billing_session = RealmBillingSession(user=user, realm=realm)
+        billing_session.update_license_ledger_if_needed(event_time)
