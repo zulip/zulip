@@ -667,6 +667,11 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
                 label="Include emoji indicators in the notifications",
                 input_type="checkbox_enabled",
             ),
+            WebhookUrlOption(
+                name="compact_edit_format",
+                label="Use a compact message format for edited issue and pull request descriptions",
+                input_type="checkbox_enabled",
+            ),
         ],
     ),
     IncomingWebhookIntegration(
