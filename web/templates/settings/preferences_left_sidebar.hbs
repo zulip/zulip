@@ -52,4 +52,14 @@
             {{> dropdown_options_widget option_values=(object_values demote_inactive_streams_values)}}
         </select>
     </div>
+
+    <div class="input-group">
+        <label class="settings-field-label">
+            {{t "Automatically collapse direct messages section in the left sidebar"}}
+        </label>
+        <select name="web_dm_collapse_policy" class="setting_pin_dm_section prop-element bootstrap-focus-style
+          settings_select" id="{{prefix}}web_dm_collapse_policy" data-setting-widget-type="number" >
+            {{> dropdown_options_widget option_values=(object_values dm_section_collapse_policy_values)}}
+        </select>
+    </div>
 </div>
