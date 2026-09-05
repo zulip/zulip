@@ -269,6 +269,7 @@ ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
 # is enabled.
 ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS: bool | None = None
 ZULIP_SERVICE_SECURITY_ALERTS = False
+ZULIP_SERVICE_ADVERTISE_REALM = False
 
 # Old setting kept around for backwards compatibility. Some old servers
 # may have it in their settings.py.

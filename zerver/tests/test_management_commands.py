@@ -23,6 +23,7 @@ from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.management import ZulipBaseCommand, skip_unless_locked
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, stdout_suppressed
+from zerver.lib.types import AnalyticsDataUploadLevel
 from zerver.models import Realm, RealmAuditLog, Recipient, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
@@ -938,3 +939,44 @@ class TestUserChangeNotifications(ZulipTestCase):
             realm_id=realm.id, recipient__type_id=bot.id
         ).count()
         self.assertEqual(bot_messages_before, bot_messages_after)
+
+
+class TestRegisterServer(ZulipTestCase):
+    COMMAND_NAME = "register_server"
+
+    def test_no_zulip_services_enabled(self) -> None:
+        with (
+            self.settings(
+                ZULIP_ORG_ID="zulip-org-id",
+                ZULIP_ORG_KEY="zulip-org-key",
+                ANALYTICS_DATA_UPLOAD_LEVEL=AnalyticsDataUploadLevel.NONE,
+            ),
+            self.assertRaisesRegex(CommandError, "No Zulip services are enabled"),
+        ):
+            call_command(self.COMMAND_NAME, "--agree-to-terms-of-service")
+
+    def test_register_without_push_notifications_service(self) -> None:
+        # A registration is shared by all Zulip services, so having any
+        # one of them enabled is enough to register; mobile push
+        # notifications are not special.
+        with (
+            self.settings(
+                ZULIP_ORG_ID="zulip-org-id",
+                ZULIP_ORG_KEY="zulip-org-key",
+                ZULIP_SERVICE_PUSH_NOTIFICATIONS=False,
+                ANALYTICS_DATA_UPLOAD_LEVEL=AnalyticsDataUploadLevel.BASIC,
+            ),
+            patch(
+                "zerver.management.commands.register_server.Command._request_push_notification_bouncer_url"
+            ) as mock_request,
+            patch(
+                "zerver.management.commands.register_server.send_server_data_to_push_bouncer"
+            ) as mock_send_server_data,
+            stdout_suppressed(),
+        ):
+            mock_request.return_value.json.return_value = {"created": True}
+            call_command(self.COMMAND_NAME, "--agree-to-terms-of-service")
+
+        mock_request.assert_called_once()
+        self.assertEqual(mock_request.call_args[0][0], "/api/v1/remotes/server/register")
+        mock_send_server_data.assert_called_once()
