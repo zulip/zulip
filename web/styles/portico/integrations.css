@@ -861,7 +861,7 @@ html:has(.portico-landing.integrations) {
                 border-color: var(--color-integrations-card-border-hover);
             }
 
-            .eligible_realm_logo {
+            .eligible_realm_icon {
                 display: flex;
                 margin-right: 20px;
                 width: 60px;
