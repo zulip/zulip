@@ -1,0 +1,62 @@
+{
+  "event_name": "task.overdue",
+  "time": "2026-03-30T14:05:00.766656063Z",
+  "data": {
+    "project": {
+      "background_blur_hash": "",
+      "background_information": null,
+      "created": "2026-03-30T11:55:14+02:00",
+      "description": "",
+      "hex_color": "1973ff",
+      "id": 69,
+      "identifier": "",
+      "is_archived": false,
+      "is_favorite": false,
+      "max_permission": 0,
+      "owner": null,
+      "parent_project_id": 0,
+      "position": 4521984,
+      "title": "Zulip Dev",
+      "updated": "2026-03-30T15:32:00+02:00",
+      "views": null
+    },
+    "task": {
+      "assignees": null,
+      "attachments": null,
+      "bucket_id": 0,
+      "cover_image_attachment_id": 0,
+      "created": "2026-03-30T12:03:03+02:00",
+      "created_by": null,
+      "description": "",
+      "done": false,
+      "done_at": "0001-01-01T00:00:00Z",
+      "due_date": "2026-03-30T15:00:00+02:00",
+      "end_date": "0001-01-01T00:00:00Z",
+      "hex_color": "",
+      "id": 988,
+      "identifier": "",
+      "index": 2,
+      "is_favorite": false,
+      "labels": null,
+      "percent_done": 0,
+      "position": 0,
+      "priority": 0,
+      "project_id": 69,
+      "reactions": null,
+      "related_tasks": null,
+      "reminders": null,
+      "repeat_after": 0,
+      "repeat_mode": 0,
+      "start_date": "0001-01-01T00:00:00Z",
+      "title": "Task 2",
+      "updated": "2026-03-30T15:32:00+02:00"
+    },
+    "user": {
+      "id": 2,
+      "name": "John Doe",
+      "username": "jdoe",
+      "created": "2026-02-17T12:57:54+01:00",
+      "updated": "2026-03-30T16:04:49+02:00"
+    }
+  }
+}
