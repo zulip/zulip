@@ -133,6 +133,14 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         # text=googlebot: What is the air-speed velocity of an unladen swallow?
         # trigger_word=googlebot:
 
+        bot_mention = f"@**{self.user_profile.full_name}**"
+        text = event["command"]
+        command = ""
+
+        if text.startswith(bot_mention):
+            command = f"/{self.user_profile.full_name}"
+            text = text[len(bot_mention) :].strip()
+
         request_data = [
             ("token", self.token),
             ("team_id", f"T{realm.id}"),
@@ -143,10 +151,12 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             ("timestamp", event["message"]["timestamp"]),
             ("user_id", f"U{event['message']['sender_id']}"),
             ("user_name", event["message"]["sender_full_name"]),
-            ("text", event["command"]),
+            ("text", text),
             ("trigger_word", event["trigger"]),
             ("service_id", event["user_profile_id"]),
         ]
+        if command:
+            request_data.append(("command", command))
         return self.session.post(base_url, data=request_data)
 
     @override

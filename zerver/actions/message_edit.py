@@ -70,6 +70,7 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import (
     ORIG_TOPIC,
     RESOLVED_TOPIC_PREFIX,
+    is_topic_resolved,
     TOPIC_LINKS,
     TOPIC_NAME,
     get_topic_display_name,
@@ -1576,13 +1577,13 @@ def build_message_edit_request(
 
         resolved_prefix_len = len(RESOLVED_TOPIC_PREFIX)
         topic_resolved = (
-            target_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
-            and not old_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
+            is_topic_resolved(target_topic_name)
+            and not is_topic_resolved(old_topic_name)
             and pre_truncation_target_topic_name[resolved_prefix_len:] == old_topic_name
         )
         topic_unresolved = (
-            old_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
-            and not target_topic_name.startswith(RESOLVED_TOPIC_PREFIX)
+            is_topic_resolved(old_topic_name)
+            and not is_topic_resolved(target_topic_name)
             # lstrip is intentional here. unresolve_name() in
             # web/src/resolved_topic.ts strips all leading "✔"
             # and space characters to guarantee the result never
