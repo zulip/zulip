@@ -1,3 +1,22 @@
+.compose_control_button.compose_record_voice.recording {
+    /* Visually flag that recording is in progress. Red reads correctly in both
+       light and dark themes; the full recording indicator / waveform is a CDO
+       design follow-up. */
+    color: hsl(3deg 80% 55%);
+    animation: compose-voice-recording-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes compose-voice-recording-pulse {
+    50% {
+        opacity: 0.4;
+    }
+}
+
+body.voice-recording-unsupported
+    .compose_control_button_container:has(> .compose_record_voice) {
+    display: none;
+}
+
 #legacy-closed-compose-box {
     text-align: right;
     display: flex;
