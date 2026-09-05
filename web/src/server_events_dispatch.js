@@ -104,6 +104,7 @@ import * as user_group_edit from "./user_group_edit.ts";
 import * as user_groups from "./user_groups.ts";
 import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
+import * as user_status_ui from "./user_status_ui.ts";
 import * as user_topics from "./user_topics.ts";
 import * as user_topics_ui from "./user_topics_ui.ts";
 
@@ -1110,12 +1111,17 @@ export function dispatch_normal_event(event) {
                     settings_preferences.report_emojiset_change(
                         settings_preferences.user_settings_panel,
                     );
+                    // Refresh cached status emoji details before rerendering.
+                    user_status.rerender_emoji_info();
+                    message_store.update_all_status_emoji_info(user_status.get_status_emoji);
                     // Rerender the whole message list UI
                     for (const msg_list of message_lists.all_rendered_message_lists()) {
                         msg_list.rerender();
                     }
-                    // Rerender buddy list status emoji
+                    // Rerender status emoji shown outside the message feed
                     activity_ui.build_user_sidebar();
+                    pm_list.update_private_messages();
+                    user_status_ui.rerender_status_emoji_ui();
                     break;
                 case "display_emoji_reaction_users":
                     message_live_update.rerender_messages_view();
