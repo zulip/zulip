@@ -166,6 +166,8 @@ export function set_up(settings_panel: SettingsPanel): void {
         .find(".setting_web_stream_unreads_count_display_policy")
         .val(settings_object.web_stream_unreads_count_display_policy);
 
+    $container.find(".setting_pin_views_section").val(settings_object.pin_views_section);
+
     information_density.enable_or_disable_control_buttons($container);
 
     if (for_realm_settings) {
