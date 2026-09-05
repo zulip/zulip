@@ -957,6 +957,7 @@ class SubmessageEvent(BaseEvent):
     sender_id: int
     msg_type: str
     content: str
+    timestamp: int
 
 
 class SingleSubscription(BaseModel):
