@@ -26,6 +26,7 @@ from corporate.lib.stripe import BillingUserCounts
 from zerver.actions.message_flags import do_mark_stream_messages_as_read, do_update_message_flags
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_regenerate_api_key
+from zerver.actions.users import do_delete_user
 from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
@@ -1278,6 +1279,43 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
         remote_realm.refresh_from_db()
         self.assertEqual(remote_realm.last_request_datetime, time_sent)
+
+    @activate_push_notification_service()
+    @responses.activate
+    def test_delete_user_unregisters_push_devices_from_bouncer(self) -> None:
+        """Deleting a user must also drop the device registrations held by
+        the bouncer; deleting only this server's PushDeviceToken rows would
+        leave the deleted user's device tokens associated with their uuid on
+        the bouncer.
+        """
+        self.add_mock_response()
+        user = self.example_user("cordelia")
+        self.login_user(user)
+        server = self.server
+
+        endpoints: list[tuple[str, str, Mapping[str, str]]] = [
+            (
+                "/json/users/me/apns_device_token",
+                "c0fFeE",
+                {"appid": "org.zulip.Zulip"},
+            ),
+            ("/json/users/me/android_gcm_reg_id", "android-token", {}),
+        ]
+        for endpoint, token, appid in endpoints:
+            result = self.client_post(endpoint, {"token": token, **appid}, subdomain="zulip")
+            self.assert_json_success(result)
+
+        self.assert_length(
+            RemotePushDeviceToken.objects.filter(user_uuid=user.uuid, server=server), 2
+        )
+
+        with self.captureOnCommitCallbacks(execute=True):
+            do_delete_user(user, acting_user=None)
+
+        self.assert_length(
+            RemotePushDeviceToken.objects.filter(user_uuid=user.uuid, server=server), 0
+        )
+        self.assert_length(PushDeviceToken.objects.filter(user=user), 0)
 
 
 class TestAPNs(PushNotificationTestCase):
