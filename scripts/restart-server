@@ -9,6 +9,7 @@ import socket
 import subprocess
 import sys
 import time
+from typing import Any
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from scripts.lib.setup_path import setup_path
@@ -260,7 +261,7 @@ if has_application_server():
             logging.info("%s Tornado process", verbing)
             restart_or_start("zulip-tornado:*")
 
-    def get_uwsgi_stats() -> dict[str, object]:
+    def get_uwsgi_stats() -> dict[str, Any]:
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
             sock.connect("/home/zulip/deployments/uwsgi-stats")
             data = b""
