@@ -1,5 +1,6 @@
 import logging
 import secrets
+import time
 from collections.abc import Mapping
 from typing import Any
 from urllib.parse import urljoin
@@ -35,6 +36,7 @@ from zerver.models import Realm, RealmAuditLog
 from zerver.models.realms import OrgTypeEnum
 
 redis_client = get_redis_client()
+logger = logging.getLogger(__name__)
 
 
 class PushBouncerSession(OutgoingSession):
@@ -52,6 +54,25 @@ class PushNotificationBouncerRetryLaterError(JsonableError):
 
 class PushNotificationBouncerServerError(PushNotificationBouncerRetryLaterError):
     http_status_code = 502
+
+
+# Retry settings for HTTP 429 (rate limited) responses from the push
+# bouncer. See https://github.com/zulip/zulip/issues/19278.
+PUSH_BOUNCER_RATE_LIMIT_MAX_RETRIES = 5
+PUSH_BOUNCER_RATE_LIMIT_INITIAL_BACKOFF_SECONDS = 1.0
+PUSH_BOUNCER_RATE_LIMIT_MAX_BACKOFF_SECONDS = 64.0
+
+
+def _get_retry_after_seconds(res: requests.Response) -> float | None:
+    # The bouncer may tell us explicitly how long to wait via the
+    # Retry-After header (RFC 9110), as a number of seconds.
+    retry_after = res.headers.get("Retry-After")
+    if retry_after is None:
+        return None
+    try:
+        return max(float(retry_after), 0.0)
+    except ValueError:
+        return None
 
 
 class RealmCountDataForAnalytics(BaseModel):
@@ -162,23 +183,45 @@ def send_to_push_bouncer(
     else:
         session = PushBouncerSession()
 
-    try:
-        res = session.request(
-            method,
-            url,
-            data=post_data,
-            auth=api_auth,
-            verify=True,
-            headers=headers,
+    attempt = 0
+    while True:
+        try:
+            res = session.request(
+                method,
+                url,
+                data=post_data,
+                auth=api_auth,
+                verify=True,
+                headers=headers,
+            )
+        except (
+            requests.exceptions.Timeout,
+            requests.exceptions.SSLError,
+            requests.exceptions.ConnectionError,
+        ) as e:
+            raise PushNotificationBouncerRetryLaterError(
+                f"{type(e).__name__} while trying to connect to push notification bouncer"
+            )
+
+        if res.status_code != 429 or attempt >= PUSH_BOUNCER_RATE_LIMIT_MAX_RETRIES:
+            # Not rate limited, or we've exhausted our retries; fall
+            # through to the status-code handling below as usual.
+            break
+
+        delay = _get_retry_after_seconds(res)
+        if delay is None:
+            delay = min(
+                PUSH_BOUNCER_RATE_LIMIT_INITIAL_BACKOFF_SECONDS * (2**attempt),
+                PUSH_BOUNCER_RATE_LIMIT_MAX_BACKOFF_SECONDS,
+            )
+        logger.warning(
+            "Rate limited by push notification bouncer (attempt %d/%d); retrying in %.1fs",
+            attempt + 1,
+            PUSH_BOUNCER_RATE_LIMIT_MAX_RETRIES,
+            delay,
         )
-    except (
-        requests.exceptions.Timeout,
-        requests.exceptions.SSLError,
-        requests.exceptions.ConnectionError,
-    ) as e:
-        raise PushNotificationBouncerRetryLaterError(
-            f"{type(e).__name__} while trying to connect to push notification bouncer"
-        )
+        time.sleep(delay)
+        attempt += 1
 
     if res.status_code >= 500:
         # 5xx's should be resolved by the people who run the push
@@ -186,7 +229,7 @@ def send_to_push_bouncer(
         # error notification from the server. We raise an exception to signal
         # to the callers that the attempt failed and they can retry.
         error_msg = f"Received {res.status_code} from push notification bouncer"
-        logging.warning(error_msg)
+        logger.warning(error_msg)
         raise PushNotificationBouncerServerError(error_msg)
     elif res.status_code >= 400:
         # If JSON parsing errors, just let that exception happen
