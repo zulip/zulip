@@ -923,10 +923,15 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             )
 
         # Update value of field
-        result = self.client_patch(
-            "/json/users/me/profile_data",
-            {"data": orjson.dumps([{"id": f["id"], "value": f["value"]} for f in data]).decode()},
-        )
+        with self.assert_database_query_count(13):
+            result = self.client_patch(
+                "/json/users/me/profile_data",
+                {
+                    "data": orjson.dumps(
+                        [{"id": f["id"], "value": f["value"]} for f in data]
+                    ).decode()
+                },
+            )
         self.assert_json_success(result)
 
         iago = self.example_user("iago")
