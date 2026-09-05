@@ -1388,6 +1388,27 @@ class RealmTest(ZulipTestCase):
             webex_provider_id,
         )
 
+        livekit_provider_id = Realm.VIDEO_CHAT_PROVIDERS["livekit"]["id"]
+        req = {"video_chat_provider": f"{livekit_provider_id}"}
+        with self.settings(LIVEKIT_URL=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(result, f"Invalid video_chat_provider {livekit_provider_id}")
+
+        with self.settings(LIVEKIT_API_KEY=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(result, f"Invalid video_chat_provider {livekit_provider_id}")
+
+        with self.settings(LIVEKIT_API_SECRET=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(result, f"Invalid video_chat_provider {livekit_provider_id}")
+
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        self.assertEqual(
+            get_realm("zulip").video_chat_provider,
+            livekit_provider_id,
+        )
+
     def test_data_deletion_schedule_when_deactivating_realm(self) -> None:
         self.login("desdemona")
 
