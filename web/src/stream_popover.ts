@@ -399,7 +399,6 @@ export async function build_move_topic_to_stream_popover(
         disable_topic_input?: boolean;
         message_placement?: "first" | "intermediate" | "last";
         stream: sub_store.StreamSubscription | undefined;
-        max_topic_length: number;
     } = {
         topic_name,
         empty_string_topic_display_name,
@@ -409,7 +408,6 @@ export async function build_move_topic_to_stream_popover(
         notify_old_thread: message_edit.notify_old_thread_default,
         from_message_actions_popover: message !== undefined,
         only_topic_edit,
-        max_topic_length: realm.max_topic_length,
     };
 
     // When the modal is opened for moving the whole topic from left sidebar,
@@ -1110,6 +1108,13 @@ export async function build_move_topic_to_stream_popover(
             current_stream_name,
             false,
         );
+
+        $topic_input.on("input", () => {
+            ui_util.truncate_input_to_max_code_points(
+                util.the($topic_input),
+                realm.max_topic_length,
+            );
+        });
 
         const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
 
