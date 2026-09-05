@@ -35,7 +35,7 @@ from zerver.actions.users import (
     do_change_user_role,
     do_deactivate_user,
     do_update_bot_config_data,
-    do_update_outgoing_webhook_service,
+    do_update_bot_service,
 )
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_human_non_guest_user, require_realm_admin
@@ -123,6 +123,17 @@ RoleParamType: TypeAlias = Annotated[
 def check_last_owner(user_profile: UserProfile) -> bool:
     owners = set(user_profile.realm.get_human_owner_users())
     return user_profile.is_realm_owner and not user_profile.is_bot and len(owners) == 1
+
+
+def validate_bot_triggers(triggers: list[str]) -> list[str]:
+    service_triggers = {t.strip().lower() for t in triggers}
+
+    if unknown_triggers := service_triggers - set(Service.BOT_SERVICE_TRIGGERS):
+        raise JsonableError(
+            f"Invalid bot service trigger(s): {', '.join(sorted(unknown_triggers))}"
+        )
+
+    return list(service_triggers)
 
 
 @typed_endpoint
@@ -483,6 +494,10 @@ def patch_bot_backend(
     role: Json[RoleParamType] | None = None,
     service_interface: Json[int] = 1,
     service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
+    service_triggers: Annotated[
+        Json[list[str]] | None,
+        AfterValidator(validate_bot_triggers),
+    ] = None,
     short_name: str | None = None,
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
@@ -555,13 +570,17 @@ def patch_bot_backend(
             bot, default_all_public_streams, acting_user=user_profile
         )
 
-    if service_payload_url is not None:
+    if service_triggers is not None and len(service_triggers) < 1:
+        raise JsonableError(_("The bot triggers are not specified."))
+
+    if service_payload_url is not None or service_triggers is not None:
         check_valid_interface_type(service_interface)
         assert service_interface is not None
-        do_update_outgoing_webhook_service(
+        do_update_bot_service(
             bot,
             interface=service_interface,
             base_url=service_payload_url,
+            triggers=service_triggers,
             acting_user=user_profile,
         )
 
@@ -646,6 +665,10 @@ def add_bot_backend(
     interface_type: Json[int] = Service.GENERIC,
     payload_url: Json[Annotated[str, AfterValidator(check_url)]] = "",
     service_name: str | None = None,
+    service_triggers: Annotated[
+        Json[list[str]] | None,
+        AfterValidator(validate_bot_triggers),
+    ] = None,
     short_name_raw: Annotated[str, ApiParamConfig("short_name")],
 ) -> HttpResponse:
     if user_profile.realm.demo_organization_scheduled_deletion_date is not None:
@@ -687,6 +710,9 @@ def add_bot_backend(
         raise EmailAlreadyInUseError
     except UserProfile.DoesNotExist:
         pass
+
+    if bot_type in UserProfile.MESSAGE_TRIGGERED_BOT_TYPES and not service_triggers:
+        raise JsonableError(_("The bot triggers are not specified."))
 
     check_bot_name_available(
         realm_id=user_profile.realm_id,
@@ -739,14 +765,16 @@ def add_bot_backend(
         _filename, content_type = get_file_info(user_file)
         upload_avatar_image(user_file, bot_profile, content_type=content_type, future=False)
 
-    if bot_type in (UserProfile.OUTGOING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
+    if bot_type in UserProfile.MESSAGE_TRIGGERED_BOT_TYPES:
         assert isinstance(service_name, str)
+        assert service_triggers is not None
         add_service(
             name=service_name,
             user_profile=bot_profile,
             base_url=payload_url,
             interface=interface_type,
             token=generate_api_key(),
+            triggers=service_triggers,
         )
 
     if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:
