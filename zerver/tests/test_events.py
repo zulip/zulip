@@ -3295,6 +3295,18 @@ class NormalActionsTest(BaseAction):
 
         with self.verify_action(num_events=1) as events:
             do_change_user_setting(
+                self.user_profile, notification_setting, 4, acting_user=self.user_profile
+            )
+        check_user_settings_update("events[0]", events[0])
+
+        with self.verify_action(num_events=1) as events:
+            do_change_user_setting(
+                self.user_profile, notification_setting, 5, acting_user=self.user_profile
+            )
+        check_user_settings_update("events[0]", events[0])
+
+        with self.verify_action(num_events=1) as events:
+            do_change_user_setting(
                 self.user_profile, notification_setting, 1, acting_user=self.user_profile
             )
         check_user_settings_update("events[0]", events[0])

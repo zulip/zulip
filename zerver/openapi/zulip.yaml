@@ -16076,9 +16076,13 @@ paths:
                     - 1 - All unread messages
                     - 2 - DMs, mentions, and followed topics
                     - 3 - DMs and mentions
-                    - 4 - None
+                    - 4 - Current conversation
+                    - 5 - None
 
-                    **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions, and followed
+                    **Changes**: In Zulip 13.0 (feature level 510), added `Current conversation`
+                    option, renumbering the `None` option from 4 to 5.
+
+                    In Zulip 8.0 (feature level 227), added `DMs, mentions, and followed
                     topics` option, renumbering the options to insert it in order.
                   type: integer
                   enum:
@@ -16086,6 +16090,7 @@ paths:
                     - 2
                     - 3
                     - 4
+                    - 5
                   example: 1
                 realm_name_in_email_notifications_policy:
                   description: |
@@ -20257,9 +20262,14 @@ paths:
                               - 1 - All unread messages
                               - 2 - DMs, mentions, and followed topics
                               - 3 - DMs and mentions
-                              - 4 - None
+                              - 4 - Current conversation
+                              - 5 - None
 
-                              **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions,
+                              **Changes**: In Zulip 13.0 (feature level 510), added
+                              `Current conversation` option, renumbering the `None` option
+                              from 4 to 5.
+
+                              In Zulip 8.0 (feature level 227), added `DMs, mentions,
                               and followed topics` option, renumbering the options to insert it in
                               order.
                           realm_name_in_email_notifications_policy:
@@ -22642,9 +22652,14 @@ paths:
                               - 1 - All unread messages
                               - 2 - DMs, mentions, and followed topics
                               - 3 - DMs and mentions
-                              - 4 - None
+                              - 4 - Current conversation
+                              - 5 - None
 
-                              **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions,
+                              **Changes**: In Zulip 13.0 (feature level 510), added
+                              `Current conversation` option, renumbering the `None` option
+                              from 4 to 5.
+
+                              In Zulip 8.0 (feature level 227), added `DMs, mentions,
                               and followed topics` option, renumbering the options to insert it in
                               order.
                           realm_name_in_email_notifications_policy:
@@ -24103,9 +24118,13 @@ paths:
                     - 1 - All unread messages
                     - 2 - DMs, mentions, and followed topics
                     - 3 - DMs and mentions
-                    - 4 - None
+                    - 4 - Current conversation
+                    - 5 - None
 
-                    **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions, and followed
+                    **Changes**: In Zulip 13.0 (feature level 510), added `Current conversation`
+                    option, renumbering the `None` option from 4 to 5.
+
+                    In Zulip 8.0 (feature level 227), added `DMs, mentions, and followed
                     topics` option, renumbering the options to insert it in order.
 
                     Before Zulip 5.0 (feature level 80), this setting was managed by the
@@ -24116,6 +24135,7 @@ paths:
                     - 2
                     - 3
                     - 4
+                    - 5
                   example: 1
                 realm_name_in_email_notifications_policy:
                   description: |
