@@ -303,7 +303,8 @@ if has_application_server():
                 if n % 5 == 0:
                     stats = get_uwsgi_stats()
                     reloaded = sum(
-                        1 for w in stats["workers"]
+                        1
+                        for w in stats["workers"]
                         if w["respawn_count"] > initial_respawn_counts[w["id"]]
                     )
                     logging.info("Reloaded %s out of %s workers", reloaded, total_workers)
