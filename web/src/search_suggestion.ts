@@ -30,7 +30,18 @@ type ChannelTopicEntry = {
     topic: string;
 };
 
-type TermPattern = Omit<NarrowTerm, "operand"> & Partial<Pick<NarrowTerm, "operand">>;
+// Same as a term, except the operand is an optional string.
+type TermPattern = Omit<NarrowTerm, "operand"> & {operand?: string};
+
+function get_negated_and_unnegated_patterns(
+    operator: TermPattern["operator"],
+    operand: string,
+): TermPattern[] {
+    return [
+        {operator, operand},
+        {operator, operand, negated: true},
+    ];
+}
 
 const common_incompatible_patterns: TermPattern[] = [
     {operator: "is", operand: "dm"},
@@ -40,15 +51,22 @@ const common_incompatible_patterns: TermPattern[] = [
     {operator: "in"},
 ];
 
-const channel_incompatible_patterns: TermPattern[] = [
-    ...common_incompatible_patterns,
-    {operator: "channels"},
-];
-
 const channels_public_incompatible_patterns: TermPattern[] = [
     ...common_incompatible_patterns,
-    {operator: "channels", operand: "public"},
+    ...get_negated_and_unnegated_patterns("channels", "public"),
     {operator: "channels", operand: "web-public"},
+];
+
+// Built separately from the list above, not from it. With
+// "-channels:public" in the search bar, "channels:web-public" can
+// never match anything and "-channels:web-public" changes nothing,
+// so the negated pattern blocks both. The unnegated "channels:public"
+// only makes the unnegated suggestion redundant, which
+// redundant_patterns handles.
+const channels_web_public_incompatible_patterns: TermPattern[] = [
+    ...common_incompatible_patterns,
+    ...get_negated_and_unnegated_patterns("channels", "web-public"),
+    {operator: "channels", operand: "public", negated: true},
 ];
 
 // TODO: Expand this to support all available filters and its description.
@@ -92,13 +110,13 @@ type SearchFilter =
     | "has:reaction";
 
 const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
-    channel: channel_incompatible_patterns,
-    channels: channel_incompatible_patterns,
+    channel: common_incompatible_patterns,
+    channels: common_incompatible_patterns,
     "channels:public": channels_public_incompatible_patterns,
-    "channels:web-public": channels_public_incompatible_patterns,
+    "channels:web-public": channels_web_public_incompatible_patterns,
     "channels:archived": [
         ...common_incompatible_patterns,
-        {operator: "channels", operand: "archived"},
+        ...get_negated_and_unnegated_patterns("channels", "archived"),
     ],
     topic: [
         {operator: "dm"},
@@ -115,19 +133,19 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     ],
     "dm-including": [{operator: "channel"}, {operator: "stream"}, {operator: "channels"}],
     "is:resolved": [
-        {operator: "is", operand: "resolved"},
+        ...get_negated_and_unnegated_patterns("is", "resolved"),
         {operator: "is", operand: "dm"},
         {operator: "dm"},
         {operator: "dm-including"},
     ],
     "-is:resolved": [
-        {operator: "is", operand: "resolved"},
+        ...get_negated_and_unnegated_patterns("is", "resolved"),
         {operator: "is", operand: "dm"},
         {operator: "dm"},
         {operator: "dm-including"},
     ],
     "is:dm": [
-        {operator: "is", operand: "dm"},
+        ...get_negated_and_unnegated_patterns("is", "dm"),
         {operator: "is", operand: "resolved"},
         {operator: "channel"},
         {operator: "dm"},
@@ -137,24 +155,24 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     ],
     mentions: [{operator: "mentions"}],
     sender: [{operator: "sender"}, {operator: "from"}],
-    "is:starred": [{operator: "is", operand: "starred"}],
-    "is:mentioned": [{operator: "is", operand: "mentioned"}],
+    "is:starred": get_negated_and_unnegated_patterns("is", "starred"),
+    "is:mentioned": get_negated_and_unnegated_patterns("is", "mentioned"),
     "is:followed": [
-        {operator: "is", operand: "followed"},
+        ...get_negated_and_unnegated_patterns("is", "followed"),
         {operator: "is", operand: "dm"},
         {operator: "dm"},
         {operator: "dm-including"},
     ],
-    "is:alerted": [{operator: "is", operand: "alerted"}],
-    "is:unread": [{operator: "is", operand: "unread"}],
+    "is:alerted": get_negated_and_unnegated_patterns("is", "alerted"),
+    "is:unread": get_negated_and_unnegated_patterns("is", "unread"),
     "is:muted": [
-        {operator: "is", operand: "muted"},
-        {operator: "in", operand: "home"},
+        ...get_negated_and_unnegated_patterns("is", "muted"),
+        ...get_negated_and_unnegated_patterns("in", "home"),
     ],
-    "has:link": [{operator: "has", operand: "link"}],
-    "has:image": [{operator: "has", operand: "image"}],
-    "has:attachment": [{operator: "has", operand: "attachment"}],
-    "has:reaction": [{operator: "has", operand: "reaction"}],
+    "has:link": get_negated_and_unnegated_patterns("has", "link"),
+    "has:image": get_negated_and_unnegated_patterns("has", "image"),
+    "has:attachment": get_negated_and_unnegated_patterns("has", "attachment"),
+    "has:reaction": get_negated_and_unnegated_patterns("has", "reaction"),
     // `date` and `near` combination is made incompatible to avoid confusing the user.
     // Having both operators only takes `date` into account while narrowing.
     // Details: https://github.com/zulip/zulip/pull/38486#issuecomment-4310019929
@@ -169,6 +187,39 @@ const incompatible_patterns: Record<SearchFilter, TermPattern[]> = {
     search: [],
     with: [],
 };
+
+// Broader terms in the search bar that make a suggestion redundant
+// rather than wrong: combining the two means the same as the narrower
+// one alone. Excluding such a filter can still change the search, so
+// only the unnegated form of the suggestion is dropped.
+const redundant_patterns: Partial<Record<SearchFilter, TermPattern[]>> = {
+    // A "channels:" term already narrows the search to a set of
+    // channels. Naming one of them with "channel:" means the same as
+    // the "channel:" term alone, while excluding one usually changes
+    // the search. Excluding a channel outside the set, like a private
+    // channel with "channels:public", is a no-op, but harmless.
+    channel: [{operator: "channels"}],
+    // A second "channels:" scope alongside an existing one isn't
+    // offered, but excluding part of the current scope, like
+    // "channels:public -channels:web-public", still changes the
+    // search.
+    channels: [{operator: "channels"}],
+    // Web-public channels are public, so "channels:public
+    // channels:web-public" is just the web-public channels, while
+    // "channels:public -channels:web-public" is the public channels
+    // that aren't web-public.
+    "channels:web-public": [{operator: "channels", operand: "public"}],
+};
+
+// A suggestion is ruled out by its incompatible patterns for either
+// polarity, but by its redundant patterns only when unnegated.
+function get_blocking_patterns(search_filter: SearchFilter, negated: boolean): TermPattern[] {
+    const patterns = incompatible_patterns[search_filter];
+    if (negated) {
+        return patterns;
+    }
+    return [...patterns, ...(redundant_patterns[search_filter] ?? [])];
+}
 
 export type Suggestion = string;
 
@@ -185,18 +236,29 @@ function match_criteria(terms: NarrowCanonicalTerm[], criteria: TermPattern[]): 
     const filter = new Filter(terms);
     return criteria.some((cr) => {
         if (cr.operand !== undefined) {
+            if (cr.negated) {
+                return filter.has_negated_operand(cr.operator, cr.operand);
+            }
             return filter.has_operand(cr.operator, cr.operand);
         }
         return filter.has_operator(cr.operator);
     });
 }
 
+// Whether the typed text asks for a negated filter, either as a
+// parsed negated term or as a search operand starting with "-".
+function is_input_negated(last: NarrowCanonicalTermSuggestion): boolean {
+    return last.negated === true || (last.operator === "search" && last.operand.startsWith("-"));
+}
+
 function filter_suggestions_by_criteria(
     terms: NarrowCanonicalTerm[],
+    last: NarrowCanonicalTermSuggestion,
     search_filters: SearchFilter[],
 ): Suggestion[] {
+    const negated = is_input_negated(last);
     return search_filters.filter(
-        (search_filter) => !match_criteria(terms, incompatible_patterns[search_filter]),
+        (search_filter) => !match_criteria(terms, get_blocking_patterns(search_filter, negated)),
     );
 }
 
@@ -265,7 +327,8 @@ function get_channel_suggestions(
     // For users with "stream" in their muscle memory, still
     // have suggestions with "channel:" operator.
     const valid = ["stream", "channel", "search", ""];
-    if (!check_validity(last.operator, terms, valid, incompatible_patterns.channel)) {
+    const patterns = get_blocking_patterns("channel", last.negated === true);
+    if (!check_validity(last.operator, terms, valid, patterns)) {
         return [];
     }
 
@@ -277,16 +340,23 @@ function get_channel_suggestions(
         channel_matches_query(channel_name, query),
     );
     matching_channel_names = typeahead_helper.sorter(query, matching_channel_names, (x) => x);
-    return matching_channel_names.map((channel_name) => {
+    // A term that's already negated in the search bar isn't suggested
+    // again for either polarity: repeating it duplicates the existing
+    // term, and the unnegated form contradicts it.
+    const filter = new Filter(terms);
+    return matching_channel_names.flatMap((channel_name) => {
         const channel = stream_data.get_sub_by_name(channel_name);
         assert(channel !== undefined);
+        const operand = channel.stream_id.toString();
+        if (filter.has_negated_operand("channel", operand)) {
+            return [];
+        }
         const term: NarrowTerm = {
             operator: "channel",
-            operand: channel.stream_id.toString(),
+            operand,
             negated: last.negated,
         };
-        const search_string = Filter.unparse([term]);
-        return search_string;
+        return [Filter.unparse([term])];
     });
 }
 
@@ -420,43 +490,57 @@ function get_person_suggestions(
 
     const valid = ["search", autocomplete_operator];
 
-    if (
-        !check_validity(last.operator, terms, valid, incompatible_patterns[autocomplete_operator])
-    ) {
+    const patterns = get_blocking_patterns(autocomplete_operator, last.negated === true);
+    if (!check_validity(last.operator, terms, valid, patterns)) {
         return [];
     }
 
-    const persons = people_getter();
-
-    return persons.map((person) => {
-        const terms: NarrowCanonicalTerm[] = [];
+    const filter = new Filter(terms);
+    return people_getter().flatMap((person) => {
+        let term: NarrowCanonicalTerm;
         switch (autocomplete_operator) {
             case "dm":
             case "dm-including":
-                terms.push({
+                term = {
                     operator: autocomplete_operator,
                     operand: [person.user_id],
                     negated: last.negated,
-                });
+                };
                 break;
             case "sender":
             case "mentions":
-                terms.push({
+                term = {
                     operator: autocomplete_operator,
                     operand: person.user_id,
                     negated: last.negated,
-                });
+                };
                 break;
         }
 
+        if (filter.has_negated_operand(term.operator, term.operand)) {
+            return [];
+        }
+
+        // "mentions:me" canonicalizes to "is:mentioned", so with
+        // "-mentions:me" in the search bar the excluded term to look
+        // for is "-is:mentioned".
+        if (
+            autocomplete_operator === "mentions" &&
+            person.user_id === people.my_current_user_id() &&
+            filter.has_negated_operand("is", "mentioned")
+        ) {
+            return [];
+        }
+
+        const suggestion_terms: NarrowCanonicalTerm[] = [term];
         if (last.negated && autocomplete_operator === "dm") {
             // In the special case of "-dm" or "-pm-with", add "is:dm" before
             // it because we assume the user still wants to narrow to direct
             // messages.
-            terms.unshift({operator: "is", operand: "dm"});
+            suggestion_terms.unshift({operator: "is", operand: "dm"});
         }
 
-        return Filter.unparse(terms);
+        return [Filter.unparse(suggestion_terms)];
     });
 }
 
@@ -729,30 +813,43 @@ function get_special_filter_suggestions(
     last: NarrowCanonicalTermSuggestion,
     suggestions: Suggestion[],
 ): Suggestion[] {
-    const is_search_operand_negated = last.operator === "search" && last.operand.startsWith("-");
-    // Negating suggestions on is_search_operand_negated is required for
+    // Negating suggestions for a negated input is required for
     // suggesting negated terms.
-    if (last.negated === true || is_search_operand_negated) {
+    const negated_input = is_input_negated(last);
+    if (negated_input) {
         suggestions = suggestions
             .filter((suggestion) => suggestion !== "-is:resolved")
             .map((suggestion) => "-" + suggestion);
     }
 
     const last_string = Filter.unparse([last]).toLowerCase();
+    // When the typed text is negated, the suggestions are negated
+    // too, so match the text after the "-" against the unnegated
+    // parts of the suggestion: "-star" should offer "-is:starred"
+    // just as "star" offers "is:starred".
+    const match_string = negated_input ? last_string.slice(1) : last_string;
     suggestions = suggestions.filter((s) => {
         if (last_string === "") {
             return true;
         }
 
+        const unnegated_suggestion = s.startsWith("-") ? s.slice(1) : s;
+        // For negated input, never match a negated suggestion's own
+        // description: "-is:resolved" is described as "unresolved
+        // topics", so matching it against the de-negated typed text
+        // would make "-unres" offer "-is:resolved".
+        const description = negated_input ? descriptions[unnegated_suggestion] : descriptions[s];
         // returns the substring after the ":" symbol.
-        const suggestion_operand = s.slice(s.indexOf(":") + 1);
+        const suggestion_operand = unnegated_suggestion.slice(
+            unnegated_suggestion.indexOf(":") + 1,
+        );
         // e.g for `att` search query, `has:attachment` should be suggested.
         const show_operator_suggestions =
-            last.operator === "search" && suggestion_operand.toLowerCase().startsWith(last_string);
+            last.operator === "search" && suggestion_operand.toLowerCase().startsWith(match_string);
         return (
             s.toLowerCase().startsWith(last_string) ||
             show_operator_suggestions ||
-            descriptions[s]?.toLowerCase().startsWith(last_string)
+            description?.toLowerCase().startsWith(match_string)
         );
     });
 
@@ -772,16 +869,20 @@ function get_channels_filter_suggestions(
     const suggestions: Suggestion[] = [];
 
     if (!page_params.is_spectator) {
-        suggestions.push(...filter_suggestions_by_criteria(terms, [public_channels_search_string]));
+        suggestions.push(
+            ...filter_suggestions_by_criteria(terms, last, [public_channels_search_string]),
+        );
     }
 
     if (stream_data.realm_has_web_public_streams()) {
         suggestions.push(
-            ...filter_suggestions_by_criteria(terms, [web_public_channels_search_string]),
+            ...filter_suggestions_by_criteria(terms, last, [web_public_channels_search_string]),
         );
     }
 
-    suggestions.push(...filter_suggestions_by_criteria(terms, [archived_channels_search_string]));
+    suggestions.push(
+        ...filter_suggestions_by_criteria(terms, last, [archived_channels_search_string]),
+    );
     return get_special_filter_suggestions(last, suggestions);
 }
 
@@ -791,9 +892,9 @@ function get_is_filter_suggestions(
 ): Suggestion[] {
     let suggestions: Suggestion[];
     if (page_params.is_spectator) {
-        suggestions = filter_suggestions_by_criteria(terms, ["is:resolved", "-is:resolved"]);
+        suggestions = filter_suggestions_by_criteria(terms, last, ["is:resolved", "-is:resolved"]);
     } else {
-        suggestions = filter_suggestions_by_criteria(terms, [
+        suggestions = filter_suggestions_by_criteria(terms, last, [
             "is:dm",
             "is:starred",
             "is:mentioned",
@@ -828,7 +929,7 @@ function get_has_filter_suggestions(
     last: NarrowCanonicalTermSuggestion,
     terms: NarrowCanonicalTerm[],
 ): Suggestion[] {
-    const suggestions: Suggestion[] = filter_suggestions_by_criteria(terms, [
+    const suggestions: Suggestion[] = filter_suggestions_by_criteria(terms, last, [
         "has:link",
         "has:image",
         "has:attachment",
@@ -842,9 +943,7 @@ function get_sent_by_me_suggestions(
     terms: NarrowCanonicalTerm[],
 ): Suggestion[] {
     const last_string = Filter.unparse([last]).toLowerCase();
-    const negated =
-        last.negated === true || (last.operator === "search" && last.operand.startsWith("-"));
-    const negated_symbol = negated ? "-" : "";
+    const negated_symbol = is_input_negated(last) ? "-" : "";
 
     const sender_query = negated_symbol + "sender:" + people.my_current_user_id();
     const sender_email_string = negated_symbol + "sender:" + people.my_current_email();
@@ -852,7 +951,10 @@ function get_sent_by_me_suggestions(
     const from_string = negated_symbol + "from";
     const sent_string = negated_symbol + "sent";
 
-    if (match_criteria(terms, incompatible_patterns.sender)) {
+    if (
+        match_criteria(terms, incompatible_patterns.sender) ||
+        new Filter(terms).has_negated_operand("sender", people.my_current_user_id())
+    ) {
         return [];
     }
 
@@ -912,10 +1014,10 @@ function get_operator_suggestions(
         canonicalized_operator_choices.push("date");
     }
 
-    // We remove suggestion choice if its incompatible_pattern matches
-    // that of current search terms.
+    // We remove a suggestion choice if its blocking patterns match
+    // the current search terms.
     canonicalized_operator_choices = canonicalized_operator_choices.filter((choice) => {
-        if (match_criteria(terms, incompatible_patterns[choice])) {
+        if (match_criteria(terms, get_blocking_patterns(choice, negated))) {
             incompatible_operators.add(choice);
             return false;
         }
