@@ -2,13 +2,13 @@
     {{#if (eq count 1)}}
         {{#tr}}
             This will clear the <z-field-name></z-field-name> profile field for 1 user.
-            {{#*inline "z-field-name"}}<strong>{{field_name}}</strong>{{/inline}}
+            {{#*inline "z-field-name"}}<strong class="rendered_markdown">{{rendered_markdown rendered_field_name}}</strong>{{/inline}}
         {{/tr}}
     {{else}}
         {{#tr}}
             This will clear the <z-field-name></z-field-name> profile field for <z-count></z-count> users.
             {{#*inline "z-count"}}{{count}}{{/inline}}
-            {{#*inline "z-field-name"}}<strong>{{field_name}}</strong>{{/inline}}
+            {{#*inline "z-field-name"}}<strong class="rendered_markdown">{{rendered_markdown rendered_field_name}}</strong>{{/inline}}
         {{/tr}}
     {{/if}}
 </p>
