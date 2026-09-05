@@ -5,7 +5,10 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm
-from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, get_topic_from_message_info
+from zerver.lib.topic import (
+    get_topic_from_message_info,
+    is_topic_resolved,
+)
 
 # "stream" is a legacy alias for "channel"
 channel_operators: list[str] = ["channel", "stream"]
@@ -70,7 +73,7 @@ def build_narrow_predicate(
                 if message["type"] != "stream":
                     return False
                 topic_name = get_topic_from_message_info(message)
-                if not topic_name.startswith(RESOLVED_TOPIC_PREFIX):
+                if not is_topic_resolved(topic_name):
                     return False
             return True
 
