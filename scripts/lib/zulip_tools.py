@@ -623,6 +623,16 @@ def is_vagrant_env_host(path: str) -> bool:
     return ".vagrant" in os.listdir(path)
 
 
+def is_zulip_production_install() -> bool:
+    """True iff this machine has Zulip's production install.
+
+    Detected by the `[machine].deploy_type` option in
+    `/etc/zulip/zulip.conf`, written by puppet on install and never by
+    `tools/provision`.
+    """
+    return get_config_file().has_option("machine", "deploy_type")
+
+
 def has_application_server(once: bool = False) -> bool:
     if once:
         return os.path.exists("/etc/supervisor/conf.d/zulip/zulip-once.conf")
