@@ -1,10 +1,12 @@
 import django.db.models.functions.text
-from django.contrib.postgres.operations import AddIndexConcurrently
+from django.conf import settings
 from django.db import migrations, models
+
+from zerver.lib.migrate import add_index
 
 
 class Migration(migrations.Migration):
-    atomic = False
+    atomic = not settings.MIGRATIONS_ADD_REMOVE_INDEXES_CONCURRENTLY
 
     dependencies = [
         ("zerver", "0807_usertopic_zerver_usertopic_user_visibility_recipient_idx"),
@@ -31,7 +33,7 @@ class Migration(migrations.Migration):
             new_name="zerver_message_realm_id_nulls_last",
             old_name="zerver_message_realm_id",
         ),
-        AddIndexConcurrently(
+        add_index(
             model_name="message",
             index=models.Index(
                 models.F("realm_id"),
@@ -41,7 +43,7 @@ class Migration(migrations.Migration):
                 name="zerver_message_realm_upper_subject",
             ),
         ),
-        AddIndexConcurrently(
+        add_index(
             model_name="message",
             index=models.Index(
                 models.F("realm_id"),
@@ -52,7 +54,7 @@ class Migration(migrations.Migration):
                 name="zerver_message_realm_recipient_upper_subject",
             ),
         ),
-        AddIndexConcurrently(
+        add_index(
             model_name="message",
             index=models.Index(
                 models.F("realm_id"),
@@ -63,7 +65,7 @@ class Migration(migrations.Migration):
                 name="zerver_message_realm_recipient_subject",
             ),
         ),
-        AddIndexConcurrently(
+        add_index(
             model_name="message",
             index=models.Index(
                 models.F("realm_id"),
