@@ -5,9 +5,11 @@ import logging
 import os
 import pwd
 import shlex
+import socket
 import subprocess
 import sys
 import time
+from typing import Any
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from scripts.lib.setup_path import setup_path
@@ -259,6 +261,17 @@ if has_application_server():
             logging.info("%s Tornado process", verbing)
             restart_or_start("zulip-tornado:*")
 
+    def get_uwsgi_stats() -> dict[str, Any]:
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
+            sock.connect("/home/zulip/deployments/uwsgi-stats")
+            data = b""
+            while True:
+                chunk = sock.recv(4096)
+                if not chunk:
+                    break
+                data += chunk
+        return json.loads(data)
+
     # Finally, restart the Django uWSGI processes.
     if (
         action == "restart"
@@ -280,12 +293,22 @@ if has_application_server():
                 # "c" is chain-reloading:
                 # https://uwsgi-docs.readthedocs.io/en/latest/MasterFIFO.html#available-commands
                 control_socket.write("c")
+            stats = get_uwsgi_stats()
+            initial_respawn_counts = {w["id"]: w["respawn_count"] for w in stats["workers"]}
+            total_workers = len(stats["workers"])
+
             n = 0
             while not os.path.exists("/var/lib/zulip/django-workers.ready"):
                 time.sleep(1)
                 n += 1
                 if n % 5 == 0:
-                    logging.info("...")
+                    stats = get_uwsgi_stats()
+                    reloaded = sum(
+                        1
+                        for w in stats["workers"]
+                        if w["respawn_count"] > initial_respawn_counts[w["id"]]
+                    )
+                    logging.info("Reloaded %s out of %s workers", reloaded, total_workers)
             logging.info("Chain reloading complete")
         else:
             logging.info("Starting django server")
