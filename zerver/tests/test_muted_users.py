@@ -346,9 +346,13 @@ class MutedUsersTests(ZulipTestCase):
                     ),
                 )
             self.assert_json_success(result)
-            m.assert_called_once()
+            considered_user_ids = {
+                call[1]["user_notifications_data"].user_id for call in m.call_args_list
+            }
             # `maybe_enqueue_notifications` was called for Hamlet after message edit mentioned him.
-            self.assertEqual(m.call_args_list[0][1]["user_notifications_data"].user_id, hamlet.id)
+            # It is also called for Cordelia, who receives the event for her own edit since she
+            # isn't subscribed to the channel, but a user is never notified about their own edit.
+            self.assertEqual(considered_user_ids, {hamlet.id, cordelia.id})
 
         # Hamlet mutes Cordelia.
         self.login("hamlet")

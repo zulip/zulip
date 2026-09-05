@@ -354,6 +354,42 @@ run_test("insert_local_message streams", ({override}) => {
     assert.ok(insert_message_called);
 });
 
+run_test("insert_local_message to an unsubscribed channel is historical", ({override}) => {
+    const unsubscribed_sub = make_stream({
+        stream_id: 202,
+        name: "unsubscribed",
+        subscribed: false,
+    });
+    stream_data.add_sub_for_tests(unsubscribed_sub);
+
+    override(markdown, "render", () => ({content: "<p>hi</p>", flags: [], is_me_message: false}));
+    override(markdown, "get_topic_links", () => []);
+
+    function echoed_flags(stream_id, local_id_float) {
+        let flags;
+        const insert_new_messages = (message_data) => {
+            [{flags}] = message_data.raw_messages;
+            return message_data.raw_messages;
+        };
+        echo.insert_local_message(
+            {
+                type: "stream",
+                stream_id,
+                topic: "greeting",
+                sender_email: "iago@zulip.com",
+                sender_full_name: "Iago",
+                sender_id: 123,
+            },
+            local_id_float,
+            insert_new_messages,
+        );
+        return flags;
+    }
+
+    assert.ok(echoed_flags(unsubscribed_sub.stream_id, 102.01).includes("historical"));
+    assert.ok(!echoed_flags(general_sub.stream_id, 103.01).includes("historical"));
+});
+
 run_test("insert_local_message direct message", ({override}) => {
     const local_id_float = 102.01;
 

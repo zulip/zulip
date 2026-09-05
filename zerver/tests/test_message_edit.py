@@ -220,6 +220,38 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(Message.objects.get(id=msg_id).topic_name(), "edited")
 
+    def test_unsubscribed_editor_gets_update_message_event(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        stream_name = "Test stream"
+        self.subscribe(cordelia, stream_name)
+        self.login("hamlet")
+
+        msg_id = self.send_stream_message(
+            hamlet,
+            stream_name,
+            topic_name="editing",
+            content="before edit",
+            allow_unsubscribed_sender=True,
+        )
+        self.assertFalse(
+            UserMessage.objects.filter(user_profile=hamlet, message_id=msg_id).exists()
+        )
+
+        # Hamlet has no UserMessage row for a channel he isn't subscribed to,
+        # so the subscriber logic doesn't cover him; we notify him anyway, so
+        # his client sees his own edit.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.client_patch(
+                f"/json/messages/{msg_id}",
+                {"content": "after edit"},
+            )
+        self.assert_json_success(result)
+
+        users = {user["id"]: user for user in events[0]["users"]}
+        self.assertIn(hamlet.id, users)
+        self.assertEqual(sorted(users[hamlet.id]["flags"]), ["historical", "read"])
+
     def test_fetch_message_from_id(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
