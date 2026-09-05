@@ -1238,7 +1238,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
             message=message,
             emoji_name="whatever",
             emoji_code="whatever",
-            reaction_type="whatever",
+            reaction_type="unicode_emoji",
         )
 
         with (

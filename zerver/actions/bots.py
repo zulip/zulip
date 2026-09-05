@@ -2,6 +2,14 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.create_user import created_bot_event
+from zerver.lib.event_types import (
+    BotTypeForDelete,
+    BotTypeForUpdate,
+    PersonBotOwnerId,
+    RealmBotDeleteEvent,
+    RealmBotUpdateEvent,
+    RealmUserUpdateEvent,
+)
 from zerver.models import RealmAuditLog, Stream, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import active_user_ids, bot_owner_user_ids
@@ -13,25 +21,14 @@ def send_bot_owner_update_events(
 ) -> None:
     # Since `bot_owner_id` is included in the user profile dict we need
     # to update the users dict with the new bot owner id
-    event = dict(
-        type="realm_user",
-        op="update",
-        person=dict(
-            user_id=user_profile.id,
-            bot_owner_id=bot_owner.id,
-        ),
+    event = RealmUserUpdateEvent(
+        person=PersonBotOwnerId(user_id=user_profile.id, bot_owner_id=bot_owner.id),
     )
     send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
     # Delete the bot from previous owner's bot data.
     if previous_owner and not previous_owner.is_realm_admin:
-        delete_event = dict(
-            type="realm_bot",
-            op="delete",
-            bot=dict(
-                user_id=user_profile.id,
-            ),
-        )
+        delete_event = RealmBotDeleteEvent(bot=BotTypeForDelete(user_id=user_profile.id))
         previous_owner_id = previous_owner.id
         send_event_on_commit(
             user_profile.realm,
@@ -94,13 +91,8 @@ def do_change_default_sending_stream(
             stream_name: str | None = stream.name
         else:
             stream_name = None
-        event = dict(
-            type="realm_bot",
-            op="update",
-            bot=dict(
-                user_id=user_profile.id,
-                default_sending_stream=stream_name,
-            ),
+        event = RealmBotUpdateEvent(
+            bot=BotTypeForUpdate(user_id=user_profile.id, default_sending_stream=stream_name),
         )
         send_event_on_commit(
             user_profile.realm,
@@ -136,12 +128,9 @@ def do_change_default_events_register_stream(
         else:
             stream_name = None
 
-        event = dict(
-            type="realm_bot",
-            op="update",
-            bot=dict(
-                user_id=user_profile.id,
-                default_events_register_stream=stream_name,
+        event = RealmBotUpdateEvent(
+            bot=BotTypeForUpdate(
+                user_id=user_profile.id, default_events_register_stream=stream_name
             ),
         )
         send_event_on_commit(
@@ -173,10 +162,8 @@ def do_change_default_all_public_streams(
     )
 
     if user_profile.is_bot:
-        event = dict(
-            type="realm_bot",
-            op="update",
-            bot=dict(
+        event = RealmBotUpdateEvent(
+            bot=BotTypeForUpdate(
                 user_id=user_profile.id,
                 default_all_public_streams=user_profile.default_all_public_streams,
             ),
