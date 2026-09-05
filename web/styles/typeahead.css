@@ -96,6 +96,10 @@
             color: var(--color-compose-chevron-arrow);
             text-decoration: none;
         }
+
+        .stream-to-topic-separator {
+            margin: 0 0.25em; /* 4px at 16px em */
+        }
     }
 
     .active > a {
