@@ -588,7 +588,9 @@ class ReportMessageTest(ZulipTestCase):
             report_type="harassment",
         )
         self.assert_json_success(result)
-        report_msg = self.get_last_message()
+        reports = self.get_submitted_moderation_requests()
+        report_msg = reports.first()
+        assert report_msg is not None
         self.assertEqual(report_msg.sender_id, notification_bot.id)
         self.assertEqual(report_msg.topic_name(), "")
         self.assertIn("reported", report_msg.content)
