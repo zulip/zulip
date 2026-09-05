@@ -250,9 +250,13 @@ def get_message_url(event: dict[str, Any]) -> str:
     message = event["message"]
     realm = bot_user.realm
 
+    is_stream_message = message["type"] == "stream"
     return message_link_url(
         realm=realm,
-        message=message,
+        message_id=message["id"],
+        display_recipient=message["display_recipient"],
+        stream_id=message["stream_id"] if is_stream_message else None,
+        topic_name=get_topic_from_message_info(message) if is_stream_message else None,
     )
 
 
