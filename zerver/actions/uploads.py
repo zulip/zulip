@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any
 
@@ -26,7 +27,11 @@ class AttachmentChangeResult:
 
 
 def notify_attachment_update(
-    user_profile: UserProfile, op: str, attachment_dict: dict[str, Any]
+    user_profile: UserProfile,
+    op: str,
+    attachment_dict: dict[str, Any],
+    *,
+    users: Iterable[int] | None = None,
 ) -> None:
     event = {
         "type": "attachment",
@@ -34,7 +39,9 @@ def notify_attachment_update(
         "attachment": attachment_dict,
         "upload_space_used": user_profile.realm.currently_used_upload_space_bytes(),
     }
-    send_event_on_commit(user_profile.realm, event, [user_profile.id])
+    if users is None:
+        users = [user_profile.id]
+    send_event_on_commit(user_profile.realm, event, users)
 
 
 def do_claim_attachments(
