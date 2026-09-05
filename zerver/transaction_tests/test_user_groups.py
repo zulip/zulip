@@ -104,7 +104,6 @@ class UserGroupRaceConditionTestCase(ZulipTransactionTestCase):
 
     def test_lock_subgroups_with_respect_to_supergroup(self) -> None:
         realm = get_realm("zulip")
-        self.login("iago")
         iago = self.example_user("iago")
 
         class RacingThread(threading.Thread):

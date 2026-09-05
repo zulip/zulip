@@ -86,7 +86,7 @@ from zerver.models.prereg_users import filter_to_valid_prereg_users
 from zerver.models.realm_audit_logs import AuditLogEventType, RealmAuditLog
 from zerver.models.realms import get_realm
 from zerver.models.users import remote_user_to_email
-from zerver.signals import email_on_new_login
+from zerver.signals import do_create_login_audit_log_entry, email_on_new_login
 from zerver.views.errors import config_error
 from zproject.backends import (
     AUTH_BACKEND_NAME_MAP,
@@ -222,6 +222,13 @@ def maybe_send_to_registration(
             mobile_flow_otp,
             expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
         )
+        if params_to_store_in_authenticated_session:
+            set_expirable_session_var(
+                request.session,
+                "registration_mobile_flow_params_to_store_in_authenticated_session",
+                orjson.dumps(params_to_store_in_authenticated_session).decode(),
+                expiry_seconds=EXPIRABLE_SESSION_VAR_DEFAULT_EXPIRY_SECS,
+            )
     elif desktop_flow_otp:
         set_expirable_session_var(
             request.session,
@@ -468,7 +475,9 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
     # or not they're using the mobile OTP flow or want a browser session.
     is_realm_creation = result.data_dict.get("is_realm_creation")
     if mobile_flow_otp is not None:
-        return finish_mobile_flow(request, user_profile, mobile_flow_otp)
+        return finish_mobile_flow(
+            request, user_profile, mobile_flow_otp, params_to_store_in_authenticated_session
+        )
     elif desktop_flow_otp is not None:
         return finish_desktop_flow(
             request, user_profile, desktop_flow_otp, params_to_store_in_authenticated_session
@@ -521,7 +530,12 @@ def finish_desktop_flow(
     return TemplateResponse(request, "zerver/desktop_redirect.html", context=context)
 
 
-def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
+def finish_mobile_flow(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    otp: str,
+    params_to_store_in_authenticated_session: dict[str, str] | None = None,
+) -> HttpResponse:
     # For the mobile OAuth flow, we send the API key and other
     # necessary details in a redirect to a zulip:// URL scheme.
     api_key = user_profile.api_key
@@ -538,6 +552,15 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
     # Arguably, sending a fake 'user_logged_in' signal would be a better approach:
     #   user_logged_in.send(sender=type(user_profile), request=request, user=user_profile)
     email_on_new_login(sender=type(user_profile), request=request, user=user_profile)
+    # No Django session is created here, so the social_auth_backend
+    # marker that login_or_register_remote_user would otherwise copy
+    # into the session isn't available to our audit-log helper. Pass
+    # the value through explicitly so the recorded method matches the
+    # equivalent web flow (e.g. "github" rather than "GitHubAuthBackend").
+    login_method = None
+    if params_to_store_in_authenticated_session is not None:
+        login_method = params_to_store_in_authenticated_session.get("social_auth_backend")
+    do_create_login_audit_log_entry(user_profile, request, login_method=login_method)
 
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
@@ -617,6 +640,10 @@ def remote_user_sso(
         mobile_flow_otp=mobile_flow_otp,
         desktop_flow_otp=desktop_flow_otp,
         redirect_to=next,
+        # Marker so the login/logout audit log can identify this as a
+        # REMOTE_USER SSO login. login_or_register_remote_user copies
+        # this into request.session before do_login runs.
+        params_to_store_in_authenticated_session={"social_auth_backend": "remote_user_sso"},
     )
     if realm:
         data_dict["subdomain"] = realm.subdomain
@@ -666,13 +693,25 @@ def remote_user_jwt(request: HttpRequest, *, token: str = "") -> HttpResponse:
     )
 
     user_profile = authenticate(username=email, realm=realm, use_dummy_backend=True)
+    # Marker so the login/logout audit log can identify this as a JWT
+    # login. login_or_register_remote_user copies this into request.session
+    # before do_login runs.
+    session_data = {"social_auth_backend": "jwt"}
     if user_profile is None:
         result = ExternalAuthResult(
-            data_dict={"email": email, "full_name": "", "subdomain": realm.subdomain}
+            data_dict={
+                "email": email,
+                "full_name": "",
+                "subdomain": realm.subdomain,
+                "params_to_store_in_authenticated_session": session_data,
+            }
         )
     else:
         assert isinstance(user_profile, UserProfile)
-        result = ExternalAuthResult(user_profile=user_profile)
+        result = ExternalAuthResult(
+            user_profile=user_profile,
+            data_dict={"params_to_store_in_authenticated_session": session_data},
+        )
 
     return login_or_register_remote_user(request, result)
 
@@ -1086,7 +1125,7 @@ def start_two_factor_auth(
 
 
 def process_api_key_fetch_authenticate_result(
-    request: HttpRequest, user_profile: UserProfile
+    request: HttpRequest, user_profile: UserProfile, *, method: str | None = None
 ) -> str:
     assert user_profile.is_authenticated
 
@@ -1096,6 +1135,7 @@ def process_api_key_fetch_authenticate_result(
     # in the session. If the signal receiver assumes that we do then that
     # would cause problems.
     email_on_new_login(sender=type(user_profile), request=request, user=user_profile)
+    do_create_login_audit_log_entry(user_profile, request, login_method=method)
 
     # Mark this request as having a logged-in user for our server logs.
     assert isinstance(user_profile, UserProfile)
@@ -1147,7 +1187,7 @@ def jwt_fetch_api_key(
 
     assert isinstance(user_profile, UserProfile)
 
-    api_key = process_api_key_fetch_authenticate_result(request, user_profile)
+    api_key = process_api_key_fetch_authenticate_result(request, user_profile, method="jwt")
 
     result: dict[str, Any] = {
         "api_key": api_key,
