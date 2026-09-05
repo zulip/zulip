@@ -996,3 +996,33 @@ export function set_up(): void {
         );
     });
 }
+
+export function update_custom_profile_field_ui(
+    user_id: number,
+    field: {id: number; value: string | null},
+): void {
+    const field_id = field.id;
+    const new_value = field.value ?? "";
+
+    if (user_id === people.my_current_user_id()) {
+        const $personal_input = $(
+            `#profile-settings .custom_user_field[data-field-id="${CSS.escape(field_id.toString())}"] .custom_user_field_value`,
+        );
+        if ($personal_input.length > 0) {
+            $personal_input.val(new_value);
+        }
+    }
+
+    const $manage_user_form = $("#edit-user-form");
+    if ($manage_user_form.length > 0) {
+        const modal_user_id = Number.parseInt($manage_user_form.attr("data-user-id")!, 10);
+        if (modal_user_id === user_id) {
+            const $modal_input = $manage_user_form.find(
+                `.custom_user_field[data-field-id="${CSS.escape(field_id.toString())}"] .custom_user_field_value`,
+            );
+            if ($modal_input.length > 0) {
+                $modal_input.val(new_value);
+            }
+        }
+    }
+}
