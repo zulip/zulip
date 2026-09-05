@@ -95,6 +95,8 @@ mock_esm("../src/message_lists", {
 });
 mock_esm("../src/resize", {
     reset_compose_message_max_height: noop,
+    watch_compose_box_for_virtual_keyboard: noop,
+    unwatch_compose_box_for_virtual_keyboard: noop,
 });
 mock_esm("../src/popovers", {
     hide_all: noop,
