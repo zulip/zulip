@@ -1,5 +1,6 @@
 import time
 from collections import defaultdict
+from collections.abc import Collection
 from dataclasses import asdict, dataclass, field
 
 from django.db import transaction
@@ -16,10 +17,23 @@ from zerver.lib.message import (
 )
 from zerver.lib.queue import mobile_notifications_queue_name, queue_event_on_commit
 from zerver.lib.stream_subscription import get_subscribed_stream_recipient_ids_for_user
+from zerver.lib.streams import user_has_content_access
 from zerver.lib.topic import filter_by_topic_name_via_message
+from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.lib.user_message import DEFAULT_HISTORICAL_FLAGS, create_historical_user_messages
-from zerver.models import Device, Message, PushDeviceToken, Recipient, UserMessage, UserProfile
+from zerver.models import (
+    Device,
+    Message,
+    PushDeviceToken,
+    Recipient,
+    Stream,
+    Subscription,
+    UserMessage,
+    UserProfile,
+)
 from zerver.tornado.django_api import send_event_on_commit, send_event_rollback_unsafe
+
+UNSTAR_MESSAGES_BATCH_SIZE = 1000
 
 
 @dataclass
@@ -152,6 +166,81 @@ def do_mark_stream_messages_as_read(
         increment=min(1, count),
     )
     return count
+
+
+def do_unstar_inaccessible_stream_messages(
+    user_profile: UserProfile, stream_recipient_ids: Collection[int]
+) -> int:
+    count = 0
+    while True:
+        with transaction.atomic(durable=True):
+            streams = list(
+                Stream.objects.filter(
+                    realm=user_profile.realm,
+                    recipient_id__in=stream_recipient_ids,
+                )
+            )
+            subscribed_recipient_ids = set(
+                Subscription.objects.filter(
+                    user_profile=user_profile,
+                    recipient_id__in=stream_recipient_ids,
+                    active=True,
+                ).values_list("recipient_id", flat=True)
+            )
+            user_group_membership_details = UserGroupMembershipDetails(
+                user_recursive_group_ids=None
+            )
+            inaccessible_recipient_ids: list[int] = []
+            for stream in streams:
+                assert stream.recipient_id is not None
+                if not user_has_content_access(
+                    user_profile,
+                    stream,
+                    user_group_membership_details,
+                    is_subscribed=stream.recipient_id in subscribed_recipient_ids,
+                ):
+                    inaccessible_recipient_ids.append(stream.recipient_id)
+
+            if len(inaccessible_recipient_ids) == 0:
+                return count
+
+            query = (
+                UserMessage.select_for_update_query()
+                .filter(
+                    user_profile=user_profile,
+                    message__recipient_id__in=inaccessible_recipient_ids,
+                )
+                .extra(  # noqa: S610
+                    where=[UserMessage.where_starred()],
+                )
+            )
+            user_message_rows = list(
+                query.values_list("id", "message_id")[:UNSTAR_MESSAGES_BATCH_SIZE]
+            )
+
+            if len(user_message_rows) == 0:
+                return count
+
+            user_message_ids = [row[0] for row in user_message_rows]
+            message_ids = [row[1] for row in user_message_rows]
+            updated_count = UserMessage.objects.filter(id__in=user_message_ids).update(
+                flags=F("flags").bitand(~UserMessage.flags.starred),
+            )
+
+            event = {
+                "type": "update_message_flags",
+                "op": "remove",
+                "operation": "remove",
+                "flag": "starred",
+                "messages": message_ids,
+                "all": False,
+            }
+            send_event_on_commit(user_profile.realm, event, [user_profile.id])
+
+            count += updated_count
+
+        if updated_count < UNSTAR_MESSAGES_BATCH_SIZE:
+            return count
 
 
 @transaction.atomic(savepoint=False)
