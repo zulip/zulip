@@ -748,8 +748,16 @@ ul.popover-group-menu-member-list {
     }
 
     #move_messages_count {
-        /* Disabled pending fixes to the logic. */
-        display: none;
+        /* The count describes the control above it, so we pull it up
+           into part of that group's bottom margin, and keep the rest of
+           that spacing below the count. */
+        margin: -0.625em 0 0.625em; /* -10px and 10px at 16px/em */
+
+        /* With no count to show, the paragraph should take up no space
+           at all. */
+        &:empty {
+            margin: 0;
+        }
     }
 
     .topic_stream_edit_header {
