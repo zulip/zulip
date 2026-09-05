@@ -8,9 +8,9 @@ import {compose_call_session_manager} from "./compose_call_session.ts";
 import {get_recipient_label} from "./compose_closed_ui.ts";
 import * as compose_ui from "./compose_ui.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as popup_banners from "./popup_banners.ts";
 import * as rows from "./rows.ts";
 import {current_user, realm} from "./state_data.ts";
-import * as ui_report from "./ui_report.ts";
 import * as util from "./util.ts";
 
 const call_response_schema = z.object({
@@ -108,7 +108,7 @@ export function generate_and_insert_audio_or_video_call_link(
                 ) {
                     compose_banner.show_unknown_zoom_user_error(current_user.delivery_email);
                 } else if (status !== "abort") {
-                    ui_report.generic_embed_error(
+                    popup_banners.open_error_popup_banner(
                         $t_html({defaultMessage: "Failed to create video call."}),
                     );
                 }
@@ -190,7 +190,7 @@ export function generate_and_insert_audio_or_video_call_link(
                 ): void => {
                     const callback = (): void => {
                         if (status !== "abort") {
-                            ui_report.generic_embed_error(
+                            popup_banners.open_error_popup_banner(
                                 $t_html({defaultMessage: "Failed to create video call."}),
                                 2000,
                             );
@@ -225,7 +225,7 @@ export function generate_and_insert_audio_or_video_call_link(
                 ): void => {
                     const callback = (): void => {
                         if (status !== "abort") {
-                            ui_report.generic_embed_error(
+                            popup_banners.open_error_popup_banner(
                                 $t_html({defaultMessage: "Failed to create video call."}),
                                 2000,
                             );
