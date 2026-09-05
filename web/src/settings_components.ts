@@ -1056,6 +1056,9 @@ export function check_realm_default_settings_property_changed(elem: HTMLElement)
         case "user_list_style":
             proposed_val = get_input_element_value(elem, "radio-group");
             break;
+        case "display_offline_users":
+            proposed_val = get_input_element_value(elem, "radio-group");
+            break;
         case "email_notifications_batching_period_seconds":
             assert(elem instanceof HTMLSelectElement);
             proposed_val = get_time_limit_setting_value($(elem), false);

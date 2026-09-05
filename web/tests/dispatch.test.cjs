@@ -1441,6 +1441,17 @@ run_test("user_settings", ({override}) => {
         assert_same(user_settings.user_list_style, 2);
     }
 
+    {
+        const stub = make_stub();
+        event = event_fixtures.user_settings__display_offline_users;
+        override(settings_preferences, "report_user_list_offline_user_style_change", stub.f);
+        override(user_settings, "display_offline_users", 1);
+        override(activity_ui, "build_user_sidebar", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 2);
+        assert_same(user_settings.display_offline_users, 2);
+    }
+
     event = event_fixtures.user_settings__enter_sends;
     override(user_settings, "enter_sends", false);
     dispatch(event);
