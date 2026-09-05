@@ -226,6 +226,7 @@
         color: hsl(200deg 79% 66%);
     }
 
+    #page_loading_indicator,
     #loading_older_messages_indicator,
     #recent_view_loading_messages_indicator {
         & path {

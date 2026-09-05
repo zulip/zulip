@@ -47,11 +47,13 @@ function show_end_of_results_notice(): void {
 }
 
 export function update_top_of_feed_logo(): void {
-    if (message_lists.current?.data.fetch_status.has_found_oldest()) {
-        $(".top-messages-logo").hide();
-    } else {
-        $(".top-messages-logo").show();
-    }
+    // The logo is hidden once we have the narrow's oldest message. Only
+    // the logo itself goes away (see the CSS); the page-load spinner
+    // drawn around it stays until the initial fetch finishes, and the
+    // loading indicator, which is kept on screen for a minimum time,
+    // takes the logo with it when it goes.
+    const found_oldest = message_lists.current?.data.fetch_status.has_found_oldest() ?? false;
+    $(".top-messages-logo").toggleClass("found-oldest", found_oldest);
 }
 
 export function update_top_of_narrow_notices(msg_list: MessageList): void {
@@ -86,7 +88,7 @@ export function hide_top_of_narrow_notices(): void {
     // narrow, whose fetch status we don't know yet. It is hidden again
     // once we learn we have the narrow's oldest message (see
     // update_top_of_feed_logo).
-    $(".top-messages-logo").show();
+    $(".top-messages-logo").toggleClass("found-oldest", false);
     hide_end_of_results_notice();
     hide_history_limit_notice();
 }
