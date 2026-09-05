@@ -272,6 +272,7 @@ export class Typeahead<ItemType extends string | object> {
     hideOnEmptyAfterBackspace: boolean;
     // Used for adding a custom classname to the typeahead link.
     getCustomItemClassname: ((item: ItemType) => string) | undefined;
+    boundScrollHandler: () => void;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -317,6 +318,7 @@ export class Typeahead<ItemType extends string | object> {
         this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
         this.hideOnEmptyAfterBackspace = options.hideOnEmptyAfterBackspace ?? false;
         this.getCustomItemClassname = options.getCustomItemClassname;
+        this.boundScrollHandler = this.scrollHandler.bind(this);
         this.listen();
     }
 
@@ -469,6 +471,7 @@ export class Typeahead<ItemType extends string | object> {
                     requestAnimationFrame(() => {
                         // This detects any overflows by default and adjusts
                         // the placement of typeahead.
+                        this.scrollHandler();
                         void instance.popperInstance?.update();
                     });
 
@@ -684,7 +687,8 @@ export class Typeahead<ItemType extends string | object> {
             .on("click", this.element_click.bind(this))
             .on("focus", this.element_focus.bind(this))
             .on("keydown", this.keydown.bind(this))
-            .on("typeahead.refreshPosition", this.refreshPosition.bind(this));
+            .on("typeahead.refreshPosition", this.refreshPosition.bind(this))
+            .on("scroll", this.boundScrollHandler);
 
         this.$menu
             .on("click", "li", this.click.bind(this))
@@ -698,6 +702,7 @@ export class Typeahead<ItemType extends string | object> {
             });
 
         $(window).on("resize", this.resizeHandler.bind(this));
+        $(window).on("scroll", this.boundScrollHandler);
     }
 
     unlisten(): void {
@@ -707,6 +712,43 @@ export class Typeahead<ItemType extends string | object> {
         for (const event of events) {
             $(this.input_element.$element).off(event);
         }
+        $(window).off("scroll", this.boundScrollHandler);
+    }
+
+    scrollHandler(): void {
+        if (!this.shown) {
+            return;
+        }
+
+        if (this.input_element.type === "textarea") {
+            const element = the(this.input_element.$element);
+            const element_rect = element.getBoundingClientRect();
+            const caret = getCaretCoordinates(element, element.selectionStart);
+            const scrollTop = this.input_element.$element.scrollTop() ?? 0;
+
+            const caret_viewport_top = element_rect.top + caret.top - scrollTop;
+            const caret_viewport_bottom = caret_viewport_top + caret.height;
+
+            const sticky_header_bottom = 64;
+            const visible_top = Math.max(sticky_header_bottom, element_rect.top);
+            const visible_bottom = Math.min(window.innerHeight, element_rect.bottom);
+
+            if (caret_viewport_bottom <= visible_top || caret_viewport_top >= visible_bottom) {
+                this.hide();
+                return;
+            }
+
+            const safe_top = 140;
+            const popper_rect = this.instance?.popper.getBoundingClientRect();
+
+            if (popper_rect !== undefined && popper_rect.top < safe_top) {
+                this.instance?.setProps({placement: "bottom-start"});
+                void this.instance?.popperInstance?.update();
+                return;
+            }
+        }
+
+        void this.instance?.popperInstance?.update();
     }
 
     resizeHandler(): void {
