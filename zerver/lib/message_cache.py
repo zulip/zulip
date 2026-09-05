@@ -563,7 +563,7 @@ class MessageDict:
         obj: dict[str, Any], client_gravatar: bool, can_access_sender: bool = True
     ) -> None:
         if not can_access_sender:
-            obj["avatar_url"] = get_avatar_for_inaccessible_user()
+            obj["avatar_url"] = get_avatar_for_inaccessible_user(medium=False)
             return
 
         sender_id = obj["sender_id"]
