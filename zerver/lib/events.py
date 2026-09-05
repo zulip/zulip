@@ -590,7 +590,7 @@ def fetch_initial_state_data(
 
         state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
         state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
-        state["max_bulk_new_subscription_messages"] = settings.MAX_BULK_NEW_SUBSCRIPTION_MESSAGES
+        state["max_bulk_subscription_messages"] = settings.MAX_BULK_SUBSCRIPTION_MESSAGES
         state["max_topic_length"] = MAX_TOPIC_NAME_LENGTH
         state["max_message_length"] = settings.MAX_MESSAGE_LENGTH
         state["max_channel_folder_name_length"] = ChannelFolder.MAX_NAME_LENGTH
