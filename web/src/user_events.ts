@@ -187,6 +187,21 @@ export const update_person = function update(event: UserUpdate): void {
         user.avatar_url = url;
         user.avatar_version = event.avatar_version;
 
+        if (user.is_bot) {
+            user.avatar_source = event.avatar_source;
+            const $img = $("#bot-avatar-upload-widget .image-block");
+            if ($img.length > 0) {
+                $img.attr(
+                    "src",
+                    event.avatar_url_medium ?? people.medium_avatar_url_for_person(user),
+                );
+                if (event.avatar_source === "U") {
+                    $("#bot-avatar-upload-widget .image-delete-button").show();
+                } else {
+                    $("#bot-avatar-upload-widget .image-delete-button").hide();
+                }
+            }
+        }
         if (people.is_my_user_id(event.user_id)) {
             current_user.avatar_source = event.avatar_source;
             current_user.avatar_url = url;
