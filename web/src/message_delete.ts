@@ -8,6 +8,7 @@ import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import type {Message} from "./message_store.ts";
 import * as people from "./people.ts";
+import * as server_time from "./server_time.ts";
 import * as settings_data from "./settings_data.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -80,7 +81,7 @@ export function get_deletability(message: Message): boolean {
     }
 
     if (
-        realm.realm_message_content_delete_limit_seconds + (message.timestamp - Date.now() / 1000) >
+        realm.realm_message_content_delete_limit_seconds + (message.timestamp - server_time.now()) >
         0
     ) {
         return true;

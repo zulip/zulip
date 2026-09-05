@@ -7,6 +7,7 @@ const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const message_edit = zrequire("message_edit");
+const server_time = zrequire("server_time");
 const {set_current_user, set_realm} = zrequire("state_data");
 
 const is_content_editable = message_edit.is_content_editable;
@@ -303,4 +304,31 @@ run_test("stream_and_topic_exist_in_edit_history", () => {
         ),
         false,
     );
+});
+
+run_test("is_content_editable with the client clock ahead of the server", ({override}) => {
+    override(realm, "realm_allow_message_editing", true);
+    override(realm, "realm_message_content_edit_limit_seconds", 600);
+
+    // This client's clock is an hour ahead of the server's.
+    const server_now = Date.now() / 1000 - 3600;
+    const message = {
+        sent_by_me: true,
+        submessages: [],
+        type: "private",
+        timestamp: server_now - 60,
+    };
+
+    // Measured against the client's clock the message looks more than
+    // an hour old, so the ten minute limit appears to have passed.
+    assert.equal(is_content_editable(message), false);
+
+    try {
+        server_time.update_offset(server_now);
+        // The server would still accept an edit a minute after the
+        // message was sent, and now we agree.
+        assert.equal(is_content_editable(message), true);
+    } finally {
+        server_time.update_offset(Date.now() / 1000);
+    }
 });
