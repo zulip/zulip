@@ -75,8 +75,8 @@ a.no-underline:focus {
 
 .simplebar-track {
     .simplebar-scrollbar::before {
-        background-color: hsl(0deg 0% 0%);
-        box-shadow: 0 0 0 1px hsl(0deg 0% 100% / 33%);
+        background-color: var(--color-background-simplebar-scrollbar);
+        box-shadow: 0 0 0 1px var(--color-box-shadow-simplebar-scrollbar);
     }
 
     &.simplebar-vertical {
