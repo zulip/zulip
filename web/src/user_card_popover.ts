@@ -848,7 +848,7 @@ function register_click_handlers(): void {
         if (is_overlay_hash(current_hash)) {
             user_profile.show_user_profile(user_id);
         } else {
-            browser_history.go_to_location(`user/${user_id}`);
+            browser_history.go_to_location(hash_util.user_profile_url(user_id));
         }
         e.stopPropagation();
         e.preventDefault();
@@ -1004,7 +1004,7 @@ function register_click_handlers(): void {
     $("body").on("click", ".sidebar-popover-manage-user", function () {
         hide_all();
         const user_id = elem_to_user_id($(this).parents("ul"));
-        user_profile.show_user_profile(user_id, "manage-profile-tab");
+        user_profile.show_user_profile(user_id, "manage");
     });
 
     $("body").on("click", ".edit-your-profile", () => {
