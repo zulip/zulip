@@ -460,6 +460,44 @@ run_test("insert_remove", ({mock_template}) => {
     assert.ok($prev_pill_stub.is(":focus"));
 });
 
+run_test("backspace focuses input with focus_input_on_backspace_remove", ({mock_template}) => {
+    mock_template("input_pill.hbs", true, (_data, html) => html);
+
+    const info = set_up();
+    const $container = info.$container;
+    const $pill_input = info.$pill_input;
+    const items = info.items;
+
+    const widget = input_pill.create({
+        ...info.config,
+        focus_input_on_backspace_remove: true,
+    });
+    widget.appendValue("blue,red");
+
+    const pills = widget._get_pills_for_testing();
+    for (const pill of pills) {
+        pill.$element[0].remove = noop;
+    }
+
+    const red_pill = pills.find((pill) => pill.item.color_name === "RED");
+    const $prev_pill_stub = $("<prev-stub>");
+    red_pill.$element.set_prev($prev_pill_stub);
+    red_pill.$element.set_next($("<next-stub>"));
+    $container.set_find_results(".pill:focus", red_pill.$element);
+
+    const key_handler = $container.get_on_handler("keydown", ".pill");
+    key_handler({
+        key: "Backspace",
+        preventDefault: noop,
+    });
+
+    // With the option set, focus moves to the input rather than the
+    // previous pill, even though a previous pill exists.
+    assert.ok($pill_input.is(":focus"));
+    assert.ok(!$prev_pill_stub.is(":focus"));
+    assert.deepEqual(widget.items(), [items.blue]);
+});
+
 run_test("exit button on pill", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (data, html) => {
         assert.equal(typeof data.display_value, "string");
