@@ -366,6 +366,18 @@ export function enable_or_disable_permission_settings_in_edit_panel(
     );
     $default_push_notifications_setting.find("input").prop("disabled", disable_push_notifications);
 
+    const $mandatory_email_notifications_setting = $stream_settings
+        .find("input[name='mandatory_email_notifications']")
+        .closest(".settings-checkbox-wrapper");
+    const disable_mandatory_email_notifications = !current_user.is_admin;
+    $mandatory_email_notifications_setting.toggleClass(
+        "control-label-disabled",
+        disable_mandatory_email_notifications,
+    );
+    $mandatory_email_notifications_setting
+        .find("input")
+        .prop("disabled", disable_mandatory_email_notifications);
+
     if (!sub.can_change_stream_permissions_requiring_metadata_access) {
         settings_components.disable_group_permission_setting($permission_pill_container_elements);
         return;
@@ -463,10 +475,36 @@ export function update_notification_setting_checkbox(
         return;
     }
     const stream_id = Number($stream_row.attr("data-stream-id"));
-    $(`#${CSS.escape(notification_name)}_${CSS.escape(stream_id.toString())}`).prop(
-        "checked",
-        stream_data.receives_notifications(stream_id, notification_name),
+    const $checkbox = $(`#${CSS.escape(notification_name)}_${CSS.escape(stream_id.toString())}`);
+    $checkbox.prop("checked", stream_data.receives_notifications(stream_id, notification_name));
+}
+
+export function update_mandatory_email_notification_checkboxes(sub: StreamSubscription): void {
+    const mandatory_email = sub.mandatory_email_notifications;
+    const $settings_checkbox = $(`#email_notifications_${CSS.escape(sub.stream_id.toString())}`);
+    $settings_checkbox.prop("disabled", mandatory_email);
+    $settings_checkbox
+        .closest("#sub_email_notifications_setting")
+        .toggleClass("control-label-disabled", mandatory_email);
+    if (mandatory_email) {
+        $settings_checkbox.prop("checked", true);
+    }
+
+    const $notifications_table_checkbox = $(
+        `#stream-specific-notify-table tr[data-stream-id="${CSS.escape(sub.stream_id.toString())}"] input.email_notifications`,
     );
+    $notifications_table_checkbox.prop("disabled", mandatory_email);
+    const $wrapper = $notifications_table_checkbox.closest("span");
+    $wrapper.toggleClass("tippy-zulip-tooltip", mandatory_email);
+    if (mandatory_email) {
+        $wrapper.attr(
+            "data-tippy-content",
+            $t({defaultMessage: "Email notifications are required for this channel."}),
+        );
+        $notifications_table_checkbox.prop("checked", true);
+    } else {
+        $wrapper.removeAttr("data-tippy-content");
+    }
 }
 
 export function update_stream_row_in_settings_tab(sub: StreamSubscription): void {

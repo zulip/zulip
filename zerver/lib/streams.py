@@ -87,6 +87,7 @@ class StreamDict(TypedDict, total=False):
 
     name: str
     default_push_notifications: bool
+    mandatory_email_notifications: bool
     description: str
     invite_only: bool
     is_web_public: bool
@@ -372,6 +373,7 @@ def create_stream_if_needed(
     stream_name: str,
     *,
     default_push_notifications: bool = False,
+    mandatory_email_notifications: bool = False,
     invite_only: bool = False,
     is_web_public: bool = False,
     history_public_to_subscribers: bool | None = None,
@@ -444,6 +446,7 @@ def create_stream_if_needed(
             history_public_to_subscribers=history_public_to_subscribers,
             message_retention_days=message_retention_days,
             default_push_notifications=default_push_notifications,
+            mandatory_email_notifications=mandatory_email_notifications,
             folder=folder,
             topics_policy=topics_policy,
             **group_setting_values,
@@ -521,6 +524,7 @@ def create_streams_if_needed(
             stream_description=stream_dict.get("description", ""),
             message_retention_days=stream_dict.get("message_retention_days", None),
             default_push_notifications=stream_dict.get("default_push_notifications", False),
+            mandatory_email_notifications=stream_dict.get("mandatory_email_notifications", False),
             topics_policy=stream_dict.get("topics_policy", None),
             can_add_subscribers_group=stream_dict.get("can_add_subscribers_group", None),
             can_administer_channel_group=stream_dict.get("can_administer_channel_group", None),
@@ -557,6 +561,10 @@ def subscribed_to_stream(user_profile: UserProfile, stream_id: int) -> bool:
         recipient__type=Recipient.STREAM,
         recipient__type_id=stream_id,
     ).exists()
+
+
+def user_can_unsubscribe_from_stream(user_profile: UserProfile, stream: Stream) -> bool:
+    return subscribed_to_stream(user_profile, stream.id)
 
 
 def is_user_in_can_administer_channel_group(
@@ -1906,6 +1914,7 @@ def stream_to_dict(
         creator_id=stream.creator_id,
         date_created=datetime_to_timestamp(stream.date_created),
         default_push_notifications=stream.default_push_notifications,
+        mandatory_email_notifications=stream.mandatory_email_notifications,
         description=stream.description,
         first_message_id=stream.first_message_id,
         folder_id=stream.folder_id,

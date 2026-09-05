@@ -318,6 +318,7 @@ export function stream_settings(sub: StreamSubscription): StreamSetting[] {
         const notification_setting = notification_labels_schema.safeParse(setting);
 
         let is_checked;
+        let is_disabled;
         if (notification_setting.success) {
             // This block ensures we correctly display to users the
             // current state of stream-level notification settings
@@ -326,16 +327,25 @@ export function stream_settings(sub: StreamSubscription): StreamSetting[] {
             is_checked =
                 stream_data.receives_notifications(sub.stream_id, notification_setting.data) &&
                 !realm_setting;
+            is_disabled =
+                realm_setting ||
+                (notification_setting.data === "email_notifications" &&
+                    sub.mandatory_email_notifications);
         } else {
             is_checked = (sub[setting] ?? false) && !realm_setting;
+            is_disabled = realm_setting;
         }
         return {
             name: setting,
             label,
             disabled_realm_setting: realm_setting,
-            is_disabled: realm_setting,
+            is_disabled,
             has_global_notification_setting: notification_setting.success,
             is_checked,
+            mandatory_email_notifications:
+                notification_setting.success &&
+                notification_setting.data === "email_notifications" &&
+                sub.mandatory_email_notifications,
         };
     });
 }
@@ -471,6 +481,13 @@ function get_push_notifications_tooltip(): string | undefined {
     return undefined;
 }
 
+function get_mandatory_email_notifications_tooltip(): string | undefined {
+    if (!current_user.is_admin) {
+        return $t({defaultMessage: "Only organization administrators can edit this setting."});
+    }
+    return undefined;
+}
+
 export function show_settings_for(node: HTMLElement): void {
     // Hide any tooltips or popovers before we rerender / change
     // currently displayed stream settings.
@@ -503,6 +520,8 @@ export function show_settings_for(node: HTMLElement): void {
             realm.realm_org_type === settings_config.all_org_type_values.business.code,
         is_admin: current_user.is_admin,
         push_notifications_tooltip: get_push_notifications_tooltip(),
+        disable_mandatory_email_notifications: !current_user.is_admin,
+        mandatory_email_notifications_tooltip: get_mandatory_email_notifications_tooltip(),
         org_level_message_retention_setting: get_display_text_for_realm_message_retention_setting(),
         group_setting_labels: settings_config.all_group_setting_labels.stream,
         has_billing_access: settings_data.user_has_billing_access(),
