@@ -8022,11 +8022,11 @@ paths:
       tags: ["reminders"]
       summary: Get reminders
       description: |
-        Fetch all [reminders](/help/schedule-a-reminder) for the
+        Fetch all scheduled [reminders](/help/schedule-a-reminder) for the
         current user.
 
         Reminders are messages the user has scheduled to be sent in the
-        future to themself.
+        future that reference another previously sent target message.
 
         **Changes**: New in Zulip 11.0 (feature level 399).
       responses:
@@ -8046,7 +8046,7 @@ paths:
                         type: array
                         description: |
                           Returns all of the current user's undelivered reminders,
-                          ordered by `scheduled_delivery_timestamp` (ascending).
+                          in ascending order by `scheduled_delivery_timestamp`.
                         items:
                           $ref: "#/components/schemas/Reminder"
                     example:
@@ -8059,8 +8059,8 @@ paths:
                               "reminder_id": 27,
                               "to": [6],
                               "type": "private",
-                              "content": "Hi",
-                              "rendered_content": "<p>Hi</p>",
+                              "content": "You requested a reminder for the following message.\n\n```quote\nHi\n```",
+                              "rendered_content": "<p>You requested a reminder for the following message.</p>\n\n<blockquote>\n<p>Hi</p>\n</blockquote>",
                               "scheduled_delivery_timestamp": 1681662420,
                               "failed": false,
                               "reminder_target_message_id": 42,
@@ -8070,9 +8070,11 @@ paths:
     post:
       operationId: create-message-reminder
       tags: ["reminders"]
-      summary: Create a message reminder
+      summary: Create a reminder
       description: |
-        Schedule a reminder to be sent to the current user at the specified time. The reminder will link the relevant message.
+        Schedule a [reminder](/help/schedule-a-reminder) to be sent to the current
+        user at the specified time. The reminder will reference a previously
+        sent message.
 
         **Changes**: New in Zulip 11.0 (feature level 381).
       requestBody:
@@ -8096,10 +8098,15 @@ paths:
                 note:
                   type: string
                   description: |
-                    A note associated with the reminder shown in the Notification Bot message.
+                    A note to include in the reminder message when it is sent, in
+                    [Zulip-flavored Markdown](/help/format-your-message-using-markdown)
+                    format.
 
                     **Changes**: New in Zulip 11.0 (feature level 415).
                   example: "This is a reminder note."
+              required:
+                - message_id
+                - scheduled_delivery_timestamp
       responses:
         "200":
           description: Success.
@@ -8125,8 +8132,8 @@ paths:
       tags: ["reminders"]
       summary: Delete a reminder
       description: |
-        Delete, and therefore cancel sending, a previously [scheduled
-        reminder](/help/schedule-a-reminder).
+        Delete, and therefore cancel sending, a previously scheduled
+        [reminder](/help/schedule-a-reminder) message.
 
         **Changes**: New in Zulip 11.0 (feature level 399).
       parameters:
@@ -8189,9 +8196,8 @@ paths:
                       scheduled_messages:
                         type: array
                         description: |
-                          Returns all of the current user's undelivered scheduled
-                          messages, ordered by `scheduled_delivery_timestamp`
-                          (ascending).
+                          Returns all of the current user's undelivered scheduled messages,
+                          in ascending order by `scheduled_delivery_timestamp`.
                         items:
                           $ref: "#/components/schemas/ScheduledMessage"
                     example:
@@ -30129,13 +30135,13 @@ components:
       type: object
       additionalProperties: false
       description: |
-        Object containing details of the scheduled message.
+        Object containing details of the scheduled reminder message.
       properties:
         reminder_id:
           type: integer
           description: |
             The unique ID of the reminder, which can be used to
-            delete the reminder.
+            [delete the reminder](/api/delete-reminder).
 
             This is different from the unique ID that the message would have
             after being sent.
@@ -30155,13 +30161,16 @@ components:
         content:
           type: string
           description: |
-            The content/body of the reminder, in [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format.
+            The content/body of the reminder message, in
+            [Zulip-flavored Markdown](/help/format-your-message-using-markdown)
+            format.
 
-            See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
+            See [Markdown message formatting](/api/message-formatting) for details on
+            Zulip's HTML format.
         rendered_content:
           type: string
           description: |
-            The content/body of the reminder rendered in HTML.
+            The content/body of the reminder message rendered in HTML.
         scheduled_delivery_timestamp:
           type: integer
           description: |
@@ -30182,7 +30191,8 @@ components:
         reminder_target_message_id:
           type: integer
           description: |
-            The ID of the message that the reminder is created for.
+            The ID of the message that the reminder was created for and will
+            reference.
       required:
         - reminder_id
         - type
