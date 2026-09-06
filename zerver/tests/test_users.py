@@ -19,11 +19,12 @@ from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.custom_profile_fields import do_update_user_custom_profile_data_if_changed
 from zerver.actions.invites import do_create_multiuse_invite_link, do_invite_users
 from zerver.actions.message_send import RecipientInfoResult, get_recipient_info
-from zerver.actions.muted_users import do_mute_user
+from zerver.actions.muted_users import do_mute_user, do_unmute_user
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
 )
+from zerver.actions.streams import do_change_subscription_property
 from zerver.actions.user_settings import (
     bulk_regenerate_api_keys,
     do_change_avatar_fields,
@@ -4378,6 +4379,41 @@ class DeleteUserTest(ZulipTestCase):
         self.assertFalse(UserActivity.objects.filter(user_profile=hamlet).exists())
         self.assertFalse(UserActivityInterval.objects.filter(user_profile=hamlet).exists())
         self.assertFalse(UserPresence.objects.filter(user_profile=hamlet).exists())
+
+    def test_do_delete_user_scrubs_audit_log_extra_data(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        realm = hamlet.realm
+        stream = get_stream("Denmark", realm)
+        self.subscribe(hamlet, "Denmark")
+
+        do_mute_user(hamlet, cordelia)
+        do_unmute_user(MutedUser.objects.get(user_profile=hamlet, muted_user=cordelia))
+        do_change_subscription_property(
+            hamlet,
+            get_subscription("Denmark", hamlet),
+            stream,
+            "color",
+            "#ff0000",
+            acting_user=hamlet,
+        )
+
+        scrubbed_audit_log_ids = {}
+        for event_type in [
+            AuditLogEventType.USER_MUTED,
+            AuditLogEventType.USER_UNMUTED,
+            AuditLogEventType.SUBSCRIPTION_PROPERTY_CHANGED,
+        ]:
+            audit_log = RealmAuditLog.objects.get(modified_user=hamlet, event_type=event_type)
+            self.assertNotEqual(audit_log.extra_data, {})
+            scrubbed_audit_log_ids[event_type] = audit_log.id
+
+        do_delete_user(hamlet, acting_user=None)
+
+        for event_type, audit_log_id in scrubbed_audit_log_ids.items():
+            audit_log = RealmAuditLog.objects.get(id=audit_log_id)
+            self.assertEqual(audit_log.extra_data, {})
+            self.assertTrue(audit_log.scrubbed)
 
 
 class FakeEmailDomainTest(ZulipTestCase):

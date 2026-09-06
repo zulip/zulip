@@ -275,6 +275,9 @@ def do_delete_user_core(
             AuditLogEventType.USER_EMAIL_CHANGED,
             AuditLogEventType.USER_FULL_NAME_CHANGED,
             AuditLogEventType.USER_SETTING_CHANGED,
+            AuditLogEventType.USER_MUTED,
+            AuditLogEventType.USER_UNMUTED,
+            AuditLogEventType.SUBSCRIPTION_PROPERTY_CHANGED,
         ]
         RealmAuditLog.objects.filter(
             modified_user=user_profile, event_type__in=audit_log_event_types_for_scrubbing
