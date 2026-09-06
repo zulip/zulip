@@ -154,13 +154,25 @@ class ZulipMessageHandler(MessageHandler):
 
 
 def parse_listen_address(listen: str) -> tuple[str, int]:
+    host: str | None
+    port: int | None
     if listen.isdigit():
         host, port = None, int(listen)
     else:
         r = SplitResult("", listen, "", "", "")
-        if r.port is None:
+        try:
+            port = r.port
+        except ValueError as e:
+            # An unbracketed IPv6 address is ambiguous with
+            # address:port, and parses as a host and a non-numeric
+            # port.
+            raise RuntimeError(
+                f"{listen!r} is not a valid port, or address:port; IPv6 addresses "
+                "must be enclosed in square brackets."
+            ) from e
+        if port is None:
             raise RuntimeError(f"{listen!r} does not have a valid port number.")
-        host, port = r.hostname, r.port
+        host = r.hostname
     if host is None:
         # With no address specified, bind the IPv6 wildcard address if
         # IPv6 is available, since (with IPV6_V6ONLY disabled, as

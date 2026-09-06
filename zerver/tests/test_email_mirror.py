@@ -2188,6 +2188,15 @@ class TestEmailMirrorServer(ZulipTestCase):
             RuntimeError, "'mail.example.com' does not have a valid port number."
         ):
             parse_listen_address("mail.example.com")
+        with self.assertRaisesRegex(RuntimeError, r"'\[::\]' does not have a valid port number."):
+            parse_listen_address("[::]")
+        for unbracketed in ("::", "::1", "2001:db8::1"):
+            with self.assertRaisesRegex(
+                RuntimeError, "IPv6 addresses must be enclosed in square brackets"
+            ):
+                parse_listen_address(unbracketed)
+        with self.assertRaisesRegex(RuntimeError, "is not a valid port, or address:port"):
+            parse_listen_address(f"{ipv4_wildcard}:99999")
 
     def test_send_postmaster(self) -> None:
         email = EmailMessage()
