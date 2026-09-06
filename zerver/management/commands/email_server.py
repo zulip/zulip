@@ -14,7 +14,10 @@ class Command(BaseCommand):
     @override
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
-            "--listen", help="[Port, or address:port, to bind the SMTP server to]", default="25"
+            "--listen",
+            help="[Port, or address:port, to bind the SMTP server to; "
+            "enclose IPv6 addresses in square brackets]",
+            default="25",
         )
         parser.add_argument(
             "--user",
