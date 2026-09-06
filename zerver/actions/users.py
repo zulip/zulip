@@ -97,8 +97,11 @@ from zerver.models import (
     Service,
     Stream,
     Subscription,
+    UserActivity,
+    UserActivityInterval,
     UserGroup,
     UserGroupMembership,
+    UserPresence,
     UserProfile,
     UserStatus,
     UserTopic,
@@ -241,6 +244,13 @@ def do_delete_user_core(
             (MutedUser, "user_profile"),
             (NavigationView, "user"),
             (UserTopic, "user_profile"),
+            # UserActivity and UserActivityInterval are documented as
+            # org-level analytics data, but a deleted user's per-endpoint
+            # access pattern is still inferable from them, and the data we
+            # consider important for auditing lives in RealmAuditLog.
+            (UserActivity, "user_profile"),
+            (UserActivityInterval, "user_profile"),
+            (UserPresence, "user_profile"),
         ]
         for table, field_name in fks_to_delete:
             table.objects.filter(**{field_name: user_profile}).delete()

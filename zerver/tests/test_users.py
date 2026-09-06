@@ -94,7 +94,10 @@ from zerver.models import (
     ScheduledEmail,
     Stream,
     Subscription,
+    UserActivity,
+    UserActivityInterval,
     UserGroupMembership,
+    UserPresence,
     UserProfile,
     UserStatus,
     UserTopic,
@@ -4350,6 +4353,31 @@ class DeleteUserTest(ZulipTestCase):
         self.assertFalse(MutedUser.objects.filter(user_profile=hamlet).exists())
         self.assertFalse(NavigationView.objects.filter(user=hamlet).exists())
         self.assertFalse(UserTopic.objects.filter(user_profile=hamlet).exists())
+
+    def test_do_delete_user_deletes_activity_and_presence_data(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+        test_client = get_client("test")
+
+        UserActivity.objects.create(
+            user_profile=hamlet,
+            client=test_client,
+            query="/json/users",
+            count=3,
+            last_visit=timezone_now(),
+        )
+        UserActivityInterval.objects.create(
+            user_profile=hamlet,
+            start=timezone_now(),
+            end=timezone_now() + timedelta(minutes=20),
+        )
+        UserPresence.objects.create(user_profile=hamlet, realm=realm)
+
+        do_delete_user(hamlet, acting_user=None)
+
+        self.assertFalse(UserActivity.objects.filter(user_profile=hamlet).exists())
+        self.assertFalse(UserActivityInterval.objects.filter(user_profile=hamlet).exists())
+        self.assertFalse(UserPresence.objects.filter(user_profile=hamlet).exists())
 
 
 class FakeEmailDomainTest(ZulipTestCase):
