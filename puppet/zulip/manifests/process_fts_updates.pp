@@ -26,13 +26,14 @@ class zulip::process_fts_updates {
     source => 'puppet:///modules/zulip/postgresql/process_fts_updates',
   }
 
+  $supervisor_output = zulipconf('application_server', 'supervisor_output', 'file')
   file { "${zulip::common::supervisor_conf_dir}/zulip_db.conf":
     ensure  => file,
     require => [Package[supervisor], Package['python3-psycopg2']],
     owner   => 'root',
     group   => 'root',
     mode    => '0644',
-    source  => 'puppet:///modules/zulip/supervisor/conf.d/zulip_db.conf',
+    content => template('zulip/supervisor/zulip_db.conf.erb'),
     notify  => Service[$zulip::common::supervisor_service],
   }
 }

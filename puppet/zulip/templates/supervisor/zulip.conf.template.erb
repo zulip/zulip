@@ -17,9 +17,14 @@ stopsignal=INT                 ; signal used to kill process (default TERM)
 stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+<% if @supervisor_output == 'syslog' -%>
+stdout_syslog=true
+stdout_logfile=NONE
+<% else -%>
 stdout_logfile=/var/log/zulip/django.log        ; stdout log path, NONE for none; default AUTO
 stdout_logfile_maxbytes=100MB   ; max # logfile bytes b4 rotation (default 50MB)
 stdout_logfile_backups=10     ; # of stdout logfile backups (default 10)
+<% end -%>
 stopasgroup=true              ; Without this, we leak processes every restart
 killasgroup=true              ; Without this, we leak processes every restart
 directory=/home/zulip/deployments/current/
@@ -34,9 +39,14 @@ stopsignal=INT                 ; signal used to kill process (default TERM)
 stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+<% if @supervisor_output == 'syslog' -%>
+stdout_syslog=true
+stdout_logfile=NONE
+<% else -%>
 stdout_logfile=/var/log/zulip/tusd.log        ; stdout log path, NONE for none; default AUTO
 stdout_logfile_maxbytes=0     ; Rotated by logrotate
 stdout_logfile_backups=0
+<% end -%>
 stopasgroup=true              ; Without this, we leak processes every restart
 killasgroup=true              ; Without this, we leak processes every restart
 directory=/home/zulip/deployments/current/
@@ -53,9 +63,14 @@ stopsignal=TERM                 ; signal used to kill process (default TERM)
 stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+<% if @supervisor_output == 'syslog' -%>
+stdout_syslog=true
+stdout_logfile=NONE
+<% else -%>
 stdout_logfile=/var/log/zulip/tornado-98%(process_num)02d.log         ; stdout log path, NONE for none; default AUTO
 stdout_logfile_maxbytes=0     ; Rotated by logrotate
 stdout_logfile_backups=0
+<% end -%>
 directory=/home/zulip/deployments/current/
 numprocs=<%= @tornado_ports.length %>
 <% else -%>
@@ -69,9 +84,14 @@ stopsignal=TERM                 ; signal used to kill process (default TERM)
 stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+<% if @supervisor_output == 'syslog' -%>
+stdout_syslog=true
+stdout_logfile=NONE
+<% else -%>
 stdout_logfile=/var/log/zulip/tornado.log         ; stdout log path, NONE for none; default AUTO
 stdout_logfile_maxbytes=0     ; Rotated by logrotate
 stdout_logfile_backups=0
+<% end -%>
 directory=/home/zulip/deployments/current/
 <% end -%>
 
@@ -93,12 +113,22 @@ directory=/home/zulip/deployments/current/
 <%- if numprocs > 1 -%>
 process_name=zulip_events_<%= queue %>_<%= term %>%(process_num)s
 command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --queue_name=<%= queue %> --skip-checks --worker_num %(process_num)s
+<% if @supervisor_output == 'syslog' -%>
+stdout_syslog=true
+stdout_logfile=NONE
+<% else -%>
 stdout_logfile=/var/log/zulip/events_<%= queue %>_<%= term %>%(process_num)s.log         ; stdout log path, NONE for none; default AUTO
+<% end -%>
 numprocs=<%= numprocs %>
 numprocs_start=1
 <% else -%>
 command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --queue_name=<%= queue %> --skip-checks
+<% if @supervisor_output == 'syslog' -%>
+stdout_syslog=true
+stdout_logfile=NONE
+<% else -%>
 stdout_logfile=/var/log/zulip/events_<%= queue %>.log         ; stdout log path, NONE for none; default AUTO
+<% end -%>
 <%end -%>
 environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"<%= @ca_bundle %>
 priority=300                   ; the relative start priority (default 999)
@@ -108,8 +138,10 @@ stopsignal=TERM                 ; signal used to kill process (default TERM)
 stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+<% if @supervisor_output != 'syslog' -%>
 stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
 stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
+<% end -%>
 directory=/home/zulip/deployments/current/
 <% end -%>
 <% else %>
@@ -123,9 +155,14 @@ stopsignal=TERM                 ; signal used to kill process (default TERM)
 stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+<% if @supervisor_output == 'syslog' -%>
+stdout_syslog=true
+stdout_logfile=NONE
+<% else -%>
 stdout_logfile=/var/log/zulip/events.log         ; stdout log path, NONE for none; default AUTO
 stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
 stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
+<% end -%>
 directory=/home/zulip/deployments/current/
 stopasgroup=true              ; Without this, we leak processes every restart
 killasgroup=true              ; Without this, we leak processes every restart
@@ -154,9 +191,14 @@ stopsignal=TERM                 ; signal used to kill process (default TERM)
 stopwaitsecs=30                ; max num secs to wait b4 SIGKILL (default 10)
 user=zulip                    ; setuid to this UNIX account to run the program
 redirect_stderr=true           ; redirect proc stderr to stdout (default false)
+<% if @supervisor_output == 'syslog' -%>
+stdout_syslog=true
+stdout_logfile=NONE
+<% else -%>
 stdout_logfile=/var/log/zulip/katex.log         ; stdout log path, NONE for none; default AUTO
 stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
 stdout_logfile_backups=3     ; # of stdout logfile backups (default 10)
+<% end -%>
 directory=/home/zulip/deployments/current/
 <% end %>
 
