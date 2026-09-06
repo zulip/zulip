@@ -1,5 +1,7 @@
 [program:zulip-email-server]
-command=nice -n15 /home/zulip/deployments/current/manage.py email_server --user zulip --group zulip<% if @listen != '' %> --listen <%= @listen %><% end %>
+<%# supervisor expands the command as a format string, so percent signs
+    in the address (e.g. an IPv6 zone id) must be doubled. -%>
+command=nice -n15 /home/zulip/deployments/current/manage.py email_server --user zulip --group zulip<% if @listen != '' %> --listen <%= @listen.gsub('%', '%%') %><% end %>
 environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"
 priority=350                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
