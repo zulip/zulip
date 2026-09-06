@@ -206,6 +206,13 @@ class PermissionDroppingUnthreadedController(UnthreadedController):  # nocoverag
             # specific address.
             server_socket.setsockopt(socket.IPPROTO_IPV6, socket.IPV6_V6ONLY, 0)
         server_socket.bind(sockaddr)
+        # Log the address which was actually bound; if the requested
+        # address was a hostname with more than one address, only the
+        # first one that the resolver returned is used.
+        bound_host, bound_port = server_socket.getsockname()[:2]
+        if family == socket.AF_INET6:
+            bound_host = f"[{bound_host}]"
+        logger.info("Listening on %s:%d", bound_host, bound_port)
         if os.geteuid() == 0:
             assert self.user_id is not None
             assert self.group_id is not None
@@ -233,7 +240,7 @@ class PermissionDroppingUnthreadedController(UnthreadedController):  # nocoverag
 def run_smtp_server(
     user: str | None, group: str | None, host: str, port: int, tls_context: SSLContext | None
 ) -> None:  # nocoverage
-    logger.info("Listening on %s:%d", f"[{host}]" if ":" in host else host, port)
+    logger.info("Starting SMTP server on %s:%d", f"[{host}]" if ":" in host else host, port)
     server = PermissionDroppingUnthreadedController(
         user=user,
         group=group,
