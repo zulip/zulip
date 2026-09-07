@@ -5,6 +5,18 @@ the Zulip codebase. These guidelines are designed to produce
 contributions that meet the same high standards we expect from human
 contributors.
 
+When doing any work with AI assistants, it is crucial to follow our
+AI use policy and guidelines (the "AI use policy and guidelines"
+section in `CONTRIBUTING.md`). In particular:
+
+> **Do not submit an AI-generated PR you haven't personally
+> understood and tested**, as this wastes maintainers' time. PRs that
+> appear to violate this guideline will be closed without review.
+
+> **Do not post AI-generated messages** in the [Zulip development
+> community](https://zulip.com/development-community/) -- we want to
+> read your own genuine expression of your thoughts.
+
 Claude Code automatically uses `.claude/rules/` and `.claude/skills/`.
 If you are a different agent, read the files in these folders to see
 the rest of the agent instructions and when they're relevant. Rules
