@@ -1,9 +1,9 @@
 import assert from "minimalistic-assert";
 
 import {$t} from "./i18n.ts";
+import * as settings_data from "./settings_data.ts";
 import * as thumbnail from "./thumbnail.ts";
 import {user_settings} from "./user_settings.ts";
-import * as util from "./util.ts";
 
 let inertDocument: Document | undefined;
 
@@ -249,14 +249,7 @@ export function postprocess_content(html: string): string {
             ) {
                 let thumbnail_name = thumbnail.preferred_format.name;
                 if (message_media_image.getAttribute("data-animated") === "true") {
-                    if (
-                        user_settings.web_animate_image_previews === "always" ||
-                        // Treat on_hover as "always" on mobile web, where
-                        // hovering is impossible and there's much less on
-                        // the screen.
-                        (user_settings.web_animate_image_previews === "on_hover" &&
-                            util.is_mobile())
-                    ) {
+                    if (settings_data.effective_web_animate_image_previews() === "always") {
                         thumbnail_name = thumbnail.animated_format.name;
                     } else {
                         // If we're showing a still thumbnail, show a play
