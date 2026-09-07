@@ -2,6 +2,7 @@ import glob
 import os
 import subprocess
 import sys
+import xml.etree.ElementTree as ET
 from argparse import ArgumentParser
 from collections.abc import Iterable
 
@@ -116,6 +117,33 @@ def find_js_test_files(test_dir: str, files: Iterable[str]) -> list[str]:
         )
 
     return test_files
+
+
+def write_junit_report(test_results: Iterable[tuple[str, int, float]], path: str) -> None:
+    """Write one JUnit testcase for each Puppeteer test file that ran."""
+    results = list(test_results)
+    failures = [result for result in results if result[1] != 0]
+    suite = ET.Element(
+        "testsuite",
+        name="Puppeteer frontend tests",
+        tests=str(len(results)),
+        failures=str(len(failures)),
+        time=f"{sum(result[2] for result in results):.3f}",
+    )
+    for test_file, return_code, duration in results:
+        testcase = ET.SubElement(
+            suite,
+            "testcase",
+            classname="Puppeteer",
+            name=os.path.basename(test_file),
+            time=f"{duration:.3f}",
+        )
+        if return_code != 0:
+            failure = ET.SubElement(testcase, "failure", message=f"exit code {return_code}")
+            failure.text = f"Puppeteer test exited with code {return_code}."
+
+    ET.indent(suite, space="  ")
+    ET.ElementTree(suite).write(path, encoding="utf-8", xml_declaration=True)
 
 
 def prepare_puppeteer_run(is_firefox: bool = False) -> None:

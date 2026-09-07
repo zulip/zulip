@@ -21,6 +21,7 @@ defaults:
 
 permissions:
   contents: read
+  checks: write
 
 jobs:
   tests:
@@ -175,7 +176,15 @@ jobs:
         if: ${{ matrix.include_frontend_tests }}
         run: |
           source tools/ci/activate-venv
-          ./tools/test-js-with-puppeteer
+          ./tools/test-js-with-puppeteer --xml-report
+
+      - name: Publish Puppeteer test report
+        if: ${{ always() && matrix.include_frontend_tests }}
+        uses: dorny/test-reporter@a6ddd83ac95ff4586f5d3aceeb314d9a1841db95 # v3.0.0
+        with:
+          name: Puppeteer tests
+          path: var/puppeteer/junit.xml
+          reporter: java-junit
 
       - name: Check pnpm dedupe
         if: ${{ matrix.include_frontend_tests }}

@@ -4,6 +4,7 @@ import os
 import shlex
 import subprocess
 import sys
+import time
 
 import requests
 
@@ -46,6 +47,7 @@ from tools.lib.test_script import (
     assert_provisioning_status_ok,
     find_js_test_files,
     prepare_puppeteer_run,
+    write_junit_report,
 )
 from tools.lib.test_server import test_server_running
 
@@ -55,6 +57,7 @@ parser.add_argument("--interactive", action="store_true", help="Run tests intera
 add_provision_check_override_param(parser)
 parser.add_argument("--firefox", action="store_true", help="Run tests with firefox.")
 parser.add_argument("--loop", nargs="?", type=int, default=1)
+parser.add_argument("--xml-report", action="store_true", help="Write a JUnit XML report")
 parser.add_argument(
     "tests", nargs=argparse.REMAINDER, help="Specific tests to run; by default, runs all tests"
 )
@@ -88,11 +91,14 @@ def run_tests(files: Iterable[str], external_host: str, loop: int = 1) -> None:
     test_dir = os.path.join(ZULIP_PATH, "web/e2e-tests")
     test_files = find_js_test_files(test_dir, files)
     total_tests = len(test_files)
+    test_results: list[tuple[str, int, float]] = []
 
     def run_tests(test_number: int = 0) -> tuple[int, int]:
         current_test_num = test_number
         for test_file in test_files[test_number:]:
+            start_time = time.monotonic()
             return_code = run_single_test(test_file, current_test_num + 1, total_tests)
+            test_results.append((test_file, return_code, time.monotonic() - start_time))
             if return_code != 0:
                 return return_code, current_test_num
             current_test_num += 1
@@ -122,6 +128,9 @@ def run_tests(files: Iterable[str], external_host: str, loop: int = 1) -> None:
                     print(f"{OKGREEN}All tests passed!{ENDC}")
                 else:
                     break
+
+    if options.xml_report:
+        write_junit_report(test_results, "var/puppeteer/junit.xml")
 
     if ret != 0:
         failed_test_file_name = os.path.basename(test_files[current_test_num])
