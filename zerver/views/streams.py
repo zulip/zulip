@@ -1363,7 +1363,11 @@ class SubscriptionPropertyChangeRequest(BaseModel):
         }
 
         if self.property == "color":
-            self.value = check_color("color", self.value)
+            try:
+                self.value = check_color("color", self.value)
+            except ValueError as e:
+                # Raise JsonableError on validation failure to avoid 500.
+                raise JsonableError(str(e))
         elif self.property in boolean_properties:
             if not isinstance(self.value, bool):
                 raise JsonableError(_("{property} is not a boolean").format(property=self.property))
