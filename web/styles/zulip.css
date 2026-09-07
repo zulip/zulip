@@ -1235,12 +1235,12 @@ nav {
     font-family: "Source Code Pro", monospace;
 }
 
-#loading_older_messages_indicator,
+#top-of-feed-loading-indicator,
 #loading_more_indicator {
     margin: 10px;
 }
 
-#loading_older_messages_indicator path {
+#top-of-feed-loading-indicator path {
     fill: var(--color-zulip-logo-loading);
 }
 
@@ -1262,25 +1262,6 @@ nav {
     position: relative;
     left: -1.3571em; /* 50% of 38px = 19px at 14px/em */
     top: -3.0714em; /* -43px at 14px/em */
-    z-index: 1;
-    border-radius: 6px;
-}
-
-#page_loading_indicator {
-    margin: 10px auto;
-}
-
-#page_loading_indicator_box_container {
-    position: absolute;
-    left: 50%;
-}
-
-#page_loading_indicator_box {
-    position: relative;
-    /* 50% of 38px = 19px at 14px/1em */
-    left: -1.3571em;
-    /* -43px at 14px/1em */
-    top: -3.0714em;
     z-index: 1;
     border-radius: 6px;
 }
