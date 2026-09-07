@@ -196,16 +196,10 @@ a.help_link_widget {
 }
 
 .play_notification_sound {
-    .notification-sound-icon {
+    padding: 0;
+
+    .zulip-icon {
         font-size: 1.4857em; /* 20.8px at 14px / em */
-        /* Visually center with chevron in select
-        by setting the line-height equal to the height
-        of select which is equal to - 1.4em + 8px (4px
-        each for top and bottom paddings) + 2px (1px each
-        for top and bottom borders). */
-        line-height: calc(1.4 * var(--base-font-size-px) + 10px);
-        cursor: pointer;
-        vertical-align: middle;
     }
 }
 
