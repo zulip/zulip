@@ -10,8 +10,8 @@ export let page_load_time: number | undefined;
 $(() => {
     page_load_time = Date.now();
 
-    // Display loading indicator.  This disappears after the first
-    // get_events completes.
+    // Display loading indicator. This disappears when the initial
+    // message fetch completes.
     loading.make_indicator($("#page_loading_indicator"), {
         abs_positioned: true,
     });
