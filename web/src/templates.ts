@@ -240,9 +240,16 @@ Handlebars.registerHelper("tr", function (this: Context, options: Handlebars.Hel
     return new Handlebars.SafeString(result);
 });
 
+const rendered_markdown_options_schema = z.object({
+    honor_emoji_animation_setting: z.optional(z.boolean()),
+});
+
 Handlebars.registerHelper(
     "rendered_markdown",
-    (content: string) => new Handlebars.SafeString(postprocess_content(content)),
+    (content: string, options: Handlebars.HelperOptions) =>
+        new Handlebars.SafeString(
+            postprocess_content(content, rendered_markdown_options_schema.parse(options.hash)),
+        ),
 );
 
 Handlebars.registerHelper("numberFormat", (number: number) => number.toLocaleString());

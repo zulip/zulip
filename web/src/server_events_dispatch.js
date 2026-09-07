@@ -36,6 +36,7 @@ import * as message_live_update from "./message_live_update.ts";
 import * as message_reminder from "./message_reminder.ts";
 import * as message_store from "./message_store.ts";
 import * as message_view from "./message_view.ts";
+import * as message_view_header from "./message_view_header.ts";
 import * as muted_users_ui from "./muted_users_ui.ts";
 import * as narrow_title from "./narrow_title.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
@@ -1065,6 +1066,7 @@ export function dispatch_normal_event(event) {
                     pm_list.update_private_messages();
                     inbox_ui.complete_rerender();
                     recent_view_ui.complete_rerender();
+                    message_view_header.render_title_area();
                     break;
                 case "web_stream_unreads_count_display_policy":
                     stream_list.build_stream_list(true);
