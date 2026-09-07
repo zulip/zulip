@@ -22,7 +22,3 @@ Before finalizing, verify:
 - [ ] Refactoring is complete (`git grep` for remaining occurrences)
 - [ ] Security audit of changes. Always check for XSS in UI changes
       and for incorrect access control in server changes.
-
-Always output a recommend pull request summary+description that
-follow's Zulip's guidelines once you finish preparing a series of
-commits.
