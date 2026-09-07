@@ -11,6 +11,7 @@ import * as muted_users from "./muted_users.ts";
 import * as people from "./people.ts";
 import * as stream_data from "./stream_data.ts";
 import {topic_link_schema} from "./types.ts";
+import type {EmojiAnimationSetting} from "./user_settings.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
 
@@ -159,12 +160,15 @@ export type MessageCleanReaction = {
     class: string;
     count: number;
     emoji_alt_code: boolean;
+    emoji_animation_setting: EmojiAnimationSetting;
     emoji_code: string;
     emoji_name: string;
     is_realm_emoji: boolean;
     label: string;
     local_id: string;
     reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
+    still_url?: string | null;
+    url?: string;
     user_ids: number[];
     vote_text: string;
 };
