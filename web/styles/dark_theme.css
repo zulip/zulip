@@ -226,7 +226,7 @@
         color: hsl(200deg 79% 66%);
     }
 
-    #loading_older_messages_indicator,
+    #top_of_feed_loading_indicator,
     #recent_view_loading_messages_indicator {
         & path {
             fill: hsl(0deg 0% 100%);
