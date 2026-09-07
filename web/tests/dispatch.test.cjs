@@ -49,6 +49,7 @@ const message_events = mock_esm("../src/message_events", {
     update_current_view_for_topic_visibility: noop,
 });
 const message_lists = mock_esm("../src/message_lists");
+const message_view_header = mock_esm("../src/message_view_header");
 const user_topics_ui = mock_esm("../src/user_topics_ui");
 const muted_users_ui = mock_esm("../src/muted_users_ui");
 const narrow_title = mock_esm("../src/narrow_title");
@@ -1342,6 +1343,7 @@ run_test("user_settings", ({override}) => {
 
     override(activity_ui, "build_user_sidebar", noop);
     override(pm_list, "update_private_messages", noop);
+    override(message_view_header, "render_title_area", noop);
 
     {
         event = event_fixtures.user_settings__web_animate_image_previews_always;

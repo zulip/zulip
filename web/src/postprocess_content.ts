@@ -1,5 +1,6 @@
 import assert from "minimalistic-assert";
 
+import * as emoji from "./emoji.ts";
 import {$t} from "./i18n.ts";
 import * as settings_data from "./settings_data.ts";
 import * as thumbnail from "./thumbnail.ts";
@@ -7,12 +8,20 @@ import {user_settings} from "./user_settings.ts";
 
 let inertDocument: Document | undefined;
 
-export function postprocess_content(html: string): string {
+export function postprocess_content(
+    html: string,
+    {
+        honor_emoji_animation_setting = true,
+    }: {honor_emoji_animation_setting?: boolean | undefined} = {},
+): string {
     inertDocument ??= new DOMParser().parseFromString("", "text/html");
     const template = inertDocument.createElement("template");
     template.innerHTML = html;
 
     process_emoji_only_message(template.content);
+    if (honor_emoji_animation_setting) {
+        apply_emoji_animation_setting(template.content);
+    }
 
     for (const ol of template.content.querySelectorAll("ol")) {
         const list_start = Number(ol.getAttribute("start") ?? 1);
@@ -472,4 +481,47 @@ function process_emoji_only_message(content: DocumentFragment): void {
     // so we add .emoji-only to the paragraph element for styling
     // the emoji in CSS.
     content.firstElementChild?.classList.add("emoji-only");
+}
+
+// Honor the user's web_animate_image_previews setting for animated
+// custom emoji.
+//
+// The server renders every custom emoji as a bare
+// `<img class="emoji" src="...">` pointing at its animated URL, and
+// tells us nothing about whether the emoji is animated. So we recognize
+// the animated ones by looking their source URL up among the realm's
+// emojis; that table includes deactivated emojis, so emojis in old
+// content resolve too.
+function apply_emoji_animation_setting(content: DocumentFragment): void {
+    const animation_setting = settings_data.effective_web_animate_image_previews();
+    if (animation_setting === "always") {
+        // The animated URL is already the `src`, which is also how this
+        // resolves on mobile web, where hovering is impossible.
+        return;
+    }
+
+    const stamp_hover_urls = animation_setting === "on_hover";
+    for (const img of content.querySelectorAll("img.emoji")) {
+        const src = img.getAttribute("src");
+        if (src === null) {
+            continue;
+        }
+
+        const emoji_obj = emoji.all_realm_emojis_by_url.get(src);
+        if (emoji_obj === undefined) {
+            continue;
+        }
+        const {still_url} = emoji_obj;
+        if (still_url === null) {
+            // Not an animated emoji, so it has no still frame.
+            continue;
+        }
+
+        if (stamp_hover_urls) {
+            // emoji_hover_animation.ts drives its swap off these.
+            img.setAttribute("data-still-url", still_url);
+            img.setAttribute("data-animated-url", emoji_obj.emoji_url);
+        }
+        img.setAttribute("src", still_url);
+    }
 }

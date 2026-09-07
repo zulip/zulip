@@ -1742,7 +1742,11 @@ export function render_and_show_preview(
             rendered_preview_html = rendered_content;
         }
 
-        $preview_content_box.html(postprocess_content(rendered_preview_html));
+        $preview_content_box.html(
+            postprocess_content(rendered_preview_html, {
+                honor_emoji_animation_setting: false,
+            }),
+        );
         rendered_markdown.update_elements($preview_content_box);
 
         // Check for thumbnail loading placeholders and start polling
