@@ -145,3 +145,26 @@ run_test("is_emoji_present_in_text", () => {
         true,
     );
 });
+
+run_test("custom emoji always animate", () => {
+    // The picker shows an emoji the way recipients will see it, not
+    // according to the user's own animation setting.
+    const emoji_dict = {
+        name: "dance",
+        display_name: "dance",
+        has_reacted: false,
+        is_realm_emoji: true,
+        url: "/animated.gif",
+        still_url: "/still.png",
+    };
+    const render_emoji_popover_emoji = require("../templates/popovers/emoji/emoji_popover_emoji.hbs");
+    const render_emoji_showcase = require("../templates/popovers/emoji/emoji_showcase.hbs");
+
+    for (const html of [
+        render_emoji_popover_emoji({emoji_dict, type: "emoji", section: 0, index: 0}),
+        render_emoji_showcase({emoji_dict}),
+    ]) {
+        assert.ok(html.includes('src="/animated.gif"'));
+        assert.ok(!html.includes("/still.png"));
+    }
+});
