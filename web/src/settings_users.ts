@@ -87,10 +87,21 @@ const imported_section: UserSettingsSection = {
     list_widget: undefined,
 };
 
+// Users with no presence data are shown with their join date, so
+// sort by that date to keep the column order consistent with its
+// displayed values.
+function get_last_active_date(user: User): Date | undefined {
+    const last_active_date = presence.last_active_date(user.user_id);
+    if (!last_active_date && presence_data_fetched) {
+        return new Date(user.date_joined);
+    }
+    return last_active_date;
+}
+
 function sort_last_active(a: User, b: User): number {
     return util.compare_a_b(
-        presence.last_active_date(a.user_id) ?? 0,
-        presence.last_active_date(b.user_id) ?? 0,
+        get_last_active_date(a)?.getTime() ?? 0,
+        get_last_active_date(b)?.getTime() ?? 0,
     );
 }
 
@@ -378,10 +389,7 @@ function reset_scrollbar($sel: JQuery): () => void {
 }
 
 function get_last_active(user: User): string {
-    const last_active_date = presence.last_active_date(user.user_id);
-    if (!last_active_date && presence_data_fetched) {
-        return timerender.render_now(new Date(user.date_joined)).time_str;
-    }
+    const last_active_date = get_last_active_date(user);
     if (!last_active_date) {
         setTimeout(() => {
             loading.make_indicator(
