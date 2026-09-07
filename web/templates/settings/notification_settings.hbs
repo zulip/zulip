@@ -185,9 +185,9 @@
                         <option value="{{ this }}">{{ this }}</option>
                     {{/each}}
                 </select>
-                <span class="play_notification_sound">
-                    <i class="notification-sound-icon zulip-icon zulip-icon-play-circle" aria-label="{{t 'Play sound' }}"></i>
-                </span>
+                <button type="button" class="play_notification_sound" aria-label="{{t 'Play sound' }}">
+                    <i class="notification-sound-icon zulip-icon zulip-icon-play-circle" aria-hidden="true"></i>
+                </button>
             </div>
         </div>
 

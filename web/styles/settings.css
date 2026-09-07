@@ -191,6 +191,12 @@ a.help_link_widget {
 
 .setting_notification_sound,
 .play_notification_sound {
+    /* Reset the button chrome; this control is just its icon. */
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    color: inherit;
     margin-right: 4px;
 }
 
@@ -203,7 +209,6 @@ a.help_link_widget {
         each for top and bottom paddings) + 2px (1px each
         for top and bottom borders). */
         line-height: calc(1.4 * var(--base-font-size-px) + 10px);
-        cursor: pointer;
         vertical-align: middle;
     }
 }
