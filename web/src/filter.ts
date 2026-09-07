@@ -1193,9 +1193,14 @@ export class Filter {
         return Number.parseInt(term.operand, 10);
     }
 
-    has_negated_operand(operator: string, operand: string): boolean {
+    has_negated_operand(operator: string, operand: string | number | number[]): boolean {
         return this._terms.some(
-            (term) => term.negated && term.operator === operator && term.operand === operand,
+            (term) =>
+                term.negated &&
+                term.operator === operator &&
+                (Array.isArray(term.operand) && Array.isArray(operand)
+                    ? util.array_compare(term.operand, operand)
+                    : term.operand === operand),
         );
     }
 

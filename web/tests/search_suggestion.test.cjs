@@ -592,6 +592,7 @@ test("check_is_suggestions", ({override}) => {
         "-is:unread",
         "-is:muted",
         "-is:resolved",
+        "-has:image",
     ];
     assert.deepEqual(suggestions, expected);
 
@@ -1157,7 +1158,14 @@ test("operator_suggestions", ({override}) => {
 
     query = "-s";
     suggestions = get_suggestions(query);
-    expected = ["-s", "-sender:", "-channels:", "-channel:", `-sender:${me.user_id}`];
+    expected = [
+        "-s",
+        "-sender:",
+        "-channels:",
+        "-channel:",
+        "-is:starred",
+        `-sender:${me.user_id}`,
+    ];
     assert.deepEqual(suggestions, expected);
 
     stream_data.add_sub_for_tests(
@@ -1172,6 +1180,7 @@ test("operator_suggestions", ({override}) => {
     expected = [
         "channel:66 is:alerted -f",
         "channel:66 is:alerted -sender:",
+        "channel:66 is:alerted -is:followed",
         `channel:66 is:alerted -sender:${me.user_id}`,
     ];
     assert.deepEqual(suggestions, expected);
@@ -1242,4 +1251,305 @@ test("empty query suggestions in an inaccessible narrow", ({override}) => {
     ];
     suggestions = search.get_suggestions([], [], true);
     assert.deepEqual(suggestions, search.get_suggestions([], [], false));
+});
+
+test("negated filters are not suggested again", () => {
+    // A filter that's already in the search bar isn't suggested
+    // again, and that holds when the existing term is negated.
+    let query = "-has:link -has:";
+    let suggestions = get_suggestions(query);
+    let expected = ["-has:link -has:image", "-has:link -has:attachment", "-has:link -has:reaction"];
+    assert.deepEqual(suggestions, expected);
+
+    query = "-channels:public -channels:";
+    suggestions = get_suggestions(query);
+    expected = ["-channels:public -channels:archived"];
+    assert.deepEqual(suggestions, expected);
+
+    // Suggesting the non-negated filter would contradict the
+    // existing term, so it's left out too.
+    query = "-has:link has:";
+    suggestions = get_suggestions(query);
+    expected = ["-has:link has:image", "-has:link has:attachment", "-has:link has:reaction"];
+    assert.deepEqual(suggestions, expected);
+
+    query = "-is:starred is:";
+    suggestions = get_suggestions(query);
+    expected = [
+        "-is:starred is:dm",
+        "-is:starred is:mentioned",
+        "-is:starred is:followed",
+        "-is:starred is:alerted",
+        "-is:starred is:unread",
+        "-is:starred is:muted",
+        "-is:starred is:resolved",
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    // `-is:muted` is an alias of `in:home`, so `-in:home` blocks
+    // both forms of the `is:muted` suggestion.
+    query = "-in:home is:";
+    suggestions = get_suggestions(query);
+    expected = [
+        "-in:home is:dm",
+        "-in:home is:starred",
+        "-in:home is:mentioned",
+        "-in:home is:followed",
+        "-in:home is:alerted",
+        "-in:home is:unread",
+        "-in:home is:resolved",
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    query = "-in:home -is:";
+    suggestions = get_suggestions(query);
+    expected = [
+        "-in:home -is:dm",
+        "-in:home -is:starred",
+        "-in:home -is:mentioned",
+        "-in:home -is:followed",
+        "-in:home -is:alerted",
+        "-in:home -is:unread",
+        "-in:home -is:resolved",
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    // The same holds for suggestions built per operand: a channel
+    // that's already excluded isn't offered again, while other
+    // channels still are.
+    const devel_id = new_stream_id();
+    const office_id = new_stream_id();
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: devel_id, name: "devel", subscribed: true}),
+    );
+    stream_data.add_sub_for_tests(
+        make_stream({stream_id: office_id, name: "office", subscribed: true}),
+    );
+
+    query = `-channel:${devel_id} channel:`;
+    suggestions = get_suggestions(query);
+    expected = [`-channel:${devel_id} channel:${office_id}`];
+    assert.deepEqual(suggestions, expected);
+
+    query = `-channel:${devel_id} -channel:`;
+    suggestions = get_suggestions(query);
+    expected = [`-channel:${devel_id} -channel:${office_id}`];
+    assert.deepEqual(suggestions, expected);
+
+    // "-sender:me" blocks suggesting yourself again, both from the
+    // sent-by-me shortcut and from the person suggestions.
+    query = "-sender:me sender:";
+    suggestions = get_suggestions(query);
+    expected = [
+        `-sender:${me.user_id} sender:${alice.user_id}`,
+        `-sender:${me.user_id} sender:${bob.user_id}`,
+        `-sender:${me.user_id} sender:${jeff.user_id}`,
+        `-sender:${me.user_id} sender:${ted.user_id}`,
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    query = "-sender:me -sender:";
+    suggestions = get_suggestions(query);
+    expected = [
+        `-sender:${me.user_id} -sender:${alice.user_id}`,
+        `-sender:${me.user_id} -sender:${bob.user_id}`,
+        `-sender:${me.user_id} -sender:${jeff.user_id}`,
+        `-sender:${me.user_id} -sender:${ted.user_id}`,
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    // Other operators suggesting users skip an excluded user the
+    // same way.
+    query = `-dm:${alice.user_id} dm:`;
+    suggestions = get_suggestions(query);
+    expected = [
+        `-dm:${alice.user_id} dm:${bob.user_id}`,
+        `-dm:${alice.user_id} dm:${jeff.user_id}`,
+        `-dm:${alice.user_id} dm:${me.user_id}`,
+        `-dm:${alice.user_id} dm:${ted.user_id}`,
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    query = `-mentions:${alice.user_id} mentions:`;
+    suggestions = get_suggestions(query);
+    expected = [
+        `-mentions:${alice.user_id} mentions:${bob.user_id}`,
+        `-mentions:${alice.user_id} mentions:${jeff.user_id}`,
+        `-mentions:${alice.user_id} mentions:${me.user_id}`,
+        `-mentions:${alice.user_id} mentions:${ted.user_id}`,
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    // "-mentions:me" canonicalizes to "-is:mentioned", so it blocks
+    // suggesting yourself the same way.
+    query = "-mentions:me mentions:";
+    suggestions = get_suggestions(query);
+    expected = [
+        `-is:mentioned mentions:${alice.user_id}`,
+        `-is:mentioned mentions:${bob.user_id}`,
+        `-is:mentioned mentions:${jeff.user_id}`,
+        `-is:mentioned mentions:${ted.user_id}`,
+    ];
+    assert.deepEqual(suggestions, expected);
+});
+
+test("negated filters do not block other operands", ({override}) => {
+    override(narrow_state, "stream_id", noop);
+    // "-channels:web-public" neither duplicates nor contradicts
+    // "channels:public", so that suggestion is still offered.
+    const web_public_id = new_stream_id();
+    const sub = make_stream({
+        name: "Web public",
+        stream_id: web_public_id,
+        is_web_public: true,
+    });
+    stream_data.add_sub_for_tests(sub);
+
+    let query = "-channels:web-public channels:";
+    let suggestions = get_suggestions(query);
+    let expected = [
+        "-channels:web-public channels:public",
+        "-channels:web-public channels:archived",
+    ];
+    assert.deepEqual(suggestions, expected);
+
+    query = "-channels:web-public -channels:";
+    suggestions = get_suggestions(query);
+    expected = ["-channels:web-public -channels:public", "-channels:web-public -channels:archived"];
+    assert.deepEqual(suggestions, expected);
+
+    // "channels:public -channels:web-public" is the public channels
+    // that aren't web-public, so the positive term doesn't block the
+    // negated suggestion either.
+    query = "channels:public -channels:";
+    suggestions = get_suggestions(query);
+    expected = ["channels:public -channels:web-public", "channels:public -channels:archived"];
+    assert.deepEqual(suggestions, expected);
+
+    // Searching both is just searching the web-public channels, so
+    // that suggestion stays blocked.
+    query = "channels:public channels:";
+    suggestions = get_suggestions(query);
+    expected = ["channels:public channels:archived"];
+    assert.deepEqual(suggestions, expected);
+
+    // With all public channels excluded, searching web-public
+    // channels can never match anything, and excluding them changes
+    // nothing, so both suggestions are dropped.
+    query = "-channels:public channels:";
+    suggestions = get_suggestions(query);
+    expected = ["-channels:public channels:archived"];
+    assert.deepEqual(suggestions, expected);
+
+    query = "-channels:public -channels:";
+    suggestions = get_suggestions(query);
+    expected = ["-channels:public -channels:archived"];
+    assert.deepEqual(suggestions, expected);
+
+    // The same reasoning applies to naming a single channel:
+    // "channels:public -channel:Web public" is the public channels
+    // other than that one, while naming it unnegated means the same
+    // as the "channel:" term alone, so only the negated suggestion
+    // is offered.
+    query = "channels:public -channel:";
+    suggestions = get_suggestions(query);
+    expected = [`channels:public -channel:${web_public_id}`];
+    assert.deepEqual(suggestions, expected);
+
+    query = "channels:public channel:";
+    suggestions = get_suggestions(query);
+    expected = [];
+    assert.deepEqual(suggestions, expected);
+
+    // The "-channels:" and "-channel:" operators themselves are
+    // offered the same way, so the negated suggestions above are
+    // reachable by typing a prefix.
+    query = "channels:public -chan";
+    suggestions = get_suggestions(query);
+    expected = ["channels:public -chan", "channels:public -channels:", "channels:public -channel:"];
+    assert.deepEqual(suggestions, expected);
+
+    query = "channels:public chan";
+    suggestions = get_suggestions(query);
+    expected = ["channels:public chan"];
+    assert.deepEqual(suggestions, expected);
+
+    // A loose "-" isn't a parsed negation, so it doesn't unlock the
+    // redundant unnegated suggestion for a channel whose name
+    // happens to match the "-".
+    stream_data.add_sub_for_tests(
+        make_stream({
+            name: "dev - help",
+            stream_id: new_stream_id(),
+        }),
+    );
+    query = "channels:public -";
+    suggestions = get_suggestions(query);
+    expected = [
+        "channels:public -",
+        "channels:public -channels:",
+        "channels:public -channel:",
+        "channels:public -topic:",
+        "channels:public -sender:",
+        "channels:public -near:",
+        "channels:public -mentions:",
+        "channels:public -is:starred",
+        "channels:public -is:mentioned",
+        "channels:public -is:followed",
+        "channels:public -is:alerted",
+        "channels:public -is:unread",
+        "channels:public -is:muted",
+        "channels:public -is:resolved",
+        "channels:public -sender:41",
+        "channels:public -has:link",
+        "channels:public -has:image",
+        "channels:public -has:attachment",
+        "channels:public -has:reaction",
+    ];
+    assert.deepEqual(suggestions, expected);
+});
+
+test("negated suggestions match typed text", ({override}) => {
+    override(narrow_state, "stream_id", noop);
+    // Typing "star" offers "is:starred", so typing "-star" offers
+    // "-is:starred": the "-" is stripped from both sides before
+    // matching the operand.
+    let query = "-star";
+    let suggestions = get_suggestions(query);
+    let expected = ["-star", "-is:starred"];
+    assert.deepEqual(suggestions, expected);
+
+    query = "-att";
+    suggestions = get_suggestions(query);
+    expected = ["-att", "-has:attachment"];
+    assert.deepEqual(suggestions, expected);
+
+    // Descriptions match the same way: "is:dm" is described as
+    // "direct messages".
+    query = "-dir";
+    suggestions = get_suggestions(query);
+    expected = ["-dir", "-is:dm"];
+    assert.deepEqual(suggestions, expected);
+
+    // "-is:resolved" has a description of its own, "unresolved
+    // topics", offered among the unnegated suggestions.
+    query = "unres";
+    suggestions = get_suggestions(query);
+    expected = ["unres", "-is:resolved"];
+    assert.deepEqual(suggestions, expected);
+
+    // But that description must not match negated input: "-unres"
+    // means "not unresolved", so offering "-is:resolved" for it
+    // would suggest the opposite of what was typed.
+    query = "-unres";
+    suggestions = get_suggestions(query);
+    expected = ["-unres"];
+    assert.deepEqual(suggestions, expected);
+
+    // Negated input matches the unnegated description: "-res"
+    // offers "-is:resolved" via "resolved topics".
+    query = "-res";
+    suggestions = get_suggestions(query);
+    expected = ["-res", "-is:resolved"];
+    assert.deepEqual(suggestions, expected);
 });
