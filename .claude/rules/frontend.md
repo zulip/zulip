@@ -14,3 +14,5 @@ paths:
   selectors for specific elements) without guarding for node test
   environments, where the DOM is mocked minimally. Check that the
   element exists before using it.
+- Use `util.the($el)` instead of `$el[0]!` when a jQuery object should
+  hold exactly one element.
