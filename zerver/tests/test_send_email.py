@@ -80,6 +80,20 @@ class TestBuildEmail(ZulipTestCase):
         )
         self.assertEqual(mail.to[0], hamlet.delivery_email)
 
+    def test_from_header_non_ascii_display_name(self) -> None:
+        hamlet = self.example_user("hamlet")
+        mail = build_email(
+            "zerver/emails/password_reset",
+            to_emails=[hamlet.email],
+            from_name="Zulip Älëbërä",
+            from_address=FromAddress.NOREPLY,
+            language="en",
+        )
+        # Regression test: non-ASCII From display names must be encoded into
+        # an ASCII-safe header, not emitted as raw Unicode.
+        self.assertTrue(mail.extra_headers["From"].isascii())
+        self.assertIn(FromAddress.NOREPLY, mail.extra_headers["From"])
+
     def test_email_subject_strips_crlf(self) -> None:
         # Email header injection would require a CR or LF making it
         # through email-subject rendering.  Templates are trusted, but

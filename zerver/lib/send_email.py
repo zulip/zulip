@@ -209,7 +209,7 @@ def build_email(
         from_address = FromAddress.SUPPORT
 
     # Set the "From" that is displayed separately from the envelope-from.
-    extra_headers["From"] = str(Address(display_name=from_name, addr_spec=from_address))
+    extra_headers["From"] = formataddr((from_name, from_address), charset="utf-8")
     # As above, with the "To" line, we drop the name part if it would
     # result in an address which is longer than 320 bytes.
     if len(sanitize_address(extra_headers["From"], "utf-8")) > 320:
