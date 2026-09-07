@@ -7,8 +7,8 @@ const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
-mock_esm("../src/loading", {
-    destroy_indicator: noop,
+mock_esm("../src/message_feed_loading", {
+    hide_loading_initial_page: noop,
 });
 set_global("addEventListener", noop);
 
