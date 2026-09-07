@@ -298,7 +298,11 @@ function fetch_server_rendered_drafts(formatted_drafts: FormattedDraft[]): void 
                     if ($content_element.length === 0) {
                         return;
                     }
-                    $content_element.html(postprocess_content(data.rendered));
+                    $content_element.html(
+                        postprocess_content(data.rendered, {
+                            honor_emoji_animation_setting: false,
+                        }),
+                    );
                     rendered_markdown.update_elements($content_element);
                 },
                 // We don't do anything on error and keep displaying the
