@@ -96,80 +96,89 @@ def api_grafana_webhook(
         # - https://grafana.com/docs/grafana/v9.0/alerting/contact-points/notifiers/webhook-notifier/
         # - https://grafana.com/docs/grafana/v10.0/alerting/alerting-rules/manage-contact-points/webhook-notifier/
         # - https://grafana.com/docs/grafana/v11.0/alerting/configure-notifications/manage-contact-points/integrations/webhook-notifier/
-        for alert in payload["alerts"]:
-            status = alert["status"].tame(check_string_in(["firing", "resolved"]))
-            if status == "firing":
-                body = ALERT_STATUS_TEMPLATE.format(
-                    alert_icon=":alert:", alert_state=status.upper()
-                )
-            else:
-                body = ALERT_STATUS_TEMPLATE.format(
-                    alert_icon=":checkbox:", alert_state=status.upper()
-                )
-
-            if "alertname" in alert["labels"] and alert["labels"]["alertname"]:
-                alertname = alert["labels"]["alertname"].tame(check_string)
-                topic_name = NEW_TOPIC_TEMPLATE.format(alertname=alertname)
-                body += "**" + alertname + "**\n\n"
-            else:
-                # if no alertname, fallback to the alert fingerprint
-                topic_name = NEW_TOPIC_TEMPLATE.format(
-                    alertname=alert["fingerprint"].tame(check_string)
-                )
-
-            body += START_TIME_TEMPLATE.format(
-                start_time=get_global_time(alert["startsAt"].tame(check_string))
-            )
-
-            end_time = alert["endsAt"].tame(check_string)
-            if end_time != "0001-01-01T00:00:00Z":
-                body += END_TIME_TEMPLATE.format(end_time=get_global_time(end_time))
-
-            if alert["labels"]:
-                label_information = ""
-                for key, value in alert["labels"].items():
-                    label_information += "- " + key + ": " + value.tame(check_string) + "\n"
-                body += MESSAGE_LABELS_TEMPLATE.format(label_information=label_information)
-
-            if alert.get("values"):
-                value_information = ""
-                for key, value in alert["values"].items():
-                    value_information += "- " + key + ": " + str(value.tame(check_anything)) + "\n"
-                body += MESSAGE_VALUES_TEMPLATE.format(value_information=value_information)
-            elif alert.get("valueString"):
-                body += (
-                    MESSAGE_VALUES_TEMPLATE.format(
-                        value_information=alert["valueString"].tame(check_string)
+        try:
+            for alert in payload["alerts"]:
+                status = alert["status"].tame(check_string_in(["firing", "resolved"]))
+                if status == "firing":
+                    body = ALERT_STATUS_TEMPLATE.format(
+                        alert_icon=":alert:", alert_state=status.upper()
                     )
-                    + "\n"
+                else:
+                    body = ALERT_STATUS_TEMPLATE.format(
+                        alert_icon=":checkbox:", alert_state=status.upper()
+                    )
+
+                if "alertname" in alert["labels"] and alert["labels"]["alertname"]:
+                    alertname = alert["labels"]["alertname"].tame(check_string)
+                    topic_name = NEW_TOPIC_TEMPLATE.format(alertname=alertname)
+                    body += "**" + alertname + "**\n\n"
+                else:
+                    # if no alertname, fallback to the alert fingerprint
+                    topic_name = NEW_TOPIC_TEMPLATE.format(
+                        alertname=alert["fingerprint"].tame(check_string)
+                    )
+
+                body += START_TIME_TEMPLATE.format(
+                    start_time=get_global_time(alert["startsAt"].tame(check_string))
                 )
 
-            if alert.get("annotations"):
-                annotation_information = ""
-                for key, value in alert["annotations"].items():
-                    annotation_information += "- " + key + ": " + value.tame(check_string) + "\n"
-                body += MESSAGE_ANNOTATIONS_TEMPLATE.format(
-                    annotation_information=annotation_information
-                )
+                end_time = alert["endsAt"].tame(check_string)
+                if end_time != "0001-01-01T00:00:00Z":
+                    body += END_TIME_TEMPLATE.format(end_time=get_global_time(end_time))
 
-            if alert.get("generatorURL"):
-                body += MESSAGE_GENERATOR_TEMPLATE.format(
-                    generator_url=alert["generatorURL"].tame(check_string)
-                )
+                if alert["labels"]:
+                    label_information = ""
+                    for key, value in alert["labels"].items():
+                        label_information += "- " + key + ": " + value.tame(check_string) + "\n"
+                    body += MESSAGE_LABELS_TEMPLATE.format(label_information=label_information)
 
-            if alert.get("silenceURL"):
-                body += MESSAGE_SILENCE_TEMPLATE.format(
-                    silence_url=alert["silenceURL"].tame(check_string)
-                )
+                if alert.get("values"):
+                    value_information = ""
+                    for key, value in alert["values"].items():
+                        value_information += (
+                            "- " + key + ": " + str(value.tame(check_anything)) + "\n"
+                        )
+                    body += MESSAGE_VALUES_TEMPLATE.format(value_information=value_information)
+                elif alert.get("valueString"):
+                    body += (
+                        MESSAGE_VALUES_TEMPLATE.format(
+                            value_information=alert["valueString"].tame(check_string)
+                        )
+                        + "\n"
+                    )
 
-            if alert.get("imageURL"):
-                body += MESSAGE_IMAGE_TEMPLATE.format(
-                    image_url=alert["imageURL"].tame(check_string)
-                )
+                if alert.get("annotations"):
+                    annotation_information = ""
+                    for key, value in alert["annotations"].items():
+                        annotation_information += (
+                            "- " + key + ": " + value.tame(check_string) + "\n"
+                        )
+                    body += MESSAGE_ANNOTATIONS_TEMPLATE.format(
+                        annotation_information=annotation_information
+                    )
 
-            body += "\n"
+                if alert.get("generatorURL"):
+                    body += MESSAGE_GENERATOR_TEMPLATE.format(
+                        generator_url=alert["generatorURL"].tame(check_string)
+                    )
 
-            check_send_webhook_message(request, user_profile, topic_name, body, status)
+                if alert.get("silenceURL"):
+                    body += MESSAGE_SILENCE_TEMPLATE.format(
+                        silence_url=alert["silenceURL"].tame(check_string)
+                    )
+
+                if alert.get("imageURL"):
+                    body += MESSAGE_IMAGE_TEMPLATE.format(
+                        image_url=alert["imageURL"].tame(check_string)
+                    )
+
+                body += "\n"
+
+                check_send_webhook_message(request, user_profile, topic_name, body, status)
+        except ValidationError:
+            # The payload did not include the expected fields for an
+            # "alerts"-style (Grafana 8.0+) webhook.
+            raise AnomalousWebhookPayloadError
 
         return json_success(request)
 

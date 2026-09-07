@@ -310,3 +310,17 @@ Annotations:
             "Unable to parse request: Did Grafana generate this event?",
             e.exception.args[0],
         )
+
+    def test_anomalous_webhook_payload_alerts_style_missing_fields(self) -> None:
+        with self.assertRaises(AssertionError) as e:
+            self.check_webhook(
+                fixture_name="alert_alerts_style_missing_fields",
+                expected_topic_name="",
+                expected_message="",
+                expect_noop=True,
+            )
+
+        self.assertIn(
+            "Unable to parse request: Did Grafana generate this event?",
+            e.exception.args[0],
+        )

@@ -1,0 +1,20 @@
+{
+    "receiver": "",
+    "status": "firing",
+    "alerts": [
+      {
+        "status": "firing"
+      }
+    ],
+    "groupLabels": {},
+    "commonLabels": {},
+    "commonAnnotations": {},
+    "externalURL": "https://zuliptestingwh2.grafana.net/",
+    "version": "1",
+    "groupKey": "{}",
+    "truncatedAlerts": 1,
+    "orgId": 1,
+    "title": "[FIRING:1]",
+    "state": "alerting",
+    "message": "Webhook test message."
+}
