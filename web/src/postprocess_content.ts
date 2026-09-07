@@ -249,14 +249,7 @@ export function postprocess_content(html: string): string {
             ) {
                 let thumbnail_name = thumbnail.preferred_format.name;
                 if (message_media_image.getAttribute("data-animated") === "true") {
-                    if (
-                        user_settings.web_animate_image_previews === "always" ||
-                        // Treat on_hover as "always" on mobile web, where
-                        // hovering is impossible and there's much less on
-                        // the screen.
-                        (user_settings.web_animate_image_previews === "on_hover" &&
-                            util.is_mobile())
-                    ) {
+                    if (util.effective_web_animate_image_previews() === "always") {
                         thumbnail_name = thumbnail.animated_format.name;
                     } else {
                         // If we're showing a still thumbnail, show a play

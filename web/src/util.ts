@@ -5,6 +5,7 @@ import {$t} from "./i18n.ts";
 import type {MatchedMessage, Message, RawMessage} from "./message_store.ts";
 import type {UpdateMessageEvent} from "./server_event_types.ts";
 import {realm} from "./state_data.ts";
+import type {UserSettings} from "./user_settings.ts";
 import {user_settings} from "./user_settings.ts";
 
 // From MDN: https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Math/random
@@ -230,6 +231,18 @@ export function is_mobile(): boolean {
     return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
         window.navigator.userAgent,
     );
+}
+
+// This is here rather than in settings_data because postprocess_content
+// needs it, and pages outside the main web app load that module; they
+// can't load settings_data, which depends on page_params.
+export function effective_web_animate_image_previews(): UserSettings["web_animate_image_previews"] {
+    if (user_settings.web_animate_image_previews === "on_hover" && is_mobile()) {
+        // Treat "on_hover" as "always" on mobile web, where hovering is
+        // impossible and there's much less on the screen.
+        return "always";
+    }
+    return user_settings.web_animate_image_previews;
 }
 
 export function is_client_safari(): boolean {

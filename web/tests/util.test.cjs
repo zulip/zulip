@@ -19,7 +19,8 @@ set_global("document", {});
 const util = zrequire("util");
 const {get_retry_backoff_seconds} = zrequire("retry_backoff");
 
-initialize_user_settings({user_settings: {}});
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 run_test("CachedValue", () => {
     let x = 5;
@@ -722,4 +723,27 @@ run_test("convert_emoji_code_to_unicode", () => {
     // A single invalid codepoint invalidates the whole emoji.
     assert.equal(util.convert_emoji_code_to_unicode("1f468-110000-1f373"), undefined);
     assert.equal(util.convert_emoji_code_to_unicode("1f468--1f373"), undefined);
+});
+
+run_test("effective_web_animate_image_previews", ({override}) => {
+    // Where there is a mouse, the setting is honored as chosen.
+    for (const setting of ["always", "on_hover", "never"]) {
+        override(user_settings, "web_animate_image_previews", setting);
+        assert.equal(util.effective_web_animate_image_previews(), setting);
+    }
+
+    const desktop_navigator = window.navigator;
+    window.navigator = {userAgent: "Android"};
+    try {
+        // "on_hover" is unreachable on mobile web, so animations play
+        // there as though "always" had been chosen.
+        override(user_settings, "web_animate_image_previews", "on_hover");
+        assert.equal(util.effective_web_animate_image_previews(), "always");
+
+        // The other two values mean the same thing everywhere.
+        override(user_settings, "web_animate_image_previews", "never");
+        assert.equal(util.effective_web_animate_image_previews(), "never");
+    } finally {
+        window.navigator = desktop_navigator;
+    }
 });
