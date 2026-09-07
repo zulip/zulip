@@ -1,7 +1,7 @@
 import {$} from "jquery";
 
 import * as blueslip from "./blueslip.ts";
-import * as loading from "./loading.ts";
+import * as message_feed_loading from "./message_feed_loading.ts";
 import * as util from "./util.ts";
 
 export let page_load_time: number | undefined;
@@ -12,9 +12,7 @@ $(() => {
 
     // Display loading indicator. This disappears when the initial
     // message fetch completes.
-    loading.make_indicator($("#page_loading_indicator"), {
-        abs_positioned: true,
-    });
+    message_feed_loading.show_loading_initial_page();
 
     $.fn.get_offset_to_window = function () {
         return util.the(this).getBoundingClientRect();
