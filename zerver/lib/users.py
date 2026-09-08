@@ -136,18 +136,20 @@ def check_valid_incoming_webhook_bot_config(
 ) -> None:
     from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 
-    config_options = None
-    for integration in INCOMING_WEBHOOK_INTEGRATIONS:
-        if integration.name == service_name:
-            # key: validator
-            config_options = {
-                option.name: option.validator for option in integration.config_options
-            }
-            break
-    if config_options is None:
+    integration = next(
+        (
+            integration
+            for integration in INCOMING_WEBHOOK_INTEGRATIONS
+            if integration.name == service_name
+        ),
+        None,
+    )
+    if integration is None:
         raise JsonableError(
             _("Invalid integration '{integration_name}'.").format(integration_name=service_name)
         )
+
+    config_options = {option.name: option.validator for option in integration.config_options}
 
     missing_keys = set(config_options.keys()) - set(config_data.keys())
     if missing_keys:
