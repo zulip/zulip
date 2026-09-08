@@ -238,10 +238,6 @@ p.n-margin {
 
 .bottom-messages-logo {
     display: none;
-}
-
-.top-messages-logo,
-.bottom-messages-logo {
     width: 1.7143em; /* 24px at 14px/em */
     height: 1.7143em;
     margin: 0 auto 0.8571em; /* 12px at 14px/em */
@@ -262,12 +258,6 @@ p.n-margin {
         fill: var(--color-zulip-logo-loading);
         stroke: var(--color-zulip-logo-loading);
     }
-}
-
-.top-messages-logo {
-    /* Since padding under message header is not transparent
-       we need to position it below the padding. */
-    padding-top: var(--header-padding-bottom);
 }
 
 /* See https://web.dev/animations-guide/#triggers before adding any funny animation properties here. */
@@ -585,12 +575,10 @@ body.has-overlay-scrollbar {
     z-index: 15;
 }
 
-#message_feed_container,
-.app-main .column-left .left-sidebar,
-.app-main .column-right .right-sidebar {
-    padding-top: calc(
-        var(--navbar-fixed-height) + var(--header-padding-bottom)
-    );
+#message_feed_container {
+    /* The gutter below the navbar is the top-of-feed loading box; see
+       #top_of_feed_loading_indicator. */
+    padding-top: var(--navbar-fixed-height);
 }
 
 .app-main {
@@ -610,6 +598,9 @@ body.has-overlay-scrollbar {
     .column-right .right-sidebar {
         position: fixed;
         z-index: 100;
+        padding-top: calc(
+            var(--navbar-fixed-height) + var(--header-padding-bottom)
+        );
     }
 
     .column-left .left-sidebar {
@@ -1230,12 +1221,94 @@ nav {
     font-family: "Source Code Pro", monospace;
 }
 
-#top_of_feed_loading_indicator,
+#top_of_feed_loading_indicator {
+    /* How much of the line the pulse covers; the sweep keyframes
+       use this to travel the full width of the line. */
+    --loading-pulse-fraction: 0.3;
+
+    position: relative;
+    height: var(--header-padding-bottom);
+    /* Above the first recipient bar (see .message-feed .message_header
+       in message_header.css), whose empty top margin the line hangs
+       into. */
+    z-index: 5;
+    /* Clip the pulse as it sweeps past the sides, but let the line
+       hang out below, over the recipient bar's empty top margin. */
+    overflow: clip visible;
+
+    &::before,
+    &::after {
+        content: "";
+        position: absolute;
+        /* Centered in the space between the navbar and the recipient
+           bar's contents, which is the gutter plus the bar's equal top
+           margin: that is, centered on the gutter's bottom edge. */
+        bottom: -1.5px;
+        left: 0;
+        height: 3px;
+        /* Fade in and out rather than popping. */
+        opacity: 0;
+        transition: opacity 200ms ease-in-out;
+    }
+
+    /* The line's track. */
+    &::before {
+        right: 0;
+        background-color: var(--color-top-of-feed-loading-line-track);
+    }
+
+    /* The pulse that sweeps along the line, left to right. */
+    &::after {
+        width: calc(100% * var(--loading-pulse-fraction));
+        background-color: var(--color-top-of-feed-loading-line);
+
+        @media (prefers-reduced-motion) {
+            width: 100%;
+        }
+    }
+
+    &.loading::before,
+    &.loading::after {
+        opacity: 1;
+    }
+
+    /* The pulse only moves while the line is up, so that each time
+       the line shows up the sweep starts over from the left edge. */
+    &.loading::after {
+        animation: top-of-feed-loading-pulse 750ms ease-in-out infinite;
+
+        @media (prefers-reduced-motion) {
+            animation: top-of-feed-loading-fade 750ms ease-in-out infinite;
+        }
+    }
+}
+
+@keyframes top-of-feed-loading-pulse {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        /* The line's full width, measured in pulse widths. */
+        transform: translateX(calc(100% / var(--loading-pulse-fraction)));
+    }
+}
+
+@keyframes top-of-feed-loading-fade {
+    0%,
+    100% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
 #loading_more_indicator {
     margin: 10px;
 }
 
-#loading_older_messages_indicator_box_container,
 #loading_more_indicator_box_container {
     position: absolute;
     left: 50%;
@@ -1248,7 +1321,6 @@ nav {
     }
 }
 
-#loading_older_messages_indicator_box,
 #loading_more_indicator_box {
     position: relative;
     left: -1.3571em; /* 50% of 38px = 19px at 14px/em */

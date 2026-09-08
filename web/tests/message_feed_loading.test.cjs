@@ -2,19 +2,14 @@
 
 const assert = require("node:assert/strict");
 
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
-const {run_test, noop} = require("./lib/test.cjs");
+const {zrequire} = require("./lib/namespace.cjs");
+const {run_test} = require("./lib/test.cjs");
 const {$} = require("./lib/zjquery.cjs");
-
-mock_esm("../src/loading", {
-    make_indicator: noop,
-    destroy_indicator: noop,
-});
 
 const message_feed_loading = zrequire("message_feed_loading");
 
 function is_loading() {
-    return $(".top-messages-logo").hasClass("loading");
+    return $("#top_of_feed_loading_indicator").hasClass("loading");
 }
 
 run_test("initial page load and older fetches share the indicator", () => {
