@@ -1344,6 +1344,7 @@ run_test("user_settings", ({override}) => {
     override(activity_ui, "build_user_sidebar", noop);
     override(pm_list, "update_private_messages", noop);
     override(message_view_header, "render_title_area", noop);
+    override(settings_emoji, "populate_emoji", noop);
 
     {
         event = event_fixtures.user_settings__web_animate_image_previews_always;

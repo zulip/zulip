@@ -1067,6 +1067,7 @@ export function dispatch_normal_event(event) {
                     inbox_ui.complete_rerender();
                     recent_view_ui.complete_rerender();
                     message_view_header.render_title_area();
+                    settings_emoji.populate_emoji();
                     break;
                 case "web_stream_unreads_count_display_policy":
                     stream_list.build_stream_list(true);
