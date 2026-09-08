@@ -66,14 +66,17 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         response_dict = self.assert_json_success(result)
         self.assert_length(response_dict["bots"], count)
 
-    def create_bot(self, **extras: Any) -> dict[str, Any]:
+    def bot_creation_info(self, **extras: Any) -> dict[str, Any]:
         bot_info = {
             "full_name": "The Bot of Hamlet",
             "short_name": "hambot",
             "bot_type": "1",
         }
         bot_info.update(extras)
-        result = self.client_post("/json/bots", bot_info)
+        return bot_info
+
+    def create_bot(self, **extras: Any) -> dict[str, Any]:
+        result = self.client_post("/json/bots", self.bot_creation_info(**extras))
         response_dict = self.assert_json_success(result)
         return response_dict
 
