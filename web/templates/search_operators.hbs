@@ -46,8 +46,16 @@
                         <td class="operator">dm:<span class="operator_value">user</span></td>
                         <td class="definition">
                             {{#tr}}
-                                Narrow to direct messages with <z-value></z-value>.
+                                Narrow to 1-on-1 direct messages with <z-value></z-value>.
                                 {{#*inline "z-value"}}<span class="operator_value">user</span>{{/inline}}
+                            {{/tr}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="operator">dm:<span class="operator_value">user A, user B</span></td>
+                        <td class="definition">
+                            {{#tr}}
+                                Narrow to direct messages with specified users.
                             {{/tr}}
                         </td>
                     </tr>
@@ -55,7 +63,7 @@
                         <td class="operator">dm-including:<span class="operator_value">user</span></td>
                         <td class="definition">
                             {{#tr}}
-                                Narrow to direct messages that include <z-value></z-value>.
+                                Narrow to all direct messages that include <z-value></z-value>.
                                 {{#*inline "z-value"}}<span class="operator_value">user</span>{{/inline}}
                             {{/tr}}
                         </td>
