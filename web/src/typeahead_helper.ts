@@ -19,6 +19,7 @@ import * as pm_conversations from "./pm_conversations.ts";
 import * as pygments_data from "./pygments_data.ts";
 import * as recent_senders from "./recent_senders.ts";
 import * as settings_config from "./settings_config.ts";
+import * as settings_data from "./settings_data.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
@@ -30,6 +31,7 @@ import type {UserGroupPill, UserGroupPillData} from "./user_group_pill.ts";
 import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import type {UserPill, UserPillData} from "./user_pill.ts";
+import type {EmojiAnimationSetting} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
@@ -61,6 +63,8 @@ export let render_typeahead_item = (args: {
     is_person?: boolean;
     is_emoji?: boolean;
     img_src?: string;
+    still_url?: string | null;
+    emoji_animation_setting?: EmojiAnimationSetting;
     status_emoji_info?: UserStatusEmojiInfo | undefined;
     secondary?: string | null;
     secondary_html?: string | undefined;
@@ -243,6 +247,8 @@ export let render_emoji = (item: EmojiSuggestion): string => {
         return render_typeahead_item({
             ...args,
             img_src: item.emoji_url,
+            still_url: (item.is_realm_emoji ? item.still_url : null) ?? null,
+            emoji_animation_setting: settings_data.effective_web_animate_image_previews(),
         });
     }
     return render_typeahead_item({

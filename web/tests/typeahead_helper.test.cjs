@@ -36,7 +36,7 @@ const current_user = {};
 set_current_user(current_user);
 const realm = make_realm();
 set_realm(realm);
-const user_settings = {};
+const user_settings = {web_animate_image_previews: "on_hover"};
 initialize_user_settings({user_settings});
 
 let next_id = 0;
@@ -1122,6 +1122,8 @@ test("render_emoji", ({mock_template}) => {
     expected_template_data = {
         primary: "realm emoji",
         img_src: "TBD",
+        still_url: null,
+        emoji_animation_setting: "on_hover",
         is_emoji: true,
         has_image: true,
         has_pronouns: false,
