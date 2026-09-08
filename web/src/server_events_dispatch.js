@@ -1053,10 +1053,18 @@ export function dispatch_normal_event(event) {
                     stream_list.update_streams_sidebar(true);
                     break;
                 case "web_animate_image_previews":
+                    // Refresh the cached status emoji display settings so
+                    // that the rerenders below pick up the new value.
+                    user_status.refresh_cached_display_settings_for_all_users();
                     // Rerender the whole message list UI
                     for (const msg_list of message_lists.all_rendered_message_lists()) {
                         msg_list.rerender();
                     }
+                    // Rerender so that status_emojis reflect the new setting.
+                    activity_ui.build_user_sidebar();
+                    pm_list.update_private_messages();
+                    inbox_ui.complete_rerender();
+                    recent_view_ui.complete_rerender();
                     break;
                 case "web_stream_unreads_count_display_policy":
                     stream_list.build_stream_list(true);
