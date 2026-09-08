@@ -149,9 +149,7 @@ def check_valid_incoming_webhook_bot_config(
             _("Invalid integration '{integration_name}'.").format(integration_name=service_name)
         )
 
-    config_options = {option.name: option.validator for option in integration.config_options}
-
-    missing_keys = set(config_options.keys()) - set(config_data.keys())
+    missing_keys = {option.name for option in integration.config_options} - config_data.keys()
     if missing_keys:
         raise JsonableError(
             _("Missing configuration parameters: {keys}").format(
@@ -159,12 +157,14 @@ def check_valid_incoming_webhook_bot_config(
             )
         )
 
-    for key, validator in config_options.items():
-        value = config_data[key]
-        error = validator(key, value)
+    for option in integration.config_options:
+        value = config_data[option.name]
+        error = option.validator(option.name, value)
         if error is not None:
             raise JsonableError(
-                _("Invalid {key} value {value} ({error})").format(key=key, value=value, error=error)
+                _("Invalid {key} value {value} ({error})").format(
+                    key=option.name, value=value, error=error
+                )
             )
 
 
