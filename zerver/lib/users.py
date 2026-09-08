@@ -170,6 +170,8 @@ def check_valid_embedded_bot_config(service_name: str, config_data: Mapping[str,
     from zerver.lib.bot_lib import get_bot_handler
 
     bot_handler = get_bot_handler(service_name)
+    if bot_handler is None:
+        raise JsonableError(_("Invalid embedded bot name."))
     if not hasattr(bot_handler, "validate_config"):
         return
 
