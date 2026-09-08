@@ -9,7 +9,7 @@ import {user_status_schema} from "./user_status_types.ts";
 
 export type UserStatus = z.infer<typeof user_status_schema>;
 export type UserStatusEmojiInfo = EmojiRenderingDetails & {
-    emoji_alt_code?: boolean;
+    emoji_alt_code: boolean;
 };
 
 const user_status_event_schema = z.intersection(
@@ -118,6 +118,7 @@ export function initialize(params: StateData["user_status"]): void {
 
         if (dct.emoji_name) {
             user_status_emoji_info.set(user_id, {
+                emoji_alt_code: user_settings.emojiset === "text",
                 ...emoji.get_emoji_details_for_rendering(dct),
             });
         }

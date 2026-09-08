@@ -12,7 +12,8 @@ const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const emoji = zrequire("emoji");
 const {initialize_user_settings} = zrequire("user_settings");
 
-initialize_user_settings({user_settings: {}});
+const user_settings = {emojiset: "google"};
+initialize_user_settings({user_settings});
 
 const emoji_params = {
     realm_emoji: {
@@ -55,6 +56,7 @@ run_test("basics", () => {
     initialize();
 
     assert.deepEqual(user_status.get_status_emoji(5), {
+        emoji_alt_code: false,
         emoji_code: "992",
         emoji_name: "deactivated_realm_emoji",
         reaction_type: "realm_emoji",
@@ -187,4 +189,15 @@ run_test("defensive checks", () => {
             message: "Cannot find realm emoji for code 'fake_code'.",
         },
     );
+});
+
+run_test("emoji_alt_code under the text emojiset", ({override}) => {
+    // The `text` emojiset renders a status emoji as `:name:` text
+    // rather than an image, which status_emoji.hbs decides from the
+    // cached emoji_alt_code. Entries built at initialize() have to
+    // carry it just like the ones built from a user_status event.
+    override(user_settings, "emojiset", "text");
+    initialize();
+    assert.equal(user_status.get_status_emoji(5).emoji_alt_code, true);
+    assert.equal(user_status.get_status_emoji(4).emoji_alt_code, true);
 });
