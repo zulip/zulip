@@ -75,6 +75,26 @@ class IntegrationsTestCase(ZulipTestCase):
             "images/integrations/bot_avatars/zulip-icon-128x128.png",
         )
 
+    def test_no_missing_logo(self) -> None:
+        # Integrations without logos in self-hosted servers can use the
+        # fallback Zulip logo. Official integrations should have their own
+        # logos.
+        integrations_using_fallback_logo = {
+            integration.name
+            for integration in INTEGRATIONS.values()
+            if integration.is_enabled_in_catalog()
+            and integration.logo_path == Integration.ZULIP_LOGO_STATIC_PATH_PNG
+        }
+
+        self.assertEqual(
+            integrations_using_fallback_logo,
+            set(),
+            "\n\nThe following integrations have no logo of their own:\n"
+            + "\n".join(integrations_using_fallback_logo)
+            + '\nAdd an SVG for each to "static/images/integrations/logos", or run'
+            + '\n"./tools/provision" if these are bot integrations.',
+        )
+
     def test_no_missing_doc_screenshot_config(self) -> None:
         integration_names = {
             integration.name
