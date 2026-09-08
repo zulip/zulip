@@ -46,22 +46,12 @@ function show_end_of_results_notice(): void {
     $(".all-messages-search-caution .search-shared-history").attr("data-url", update_hash);
 }
 
-export function update_top_of_feed_logo(): void {
-    if (message_lists.current?.data.fetch_status.has_found_oldest()) {
-        $(".top-messages-logo").hide();
-    } else {
-        $(".top-messages-logo").show();
-    }
-}
-
 export function update_top_of_narrow_notices(msg_list: MessageList): void {
     // Assumes that the current state is all notices hidden (i.e. this
     // will not hide a notice that should not be there)
     if (message_lists.current === undefined || msg_list !== message_lists.current) {
         return;
     }
-
-    update_top_of_feed_logo();
 
     if (msg_list.data.fetch_status.has_found_oldest()) {
         const filter = narrow_state.filter();
@@ -82,11 +72,6 @@ export function update_top_of_narrow_notices(msg_list: MessageList): void {
 }
 
 export function hide_top_of_narrow_notices(): void {
-    // Restore the top-of-feed logo; this runs when resetting for a new
-    // narrow, whose fetch status we don't know yet. It is hidden again
-    // once we learn we have the narrow's oldest message (see
-    // update_top_of_feed_logo).
-    $(".top-messages-logo").show();
     hide_end_of_results_notice();
     hide_history_limit_notice();
 }

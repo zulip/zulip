@@ -355,8 +355,8 @@ function get_selected_message_top_offset(is_first_message_in_narrow = false): nu
     // the top of the message and the sticky header.
     if (is_first_message_in_narrow) {
         final_offset +=
-            ($("#message_feed_errors_container").outerHeight(true) ?? 0) +
-            ($(".top-messages-logo").outerHeight(true) ?? 0);
+            ($("#top-of-feed-loading-indicator").outerHeight(true) ?? 0) +
+            ($("#message_feed_errors_container").outerHeight(true) ?? 0);
     }
     return final_offset;
 }
