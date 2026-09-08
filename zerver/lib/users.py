@@ -167,12 +167,14 @@ def check_valid_incoming_webhook_bot_config(
 
 
 def check_valid_embedded_bot_config(service_name: str, config_data: Mapping[str, str]) -> None:
-    try:
-        from zerver.lib.bot_lib import get_bot_handler
+    from zerver.lib.bot_lib import get_bot_handler
 
-        bot_handler = get_bot_handler(service_name)
-        if hasattr(bot_handler, "validate_config"):
-            bot_handler.validate_config(config_data)
+    bot_handler = get_bot_handler(service_name)
+    if not hasattr(bot_handler, "validate_config"):
+        return
+
+    try:
+        bot_handler.validate_config(config_data)
     except ConfigValidationError:
         # The exception provides a specific error message, but that
         # message is not tagged translatable, because it is
