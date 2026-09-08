@@ -73,7 +73,9 @@ const scheduled_messages_ui = mock_esm("../src/scheduled_messages_ui");
 const scroll_bar = mock_esm("../src/scroll_bar");
 const settings_account = mock_esm("../src/settings_account");
 const settings_bots = mock_esm("../src/settings_bots");
-const settings_data = mock_esm("../src/settings_data");
+const settings_data = mock_esm("../src/settings_data", {
+    effective_web_animate_image_previews: () => user_settings.web_animate_image_previews,
+});
 const settings_emoji = mock_esm("../src/settings_emoji");
 const settings_exports = mock_esm("../src/settings_exports");
 const settings_invites = mock_esm("../src/settings_invites");
@@ -127,7 +129,7 @@ const current_user = {};
 set_current_user(current_user);
 const realm_user_settings_defaults = {};
 initialize_realm_user_settings_defaults({realm_user_settings_defaults});
-const user_settings = {};
+const user_settings = {web_animate_image_previews: "on_hover"};
 initialize_user_settings({user_settings});
 
 message_lists.update_recipient_bar_background_color = noop;
@@ -1337,6 +1339,10 @@ run_test("user_settings", ({override}) => {
         dispatch(event);
         assert.equal(user_settings.web_home_view, "inbox");
     }
+
+    override(activity_ui, "build_user_sidebar", noop);
+    override(pm_list, "update_private_messages", noop);
+
     {
         event = event_fixtures.user_settings__web_animate_image_previews_always;
         override(user_settings, "web_animate_image_previews", "on_hover");
@@ -1733,6 +1739,7 @@ run_test("user_status", ({override}) => {
             reaction_type: "unicode_emoji",
             // Extra parameters that were added by `emoji.get_emoji_details_by_name`
             emoji_alt_code: false,
+            emoji_animation_setting: "on_hover",
         });
     }
 
