@@ -5,6 +5,7 @@ import * as pm_conversations from "./pm_conversations.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list_sort from "./stream_list_sort.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
+import * as topic_list_data from "./topic_list_data.ts";
 import * as unread from "./unread.ts";
 import * as user_topics from "./user_topics.ts";
 import * as util from "./util.ts";
@@ -165,8 +166,15 @@ export function get_next_topic(
         return topics.some((topic) => user_topics.is_topic_unmuted_or_followed(channel_id, topic));
     });
 
+    // Topics are visited in the order the left sidebar lists them.
+    function get_topics_in_sidebar_order(stream_id: number): string[] {
+        return topic_list_data.list_resolved_topics_last(
+            stream_topic_history.get_recent_topic_names(stream_id),
+        );
+    }
+
     function get_followed_topics(stream_id: number): string[] {
-        let topics = stream_topic_history.get_recent_topic_names(stream_id);
+        let topics = get_topics_in_sidebar_order(stream_id);
         topics = topics.filter((topic) => user_topics.is_topic_followed(stream_id, topic));
         return topics;
     }
@@ -213,8 +221,7 @@ export function get_next_topic(
 
     return next_topic(
         sorted_channels_info,
-        (stream_id) =>
-            get_unmuted_topics(stream_id, stream_topic_history.get_recent_topic_names(stream_id)),
+        (stream_id) => get_unmuted_topics(stream_id, get_topics_in_sidebar_order(stream_id)),
         has_unread_messages,
         curr_stream_id,
         curr_topic,

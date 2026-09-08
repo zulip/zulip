@@ -363,6 +363,7 @@ export class TopicListWidget {
             this.my_stream_id,
             this.for_modal,
             this.filter_topics,
+            {demote_resolved_topics: true},
         );
 
         const num_possible_topics = list_info.num_possible_topics;
@@ -560,6 +561,17 @@ export function rebuild_left_sidebar(
     active_widgets.set(stream_id, widget);
 }
 
+// Does nothing when the active topic is not in the list, e.g.
+// because a topic filter excludes it.
+export function keep_zoomed_in_active_topic_visible(): void {
+    const $scroll_container = $("#more-topics-modal .topic-list-scroll-container");
+    const $selected_topic = $scroll_container.find(".topic-list-item.active-sub-filter");
+    if ($selected_topic.length === 0) {
+        return;
+    }
+    scroll_util.scroll_element_into_container($selected_topic, $scroll_container, 0);
+}
+
 export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
     const $scroll_container = zoomed
         ? $("#more-topics-modal .topic-list-scroll-container")
@@ -571,7 +583,7 @@ export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
         return;
     }
     if (zoomed) {
-        scroll_util.scroll_element_into_container($selected_topic, $scroll_container, 0);
+        keep_zoomed_in_active_topic_visible();
     } else {
         const direct_message_header_height =
             $("#direct-messages-section-header").outerHeight(true) ?? 0;
