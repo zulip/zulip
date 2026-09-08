@@ -59,6 +59,7 @@ type StreamData = {
 export let render_typeahead_item = (args: {
     primary?: string | undefined;
     is_person?: boolean;
+    is_emoji?: boolean;
     img_src?: string;
     status_emoji_info?: UserStatusEmojiInfo | undefined;
     secondary?: string | null;
