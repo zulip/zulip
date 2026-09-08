@@ -282,13 +282,21 @@
 #left-sidebar-modal-content #direct-messages-modal,
 #left-sidebar-modal-content #more-topics-modal {
     display: grid;
-    grid-template:
-        "section-header" minmax(0, max-content)
-        "conversation-list" minmax(0, 1fr) / minmax(0, 1fr);
     max-height: 100%;
 }
 
+#left-sidebar-modal-content #more-topics-modal {
+    grid-template:
+        "section-header" minmax(0, max-content)
+        "conversation-list" minmax(0, 1fr)
+        "resolved-topics-unreads-jump" minmax(0, max-content) / minmax(0, 1fr);
+}
+
 #left-sidebar-modal-content #direct-messages-modal {
+    grid-template:
+        "section-header" minmax(0, max-content)
+        "conversation-list" minmax(0, 1fr) / minmax(0, 1fr);
+
     #direct-messages-modal-section-header,
     .dm-list {
         margin-right: var(--left-sidebar-right-margin);
@@ -2169,6 +2177,50 @@ li.active-sub-filter {
     }
 }
 
+/* Shown below the zoomed-in topic list while resolved topics
+   with unreads are scrolled out of view. */
+.resolved-topics-unreads-jump {
+    grid-area: resolved-topics-unreads-jump;
+    display: flex;
+    align-items: center;
+    gap: var(--left-sidebar-icon-content-gap);
+    /* Leave room for the scrollbar, like the channel header. */
+    margin-right: var(--left-sidebar-right-margin);
+    padding: 0 var(--input-icon-starting-offset);
+    min-height: var(--line-height-sidebar-row-prominent);
+    border: 0;
+    border-top: 1px solid var(--color-border-sidebar);
+    border-radius: 0;
+    background-color: var(--color-background);
+    color: var(--color-text-sidebar-action-heading);
+    /* Buttons don't inherit the page font by default. */
+    font-family: inherit;
+    font-size: var(--font-size-sidebar-action-heading);
+    font-weight: var(--font-weight-sidebar-action-heading);
+    font-variant: var(--font-variant-sidebar-action-heading);
+    font-feature-settings: var(--font-feature-settings-sidebar-action-heading);
+    text-transform: var(--text-transform-sidebar-action-heading);
+    text-align: left;
+
+    &:hover {
+        background-color: var(--color-background-sidebar-action-heading-hover);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+    }
+
+    /* Override the display: flex above. */
+    &.hide {
+        display: none;
+    }
+
+    .zulip-icon {
+        flex-shrink: 0;
+    }
+}
+
 .channel-new-topic-button,
 .channel-search-topics-button {
     /* display: flex; is set on visible channels and
@@ -2663,6 +2715,14 @@ body:not(.spectator-view)
     .modal-direct-messages-list,
     .topic-list-scroll-container {
         grid-area: conversation-list;
+    }
+
+    .topic-list-scroll-container {
+        /* SimpleBar's `.simplebar-wrapper` uses `height: inherit`;
+           with the grid-sized default of `height: auto`, it grows
+           to the full list height and overlaps the jump button
+           below, intercepting clicks. */
+        height: 100%;
     }
 
     .channel-header {

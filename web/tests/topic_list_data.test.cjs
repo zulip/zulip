@@ -134,6 +134,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         more_topics_unreads: 0,
         more_topics_unread_count_muted: false,
         num_possible_topics: 0,
+        resolved_topics_unreads: 0,
     });
 
     function add_topic_message(topic_name, message_id) {
@@ -658,6 +659,7 @@ test("get_list_info demotes resolved topics", ({override}) => {
         "✔ issue 3",
     ]);
     assert.equal(list_info.more_topics_unreads, 0);
+    assert.equal(list_info.resolved_topics_unreads, 2);
 
     // In a muted channel, unmuted or followed topics come first
     // within the unresolved and resolved groups.
@@ -702,6 +704,19 @@ test("get_list_info demotes resolved topics", ({override}) => {
         "issue 18",
     ]);
     assert.equal(list_info.more_topics_unreads, 3);
+    assert.equal(list_info.resolved_topics_unreads, 0);
+
+    // When zoomed, resolved_topics_unreads counts the unreads in
+    // the unmuted resolved topics.
+    list_info = get_list_info(true);
+    assert.equal(list_info.resolved_topics_unreads, 3);
+    override(user_topics, "is_topic_muted", (stream_id, topic_name) => {
+        assert.equal(stream_id, general.stream_id);
+        return topic_name === "✔ issue 7";
+    });
+    list_info = get_list_info(true);
+    assert.equal(list_info.resolved_topics_unreads, 2);
+    override(user_topics, "is_topic_muted", () => false);
 
     // The active topic is always shown, in the resolved group if
     // it is resolved.

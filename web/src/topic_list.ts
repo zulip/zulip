@@ -25,6 +25,7 @@ import type {TopicFilterPill, TopicFilterPillWidget} from "./topic_filter_pill.t
 import * as topic_list_data from "./topic_list_data.ts";
 import type {TopicInfo} from "./topic_list_data.ts";
 import * as ui_util from "./ui_util.ts";
+import * as util from "./util.ts";
 import * as vdom from "./vdom.ts";
 
 /* Track all active widgets with a Map by stream_id. We have at max
@@ -342,6 +343,7 @@ export class TopicListWidget {
     my_stream_id: number;
     for_modal: boolean;
     filter_topics: (topic_names: string[]) => string[];
+    resolved_topics_unreads = 0;
 
     constructor(
         $stream_li: JQuery,
@@ -364,6 +366,8 @@ export class TopicListWidget {
             this.for_modal,
             this.filter_topics,
         );
+
+        this.resolved_topics_unreads = list_info.resolved_topics_unreads;
 
         const num_possible_topics = list_info.num_possible_topics;
         const more_topics_unreads = list_info.more_topics_unreads;
@@ -473,7 +477,65 @@ export class LeftSidebarTopicListWidget extends TopicListWidget {
         const formatter = keyed_topic_li;
 
         super.build(spinner, formatter);
+
+        if (this.for_modal) {
+            update_resolved_topics_unreads_jump();
+        }
     }
+}
+
+function get_first_unread_resolved_topic_row(): JQuery {
+    return scroll_util
+        .get_content_element($("#more-topics-modal .topic-list-scroll-container"))
+        .find("li.topic-list-item.resolved-topic-with-unreads")
+        .first();
+}
+
+// Shows the button to jump to the unreads in resolved topics in the
+// zoomed-in topic list while the first resolved topic with unreads
+// is scrolled out of view.
+function update_resolved_topics_unreads_jump(): void {
+    const $jump_button = $("#more-topics-modal .resolved-topics-unreads-jump");
+    if ($jump_button.length === 0) {
+        return;
+    }
+
+    const $first_unread_resolved_topic_row = get_first_unread_resolved_topic_row();
+    if (
+        !zoomed ||
+        zoomed_in_widget === undefined ||
+        zoomed_in_widget.resolved_topics_unreads === 0 ||
+        $first_unread_resolved_topic_row.length === 0
+    ) {
+        $jump_button.addClass("hide");
+        return;
+    }
+
+    const $scroll_container = $("#more-topics-modal .topic-list-scroll-container");
+    const container_bottom = util.the($scroll_container).getBoundingClientRect().bottom;
+    const first_unread_resolved_topic_row_bottom = util
+        .the($first_unread_resolved_topic_row)
+        .getBoundingClientRect().bottom;
+    $jump_button.toggleClass("hide", first_unread_resolved_topic_row_bottom <= container_bottom);
+}
+
+function scroll_to_resolved_topics(): void {
+    const $first_unread_resolved_topic_row = get_first_unread_resolved_topic_row();
+    if ($first_unread_resolved_topic_row.length === 0) {
+        return;
+    }
+
+    // Scroll the first resolved topic with unreads to the top of the
+    // topic list, unlike scroll_element_into_container, which only
+    // scrolls until the row is visible.
+    const $scroll_container = scroll_util.get_scroll_element(
+        $("#more-topics-modal .topic-list-scroll-container"),
+    );
+    const row_offset = $first_unread_resolved_topic_row.offset()?.top ?? 0;
+    const container_offset = $scroll_container.offset()?.top ?? 0;
+    $scroll_container.scrollTop(
+        ($scroll_container.scrollTop() ?? 0) + row_offset - container_offset,
+    );
 }
 
 export function clear_topic_search(e: JQuery.Event): void {
@@ -615,6 +677,19 @@ export function zoom_in($stream_li: JQuery, stream_id: number): void {
     const spinner = true;
     zoomed_in_widget.build(spinner);
     reset_topic_list_cursor({show_highlight: false});
+
+    // The modal is recreated on each zoom in, so these listeners go
+    // away with it.
+    scroll_util
+        .get_scroll_element($("#more-topics-modal .topic-list-scroll-container"))
+        .on("scroll", update_resolved_topics_unreads_jump);
+    // We observe the modal rather than the scroll container, since
+    // showing or hiding the button resizes the scroll container, and
+    // the callback is deferred to avoid a ResizeObserver loop.
+    const resize_observer = new ResizeObserver((_entries) => {
+        requestAnimationFrame(update_resolved_topics_unreads_jump);
+    });
+    resize_observer.observe(util.the($("#more-topics-modal")));
 
     function on_success(): void {
         if (!active_widgets.has(stream_id)) {
@@ -834,6 +909,12 @@ export function initialize({
     }
     $("#more-topics-modal").on("click", ".topic-box", on_topic_box_click);
     $("#stream_filters").on("click", ".topic-box", on_topic_box_click);
+
+    $("body").on("click", "#more-topics-modal .resolved-topics-unreads-jump", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        scroll_to_resolved_topics();
+    });
 
     $("body").on("input", "#left-sidebar-filter-topic-input", (): void => {
         const stream_id = active_stream_id();

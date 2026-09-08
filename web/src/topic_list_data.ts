@@ -199,6 +199,8 @@ type TopicListInfo = {
     more_topics_unreads: number;
     more_topics_have_unread_mention_messages: boolean;
     more_topics_unread_count_muted: boolean;
+    // Unreads in the unmuted resolved topics included in items.
+    resolved_topics_unreads: number;
 };
 
 export function filter_topics_by_search_term(
@@ -304,6 +306,10 @@ export function get_list_info(
         choose_topics(stream_id, ordered_topic_names, topic_choice_state);
     }
 
+    const resolved_topics_unreads = topic_choice_state.items
+        .filter((item) => !item.is_muted && resolved_topic.is_resolved(item.topic_name))
+        .reduce((total, item) => total + item.unread, 0);
+
     if (
         topic_choice_state.more_topics_unmuted_unreads === 0 &&
         topic_choice_state.more_topics_muted_unreads > 0 &&
@@ -318,6 +324,7 @@ export function get_list_info(
             more_topics_have_unread_mention_messages:
                 topic_choice_state.more_topics_have_muted_unread_mention_messages,
             more_topics_unread_count_muted: true,
+            resolved_topics_unreads,
         };
     }
     return {
@@ -331,5 +338,6 @@ export function get_list_info(
             topic_choice_state.more_topics_have_unread_mention_messages ||
             topic_choice_state.more_topics_have_muted_unread_mention_messages,
         more_topics_unread_count_muted: false,
+        resolved_topics_unreads,
     };
 }
