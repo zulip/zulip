@@ -2,7 +2,7 @@ import {$} from "jquery";
 
 import * as loading from "./loading.ts";
 
-let loading_older_messages_indicator_showing = false;
+let top_of_feed_indicator_showing = false;
 let loading_newer_messages_indicator_showing = false;
 
 // The indicator at the top of the feed is shown for two reasons: the
@@ -13,17 +13,15 @@ let fetching_older_messages = false;
 
 function update_top_of_feed_indicator(): void {
     const should_show_indicator = initial_page_load_pending || fetching_older_messages;
-    if (should_show_indicator === loading_older_messages_indicator_showing) {
+    if (should_show_indicator === top_of_feed_indicator_showing) {
         return;
     }
     if (should_show_indicator) {
-        $(".top-messages-logo").toggleClass("loading", true);
-        loading.make_indicator($("#top-of-feed-loading-indicator"), {abs_positioned: true});
-        loading_older_messages_indicator_showing = true;
+        $("#top-of-feed-loading-indicator").addClass("loading");
+        top_of_feed_indicator_showing = true;
     } else {
-        $(".top-messages-logo").toggleClass("loading", false);
-        loading.destroy_indicator($("#top-of-feed-loading-indicator"));
-        loading_older_messages_indicator_showing = false;
+        $("#top-of-feed-loading-indicator").removeClass("loading");
+        top_of_feed_indicator_showing = false;
     }
 }
 
