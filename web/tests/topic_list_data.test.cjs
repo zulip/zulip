@@ -189,23 +189,13 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 10);
 
-    assert.deepEqual(list_info.items[0], {
-        contains_unread_mention: false,
-        is_active_topic: false,
-        is_muted: false,
-        is_followed: false,
-        is_unmuted_or_followed: false,
-        is_zero: true,
-        stream_id: 556,
-        topic_display_name: "topic 9",
-        topic_name: "✔ topic 9",
-        topic_resolved_prefix: "✔ ",
-        is_empty_string_topic: false,
-        unread: 0,
-        url: `#narrow/channel/556-general/topic/.E2.9C.94.20topic.209/with/${1000 + 9}`,
-    });
+    // Resolved topics are listed after unresolved ones.
+    assert.deepEqual(
+        list_info.items.map((li) => li.topic_name),
+        ["topic 8", "topic 6", "topic 4", "topic 2", "topic 0", "✔ topic 9"],
+    );
 
-    assert.deepEqual(list_info.items[1], {
+    assert.deepEqual(list_info.items[0], {
         contains_unread_mention: false,
         is_active_topic: false,
         is_muted: false,
@@ -219,6 +209,22 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         is_empty_string_topic: false,
         unread: 0,
         url: `#narrow/channel/556-general/topic/topic.208/with/${1000 + 8}`,
+    });
+
+    assert.deepEqual(list_info.items[5], {
+        contains_unread_mention: false,
+        is_active_topic: false,
+        is_muted: false,
+        is_followed: false,
+        is_unmuted_or_followed: false,
+        is_zero: true,
+        stream_id: 556,
+        topic_display_name: "topic 9",
+        topic_name: "✔ topic 9",
+        topic_resolved_prefix: "✔ ",
+        is_empty_string_topic: false,
+        unread: 0,
+        url: `#narrow/channel/556-general/topic/.E2.9C.94.20topic.209/with/${1000 + 9}`,
     });
 
     // Empty string as topic name.
@@ -254,6 +260,22 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
     assert.equal(list_info.more_topics_unreads, 0);
     assert.equal(list_info.more_topics_have_unread_mention_messages, false);
     assert.equal(list_info.num_possible_topics, 11);
+    assert.deepEqual(
+        list_info.items.map((li) => li.topic_name),
+        [
+            "",
+            "topic 8",
+            "topic 6",
+            "topic 4",
+            "topic 2",
+            "topic 0",
+            "✔ topic 9",
+            "✔ topic 7",
+            "✔ topic 5",
+            "✔ topic 3",
+            "✔ topic 1",
+        ],
+    );
 
     add_topic_message("Backend Developer", 1008);
     add_topic_message("Developer Backend", 1009);
@@ -573,6 +595,160 @@ test("get_list_info unreads", ({override}) => {
             "topic 14",
         ],
     );
+});
+
+test("get_list_info demotes resolved topics", ({override}) => {
+    let list_info;
+    general.is_muted = false;
+    unread.declare_bankruptcy();
+
+    // Even topics are unresolved, odd topics are resolved, and
+    // "issue 0" is the most recent.
+    let message_id = 5000;
+    for (let i = 19; i >= 0; i -= 1) {
+        stream_topic_history.add_message({
+            stream_id: general.stream_id,
+            message_id: (message_id += 1),
+            topic_name: i % 2 ? `✔ issue ${i}` : `issue ${i}`,
+        });
+    }
+
+    function add_unread(topic) {
+        unread.process_loaded_messages([
+            {
+                id: (message_id += 1),
+                stream_id: general.stream_id,
+                topic,
+                type: "stream",
+                unread: true,
+            },
+        ]);
+    }
+
+    function topic_names(list_info) {
+        return list_info.items.map((li) => li.topic_name);
+    }
+
+    // With no unreads, the MAX_TOPICS slots are filled by the most
+    // recent unresolved topics.
+    list_info = get_list_info();
+    assert.deepEqual(topic_names(list_info), [
+        "issue 0",
+        "issue 2",
+        "issue 4",
+        "issue 6",
+        "issue 8",
+        "issue 10",
+    ]);
+    assert.equal(list_info.more_topics_unreads, 0);
+
+    // Resolved topics with unreads are shown after the unresolved
+    // topics, while there is room under MAX_TOPICS_WITH_UNREAD.
+    add_unread("✔ issue 1");
+    add_unread("✔ issue 3");
+    list_info = get_list_info();
+    assert.deepEqual(topic_names(list_info), [
+        "issue 0",
+        "issue 2",
+        "issue 4",
+        "issue 6",
+        "issue 8",
+        "issue 10",
+        "✔ issue 1",
+        "✔ issue 3",
+    ]);
+    assert.equal(list_info.more_topics_unreads, 0);
+
+    // In a muted channel, unmuted or followed topics come first
+    // within the unresolved and resolved groups.
+    general.is_muted = true;
+    add_unread("✔ issue 7");
+    override(user_topics, "is_topic_unmuted_or_followed", (stream_id, topic_name) => {
+        assert.equal(stream_id, general.stream_id);
+        return ["issue 4", "✔ issue 7"].includes(topic_name);
+    });
+    list_info = get_list_info();
+    assert.deepEqual(topic_names(list_info), [
+        "issue 4",
+        "issue 0",
+        "issue 2",
+        "issue 6",
+        "issue 8",
+        "issue 10",
+        "✔ issue 7",
+        "✔ issue 1",
+        "✔ issue 3",
+    ]);
+    general.is_muted = false;
+    override(user_topics, "is_topic_unmuted_or_followed", () => false);
+
+    // Once unresolved topics with unreads fill the list, resolved
+    // topics with unreads are counted in "show all topics".
+    add_unread("issue 12");
+    add_unread("issue 14");
+    add_unread("issue 16");
+    add_unread("issue 18");
+    list_info = get_list_info();
+    assert.deepEqual(topic_names(list_info), [
+        "issue 0",
+        "issue 2",
+        "issue 4",
+        "issue 6",
+        "issue 8",
+        "issue 10",
+        "issue 12",
+        "issue 14",
+        "issue 16",
+        "issue 18",
+    ]);
+    assert.equal(list_info.more_topics_unreads, 3);
+
+    // The active topic is always shown, in the resolved group if
+    // it is resolved.
+    override(narrow_state, "stream_id", () => general.stream_id);
+    override(narrow_state, "topic", () => "✔ issue 5");
+    list_info = get_list_info();
+    assert.equal(list_info.items.length, 11);
+    assert.equal(list_info.items[10].topic_name, "✔ issue 5");
+    assert.equal(list_info.items[10].is_active_topic, true);
+    assert.equal(list_info.more_topics_unreads, 3);
+    override(narrow_state, "topic", () => {});
+
+    // Filtering by resolved state leaves a single group, so the
+    // order is the same as without demotion.
+    function get_list_info_with_topics_state(topics_state) {
+        return topic_list_data.get_list_info(general.stream_id, false, (topics) =>
+            topic_list_data.filter_topics_by_search_term(
+                general.stream_id,
+                topics,
+                "",
+                topics_state,
+            ),
+        );
+    }
+    list_info = get_list_info_with_topics_state("-is:resolved");
+    assert.deepEqual(topic_names(list_info), [
+        "issue 0",
+        "issue 2",
+        "issue 4",
+        "issue 6",
+        "issue 8",
+        "issue 10",
+        "issue 12",
+        "issue 14",
+        "issue 16",
+        "issue 18",
+    ]);
+    list_info = get_list_info_with_topics_state("is:resolved");
+    assert.deepEqual(topic_names(list_info), [
+        "✔ issue 1",
+        "✔ issue 3",
+        "✔ issue 5",
+        "✔ issue 7",
+        "✔ issue 9",
+        "✔ issue 11",
+    ]);
+    assert.equal(list_info.more_topics_unreads, 0);
 });
 
 test("get_list_info with specific topics and searches", () => {

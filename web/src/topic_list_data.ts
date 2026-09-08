@@ -180,6 +180,14 @@ function choose_topics(
     }
 }
 
+// Lists resolved topics after unresolved ones, keeping the existing
+// order within each group.
+function demote_resolved_topics(topic_names: string[]): string[] {
+    const unresolved_topics = topic_names.filter((name) => !resolved_topic.is_resolved(name));
+    const resolved_topics = topic_names.filter((name) => resolved_topic.is_resolved(name));
+    return [...unresolved_topics, ...resolved_topics];
+}
+
 function contains_topic(topic_names: string[], narrowed_topic: string): boolean {
     const lower_cased_topics = topic_names.map((name) => name.toLowerCase());
     return lower_cased_topics.includes(narrowed_topic.toLowerCase());
@@ -278,19 +286,22 @@ export function get_list_info(
 
     const topic_names = get_filtered_topic_names(stream_id, filter_topics);
 
-    if (zoomed) {
-        show_all_topics(stream_id, topic_names, topic_choice_state);
-    } else if (stream_muted) {
+    let ordered_topic_names = topic_names;
+    if (!zoomed && stream_muted) {
         const unmuted_or_followed_topics = topic_names.filter((topic) =>
             user_topics.is_topic_unmuted_or_followed(stream_id, topic),
         );
         const other_topics = topic_names.filter(
             (topic) => !user_topics.is_topic_unmuted_or_followed(stream_id, topic),
         );
-        const reordered_topics = [...unmuted_or_followed_topics, ...other_topics];
-        choose_topics(stream_id, reordered_topics, topic_choice_state);
+        ordered_topic_names = [...unmuted_or_followed_topics, ...other_topics];
+    }
+    ordered_topic_names = demote_resolved_topics(ordered_topic_names);
+
+    if (zoomed) {
+        show_all_topics(stream_id, ordered_topic_names, topic_choice_state);
     } else {
-        choose_topics(stream_id, topic_names, topic_choice_state);
+        choose_topics(stream_id, ordered_topic_names, topic_choice_state);
     }
 
     if (
