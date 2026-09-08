@@ -32,6 +32,7 @@ const {electron_bridge} = mock_esm("../src/electron_bridge", {
 });
 const theme = mock_esm("../src/theme");
 const emoji_frequency = mock_esm("../src/emoji_frequency");
+const emoji_hover_animation = mock_esm("../src/emoji_hover_animation");
 const emoji_picker = mock_esm("../src/emoji_picker");
 const gear_menu = mock_esm("../src/gear_menu");
 mock_esm("../src/inbox_ui", {
@@ -132,7 +133,7 @@ const current_user = {};
 set_current_user(current_user);
 const realm_user_settings_defaults = {};
 initialize_realm_user_settings_defaults({realm_user_settings_defaults});
-const user_settings = {};
+const user_settings = {web_animate_image_previews: "on_hover"};
 initialize_user_settings({user_settings});
 
 message_lists.update_recipient_bar_background_color = noop;
@@ -1362,6 +1363,14 @@ run_test("user_settings", ({override}) => {
         dispatch(event);
         assert.equal(user_settings.web_home_view, "inbox");
     }
+
+    const update_all_rendered_emojis_stub = make_stub();
+    override(
+        emoji_hover_animation,
+        "update_all_rendered_emojis",
+        update_all_rendered_emojis_stub.f,
+    );
+
     {
         event = event_fixtures.user_settings__web_animate_image_previews_always;
         override(user_settings, "web_animate_image_previews", "on_hover");
@@ -1382,6 +1391,7 @@ run_test("user_settings", ({override}) => {
         dispatch(event);
         assert.equal(user_settings.web_animate_image_previews, "never");
     }
+    assert.equal(update_all_rendered_emojis_stub.num_calls, 3);
 
     {
         const stub = make_stub();
@@ -1761,6 +1771,7 @@ run_test("user_status", ({override}) => {
             reaction_type: "unicode_emoji",
             // Extra parameters that were added by `emoji.get_emoji_details_by_name`
             emoji_alt_code: false,
+            emoji_animation_setting: "on_hover",
         });
     }
 

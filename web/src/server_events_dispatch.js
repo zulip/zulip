@@ -22,6 +22,7 @@ import * as condense from "./condense.ts";
 import {electron_bridge} from "./electron_bridge.ts";
 import * as emoji from "./emoji.ts";
 import * as emoji_frequency from "./emoji_frequency.ts";
+import * as emoji_hover_animation from "./emoji_hover_animation.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as gear_menu from "./gear_menu.ts";
 import * as gif_state from "./gif_state.ts";
@@ -1064,6 +1065,7 @@ export function dispatch_normal_event(event) {
                     stream_list.update_streams_sidebar(true);
                     break;
                 case "web_animate_image_previews":
+                    emoji_hover_animation.update_all_rendered_emojis();
                     // Rerender the whole message list UI
                     for (const msg_list of message_lists.all_rendered_message_lists()) {
                         msg_list.rerender();
