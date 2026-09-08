@@ -1306,10 +1306,14 @@ export function handle_narrow_activated(
         zoom_in(info.stream_id);
     }
 
-    // Do not auto scroll when switching topics in an already expanded channel.
+    // When switching topics in an already expanded channel, we only
+    // scroll if the active topic moved out of view in the zoomed-in
+    // list, e.g. to the resolved topics section when it is resolved.
     const info = get_sidebar_stream_topic_info(filter);
     if (info.stream_id !== previously_expanded_stream_id) {
         scroll_stream_into_view();
+    } else if (is_zoomed_in() && info.topic_selected) {
+        topic_list.keep_zoomed_in_active_topic_visible();
     }
 }
 
