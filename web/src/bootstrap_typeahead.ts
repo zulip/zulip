@@ -149,6 +149,18 @@
  *
  *   This allows us to prevent the typeahead menu from being displayed
  *   when a pill is deleted using the backspace key.
+ *
+ * 19. Ignore typeahead selection for IME-confirming Enter (#23595):
+ *
+ *   Enter/Tab during CJK IME composition must not complete a typeahead
+ *   item. We track composition via compositionstart/compositionend, honor
+ *   KeyboardEvent.isComposing, and treat keyCode 229 as IME input for
+ *   selection/navigation keys. Lookup still runs during composition so
+ *   suggestions can appear. On compositionend we set
+ *   ignore_next_enter_for_selection so the confirming Enter (which may
+ *   arrive after compositionend with isComposing already false, including
+ *   on a later macrotask) does not select; any non-Enter key clears that
+ *   flag so a later genuine Enter still selects normally.
  * ============================================================ */
 
 import {$} from "jquery";
@@ -184,6 +196,40 @@ export let MAX_ITEMS = 50;
 
 export function rewire_MAX_ITEMS(value: typeof MAX_ITEMS): void {
     MAX_ITEMS = value;
+}
+
+// Traditional keyCode for keys handled by an IME (Unidentified).
+const IME_KEY_CODE = 229;
+
+/**
+ * Whether a keyboard event is coming from an IME (active composition or
+ * Unidentified / keyCode 229), as opposed to a normal shortcut key.
+ *
+ * Exported for tests. Callers that track composition themselves should pass
+ * `in_ime_composition` from compositionstart/compositionend listeners.
+ * keyCode 229 covers Safari keys during composition; the separate
+ * `ignore_next_enter_for_selection` flag covers confirming Enter after
+ * compositionend (#23595).
+ */
+export function is_ime_provider_input(
+    event: JQuery.KeyboardEventBase,
+    in_ime_composition: boolean,
+): boolean {
+    if (in_ime_composition) {
+        return true;
+    }
+    const original = event.originalEvent;
+    if (original?.isComposing) {
+        return true;
+    }
+    // keyCode 229 (Unidentified) is still the reliable IME signal on Safari
+    // during composition. There is no non-deprecated equivalent.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return original?.keyCode === IME_KEY_CODE;
+}
+
+function is_enter_key(event: JQuery.KeyboardEventBase): boolean {
+    return event.key === "Enter";
 }
 
 /* TYPEAHEAD PUBLIC CLASS DEFINITION
@@ -272,6 +318,11 @@ export class Typeahead<ItemType extends string | object> {
     hideOnEmptyAfterBackspace: boolean;
     // Used for adding a custom classname to the typeahead link.
     getCustomItemClassname: ((item: ItemType) => string) | undefined;
+    // True between compositionstart and compositionend (#23595).
+    in_ime_composition = false;
+    // Set on compositionend; consumed by the next Enter (IME confirm) or
+    // cleared by any non-Enter key so a later Enter can select (#23595).
+    ignore_next_enter_for_selection = false;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -684,6 +735,8 @@ export class Typeahead<ItemType extends string | object> {
             .on("click", this.element_click.bind(this))
             .on("focus", this.element_focus.bind(this))
             .on("keydown", this.keydown.bind(this))
+            .on("compositionstart", this.compositionstart.bind(this))
+            .on("compositionend", this.compositionend.bind(this))
             .on("typeahead.refreshPosition", this.refreshPosition.bind(this));
 
         this.$menu
@@ -701,12 +754,53 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     unlisten(): void {
+        this.in_ime_composition = false;
+        this.ignore_next_enter_for_selection = false;
         this.hide();
         this.$container.remove();
-        const events = ["blur", "keydown", "keyup", "keypress", "click", "focus"];
+        const events = [
+            "blur",
+            "keydown",
+            "keyup",
+            "keypress",
+            "click",
+            "focus",
+            "compositionstart",
+            "compositionend",
+        ];
         for (const event of events) {
             $(this.input_element.$element).off(event);
         }
+    }
+
+    compositionstart(): void {
+        this.in_ime_composition = true;
+    }
+
+    compositionend(): void {
+        this.in_ime_composition = false;
+        // The key that confirmed composition (often Enter) may arrive after
+        // this event with isComposing already false. Ignore that Enter for
+        // typeahead selection; non-Enter keys clear the flag instead.
+        this.ignore_next_enter_for_selection = true;
+        this.lookup(false);
+    }
+
+    /**
+     * Whether Enter should complete a typeahead item. False during IME
+     * composition and for the one Enter that confirms composition after
+     * compositionend. Exported behavior is covered by unit tests on keyup.
+     */
+    should_skip_enter_selection(event: JQuery.KeyboardEventBase): boolean {
+        if (is_ime_provider_input(event, this.in_ime_composition)) {
+            return true;
+        }
+        return this.ignore_next_enter_for_selection;
+    }
+
+    note_non_enter_key_event(): void {
+        // Composition was confirmed with Space/number/click, not Enter.
+        this.ignore_next_enter_for_selection = false;
     }
 
     resizeHandler(): void {
@@ -766,6 +860,18 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     keydown(e: JQuery.KeyDownEvent): void {
+        if (is_ime_provider_input(e, this.in_ime_composition)) {
+            // Let the IME handle keys (including Enter to confirm).
+            return;
+        }
+        if (is_enter_key(e) && this.ignore_next_enter_for_selection) {
+            // Confirming Enter after compositionend: do not navigate or
+            // select; keyup consumes ignore_next_enter_for_selection.
+            return;
+        }
+        if (!is_enter_key(e)) {
+            this.note_non_enter_key_event();
+        }
         if (this.trigger_selection(e)) {
             if (!this.shown) {
                 return;
@@ -780,6 +886,12 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     keypress(e: JQuery.KeyPressEvent): void {
+        if (is_ime_provider_input(e, this.in_ime_composition)) {
+            return;
+        }
+        if (is_enter_key(e) && this.ignore_next_enter_for_selection) {
+            return;
+        }
         if (!this.suppressKeyPressRepeat) {
             this.move(e);
             return;
@@ -797,9 +909,17 @@ export class Typeahead<ItemType extends string | object> {
         switch (e.key) {
             case "ArrowDown":
             case "ArrowUp":
+                if (is_ime_provider_input(e, this.in_ime_composition)) {
+                    return;
+                }
+                this.note_non_enter_key_event();
                 break;
 
             case "Tab":
+                if (is_ime_provider_input(e, this.in_ime_composition)) {
+                    return;
+                }
+                this.note_non_enter_key_event();
                 // If the typeahead is not shown or tabIsEnter option is not set, do nothing and return
                 if (!this.tabIsEnter || !this.shown) {
                     return;
@@ -818,6 +938,12 @@ export class Typeahead<ItemType extends string | object> {
                 break;
 
             case "Enter":
+                if (this.should_skip_enter_selection(e)) {
+                    // Consume the post-compositionend ignore flag on this
+                    // confirming Enter (whether same turn or later macrotask).
+                    this.ignore_next_enter_for_selection = false;
+                    return;
+                }
                 if (!this.shown) {
                     return;
                 }
@@ -825,6 +951,10 @@ export class Typeahead<ItemType extends string | object> {
                 break;
 
             case "Escape":
+                if (is_ime_provider_input(e, this.in_ime_composition)) {
+                    return;
+                }
+                this.note_non_enter_key_event();
                 if (this.select_on_escape_condition()) {
                     this.select(e);
                 }
@@ -838,6 +968,7 @@ export class Typeahead<ItemType extends string | object> {
                 break;
 
             default:
+                this.note_non_enter_key_event();
                 // to stop typeahead from showing up momentarily
                 // when shift + tabbing to the topic field
                 if (
@@ -846,11 +977,18 @@ export class Typeahead<ItemType extends string | object> {
                 ) {
                     return;
                 }
+                // Lookup during IME composition as well so suggestions stay
+                // visible; only selection is suppressed (#23595).
                 if (e.key === "Backspace") {
                     this.lookup(this.hideOnEmptyAfterBackspace);
                     return;
                 }
                 this.lookup(false);
+                // During composition, do not preventDefault — the IME owns
+                // the key. Selection keys above already returned early.
+                if (is_ime_provider_input(e, this.in_ime_composition)) {
+                    return;
+                }
         }
 
         this.maybeStopAdvance(e);
@@ -884,6 +1022,10 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     element_click(): void {
+        // Mouse IME candidate clicks confirm without Enter; don't block the
+        // next real Enter from selecting a typeahead item.
+        this.note_non_enter_key_event();
+
         if (!this.showOnClick) {
             // If showOnClick is false, we don't want to show the typeahead
             // when the user clicks anywhere on the input element.
