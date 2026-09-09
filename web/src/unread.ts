@@ -721,6 +721,16 @@ export function get_unread_messages(messages: Message[]): Message[] {
     return messages.filter((message) => unread_messages.has(message.id));
 }
 
+// The key recent view uses for the message's conversation, known here
+// even for a message the client never fetched.
+export function get_unread_message_conversation_key(message_id: number): string | undefined {
+    const stream_topic = unread_topic_counter.reverse_lookup.get(message_id);
+    if (stream_topic !== undefined) {
+        return recent_view_util.get_topic_key(stream_topic.stream_id, stream_topic.topic);
+    }
+    return unread_direct_message_counter.reverse_lookup.get(message_id);
+}
+
 export function get_unread_message_count(): number {
     return unread_messages.size;
 }
