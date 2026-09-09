@@ -83,6 +83,8 @@ const ListWidget = mock_esm("../src/list_widget", {
 
     hard_redraw: noop,
     filter_and_sort: () => [],
+    get_current_list: () => [],
+    all_rendered: () => true,
     replace_list_data(data) {
         assert.notEqual(
             expected_data_to_replace_in_list_widget,
@@ -226,6 +228,7 @@ const {buddy_list} = zrequire("buddy_list");
 const activity_ui = zrequire("activity_ui");
 const people = zrequire("people");
 const rt = zrequire("recent_view_ui");
+const views_util = zrequire("views_util");
 rt.set_hide_other_views(noop);
 const recent_view_util = zrequire("recent_view_util");
 const rt_data = zrequire("recent_view_data");
@@ -984,6 +987,34 @@ test("inplace_rerender updates one row the way a bulk rerender does", ({override
     // resort has removed its row, so no row is updated for it.
     assert.ok(rt.inplace_rerender(get_topic_key(stream1, topic7)));
     assert.equal(updates.length, 2);
+});
+
+test("rerender renders more rows until they reach the bottom of the viewport", ({
+    override,
+    override_rewire,
+}) => {
+    show_recent_view_with_messages();
+    let batches_rendered = 0;
+    override(ListWidget, "render", () => {
+        batches_rendered += 1;
+    });
+
+    const batches_until_viewport_is_filled = 2;
+    override(ListWidget, "all_rendered", () => false);
+    override_rewire(
+        views_util,
+        "is_bottom_padding_in_view",
+        () => batches_rendered < batches_until_viewport_is_filled,
+    );
+    bulk_rerender([]);
+    assert.equal(batches_rendered, batches_until_viewport_is_filled);
+
+    batches_rendered = 0;
+    const batches_until_all_rendered = 3;
+    override_rewire(views_util, "is_bottom_padding_in_view", () => true);
+    override(ListWidget, "all_rendered", () => batches_rendered === batches_until_all_rendered);
+    bulk_rerender([]);
+    assert.equal(batches_rendered, batches_until_all_rendered);
 });
 
 test("basic assertions", ({mock_template, override_rewire}) => {

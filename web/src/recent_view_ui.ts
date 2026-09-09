@@ -1180,6 +1180,13 @@ function rerender_conversation_rows(row_keys: Set<string>): void {
             }
         }
     }
+    // The widget renders more rows only on scroll, and removals can
+    // bring the end of the rows into view without one. Its own scroll
+    // check asks for rows from two thirds of the way down, which near
+    // the end of a long table would be hundreds of them at once.
+    while (!topics_widget.all_rendered() && views_util.is_bottom_padding_in_view()) {
+        topics_widget.render();
+    }
     setTimeout(revive_current_focus, 0);
 }
 

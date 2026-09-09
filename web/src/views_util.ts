@@ -216,3 +216,10 @@ export function is_scroll_position_for_render(): boolean {
     const scroll_max = get_scroll_height_without_bottom_padding();
     return scroll_position + window_height >= (2 / 3) * scroll_max;
 }
+
+export let is_bottom_padding_in_view = (): boolean =>
+    window.scrollY + window.innerHeight >= get_scroll_height_without_bottom_padding();
+
+export function rewire_is_bottom_padding_in_view(value: typeof is_bottom_padding_in_view): void {
+    is_bottom_padding_in_view = value;
+}
