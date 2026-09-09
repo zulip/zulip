@@ -67,6 +67,7 @@ from zerver.data_import.slack import (
     process_message_files,
     slack_emoji_name_to_codepoint,
     slack_workspace_to_realm,
+    thread_parent_map,
     users_to_zerver_userprofile,
 )
 from zerver.lib.exceptions import SlackImportInvalidFileError
@@ -2346,10 +2347,16 @@ To Do
             status=200,
         )
 
+        # A conversion must not read thread state cached by an earlier
+        # import in the same process; see reset_import_state.
+        thread_parent_map["0000000000.000000"] = "USTALEPARENT"
+
         with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
             # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
             # uses it to generate email addresses for users without an email specified.
             do_convert_zipfile(test_slack_zip_file, output_dir, token, processes=1)
+
+        self.assertNotIn("0000000000.000000", thread_parent_map)
 
         realm_id = 0
         uploads_folder = os.path.join(output_dir, "uploads", str(realm_id))

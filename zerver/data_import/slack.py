@@ -929,6 +929,10 @@ def get_messages_iterator(
 thread_parent_map: dict[str, str] = {}
 
 
+def reset_import_state() -> None:
+    thread_parent_map.clear()
+
+
 def get_parent_user_id_from_thread_message(thread_message: ZerverFieldsT, subtype: str) -> str:
     """
     This retrieves the user id of the sender of the original thread
@@ -1794,6 +1798,10 @@ def do_convert_directory(
     processes: int = 6,
     convert_slack_threads: bool = False,
 ) -> None:
+    # Start from a clean slate: the module-level id maps below persist across
+    # Slack imports in a long-lived worker, so reset them before touching
+    # anything.
+    reset_import_state()
     check_slack_token_access(token, SLACK_IMPORT_TOKEN_SCOPES)
 
     os.makedirs(output_dir, exist_ok=True)
