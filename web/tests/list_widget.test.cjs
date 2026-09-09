@@ -232,7 +232,7 @@ function make_tracked_widget(list, opts = {}) {
         $simplebar_container: $scroll_container,
         ...opts,
     });
-    return {widget, rows, stats};
+    return {widget, rows, row, stats};
 }
 
 run_test("scrolling", () => {
@@ -1084,6 +1084,47 @@ run_test("render_item drops the row of an item moved past the rendered range", (
     assert.ok(widget.all_rendered());
     assert.equal(rows.length, list.length);
     assert.equal(rows.at(-1), moved);
+});
+
+run_test("insert_rendered_row falls back to a redraw without counting a row", () => {
+    const list = make_items(100);
+    const {widget, rows, row, stats} = make_tracked_widget(list, {
+        filter: {predicate: () => true},
+        init_sort: (a, b) => a.key - b.key,
+    });
+    function add_to_list(...items) {
+        list.push(...items);
+        widget.replace_list_data(list, false);
+        widget.filter_and_sort();
+    }
+    function insert(item) {
+        widget.insert_rendered_row(item, (items) => items.indexOf(item));
+    }
+
+    // Two new items sort first, and are inserted in list order. The first
+    // one has no rendered neighbor: nothing comes before it, and the item
+    // after it is the second one, not inserted yet. The widget redraws,
+    // rendering both, and must not count the row it did not insert.
+    const first_new_item = {value: 101, key: 0.1};
+    const second_new_item = {value: 102, key: 0.2};
+    add_to_list(first_new_item, second_new_item);
+    insert(first_new_item);
+    assert.equal(stats.redraws, 1);
+    assert.deepEqual(rows.slice(0, 2), [first_new_item, second_new_item]);
+    assert.equal(rows.length, INITIAL_RENDER_COUNT);
+    assert.equal(widget.get_rendered_list().length, INITIAL_RENDER_COUNT);
+
+    // The same for a new last item whose predecessor's row went missing.
+    widget.render(list.length);
+    const neighbor = rows.at(-1);
+    row(neighbor).remove();
+    const new_last_item = {value: 103, key: neighbor.key + 0.5};
+    add_to_list(new_last_item);
+    insert(new_last_item);
+    assert.equal(stats.redraws, 2);
+    assert.ok(!rows.includes(new_last_item));
+    assert.equal(rows.length, INITIAL_RENDER_COUNT);
+    assert.equal(widget.get_rendered_list().length, INITIAL_RENDER_COUNT);
 });
 
 run_test("Multiselect dropdown retain_selected_items", () => {
