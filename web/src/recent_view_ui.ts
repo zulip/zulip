@@ -1228,11 +1228,6 @@ export function update_topic_visibility_policy(stream_id: number, topic: string)
     return true;
 }
 
-export function update_topic_unread_count(message: Message): void {
-    const topic_key = recent_view_util.get_key_from_message(message);
-    inplace_rerender(topic_key);
-}
-
 export function set_filter(filter: string): void {
     // This function updates the `filters` variable
     // after user clicks on one of the filter buttons
