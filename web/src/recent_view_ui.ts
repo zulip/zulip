@@ -1165,38 +1165,21 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
         return;
     }
 
-    // When doing bulk rerender, we assume that order of rows are not going
-    // to change by default. Row insertion can still change the order but
-    // we ensure the list remains sorted after insertion.
-    //
-    // Save whether all rows were rendered before updating the data,
-    // so we know if it's safe to use render() for new items below.
-    const was_all_rendered = topics_widget.all_rendered();
     topics_widget.replace_list_data(get_list_data_for_widget(), false);
     filter_and_sort_topics_widget();
-    // Iterate in the order in which the rows should be present so that
-    // we are not inserting rows without any rows being present around them.
-    let processed_count = 0;
-    for (const topic_data of topics_widget.get_rendered_list()) {
-        if (processed_count >= row_keys.length) {
+
+    const remaining_keys = new Set(row_keys);
+    const current_list = topics_widget.get_current_list();
+    // Update the rows in list order, so that a row inserted next to another
+    // one finds it already in place.
+    for (const topic_data of current_list) {
+        if (remaining_keys.size === 0) {
             break;
         }
         const topic_key = get_conversation_key(topic_data);
-        if (row_keys.includes(topic_key)) {
+        if (remaining_keys.delete(topic_key)) {
             inplace_rerender(topic_key, true);
-            processed_count += 1;
         }
-    }
-    // New conversations from backfilled old messages sort at the end
-    // of the list, beyond the current render offset. Use render() to
-    // efficiently batch-append them in a single DOM operation, rather
-    // than inserting one at a time via insert_rendered_row.
-    //
-    // We can only use render() when the DOM already had all rows up
-    // to the render offset (was_all_rendered), ensuring new items
-    // start right at the offset boundary with no gap.
-    if (processed_count < row_keys.length && was_all_rendered) {
-        topics_widget.render(row_keys.length - processed_count);
     }
     update_unread_sort_header_state();
     setTimeout(revive_current_focus, 0);

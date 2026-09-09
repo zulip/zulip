@@ -480,6 +480,25 @@ function stub_out_filter_buttons() {
     }
 }
 
+function show_recent_view_with_messages() {
+    $.clear_all_elements();
+    recent_view_util.set_visible(true);
+    rt.clear_for_tests();
+    rt.set_filters_for_tests();
+    rt.set_default_focus();
+    stub_out_filter_buttons();
+    rt.process_messages(messages);
+}
+
+function conversation_for(topic) {
+    return rt_data.conversations.get(get_topic_key(stream1, topic));
+}
+
+function bulk_rerender(keys) {
+    expected_data_to_replace_in_list_widget = rt_data.get_conversations().values().toArray();
+    rt.bulk_inplace_rerender(keys);
+}
+
 function test(label, f) {
     run_test(label, (helpers) => {
         page_params.development_environment = true;
@@ -886,6 +905,30 @@ test("test_update_unread_count", () => {
     // update a message
     generate_topic_data([[1, "topic-7", 1, all_visibility_policies.INHERIT]]);
     rt.update_topic_unread_count(messages[9]);
+});
+
+test("bulk_inplace_rerender updates the requested rows in list order", ({override}) => {
+    show_recent_view_with_messages();
+    const [first, second, third] = [topic1, topic2, topic3].map((topic) => conversation_for(topic));
+    // The third conversation has no row yet; the others do.
+    $.set_results(`#${CSS.escape(`recent_conversation:${get_topic_key(stream1, topic3)}`)}`, []);
+    const updates = [];
+    override(ListWidget, "render_item", (conversation) => {
+        updates.push(["rerender", conversation]);
+    });
+    override(ListWidget, "insert_rendered_row", (conversation) => {
+        updates.push(["insert", conversation]);
+    });
+    override(ListWidget, "get_current_list", () => [third, first, second]);
+
+    // A conversation with a row is rerendered and one without gets a row,
+    // in list order, so that a row inserted next to another one finds it
+    // already in place.
+    bulk_rerender([get_topic_key(stream1, topic1), get_topic_key(stream1, topic3)]);
+    assert.deepEqual(updates, [
+        ["insert", third],
+        ["rerender", first],
+    ]);
 });
 
 test("basic assertions", ({mock_template, override_rewire}) => {
