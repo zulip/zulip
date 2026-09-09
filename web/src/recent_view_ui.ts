@@ -648,7 +648,7 @@ export function process_messages(
     if (conversation_data_updated) {
         if (!rows_order_changed) {
             // If rows order didn't change, we can just rerender the affected rows.
-            bulk_inplace_rerender([...updated_rows]);
+            bulk_inplace_rerender(updated_rows);
         } else {
             complete_rerender();
         }
@@ -1162,49 +1162,37 @@ function filter_and_sort_topics_widget(): void {
     }
 }
 
-export function bulk_inplace_rerender(row_keys: string[]): void {
+export function bulk_inplace_rerender(row_keys: Set<string>): void {
     if (!topics_widget || !recent_view_util.is_visible()) {
         return;
     }
 
-    // When doing bulk rerender, we assume that order of rows are not going
-    // to change by default. Row insertion can still change the order but
-    // we ensure the list remains sorted after insertion.
-    //
-    // Save whether all rows were rendered before updating the data,
-    // so we know if it's safe to use render() for new items below.
-    const was_all_rendered = topics_widget.all_rendered();
     topics_widget.replace_list_data(get_list_data_for_widget(), false);
     filter_and_sort_topics_widget();
-    // Iterate in the order in which the rows should be present so that
-    // we are not inserting rows without any rows being present around them.
-    let processed_count = 0;
-    for (const topic_data of topics_widget.get_rendered_list()) {
-        if (processed_count >= row_keys.length) {
+    // Settle the sort before the walk: a redraw during it would otherwise
+    // fall back from the unread sort and reorder the list under the walk.
+    update_unread_sort_header_state();
+
+    let rows_left = row_keys.size;
+    // In list order, as the widget places a row after its predecessor's.
+    for (const [list_index, topic_data] of topics_widget.get_current_list().entries()) {
+        if (rows_left === 0) {
             break;
         }
-        const topic_key = get_conversation_key(topic_data);
-        if (row_keys.includes(topic_key)) {
-            inplace_rerender(topic_key, true);
-            processed_count += 1;
+        const conversation_key = get_conversation_key(topic_data);
+        if (row_keys.has(conversation_key)) {
+            rows_left -= 1;
+            if (get_conversation_row(conversation_key).length > 0) {
+                topics_widget.render_item(topic_data);
+            } else {
+                topics_widget.insert_rendered_row(topic_data, () => list_index);
+            }
         }
     }
-    // New conversations from backfilled old messages sort at the end
-    // of the list, beyond the current render offset. Use render() to
-    // efficiently batch-append them in a single DOM operation, rather
-    // than inserting one at a time via insert_rendered_row.
-    //
-    // We can only use render() when the DOM already had all rows up
-    // to the render offset (was_all_rendered), ensuring new items
-    // start right at the offset boundary with no gap.
-    if (processed_count < row_keys.length && was_all_rendered) {
-        topics_widget.render(row_keys.length - processed_count);
-    }
-    update_unread_sort_header_state();
     setTimeout(revive_current_focus, 0);
 }
 
-export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): boolean => {
+export let inplace_rerender = (topic_key: string): boolean => {
     if (!recent_view_util.is_visible() || !recent_view_data.conversations.has(topic_key)) {
         return false;
     }
@@ -1212,15 +1200,13 @@ export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): b
     const topic_data = recent_view_data.conversations.get(topic_key);
     assert(topic_data !== undefined);
     assert(topics_widget !== undefined);
-    if (!is_bulk_rerender) {
-        // Resorting the topics_widget is important for the case where we
-        // are rerendering because of message editing or new messages
-        // arriving, since those operations often change the sort key.
-        //
-        // NOTE: This doesn't add any new entry to the original list but updates the filtered list
-        // based on the current filters and updated row data.
-        filter_and_sort_topics_widget();
-    }
+    // Resorting the topics_widget is important for the case where we
+    // are rerendering because of message editing or new messages
+    // arriving, since those operations often change the sort key.
+    //
+    // NOTE: This doesn't add any new entry to the original list but updates the filtered list
+    // based on the current filters and updated row data.
+    filter_and_sort_topics_widget();
 
     // We cannot rely on `topic_widget.meta.filtered_list` to know
     // if a topic is rendered since the `filtered_list` might have
@@ -1240,10 +1226,8 @@ export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): b
             ),
         );
     }
-    if (!is_bulk_rerender) {
-        update_unread_sort_header_state();
-        setTimeout(revive_current_focus, 0);
-    }
+    update_unread_sort_header_state();
+    setTimeout(revive_current_focus, 0);
     return true;
 };
 
