@@ -431,7 +431,7 @@ export function create<Key, Item = Key>(
             }
 
             $container.append($(html));
-            meta.offset += load_count;
+            meta.offset += slice.length;
 
             if (opts.multiselect) {
                 widget.retain_selected_items();

@@ -939,6 +939,29 @@ run_test("render item", () => {
     blueslip.reset();
 });
 
+run_test("render advances the offset by the rows appended", () => {
+    const $container = make_container();
+    const $scroll_container = make_scroll_container();
+    const widget = ListWidget.create($container, [1, 2, 3], {
+        name: "render-offset",
+        modifier_html: div,
+        get_item: (item) => item,
+        $simplebar_container: $scroll_container,
+    });
+    assert.equal($container.$appended_data.html(), "<div>1</div><div>2</div><div>3</div>");
+    assert.ok(widget.all_rendered());
+
+    // The initial render asked for more rows than the list had; the offset
+    // must not end up past its end, or items added later would count as
+    // rendered and never be appended.
+    widget.replace_list_data([1, 2, 3, 4], false);
+    widget.filter_and_sort();
+    assert.ok(!widget.all_rendered());
+    widget.render();
+    assert.equal($container.$appended_data.html(), "<div>4</div>");
+    assert.ok(widget.all_rendered());
+});
+
 run_test("Multiselect dropdown retain_selected_items", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
