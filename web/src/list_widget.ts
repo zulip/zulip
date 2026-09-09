@@ -358,8 +358,8 @@ export function create<Key, Item = Key>(
         reduce_rendered_offset();
     }
 
-    // Callers insert rows in list order, so the next item may be a new one
-    // whose row is not inserted yet.
+    // Callers update rows in list order, so the rows before this one are
+    // in place, which the next item's row may not be.
     function insert_row_at_index($row: JQuery, index: number): boolean {
         assert(opts.html_selector !== undefined);
         if (meta.offset === 0) {
@@ -376,6 +376,14 @@ export function create<Key, Item = Key>(
         }
         $predecessor_row.after($row);
         return true;
+    }
+
+    function is_row_at_index($row: JQuery, index: number): boolean {
+        assert(opts.html_selector !== undefined);
+        if (index === 0) {
+            return $row.prev().length === 0;
+        }
+        return $row.prev().is(opts.html_selector(meta.filtered_list[index - 1]!));
     }
 
     const widget: ListWidget<Key, Item> = {
@@ -537,10 +545,16 @@ export function create<Key, Item = Key>(
                 blueslip.error("List item is not a string", {item: html});
                 return;
             }
+            const $row = $(html);
 
-            // At this point, we have asserted we have all the information to replace
-            // the html now.
-            $html_item.replaceWith($(html));
+            if (index === -1 || is_row_at_index($html_item, index)) {
+                $html_item.replaceWith($row);
+            } else {
+                $html_item.remove();
+                if (!insert_row_at_index($row, index)) {
+                    widget.clean_redraw();
+                }
+            }
         },
 
         clear() {
