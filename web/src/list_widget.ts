@@ -72,7 +72,7 @@ type BaseListWidget = {
 export type ListWidget<Key, Item = Key> = BaseListWidget & {
     get_current_list: () => Item[];
     get_rendered_list: () => Item[];
-    filter_and_sort: () => void;
+    filter_and_sort: () => Item[];
     retain_selected_items: () => void;
     all_rendered: () => boolean;
     render: (how_many?: number) => void;
@@ -84,7 +84,6 @@ export type ListWidget<Key, Item = Key> = BaseListWidget & {
     set_up_event_handlers: () => void;
     increase_rendered_offset: () => void;
     reduce_rendered_offset: () => void;
-    remove_rendered_row: (row: JQuery) => void;
     clean_redraw: () => void;
     hard_redraw: () => void;
     insert_rendered_row: (
@@ -356,8 +355,39 @@ export function create<Key, Item = Key>(
             return meta.filtered_list.slice(0, meta.offset);
         },
 
+        // Recomputes the filtered list and removes the rendered rows of
+        // items it no longer includes, returning those items. A row left
+        // behind would not be counted by meta.offset, so a later render()
+        // would append rows that are already on screen. The removed rows
+        // are expected to belong to items the caller is updating;
+        // returning them lets the caller report any other item, hidden by
+        // a change it was not told about.
         filter_and_sort() {
+            const previously_rendered_items = widget.get_rendered_list();
             compute_filtered_list();
+            if (!opts.html_selector || previously_rendered_items.length === 0) {
+                return [];
+            }
+
+            const listed_items = new Set(meta.filtered_list);
+            const removed_items: Item[] = [];
+            for (const item of previously_rendered_items) {
+                if (listed_items.has(item)) {
+                    continue;
+                }
+                const $row = opts.html_selector(item);
+                if ($row.length === 0) {
+                    continue;
+                }
+                $row.remove();
+                widget.reduce_rendered_offset();
+                removed_items.push(item);
+            }
+            if (removed_items.length > 0 && widget.all_rendered()) {
+                // render() shows the empty-list message once the last row is gone.
+                widget.render();
+            }
+            return removed_items;
         },
 
         // Used in case of Multiselect DropdownListWidget to retain
@@ -559,17 +589,6 @@ export function create<Key, Item = Key>(
 
         reduce_rendered_offset() {
             meta.offset = Math.max(meta.offset - 1, 0);
-        },
-
-        remove_rendered_row(rendered_row) {
-            rendered_row.remove();
-            // We removed a rendered row, so we need to reduce one offset.
-            widget.reduce_rendered_offset();
-            // If the container is now empty, render() will display
-            // the empty-list message.
-            if (this.all_rendered()) {
-                this.render();
-            }
         },
 
         clean_redraw() {
