@@ -1,4 +1,4 @@
-from collections.abc import Iterable
+from collections.abc import Collection, Iterable
 from typing import Any, cast
 from unittest import mock
 
@@ -7,6 +7,7 @@ from typing_extensions import override
 
 from zerver.actions.custom_profile_fields import (
     do_remove_realm_custom_profile_field,
+    do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
     try_reorder_realm_custom_profile_fields,
 )
@@ -960,6 +961,67 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         for field_dict in iago.profile_data():
             if field_dict["id"] == field.id:
                 self.assertEqual(field_dict["value"], "foobar")
+
+    def test_update_profile_data_handles_concurrent_creation(self) -> None:
+        # Regression test for a race: if two requests both see no
+        # existing CustomProfileFieldValue for a field and both try
+        # to create one, the unique_together constraint on
+        # (user_profile, field) means only one INSERT can succeed.
+        # do_update_user_custom_profile_data_if_changed should not
+        # crash in this case, and should end up with exactly one row
+        # reflecting whichever request wins the race.
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        field = CustomProfileField.objects.get(name="GitHub username", realm=realm)
+        CustomProfileFieldValue.objects.filter(user_profile=iago, field=field).delete()
+
+        real_bulk_create = CustomProfileFieldValue.objects.bulk_create
+
+        def racing_bulk_create(
+            objs: Iterable[CustomProfileFieldValue],
+            batch_size: int | None = None,
+            ignore_conflicts: bool = False,
+            update_conflicts: bool = False,
+            update_fields: Collection[str] | None = None,
+            unique_fields: Collection[str] | None = None,
+        ) -> list[CustomProfileFieldValue]:
+            # Simulate a concurrent request creating the same row
+            # first, in the window between our own SELECT and this
+            # bulk_create call.
+            CustomProfileFieldValue.objects.create(
+                user_profile=iago, field=field, value="raced-in-value"
+            )
+            return real_bulk_create(
+                objs,
+                batch_size=batch_size,
+                ignore_conflicts=ignore_conflicts,
+                update_conflicts=update_conflicts,
+                update_fields=update_fields,
+                unique_fields=unique_fields,
+            )
+
+        with mock.patch.object(
+            CustomProfileFieldValue.objects, "bulk_create", side_effect=racing_bulk_create
+        ):
+            do_update_user_custom_profile_data_if_changed(
+                iago,
+                [{"id": field.id, "value": "our-value"}],
+                iago,
+                notify=False,
+            )
+
+        # No IntegrityError should have been raised above. Confirm we
+        # end up with exactly one row (not a duplicate). The final
+        # value is ours, not the concurrent write's, this matches
+        # the original get_or_create()-based code's behavior, since
+        # both versions proceed to overwrite the row once the create
+        # race itself is resolved; only the creation step needs
+        # protection from the unique constraint, not the value write.
+        values = CustomProfileFieldValue.objects.filter(user_profile=iago, field=field)
+        self.assertEqual(values.count(), 1)
+        value = values.first()
+        assert value is not None
+        self.assertEqual(value.value, "our-value")
 
     def test_update_invalid_dropdown_field(self) -> None:
         field_name = "Favorite editor"
