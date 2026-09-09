@@ -25,6 +25,7 @@ import {page_params} from "./page_params.ts";
 import * as popup_banners from "./popup_banners.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import * as recent_view_util from "./recent_view_util.ts";
 import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import {narrow_operator_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
@@ -157,12 +158,21 @@ export function fetch_more_if_required_for_current_msg_list(
 }
 
 export function do_unread_count_updates(messages: Message[], expect_no_new_unreads = false): void {
-    const any_new_unreads = unread.process_loaded_messages(messages, expect_no_new_unreads);
+    const untracked_unread_messages = unread.process_loaded_messages(
+        messages,
+        expect_no_new_unreads,
+    );
 
-    if (any_new_unreads) {
+    if (untracked_unread_messages.length > 0) {
         // The following operations are expensive, and thus should
         // only happen if we found any unread messages justifying it.
         unread_ui.update_unread_counts();
+        const conversation_keys = new Set(
+            untracked_unread_messages.map((message) =>
+                recent_view_util.get_key_from_message(message),
+            ),
+        );
+        recent_view_ui.bulk_inplace_rerender(conversation_keys);
     }
 }
 
