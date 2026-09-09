@@ -2095,8 +2095,10 @@ def internal_prep_stream_message(
     topic_name: str,
     content: str,
     *,
+    realm: Realm | None = None,
     email_gateway: bool = False,
     message_type: int = Message.MessageType.NORMAL,
+    mention_backend: MentionBackend | None = None,
     limit_unread_user_ids: set[int] | None = None,
     forged: bool = False,
     forged_timestamp: float | None = None,
@@ -2106,7 +2108,8 @@ def internal_prep_stream_message(
     """
     See _internal_prep_message for details of how this works.
     """
-    realm = stream.realm
+    if realm is None:
+        realm = stream.realm
     addressee = Addressee.for_stream(stream, topic_name)
 
     return _internal_prep_message(
@@ -2116,6 +2119,7 @@ def internal_prep_stream_message(
         content=content,
         email_gateway=email_gateway,
         message_type=message_type,
+        mention_backend=mention_backend,
         limit_unread_user_ids=limit_unread_user_ids,
         forged=forged,
         forged_timestamp=forged_timestamp,

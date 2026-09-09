@@ -1749,7 +1749,9 @@ def is_message_to_self(message: Message) -> bool:
     return False
 
 
-def get_user_mentions_for_display(user_list: list[UserProfile | UserDisplayRecipient]) -> str:
+def get_user_mentions_for_display(
+    user_list: Sequence[UserProfile | UserDisplayRecipient],
+) -> str:
     recipient_list = sorted(silent_mention_syntax_for_user(user) for user in user_list)
 
     if len(recipient_list) == 1:

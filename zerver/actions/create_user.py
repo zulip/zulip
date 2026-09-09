@@ -16,7 +16,11 @@ from zerver.actions.message_send import (
     internal_send_private_message,
     internal_send_stream_message,
 )
-from zerver.actions.streams import bulk_add_subscriptions, send_peer_subscriber_events
+from zerver.actions.streams import (
+    bulk_add_subscriptions,
+    send_peer_subscriber_events,
+    send_subscription_change_notices,
+)
 from zerver.actions.user_groups import (
     bulk_add_members_to_user_groups,
     do_send_user_group_members_update_event,
@@ -168,13 +172,23 @@ def set_up_streams_and_groups_for_new_human_user(
     else:
         streams = []
 
-    bulk_add_subscriptions(
+    subscribed, _already_subscribed = bulk_add_subscriptions(
         realm,
         streams,
         [user_profile],
         from_user_creation=True,
         acting_user=acting_user,
     )
+    # Announce the new member in each private channel they joined, marked read
+    # for them so it isn't unread on their first login.
+    if acting_user is not None:
+        send_subscription_change_notices(
+            realm,
+            acting_user=acting_user,
+            changed_subs=[(sub_info.user, sub_info.stream) for sub_info in subscribed],
+            subscribed=True,
+            mark_as_read_user_ids={user_profile.id},
+        )
 
     bulk_add_members_to_user_groups(
         user_groups,
