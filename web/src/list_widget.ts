@@ -651,6 +651,10 @@ export function create<Key, Item = Key>(
                 const rendered_row = opts.modifier_html(item, meta.filter_value);
                 if (insert_index === meta.filtered_list.length - 1) {
                     const $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]!);
+                    if ($target_row.length === 0) {
+                        widget.clean_redraw();
+                        return;
+                    }
                     $target_row.after($(rendered_row));
                 } else {
                     let $target_row = opts.html_selector!(meta.filtered_list[insert_index + 1]!);
@@ -665,10 +669,12 @@ export function create<Key, Item = Key>(
                         }
                     }
 
-                    // If we failed at inserting the row due rows around the row
-                    // not being rendered yet, just do a clean redraw.
+                    // The new row has no rendered neighbor if no rows are
+                    // rendered, or if its neighbors are new items the caller
+                    // has not inserted yet; redraw instead.
                     if ($target_row.length === 0) {
                         widget.clean_redraw();
+                        return;
                     }
                 }
                 increase_rendered_offset();
