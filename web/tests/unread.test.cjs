@@ -519,6 +519,30 @@ test("get_conversation_key", () => {
     assert.equal(unread.get_conversation_key(stream_message.id), undefined);
 });
 
+test("process_loaded_messages returns newly tracked unreads", () => {
+    const unread_message = {
+        id: 31,
+        type: "stream",
+        stream_id: social.stream_id,
+        topic: "lunch",
+        unread: true,
+    };
+    const read_message = {
+        id: 32,
+        type: "stream",
+        stream_id: social.stream_id,
+        topic: "lunch",
+        unread: false,
+    };
+    assert.deepEqual(unread.process_loaded_messages([unread_message, read_message]), [
+        unread_message,
+    ]);
+    assert.equal(unread.num_unread_for_topic(social.stream_id, "lunch"), 1);
+
+    // Messages already tracked as unread are not reported again.
+    assert.deepEqual(unread.process_loaded_messages([unread_message, read_message]), []);
+});
+
 test("private_messages", () => {
     const alice = make_user({
         email: "alice@example.com",

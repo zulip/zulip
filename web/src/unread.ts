@@ -772,17 +772,17 @@ export function update_unread_topic_name_case(
 export function process_loaded_messages(
     messages: Message[],
     expect_no_new_unreads = false,
-): boolean {
+): Message[] {
     // Process a set of messages that we have full copies of from the
     // server for whether any are unread but not tracked as such by
     // our data structures. This can occur due to old_unreads_missing,
     // changes in muting configuration, innocent races, or potentially bugs.
     //
-    // Returns whether there were any new unread messages; in that
-    // case, the caller will need to trigger a rerender of UI
+    // Returns the messages newly discovered to be unread; if there
+    // are any, the caller will need to trigger a rerender of UI
     // displaying unread counts.
 
-    let any_untracked_unread_messages = false;
+    const untracked_unread_messages: Message[] = [];
     for (const message of messages) {
         if (message.unread) {
             if (unread_messages.has(message.id)) {
@@ -818,11 +818,11 @@ export function process_loaded_messages(
                     unread: true,
                 });
             }
-            any_untracked_unread_messages = true;
+            untracked_unread_messages.push(message);
         }
     }
 
-    return any_untracked_unread_messages;
+    return untracked_unread_messages;
 }
 
 type UnreadMessageData = {
