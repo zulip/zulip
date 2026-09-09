@@ -897,17 +897,6 @@ test("test_filter_participated", ({mock_template}) => {
     rt.process_messages([messages[4]]);
 });
 
-test("test_update_unread_count", () => {
-    recent_view_util.set_visible(false);
-    rt.clear_for_tests();
-    stub_out_filter_buttons();
-    rt.process_messages(messages);
-
-    // update a message
-    generate_topic_data([[1, "topic-7", 1, all_visibility_policies.INHERIT]]);
-    rt.update_topic_unread_count(messages[9]);
-});
-
 test("bulk_inplace_rerender updates the requested rows in list order", ({override}) => {
     show_recent_view_with_messages();
     const [first, second, third] = [topic1, topic2, topic3].map((topic) => conversation_for(topic));

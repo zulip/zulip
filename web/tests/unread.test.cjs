@@ -492,6 +492,33 @@ test("private_messages", () => {
     test_notifiable_count(counts.home_unread_messages, 0);
 });
 
+test("get_conversation_key", () => {
+    const stream_message = {
+        id: 21,
+        type: "stream",
+        stream_id: social.stream_id,
+        topic: "Lunch",
+        unread: true,
+    };
+    const dm_message = {
+        id: 22,
+        type: "private",
+        display_recipient: [{id: anybody.user_id}, {id: me.user_id}],
+        unread: true,
+    };
+    unread.process_loaded_messages([stream_message, dm_message]);
+
+    // The keys match recent view's conversation keys, and come from the
+    // unread data rather than message_store, so they are available for
+    // messages this client never fetched.
+    assert.equal(unread.get_conversation_key(stream_message.id), `${social.stream_id}:lunch`);
+    assert.equal(unread.get_conversation_key(dm_message.id), anybody.user_id.toString());
+    assert.equal(unread.get_conversation_key(23), undefined);
+
+    unread.mark_as_read(stream_message.id);
+    assert.equal(unread.get_conversation_key(stream_message.id), undefined);
+});
+
 test("private_messages", () => {
     const alice = make_user({
         email: "alice@example.com",
