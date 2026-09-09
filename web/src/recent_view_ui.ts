@@ -1160,6 +1160,11 @@ function filter_and_sort_topics_widget(): void {
     }
 }
 
+function finish_rerender(): void {
+    update_unread_sort_header_state();
+    setTimeout(revive_current_focus, 0);
+}
+
 export function bulk_inplace_rerender(row_keys: string[]): void {
     if (!topics_widget || !recent_view_util.is_visible()) {
         return;
@@ -1181,8 +1186,7 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
             inplace_rerender(topic_key, true);
         }
     }
-    update_unread_sort_header_state();
-    setTimeout(revive_current_focus, 0);
+    finish_rerender();
 }
 
 export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): boolean => {
@@ -1225,8 +1229,7 @@ export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): b
         );
     }
     if (!is_bulk_rerender) {
-        update_unread_sort_header_state();
-        setTimeout(revive_current_focus, 0);
+        finish_rerender();
     }
     return true;
 };
