@@ -313,6 +313,39 @@ export function create<Key, Item = Key>(
         meta.sort_by_filter_value = opts.sort_by_filter_value;
     }
 
+    function compute_filtered_list(): void {
+        meta.filtered_list = get_filtered_items(meta.filter_value, meta.list, opts);
+
+        if (meta.sort_by_filter_value) {
+            assert(meta.sorting_function === null);
+            meta.filtered_list = meta.sort_by_filter_value(meta.filtered_list, meta.filter_value);
+            return;
+        }
+
+        if (meta.sorting_function) {
+            // If the sorting function is already applied, remove it to avoid duplicate sorting.
+            const existing_sorting_function_index = meta.applied_sorting_functions.findIndex(
+                ([sorting_function, _]) => sorting_function === meta.sorting_function,
+            );
+            if (existing_sorting_function_index !== -1) {
+                meta.applied_sorting_functions.splice(existing_sorting_function_index, 1);
+            }
+
+            meta.applied_sorting_functions.push([meta.sorting_function, meta.reverse_mode]);
+            meta.filtered_list.sort((a, b) => {
+                for (let i = meta.applied_sorting_functions.length - 1; i >= 0; i -= 1) {
+                    const sorting_function = meta.applied_sorting_functions[i]![0];
+                    const is_reverse = meta.applied_sorting_functions[i]![1];
+                    const result = sorting_function(a, b);
+                    if (result !== 0) {
+                        return is_reverse ? -result : result;
+                    }
+                }
+                return 0;
+            });
+        }
+    }
+
     const widget: ListWidget<Key, Item> = {
         get_current_list() {
             return meta.filtered_list;
@@ -323,39 +356,7 @@ export function create<Key, Item = Key>(
         },
 
         filter_and_sort() {
-            meta.filtered_list = get_filtered_items(meta.filter_value, meta.list, opts);
-
-            if (meta.sort_by_filter_value) {
-                assert(meta.sorting_function === null);
-                meta.filtered_list = meta.sort_by_filter_value(
-                    meta.filtered_list,
-                    meta.filter_value,
-                );
-                return;
-            }
-
-            if (meta.sorting_function) {
-                // If the sorting function is already applied, remove it to avoid duplicate sorting.
-                const existing_sorting_function_index = meta.applied_sorting_functions.findIndex(
-                    ([sorting_function, _]) => sorting_function === meta.sorting_function,
-                );
-                if (existing_sorting_function_index !== -1) {
-                    meta.applied_sorting_functions.splice(existing_sorting_function_index, 1);
-                }
-
-                meta.applied_sorting_functions.push([meta.sorting_function, meta.reverse_mode]);
-                meta.filtered_list.sort((a, b) => {
-                    for (let i = meta.applied_sorting_functions.length - 1; i >= 0; i -= 1) {
-                        const sorting_function = meta.applied_sorting_functions[i]![0];
-                        const is_reverse = meta.applied_sorting_functions[i]![1];
-                        const result = sorting_function(a, b);
-                        if (result !== 0) {
-                            return is_reverse ? -result : result;
-                        }
-                    }
-                    return 0;
-                });
-            }
+            compute_filtered_list();
         },
 
         // Used in case of Multiselect DropdownListWidget to retain
@@ -571,7 +572,7 @@ export function create<Key, Item = Key>(
         },
 
         clean_redraw() {
-            widget.filter_and_sort();
+            compute_filtered_list();
             widget.clear();
             widget.render(DEFAULTS.INITIAL_RENDER_COUNT);
         },
