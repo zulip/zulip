@@ -1219,6 +1219,43 @@ export function rewire_inplace_rerender(value: typeof inplace_rerender): void {
     inplace_rerender = value;
 }
 
+function conversation_shows_user(conversation: ConversationData, user_id: number): boolean {
+    const message = message_store.get(conversation.last_msg_id);
+    assert(message !== undefined);
+    if (message.type === "private") {
+        return people.get_participants_from_user_ids_string(message.to_user_ids).has(user_id);
+    }
+    const message_ids = recent_senders.get_topic_message_ids_for_sender(
+        message.stream_id,
+        message.topic,
+        user_id,
+    );
+    return message_ids.size > 0;
+}
+
+export function rerender_conversations_with_user(user_id: number): void {
+    if (!recent_view_util.is_visible()) {
+        return;
+    }
+    const is_searching = get_search_keyword() !== "";
+    const conversation_keys = new Set<string>();
+    for (const [key, conversation] of recent_view_data.conversations) {
+        if (!conversation_shows_user(conversation, user_id)) {
+            continue;
+        }
+        const has_row = get_conversation_row(key).length > 0;
+        // The search matches direct message conversations by their
+        // participants' names and emails.
+        const search_may_now_list_it = is_searching && conversation.type === "private";
+        if (has_row || search_may_now_list_it) {
+            conversation_keys.add(key);
+        }
+    }
+    if (conversation_keys.size > 0) {
+        bulk_inplace_rerender(conversation_keys);
+    }
+}
+
 export function update_topic_visibility_policy(stream_id: number, topic: string): boolean {
     const key = recent_view_util.get_topic_key(stream_id, topic);
     if (!recent_view_data.conversations.has(key)) {

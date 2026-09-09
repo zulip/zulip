@@ -153,8 +153,9 @@ mock_esm("../src/pm_list", {
     update_private_messages: noop,
     handle_message_view_deactivated: noop,
 });
-mock_esm("../src/recent_senders", {
+const recent_senders = mock_esm("../src/recent_senders", {
     get_topic_recent_senders: () => [2, 1],
+    get_topic_message_ids_for_sender: () => new Set(),
     get_pm_recent_senders(user_ids_string) {
         return {
             participants: user_ids_string.split(",").map((user_id) => Number.parseInt(user_id, 10)),
@@ -977,6 +978,63 @@ test("inplace_rerender updates one row the way a bulk rerender does", ({override
     // resort has removed its row, so no row is updated for it.
     assert.ok(rt.inplace_rerender(get_topic_key(stream1, topic7)));
     assert.equal(updates.length, 2);
+});
+
+test("rerender_conversations_with_user rerenders the rows that show the user", ({override}) => {
+    // A row shows the senders of its topic, or the participants of its
+    // direct message conversation. sender2 sent to topics 2 to 6 and is
+    // in the direct message conversations "2,3" and "2,4".
+    show_recent_view_with_messages();
+    for (const message of private_messages) {
+        rt_data.process_message(message);
+    }
+    override(recent_senders, "get_topic_message_ids_for_sender", (stream_id, topic, sender_id) => {
+        const messages_sent = messages.filter(
+            (message) =>
+                message.stream_id === stream_id &&
+                message.topic === topic &&
+                message.sender_id === sender_id,
+        );
+        return new Set(messages_sent.map((message) => message.id));
+    });
+    const rerendered_conversations = new Set();
+    override(ListWidget, "render_item", (conversation) => {
+        rerendered_conversations.add(conversation);
+    });
+    const inserted_conversations = new Set();
+    override(ListWidget, "insert_rendered_row", (conversation) => {
+        inserted_conversations.add(conversation);
+    });
+    override(ListWidget, "get_current_list", () => rt_data.get_conversations().values().toArray());
+    function rerender_conversations_with(user_id) {
+        rerendered_conversations.clear();
+        inserted_conversations.clear();
+        expected_data_to_replace_in_list_widget = rt_data.get_conversations().values().toArray();
+        rt.rerender_conversations_with_user(user_id);
+    }
+
+    stub_no_row_for(get_topic_key(stream1, topic6));
+    stub_no_row_for("2,4");
+    const rows_showing_sender2 = new Set([
+        ...[topic2, topic3, topic4, topic5].map((topic) => conversation_for(topic)),
+        rt_data.conversations.get("2,3"),
+    ]);
+    rerender_conversations_with(sender2);
+    assert.deepEqual(rerendered_conversations, rows_showing_sender2);
+    assert.equal(inserted_conversations.size, 0);
+
+    // A search matches direct message conversations by their
+    // participants, so it may now list one that has no row.
+    $("#recent_view_search").val("fred");
+    rerender_conversations_with(sender2);
+    assert.deepEqual(rerendered_conversations, rows_showing_sender2);
+    assert.deepEqual(inserted_conversations, new Set([rt_data.conversations.get("2,4")]));
+    $("#recent_view_search").val("");
+
+    // The mocked widget rejects the list update that a rerender would
+    // start with, as none is expected for a user in no conversation.
+    const user_id_in_no_conversation = 5;
+    rt.rerender_conversations_with_user(user_id_in_no_conversation);
 });
 
 test("rerender renders more rows until they reach the bottom of the viewport", ({

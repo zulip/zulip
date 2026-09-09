@@ -18,6 +18,7 @@ import * as navbar_alerts from "./navbar_alerts.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as reactions from "./reactions.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
 import * as settings from "./settings.ts";
 import * as settings_account from "./settings_account.ts";
 import * as settings_bots from "./settings_bots.ts";
@@ -209,6 +210,16 @@ export const update_person = function update(event: UserUpdate): void {
         message_live_update.update_avatar(user.user_id, event.avatar_url);
         buddy_list.insert_or_move([event.user_id]);
         user_profile.update_profile_modal_ui(user, event);
+    }
+
+    if (
+        "full_name" in event ||
+        "new_email" in event ||
+        "delivery_email" in event ||
+        "role" in event ||
+        "avatar_url" in event
+    ) {
+        recent_view_ui.rerender_conversations_with_user(event.user_id);
     }
 
     if ("custom_profile_field" in event) {
