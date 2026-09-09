@@ -76,6 +76,7 @@ export type ListWidget<Key, Item = Key> = BaseListWidget & {
     retain_selected_items: () => void;
     all_rendered: () => boolean;
     render: (how_many?: number) => void;
+    maybe_render_more: () => boolean;
     render_item: (item: Item) => void;
     clear: () => void;
     set_filter_value: (value: string) => void;
@@ -509,6 +510,22 @@ export function create<Key, Item = Key>(
             }
         },
 
+        maybe_render_more() {
+            let should_render;
+            if (opts.is_scroll_position_for_render === undefined) {
+                const scroll_element = meta.$scroll_container[0];
+                assert(scroll_element !== undefined);
+                should_render = is_scroll_position_for_render(scroll_element);
+            } else {
+                should_render = opts.is_scroll_position_for_render();
+            }
+            if (!should_render) {
+                return false;
+            }
+            widget.render();
+            return true;
+        },
+
         render_item(item) {
             if (!opts.html_selector) {
                 // We don't have any way to find the existing item.
@@ -581,22 +598,11 @@ export function create<Key, Item = Key>(
         set_up_event_handlers() {
             // on scroll of the nearest scrolling container, if it hits the bottom
             // of the container then fetch a new block of items and render them.
-            meta.$scroll_listening_element.on("scroll.list_widget_container", function () {
+            meta.$scroll_listening_element.on("scroll.list_widget_container", () => {
                 if (opts.post_scroll__pre_render_callback) {
                     opts.post_scroll__pre_render_callback();
                 }
-
-                let should_render;
-                if (opts.is_scroll_position_for_render === undefined) {
-                    assert(!(this instanceof Window));
-                    should_render = is_scroll_position_for_render(this);
-                } else {
-                    should_render = opts.is_scroll_position_for_render();
-                }
-
-                if (should_render) {
-                    widget.render();
-                }
+                widget.maybe_render_more();
             });
 
             if (opts.$parent_container) {

@@ -279,10 +279,13 @@ run_test("scrolling", () => {
         $simplebar_container: $scroll_container,
     };
 
-    ListWidget.create($container, items, opts);
+    const widget = ListWidget.create($container, items, opts);
 
     assert.deepEqual($container.$appended_data.html(), items.slice(0, 80).join(""));
     assert.equal(get_scroll_element_called, true);
+
+    // Nothing to render while the container is not scrolled to its end.
+    assert.equal(widget.maybe_render_more(), false);
 
     // Set up our fake geometry so it forces a scroll action.
     $scroll_container[0].scrollTop = 180;
@@ -293,6 +296,9 @@ run_test("scrolling", () => {
     // our widget.
     $scroll_container.call_scroll();
     assert.deepEqual($container.$appended_data.html(), items.slice(80, 100).join(""));
+
+    assert.equal(widget.maybe_render_more(), true);
+    assert.deepEqual($container.$appended_data.html(), items.slice(100, 120).join(""));
 });
 
 run_test("not_scrolling", () => {
