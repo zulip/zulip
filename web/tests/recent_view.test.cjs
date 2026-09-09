@@ -82,7 +82,7 @@ const ListWidget = mock_esm("../src/list_widget", {
     },
 
     hard_redraw: noop,
-    filter_and_sort: noop,
+    filter_and_sort: () => [],
     replace_list_data(data) {
         assert.notEqual(
             expected_data_to_replace_in_list_widget,
@@ -181,6 +181,7 @@ mock_esm("../src/unread", {
         }
         return 1;
     },
+    get_unread_message_count: () => 0,
     num_unread_for_user_ids_string() {
         return 0;
     },

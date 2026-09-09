@@ -72,7 +72,7 @@ type BaseListWidget = {
 export type ListWidget<Key, Item = Key> = BaseListWidget & {
     get_current_list: () => Item[];
     get_rendered_list: () => Item[];
-    filter_and_sort: () => void;
+    filter_and_sort: () => Item[];
     retain_selected_items: () => void;
     all_rendered: () => boolean;
     render: (how_many?: number) => void;
@@ -355,8 +355,40 @@ export function create<Key, Item = Key>(
             return meta.filtered_list.slice(0, meta.offset);
         },
 
+        // Recomputes the filtered list and removes the rendered rows of
+        // items it no longer includes, returning those items. Callers
+        // update the rows of the items they know changed with
+        // render_item/insert_rendered_row; this covers items hidden by
+        // changes they were not told about. A row left behind for such
+        // an item would no longer be counted by meta.offset, so a later
+        // render() would append rows that are already on screen.
         filter_and_sort() {
+            const previously_rendered_items = widget.get_rendered_list();
             compute_filtered_list();
+            if (!opts.html_selector || previously_rendered_items.length === 0) {
+                return [];
+            }
+
+            const listed_items = new Set(meta.filtered_list);
+            const removed_items: Item[] = [];
+            for (const item of previously_rendered_items) {
+                if (listed_items.has(item)) {
+                    continue;
+                }
+                const $row = opts.html_selector(item);
+                if ($row.length === 0) {
+                    continue;
+                }
+                $row.remove();
+                widget.reduce_rendered_offset();
+                removed_items.push(item);
+            }
+            if (removed_items.length > 0 && widget.all_rendered()) {
+                // As in remove_rendered_row: if the container is now
+                // empty, render() will display the empty-list message.
+                widget.render();
+            }
+            return removed_items;
         },
 
         // Used in case of Multiselect DropdownListWidget to retain

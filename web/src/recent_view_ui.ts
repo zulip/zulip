@@ -1144,6 +1144,22 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
     return false;
 }
 
+// Recomputes the widget's filtered list, keeping keyboard focus
+// sensible when the resort removed the focused row.
+function filter_and_sort_topics_widget(): void {
+    assert(topics_widget !== undefined);
+    // Look up the focused row while row_focus still indexes the rows the
+    // resort may remove.
+    const focused_message_id = get_focused_row_message()?.id;
+    const removed_conversations = topics_widget.filter_and_sort();
+    const focused_row_removed = removed_conversations.some(
+        (conversation) => conversation.last_msg_id === focused_message_id,
+    );
+    if (focused_row_removed && row_focus >= topics_widget.get_current_list().length) {
+        row_focus = Math.max(topics_widget.get_current_list().length - 1, 0);
+    }
+}
+
 export function bulk_inplace_rerender(row_keys: string[]): void {
     if (!topics_widget || !recent_view_util.is_visible()) {
         return;
@@ -1157,7 +1173,7 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
     // so we know if it's safe to use render() for new items below.
     const was_all_rendered = topics_widget.all_rendered();
     topics_widget.replace_list_data(get_list_data_for_widget(), false);
-    topics_widget.filter_and_sort();
+    filter_and_sort_topics_widget();
     // Iterate in the order in which the rows should be present so that
     // we are not inserting rows without any rows being present around them.
     let processed_count = 0;
@@ -1204,38 +1220,21 @@ export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): b
         //
         // NOTE: This doesn't add any new entry to the original list but updates the filtered list
         // based on the current filters and updated row data.
-        topics_widget.filter_and_sort();
+        filter_and_sort_topics_widget();
     }
 
     // We cannot rely on `topic_widget.meta.filtered_list` to know
     // if a topic is rendered since the `filtered_list` might have
     // already been updated via other calls.
-    const $topic_row = get_topic_row(topic_data);
-    const is_topic_rendered = $topic_row.length;
+    const is_topic_rendered = get_topic_row(topic_data).length > 0;
     const current_topics_list = topics_widget.get_current_list();
-    if (is_topic_rendered && filters_should_hide_row(topic_data)) {
-        // Since the row needs to be removed from DOM, we need to adjust `row_focus`
-        // if the row being removed is focused and is the last row in the list.
-        // This prevents the row_focus either being reset to the first row or
-        // middle of the visible table rows.
-        // We need to get the current focused row details from DOM since we cannot
-        // rely on `current_topics_list` since it has already been updated and row
-        // doesn't exist inside it.
-        const row_is_focused = get_focused_row_message()?.id === topic_data.last_msg_id;
-        if (row_is_focused && row_focus >= current_topics_list.length) {
-            row_focus = current_topics_list.length - 1;
-        }
-        topics_widget.remove_rendered_row($topic_row);
-    } else if (!is_topic_rendered && filters_should_hide_row(topic_data)) {
-        // In case `topic_row` is not present, our job is already done here
-        // since it has not been rendered yet and we already removed it from
-        // the filtered list in `topic_widget`. So, it won't be displayed in
-        // the future too.
-    } else if (is_topic_rendered && !filters_should_hide_row(topic_data)) {
+    if (filters_should_hide_row(topic_data)) {
+        // Nothing to do: the widget removed the row when the filtered list was
+        // recomputed, and a row never rendered stays out of the list.
+    } else if (is_topic_rendered) {
         // Only a re-render is required in this case.
         topics_widget.render_item(topic_data);
     } else {
-        // Final case: !is_topic_rendered && !filters_should_hide_row(topic_data).
         topics_widget.insert_rendered_row(topic_data, () =>
             current_topics_list.findIndex(
                 (list_item) => list_item.last_msg_id === topic_data.last_msg_id,
