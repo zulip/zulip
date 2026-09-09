@@ -16,8 +16,8 @@ import type {MessageList} from "./message_list.ts";
 import type {MessageListData} from "./message_list_data.ts";
 import * as message_list_data_cache from "./message_list_data_cache.ts";
 import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
 import {raw_message_schema} from "./message_store.ts";
-import * as message_util from "./message_util.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as narrow_banner from "./narrow_banner.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
@@ -30,7 +30,9 @@ import {narrow_operator_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
+import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
+import * as unread_ui from "./unread_ui.ts";
 
 export const message_ids_response_schema = z.object({
     found_newest: z.boolean(),
@@ -154,6 +156,16 @@ export function fetch_more_if_required_for_current_msg_list(
     }
 }
 
+export function do_unread_count_updates(messages: Message[], expect_no_new_unreads = false): void {
+    const any_new_unreads = unread.process_loaded_messages(messages, expect_no_new_unreads);
+
+    if (any_new_unreads) {
+        // The following operations are expensive, and thus should
+        // only happen if we found any unread messages justifying it.
+        unread_ui.update_unread_counts();
+    }
+}
+
 function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): void {
     const raw_messages = data.messages;
 
@@ -165,7 +177,7 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
 
     // In some rare situations, we expect to discover new unread
     // messages not tracked in unread.ts during this fetching process.
-    message_util.do_unread_count_updates(messages, true);
+    do_unread_count_updates(messages, true);
 
     const is_contiguous_history = true;
     if (messages.length > 0) {
