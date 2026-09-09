@@ -953,11 +953,14 @@ function format_conversation(conversation_data: ConversationData): ConversationC
     };
 }
 
-function get_topic_row(topic_data: ConversationData): JQuery {
-    const msg = message_store.get(topic_data.last_msg_id);
+function get_conversation_key(conversation: ConversationData): string {
+    const msg = message_store.get(conversation.last_msg_id);
     assert(msg !== undefined);
-    const topic_key = recent_view_util.get_key_from_message(msg);
-    return $(`#${CSS.escape(recent_conversation_key_prefix + topic_key)}`);
+    return recent_view_util.get_key_from_message(msg);
+}
+
+function get_topic_row(topic_data: ConversationData): JQuery {
+    return $(`#${CSS.escape(recent_conversation_key_prefix + get_conversation_key(topic_data))}`);
 }
 
 export function process_topic_edit(
@@ -1162,9 +1165,7 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
         if (processed_count >= row_keys.length) {
             break;
         }
-        const msg = message_store.get(topic_data.last_msg_id);
-        assert(msg !== undefined);
-        const topic_key = recent_view_util.get_key_from_message(msg);
+        const topic_key = get_conversation_key(topic_data);
         if (row_keys.includes(topic_key)) {
             inplace_rerender(topic_key, true);
             processed_count += 1;
