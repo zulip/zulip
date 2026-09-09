@@ -966,11 +966,6 @@ def get_parent_user_id_from_thread_message(thread_message: ZerverFieldsT, subtyp
                 return thread_message["bot_id"]
     except KeyError:
         # If Slack doesn't specify the parent user/bot ID in this message, use the cached one.
-        #
-        # TODO: Our caching strategy works under the assumption that we visit thread messages
-        # in the order of oldest-to-newest - so that we see the thread's parent message before
-        # thread replies. If messages are unsorted, we might process a
-        # reply before its parent, resulting in KeyError because the parent’s user ID hasn’t been cached yet.
         return thread_parent_map[thread_message["thread_ts"]]
 
 
