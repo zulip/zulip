@@ -83,6 +83,7 @@ const ListWidget = mock_esm("../src/list_widget", {
 
     hard_redraw: noop,
     filter_and_sort: () => [],
+    maybe_render_more: noop,
     replace_list_data(data) {
         assert.notEqual(
             expected_data_to_replace_in_list_widget,
@@ -920,6 +921,11 @@ test("bulk_inplace_rerender updates the requested rows in list order", ({overrid
         updates.push(["insert", conversation]);
     });
     override(ListWidget, "get_current_list", () => [third, first, second]);
+    let render_more_calls = 0;
+    override(ListWidget, "maybe_render_more", () => {
+        render_more_calls += 1;
+        return false;
+    });
 
     // A conversation with a row is rerendered and one without gets a row,
     // in list order, so that a row inserted next to another one finds it
@@ -929,6 +935,8 @@ test("bulk_inplace_rerender updates the requested rows in list order", ({overrid
         ["insert", third],
         ["rerender", first],
     ]);
+    // The rerender ends by rendering more rows if the table has room.
+    assert.equal(render_more_calls, 1);
 });
 
 test("basic assertions", ({mock_template, override_rewire}) => {

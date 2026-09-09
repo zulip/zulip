@@ -1161,6 +1161,13 @@ function filter_and_sort_topics_widget(): void {
 }
 
 function finish_rerender(): void {
+    assert(topics_widget !== undefined);
+    // Removals can leave the table short of the scroll end with no scroll
+    // event to come. Rendering runs callback_after_render, which does the
+    // rest of the work below.
+    if (topics_widget.maybe_render_more()) {
+        return;
+    }
     update_unread_sort_header_state();
     setTimeout(revive_current_focus, 0);
 }
