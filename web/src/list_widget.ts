@@ -357,6 +357,25 @@ export function create<Key, Item = Key>(
         reduce_rendered_offset();
     }
 
+    function insert_row_at_index($row: JQuery, index: number): boolean {
+        assert(opts.html_selector !== undefined);
+        if (index + 1 < meta.filtered_list.length) {
+            const $next_row = opts.html_selector(meta.filtered_list[index + 1]!);
+            if ($next_row.length > 0) {
+                $next_row.before($row);
+                return true;
+            }
+        }
+        if (index > 0) {
+            const $previous_row = opts.html_selector(meta.filtered_list[index - 1]!);
+            if ($previous_row.length > 0) {
+                $previous_row.after($row);
+                return true;
+            }
+        }
+        return false;
+    }
+
     const widget: ListWidget<Key, Item> = {
         get_current_list() {
             return meta.filtered_list;
@@ -647,37 +666,17 @@ export function create<Key, Item = Key>(
                     blueslip.error(
                         "Please specify modifier and html_selector when creating the widget.",
                     );
+                    return;
                 }
-                const rendered_row = opts.modifier_html(item, meta.filter_value);
-                if (insert_index === meta.filtered_list.length - 1) {
-                    const $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]!);
-                    if ($target_row.length === 0) {
-                        widget.clean_redraw();
-                        return;
-                    }
-                    $target_row.after($(rendered_row));
+                const $row = $(opts.modifier_html(item, meta.filter_value));
+                // The new row has no rendered neighbor if no rows are
+                // rendered, or if its neighbors are new items the caller
+                // has not inserted yet; redraw instead.
+                if (insert_row_at_index($row, insert_index)) {
+                    increase_rendered_offset();
                 } else {
-                    let $target_row = opts.html_selector!(meta.filtered_list[insert_index + 1]!);
-                    if ($target_row.length > 0) {
-                        $target_row.before($(rendered_row));
-                    } else if (insert_index > 0) {
-                        // We don't have a row rendered after row we are trying to insert at.
-                        // So, try looking for the row before current row.
-                        $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]!);
-                        if ($target_row.length > 0) {
-                            $target_row.after($(rendered_row));
-                        }
-                    }
-
-                    // The new row has no rendered neighbor if no rows are
-                    // rendered, or if its neighbors are new items the caller
-                    // has not inserted yet; redraw instead.
-                    if ($target_row.length === 0) {
-                        widget.clean_redraw();
-                        return;
-                    }
+                    widget.clean_redraw();
                 }
-                increase_rendered_offset();
             }
         },
 
