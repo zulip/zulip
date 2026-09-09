@@ -59,6 +59,9 @@ mock_esm("../src/compose_recipient", {
 const pm_list = mock_esm("../src/pm_list", {
     update_private_messages() {},
 });
+const recent_view_ui = mock_esm("../src/recent_view_ui", {
+    rerender_conversations_with_user() {},
+});
 
 const buddy_data = new buddy_list.BuddyList();
 buddy_list.buddy_list = buddy_data;
@@ -432,4 +435,50 @@ run_test("updates", ({override}) => {
     user_events.update_person({user_id: isaac.user_id, full_name: "Sir Isaac Newton"});
     assert.equal($navbar_title.text(), "placeholder");
     message_lists.set_current(undefined);
+});
+
+run_test("update_person rerenders the user's recent view rows", ({override}) => {
+    // Recent view rerenders from the user's data, so each change has to
+    // be in that data by the time recent view is called.
+    const users_at_rerender = [];
+    override(recent_view_ui, "rerender_conversations_with_user", (user_id) => {
+        users_at_rerender.push({...people.get_by_user_id(user_id)});
+    });
+    override(message_live_update, "update_user_full_name", noop);
+    override(message_live_update, "update_avatar", noop);
+    const marie = make_user({
+        email: "marie@example.com",
+        delivery_email: null,
+        user_id: 36,
+        full_name: "Marie Curie",
+    });
+    people.add_active_user(marie);
+
+    const changes_recent_view_shows = [
+        {event: {full_name: "Maria Sklodowska"}, field: "full_name", value: "Maria Sklodowska"},
+        {event: {new_email: "maria@example.com"}, field: "email", value: "maria@example.com"},
+        {
+            event: {delivery_email: "maria-delivery@example.com"},
+            field: "delivery_email",
+            value: "maria-delivery@example.com",
+        },
+        {
+            event: {role: settings_config.user_role_values.guest.code},
+            field: "is_guest",
+            value: true,
+        },
+        {
+            event: {avatar_url: "http://gravatar.com/maria"},
+            field: "avatar_url",
+            value: "http://gravatar.com/maria",
+        },
+    ];
+    for (const [index, {event, field, value}] of changes_recent_view_shows.entries()) {
+        user_events.update_person({user_id: marie.user_id, ...event});
+        assert.equal(users_at_rerender.length, index + 1);
+        assert.equal(users_at_rerender[index][field], value);
+    }
+
+    user_events.update_person({user_id: marie.user_id, timezone: "UTC"});
+    assert.equal(users_at_rerender.length, changes_recent_view_shows.length);
 });
