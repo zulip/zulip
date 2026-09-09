@@ -694,7 +694,7 @@ def do_change_user_role(
             user_profile.realm,
             [user_profile.id],
             acting_user=acting_user,
-            skip_workplace_users_count_audit_log=True,
+            skip_workplace_users_count_audit_log_and_ledger_entry=True,
         )
 
     # realm_user_count_by_role counts the workplace users from

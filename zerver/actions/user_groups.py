@@ -113,7 +113,7 @@ def update_users_in_full_members_system_group(
     affected_user_ids: Sequence[int] = [],
     *,
     acting_user: UserProfile | None,
-    skip_workplace_users_count_audit_log: bool = False,
+    skip_workplace_users_count_audit_log_and_ledger_entry: bool = False,
 ) -> None:
     full_members_system_group = NamedUserGroup.objects.get(
         realm_for_sharding=realm, name=SystemGroups.FULL_MEMBERS, is_system_group=True
@@ -173,7 +173,7 @@ def update_users_in_full_members_system_group(
             [full_members_system_group],
             old_full_member_ids,
             acting_user=acting_user,
-            skip_workplace_users_count_audit_log=skip_workplace_users_count_audit_log,
+            skip_workplace_users_count_audit_log_and_ledger_entry=skip_workplace_users_count_audit_log_and_ledger_entry,
         )
 
     if len(new_full_members) > 0:
@@ -181,7 +181,7 @@ def update_users_in_full_members_system_group(
             [full_members_system_group],
             new_full_member_ids,
             acting_user=acting_user,
-            skip_workplace_users_count_audit_log=skip_workplace_users_count_audit_log,
+            skip_workplace_users_count_audit_log_and_ledger_entry=skip_workplace_users_count_audit_log_and_ledger_entry,
         )
 
 
@@ -336,7 +336,7 @@ def bulk_add_members_to_user_groups(
     user_profile_ids: list[int],
     *,
     acting_user: UserProfile | None,
-    skip_workplace_users_count_audit_log: bool = False,
+    skip_workplace_users_count_audit_log_and_ledger_entry: bool = False,
 ) -> None:
     # All intended callers of this function involve a single user
     # being added to one or more groups, or many users being added to
@@ -374,8 +374,9 @@ def bulk_add_members_to_user_groups(
         for user_group in user_groups
     )
 
-    if not skip_workplace_users_count_audit_log and check_any_group_used_for_workplace_users_group(
-        realm, user_groups
+    if (
+        not skip_workplace_users_count_audit_log_and_ledger_entry
+        and check_any_group_used_for_workplace_users_group(realm, user_groups)
     ):
         RealmAuditLog.objects.create(
             realm=realm,
@@ -431,7 +432,7 @@ def bulk_remove_members_from_user_groups(
     user_profile_ids: list[int],
     *,
     acting_user: UserProfile | None,
-    skip_workplace_users_count_audit_log: bool = False,
+    skip_workplace_users_count_audit_log_and_ledger_entry: bool = False,
 ) -> None:
     # All intended callers of this function involve a single user
     # being added to one or more groups, or many users being added to
@@ -467,8 +468,9 @@ def bulk_remove_members_from_user_groups(
         for user_group in user_groups
     )
 
-    if not skip_workplace_users_count_audit_log and check_any_group_used_for_workplace_users_group(
-        realm, user_groups
+    if (
+        not skip_workplace_users_count_audit_log_and_ledger_entry
+        and check_any_group_used_for_workplace_users_group(realm, user_groups)
     ):
         RealmAuditLog.objects.create(
             realm=realm,
