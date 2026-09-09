@@ -82,8 +82,6 @@ export type ListWidget<Key, Item = Key> = BaseListWidget & {
     set_reverse_mode: (reverse_mode: boolean) => void;
     set_sorting_function: (sorting_function: string | string[] | SortingFunction<Item>) => void;
     set_up_event_handlers: () => void;
-    increase_rendered_offset: () => void;
-    reduce_rendered_offset: () => void;
     clean_redraw: () => void;
     hard_redraw: () => void;
     insert_rendered_row: (
@@ -346,6 +344,19 @@ export function create<Key, Item = Key>(
         }
     }
 
+    function increase_rendered_offset(): void {
+        meta.offset = Math.min(meta.offset + 1, meta.filtered_list.length);
+    }
+
+    function reduce_rendered_offset(): void {
+        meta.offset = Math.max(meta.offset - 1, 0);
+    }
+
+    function remove_row($row: JQuery): void {
+        $row.remove();
+        reduce_rendered_offset();
+    }
+
     const widget: ListWidget<Key, Item> = {
         get_current_list() {
             return meta.filtered_list;
@@ -379,8 +390,7 @@ export function create<Key, Item = Key>(
                 if ($row.length === 0) {
                     continue;
                 }
-                $row.remove();
-                widget.reduce_rendered_offset();
+                remove_row($row);
                 removed_items.push(item);
             }
             if (removed_items.length > 0 && widget.all_rendered()) {
@@ -583,14 +593,6 @@ export function create<Key, Item = Key>(
             opts.filter?.$element?.off("input.list_widget_filter");
         },
 
-        increase_rendered_offset() {
-            meta.offset = Math.min(meta.offset + 1, meta.filtered_list.length);
-        },
-
-        reduce_rendered_offset() {
-            meta.offset = Math.max(meta.offset - 1, 0);
-        },
-
         clean_redraw() {
             compute_filtered_list();
             widget.clear();
@@ -657,7 +659,7 @@ export function create<Key, Item = Key>(
                         widget.clean_redraw();
                     }
                 }
-                widget.increase_rendered_offset();
+                increase_rendered_offset();
             }
         },
 
