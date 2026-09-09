@@ -315,6 +315,10 @@
     }
 
     .message_length_toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
         width: 100%;
         height: 1.714em; /* 24px / 14px em */
         margin-bottom: var(--message-box-markdown-aligned-vertical-space);
@@ -341,6 +345,10 @@
                 --color-show-more-less-button-background-active
             );
             scale: 0.98;
+        }
+
+        > span {
+            line-height: 1;
         }
     }
 
