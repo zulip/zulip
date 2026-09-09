@@ -357,15 +357,27 @@ def merge_streams(
     existing_subs = Subscription.objects.filter(recipient=recipient_to_keep)
     users_already_subscribed = {sub.user_profile_id: sub.active for sub in existing_subs}
 
-    subs_to_deactivate = Subscription.objects.filter(recipient=recipient_to_destroy, active=True)
-    users_to_activate = [
-        sub.user_profile
-        for sub in subs_to_deactivate
-        if not users_already_subscribed.get(sub.user_profile_id, False)
+    user_ids_to_deactivate_subs = Subscription.objects.filter(
+        recipient=recipient_to_destroy, active=True
+    ).values_list("user_profile_id", flat=True)
+    user_ids_to_activate = [
+        user_id
+        for user_id in user_ids_to_deactivate_subs
+        if not users_already_subscribed.get(user_id, False)
     ]
 
-    if len(users_to_activate) > 0:
-        bulk_add_subscriptions(realm, [stream_to_keep], users_to_activate, acting_user=None)
+    if len(user_ids_to_activate) > 0:
+        # Lock the subscriber rows (ordered, to avoid deadlocks) so this
+        # serializes with concurrent (un)subscription of the same users.
+        # The lock is scoped narrowly to keep merge_streams re-runnable
+        # after an interruption, as described above.
+        with transaction.atomic(savepoint=False):
+            users_to_activate = list(
+                UserProfile.objects.filter(id__in=user_ids_to_activate)
+                .order_by("id")
+                .select_for_update(no_key=True)
+            )
+            bulk_add_subscriptions(realm, [stream_to_keep], users_to_activate, acting_user=None)
 
     # Move the messages, and delete the old copies from caches. We do
     # this before removing the subscription objects, to avoid messages
@@ -385,17 +397,25 @@ def merge_streams(
     bulk_delete_cache_keys(message_ids_to_clear)
 
     # Remove subscriptions to the old stream.
-    if len(subs_to_deactivate) > 0:
-        bulk_remove_subscriptions(
-            realm,
-            [sub.user_profile for sub in subs_to_deactivate],
-            [stream_to_destroy],
-            acting_user=None,
-        )
+    if len(user_ids_to_deactivate_subs) > 0:
+        # Lock the subscriber rows (ordered, to avoid deadlocks) so this
+        # serializes with concurrent (un)subscription of the same users.
+        with transaction.atomic(savepoint=False):
+            users_to_deactivate = list(
+                UserProfile.objects.filter(id__in=user_ids_to_deactivate_subs)
+                .order_by("id")
+                .select_for_update(no_key=True)
+            )
+            bulk_remove_subscriptions(
+                realm,
+                users_to_deactivate,
+                [stream_to_destroy],
+                acting_user=None,
+            )
 
     do_deactivate_stream(stream_to_destroy, acting_user=None)
 
-    return (len(users_to_activate), count, len(subs_to_deactivate))
+    return (len(user_ids_to_activate), count, len(user_ids_to_deactivate_subs))
 
 
 def get_subscriber_ids(

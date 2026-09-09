@@ -1,6 +1,7 @@
 from typing import Any
 
 from django.core.management.base import CommandParser
+from django.db import transaction
 from typing_extensions import override
 
 from zerver.actions.streams import bulk_add_subscriptions
@@ -25,20 +26,23 @@ class Command(ZulipBaseCommand):
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 
-        user_profiles = self.get_users(options, realm)
-        stream_names = {stream.strip() for stream in options["streams"].split(",")}
+        with transaction.atomic(savepoint=False):
+            user_profiles = self.get_users(options, realm, acquire_lock=True)
+            stream_names = {stream.strip() for stream in options["streams"].split(",")}
 
-        for stream_name in stream_names:
-            for user_profile in user_profiles:
-                stream = ensure_stream(realm, stream_name, acting_user=None)
-                _ignore, already_subscribed = bulk_add_subscriptions(
-                    realm, [stream], [user_profile], acting_user=None
-                )
-                was_there_already = user_profile.id in (info.user.id for info in already_subscribed)
-                print(
-                    "{} {} to {}".format(
-                        "Already subscribed" if was_there_already else "Subscribed",
-                        user_profile.delivery_email,
-                        stream_name,
+            for stream_name in stream_names:
+                for user_profile in user_profiles:
+                    stream = ensure_stream(realm, stream_name, acting_user=None)
+                    _ignore, already_subscribed = bulk_add_subscriptions(
+                        realm, [stream], [user_profile], acting_user=None
                     )
-                )
+                    was_there_already = user_profile.id in (
+                        info.user.id for info in already_subscribed
+                    )
+                    print(
+                        "{} {} to {}".format(
+                            "Already subscribed" if was_there_already else "Subscribed",
+                            user_profile.delivery_email,
+                            stream_name,
+                        )
+                    )
