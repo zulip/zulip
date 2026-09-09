@@ -1046,6 +1046,26 @@ run_test("filter_and_sort removes rows of items no longer listed", () => {
     assert.equal(render_count, 3);
 });
 
+run_test("render_item drops the row of an item moved past the rendered range", () => {
+    const list = make_items(100);
+    const {widget, rows, stats} = make_tracked_widget(list, {init_sort: (a, b) => a.key - b.key});
+    const moved = rows[4];
+
+    // The item now sorts last, past the rendered range: its row goes, with
+    // no redraw, and the rendered list still matches the rows in the DOM.
+    moved.key = 200;
+    widget.filter_and_sort();
+    widget.render_item(moved);
+    assert.ok(!rows.includes(moved));
+    assert.equal(stats.redraws, 0);
+    assert.deepEqual(widget.get_rendered_list(), rows);
+
+    // Rendering the rest reaches it last, and once.
+    widget.render(list.length);
+    assert.ok(widget.all_rendered());
+    assert.equal(rows.at(-1), moved);
+});
+
 run_test("Multiselect dropdown retain_selected_items", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();

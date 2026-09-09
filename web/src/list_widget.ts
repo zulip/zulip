@@ -494,6 +494,16 @@ export function create<Key, Item = Key>(
                 return;
             }
 
+            // An item moved past the rendered range no longer belongs on screen:
+            // its row would not be counted by meta.offset, and a later render()
+            // would append the item again. Widgets whose get_item returns fresh
+            // objects cannot be matched by identity and keep the in-place update.
+            const index = meta.filtered_list.indexOf(item);
+            if (index !== -1 && index >= meta.offset) {
+                remove_row($html_item);
+                return;
+            }
+
             const html = opts.modifier_html(item, meta.filter_value);
             if (typeof html !== "string") {
                 blueslip.error("List item is not a string", {item: html});
