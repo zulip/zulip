@@ -185,18 +185,28 @@ function make_items(count) {
 }
 
 // A widget over `list` with a stand-in for its DOM: `rows` holds the items
-// that have a row, in order, and refuses to render an item twice; `stats`
-// counts the redraws that threw rendered rows away.
+// that have a row, in DOM order, and refuses to render an item twice; the
+// row stubs remove, replace and position rows the way jQuery does. `stats`
+// counts the redraws that threw rendered rows away and lists the items
+// whose row was replaced in place.
 function make_tracked_widget(list, opts = {}) {
     const rows = [];
-    const stats = {redraws: 0};
+    const stats = {redraws: 0, replaced: []};
     const items_in = (html) =>
         html
             .matchAll(/data-item=(\d+)/g)
             .map((match) => list[Number(match[1]) - 1])
             .toArray();
+    function insert_items(index, $data) {
+        assert.ok(index >= 0, "anchor row is not in the DOM");
+        for (const [i, item] of items_in($data.html()).entries()) {
+            assert.ok(!rows.includes(item), `item ${item.value} was rendered twice`);
+            rows.splice(index + i, 0, item);
+        }
+    }
     function row(item) {
         return {
+            item,
             get length() {
                 return rows.includes(item) ? 1 : 0;
             },
@@ -204,14 +214,28 @@ function make_tracked_widget(list, opts = {}) {
                 assert.ok(rows.includes(item), "row is not in the DOM");
                 rows.splice(rows.indexOf(item), 1);
             },
+            before($data) {
+                insert_items(rows.indexOf(item), $data);
+            },
+            after($data) {
+                insert_items(rows.indexOf(item) + 1, $data);
+            },
+            replaceWith($data) {
+                assert.deepEqual(items_in($data.html()), [item]);
+                stats.replaced.push(item);
+            },
+            prev() {
+                // For the first row, row(undefined) stands in for no row.
+                return row(rows[rows.indexOf(item) - 1]);
+            },
+            is($other) {
+                return $other.item === item;
+            },
         };
     }
     const $container = make_container();
     $container.append = ($data) => {
-        for (const item of items_in($data.html())) {
-            assert.ok(!rows.includes(item), `item ${item.value} was rendered twice`);
-            rows.push(item);
-        }
+        insert_items(rows.length, $data);
     };
     $container.empty = () => {
         if (rows.length > 0) {
@@ -1064,6 +1088,30 @@ run_test("render_item drops the row of an item moved past the rendered range", (
     widget.render(list.length);
     assert.ok(widget.all_rendered());
     assert.equal(rows.at(-1), moved);
+});
+
+run_test("render_item moves a row to its item's new position", () => {
+    const list = make_items(50);
+    const {widget, rows, stats} = make_tracked_widget(list, {init_sort: (a, b) => a.key - b.key});
+    assert.ok(widget.all_rendered());
+
+    // Item 6 now sorts between items 25 and 26, item 40 first and item 8
+    // last; item 7 stays where it is.
+    list[5].key = 25.5;
+    list[39].key = 0.5;
+    list[7].key = 100;
+    widget.filter_and_sort();
+    widget.render_item(list[5]);
+    widget.render_item(list[39]);
+    widget.render_item(list[7]);
+    widget.render_item(list[6]);
+    assert.equal(rows[rows.indexOf(list[24]) + 1], list[5]);
+    assert.equal(rows[0], list[39]);
+    assert.equal(rows.at(-1), list[7]);
+    assert.deepEqual(widget.get_rendered_list(), rows);
+    // Only item 7's row was replaced in place; the other three moved, and
+    // nothing fell back to a redraw.
+    assert.deepEqual(stats, {redraws: 0, replaced: [list[6]]});
 });
 
 run_test("insert_rendered_row falls back to a redraw without counting a row", () => {

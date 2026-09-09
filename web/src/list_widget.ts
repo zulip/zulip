@@ -375,6 +375,14 @@ export function create<Key, Item = Key>(
         return false;
     }
 
+    function is_row_at_index($row: JQuery, index: number): boolean {
+        assert(opts.html_selector !== undefined);
+        if (index === 0) {
+            return $row.prev().length === 0;
+        }
+        return $row.prev().is(opts.html_selector(meta.filtered_list[index - 1]!));
+    }
+
     const widget: ListWidget<Key, Item> = {
         get_current_list() {
             return meta.filtered_list;
@@ -528,10 +536,16 @@ export function create<Key, Item = Key>(
                 blueslip.error("List item is not a string", {item: html});
                 return;
             }
+            const $row = $(html);
 
-            // At this point, we have asserted we have all the information to replace
-            // the html now.
-            $html_item.replaceWith($(html));
+            if (index !== -1 && !is_row_at_index($html_item, index)) {
+                $html_item.remove();
+                if (!insert_row_at_index($row, index)) {
+                    widget.clean_redraw();
+                }
+                return;
+            }
+            $html_item.replaceWith($row);
         },
 
         clear() {
