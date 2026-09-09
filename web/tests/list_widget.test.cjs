@@ -1066,6 +1066,37 @@ run_test("render_item drops the row of an item moved past the rendered range", (
     assert.equal(rows.at(-1), moved);
 });
 
+run_test("insert_rendered_row falls back to a redraw without counting a row", () => {
+    const list = make_items(100);
+    const {widget, rows, row, stats} = make_tracked_widget(list, {
+        filter: {predicate: () => true},
+        init_sort: (a, b) => a.key - b.key,
+    });
+    const insert = (item) => {
+        list.push(item);
+        widget.replace_list_data(list, false);
+        widget.filter_and_sort();
+        widget.insert_rendered_row(item, (items) => items.indexOf(item));
+    };
+
+    // Neither neighbor of the new item has a row: the one before went
+    // missing, the one after is past the rendered range. The widget redraws
+    // and must not count the row it did not insert.
+    row(rows.at(-1)).remove();
+    insert({value: 101, key: 80.5});
+    assert.equal(stats.redraws, 1);
+    assert.deepEqual(widget.get_rendered_list(), rows);
+    assert.ok(!rows.includes(list.at(-1)));
+
+    // The same for a new last item whose predecessor's row went missing.
+    widget.render(list.length);
+    row(rows.at(-1)).remove();
+    insert({value: 102, key: 200});
+    assert.equal(stats.redraws, 2);
+    assert.deepEqual(widget.get_rendered_list(), rows);
+    assert.ok(!rows.includes(list.at(-1)));
+});
+
 run_test("Multiselect dropdown retain_selected_items", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
