@@ -1197,20 +1197,29 @@ function report_rows_hidden_without_rerender(
     }
 }
 
+function restore_row_focus($focused_row: JQuery): void {
+    assert(topics_widget !== undefined);
+    const index_in_table = $focused_row.index();
+    const has_left_table = index_in_table === -1;
+    if (has_left_table) {
+        // The row was removed, or replaced by a rerender of its
+        // conversation or by a redraw, which may have put the
+        // conversation far from where it was.
+        const last_row_index = Math.max(topics_widget.get_current_list().length - 1, 0);
+        row_focus = Math.min(row_focus, last_row_index);
+    } else {
+        row_focus = index_in_table;
+    }
+}
+
 function rerender_conversation_rows(row_keys: Set<string>): void {
     assert(topics_widget !== undefined);
     // Look up the focused row while row_focus still indexes the rows the
     // resort may remove.
-    const focused_message_id = get_focused_row_message()?.id;
+    const $focused_row = get_focused_row();
     // NOTE: This doesn't add any new entry to the original list but updates the filtered list
     // based on the current filters and updated row data.
     const removed_conversations = topics_widget.filter_and_sort();
-    const focused_row_removed = removed_conversations.some(
-        (conversation) => conversation.last_msg_id === focused_message_id,
-    );
-    if (focused_row_removed && row_focus >= topics_widget.get_current_list().length) {
-        row_focus = Math.max(topics_widget.get_current_list().length - 1, 0);
-    }
     // Settle the sort before the walk: a redraw during it would otherwise
     // fall back from the unread sort and reorder the list under the walk.
     update_unread_sort_header_state();
@@ -1234,6 +1243,9 @@ function rerender_conversation_rows(row_keys: Set<string>): void {
                 topics_widget.insert_rendered_row(topic_data, () => list_index);
             }
         }
+    }
+    if ($focused_row !== undefined) {
+        restore_row_focus($focused_row);
     }
     // The widget renders more rows only on scroll, and removals can
     // bring the end of the rows into view without one. Its own scroll

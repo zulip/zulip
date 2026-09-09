@@ -101,6 +101,7 @@ const ListWidget = mock_esm("../src/list_widget", {
 mock_esm("../src/compose_closed_ui", {
     set_standard_text_for_reply_button: noop,
     update_buttons: noop,
+    update_reply_button: noop,
 });
 mock_esm("../src/hash_util", {
     channel_url_by_user_setting: test_url,
@@ -168,6 +169,7 @@ mock_esm("../src/stream_data", {
         return stream_id === stream6;
     },
     get_stream_name_from_id: () => "stream_name",
+    get_sub_by_name: noop,
 });
 mock_esm("../src/stream_list", {
     handle_message_view_deactivated: noop,
@@ -470,8 +472,6 @@ function verify_topic_data(all_topics, stream, topic, last_msg_id, participated)
     assert.equal(topic_data.participated, participated);
 }
 
-rt.set_default_focus();
-
 function stub_out_filter_buttons() {
     // TODO: We probably want more direct tests that make sure
     //       the widgets get updated correctly, but the stubs here
@@ -533,6 +533,62 @@ function schedule_visibility_update(override, topic) {
     return run_update;
 }
 
+// Shows recent view with a row for each of `topics`, in that order, and
+// the keyboard focus on the row of `focused_topic`. A test models a
+// rerender with what is returned: set_list() sets the widget's list,
+// set_rows() the rows in the table, and replace_row() gives a topic a
+// new row, as rerendering its conversation or redrawing the view does.
+function show_recent_view_with_focused_row(override, topics, focused_topic) {
+    show_recent_view_with_messages();
+    // Focusing a row schedules a focus event, which these tests have no
+    // use for.
+    override(global, "setTimeout", noop);
+    let list;
+    override(ListWidget, "get_current_list", () => list);
+    function set_list(listed_topics) {
+        list = listed_topics.map((topic) => conversation_for(topic));
+    }
+
+    const $table = $("#recent-view-content-tbody");
+    const row_of_topic = new Map();
+    let rows_made = 0;
+    function make_row(topic) {
+        rows_made += 1;
+        const $row = $.create(`row-${rows_made}-of-${topic}`);
+        $row.attr("id", `recent_conversation:${get_topic_key(stream1, topic)}`);
+        $row.set_parent($table);
+        // Focusing a row reads its channel and topic for the reply button.
+        $row.set_find_results(".recent-view-channel-name", $.create(`channel-${rows_made}`));
+        $row.set_find_results(".recent-view-conversation-link", $.create(`link-${rows_made}`));
+        row_of_topic.set(topic, $row[0]);
+    }
+    const fixture_topics = new Set(messages.map((message) => message.topic));
+    for (const topic of fixture_topics) {
+        make_row(topic);
+    }
+    function set_results(selector, elements) {
+        $.reset_selector(selector);
+        $.set_results(selector, elements);
+    }
+    function set_rows(topics_with_rows) {
+        const rows = topics_with_rows.map((topic) => row_of_topic.get(topic));
+        for (const [topic, row] of row_of_topic) {
+            const selector = row_selector(get_topic_key(stream1, topic));
+            set_results(selector, rows.includes(row) ? [row] : []);
+        }
+        set_results("#recent-view-content-tbody tr", rows);
+        $table.set_children(rows);
+    }
+    set_list(topics);
+    set_rows(topics);
+    rt.focus_clicked_element(topics.indexOf(focused_topic), rt.COLUMNS.topic);
+    return {set_list, set_rows, replace_row: make_row};
+}
+
+function get_focused_topic() {
+    return rt.get_focused_row_message()?.topic;
+}
+
 function test(label, f) {
     run_test(label, (helpers) => {
         page_params.development_environment = true;
@@ -541,6 +597,7 @@ function test(label, f) {
         message_store.set_messages_for_tests(
             [...messages, ...private_messages].map((message) => ({message})),
         );
+        rt.set_default_focus();
         f(helpers);
     });
 }
@@ -1158,6 +1215,94 @@ test("rerender reports rows its resort removed without being asked", ({override}
     rt.inplace_rerender(visible_key);
     assert.deepEqual(blueslip.get_test_logs("error"), []);
     $("#recent_view_search").val("");
+});
+
+test("rerender moves the keyboard focus with its conversation's row", ({override}) => {
+    // The focus is kept as a row index, so a row inserted above the
+    // focused one would leave the focus on the conversation above it.
+    const view = show_recent_view_with_focused_row(override, [topic1, topic2], topic2);
+    assert.equal(get_focused_topic(), topic2);
+
+    const topics_after_rerender = [topic3, topic1, topic2];
+    override(ListWidget, "filter_and_sort", () => {
+        view.set_list(topics_after_rerender);
+        return [];
+    });
+    override(ListWidget, "insert_rendered_row", () => {
+        view.set_rows(topics_after_rerender);
+    });
+    rt.inplace_rerender(get_topic_key(stream1, topic3));
+    assert.equal(get_focused_topic(), topic2);
+});
+
+test("rerender leaves the keyboard focus in place when its conversation moves", ({override}) => {
+    // A rerender replaces the focused conversation's row, and the new row
+    // can sort far from the old one, so the focus stays at its row index.
+    const view = show_recent_view_with_focused_row(override, [topic1, topic2], topic2);
+
+    const topics_after_rerender = [topic2, topic1];
+    override(ListWidget, "filter_and_sort", () => {
+        view.set_list(topics_after_rerender);
+        return [];
+    });
+    override(ListWidget, "render_item", () => {
+        view.replace_row(topic2);
+        view.set_rows(topics_after_rerender);
+    });
+    rt.inplace_rerender(get_topic_key(stream1, topic2));
+    assert.equal(get_focused_topic(), topic1);
+});
+
+test("rerender moves the keyboard focus up when the last row is removed", ({override}) => {
+    const view = show_recent_view_with_focused_row(override, [topic1, topic2], topic2);
+
+    // The filters now hide the focused conversation, so the widget's
+    // resort removes its row.
+    override(ListWidget, "filter_and_sort", () => {
+        view.set_list([topic1]);
+        view.set_rows([topic1]);
+        return [conversation_for(topic2)];
+    });
+    rt.inplace_rerender(get_topic_key(stream1, topic2));
+    assert.equal(get_focused_topic(), topic1);
+});
+
+test("rerender keeps the keyboard focus within the rows that are left", ({override}) => {
+    // The focused conversation is rerendered along with one above it,
+    // which the filters now hide. The focus stays at its row index,
+    // which is past the last row once the row above is gone.
+    const view = show_recent_view_with_focused_row(override, [topic1, topic2, topic3], topic3);
+
+    override(ListWidget, "filter_and_sort", () => {
+        view.set_list([topic2, topic3]);
+        view.set_rows([topic2, topic3]);
+        return [conversation_for(topic1)];
+    });
+    override(ListWidget, "render_item", () => {
+        view.replace_row(topic3);
+        view.set_rows([topic2, topic3]);
+    });
+    bulk_rerender([get_topic_key(stream1, topic1), get_topic_key(stream1, topic3)]);
+    assert.equal(get_focused_topic(), topic3);
+});
+
+test("rerender leaves the keyboard focus in place when the view is redrawn", ({override}) => {
+    // A redraw during the rerender, as when the view falls back from the
+    // unread sort, replaces every row and can reorder them all.
+    const view = show_recent_view_with_focused_row(override, [topic1, topic2, topic3], topic2);
+
+    const topics_after_redraw = [topic2, topic3, topic1];
+    override(ListWidget, "filter_and_sort", () => {
+        for (const topic of topics_after_redraw) {
+            view.replace_row(topic);
+        }
+        view.set_list(topics_after_redraw);
+        view.set_rows(topics_after_redraw);
+        return [];
+    });
+    override(ListWidget, "render_item", noop);
+    rt.inplace_rerender(get_topic_key(stream1, topic1));
+    assert.equal(get_focused_topic(), topic3);
 });
 
 test("basic assertions", ({mock_template, override, override_rewire}) => {
