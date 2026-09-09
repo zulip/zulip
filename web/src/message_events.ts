@@ -324,7 +324,7 @@ export function insert_new_messages(opts: InsertNewMessagesOpts): Message[] {
         messages = local_messages;
     }
 
-    const any_untracked_unread_messages = unread.process_loaded_messages(messages, false);
+    const untracked_unread_messages = unread.process_loaded_messages(messages, false);
     direct_message_group_data.process_loaded_messages(messages);
 
     let need_user_to_scroll = false;
@@ -386,7 +386,7 @@ export function insert_new_messages(opts: InsertNewMessagesOpts): Message[] {
         });
     }
 
-    if (any_untracked_unread_messages) {
+    if (untracked_unread_messages.length > 0) {
         unread_ui.update_unread_counts();
     }
 

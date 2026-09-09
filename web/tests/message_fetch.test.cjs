@@ -2,13 +2,18 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
+
+const recent_view_ui = mock_esm("../src/recent_view_ui");
+const unread_ui = mock_esm("../src/unread_ui");
 
 const {Filter} = zrequire("filter");
 const {MessageListData} = zrequire("message_list_data");
 const message_fetch = zrequire("message_fetch");
+const {get_topic_key} = zrequire("recent_view_util");
+const unread = zrequire("unread");
 
 run_test("get_parameters_for_message_fetch_api date anchor", () => {
     const msg_list_data = new MessageListData({
@@ -37,4 +42,34 @@ run_test("get_parameters_for_message_fetch_api date anchor", () => {
         msg_list_data,
     });
     assert.equal(missing_date.anchor_date, undefined);
+});
+
+run_test("do_unread_count_updates", ({override}) => {
+    unread.declare_bankruptcy();
+    const stream_id = 5;
+    const messages = [
+        {id: 1, type: "stream", stream_id, topic: "Lunch", unread: true},
+        {id: 2, type: "stream", stream_id, topic: "lunch", unread: true},
+        {id: 3, type: "stream", stream_id, topic: "read", unread: false},
+    ];
+
+    let unread_counts_updated = false;
+    override(unread_ui, "update_unread_counts", () => {
+        unread_counts_updated = true;
+    });
+    let rerendered_conversation_keys;
+    override(recent_view_ui, "bulk_inplace_rerender", (conversation_keys) => {
+        rerendered_conversation_keys = conversation_keys;
+    });
+
+    message_fetch.do_unread_count_updates(messages);
+    assert.ok(unread_counts_updated);
+    assert.deepEqual(rerendered_conversation_keys, new Set([get_topic_key(stream_id, "lunch")]));
+
+    // Fetching the same messages again discovers nothing new.
+    unread_counts_updated = false;
+    rerendered_conversation_keys = undefined;
+    message_fetch.do_unread_count_updates(messages);
+    assert.ok(!unread_counts_updated);
+    assert.equal(rerendered_conversation_keys, undefined);
 });
