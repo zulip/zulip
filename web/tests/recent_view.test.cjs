@@ -84,6 +84,7 @@ const ListWidget = mock_esm("../src/list_widget", {
     hard_redraw: noop,
     filter_and_sort: () => [],
     get_current_list: () => [],
+    get_rendered_list: () => ListWidget.get_current_list(),
     all_rendered: () => true,
     replace_list_data(data) {
         assert.notEqual(
@@ -1015,6 +1016,32 @@ test("rerender renders more rows until they reach the bottom of the viewport", (
     override(ListWidget, "all_rendered", () => batches_rendered === batches_until_all_rendered);
     bulk_rerender([]);
     assert.equal(batches_rendered, batches_until_all_rendered);
+});
+
+test("rerender inserts rows only within the rendered range", ({override}) => {
+    // Two new conversations sort before the only rendered row. Each insert
+    // extends the rendered range, which lets the second one in; a third,
+    // past the range, is left for the widget to render.
+    show_recent_view_with_messages();
+    const topics = [topic1, topic2, topic3, topic4];
+    const list = topics.map((topic) => conversation_for(topic));
+    const [new_first, new_second, with_row] = list;
+    for (const topic of [topic1, topic2, topic4]) {
+        stub_no_row_for(get_topic_key(stream1, topic));
+    }
+    override(ListWidget, "get_current_list", () => list);
+    const updates = record_row_updates(override);
+    override(ListWidget, "get_rendered_list", () => {
+        const rows_inserted = updates.filter(([kind]) => kind === "insert").length;
+        return list.slice(0, 1 + rows_inserted);
+    });
+
+    bulk_rerender(topics.map((topic) => get_topic_key(stream1, topic)));
+    assert.deepEqual(updates, [
+        ["insert", new_first, 0],
+        ["insert", new_second, 1],
+        ["rerender", with_row],
+    ]);
 });
 
 test("basic assertions", ({mock_template, override_rewire}) => {

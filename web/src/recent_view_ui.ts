@@ -1175,7 +1175,11 @@ function rerender_conversation_rows(row_keys: Set<string>): void {
             rows_left -= 1;
             if (get_conversation_row(conversation_key).length > 0) {
                 topics_widget.render_item(topic_data);
-            } else {
+            } else if (list_index < topics_widget.get_rendered_list().length) {
+                // The range grows with each insert, hence the live length.
+                // Inserting at its end would grow it too, for the next
+                // conversation and so on; the widget renders those rows
+                // in batches.
                 topics_widget.insert_rendered_row(topic_data, () => list_index);
             }
         }
