@@ -1196,11 +1196,6 @@ export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): b
 
     const topic_data = recent_view_data.conversations.get(topic_key);
     assert(topic_data !== undefined);
-    const $topic_row = get_topic_row(topic_data);
-    // We cannot rely on `topic_widget.meta.filtered_list` to know
-    // if a topic is rendered since the `filtered_list` might have
-    // already been updated via other calls.
-    const is_topic_rendered = $topic_row.length;
     assert(topics_widget !== undefined);
     if (!is_bulk_rerender) {
         // Resorting the topics_widget is important for the case where we
@@ -1212,6 +1207,11 @@ export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): b
         topics_widget.filter_and_sort();
     }
 
+    // We cannot rely on `topic_widget.meta.filtered_list` to know
+    // if a topic is rendered since the `filtered_list` might have
+    // already been updated via other calls.
+    const $topic_row = get_topic_row(topic_data);
+    const is_topic_rendered = $topic_row.length;
     const current_topics_list = topics_widget.get_current_list();
     if (is_topic_rendered && filters_should_hide_row(topic_data)) {
         // Since the row needs to be removed from DOM, we need to adjust `row_focus`
