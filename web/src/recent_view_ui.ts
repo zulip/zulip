@@ -1157,16 +1157,16 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
 }
 
 // Recomputes the widget's filtered list for a rerender of the given
-// conversations, reporting rows removed for conversations it was not
-// asked about.
-function filter_and_sort_topics_widget(rerendering_keys: string[]): void {
+// conversations, and returns the conversation the keyboard focus
+// should follow once the rows have settled; see finish_rerender.
+function filter_and_sort_topics_widget(rerendering_keys: string[]): string | undefined {
     assert(topics_widget !== undefined);
     // Look up the focused row while row_focus still indexes the rows the
     // resort may remove.
-    const focused_message_id = get_focused_row_message()?.id;
+    const focused_conversation_key = get_focused_conversation_key();
     const removed_conversations = topics_widget.filter_and_sort();
     const focused_row_removed = removed_conversations.some(
-        (conversation) => conversation.last_msg_id === focused_message_id,
+        (conversation) => get_conversation_key(conversation) === focused_conversation_key,
     );
     if (focused_row_removed && row_focus >= topics_widget.get_current_list().length) {
         row_focus = Math.max(topics_widget.get_current_list().length - 1, 0);
@@ -1191,10 +1191,28 @@ function filter_and_sort_topics_widget(rerendering_keys: string[]): void {
                 folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION,
         });
     }
+
+    // The focus follows its conversation's row, unless that conversation is
+    // being rerendered: its row may then move to its sorted place, and the
+    // focus stays where it is, as it does when the row is removed.
+    if (
+        focused_conversation_key === undefined ||
+        rerendering_keys.includes(focused_conversation_key)
+    ) {
+        return undefined;
+    }
+    return focused_conversation_key;
 }
 
-function finish_rerender(): void {
+function finish_rerender(conversation_key_to_focus: string | undefined): void {
     assert(topics_widget !== undefined);
+    // Rows can move during a rerender, and row_focus is a DOM index.
+    if (conversation_key_to_focus !== undefined) {
+        const $row = get_conversation_row(conversation_key_to_focus);
+        if ($row.length > 0) {
+            row_focus = $row.index();
+        }
+    }
     // Removals can leave the table short of the scroll end with no scroll
     // event to come. Rendering runs callback_after_render, which does the
     // rest of the work below.
@@ -1211,7 +1229,7 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
     }
 
     topics_widget.replace_list_data(get_list_data_for_widget(), false);
-    filter_and_sort_topics_widget(row_keys);
+    const conversation_key_to_focus = filter_and_sort_topics_widget(row_keys);
 
     const remaining_keys = new Set(row_keys);
     const current_list = topics_widget.get_current_list();
@@ -1226,7 +1244,7 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
             inplace_rerender(topic_key, true);
         }
     }
-    finish_rerender();
+    finish_rerender(conversation_key_to_focus);
 }
 
 export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): boolean => {
@@ -1240,6 +1258,7 @@ export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): b
     const topic_data = recent_view_data.conversations.get(topic_key);
     assert(topic_data !== undefined);
     assert(topics_widget !== undefined);
+    let conversation_key_to_focus: string | undefined;
     if (!is_bulk_rerender) {
         // Resorting the topics_widget is important for the case where we
         // are rerendering because of message editing or new messages
@@ -1247,7 +1266,7 @@ export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): b
         //
         // NOTE: This doesn't add any new entry to the original list but updates the filtered list
         // based on the current filters and updated row data.
-        filter_and_sort_topics_widget([topic_key]);
+        conversation_key_to_focus = filter_and_sort_topics_widget([topic_key]);
     }
 
     // We cannot rely on `topic_widget.meta.filtered_list` to know
@@ -1269,7 +1288,7 @@ export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): b
         );
     }
     if (!is_bulk_rerender) {
-        finish_rerender();
+        finish_rerender(conversation_key_to_focus);
     }
     return true;
 };
