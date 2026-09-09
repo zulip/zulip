@@ -8,13 +8,13 @@ from confirmation.models import Confirmation, create_confirmation_link
 from zerver.context_processors import get_realm_from_request
 from zerver.lib.response import json_success
 from zerver.models import Realm, UserProfile
-from zerver.views.auth import (
-    create_preregistration_realm,
-    create_preregistration_user,
-    redirect_and_log_into_subdomain,
+from zerver.views.auth import create_preregistration_realm, create_preregistration_user
+from zerver.views.registration import (
+    DEMO_ORGANIZATION_CREATION_LOGIN_METHOD,
+    accounts_register,
+    create_demo_helper,
+    redirect_and_log_into_new_realm,
 )
-from zerver.views.registration import accounts_register, create_demo_helper
-from zproject.backends import ExternalAuthResult
 
 if TYPE_CHECKING:
     from django.http.request import _ImmutableQueryDict
@@ -99,6 +99,6 @@ def register_demo_development_realm(request: HttpRequest) -> HttpResponse:
         timezone="US/Pacific",
     )
 
-    return redirect_and_log_into_subdomain(
-        ExternalAuthResult(user_profile=user_profile, data_dict={"is_realm_creation": True})
+    return redirect_and_log_into_new_realm(
+        user_profile, login_method=DEMO_ORGANIZATION_CREATION_LOGIN_METHOD
     )

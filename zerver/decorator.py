@@ -495,9 +495,17 @@ def do_two_factor_login(request: HttpRequest, user_profile: UserProfile) -> None
         django_otp.login(request, device)
 
 
-def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
+def do_login(
+    request: HttpRequest, user_profile: UserProfile, *, login_method: str | None = None
+) -> None:
     """Creates a session, logging in the user, using the Django method,
     and also adds helpful data needed by our server logs.
+
+    Callers that authenticated the user themselves, rather than through
+    login_or_register_remote_user, pass login_method so that the login
+    audit log entry records the auth method they used. Without it, the
+    entry would record the ZulipDummyBackend that the hardening
+    re-authentication below leaves on the user object.
     """
 
     # As a hardening measure, pass the user_profile through the dummy backend,
@@ -514,6 +522,11 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
         raise AssertionError("do_login called for a user_profile that shouldn't be able to log in")
 
     assert isinstance(validated_user_profile, UserProfile)
+
+    if login_method is not None and "social_auth_backend" not in request.session:
+        # login_or_register_remote_user sets this marker for the flows it
+        # handles; don't overwrite what it recorded there.
+        request.session["social_auth_backend"] = login_method
 
     django_login(request, validated_user_profile)
     RequestNotes.get_notes(

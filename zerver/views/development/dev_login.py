@@ -23,7 +23,7 @@ from zerver.models import Realm, UserProfile
 from zerver.models.realms import get_realm
 from zerver.views.auth import get_safe_redirect_to
 from zerver.views.errors import config_error
-from zproject.backends import dev_auth_enabled
+from zproject.backends import DevAuthBackend, dev_auth_enabled
 
 
 def get_dev_users(realm: Realm | None = None, extra_users_count: int = 10) -> list[UserProfile]:
@@ -89,7 +89,7 @@ def dev_direct_login(
     if user_profile is None:
         return config_error(request, "dev_not_supported")
     assert isinstance(user_profile, UserProfile)
-    do_login(request, user_profile)
+    do_login(request, user_profile, login_method=DevAuthBackend.name)
 
     redirect_to = get_safe_redirect_to(next, user_profile.realm.url)
     return HttpResponseRedirect(redirect_to)
@@ -135,7 +135,7 @@ def api_dev_fetch_api_key(request: HttpRequest, *, username: str) -> HttpRespons
         raise AuthenticationFailedError
     assert isinstance(user_profile, UserProfile)
 
-    do_login(request, user_profile)
+    do_login(request, user_profile, login_method=DevAuthBackend.name)
     api_key = user_profile.api_key
     return json_success(
         request,
