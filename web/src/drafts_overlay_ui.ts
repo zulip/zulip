@@ -41,12 +41,19 @@ function undo_draft_deletion(): void {
         return;
     }
 
+    let first_restored_draft_id: string | undefined;
+
     for (const draft of draft_undo_delete_list) {
-        drafts.draft_model.addDraft(draft);
+        const id = drafts.draft_model.addDraft(draft);
+        first_restored_draft_id ??= id;
     }
 
     clear_undo_list();
     rerender_drafts();
+
+    if (first_restored_draft_id !== undefined) {
+        messages_overlay_ui.set_initial_element(first_restored_draft_id, keyboard_handling_context);
+    }
 
     $(".select-drafts-button").show();
     $(".delete-selected-drafts-button").show();
@@ -144,6 +151,7 @@ function remove_drafts($draft_rows: JQuery): void {
 
     if ($(".drafts-tab-pane .overlay-message-row").length === 0) {
         $(".drafts-tab-pane .no-drafts").show();
+        $("#draft_overlay").trigger("focus");
     }
     update_rendered_drafts(
         $("#drafts-from-conversation .overlay-message-row").length > 0,
@@ -396,14 +404,15 @@ function setup_event_handlers(): void {
 
     $("#drafts_table .overlay_message_controls .delete-overlay-message").on("click", function () {
         const $draft_row = $(this).closest(".overlay-message-row");
-
+        messages_overlay_ui.focus_on_sibling_element(keyboard_handling_context);
         remove_drafts($draft_row);
         update_bulk_delete_ui();
     });
 
-    $("#drafts_table .overlay_message_controls .draft-selection-checkbox").on("click", (e) => {
-        const is_checked = is_checkbox_icon_checked($(e.target));
-        toggle_checkbox_icon_state($(e.target), !is_checked);
+    $("#drafts_table .overlay_message_controls .draft-selection-tooltip").on("click", (e) => {
+        const $checkbox = $(e.currentTarget).find(".draft-selection-checkbox");
+        const is_checked = is_checkbox_icon_checked($checkbox);
+        toggle_checkbox_icon_state($checkbox, !is_checked);
         update_bulk_delete_ui();
     });
 }
@@ -511,7 +520,7 @@ export function is_checkbox_icon_checked($checkbox: JQuery): boolean {
 }
 
 export function toggle_checkbox_icon_state($checkbox: JQuery, checked: boolean): void {
-    $checkbox.parent().attr("aria-checked", checked.toString());
+    $checkbox.closest(".draft-selection-tooltip").attr("aria-checked", checked.toString());
     if (checked) {
         $checkbox.removeClass("fa-square-o").addClass("fa-check-square");
     } else {
@@ -541,6 +550,15 @@ export function initialize(): void {
         }
         const draft_row = e.target.closest(".overlay-message-info-box");
         if (draft_row instanceof HTMLElement) {
+            if (e.target !== draft_row) {
+                // Focus landed on an action button inside the draft row (copy, delete, checkbox).
+                // Do not steal focus back to the row, but keep this row marked active.
+                if (!draft_row.classList.contains("active")) {
+                    $("#drafts_table .overlay-message-info-box.active").removeClass("active");
+                    draft_row.classList.add("active");
+                }
+                return;
+            }
             // A draft gained focus; mark it as the selected draft.
             messages_overlay_ui.activate_element(draft_row, keyboard_handling_context);
         } else if (e.target.matches(overlay_util.OVERLAY_FOCUSABLE_SELECTOR)) {
@@ -553,7 +571,7 @@ export function initialize(): void {
             // ring; a pointer click shows no ring on the control, so keep the
             // selection.
             if (e.target.matches(":focus-visible")) {
-                $("#drafts_table .overlay-message-info-box").removeClass("active");
+                $("#drafts_table .overlay-message-info-box.active").removeClass("active");
             }
         } else {
             // Focus landed on a non-interactive area. Return focus to the

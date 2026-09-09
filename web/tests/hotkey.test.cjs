@@ -87,6 +87,8 @@ const popovers = mock_esm("../src/user_card_popover", {
 });
 const reactions = mock_esm("../src/reactions");
 const read_receipts = mock_esm("../src/read_receipts");
+const reminders_overlay_ui = mock_esm("../src/reminders_overlay_ui");
+const scheduled_messages_overlay_ui = mock_esm("../src/scheduled_messages_overlay_ui");
 const search = mock_esm("../src/search");
 const settings_data = mock_esm("../src/settings_data");
 const sidebar_ui = mock_esm("../src/sidebar_ui");
@@ -489,6 +491,96 @@ test_while_not_editing_text("drafts closed w/other overlay", ({override}) => {
 test_while_not_editing_text("drafts closed launch", ({override}) => {
     override(overlays, "any_active", () => false);
     assert_mapping("d", browser_history, "go_to_location");
+});
+
+test_while_not_editing_text("scheduled messages overlay enter hotkey", ({override}) => {
+    override(overlays, "scheduled_messages_open", () => true);
+    const $target = $.create("target-stub");
+    const e = {
+        key: "Enter",
+        target: $target[0],
+    };
+
+    // 1. Focus inside an action button/control in scheduled messages overlay:
+    // Hotkey processing should return false so the button's native action runs.
+    const $scheduled_action_button = $.create("scheduled-action-button");
+    $("#scheduled_messages_overlay").set_find_results(
+        "a:focus, button:focus, input:focus",
+        $scheduled_action_button,
+    );
+    with_overrides(({disallow}) => {
+        disallow(scheduled_messages_overlay_ui, "handle_keyboard_events");
+        assert.equal(hotkey.process_keydown(e), false);
+    });
+
+    // 2. Focus is on a row or outside action controls in scheduled messages overlay:
+    // Hotkey processing should call handle_keyboard_events("enter") and return true.
+    $("#scheduled_messages_overlay").set_find_results("a:focus, button:focus, input:focus", []);
+    stubbing(scheduled_messages_overlay_ui, "handle_keyboard_events", (stub) => {
+        assert.equal(hotkey.process_keydown(e), true);
+        assert.equal(stub.num_calls, 1);
+        assert.deepEqual(stub.last_call_args, ["enter"]);
+    });
+});
+
+test_while_not_editing_text("reminders overlay enter hotkey", ({override}) => {
+    override(overlays, "reminders_open", () => true);
+    const $target = $.create("target-stub");
+    const e = {
+        key: "Enter",
+        target: $target[0],
+    };
+
+    // 1. Focus inside an action button/control in reminders overlay:
+    // Hotkey processing should return false so the button's native action runs.
+    const $reminder_action_button = $.create("reminder-action-button");
+    $("#reminders-overlay").set_find_results(
+        "a:focus, button:focus, input:focus",
+        $reminder_action_button,
+    );
+    with_overrides(({disallow}) => {
+        disallow(reminders_overlay_ui, "handle_keyboard_events");
+        assert.equal(hotkey.process_keydown(e), false);
+    });
+
+    // 2. Focus is on a row or outside action controls in reminders overlay:
+    // Hotkey processing should call handle_keyboard_events("enter") and return true.
+    $("#reminders-overlay").set_find_results("a:focus, button:focus, input:focus", []);
+    stubbing(reminders_overlay_ui, "handle_keyboard_events", (stub) => {
+        assert.equal(hotkey.process_keydown(e), true);
+        assert.equal(stub.num_calls, 1);
+        assert.deepEqual(stub.last_call_args, ["enter"]);
+    });
+});
+
+test_while_not_editing_text("drafts overlay enter hotkey", ({override}) => {
+    override(overlays, "drafts_open", () => true);
+    const $target = $.create("target-stub");
+    const e = {
+        key: "Enter",
+        target: $target[0],
+    };
+
+    // 1. Focus inside an action button/control in drafts overlay:
+    // Hotkey processing should return false so the button's native action runs.
+    const $draft_action_button = $.create("draft-action-button");
+    $("#draft_overlay").set_find_results(
+        "a:focus, button:focus, input:focus",
+        $draft_action_button,
+    );
+    with_overrides(({disallow}) => {
+        disallow(drafts_overlay_ui, "handle_keyboard_events");
+        assert.equal(hotkey.process_keydown(e), false);
+    });
+
+    // 2. Focus is on a row or outside action controls in drafts overlay:
+    // Hotkey processing should call handle_keyboard_events("enter") and return true.
+    $("#draft_overlay").set_find_results("a:focus, button:focus, input:focus", []);
+    stubbing(drafts_overlay_ui, "handle_keyboard_events", (stub) => {
+        assert.equal(hotkey.process_keydown(e), true);
+        assert.equal(stub.num_calls, 1);
+        assert.deepEqual(stub.last_call_args, ["enter"]);
+    });
 });
 
 run_test("print hotkey", ({override}) => {
