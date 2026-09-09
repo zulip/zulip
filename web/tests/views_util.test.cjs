@@ -2,8 +2,12 @@
 
 const assert = require("node:assert/strict");
 
-const {zrequire} = require("./lib/namespace.cjs");
+const {mock_jquery, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+
+// views_util reads the page's bottom padding from a CSS variable.
+const bottom_padding = 400;
+mock_jquery(() => ({css: () => `${bottom_padding}px`}));
 
 const views_util = zrequire("views_util");
 
@@ -35,4 +39,18 @@ run_test("find_first_row_index_at_or_below", () => {
     assert.equal(find_row_index(229.5), undefined);
     assert.equal(find_row_index(500), undefined);
     assert.equal(views_util.find_first_row_index_at_or_below([], 145), undefined);
+});
+
+run_test("is_bottom_padding_in_view", ({override}) => {
+    const viewport_bottom = 600;
+    const scroll_y = 100;
+    override(window, "scrollY", scroll_y);
+    override(window, "innerHeight", viewport_bottom - scroll_y);
+    const body = {scrollHeight: viewport_bottom + 1 + bottom_padding};
+    override(window, "document", {body});
+
+    // The rows end just below the bottom of the viewport, then at it.
+    assert.ok(!views_util.is_bottom_padding_in_view());
+    body.scrollHeight -= 1;
+    assert.ok(views_util.is_bottom_padding_in_view());
 });
