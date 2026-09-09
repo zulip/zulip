@@ -187,9 +187,11 @@ function make_items(count) {
 }
 
 // A widget over `list` with a stand-in for its DOM: `rows` holds the items
-// that have a row, in order, and refuses to render an item twice.
+// that have a row, in order, and refuses to render an item twice; `stats`
+// counts the redraws that threw rendered rows away.
 function make_tracked_widget(list, opts = {}) {
     const rows = [];
+    const stats = {redraws: 0};
     function items_in(html) {
         return html
             .matchAll(/data-item=(\d+)/g)
@@ -215,6 +217,9 @@ function make_tracked_widget(list, opts = {}) {
         }
     };
     $container.empty = () => {
+        if (rows.length > 0) {
+            stats.redraws += 1;
+        }
         rows.length = 0;
     };
     const $scroll_container = make_scroll_container();
@@ -227,7 +232,7 @@ function make_tracked_widget(list, opts = {}) {
         $simplebar_container: $scroll_container,
         ...opts,
     });
-    return {widget, rows};
+    return {widget, rows, stats};
 }
 
 run_test("scrolling", () => {
@@ -1057,6 +1062,28 @@ run_test("filter_and_sort removes rows of items no longer listed", () => {
     hidden_items.add(list[0]);
     assert.deepEqual(widget.filter_and_sort(), [list[0]]);
     assert.equal(render_count, 3);
+});
+
+run_test("render_item drops the row of an item moved past the rendered range", () => {
+    const list = make_items(100);
+    const {widget, rows, stats} = make_tracked_widget(list, {init_sort: (a, b) => a.key - b.key});
+    const moved = rows[4];
+
+    // The item now sorts last, past the rendered range: its row goes, with
+    // no redraw, and the rendered list still matches the rows in the DOM.
+    moved.key = 200;
+    widget.filter_and_sort();
+    widget.render_item(moved);
+    assert.ok(!rows.includes(moved));
+    assert.equal(rows.length, INITIAL_RENDER_COUNT - 1);
+    assert.equal(stats.redraws, 0);
+    assert.deepEqual(widget.get_rendered_list(), rows);
+
+    // Rendering the rest reaches it last, and once.
+    widget.render(list.length);
+    assert.ok(widget.all_rendered());
+    assert.equal(rows.length, list.length);
+    assert.equal(rows.at(-1), moved);
 });
 
 run_test("Multiselect dropdown retain_selected_items", () => {
