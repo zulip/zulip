@@ -1043,6 +1043,10 @@ export function update_topics_of_deleted_message_ids(message_ids: number[]): voi
     }
 }
 
+function get_search_keyword(): string {
+    return $<HTMLInputElement>("#recent_view_search").val() ?? "";
+}
+
 export function filters_should_hide_row(topic_data: ConversationData): boolean {
     const msg = message_store.get(topic_data.last_msg_id);
     assert(msg !== undefined);
@@ -1126,8 +1130,7 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
         return true;
     }
 
-    const search_keyword = $<HTMLInputElement>("#recent_view_search").val();
-    assert(search_keyword !== undefined);
+    const search_keyword = get_search_keyword();
     if (msg.type === "stream") {
         const stream_name = stream_data.get_stream_name_from_id(msg.stream_id);
         if (!topic_in_search_results(search_keyword, stream_name, msg.topic)) {
@@ -1702,7 +1705,7 @@ export function complete_rerender(coming_from_other_views = false): void {
     }
 
     const rendered_body = render_recent_view_body({
-        search_val: $("#recent_view_search").val() ?? "",
+        search_val: get_search_keyword(),
         ...get_recent_view_filters_params(),
     });
     $("#recent_view_table").html(rendered_body);
@@ -2456,7 +2459,7 @@ export function initialize({
         "input",
         "#recent_view_search",
         _.debounce(() => {
-            const search_term = $<HTMLInputElement>("#recent_view_search").val() ?? "";
+            const search_term = get_search_keyword();
             const is_previous_search_term_empty = previous_search_term === "";
             previous_search_term = search_term;
 
