@@ -174,7 +174,7 @@ mock_esm("../src/timerender", {
 mock_esm("../src/left_sidebar_navigation_area", {
     highlight_recent_view: noop,
 });
-mock_esm("../src/unread", {
+const unread = mock_esm("../src/unread", {
     num_unread_for_topic(stream_id, topic) {
         if (stream_id === 1 && topic === "topic-1") {
             return 0;
@@ -478,6 +478,44 @@ function stub_out_filter_buttons() {
         const selector = `[data-filter="${filter}"]`;
         $("#recent_view_filter_buttons").set_find_results(selector, $stub);
     }
+}
+
+function show_recent_view_with_messages() {
+    $.clear_all_elements();
+    recent_view_util.set_visible(true);
+    rt.clear_for_tests();
+    rt.set_filters_for_tests();
+    stub_out_filter_buttons();
+    rt.process_messages(messages);
+}
+
+function conversation_for(topic) {
+    return rt_data.conversations.get(get_topic_key(stream1, topic));
+}
+
+function row_selector(conversation_key) {
+    return `#${CSS.escape(`recent_conversation:${conversation_key}`)}`;
+}
+
+// zjquery reports a row for any selector by default.
+function stub_no_row_for(conversation_key) {
+    $.set_results(row_selector(conversation_key), []);
+}
+
+function bulk_rerender(keys) {
+    expected_data_to_replace_in_list_widget = rt_data.get_conversations().values().toArray();
+    rt.bulk_inplace_rerender(new Set(keys));
+}
+
+function record_row_updates(override) {
+    const updates = [];
+    override(ListWidget, "render_item", (conversation) => {
+        updates.push(["rerender", conversation]);
+    });
+    override(ListWidget, "insert_rendered_row", (conversation, get_insert_index) => {
+        updates.push(["insert", conversation, get_insert_index()]);
+    });
+    return updates;
 }
 
 function test(label, f) {
@@ -886,6 +924,46 @@ test("test_update_unread_count", () => {
     // update a message
     generate_topic_data([[1, "topic-7", 1, all_visibility_policies.INHERIT]]);
     rt.update_topic_unread_count(messages[9]);
+});
+
+test("bulk_inplace_rerender updates the requested rows in list order", ({override}) => {
+    show_recent_view_with_messages();
+    const [with_row, not_requested, without_row] = [topic1, topic2, topic3].map((topic) =>
+        conversation_for(topic),
+    );
+    stub_no_row_for(get_topic_key(stream1, topic3));
+    const updates = record_row_updates(override);
+    override(ListWidget, "get_current_list", () => [without_row, with_row, not_requested]);
+
+    bulk_rerender([get_topic_key(stream1, topic1), get_topic_key(stream1, topic3)]);
+    assert.deepEqual(updates, [
+        ["insert", without_row, 0],
+        ["rerender", with_row],
+    ]);
+});
+
+test("bulk_inplace_rerender falls back from the unread sort before updating rows", ({override}) => {
+    // The last unread conversation is read while the unread sort is active.
+    show_recent_view_with_messages();
+    const conversation = conversation_for(topic2);
+    override(ListWidget, "get_current_list", () => [conversation]);
+    let unread_message_count = 1;
+    override(unread, "get_unread_message_count", () => unread_message_count);
+    // Recent view first has to see the conversation as unread.
+    bulk_rerender([]);
+    $("#recent-view-table-headers .recent-view-unread-sort-header").addClass("active");
+
+    const calls = [];
+    override(ListWidget, "set_reverse_mode", noop);
+    override(ListWidget, "sort", () => {
+        calls.push("sort");
+    });
+    override(ListWidget, "render_item", () => {
+        calls.push("rerender");
+    });
+    unread_message_count = 0;
+    bulk_rerender([get_topic_key(stream1, topic2)]);
+    assert.deepEqual(calls, ["sort", "rerender"]);
 });
 
 test("basic assertions", ({mock_template, override_rewire}) => {
