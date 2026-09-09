@@ -509,30 +509,36 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
     return true;
 }
 
-export function get_focused_row_message(): Message | undefined {
-    if (is_table_focused()) {
-        assert(topics_widget !== undefined);
-        if (topics_widget.get_current_list().length === 0) {
-            return undefined;
-        }
-
-        const $topic_rows = $("#recent-view-content-tbody tr");
-        const $topic_row = $topic_rows.eq(row_focus);
-        if ($topic_row.length === 0) {
-            // There are less items in the table than `row_focus`.
-            // We don't reset `row_focus` here since that is not the
-            // purpose of this function.
-            return undefined;
-        }
-        const topic_id = $topic_row.attr("id");
-        assert(topic_id !== undefined);
-        const conversation_id = topic_id.slice(recent_conversation_key_prefix.length);
-        const last_conversation = recent_view_data.conversations.get(conversation_id);
-        assert(last_conversation !== undefined);
-        const topic_last_msg_id = last_conversation.last_msg_id;
-        return message_store.get(topic_last_msg_id);
+function get_focused_conversation_key(): string | undefined {
+    if (!is_table_focused()) {
+        return undefined;
     }
-    return undefined;
+    assert(topics_widget !== undefined);
+    if (topics_widget.get_current_list().length === 0) {
+        return undefined;
+    }
+
+    const $topic_rows = $("#recent-view-content-tbody tr");
+    const $topic_row = $topic_rows.eq(row_focus);
+    if ($topic_row.length === 0) {
+        // There are less items in the table than `row_focus`.
+        // We don't reset `row_focus` here since that is not the
+        // purpose of this function.
+        return undefined;
+    }
+    const topic_id = $topic_row.attr("id");
+    assert(topic_id !== undefined);
+    return topic_id.slice(recent_conversation_key_prefix.length);
+}
+
+export function get_focused_row_message(): Message | undefined {
+    const conversation_key = get_focused_conversation_key();
+    if (conversation_key === undefined) {
+        return undefined;
+    }
+    const conversation = recent_view_data.conversations.get(conversation_key);
+    assert(conversation !== undefined);
+    return message_store.get(conversation.last_msg_id);
 }
 
 export function revive_current_focus(): boolean {
@@ -961,8 +967,12 @@ function get_conversation_key(conversation: ConversationData): string {
     return recent_view_util.get_key_from_message(msg);
 }
 
+function get_conversation_row(conversation_key: string): JQuery {
+    return $(`#${CSS.escape(recent_conversation_key_prefix + conversation_key)}`);
+}
+
 function get_topic_row(topic_data: ConversationData): JQuery {
-    return $(`#${CSS.escape(recent_conversation_key_prefix + get_conversation_key(topic_data))}`);
+    return get_conversation_row(get_conversation_key(topic_data));
 }
 
 export function process_topic_edit(
