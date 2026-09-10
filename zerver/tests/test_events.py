@@ -1737,6 +1737,19 @@ class NormalActionsTest(BaseAction):
             )
         check_custom_profile_fields("events[0]", events[0])
 
+        with self.verify_action() as events:
+            try_add_realm_custom_profile_field(
+                realm=realm,
+                name="Matrix username",
+                field_type=CustomProfileField.SHORT_TEXT,
+                use_for_user_matching=True,
+            )
+        check_custom_profile_fields("events[0]", events[0])
+        [matching_field] = (
+            field for field in events[0]["fields"] if field["name"] == "Matrix username"
+        )
+        self.assertTrue(matching_field["use_for_user_matching"])
+
         field = realm.customprofilefield_set.get(realm=realm, name="Biography")
         name = field.name
         hint = "Biography of the user"
