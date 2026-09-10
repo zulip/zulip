@@ -1256,7 +1256,11 @@ export function rerender_conversations_with_user(user_id: number): void {
     }
 }
 
-export function update_topic_visibility_policy(stream_id: number, topic: string): boolean {
+export function schedule_topic_visibility_update(
+    stream_id: number,
+    topic: string,
+    delay_ms: number,
+): boolean {
     const key = recent_view_util.get_topic_key(stream_id, topic);
     if (!recent_view_data.conversations.has(key)) {
         // we receive mute request for a topic we are
@@ -1264,7 +1268,9 @@ export function update_topic_visibility_policy(stream_id: number, topic: string)
         return false;
     }
 
-    inplace_rerender(key);
+    setTimeout(() => {
+        inplace_rerender(key);
+    }, delay_ms);
     return true;
 }
 
