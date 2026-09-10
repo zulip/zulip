@@ -100,7 +100,10 @@ class EventsEndpointTest(ZulipTestCase):
         # This test is intended to get minimal coverage on the
         # events_register code paths
         user = self.example_user("hamlet")
-        with mock.patch("zerver.views.events_register.do_events_register", return_value={}):
+        with mock.patch(
+            "zerver.views.events_register.do_events_register",
+            return_value={"queue_id": "test-queue-id"},
+        ):
             result = self.api_post(user, "/api/v1/register")
         self.assert_json_success(result)
 
@@ -307,11 +310,17 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(guest_user.role, UserProfile.ROLE_GUEST)
         self.assertEqual(normal_user.role, UserProfile.ROLE_MEMBER)
 
-        with mock.patch("zerver.views.events_register.do_events_register", return_value={}):
+        with mock.patch(
+            "zerver.views.events_register.do_events_register",
+            return_value={"queue_id": "test-queue-id"},
+        ):
             result = self.api_post(normal_user, "/api/v1/register", dict(all_public_streams="true"))
         self.assert_json_success(result)
 
-        with mock.patch("zerver.views.events_register.do_events_register", return_value={}):
+        with mock.patch(
+            "zerver.views.events_register.do_events_register",
+            return_value={"queue_id": "test-queue-id"},
+        ):
             result = self.api_post(guest_user, "/api/v1/register", dict(all_public_streams="true"))
         self.assert_json_error(result, "User not authorized for this query")
 
