@@ -1226,15 +1226,17 @@ nav {
        use this to travel the full width of the line. */
     --loading-pulse-fraction: 0.3;
 
-    position: relative;
+    position: sticky;
+    top: var(--navbar-fixed-height);
     height: var(--header-padding-bottom);
-    /* Above the first recipient bar (see .message-feed .message_header
-       in message_header.css), whose empty top margin the line hangs
-       into. */
+    /* The recipient bars are sticky too, come after this element in the
+       HTML, and set z-index: 4. So by default a bar is drawn on top of
+       the gutter wherever the two overlap. This puts the gutter on top. */
     z-index: 5;
     /* Clip the pulse as it sweeps past the sides, but let the line
        hang out below, over the recipient bar's empty top margin. */
     overflow: clip visible;
+    background-color: var(--color-background);
 
     &::before,
     &::after {
