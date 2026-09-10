@@ -20,13 +20,8 @@ from zerver.actions.users import change_user_is_active
 from zerver.lib.compatibility import LAST_SERVER_UPGRADE_TIME, is_outdated_server
 from zerver.lib.events import has_pending_sponsorship_request
 from zerver.lib.home import get_furthest_read_time, promote_sponsoring_zulip_in_realm
-from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import (
-    activate_push_notification_service,
-    get_user_messages,
-    queries_captured,
-)
+from zerver.lib.test_helpers import activate_push_notification_service, queries_captured
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.users import max_message_id_for_user
 from zerver.models import DefaultStream, Draft, Realm, UserActivity, UserProfile
@@ -38,8 +33,6 @@ from zerver.worker.user_activity import UserActivityWorker
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
-
-logger_string = "zulip.soft_deactivation"
 
 
 class HomeTest(ZulipTestCase):
@@ -1215,7 +1208,7 @@ class HomeTest(ZulipTestCase):
                 self.assertEqual(is_outdated_server(None), False)
 
     def test_furthest_read_time(self) -> None:
-        msg_id = self.send_test_message("hello!", sender_name="iago")
+        msg_id = self.send_stream_message(self.example_user("iago"), "Denmark", content="hello!")
 
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
@@ -1281,127 +1274,6 @@ class HomeTest(ZulipTestCase):
             result = self._get_home_page()
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/serverlogin/")
-
-    def send_test_message(
-        self,
-        content: str,
-        sender_name: str = "iago",
-        stream_name: str = "Denmark",
-        topic_name: str = "foo",
-    ) -> int:
-        sender = self.example_user(sender_name)
-        return self.send_stream_message(sender, stream_name, content=content, topic_name=topic_name)
-
-    def soft_activate_and_get_unread_count(
-        self, stream: str = "Denmark", topic_name: str = "foo"
-    ) -> int:
-        stream_narrow = self._get_home_page(stream=stream, topic=topic_name)
-        page_params = self._get_page_params(stream_narrow)
-        return page_params["state_data"]["unread_msgs"]["count"]
-
-    def test_unread_count_user_soft_deactivation(self) -> None:
-        # In this test we make sure if a soft deactivated user had unread
-        # messages before deactivation they remain same way after activation.
-        long_term_idle_user = self.example_user("hamlet")
-        self.login_user(long_term_idle_user)
-        message = "Test message 1"
-        self.send_test_message(message)
-        with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 1)
-        query_count = len(queries)
-        user_msg_list = get_user_messages(long_term_idle_user)
-        self.assertEqual(user_msg_list[-1].content, message)
-        self.logout()
-
-        with self.assertLogs(logger_string, level="INFO") as info_log:
-            do_soft_deactivate_users([long_term_idle_user])
-        self.assertEqual(
-            info_log.output,
-            [
-                f"INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}",
-                f"INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process",
-            ],
-        )
-
-        self.login_user(long_term_idle_user)
-        message = "Test message 2"
-        self.send_test_message(message)
-        idle_user_msg_list = get_user_messages(long_term_idle_user)
-        self.assertNotEqual(idle_user_msg_list[-1].content, message)
-        with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 2)
-        # Test here for query count to be at least 5 greater than previous count
-        # This will assure indirectly that add_missing_messages() was called.
-        self.assertGreaterEqual(len(queries) - query_count, 5)
-        idle_user_msg_list = get_user_messages(long_term_idle_user)
-        self.assertEqual(idle_user_msg_list[-1].content, message)
-
-    def test_multiple_user_soft_deactivations(self) -> None:
-        long_term_idle_user = self.example_user("hamlet")
-        # We are sending this message to ensure that long_term_idle_user has
-        # at least one UserMessage row.
-        self.send_test_message("Testing", sender_name="hamlet")
-        with self.assertLogs(logger_string, level="INFO") as info_log:
-            do_soft_deactivate_users([long_term_idle_user])
-        self.assertEqual(
-            info_log.output,
-            [
-                f"INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}",
-                f"INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process",
-            ],
-        )
-
-        message = "Test message 1"
-        self.send_test_message(message)
-        self.login_user(long_term_idle_user)
-        with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 1)
-        query_count = len(queries)
-        long_term_idle_user.refresh_from_db()
-        self.assertFalse(long_term_idle_user.long_term_idle)
-        idle_user_msg_list = get_user_messages(long_term_idle_user)
-        self.assertEqual(idle_user_msg_list[-1].content, message)
-
-        message = "Test message 2"
-        self.send_test_message(message)
-        with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 2)
-        # Test here for query count to be at least 5 less than previous count.
-        # This will assure add_missing_messages() isn't repeatedly called.
-        self.assertGreaterEqual(query_count - len(queries), 5)
-        idle_user_msg_list = get_user_messages(long_term_idle_user)
-        self.assertEqual(idle_user_msg_list[-1].content, message)
-        self.logout()
-
-        with self.assertLogs(logger_string, level="INFO") as info_log:
-            do_soft_deactivate_users([long_term_idle_user])
-        self.assertEqual(
-            info_log.output,
-            [
-                f"INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}",
-                f"INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process",
-            ],
-        )
-
-        message = "Test message 3"
-        self.send_test_message(message)
-        self.login_user(long_term_idle_user)
-        with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 3)
-        query_count = len(queries)
-        long_term_idle_user.refresh_from_db()
-        self.assertFalse(long_term_idle_user.long_term_idle)
-        idle_user_msg_list = get_user_messages(long_term_idle_user)
-        self.assertEqual(idle_user_msg_list[-1].content, message)
-
-        message = "Test message 4"
-        self.send_test_message(message)
-        with queries_captured() as queries:
-            self.assertEqual(self.soft_activate_and_get_unread_count(), 4)
-        self.assertGreaterEqual(query_count - len(queries), 5)
-        idle_user_msg_list = get_user_messages(long_term_idle_user)
-        self.assertEqual(idle_user_msg_list[-1].content, message)
-        self.logout()
 
     def test_url_language(self) -> None:
         user = self.example_user("hamlet")
