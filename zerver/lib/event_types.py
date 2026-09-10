@@ -67,8 +67,9 @@ class ChannelFolderForChannelFolderAddEvent(BaseModel):
     name: str
     description: str
     rendered_description: str
+    order: int
     date_created: int
-    creator_id: int
+    creator_id: int | None
     is_archived: bool
 
 
