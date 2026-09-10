@@ -1380,6 +1380,39 @@ class FetchInitialStateDataTest(ZulipTestCase):
             get_stream("private_stream", realm).id,
         )
 
+    def test_events_are_applied_to_fetched_state(self) -> None:
+        # /register applies the events that arrive while it is computing
+        # the initial state, and advances last_event_id past them. An
+        # event type absent from fetch_event_types is dropped instead,
+        # and the client never hears about it again, so the state names
+        # we fetch and the event names that update them both have to be
+        # listed. Here "video_calls" fetches what "has_zoom_token"
+        # updates.
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        queue_data = EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600)
+        event = dict(id=7, type="has_zoom_token", value=True)
+
+        with stub_event_queue_user_events(queue_data, [event]):
+            result = self.client_post(
+                "/json/register",
+                dict(fetch_event_types=orjson.dumps(["video_calls", "has_zoom_token"]).decode()),
+            )
+        state = self.assert_json_success(result)
+        self.assertEqual(state["last_event_id"], 7)
+        self.assertTrue(state["has_zoom_token"])
+
+        # Without the event's own name, the state keeps the value from
+        # before the event, which is now permanently stale.
+        with stub_event_queue_user_events(queue_data, [event]):
+            result = self.client_post(
+                "/json/register",
+                dict(fetch_event_types=orjson.dumps(["video_calls"]).decode()),
+            )
+        state = self.assert_json_success(result)
+        self.assertEqual(state["last_event_id"], 7)
+        self.assertFalse(state["has_zoom_token"])
+
     def test_narrow_does_not_scope_state(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
