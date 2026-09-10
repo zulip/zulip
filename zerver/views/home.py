@@ -20,7 +20,6 @@ from zerver.forms import ToSForm
 from zerver.lib.compatibility import is_banned_browser, is_outdated_desktop_app
 from zerver.lib.home import build_page_params_for_home_page_load, get_user_permission_info
 from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm
-from zerver.lib.request import RequestNotes
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
@@ -243,7 +242,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     narrow, narrow_stream, narrow_topic_name = detect_narrowed_window(request, user_profile)
 
-    queue_id, page_params = build_page_params_for_home_page_load(
+    page_params = build_page_params_for_home_page_load(
         request=request,
         user_profile=user_profile,
         realm=realm,
@@ -252,10 +251,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
         narrow_stream=narrow_stream,
         narrow_topic_name=narrow_topic_name,
     )
-
-    log_data = RequestNotes.get_notes(request).log_data
-    assert log_data is not None
-    log_data["extra"] = f"[{queue_id}]"
 
     csp_nonce = secrets.token_hex(24)
 

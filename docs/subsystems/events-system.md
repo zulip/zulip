@@ -221,6 +221,12 @@ request; the logic is in `zerver/views/events_register.py` and
   change event, it finds the user data in the `realm_user` data
   structure, and updates it to have the new name.
 
+The Zulip web app makes this same request itself: once the small HTML
+page served for `GET /` has loaded the JavaScript, `web/src/ui_init.js`
+calls `POST /json/register` and passes the response to the
+initialization code for each module (see `state_data_schema` in
+`web/src/state_data.ts` for how the response is parsed and split up).
+
 ### Testing
 
 The design above achieves everything we desire, at the cost that we need to
@@ -399,8 +405,13 @@ the coverage data.
 
 #### page_params
 
-In the Zulip web app, the data returned by the `register` API is
-available via the `page_params` parameter.
+The web app receives its data in two pieces. The HTML for `GET /`
+embeds `page_params`, the handful of values the server has to decide
+before any JavaScript runs, such as the language to render in and
+whether the visitor is a spectator; see
+`build_page_params_for_home_page_load`. Everything the `register` API
+returns arrives separately as `state_data`, from the `POST
+/json/register` the web app makes once it has loaded.
 
 ### Messages
 

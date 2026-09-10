@@ -13,15 +13,15 @@ from corporate.models.customers import Customer
 from corporate.models.plans import CustomerPlan
 from version import ZULIP_VERSION
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
+from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.compatibility import LAST_SERVER_UPGRADE_TIME, is_outdated_server
 from zerver.lib.events import has_pending_sponsorship_request
 from zerver.lib.home import get_furthest_read_time, promote_sponsoring_zulip_in_realm
+from zerver.lib.i18n import get_language_translation_data
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
-from zerver.lib.users import max_message_id_for_user
 from zerver.models import Realm, UserActivity, UserProfile
 from zerver.models.realms import get_realm
-from zerver.tornado.django_api import EventQueueData
 from zerver.worker.user_activity import UserActivityWorker
 
 if TYPE_CHECKING:
@@ -43,7 +43,6 @@ class HomeTest(ZulipTestCase):
         "login_page",
         "narrow",
         "narrow_stream",
-        "no_event_queue",
         "non_workplace_pricing_eligible",
         "page_type",
         "presence_history_limit_days_for_web_app",
@@ -51,7 +50,6 @@ class HomeTest(ZulipTestCase):
         "realm_rendered_description",
         "request_language",
         "show_try_zulip_modal",
-        "state_data",
         "test_suite",
         "translation_data",
         "two_fa_enabled",
@@ -73,7 +71,7 @@ class HomeTest(ZulipTestCase):
 
         # Verify succeeds once logged-in
         with (
-            self.assert_database_query_count(55),
+            self.assert_database_query_count(9),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page(stream="Denmark")
@@ -82,7 +80,7 @@ class HomeTest(ZulipTestCase):
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
-        self.assert_length(cache_mock.call_args_list, 7)
+        self.assert_length(cache_mock.call_args_list, 3)
 
         html = result.content.decode()
 
@@ -133,7 +131,6 @@ class HomeTest(ZulipTestCase):
             "language_cookie_name",
             "language_list",
             "login_page",
-            "no_event_queue",
             "non_workplace_pricing_eligible",
             "page_type",
             "presence_history_limit_days_for_web_app",
@@ -141,7 +138,6 @@ class HomeTest(ZulipTestCase):
             "realm_rendered_description",
             "request_language",
             "show_try_zulip_modal",
-            "state_data",
             "test_suite",
             "translation_data",
             "two_fa_enabled",
@@ -149,7 +145,6 @@ class HomeTest(ZulipTestCase):
             "warn_no_email",
         ]
         self.assertCountEqual(page_params, expected_keys)
-        self.assertIsNone(page_params["state_data"])
 
         with self.settings(DEVELOPMENT=True):
             result = self.client_get("/?show_try_zulip_modal")
@@ -253,30 +248,10 @@ class HomeTest(ZulipTestCase):
             # Should be successful after calling 2fa login function.
             self.check_rendered_logged_in_app(result)
 
-    @override_settings(TERMS_OF_SERVICE_VERSION=None)
-    def test_home_reload(self) -> None:
-        # When the client triggers a reload via ?state_data=deferred,
-        # the server should skip the expensive do_events_register()
-        # call and return state_data=None so the client fetches it
-        # via /json/register instead. See #36094.
-        self.login("hamlet")
-        result = self.client_get("/", {"state_data": "deferred"})
-        self.check_rendered_logged_in_app(result)
-
-        page_params = self._get_page_params(result)
-        self.assertIsNone(page_params["state_data"])
-        self.assertTrue(page_params["no_event_queue"])
-        self.assertFalse(page_params["is_spectator"])
-
     def _get_home_page(self, subdomain: str | None = None, **kwargs: Any) -> "TestHttpResponse":
-        queue_data = EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600)
-        with (
-            patch("zerver.lib.events.request_event_queue", return_value=queue_data),
-            patch("zerver.lib.events.get_user_events", return_value=[]),
-        ):
-            if subdomain:
-                return self.client_get("/", dict(**kwargs), subdomain=subdomain)
-            return self.client_get("/", dict(**kwargs))
+        if subdomain:
+            return self.client_get("/", dict(**kwargs), subdomain=subdomain)
+        return self.client_get("/", dict(**kwargs))
 
     def _sanity_check(self, result: "TestHttpResponse") -> None:
         """
@@ -300,6 +275,12 @@ class HomeTest(ZulipTestCase):
 
             html = result.content.decode()
             self.assertIn("Accept the Terms of Service", html)
+
+        user.tos_version = "1.1"
+        user.save()
+        with self.settings(TERMS_OF_SERVICE_VERSION=None):
+            result = self._get_home_page(stream="Denmark")
+        self.check_rendered_logged_in_app(result)
 
     def test_banned_desktop_app_versions(self) -> None:
         user = self.example_user("hamlet")
@@ -460,19 +441,6 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(page_params["narrow_stream"], stream_name)
         self.assertEqual(page_params["narrow"], [dict(operator="stream", operand=stream_name)])
-        # max_message_id is the user's global latest message id, not
-        # the narrow's; see local_message.ts for how it's consumed.
-        self.assertEqual(
-            page_params["state_data"]["max_message_id"],
-            max_message_id_for_user(user_profile),
-        )
-        # The mini-window's desktop-notification suppression is now
-        # applied client-side; the server returns the user's actual
-        # setting unchanged.
-        self.assertEqual(
-            page_params["state_data"]["user_settings"]["enable_desktop_notifications"],
-            user_profile.enable_desktop_notifications,
-        )
 
     @activate_push_notification_service()
     def test_has_pending_sponsorship_request(self) -> None:
@@ -643,18 +611,18 @@ class HomeTest(ZulipTestCase):
         user.default_language = "es"
         user.save()
         self.login_user(user)
-        result = self._get_home_page()
+
+        result = self.client_get("/de/")
         self.check_rendered_logged_in_app(result)
-        queue_data = EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600)
-        with (
-            patch("zerver.lib.events.request_event_queue", return_value=queue_data),
-            patch("zerver.lib.events.get_user_events", return_value=[]),
-        ):
-            result = self.client_get("/de/")
         page_params = self._get_page_params(result)
-        self.assertEqual(page_params["state_data"]["user_settings"]["default_language"], "es")
-        # TODO: Verify that the actual language we're using in the
-        # translation data is German.
+        self.assertEqual(page_params["request_language"], "de")
+        self.assertEqual(page_params["translation_data"], get_language_translation_data("de"))
+        self.assertNotEqual(page_params["translation_data"], {})
+
+        # The prefix is for debugging, so it doesn't change the language
+        # the user has configured.
+        user.refresh_from_db()
+        self.assertEqual(user.default_language, "es")
 
     def test_translation_data(self) -> None:
         user = self.example_user("hamlet")
@@ -665,7 +633,34 @@ class HomeTest(ZulipTestCase):
         self.check_rendered_logged_in_app(result)
 
         page_params = self._get_page_params(result)
-        self.assertEqual(page_params["state_data"]["user_settings"]["default_language"], "es")
+        self.assertEqual(page_params["request_language"], "es")
+        self.assertEqual(page_params["translation_data"], get_language_translation_data("es"))
+        self.assertNotEqual(page_params["translation_data"], {})
+
+    def test_default_language_without_translations(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        do_change_user_setting(hamlet, "default_language", "no", acting_user=None)
+        do_set_realm_property(realm, "default_language", "de", acting_user=None)
+        self.login_user(hamlet)
+
+        mocked_language_list = [
+            {"code": "de", "locale": "de", "name": "Deutsch", "percent_translated": 97},
+            {"code": "en", "locale": "en", "name": "English"},
+            {"code": "no", "locale": "no", "name": "norsk", "percent_translated": 1},
+        ]
+
+        # We render in the organization's language when the user's own
+        # language no longer has translations.
+        with patch("zerver.lib.i18n.get_language_list", return_value=mocked_language_list):
+            result = self._get_home_page()
+        self.assertEqual(self._get_page_params(result)["request_language"], "de")
+
+        # And in English when the organization's language doesn't either.
+        do_set_realm_property(realm, "default_language", "no", acting_user=None)
+        with patch("zerver.lib.i18n.get_language_list", return_value=mocked_language_list):
+            result = self._get_home_page()
+        self.assertEqual(self._get_page_params(result)["request_language"], "en")
 
 
 class TestDocRedirectView(ZulipTestCase):

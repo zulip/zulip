@@ -2,7 +2,7 @@ import * as z from "zod/mini";
 
 import {show_loading_error} from "./loading_error.ts";
 import {get_retry_backoff_seconds} from "./retry_backoff.ts";
-import {narrow_term_schema, state_data_schema} from "./state_data.ts";
+import {narrow_term_schema} from "./state_data.ts";
 
 const t1 = performance.now();
 
@@ -48,12 +48,10 @@ const home_params_schema = z.object({
     narrow: z.optional(z.array(narrow_term_schema)),
     narrow_stream: z.optional(z.string()),
     narrow_topic: z.optional(z.string()),
-    no_event_queue: z.boolean(),
     presence_history_limit_days_for_web_app: z.number(),
     promote_sponsoring_zulip: z.boolean(),
     realm_rendered_description: z.string(),
     show_try_zulip_modal: z.boolean(),
-    state_data: z.nullable(state_data_schema),
     test_suite: z.boolean(),
     translation_data: z.record(z.string(), z.string()),
     two_fa_enabled: z.boolean(),

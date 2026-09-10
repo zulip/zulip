@@ -1,6 +1,5 @@
 import {$} from "jquery";
 import _ from "lodash";
-import assert from "minimalistic-assert";
 
 import generated_emoji_codes from "../../static/generated/emoji/emoji_codes.json";
 import render_compose from "../templates/compose.hbs";
@@ -830,6 +829,9 @@ $(() => {
         needs_url_cleanup = true;
     }
     if (url.searchParams.has("state_data")) {
+        // TODO/compatibility(13.0): 12.x web app versions add this
+        // parameter when reloading; remove once direct upgrades from
+        // 12.x are no longer possible.
         url.searchParams.delete("state_data");
         needs_url_cleanup = true;
     }
@@ -837,99 +839,94 @@ $(() => {
         window.history.replaceState(window.history.state, "", url);
     }
 
-    if (page_params.no_event_queue) {
-        // For spectators and client-triggered reloads, fetch
-        // state_data via the API rather than reading it from the
-        // (potentially very large) HTML response. For reloads, this
-        // avoids partial-transfer failures that leave users stuck on
-        // the loading screen. See #36094.
-        const shared_client_capabilities = {
-            notification_settings_null: true,
-            bulk_message_deletion: true,
-            user_avatar_url_field_optional: true,
-            empty_topic_name: true,
-            individual_emoji_changes: true,
+    const shared_client_capabilities = {
+        notification_settings_null: true,
+        bulk_message_deletion: true,
+        user_avatar_url_field_optional: true,
+        empty_topic_name: true,
+        individual_emoji_changes: true,
+    };
+
+    // Fetching the initial state via the API rather than embedding it
+    // in the HTML keeps the page small enough to load reliably on flaky
+    // networks; see #36094.
+    let data;
+    if (page_params.is_spectator) {
+        data = {
+            apply_markdown: true,
+            client_gravatar: false,
+            client_capabilities: JSON.stringify({
+                ...shared_client_capabilities,
+                // Set this to true when stream typing notifications are implemented.
+                stream_typing_notifications: false,
+            }),
         };
-        let data;
-        if (page_params.is_spectator) {
-            data = {
-                apply_markdown: true,
-                client_gravatar: false,
-                client_capabilities: JSON.stringify({
-                    ...shared_client_capabilities,
-                    // Set this to true when stream typing notifications are implemented.
-                    stream_typing_notifications: false,
-                }),
-            };
-        } else {
-            // Logged-in reload: request the same parameters the
-            // server-side do_events_register call uses for the initial
-            // page load. Keep these in sync with the call in
-            // zerver/lib/home.py.
-            data = {
-                apply_markdown: true,
-                client_gravatar: true,
-                slim_presence: true,
-                include_subscribers: "partial",
-                presence_history_limit_days: page_params.presence_history_limit_days_for_web_app,
-                fetch_event_types: JSON.stringify(FETCH_EVENT_TYPES),
-                client_capabilities: JSON.stringify({
-                    ...shared_client_capabilities,
-                    stream_typing_notifications: true,
-                    linkifier_url_template: true,
-                    user_list_incomplete: true,
-                    include_deactivated_groups: true,
-                    archived_channels: true,
-                    simplified_presence_events: true,
-                }),
-            };
-        }
-        let register_failures = 0;
-        function fetch_state_data() {
-            channel.post({
-                url: "/json/register",
-                data,
-                success(response_data) {
-                    let state_data;
-                    try {
-                        state_data = state_data_schema.parse(response_data);
-                    } catch (error) {
-                        // Posting again won't help, since this browser's
-                        // code and the server disagree about the format;
-                        // the error offers the user a page reload, which
-                        // can land on an updated server. Show it before
-                        // reporting, since blueslip.error throws in
-                        // development.
-                        loading_error.show_loading_error();
-                        blueslip.error("Malformed /register response", undefined, error);
-                        return;
-                    }
-                    initialize_everything(state_data);
-                    if (page_params.show_try_zulip_modal) {
-                        show_try_zulip_modal();
-                    }
-                },
-                error(xhr) {
-                    register_failures += 1;
-                    if (register_failures <= 5) {
-                        const retry_delay_secs = get_retry_backoff_seconds(
-                            xhr,
-                            register_failures,
-                            false,
-                            true,
-                        );
-                        setTimeout(fetch_state_data, retry_delay_secs * 1000);
-                        return;
-                    }
-                    loading_error.show_loading_error();
-                },
-            });
-        }
-        fetch_state_data();
     } else {
-        const state_data = page_params.state_data;
-        assert(state_data !== null);
-        page_params.state_data = null;
-        initialize_everything(state_data);
+        data = {
+            apply_markdown: true,
+            client_gravatar: true,
+            slim_presence: true,
+            all_public_streams: false,
+            include_subscribers: "partial",
+            presence_history_limit_days: page_params.presence_history_limit_days_for_web_app,
+            fetch_event_types: JSON.stringify(FETCH_EVENT_TYPES),
+            client_capabilities: JSON.stringify({
+                ...shared_client_capabilities,
+                stream_typing_notifications: true,
+                linkifier_url_template: true,
+                user_list_incomplete: true,
+                include_deactivated_groups: true,
+                archived_channels: true,
+                simplified_presence_events: true,
+            }),
+        };
+        if (page_params.narrow !== undefined) {
+            // Restrict the event queue to the mini-window's narrow, in the
+            // [operator, operand] pair format /register expects.
+            data.narrow = JSON.stringify(
+                page_params.narrow.map((term) => [term.operator, term.operand]),
+            );
+        }
     }
+    let register_failures = 0;
+    function fetch_state_data() {
+        channel.post({
+            url: "/json/register",
+            data,
+            success(response_data) {
+                let state_data;
+                try {
+                    state_data = state_data_schema.parse(response_data);
+                } catch (error) {
+                    // Posting again won't help, since this browser's code
+                    // and the server disagree about the format; the error
+                    // offers the user a page reload, which can land on an
+                    // updated server. Show it before reporting, since
+                    // blueslip.error throws in development.
+                    loading_error.show_loading_error();
+                    blueslip.error("Malformed /register response", undefined, error);
+                    return;
+                }
+                initialize_everything(state_data);
+                if (page_params.show_try_zulip_modal) {
+                    show_try_zulip_modal();
+                }
+            },
+            error(xhr) {
+                register_failures += 1;
+                if (register_failures <= 5) {
+                    const retry_delay_secs = get_retry_backoff_seconds(
+                        xhr,
+                        register_failures,
+                        false,
+                        true,
+                    );
+                    setTimeout(fetch_state_data, retry_delay_secs * 1000);
+                    return;
+                }
+                loading_error.show_loading_error();
+            },
+        });
+    }
+    fetch_state_data();
 });
