@@ -2252,10 +2252,10 @@ export class MessageListView {
             });
         }
 
-        const navbar_bottom = $("#navbar-fixed-container").outerHeight()!;
+        const message_feed_visible_top = message_viewport.message_feed_visible_top();
         /* We need date to be properly visible on the header, so partially visible headers
            who are about to be scrolled out of view are not acceptable. */
-        const partially_hidden_header_position = navbar_bottom - 1;
+        const partially_hidden_header_position = message_feed_visible_top - 1;
 
         function is_sticky(header: Element): number {
             // header has a box-shadow of `1px` at top but since it doesn't impact
@@ -2264,7 +2264,7 @@ export class MessageListView {
             // This value is dependent upon space between two `recipient_row` message groups.
             const margin_between_recipient_rows = 10;
             const sticky_or_about_to_be_sticky_header_position =
-                navbar_bottom + header_props.height + margin_between_recipient_rows;
+                message_feed_visible_top + header_props.height + margin_between_recipient_rows;
             if (header_props.top < partially_hidden_header_position) {
                 return -1;
             }
