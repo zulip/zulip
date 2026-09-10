@@ -56,6 +56,7 @@ mock_esm("../src/compose_banner", {
     clear_search_view_banner() {},
 });
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
+const message_viewport = mock_esm("../src/message_viewport");
 const settings_data = mock_esm("../src/settings_data");
 mock_esm("../src/spectators", {
     login_to_access() {},
@@ -1124,7 +1125,7 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
         selected = {id, opts};
     };
     message_lists.current = list;
-    $("#navbar-fixed-container").set_height(50);
+    override(message_viewport, "message_feed_visible_top", () => 50);
     $(".message_header").set_height(30);
     // Date jumps should place the selected message below the sticky
     // message header, increasing the target scroll offset by the
