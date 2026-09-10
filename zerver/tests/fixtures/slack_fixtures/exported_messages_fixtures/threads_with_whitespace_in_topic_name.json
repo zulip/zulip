@@ -1,0 +1,32 @@
+[
+    {
+        "text": "Hi\n\nthere\tfriend",
+        "user": "U061A5N1G",
+        "ts": "1439868294.000008",
+        "thread_ts": "1439868294.000008",
+        "channel_name": "random"
+    },
+    {
+        "text": "hello",
+        "user": "U061A1R2R",
+        "ts": "1439869294.000008",
+        "parent_user_id": "U061A5N1G",
+        "thread_ts": "1439868294.000008",
+        "channel_name": "random"
+    },
+    {
+        "text": "Release notes:\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n- fixed the thing",
+        "user": "U061A1R2R",
+        "ts": "1547139200.000002",
+        "thread_ts": "1547139200.000002",
+        "channel_name": "random"
+    },
+    {
+        "text": "nice",
+        "user": "U061A5N1G",
+        "ts": "1547149200.000002",
+        "parent_user_id": "U061A1R2R",
+        "thread_ts": "1547139200.000002",
+        "channel_name": "random"
+    }
+]

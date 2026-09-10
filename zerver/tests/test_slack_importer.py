@@ -1845,6 +1845,49 @@ message body text
         self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
         self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
 
+    def test_convert_thread_topic_name_with_whitespace(self) -> None:
+        slack_recipient_name_to_zulip_recipient_id = {
+            "random": 2,
+            "general": 1,
+        }
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["threads_with_whitespace_in_topic_name"],
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
+        )
+
+        zerver_message = conversion_result.zerver_message
+
+        self.assert_length(zerver_message, 4)
+
+        ### THREAD 1 CONVERSATION ###
+        # Newlines and tabs are not valid topic name characters, so each run
+        # of whitespace in the message snippet becomes a single space.
+        expected_thread_1_topic_name = "2015-08-18 Hi there friend"
+        thread_1_topic_link_syntax = get_stream_topic_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            expected_thread_1_topic_name,
+        )
+        original_thread_1_message_1_content = "Hi\n\nthere\tfriend"
+        expected_thread_1_message_1_content = f"""
+{original_thread_1_message_1_content}
+
+*1 reply in {thread_1_topic_link_syntax}*
+""".strip()
+
+        # The message itself keeps its original whitespace; only the topic
+        # name derived from it is collapsed.
+        self.assertEqual(zerver_message[0]["content"], expected_thread_1_message_1_content)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+
+        ### THREAD 2 CONVERSATION ###
+        # Collapsing happens before truncation, so a long run of blank lines
+        # in the middle of the message doesn't consume the whole snippet.
+        expected_thread_2_topic_name = "2019-01-10 Release notes: - fixed the thing"
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message_with_integration_bots(
         self, mock_build_usermessage: mock.Mock
