@@ -426,8 +426,16 @@ class HomeTest(ZulipTestCase):
         self.login("hamlet")
         result = self._get_home_page(stream="Denmark", topic="lunch")
         self._sanity_check(result)
-        html = result.content.decode()
-        self.assertIn("lunch", html)
+        page_params = self._get_page_params(result)
+        self.assertEqual(page_params["narrow_stream"], "Denmark")
+        self.assertEqual(page_params["narrow_topic"], "lunch")
+        self.assertEqual(
+            page_params["narrow"],
+            [
+                dict(operator="stream", operand="Denmark"),
+                dict(operator="topic", operand="lunch"),
+            ],
+        )
         self.assertEqual(
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )

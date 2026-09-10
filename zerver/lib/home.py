@@ -15,7 +15,6 @@ from zerver.lib.i18n import (
     get_language_list,
     get_language_translation_data,
 )
-from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm
 from zerver.lib.realm_description import get_realm_rendered_description
 from zerver.lib.workplace_users import (
     realm_eligible_for_non_workplace_pricing,
@@ -83,7 +82,6 @@ def build_page_params_for_home_page_load(
     user_profile: UserProfile | None,
     realm: Realm,
     insecure_desktop_app: bool,
-    narrow: list[NeverNegatedNarrowTerm],
     narrow_stream: Stream | None,
     narrow_topic_name: str | None,
 ) -> dict[str, object]:
@@ -148,11 +146,11 @@ def build_page_params_for_home_page_load(
 
     if narrow_stream is not None:
         page_params["narrow_stream"] = narrow_stream.name
+        narrow = [dict(operator="stream", operand=narrow_stream.name)]
         if narrow_topic_name is not None:
             page_params["narrow_topic"] = narrow_topic_name
-        page_params["narrow"] = [
-            dict(operator=term.operator, operand=term.operand) for term in narrow
-        ]
+            narrow.append(dict(operator="topic", operand=narrow_topic_name))
+        page_params["narrow"] = narrow
 
     page_params["translation_data"] = get_language_translation_data(request_language)
 
