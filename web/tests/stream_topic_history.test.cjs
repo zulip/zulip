@@ -250,6 +250,7 @@ test("test_unread_logic", () => {
     for (const msg of msgs) {
         msg.type = "stream";
         msg.stream_id = stream_id;
+        msg.content = "";
         msg.unread = true;
         message_store.update_message_cache({
             type: "server_message",

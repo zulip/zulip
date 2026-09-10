@@ -102,6 +102,7 @@ test("changing_topics", () => {
     const message = {
         id: 15,
         type: "stream",
+        content: "",
         stream_id,
         topic: "luNch",
         unread: true,
@@ -110,6 +111,7 @@ test("changing_topics", () => {
     const other_message = {
         id: 16,
         type: "stream",
+        content: "",
         stream_id,
         topic: "lunCH",
         unread: true,
@@ -199,6 +201,7 @@ test("changing_topics", () => {
     const sticky_message = {
         id: 17,
         type: "stream",
+        content: "",
         stream_id,
         topic: "sticky",
         unread: true,
@@ -303,6 +306,7 @@ test("num_unread_for_topic", () => {
 
     const message = {
         type: "stream",
+        content: "",
         stream_id,
         topic: "LuncH",
         unread: true,
@@ -455,6 +459,7 @@ test("phantom_messages", () => {
     const message = {
         id: 999,
         type: "stream",
+        content: "",
         stream_id: 555,
         topic: "phantom",
     };

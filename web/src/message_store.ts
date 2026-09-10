@@ -718,6 +718,11 @@ function remove_message_from_topic_links(message_id: number): void {
     _remove_or_update_message_id_from_topic_links(message_id, undefined);
 }
 
+// Parsing message content into a template in a shared inert document
+// avoids creating a new document, and firing its load events, for
+// every message.
+const inert_document = new DOMParser().parseFromString("", "text/html");
+
 export function save_topic_links(message: Message): void {
     if (message.type !== "stream") {
         return;
@@ -725,11 +730,15 @@ export function save_topic_links(message: Message): void {
     if (muted_users.is_user_muted(message.sender_id)) {
         return;
     }
+    // Parsing HTML is expensive, and most messages have no narrow links.
+    if (!message.content.includes("#narrow/")) {
+        return;
+    }
 
     // Extract the URLs from the message content.
-    const link_elements = new DOMParser()
-        .parseFromString(message.content, "text/html")
-        .querySelectorAll("a");
+    const template = inert_document.createElement("template");
+    template.innerHTML = message.content;
+    const link_elements = template.content.querySelectorAll("a");
     for (const link_element of link_elements) {
         const link = link_element.href;
         const hash = hash_util.get_link_hash(link);
