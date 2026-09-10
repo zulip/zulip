@@ -139,7 +139,14 @@ const PAGE_PARAMS_RETRY_CAP = 5;
 // mostly means truncating translation_data; refetching often succeeds.
 function schedule_reload_after_parse_failure(): boolean {
     const url = new URL(window.location.href);
-    const previous_retries = Number.parseInt(url.searchParams.get("page_params_retry") ?? "0", 10);
+    // Number() reads an absent parameter and a valueless one alike as 0.
+    const parsed_retries = Number(url.searchParams.get("page_params_retry"));
+    // Treat a counter we can't make sense of as exhausted: a negative one
+    // would otherwise reload with no delay, and forever.
+    const previous_retries =
+        Number.isSafeInteger(parsed_retries) && parsed_retries >= 0
+            ? parsed_retries
+            : PAGE_PARAMS_RETRY_CAP;
     if (previous_retries >= PAGE_PARAMS_RETRY_CAP) {
         clear_page_params_retry_from_url();
         show_loading_error();
