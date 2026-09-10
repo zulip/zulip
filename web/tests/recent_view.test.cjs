@@ -928,7 +928,7 @@ test("bulk_inplace_rerender updates the requested rows in list order", ({overrid
     assert.equal(render_more_calls, 1);
 });
 
-test("basic assertions", ({mock_template, override_rewire}) => {
+test("basic assertions", ({mock_template, override, override_rewire}) => {
     override_rewire(rt, "inplace_rerender", noop);
     rt.clear_for_tests();
     rt.set_filters_for_tests();
@@ -1094,6 +1094,10 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     // so we don't need to check anythere here.
     generate_topic_data([[1, topic1, 0, all_visibility_policies.INHERIT]]);
     $("#search_query").trigger("focus");
+    // The update is applied after a delay; run it right away here.
+    override(global, "setTimeout", (callback) => {
+        callback();
+    });
     assert.equal(rt.update_topic_visibility_policy(stream1, topic1), true);
     // a topic gets muted which we are not tracking
     assert.equal(rt.update_topic_visibility_policy(stream1, "topic-10"), false);

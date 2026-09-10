@@ -1245,7 +1245,13 @@ export function rewire_inplace_rerender(value: typeof inplace_rerender): void {
     inplace_rerender = value;
 }
 
-export function update_topic_visibility_policy(stream_id: number, topic: string): boolean {
+// Applies a topic's visibility policy change after delay_ms, which lets
+// a popover anchored on the row finish closing first.
+export function update_topic_visibility_policy(
+    stream_id: number,
+    topic: string,
+    delay_ms = 0,
+): boolean {
     const key = recent_view_util.get_topic_key(stream_id, topic);
     if (!recent_view_data.conversations.has(key)) {
         // we receive mute request for a topic we are
@@ -1253,7 +1259,9 @@ export function update_topic_visibility_policy(stream_id: number, topic: string)
         return false;
     }
 
-    inplace_rerender(key);
+    setTimeout(() => {
+        inplace_rerender(key);
+    }, delay_ms);
     return true;
 }
 
