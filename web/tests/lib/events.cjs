@@ -158,6 +158,7 @@ exports.fixtures = {
             name: "Frontend",
             description: "Channels for frontend discussions",
             rendered_description: "<p>Channels for frontend discussions</p>",
+            order: 1,
             date_created: 1681662420,
             creator_id: 10,
             is_archived: false,

@@ -69,8 +69,9 @@ class ChannelFolderForChannelFolderAddEvent(BaseModel):
     name: str
     description: str
     rendered_description: str
+    order: int
     date_created: int
-    creator_id: int
+    creator_id: int | None
     is_archived: bool
 
 
@@ -84,6 +85,7 @@ class ChannelFolderDataForUpdate(BaseModel):
     # TODO: fix types to avoid optional fields
     name: str | None = None
     description: str | None = None
+    rendered_description: str | None = None
     is_archived: bool | None = None
 
 
