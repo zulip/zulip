@@ -47,6 +47,7 @@ run_test("get_raw_content_for_messages", ({override}) => {
     const msg_1 = {
         id: 1,
         raw_content: "Already hydrated content",
+        content: "<p>HTML content</p>",
         type: "stream",
         stream_id: denmark.stream_id,
     };
@@ -534,6 +535,7 @@ run_test("get_raw_content_for_single_message", ({override}) => {
     const msg_1 = {
         id: 1,
         raw_content: "Already hydrated content",
+        content: "<p>HTML content</p>",
         type: "stream",
         stream_id: denmark.stream_id,
     };

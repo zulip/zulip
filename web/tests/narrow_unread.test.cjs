@@ -77,6 +77,7 @@ run_test("get_unread_ids", () => {
     const stream_msg = {
         id: 101,
         type: "stream",
+        content: "",
         stream_id: sub.stream_id,
         display_recipient: sub.name,
         topic: "my topic",
@@ -95,6 +96,7 @@ run_test("get_unread_ids", () => {
     const other_topic_message = {
         id: 103,
         type: "stream",
+        content: "",
         stream_id: sub.stream_id,
         display_recipient: sub.name,
         topic: "another topic",
