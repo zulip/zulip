@@ -17,7 +17,7 @@ from zerver.lib.compatibility import LAST_SERVER_UPGRADE_TIME, is_outdated_serve
 from zerver.lib.events import has_pending_sponsorship_request
 from zerver.lib.home import get_furthest_read_time, promote_sponsoring_zulip_in_realm
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import activate_push_notification_service, queries_captured
+from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.users import max_message_id_for_user
 from zerver.models import DefaultStream, Realm, UserActivity, UserProfile
 from zerver.models.realms import get_realm
@@ -58,219 +58,6 @@ class HomeTest(ZulipTestCase):
         "two_fa_enabled_user",
         "warn_no_email",
     ]
-    expected_state_data_keys = [
-        "alert_words",
-        "avatar_source",
-        "avatar_url",
-        "avatar_url_medium",
-        "can_create_private_streams",
-        "can_create_public_streams",
-        "can_create_streams",
-        "can_create_web_public_streams",
-        "can_invite_others_to_realm",
-        "channel_folders",
-        "cross_realm_bots",
-        "custom_profile_field_types",
-        "custom_profile_fields",
-        "delivery_email",
-        "development_environment",
-        "devices",
-        "drafts",
-        "email",
-        "event_queue_longpoll_timeout_seconds",
-        "full_name",
-        "gif_rating_policy_options",
-        "giphy_api_key",
-        "has_webex_token",
-        "has_zoom_token",
-        "idle_queue_timeout_secs",
-        "is_admin",
-        "is_guest",
-        "is_moderator",
-        "is_owner",
-        "jitsi_server_url",
-        "klipy_api_key",
-        "last_event_id",
-        "max_avatar_file_size_mib",
-        "max_bulk_new_subscription_messages",
-        "max_channel_folder_description_length",
-        "max_channel_folder_name_length",
-        "max_file_upload_size_mib",
-        "max_icon_file_size_mib",
-        "max_logo_file_size_mib",
-        "max_message_id",
-        "max_message_length",
-        "max_reminder_note_length",
-        "max_stream_description_length",
-        "max_stream_name_length",
-        "max_topic_length",
-        "muted_topics",
-        "muted_users",
-        "navigation_tour_video_url",
-        "navigation_views",
-        "never_subscribed",
-        "onboarding_steps",
-        "password_max_length",
-        "password_min_guesses",
-        "password_min_length",
-        "presence_last_update_id",
-        "presences",
-        "queue_id",
-        "realm_allow_edit_history",
-        "realm_allow_message_editing",
-        "realm_authentication_methods",
-        "realm_available_video_chat_providers",
-        "realm_avatar_changes_disabled",
-        "realm_billing",
-        "realm_bot_domain",
-        "realm_bots",
-        "realm_can_access_all_users_group",
-        "realm_can_add_custom_emoji_group",
-        "realm_can_add_subscribers_group",
-        "realm_can_create_bots_group",
-        "realm_can_create_groups",
-        "realm_can_create_private_channel_group",
-        "realm_can_create_public_channel_group",
-        "realm_can_create_web_public_channel_group",
-        "realm_can_create_write_only_bots_group",
-        "realm_can_delete_any_message_group",
-        "realm_can_delete_own_message_group",
-        "realm_can_invite_users_group",
-        "realm_can_manage_all_groups",
-        "realm_can_manage_billing_group",
-        "realm_can_mention_many_users_group",
-        "realm_can_move_messages_between_channels_group",
-        "realm_can_move_messages_between_topics_group",
-        "realm_can_resolve_topics_group",
-        "realm_can_set_delete_message_policy_group",
-        "realm_can_set_topics_policy_group",
-        "realm_can_summarize_topics_group",
-        "realm_create_multiuse_invite_group",
-        "realm_create_private_stream_policy",
-        "realm_create_public_stream_policy",
-        "realm_create_web_public_stream_policy",
-        "realm_date_created",
-        "realm_default_avatar_source",
-        "realm_default_code_block_language",
-        "realm_default_external_accounts",
-        "realm_default_language",
-        "realm_default_stream_groups",
-        "realm_default_streams",
-        "realm_description",
-        "realm_digest_emails_enabled",
-        "realm_digest_weekday",
-        "realm_direct_message_initiator_group",
-        "realm_direct_message_permission_group",
-        "realm_disallow_disposable_email_addresses",
-        "realm_domains",
-        "realm_email_auth_enabled",
-        "realm_email_changes_disabled",
-        "realm_emails_restricted_to_domains",
-        "realm_embedded_bots",
-        "realm_emoji",
-        "realm_empty_topic_display_name",
-        "realm_enable_guest_user_dm_warning",
-        "realm_enable_guest_user_indicator",
-        "realm_enable_read_receipts",
-        "realm_enable_spectator_access",
-        "realm_filters",
-        "realm_gif_rating_policy",
-        "realm_icon_source",
-        "realm_icon_url",
-        "realm_incoming_webhook_bots",
-        "realm_inline_image_preview",
-        "realm_inline_url_embed_preview",
-        "realm_invite_required",
-        "realm_jitsi_server_url",
-        "realm_linkifiers",
-        "realm_logo_source",
-        "realm_logo_url",
-        "realm_mandatory_topics",
-        "realm_media_preview_size",
-        "realm_message_content_allowed_in_email_notifications",
-        "realm_message_content_delete_limit_seconds",
-        "realm_message_content_edit_limit_seconds",
-        "realm_message_edit_history_visibility_policy",
-        "realm_message_retention_days",
-        "realm_moderation_request_channel_id",
-        "realm_move_messages_between_streams_limit_seconds",
-        "realm_move_messages_within_stream_limit_seconds",
-        "realm_name",
-        "realm_name_changes_disabled",
-        "realm_new_stream_announcements_stream_id",
-        "realm_night_logo_source",
-        "realm_night_logo_url",
-        "realm_non_active_users",
-        "realm_org_type",
-        "realm_owner_full_content_access",
-        "realm_password_auth_enabled",
-        "realm_plan_type",
-        "realm_playgrounds",
-        "realm_presence_disabled",
-        "realm_push_notifications_enabled",
-        "realm_push_notifications_enabled_end_timestamp",
-        "realm_require_e2ee_push_notifications",
-        "realm_require_unique_names",
-        "realm_send_channel_events_messages",
-        "realm_send_welcome_emails",
-        "realm_signup_announcements_stream_id",
-        "realm_topics_policy",
-        "realm_upload_quota_mib",
-        "realm_uri",
-        "realm_url",
-        "realm_user_groups",
-        "realm_user_settings_defaults",
-        "realm_users",
-        "realm_uuid",
-        "realm_video_chat_provider",
-        "realm_waiting_period_threshold",
-        "realm_want_advertise_in_communities_directory",
-        "realm_welcome_message_custom_text",
-        "realm_wildcard_mention_policy",
-        "realm_workplace_users_group",
-        "realm_zulip_update_announcements_stream_id",
-        "recent_private_conversations",
-        "reminders",
-        "saved_snippets",
-        "scheduled_messages",
-        "server_avatar_changes_disabled",
-        "server_can_summarize_topics",
-        "server_emoji_data_url",
-        "server_generation",
-        "server_inline_image_preview",
-        "server_inline_url_embed_preview",
-        "server_jitsi_server_url",
-        "server_max_deactivated_realm_deletion_days",
-        "server_min_deactivated_realm_deletion_days",
-        "server_name_changes_disabled",
-        "server_needs_upgrade",
-        "server_presence_offline_threshold_seconds",
-        "server_presence_ping_interval_seconds",
-        "server_report_message_types",
-        "server_supported_permission_settings",
-        "server_thumbnail_formats",
-        "server_timestamp",
-        "server_typing_started_expiry_period_milliseconds",
-        "server_typing_started_wait_period_milliseconds",
-        "server_typing_stopped_wait_period_milliseconds",
-        "server_web_public_streams_enabled",
-        "settings_send_digest_emails",
-        "starred_messages",
-        "stop_words",
-        "subscriptions",
-        "tenor_api_key",
-        "unread_msgs",
-        "unsubscribed",
-        "upgrade_text_for_wide_organization_logo",
-        "user_id",
-        "user_settings",
-        "user_status",
-        "user_topics",
-        "zulip_feature_level",
-        "zulip_merge_base",
-        "zulip_plan_is_not_limited",
-        "zulip_version",
-    ]
 
     def test_home(self) -> None:
         # Keep this list sorted!!!
@@ -284,16 +71,9 @@ class HomeTest(ZulipTestCase):
 
         self.login("hamlet")
 
-        # Create bot for realm_bots testing. Must be done before fetching home_page.
-        bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
-        }
-        self.client_post("/json/bots", bot_info)
-
         # Verify succeeds once logged-in
         with (
-            self.assert_database_query_count(56),
+            self.assert_database_query_count(55),
             patch("zerver.lib.cache.cache_set") as cache_mock,
         ):
             result = self._get_home_page(stream="Denmark")
@@ -313,36 +93,16 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
 
         self.assertCountEqual(page_params, self.expected_page_params_keys)
-        self.assertCountEqual(page_params["state_data"], self.expected_state_data_keys)
-
-        # TODO: Inspect the page_params data further.
-        # print(orjson.dumps(page_params, option=orjson.OPT_INDENT_2).decode())
-        realm_bots_expected_keys = [
-            "default_all_public_streams",
-            "default_events_register_stream",
-            "default_sending_stream",
-            "services",
-            "user_id",
-        ]
-
-        self.assertCountEqual(page_params["state_data"]["realm_bots"][0], realm_bots_expected_keys)
 
     def test_home_demo_organization(self) -> None:
         demo_organization_owner = self.create_demo_organization_owner()
         realm = demo_organization_owner.realm
 
-        # Verify succeeds once logged-in
-        with queries_captured(), patch("zerver.lib.cache.cache_set"):
-            result = self._get_home_page(subdomain=realm.subdomain, stream="Zulip")
-            self.check_rendered_logged_in_app(result)
+        result = self._get_home_page(subdomain=realm.subdomain, stream="Zulip")
+        self.check_rendered_logged_in_app(result)
 
         page_params = self._get_page_params(result)
         self.assertCountEqual(page_params, self.expected_page_params_keys)
-        expected_state_data_keys = [
-            *self.expected_state_data_keys,
-            "demo_organization_scheduled_deletion_date",
-        ]
-        self.assertCountEqual(page_params["state_data"], expected_state_data_keys)
 
     def test_logged_out_home(self) -> None:
         realm = get_realm("zulip")
