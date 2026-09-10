@@ -135,7 +135,9 @@ function take_params(): string {
 
 const PAGE_PARAMS_RETRY_CAP = 5;
 
-function reload_with_deferred_state_data(): boolean {
+// A partial transfer on a marginal network can truncate the HTML, which
+// mostly means truncating translation_data; refetching often succeeds.
+function schedule_reload_after_parse_failure(): boolean {
     const url = new URL(window.location.href);
     const previous_retries = Number.parseInt(url.searchParams.get("page_params_retry") ?? "0", 10);
     if (previous_retries >= PAGE_PARAMS_RETRY_CAP) {
@@ -143,7 +145,6 @@ function reload_with_deferred_state_data(): boolean {
         show_loading_error();
         return false;
     }
-    url.searchParams.set("state_data", "deferred");
     url.searchParams.set("page_params_retry", String(previous_retries + 1));
     const backoff_ms =
         get_retry_backoff_seconds(undefined, previous_retries + 1, false, true) * 1000;
@@ -167,7 +168,7 @@ function parse_page_params(): z.infer<typeof page_params_schema> {
         clear_page_params_retry_from_url();
         return params;
     } catch (error) {
-        if (reload_with_deferred_state_data()) {
+        if (schedule_reload_after_parse_failure()) {
             // Halt module loading without logging to Sentry; the
             // user self-heals on the scheduled reload. The matching
             // entry in sentry.ts's ignoreErrors keeps this quiet.
