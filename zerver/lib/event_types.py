@@ -113,6 +113,7 @@ class DetailedCustomProfileCore(BaseModel):
 class DetailedCustomProfile(DetailedCustomProfileCore):
     # TODO: fix types to avoid optional fields
     display_in_profile_summary: bool | None = None
+    use_for_user_matching: bool | None = None
 
 
 class CustomProfileFieldsEvent(BaseEvent):
