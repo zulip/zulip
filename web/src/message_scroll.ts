@@ -4,6 +4,7 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import * as compose_banner from "./compose_banner.ts";
+import * as message_feed_loading from "./message_feed_loading.ts";
 import * as message_fetch from "./message_fetch.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_scroll_state from "./message_scroll_state.ts";
@@ -156,6 +157,7 @@ export function initialize(): void {
             }
 
             message_lists.current.view.update_sticky_recipient_headers();
+            message_feed_loading.update_for_scroll_position();
             scroll_finish();
         }, 50),
     );
