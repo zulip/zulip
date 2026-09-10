@@ -607,6 +607,13 @@ test("save_topic_links", () => {
     message_store.save_topic_links(message_with_content(`<div><a href='${link}'>a link!</a>`));
     assert_maps_empty();
 
+    // Same when the message only mentions a narrow link without linking to one.
+    link = "https://example.com";
+    message_store.save_topic_links(
+        message_with_content(`<div><a href='${link}'>see #narrow/channel/10-design</a>`),
+    );
+    assert_maps_empty();
+
     // Malformed link doesn't throw an error
     link = "/#narrow/which-channel/10-design/bad-topic/hello/";
     message_store.save_topic_links(message_with_content(`<div><a href='${link}'>a link!</a>`));
