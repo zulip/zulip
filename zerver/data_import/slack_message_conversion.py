@@ -108,6 +108,8 @@ SLACK_BOLD_REGEX = r"""
                     )
                     """
 
+FALLBACK_SLACK_USER_FULL_NAME = "Slack user {id}"
+
 
 def get_user_full_name(user: ZerverFieldsT) -> str:
     if "deleted" in user and user["deleted"] is False:
