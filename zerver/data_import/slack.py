@@ -982,10 +982,15 @@ def get_zulip_thread_topic_name(
     e.g "2024-05-22 Hello this is a long message that will be c… (1)"
     """
     thread_date = thread_ts.date().isoformat()
+    # Topic names must be a single line, so collapse each run of whitespace
+    # before truncating; otherwise blank lines in the middle of the message
+    # would consume most of the snippet.
+    content_for_topic_name = " ".join(message_content.split())
+    topic_name_without_counter = f"{thread_date} {content_for_topic_name}".strip()
 
     # Truncate
     truncated_zulip_topic_name = truncate_content(
-        f"{thread_date} {message_content}".strip(), MAX_TOPIC_NAME_LENGTH, "…"
+        topic_name_without_counter, MAX_TOPIC_NAME_LENGTH, "…"
     )
     collision = thread_counter[truncated_zulip_topic_name]
     thread_counter[truncated_zulip_topic_name] += 1
@@ -994,9 +999,7 @@ def get_zulip_thread_topic_name(
     # Important: The count is at the end, after …, so we need to
     # subtract its length when doing truncation.
     final_topic_name = (
-        truncate_content(
-            f"{thread_date} {message_content}".strip(), MAX_TOPIC_NAME_LENGTH - len(f"{count}"), "…"
-        )
+        truncate_content(topic_name_without_counter, MAX_TOPIC_NAME_LENGTH - len(f"{count}"), "…")
         + f"{count}"
     )
     return final_topic_name
