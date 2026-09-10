@@ -9,8 +9,11 @@ import KeyboardTip from "../../components/KeyboardTip.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
 import AdminOnly from "../include/_AdminOnly.mdx";
+import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
 import CodeBlocksExamples from "../include/_CodeBlocksExamples.mdx";
 import CodeBlocksIntro from "../include/_CodeBlocksIntro.mdx";
+import SaveChanges from "../include/_SaveChanges.mdx";
+import SelectChannelViewGeneral from "../include/_SelectChannelViewGeneral.mdx";
 import StartComposing from "../include/_StartComposing.mdx";
 
 import CodeIcon from "~icons/zulip-icon/code";
@@ -102,10 +105,35 @@ print("Hello world!")
 ```
 ````
 
-### Default code block language
+## Default code block language
 
-Organization administrators can also configure a default language for code
-blocks, which will be used whenever the code block has no tag.
+You can configure a default language for code blocks, which will be used
+whenever a code block has no tag. For example, if most of the code discussed
+in your organization is written in Python, you can make `python` the default
+language, so that code blocks are highlighted as Python code without anyone
+having to tag them.
+
+Zulip supports:
+
+* Configuring a default language for the organization, which applies to
+  [direct messages](/help/direct-messages), and to all channels that do not
+  have their own default.
+* Configuring a default language for an individual channel, which overrides
+  the organization's default for messages sent to that channel. For example,
+  a channel used to discuss your web app can default to `javascript`, while
+  the rest of the organization defaults to `python`.
+
+When a default language is configured, one can use ` ```text ` to display
+code blocks without any syntax highlighting (e.g., to paste an error message).
+
+The default language is applied when a message is sent, so changing it never
+changes how already sent messages are displayed. [Moving a
+message](/help/move-content-to-another-channel) to another channel also does
+not change how its code blocks are highlighted, but editing the message's
+content re-renders it with the default language for the channel where the
+message was posted.
+
+### Configure the default code block language for an organization
 
 <AdminOnly />
 
@@ -113,10 +141,30 @@ blocks, which will be used whenever the code block has no tag.
   <NavigationSteps target="settings/organization-settings" />
 
   1. Under **Message feed settings**, edit **Default language for code blocks**.
+
+  <SaveChanges />
 </FlattenedSteps>
 
-When a default language is configured, one can use ` ```text ` to display
-code blocks without any syntax highlighting (e.g., to paste an error message).
+### Configure the default code block language for a channel
+
+Organization administrators and [channel
+administrators](/help/configure-who-can-administer-a-channel) can configure
+a default language for code blocks in a channel. You can also do this when
+you [create a channel](/help/create-a-channel).
+
+<FlattenedSteps>
+  <NavigationSteps target="relative/channel/all" />
+
+  1. Select a channel.
+
+  <SelectChannelViewGeneral />
+
+  1. Under **Settings**, edit **Default language for code blocks**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+<ChannelSettingsNavbarTip />
 
 ## Code playgrounds
 
