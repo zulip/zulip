@@ -110,6 +110,7 @@ const ls = localstorage();
 
 let filters = new Set<string>();
 let dropdown_filters = new Set<string>();
+const pending_topic_visibility_updates = new Set<string>();
 let folder_filter_value: number = folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION;
 let folder_filter_dropdown_widget: dropdown_widget.DropdownWidget | undefined;
 
@@ -216,6 +217,7 @@ export function clear_for_tests(): void {
     dropdown_filters.clear();
     folder_filter_value = folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION;
     recent_view_data.conversations.clear();
+    pending_topic_visibility_updates.clear();
     topics_widget = undefined;
 }
 
@@ -1144,9 +1146,10 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
     return false;
 }
 
-// Recomputes the widget's filtered list, keeping keyboard focus
-// sensible when the resort removed the focused row.
-function filter_and_sort_topics_widget(): void {
+// Recomputes the widget's filtered list for a rerender of the given
+// conversations, reporting rows removed for conversations it was not
+// asked about.
+function filter_and_sort_topics_widget(rerendering_keys: string[]): void {
     assert(topics_widget !== undefined);
     // Look up the focused row while row_focus still indexes the rows the
     // resort may remove.
@@ -1157,6 +1160,26 @@ function filter_and_sort_topics_widget(): void {
     );
     if (focused_row_removed && row_focus >= topics_widget.get_current_list().length) {
         row_focus = Math.max(topics_widget.get_current_list().length - 1, 0);
+    }
+
+    const stranded_conversations = removed_conversations.filter((conversation) => {
+        const key = get_conversation_key(conversation);
+        return !rerendering_keys.includes(key) && !pending_topic_visibility_updates.has(key);
+    });
+    if (stranded_conversations.length > 0) {
+        // Every event that can hide a rendered conversation should rerender it
+        // or redraw the view; a row removed here was left on screen by one
+        // that does neither, so report it to be handled directly.
+        blueslip.error("Recent view rows hidden without a rerender", {
+            count: stranded_conversations.length,
+            types: [...new Set(stranded_conversations.map((conversation) => conversation.type))],
+            filters: [...filters].toSorted(),
+            dropdown_filters: [...dropdown_filters],
+            has_search_keyword: $<HTMLInputElement>("#recent_view_search").val() !== "",
+            has_folder_filter:
+                folder_filter_value !==
+                folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION,
+        });
     }
 }
 
@@ -1178,7 +1201,7 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
     }
 
     topics_widget.replace_list_data(get_list_data_for_widget(), false);
-    filter_and_sort_topics_widget();
+    filter_and_sort_topics_widget(row_keys);
 
     const remaining_keys = new Set(row_keys);
     const current_list = topics_widget.get_current_list();
@@ -1214,7 +1237,7 @@ export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): b
         //
         // NOTE: This doesn't add any new entry to the original list but updates the filtered list
         // based on the current filters and updated row data.
-        filter_and_sort_topics_widget();
+        filter_and_sort_topics_widget([topic_key]);
     }
 
     // We cannot rely on `topic_widget.meta.filtered_list` to know
@@ -1246,7 +1269,8 @@ export function rewire_inplace_rerender(value: typeof inplace_rerender): void {
 }
 
 // Applies a topic's visibility policy change after delay_ms, which lets
-// a popover anchored on the row finish closing first.
+// a popover anchored on the row finish closing first. Until then the
+// row is stale by design, so a resort removing it is not reported.
 export function update_topic_visibility_policy(
     stream_id: number,
     topic: string,
@@ -1259,7 +1283,9 @@ export function update_topic_visibility_policy(
         return false;
     }
 
+    pending_topic_visibility_updates.add(key);
     setTimeout(() => {
+        pending_topic_visibility_updates.delete(key);
         inplace_rerender(key);
     }, delay_ms);
     return true;

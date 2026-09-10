@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+const blueslip = require("./lib/zblueslip.cjs");
 const {$} = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -926,6 +927,37 @@ test("bulk_inplace_rerender updates the requested rows in list order", ({overrid
     ]);
     // The rerender ends by rendering more rows if the table has room.
     assert.equal(render_more_calls, 1);
+});
+
+test("resort reports rows hidden without a rerender", ({override}) => {
+    show_recent_view_with_messages();
+    const muted_key = get_topic_key(stream1, topic7);
+    const visible_key = get_topic_key(stream1, topic1);
+    override(ListWidget, "render_item", noop);
+    override(ListWidget, "get_current_list", () => [conversation_for(topic1)]);
+    // Recomputing the filtered list removes the muted conversation's row.
+    override(ListWidget, "filter_and_sort", () => [conversation_for(topic7)]);
+
+    // Removing the row of the conversation being rerendered is expected;
+    // removing it while rerendering another one means the event that hid
+    // it left its row behind.
+    rt.inplace_rerender(muted_key);
+    blueslip.expect("error", "Recent view rows hidden without a rerender");
+    rt.inplace_rerender(visible_key);
+    blueslip.reset();
+
+    // A topic visibility change is applied after a delay; a resort in the
+    // meantime removes the row without a report, until the update runs.
+    const delayed_callbacks = [];
+    override(global, "setTimeout", (callback, delay) => {
+        delayed_callbacks.push({callback, delay});
+    });
+    rt.update_topic_visibility_policy(stream1, topic7, 500);
+    rt.inplace_rerender(visible_key);
+    delayed_callbacks.find(({delay}) => delay === 500).callback();
+    blueslip.expect("error", "Recent view rows hidden without a rerender");
+    rt.inplace_rerender(visible_key);
+    blueslip.reset();
 });
 
 test("basic assertions", ({mock_template, override, override_rewire}) => {
