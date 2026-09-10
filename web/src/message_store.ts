@@ -725,6 +725,10 @@ export function save_topic_links(message: Message): void {
     if (muted_users.is_user_muted(message.sender_id)) {
         return;
     }
+    // Parsing HTML is expensive, and most messages have no narrow links.
+    if (!message.content.includes("#narrow/")) {
+        return;
+    }
 
     // Extract the URLs from the message content.
     const link_elements = new DOMParser()
