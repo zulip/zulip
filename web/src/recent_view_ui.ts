@@ -1159,6 +1159,36 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
     return false;
 }
 
+// The resort should remove only rows of the conversations being
+// rerendered. Any other row belongs to a conversation that an event hid
+// without rerendering it or redrawing the view.
+function report_rows_hidden_without_rerender(
+    removed_conversations: ConversationData[],
+    rerendered_keys: Set<string>,
+): void {
+    const search_keyword = get_search_keyword();
+    const is_search_redraw_pending = search_keyword !== previous_search_term;
+    if (is_search_redraw_pending) {
+        // The resort also removed the rows that search hides.
+        return;
+    }
+    const unexpected_removals = removed_conversations.filter(
+        (conversation) => !rerendered_keys.has(get_conversation_key(conversation)),
+    );
+    if (unexpected_removals.length > 0) {
+        blueslip.error("Recent view rows hidden without a rerender", {
+            count: unexpected_removals.length,
+            types: [...new Set(unexpected_removals.map((conversation) => conversation.type))],
+            filters: [...filters],
+            dropdown_filters: [...dropdown_filters],
+            has_search_keyword: search_keyword !== "",
+            has_folder_filter:
+                folder_filter_value !==
+                folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION,
+        });
+    }
+}
+
 function rerender_conversation_rows(row_keys: Set<string>): void {
     assert(topics_widget !== undefined);
     // Look up the focused row while row_focus still indexes the rows the
@@ -1205,6 +1235,8 @@ function rerender_conversation_rows(row_keys: Set<string>): void {
         topics_widget.render();
     }
     setTimeout(revive_current_focus, 0);
+    // Last, since blueslip.error throws in development.
+    report_rows_hidden_without_rerender(removed_conversations, row_keys);
 }
 
 export function bulk_inplace_rerender(row_keys: Set<string>): void {

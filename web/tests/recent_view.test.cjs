@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+const blueslip = require("./lib/zblueslip.cjs");
 const {$} = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -1128,6 +1129,35 @@ test("a conversation without a row stays unlisted until its visibility update", 
 
     run_update();
     assert.ok(!rt.filters_should_hide_row(conversation));
+});
+
+test("rerender reports rows its resort removed without being asked", ({override}) => {
+    // The widget's resort removes the row of a conversation the filters
+    // hide. For any conversation but the one being rerendered, that means
+    // an event hid it without updating the view, which is reported.
+    show_recent_view_with_messages();
+    const muted_key = get_topic_key(stream1, topic7);
+    const visible_key = get_topic_key(stream1, topic1);
+    override(ListWidget, "render_item", noop);
+    override(ListWidget, "get_current_list", () => [conversation_for(topic1)]);
+    override(ListWidget, "filter_and_sort", () => [conversation_for(topic7)]);
+
+    rt.inplace_rerender(muted_key);
+    assert.deepEqual(blueslip.get_test_logs("error"), []);
+
+    blueslip.expect("error", "Recent view rows hidden without a rerender");
+    rt.inplace_rerender(visible_key);
+    const [{more_info}] = blueslip.get_test_logs("error");
+    assert.equal(more_info.count, 1);
+    assert.deepEqual(more_info.types, ["stream"]);
+    blueslip.reset();
+
+    // While a search is being typed, its debounced handler has yet to
+    // redraw the view, and the resort removes the rows it hides as well.
+    $("#recent_view_search").val("half typed");
+    rt.inplace_rerender(visible_key);
+    assert.deepEqual(blueslip.get_test_logs("error"), []);
+    $("#recent_view_search").val("");
 });
 
 test("basic assertions", ({mock_template, override, override_rewire}) => {
