@@ -687,10 +687,19 @@ class RealmUser(BaseModel):
     is_guest: bool
     role: Literal[100, 200, 300, 400, 600]
     is_active: bool
-    profile_data: dict[str, dict[str, object]]
+    is_imported_stub: bool
+    # Absent for bots.
+    profile_data: dict[str, dict[str, object]] | None = None
     timezone: str
     date_joined: str
     delivery_email: str | None
+    # Only present when true.
+    is_deleted: bool | None = None
+    # Only present for bots.
+    bot_type: int | None = None
+    bot_owner_id: int | None = None
+    # Only present for cross-realm system bots.
+    is_system_bot: bool | None = None
 
 
 class RealmUserAddEvent(BaseEvent):
