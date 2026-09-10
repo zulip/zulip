@@ -3518,6 +3518,12 @@ class NormalActionsTest(BaseAction):
             self.create_bot("test")
         check_realm_bot_add("events[3]", events[3], UserProfile.DEFAULT_BOT)
 
+        # Bots also get a realm_user/add event, whose person carries
+        # the bot-only fields.
+        [user_add_event] = (event for event in events if event["type"] == "realm_user")
+        check_realm_user_add("realm_user_add_event", user_add_event)
+        self.assertEqual(user_add_event["person"]["bot_type"], UserProfile.DEFAULT_BOT)
+
         with self.verify_action(num_events=4) as events:
             self.create_bot(
                 "test_outgoing_webhook",
