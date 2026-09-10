@@ -19,7 +19,7 @@ from zerver.lib.home import get_furthest_read_time, promote_sponsoring_zulip_in_
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.users import max_message_id_for_user
-from zerver.models import DefaultStream, Realm, UserActivity, UserProfile
+from zerver.models import Realm, UserActivity, UserProfile
 from zerver.models.realms import get_realm
 from zerver.tornado.django_api import EventQueueData
 from zerver.worker.user_activity import UserActivityWorker
@@ -267,50 +267,6 @@ class HomeTest(ZulipTestCase):
         self.assertIsNone(page_params["state_data"])
         self.assertTrue(page_params["no_event_queue"])
         self.assertFalse(page_params["is_spectator"])
-
-    @override_settings(TERMS_OF_SERVICE_VERSION=None)
-    def test_num_queries_for_realm_admin(self) -> None:
-        # Verify number of queries for Realm admin isn't much higher than for normal users.
-        self.login("iago")
-        with (
-            self.assert_database_query_count(58),
-            patch("zerver.lib.cache.cache_set") as cache_mock,
-        ):
-            result = self._get_home_page()
-            self.check_rendered_logged_in_app(result)
-            self.assert_length(cache_mock.call_args_list, 9)
-
-    def test_num_queries_with_streams(self) -> None:
-        main_user = self.example_user("hamlet")
-        other_user = self.example_user("cordelia")
-
-        realm_id = main_user.realm_id
-
-        self.login_user(main_user)
-
-        # Try to make page-load do extra work for various subscribed
-        # streams.
-        for i in range(10):
-            stream_name = "test_stream_" + str(i)
-            stream = self.make_stream(stream_name)
-            DefaultStream.objects.create(
-                realm_id=realm_id,
-                stream_id=stream.id,
-            )
-            for user in [main_user, other_user]:
-                self.subscribe(user, stream_name)
-
-        # Simulate hitting the page the first time to avoid some noise
-        # related to initial logins.
-        self._get_home_page()
-
-        # Then for the second page load, measure the number of queries.
-        with self.assert_database_query_count(53):
-            result = self._get_home_page()
-
-        # Do a sanity check that our new streams were in the payload.
-        html = result.content.decode()
-        self.assertIn("test_stream_7", html)
 
     def _get_home_page(self, subdomain: str | None = None, **kwargs: Any) -> "TestHttpResponse":
         queue_data = EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600)

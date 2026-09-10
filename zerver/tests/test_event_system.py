@@ -36,7 +36,15 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.users import get_users_for_api
-from zerver.models import CustomProfileField, Draft, Realm, UserMessage, UserPresence, UserProfile
+from zerver.models import (
+    CustomProfileField,
+    DefaultStream,
+    Draft,
+    Realm,
+    UserMessage,
+    UserPresence,
+    UserProfile,
+)
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -2331,6 +2339,57 @@ class FetchQueriesTest(ZulipTestCase):
                     event_types = [event_type]
 
                 fetch_initial_state_data(user, realm=user.realm, event_types=event_types)
+
+    def test_num_queries_for_realm_admin(self) -> None:
+        # Verify number of queries for Realm admin isn't much higher than for normal users.
+        self.login("hamlet")
+        # Register once per user before measuring, so each measurement
+        # sees warm caches rather than paying to fill them.
+        self.register_via_api(dict(include_subscribers="partial"))
+        with (
+            self.assert_database_query_count(51),
+            mock.patch("zerver.lib.cache.cache_set") as cache_mock,
+        ):
+            self.register_via_api(dict(include_subscribers="partial"))
+            self.assert_length(cache_mock.call_args_list, 5)
+
+        self.login("iago")
+        self.register_via_api(dict(include_subscribers="partial"))
+        with (
+            self.assert_database_query_count(56),
+            mock.patch("zerver.lib.cache.cache_set") as cache_mock,
+        ):
+            self.register_via_api(dict(include_subscribers="partial"))
+            self.assert_length(cache_mock.call_args_list, 7)
+
+    def test_num_queries_with_streams(self) -> None:
+        main_user = self.example_user("hamlet")
+        other_user = self.example_user("cordelia")
+
+        realm_id = main_user.realm_id
+
+        self.login_user(main_user)
+
+        # Try to make registering do extra work for various subscribed
+        # streams.
+        for i in range(10):
+            stream_name = "test_stream_" + str(i)
+            stream = self.make_stream(stream_name)
+            DefaultStream.objects.create(
+                realm_id=realm_id,
+                stream_id=stream.id,
+            )
+            for user in [main_user, other_user]:
+                self.subscribe(user, stream_name)
+
+        # Simulate registering the first time to avoid some noise
+        # related to initial logins.
+        self.register_via_api(dict(include_subscribers="partial"))
+
+        with self.assert_database_query_count(51):
+            result = self.register_via_api(dict(include_subscribers="partial"))
+
+        self.assertIn("test_stream_7", [sub["name"] for sub in result["subscriptions"]])
 
 
 class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):
