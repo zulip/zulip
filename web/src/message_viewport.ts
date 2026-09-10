@@ -42,7 +42,7 @@ export function at_rendered_top(): boolean {
 }
 
 export function message_feed_visible_top(): number {
-    return util.the($("#navbar-fixed-container")).getBoundingClientRect().bottom;
+    return util.the($("#top_of_feed_loading_indicator")).getBoundingClientRect().bottom;
 }
 
 export function message_viewport_info(): MessageViewportInfo {
