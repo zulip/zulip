@@ -3,7 +3,7 @@
 const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
-const {mock_esm, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const {$} = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -1091,8 +1091,26 @@ test("rerender inserts rows only within the rendered range", ({override}) => {
     ]);
 });
 
-test("basic assertions", ({mock_template, override_rewire}) => {
-    override_rewire(rt, "inplace_rerender", noop);
+test("a topic's visibility update rerenders its row after the delay", ({override_rewire}) => {
+    show_recent_view_with_messages();
+    const rerendered_keys = [];
+    override_rewire(rt, "inplace_rerender", (key) => {
+        rerendered_keys.push(key);
+    });
+
+    assert.ok(rt.schedule_topic_visibility_update(stream1, topic1, 500));
+    clock.tick(499);
+    assert.deepEqual(rerendered_keys, []);
+    clock.tick(1);
+    assert.deepEqual(rerendered_keys, [get_topic_key(stream1, topic1)]);
+
+    // Recent view has no row to update for a topic it is not tracking.
+    assert.ok(!rt.schedule_topic_visibility_update(stream1, "topic-10", 500));
+    clock.tick(500);
+    assert.deepEqual(rerendered_keys, [get_topic_key(stream1, topic1)]);
+});
+
+test("basic assertions", ({mock_template}) => {
     rt.clear_for_tests();
     rt.set_filters_for_tests();
 
@@ -1252,14 +1270,6 @@ test("basic assertions", ({mock_template, override_rewire}) => {
         "1:topic-1",
         "6,7,8",
     ]);
-
-    // update_topic_visibility_policy now relies on external libraries completely
-    // so we don't need to check anythere here.
-    generate_topic_data([[1, topic1, 0, all_visibility_policies.INHERIT]]);
-    $("#search_query").trigger("focus");
-    assert.equal(rt.update_topic_visibility_policy(stream1, topic1), true);
-    // a topic gets muted which we are not tracking
-    assert.equal(rt.update_topic_visibility_policy(stream1, "topic-10"), false);
 });
 
 test("test_reify_local_echo_message", ({mock_template}) => {
