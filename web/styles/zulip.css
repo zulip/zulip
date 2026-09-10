@@ -581,8 +581,7 @@ body.has-overlay-scrollbar {
 }
 
 #message_feed_container {
-    /* The gutter below the navbar is the top-of-feed loading box; see
-       #top-of-feed-loading-indicator. */
+    /* The gutter below the navbar is #top-of-feed-gutter. */
     padding-top: var(--navbar-fixed-height);
 }
 
@@ -1230,31 +1229,52 @@ nav {
     font-family: "Source Code Pro", monospace;
 }
 
+#top-of-feed-gutter {
+    position: sticky;
+    top: var(--navbar-fixed-height);
+    height: var(--header-padding-bottom);
+    /* Below sticky recipient bars (z-index: 4), so that a bar pushed
+       out by the next one slides up under the navbar. */
+    z-index: 3;
+    background-color: var(--color-background);
+
+    /* While the loading line shows, the gutter covers recipient bars
+       instead, so that a bar pushed out by the next one never slides
+       through the line. */
+    #main_div:has(> #top-of-feed-loading-indicator:is(.loading, .fade-out))
+        > & {
+        z-index: 5;
+    }
+}
+
+/* The loading line is centered in the space between the navbar and
+   the recipient bar's contents. At the top of the feed, that space is
+   the gutter plus the first bar's top margin, so the line is centered
+   on the gutter's bottom edge. Once a recipient bar is stuck, the
+   gutter covers the bar's top margin, so the line sticks at the middle
+   of the gutter. This element takes no space in the layout. */
 #top-of-feed-loading-indicator {
     /* How much of the line the pulse covers; the sweep keyframes
        use this to travel the full width of the line. */
     --loading-pulse-fraction: 0.3;
 
-    position: relative;
-    height: var(--header-padding-bottom);
-    /* Above the first recipient bar (see .message-feed .message_header
-       in message_header.css), whose empty top margin the line hangs
-       into. */
+    position: sticky;
+    top: calc(var(--navbar-fixed-height) + var(--header-padding-bottom) / 2);
+    height: 0;
+    /* Same as #top-of-feed-gutter, so that this is drawn above sticky
+       recipient bars (z-index: 4) and, coming later, above
+       #top-of-feed-gutter. */
     z-index: 5;
-    /* Clip the pulse as it sweeps past the sides, but let the line
-       hang out below, over the recipient bar's empty top margin. */
+    /* Clip the pulse as it sweeps past the sides. */
     overflow: clip visible;
 
     &::before,
     &::after {
         content: "";
         position: absolute;
-        /* Centered in the space between the navbar and the recipient
-           bar's contents, which is the gutter plus the bar's equal top
-           margin: that is, centered on the gutter's bottom edge. */
-        bottom: -1.5px;
+        top: -1px;
         left: 0;
-        height: 3px;
+        height: 2px;
         /* Fade in and out rather than popping. */
         opacity: 0;
         transition: opacity 200ms ease-in-out;

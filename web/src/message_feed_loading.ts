@@ -11,8 +11,17 @@ let loading_newer_messages_indicator_showing = false;
 let initial_page_load_pending = false;
 let fetching_older_messages = false;
 
+function top_of_feed_in_view(): boolean {
+    // Same check as message_viewport.at_rendered_top, duplicated here
+    // to avoid an import cycle.
+    return window.scrollY <= 0;
+}
+
 function update_top_of_feed_indicator(): void {
-    const should_show_indicator = initial_page_load_pending || fetching_older_messages;
+    // The initial page load always shows the indicator. Loading older
+    // messages only shows it when the user is at the top of the feed.
+    const should_show_indicator =
+        initial_page_load_pending || (fetching_older_messages && top_of_feed_in_view());
     if (should_show_indicator === top_of_feed_indicator_showing) {
         return;
     }
@@ -22,6 +31,14 @@ function update_top_of_feed_indicator(): void {
     } else {
         $("#top-of-feed-loading-indicator").removeClass("loading");
         top_of_feed_indicator_showing = false;
+    }
+}
+
+export function update_for_scroll_position(): void {
+    // Scrolling can bring the top of the feed into or out of view while
+    // older messages are being fetched.
+    if (fetching_older_messages) {
+        update_top_of_feed_indicator();
     }
 }
 
