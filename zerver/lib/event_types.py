@@ -2,7 +2,7 @@ from typing import Annotated, Literal
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
-from pydantic import AfterValidator, BaseModel
+from pydantic import AfterValidator, BaseModel, Field
 
 from zerver.lib.types import UserGroupMembersDict
 from zerver.models.realms import RealmExportSlug
@@ -678,7 +678,7 @@ class RealmUpdateEvent(BaseEvent):
     rendered_description: str | None = None
 
 
-class RealmUser(BaseModel):
+class RealmUserCore(BaseModel):
     user_id: int
     email: str
     avatar_url: str | None
@@ -686,20 +686,34 @@ class RealmUser(BaseModel):
     full_name: str
     is_admin: bool
     is_owner: bool
-    is_bot: bool
     is_guest: bool
     role: Literal[100, 200, 300, 400, 600]
     is_active: bool
-    profile_data: dict[str, dict[str, object]]
+    is_imported_stub: bool
     timezone: str
     date_joined: str
     delivery_email: str | None
+    # TODO: fix types to avoid optional fields
+    is_deleted: bool | None = None
+
+
+class RealmHumanUser(RealmUserCore):
+    is_bot: Literal[False]
+    profile_data: dict[str, dict[str, object]]
+
+
+class RealmBotUser(RealmUserCore):
+    is_bot: Literal[True]
+    bot_type: int
+    bot_owner_id: int | None
+    # TODO: fix types to avoid optional fields
+    is_system_bot: bool | None = None
 
 
 class RealmUserAddEvent(BaseEvent):
     type: Literal["realm_user"]
     op: Literal["add"]
-    person: RealmUser
+    person: Annotated[RealmHumanUser | RealmBotUser, Field(discriminator="is_bot")]
 
 
 class RemovedUser(BaseModel):
