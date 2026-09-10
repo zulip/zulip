@@ -8,9 +8,11 @@ from django.utils.translation import gettext as _
 from zerver.actions.message_send import send_rate_limited_pm_notification_to_bot_owner
 from zerver.data_import.slack import check_slack_token_access, get_slack_api_data
 from zerver.data_import.slack_message_conversion import (
+    FALLBACK_USER_FULL_NAME,
     SLACK_USERMENTION_REGEX,
     convert_slack_formatting,
     convert_slack_workspace_mentions,
+    get_optional_slack_field,
     process_slack_block_and_attachment,
     replace_links,
 )
@@ -70,13 +72,10 @@ def get_slack_sender_name(user_id: str, token: str) -> str:
         token=token,
         user=user_id,
     )
-    # The "real_name" field is not guaranteed to be included.
-    # If it is included -- although unlikely -- its type could
-    # be null, an empty string, or None.
-    user_name = slack_user_data.get("real_name")
-    if isinstance(user_name, str) and user_name.strip():
+    user_name = get_optional_slack_field(slack_user_data, "real_name", str)
+    if user_name is not None:
         return user_name
-    return f"Slack user {user_id}"
+    return FALLBACK_USER_FULL_NAME.format(id=user_id)
 
 
 def convert_slack_user_and_channel_mentions(text: str, app_token: str) -> str:

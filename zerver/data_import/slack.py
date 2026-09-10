@@ -54,6 +54,7 @@ from zerver.data_import.import_util import (
 from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
+    get_optional_slack_field,
     get_user_full_name,
     process_slack_block_and_attachment,
 )
@@ -335,18 +336,25 @@ def users_to_zerver_userprofile(
         else:
             bot_type = None
 
+        full_name = get_user_full_name(user)
+        # "name" is the user's Slack handle, which Slack does not
+        # guarantee either. short_name is only kept for legacy reasons
+        # and isn't used to build the Zulip user, so fall back to the
+        # full name, as the other importers pass for it anyway.
+        short_name = get_optional_slack_field(user, "name", str) or full_name
+
         userprofile_dict = build_user_profile(
             avatar_source=avatar_source,
             date_joined=timestamp,
             delivery_email=email,
             email=email,
-            full_name=get_user_full_name(user),
+            full_name=full_name,
             id=user_id,
             is_active=not user.get("deleted", False) and not user["is_mirror_dummy"],
             role=role,
             is_mirror_dummy=user["is_mirror_dummy"],
             realm_id=realm_id,
-            short_name=user["name"],
+            short_name=short_name,
             timezone=timezone,
             is_bot=is_bot,
             bot_type=bot_type,
@@ -357,7 +365,7 @@ def users_to_zerver_userprofile(
         if not user.get("is_primary_owner", False):
             user_id_count += 1
 
-        logging.info("%s: %s -> %s", slack_user_id, user["name"], userprofile_dict["email"])
+        logging.info("%s: %s -> %s", slack_user_id, short_name, userprofile_dict["email"])
 
     validate_user_emails_for_import(list(found_emails))
     process_customprofilefields(zerver_customprofilefield, zerver_customprofilefield_values)
@@ -461,7 +469,10 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
     if "email" in user["profile"]:
         return user["profile"]["email"]
     if user["is_mirror_dummy"]:
-        return Address(username=user["name"], domain=f"{user['team_domain']}.slack.com").addr_spec
+        # Slack does not guarantee a handle to build this from; their ID
+        # is the only thing we're sure to have that identifies them.
+        username = get_optional_slack_field(user, "name", str) or user["id"]
+        return Address(username=username, domain=f"{user['team_domain']}.slack.com").addr_spec
     if "bot_id" in user["profile"]:
         return SlackBotEmail.get_email(user["profile"], domain_name)
     if is_slackbot(user):
@@ -472,17 +483,18 @@ def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
 def build_avatar_url(slack_user_id: str, user: ZerverFieldsT) -> tuple[str, str | None]:
     avatar_url: str | None = None
     avatar_source = UserProfile.DEFAULT_AVATAR_SOURCE
-    if user["profile"].get("avatar_hash"):
+    profile = user.get("profile", {})
+    avatar_hash = get_optional_slack_field(profile, "avatar_hash", str)
+    team_id = get_optional_slack_field(user, "team_id", str)
+    if avatar_hash is not None and team_id is not None:
         # Process avatar image for a typical Slack user.
-        team_id = user["team_id"]
-        avatar_hash = user["profile"]["avatar_hash"]
         avatar_url = f"https://ca.slack-edge.com/{team_id}-{slack_user_id}-{avatar_hash}"
         avatar_source = UserProfile.AVATAR_FROM_USER
-    elif user.get("is_integration_bot") and "image_72" in user["profile"]:
+    elif user.get("is_integration_bot") and "image_72" in profile:
         # Unlike other Slack user types, Slacks integration bot avatar URL ends with
         # a file type extension (.png, in this case).
         # e.g https://avatars.slack-edge.com/2024-05-01/7218497908_deb94eac4c_512.png
-        avatar_url = user["profile"]["image_72"]
+        avatar_url = profile["image_72"]
         avatar_source = UserProfile.AVATAR_FROM_USER
         content_type = guess_type(avatar_url)[0]
         if content_type not in THUMBNAIL_ACCEPT_IMAGE_TYPES:

@@ -2,7 +2,7 @@ import contextlib
 import re
 from datetime import datetime, timezone
 from itertools import zip_longest
-from typing import Any, Literal, TypeAlias, TypedDict, cast
+from typing import Any, Literal, TypeAlias, TypedDict, TypeVar, cast
 
 import regex
 from django.core.exceptions import ValidationError
@@ -25,6 +25,9 @@ ZerverFieldsT: TypeAlias = dict[str, Any]
 SlackToZulipUserIDT: TypeAlias = dict[str, int]
 AddedChannelsT: TypeAlias = dict[str, tuple[str, int]]
 SlackFieldsT: TypeAlias = dict[str, Any]
+
+# Used when Slack gives us no name at all for a user we have to name.
+FALLBACK_USER_FULL_NAME = "Slack user {id}"
 
 # Slack link can be in the format <http://www.foo.com|www.foo.com> and <http://foo.com/>
 LINK_REGEX = r"""
@@ -109,13 +112,39 @@ SLACK_BOLD_REGEX = r"""
                     """
 
 
+T = TypeVar("T")
+
+
+def get_optional_slack_field(data: SlackFieldsT, key: str, field_type: type[T]) -> T | None:
+    """
+    If a data has not been supplied by a Slack endpoint, it may not be present at
+    all, may be null or may contain the empty string (""). A Slack endpoint that
+    does that is:
+    https://docs.slack.dev/reference/methods/users.info/#profile.
+    """
+    value = data.get(key)
+    if isinstance(value, str):
+        value = value.strip()
+        if not value:
+            return None
+    if not isinstance(value, field_type):
+        return None
+    return value
+
+
 def get_user_full_name(user: ZerverFieldsT) -> str:
-    if "deleted" in user and user["deleted"] is False:
-        return user["real_name"] or user["name"]
-    elif user["is_mirror_dummy"]:
-        return user["profile"].get("real_name", user["name"])
-    else:
-        return user["name"]
+    # Slack sets these both at the top level and within "profile",
+    # inconsistently between user types, and any of them may be missing.
+    # Look through them in descending order of how well they serve as a
+    # full name, taking the first one Slack actually gave us.
+    profile = user.get("profile", {})
+    for field in ("real_name", "display_name", "name"):
+        name = get_optional_slack_field(user, field, str) or get_optional_slack_field(
+            profile, field, str
+        )
+        if name is not None:
+            return name
+    return FALLBACK_USER_FULL_NAME.format(id=user["id"])
 
 
 def get_zulip_mention_for_slack_user(
