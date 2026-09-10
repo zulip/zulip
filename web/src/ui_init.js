@@ -843,21 +843,23 @@ $(() => {
         // (potentially very large) HTML response. For reloads, this
         // avoids partial-transfer failures that leave users stuck on
         // the loading screen. See #36094.
+        const shared_client_capabilities = {
+            notification_settings_null: true,
+            bulk_message_deletion: true,
+            user_avatar_url_field_optional: true,
+            empty_topic_name: true,
+            individual_emoji_changes: true,
+        };
         let data;
         if (page_params.is_spectator) {
             data = {
                 apply_markdown: true,
+                client_gravatar: false,
                 client_capabilities: JSON.stringify({
-                    notification_settings_null: true,
-                    bulk_message_deletion: true,
-                    user_avatar_url_field_optional: true,
+                    ...shared_client_capabilities,
                     // Set this to true when stream typing notifications are implemented.
                     stream_typing_notifications: false,
-                    user_settings_object: true,
-                    empty_topic_name: true,
-                    individual_emoji_changes: true,
                 }),
-                client_gravatar: false,
             };
         } else {
             // Logged-in reload: request the same parameters the
@@ -872,17 +874,13 @@ $(() => {
                 presence_history_limit_days: page_params.presence_history_limit_days_for_web_app,
                 fetch_event_types: JSON.stringify(FETCH_EVENT_TYPES),
                 client_capabilities: JSON.stringify({
-                    notification_settings_null: true,
-                    bulk_message_deletion: true,
-                    user_avatar_url_field_optional: true,
+                    ...shared_client_capabilities,
                     stream_typing_notifications: true,
                     linkifier_url_template: true,
                     user_list_incomplete: true,
                     include_deactivated_groups: true,
                     archived_channels: true,
-                    empty_topic_name: true,
                     simplified_presence_events: true,
-                    individual_emoji_changes: true,
                 }),
             };
         }
