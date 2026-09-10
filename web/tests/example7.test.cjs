@@ -85,6 +85,7 @@ run_test("unread_ops", ({override}) => {
         {
             id: message_id,
             type: "stream",
+            content: "",
             stream_id: denmark_stream.stream_id,
             topic: "copenhagen",
             unread: true,

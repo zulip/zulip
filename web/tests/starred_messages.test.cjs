@@ -64,6 +64,7 @@ run_test("get starred ids in topic", () => {
             // Different stream
             id: 3,
             type: "stream",
+            content: "",
             stream_id: 19,
             topic: "topic",
         },
@@ -74,6 +75,7 @@ run_test("get starred ids in topic", () => {
             // Different topic
             id: 4,
             type: "stream",
+            content: "",
             stream_id: 20,
             topic: "some other topic",
         },
@@ -84,6 +86,7 @@ run_test("get starred ids in topic", () => {
             // Correct match
             id: 5,
             type: "stream",
+            content: "",
             stream_id: 20,
             topic: "topic",
         },

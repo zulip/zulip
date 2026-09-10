@@ -13,6 +13,7 @@ function make_stream_message({stream_id, topic, sender_id}) {
 
     const message = {
         type: "stream",
+        content: "",
         stream_id,
         id: next_id,
         topic,
