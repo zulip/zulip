@@ -2916,6 +2916,12 @@ button {
             width: 400px;
         }
 
+        /* On phones narrower than the image, shrink it to fit
+           instead of overflowing the section. */
+        & img {
+            max-width: 100%;
+        }
+
         @media (width < 1024px) {
             & div.quote {
                 width: 300px;
