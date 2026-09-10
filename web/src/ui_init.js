@@ -892,7 +892,20 @@ $(() => {
                 url: "/json/register",
                 data,
                 success(response_data) {
-                    const state_data = state_data_schema.parse(response_data);
+                    let state_data;
+                    try {
+                        state_data = state_data_schema.parse(response_data);
+                    } catch (error) {
+                        // Posting again won't help, since this browser's
+                        // code and the server disagree about the format;
+                        // the error offers the user a page reload, which
+                        // can land on an updated server. Show it before
+                        // reporting, since blueslip.error throws in
+                        // development.
+                        loading_error.show_loading_error();
+                        blueslip.error("Malformed /register response", undefined, error);
+                        return;
+                    }
                     initialize_everything(state_data);
                     if (page_params.show_try_zulip_modal) {
                         show_try_zulip_modal();
