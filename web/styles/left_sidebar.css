@@ -1983,12 +1983,14 @@ li.active-sub-filter {
         overflow-wrap: break-word;
 
         line-height: var(--line-height-sidebar-topic-inner);
-        /* To avoid clipping the tops of certain characters,
-           we set the top space with padding. But to make the
-           line-clamp effect work, we set the bottom space
-           with margin. */
-        padding-top: var(--spacing-top-bottom-sidebar-topic-inner);
-        margin: 0 0 var(--spacing-top-bottom-sidebar-topic-inner) 0;
+        /* To avoid clipping the tops of certain characters
+           (including emoji, which can render taller than the
+           line box on some displays), we set the top space
+           with padding, plus a little extra breathing room.
+           But to make the line-clamp effect work, we set the
+           bottom space with margin. */
+        padding-top: calc(var(--spacing-top-bottom-sidebar-topic-inner) + 0.0714em);
+        margin: 0 0 calc(var(--spacing-top-bottom-sidebar-topic-inner) + 0.0714em) 0;
     }
 }
 
