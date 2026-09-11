@@ -86,6 +86,7 @@ def render_stats(
         upload_space_used=space_used,
         guest_users=guest_users,
         translation_data=get_language_translation_data(request_language),
+        twenty_four_hour_time=request.user.twenty_four_hour_time,
     )
 
     return render(
