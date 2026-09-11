@@ -51,8 +51,10 @@ c = requests.Session()
 c.mount("http://", HTTPAdapter(max_retries=retry))
 
 log_filename = None
+
+# see man 3 daemon for what steps are taken to daemonize a process
 if args.background:
-    # Double-fork to daemonize
+    # Double-fork
     pid = os.fork()
     if pid > 0:
         sys.exit(0)
@@ -61,6 +63,18 @@ if args.background:
     if pid > 0:
         sys.exit(0)
     log_filename = "/var/log/zulip/reload-clients.log"
+
+    # Don't hold the working directory (the just-created deployment directory)
+    # open for as long as this daemon runs
+    os.chdir("/")
+
+    # Detaching stdin/stdout/stderr prevents holding a pipe open (ex `tee`) when
+    # calling from upgrade-zulip-from-git
+    devnull_fd = os.open(os.devnull, os.O_RDWR)
+    os.dup2(devnull_fd, sys.stdin.fileno())
+    os.dup2(devnull_fd, sys.stdout.fileno())
+    os.dup2(devnull_fd, sys.stderr.fileno())
+    os.close(devnull_fd)
 
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(
