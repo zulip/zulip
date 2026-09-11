@@ -1,5 +1,5 @@
 {{#list_each users ~}}
-<span class="user_status_icon_wrapper">
+<span class="user_status_icon_wrapper{{#if status_emoji_info}} emoji-animation-hover-area{{/if}}">
     <span class="user-status-microlayout">
         <span class="user-name">{{name}}</span>
         {{~!-- --~}}

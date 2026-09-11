@@ -695,7 +695,6 @@ export function initialize(): void {
         "mouseenter",
         ".user_sidebar_entry",
         function (this: HTMLElement, e) {
-            e.stopPropagation();
             const $elem = $(this);
 
             const is_compact_mode =
