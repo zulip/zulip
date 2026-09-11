@@ -1,5 +1,6 @@
 from django.utils.timezone import now as timezone_now
 
+from zerver.lib.event_types import DeviceUpdateEvent
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import UserProfile
 from zerver.models.devices import Device
@@ -34,9 +35,7 @@ def do_register_push_device(
         ]
     )
 
-    event = dict(
-        type="device",
-        op="update",
+    event = DeviceUpdateEvent(
         device_id=device.id,
         push_key_id=device.push_key_id,
         pending_push_token_id=token_id_base64,
@@ -60,12 +59,7 @@ def do_rotate_push_key(
     device.push_key_id = push_key_id
     device.save(update_fields=["push_key", "push_key_id"])
 
-    event = dict(
-        type="device",
-        op="update",
-        device_id=device.id,
-        push_key_id=device.push_key_id,
-    )
+    event = DeviceUpdateEvent(device_id=device.id, push_key_id=device.push_key_id)
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
@@ -83,9 +77,7 @@ def do_rotate_token(
             "push_registration_error_code",
         ]
     )
-    event = dict(
-        type="device",
-        op="update",
+    event = DeviceUpdateEvent(
         device_id=device.id,
         pending_push_token_id=token_id_base64,
         push_token_last_updated_timestamp=datetime_to_timestamp(token_updated_at),

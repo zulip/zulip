@@ -2,6 +2,8 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
+from zerver.lib.event_types import RealmPlayground as RealmPlaygroundData
+from zerver.lib.event_types import RealmPlaygroundsEvent
 from zerver.lib.exceptions import ValidationFailureError
 from zerver.lib.types import RealmPlaygroundDict
 from zerver.models import Realm, RealmAuditLog, RealmPlayground, UserProfile
@@ -12,7 +14,9 @@ from zerver.tornado.django_api import send_event_on_commit
 
 
 def notify_realm_playgrounds(realm: Realm, realm_playgrounds: list[RealmPlaygroundDict]) -> None:
-    event = dict(type="realm_playgrounds", realm_playgrounds=realm_playgrounds)
+    event = RealmPlaygroundsEvent(
+        realm_playgrounds=[RealmPlaygroundData(**p) for p in realm_playgrounds],
+    )
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 

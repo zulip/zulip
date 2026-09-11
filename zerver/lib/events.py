@@ -359,7 +359,11 @@ def fetch_initial_state_data(
         state["muted_topics"] = [] if user_profile is None else get_topic_mutes(user_profile)
 
     if want("muted_users"):
-        state["muted_users"] = [] if user_profile is None else get_user_mutes(user_profile)
+        state["muted_users"] = (
+            []
+            if user_profile is None
+            else [muted_user.model_dump() for muted_user in get_user_mutes(user_profile)]
+        )
 
     if want("presence"):
         if presence_last_update_id_fetched_by_client is not None or simplified_presence_events:

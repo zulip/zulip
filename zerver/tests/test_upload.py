@@ -2338,8 +2338,8 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
 
         data = b"zulip!"
         upload_message_attachment("dummy.txt", "text/plain", data, self.user_profile)
-        # notify_attachment_update function calls currently_used_upload_space_bytes which
-        # updates the cache.
+        # Sending the attachment event calls currently_used_upload_space_bytes,
+        # which updates the cache.
         self.assert_length(data, cache_get(get_realm_used_upload_space_cache_key(self.realm.id))[0])
         self.assert_length(data, self.realm.currently_used_upload_space_bytes())
 

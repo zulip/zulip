@@ -5,6 +5,7 @@ import time_machine
 
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.cache import cache_get, get_muting_users_cache_key
+from zerver.lib.event_types import MutedUser as MutedUserData
 from zerver.lib.muted_users import get_mute_object, get_muting_users, get_user_mutes
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -30,12 +31,12 @@ class MutedUsersTests(ZulipTestCase):
         muted_users = get_user_mutes(hamlet)
         self.assert_length(muted_users, 1)
 
-        self.assertDictEqual(
+        self.assertEqual(
             muted_users[0],
-            {
-                "id": cordelia.id,
-                "timestamp": datetime_to_timestamp(mute_time),
-            },
+            MutedUserData(
+                id=cordelia.id,
+                timestamp=datetime_to_timestamp(mute_time),
+            ),
         )
 
     def test_add_muted_user_mute_self(self) -> None:
@@ -94,10 +95,10 @@ class MutedUsersTests(ZulipTestCase):
             self.assert_json_success(result)
 
         self.assertIn(
-            {
-                "id": cordelia.id,
-                "timestamp": datetime_to_timestamp(mute_time),
-            },
+            MutedUserData(
+                id=cordelia.id,
+                timestamp=datetime_to_timestamp(mute_time),
+            ),
             get_user_mutes(hamlet),
         )
         self.assertIsNotNone(get_mute_object(hamlet, cordelia))
@@ -154,10 +155,10 @@ class MutedUsersTests(ZulipTestCase):
 
         self.assert_json_success(result)
         self.assertNotIn(
-            {
-                "id": cordelia.id,
-                "timestamp": datetime_to_timestamp(mute_time),
-            },
+            MutedUserData(
+                id=cordelia.id,
+                timestamp=datetime_to_timestamp(mute_time),
+            ),
             get_user_mutes(hamlet),
         )
         self.assertIsNone(get_mute_object(hamlet, cordelia))

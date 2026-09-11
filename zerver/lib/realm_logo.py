@@ -1,8 +1,7 @@
-from typing import Any
-
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
 
+from zerver.lib.event_types import LogoData, NightLogoData
 from zerver.lib.upload import get_uploaded_realm_logo_url
 from zerver.models import Realm
 
@@ -29,10 +28,10 @@ def get_realm_logo_url(realm: Realm, night: bool) -> str:
     return staticfiles_storage.url("images/logo/zulip-org-logo.svg") + "?version=0"
 
 
-def get_realm_logo_data(realm: Realm, night: bool) -> dict[str, Any]:
+def get_realm_logo_data(realm: Realm, night: bool) -> LogoData | NightLogoData:
     if night:
-        return dict(
+        return NightLogoData(
             night_logo_url=get_realm_logo_url(realm, night),
             night_logo_source=realm.night_logo_source,
         )
-    return dict(logo_url=get_realm_logo_url(realm, night), logo_source=realm.logo_source)
+    return LogoData(logo_url=get_realm_logo_url(realm, night), logo_source=realm.logo_source)

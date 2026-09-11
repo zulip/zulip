@@ -2,6 +2,12 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.actions.realm_settings import do_set_realm_property
+from zerver.lib.event_types import RealmDomain as RealmDomainData
+from zerver.lib.event_types import (
+    RealmDomainsAddEvent,
+    RealmDomainsChangeEvent,
+    RealmDomainsRemoveEvent,
+)
 from zerver.models import Realm, RealmAuditLog, RealmDomain, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import RealmDomainDict, get_realm_domains
@@ -29,10 +35,8 @@ def do_add_realm_domain(
         },
     )
 
-    event = dict(
-        type="realm_domains",
-        op="add",
-        realm_domain=RealmDomainDict(
+    event = RealmDomainsAddEvent(
+        realm_domain=RealmDomainData(
             domain=realm_domain.domain, allow_subdomains=realm_domain.allow_subdomains
         ),
     )
@@ -63,10 +67,8 @@ def do_change_realm_domain(
         },
     )
 
-    event = dict(
-        type="realm_domains",
-        op="change",
-        realm_domain=dict(
+    event = RealmDomainsChangeEvent(
+        realm_domain=RealmDomainData(
             domain=realm_domain.domain, allow_subdomains=realm_domain.allow_subdomains
         ),
     )
@@ -100,5 +102,5 @@ def do_remove_realm_domain(realm_domain: RealmDomain, *, acting_user: UserProfil
         # anything if there are no domains, and this is probably less
         # confusing than the alternative.
         do_set_realm_property(realm, "emails_restricted_to_domains", False, acting_user=acting_user)
-    event = dict(type="realm_domains", op="remove", domain=domain)
+    event = RealmDomainsRemoveEvent(domain=domain)
     send_event_on_commit(realm, event, active_user_ids(realm.id))

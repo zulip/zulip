@@ -1,10 +1,11 @@
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
 
-from zerver.actions.uploads import notify_attachment_update
 from zerver.lib.attachments import access_attachment_by_id, remove_attachment, user_attachments
+from zerver.lib.event_types import AttachmentFieldForAttachmentRemoveEvent, AttachmentRemoveEvent
 from zerver.lib.response import json_success
 from zerver.models import UserProfile
+from zerver.tornado.django_api import send_event_on_commit
 
 
 def list_by_user(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -21,5 +22,9 @@ def list_by_user(request: HttpRequest, user_profile: UserProfile) -> HttpRespons
 def remove(request: HttpRequest, user_profile: UserProfile, attachment_id: int) -> HttpResponse:
     attachment = access_attachment_by_id(user_profile, attachment_id, needs_owner=True)
     remove_attachment(user_profile, attachment)
-    notify_attachment_update(user_profile, "remove", {"id": attachment_id})
+    event = AttachmentRemoveEvent(
+        attachment=AttachmentFieldForAttachmentRemoveEvent(id=attachment_id),
+        upload_space_used=user_profile.realm.currently_used_upload_space_bytes(),
+    )
+    send_event_on_commit(user_profile.realm, event, [user_profile.id])
     return json_success(request)
