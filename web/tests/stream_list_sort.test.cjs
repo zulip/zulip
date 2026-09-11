@@ -602,3 +602,68 @@ test("initialize", ({override}) => {
 
     assert.ok(!stream_list_sort.is_filtering_inactives());
 });
+
+test("search unspaced scripts (Han, Thai, Lao)", () => {
+    // Japanese users sometimes use full-width spaces, so we test with a full-width space.
+    const japanese_stream = make_stream({
+        subscribed: true,
+        name: "お知らせ　プロジェクト",
+        stream_id: 200,
+        pin_to_top: false,
+        is_recently_active: true,
+        is_muted: false,
+    });
+
+    const thai_stream = make_stream({
+        subscribed: true,
+        name: "ประกาศ โครงการ",
+        stream_id: 201,
+        pin_to_top: false,
+        is_recently_active: true,
+        is_muted: false,
+    });
+
+    const lao_stream = make_stream({
+        subscribed: true,
+        name: "ປະກາດ ໂຄງການ",
+        stream_id: 202,
+        pin_to_top: false,
+        is_recently_active: true,
+        is_muted: false,
+    });
+
+    stream_data.add_sub_for_tests(japanese_stream);
+    stream_data.add_sub_for_tests(thai_stream);
+    stream_data.add_sub_for_tests(lao_stream);
+
+    // Test Japanese
+    let sorted_sections = sort_groups("お知らせプロジェクト").sections;
+    assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [japanese_stream.stream_id]);
+
+    sorted_sections = sort_groups("お知らせ　プロジェクト").sections;
+    assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [japanese_stream.stream_id]);
+
+    sorted_sections = sort_groups("ト").sections;
+    assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [japanese_stream.stream_id]);
+
+    // Test Thai
+    sorted_sections = sort_groups("ประกาศโครง").sections;
+    assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [thai_stream.stream_id]);
+
+    sorted_sections = sort_groups("ง").sections;
+    assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [thai_stream.stream_id]);
+
+    // Test Lao
+    sorted_sections = sort_groups("ປະກາດໂຄງ").sections;
+    assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [lao_stream.stream_id]);
+
+    sorted_sections = sort_groups("ງ").sections;
+    assert.deepEqual(sorted_sections[1].id, "normal-streams");
+    assert.deepEqual(sorted_sections[1].default_visible_streams, [lao_stream.stream_id]);
+});
