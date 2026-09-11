@@ -354,9 +354,9 @@
 
     /* Timestamps */
     & time {
-        background: hsl(0deg 0% 93%);
+        background: var(--color-background-rendered-markdown-time);
         border-radius: 3px;
-        box-shadow: 0 0 0 1px hsl(0deg 0% 80%);
+        box-shadow: 0 0 0 1px var(--color-box-shadow-rendered-markdown-time);
         white-space: nowrap;
         margin: 0 2px;
         /* Reduce the font-size to reduce the
