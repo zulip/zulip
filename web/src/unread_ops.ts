@@ -32,7 +32,18 @@ import * as unread from "./unread.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as watchdog from "./watchdog.ts";
 
-let update_read_flag_banner_displayed = false;
+// State for the progress/success banner of one bulk read-flag operation.
+// Each operation chain gets its own banner (and state), so concurrent
+// operations don't overwrite or close each other's banners.
+type ReadFlagsBannerState = {
+    id: string;
+    displayed: boolean;
+};
+
+function new_read_flags_banner_state(): ReadFlagsBannerState {
+    return {id: _.uniqueId("update-read-flags-banner-"), displayed: false};
+}
+
 let unsubscribed_ignored_channels: number[] = [];
 
 // We might want to use a slightly smaller batch for the first
@@ -162,27 +173,38 @@ export function get_message_count_text(count: number): string {
 function show_read_flag_update_progress_banner(
     operation: "read" | "unread",
     messages_updated: number,
+    banner: ReadFlagsBannerState,
 ): void {
     // We show the read flag update progress banner only
     // when the operation requires multiple batches. Otherwise,
     // we don't bother distracting the user with the banner
     // since the success is obvious through the updating UI.
-    popup_banners.open_update_read_flags_for_narrow_banner(operation, messages_updated);
-    update_read_flag_banner_displayed = true;
+    popup_banners.open_update_read_flags_for_narrow_banner(
+        operation,
+        messages_updated,
+        false,
+        banner.id,
+    );
+    banner.displayed = true;
 }
 
 function show_read_flag_update_success_banner(
     operation: "read" | "unread",
     messages_updated: number,
+    banner: ReadFlagsBannerState,
 ): void {
-    if (!update_read_flag_banner_displayed) {
+    if (!banner.displayed) {
         // If the operation completed in a single batch,
         // and we never showed the progress banner,
         // we skip showing the success banner as well.
         return;
     }
-    popup_banners.open_update_read_flags_for_narrow_banner(operation, messages_updated, true);
-    update_read_flag_banner_displayed = false;
+    popup_banners.open_update_read_flags_for_narrow_banner(
+        operation,
+        messages_updated,
+        true,
+        banner.id,
+    );
 }
 
 function bulk_update_read_flags_for_narrow(
@@ -197,14 +219,20 @@ function bulk_update_read_flags_for_narrow(
         messages_read_till_now = 0,
         num_after = INITIAL_BATCH_SIZE,
         attempt = 0,
+        banner,
     }: {
         anchor?: "newest" | "oldest" | "first_unread" | number;
         messages_read_till_now?: number;
         num_after?: number;
         attempt?: number;
+        banner?: ReadFlagsBannerState;
     } = {},
     caller_modal_id?: string,
 ): void {
+    // Follow-up requests in the same operation chain reuse the chain's
+    // banner; a chain started without one (i.e. a top-level call) gets
+    // its own, so concurrent chains don't share banner state.
+    const operation_banner = banner ?? new_read_flags_banner_state();
     const terms_with_integer_channel_id = narrow.map((term) => {
         if (term.operator === "channel") {
             return {
@@ -237,7 +265,7 @@ function bulk_update_read_flags_for_narrow(
 
             if (!data.found_newest) {
                 assert(data.last_processed_id !== null);
-                show_read_flag_update_progress_banner(operation, messages_read_till_now);
+                show_read_flag_update_progress_banner(operation, messages_read_till_now, operation_banner);
 
                 bulk_update_read_flags_for_narrow(
                     narrow,
@@ -246,11 +274,12 @@ function bulk_update_read_flags_for_narrow(
                         anchor: data.last_processed_id,
                         messages_read_till_now,
                         num_after: FOLLOWUP_BATCH_SIZE,
+                        banner: operation_banner,
                     },
                     caller_modal_id,
                 );
             } else {
-                show_read_flag_update_success_banner(operation, messages_read_till_now);
+                show_read_flag_update_success_banner(operation, messages_read_till_now, operation_banner);
 
                 if (_.isEqual(narrow, all_unread_messages_narrow) && unread.old_unreads_missing) {
                     // In the rare case that the user had more than
@@ -325,6 +354,7 @@ function bulk_update_read_flags_for_narrow(
                             anchor,
                             messages_read_till_now,
                             num_after,
+                            banner: operation_banner,
                         },
                         caller_modal_id,
                     );
@@ -340,6 +370,7 @@ function bulk_update_read_flags_for_narrow(
                             messages_read_till_now,
                             num_after,
                             attempt: attempt + 1,
+                            banner: operation_banner,
                         },
                         caller_modal_id,
                     );
@@ -531,6 +562,7 @@ function do_mark_unread_by_narrow(
     num_after = INITIAL_BATCH_SIZE - 1,
     narrow: string,
     attempt = 0,
+    banner: ReadFlagsBannerState = new_read_flags_banner_state(),
 ): void {
     const opts = {
         anchor: message_id,
@@ -555,7 +587,7 @@ function do_mark_unread_by_narrow(
             ];
             if (!data.found_newest) {
                 assert(data.last_processed_id !== null);
-                show_read_flag_update_progress_banner("unread", messages_marked_unread_till_now);
+                show_read_flag_update_progress_banner("unread", messages_marked_unread_till_now, banner);
 
                 do_mark_unread_by_narrow(
                     data.last_processed_id,
@@ -563,9 +595,11 @@ function do_mark_unread_by_narrow(
                     messages_marked_unread_till_now,
                     FOLLOWUP_BATCH_SIZE,
                     narrow,
+                    0,
+                    banner,
                 );
             } else {
-                show_read_flag_update_success_banner("unread", messages_marked_unread_till_now);
+                show_read_flag_update_success_banner("unread", messages_marked_unread_till_now, banner);
                 if (unsubscribed_ignored_channels.length > 0) {
                     handle_skipped_unsubscribed_streams(unsubscribed_ignored_channels);
                     unsubscribed_ignored_channels = [];
@@ -582,6 +616,7 @@ function do_mark_unread_by_narrow(
                         num_after,
                         narrow,
                         next_attempt,
+                        banner,
                     );
                 },
                 attempt,
@@ -596,7 +631,14 @@ function do_mark_unread_by_ids(message_ids_to_update: number[], attempt = 0): vo
         url: "/json/messages/flags",
         data: {messages: JSON.stringify(message_ids_to_update), op: "remove", flag: "read"},
         success(raw_data) {
-            show_read_flag_update_success_banner("unread", message_ids_to_update.length);
+            // This single-request operation never shows a progress banner,
+            // so its fresh banner state starts un-displayed and no success
+            // banner is shown either.
+            show_read_flag_update_success_banner(
+                "unread",
+                message_ids_to_update.length,
+                new_read_flags_banner_state(),
+            );
 
             const data = update_flags_for_response_schema.parse(raw_data);
             const ignored_because_not_subscribed_channels =
