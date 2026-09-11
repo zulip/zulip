@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block error_page_content %}
-<img src="{{ static('images/errors/500art.svg') }}" alt=""/>
+{% include "zerver/portico_error_pages/art/500art.svg" %}
 <div class="errorbox">
     <div class="errorcontent">
         <h1 class="lead">{{ _("Internal server error") }}</h1>
