@@ -912,6 +912,7 @@ class RemindersRemoveEvent(BaseEvent):
 
 class BasicStreamFields(BaseModel):
     is_archived: bool
+    can_add_subscribers_group: int | UserGroupMembersDict
     can_administer_channel_group: int | UserGroupMembersDict
     can_create_topic_group: int | UserGroupMembersDict
     can_delete_any_message_group: int | UserGroupMembersDict
@@ -919,11 +920,15 @@ class BasicStreamFields(BaseModel):
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
     can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
+    can_resolve_topics_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
+    can_subscribe_group: int | UserGroupMembersDict
     creator_id: int | None
     date_created: int
+    default_push_notifications: bool
     description: str
     first_message_id: int | None
+    folder_id: int | None
     is_recently_active: bool
     history_public_to_subscribers: bool
     invite_only: bool
@@ -935,6 +940,7 @@ class BasicStreamFields(BaseModel):
     stream_id: int
     stream_post_policy: int
     stream_weekly_traffic: int | None
+    subscriber_count: int
     topics_policy: str
 
 
@@ -980,6 +986,7 @@ class SubmessageEvent(BaseEvent):
 
 class SingleSubscription(BaseModel):
     is_archived: bool
+    can_add_subscribers_group: int | UserGroupMembersDict
     can_administer_channel_group: int | UserGroupMembersDict
     can_create_topic_group: int | UserGroupMembersDict
     can_delete_any_message_group: int | UserGroupMembersDict
@@ -987,12 +994,15 @@ class SingleSubscription(BaseModel):
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
     can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
+    can_resolve_topics_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
+    can_subscribe_group: int | UserGroupMembersDict
     creator_id: int | None
     date_created: int
     default_push_notifications: bool
     description: str
     first_message_id: int | None
+    folder_id: int | None
     is_recently_active: bool
     history_public_to_subscribers: bool
     invite_only: bool
@@ -1012,6 +1022,7 @@ class SingleSubscription(BaseModel):
     is_muted: bool
     pin_to_top: bool
     push_notifications: bool | None
+    subscriber_count: int
     subscribers: list[int]
     topics_policy: str
     wildcard_mentions_notify: bool | None
