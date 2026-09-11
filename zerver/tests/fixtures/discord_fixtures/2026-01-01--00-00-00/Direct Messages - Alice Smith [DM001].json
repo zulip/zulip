@@ -1,0 +1,66 @@
+{
+  "guild": null,
+  "channel": {
+    "id": "DM001",
+    "type": "DirectMessage",
+    "categoryId": null,
+    "category": null,
+    "name": "Alice Smith",
+    "topic": null
+  },
+  "dateRange": {
+    "after": null,
+    "before": null
+  },
+  "messages": [
+    {
+      "id": "dm001",
+      "type": "Default",
+      "timestamp": "2026-01-01T13:00:00+00:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "Hey Alice, how are you?",
+      "author": {
+        "id": "user002",
+        "name": "bob",
+        "discriminator": "0",
+        "nickname": "Bob Jones",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "_media/avatar-user2.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": []
+    },
+    {
+      "id": "dm002",
+      "type": "Default",
+      "timestamp": "2026-01-01T13:05:00+00:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "I'm good, thanks!",
+      "author": {
+        "id": "user001",
+        "name": "alice",
+        "discriminator": "0",
+        "nickname": "Alice Smith",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "_media/avatar-user1.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": []
+    }
+  ],
+  "messageCount": 2
+}
