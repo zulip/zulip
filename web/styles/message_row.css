@@ -346,10 +346,6 @@
             );
             scale: 0.98;
         }
-
-        > span {
-            line-height: 1;
-        }
     }
 
     &.content_edit_mode .message_length_controller {
