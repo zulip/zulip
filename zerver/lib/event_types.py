@@ -76,8 +76,8 @@ class ChannelFolderForChannelFolderAddEvent(BaseModel):
 
 
 class ChannelFolderAddEvent(BaseEvent):
-    type: Literal["channel_folder"]
-    op: Literal["add"]
+    type: Literal["channel_folder"] = "channel_folder"
+    op: Literal["add"] = "add"
     channel_folder: ChannelFolderForChannelFolderAddEvent
 
 
@@ -90,14 +90,14 @@ class ChannelFolderDataForUpdate(BaseModel):
 
 
 class ChannelFolderReorderEvent(BaseEvent):
-    type: Literal["channel_folder"]
-    op: Literal["reorder"]
+    type: Literal["channel_folder"] = "channel_folder"
+    op: Literal["reorder"] = "reorder"
     order: list[int]
 
 
 class ChannelFolderUpdateEvent(BaseEvent):
-    type: Literal["channel_folder"]
-    op: Literal["update"]
+    type: Literal["channel_folder"] = "channel_folder"
+    op: Literal["update"] = "update"
     channel_folder_id: int
     data: ChannelFolderDataForUpdate
 
