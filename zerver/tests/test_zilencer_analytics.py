@@ -10,6 +10,7 @@ import responses
 import time_machine
 from django.conf import settings
 from django.db.models import F
+from django.test import override_settings
 from django.utils.timezone import now
 from requests.exceptions import ConnectionError
 from typing_extensions import override
@@ -24,6 +25,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_org_type,
     do_deactivate_realm,
     do_set_realm_authentication_methods,
+    do_set_realm_property,
 )
 from zerver.lib import redis_utils
 from zerver.lib.remote_server import (
@@ -31,6 +33,7 @@ from zerver.lib.remote_server import (
     AnalyticsRequest,
     PushNotificationBouncerRetryLaterError,
     build_analytics_data,
+    get_advertise_realm_data,
     get_realms_info_for_push_bouncer,
     record_push_notifications_recently_working,
     redis_client,
@@ -1466,3 +1469,71 @@ class AnalyticsBouncerTest(BouncerTestCase):
             audit_log.event_type, AuditLogEventType.REMOTE_REALM_LOCALLY_DELETED_RESTORED
         )
         self.assertEqual(audit_log.remote_realm, remote_realm_for_deleted_realm)
+
+
+class AdvertiseRealmDataTest(BouncerTestCase):
+    def test_uploaded_only_when_server_and_realm_both_opt_in(self) -> None:
+        realm = get_realm("zulip")
+
+        # Neither the server nor the realm has opted in.
+        self.assertIsNone(get_advertise_realm_data(realm))
+
+        # The realm wants to be listed, but the server has not
+        # enabled the service.
+        do_set_realm_property(
+            realm, "want_advertise_in_communities_directory", True, acting_user=None
+        )
+        self.assertIsNone(get_advertise_realm_data(realm))
+
+        with self.settings(ZULIP_SERVICE_ADVERTISE_REALM=True):
+            self.assertIsNotNone(get_advertise_realm_data(realm))
+
+            do_set_realm_property(
+                realm, "want_advertise_in_communities_directory", False, acting_user=None
+            )
+            self.assertIsNone(get_advertise_realm_data(realm))
+
+    @override_settings(ZULIP_SERVICE_ADVERTISE_REALM=True)
+    def test_empty_description_is_not_replaced_by_placeholder(self) -> None:
+        realm = get_realm("zulip")
+        do_set_realm_property(
+            realm, "want_advertise_in_communities_directory", True, acting_user=None
+        )
+        do_set_realm_property(realm, "description", "", acting_user=None)
+
+        data = get_advertise_realm_data(realm)
+        assert data is not None
+        self.assertIsNone(data.description)
+
+    @override_settings(ZULIP_SERVICE_ADVERTISE_REALM=True)
+    def test_advertise_realm_data_success(self) -> None:
+        realm = get_realm("zulip")
+        do_set_realm_property(
+            realm, "want_advertise_in_communities_directory", True, acting_user=None
+        )
+
+        realms_data = get_realms_info_for_push_bouncer()
+        self.assertTrue(
+            any(realm_data.advertise_realm_data is not None for realm_data in realms_data)
+        )
+
+        request = AnalyticsRequest.model_construct(
+            realm_counts=[],
+            installation_counts=[],
+            realmauditlog_rows=[],
+            realms=realms_data,
+            version=None,
+            merge_base=None,
+            api_feature_level=None,
+        )
+        result = self.uuid_post(
+            self.server_uuid,
+            "/api/v1/remotes/server/analytics",
+            request.model_dump(
+                round_trip=True, exclude={"version", "merge_base", "api_feature_level"}
+            ),
+            subdomain="",
+        )
+        self.assert_json_success(result)
+
+        # TODO: Extend it when implementing bouncer side of this feature.
