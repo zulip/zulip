@@ -872,9 +872,9 @@ ul.popover-group-menu-member-list {
         border-radius: 50%;
 
         &.deactivated-user-icon {
-            font-size: 0.8em;
+            font-size: 0.69em;
             background-color: var(--color-background-popover-menu);
-            padding: 1px;
+            padding: 1.5px;
         }
     }
 
