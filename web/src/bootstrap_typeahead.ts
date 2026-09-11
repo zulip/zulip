@@ -272,6 +272,7 @@ export class Typeahead<ItemType extends string | object> {
     hideOnEmptyAfterBackspace: boolean;
     // Used for adding a custom classname to the typeahead link.
     getCustomItemClassname: ((item: ItemType) => string) | undefined;
+    boundScrollHandler: () => void;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -317,6 +318,7 @@ export class Typeahead<ItemType extends string | object> {
         this.hideAfterSelect = options.hideAfterSelect ?? (() => true);
         this.hideOnEmptyAfterBackspace = options.hideOnEmptyAfterBackspace ?? false;
         this.getCustomItemClassname = options.getCustomItemClassname;
+        this.boundScrollHandler = this.scrollHandler.bind(this);
         this.listen();
     }
 
@@ -684,7 +686,8 @@ export class Typeahead<ItemType extends string | object> {
             .on("click", this.element_click.bind(this))
             .on("focus", this.element_focus.bind(this))
             .on("keydown", this.keydown.bind(this))
-            .on("typeahead.refreshPosition", this.refreshPosition.bind(this));
+            .on("typeahead.refreshPosition", this.refreshPosition.bind(this))
+            .on("scroll", this.boundScrollHandler);
 
         this.$menu
             .on("click", "li", this.click.bind(this))
@@ -698,14 +701,22 @@ export class Typeahead<ItemType extends string | object> {
             });
 
         $(window).on("resize", this.resizeHandler.bind(this));
+        $(window).on("scroll", this.boundScrollHandler);
     }
 
     unlisten(): void {
         this.hide();
         this.$container.remove();
-        const events = ["blur", "keydown", "keyup", "keypress", "click", "focus"];
+        const events = ["blur", "keydown", "keyup", "keypress", "click", "focus", "scroll"];
         for (const event of events) {
             $(this.input_element.$element).off(event);
+        }
+        $(window).off("scroll", this.boundScrollHandler);
+    }
+
+    scrollHandler(): void {
+        if (this.shown) {
+            this.hide();
         }
     }
 
