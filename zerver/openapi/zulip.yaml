@@ -5990,6 +5990,17 @@ paths:
                                         **Changes**: New in Zulip 10.0 (feature level 306). Previously,
                                         this was present changed via an `upload_quota` field in `extra_data` property
                                         of [realm/update](#realm-update) event format for `plan_type` events.
+                                    upload_quota_used_bytes:
+                                      type: integer
+                                      description: |
+                                        The total number of bytes now used for uploaded files in this
+                                        organization, sent when a file is uploaded or deleted.
+
+                                        Clients that never received `realm_upload_quota_used_bytes` in the
+                                        [`POST /register`](/api/register-queue) response, because they did
+                                        not pass `realm` in `fetch_event_types`, should ignore this field.
+
+                                        **Changes**: New in Zulip 13.0 (feature level ZF-592330).
                                     video_chat_provider:
                                       type: integer
                                       description: |
@@ -21756,6 +21767,22 @@ paths:
 
                           New in Zulip 5.0 (feature level 72). Previously,
                           this was called `realm_upload_quota`.
+                      realm_upload_quota_used_bytes:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`,
+                          except for unauthenticated [spectator](/help/public-access-option)
+                          clients, which never receive this field.
+
+                          The total number of bytes currently used for uploaded files
+                          in this organization.
+
+                          Clients can use this in combination with `realm_upload_quota_mib`
+                          to display upload quota usage to users. It is kept up to date
+                          by the `upload_quota_used_bytes` field of the
+                          [realm/update_dict](/api/get-events#realm-update_dict) event.
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-592330).
                       realm_org_type:
                         type: integer
                         description: |

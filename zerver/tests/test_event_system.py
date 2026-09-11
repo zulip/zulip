@@ -19,7 +19,7 @@ from zerver.actions.streams import do_change_stream_folder
 from zerver.actions.user_settings import do_change_avatar_fields, do_change_user_setting
 from zerver.actions.users import do_change_user_role
 from zerver.lib.event_schema import check_web_reload_client_event
-from zerver.lib.events import fetch_initial_state_data, post_process_state
+from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.exceptions import AccessDeniedError
 from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.test_classes import ZulipTestCase
@@ -898,6 +898,60 @@ class FetchInitialStateDataTest(ZulipTestCase):
         result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
         self.assertEqual(result["max_message_id"], -1)
 
+    def test_realm_upload_quota_used_bytes_not_present_for_spectators(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        # Authenticated users who request the "realm" fetch type get the
+        # realm's current upload usage.
+        result = fetch_initial_state_data(hamlet, realm=realm, event_types=["realm"])
+        self.assertEqual(
+            result["realm_upload_quota_used_bytes"],
+            realm.currently_used_upload_space_bytes(),
+        )
+
+        # Spectators never receive it, even when requesting the same type;
+        # the warning banner is for organization members only.
+        result = fetch_initial_state_data(
+            None, realm=realm, event_types=["realm"], spectator_requested_language="en"
+        )
+        self.assertNotIn("realm_upload_quota_used_bytes", result)
+
+    def test_realm_upload_quota_used_bytes_apply_event(self) -> None:
+        hamlet = self.example_user("hamlet")
+        event = {
+            "type": "realm",
+            "op": "update_dict",
+            "property": "default",
+            "data": {"upload_quota_used_bytes": 1234},
+        }
+
+        def apply_to(state: dict[str, Any]) -> dict[str, Any]:
+            apply_events(
+                hamlet,
+                state=state,
+                events=[event],
+                fetch_event_types=None,
+                client_gravatar=False,
+                slim_presence=False,
+                include_subscribers=True,
+                linkifier_url_template=True,
+                user_list_incomplete=False,
+                include_deactivated_groups=False,
+            )
+            return state
+
+        self.assertEqual(
+            apply_to({"realm_upload_quota_used_bytes": 0}),
+            {"realm_upload_quota_used_bytes": 1234},
+        )
+
+        # A client can subscribe to "realm" events while passing a
+        # fetch_event_types that omits "realm", in which case its state has
+        # no realm_upload_quota_used_bytes; we must not add the field for
+        # a client that didn't fetch it.
+        self.assertEqual(apply_to({}), {})
+
     def test_delivery_email_presence_for_non_admins(self) -> None:
         user_profile = self.example_user("aaron")
         hamlet = self.example_user("hamlet")
@@ -1557,7 +1611,7 @@ class FetchQueriesTest(ZulipTestCase):
         self.login_user(user)
 
         with (
-            self.assert_database_query_count(48),
+            self.assert_database_query_count(50),
             mock.patch("zerver.lib.events.always_want") as want_mock,
         ):
             fetch_initial_state_data(user, realm=user.realm)
@@ -1579,10 +1633,11 @@ class FetchQueriesTest(ZulipTestCase):
             navigation_views=1,
             onboarding_steps=1,
             presence=1,
-            # 2 of the 3 queries here are a single query that is used
+            # 2 of the 5 queries here are a single query that is used
             # for all the 'realm', 'stream', 'subscription'
-            # and 'realm_user_groups' event types.
-            realm=3,
+            # and 'realm_user_groups' event types. Another 2 compute
+            # realm_upload_quota_used_bytes.
+            realm=5,
             # Similarly, this query is shared with the realm_user total.
             realm_billing=1,
             realm_bot=1,
