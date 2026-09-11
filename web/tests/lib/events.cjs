@@ -150,6 +150,17 @@ exports.fixtures = {
         upload_space_used: 90000,
     },
 
+    attachment__remove: {
+        type: "attachment",
+        op: "remove",
+        attachment: {
+            id: 99,
+            path_id: "path_id",
+            message_ids: [1000],
+        },
+        upload_space_used: 90000,
+    },
+
     channel_folder__add: {
         type: "channel_folder",
         op: "add",

@@ -1,10 +1,16 @@
 import logging
+from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any
 
 from django.db import transaction
 
-from zerver.lib.attachments import get_old_unclaimed_attachments, validate_attachment_request
+from zerver.lib.attachments import (
+    attachment_update_user_ids,
+    get_old_unclaimed_attachments,
+    remove_attachment,
+    validate_attachment_request,
+)
 from zerver.lib.markdown import MessageRenderingResult
 from zerver.lib.upload import claim_attachment, delete_message_attachments
 from zerver.models import (
@@ -26,7 +32,11 @@ class AttachmentChangeResult:
 
 
 def notify_attachment_update(
-    user_profile: UserProfile, op: str, attachment_dict: dict[str, Any]
+    user_profile: UserProfile,
+    op: str,
+    attachment_dict: dict[str, Any],
+    *,
+    users: Iterable[int] | None = None,
 ) -> None:
     event = {
         "type": "attachment",
@@ -34,7 +44,28 @@ def notify_attachment_update(
         "attachment": attachment_dict,
         "upload_space_used": user_profile.realm.currently_used_upload_space_bytes(),
     }
-    send_event_on_commit(user_profile.realm, event, [user_profile.id])
+    if users is None:
+        users = [user_profile.id]
+    send_event_on_commit(user_profile.realm, event, users)
+
+
+@transaction.atomic(durable=True)
+def do_delete_attachment(user_profile: UserProfile, attachment: Attachment) -> None:
+    users = attachment_update_user_ids(attachment)
+    attachment_id = attachment.id
+    path_id = attachment.path_id
+    message_ids = list(attachment.messages.values_list("id", flat=True))
+    remove_attachment(user_profile, attachment)
+    notify_attachment_update(
+        user_profile,
+        "remove",
+        {
+            "id": attachment_id,
+            "path_id": path_id,
+            "message_ids": message_ids,
+        },
+        users=users,
+    )
 
 
 def do_claim_attachments(
