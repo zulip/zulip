@@ -16239,6 +16239,17 @@ paths:
                     this behavior was not configurable.
                   type: boolean
                   example: true
+                pin_views_section:
+                  description: |
+                    Whether to pin the views section in left sidebar. while
+                    scrolling it expanded or collapse (default).
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-4c3052).
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                  example: 1
             encoding:
               starred_message_counts:
                 contentType: application/json
@@ -16347,6 +16358,8 @@ paths:
               email_address_visibility:
                 contentType: application/json
               web_navigate_to_sent_message:
+                contentType: application/json
+              pin_views_section:
                 contentType: application/json
       responses:
         "200":
@@ -20394,6 +20407,16 @@ paths:
 
                               **Changes**: New in Zulip 9.0 (feature level 268). Previously,
                               this behavior was not configurable.
+                          pin_views_section:
+                            type: integer
+                            description: |
+                              Whether to pin the views section in left sidebar. while
+                              scrolling it expanded or collapse (default).
+
+                              - 1 - When scrolling down (default)
+                              - 2 - Never
+
+                              **Changes**: New in Zulip 12.0 (feature level ZF-4c3052).
                       user_topics:
                         type: array
                         description: |
@@ -22794,6 +22817,16 @@ paths:
 
                               **Changes**: New in Zulip 9.0 (feature level 268). Previously,
                               this behavior was not configurable.
+                          pin_views_section:
+                            type: integer
+                            description: |
+                              Whether to pin the views section in left sidebar. while
+                              scrolling it expanded or collapse (default).
+
+                              - 1 - When scrolling down (default)
+                              - 2 - Never
+
+                              **Changes**: New in Zulip 12.0 (feature level ZF-4c3052).
                       realm_users:
                         type: array
                         description: |
@@ -24278,6 +24311,17 @@ paths:
                     this behavior was not configurable.
                   type: boolean
                   example: true
+                pin_views_section:
+                  description: |
+                    Whether to pin the views section in left sidebar. while
+                    scrolling it expanded or collapse (default).
+
+                    **Changes**: New in Zulip 12.0 (feature level ZF-4c3052).
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                  example: 1
             encoding:
               target_users:
                 contentType: application/json
@@ -24394,6 +24438,8 @@ paths:
               email_address_visibility:
                 contentType: application/json
               web_navigate_to_sent_message:
+                contentType: application/json
+              pin_views_section:
                 contentType: application/json
       responses:
         "200":
