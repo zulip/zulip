@@ -205,10 +205,6 @@
         }
     }
 
-    .top-messages-logo {
-        opacity: 0.7;
-    }
-
     .history-limited-box {
         background-color: hsl(0deg 0% 0% / 20%);
     }
@@ -226,7 +222,6 @@
         color: hsl(200deg 79% 66%);
     }
 
-    #loading_older_messages_indicator,
     #recent_view_loading_messages_indicator {
         & path {
             fill: hsl(0deg 0% 100%);

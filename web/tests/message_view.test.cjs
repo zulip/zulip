@@ -1124,17 +1124,18 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
         selected = {id, opts};
     };
     message_lists.current = list;
-    $("#navbar-fixed-container").set_height(50);
+    $("#top_of_feed_loading_indicator")[0].getBoundingClientRect = () => ({bottom: 60});
     $(".message_header").set_height(30);
     // Date jumps should place the selected message below the sticky
-    // message header, increasing the target scroll offset by the
-    // header's measured height (30px here).
+    // message header, which sticks below the top-of-feed loading box:
+    // the box's bottom edge (60px here) + the header's measured height
+    // (30px here).
 
     const in_range = new Date(150 * 1000).toISOString();
     message_view.fast_track_current_msg_list_to_anchor("date", in_range);
     assert.deepEqual(selected, {
         id: 102,
-        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 80},
+        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 90},
     });
 
     list.data.fetch_status.finish_older_batch({
@@ -1146,7 +1147,7 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
     message_view.fast_track_current_msg_list_to_anchor("date", before_range);
     assert.deepEqual(selected, {
         id: 101,
-        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 80},
+        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 90},
     });
 
     // If we have not found the oldest message, and the anchor timestamp is
@@ -1186,7 +1187,7 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
             then_scroll: true,
             from_scroll: false,
             force_rerender: true,
-            target_scroll_offset: 80,
+            target_scroll_offset: 90,
         },
     });
 
@@ -1219,7 +1220,7 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
             then_scroll: true,
             from_scroll: false,
             force_rerender: true,
-            target_scroll_offset: 80,
+            target_scroll_offset: 90,
         },
     });
 
@@ -1234,7 +1235,7 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
     message_view.fast_track_current_msg_list_to_anchor("date", future_range);
     assert.deepEqual(selected, {
         id: 104,
-        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 80},
+        opts: {then_scroll: true, from_scroll: false, target_scroll_offset: 90},
     });
     assert.equal(load_messages_calls, 0);
 

@@ -2096,6 +2096,15 @@
         hsl(0deg 0% 100% / 60%)
     );
     --color-zulip-logo-z: light-dark(hsl(0deg 0% 100%), hsl(214deg 27% 18%));
+    --color-top-of-feed-loading-line: light-dark(
+        hsl(0deg 0% 27% / 70%),
+        hsl(0deg 0% 100% / 70%)
+    );
+    /* The track is darker than the background in both themes. */
+    --color-top-of-feed-loading-line-track: light-dark(
+        hsl(0deg 0% 0% / 15%),
+        hsl(0deg 0% 0% / 45%)
+    );
 
     /* Message collapsing/condensing button colors */
     --color-show-more-less-button-background: light-dark(

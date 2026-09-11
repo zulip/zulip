@@ -137,7 +137,12 @@ export function fetch_more_if_required_for_current_msg_list(
     if (has_found_oldest && has_found_newest && message_lists.current.visibly_empty()) {
         // Even after loading more messages, we have
         // no messages to display in this narrow.
-        narrow_banner.show_empty_narrow_message(message_lists.current.data.filter);
+        const msg_list = message_lists.current;
+        message_feed_loading.run_when_top_of_feed_indicator_hidden(() => {
+            if (msg_list === message_lists.current && msg_list.visibly_empty()) {
+                narrow_banner.show_empty_narrow_message(msg_list.data.filter);
+            }
+        });
         message_lists.current.update_trailing_bookend();
         compose_closed_ui.maybe_update_buttons_for_dm_recipient();
         compose_validate.validate_and_update_send_button_status();
