@@ -471,7 +471,6 @@ export class Typeahead<ItemType extends string | object> {
                     requestAnimationFrame(() => {
                         // This detects any overflows by default and adjusts
                         // the placement of typeahead.
-                        this.scrollHandler();
                         void instance.popperInstance?.update();
                     });
 
@@ -708,7 +707,7 @@ export class Typeahead<ItemType extends string | object> {
     unlisten(): void {
         this.hide();
         this.$container.remove();
-        const events = ["blur", "keydown", "keyup", "keypress", "click", "focus"];
+        const events = ["blur", "keydown", "keyup", "keypress", "click", "focus", "scroll"];
         for (const event of events) {
             $(this.input_element.$element).off(event);
         }
@@ -716,39 +715,9 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     scrollHandler(): void {
-        if (!this.shown) {
-            return;
+        if (this.shown) {
+            this.hide();
         }
-
-        if (this.input_element.type === "textarea") {
-            const element = the(this.input_element.$element);
-            const element_rect = element.getBoundingClientRect();
-            const caret = getCaretCoordinates(element, element.selectionStart);
-            const scrollTop = this.input_element.$element.scrollTop() ?? 0;
-
-            const caret_viewport_top = element_rect.top + caret.top - scrollTop;
-            const caret_viewport_bottom = caret_viewport_top + caret.height;
-
-            const sticky_header_bottom = 64;
-            const visible_top = Math.max(sticky_header_bottom, element_rect.top);
-            const visible_bottom = Math.min(window.innerHeight, element_rect.bottom);
-
-            if (caret_viewport_bottom <= visible_top || caret_viewport_top >= visible_bottom) {
-                this.hide();
-                return;
-            }
-
-            const safe_top = 140;
-            const popper_rect = this.instance?.popper.getBoundingClientRect();
-
-            if (popper_rect !== undefined && popper_rect.top < safe_top) {
-                this.instance?.setProps({placement: "bottom-start"});
-                void this.instance?.popperInstance?.update();
-                return;
-            }
-        }
-
-        void this.instance?.popperInstance?.update();
     }
 
     resizeHandler(): void {
