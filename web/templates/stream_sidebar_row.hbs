@@ -31,5 +31,11 @@
             <span class="sidebar-menu-icon stream-sidebar-menu-icon" tabindex="0"><i class="zulip-icon zulip-icon-more-vertical" aria-hidden="true"></i></span>
         </a>
     </div>
-    {{#if for_modal}}<div class="topic-list-scroll-container" data-simplebar data-simplebar-tab-index="-1"></div>{{/if}}
+    {{#if for_modal}}
+    <div class="topic-list-scroll-container" data-simplebar data-simplebar-tab-index="-1"></div>
+    <button type="button" class="resolved-topics-unreads-jump hide">
+        <i class="zulip-icon zulip-icon-chevron-down" aria-hidden="true"></i>
+        <span class="resolved-topics-unreads-jump-label">{{t "Go to unreads in resolved topics" }}</span>
+    </button>
+    {{/if}}
 </li>

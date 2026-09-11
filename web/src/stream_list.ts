@@ -1306,6 +1306,11 @@ export function handle_narrow_activated(
     const info = get_sidebar_stream_topic_info(filter);
     if (info.stream_id !== previously_expanded_stream_id) {
         scroll_stream_into_view();
+    } else if (is_zoomed_in() && info.topic_selected) {
+        // The active topic can move within the zoomed-in list, e.g.
+        // to the resolved topics section when it is resolved, so we
+        // scroll just enough to keep it visible.
+        topic_list.left_sidebar_scroll_zoomed_in_topic_into_view();
     }
 }
 
