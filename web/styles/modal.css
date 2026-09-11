@@ -138,7 +138,7 @@
         padding: 0.25em; /* 4px at 16px/1em */
     }
 
-    /* help_link_widget margin for the fa-circle-o. */
+    /* help_link_widget margin for the zulip-icon-help. */
     .help_link_widget {
         margin-left: 5px;
     }

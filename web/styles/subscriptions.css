@@ -449,6 +449,11 @@
 
     .tab-switcher.stream_sorter_toggle {
         margin-left: auto;
+
+        .zulip-icon-bar-chart {
+            /* Eyeballed to match the other sort icons. */
+            font-size: 1.1em;
+        }
     }
 
     .tab-switcher,
@@ -1080,6 +1085,23 @@
         .bottom-bar .stream-message-count {
             white-space: nowrap;
             color: hsl(0deg 0% 67%);
+            /* Center the icon against its count, rather than nudging it. */
+            display: flex;
+            align-items: center;
+            gap: 0.1em;
+        }
+
+        /* Eyeballed to match the count text; glyph sizes vary. */
+        .top-bar .subscriber-count .zulip-icon-user {
+            font-size: 1.1em;
+        }
+
+        .top-bar .subscriber-count .zulip-icon-lock {
+            font-size: 0.82em;
+        }
+
+        .bottom-bar .stream-message-count .zulip-icon-bar-chart {
+            font-size: 1.2em;
         }
 
         .top-bar .subscriber-count-text,
