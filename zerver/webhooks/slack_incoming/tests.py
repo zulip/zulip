@@ -24,21 +24,9 @@ Hello, world.
             ("*foo*a*bar*", "*foo*a*bar*"),
             ("some _foo_ word", "some *foo* word"),
         ]
-        self.subscribe(self.test_user, self.channel_name)
         for input_value, output_value in tests:
-            payload = {"text": input_value}
-            msg = self.send_webhook_payload(
-                self.test_user,
-                self.url,
-                payload,
-                content_type="application/json",
-            )
-            self.assert_channel_message(
-                message=msg,
-                channel_name=self.channel_name,
-                topic_name="",
-                content=output_value,
-            )
+            with self.subTest(input_value=input_value):
+                self.check_webhook("text", "", output_value, custom_payload={"text": input_value})
 
     def test_null_message(self) -> None:
         self.check_webhook(
