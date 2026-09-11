@@ -8,6 +8,7 @@ import * as loading from "./loading.ts";
 import * as message_events from "./message_events.ts";
 import {page_params} from "./page_params.ts";
 import * as popup_banners from "./popup_banners.ts";
+import * as reaction_notifications from "./reaction_notifications.ts";
 import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
 import {get_retry_backoff_seconds} from "./retry_backoff.ts";
@@ -36,6 +37,7 @@ let event_queue_expired = false;
 function get_events_success(events) {
     let raw_messages = [];
     const update_message_events = [];
+    const reaction_events = [];
     const post_message_events = [];
 
     const clean_event = function clean_event(event) {
@@ -79,6 +81,15 @@ function get_events_success(events) {
 
             case "update_message":
                 update_message_events.push(event);
+                break;
+
+            case "reaction":
+                // The reaction itself is applied to the message here,
+                // while notifications are processed as a batch below, so
+                // that reactions to messages we don't have cached share a
+                // single fetch of those messages.
+                server_events_dispatch.dispatch_normal_event(event);
+                reaction_events.push(event);
                 break;
 
             case "delete_message":
@@ -138,6 +149,14 @@ function get_events_success(events) {
             message_events.update_messages(update_message_events);
         } catch (error) {
             blueslip.error("Failed to update messages", undefined, error);
+        }
+    }
+
+    if (reaction_events.length > 0) {
+        try {
+            reaction_notifications.received_reactions(reaction_events);
+        } catch (error) {
+            blueslip.error("Failed to process reaction notifications", undefined, error);
         }
     }
 

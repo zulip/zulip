@@ -1,9 +1,9 @@
 import {$} from "jquery";
+import assert from "minimalistic-assert";
 
 import * as alert_words from "./alert_words.ts";
 import * as blueslip from "./blueslip.ts";
 import * as desktop_notifications from "./desktop_notifications.ts";
-import type {ElectronBridgeNotification} from "./desktop_notifications.ts";
 import {$t} from "./i18n.ts";
 import * as message_parser from "./message_parser.ts";
 import type {Message} from "./message_store.ts";
@@ -37,7 +37,7 @@ function small_avatar_url_for_test_notification(message: TestNotificationMessage
     return people.gravatar_url_for_email(message.sender_email);
 }
 
-function get_notification_content(message: Message | TestNotificationMessage): string {
+export function get_notification_content(message: Message | TestNotificationMessage): string {
     let content;
     // Convert the content to plain text, replacing emoji with their alt text
     const $content = $("<div>").html(message.content);
@@ -170,16 +170,14 @@ export function process_notification(notification: {
     const message = notification.message;
     const content = get_notification_content(message);
     const key = get_notification_key(message);
-    let notification_object: ElectronBridgeNotification | Notification;
     let msg_count = 1;
 
     debug_notification_source_value(message);
 
     const notice_memory = desktop_notifications.notice_memory.get(key);
     if (notice_memory) {
-        msg_count = notice_memory.msg_count + 1;
-        notification_object = notice_memory.obj;
-        notification_object.close();
+        assert(notice_memory.data.type === "message");
+        msg_count = notice_memory.data.msg_count + 1;
     }
 
     const title = get_notification_title(message, msg_count);
@@ -189,41 +187,29 @@ export function process_notification(notification: {
             message.type === "test-notification"
                 ? small_avatar_url_for_test_notification(message)
                 : people.small_avatar_url(message);
-        notification_object = new desktop_notifications.NotificationAPI(title, {
+
+        const notification_options = {
             icon: icon_url,
             body: content,
             tag: message.id.toString(),
-        });
-        desktop_notifications.notice_memory.set(key, {
-            obj: notification_object,
-            msg_count,
-            message_id: message.id,
-        });
+        };
 
-        if (typeof notification_object.addEventListener === "function") {
-            // Sadly, some third-party Electron apps like Franz/Ferdi
-            // misimplement the Notification API not inheriting from
-            // EventTarget.  This results in addEventListener being
-            // unavailable for them.
-            notification_object.addEventListener("click", () => {
-                notification_object.close();
-                if (message.type !== "test-notification") {
-                    // Narrowing to message's near view helps to handle the case
-                    // where a user clicked the notification, but before narrowing
-                    // the message deletion got processed.
-                    message_view.narrow_to_message_near(message, "notification");
-                }
-                window.focus();
-            });
-            notification_object.addEventListener("close", () => {
-                const current_notice_memory = desktop_notifications.notice_memory.get(key);
-                // This check helps avoid race between close event for current notification
-                // object and the previous notification_object close handler.
-                if (current_notice_memory?.obj === notification_object) {
-                    desktop_notifications.notice_memory.delete(key);
-                }
-            });
+        function on_click(): void {
+            if (message.type !== "test-notification") {
+                // Narrowing to message's near view helps to handle the case
+                // where a user clicked the notification, but before narrowing
+                // the message deletion got processed.
+                message_view.narrow_to_message_near(message, "notification");
+            }
         }
+
+        desktop_notifications.create_notification({
+            notification_options,
+            key,
+            title,
+            data: {type: "message", message_id: message.id, msg_count},
+            on_click,
+        });
     }
 }
 

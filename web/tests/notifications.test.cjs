@@ -508,7 +508,7 @@ test("basic_notifications", () => {
     assert.equal(last_shown_message_id, stream_message_1.id.toString());
 
     // Remove notification.
-    desktop_notifications.close_notification(stream_message_1);
+    desktop_notifications.close_notification(stream_message_1.id);
     n = desktop_notifications.get_notifications();
     assert.equal(n.has("channel:1:10:whatever"), false);
     assert.equal(n.size, 0);
@@ -539,8 +539,8 @@ test("basic_notifications", () => {
     assert.equal(last_shown_message_id, stream_message_2.id.toString());
 
     // Remove notifications.
-    desktop_notifications.close_notification(stream_message_1);
-    desktop_notifications.close_notification(stream_message_2);
+    desktop_notifications.close_notification(stream_message_1.id);
+    desktop_notifications.close_notification(stream_message_2.id);
     n = desktop_notifications.get_notifications();
     assert.equal(n.has("channel:1:10:whatever"), false);
     assert.equal(n.size, 0);
@@ -550,7 +550,7 @@ test("basic_notifications", () => {
     n = desktop_notifications.get_notifications();
     assert.equal(n.has("dm:2,3"), true);
     assert.equal(n.size, 1);
-    desktop_notifications.close_notification(direct_message);
+    desktop_notifications.close_notification(direct_message.id);
 
     message_notifications.process_notification({
         message: test_notification_message,
@@ -559,5 +559,5 @@ test("basic_notifications", () => {
     n = desktop_notifications.get_notifications();
     assert.equal(n.has("test:Notification Bot"), true);
     assert.equal(n.size, 1);
-    desktop_notifications.close_notification(test_notification_message);
+    desktop_notifications.close_notification(test_notification_message.id);
 });

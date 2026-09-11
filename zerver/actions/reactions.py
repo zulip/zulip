@@ -24,6 +24,7 @@ class ReactionEvent(TypedDict):
     op: Literal["add", "remove"]
     user_id: int
     message_id: int
+    message_sender_id: int
     emoji_name: str
     emoji_code: str
     reaction_type: str
@@ -40,6 +41,7 @@ def notify_reaction_update(
         "op": op,
         "user_id": user_profile.id,
         "message_id": message.id,
+        "message_sender_id": message.sender_id,
         "emoji_name": reaction.emoji_name,
         "emoji_code": reaction.emoji_code,
         "reaction_type": reaction.reaction_type,

@@ -376,6 +376,7 @@ class ReactionAddEvent(BaseEvent):
     type: Literal["reaction"]
     op: Literal["add"]
     message_id: int
+    message_sender_id: int
     emoji_name: str
     emoji_code: str
     reaction_type: Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"]
@@ -386,6 +387,7 @@ class ReactionRemoveEvent(BaseEvent):
     type: Literal["reaction"]
     op: Literal["remove"]
     message_id: int
+    message_sender_id: int
     emoji_name: str
     emoji_code: str
     reaction_type: Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"]
