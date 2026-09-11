@@ -2215,14 +2215,15 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(bot_owner_user_ids(new_bot), set())
 
     @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
-    def test_create_incoming_webhook_bot_with_service_name_and_with_keys(self) -> None:
+    def test_create_incoming_webhook_bot_with_integration_id_and_with_keys(self) -> None:
         self.login("hamlet")
         bot_metadata = {
             "full_name": "My Stripe Bot",
             "short_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
-            "service_name": "stripe",
-            "config_data": orjson.dumps({"stripe_api_key": "sample-api-key"}).decode(),
+            "config_data": orjson.dumps(
+                {"integration_id": "stripe", "stripe_api_key": "sample-api-key"}
+            ).decode(),
         }
         self.create_bot(**bot_metadata)
         new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
@@ -2232,13 +2233,13 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         )
 
     @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
-    def test_create_incoming_webhook_bot_with_service_name_and_no_config_options(self) -> None:
+    def test_create_incoming_webhook_bot_with_just_integration_id_in_config_options(self) -> None:
         self.login("hamlet")
         bot_metadata = {
             "full_name": "My Hello World Bot",
             "short_name": "my-helloworld",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
-            "service_name": "helloworld",
+            "config_data": orjson.dumps({"integration_id": "helloworld"}).decode(),
         }
         self.create_bot(**bot_metadata)
         new_bot = UserProfile.objects.get(full_name="My Hello World Bot")
@@ -2246,14 +2247,15 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(config_data, {"integration_id": "helloworld"})
 
     @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
-    def test_create_incoming_webhook_bot_with_service_name_incorrect_keys(self) -> None:
+    def test_create_incoming_webhook_bot_with_integration_id_incorrect_keys(self) -> None:
         self.login("hamlet")
         bot_metadata = {
             "full_name": "My Stripe Bot",
             "short_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
-            "service_name": "stripe",
-            "config_data": orjson.dumps({"stripe_api_key": "_invalid_key"}).decode(),
+            "config_data": orjson.dumps(
+                {"integration_id": "stripe", "stripe_api_key": "_invalid_key"}
+            ).decode(),
         }
         response = self.client_post("/json/bots", bot_metadata)
         self.assertEqual(response.status_code, 400)
@@ -2263,13 +2265,13 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             UserProfile.objects.get(full_name="My Stripe Bot")
 
     @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
-    def test_create_incoming_webhook_bot_with_service_name_without_keys(self) -> None:
+    def test_create_incoming_webhook_bot_with_integration_id_without_keys(self) -> None:
         self.login("hamlet")
         bot_metadata = {
             "full_name": "My Stripe Bot",
             "short_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
-            "service_name": "stripe",
+            "config_data": orjson.dumps({"integration_id": "stripe"}).decode(),
         }
         response = self.client_post("/json/bots", bot_metadata)
         self.assertEqual(response.status_code, 400)
@@ -2279,7 +2281,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             UserProfile.objects.get(full_name="My Stripe Bot")
 
     @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
-    def test_create_incoming_webhook_bot_without_service_name(self) -> None:
+    def test_create_incoming_webhook_bot_without_integration_id(self) -> None:
         self.login("hamlet")
         bot_metadata = {
             "full_name": "My Stripe Bot",
@@ -2292,17 +2294,47 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             get_bot_config(new_bot)
 
     @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
-    def test_create_incoming_webhook_bot_with_incorrect_service_name(self) -> None:
+    def test_create_incoming_webhook_bot_without_integration_id_with_keys(self) -> None:
         self.login("hamlet")
         bot_metadata = {
             "full_name": "My Stripe Bot",
             "short_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
-            "service_name": "stripes",
+            "config_data": orjson.dumps({"stripe_api_key": "sample-api-key"}).decode(),
+        }
+        self.create_bot(**bot_metadata)
+        new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
+        config_data = get_bot_config(new_bot)
+        self.assertEqual(config_data, {"stripe_api_key": "sample-api-key"})
+
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    def test_create_incoming_webhook_bot_with_incorrect_integration_id(self) -> None:
+        self.login("hamlet")
+        bot_metadata = {
+            "full_name": "My Stripe Bot",
+            "short_name": "my-stripe",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+            "config_data": orjson.dumps({"integration_id": "stripes"}).decode(),
         }
         response = self.client_post("/json/bots", bot_metadata)
         self.assertEqual(response.status_code, 400)
         expected_error_message = "Invalid integration 'stripes'."
+        self.assertEqual(orjson.loads(response.content)["msg"], expected_error_message)
+        with self.assertRaises(UserProfile.DoesNotExist):
+            UserProfile.objects.get(full_name="My Stripe Bot")
+
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    def test_create_incoming_webhook_bot_with_empty_integration_id(self) -> None:
+        self.login("hamlet")
+        bot_metadata = {
+            "full_name": "My Stripe Bot",
+            "short_name": "my-stripe",
+            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
+            "config_data": orjson.dumps({"integration_id": ""}).decode(),
+        }
+        response = self.client_post("/json/bots", bot_metadata)
+        self.assertEqual(response.status_code, 400)
+        expected_error_message = "Integration name cannot be empty."
         self.assertEqual(orjson.loads(response.content)["msg"], expected_error_message)
         with self.assertRaises(UserProfile.DoesNotExist):
             UserProfile.objects.get(full_name="My Stripe Bot")
