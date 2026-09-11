@@ -65,6 +65,7 @@ class PresetUrlOption(str, Enum):
     BRANCHES = "branches"
     IGNORE_PRIVATE_REPOSITORIES = "ignore_private_repositories"
     CHANNEL_MAPPING = "mapping"
+    CUSTOM_FIELDS = "custom_fields"
 
 
 @dataclass
@@ -103,6 +104,12 @@ class WebhookUrlOption:
                     input_type="checkbox",
                 )
             case PresetUrlOption.CHANNEL_MAPPING:
+                return cls(
+                    name=config.value,
+                    label="",
+                    input_type="text",
+                )
+            case PresetUrlOption.CUSTOM_FIELDS:
                 return cls(
                     name=config.value,
                     label="",
