@@ -596,6 +596,9 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 #             # the list of group names sent in the "zulip_groups"
 #             # attribute in the SAMLResponse.
 #             "groups": ["group1", "group2", ("samlgroup3", "zulipgroup3"), "group4"],
+#             # Avatar sync is currently only available for OICD and only done on user
+#             # login and not sign up.
+#             "avatar": False,
 #         }
 #     }
 # }

@@ -9,6 +9,7 @@ import time
 from abc import ABC, abstractmethod
 from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
+from dataclasses import dataclass
 from datetime import timedelta
 from email.headerregistry import Address
 from typing import TYPE_CHECKING, Any
@@ -3681,6 +3682,30 @@ class SAMLAuthBackendTest(SocialAuthBaseWithSyncAttrTest):
                 result,
             )
 
+    def test_social_auth_avatar_sync_unsupported_backend(self) -> None:
+        # SAML is in USER_ATTRIBUTE_SYNC_SUPPORTED_BACKENDS but doesn't
+        # implement avatar fetching (that's OIDC-only), so configuring avatar
+        # sync logs a warning and leaves the avatar unchanged rather than
+        # crashing.
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+        sync_attrs_dict = {"zulip": {self.BACKEND_CLASS.name: {"avatar": True}}}
+        with self.assertLogs(self.logger_string, level="INFO") as m:
+            result = self.social_auth_test_with_sync_attrs(
+                self.get_account_data_dict(email=self.email, name=self.name),
+                subdomain="zulip",
+                extra_attrs={},
+                sync_attrs_config=sync_attrs_dict,
+            )
+        self.assertEqual(result.status_code, 302)
+
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+        self.assertIn(
+            f"WARNING:{self.logger_string}:Failed to sync user avatar. "
+            f"This feature is not yet supported for {self.BACKEND_CLASS.name}",
+            m.output,
+        )
+
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_registration_auto_signup(self) -> None:
         """
@@ -4999,6 +5024,17 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         """
 
 
+@dataclass
+class AvatarResponseMock:
+    """Configures the avatar an OIDC IdP serves during a test login, for
+    get_user_avatar_from_provider to fetch from the "picture" claim's URL."""
+
+    avatar_url: str | None = None
+    body: bytes = b""
+    content_type: str = "image/png"
+    status: int = 200
+
+
 class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
     BACKEND_CLASS = GenericOpenIdConnectBackend
     CLIENT_KEY_SETTING = "SOCIAL_AUTH_TESTOIDC_KEY"
@@ -5080,8 +5116,6 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
         # successfully pass validation by validate_and_return_id_token is impractical
         # and unnecessary (see python-social-auth implementation of the method for
         # how the validation works).
-        # We can simply mock the method to make it succeed and return an empty dict, because
-        # the return value is not used for anything.
         with mock.patch.object(
             GenericOpenIdConnectBackend, "validate_and_return_id_token", return_value={}
         ):
@@ -5109,6 +5143,20 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
             status=200,
             body=body,
             content_type="application/json",
+        )
+
+        # When a test enables avatar sync, serve the avatar from the "picture"
+        # claim's URL so get_user_avatar_from_provider can fetch it.
+        avatar_mock = extra_data.get("avatar_mock")
+        if avatar_mock is None or not avatar_mock.avatar_url:
+            return
+
+        requests_mock.add(
+            requests_mock.GET,
+            avatar_mock.avatar_url,
+            status=avatar_mock.status,
+            body=avatar_mock.body,
+            content_type=avatar_mock.content_type,
         )
 
     @override
@@ -5150,9 +5198,14 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
         extra_attrs: dict[str, Any],
         sync_attrs_config: dict[str, Any],
         multiuse_object_key: str = "",
+        avatar_mock: AvatarResponseMock | None = None,
     ) -> "TestHttpResponse":
         # Include additional claims in account_data_dict.
         account_data_dict.update(**extra_attrs)
+        # Deliver the "picture" claim via the UserInfo response so
+        # get_user_details captures it.
+        if avatar_mock is not None and avatar_mock.avatar_url:
+            account_data_dict["picture"] = avatar_mock.avatar_url
         idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
 
         if oidc_sync_attrs_dict := sync_attrs_config.get(subdomain, {}).get("oidc"):
@@ -5169,7 +5222,186 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
                 subdomain=subdomain,
                 is_signup=is_signup,
                 multiuse_object_key=multiuse_object_key,
+                avatar_mock=avatar_mock,
             )
+
+    def test_social_auth_avatar_sync_on_login(self) -> None:
+        example_avatar = read_test_image_file("img.png")
+        # hamlet starts without a user-uploaded avatar.
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+
+        sync_attrs_dict = {"zulip": {self.BACKEND_CLASS.name: {"avatar": True}}}
+        with self.assertLogs(self.logger_string, level="INFO"):
+            result = self.social_auth_test_with_sync_attrs(
+                self.get_account_data_dict(email=self.email, name=self.name),
+                subdomain="zulip",
+                extra_attrs={},
+                sync_attrs_config=sync_attrs_dict,
+                avatar_mock=AvatarResponseMock(
+                    avatar_url="https://idp.example.com/me/photo.png", body=example_avatar
+                ),
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(result.status_code, 302)
+
+        # The avatar from the IdP's "picture" endpoint is applied.
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_USER)
+        url = avatar_url(self.user_profile)
+        assert url is not None
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.getvalue(), resize_avatar(example_avatar, DEFAULT_AVATAR_SIZE))
+
+    def test_social_auth_avatar_sync_skips_non_image(self) -> None:
+        avatar_url = "https://idp.example.com/me/photo"
+        sync_attrs_dict = {"zulip": {self.BACKEND_CLASS.name: {"avatar": True}}}
+        with self.assertLogs(self.logger_string, level="INFO") as m:
+            result = self.social_auth_test_with_sync_attrs(
+                self.get_account_data_dict(email=self.email, name=self.name),
+                subdomain="zulip",
+                extra_attrs={},
+                sync_attrs_config=sync_attrs_dict,
+                avatar_mock=AvatarResponseMock(
+                    avatar_url=avatar_url,
+                    body=b"<html>not an image</html>",
+                    content_type="text/html",
+                ),
+            )
+        self.assertEqual(result.status_code, 302)
+
+        # A non-image response is rejected and the avatar is left unchanged.
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+        self.assertIn(
+            f"INFO:{self.logger_string}:User avatar is not an image file. Content type: text/html",
+            m.output,
+        )
+
+    def test_social_auth_avatar_sync_skips_unchanged_avatar(self) -> None:
+        example_avatar = read_test_image_file("img.png")
+        avatar_url = "https://idp.example.com/me/photo"
+
+        avatar_mock = AvatarResponseMock(avatar_url=avatar_url, body=example_avatar)
+
+        sync_attrs_dict = {"zulip": {self.BACKEND_CLASS.name: {"avatar": True}}}
+
+        # The first login uploads the avatar and records its content hash.
+        with self.assertLogs(self.logger_string, level="INFO"):
+            self.social_auth_test_with_sync_attrs(
+                self.get_account_data_dict(email=self.email, name=self.name),
+                subdomain="zulip",
+                extra_attrs={},
+                sync_attrs_config=sync_attrs_dict,
+                avatar_mock=avatar_mock,
+            )
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_USER)
+        avatar_version_after_first_login = self.user_profile.avatar_version
+
+        # On the next login with the same avatar, is_avatar_new short-circuits,
+        # so we neither re-upload the image nor bump the avatar version.
+        with (
+            self.assertLogs(self.logger_string, level="INFO"),
+            mock.patch("zerver.lib.upload.upload_avatar_image") as mock_upload,
+        ):
+            self.social_auth_test_with_sync_attrs(
+                self.get_account_data_dict(email=self.email, name=self.name),
+                subdomain="zulip",
+                extra_attrs={},
+                sync_attrs_config=sync_attrs_dict,
+                avatar_mock=avatar_mock,
+            )
+        mock_upload.assert_not_called()
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.avatar_version, avatar_version_after_first_login)
+
+    def test_social_auth_avatar_sync_no_picture_claim(self) -> None:
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+        sync_attrs_dict = {"zulip": {self.BACKEND_CLASS.name: {"avatar": True}}}
+        with self.assertLogs(self.logger_string, level="INFO") as m:
+            result = self.social_auth_test_with_sync_attrs(
+                self.get_account_data_dict(email=self.email, name=self.name),
+                subdomain="zulip",
+                extra_attrs={},
+                sync_attrs_config=sync_attrs_dict,
+            )
+        self.assertEqual(result.status_code, 302)
+
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+        self.assertIn(
+            f"INFO:{self.logger_string}:Unable to sync user avatar because the 'picture' "
+            "claim from 'testoidc' could not be found.",
+            m.output,
+        )
+
+    def test_social_auth_avatar_sync_fetch_http_error(self) -> None:
+        # If the avatar download fails, the avatar is left unchanged.
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+        sync_attrs_dict = {"zulip": {self.BACKEND_CLASS.name: {"avatar": True}}}
+        with self.assertLogs(self.logger_string, level="INFO") as m:
+            result = self.social_auth_test_with_sync_attrs(
+                self.get_account_data_dict(email=self.email, name=self.name),
+                subdomain="zulip",
+                extra_attrs={},
+                sync_attrs_config=sync_attrs_dict,
+                avatar_mock=AvatarResponseMock(
+                    avatar_url="https://idp.example.com/me/photo.png",
+                    body=b"not found",
+                    status=404,
+                ),
+            )
+        self.assertEqual(result.status_code, 302)
+
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+        self.assertIn(
+            f"INFO:{self.logger_string}:Failed to fetch user avatar from 'oidc:testoidc'. HTTP error: 404",
+            m.output,
+        )
+
+    def test_social_auth_avatar_sync_entra(self) -> None:
+        # Entra ID's "picture" claim is the Microsoft Graph avatar endpoint,
+        # which the backend must fetch using the OAuth access token.
+        example_avatar = read_test_image_file("img.png")
+        graph_avatar_url = "https://graph.microsoft.com/v1.0/me/photo/$value"
+
+        self.LOGIN_URL = "/accounts/login/social/oidc/entra"
+
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
+        idps_dict["entra"] = copy.deepcopy(idps_dict["testoidc"])
+        idps_dict["entra"]["display_name"] = "Entra ID"
+        sync_attrs_dict = {"zulip": {self.BACKEND_CLASS.name: {"avatar": True}}}
+
+        # This test drives social_auth_test directly, so deliver the "picture"
+        # claim (the Graph URL) via the UserInfo response ourselves.
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        account_data_dict["picture"] = graph_avatar_url
+
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+        with (
+            self.settings(
+                SOCIAL_AUTH_OIDC_ENABLED_IDPS=idps_dict,
+                SOCIAL_AUTH_SYNC_ATTRS_DICT=sync_attrs_dict,
+            ),
+            self.assertLogs(self.logger_string, level="INFO"),
+        ):
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+                avatar_mock=AvatarResponseMock(avatar_url=graph_avatar_url, body=example_avatar),
+            )
+        self.assertEqual(result.status_code, 302)
+
+        self.user_profile.refresh_from_db()
+        self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_USER)
+        url = avatar_url(self.user_profile)
+        assert url is not None
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.getvalue(), resize_avatar(example_avatar, DEFAULT_AVATAR_SIZE))
 
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_social_auth_registration_auto_signup(self) -> None:

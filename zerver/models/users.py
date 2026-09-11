@@ -680,9 +680,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         default=DEFAULT_AVATAR_SOURCE, choices=AVATAR_SOURCES, max_length=1
     )
     avatar_version = models.PositiveSmallIntegerField(default=1)
-    # This is only used for LDAP-provided avatars; it contains the
-    # SHA256 hex digest of most recent raw contents that LDAP provided
-    # us, pre-thumbnailing.
+    # Used for avatars synced from an external source (currently LDAP
+    # and OIDC); it contains the SHA256 hex digest of the most recent
+    # raw contents that source provided us, pre-thumbnailing. This lets
+    # a subsequent sync skip re-uploading an unchanged avatar.
     avatar_hash = models.CharField(null=True, max_length=64)
 
     # A place to store the user's state related to third-party API
