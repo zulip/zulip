@@ -463,3 +463,45 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         )
 
         self.assert_json_success(result, ignored_parameters=["invalid_parameter"])
+
+    def test_mandatory_email_notifications_subscription_property(self) -> None:
+        hamlet = self.example_user("hamlet")
+        stream = self.make_stream("mandatory_email", hamlet.realm)
+        stream.mandatory_email_notifications = True
+        stream.save()
+        self.subscribe(hamlet, stream.name)
+        self.login_user(hamlet)
+
+        result = self.api_post(
+            hamlet,
+            "/api/v1/users/me/subscriptions/properties",
+            {
+                "subscription_data": orjson.dumps(
+                    [
+                        {
+                            "property": "email_notifications",
+                            "stream_id": stream.id,
+                            "value": False,
+                        }
+                    ]
+                ).decode()
+            },
+        )
+        self.assert_json_error(result, "Email notifications are required for this channel.")
+
+        result = self.api_post(
+            hamlet,
+            "/api/v1/users/me/subscriptions/properties",
+            {
+                "subscription_data": orjson.dumps(
+                    [
+                        {
+                            "property": "email_notifications",
+                            "stream_id": stream.id,
+                            "value": True,
+                        }
+                    ]
+                ).decode()
+            },
+        )
+        self.assert_json_success(result)

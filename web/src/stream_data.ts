@@ -513,6 +513,13 @@ export function update_default_push_notifications(
     sub.default_push_notifications = default_push_notifications;
 }
 
+export function update_mandatory_email_notifications(
+    sub: StreamSubscription,
+    mandatory_email_notifications: boolean,
+): void {
+    sub.mandatory_email_notifications = mandatory_email_notifications;
+}
+
 export function update_stream_permission_group_setting(
     setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
@@ -532,6 +539,9 @@ export function receives_notifications(
     const sub = sub_store.get(stream_id);
     if (sub === undefined) {
         return false;
+    }
+    if (notification_name === "email_notifications" && sub.mandatory_email_notifications) {
+        return true;
     }
     if (sub[notification_name] !== null) {
         return sub[notification_name];

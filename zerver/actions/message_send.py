@@ -282,6 +282,11 @@ def get_recipient_info(
         # of this function for different message types.
         assert stream_topic is not None
 
+        stream = Stream.objects.only("mandatory_email_notifications").get(
+            id=stream_topic.stream_id, realm_id=realm_id
+        )
+        mandatory_email_notifications = stream.mandatory_email_notifications
+
         if possible_topic_wildcard_mention:
             # A topic participant is anyone who either sent or reacted to messages in the topic.
             # It is expensive to call `participants_for_topic` if the topic has a large number
@@ -302,6 +307,7 @@ def get_recipient_info(
                 stream_id=stream_topic.stream_id,
                 topic_name=stream_topic.topic_name,
                 possible_stream_wildcard_mention=possible_stream_wildcard_mention,
+                mandatory_email_notifications=mandatory_email_notifications,
                 topic_participant_user_ids=topic_participant_user_ids,
                 possibly_mentioned_user_ids=possibly_mentioned_user_ids,
             )
@@ -359,6 +365,9 @@ def get_recipient_info(
             *,
             channel_specific_setting_overrides_mute: bool = False,
         ) -> set[int]:
+            use_mandatory_email_notifications = (
+                mandatory_email_notifications and setting == "email_notifications"
+            )
             return {
                 row["user_profile_id"]
                 for row in subscription_rows
@@ -370,6 +379,7 @@ def get_recipient_info(
                     row[setting],
                     row[user_setting],
                     channel_specific_setting_overrides_mute,
+                    mandatory_email_notifications=use_mandatory_email_notifications,
                 )
             }
 

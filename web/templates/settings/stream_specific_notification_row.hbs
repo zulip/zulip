@@ -14,9 +14,10 @@
           setting_name=this
           prefix=(lookup ../stream "stream_id")
           is_checked=(lookup ../stream this)
-          is_disabled=(lookup ../is_disabled this)
+          is_disabled=(or (lookup ../is_disabled this) (and ../stream.mandatory_email_notifications (eq this "email_notifications")))
           is_mobile_checkbox=(eq this "push_notifications")
           push_notifications_disabled=../push_notifications_disabled
+          mandatory_email_notifications_required=(and ../stream.mandatory_email_notifications (eq this "email_notifications"))
           }}
     {{/each}}
 </tr>
