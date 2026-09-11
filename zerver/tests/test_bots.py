@@ -66,14 +66,17 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         response_dict = self.assert_json_success(result)
         self.assert_length(response_dict["bots"], count)
 
-    def create_bot(self, **extras: Any) -> dict[str, Any]:
+    def bot_creation_info(self, **extras: Any) -> dict[str, Any]:
         bot_info = {
             "full_name": "The Bot of Hamlet",
             "short_name": "hambot",
             "bot_type": "1",
         }
         bot_info.update(extras)
-        result = self.client_post("/json/bots", bot_info)
+        return bot_info
+
+    def create_bot(self, **extras: Any) -> dict[str, Any]:
+        result = self.client_post("/json/bots", self.bot_creation_info(**extras))
         response_dict = self.assert_json_success(result)
         return response_dict
 
@@ -2217,16 +2220,12 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
     def test_create_incoming_webhook_bot_with_service_name_and_with_keys(self) -> None:
         self.login("hamlet")
-        bot_metadata = {
-            "full_name": "My Stripe Bot",
-            "short_name": "my-stripe",
-            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
-            "service_name": "stripe",
-            "config_data": orjson.dumps({"stripe_api_key": "sample-api-key"}).decode(),
-        }
-        self.create_bot(**bot_metadata)
-        new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
-        config_data = get_bot_config(new_bot)
+        bot = self.create_bot(
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            service_name="stripe",
+            config_data=orjson.dumps({"stripe_api_key": "sample-api-key"}).decode(),
+        )
+        config_data = get_bot_config(UserProfile.objects.get(id=bot["user_id"]))
         self.assertEqual(
             config_data, {"integration_id": "stripe", "stripe_api_key": "sample-api-key"}
         )
@@ -2234,78 +2233,38 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
     def test_create_incoming_webhook_bot_with_service_name_and_no_config_options(self) -> None:
         self.login("hamlet")
-        bot_metadata = {
-            "full_name": "My Hello World Bot",
-            "short_name": "my-helloworld",
-            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
-            "service_name": "helloworld",
-        }
-        self.create_bot(**bot_metadata)
-        new_bot = UserProfile.objects.get(full_name="My Hello World Bot")
-        config_data = get_bot_config(new_bot)
+        bot = self.create_bot(bot_type=UserProfile.INCOMING_WEBHOOK_BOT, service_name="helloworld")
+        config_data = get_bot_config(UserProfile.objects.get(id=bot["user_id"]))
         self.assertEqual(config_data, {"integration_id": "helloworld"})
 
-    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
-    def test_create_incoming_webhook_bot_with_service_name_incorrect_keys(self) -> None:
-        self.login("hamlet")
-        bot_metadata = {
-            "full_name": "My Stripe Bot",
-            "short_name": "my-stripe",
-            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
-            "service_name": "stripe",
-            "config_data": orjson.dumps({"stripe_api_key": "_invalid_key"}).decode(),
-        }
-        response = self.client_post("/json/bots", bot_metadata)
-        self.assertEqual(response.status_code, 400)
-        expected_error_message = 'Invalid stripe_api_key value _invalid_key (stripe_api_key starts with a "_" and is hence invalid.)'
-        self.assertEqual(orjson.loads(response.content)["msg"], expected_error_message)
-        with self.assertRaises(UserProfile.DoesNotExist):
-            UserProfile.objects.get(full_name="My Stripe Bot")
-
-    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
-    def test_create_incoming_webhook_bot_with_service_name_without_keys(self) -> None:
-        self.login("hamlet")
-        bot_metadata = {
-            "full_name": "My Stripe Bot",
-            "short_name": "my-stripe",
-            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
-            "service_name": "stripe",
-        }
-        response = self.client_post("/json/bots", bot_metadata)
-        self.assertEqual(response.status_code, 400)
-        expected_error_message = "Missing configuration parameters: {'stripe_api_key'}"
-        self.assertEqual(orjson.loads(response.content)["msg"], expected_error_message)
-        with self.assertRaises(UserProfile.DoesNotExist):
-            UserProfile.objects.get(full_name="My Stripe Bot")
-
-    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
     def test_create_incoming_webhook_bot_without_service_name(self) -> None:
         self.login("hamlet")
-        bot_metadata = {
-            "full_name": "My Stripe Bot",
-            "short_name": "my-stripe",
-            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
-        }
-        self.create_bot(**bot_metadata)
-        new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
+        bot = self.create_bot(bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+        new_bot = UserProfile.objects.get(id=bot["user_id"])
         with self.assertRaises(ConfigError):
             get_bot_config(new_bot)
 
     @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
-    def test_create_incoming_webhook_bot_with_incorrect_service_name(self) -> None:
+    def test_create_incoming_webhook_bot_with_invalid_service(self) -> None:
         self.login("hamlet")
-        bot_metadata = {
-            "full_name": "My Stripe Bot",
-            "short_name": "my-stripe",
-            "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
-            "service_name": "stripes",
-        }
-        response = self.client_post("/json/bots", bot_metadata)
-        self.assertEqual(response.status_code, 400)
-        expected_error_message = "Invalid integration 'stripes'."
-        self.assertEqual(orjson.loads(response.content)["msg"], expected_error_message)
-        with self.assertRaises(UserProfile.DoesNotExist):
-            UserProfile.objects.get(full_name="My Stripe Bot")
+        for service_config, expected_error_message in [
+            (
+                {
+                    "service_name": "stripe",
+                    "config_data": orjson.dumps({"stripe_api_key": "_invalid_key"}).decode(),
+                },
+                'Invalid stripe_api_key value _invalid_key (stripe_api_key starts with a "_" and is hence invalid.)',
+            ),
+            ({"service_name": "stripe"}, "Missing configuration parameters: {'stripe_api_key'}"),
+            ({"service_name": "stripes"}, "Invalid integration 'stripes'."),
+        ]:
+            with self.subTest(expected_error_message):
+                bot_info = self.bot_creation_info(
+                    bot_type=UserProfile.INCOMING_WEBHOOK_BOT, **service_config
+                )
+                result = self.client_post("/json/bots", bot_info)
+                self.assert_json_error(result, expected_error_message)
+                self.assert_num_bots_equal(0)
 
     def test_get_bot_api_key(self) -> None:
         self.login("hamlet")
