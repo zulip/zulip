@@ -7,6 +7,8 @@ import render_new_user_group_users from "../templates/user_group_settings/new_us
 import * as add_group_members_pill from "./add_group_members_pill.ts";
 import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
+import * as loading from "./loading.ts";
+import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import {current_user} from "./state_data.ts";
@@ -62,6 +64,35 @@ export function clear_member_list(): void {
     user_group_create_members_data.initialize_with_current_user();
     user_group_create_members_data.reset_subgroups_data();
     redraw_member_list();
+}
+
+export async function add_members_from_pills(): Promise<boolean> {
+    // Subscriber data for a channel pill may still be fetching from
+    // the server, in which case the members of that channel are not
+    // yet in the data set. Wait for the fetch and sync the pills'
+    // members, so that the group is not created without them.
+    const $spinner = $("#people_to_add_in_group .add-group-member-loading-spinner");
+    loading.make_indicator($spinner, {
+        height: 56, // 4em at 14px / 1em
+    });
+    const current_pill_widget = pill_widget;
+    const user_ids = await add_group_members_pill.get_pill_user_ids(pill_widget);
+    // Make sure the creation form was not closed, or closed and
+    // rebuilt, while we were waiting for subscriber data. Closing
+    // the groups overlay hides it without resetting the panes, so
+    // also check that the overlay itself is still open. We don't
+    // need to destroy the spinner in that case, because build_widgets
+    // re-renders its container every time the form opens.
+    if (
+        pill_widget !== current_pill_widget ||
+        !overlays.groups_open() ||
+        $("#user-group-creation").css("display") === "none"
+    ) {
+        return false;
+    }
+    loading.destroy_indicator($spinner);
+    add_members(user_ids, add_group_members_pill.get_pill_group_ids(pill_widget));
+    return true;
 }
 
 function sync_members(user_ids: number[], subgroup_ids: number[]): void {

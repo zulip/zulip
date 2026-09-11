@@ -15,13 +15,13 @@ import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import * as user_pill from "./user_pill.ts";
 
-async function get_pill_user_ids(pill_widget: CombinedPillContainer): Promise<number[]> {
+export async function get_pill_user_ids(pill_widget: CombinedPillContainer): Promise<number[]> {
     const user_ids = user_pill.get_user_ids(pill_widget);
     const stream_user_ids = await stream_pill.get_user_ids(pill_widget);
     return [...user_ids, ...stream_user_ids];
 }
 
-function get_pill_group_ids(pill_widget: CombinedPillContainer): number[] {
+export function get_pill_group_ids(pill_widget: CombinedPillContainer): number[] {
     const group_user_ids = user_group_pill.get_group_ids(pill_widget);
     return group_user_ids;
 }
