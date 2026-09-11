@@ -7,6 +7,7 @@ import {Steps} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
+import ViewAlertWords from "../include/_ViewAlertWords.mdx";
 
 import TrashIcon from "~icons/zulip-icon/trash";
 
@@ -88,6 +89,13 @@ issue.
   1. Click the **delete** (<TrashIcon />) icon next to the
      alert word that you would like to remove.
 </FlattenedSteps>
+
+### View messages with alert words
+
+Zulip shows an **Alert words** view in the left sidebar, with an unread count,
+once you have configured at least one alert word.
+
+<ViewAlertWords />
 
 ## Related articles
 
