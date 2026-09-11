@@ -245,6 +245,14 @@ export function update_default_push_notifications_setting(
     stream_ui_updates.update_setting_element(sub, "default_push_notifications");
 }
 
+export function update_default_code_block_language(
+    sub: StreamSubscription,
+    new_value: string,
+): void {
+    stream_data.update_default_code_block_language(sub, new_value);
+    stream_ui_updates.update_setting_element(sub, "default_code_block_language");
+}
+
 export function update_stream_permission_group_setting(
     setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
