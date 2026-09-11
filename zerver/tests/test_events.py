@@ -690,7 +690,7 @@ class NormalActionsTest(BaseAction):
         mention_data = MentionData(
             mention_backend=mention_backend,
             content=content,
-            message_sender=self.example_user("cordelia"),
+            acting_user=self.example_user("cordelia"),
         )
 
         message_edit_request = build_message_edit_request(
@@ -1002,7 +1002,7 @@ class NormalActionsTest(BaseAction):
         mention_data = MentionData(
             mention_backend=mention_backend,
             content=content,
-            message_sender=iago,
+            acting_user=iago,
         )
 
         message_edit_request = build_message_edit_request(
@@ -1073,7 +1073,7 @@ class NormalActionsTest(BaseAction):
         mention_data = MentionData(
             mention_backend=MentionBackend(message.realm_id),
             content=content,
-            message_sender=message.sender,
+            acting_user=message.sender,
         )
         rendering_result = render_message_markdown(message, content, mention_data=mention_data)
         with self.verify_action(state_change_expected=False) as events:

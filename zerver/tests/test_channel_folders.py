@@ -9,6 +9,11 @@ from zerver.actions.channel_folders import (
     try_reorder_realm_channel_folders,
 )
 from zerver.actions.streams import do_change_stream_folder, do_deactivate_stream
+from zerver.actions.user_groups import (
+    bulk_add_members_to_user_groups,
+    check_add_user_group,
+    do_change_user_group_permission_setting,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import ChannelFolder
 from zerver.models.realms import get_realm
@@ -375,6 +380,56 @@ class UpdateChannelFoldersTest(ChannelFoldersTestCase):
         self.assert_json_success(result)
         channel_folder = ChannelFolder.objects.get(id=channel_folder_id)
         self.assertTrue(channel_folder.is_archived)
+
+    def test_user_group_mention_in_channel_folder_description(self) -> None:
+        realm = get_realm("zulip")
+        aaron = self.example_user("aaron")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+        self.login_user(iago)
+
+        test_group = check_add_user_group(realm, "test_group", [aaron], acting_user=othello)
+        channel_folder = ChannelFolder.objects.get(name="Frontend", realm=realm)
+
+        description = "Ask @*test_group* for help"
+        # iago can mention test_group by default.
+        result = self.client_patch(
+            f"/json/channel_folders/{channel_folder.id}",
+            {"description": description},
+        )
+        self.assert_json_success(result)
+        channel_folder.refresh_from_db()
+        self.assertEqual(
+            channel_folder.rendered_description,
+            f'<p>Ask <span class="user-group-mention" data-user-group-id="{test_group.id}">@test_group</span> for help</p>',
+        )
+
+        # Restrict mentioning test_group to its own members, which iago is not.
+        do_change_user_group_permission_setting(
+            test_group, "can_mention_group", test_group, acting_user=None
+        )
+        # Change description, since an unchanged description is not
+        # re-rendered.
+        description = "Can I ask @*test_group* for help?"
+        # iago is now NOT allowed to mention the group inside a channel folder description.
+        result = self.client_patch(
+            f"/json/channel_folders/{channel_folder.id}",
+            {"description": description},
+        )
+        self.assert_json_error(result, "You are not allowed to mention user group 'test_group'.")
+
+        # Add iago to test_group, to regain mention permission.
+        bulk_add_members_to_user_groups([test_group], [iago.id], acting_user=othello)
+        result = self.client_patch(
+            f"/json/channel_folders/{channel_folder.id}",
+            {"description": description},
+        )
+        self.assert_json_success(result)
+        channel_folder.refresh_from_db()
+        self.assertEqual(
+            channel_folder.rendered_description,
+            f'<p>Can I ask <span class="user-group-mention" data-user-group-id="{test_group.id}">@test_group</span> for help?</p>',
+        )
 
 
 class ReorderChannelFolderTest(ChannelFoldersTestCase):

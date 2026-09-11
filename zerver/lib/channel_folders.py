@@ -4,6 +4,8 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.markdown import markdown_convert
+from zerver.lib.mention import MentionBackend, MentionData
+from zerver.lib.message import check_user_group_mention_allowed
 from zerver.lib.streams import get_web_public_streams_queryset
 from zerver.lib.string_validation import check_string_is_printable
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -39,9 +41,17 @@ def check_channel_folder_name(name: str, realm: Realm) -> None:
 
 
 def render_channel_folder_description(text: str, realm: Realm, *, acting_user: UserProfile) -> str:
-    return markdown_convert(
-        text, message_realm=realm, no_previews=True, acting_user=acting_user
-    ).rendered_content
+    mention_backend = MentionBackend(realm.id)
+    mention_data = MentionData(mention_backend, text, acting_user)
+    rendering_result = markdown_convert(
+        text,
+        message_realm=realm,
+        no_previews=True,
+        acting_user=acting_user,
+        mention_data=mention_data,
+    )
+    check_user_group_mention_allowed(rendering_result.mentions_user_group_ids, mention_data)
+    return rendering_result.rendered_content
 
 
 def get_channel_folder_data(channel_folder: ChannelFolder) -> ChannelFolderData:

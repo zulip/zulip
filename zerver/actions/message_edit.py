@@ -1739,7 +1739,7 @@ def check_update_message(
         mention_data = MentionData(
             mention_backend=mention_backend,
             content=message_edit_request.content,
-            message_sender=message.sender,
+            acting_user=message.sender,
         )
         prior_mention_user_ids = get_mentions_for_message_updates(message)
 
@@ -1770,8 +1770,7 @@ def check_update_message(
                 raise TopicWildcardMentionNotAllowedError
 
         if rendering_result.mentions_user_group_ids:
-            mentioned_group_ids = list(rendering_result.mentions_user_group_ids)
-            check_user_group_mention_allowed(user_profile, mentioned_group_ids)
+            check_user_group_mention_allowed(rendering_result.mentions_user_group_ids, mention_data)
 
     if isinstance(message_edit_request, StreamMessageEditRequest):
         user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
