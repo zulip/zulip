@@ -5,6 +5,7 @@ const assert = require("node:assert/strict");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
+const blueslip = require("./lib/zblueslip.cjs");
 const {$} = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
@@ -82,7 +83,8 @@ const ListWidget = mock_esm("../src/list_widget", {
     },
 
     hard_redraw: noop,
-    filter_and_sort: noop,
+    filter_and_sort: () => [],
+    maybe_render_more: noop,
     replace_list_data(data) {
         assert.notEqual(
             expected_data_to_replace_in_list_widget,
@@ -181,6 +183,7 @@ mock_esm("../src/unread", {
         }
         return 1;
     },
+    get_unread_message_count: () => 0,
     num_unread_for_user_ids_string() {
         return 0;
     },
@@ -477,6 +480,25 @@ function stub_out_filter_buttons() {
         const selector = `[data-filter="${filter}"]`;
         $("#recent_view_filter_buttons").set_find_results(selector, $stub);
     }
+}
+
+function show_recent_view_with_messages() {
+    $.clear_all_elements();
+    recent_view_util.set_visible(true);
+    rt.clear_for_tests();
+    rt.set_filters_for_tests();
+    rt.set_default_focus();
+    stub_out_filter_buttons();
+    rt.process_messages(messages);
+}
+
+function conversation_for(topic) {
+    return rt_data.conversations.get(get_topic_key(stream1, topic));
+}
+
+function bulk_rerender(keys) {
+    expected_data_to_replace_in_list_widget = rt_data.get_conversations().values().toArray();
+    rt.bulk_inplace_rerender(keys);
 }
 
 function test(label, f) {
@@ -876,18 +898,69 @@ test("test_filter_participated", ({mock_template}) => {
     rt.process_messages([messages[4]]);
 });
 
-test("test_update_unread_count", () => {
-    recent_view_util.set_visible(false);
-    rt.clear_for_tests();
-    stub_out_filter_buttons();
-    rt.process_messages(messages);
+test("bulk_inplace_rerender updates the requested rows in list order", ({override}) => {
+    show_recent_view_with_messages();
+    const [first, second, third] = [topic1, topic2, topic3].map((topic) => conversation_for(topic));
+    // The third conversation has no row yet; the others do.
+    $.set_results(`#${CSS.escape(`recent_conversation:${get_topic_key(stream1, topic3)}`)}`, []);
+    const updates = [];
+    override(ListWidget, "render_item", (conversation) => {
+        updates.push(["rerender", conversation]);
+    });
+    override(ListWidget, "insert_rendered_row", (conversation) => {
+        updates.push(["insert", conversation]);
+    });
+    override(ListWidget, "get_current_list", () => [third, first, second]);
+    let render_more_calls = 0;
+    override(ListWidget, "maybe_render_more", () => {
+        render_more_calls += 1;
+        return false;
+    });
 
-    // update a message
-    generate_topic_data([[1, "topic-7", 1, all_visibility_policies.INHERIT]]);
-    rt.update_topic_unread_count(messages[9]);
+    // A conversation with a row is rerendered and one without gets a row,
+    // in list order, so that a row inserted next to another one finds it
+    // already in place.
+    bulk_rerender([get_topic_key(stream1, topic1), get_topic_key(stream1, topic3)]);
+    assert.deepEqual(updates, [
+        ["insert", third],
+        ["rerender", first],
+    ]);
+    // The rerender ends by rendering more rows if the table has room.
+    assert.equal(render_more_calls, 1);
 });
 
-test("basic assertions", ({mock_template, override_rewire}) => {
+test("resort reports rows hidden without a rerender", ({override}) => {
+    show_recent_view_with_messages();
+    const muted_key = get_topic_key(stream1, topic7);
+    const visible_key = get_topic_key(stream1, topic1);
+    override(ListWidget, "render_item", noop);
+    override(ListWidget, "get_current_list", () => [conversation_for(topic1)]);
+    // Recomputing the filtered list removes the muted conversation's row.
+    override(ListWidget, "filter_and_sort", () => [conversation_for(topic7)]);
+
+    // Removing the row of the conversation being rerendered is expected;
+    // removing it while rerendering another one means the event that hid
+    // it left its row behind.
+    rt.inplace_rerender(muted_key);
+    blueslip.expect("error", "Recent view rows hidden without a rerender");
+    rt.inplace_rerender(visible_key);
+    blueslip.reset();
+
+    // A topic visibility change is applied after a delay; a resort in the
+    // meantime removes the row without a report, until the update runs.
+    const delayed_callbacks = [];
+    override(global, "setTimeout", (callback, delay) => {
+        delayed_callbacks.push({callback, delay});
+    });
+    rt.update_topic_visibility_policy(stream1, topic7, 500);
+    rt.inplace_rerender(visible_key);
+    delayed_callbacks.find(({delay}) => delay === 500).callback();
+    blueslip.expect("error", "Recent view rows hidden without a rerender");
+    rt.inplace_rerender(visible_key);
+    blueslip.reset();
+});
+
+test("basic assertions", ({mock_template, override, override_rewire}) => {
     override_rewire(rt, "inplace_rerender", noop);
     rt.clear_for_tests();
     rt.set_filters_for_tests();
@@ -1053,6 +1126,10 @@ test("basic assertions", ({mock_template, override_rewire}) => {
     // so we don't need to check anythere here.
     generate_topic_data([[1, topic1, 0, all_visibility_policies.INHERIT]]);
     $("#search_query").trigger("focus");
+    // The update is applied after a delay; run it right away here.
+    override(global, "setTimeout", (callback) => {
+        callback();
+    });
     assert.equal(rt.update_topic_visibility_policy(stream1, topic1), true);
     // a topic gets muted which we are not tracking
     assert.equal(rt.update_topic_visibility_policy(stream1, "topic-10"), false);

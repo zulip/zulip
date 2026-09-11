@@ -24,6 +24,7 @@ import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import * as recent_view_util from "./recent_view_util.ts";
 import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import type {MessageDetails} from "./server_event_types.ts";
 import type {NarrowTerm} from "./state_data.ts";
@@ -402,7 +403,6 @@ function process_newly_read_message(
         msg_list.view.show_message_as_read(message, options);
     }
     desktop_notifications.close_notification(message);
-    recent_view_ui.update_topic_unread_count(message);
 }
 
 export function mark_as_unread_from_here(message_id: number): void {
@@ -678,18 +678,22 @@ export function process_read_messages_event(message_ids: number[]): void {
         return;
     }
 
+    const conversation_keys = new Set<string>();
     for (const message_id of message_ids) {
+        // The unread data knows the conversation of every message it
+        // tracks, fetched or not, but only until we mark it as read.
+        const conversation_key = unread.get_conversation_key(message_id);
+        if (conversation_key !== undefined) {
+            conversation_keys.add(conversation_key);
+        }
         unread.mark_as_read(message_id);
 
         const message = message_store.get(message_id);
-
-        // TODO: This ends up doing one in-place rerender operation on
-        // recent conversations per message, not a single global
-        // rerender or one per conversation.
         if (message) {
             process_newly_read_message(message, options);
         }
     }
+    recent_view_ui.update_conversations_unread_count(conversation_keys);
 
     if (message_lists.current !== undefined && !message_lists.current.has_unread_messages()) {
         unread_ui.hide_unread_banner();
@@ -797,10 +801,13 @@ export function notify_server_messages_read(
 
     message_flags.send_read(messages);
 
+    const conversation_keys = new Set<string>();
     for (const message of messages) {
         unread.mark_as_read(message.id);
         process_newly_read_message(message, options);
+        conversation_keys.add(recent_view_util.get_key_from_message(message));
     }
+    recent_view_ui.update_conversations_unread_count(conversation_keys);
 
     unread_ui.update_unread_counts();
 }
