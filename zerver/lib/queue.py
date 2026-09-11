@@ -473,6 +473,12 @@ def mobile_notifications_queue_name(user_id: int) -> str:
     return "missedmessage_mobile_notifications"
 
 
+def high_latency_queue_name() -> str:
+    if settings.DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE:
+        return "deferred_work_high_latency"
+    return "deferred_work"
+
+
 def retry_event(
     queue_name: str, event: dict[str, Any], failure_processor: Callable[[dict[str, Any]], None]
 ) -> None:

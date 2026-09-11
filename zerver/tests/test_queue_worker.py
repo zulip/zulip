@@ -17,7 +17,7 @@ from django.test import override_settings
 from typing_extensions import override
 
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
-from zerver.lib.queue import MAX_REQUEST_RETRIES
+from zerver.lib.queue import MAX_REQUEST_RETRIES, high_latency_queue_name
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.lib.send_email import EmailNotDeliveredError, FromAddress
 from zerver.lib.test_classes import ZulipTestCase
@@ -29,12 +29,13 @@ from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream
 from zerver.tornado.event_queue import build_offline_notification
 from zerver.worker import base as base_worker
+from zerver.worker import deferred_work_high_latency
 from zerver.worker.email_mirror import MirrorWorker
 from zerver.worker.email_senders import ImmediateEmailSenderWorker
 from zerver.worker.embed_links import FetchLinksEmbedData
 from zerver.worker.missedmessage_emails import MissedMessageWorker
 from zerver.worker.missedmessage_mobile_notifications import PushNotificationsWorker
-from zerver.worker.queue_processors import get_active_worker_queues
+from zerver.worker.queue_processors import get_active_worker_queues, get_worker
 from zerver.worker.user_activity import UserActivityWorker
 
 Event: TypeAlias = dict[str, Any]
@@ -838,3 +839,67 @@ class WorkerTest(ZulipTestCase):
         self.assertNotIn("soft_reactivation", get_active_worker_queues())
         with override_settings(DEDICATED_SOFT_REACTIVATION_QUEUE=True):
             self.assertIn("soft_reactivation", get_active_worker_queues())
+
+    def test_high_latency_queue_name(self) -> None:
+        self.assertEqual(high_latency_queue_name(), "deferred_work")
+        with override_settings(DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE=True):
+            self.assertEqual(high_latency_queue_name(), "deferred_work_high_latency")
+
+    def test_high_latency_queue_is_opt_in(self) -> None:
+        # Keeps the production install's queue-processor check consistent.
+        self.assertNotIn("deferred_work_high_latency", get_active_worker_queues())
+        with override_settings(DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE=True):
+            queues = get_active_worker_queues()
+            self.assertIn("deferred_work_high_latency", queues)
+            # deferred_work keeps running, to drain what is already queued there.
+            self.assertIn("deferred_work", queues)
+
+    def test_high_latency_worker_dispatches_both_event_types(self) -> None:
+        worker = get_worker("deferred_work_high_latency")
+        # These jobs have no SLO; a per-event timeout would kill them partway.
+        self.assertIsNone(worker.MAX_CONSUME_SECONDS)
+
+        export_event = {"type": "realm_export", "user_profile_id": 1, "realm_export_id": 1}
+        with (
+            patch(
+                "zerver.worker.deferred_work_high_latency.export_realm_from_event"
+            ) as mock_export,
+            self.assertLogs(deferred_work_high_latency.logger, level="INFO") as export_logs,
+        ):
+            worker.consume(export_event)
+        mock_export.assert_called_once_with(
+            export_event, threaded=False, logger=deferred_work_high_latency.logger
+        )
+        self.assertIn(
+            "deferred_work_high_latency processed realm_export event", export_logs.output[0]
+        )
+
+        import_event = {
+            "type": "import_slack_data",
+            "preregistration_realm_id": 1,
+            "filename": "import/1/slack.zip",
+            "slack_access_token": "xoxb-token",
+        }
+        with (
+            patch("zerver.worker.deferred_work_high_latency.import_slack_data") as mock_import,
+            self.assertLogs(deferred_work_high_latency.logger, level="INFO"),
+        ):
+            worker.consume(import_event)
+        mock_import.assert_called_once_with(import_event)
+
+        scrub_event = {"type": "scrub_deactivated_realm", "realm_id": 1}
+        with (
+            patch(
+                "zerver.worker.deferred_work_high_latency.clean_deactivated_realm_data"
+            ) as mock_scrub,
+            self.assertLogs(deferred_work_high_latency.logger, level="INFO"),
+        ):
+            worker.consume(scrub_event)
+        mock_scrub.assert_called_once_with()
+
+    def test_high_latency_worker_rejects_unknown_event_type(self) -> None:
+        """Acknowledging an unrecognized type would silently discard a job that
+        can take an hour to redo."""
+        worker = get_worker("deferred_work_high_latency")
+        with self.assertRaises(AssertionError):
+            worker.consume({"type": "soft_reactivate", "user_profile_id": 1})

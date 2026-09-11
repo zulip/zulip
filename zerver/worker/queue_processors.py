@@ -37,8 +37,10 @@ def get_active_worker_queues(only_test_queues: bool = False) -> list[str]:
         for queue_name in worker_classes
         if bool(queue_name in test_queues) == only_test_queues
     ]
-    if not settings.DEDICATED_SOFT_REACTIVATION_QUEUE:
-        # Soft reactivations share the deferred_work queue unless a server
-        # opts into a dedicated queue, so its worker is not run otherwise.
-        queues = [queue_name for queue_name in queues if queue_name != "soft_reactivation"]
-    return queues
+    # A queue whose setting is off keeps its events in deferred_work, so its
+    # worker must neither run nor be expected by the production install check.
+    opt_in_queues = {
+        "soft_reactivation": settings.DEDICATED_SOFT_REACTIVATION_QUEUE,
+        "deferred_work_high_latency": settings.DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE,
+    }
+    return [queue_name for queue_name in queues if opt_in_queues.get(queue_name, True)]

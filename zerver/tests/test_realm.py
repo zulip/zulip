@@ -1481,6 +1481,27 @@ class RealmTest(ZulipTestCase):
             clean_deactivated_realm_data()
             mock_scrub_realm.assert_called_once_with(zephyr, acting_user=None)
 
+    @override_settings(DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE=True)
+    def test_scrub_uses_dedicated_queue_when_enabled(self) -> None:
+        """Scrubbing a realm walks every message and attachment it owns, so it
+        belongs in the high-latency queue rather than ahead of deferred_work's
+        latency-sensitive jobs."""
+        lear = get_realm("lear")
+        with mock.patch(
+            "zerver.actions.realm_settings.queue_json_publish_rollback_unsafe"
+        ) as mock_queue:
+            do_deactivate_realm(
+                lear,
+                acting_user=None,
+                deletion_delay_days=0,
+                deactivation_reason="owner_request",
+                email_owners=False,
+            )
+        mock_queue.assert_called_once_with(
+            "deferred_work_high_latency",
+            {"type": "scrub_deactivated_realm", "realm_id": lear.id},
+        )
+
     def test_delete_expired_demo_organizations(self) -> None:
         demo_organization_owner = self.create_demo_organization_owner()
         demo_organization = demo_organization_owner.realm
