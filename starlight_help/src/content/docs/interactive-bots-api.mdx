@@ -143,16 +143,64 @@ bot_handler.update_message(dict(
 
 ## bot\_handler.storage
 
-A common problem when writing an interactive bot is that you want to
-be able to store a bit of persistent state for the bot (e.g., for an
-RSVP bot, the RSVPs).  For a sufficiently complex bot, you want need
-your own database, but for simpler bots, we offer a convenient way for
-bot code to persistently store data.
+Zulip provides each bot user with a small, persistent, server-side
+key-value store. This is convenient for state a bot needs to remember
+between messages — for example, an RSVP bot tracking who is attending
+an event, or a counter bot incrementing a value across restarts.
 
-The interface for doing this is `bot_handler.storage`.
+Bot storage is:
 
-The data is stored in the Zulip Server's database. Each bot user has
-an independent storage quota available to it.
+* **Per-bot and isolated.** Each bot user has its own storage, and bots
+  cannot read or write each other's data.
+* **String-only.** Keys and values are both UTF-8 strings. To store
+  structured data, encode it first (e.g., with `json`).
+* **Size-limited.** The server enforces a per-bot size limit, with a
+  default of 10,000,000 characters. Self-hosted administrators can
+  override this in the server settings. Requests that would exceed the
+  limit fail with an error.
+* **Restricted to bot accounts.** Only bot users can use bot storage;
+  requests from non-bot accounts are rejected.
+
+For complex or relational state, use your own database — bot storage
+is intentionally minimal.
+
+Python bots interact with bot storage via the `bot_handler.storage`
+interface documented below. Bots written in other languages can call
+the underlying REST API directly:
+[`GET /bot_storage`](/api/get-bot-storage),
+[`PUT /bot_storage`](/api/update-bot-storage), and
+[`DELETE /bot_storage`](/api/remove-bot-storage).
+
+### Example
+
+A minimal RSVP bot that records each user's response and avoids
+double-counting if they reply more than once:
+
+```python
+import json
+
+def handle_message(self, message, bot_handler):
+    sender = message['sender_email']
+    response = message['content'].strip().upper()
+    if response not in ("YES", "NO"):
+        bot_handler.send_reply(message, 'Please reply with "yes" or "no".')
+        return
+    key = f"RSVP_{response}"
+    try:
+        attendees = json.loads(bot_handler.storage.get(key))
+    except KeyError:
+        attendees = []
+    if sender not in attendees:
+        attendees.append(sender)
+        bot_handler.storage.put(key, json.dumps(attendees))
+    bot_handler.send_reply(message, f"Recorded your {response.lower()} response.")
+```
+
+`bot_handler.storage.get` raises `KeyError` when a key has not yet
+been stored, so the example seeds an empty list on first use. For
+bots that read or write several keys per message, see the
+`use_storage` context manager below, which batches the round-trips
+to the server.
 
 ### Performance considerations
 
@@ -313,3 +361,6 @@ with use_storage(bot_handler.storage, ["foo", "bar"]) as cache:
 
 * [Writing bots](/help/writing-bots)
 * [Writing tests for bots](/help/writing-tests-for-interactive-bots)
+* [Get a bot's stored data](/api/get-bot-storage)
+* [Update a bot's stored data](/api/update-bot-storage)
+* [Remove a bot's stored data](/api/remove-bot-storage)
