@@ -152,6 +152,7 @@ html {
             text-align: center;
 
             .inline-block {
+                width: 100%;
                 text-align: center;
             }
         }
@@ -1358,24 +1359,42 @@ button#register_auth_button_gitlab {
 
 .goto-account-page {
     #realm_redirect_subdomain {
-        text-align: right;
+        text-align: left;
         position: relative;
-        padding-right: 10px;
+        border: none;
+        margin: 0; /* override the 25px 0 5px margin from .input-box */
+        width: auto;
     }
 
     #realm_redirect_external_host {
-        font-size: 20px;
-        top: 13px;
-        left: 5px;
+        font-size: 16px;
         position: relative;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        background-color: hsl(0deg 0% 96%);
+        border-left: 1px solid hsl(0deg 0% 87%);
+        color: hsl(0deg 0% 33%);
     }
 
     #realm_redirect_description {
-        top: 15px;
         position: relative;
         text-align: left;
         font-weight: 600;
-        margin-bottom: -5px;
+        margin-bottom: 5px;
+    }
+
+    .realm-url-input-group {
+        position: relative;
+        display: flex;
+        border: 1px solid hsl(0deg 0% 87%);
+        border-radius: 4px;
+        overflow: hidden;
+        transition: border-color 0.3s ease;
+
+        &:focus-within {
+            border-color: var(--color-border-legacy-input-focus);
+        }
     }
 
     #enter-realm-button {
@@ -1578,6 +1597,16 @@ button#register_auth_button_gitlab {
         #registration {
             padding: 0;
         }
+    }
+
+    .realm-url-input-group {
+        flex-direction: column;
+    }
+
+    #realm_redirect_external_host {
+        border-left: none !important;
+        border-top: 1px solid hsl(0deg 0% 87%);
+        padding: 8px 12px !important;
     }
 }
 
