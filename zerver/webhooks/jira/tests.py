@@ -129,7 +129,9 @@ class JiraHookTests(WebhookTestCase):
 
     def test_comment_created_silent_mention_atlassian_account_id(self) -> None:
         realm = get_realm("zulip")
-        atlassian_field = try_add_realm_default_custom_profile_field(realm, "atlassian")
+        atlassian_field = try_add_realm_default_custom_profile_field(
+            realm, "atlassian", acting_user=None
+        )
         hamlet = self.example_user("hamlet")
         test_account_id = "5c76b994e1bcdf6294d0eb0f"
         self.set_user_custom_profile_data(

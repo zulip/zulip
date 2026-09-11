@@ -460,7 +460,9 @@ class BitbucketHookTests(WebhookTestCase):
 
     def test_push_event_message_silent_mention(self) -> None:
         realm = get_realm("zulip")
-        atlassian_field = try_add_realm_default_custom_profile_field(realm, "atlassian")
+        atlassian_field = try_add_realm_default_custom_profile_field(
+            realm, "atlassian", acting_user=None
+        )
         hamlet = self.example_user("hamlet")
         self.set_user_custom_profile_data(
             hamlet,

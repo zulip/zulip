@@ -848,7 +848,7 @@ A trivial change that should probably be ignored.
 
     def test_push_event_message_silent_mention(self) -> None:
         realm = get_realm("zulip")
-        gitlab_field = try_add_realm_default_custom_profile_field(realm, "gitlab")
+        gitlab_field = try_add_realm_default_custom_profile_field(realm, "gitlab", acting_user=None)
         hamlet = self.example_user("hamlet")
         self.set_user_custom_profile_data(
             hamlet, [{"id": gitlab_field.id, "value": "tomaszkolek0"}]
@@ -859,7 +859,7 @@ A trivial change that should probably be ignored.
 
     def test_update_issue_event_message_silent_mention(self) -> None:
         realm = get_realm("zulip")
-        gitlab_field = try_add_realm_default_custom_profile_field(realm, "gitlab")
+        gitlab_field = try_add_realm_default_custom_profile_field(realm, "gitlab", acting_user=None)
         hamlet = self.example_user("hamlet")
         self.set_user_custom_profile_data(
             hamlet, [{"id": gitlab_field.id, "value": "tomaszkolek0"}]
@@ -870,7 +870,7 @@ A trivial change that should probably be ignored.
 
     def test_update_issue_event_message_silent_mention_multiple_matches(self) -> None:
         realm = get_realm("zulip")
-        gitlab_field = try_add_realm_default_custom_profile_field(realm, "gitlab")
+        gitlab_field = try_add_realm_default_custom_profile_field(realm, "gitlab", acting_user=None)
         hamlet = self.example_user("hamlet")
         self.set_user_custom_profile_data(
             hamlet, [{"id": gitlab_field.id, "value": "tomaszkolek0"}]
