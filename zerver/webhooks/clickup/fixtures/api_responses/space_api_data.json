@@ -1,0 +1,140 @@
+{
+  "id": "90167241645",
+  "name": "Zulip Test",
+  "color": "#000",
+  "private": false,
+  "avatar": null,
+  "admin_can_manage": false,
+  "statuses": [
+    {
+      "id": "p90167244768_oRSdjyTz",
+      "status": "to do",
+      "type": "open",
+      "orderindex": 0,
+      "color": "#87909e"
+    },
+    {
+      "id": "p90167244768_j2vyFFUU",
+      "status": "not started",
+      "type": "unstarted",
+      "orderindex": 1,
+      "color": "#12a594"
+    },
+    {
+      "id": "p90167244768_3C1fVtyw",
+      "status": "in progress",
+      "type": "custom",
+      "orderindex": 2,
+      "color": "#5f55ee"
+    },
+    {
+      "id": "p90167244768_RcKI474l",
+      "status": "complete",
+      "type": "closed",
+      "orderindex": 3,
+      "color": "#008844"
+    }
+  ],
+  "multiple_assignees": true,
+  "features": {
+    "due_dates": {
+      "enabled": true,
+      "start_date": true,
+      "remap_due_dates": false,
+      "remap_closed_due_date": false
+    },
+    "sprints": {
+      "enabled": false
+    },
+    "time_tracking": {
+      "enabled": true,
+      "harvest": false,
+      "rollup": true,
+      "default_to_billable": 2
+    },
+    "points": {
+      "enabled": false
+    },
+    "custom_items": {
+      "enabled": false
+    },
+    "priorities": {
+      "enabled": true,
+      "priorities": [
+        {
+          "color": "#f50000",
+          "id": "1",
+          "orderindex": "1",
+          "priority": "urgent"
+        },
+        {
+          "color": "#f8ae00",
+          "id": "2",
+          "orderindex": "2",
+          "priority": "high"
+        },
+        {
+          "color": "#6fddff",
+          "id": "3",
+          "orderindex": "3",
+          "priority": "normal"
+        },
+        {
+          "color": "#d8d8d8",
+          "id": "4",
+          "orderindex": "4",
+          "priority": "low"
+        }
+      ]
+    },
+    "tags": {
+      "enabled": true
+    },
+    "time_estimates": {
+      "enabled": true,
+      "rollup": true,
+      "per_assignee": false
+    },
+    "check_unresolved": {
+      "enabled": true,
+      "subtasks": null,
+      "checklists": null,
+      "comments": null
+    },
+    "milestones": {
+      "enabled": true
+    },
+    "custom_fields": {
+      "enabled": true
+    },
+    "remap_dependencies": {
+      "enabled": true
+    },
+    "dependency_warning": {
+      "enabled": true
+    },
+    "status_pies": {
+      "enabled": true
+    },
+    "multiple_assignees": {
+      "enabled": true
+    },
+    "emails": {
+      "enabled": true
+    },
+    "scheduler_enabled": false,
+    "dependency_type_enabled": false,
+    "dependency_enforcement": {
+      "enforcement_mode": 2
+    },
+    "remap_dependency_settings": {
+      "enabled": true,
+      "enforcement_mode": 2,
+      "reschedule_closed_dependencies": true
+    },
+    "reschedule_closed_dependencies": {
+      "enabled": true
+    }
+  },
+  "archived": false
+}
