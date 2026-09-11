@@ -66,6 +66,7 @@ from zerver.actions.message_edit import (
     do_update_message,
 )
 from zerver.actions.message_flags import do_update_message_flags
+from zerver.actions.message_send import do_send_url_embed_data_event
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
 from zerver.actions.navigation_views import (
     do_add_navigation_view,
@@ -243,6 +244,7 @@ from zerver.lib.event_schema import (
     check_update_message,
     check_update_message_flags_add,
     check_update_message_flags_remove,
+    check_url_embed_data,
     check_user_group_add,
     check_user_group_add_members,
     check_user_group_add_subgroups,
@@ -1631,6 +1633,13 @@ class NormalActionsTest(BaseAction):
             )
 
         check_invites_changed("events[6]", events[5])
+
+    def test_url_embed_data_events(self) -> None:
+        with self.verify_action(state_change_expected=False) as events:
+            do_send_url_embed_data_event(
+                self.user_profile, "http://example.com/", "<p>rendered</p>"
+            )
+        check_url_embed_data("events[0]", events[0])
 
     def test_typing_events(self) -> None:
         with self.verify_action(state_change_expected=False) as events:

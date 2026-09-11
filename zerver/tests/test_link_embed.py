@@ -12,7 +12,18 @@ from requests.exceptions import ConnectionError
 from typing_extensions import override
 
 from zerver.actions.message_delete import do_delete_messages
-from zerver.lib.cache import cache_delete, cache_get, preview_url_cache_key
+from zerver.actions.message_send import (
+    PREVIEW_URL_FETCH_FAILED_TIMEOUT_SECONDS,
+    render_unsaved_message,
+)
+from zerver.lib.cache import (
+    cache_delete,
+    cache_get,
+    cache_set,
+    preview_url_cache_key,
+    preview_url_fetch_failed_cache_key,
+    url_embed_data_pending_cache_key,
+)
 from zerver.lib.camo import get_camo_url
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.test_classes import ZulipTestCase
@@ -373,6 +384,373 @@ class PreviewTestCase(ZulipTestCase):
         msg = Message.objects.select_related("sender").get(id=msg_id)
         assert msg.rendered_content is not None
         self.assertIn(embedded_link, msg.rendered_content)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_compose_preview_link_embed(self) -> None:
+        # The preview enqueues the fetch; the worker then pushes the embed back.
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+        cache_delete(preview_url_cache_key(url))
+        cache_delete(url_embed_data_pending_cache_key(user.id, url))
+
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            result = self.client_post(
+                "/json/messages/render", {"content": url, "populate_url_embed_data": "true"}
+            )
+        self.assert_json_success(result)
+        self.assertNotIn("message_embed", result.json()["rendered"])
+
+        patched.assert_called_once()
+        self.assertEqual(patched.call_args[0][0], "embed_links")
+        event = patched.call_args[0][1]
+        self.assertEqual(
+            event,
+            {
+                "populate_url_embed_data": True,
+                "user_id": user.id,
+                "content": url,
+                "urls": [url],
+                "uncached_urls": [url],
+            },
+        )
+
+        self.create_mock_response(url)
+        with (
+            self.settings(TEST_SUITE=False),
+            self.assertLogs(level="INFO") as info_logs,
+            self.capture_send_event_calls(expected_num_events=1) as events,
+        ):
+            FetchLinksEmbedData().consume(event)
+        self.assertIn(
+            "INFO:root:Time spent on get_link_embed_data for http://test.org/: ",
+            info_logs.output[0],
+        )
+
+        self.assertEqual(events[0]["users"], [user.id])
+        preview_event = events[0]["event"]
+        self.assertEqual(preview_event["type"], "url_embed_data")
+        self.assertEqual(preview_event["content"], url)
+        self.assertIn(
+            f'<a href="{url}" title="The Rock">The Rock</a>',
+            preview_event["rendered_content"],
+        )
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_render_without_populate_url_embed_data_does_not_enqueue(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+        cache_delete(preview_url_cache_key(url))
+        cache_delete(url_embed_data_pending_cache_key(user.id, url))
+
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            result = self.client_post("/json/messages/render", {"content": url})
+        self.assert_json_success(result)
+        patched.assert_not_called()
+        self.assertIsNone(cache_get(url_embed_data_pending_cache_key(user.id, url)))
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_compose_preview_uses_cached_embed(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+        cache_delete(preview_url_cache_key(url))
+        self.create_mock_response(url)
+        get_link_embed_data(url)
+
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            result = self.client_post(
+                "/json/messages/render", {"content": url, "populate_url_embed_data": "true"}
+            )
+        self.assert_json_success(result)
+        self.assertIn(
+            f'<a href="{url}" title="The Rock">The Rock</a>',
+            result.json()["rendered"],
+        )
+        patched.assert_not_called()
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_compose_preview_dedupes_job_for_same_draft(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+        cache_delete(preview_url_cache_key(url))
+        cache_delete(url_embed_data_pending_cache_key(user.id, url))
+
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            self.client_post(
+                "/json/messages/render", {"content": url, "populate_url_embed_data": "true"}
+            )
+        patched.assert_called_once()
+        self.assertIsNotNone(cache_get(url_embed_data_pending_cache_key(user.id, url)))
+
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            result = self.client_post(
+                "/json/messages/render", {"content": url, "populate_url_embed_data": "true"}
+            )
+        self.assert_json_success(result)
+        patched.assert_not_called()
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_compose_preview_enqueues_job_for_edited_draft(self) -> None:
+        # The in-flight job renders the pre-edit draft, which the client
+        # discards, so the edited draft needs a job of its own.
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+        edited_content = f"{url} hello"
+        cache_delete(preview_url_cache_key(url))
+        cache_delete(url_embed_data_pending_cache_key(user.id, url))
+        cache_delete(url_embed_data_pending_cache_key(user.id, edited_content))
+
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            self.client_post(
+                "/json/messages/render", {"content": url, "populate_url_embed_data": "true"}
+            )
+        patched.assert_called_once()
+
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            self.client_post(
+                "/json/messages/render",
+                {"content": edited_content, "populate_url_embed_data": "true"},
+            )
+        patched.assert_called_once()
+        self.assertEqual(patched.call_args[0][1]["content"], edited_content)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_compose_preview_enqueues_job_for_each_sender(self) -> None:
+        # A job only updates the preview of the user it was enqueued for.
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        url = "http://test.org/"
+        cache_delete(preview_url_cache_key(url))
+        cache_delete(url_embed_data_pending_cache_key(hamlet.id, url))
+        cache_delete(url_embed_data_pending_cache_key(othello.id, url))
+
+        self.login_user(hamlet)
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            self.client_post(
+                "/json/messages/render", {"content": url, "populate_url_embed_data": "true"}
+            )
+        patched.assert_called_once()
+
+        self.login_user(othello)
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            self.client_post(
+                "/json/messages/render", {"content": url, "populate_url_embed_data": "true"}
+            )
+        patched.assert_called_once()
+        self.assertEqual(patched.call_args[0][1]["user_id"], othello.id)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_compose_preview_skips_second_render_for_uncacheable_link(self) -> None:
+        # A link cached as "no preview" renders identically, so skip the second render.
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+        cache_set(preview_url_cache_key(url), None)
+
+        with (
+            mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched,
+            mock.patch(
+                "zerver.views.message_send.render_unsaved_message",
+                wraps=render_unsaved_message,
+            ) as render_spy,
+        ):
+            result = self.client_post(
+                "/json/messages/render", {"content": url, "populate_url_embed_data": "true"}
+            )
+        self.assert_json_success(result)
+        patched.assert_not_called()
+        render_spy.assert_called_once()
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_compose_preview_mixed_cached_and_uncached_links(self) -> None:
+        # The worker's re-render must keep the cached link's card too.
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        cached_url = "http://test.org/"
+        uncached_url = "http://example.com/"
+        for url in (cached_url, uncached_url):
+            cache_delete(preview_url_cache_key(url))
+
+        self.create_mock_response(cached_url)
+        get_link_embed_data(cached_url)
+
+        content = f"{cached_url} {uncached_url}"
+        cache_delete(url_embed_data_pending_cache_key(user.id, content))
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            result = self.client_post(
+                "/json/messages/render", {"content": content, "populate_url_embed_data": "true"}
+            )
+        self.assert_json_success(result)
+        self.assertIn(
+            f'<a href="{cached_url}" title="The Rock">The Rock</a>',
+            result.json()["rendered"],
+        )
+        self.assertNotIn(
+            f'<a href="{uncached_url}" title="The Rock">The Rock</a>',
+            result.json()["rendered"],
+        )
+
+        patched.assert_called_once()
+        event = patched.call_args[0][1]
+        self.assertEqual(event["populate_url_embed_data"], True)
+        self.assertEqual(event["content"], content)
+        self.assertEqual(set(event["urls"]), {cached_url, uncached_url})
+        self.assertEqual(event["uncached_urls"], [uncached_url])
+
+        self.create_mock_response(uncached_url)
+        with (
+            self.settings(TEST_SUITE=False),
+            self.assertLogs(level="INFO"),
+            self.capture_send_event_calls(expected_num_events=1) as events,
+        ):
+            FetchLinksEmbedData().consume(event)
+
+        preview_event = events[0]["event"]
+        self.assertEqual(preview_event["type"], "url_embed_data")
+        self.assertIn(
+            f'<a href="{cached_url}" title="The Rock">The Rock</a>',
+            preview_event["rendered_content"],
+        )
+        self.assertIn(
+            f'<a href="{uncached_url}" title="The Rock">The Rock</a>',
+            preview_event["rendered_content"],
+        )
+
+    def test_compose_preview_sends_no_event_when_nothing_previewable(self) -> None:
+        # The re-render would reproduce the HTML the preview already shows.
+        user = self.example_user("hamlet")
+        url = "http://no-preview.example/"
+        event = {
+            "populate_url_embed_data": True,
+            "user_id": user.id,
+            "content": url,
+            "urls": [url],
+            "uncached_urls": [url],
+        }
+        with (
+            mock.patch.object(
+                FetchLinksEmbedData, "fetch_url_embed_data", return_value={url: None}
+            ),
+            self.capture_send_event_calls(expected_num_events=0),
+        ):
+            FetchLinksEmbedData().consume(event)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_compose_preview_sends_no_event_when_only_cached_links_have_embeds(self) -> None:
+        user = self.example_user("hamlet")
+        cached_url = "http://test.org/"
+        uncached_url = "http://only-uncached.example/"
+        content = f"{cached_url} {uncached_url}"
+        event = {
+            "populate_url_embed_data": True,
+            "user_id": user.id,
+            "content": content,
+            "urls": [cached_url, uncached_url],
+            "uncached_urls": [uncached_url],
+        }
+        with (
+            mock.patch.object(
+                FetchLinksEmbedData,
+                "fetch_url_embed_data",
+                return_value={cached_url: UrlEmbedData(title="The Rock"), uncached_url: None},
+            ),
+            self.capture_send_event_calls(expected_num_events=0),
+        ):
+            FetchLinksEmbedData().consume(event)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_compose_preview_skips_link_whose_fetch_cached_nothing(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://stalls.example/"
+        cache_delete(preview_url_cache_key(url))
+        cache_delete(preview_url_fetch_failed_cache_key(url))
+
+        event = {
+            "populate_url_embed_data": True,
+            "user_id": user.id,
+            "content": url,
+            "urls": [url],
+            "uncached_urls": [url],
+        }
+        with (
+            mock.patch.object(
+                FetchLinksEmbedData, "fetch_url_embed_data", return_value={url: None}
+            ),
+            self.capture_send_event_calls(expected_num_events=0),
+        ):
+            FetchLinksEmbedData().consume(event)
+        self.assertIsNotNone(cache_get(preview_url_fetch_failed_cache_key(url)))
+
+        content = f"{url} edited"
+        cache_delete(url_embed_data_pending_cache_key(user.id, content))
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            result = self.client_post(
+                "/json/messages/render", {"content": content, "populate_url_embed_data": "true"}
+            )
+        self.assert_json_success(result)
+        patched.assert_not_called()
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_compose_preview_omits_failed_link_from_sibling_job(self) -> None:
+        # A link we have given up fetching must not ride along in a job for
+        # its siblings, whose fetch would retry it.
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        failed_url = "http://stalls.example/"
+        fresh_url = "http://example.com/"
+        for url in (failed_url, fresh_url):
+            cache_delete(preview_url_cache_key(url))
+            cache_delete(preview_url_fetch_failed_cache_key(url))
+        cache_set(
+            preview_url_fetch_failed_cache_key(failed_url),
+            True,
+            timeout=PREVIEW_URL_FETCH_FAILED_TIMEOUT_SECONDS,
+        )
+
+        content = f"{failed_url} {fresh_url}"
+        cache_delete(url_embed_data_pending_cache_key(user.id, content))
+        with mock_queue_publish("zerver.actions.message_send.queue_event_on_commit") as patched:
+            result = self.client_post(
+                "/json/messages/render", {"content": content, "populate_url_embed_data": "true"}
+            )
+        self.assert_json_success(result)
+
+        patched.assert_called_once()
+        event = patched.call_args[0][1]
+        self.assertEqual(event["urls"], [fresh_url])
+        self.assertEqual(event["uncached_urls"], [fresh_url])
+
+    def test_compose_preview_skips_deleted_sender(self) -> None:
+        # A deleted sender is dropped without a wasted fetch (looked up first).
+        event = {
+            "populate_url_embed_data": True,
+            "user_id": 1234567890,
+            "content": "http://test.org/",
+            "urls": ["http://test.org/"],
+            "uncached_urls": ["http://test.org/"],
+        }
+        with (
+            mock.patch.object(FetchLinksEmbedData, "fetch_url_embed_data") as mock_fetch,
+            self.capture_send_event_calls(expected_num_events=0),
+        ):
+            FetchLinksEmbedData().consume(event)
+        mock_fetch.assert_not_called()
 
     @responses.activate
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)

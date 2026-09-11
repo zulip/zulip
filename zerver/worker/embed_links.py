@@ -9,11 +9,23 @@ from django.db import transaction
 from typing_extensions import override
 
 from zerver.actions.message_edit import do_update_embedded_data
-from zerver.actions.message_send import render_incoming_message
+from zerver.actions.message_send import (
+    PREVIEW_URL_FETCH_FAILED_TIMEOUT_SECONDS,
+    do_send_url_embed_data_event,
+    render_incoming_message,
+    render_unsaved_message,
+)
+from zerver.lib.cache import (
+    cache_get,
+    cache_set,
+    preview_url_cache_key,
+    preview_url_fetch_failed_cache_key,
+)
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.url_preview.types import UrlEmbedData
-from zerver.models import Message, Realm
+from zerver.models import Message, Realm, UserProfile
+from zerver.models.users import get_user_profile_by_id
 from zerver.worker.base import InterruptConsumeError, QueueProcessingWorker, assign_queue
 
 logger = logging.getLogger(__name__)
@@ -27,13 +39,11 @@ class FetchLinksEmbedData(QueueProcessingWorker):
 
     @override
     def consume(self, event: Mapping[str, Any]) -> None:
-        url_embed_data: dict[str, UrlEmbedData | None] = {}
-        for url in event["urls"]:
-            start_time = time.time()
-            url_embed_data[url] = url_preview.get_link_embed_data(url)
-            logging.info(
-                "Time spent on get_link_embed_data for %s: %s", url, time.time() - start_time
-            )
+        if event.get("populate_url_embed_data"):
+            self.handle_url_embed_data_request(event)
+            return
+
+        url_embed_data = self.fetch_url_embed_data(event["urls"])
 
         # Ideally, we should use `durable=True` here. However, in the
         # `test_message_update_race_condition` test, this function is not called
@@ -72,6 +82,45 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             )
             do_update_embedded_data(message.sender, message, rendering_result, mention_data)
 
+    def fetch_url_embed_data(self, urls: list[str]) -> dict[str, UrlEmbedData | None]:
+        url_embed_data: dict[str, UrlEmbedData | None] = {}
+        for url in urls:
+            start_time = time.time()
+            url_embed_data[url] = url_preview.get_link_embed_data(url)
+            logging.info(
+                "Time spent on get_link_embed_data for %s: %s", url, time.time() - start_time
+            )
+        return url_embed_data
+
+    def handle_url_embed_data_request(self, event: Mapping[str, Any]) -> None:
+        try:
+            sender = get_user_profile_by_id(event["user_id"])
+        except UserProfile.DoesNotExist:
+            # The composing user may have been deleted.
+            return
+        url_embed_data = self.fetch_url_embed_data(event["urls"])
+
+        # The view baked the already cached embeds into the render the client
+        # is showing, so only the links it lacked can change the preview.
+        uncached_urls = event["uncached_urls"]
+        for url in uncached_urls:
+            # Only a fetch that ran to completion caches a result, so bound
+            # the retries of one that raised.
+            if cache_get(preview_url_cache_key(url)) is None:
+                cache_set(
+                    preview_url_fetch_failed_cache_key(url),
+                    True,
+                    timeout=PREVIEW_URL_FETCH_FAILED_TIMEOUT_SECONDS,
+                )
+
+        if all(url_embed_data.get(url) is None for url in uncached_urls):
+            # The re-render would reproduce the HTML the preview already shows.
+            return
+        rendering_result = render_unsaved_message(
+            sender, event["content"], url_embed_data=url_embed_data
+        )
+        do_send_url_embed_data_event(sender, event["content"], rendering_result.rendered_content)
+
     @override
     def timer_expired(
         self, limit: int, events: list[dict[str, Any]], signal: int, frame: FrameType | None
@@ -79,11 +128,13 @@ class FetchLinksEmbedData(QueueProcessingWorker):
         assert len(events) == 1
         event = events[0]
 
+        # Render-request jobs have no message_id; a KeyError here would mask
+        # the timeout we are trying to report.
         logging.warning(
             "Timed out in %s after %s seconds while fetching URLs for message %s: %s",
             self.queue_name,
             limit,
-            event["message_id"],
+            event.get("message_id"),
             event["urls"],
         )
         raise InterruptConsumeError
