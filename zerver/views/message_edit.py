@@ -10,7 +10,7 @@ from django.utils.translation import gettext as _
 from pydantic import Json, NonNegativeInt
 
 from zerver.actions.message_delete import do_delete_messages
-from zerver.actions.message_edit import check_update_message
+from zerver.actions.message_edit import check_update_message, do_delete_message_edit_history
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.html_diff import highlight_html_differences
@@ -93,6 +93,8 @@ def fill_edit_history_entries(
             formatted_entry["prev_stream"] = edit_history_event["prev_stream"]
             formatted_entry["stream"] = edit_history_event["stream"]
 
+        if "history_deleted_by" in edit_history_event:
+            formatted_entry["history_deleted_by"] = edit_history_event["history_deleted_by"]
         formatted_edit_history.append(formatted_entry)
 
     initial_message_history: FormattedEditHistoryEvent = {
@@ -144,6 +146,31 @@ def get_message_edit_history(
     return json_success(
         request, data={"message_history": list(reversed(visible_message_edit_history))}
     )
+
+
+@typed_endpoint
+def delete_message_edit_history(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    message_id: PathOnly[NonNegativeInt],
+) -> HttpResponse:
+    message = access_message(user_profile, message_id, is_modifying_message=True)
+
+    # Only users who can delete the message can delete its history
+    validate_can_delete_message(user_profile, message)
+
+    # Only makes sense if message was actually content-edited
+    if message.edit_history is None:
+        raise JsonableError(_("This message has no edit history to delete."))
+
+    raw_history: list[EditHistoryEvent] = orjson.loads(message.edit_history)
+    has_content_edit = any("prev_content" in entry for entry in raw_history)
+    if not has_content_edit:
+        raise JsonableError(_("This message has no content edits to delete."))
+
+    do_delete_message_edit_history(message, user_profile)
+    return json_success(request)
 
 
 @typed_endpoint
