@@ -11,7 +11,7 @@
         "mail": ["hamlet@zulip.com"],
         "userAccountControl": ["512"],
         "sn": ["Hamlet"],
-        "homePhone": ["123456789"],
+        "homePhone": ["+12345678900"],
         "birthDate": ["1900-09-08"],
         "jpegPhoto": "file:static/images/test-images/avatars/example_profile_picture.png"
     },
