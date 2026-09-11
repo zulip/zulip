@@ -16,7 +16,10 @@ from zerver.lib.markdown import markdown_convert
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileDataElementValue
 from zerver.models import CustomProfileField, CustomProfileFieldValue, UserProfile
-from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
+from zerver.models.custom_profile_fields import (
+    custom_profile_fields_for_realm,
+    rendered_custom_profile_fields_for_realm,
+)
 from zerver.models.realms import get_realm
 
 
@@ -74,6 +77,9 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         field = CustomProfileField.objects.get(name="Phone", realm=realm)
         self.assertEqual(field.id, field.order)
+        field_dict = field.as_dict()
+        self.assertEqual(field_dict["rendered_name"], "Phone")
+        self.assertEqual(field_dict["rendered_hint"], "Contact number")
 
         data["name"] = "Name "
         data["hint"] = "Some name"
@@ -100,6 +106,68 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         data["use_for_user_matching"] = "true"
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "Field type not supported for use for user matching.")
+
+    def test_rendered_fields_in_as_dict(self) -> None:
+        realm = get_realm("zulip")
+        field = CustomProfileField.objects.filter(realm=realm).first()
+        assert field is not None
+
+        field.name = "**Bold** label"
+        field.hint = "Use a [link](https://zulip.com)"
+        field.rendered_name = None
+        field.rendered_hint = None
+        field.save(update_fields=["name", "hint", "rendered_name", "rendered_hint"])
+
+        data = field.as_dict()
+        self.assertEqual(data["rendered_name"], "<strong>Bold</strong> label")
+        self.assertEqual(
+            data["rendered_hint"],
+            'Use a <a href="https://zulip.com">link</a>',
+        )
+        self.assertEqual(data["name"], "**Bold** label")
+        self.assertEqual(data["hint"], "Use a [link](https://zulip.com)")
+
+    def test_as_dict_renders_and_saves_fields_on_demand(self) -> None:
+        realm = get_realm("zulip")
+        field = CustomProfileField.objects.filter(realm=realm).first()
+        assert field is not None
+
+        field.name = "Phone"
+        field.hint = "Contact number"
+        field.rendered_name = None
+        field.rendered_hint = None
+        field.save(update_fields=["name", "hint", "rendered_name", "rendered_hint"])
+
+        field.as_dict()
+
+        field.refresh_from_db()
+        self.assertEqual(field.rendered_name, "Phone")
+        self.assertEqual(field.rendered_hint, "Contact number")
+
+    def test_rendered_custom_profile_fields_for_realm_renders_in_bulk(self) -> None:
+        realm = get_realm("zulip")
+        CustomProfileField.objects.filter(realm=realm).update(
+            rendered_name=None, rendered_hint=None
+        )
+        self.assertGreater(CustomProfileField.objects.filter(realm=realm).count(), 1)
+
+        with (
+            mock.patch.object(CustomProfileField, "save") as mock_save,
+            mock.patch.object(
+                CustomProfileField.objects,
+                "bulk_update",
+                wraps=CustomProfileField.objects.bulk_update,
+            ) as mock_bulk_update,
+        ):
+            rendered_custom_profile_fields_for_realm(realm.id)
+
+        # The unrendered fields are persisted with a single bulk_update,
+        # never a save() per field.
+        mock_save.assert_not_called()
+        mock_bulk_update.assert_called_once()
+        for field in CustomProfileField.objects.filter(realm=realm):
+            self.assertIsNotNone(field.rendered_name)
+            self.assertIsNotNone(field.rendered_hint)
 
     def test_create_dropdown_field(self) -> None:
         self.login("iago")
@@ -209,6 +277,9 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         field = CustomProfileField.objects.get(name="X username")
         self.assertEqual(field.name, DEFAULT_EXTERNAL_ACCOUNTS["x"].name)
         self.assertEqual(field.hint, DEFAULT_EXTERNAL_ACCOUNTS["x"].hint)
+        field_dict = field.as_dict()
+        self.assertEqual(field_dict["rendered_name"], "X username")
+        self.assertEqual(field_dict["rendered_hint"], "")
 
         result = self.client_delete(f"/json/realm/profile_fields/{field.id}")
         self.assert_json_success(result)
@@ -404,6 +475,53 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         }
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
+
+    def test_rendered_fields_strip_entity_references(self) -> None:
+        self.login("iago")
+        realm = get_realm("zulip")
+
+        test_cases: list[tuple[str, str]] = [
+            ("**bold**", "<strong>bold</strong>"),
+            ("*italic*", "<em>italic</em>"),
+            ("`code`", "<code>code</code>"),
+            (
+                "[link](https://zulip.com)",
+                '<a href="https://zulip.com">link</a>',
+            ),
+            ("~~strike~~", "<del>strike</del>"),
+            ("plain text", "plain text"),
+            # Entity references render as plain text
+            ("@**Iago**", "@Iago"),
+            ("@*hamletcharacters*", "@hamletcharacters"),
+            ("#**Verona**", "#Verona"),
+            # Emoji shortcodes strip to plain text
+            (":smile:", ":smile:"),
+            # Source that renders to nothing falls back to its escaped source
+            # so the label is never blank (custom emoji, horizontal rule).
+            (":green_tick:", ":green_tick:"),
+            ("---", "---"),
+            # Block elements outside our inline allowlist strip to plain text
+            ("# Heading", "Heading"),
+            ("## Smaller heading", "Smaller heading"),
+            ("- item one\n- item two", "\nitem one\nitem two\n"),
+            ("> quoted", "\nquoted\n"),
+        ]
+
+        for i, (raw, expected) in enumerate(test_cases):
+            data: dict[str, Any] = {
+                "name": f"Field {i}",
+                "field_type": CustomProfileField.SHORT_TEXT,
+                "hint": raw,
+            }
+            result = self.client_post("/json/realm/profile_fields", info=data)
+            self.assert_json_success(result)
+
+            field = CustomProfileField.objects.get(name=f"Field {i}", realm=realm)
+            self.assertEqual(
+                field.as_dict()["rendered_hint"],
+                expected,
+                f"Failed for input: {raw!r}",
+            )
 
 
 class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
@@ -620,6 +738,9 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertEqual(CustomProfileField.objects.count(), self.original_count)
         self.assertEqual(field.name, "New phone number")
         self.assertEqual(field.hint, "New contact number")
+        field_dict = field.as_dict()
+        self.assertEqual(field_dict["rendered_name"], "New phone number")
+        self.assertEqual(field_dict["rendered_hint"], "New contact number")
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
         self.assertEqual(field.display_in_profile_summary, True)
         self.assertEqual(field.required, True)
@@ -635,6 +756,9 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_json_success(result)
         field.refresh_from_db()
         self.assertEqual(field.hint, "New hint")
+        field_dict = field.as_dict()
+        self.assertEqual(field_dict["rendered_hint"], "New hint")
+        self.assertEqual(field_dict["rendered_name"], "New phone number")
         self.assertEqual(field.required, True)
         self.assertEqual(field.editable_by_user, False)
 
@@ -654,6 +778,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_json_success(result)
         field.refresh_from_db()
         self.assertEqual(field.hint, "")
+        self.assertEqual(field.as_dict()["rendered_hint"], "")
 
     def test_update_display_in_profile_summary(self) -> None:
         self.login("iago")

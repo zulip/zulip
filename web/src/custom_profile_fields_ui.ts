@@ -12,6 +12,7 @@ import * as channel from "./channel.ts";
 import {$t} from "./i18n.ts";
 import * as people from "./people.ts";
 import * as pill_typeahead from "./pill_typeahead.ts";
+import {update_elements} from "./rendered_markdown.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_ui from "./settings_ui.ts";
 import {current_user, realm} from "./state_data.ts";
@@ -81,6 +82,7 @@ export function append_custom_profile_fields(element_id: string, user_id: number
         });
         $(element_id).append($(html));
     }
+    update_elements($(element_id));
 }
 
 export type CustomProfileFieldData = {

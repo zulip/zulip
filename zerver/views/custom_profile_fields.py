@@ -25,13 +25,13 @@ from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData
 from zerver.lib.users import validate_user_custom_profile_data
 from zerver.lib.validator import check_capped_string, validate_custom_profile_field_choices
 from zerver.models import CustomProfileField, Realm, UserProfile
-from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
+from zerver.models.custom_profile_fields import rendered_custom_profile_fields_for_realm
 
 
 def list_realm_custom_profile_fields(
     request: HttpRequest, user_profile: UserProfile
 ) -> HttpResponse:
-    fields = custom_profile_fields_for_realm(user_profile.realm_id)
+    fields = rendered_custom_profile_fields_for_realm(user_profile.realm_id)
     return json_success(request, data={"custom_fields": [f.as_dict() for f in fields]})
 
 

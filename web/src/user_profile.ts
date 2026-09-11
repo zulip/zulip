@@ -50,6 +50,7 @@ import * as modals from "./modals.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
+import {update_elements} from "./rendered_markdown.ts";
 import * as settings_components from "./settings_components.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -77,6 +78,7 @@ import * as util from "./util.ts";
 export type CustomProfileFieldData = {
     id: number;
     name: string;
+    rendered_name: string;
     is_user_field: boolean;
     is_link: boolean;
     is_external_account: boolean;
@@ -475,6 +477,7 @@ export function get_custom_profile_field_data(
     const profile_field: CustomProfileFieldData = {
         id: field.id,
         name: field.name,
+        rendered_name: field.rendered_name,
         is_user_field: false,
         is_link: field_type === field_types.URL.id,
         is_external_account: field_type === field_types.EXTERNAL_ACCOUNT.id,
@@ -548,6 +551,7 @@ export function update_user_custom_profile_fields(user: User): void {
 
     const profile_data = {profile_fields};
     $custom_profile_field.html(render_user_custom_profile_fields(profile_data));
+    update_elements($custom_profile_field);
     custom_profile_fields_ui.initialize_profile_user_type_pills(user.user_id);
 }
 
