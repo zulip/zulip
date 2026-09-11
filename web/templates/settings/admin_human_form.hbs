@@ -9,7 +9,7 @@
         {{#if email}}
         <div class="input-group email_change_container">
             <label for="email" class="modal-field-label">{{t "Email" }}</label>
-            <input type="text" autocomplete="off" name="email" class="modal_text_input" value="{{ email }}" readonly/>
+            <input type="text" autocomplete="off" name="email" class="modal_text_input" value="{{ email }}" {{#unless can_change_email}}readonly{{/unless}}/>
         </div>
         {{/if}}
         <div class="input-group user_id_container">
