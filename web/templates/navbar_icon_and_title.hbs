@@ -1,3 +1,27 @@
+{{#if is_dm_narrow}}
+<span class="navbar-dm-avatars">
+    {{#each dm_users}}
+        <span class="navbar-dm-avatar" data-user-id="{{this.user_id}}" data-full-name="{{this.name}}" role="button" tabindex="0" aria-label="{{this.name}}">
+            {{#if this.is_muted}}
+            <span class="navbar-dm-avatar-image" data-tippy-content="{{this.name}}">
+                <i class="fa fa-user" aria-hidden="true"></i>
+            </span>
+            {{else}}
+            <span class="navbar-dm-avatar-image avatar-preload-background" data-tippy-content="{{this.name}}">
+                <img loading="lazy" src="{{this.avatar_url}}" alt="" />
+            </span>
+            <span class="zulip-icon zulip-icon-{{this.user_circle_class}} {{this.user_circle_class}} user-circle" data-presence-indicator-user-id="{{this.user_id}}" aria-hidden="true"></span>
+            {{/if}}
+        </span>
+    {{/each}}
+    {{! The "+N" indicator and its participant list are populated by relayout_dm_avatars once we know how many avatars fit. }}
+    <span class="navbar-dm-avatar-overflow hidden" data-tooltip-template-id="navbar-dm-avatar-overflow-names" aria-hidden="true"></span>
+    <template id="navbar-dm-avatar-overflow-names" class="navbar-dm-avatar-overflow-names"></template>
+</span>
+{{#if is_one_on_one_dm}}
+<span class="message-header-navbar-title">{{title}}</span>
+{{/if}}
+{{else}}
 {{#if zulip_icon}}
 <i class="navbar-icon zulip-icon zulip-icon-{{zulip_icon}}" aria-hidden="true"></i>
 {{else if icon}}
@@ -15,4 +39,5 @@
         <i class="archived-indicator">({{t 'archived' }})</i>
     </span>
     {{/if}}
+{{/if}}
 {{/if}}
