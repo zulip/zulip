@@ -80,7 +80,11 @@ export function initialize(): void {
             if (draft === false) {
                 blueslip.warn("Tried to restore a draft that didn't exist.");
             } else {
-                compose_actions.start({...draft, message_type: draft.type});
+                compose_actions.start({
+                    ...draft,
+                    message_type: draft.type,
+                    draft_id: data.compose_active_draft_id,
+                });
                 if (data.compose_active_draft_send_immediately) {
                     compose.finish();
                 }
