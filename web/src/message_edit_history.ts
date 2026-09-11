@@ -307,7 +307,7 @@ export function fetch_and_render_message_history(message: Message): void {
                 .find("img.image-loading-placeholder")
                 .each(function () {
                     const $img = $(this);
-                    $img.attr("src", "/static/images/errors/image-not-exist.png");
+                    $img.attr("src", "/static/images/errors/file-not-exist.png");
                     $img.attr(
                         "alt",
                         $t({defaultMessage: "This file does not exist or has been deleted."}),
