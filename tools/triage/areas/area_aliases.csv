@@ -1,0 +1,1143 @@
+area,raw_prefix,prefix_count
+filter,filter,51
+filter,filter inputs,3
+search suggestion,search suggestion,32
+search suggestion,search suggestions,7
+channel data,stream data,9
+help,help,412
+help,help center,2
+popovers,popovers,14
+popovers,popover,4
+css,css,74
+message header,message header,19
+icons,icons,24
+docs,docs,147
+dev docs,dev docs,1
+uv.lock,uv.lock,2
+lightbox,lightbox,20
+hotkey,hotkey,34
+move topic modal,move topic modal,2
+starlight,help beta,92
+starlight,starlight help,23
+starlight,starlight,1
+settings data,settings data,2
+people,people,47
+copy paste,copy paste,3
+inbox,inbox,70
+inbox,inbox view,1
+right sidebar,right sidebar,13
+markdown,markdown,65
+markdown,rendered markdown,12
+markdown,rendered markdown tests,3
+compose paste,compose paste,16
+buddy list,buddy list,20
+compose typeahead,composebox typeahead,19
+compose typeahead,compose typeahead,3
+templates,templates,41
+send email,send email,17
+support,support,26
+email mirror,email mirror,19
+email mirror,email mirror server,15
+groups ui,groups ui,9
+integrations,integrations,118
+alert popup,alert popup,1
+popover menus,popover menus,7
+recent view,recent view,99
+recent view,recents,11
+message feed bottom whitespace,message feed bottom whitespace,2
+inbox ui,inbox ui,22
+documentation,documentation,3
+help docs,help docs,1
+integ docs,integ docs,1
+integ docs/hubot,integ docs/hubot,1
+postcss,postcss,2
+types,types,4
+recipient row,recipient row,7
+mattermost,mattermost importer,20
+mattermost,mattermost import,6
+mattermost,mattermost,4
+mattermost,test mattermost importer,2
+mattermost,test mattermost,2
+test message dict,test message dict,1
+messages,messages,8
+corporate,corporate,29
+channels,streams,55
+channels,channels,4
+channels,stream,4
+channels,channel,3
+channels,streams ui,3
+channels,stream types,2
+channels,selected stream title,2
+channels,channel email address,2
+channels,decorated channel name,2
+channels,default streams,2
+channels,stream members,2
+channels,stream pill,1
+channels,stream ui updates,1
+channels,stream subscription,1
+channels,channel permissions,1
+channels,channel email,1
+channels,channels overlay,1
+channels,example stream,1
+channels,stream traffic,1
+channels,stream privacy icon,1
+channels,stream type icon,1
+channels,stream description,1
+channels,stream color,1
+channels,add stream options,1
+gitattributes,gitattributes,1
+svg,svg,1
+unread banner,unread banner,1
+tooltips,tooltips,15
+tooltips,tooltip,14
+email senders,email senders,2
+find account,find account,2
+push notifications,push notifications,31
+push notifications,push notification,31
+channel folders,channel folders,34
+channel folders,channel folder ui,4
+channel folders,channel folders popover,2
+channel folders,channel folder,1
+channel folders,test channel folders,1
+channel folders,channel folders ui,1
+folders,folders,3
+slack,slack import,27
+slack,slack,23
+slack,slack importer,23
+slack,slack integration,7
+slack,slack converter,7
+slack,slack import doc,4
+slack,slack integration doc,3
+slack,test slack importer,2
+slack,test slack integration,2
+slack,slack importer doc,2
+slack,slack incoming,2
+slack,slack importer test,1
+slack,slack util,1
+slack,slack message conversion,1
+slack,webhooks/slack,1
+signup,signup,5
+realm import post process,realm import post process,1
+production build,production build,1
+browserslist,browserslist,1
+demo orgs,demo orgs,47
+thumbnail,thumbnail,18
+thumbnail,thumbnails,3
+i18n,i18n,49
+organization settings,organization settings,2
+updates,updates,11
+topic link util,topic link util,10
+navbar,navbar,18
+navbar,navbar menus,2
+navbar,personal menu,1
+settings panel menu,settings panel menu,1
+user card popover,user card popover,6
+user group popover,user group popover,1
+upload,upload,45
+upload,uploads,6
+billing,billing,6
+user groups,user groups,24
+user groups,user group edit,7
+user groups,groups,5
+user groups,user group,2
+group settings,group settings,28
+realm creation form,realm creation form,1
+process exporter,process exporter,1
+channel settings,stream settings,56
+channel settings,channel settings,19
+channel settings,stream settings ui,4
+channel settings,stream setting,2
+channel settings,stream settings data,2
+channel settings,channel setting,1
+soft deactivation,soft deactivation,5
+compat,compat,1
+registration,registration,6
+saml,saml,17
+sync group,sync group,1
+python,python,8
+register,register,10
+api,api,31
+tools,tools,18
+presence data,presence data,1
+compose,compose,131
+compose banner,compose banner,9
+compose recipient,compose recipient,8
+compose validate,compose validate,14
+compose send menu popover,compose send menu popover,7
+emoji,emoji picker,14
+emoji,emoji,12
+left sidebar tooltips,left sidebar tooltips,1
+message actions popover,message actions popover,1
+message edit,message edit,30
+messages overlay ui,messages overlay ui,2
+playground links popover,playground links popover,1
+popover menus data,popover menus data,2
+search,search,61
+search pill,search pill,17
+search pill,search user pill,1
+sidebar ui,sidebars,14
+sidebar ui,sidebar ui,13
+sidebar ui,sidebar,7
+channel create,create channel,12
+channel create,stream create,6
+channel create,test channel creation,1
+tippyjs,tippyjs,1
+unread ops,unread ops,12
+unread ops,unread,5
+views util,views util,4
+eslint,eslint,19
+process fts updates,process fts updates,6
+puppet,puppet,64
+events,events,17
+import,import,25
+import,import util,11
+import,data import,10
+import,import realm,6
+import,test import export,2
+showroom,showroom,3
+inputs,inputs,9
+left sidebar,left sidebar,186
+configure rabbitmq,configure rabbitmq,1
+sync groups,sync groups,1
+new,new,1
+users,users,25
+drafts,drafts,24
+pill typeahead,pill typeahead,2
+typeahead helper,typeahead helper,4
+buddy data,buddy data,6
+stripe,stripe,44
+stripe,test stripe,10
+ldap,ldap,10
+self hosting,self hosting,1
+portico,portico,74
+portico,docs and portico,3
+portico,portico signin,3
+portico,legacy portico,2
+portico,portico markdown,2
+message list popover,message list popover,1
+message list hover,message list hover,2
+kandra,kandra,13
+ui util,ui util,3
+reminders,reminders,14
+reminders,reminder,4
+message reminder,message reminder,2
+input pill,input pill,8
+compose state,compose state,4
+compose actions,compose actions,6
+compose ui,compose closed ui,5
+compose ui,compose ui,4
+compose ui,closed compose,1
+overlays,overlay,12
+overlays,overlays,10
+buttons,buttons,9
+echo,echo,5
+condenser,condenser,2
+message actions,message actions,2
+message row,message row,10
+admin,admin,3
+hash util,hash util,19
+api docs,api docs,120
+postgres,postgres,6
+server events,server events,7
+user circles,user circles,3
+typeahead,typeahead,27
+settings ui,settings ui,5
+server events dispatch,server events dispatch,4
+styles,styles,3
+reactions,reactions,8
+run dev,run dev,12
+sentry,sentry,6
+install,install uv,24
+install,install node,13
+install,install,4
+install,install shfmt,3
+test auth backends,test auth backends,6
+requirements,requirements,41
+upgrade postgresql,upgrade postgresql,8
+compose action,compose action,1
+invites,invite,8
+invites,invites,6
+attachments,attachments,9
+unread data,unread data,1
+message feed ui,message feed ui,1
+page loader,page loader,1
+channel edit,stream edit,5
+channel edit,stream edit subscribers,1
+channel edit,channel edit,1
+components,components,4
+message view,message view,22
+message view,message view header,3
+populate analytics db,populate analytics db,1
+migrations,migrations,24
+migrations,migration,2
+integration docs,integration docs,15
+peer data,peer data,13
+dependencies,dependencies,26
+password reset,password reset,1
+web,web,30
+hashchange,hashchange,2
+scheduled messages,scheduled messages,12
+openapi,openapi,27
+scheduled message,scheduled message,3
+app,app,2
+views,views,7
+common,common,2
+url decoding,url decoding,7
+narrow helper,narrow helper,1
+url encoding,url encoding,9
+case studies,case studies,3
+process fts update,process fts update,1
+semgrep,semgrep,3
+channel list,stream list,59
+channel list,channel list item,1
+topics,topics,11
+zerver,zerver,28
+user events,user events,9
+header avatar,header avatar,2
+email notifications,email notifications,8
+email notifications,email notification,3
+topic list,topic list,28
+topic list,topic list data,9
+topic list,channel topics list,2
+topic list,topic list data test,2
+topic list,test stream topic history,1
+topic list,stream topic history util,1
+topic list,channel topic list,1
+social auth,social auth,2
+subscription data,subscription data,1
+mypy,mypy,11
+generate integration docs screenshot,generate integration docs screenshot,14
+modals,modals,59
+modals,modal,12
+process new human user,process new human user,1
+logo,logo,2
+webhooks/opsgenie,webhooks/opsgenie,1
+actions,actions,2
+app variable,app variable,1
+test bot data,test bot data,1
+dialog widget,dialog widget,5
+ruff,ruff,24
+validator,validator,3
+lookups,lookups,1
+user settings,user settings,7
+user settings,settings users,6
+populate db,populate db,9
+populate db,populate analytics,2
+flush memcached,flush memcached,1
+deferred email senders,deferred email senders,1
+confirm email change,confirm email change,2
+do start email change process,do start email change process,1
+validate email not already in realm,validate email not already in realm,1
+widgets,widgets,13
+links,links,4
+banners,banners,14
+setup apt repo,setup apt repo,2
+channel privacy,channel privacy,3
+channel privacy,test channel permissions,1
+desktop notification,desktop notification,2
+desktop notifications,desktop notifications,1
+notifications,notifications,15
+channel popover,stream popover,11
+channel popover,stream card popover,2
+channel popover,channel popover,1
+home,home,6
+test event system,test event system,1
+validate token,validate token,1
+zilencer,zilencer,8
+ui report,ui report,1
+custom profile fields,custom profile fields,20
+narrow history,narrow history,1
+message delete,message delete,6
+devlogin,devlogin,1
+add emoji,add emoji,2
+check rabbitmq queue,check rabbitmq queue,1
+nagios,nagios,1
+wal g exporter,wal g exporter,1
+auth,auth,10
+bots,bots,29
+bots,bot,2
+icon button,icon button,1
+alerts,alerts,2
+narrow banner,narrow banner,11
+empty feed notice,empty feed notice,2
+user profile,user profile,40
+add users button,add users button,1
+subscribers,subscribers,1
+state data,state data,2
+status modal,status modal,1
+personal recipients,personal recipient,3
+personal recipients,personal recipients,3
+avatar,avatar,4
+mandatory topics,mandatory topics,1
+bug,bug,2
+x buttons,x buttons,1
+onboarding steps,onboarding steps,5
+selects,selects,1
+bootstrap typeahead,bootstrap typeahead,5
+report message,report message,1
+integration doc,integration doc,1
+remote billing page,remote billing page,1
+manage,manage,1
+request,request,1
+restart server,restart server,5
+settings banner,settings banner,1
+settings account,settings account,1
+list util,list util,1
+welcome bot,welcome bot,2
+backend,backend,3
+analytics,analytics,3
+dm list,pm list,11
+dm list,pm list item,1
+dm list,pm list data,1
+dm list,pm list test,1
+topic box,topic box,2
+zephyr/user pill,zephyr/user pill,1
+user pill,user pill,9
+register queue,register queue,2
+send to push bouncer,send to push bouncer,1
+queue,queue,2
+empji picker,empji picker,1
+notification,notification,1
+test documentation,test documentation,1
+models,models,9
+bot settings,bot settings,6
+setting,setting,1
+bot list admin,bot list admin,1
+message feed top notice,message feed top notice,1
+message feed notice,message feed notice,1
+combined feed,combined feed,1
+integration url modal,integration url modal,11
+message live update,message live update,3
+navigation views,navigation views,3
+subscriptions,subscriptions,10
+dropdown list widget,dropdown list widget,1
+muted users,muted users,6
+message body,message body,1
+export search,export search,20
+images,images,2
+message edit history,message edit history,13
+scheduled message overlay,scheduled message overlay,2
+onboarding,onboarding,8
+desktop notification banner,desktop notification banner,1
+linter,linter,2
+message move,message move,2
+message flags,message flags,8
+me messages,me messages,2
+default user settings,default user settings,1
+new help center,new help center,1
+changelog,changelog,4
+reload,reload,7
+topic generator,topic generator,2
+drafts ui,drafts ui,2
+compose notifications,compose notifications,3
+notify local mixes,notify local mixes,1
+preferences,preferences,1
+makemessages,makemessages,2
+test e2ee push notification,test e2ee push notification,1
+topic filter,topic filter,1
+topic filter input,topic filter input,1
+realmauditlog,realmauditlog,1
+bulk remove subscriptions,bulk remove subscriptions,1
+compose banners,compose banners,2
+send zulip update announcements,send zulip update announcements,1
+topic popover,topic popover,4
+recent,recent,1
+altcha,altcha,1
+message send,message send,10
+compose attention,compose attention,2
+banner,banner,2
+user membership,user membership,1
+event types,event types,5
+event schema,event schema,2
+poll widget,poll widget,8
+pill container,pill container,3
+get recursive group members,get recursive group members,1
+grafana,grafana,1
+narrow,narrow,27
+fix(redmine),fix(redmine),3
+test(redmine),test(redmine),1
+register push device,register push device,3
+condense,condense,1
+filter input,filter input,1
+direct messages,direct messages,4
+direct messages,dm groups,2
+direct messages,direct message group,1
+direct messages,private messages,1
+direct messages,pm conversation,1
+move message,move message,1
+favicon,favicon,1
+unreads,unreads,1
+copy email modal,copy email modal,1
+filter topic,filter topic,1
+user status tooltips,user status tooltips,1
+run hooks,run hooks,3
+realm reactivation,realm reactivation,1
+message reminders,message reminders,1
+settings user list row,settings user list row,1
+admin human form,admin human form,1
+mime types,mime types,3
+log search,log search,5
+management,management,3
+forms,forms,11
+message reaction,message reaction,1
+user popover,user popover,2
+message edit tooltips,message edit tooltips,1
+compose tooltips,compose tooltips,2
+event,event,1
+navigation view,navigation view,2
+settings overlay,settings overlay,4
+copy messages,copy messages,6
+remove single newlines,remove single newlines,1
+user status ui,user status ui,2
+settings config,settings config,2
+channel list sort,stream list sort,9
+test message report,test message report,7
+typed endpoint,typed endpoint,2
+github actions,github actions,4
+realm audit logs,realm audit logs,1
+message list,message list,6
+test send message,test send message,1
+realm create,realm create,1
+access user group api value for setting,access user group api value for setting,1
+scim,scim,4
+scim filter,scim filter,1
+tippy,tippy,3
+confirmation,confirmation,2
+x icon,x icon,1
+widget,widget,3
+message report,message report,11
+home view,home view,1
+read receipt,read receipt,2
+copy,copy,2
+overlay ui,overlay ui,1
+docker,docker,2
+compose reply,compose reply,12
+help menu,help menu,1
+resize,resize,6
+export,export,32
+api changelog,api changelog,1
+channel events,stream events,6
+channel events,stream events dispatch,1
+dropdown,dropdown widget,19
+dropdown,dropdown lists,8
+dropdown,dropdown,7
+dropdown,folder dropdown widget,2
+render curl example,render curl example,2
+message,message,11
+delete in topic,delete in topic,4
+retention,retention,7
+add subscriptions,add subscriptions,3
+reload clients,reload clients,2
+ci,ci,3
+deactivated redirect,deactivated redirect,4
+settings export,settings export,4
+composebox,composebox,2
+dom selection,dom selection,6
+test realm export,test realm export,1
+do scrub realm,do scrub realm,2
+thirdparty,thirdparty,4
+cleanup,cleanup,1
+audio,audio,3
+realm creation,realm creation,1
+info overlays,info overlays,1
+cache,cache,15
+message cache,message cache,3
+memcached,memcached,2
+drafts overlay,drafts overlay,1
+video calls,video calls,19
+ui init,ui init,10
+get recipient ids,get recipient ids,2
+user status,user status,10
+pill input,pill input,1
+stylelint,stylelint,3
+unread animation,unread animation,1
+left sidebar mention,left sidebar mention,1
+layout,layout,1
+settings org,settings org,2
+build pgroonga,build pgroonga,3
+apt repos,apt repos,1
+test timezone,test timezone,1
+embeds,embeds,1
+external auth id,external auth id,1
+start server,start server,1
+test urls,test urls,2
+move topics modal,move topics modal,1
+app components,app components,2
+left sidebar navigation area,left sidebar navigation area,3
+schduled msgs ui,schduled msgs ui,1
+org settings,org settings,1
+test middleware,test middleware,1
+site previews,site previews,1
+transfer,transfer,1
+audio player,audio player,6
+settings preferences,settings preferences,1
+confirm dialog,confirm dialog,2
+left sidebar popover,left sidebar popover,1
+install shellcheck,install shellcheck,1
+test integrations,test integrations,3
+test push notifications,test push notifications,1
+upgrade banners,upgrade banners,1
+release checklist,release checklist,2
+update subscriber counts,update subscriber counts,6
+pgroonga,pgroonga,1
+transmit,transmit,4
+devtools,devtools,2
+compose and feed,compose and feed,1
+postgresql,postgresql,2
+microsoft teams,ms teams importer,11
+microsoft teams,microsoft teams importer,3
+microsoft teams,microsoft teams,1
+realm redirect,realm redirect,2
+postprocess,postprocess,13
+message events,message events,5
+message events,message events test,1
+pygments data,pygments data,1
+recent view ui,recent view ui,6
+deactivated org,deactivated org,1
+upload widget,upload widget,6
+upload widget,image upload widget,3
+package,package,1
+fixup,fixup,1
+custom emails,custom emails,3
+reload setup,reload setup,2
+navbar alerts,navbar alerts,2
+compose setup,compose setup,2
+message store,message store,10
+reminders overlay ui,reminders overlay ui,1
+event queue,event queue,8
+prod template,prod template,2
+test signup,test signup,1
+postprocess test,postprocess test,2
+media,media,1
+postprocess content,postprocess content,2
+todo widget,todo widget,6
+zform,zform,7
+dark theme,dark theme,9
+sync translations,sync translations,6
+subscription info,subscription info,3
+search pills,search pills,2
+tsconfig,tsconfig,2
+astro,astro,1
+remark,remark,4
+prettier,prettier,1
+babel,babel,2
+user pill container,user pill container,1
+zephyr,zephyr,1
+narrow title,narrow title,3
+settings profile,settings profile fields,7
+settings profile,profile settings,1
+draft overlay,draft overlay,1
+edit history overlay,edit history overlay,2
+reminders overlay,reminders overlay,1
+scheduled overlay,scheduled overlay,1
+groups overlay,groups overlay,1
+about overlay,about overlay,1
+info overlay,info overlay,8
+search results,search results,2
+digest base,digest base,1
+email base messages,email base messages,1
+send later popover,send later popover,2
+add new bot form,add new bot form,1
+preferences emoji,preferences emoji,1
+preferences information,preferences information,1
+user profile modal,user profile modal,2
+todo widget tasks,todo widget tasks,1
+index,index,1
+landing nav,landing nav,2
+remote billing finalize login confirmation,remote billing finalize login confirmation,1
+template parser,template parser,3
+outgoing webhook,outgoing webhook,3
+check openapi,check openapi,1
+lint,lint,1
+format mdx,format mdx,1
+util,util,5
+convert help center docs to mdx,convert help center docs to mdx,2
+help relative links,help relative links,2
+tabbed instructions,tabbed instructions,2
+check help documentation,check help documentation,1
+documentation crawler,documentation crawler,1
+policies,policies,2
+narrow state,narrow state,3
+compose closed,compose closed,3
+compose close,compose close,1
+realm logo,realm logo,1
+refactor,refactor,7
+desktop,desktop,1
+saved snippet,saved snippet,1
+contributor docs,contributor docs,25
+email forwarding,email forwarding,1
+s3,s3,1
+restore messages,restore messages,1
+narrow channel header,narrow channel header,1
+rate limit,rate limit,1
+exceptions,exceptions,1
+new registration,new registration,1
+setup upgrade postgresql,setup upgrade postgresql,2
+compose call,compose call ui,5
+compose call,compose call,5
+hello,hello,1
+submessage,submessage,5
+prometheus,prometheus,2
+rocketchat,rocketchat,10
+rocketchat,rocketchat importer,2
+message list view,message list view,9
+drodpown,drodpown,2
+template styles,template styles,1
+feat,feat,5
+version,version,4
+topic menu,topic menu,1
+mobile web,mobile web,1
+closed by commits,closed by commits,2
+webhooks/gitea,webhooks gitea,3
+register remote server,register remote server,6
+integrations/appveyor,integrations/appveyor,1
+integrations/freshstatus,integrations/freshstatus,1
+integrations/gocd,integrations/gocd,1
+integrations/insping,integrations/insping,1
+integrations/librato,integrations/librato,1
+integrations/opensearch,integrations/opensearch,1
+integrations/papertrail,integrations/papertrail,1
+integrations/raygun,integrations/raygun,1
+integrations/sentry,integrations/sentry,1
+integrations/stripe,integrations/stripe,1
+integrations/trello,integrations/trello,1
+integrations/updown,integrations/updown,1
+integrations/thinkst,integrations/thinkst,1
+integrations/canarytoken,integrations/canarytoken,1
+integrations/google calendar,integrations/google calendar,1
+github action,github action,3
+typing,typing,4
+create realm,create realm,4
+upgrade zulip from git,upgrade zulip from git,2
+paste,paste,1
+test message fetch,test message fetch,1
+check schemas,check schemas,1
+build emoji,build emoji,2
+send custom email,send custom email,1
+idempotency,idempotency,2
+sharding,sharding,8
+hash,hash,3
+emoji names,emoji names,1
+timestamp,timestamp,2
+read receipts,read receipts,4
+keyboard shortcuts,keyboard shortcuts,1
+cache helpers,cache helpers,1
+signals,signals,1
+webhooks/freshstatus,webhooks/freshstatus,1
+webhooks/insping,webhooks/insping,1
+webhooks/librato,webhooks/librato,1
+webhooks/stripe,webhooks/stripe,2
+webhooks/raygun,webhooks/raygun,1
+webhooks/trello,webhooks/trello,1
+webhooks/updown,webhooks/updown,1
+webhooks/grafana,webhooks/grafana,1
+webhooks/appveyor,webhooks/appveyor,2
+webhooks/canarytoken,webhooks/canarytoken,1
+webhooks/thinkst,webhooks/thinkst,1
+webhooks/sentry,webhooks/sentry,8
+webhooks/papertrail,webhooks/papertrail,2
+fixtureless integrations,fixtureless integrations,1
+webhooks/newrelic,webhooks/newrelic,2
+webhooks/opensearch,webhooks/opensearch,1
+gifs,gifs,24
+gifs,gif picker,8
+organization profile,organization profile,1
+letsencrypt,letsencrypt,7
+setup certbot,setup certbot,6
+mouse drag,mouse drag,2
+external accounts,external accounts,2
+realm export,realm export,6
+base page params,base page params,3
+digest emails,digest emails,1
+handle push notification,handle push notification,3
+upload overlay,upload overlay,1
+setup docs,setup docs,2
+hash parser,hash parser,2
+nginx,nginx,16
+demo org,demo org,1
+web(landing),web(landing),2
+watched phrases,watched phrases,2
+time zone util,time zone util,1
+playgrounds,playgrounds,1
+click handlers,click handlers,2
+message feed,message feed,1
+puppeteer tests,puppeteer,8
+typeaheads,typeaheads,1
+tabbed sections,tabbed sections,1
+message scroll,message scroll,6
+user pills,user pills,2
+groupcard,groupcard,1
+github,github,12
+digest,digest,8
+exception reporter,exception reporter,1
+middleware,middleware,3
+checks,checks,13
+mirror to czo,mirror to czo,1
+presence,presence,6
+closed by commit,closed by commit,1
+email,emails,8
+email,email,6
+recent topics,recent topics,3
+dropdowns,dropdowns,1
+giphy,giphy,4
+tenor,tenor,13
+production docs,production docs,1
+message report modal,message report modal,1
+pills,pills,4
+user,user,1
+shared,shared,9
+fenced code,fenced code,3
+settings bots,settings bots,4
+typos,typos,1
+export modal,export modal,1
+test push notif,test push notif,1
+spoiler,spoiler,1
+message report test,message report test,1
+setup recommended,setup recommended,1
+message headers,message headers,1
+message report ui,message report ui,2
+export consent,export consent,1
+dev,dev,1
+imports,imports,2
+notification data,notification data,1
+previewable urls,previewable urls,2
+readme,readme,1
+markdown util,markdown util,1
+experiment,experiment,1
+webhooks/intercom,webhooks/intercom,11
+webhooks/github,webhooks/github,17
+webhooks/github,integrations/github,3
+webhooks/gitlab,webhooks/gitlab,4
+custom check,custom check,1
+clipboard handler,clipboard handler,1
+settings notifications,settings notifications,1
+settings css,settings css,4
+custom profile fields ui,custom profile fields ui,1
+message list tooltips,message list tooltips,2
+user group create members,user group create members,1
+manage bot,manage bot,1
+flatpickr,flatpickr,3
+message feed divider,message feed divider,1
+message list tooltip,message list tooltip,1
+webhooks,webhooks,24
+delete avatar,delete avatar,1
+avatar hash,avatar hash,1
+build avatar url,build avatar url,1
+scrub realm,scrub realm,3
+scrub avatar image,scrub avatar image,1
+marketing page,marketing page,34
+for education,for education,4
+edit profile,edit profile,1
+message select,message select,1
+tenor picker,tenor picker,4
+message list data cache,message list data cache,1
+template,template,2
+message util,message util,3
+demo organizations,demo organizations,1
+realm deactivation,realm deactivation,1
+backup,backup,2
+digest email,digest email,1
+cordoba case study,cordoba case study,1
+get identity dict from session,get identity dict from session,1
+remote billing,remote billing,3
+all messages data,all messages data,2
+attribution,attribution,1
+landing page,landing page,1
+workflows,workflows,12
+portico svgs,portico svgs,3
+zproject,zproject,15
+error pages,error pages,1
+icons/unread,icons/unread,2
+icons/sort arrow down,icons/sort arrow down,2
+marketing nav,marketing nav,1
+watchdog,watchdog,3
+why zulip,why zulip,1
+apps page,apps page,2
+features grid,features grid,1
+contributing,contributing,1
+example realm,example realm,1
+test handle push notification,test handle push notification,1
+test e2ee push notifications,test e2ee push notifications,1
+settings exports,settings exports,3
+message list data,message list data,2
+activity,activity,8
+backport all prs,backport all prs,2
+test parallel,test parallel,1
+message sending,message sending,2
+settings emoji,settings emoji,3
+widget css,widget css,1
+transfer avatars to s3,transfer avatars to s3,1
+integrations/xkcd,integrations/xkcd,1
+pg backup and purge,pg backup and purge,1
+rate limiter,rate limiter,5
+provision,provision,6
+settings checkbox,settings checkbox,1
+click,click,3
+missedmessage emails,missedmessage emails,2
+internal url,internal url,2
+devices,devices,4
+push registration,push registration,8
+test push notification,test push notification,1
+autosize,autosize,1
+todo data,todo data,1
+widgetize,widgetize,1
+creator details,creator details,2
+access user,access user,1
+locale,locale,2
+style,style,6
+fix,fix,5
+webhooks/taiga,webhooks/taiga,7
+popup banner,popup banner,1
+rate limiting,rate limiting,2
+information density,information density,1
+viewport,viewport,4
+search description,search description,1
+navigate,navigate,3
+test queue worker,test queue worker,2
+register device to bouncer,register device to bouncer,2
+tab key,tab key,1
+shift tab key,shift tab key,1
+settings linkifiers,settings linkifiers,1
+linkifiers,linkifiers,19
+linkifiers,linkifier,1
+frontend,frontend,1
+depenedencies,depenedencies,2
+compose call tests,compose call tests,1
+emoji frequency,emoji frequency,18
+emoji frequency,emoji frequency data,2
+popup banners,popup banners,2
+setup,setup,4
+push device event,push device event,2
+worker,worker,1
+dev emails,dev emails,1
+two pane settings css,two pane settings css,1
+user group settings,user group settings,7
+deferred work,deferred work,2
+tooling,tooling,2
+stats,stats,3
+team,team,4
+search/backend,search/backend,1
+search/frontend,search/frontend,1
+search/ui,search/ui,1
+navigation,navigation,1
+user with status icon,user with status icon,1
+user group edit members,user group edit members,1
+quote,quote,14
+quote,quote message,3
+quote,quote messages,2
+missedmessage email,missedmessage email,7
+widget system,widget system,1
+polls,polls,3
+polls,poll,2
+event recipient ids for action on messages,event recipient ids for action on messages,1
+delete messages,delete messages,1
+move messages to archive,move messages to archive,1
+run archiving,run archiving,1
+zform (trivia bot),zform (trivia bot),1
+gif state,gif state,1
+logging,logging,1
+user custom profile fields,user custom profile fields,1
+tenor network,tenor network,1
+abstract network gif,abstract network gif,1
+get messages,get messages,1
+timerender,timerender,3
+color picker popover,color picker popover,1
+webhooks/jira,webhooks/jira,7
+editorconfig,editorconfig,1
+webpack,webpack,4
+partial subscribers,partial subscribers,1
+message link,message link,1
+integrations/onyx,integrations/onyx,1
+compose pm pill,compose pm pill,2
+keyboard,keyboard,3
+user presence,user presence,1
+alert words,alert words,5
+rendered mardown,rendered mardown,1
+analytics tests,analytics tests,1
+skills,skills,3
+supervisor,supervisor,1
+logrotate,logrotate,1
+subdomains,subdomains,1
+api tests,api tests,1
+realm emoji,realm emoji,8
+skinned compose,skinned compose,3
+calculate first visible message id,calculate first visible message id,1
+update first visible message,update first visible message,1
+message fetch,message fetch,6
+ui,ui,2
+clipboard handler.test.cjs,clipboard handler.test.cjs,1
+outgoing webhooks,outgoing webhooks,3
+api settings,api settings,1
+json,json,1
+config error,config error,2
+jdenticon,jdenticon,2
+bitbucket,bitbucket,1
+jira,jira,4
+webhooks/bitbucket,webhooks/bitbucket,1
+zquery,zquery,1
+discord,discord,1
+ts,ts,1
+github webhook,github webhook,1
+recent view tests,recent view tests,2
+recent senders,recent senders test,2
+recent senders,recent senders,2
+starred messages,starred messages,3
+desktop integration,desktop integration,1
+message content,message content,1
+decorators,decorators,1
+reviewboard,reviewboard,1
+feedback widget,feedback widget,1
+scripts,scripts,2
+webhooks/heroku,webhooks/heroku,2
+backends,backends,5
+message quoting,message quoting,1
+camo,camo,1
+user card,user card,3
+fetch zulip messages,fetch zulip messages,1
+webhooks/notion(zapier),webhooks/notion(zapier),1
+webhooks/notion,webhooks/notion,2
+fixtures,fixtures,2
+bot storage,bot storage,2
+user activity,user activity,2
+do delete all realm attachments,do delete all realm attachments,1
+env wal g,env wal g,2
+claude,claude,5
+url preview,url preview,1
+submessages,submessages,1
+zulip puppet apply,zulip puppet apply,1
+user full name,user full name,2
+gitignore,gitignore,3
+dev settings,dev settings,1
+users backend,users backend,2
+admin settings,admin settings,2
+mention,mention,1
+gitlab,gitlab,4
+runtornado,runtornado,1
+embedded bots,embedded bots,1
+missedmessage mobile notifications,missedmessage mobile notifications,1
+apps,apps,2
+link preview,link preview,1
+do change user role,do change user role,1
+queries,queries,1
+webhook/github,webhook/github,3
+restore backup,restore backup,2
+display recipient,display recipient,2
+create user,create user,1
+"recent view, inbox","recent view, inbox",1
+oidc,oidc,2
+soft reactivate,soft reactivate,1
+webhooks/codeship,webhooks/codeship,1
+webhooks/pagerduty,webhooks/pagerduty,4
+saved snippets,saved snippets,7
+group popover,group popover,1
+raw content,raw content,1
+webhooks/circleci,webhooks/circleci,1
+tornado,tornado,6
+alert word,alert word,1
+highlight,highlight,1
+dev vagrant docker,dev vagrant docker,2
+list widget,list widget,3
+manage folder,manage folder,1
+lib,lib,1
+message helper,message helper,1
+oauth,oauth,1
+screenshots,screenshots,2
+user group css,user group css,2
+reaction,reaction,1
+rows,rows,1
+mentions,mentions,1
+linear,linear,1
+email pill,email pill,3
+resolved topic,resolved topic,1
+date,date,1
+azuremonitor,azuremonitor,1
+topic filter pill,topic filter pill,1
+dialog,dialog,1
+settings components,settings components,1
+incoming webhooks walkthrough,incoming webhooks walkthrough,2
+incoming webhooks reference,incoming webhooks reference,4
+pagerduty,pagerduty,1
+rundeck,rundeck,1
+harbor,harbor,1
+external accounts dropdown,external accounts dropdown,1
+webhooks/travis,webhooks/travis,5
+outgoing http,outgoing http,3
+push,push,1
+scroll to date,scroll to date,1
+communities,communities,2
+message overlays,message overlays,3
+zcommand,zcommand,1
+compose preview,compose preview,1
+message parser,message parser,2
+frequent emoji,frequent emoji,1
+zjquery,zjquery,57
+image galleries,image galleries,1
+inline images,inline images,1
+api message formatting,api message formatting,1
+webhooks/zabbix,webhooks/zabbix,1
+test user groups,test user groups,1
+jquery idle,jquery idle,1
+droplets,droplets,1
+test user status,test user status,1
+per request cache,per request cache,1
+about zulip,about zulip,1
+accessibility,accessibility,1
+topic list item,topic list item,1
+e2e,e2e,1
+upgrade,upgrade,1
+footer,footer,1
+message formatting,message formatting,1
+webhooks/dbt,webhooks/dbt,1
+email validation,email validation,1
+external auth,external auth,1
+realm settings,realm settings,1
+do delete realm,do delete realm,2
+ms teasm importer,ms teasm importer,1
+"inbox, recent","inbox, recent",5
+"inbox, recent view","inbox, recent view",2
+test reminders,test reminders,1
+follow,follow,4
+email backends,email backends,3
+python warnings,python warnings,2
+coveragerc,coveragerc,1
+async utils,async utils,1
+build groonga,build groonga,1
+production verify,production verify,1
+db replica,db replica,1
+antispam,antispam,2
+thumbnail galleries,thumbnail galleries,1
+user schema,user schema,1
+shimmer,shimmer,4
+test api,test api,1
+webhooks/harbor,webhooks/harbor,2
+webhooks/rundeck,webhooks/rundeck,5
+markdown parse,markdown parse,1
+api key modal,api key modal,1
+llms txt,llms txt,4
+box resize,box resize,1
+user agent,user agent,1
+compose fade,compose fade,1
+user topics,user topics,1
+user search,user search,1
+stream search,stream search,1
+message preview,message preview,1
+sync,sync,1
+scroll,scroll,1
+user counts,user counts,1
+sponsorship,sponsorship,1
+password,password,1
+forward,forward,1
+more pms,more pms,1
+webhook/jira,webhook/jira,1
+integrations/nextcloud talk,integrations/nextcloud talk,1
+settings invites,settings invites,1
+user deactivation ui,user deactivation ui,1
+pnpm,pnpm,1
+assets,assets,1
+debug require webpack plugin,debug require webpack plugin,1
+popover menu,popover menu,1
+stripe event handler,stripe event handler,1
+test zilencer analytics,test zilencer analytics,1
+discord auth,discord auth,1
+tools/triage,tools/triage,6
+pr triage,pr triage,1
