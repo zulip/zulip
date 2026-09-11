@@ -173,6 +173,7 @@ class RawStreamDict(TypedDict):
     can_create_topic_group_id: int
     can_delete_any_message_group_id: int
     can_delete_own_message_group_id: int
+    can_mention_many_users_group_id: int
     can_move_messages_out_of_channel_group_id: int
     can_move_messages_within_channel_group_id: int
     can_send_message_group_id: int
@@ -229,6 +230,7 @@ class SubscriptionStreamDict(TypedDict):
     can_create_topic_group: int | UserGroupMembersDict
     can_delete_any_message_group: int | UserGroupMembersDict
     can_delete_own_message_group: int | UserGroupMembersDict
+    can_mention_many_users_group: int | UserGroupMembersDict
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
     can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
@@ -273,6 +275,7 @@ class NeverSubscribedStreamDict(TypedDict):
     can_create_topic_group: int | UserGroupMembersDict
     can_delete_any_message_group: int | UserGroupMembersDict
     can_delete_own_message_group: int | UserGroupMembersDict
+    can_mention_many_users_group: int | UserGroupMembersDict
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
     can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
@@ -314,6 +317,7 @@ class DefaultStreamDict(TypedDict):
     can_create_topic_group: int | UserGroupMembersDict
     can_delete_any_message_group: int | UserGroupMembersDict
     can_delete_own_message_group: int | UserGroupMembersDict
+    can_mention_many_users_group: int | UserGroupMembersDict
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
     can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
