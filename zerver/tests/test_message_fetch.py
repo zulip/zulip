@@ -2183,7 +2183,8 @@ class GetOldMessagesTest(ZulipTestCase):
         set depending on which endpoint encounters the error.
 
         This verifies the status code as well as the value of the set header.
-        `www_authenticate` should be `Basic realm="zulip"` for paths starting with "/api", and
+        `www_authenticate` should be `Basic realm="zulip"` for paths starting with "/api"
+        (or include Bearer as well when ENABLE_ZULIP_OAUTH is on), and
         `Session realm="zulip"` otherwise.
         """
         self.assert_json_error(
@@ -2285,9 +2286,12 @@ class GetOldMessagesTest(ZulipTestCase):
         self.check_unauthenticated_response(result)
 
         # Paths starting with /api/v1 should receive a response that asks
-        # for basic auth.
+        # for API authentication (basic, and bearer when OAuth is enabled).
         result = self.client_get("/api/v1/messages", dict(get_params))
-        self.check_unauthenticated_response(result, www_authenticate='Basic realm="zulip"')
+        self.check_unauthenticated_response(
+            result,
+            www_authenticate='Bearer realm="zulip", Basic realm="zulip"',
+        )
 
         # Successful access to web-public channel messages.
         web_public_channel_get_params: dict[str, int | str | bool] = {

@@ -16,3 +16,15 @@ class TwoFactorLoader(app_directories.Loader):
             if d.match("two_factor/*"):
                 two_factor_dirs.append(d)
         return two_factor_dirs
+
+
+class OauthLoader(app_directories.Loader):
+    @override
+    def get_dirs(self) -> list[str | Path]:
+        dirs = super().get_dirs()
+        oauth_dirs: list[str | Path] = []
+        for d in dirs:
+            assert isinstance(d, Path)
+            if d.match("oauth2_provider/*"):
+                oauth_dirs.append(d)
+        return oauth_dirs

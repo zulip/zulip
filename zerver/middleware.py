@@ -391,7 +391,10 @@ class JsonErrorHandler(MiddlewareMixin):
                     f"{settings.HOME_NOT_LOGGED_IN}?{urlencode({'next': request.path})}"
                 )
             if request.path.startswith("/api"):
-                # For API routes, ask for HTTP basic auth (email:apiKey).
+                # For API routes, advertise HTTP basic auth (email:apiKey),
+                # and bearer tokens when the experimental OAuth provider is on.
+                if settings.ENABLE_ZULIP_OAUTH:
+                    return json_unauthorized(www_authenticate="basic_or_bearer")
                 return json_unauthorized()
             else:
                 # For /json routes, ask for session authentication.

@@ -120,7 +120,8 @@ def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
     """Dispatch to a REST API endpoint.
 
     Authentication is verified in the following ways:
-        * for paths beginning with /api, HTTP basic auth
+        * for paths beginning with /api, HTTP basic auth (email:apiKey), and
+          when ENABLE_ZULIP_OAUTH is on, OAuth2 bearer tokens as well
         * for paths beginning with /json (used by the web client), the session token
 
     Unauthenticated requests may use this endpoint only with the
@@ -131,7 +132,7 @@ def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
 
         * protect against CSRF (if the user is already authenticated through
           a Django session)
-        * authenticate via an API key (otherwise)
+        * authenticate via an API key or OAuth bearer token (otherwise)
         * coerce PUT/PATCH/DELETE into having POST-like semantics for
           retrieving variables
 
@@ -189,7 +190,7 @@ def rest_dispatch(request: HttpRequest, /, **kwargs: object) -> HttpResponse:
         target_function = csrf_protect(authenticated_json_view(target_function, **auth_kwargs))
 
     # most clients (mobile, bots, etc) use HTTP basic auth and REST calls, where instead of
-    # username:password, we use email:apiKey
+    # username:password, we use email:apiKey. With ENABLE_ZULIP_OAUTH, bearer tokens work too.
     elif request.path.startswith("/api") and "Authorization" in request.headers:
         # Wrap function with decorator to authenticate the user before
         # proceeding
