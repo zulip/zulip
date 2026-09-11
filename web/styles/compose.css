@@ -206,6 +206,10 @@
            plus 4px of grid gap for 116px here. */
         margin-right: calc(var(--compose-send-controls-width) + 4px);
 
+        .banner {
+            margin-bottom: 4px;
+        }
+
         .main-view-banner {
             padding-right: 4px;
 
