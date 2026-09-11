@@ -2,6 +2,7 @@
 import logging
 from collections import defaultdict
 from collections.abc import Sequence
+from datetime import timedelta
 from typing import Any, TypedDict
 
 import sentry_sdk
@@ -27,6 +28,7 @@ from zerver.models import (
 )
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.scheduled_jobs import NotificationTriggers
+from zerver.tornado.django_api import send_event_on_commit
 
 logger = logging.getLogger("zulip.soft_deactivation")
 log_to_file(logger, settings.SOFT_DEACTIVATION_LOG_PATH)
@@ -348,6 +350,20 @@ def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> UserProfil
         return user_profile
 
 
+def reactivate_user_and_notify_client(user_profile: UserProfile, *, notify_client: bool) -> None:
+    """Reactivate the user, telling their clients that they are no longer
+    long-term idle -- and telling a client waiting on the loading screen even
+    if some other path did the backfill first.
+    """
+    reactivated_user = reactivate_user_if_soft_deactivated(user_profile)
+    if reactivated_user is not None or notify_client:
+        send_event_on_commit(
+            user_profile.realm,
+            {"type": "long_term_idle", "value": False},
+            [user_profile.id],
+        )
+
+
 def get_users_for_soft_deactivation(
     inactive_for_days: int, filter_kwargs: Any
 ) -> list[UserProfile]:
@@ -408,15 +424,36 @@ def get_soft_deactivated_users_for_catch_up(filter_kwargs: Any) -> QuerySet[User
     return users_to_catch_up
 
 
-def queue_soft_reactivation(user_profile_id: int) -> None:
+def queue_soft_reactivation(user_profile_id: int, *, notify_client: bool = False) -> None:
+    # Only the register flow tells a client that the user is long-term idle,
+    # so only it has a client waiting to hear that they no longer are.
     event = {
         "type": "soft_reactivate",
         "user_profile_id": user_profile_id,
+        "notify_client": notify_client,
     }
     if settings.DEDICATED_SOFT_REACTIVATION_QUEUE:
         queue_event_on_commit("soft_reactivation", event)
     else:
         queue_event_on_commit("deferred_work", event)
+
+
+def get_days_since_last_visit(user_profile: UserProfile) -> int | None:
+    """Whole days since the user's last visit before this session, or None if
+    that is unknown or less than a day.
+
+    Visits from the last few minutes are skipped because the queue worker that
+    records UserActivity may well have caught up with this very request by the
+    time we look.
+    """
+    before_this_session = timezone_now() - timedelta(minutes=10)
+    last_visit = UserActivity.objects.filter(
+        user_profile=user_profile, last_visit__lt=before_this_session
+    ).aggregate(last_visit=Max("last_visit"))["last_visit"]
+    if last_visit is None:
+        return None
+    days = (timezone_now() - last_visit).days
+    return days if days >= 1 else None
 
 
 def soft_reactivate_if_personal_notification(

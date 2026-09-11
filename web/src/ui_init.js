@@ -837,6 +837,31 @@ $(() => {
         window.history.replaceState(window.history.state, "", url);
     }
 
+    function show_long_term_idle_loading_message(days) {
+        const $container = $("#app-loading-long-term-idle");
+        $container.find(".app-loading-long-term-idle-body").text(
+            i18n.$t({
+                defaultMessage:
+                    "We'll need a minute to load your account. This page will update once it's loaded.",
+            }),
+        );
+        if (days !== null) {
+            $container
+                .find(".app-loading-long-term-idle-lead")
+                .text(
+                    i18n.$t(
+                        {
+                            defaultMessage:
+                                "You've been away for {days, plural, one {# day} other {# days}}!",
+                        },
+                        {days},
+                    ),
+                )
+                .removeAttr("hidden");
+        }
+        $container.removeAttr("hidden");
+    }
+
     if (page_params.no_event_queue) {
         // For spectators and client-triggered reloads, fetch
         // state_data via the API rather than reading it from the
@@ -844,22 +869,38 @@ $(() => {
         // avoids partial-transfer failures that leave users stuck on
         // the loading screen. See #36094.
         let data;
+        let client_capabilities;
         if (page_params.is_spectator) {
+            client_capabilities = {
+                notification_settings_null: true,
+                bulk_message_deletion: true,
+                user_avatar_url_field_optional: true,
+                // Set this to true when stream typing notifications are implemented.
+                stream_typing_notifications: false,
+                user_settings_object: true,
+                empty_topic_name: true,
+                individual_emoji_changes: true,
+            };
             data = {
                 apply_markdown: true,
-                client_capabilities: JSON.stringify({
-                    notification_settings_null: true,
-                    bulk_message_deletion: true,
-                    user_avatar_url_field_optional: true,
-                    // Set this to true when stream typing notifications are implemented.
-                    stream_typing_notifications: false,
-                    user_settings_object: true,
-                    empty_topic_name: true,
-                    individual_emoji_changes: true,
-                }),
+                client_capabilities: JSON.stringify(client_capabilities),
                 client_gravatar: false,
             };
         } else {
+            client_capabilities = {
+                notification_settings_null: true,
+                bulk_message_deletion: true,
+                user_avatar_url_field_optional: true,
+                stream_typing_notifications: true,
+                linkifier_url_template: true,
+                user_list_incomplete: true,
+                include_deactivated_groups: true,
+                archived_channels: true,
+                empty_topic_name: true,
+                simplified_presence_events: true,
+                individual_emoji_changes: true,
+                long_term_idle_reactivation: page_params.is_long_term_idle,
+            };
             // Logged-in reload: request the same parameters the
             // server-side do_events_register call uses for the initial
             // page load. Keep these in sync with the call in
@@ -871,20 +912,11 @@ $(() => {
                 include_subscribers: "partial",
                 presence_history_limit_days: page_params.presence_history_limit_days_for_web_app,
                 fetch_event_types: JSON.stringify(FETCH_EVENT_TYPES),
-                client_capabilities: JSON.stringify({
-                    notification_settings_null: true,
-                    bulk_message_deletion: true,
-                    user_avatar_url_field_optional: true,
-                    stream_typing_notifications: true,
-                    linkifier_url_template: true,
-                    user_list_incomplete: true,
-                    include_deactivated_groups: true,
-                    archived_channels: true,
-                    empty_topic_name: true,
-                    simplified_presence_events: true,
-                    individual_emoji_changes: true,
-                }),
+                client_capabilities: JSON.stringify(client_capabilities),
             };
+        }
+        if (page_params.is_long_term_idle) {
+            show_long_term_idle_loading_message(page_params.long_term_idle_days);
         }
         let register_failures = 0;
         function fetch_state_data() {
@@ -892,6 +924,11 @@ $(() => {
                 url: "/json/register",
                 data,
                 success(response_data) {
+                    register_failures = 0;
+                    if (response_data.long_term_idle) {
+                        wait_for_reactivation_and_register(response_data);
+                        return;
+                    }
                     const state_data = state_data_schema.parse(response_data);
                     initialize_everything(state_data);
                     if (page_params.show_try_zulip_modal) {
@@ -913,6 +950,80 @@ $(() => {
                     loading_error.show_loading_error();
                 },
             });
+        }
+
+        function wait_for_reactivation_and_register(reactivating_data) {
+            const queue_id = reactivating_data.queue_id;
+            let last_event_id = reactivating_data.last_event_id;
+            let failures = 0;
+            // Nothing retries a backfill whose worker dropped it, and no event
+            // is coming in that case, so give up waiting eventually.
+            const register_again_time = Date.now() + 2 * 60 * 1000;
+
+            function stop_waiting_and_register({discard_queue}) {
+                // Only the first register waits on a queue: if the account
+                // still is not ready, having the register request itself do
+                // the backfill is slow but always finishes.
+                client_capabilities.long_term_idle_reactivation = false;
+                data.client_capabilities = JSON.stringify(client_capabilities);
+                if (discard_queue) {
+                    channel.del({url: "/json/events", data: {queue_id}});
+                }
+                fetch_state_data();
+            }
+
+            function poll() {
+                if (Date.now() > register_again_time) {
+                    stop_waiting_and_register({discard_queue: true});
+                    return;
+                }
+                channel.get({
+                    url: "/json/events",
+                    data: {queue_id, last_event_id},
+                    // Bound a stalled connection; the server's heartbeats end
+                    // an idle long-poll well inside this.
+                    timeout: 120 * 1000,
+                    success(events_data) {
+                        failures = 0;
+                        for (const event of events_data.events) {
+                            last_event_id = Math.max(last_event_id, event.id);
+                            if (event.type === "long_term_idle") {
+                                stop_waiting_and_register({discard_queue: true});
+                                return;
+                            }
+                        }
+                        poll();
+                    },
+                    error(xhr, error_type) {
+                        const queue_expired =
+                            xhr.status === 400 && xhr.responseJSON?.code === "BAD_EVENT_QUEUE_ID";
+                        if (queue_expired) {
+                            stop_waiting_and_register({discard_queue: false});
+                            return;
+                        }
+                        if (error_type === "timeout") {
+                            // Waiting is expected to be long, so a poll that
+                            // ran out of time is not a failure.
+                            failures = 0;
+                            poll();
+                            return;
+                        }
+                        failures += 1;
+                        if (failures >= 5) {
+                            loading_error.show_loading_error();
+                            return;
+                        }
+                        const retry_delay_secs = get_retry_backoff_seconds(
+                            xhr,
+                            failures,
+                            false,
+                            true,
+                        );
+                        setTimeout(poll, retry_delay_secs * 1000);
+                    },
+                });
+            }
+            poll();
         }
         fetch_state_data();
     } else {
