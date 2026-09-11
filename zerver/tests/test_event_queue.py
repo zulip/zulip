@@ -1595,12 +1595,13 @@ class OfflineEventQueueTest(ZulipTestCase):
         self,
         user: UserProfile,
         queue_timeout: int | str | None,
+        client_type_name: str = "ZulipFlutter",
     ) -> ClientDescriptor:
         queue_data: dict[str, Any] = dict(
             all_public_streams=False,
             apply_markdown=True,
             client_gravatar=True,
-            client_type_name="ZulipFlutter",
+            client_type_name=client_type_name,
             event_types=["message"],
             last_connection_time=time.time(),
             queue_timeout=queue_timeout,
@@ -1687,6 +1688,26 @@ class OfflineEventQueueTest(ZulipTestCase):
             mark_clients_offline({client2.event_queue.id}, {hamlet.id})
             mock_enqueue.assert_called_once()
 
+    def test_last_client_for_user_ignores_non_human_queues(self) -> None:
+        hamlet = self.example_user("hamlet")
+        human_client = self.allocate_queue(
+            hamlet,
+            queue_timeout=self.LONG_LIVED_EVENT_QUEUE_TIMEOUT_SECS,
+            client_type_name="website",
+        )
+        self.allocate_queue(
+            hamlet,
+            queue_timeout=self.LONG_LIVED_EVENT_QUEUE_TIMEOUT_SECS,
+            client_type_name="home grown API program",
+        )
+
+        iago = self.example_user("iago")
+        self.send_personal_message(iago, hamlet)
+
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
+            mark_clients_offline({human_client.event_queue.id}, {hamlet.id})
+            mock_enqueue.assert_called_once()
+
     def test_receiver_is_off_zulip_with_offline_queue(self) -> None:
         hamlet = self.example_user("hamlet")
         client = self.allocate_queue(hamlet, queue_timeout=self.LONG_LIVED_EVENT_QUEUE_TIMEOUT_SECS)
@@ -1697,6 +1718,25 @@ class OfflineEventQueueTest(ZulipTestCase):
         # After marking offline, user should be "off Zulip".
         client.offline = True
         self.assertTrue(receiver_is_off_zulip(hamlet.id))
+
+    def test_receiver_is_off_zulip_ignores_non_human_queue(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # Non-human event queues receiving messages should not suppress push notifications.
+        self.allocate_queue(
+            hamlet,
+            queue_timeout=self.LONG_LIVED_EVENT_QUEUE_TIMEOUT_SECS,
+            client_type_name="home grown API program",
+        )
+        self.assertTrue(receiver_is_off_zulip(hamlet.id))
+
+        # Adding a human queue should mark the user as on Zulip.
+        self.allocate_queue(
+            hamlet,
+            queue_timeout=self.LONG_LIVED_EVENT_QUEUE_TIMEOUT_SECS,
+            client_type_name="website",
+        )
+        self.assertFalse(receiver_is_off_zulip(hamlet.id))
 
     @time_machine.travel(NOW, tick=False)
     def test_gc_event_queues(self) -> None:
