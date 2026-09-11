@@ -64,6 +64,10 @@ const realm_available_video_chat_providers = {
         id: 8,
         name: "Webex",
     },
+    google_meet: {
+        id: 9,
+        name: "Google Meet",
+    },
 };
 
 function test(label, f) {
@@ -281,6 +285,66 @@ test("videos", ({override}) => {
         video_handler.call($textarea, ev);
         call_success_callback();
         const video_link_regex = /\[translated: Join video call\.]\(example\.webex\.com\)/;
+        assert.ok(called);
+        assert.match(syntax_to_insert, video_link_regex);
+    })();
+
+    (function test_google_meet_video_link_compose_clicked() {
+        let syntax_to_insert;
+        let called = false;
+
+        const $textarea = $.create("google-meet-target-stub");
+        $textarea.set_parents_result(".message_edit_form", []);
+
+        const ev = {
+            preventDefault() {},
+            stopPropagation() {},
+        };
+
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
+            syntax_to_insert = syntax;
+            called = true;
+            success_callback = undefined;
+        });
+
+        override(
+            realm,
+            "realm_video_chat_provider",
+            realm_available_video_chat_providers.google_meet.id,
+        );
+        override(current_user, "has_google_meet_token", false);
+
+        window.open = (url) => {
+            assert.ok(url.endsWith("/calls/google_meet/register"));
+
+            // The event here has value=true.  We keep it in events.js to
+            // allow our tooling to verify its schema.
+            server_events_dispatch.dispatch_normal_event(events.fixtures.has_google_meet_token);
+        };
+
+        let success_callback;
+        const xhr_object = {abort() {}};
+        channel.post = (payload) => {
+            assert.equal(payload.url, "/json/calls/google_meet/create");
+            success_callback = payload.success;
+            return xhr_object;
+        };
+
+        function call_success_callback() {
+            assert.ok(success_callback !== undefined);
+            success_callback({
+                result: "success",
+                msg: "",
+                url: "https://meet.google.com/abc-mnop-xyz",
+            });
+        }
+
+        $("textarea#compose-textarea").val("");
+        const video_handler = $("body").get_on_handler("click", ".video_link");
+        video_handler.call($textarea, ev);
+        call_success_callback();
+        const video_link_regex =
+            /\[translated: Join video call\.]\(https:\/\/meet\.google\.com\/abc-mnop-xyz\)/;
         assert.ok(called);
         assert.match(syntax_to_insert, video_link_regex);
     })();
