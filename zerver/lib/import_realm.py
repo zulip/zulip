@@ -2599,7 +2599,12 @@ def create_image_attachments(realm: Realm, attachment_data: ImportedTableData) -
         # image from S3.
         local_filename = path_maps["new_attachment_path_to_local_data_path"][path_id]
         pyvips_source = pyvips.Source.new_from_file(local_filename)
-        maybe_thumbnail(pyvips_source, content_type, path_id, realm.id, skip_events=True)
+        image_row = maybe_thumbnail(
+            pyvips_source, content_type, path_id, realm.id, skip_events=True
+        )
+        if image_row is not None and image_row.content_type is not None:
+            # thumbnail-checking code may have corrected the content type
+            attachment["content_type"] = image_row.content_type
 
 
 def import_analytics_data(realm: Realm, import_dir: Path, crossrealm_user_ids: set[int]) -> None:
