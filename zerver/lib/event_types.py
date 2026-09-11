@@ -667,6 +667,8 @@ class RealmUpdateDictEvent(BaseEvent):
         | NightLogoData
         | GroupSettingUpdateData
         | PlanTypeData
+        | RealmTopicsPolicyData
+        | RealmDescriptionData
     )
 
 
