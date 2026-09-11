@@ -1923,7 +1923,10 @@ export class MessageListView {
         });
     }
 
-    rerender_messages(messages: Message[], message_content_edited = false): void {
+    rerender_messages(
+        messages: Message[],
+        content_edited_message_ids: ReadonlySet<number> = new Set(),
+    ): void {
         // this.render is never called in this code path, we use
         // `_rerender_message` instead which is optimized for this use
         // case.
@@ -1950,7 +1953,7 @@ export class MessageListView {
         const rerendered_group_ids = new Set<string>();
         for (const message_container of message_containers) {
             const $rendered = this._rerender_message(message_container, {
-                message_content_edited,
+                message_content_edited: content_edited_message_ids.has(message_container.msg.id),
                 is_revealed: false,
             });
             rerendered_elements.push(...$rendered);
