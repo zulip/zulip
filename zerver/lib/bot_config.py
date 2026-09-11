@@ -2,6 +2,7 @@ import configparser
 import importlib
 import os
 from collections import defaultdict
+from collections.abc import Mapping
 
 from django.conf import settings
 from django.db.models import F, Sum
@@ -19,6 +20,16 @@ def get_bot_config(bot_profile: UserProfile) -> dict[str, str]:
     if not entries:
         raise ConfigError("No config data available.")
     return {entry.key: entry.value for entry in entries}
+
+
+def get_merged_bot_config(
+    bot_profile: UserProfile, config_data: Mapping[str, str]
+) -> dict[str, str]:
+    try:
+        existing_config_data = get_bot_config(bot_profile)
+    except ConfigError:
+        existing_config_data = {}
+    return {**existing_config_data, **config_data}
 
 
 def get_bot_configs(bot_profile_ids: list[int]) -> dict[int, dict[str, str]]:
