@@ -1,0 +1,11 @@
+{
+    "object": "user",
+    "id": "1d6d872b-594c-8129-818d-000250c7f19f",
+    "name": "Sathwik Shetty",
+    "avatar_url": null,
+    "type": "person",
+    "person": {
+        "email": "sathwikshetty1234@gmail.com"
+    },
+    "request_id": "42e7b910-0f84-46da-8f27-21c8f20587aa"
+}
