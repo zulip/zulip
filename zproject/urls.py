@@ -203,7 +203,6 @@ from zerver.views.streams import (
     update_default_stream_group_streams,
     update_stream_backend,
     update_subscription_properties_backend,
-    update_subscriptions_backend,
     update_subscriptions_property,
 )
 from zerver.views.submessage import process_submessage
@@ -574,12 +573,11 @@ v1_api_and_json_patterns = [
     rest_path(
         "default_stream_groups/<int:group_id>/streams", PATCH=update_default_stream_group_streams
     ),
-    # GET lists your streams, POST bulk adds, PATCH bulk modifies/removes
+    # GET lists your streams, POST bulk adds, DELETE bulk removes
     rest_path(
         "users/me/subscriptions",
         GET=list_subscriptions_backend,
         POST=add_subscriptions_backend,
-        PATCH=update_subscriptions_backend,
         DELETE=remove_subscriptions_backend,
     ),
     rest_path("channel_folders/create", POST=create_channel_folder),
