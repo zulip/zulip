@@ -1,0 +1,124 @@
+{
+    "object_kind": "work_item",
+    "event_type": "confidential_work_item",
+    "user": {
+        "id": 1,
+        "name": "Administrator",
+        "username": "root",
+        "avatar_url": "https://www.gravatar.com/avatar/172881a95fe2dc3aa477b7d744f6963fe1467ef84e2f6a9f680441e7819351c2?s=80&d=identicon",
+        "email": "[REDACTED]"
+    },
+    "project": {
+        "id": 1,
+        "name": "mVc",
+        "description": null,
+        "web_url": "http://gitlab.local/root/mvc",
+        "avatar_url": null,
+        "git_ssh_url": "git@gitlab.local:root/mvc.git",
+        "git_http_url": "http://gitlab.local/root/mvc.git",
+        "namespace": "Administrator",
+        "visibility_level": 20,
+        "path_with_namespace": "root/mvc",
+        "default_branch": "master",
+        "ci_config_path": null,
+        "homepage": "http://gitlab.local/root/mvc",
+        "url": "git@gitlab.local:root/mvc.git",
+        "ssh_url": "git@gitlab.local:root/mvc.git",
+        "http_url": "http://gitlab.local/root/mvc.git"
+    },
+    "object_attributes": {
+        "author_id": 1,
+        "closed_at": null,
+        "confidential": true,
+        "created_at": "2026-05-29T04:41:20.888Z",
+        "description": "Sample Confidential Task with assignee.",
+        "discussion_locked": null,
+        "due_date": null,
+        "id": 13,
+        "iid": 13,
+        "last_edited_at": null,
+        "last_edited_by_id": null,
+        "milestone_id": null,
+        "moved_to_id": null,
+        "duplicated_to_id": null,
+        "project_id": 1,
+        "relative_position": null,
+        "state_id": 1,
+        "time_estimate": 0,
+        "title": "Sample Confidential Task with assignee.",
+        "updated_at": "2026-05-29T04:41:20.888Z",
+        "updated_by_id": null,
+        "weight": null,
+        "health_status": null,
+        "type": "Task",
+        "url": "http://gitlab.local/root/mvc/-/work_items/13",
+        "total_time_spent": 0,
+        "time_change": 0,
+        "human_total_time_spent": null,
+        "human_time_change": null,
+        "human_time_estimate": null,
+        "assignee_ids": [
+            1
+        ],
+        "assignee_id": 1,
+        "labels": [],
+        "state": "opened",
+        "severity": "unknown",
+        "customer_relations_contacts": [],
+        "action": "open"
+    },
+    "labels": [],
+    "changes": {
+        "author_id": {
+            "previous": null,
+            "current": 1
+        },
+        "confidential": {
+            "previous": false,
+            "current": true
+        },
+        "created_at": {
+            "previous": null,
+            "current": "2026-05-29T04:41:20.888Z"
+        },
+        "description": {
+            "previous": null,
+            "current": "Sample Confidential Task with assignee."
+        },
+        "id": {
+            "previous": null,
+            "current": 13
+        },
+        "iid": {
+            "previous": null,
+            "current": 13
+        },
+        "project_id": {
+            "previous": null,
+            "current": 1
+        },
+        "title": {
+            "previous": null,
+            "current": "Sample Confidential Task with assignee."
+        },
+        "updated_at": {
+            "previous": null,
+            "current": "2026-05-29T04:41:20.888Z"
+        }
+    },
+    "repository": {
+        "name": "mVc",
+        "url": "git@gitlab.local:root/mvc.git",
+        "description": null,
+        "homepage": "http://gitlab.local/root/mvc"
+    },
+    "assignees": [
+        {
+            "id": 1,
+            "name": "Administrator",
+            "username": "root",
+            "avatar_url": "https://www.gravatar.com/avatar/172881a95fe2dc3aa477b7d744f6963fe1467ef84e2f6a9f680441e7819351c2?s=80&d=identicon",
+            "email": "[REDACTED]"
+        }
+    ]
+}
