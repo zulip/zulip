@@ -17,7 +17,7 @@ export type TodoWidgetExtraData = z.infer<typeof todo_widget_extra_data_schema>;
 
 const todo_widget_inbound_data = z.intersection(
     z.object({
-        type: z.enum(["new_task", "new_task_list_title", "strike"]),
+        type: z.enum(["new_task", "new_task_list_title", "strike", "reorder_tasks"]),
     }),
     z.record(z.string(), z.unknown()),
 );
@@ -46,6 +46,12 @@ type TaskStrikeOutboundData = {
     key: string;
 };
 
+type TaskReorderOutboundData = {
+    type: "reorder_tasks";
+    key: string;
+    after_key: string | null;
+};
+
 type TodoTask = {
     task: string;
     desc: string;
@@ -60,7 +66,10 @@ type Task = {
 };
 
 export type TodoWidgetOutboundData =
-    NewTaskTitleOutboundData | NewTaskOutboundData | TaskStrikeOutboundData;
+    | NewTaskTitleOutboundData
+    | NewTaskOutboundData
+    | TaskStrikeOutboundData
+    | TaskReorderOutboundData;
 
 export class TaskData {
     message_sender_id: number;
@@ -202,6 +211,50 @@ export class TaskData {
                 item.completed = !item.completed;
             },
         },
+
+        reorder_tasks: {
+            outbound(key: string, after_key: string | null): TaskReorderOutboundData {
+                const event = {
+                    type: "reorder_tasks" as const,
+                    key,
+                    after_key,
+                };
+                return event;
+            },
+
+            inbound: (_sender_id: number, raw_data: unknown): void => {
+                const task_reorder_inbound_data_schema = z.object({
+                    type: z.literal("reorder_tasks"),
+                    key: z.string(),
+                    after_key: z.nullable(z.string()),
+                });
+                const parsed = task_reorder_inbound_data_schema.safeParse(raw_data);
+                if (!parsed.success) {
+                    blueslip.warn("todo widget: bad type for inbound reorder_tasks data", {
+                        error: parsed.error,
+                    });
+                    return;
+                }
+
+                const {key, after_key} = parsed.data;
+                if (key === after_key) {
+                    blueslip.warn("todo widget: reorder_tasks key cannot follow itself: " + key);
+                    return;
+                }
+                if (!this.task_map.has(key)) {
+                    blueslip.warn("todo widget: reorder_tasks refers to unknown key: " + key);
+                    return;
+                }
+                if (after_key !== null && !this.task_map.has(after_key)) {
+                    blueslip.warn(
+                        "todo widget: reorder_tasks refers to unknown after_key: " + after_key,
+                    );
+                    return;
+                }
+
+                this.reorder(key, after_key);
+            },
+        },
     };
 
     constructor({
@@ -262,11 +315,17 @@ export class TaskData {
         return this.input_mode;
     }
 
+    reorder_tasks(key: string, after_key: string | null): void {
+        if (!this.task_map.has(key) || (after_key !== null && !this.task_map.has(after_key))) {
+            return;
+        }
+        this.reorder(key, after_key);
+    }
+
     get_widget_data(): {
         all_tasks: Task[];
     } {
         const all_tasks = this.task_map.values().toArray();
-
         const widget_data = {
             all_tasks,
         };
@@ -292,5 +351,27 @@ export class TaskData {
 
         const {data} = parsed;
         this.handle[data.type].inbound(sender_id, data);
+    }
+
+    private reorder(key: string, after_key: string | null): void {
+        const moved_task = this.task_map.get(key);
+        if (moved_task === undefined) {
+            return;
+        }
+
+        const new_task_map = new Map<string, Task>();
+        if (after_key === null) {
+            new_task_map.set(key, moved_task);
+        }
+        for (const [existing_key, task] of this.task_map) {
+            if (existing_key === key) {
+                continue;
+            }
+            new_task_map.set(existing_key, task);
+            if (existing_key === after_key) {
+                new_task_map.set(key, moved_task);
+            }
+        }
+        this.task_map = new_task_map;
     }
 }
