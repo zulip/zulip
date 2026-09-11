@@ -39,7 +39,7 @@ async function expect_verona_stream_top_topic(page: Page): Promise<void> {
         visible: true,
     });
     await common.check_messages_sent(page, message_list_id, [
-        ["Verona > test", ["verona test a", "verona test b", "verona test d"]],
+        ["test", ["verona test a", "verona test b", "verona test d"]],
     ]);
     assert.strictEqual(await page.title(), "#Verona > test - Zulip Dev - Zulip");
 }
@@ -50,9 +50,9 @@ async function expect_verona_stream(page: Page): Promise<void> {
         visible: true,
     });
     await common.check_messages_sent(page, message_list_id, [
-        ["Verona > test", ["verona test a", "verona test b"]],
-        ["Verona > other topic", ["verona other topic c"]],
-        ["Verona > test", ["verona test d"]],
+        ["test", ["verona test a", "verona test b"]],
+        ["other topic", ["verona other topic c"]],
+        ["test", ["verona test d"]],
     ]);
     assert.strictEqual(await page.title(), "#Verona - Zulip Dev - Zulip");
 }
@@ -63,7 +63,7 @@ async function expect_verona_stream_test_topic(page: Page): Promise<void> {
         visible: true,
     });
     await common.check_messages_sent(page, message_list_id, [
-        ["Verona > test", ["verona test a", "verona test b", "verona test d"]],
+        ["test", ["verona test a", "verona test b", "verona test d"]],
     ]);
     assert.strictEqual(
         await common.get_text_from_selector(page, "#new_conversation_button"),
@@ -77,7 +77,7 @@ async function expect_verona_other_topic(page: Page): Promise<void> {
         visible: true,
     });
     await common.check_messages_sent(page, message_list_id, [
-        ["Verona > other topic", ["verona other topic c"]],
+        ["other topic", ["verona other topic c"]],
     ]);
 }
 
