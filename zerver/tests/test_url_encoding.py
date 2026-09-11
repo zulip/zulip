@@ -73,25 +73,35 @@ class URLEncodeTest(ZulipTestCase):
             sender=self.example_user("hamlet"), stream_name=channel.name, topic_name=topic
         )
         channel_message = Message.objects.get(id=channel_message_id, realm=realm)
-        message_dict = dict(
-            id=channel_message_id,
-            stream_id=channel.id,
-            display_recipient=channel_message.recipient.label(),
-            topic=topic,
-        )
+        stream_name = channel_message.recipient.label()
         channel_message_url = stream_message_url(
             realm,
-            message_dict,
+            channel_message_id,
+            channel.id,
+            stream_name,
+            topic,
         )
         expected_channel_message_url = f"{realm.url}/#narrow/{encode_channel(channel.id, channel.name, True)}/topic/{encode_hash_component(topic)}/near/{channel_message_id}"
         self.assertEqual(channel_message_url, expected_channel_message_url)
 
         relative_channel_message_url = stream_message_url(
-            realm, message_dict, include_base_url=False
+            realm,
+            channel_message_id,
+            channel.id,
+            stream_name,
+            topic,
+            include_base_url=False,
         )
         expected_relative_channel_message_url = f"#narrow/{encode_channel(channel.id, channel.name, True)}/topic/{encode_hash_component(topic)}/near/{channel_message_id}"
         self.assertEqual(relative_channel_message_url, expected_relative_channel_message_url)
 
         with self.assertRaises(ValueError) as e:
-            stream_message_url(realm=None, message=message_dict, include_base_url=True)
+            stream_message_url(
+                None,
+                channel_message_id,
+                channel.id,
+                stream_name,
+                topic,
+                include_base_url=True,
+            )
         self.assertEqual(str(e.exception), "realm is required when include_base_url=True")
