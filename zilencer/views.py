@@ -75,6 +75,7 @@ from zerver.lib.push_notifications import (
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.rate_limiter import rate_limit_endpoint_absolute, rate_limit_request_by_ip
 from zerver.lib.remote_server import (
+    AdvertiseRealmData,
     InstallationCountDataForAnalytics,
     RealmAuditLogDataForAnalytics,
     RealmCountDataForAnalytics,
@@ -1224,6 +1225,29 @@ def ensure_devices_set_remote_realm(
     RemotePushDeviceToken.objects.bulk_update(devices_to_update, ["remote_realm"])
 
 
+def get_communities_directory_fields(
+    advertise_realm_data: AdvertiseRealmData | None,
+) -> dict[str, str | bool]:
+    """The RemoteRealm values mirroring what a realm publishes about itself for
+    the Zulip communities directory.
+
+    A realm that is not asking to be listed uploads none of this, so there is
+    nothing to sync; we keep the values we last saw, which nothing reads while
+    asks_to_advertise_in_communities_directory is False.
+    """
+    if advertise_realm_data is None:
+        return {}
+
+    return {
+        "description": advertise_realm_data.description or "",
+        "icon_url": advertise_realm_data.icon_url,
+        "invite_required": advertise_realm_data.invite_required,
+        "emails_restricted_to_domains": advertise_realm_data.emails_restricted_to_domains,
+        "has_web_public_streams": advertise_realm_data.has_web_public_streams,
+        "is_demo_organization": advertise_realm_data.is_demo_organization,
+    }
+
+
 def update_remote_realm_data_for_server(
     server: RemoteZulipServer, server_realms_info: list[RealmDataForAnalytics]
 ) -> None:
@@ -1261,6 +1285,8 @@ def update_remote_realm_data_for_server(
             name=realm.name,
             authentication_methods=realm.authentication_methods,
             is_system_bot_realm=realm.is_system_bot_realm,
+            asks_to_advertise_in_communities_directory=realm.advertise_realm_data is not None,
+            **get_communities_directory_fields(realm.advertise_realm_data),
         )
         for realm in server_realms_info
         if realm.uuid not in already_registered_uuids
@@ -1293,6 +1319,10 @@ def update_remote_realm_data_for_server(
             "authentication_methods": realm.authentication_methods,
             "realm_deactivated": realm.deactivated,
             "is_system_bot_realm": realm.is_system_bot_realm,
+            # Uploading no directory data at all is how a realm, or its
+            # server, says it no longer wants to be advertised.
+            "asks_to_advertise_in_communities_directory": realm.advertise_realm_data is not None,
+            **get_communities_directory_fields(realm.advertise_realm_data),
         }.items():
             old_value = getattr(remote_realm, remote_realm_attr)
 
@@ -1344,6 +1374,13 @@ def update_remote_realm_data_for_server(
             "org_type",
             "is_system_bot_realm",
             "realm_locally_deleted",
+            "asks_to_advertise_in_communities_directory",
+            "description",
+            "icon_url",
+            "invite_required",
+            "emails_restricted_to_domains",
+            "has_web_public_streams",
+            "is_demo_organization",
         ],
     )
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
