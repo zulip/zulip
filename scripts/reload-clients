@@ -51,8 +51,10 @@ c = requests.Session()
 c.mount("http://", HTTPAdapter(max_retries=retry))
 
 log_filename = None
+
+# see man 3 daemon for what steps are taken to daemonize a process
 if args.background:
-    # Double-fork to daemonize
+    # Double-fork
     pid = os.fork()
     if pid > 0:
         sys.exit(0)
@@ -61,6 +63,24 @@ if args.background:
     if pid > 0:
         sys.exit(0)
     log_filename = "/var/log/zulip/reload-clients.log"
+
+    # Don't hold the working directory (the just-created deployment directory)
+    # open for as long as this daemon runs
+    os.chdir("/")
+
+    # Detach stdin. A daemon must not hold open a terminal or pipe on stdin.
+    devnull_fd = os.open(os.devnull, os.O_RDONLY)
+    os.dup2(devnull_fd, sys.stdin.fileno())
+    os.close(devnull_fd)
+
+    # Redirect stdout/stderr to the log file to catch uncaught exceptions and keep
+    # tee from hanging after script completes.
+    # Appending is safe to share with the logging module's handle, since O_APPEND
+    # writes are atomic.
+    log_fd = os.open(log_filename, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o644)
+    os.dup2(log_fd, sys.stdout.fileno())
+    os.dup2(log_fd, sys.stderr.fileno())
+    os.close(log_fd)
 
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(
