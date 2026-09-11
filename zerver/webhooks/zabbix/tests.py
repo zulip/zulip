@@ -5,13 +5,33 @@ from zerver.webhooks.zabbix.view import MISCONFIGURED_PAYLOAD_ERROR_MESSAGE
 
 
 class ZabbixHookTests(WebhookTestCase):
-    def test_zabbix_alert_message(self) -> None:
+    def test_zabbix_alert_severities_with_emoji(self) -> None:
         """
         Tests if zabbix alert is handled correctly
         """
-        expected_topic_name = "www.example.com"
-        expected_message = "PROBLEM (Average) alert on [www.example.com](https://zabbix.example.com/tr_events.php?triggerid=14032&eventid=10528):\n* Zabbix agent on www.example.com is unreachable for 5 minutes\n* Agent ping is Up (1)"
-        self.check_webhook("zabbix_alert", expected_topic_name, expected_message)
+        test_cases = [
+            ("zabbix_alert_disaster", "Disaster", ":cross_mark:"),
+            ("zabbix_alert_high", "High", ":rotating_light:"),
+            ("zabbix_alert_average", "Average", ":yellow_circle:"),
+            ("zabbix_alert_warning", "Warning", ":warning:"),
+            ("zabbix_alert_information", "Information", ":bulb:"),
+            ("zabbix_alert_not_classified", "Not classified", ":question:"),
+        ]
+
+        for fixture_name, severity, emoji in test_cases:
+            expected_topic_name = "www.example.com"
+            expected_message = (
+                f"{emoji} PROBLEM ({severity}) alert on "
+                "[www.example.com](https://zabbix.example.com/tr_events.php?triggerid=14032&eventid=10528):\n"
+                "* Zabbix agent on www.example.com is unreachable for 5 minutes\n"
+                "* Agent ping is Up (1)"
+            )
+
+            self.check_webhook(
+                fixture_name,
+                expected_topic_name,
+                expected_message,
+            )
 
     def test_zabbix_invalid_payload_with_missing_data(self) -> None:
         """
