@@ -1259,6 +1259,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
             "delivery_email",
             "email",
             "user_id",
+            "avatar_source",
             "avatar_url",
             "avatar_version",
             "is_admin",

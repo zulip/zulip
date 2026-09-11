@@ -1586,6 +1586,89 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         profile = get_user(bot_email, bot_realm)
         self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
+    def test_patch_bot_delete_avatar(self) -> None:
+        # Setup bot
+        self.login("hamlet")
+        bot_realm = get_realm("zulip")
+        do_set_realm_property(
+            bot_realm, "default_avatar_source", UserProfile.AVATAR_FROM_JDENTICON, acting_user=None
+        )
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot_email = "hambot-bot@zulip.testserver"
+        profile = get_user(bot_email, bot_realm)
+        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+        self.assertEqual(profile.avatar_version, 1)
+        self.assertTrue(os.path.exists(avatar_disk_path(profile)))
+
+        # Avatar is already Jdenticon, deleting changes nothing
+        result = self.client_patch(
+            f"/json/bots/{self.get_bot_user(bot_email).id}",
+            {"delete_avatar": orjson.dumps(True).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertEqual(
+            self.get_bot_user(bot_email).avatar_source, UserProfile.AVATAR_FROM_JDENTICON
+        )
+        self.assertEqual(profile.avatar_version, 1)
+
+        # HAPPY PATH
+        do_set_realm_property(
+            bot_realm, "default_avatar_source", UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None
+        )
+
+        with get_test_image_file("img.png") as fp:
+            self.client_patch_multipart(
+                f"/json/bots/{self.get_bot_user(bot_email).id}", dict(file=fp)
+            )
+        profile = get_user(bot_email, bot_realm)
+        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_USER)
+        self.assertEqual(profile.avatar_version, 2)
+
+        result = self.client_patch(
+            f"/json/bots/{profile.id}", {"delete_avatar": orjson.dumps(True).decode()}
+        )
+        self.assert_json_success(result)
+        profile = get_user(bot_email, bot_realm)
+        self.assertEqual(profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
+        self.assertEqual(profile.avatar_version, 3)
+
+    def test_patch_bot_delete_avatar_with_upload(self) -> None:
+        # Setup bot
+        self.login("hamlet")
+        bot_realm = get_realm("zulip")
+        do_set_realm_property(
+            bot_realm, "default_avatar_source", UserProfile.AVATAR_FROM_JDENTICON, acting_user=None
+        )
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+        }
+        bot_email = "hambot-bot@zulip.testserver"
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        # File upload patch with delete_avatar function should raise error
+        with get_test_image_file("img.png") as fp:
+            result = self.client_patch_multipart(
+                f"/json/bots/{self.get_bot_user(bot_email).id}",
+                dict(file=fp, delete_avatar=orjson.dumps(True).decode()),
+            )
+        self.assert_json_error(
+            result, "You cannot both upload and delete the bot's avatar in the same request."
+        )
+
+        profile = get_user(bot_email, bot_realm)
+        self.assertEqual(
+            self.get_bot_user(bot_email).avatar_source, UserProfile.AVATAR_FROM_JDENTICON
+        )
+        self.assertEqual(profile.avatar_version, 1)
+
     def test_patch_bot_to_stream(self) -> None:
         self.login("hamlet")
         bot_info = {

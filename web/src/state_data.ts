@@ -257,6 +257,7 @@ export const user_schema = z.intersection(
             is_bot: z.literal(true),
             bot_type: z.number(),
             bot_owner_id: z.nullable(z.number()),
+            avatar_source: z.string(),
         }),
     ]),
 );
