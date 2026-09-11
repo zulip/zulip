@@ -452,7 +452,7 @@ class TagRequests(MiddlewareMixin):
         self.process_request(request)
 
     def process_request(self, request: HttpRequest) -> None:
-        if request.path.startswith("/api/") or request.path.startswith("/json/"):
+        if request.path.startswith(("/api/", "/json/")) or request.path in ("/mcp", "/mcp/"):
             RequestNotes.get_notes(request).error_format = "JSON"
         else:
             RequestNotes.get_notes(request).error_format = "HTML"

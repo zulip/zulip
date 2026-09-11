@@ -662,6 +662,7 @@ export default defineConfig({
                         "bots-overview",
                         "integrations-overview",
                         "add-a-bot-or-integration",
+                        "connect-an-ai-agent",
                         {
                             label: "Generate integration URL",
                             link: "/generate-integration-url",

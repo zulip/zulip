@@ -30,6 +30,7 @@ full-text-search
 email
 analytics
 client
+mcp
 logging
 typing-indicators
 django-upgrades

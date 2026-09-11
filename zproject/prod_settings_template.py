@@ -817,6 +817,15 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ################
 ## AI Features
 ##
+## Whether this server offers the native MCP (Model Context Protocol)
+## endpoint, which lets users connect an AI agent of their choice to
+## read Zulip as themselves. Zulip itself makes no AI API calls for
+## this, and each organization must opt in separately via the "Allow
+## users to connect AI agents via MCP" organization permission. The
+## feature is experimental: the tools it offers may change, and are
+## not yet covered by Zulip's API compatibility guarantees.
+# MCP_SERVER_ENABLED = True
+##
 ## Specify the model to use for topic summarization. Zulip uses the
 ## OpenAI Python SDK, which supports OpenAI's API as well as any
 ## OpenAI-compatible provider.
