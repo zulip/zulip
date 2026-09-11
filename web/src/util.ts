@@ -528,6 +528,14 @@ export function compare_a_b<T>(a: T, b: T): number {
     return -1;
 }
 
+export function get_length_in_code_points(str: string): number {
+    return [...str].length;
+}
+
+export function truncate_to_max_code_points(str: string, max_length: number): string {
+    return [...str].slice(0, max_length).join("");
+}
+
 export function get_final_topic_display_name(topic_name: string): string {
     if (topic_name === "") {
         if (realm.realm_empty_topic_display_name === "general chat") {

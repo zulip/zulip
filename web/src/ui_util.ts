@@ -5,9 +5,26 @@ import type * as tippy from "tippy.js";
 import * as blueslip from "./blueslip.ts";
 import * as hash_parser from "./hash_parser.ts";
 import * as keydown_util from "./keydown_util.ts";
+import * as util from "./util.ts";
 
 // Add functions to this that have no non-trivial
 // dependencies other than jQuery.
+
+export function truncate_input_to_max_code_points(
+    elem: HTMLInputElement,
+    max_length: number,
+): boolean {
+    if (util.get_length_in_code_points(elem.value) <= max_length) {
+        return false;
+    }
+    const cursor_position = elem.selectionStart;
+    elem.value = util.truncate_to_max_code_points(elem.value, max_length);
+    if (cursor_position !== null) {
+        const new_cursor_position = Math.min(cursor_position, elem.value.length);
+        elem.setSelectionRange(new_cursor_position, new_cursor_position);
+    }
+    return true;
+}
 
 // https://stackoverflow.com/questions/4233265/contenteditable-set-caret-at-the-end-of-the-text-cross-browser
 export function place_caret_at_end(el: HTMLElement): void {
