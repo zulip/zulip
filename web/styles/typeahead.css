@@ -68,13 +68,26 @@
             }
 
             .typeahead-content {
-                display: flex;
+                display: grid;
+                grid-template-areas: "icon content";
+                grid-template-columns: max-content minmax(0, 1fr);
                 align-items: center;
                 overflow: hidden;
                 gap: 0.3571em;
+
+                &:not(:has(> .typeahead-image, > .emoji)) {
+                    grid-template-areas: "content";
+                    grid-template-columns: minmax(0, 1fr);
+                }
+
+                > .typeahead-image,
+                > .emoji {
+                    grid-area: icon;
+                }
             }
 
             .typeahead-text-container {
+                grid-area: content;
                 display: flex;
                 align-self: center;
                 overflow: hidden;
