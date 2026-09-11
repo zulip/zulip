@@ -1286,16 +1286,15 @@ def update_remote_realm_data_for_server(
     for remote_realm in already_registered_remote_realms:
         modified = False
         realm = uuid_to_realm_dict[str(remote_realm.uuid)]
-        for remote_realm_attr, realm_dict_key in [
-            ("host", "host"),
-            ("org_type", "org_type"),
-            ("name", "name"),
-            ("authentication_methods", "authentication_methods"),
-            ("realm_deactivated", "deactivated"),
-            ("is_system_bot_realm", "is_system_bot_realm"),
-        ]:
+        for remote_realm_attr, new_value in {
+            "host": realm.host,
+            "org_type": realm.org_type,
+            "name": realm.name,
+            "authentication_methods": realm.authentication_methods,
+            "realm_deactivated": realm.deactivated,
+            "is_system_bot_realm": realm.is_system_bot_realm,
+        }.items():
             old_value = getattr(remote_realm, remote_realm_attr)
-            new_value = getattr(realm, realm_dict_key)
 
             if old_value == new_value:
                 continue
