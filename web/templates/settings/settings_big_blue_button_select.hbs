@@ -1,0 +1,19 @@
+{{#unless (eq render_only false)}}
+<div class="input-group">
+    <label for="id_realm_big_blue_button_options_{{ option }}" class="settings-field-label">
+        {{t label }}
+    </label>
+
+    <select name="realm_big_blue_button_options_{{ option }}"
+      class="setting-widget prop-element settings_select bootstrap-focus-style"
+      id="id_realm_big_blue_button_options_{{ option }}"
+      data-setting-widget-type="string">
+        {{#each (object_entries list)}}
+            <option value='{{ this.[0] }}'
+              {{#if (eq ../selectedValue this.[0]) }}selected{{/if}}>
+                {{this.[1]}}
+            </option>
+        {{/each}}
+    </select>
+</div>
+{{/unless}}
