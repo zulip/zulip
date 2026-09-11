@@ -5,10 +5,12 @@ import orjson
 import time_machine
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.alert_words import do_add_watched_phrases
 from zerver.actions.reactions import check_add_reaction, do_add_reaction
 from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
+from zerver.lib.alert_words import WatchedPhraseData
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
@@ -892,6 +894,164 @@ class AutomaticallyFollowTopicsTests(ZulipTestCase):
             UserTopic.VisibilityPolicy.FOLLOWED
         )
         self.assertEqual(user_ids, {hamlet.id})
+
+    def test_automatically_follow_topic_on_alert_word(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        aaron = self.example_user("aaron")
+        stream = get_stream("Verona", hamlet.realm)
+        topic_name = "teST topic"
+        for user in [hamlet, cordelia]:
+            self.subscribe(user, stream.name)
+
+        do_add_watched_phrases(
+            hamlet, [WatchedPhraseData(watched_phrase="GSoC", automatically_follow_topics=True)]
+        )
+        # Cordelia has the same alert word, but hasn't asked to follow
+        # topics where it is used.
+        do_add_watched_phrases(
+            cordelia, [WatchedPhraseData(watched_phrase="gsoc", automatically_follow_topics=False)]
+        )
+
+        stream_topic_target = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=topic_name,
+        )
+
+        # A message without the alert word doesn't change anything.
+        self.send_stream_message(aaron, stream.name, "Nothing to see here", topic_name)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        self.assertEqual(user_ids, set())
+
+        # Alert words are matched case-insensitively.
+        self.send_stream_message(aaron, stream.name, "Any gsoc news?", topic_name)
+        user_ids = stream_topic_target.user_ids_with_visibility_policy(
+            UserTopic.VisibilityPolicy.FOLLOWED
+        )
+        self.assertEqual(user_ids, {hamlet.id})
+
+    def test_automatically_follow_topic_on_alert_word_requires_receiving_message(self) -> None:
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        aaron = self.example_user("aaron")
+        topic_name = "teST topic"
+        stream = self.make_stream("secrets", invite_only=True)
+        self.subscribe(hamlet, stream.name)
+        self.subscribe(aaron, stream.name)
+
+        # Alert words are matched against every word configured in the
+        # realm while rendering, so a user who is not receiving the
+        # message must not be made to follow the topic.
+        do_add_watched_phrases(
+            cordelia, [WatchedPhraseData(watched_phrase="GSoC", automatically_follow_topics=True)]
+        )
+        # Hamlet's own alert word does not appear in the message, so he
+        # must not follow the topic either.
+        do_add_watched_phrases(
+            hamlet,
+            [WatchedPhraseData(watched_phrase="outreachy", automatically_follow_topics=True)],
+        )
+
+        self.send_stream_message(aaron, stream.name, "Any gsoc news?", topic_name)
+        stream_topic_target = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=topic_name,
+        )
+        self.assertEqual(
+            stream_topic_target.user_ids_with_visibility_policy(
+                UserTopic.VisibilityPolicy.FOLLOWED
+            ),
+            set(),
+        )
+
+    def test_automatically_follow_topic_on_own_alert_word(self) -> None:
+        hamlet = self.example_user("hamlet")
+        stream = get_stream("Verona", hamlet.realm)
+        topic_name = "teST topic"
+        self.subscribe(hamlet, stream.name)
+
+        do_add_watched_phrases(
+            hamlet, [WatchedPhraseData(watched_phrase="GSoC", automatically_follow_topics=True)]
+        )
+
+        # Using your own alert word follows the topic, just as personally
+        # mentioning yourself does.
+        self.send_stream_message(hamlet, stream.name, "Any gsoc news?", topic_name)
+        stream_topic_target = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=topic_name,
+        )
+        self.assertEqual(
+            stream_topic_target.user_ids_with_visibility_policy(
+                UserTopic.VisibilityPolicy.FOLLOWED
+            ),
+            {hamlet.id},
+        )
+
+    def test_automatically_follow_topic_on_alert_word_in_muted_topic(self) -> None:
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        stream = get_stream("Verona", hamlet.realm)
+        topic_name = "teST topic"
+        self.subscribe(hamlet, stream.name)
+
+        do_add_watched_phrases(
+            hamlet, [WatchedPhraseData(watched_phrase="GSoC", automatically_follow_topics=True)]
+        )
+        do_set_user_topic_visibility_policy(
+            hamlet,
+            stream,
+            topic_name,
+            visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+        )
+
+        # Explicitly muting a topic takes precedence over this setting,
+        # matching "Automatically follow topics where I'm mentioned".
+        self.send_stream_message(aaron, stream.name, "Any gsoc news?", topic_name)
+        stream_topic_target = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=topic_name,
+        )
+        self.assertEqual(
+            stream_topic_target.user_ids_with_visibility_policy(UserTopic.VisibilityPolicy.MUTED),
+            {hamlet.id},
+        )
+        self.assertEqual(
+            stream_topic_target.user_ids_with_visibility_policy(
+                UserTopic.VisibilityPolicy.FOLLOWED
+            ),
+            set(),
+        )
+
+    def test_automatically_follow_topic_on_alert_word_in_muted_channel(self) -> None:
+        hamlet = self.example_user("hamlet")
+        aaron = self.example_user("aaron")
+        stream = get_stream("Verona", hamlet.realm)
+        topic_name = "teST topic"
+        self.subscribe(hamlet, stream.name)
+        sub = get_subscription(stream.name, hamlet)
+        sub.is_muted = True
+        sub.save()
+
+        do_add_watched_phrases(
+            hamlet, [WatchedPhraseData(watched_phrase="GSoC", automatically_follow_topics=True)]
+        )
+
+        # Muting a channel does not suppress this setting; only
+        # explicitly muted topics are left alone.
+        self.send_stream_message(aaron, stream.name, "Any gsoc news?", topic_name)
+        stream_topic_target = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name=topic_name,
+        )
+        self.assertEqual(
+            stream_topic_target.user_ids_with_visibility_policy(
+                UserTopic.VisibilityPolicy.FOLLOWED
+            ),
+            {hamlet.id},
+        )
 
     def test_automatically_follow_topic_on_participation_send_message(self) -> None:
         hamlet = self.example_user("hamlet")

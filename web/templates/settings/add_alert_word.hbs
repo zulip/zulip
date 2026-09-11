@@ -1,4 +1,13 @@
 <form class="modal-form" id="add-alert-word-form">
-    <label for="add-alert-word-name" class="modal-field-label">{{t "Alert word" }}</label>
-    <input type="text" name="alert-word-name" id="add-alert-word-name" class="required modal_text_input" maxlength=100 placeholder="{{t 'Alert word' }}" value="" />
+    <div class="input-group">
+        <label for="add-alert-word-name" class="modal-field-label">{{t "Alert word" }}</label>
+        <input type="text" name="alert-word-name" id="add-alert-word-name" class="required modal_text_input" maxlength=100 placeholder="{{t 'Alert word' }}" value="" />
+    </div>
+    <div class="input-group">
+        <label class="checkbox" for="add-alert-word-follow-topic">
+            <input type="checkbox" id="add-alert-word-follow-topic" name="automatically-follow-topics" />
+            <span class="rendered-checkbox"></span>
+            {{t "Automatically follow topics with this alert word" }}
+        </label>
+    </div>
 </form>

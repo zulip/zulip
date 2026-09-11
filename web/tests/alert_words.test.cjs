@@ -11,17 +11,17 @@ set_global("page_params", {
 });
 
 const params = {
-    alert_words: [
-        "alertone",
-        "alerttwo",
-        "alertthree",
-        "al*rt.*s",
-        ".+",
-        "emoji",
-        "FD&C",
-        "<3",
-        ">8",
-        "5'11\"",
+    watched_phrases: [
+        {watched_phrase: "alertone", automatically_follow_topics: false},
+        {watched_phrase: "alerttwo", automatically_follow_topics: true},
+        {watched_phrase: "alertthree", automatically_follow_topics: false},
+        {watched_phrase: "al*rt.*s", automatically_follow_topics: false},
+        {watched_phrase: ".+", automatically_follow_topics: false},
+        {watched_phrase: "emoji", automatically_follow_topics: false},
+        {watched_phrase: "FD&C", automatically_follow_topics: false},
+        {watched_phrase: "<3", automatically_follow_topics: false},
+        {watched_phrase: ">8", automatically_follow_topics: false},
+        {watched_phrase: "5'11\"", automatically_follow_topics: false},
     ],
 };
 
@@ -120,16 +120,16 @@ run_test("notifications", () => {
 run_test("munging", () => {
     alert_words.initialize(params);
     assert.deepEqual(alert_words.get_word_list(), [
-        {word: "alertthree"},
-        {word: "alertone"},
-        {word: "alerttwo"},
-        {word: "al*rt.*s"},
-        {word: "emoji"},
-        {word: `5'11"`},
-        {word: "FD&C"},
-        {word: ".+"},
-        {word: "<3"},
-        {word: ">8"},
+        {word: "alertone", automatically_follow_topics: false},
+        {word: "alerttwo", automatically_follow_topics: true},
+        {word: "alertthree", automatically_follow_topics: false},
+        {word: "al*rt.*s", automatically_follow_topics: false},
+        {word: ".+", automatically_follow_topics: false},
+        {word: "emoji", automatically_follow_topics: false},
+        {word: "FD&C", automatically_follow_topics: false},
+        {word: "<3", automatically_follow_topics: false},
+        {word: ">8", automatically_follow_topics: false},
+        {word: `5'11"`, automatically_follow_topics: false},
     ]);
     let saved_content = regular_message.content;
     alert_words.process_message(regular_message);
@@ -198,11 +198,16 @@ run_test("munging", () => {
 });
 
 run_test("basic get/set operations", () => {
-    alert_words.initialize({alert_words: []});
+    alert_words.initialize({watched_phrases: []});
     assert.ok(!alert_words.has_alert_word("breakfast"));
     assert.ok(!alert_words.has_alert_word("lunch"));
-    alert_words.set_words(["breakfast", "lunch"]);
+    alert_words.set_watched_phrases([
+        {watched_phrase: "breakfast", automatically_follow_topics: false},
+        {watched_phrase: "lunch", automatically_follow_topics: true},
+    ]);
     assert.ok(alert_words.has_alert_word("breakfast"));
     assert.ok(alert_words.has_alert_word("lunch"));
     assert.ok(!alert_words.has_alert_word("dinner"));
+    // The server matches alert words case-insensitively, so this must too.
+    assert.ok(alert_words.has_alert_word("BreakFast"));
 });

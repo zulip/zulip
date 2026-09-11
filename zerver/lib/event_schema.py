@@ -126,6 +126,7 @@ from zerver.lib.event_types import (
     UserSettingsUpdateEvent,
     UserStatusEvent,
     UserTopicEvent,
+    WatchedPhrasesEvent,
     WebReloadClientEvent,
 )
 from zerver.lib.topic import ORIG_TOPIC, TOPIC_NAME
@@ -242,6 +243,7 @@ check_user_group_remove = make_checker(UserGroupRemoveEvent)
 check_user_group_remove_members = make_checker(UserGroupRemoveMembersEvent)
 check_user_group_remove_subgroups = make_checker(UserGroupRemoveSubgroupsEvent)
 check_user_topic = make_checker(UserTopicEvent)
+check_watched_phrases = make_checker(WatchedPhrasesEvent)
 check_web_reload_client_event = make_checker(WebReloadClientEvent)
 
 

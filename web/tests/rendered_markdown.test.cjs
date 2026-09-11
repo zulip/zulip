@@ -515,7 +515,7 @@ run_test("stream-links alert words", ({mock_template}) => {
 
     const message = {alerted: true};
     set_message_for_message_content($content, message);
-    alert_words.set_words(["alert"]);
+    alert_words.set_watched_phrases([{watched_phrase: "alert", automatically_follow_topics: false}]);
 
     rm.update_elements($content);
 
@@ -533,7 +533,7 @@ run_test("stream-links alert words", ({mock_template}) => {
         href: `/#narrow/channel/${stream.stream_id}-test/topic/important.20alert.20topic`,
     });
 
-    alert_words.set_words([]);
+    alert_words.set_watched_phrases([]);
 });
 
 run_test("message-link alert words", ({mock_template}) => {
@@ -554,7 +554,7 @@ run_test("message-link alert words", ({mock_template}) => {
 
     const message = {alerted: true};
     set_message_for_message_content($content, message);
-    alert_words.set_words(["alert"]);
+    alert_words.set_watched_phrases([{watched_phrase: "alert", automatically_follow_topics: false}]);
 
     rm.update_elements($content);
 
@@ -566,7 +566,7 @@ run_test("message-link alert words", ({mock_template}) => {
         stream,
     });
 
-    alert_words.set_words([]);
+    alert_words.set_watched_phrases([]);
 });
 
 run_test("topic-link (empty string topic)", ({mock_template}) => {
