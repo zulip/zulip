@@ -17,6 +17,7 @@
         padding: 2.5px 5px 2.5px 4px;
         box-sizing: border-box;
         min-width: 44px;
+        max-width: 15em;
         cursor: pointer;
         color: var(--color-message-reaction-text);
         background-color: var(--color-message-reaction-background);
@@ -28,9 +29,7 @@
         border-radius: 21px;
         align-items: center;
         box-shadow: inset 0 0 5px 0 var(--color-message-reaction-shadow-inner);
-        transition:
-            transform 100ms linear,
-            font-weight 100ms linear; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
+        transition: transform 100ms linear;
 
         &.reacted {
             color: var(--color-message-reaction-text-reacted);
@@ -89,6 +88,11 @@
            count/name.
            13px at 12.6/1em */
         line-height: 1.0317em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+        /* required for ellipsis to work inside a flex container */
     }
 
     .message_reaction:hover .message_reaction_count {
@@ -163,7 +167,8 @@
     user-select: none;
 
     .emoji-popover {
-        width: 16.6667em; /* 250px at 15px/em */
+        width: 16.6667em;
+        /* 250px at 15px/em */
 
         .emoji-popover-category-tabs {
             /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
@@ -174,11 +179,15 @@
             overflow: hidden;
 
             .emoji-popover-tab-item {
-                font-size: 1.0667em; /* 16px at 15px/em */
+                font-size: 1.0667em;
+                /* 16px at 15px/em */
                 display: inline-block;
-                padding-top: 0.5em; /* 8px at 16px/em */
-                width: 1.5625em; /* 25px at 16px/em */
-                height: 1.5625em; /* 25px at 16px/em */
+                padding-top: 0.5em;
+                /* 8px at 16px/em */
+                width: 1.5625em;
+                /* 25px at 16px/em */
+                height: 1.5625em;
+                /* 25px at 16px/em */
                 text-align: center;
                 cursor: pointer;
                 /* Flex needed here to work around #7511 (90% zoom issues in firefox) */
@@ -198,27 +207,34 @@
             position: relative;
             overflow: hidden auto;
             display: block;
-            width: 16.4667em; /* 247px at 15px/em */
-            padding-left: 0.2em; /* 3px at 15px/em */
+            width: 16.4667em;
+            /* 247px at 15px/em */
+            padding-left: 0.2em;
+            /* 3px at 15px/em */
         }
 
         .emoji-popover-emoji-map {
-            height: 16.6667em; /* 250px at 15px/em */
+            height: 16.6667em;
+            /* 250px at 15px/em */
 
             .emoji-popover-subheading {
                 font-weight: 600;
-                padding: 0.3333em 0.2em; /* 5px 3px at 15px/em */
+                padding: 0.3333em 0.2em;
+                /* 5px 3px at 15px/em */
             }
         }
 
         .emoji-popover-emoji {
             display: inline-block;
             margin: 0;
-            padding: 0.4em; /* 6px at 15px/em */
+            padding: 0.4em;
+            /* 6px at 15px/em */
             cursor: pointer;
             border-radius: 0.5em;
-            height: 1.6667em; /* 25px at 15px/em */
-            width: 1.6667em; /* 25px at 15px/em */
+            height: 1.6667em;
+            /* 25px at 15px/em */
+            width: 1.6667em;
+            /* 25px at 15px/em */
 
             &:focus {
                 background-color: var(
@@ -249,8 +265,10 @@
             }
 
             .emoji {
-                height: 1.6667em; /* 25px at 15px/em */
-                width: 1.6667em; /* 25px at 15px/em */
+                height: 1.6667em;
+                /* 25px at 15px/em */
+                width: 1.6667em;
+                /* 25px at 15px/em */
             }
         }
 
@@ -260,12 +278,15 @@
                cause the popover to render at incorrect position when
                the search container is hidden `onMount`. */
             display: none;
-            height: 18.8667em; /* 283px at 15px/em */
+            height: 18.8667em;
+            /* 283px at 15px/em */
 
             .emoji-popover-results-heading {
-                font-size: 1.1333em; /* 17px at 15px/em */
+                font-size: 1.1333em;
+                /* 17px at 15px/em */
                 font-weight: 600;
-                padding: 0.2941em 0.1765em 0.1765em 0.2941em; /* 5px 3px 3px 5px at 17px/em */
+                padding: 0.2941em 0.1765em 0.1765em 0.2941em;
+                /* 5px 3px 3px 5px at 17px/em */
             }
         }
     }
@@ -273,24 +294,33 @@
     .emoji-showcase-container {
         position: relative;
         background-color: var(--color-background-emoji-picker-popover);
-        min-height: 2.9333em; /* 44px at 15px/em */
-        width: 16.6667em; /* 250px at 15px/em */
+        min-height: 2.9333em;
+        /* 44px at 15px/em */
+        width: 16.6667em;
+        /* 250px at 15px/em */
         border-radius: 0 0 6px 6px;
 
         .emoji-preview {
             position: absolute;
-            width: 2.1333em; /* 32px at 15px/em */
-            height: 2.1333em; /* 32px at 15px/em */
-            left: 0.3333em; /* 5px at 15px/em */
-            top: 0.4em; /* 6px at 15px/em */
+            width: 2.1333em;
+            /* 32px at 15px/em */
+            height: 2.1333em;
+            /* 32px at 15px/em */
+            left: 0.3333em;
+            /* 5px at 15px/em */
+            top: 0.4em;
+            /* 6px at 15px/em */
             margin-top: 0;
         }
 
         .emoji-canonical-name {
-            font-size: 1.0667em; /* 16px at 15px/em */
+            font-size: 1.0667em;
+            /* 16px at 15px/em */
             position: relative;
-            top: 0.75em; /* 12px at 16px/em */
-            margin-left: 3.125em; /* 50px at 16px/em */
+            top: 0.75em;
+            /* 12px at 16px/em */
+            margin-left: 3.125em;
+            /* 50px at 16px/em */
             font-weight: 600;
             white-space: nowrap;
             text-overflow: ellipsis;
