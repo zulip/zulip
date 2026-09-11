@@ -1264,7 +1264,7 @@ export const realm_name_in_email_notifications_policy_values: Record<
 };
 
 export const desktop_icon_count_display_values: Record<
-    "messages" | "dm_mention_followed_topic" | "dm_mention" | "none",
+    "messages" | "dm_mention_followed_topic" | "dm_mention" | "current_conversation" | "none",
     SettingDescription<number>
 > = {
     messages: {
@@ -1279,8 +1279,12 @@ export const desktop_icon_count_display_values: Record<
         code: 3,
         description: $t({defaultMessage: "DMs and mentions"}),
     },
-    none: {
+    current_conversation: {
         code: 4,
+        description: $t({defaultMessage: "Current conversation"}),
+    },
+    none: {
+        code: 5,
         description: $t({defaultMessage: "None"}),
     },
 };
