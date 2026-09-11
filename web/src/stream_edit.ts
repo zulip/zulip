@@ -179,9 +179,15 @@ export function save_stream_info(): void {
 
     dialog_widget.submit_api_request(channel.patch, url, data, {
         error_continuation(xhr) {
-            const {code} = z.object({code: z.string()}).parse(xhr.responseJSON);
+            const parsed_error = z
+                .object({code: z.optional(z.string())})
+                .safeParse(xhr.responseJSON);
+            if (!parsed_error.success) {
+                return;
+            }
+            const {code} = parsed_error.data;
 
-            if (code === "CHANNEL_ALREADY_EXISTS") {
+            if (code === "CHANNEL_ALREADY_EXISTS" || code === "PERMISSION_DENIED") {
                 $("#dialog_error").hide().empty();
 
                 assert(data.new_name !== undefined);
