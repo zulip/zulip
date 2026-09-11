@@ -19,6 +19,7 @@ from pydantic import Json
 from typing_extensions import override
 
 from version import ZULIP_VERSION
+from zerver.actions.message_edit import check_update_message
 from zerver.actions.message_send import (
     check_send_private_message,
     check_send_stream_message,
@@ -31,12 +32,15 @@ from zerver.lib.exceptions import (
     JsonableError,
     StreamDoesNotExistError,
 )
+from zerver.lib.message import truncate_topic
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
+from zerver.lib.topic import messages_for_topic
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
-from zerver.models import Realm, UserProfile
+from zerver.models import Realm, Stream, UserProfile
 from zerver.models.custom_profile_fields import CustomProfileField, CustomProfileFieldValue
+from zerver.models.streams import get_realm_stream, get_stream_by_id_in_realm
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +68,7 @@ OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig(
 class PresetUrlOption(str, Enum):
     BRANCHES = "branches"
     IGNORE_PRIVATE_REPOSITORIES = "ignore_private_repositories"
+    ENABLE_TOPIC_RENAME = "enable_topic_rename"
     CHANNEL_MAPPING = "mapping"
 
 
@@ -100,6 +105,12 @@ class WebhookUrlOption:
                 return cls(
                     name=config.value,
                     label="Exclude notifications from private repositories",
+                    input_type="checkbox",
+                )
+            case PresetUrlOption.ENABLE_TOPIC_RENAME:
+                return cls(
+                    name=config.value,
+                    label="Rename topics when a title is edited",
                     input_type="checkbox",
                 )
             case PresetUrlOption.CHANNEL_MAPPING:
@@ -419,3 +430,55 @@ def get_service_api_data(
             "Failed to fetch data from %s for %s integration: %s", url, integration_name, e
         )
         raise
+
+
+def check_topic_rename(
+    user_profile: UserProfile,
+    *,
+    old_topic_name: str,
+    new_topic_name: str,
+    channel: str,
+) -> bool:
+    try:
+        if channel.isdecimal():
+            stream = get_stream_by_id_in_realm(int(channel), user_profile.realm)
+        else:
+            stream = get_realm_stream(channel, user_profile.realm_id)
+    except Stream.DoesNotExist:
+        return False
+
+    old_topic_name = truncate_topic(old_topic_name)
+    new_topic_name = truncate_topic(new_topic_name)
+
+    assert stream.recipient_id is not None
+    first_message_id_in_old_topic = (
+        messages_for_topic(
+            realm_id=user_profile.realm_id,
+            stream_recipient_id=stream.recipient_id,
+            topic_name=old_topic_name,
+        )
+        .values_list("id", flat=True)
+        .first()
+    )
+
+    # This could happen if the user reconfigures their integration to send
+    # notifications to a different channel and, right after that, triggers
+    # an event that renames the topic. Currently we have no way of handling
+    # that case, and PresetUrlOption.ENABLE_TOPIC_RENAME doesn't claim to be
+    # able to move notifications across channels.
+    if first_message_id_in_old_topic is None:
+        return False
+
+    try:
+        check_update_message(
+            user_profile,
+            first_message_id_in_old_topic,
+            topic_name=new_topic_name,
+            propagate_mode="change_all",
+            send_notification_to_old_thread=False,
+            send_notification_to_new_thread=False,
+        )
+    except JsonableError:
+        return False
+
+    return True

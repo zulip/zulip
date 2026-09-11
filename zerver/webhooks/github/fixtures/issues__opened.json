@@ -1,5 +1,5 @@
 {
-    "action": "edited",
+    "action": "opened",
     "issue": {
         "url": "https://api.github.com/repos/DhruvShetty22/zulip-test/issues/33",
         "repository_url": "https://api.github.com/repos/DhruvShetty22/zulip-test",
@@ -10,7 +10,7 @@
         "id": 3848333070,
         "node_id": "I_kwDOQxTtJs7lYOcO",
         "number": 33,
-        "title": "New Short Title.",
+        "title": "This is a very long Issue title to test topic truncation when renaming.",
         "user": {
             "login": "DhruvShetty22",
             "id": 166252106,
@@ -40,7 +40,7 @@
         "milestone": null,
         "comments": 0,
         "created_at": "2026-01-23T17:01:17Z",
-        "updated_at": "2026-01-23T17:04:33Z",
+        "updated_at": "2026-01-23T17:01:17Z",
         "closed_at": null,
         "author_association": "OWNER",
         "active_lock_reason": null,
@@ -71,11 +71,6 @@
         "timeline_url": "https://api.github.com/repos/DhruvShetty22/zulip-test/issues/33/timeline",
         "performed_via_github_app": null,
         "state_reason": null
-    },
-    "changes": {
-        "title": {
-            "from": "This is a very long Issue title to test topic truncation when renaming."
-        }
     },
     "repository": {
         "id": 1125444902,
