@@ -603,6 +603,28 @@ export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
     }
 }
 
+function maybe_add_unresolved_pill_by_default(): void {
+    // Add the "Unresolved topics" pill by default when
+    // there are resolved topics and rebuild the topic list.
+    const stream_id = active_stream_id();
+    assert(stream_id !== undefined);
+
+    if (!stream_topic_history.stream_has_locally_available_resolved_topics(stream_id)) {
+        return;
+    }
+
+    const current_items = topic_filter_pill_widget?.items() ?? [];
+    const unresolved_pill = topic_filter_pill.create_item_from_syntax(
+        "-is:resolved",
+        current_items,
+    );
+
+    if (unresolved_pill) {
+        topic_filter_pill_widget?.appendValidatedData(unresolved_pill);
+        update_widget_for_stream(stream_id);
+    }
+}
+
 // For zooming, we only do topic-list stuff here...let stream_list
 // handle hiding/showing the non-narrowed streams
 export function zoom_in($stream_li: JQuery, stream_id: number): void {
@@ -636,6 +658,7 @@ export function zoom_in($stream_li: JQuery, stream_id: number): void {
         // position since we just added some topics to the list which moved user
         // to a different position anyway.
         left_sidebar_scroll_zoomed_in_topic_into_view();
+        maybe_add_unresolved_pill_by_default();
         topic_state_typeahead?.lookup(true);
         topic_list_cursor.reset();
     }
