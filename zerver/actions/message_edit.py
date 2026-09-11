@@ -63,6 +63,7 @@ from zerver.lib.streams import (
     check_stream_access_based_on_can_send_message_group,
     get_stream_topics_policy,
     notify_stream_is_recently_active_update,
+    subscribed_to_stream,
 )
 from zerver.lib.string_validation import check_stream_topic
 from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_thumbnailed_images
@@ -1332,6 +1333,18 @@ def do_update_message(
 
         if not sender.is_bot and sender not in users_losing_access and is_target_message_first:
             apply_automatic_unmute_follow_topics_policy(sender, target_stream, target_topic)
+
+    if (
+        all(user["id"] != user_profile.id for user in users_to_be_notified)
+        and not user_profile.is_bot
+        and not subscribed_to_stream(user_profile, stream_being_edited.id)
+    ):
+        # The acting user can edit a message in a channel they aren't
+        # subscribed to, in which case they have no UserMessage row and are
+        # not covered by the subscriber logic above, so they would not hear
+        # about their own edit. Notify them, using the flags that fetching
+        # this message would report.
+        users_to_be_notified.append({"id": user_profile.id, "flags": ["read", "historical"]})
 
     send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 

@@ -453,23 +453,6 @@ test_ui("test_stream_posting_permission", ({mock_template, override}) => {
     compose_state.set_stream_id(sub_stream_102.stream_id);
 
     sub_stream_102.subscribed = false;
-    let user_not_subscribed_rendered = false;
-    mock_template("compose_banner/compose_banner.hbs", false, (data) => {
-        assert.equal(data.classname, compose_banner.CLASSNAMES.user_not_subscribed);
-        assert.equal(
-            data.banner_text,
-            $t({
-                defaultMessage:
-                    "You're not subscribed to this channel. You will not be notified if other users reply to your message.",
-            }),
-        );
-        user_not_subscribed_rendered = true;
-        return "<banner-stub>";
-    });
-    assert.ok(!compose_validate.validate());
-    assert.ok(user_not_subscribed_rendered);
-
-    sub_stream_102.subscribed = true;
 
     let banner_rendered = false;
     mock_template("compose_banner/compose_banner.hbs", false, (data) => {

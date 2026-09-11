@@ -2195,6 +2195,33 @@ class StreamMessagesTest(ZulipTestCase):
         user_ids = {u["id"] for u in users}
         return user_ids
 
+    def test_unsubscribed_sender_gets_message_event(self) -> None:
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        stream_name = "Test stream"
+        self.subscribe(cordelia, stream_name)
+
+        # Hamlet isn't subscribed, so he gets no UserMessage row for his own
+        # message; we still send him the event, so his client can display it.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            self.send_stream_message(
+                hamlet,
+                stream_name,
+                content="test",
+                allow_unsubscribed_sender=True,
+                skip_capture_on_commit_callbacks=True,
+            )
+
+        users = {user["id"]: user for user in events[0]["users"]}
+        self.assertIn(hamlet.id, users)
+        # These are the flags fetching this message would report for him.
+        self.assertEqual(sorted(users[hamlet.id]["flags"]), ["historical", "read"])
+        self.assertFalse(
+            UserMessage.objects.filter(
+                user_profile=hamlet, message_id=events[0]["event"]["message"]
+            ).exists()
+        )
+
     def test_unsub_mention(self) -> None:
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")

@@ -291,6 +291,13 @@ export function insert_local_message(
 
     raw_local_message.display_recipient = build_display_recipient(raw_local_message);
 
+    if (
+        raw_local_message.type === "stream" &&
+        !stream_data.is_subscribed(raw_local_message.stream_id)
+    ) {
+        raw_local_message.flags = [...raw_local_message.flags, "historical"];
+    }
+
     const [message] = insert_new_messages({
         type: "local_message",
         raw_messages: [raw_local_message],

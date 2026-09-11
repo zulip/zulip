@@ -4,14 +4,25 @@ const assert = require("node:assert/strict");
 
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
-const {run_test} = require("./lib/test.cjs");
+const {run_test, noop} = require("./lib/test.cjs");
+const {$} = require("./lib/zjquery.cjs");
+
+const stream_data = mock_esm("../src/stream_data");
+const channel = mock_esm("../src/channel");
+const compose_tooltips = mock_esm("../src/compose_tooltips");
+const compose_validate = mock_esm("../src/compose_validate");
+const markdown = mock_esm("../src/markdown");
+const message_lists = mock_esm("../src/message_lists");
+const rows = mock_esm("../src/rows");
+mock_esm("../src/loading", {show_button_spinner: noop});
+mock_esm("../src/compose_banner", {
+    get_compose_banner_container: () => $.create("banner-container"),
+});
 
 const message_edit = zrequire("message_edit");
 const {set_current_user, set_realm} = zrequire("state_data");
 
 const is_content_editable = message_edit.is_content_editable;
-
-const stream_data = mock_esm("../src/stream_data");
 
 const realm = make_realm();
 set_realm(realm);
@@ -303,4 +314,61 @@ run_test("stream_and_topic_exist_in_edit_history", () => {
         ),
         false,
     );
+});
+
+run_test("save_message_row_edit without cached raw_content", async ({override}) => {
+    // We don't cache raw_content for messages in channels the user isn't
+    // subscribed to, so the edit box's original content is the only copy we
+    // have; saving must not depend on message.raw_content being present.
+    const message_id = 1001;
+    const stream_id = 55;
+    const original_content = "before";
+
+    const message = {
+        id: message_id,
+        type: "stream",
+        stream_id,
+        sent_by_me: true,
+        raw_content: undefined,
+        content: "<p>before</p>",
+    };
+
+    const $textarea = $.create("edit-content-textarea");
+    $textarea.val("after");
+    $textarea.attr("readonly", undefined);
+    const $row = $.create("edit-row");
+    $row.set_find_results("textarea.message_edit_content", $textarea);
+    $row.set_find_results(".message_edit_form textarea", $textarea);
+    $row.set_find_results(".message_edit_save_container", $.create("save-container"));
+    $row.set_find_results(".message_edit_save", $.create("save-button"));
+    $row.set_find_results(".message_edit_save span", $.create("save-button-span"));
+    $row.set_find_results(".message_edit_cancel", $.create("cancel-button"));
+    $row.set_find_results(".loader", $.create("edit-loader"));
+
+    override(compose_tooltips, "hide_compose_control_button_tooltips", noop);
+    override(rows, "id", () => message_id);
+    override(rows, "get_message_recipient_header", () => ({
+        attr: () => stream_id.toString(),
+    }));
+    message_lists.current = {
+        get: () => message,
+    };
+    override(compose_validate, "validate_stream_message_mentions", () => true);
+    override(markdown, "contains_backend_only_syntax", () => true);
+
+    let patched;
+    override(channel, "patch", (opts) => {
+        patched = opts;
+        opts.success({detached_uploads: []});
+    });
+
+    message_edit.original_raw_content_being_edited.set(message_id, original_content);
+
+    await message_edit.save_message_row_edit($row);
+
+    assert.ok(patched !== undefined);
+    assert.equal(patched.url, "/json/messages/" + message_id);
+    assert.equal(patched.data.content, "after");
+
+    message_edit.original_raw_content_being_edited.clear();
 });
