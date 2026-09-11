@@ -15,7 +15,12 @@ from corporate.models.customers import Customer
 from corporate.models.plans import CustomerPlan
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.context_processors import get_apps_page_url
-from zerver.lib.integrations import BOT_INTEGRATIONS, CATEGORIES, INTEGRATIONS
+from zerver.lib.integrations import (
+    BOT_INTEGRATIONS,
+    CATEGORIES,
+    CATEGORY_SEARCH_PLACEHOLDERS,
+    INTEGRATIONS,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.url_redirects import INTEGRATION_CATEGORY_SLUGS
@@ -551,6 +556,19 @@ class DocPageTest(ZulipTestCase):
         url = "/integrations/"
         og_title = '<meta property="og:title" content="Zulip integrations" />'
         self._test(url, [og_title, og_description, get_canonical_url(url)])
+
+    def test_integration_search_placeholder(self) -> None:
+        # A category missing from CATEGORY_SEARCH_PLACEHOLDERS would
+        # silently fall back to the unfiltered catalog's placeholder.
+        self.assertEqual(set(CATEGORY_SEARCH_PLACEHOLDERS), set(CATEGORIES))
+
+        url = "/integrations/"
+        self._test(url, ['class="search_input" placeholder="Search integrations"'])
+
+        for category in CATEGORIES:
+            url = f"/integrations/category/{category}"
+            placeholder = CATEGORY_SEARCH_PLACEHOLDERS[category]
+            self._test(url, [f'class="search_input" placeholder="{placeholder}"'])
 
     def test_integration_404s(self) -> None:
         # We don't need to test all the pages for 404

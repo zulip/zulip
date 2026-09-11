@@ -28,7 +28,8 @@ list. For example, to add a new incoming webhook integration, declare a
 IncomingWebhookIntegration in the INCOMING_WEBHOOK_INTEGRATIONS list. All
 *_INTEGRATIONS lists are automatically aggregated into the INTEGRATIONS dict.
 
-To add a new integration category, add it to the CATEGORIES dict below.
+To add a new integration category, add it to the CATEGORIES and
+CATEGORY_SEARCH_PLACEHOLDERS dicts below.
 
 Over time, we expect this registry to grow additional convenience
 features for writing and configuring integrations efficiently.
@@ -51,6 +52,25 @@ CATEGORIES: dict[str, str] = {
     "project-management": "Project management",
     "productivity": "Productivity",
     "version-control": "Version control",
+}
+
+CATEGORY_SEARCH_PLACEHOLDERS: dict[str, str] = {
+    "meta-integration": "Search integration frameworks",
+    "bots": "Search interactive bot integrations",
+    "video-calling": "Search video calling integrations",
+    "continuous-integration": "Search continuous integration tools",
+    "customer-support": "Search customer support integrations",
+    "deployment": "Search deployment integrations",
+    "entertainment": "Search entertainment integrations",
+    "communication": "Search communication integrations",
+    "financial": "Search financial integrations",
+    "hr": "Search human resources integrations",
+    "marketing": "Search marketing integrations",
+    "misc": "Search miscellaneous integrations",
+    "monitoring": "Search monitoring integrations",
+    "project-management": "Search project management integrations",
+    "productivity": "Search productivity integrations",
+    "version-control": "Search version control integrations",
 }
 
 # Can also be computed from INTEGRATIONS by removing entries from

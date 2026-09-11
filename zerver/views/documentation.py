@@ -22,6 +22,7 @@ from zerver.decorator import add_google_analytics_context
 from zerver.lib.html_to_text import get_content_description
 from zerver.lib.integrations import (
     CATEGORIES,
+    CATEGORY_SEARCH_PLACEHOLDERS,
     INTEGRATIONS,
     HubotIntegration,
     IncomingWebhookIntegration,
@@ -409,11 +410,14 @@ def add_catalog_integrations_context(request: HttpRequest, category_slug: str) -
     # round down to the nearest multiple of 10.
     integrations_count_display = ((enabled_integrations_count - 1) // 10) * 10
 
+    search_placeholder = CATEGORY_SEARCH_PLACEHOLDERS.get(category_slug, "Search integrations")
+
     context = add_base_integrations_context(request)
     context.update(
         {
             "categories_dict": OrderedDict(sorted(CATEGORIES.items())),
             "integrations_count_display": integrations_count_display,
+            "search_placeholder": search_placeholder,
             "selected_category_slug": category_slug,
             "visible_integrations": get_visible_integrations_for_category(category_slug),
         }
