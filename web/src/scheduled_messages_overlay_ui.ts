@@ -211,13 +211,27 @@ export function initialize(): void {
             .attr("data-scheduled-message-id");
         assert(scheduled_msg_id !== undefined);
 
+        messages_overlay_ui.focus_on_sibling_element(keyboard_handling_context);
         scheduled_messages.delete_scheduled_message(Number.parseInt(scheduled_msg_id, 10));
 
         e.stopPropagation();
         e.preventDefault();
     });
 
-    $("body").on("focus", ".scheduled-message-info-box", function (this: HTMLElement) {
-        messages_overlay_ui.activate_element(this, keyboard_handling_context);
-    });
+    $("body").on(
+        "focus",
+        ".scheduled-message-info-box",
+        function (this: HTMLElement, e: JQuery.FocusEvent) {
+            if (e.target !== this) {
+                // Focus landed on an action button inside the scheduled-message row.
+                // Do not steal focus back to the row, but keep this row marked active.
+                if (!this.classList.contains("active")) {
+                    $(".scheduled-message-info-box.active").removeClass("active");
+                    this.classList.add("active");
+                }
+                return;
+            }
+            messages_overlay_ui.activate_element(this, keyboard_handling_context);
+        },
+    );
 }

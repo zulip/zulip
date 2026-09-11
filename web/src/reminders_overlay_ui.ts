@@ -143,13 +143,23 @@ export function initialize(): void {
             .attr("data-reminder-id");
         assert(scheduled_msg_id !== undefined);
 
+        messages_overlay_ui.focus_on_sibling_element(keyboard_handling_context);
         message_reminder.delete_reminder(Number.parseInt(scheduled_msg_id, 10));
 
         e.stopPropagation();
         e.preventDefault();
     });
 
-    $("body").on("focus", ".reminder-info-box", function (this: HTMLElement) {
+    $("body").on("focus", ".reminder-info-box", function (this: HTMLElement, e: JQuery.FocusEvent) {
+        if (e.target !== this) {
+            // Focus landed on an action button inside the reminder row.
+            // Do not steal focus back to the row, but keep this row marked active.
+            if (!this.classList.contains("active")) {
+                $(".reminder-info-box.active").removeClass("active");
+                this.classList.add("active");
+            }
+            return;
+        }
         messages_overlay_ui.activate_element(this, keyboard_handling_context);
     });
 
