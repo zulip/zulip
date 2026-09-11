@@ -6,6 +6,7 @@ import * as z from "zod/mini";
 import render_bot_api_key_details from "../templates/settings/bot_api_key_details.hbs";
 
 import * as banners from "./banners.ts";
+import * as blueslip from "./blueslip.ts";
 import * as bot_data from "./bot_data.ts";
 import type {Bot} from "./bot_data.ts";
 import * as buttons from "./buttons.ts";
@@ -13,7 +14,7 @@ import * as channel from "./channel.ts";
 import * as clipboard_handler from "./clipboard_handler.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import {realm} from "./state_data.ts";
 
 export function validate_bot_short_name(value: string): boolean {
@@ -148,6 +149,8 @@ async function copy_zuliprc_content(bot: Bot, api_key: string): Promise<void> {
     });
 }
 
+const REGENERATE_WARNING_ID = "bot-api-key-regenerate-warning";
+
 export async function show_api_key_modal(bot_id: number): Promise<void> {
     const api_key = await fetch_bot_api_key(
         bot_id,
@@ -164,6 +167,7 @@ export async function show_api_key_modal(bot_id: number): Promise<void> {
     const modal_content_html = render_bot_api_key_details({
         bot_id,
         api_key,
+        regenerate_warning_id: REGENERATE_WARNING_ID,
     });
     dialog_widget.launch({
         modal_title_html: $t_html(
@@ -181,36 +185,100 @@ export async function show_api_key_modal(bot_id: number): Promise<void> {
     });
 }
 
+const REGENERATE_CONFIRMATION_BANNER: banners.Banner = {
+    intent: "warning",
+    label: $t({
+        defaultMessage:
+            "This invalidates the current API key. Integrations using the old key will stop working.",
+    }),
+    label_id: REGENERATE_WARNING_ID,
+    buttons: [
+        {
+            variant: "subtle",
+            label: $t({defaultMessage: "Confirm key rotation"}),
+            custom_classes: "bot-modal-confirm-regenerate-bot-api-key",
+            "aria-describedby": REGENERATE_WARNING_ID,
+        },
+    ],
+    close_button: false,
+    custom_classes: "banner-in-modal",
+};
+
+// Focus goes to Cancel, not Confirm: Cancel takes the exact spot the
+// regenerate icon was in, so a double-click (or a second Enter) backs out
+// instead of rotating the key.
+function show_api_key_regenerate_confirmation($container: JQuery): void {
+    $container.find(".bot-modal-api-key-error").hide();
+    $container.find(".bot-modal-regenerate-bot-api-key").addClass("hide");
+    banners.open(REGENERATE_CONFIRMATION_BANNER, $container.find(".bot-api-key-regenerate-banner"));
+    $container
+        .find(".bot-modal-cancel-regenerate-bot-api-key")
+        .removeClass("hide")
+        .trigger("focus");
+}
+
+function hide_api_key_regenerate_confirmation($container: JQuery): void {
+    banners.close($container.find(".bot-api-key-regenerate-banner .banner"));
+    $container
+        .find(".bot-modal-cancel-regenerate-bot-api-key")
+        .prop("disabled", false)
+        .addClass("hide");
+    $container.find(".bot-modal-regenerate-bot-api-key").removeClass("hide").trigger("focus");
+}
+
+function show_api_key_regenerate_error($container: JQuery, message_html: string): void {
+    $container.find(".bot-modal-api-key-error").html(message_html).show();
+}
+
 export function initialize_bot_click_handlers(): void {
     $("body").on("click", "button.bot-modal-regenerate-bot-api-key", (e) => {
         e.preventDefault();
-        const bot_id = Number.parseInt(
-            $(e.currentTarget).closest("span").attr("data-user-id")!,
-            10,
-        );
-        const $row = $(e.currentTarget).closest(".input-group");
-
-        void channel.post({
-            url: `/json/bots/${encodeURIComponent(bot_id)}/api_key/regenerate`,
-            success(data) {
-                const parsed_data = z
-                    .object({
-                        api_key: z.string(),
-                    })
-                    .parse(data);
-
-                $row.find(".api-key").val(parsed_data.api_key);
-                $row.closest(".bot-api-key-container").attr("data-api-key", parsed_data.api_key);
-                $row.find(".bot-modal-api-key-error").hide();
-            },
-            error(xhr) {
-                const parsed = z.object({msg: z.string()}).safeParse(xhr.responseJSON);
-                if (parsed.success && parsed.data.msg) {
-                    $row.find(".bot-modal-api-key-error").text(parsed.data.msg).show();
-                }
-            },
-        });
+        show_api_key_regenerate_confirmation($(e.currentTarget).closest(".bot-api-key-container"));
     });
+
+    $("body").on("click", "button.bot-modal-cancel-regenerate-bot-api-key", (e) => {
+        e.preventDefault();
+        hide_api_key_regenerate_confirmation($(e.currentTarget).closest(".bot-api-key-container"));
+    });
+
+    $("body").on(
+        "click",
+        "button.bot-modal-confirm-regenerate-bot-api-key",
+        function (this: HTMLElement, e) {
+            e.preventDefault();
+            const $button = $(this);
+            const $container = $button.closest(".bot-api-key-container");
+            const bot_id = Number.parseInt($container.attr("data-user-id")!, 10);
+
+            $container.find(".bot-modal-cancel-regenerate-bot-api-key").prop("disabled", true);
+            $button.prop("disabled", true);
+            buttons.show_button_loading_indicator($button);
+            const failure_message_html = $t_html({
+                defaultMessage: "Failed to generate new API key",
+            });
+            void channel.post({
+                url: `/json/bots/${encodeURIComponent(bot_id)}/api_key/regenerate`,
+                success(data) {
+                    const parsed = z.object({api_key: z.string()}).safeParse(data);
+                    hide_api_key_regenerate_confirmation($container);
+                    if (!parsed.success) {
+                        blueslip.error("Unexpected response to bot API key regeneration");
+                        show_api_key_regenerate_error($container, failure_message_html);
+                        return;
+                    }
+                    $container.find(".api-key").val(parsed.data.api_key);
+                    $container.attr("data-api-key", parsed.data.api_key);
+                },
+                error(xhr) {
+                    hide_api_key_regenerate_confirmation($container);
+                    show_api_key_regenerate_error(
+                        $container,
+                        channel.xhr_error_message(failure_message_html, xhr),
+                    );
+                },
+            });
+        },
+    );
 
     $("body").on("click", "button.download-bot-zuliprc", function () {
         void (async () => {

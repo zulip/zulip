@@ -492,6 +492,11 @@ select.settings_select {
     .modal_text_input {
         margin-bottom: 0;
     }
+
+    .bot-api-key-regenerate-banner:has(.banner) {
+        /* Only space the banner off the API key row when it's present. */
+        margin-top: 0.625em; /* 10px at 16px/1em */
+    }
 }
 
 #zuliprc-section {
