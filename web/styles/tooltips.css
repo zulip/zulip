@@ -46,6 +46,22 @@
             line-height: 1.2143em;
         }
 
+        .emoji-tooltip-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* 4px at 16px/1em */
+            gap: 0.25em;
+            text-align: center;
+        }
+
+        .emoji-tooltip-enlarged {
+            /* 32px at the 16px default, matching the emoji picker preview;
+               em so it scales with the user's font size. */
+            width: 2em;
+            height: 2em;
+        }
+
         &[data-placement^="top"] > .tippy-arrow::before {
             border-top-color: var(--color-background-tippy-box);
         }
