@@ -76,6 +76,7 @@ export const get_helpers = (): MarkdownHelpers => ({
 
     // stream hashes
     get_stream_by_name: (name) => stream(stream_data.get_sub(name)),
+    is_empty_topic_only_channel: stream_data.is_empty_topic_only_channel,
     stream_hash: hash_util.channel_url_by_user_setting,
     stream_topic_hash: hash_util.by_stream_topic_url,
 
