@@ -11,6 +11,7 @@ const {run_test} = require("./lib/test.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
 const message_delete = zrequire("message_delete");
+const server_time = zrequire("server_time");
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -220,4 +221,31 @@ run_test("get_deletability", ({override}) => {
 
     message.sender_id = moderator.user_id;
     assert.equal(message_delete.get_deletability(message), false);
+});
+
+run_test("get_deletability with the client clock ahead of the server", ({override}) => {
+    override(realm, "realm_can_delete_any_message_group", nobody_group.id);
+    override(realm, "realm_can_delete_own_message_group", everyone_group.id);
+    override(realm, "realm_message_content_delete_limit_seconds", 600);
+    initialize_and_override_current_user(me.user_id, override);
+
+    // This client's clock is an hour ahead of the server's.
+    const server_now = Date.now() / 1000 - 3600;
+    const message = {
+        sent_by_me: true,
+        locally_echoed: false,
+        sender_id: me.user_id,
+        timestamp: server_now - 60,
+    };
+
+    // Measured against the client's clock the message looks more than
+    // an hour old, so the ten minute limit appears to have passed.
+    assert.equal(message_delete.get_deletability(message), false);
+
+    try {
+        server_time.update_offset(server_now);
+        assert.equal(message_delete.get_deletability(message), true);
+    } finally {
+        server_time.update_offset(Date.now() / 1000);
+    }
 });
