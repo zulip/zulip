@@ -528,6 +528,12 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         url_options=[WebhookUrlOption.build_preset_config(PresetUrlOption.BRANCHES)],
     ),
     IncomingWebhookIntegration(
+        "azuremonitor",
+        ["monitoring"],
+        [WebhookScreenshotConfig("metric_alert_fired.json")],
+        display_name="Azure Monitor",
+    ),
+    IncomingWebhookIntegration(
         "basecamp", ["project-management"], [WebhookScreenshotConfig("doc_active.json")]
     ),
     IncomingWebhookIntegration(
