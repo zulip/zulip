@@ -1,4 +1,4 @@
-<div class="add_members_container add-button-container">
+<div class="add_members_container pill-action-container">
     <div class="members-input-scrollable-container" data-simplebar>
         <div class="pill-container person_picker">
             <div class="input" contenteditable="true"
@@ -8,10 +8,10 @@
         </div>
     </div>
     {{#if (not hide_add_button)}}
-        <div class="add_member_button_wrapper add-users-button-wrapper inline-block">
+        <div class="add_member_button_wrapper pill-action-button-wrapper inline-block">
             {{> ../components/action_button
               label=(t "Add")
-              custom_classes="add-member-button add-users-button"
+              custom_classes="add-member-button pill-action-button"
               id="add_member"
               variant="subtle"
               intent="brand"

@@ -252,7 +252,8 @@
 }
 
 .add_members_container,
-.add_subscribers_container {
+.add_subscribers_container,
+.remove_subscribers_container {
     display: inline-flex;
     width: 100%;
     align-items: center;
@@ -304,7 +305,8 @@
 }
 
 .user_group_subscription_request_result,
-.stream_subscription_request_result {
+.stream_subscription_request_result,
+.stream_unsubscription_request_result {
     & a {
         color: inherit;
     }
@@ -317,6 +319,7 @@
 }
 
 .add_subscriber_button_wrapper,
+.remove_subscriber_button_wrapper,
 .add_member_button_wrapper {
     display: grid;
     grid-template-columns: 1fr;
@@ -325,6 +328,7 @@
 
     .check,
     .add-subscriber-button,
+    .remove-subscriber-button-bulk,
     .add-member-button {
         grid-column: 1 / 2;
         grid-row: 1 / 2;
@@ -342,11 +346,13 @@
 }
 
 .add_subscribers_container .add_subscriber_button_wrapper,
+.remove_subscribers_container .remove_subscriber_button_wrapper,
 .add_members_container .add_member_button_wrapper {
     padding-left: 5px;
 }
 
 .add-subscribers-subtitle,
+.remove-subscribers-subtitle,
 .add-members-subtitle {
     opacity: 0.7;
 }
@@ -363,8 +369,17 @@
 }
 
 #stream_settings .add-subscribers-subtitle,
+#stream_settings .remove-subscribers-subtitle,
 #user_group_settings .add-members-subtitle {
     margin-bottom: 10px;
+}
+
+h4.remove-subscribers-heading {
+    margin-top: 20px;
+}
+
+.remove-subscribers-section.no-display {
+    display: none;
 }
 
 .choose-subscribers-label {
@@ -1115,6 +1130,7 @@
 }
 
 .add_subscribers_container.add_subscribers_disabled,
+.remove_subscribers_container.remove_subscribers_disabled,
 .add_members_container.add_members_disabled {
     cursor: not-allowed;
 
