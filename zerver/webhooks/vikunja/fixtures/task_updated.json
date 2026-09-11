@@ -1,0 +1,207 @@
+{
+    "event_name": "task.updated",
+    "time": "2026-01-19T15:13:04.476828104Z",
+    "data": {
+        "doer": {
+            "id": 1,
+            "name": "John Doe",
+            "username": "jdoe",
+            "created": "2026-01-16T13:18:58+01:00",
+            "updated": "2026-01-16T13:58:06+01:00"
+        },
+        "project": {
+            "id": 26,
+            "title": "Meeting",
+            "description": "",
+            "identifier": "",
+            "hex_color": "",
+            "parent_project_id": 21,
+            "owner": {
+                "id": 2,
+                "name": "",
+                "username": "admin",
+                "created": "2026-01-16T13:32:33+01:00",
+                "updated": "2026-01-19T10:07:36+01:00"
+            },
+            "is_archived": false,
+            "background_information": {
+                "Type": "upload"
+            },
+            "background_blur_hash": "LwJICFIVV@oeyZxZaxj].8t7ogbH",
+            "is_favorite": false,
+            "position": 1703936,
+            "views": [
+                {
+                    "id": 101,
+                    "title": "List",
+                    "project_id": 26,
+                    "view_kind": "list",
+                    "filter": {
+                        "s": "",
+                        "sort_by": null,
+                        "order_by": null,
+                        "filter": "done = false",
+                        "filter_include_nulls": false
+                    },
+                    "position": 100,
+                    "bucket_configuration_mode": "none",
+                    "bucket_configuration": null,
+                    "default_bucket_id": 0,
+                    "done_bucket_id": 0,
+                    "updated": "2026-01-16T13:37:36+01:00",
+                    "created": "2026-01-16T13:37:36+01:00"
+                },
+                {
+                    "id": 102,
+                    "title": "Gantt",
+                    "project_id": 26,
+                    "view_kind": "gantt",
+                    "filter": null,
+                    "position": 200,
+                    "bucket_configuration_mode": "none",
+                    "bucket_configuration": null,
+                    "default_bucket_id": 0,
+                    "done_bucket_id": 0,
+                    "updated": "2026-01-16T13:37:36+01:00",
+                    "created": "2026-01-16T13:37:36+01:00"
+                },
+                {
+                    "id": 103,
+                    "title": "Table",
+                    "project_id": 26,
+                    "view_kind": "table",
+                    "filter": null,
+                    "position": 300,
+                    "bucket_configuration_mode": "none",
+                    "bucket_configuration": null,
+                    "default_bucket_id": 0,
+                    "done_bucket_id": 0,
+                    "updated": "2026-01-16T13:37:36+01:00",
+                    "created": "2026-01-16T13:37:36+01:00"
+                },
+                {
+                    "id": 104,
+                    "title": "Kanban",
+                    "project_id": 26,
+                    "view_kind": "kanban",
+                    "filter": null,
+                    "position": 400,
+                    "bucket_configuration_mode": "manual",
+                    "bucket_configuration": null,
+                    "default_bucket_id": 0,
+                    "done_bucket_id": 198,
+                    "updated": "2026-01-16T13:37:38+01:00",
+                    "created": "2026-01-16T13:37:36+01:00"
+                }
+            ],
+            "max_permission": 0,
+            "created": "2026-01-16T13:37:36+01:00",
+            "updated": "2026-01-19T16:13:04+01:00"
+        },
+        "task": {
+            "id": 539,
+            "title": "A very important task",
+            "description": "<h1>Attention</h1><p>This is a task that is very important.</p>",
+            "done": false,
+            "done_at": "0001-01-01T00:00:00Z",
+            "due_date": "0001-01-01T00:00:00Z",
+            "reminders": null,
+            "project_id": 26,
+            "repeat_after": 0,
+            "repeat_mode": 0,
+            "priority": 3,
+            "start_date": "2026-02-01T09:00:00+01:00",
+            "end_date": "2026-02-28T17:00:00+01:00",
+            "assignees": null,
+            "labels": [
+                {
+                    "id": 12,
+                    "title": "Important",
+                    "description": "",
+                    "hex_color": "ff0000",
+                    "created_by": {
+                        "id": 2,
+                        "name": "Admin User",
+                        "username": "admin",
+                        "created": "2026-01-16T13:32:33+01:00",
+                        "updated": "2026-01-27T14:19:20+01:00"
+                    },
+                    "created": "2026-01-16T13:36:25+01:00",
+                    "updated": "2026-01-16T13:36:25+01:00"
+                }
+            ],
+            "hex_color": "7f23ff",
+            "percent_done": 0.40,
+            "identifier": "#12",
+            "index": 12,
+            "related_tasks": {},
+            "attachments": [
+                {
+                    "id": 63,
+                    "task_id": 539,
+                    "created_by": {
+                        "id": 2,
+                        "name": "",
+                        "username": "admin",
+                        "created": "2026-01-16T13:32:33+01:00",
+                        "updated": "2026-01-19T10:07:36+01:00"
+                    },
+                    "file": {
+                        "id": 73,
+                        "name": "image.png",
+                        "mime": "",
+                        "size": 1986432,
+                        "created": "2026-01-16T13:37:37+01:00"
+                    },
+                    "created": "2026-01-16T13:37:37+01:00"
+                },
+                {
+                    "id": 64,
+                    "task_id": 539,
+                    "created_by": {
+                        "id": 2,
+                        "name": "",
+                        "username": "admin",
+                        "created": "2026-01-16T13:32:33+01:00",
+                        "updated": "2026-01-19T10:07:36+01:00"
+                    },
+                    "file": {
+                        "id": 74,
+                        "name": "image.png",
+                        "mime": "",
+                        "size": 2841148,
+                        "created": "2026-01-16T13:37:37+01:00"
+                    },
+                    "created": "2026-01-16T13:37:37+01:00"
+                }
+            ],
+            "cover_image_attachment_id": 63,
+            "is_favorite": false,
+            "created": "2026-01-16T13:37:37+01:00",
+            "updated": "2026-01-19T16:13:04+01:00",
+            "bucket_id": 0,
+            "buckets": [
+                {
+                    "id": 198,
+                    "title": "To Do",
+                    "project_view_id": 104,
+                    "limit": 0,
+                    "count": 0,
+                    "position": 300,
+                    "created": "2026-01-16T13:37:36+01:00",
+                    "updated": "2026-01-16T13:37:36+01:00",
+                    "created_by": null
+                }
+            ],
+            "position": 0,
+            "reactions": null,
+            "created_by": {
+                "id": 2,
+                "name": "",
+                "username": "admin",
+                "created": "2026-01-16T13:32:33+01:00",
+                "updated": "2026-01-19T10:07:36+01:00"
+            }
+        }
+    }
+}
