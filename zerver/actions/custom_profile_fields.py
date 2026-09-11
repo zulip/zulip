@@ -142,18 +142,25 @@ def try_update_realm_custom_profile_field(
     editable_by_user: bool | None = None,
     use_for_user_matching: bool | None = None,
 ) -> None:
+    update_fields = []
     if name is not None:
         field.name = name
+        update_fields.append("name")
     if hint is not None:
         field.hint = hint
+        update_fields.append("hint")
     if required is not None:
         field.required = required
+        update_fields.append("required")
     if editable_by_user is not None:
         field.editable_by_user = editable_by_user
+        update_fields.append("editable_by_user")
     if display_in_profile_summary is not None:
         field.display_in_profile_summary = display_in_profile_summary
+        update_fields.append("display_in_profile_summary")
     if use_for_user_matching is not None:
         field.use_for_user_matching = use_for_user_matching
+        update_fields.append("use_for_user_matching")
 
     if field.field_type in (
         CustomProfileField.DROPDOWN,
@@ -168,7 +175,10 @@ def try_update_realm_custom_profile_field(
         # to an empty dict.
         if field_data is not None or field.field_data == "":
             field.field_data = orjson.dumps(field_data or {}).decode()
-    field.save()
+            update_fields.append("field_data")
+
+    if update_fields:
+        field.save(update_fields=update_fields)
     notify_realm_custom_profile_fields(realm)
 
 
