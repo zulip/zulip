@@ -51,7 +51,8 @@
         "./src/portico/legacy_landing_page.ts",
         "./styles/portico/marketing_page.css",
         "./styles/portico/pricing_plans.css",
-        "./styles/portico/comparison_table.css"
+        "./styles/portico/comparison_table.css",
+        "./styles/portico/slack_alternative.css"
     ],
     "landing-page-hello": [
         "./src/bundles/hello.ts",

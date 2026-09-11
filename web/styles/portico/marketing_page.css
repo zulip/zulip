@@ -2916,6 +2916,12 @@ button {
             width: 400px;
         }
 
+        /* On phones narrower than the image, shrink it to fit
+           instead of overflowing the section. */
+        & img {
+            max-width: 100%;
+        }
+
         @media (width < 1024px) {
             & div.quote {
                 width: 300px;
@@ -2963,6 +2969,13 @@ button {
             width: 100px;
         }
     }
+}
+
+/* Feature pages with a list of alternating sections shade every
+   other section, so that the eye can tell where one ends. */
+.alternative-features .feature-container:nth-child(even) {
+    background: var(--color-background-box);
+    border-radius: 10px;
 }
 
 .discounts-section {
@@ -3348,11 +3361,6 @@ button {
     .alternative-features {
         .feature-container {
             padding: 30px;
-
-            &:nth-child(even) {
-                background: var(--color-background-box);
-                border-radius: 10px;
-            }
         }
 
         .feature-icon img {
