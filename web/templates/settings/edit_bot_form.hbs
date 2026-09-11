@@ -41,6 +41,12 @@
 
         <div id="service_data">
         </div>
+        {{#if is_incoming_webhook_bot}}
+        <div class="input-group edit_bot_webhook_secret_container">
+            <label for="edit_webhook_secret" class="modal-field-label">{{t "Webhook secret" }}</label>
+            <input type="password" name="webhook_secret" id="edit_webhook_secret" class="modal_text_input" placeholder="{{t 'Leave blank to keep current secret' }}" value=""/>
+        </div>
+        {{/if}}
         <div class="input-group edit-avatar-section">
             <label class="modal-field-label">{{t "Avatar" }}</label>
             {{!-- Shows the current avatar --}}
@@ -66,16 +72,6 @@
             <div><label for="edit_bot_avatar_file" generated="true" class="edit_bot_avatar_error text-error"></label></div>
         </div>
     </form>
-    {{#if is_incoming_webhook_bot}}
-    <div class="input-group">
-        {{> ../components/action_button
-          label=(t "Generate URL for an integration")
-          variant="subtle"
-          intent="neutral"
-          custom_classes="generate_url_for_integration"
-          }}
-    </div>
-    {{/if}}
     {{#if (and is_active is_bot_owner_current_user)}}
     <div id="zuliprc-section" class="input-group">
         <div class="zuliprc-container">
