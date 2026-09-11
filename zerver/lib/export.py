@@ -168,6 +168,7 @@ ALL_ZULIP_TABLES = {
     "zerver_externalauthid",
     "zerver_groupgroupmembership",
     "zerver_huddle",
+    "zerver_idempotentrequest",
     "zerver_imageattachment",
     "zerver_message",
     "zerver_missedmessageemailaddress",
@@ -229,6 +230,9 @@ NON_EXPORTED_TABLES = {
     # export, since invitations links will be broken by the server URL
     # change anyway:
     "zerver_emailchangestatus",
+    # This table is used to ensure request's idempotency,
+    # and its rows are short-lived.
+    "zerver_idempotentrequest",
     "zerver_multiuseinvite",
     "zerver_multiuseinvite_streams",
     "zerver_multiuseinvite_groups",
