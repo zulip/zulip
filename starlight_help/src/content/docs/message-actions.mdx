@@ -5,6 +5,7 @@ title: Message actions
 import {TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
 import MessageActionsMenu from "../include/_MessageActionsMenu.mdx";
 import MessageLongPressMenu from "../include/_MessageLongPressMenu.mdx";
 
@@ -33,6 +34,10 @@ In the mobile app, the message actions menu lets you:
     <FlattenedSteps>
       <MessageActionsMenu />
     </FlattenedSteps>
+
+    <ZulipTip>
+      You can also **Right-click** a message to open the message actions menu.
+    </ZulipTip>
   </TabItem>
 
   <TabItem label="Mobile">
