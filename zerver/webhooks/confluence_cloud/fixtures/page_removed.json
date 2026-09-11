@@ -1,0 +1,47 @@
+{
+  "timestamp": 1565964350000,
+  "webhookEvent": "page_removed",
+  "userKey": "abc123",
+  "user": {
+    "type": "known",
+    "username": "jsmith",
+    "userKey": "abc123",
+    "accountId": "5c76b994e1bcdf6294d0eb0f",
+    "displayName": "John Smith",
+    "_links": {
+      "base": "https://example.atlassian.net/wiki",
+      "context": "/wiki",
+      "self": "https://example.atlassian.net/wiki/rest/api/user?key=abc123"
+    }
+  },
+  "page": {
+    "id": "123456",
+    "type": "page",
+    "status": "deleted",
+    "title": "Architecture Overview",
+    "space": {
+      "key": "ENG",
+      "name": "Engineering",
+      "type": "global",
+      "_links": {
+        "webui": "/spaces/ENG",
+        "self": "https://example.atlassian.net/wiki/rest/api/space/ENG"
+      }
+    },
+    "history": {
+      "latest": true,
+      "createdBy": {
+        "displayName": "John Smith"
+      },
+      "createdDate": "2019-08-16T14:00:17.153Z"
+    },
+    "version": {
+      "number": 2
+    },
+    "_links": {
+      "self": "https://example.atlassian.net/wiki/rest/api/content/123456",
+      "base": "https://example.atlassian.net/wiki",
+      "context": "/wiki"
+    }
+  }
+}
