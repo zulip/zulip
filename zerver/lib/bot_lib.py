@@ -23,6 +23,8 @@ from zerver.lib.bot_storage import (
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.models import UserProfile
+from zerver.models.bots import Service, get_default_bot_triggers
+from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import get_active_user
 
 
@@ -164,3 +166,29 @@ def do_flag_message_triggered_bots_messages_as_processed(
         and bot_profile.bot_type in UserProfile.MESSAGE_TRIGGERED_BOT_TYPES
     )
     do_update_message_flags(bot_profile, "add", "read", message_ids)
+
+
+BOT_SERVICE_TRIGGER_EVENT_NAME = {
+    Service.BOT_TRIGGER_ALL_DIRECT_MENTIONS: "mention",
+    Service.BOT_TRIGGER_DMS_RECEIVED: NotificationTriggers.DIRECT_MESSAGE,
+}
+
+
+def get_bot_trigger_event(
+    received_trigger_events: list[str], configured_triggers: list[str]
+) -> str | None:
+    """
+    `received_trigger_events` is a list of possible trigger events,
+    sorted from most to least specific. Returns the most specific
+    event that matches the bot's triggers, or `None` if none match.
+    """
+    effective_triggers = (
+        # For bots with no configured triggers, return the default triggers.
+        # They're most likely bots created before the multiple
+        # triggers system was implemented.
+        configured_triggers if configured_triggers != [] else get_default_bot_triggers()
+    )
+    for trigger in received_trigger_events:
+        if trigger in effective_triggers:
+            return BOT_SERVICE_TRIGGER_EVENT_NAME[trigger]
+    return None

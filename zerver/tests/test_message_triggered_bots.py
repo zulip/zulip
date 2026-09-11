@@ -1,4 +1,6 @@
+import json
 from collections.abc import Callable
+from contextlib import nullcontext
 from functools import wraps
 from typing import Any, Concatenate
 from unittest import mock
@@ -6,14 +8,15 @@ from unittest import mock
 import responses
 from typing_extensions import ParamSpec, override
 
-from zerver.actions.create_user import do_create_user
 from zerver.actions.message_send import get_message_triggered_bot_events
+from zerver.actions.users import do_update_bot_service
+from zerver.lib.bot_lib import BOT_SERVICE_TRIGGER_EVENT_NAME
+from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.models import Recipient, UserProfile
+from zerver.models.bots import Service, get_bot_services
 from zerver.models.messages import UserMessage
-from zerver.models.realms import get_realm
-from zerver.models.scheduled_jobs import NotificationTriggers
 
 BOT_TYPE_TO_QUEUE_NAME = {
     UserProfile.OUTGOING_WEBHOOK_BOT: "outgoing_webhooks",
@@ -23,14 +26,11 @@ BOT_TYPE_TO_QUEUE_NAME = {
 
 class TestMessageTriggeredBotBasics(ZulipTestCase):
     def _get_outgoing_bot(self) -> UserProfile:
-        outgoing_bot = do_create_user(
-            email="bar-bot@zulip.com",
-            password="test",
-            realm=get_realm("zulip"),
+        outgoing_bot = self.create_test_bot(
+            "bar",
+            self.example_user("cordelia"),
             full_name="BarBot",
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-            bot_owner=self.example_user("cordelia"),
-            acting_user=None,
         )
 
         return outgoing_bot
@@ -54,7 +54,10 @@ class TestMessageTriggeredBotBasics(ZulipTestCase):
 
         expected = dict(
             outgoing_webhooks=[
-                dict(trigger=NotificationTriggers.DIRECT_MESSAGE, user_profile_id=outgoing_bot.id),
+                dict(
+                    received_trigger_events=[Service.BOT_TRIGGER_DMS_RECEIVED],
+                    user_profile_id=outgoing_bot.id,
+                ),
             ],
         )
 
@@ -111,7 +114,10 @@ class TestMessageTriggeredBotBasics(ZulipTestCase):
 
         expected = dict(
             outgoing_webhooks=[
-                dict(trigger="mention", user_profile_id=outgoing_bot.id),
+                dict(
+                    received_trigger_events=[Service.BOT_TRIGGER_ALL_DIRECT_MENTIONS],
+                    user_profile_id=outgoing_bot.id,
+                ),
             ],
         )
 
@@ -183,6 +189,11 @@ def for_all_bot_types(
         for bot_type in BOT_TYPE_TO_QUEUE_NAME:
             self.bot_profile.bot_type = bot_type
             self.bot_profile.save()
+            if bot_type == UserProfile.EMBEDDED_BOT:
+                service = get_bot_services(self.bot_profile.id)[0]
+                service.name = EMBEDDED_BOTS[0].name
+                service.save()
+
             test_func(self, *args, **kwargs)
 
     return _wrapped
@@ -212,23 +223,19 @@ class TestMessageTriggeredBotEventTriggers(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         self.user_profile = self.example_user("othello")
-        self.bot_profile = do_create_user(
-            email="foo-bot@zulip.com",
-            password="test",
-            realm=get_realm("zulip"),
+        self.bot_profile = self.create_test_bot(
+            "foo",
+            self.user_profile,
             full_name="FooBot",
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-            bot_owner=self.user_profile,
-            acting_user=None,
+            payload_url='"https://bot.example.com/"',
         )
-        self.second_bot_profile = do_create_user(
-            email="bar-bot@zulip.com",
-            password="test",
-            realm=get_realm("zulip"),
+        self.second_bot_profile = self.create_test_bot(
+            "bar",
+            self.user_profile,
             full_name="BarBot",
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-            bot_owner=self.user_profile,
-            acting_user=None,
+            payload_url='"https://bot.example.com/"',
         )
 
     @for_all_bot_types
@@ -238,7 +245,6 @@ class TestMessageTriggeredBotEventTriggers(ZulipTestCase):
     ) -> None:
         content = "@**FooBot** foo bar!!!"
         recipient = "Denmark"
-        trigger = "mention"
         recipient_type = "stream"
 
         def check_values_passed(
@@ -252,7 +258,9 @@ class TestMessageTriggeredBotEventTriggers(ZulipTestCase):
             self.assertEqual(trigger_event["message"]["display_recipient"], recipient)
             self.assertEqual(trigger_event["message"]["sender_email"], self.user_profile.email)
             self.assertEqual(trigger_event["message"]["type"], recipient_type)
-            self.assertEqual(trigger_event["trigger"], trigger)
+            self.assertEqual(
+                trigger_event["received_trigger_events"], [Service.BOT_TRIGGER_ALL_DIRECT_MENTIONS]
+            )
             self.assertEqual(trigger_event["user_profile_id"], self.bot_profile.id)
 
         mock_queue_event_on_commit.side_effect = check_values_passed
@@ -278,6 +286,24 @@ class TestMessageTriggeredBotEventTriggers(ZulipTestCase):
 
     @for_all_bot_types
     @patch_queue_publish("zerver.actions.message_send.queue_event_on_commit")
+    def test_no_trigger_on_mention_from_bot_with_no_trigger(
+        self, mock_queue_event_on_commit: mock.Mock
+    ) -> None:
+        foo_bot = self.bot_profile
+        # No trigger if the bot doesn't have the "all_direct_mentions" trigger.
+        # Set the bots' trigger to only "dms_received".
+        do_update_bot_service(
+            foo_bot,
+            interface=1,
+            base_url="https://bot.example.com/",
+            triggers=[Service.BOT_TRIGGER_DMS_RECEIVED],
+            acting_user=None,
+        )
+        self.send_stream_message(self.second_bot_profile, "Denmark", "@**FooBot** foo bar!!!")
+        self.assertFalse(mock_queue_event_on_commit.called)
+
+    @for_all_bot_types
+    @patch_queue_publish("zerver.actions.message_send.queue_event_on_commit")
     def test_trigger_on_personal_message_from_user(
         self, mock_queue_event_on_commit: mock.Mock
     ) -> None:
@@ -292,7 +318,9 @@ class TestMessageTriggeredBotEventTriggers(ZulipTestCase):
             assert self.bot_profile.bot_type
             self.assertEqual(queue_name, BOT_TYPE_TO_QUEUE_NAME[self.bot_profile.bot_type])
             self.assertEqual(trigger_event["user_profile_id"], self.bot_profile.id)
-            self.assertEqual(trigger_event["trigger"], NotificationTriggers.DIRECT_MESSAGE)
+            self.assertEqual(
+                trigger_event["received_trigger_events"], [Service.BOT_TRIGGER_DMS_RECEIVED]
+            )
             self.assertEqual(trigger_event["message"]["sender_email"], sender.email)
             display_recipients = [
                 trigger_event["message"]["display_recipient"][0]["email"],
@@ -337,7 +365,9 @@ class TestMessageTriggeredBotEventTriggers(ZulipTestCase):
             self.assertEqual(queue_name, BOT_TYPE_TO_QUEUE_NAME[self.bot_profile.bot_type])
             self.assertIn(trigger_event["user_profile_id"], profile_ids)
             profile_ids.remove(trigger_event["user_profile_id"])
-            self.assertEqual(trigger_event["trigger"], NotificationTriggers.DIRECT_MESSAGE)
+            self.assertEqual(
+                trigger_event["received_trigger_events"], [Service.BOT_TRIGGER_DMS_RECEIVED]
+            )
             self.assertEqual(trigger_event["message"]["sender_email"], sender.email)
             self.assertEqual(trigger_event["message"]["type"], "private")
 
@@ -358,6 +388,55 @@ class TestMessageTriggeredBotEventTriggers(ZulipTestCase):
 
     @responses.activate
     @for_all_bot_types
+    def test_no_trigger_when_bot_lacks_relevant_triggers(self) -> None:
+        sender = self.user_profile
+        recipient = self.bot_profile
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json="",
+        )
+        # No response when direct messaged if the bot doesn't have
+        # the appropriate trigger.
+        do_update_bot_service(
+            recipient,
+            interface=1,
+            base_url="https://bot.example.com/",
+            triggers=[Service.BOT_TRIGGER_ALL_DIRECT_MENTIONS],
+            acting_user=None,
+        )
+        service = get_bot_services(recipient.id)[0]
+        assert service.triggers == [Service.BOT_TRIGGER_ALL_DIRECT_MENTIONS]
+
+        message_id = self.send_personal_message(sender, recipient)
+        bot_user_message = UserMessage.objects.get(
+            user_profile=self.bot_profile, message=message_id
+        )
+        self.assertNotIn("read", bot_user_message.flags_list())
+
+        # No response when mentioned if the bot doesn't have the
+        # appropriate trigger.
+        do_update_bot_service(
+            recipient,
+            interface=1,
+            base_url="https://bot.example.com/",
+            triggers=[Service.BOT_TRIGGER_DMS_RECEIVED],
+            acting_user=None,
+        )
+        service = get_bot_services(recipient.id)[0]
+        assert service.triggers == [Service.BOT_TRIGGER_DMS_RECEIVED]
+
+        channel = "Denmark"
+        self.subscribe(self.bot_profile, channel)
+        self.subscribe(sender, channel)
+        message_id = self.send_stream_message(sender, channel, "@**FooBot** foo bar!!!")
+        bot_user_message = UserMessage.objects.get(
+            user_profile=self.bot_profile, message=message_id
+        )
+        self.assertNotIn("read", bot_user_message.flags_list())
+
+    @responses.activate
+    @for_all_bot_types
     def test_message_flagged_read_after_bot_processes_event(self) -> None:
         """
         Verifies that once an event has been processed by the message-triggered
@@ -371,10 +450,171 @@ class TestMessageTriggeredBotEventTriggers(ZulipTestCase):
             "https://bot.example.com/",
             json="",
         )
-        message_id = self.send_group_direct_message(
-            sender, recipients, content=f"@**{self.bot_profile.full_name}** foo"
+        with self.assertLogs(level="INFO"):
+            message_id = self.send_group_direct_message(
+                sender, recipients, content=f"@**{self.bot_profile.full_name}** foo"
+            )
+
+        bot_user_message = UserMessage.objects.get(
+            user_profile=self.bot_profile, message=message_id
         )
-        # message = Message.objects.get(id=message_id, sender=sender)
+        self.assertIn("read", bot_user_message.flags_list())
+
+    @responses.activate
+    @for_all_bot_types
+    def test_no_bot_message_read_flag_when_no_service_triggered(self) -> None:
+        """
+        Verifies that when a send message event doesn't trigger a bot's service,
+        the message isn't flagged as read."
+        """
+        sender = self.user_profile
+
+        service = get_bot_services(self.bot_profile.id)[0]
+        service.triggers = [Service.BOT_TRIGGER_DMS_RECEIVED]
+        service.save()
+
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json="",
+        )
+        channel = "Denmark"
+        self.subscribe(sender, channel)
+        self.subscribe(self.bot_profile, channel)
+        with self.assertNoLogs(level="INFO"):
+            message_id = self.send_stream_message(
+                sender, channel, content=f"@**{self.bot_profile.full_name}** foo"
+            )
+
+        bot_user_message = UserMessage.objects.get(
+            user_profile=self.bot_profile, message=message_id
+        )
+        self.assertNotIn("read", bot_user_message.flags_list())
+
+    @responses.activate
+    @for_all_bot_types
+    def test_direct_mention_to_bot_with_multiple_triggers(self) -> None:
+        sender = self.user_profile
+        service = get_bot_services(self.bot_profile.id)[0]
+        self.assertListEqual(
+            sorted(service.triggers),
+            sorted([Service.BOT_TRIGGER_ALL_DIRECT_MENTIONS, Service.BOT_TRIGGER_DMS_RECEIVED]),
+        )
+
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json="",
+        )
+        ctx = (
+            self.assertLogs(level="INFO")
+            if self.bot_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT
+            else nullcontext()
+        )
+
+        channel = "Denmark"
+        channel_mention = f"@**{self.bot_profile.full_name}** foo"
+
+        with ctx:
+            self.send_stream_message(sender, channel, content=channel_mention)
+
+        request = responses.calls[0].request
+        assert request.body is not None
+        payload = json.loads(request.body)
+
+        self.assertEqual(
+            payload["trigger"],
+            BOT_SERVICE_TRIGGER_EVENT_NAME[Service.BOT_TRIGGER_ALL_DIRECT_MENTIONS],
+        )
+        self.assertEqual(payload["message"]["content"], channel_mention)
+        self.assertEqual(payload["bot_email"], self.bot_profile.email)
+
+    @responses.activate
+    @for_all_bot_types
+    def test_dm_to_bot_with_multiple_triggers(self) -> None:
+        sender = self.user_profile
+        service = get_bot_services(self.bot_profile.id)[0]
+        self.assertListEqual(
+            sorted(service.triggers),
+            sorted([Service.BOT_TRIGGER_ALL_DIRECT_MENTIONS, Service.BOT_TRIGGER_DMS_RECEIVED]),
+        )
+
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json="",
+        )
+        ctx = (
+            self.assertLogs(level="INFO")
+            if self.bot_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT
+            else nullcontext()
+        )
+        recipients = [self.user_profile, self.bot_profile]
+        dm_content = "hello, this is a direct message"
+        with ctx:
+            self.send_group_direct_message(sender, recipients, content=dm_content)
+
+        request = responses.calls[0].request
+        assert request.body is not None
+        payload = json.loads(request.body)
+
+        self.assertEqual(
+            payload["trigger"],
+            BOT_SERVICE_TRIGGER_EVENT_NAME[Service.BOT_TRIGGER_DMS_RECEIVED],
+        )
+        self.assertEqual(payload["message"]["content"], dm_content)
+        self.assertEqual(payload["bot_email"], self.bot_profile.email)
+
+    @responses.activate
+    @for_all_bot_types
+    def test_old_bot_with_no_configured_triggers(self) -> None:
+        """
+        Verifies that message-triggered bots created before the multiple-triggers
+        system was implemented are treated like they have the default triggers
+        (`get_default_bot_triggers`)
+        """
+        sender = self.user_profile
+        recipients = [self.user_profile, self.bot_profile]
+        service = get_bot_services(self.bot_profile.id)[0]
+        service.triggers = []
+        service.save()
+        self.assertListEqual(
+            sorted(service.triggers),
+            sorted([]),
+        )
+
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json="",
+        )
+        ctx = (
+            self.assertLogs(level="INFO")
+            if self.bot_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT
+            else nullcontext()
+        )
+
+        with ctx:
+            message_id = self.send_group_direct_message(
+                sender,
+                recipients,
+                content="hello, this is a direct message",
+            )
+        bot_user_message = UserMessage.objects.get(
+            user_profile=self.bot_profile, message=message_id
+        )
+        self.assertIn("read", bot_user_message.flags_list())
+
+        channel = "Denmark"
+        self.subscribe(self.bot_profile, channel)
+        self.subscribe(self.user_profile, channel)
+
+        with ctx:
+            message_id = self.send_stream_message(
+                self.user_profile,
+                channel,
+                content=f"@**{self.bot_profile.full_name}** foo",
+            )
         bot_user_message = UserMessage.objects.get(
             user_profile=self.bot_profile, message=message_id
         )
