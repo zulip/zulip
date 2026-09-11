@@ -248,7 +248,7 @@ class CustomerPlan(AbstractCustomerPlan):
 
         ledger_entry = LicenseLedger.objects.filter(plan=self).order_by("id").last()
         assert ledger_entry is not None
-        return ledger_entry.licenses
+        return ledger_entry.workplace_licenses
 
     def licenses_at_next_renewal(self) -> int | None:
         from corporate.models.licenses import LicenseLedger
@@ -260,7 +260,7 @@ class CustomerPlan(AbstractCustomerPlan):
             return None
         ledger_entry = LicenseLedger.objects.filter(plan=self).order_by("id").last()
         assert ledger_entry is not None
-        return ledger_entry.licenses_at_next_renewal
+        return ledger_entry.workplace_licenses_at_next_renewal
 
     def is_free_trial(self) -> bool:
         return self.status == CustomerPlan.FREE_TRIAL

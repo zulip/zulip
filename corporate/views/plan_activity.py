@@ -37,8 +37,8 @@ def get_plan_ledger(request: HttpRequest, plan_id: int) -> HttpResponse:
         return [
             format_optional_datetime(record.event_time),
             record.is_renewal,
-            record.licenses,
-            record.licenses_at_next_renewal,
+            record.workplace_licenses,
+            record.workplace_licenses_at_next_renewal,
         ]
 
     rows = list(map(row, ledger_entries))

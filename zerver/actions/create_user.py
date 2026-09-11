@@ -33,11 +33,14 @@ from zerver.lib.email_notifications import enqueue_welcome_emails, send_account_
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.invites import notify_invites_changed
 from zerver.lib.mention import silent_mention_syntax_for_user
-from zerver.lib.remote_server import maybe_enqueue_audit_log_upload
 from zerver.lib.send_email import clear_scheduled_invitation_emails
 from zerver.lib.streams import can_access_stream_history
 from zerver.lib.subscription_info import bulk_get_subscriber_peer_info
-from zerver.lib.user_counts import realm_user_count, realm_user_count_by_role
+from zerver.lib.user_counts import (
+    realm_user_count,
+    realm_user_count_by_role,
+    update_billing_records_if_needed,
+)
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.users import (
     can_access_delivery_email,
@@ -528,9 +531,6 @@ def do_create_user(
     add_initial_stream_subscriptions: bool = True,
     external_auth_id_dict: dict[str, str] | None = None,
 ) -> UserProfile:
-    if settings.BILLING_ENABLED:
-        from corporate.lib.stripe import RealmBillingSession
-
     user_profile = create_user(
         email=email,
         password=password,
@@ -615,11 +615,7 @@ def do_create_user(
             event_time=event_time,
             acting_user=acting_user,
         )
-    maybe_enqueue_audit_log_upload(user_profile.realm)
-
-    if settings.BILLING_ENABLED:
-        billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
-        billing_session.update_license_ledger_if_needed(event_time)
+    update_billing_records_if_needed(user_profile.realm, user=user_profile, event_time=event_time)
 
     # Note that for bots, the caller will send an additional event
     # with bot-specific info like services.
@@ -683,9 +679,6 @@ def do_activate_mirror_dummy_user(
     """
     assert user_profile.is_mirror_dummy
 
-    if settings.BILLING_ENABLED:
-        from corporate.lib.stripe import RealmBillingSession
-
     with transaction.atomic(savepoint=False):
         change_user_is_active(user_profile, True)
         user_profile.is_mirror_dummy = False
@@ -707,10 +700,9 @@ def do_activate_mirror_dummy_user(
                 RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
             },
         )
-        maybe_enqueue_audit_log_upload(user_profile.realm)
-        if settings.BILLING_ENABLED:
-            billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
-            billing_session.update_license_ledger_if_needed(event_time)
+        update_billing_records_if_needed(
+            user_profile.realm, user=user_profile, event_time=event_time
+        )
 
     notify_created_user(user_profile, [])
 
@@ -739,8 +731,6 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
             RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
         },
     )
-    maybe_enqueue_audit_log_upload(user_profile.realm)
-
     bot_owner_changed = False
     if (
         user_profile.is_bot
@@ -764,11 +754,7 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
         )
         bot_owner_changed = True
 
-    if settings.BILLING_ENABLED:
-        from corporate.lib.stripe import RealmBillingSession
-
-        billing_session = RealmBillingSession(user=user_profile, realm=user_profile.realm)
-        billing_session.update_license_ledger_if_needed(event_time)
+    update_billing_records_if_needed(user_profile.realm, user=user_profile, event_time=event_time)
 
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, is_active=True)
