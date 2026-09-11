@@ -543,6 +543,10 @@ class BaseAction(ZulipTestCase):
                 # Fix the value just like server_timestamp.
                 state["presence_last_update_id"] = 0
 
+        # The states share dicts with the events, which the caller
+        # still checks against their schemas, so normalize copies.
+        state1 = copy.deepcopy(state1)
+        state2 = copy.deepcopy(state2)
         normalize(state1)
         normalize(state2)
 
