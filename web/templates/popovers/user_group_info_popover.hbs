@@ -1,16 +1,14 @@
 <div class="popover-menu user-group-info-popover" data-simplebar data-simplebar-tab-index="-1">
     <ul role="menu" class="popover-menu-list">
-        <li role="none" class="link-item popover-menu-list-item">
-            <div class="popover-group-menu-info">
-                <div class="popover-group-menu-name-container">
-                    <i class="popover-menu-icon zulip-icon zulip-icon-user-group" aria-hidden="true"></i>
-                    <span class="popover-group-menu-name">{{group_name}}</span>
-                </div>
-                {{#if group_description}}
-                    <div class="popover-group-menu-description">{{group_description}}</div>
-                {{/if}}
-            </div>
+        <li role="none" class="popover-card-header text-item popover-menu-list-item">
+            <i class="popover-menu-icon zulip-icon zulip-icon-user-group" aria-hidden="true"></i>
+            <span class="popover-card-name">{{group_name}}</span>
         </li>
+        {{#if group_description}}
+            <li role="none" class="popover-card-description-item text-item popover-menu-list-item">
+                <div class="popover-card-description">{{group_description}}</div>
+            </li>
+        {{/if}}
         {{#unless (and (eq displayed_members.length 0) (eq displayed_subgroups.length 0))}}
             {{#if user_can_access_all_other_users}}
                 <li role="none" class="popover-menu-list-item text-item italic">
