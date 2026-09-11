@@ -1,0 +1,8 @@
+{
+  "timestamp": 1778071365412,
+  "event": "comment_removed",
+  "userKey": "abc123",
+  "comment": {
+    "id": 789012
+  }
+}

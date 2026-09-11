@@ -1,0 +1,11 @@
+{
+  "timestamp": 1778071365412,
+  "event": "page_moved",
+  "userKey": "abc123",
+  "page": {
+    "id": 123456
+  },
+    "oldParent": {
+    "id": 131148
+  }
+}
