@@ -52,6 +52,34 @@ class AttachmentsTests(ZulipTestCase):
         attachments = user_attachments(user_profile)
         self.assertEqual(attachments, [])
 
+    @mock.patch("zerver.views.attachments.notify_attachment_update")
+    def test_remove_attachment_notifies_message_recipients(self, mock_notify: Any) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        stream = self.make_stream("attachment-delete-notify", invite_only=True)
+        self.subscribe(hamlet, stream.name, invite_only=True)
+        self.subscribe(iago, stream.name, invite_only=True)
+        self.login_user(hamlet)
+
+        with (
+            self.thumbnail_formats(ThumbnailFormat("webp", 100, 75, animated=True)),
+            get_test_image_file("img.png") as image_file,
+        ):
+            response = self.assert_json_success(
+                self.client_post("/json/user_uploads", {"file": image_file})
+            )
+
+        path_id = re.sub(r"/user_uploads/", "", response["url"])
+        body = f"See this file: [img.png]({response['url']})"
+        self.send_stream_message(hamlet, stream.name, body, "test")
+        attachment = Attachment.objects.get(path_id=path_id)
+
+        result = self.client_delete(f"/json/attachments/{attachment.id}")
+        self.assert_json_success(result)
+
+        mock_notify.assert_called_once()
+        self.assertEqual(set(mock_notify.call_args.kwargs["users"]), {hamlet.id, iago.id})
+
     @mock.patch("zerver.lib.attachments.delete_message_attachment")
     def test_remove_imageattachment(self, ignored: Any) -> None:
         self.login_user(self.example_user("hamlet"))
