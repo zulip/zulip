@@ -191,9 +191,9 @@ export function group_edit_url(group: UserGroup, right_side_tab: string): string
     return hash;
 }
 
-export function search_public_streams_notice_url(terms: NarrowCanonicalTerm[]): string {
-    const public_operator: NarrowCanonicalTerm = {operator: "channels", operand: "public"};
-    return search_terms_to_hash([public_operator, ...terms]);
+export function search_all_channels_notice_url(terms: NarrowCanonicalTerm[]): string {
+    const all_channels_operator: NarrowCanonicalTerm = {operator: "channels", operand: "all"};
+    return search_terms_to_hash([all_channels_operator, ...terms]);
 }
 
 export function parse_narrow(hash: string[]): NarrowCanonicalTerm[] | undefined {

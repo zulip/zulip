@@ -68,7 +68,7 @@ type Part =
           is_empty_string_topic?: boolean;
       };
 
-const channels_operands = new Set(["archived", "public", "web-public"]);
+const channels_operands = new Set(["archived", "public", "web-public", "all"]);
 
 function message_in_home(message: Message): boolean {
     // The home view contains messages not sent to muted channels,
@@ -181,6 +181,8 @@ function build_term_predicate(term: NarrowCanonicalTerm): ((message: Message) =>
                     return (message) =>
                         message.type === "stream" &&
                         stream_data.is_stream_archived_by_id(message.stream_id);
+                case "all":
+                    return (message) => message.type === "stream";
                 default:
                     return () => false;
             }
@@ -676,6 +678,11 @@ export class Filter {
             case "channel":
                 return stream_data.get_sub_by_id_string(term.operand) !== undefined;
             case "channels":
+                if (term.negated && term.operand === "all") {
+                    // The server rejects -channels:all as an unsupported
+                    // narrow; is:dm is the way to narrow to direct messages.
+                    return false;
+                }
                 return channels_operands.has(term.operand);
             case "topic":
                 return true;
@@ -756,6 +763,7 @@ export class Filter {
     static sorted_term_types(term_types: string[]): string[] {
         const levels = [
             "in",
+            "channels-all",
             "channels-public",
             "channels-archived",
             "not-channels-archived",
@@ -997,7 +1005,8 @@ export class Filter {
     static describe_channels_operator(negated: boolean, operand: string): string {
         const possible_prefix = negated ? "exclude " : "";
         assert(channels_operands.has(operand));
-        if ((page_params.is_spectator || current_user.is_guest) && operand === "public") {
+        const has_limited_channel_access = page_params.is_spectator || current_user.is_guest;
+        if (has_limited_channel_access && operand === "public") {
             return possible_prefix + "all public channels that you can view";
         }
         switch (operand) {
@@ -1005,6 +1014,13 @@ export class Filter {
                 return possible_prefix + "all web-public channels";
             case "archived":
                 return possible_prefix + "archived channels";
+            case "all":
+                // Spectators and guests can only reach a subset of the
+                // organization's channels, so we avoid implying otherwise.
+                if (has_limited_channel_access) {
+                    return possible_prefix + "all channels that you can view";
+                }
+                return possible_prefix + "all channels (including unsubscribed)";
             default:
                 return possible_prefix + "all public channels";
         }
@@ -1284,6 +1300,7 @@ export class Filter {
             "not-is-muted",
             "in-home",
             "in-all",
+            "channels-all",
             "channels-public",
             "not-channels-public",
             "channels-archived",
@@ -1407,6 +1424,9 @@ export class Filter {
         if (_.isEqual(term_types, ["is-starred"])) {
             return true;
         }
+        if (_.isEqual(term_types, ["channels-all"])) {
+            return true;
+        }
         if (_.isEqual(term_types, ["channels-public"])) {
             return true;
         }
@@ -1492,6 +1512,8 @@ export class Filter {
                     return "/#narrow/is/starred";
                 case "is-mentioned":
                     return "/#narrow/is/mentioned";
+                case "channels-all":
+                    return "/#narrow/channels/all";
                 case "channels-public":
                     return "/#narrow/channels/public";
                 case "channels-archived":
@@ -1681,6 +1703,15 @@ export class Filter {
                     return $t({defaultMessage: "Combined feed"});
                 case "in-all":
                     return $t({defaultMessage: "All messages including muted channels"});
+                case "channels-all":
+                    if (page_params.is_spectator || current_user.is_guest) {
+                        return $t({
+                            defaultMessage: "Messages in all channels that you can view",
+                        });
+                    }
+                    return $t({
+                        defaultMessage: "Messages in all channels (including unsubscribed)",
+                    });
                 case "channels-public":
                     if (page_params.is_spectator || current_user.is_guest) {
                         return $t({
@@ -1828,6 +1859,12 @@ export class Filter {
         }
 
         if (this.has_operator("mentions")) {
+            return false;
+        }
+
+        if (this.has_negated_operand("channels", "all")) {
+            // The server rejects -channels:all as an unsupported narrow, so
+            // we must not filter messages locally as if it were valid.
             return false;
         }
 
@@ -2118,6 +2155,7 @@ export class Filter {
             "not-is-followed",
             "is-resolved",
             "not-is-resolved",
+            "channels-all",
             "channels-public",
             "not-channels-public",
             "channels-archived",
