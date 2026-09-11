@@ -21,7 +21,7 @@ import * as util from "./util.ts";
 // paths in compose_call_ui.ts to build a meeting/room name.
 // The reply-button template uses the structured `stream` / `topic_display_name`
 // fields instead, so it can render the decorated channel icon.
-type RecipientLabel = {
+export type RecipientLabel = {
     label_text: string;
     has_empty_string_topic?: boolean;
     stream?: StreamSubscription;
@@ -30,7 +30,10 @@ type RecipientLabel = {
     user_ids?: number[];
 };
 
-function get_stream_recipient_label(stream_id: number, topic: string): RecipientLabel | undefined {
+export function get_stream_recipient_label(
+    stream_id: number,
+    topic: string,
+): RecipientLabel | undefined {
     const stream = stream_data.get_sub_by_id(stream_id);
     const topic_display_name = util.get_final_topic_display_name(topic);
     if (stream) {
@@ -45,7 +48,7 @@ function get_stream_recipient_label(stream_id: number, topic: string): Recipient
     return undefined;
 }
 
-function get_direct_message_recipient_label(user_ids: number[]): RecipientLabel {
+export function get_direct_message_recipient_label(user_ids: number[]): RecipientLabel {
     let label_text = "";
     let is_dm_with_self = false;
     if (people.is_direct_message_conversation_with_self(user_ids)) {
