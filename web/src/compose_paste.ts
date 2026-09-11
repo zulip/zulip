@@ -249,6 +249,13 @@ function get_code_block_language(
 
 export const MENTION_SELECTOR = ".user-mention, .user-group-mention, .topic-mention";
 
+// Considered raw if the visible text is exactly the written href or the resolved
+// serialized URL.
+function is_raw_url_link_text(content: string, node: HTMLAnchorElement): boolean {
+    const href_attr = node.getAttribute("href") ?? "";
+    return content === href_attr || content === node.href;
+}
+
 export function paste_handler_converter(
     paste_html: string,
     $textarea?: JQuery<HTMLTextAreaElement>,
@@ -394,8 +401,8 @@ export function paste_handler_converter(
         filter: ["a"],
         replacement(content, node) {
             assert(node instanceof HTMLAnchorElement);
-            if (node.href === content) {
-                // Checks for raw links without custom text.
+            // Checks for raw links without custom text.
+            if (is_raw_url_link_text(content, node)) {
                 return content;
             }
             if (node.childNodes.length === 1 && node.firstChild!.nodeName === "IMG") {

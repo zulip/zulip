@@ -429,6 +429,44 @@ run_test("paste_handler_converter", () => {
         "https://zulip.readthedocs.io/en/latest/subsystems/logging.html",
     );
 
+    // Raw link cases where the href attribute matches the text.
+    // Serialized node.href in this case is https://google.com/ which
+    // would not match with the text content.
+    input = '<a href="https://google.com">https://google.com</a>';
+    assert.equal(compose_paste.paste_handler_converter(input), "https://google.com");
+
+    input = '<p>Check this link <a href="https://google.com">https://google.com</a> please</p>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input),
+        "Check this link https://google.com please",
+    );
+
+    // Case when text equals serialized node.href.
+    input = '<a href="https://google.com">https://google.com/</a>';
+    assert.equal(compose_paste.paste_handler_converter(input), "https://google.com/");
+
+    // Text that differs from href by a real path (a trailing slash in this case)
+    // stays labeled.
+    // node.href only adds a trailing slash for URLs that had an empty path pre-serialization.
+    input = '<a href="https://api.github.com/zen">https://api.github.com/zen/</a>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input),
+        "[https://api.github.com/zen/](https://api.github.com/zen)",
+    );
+
+    // Case where we have a relative href, and text content contains an absolute URL.
+    // In the web app, node.href resolves against the page, which for this
+    // case would translate to http://zulip.zulipdev.com/#narrow/channel/999-hello.
+    // Node tests parse this HTML with DOMParser into an about:blank
+    // document, so without <base> the getter returns about:blank#narrow/...
+    // and the link is wrongly treated as labeled.
+    input =
+        '<base href="http://zulip.zulipdev.com/"><a href="#narrow/channel/999-hello">http://zulip.zulipdev.com/#narrow/channel/999-hello</a>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input),
+        "http://zulip.zulipdev.com/#narrow/channel/999-hello",
+    );
+
     // Links with custom text
     input =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><a class="reference external" href="https://zulip.readthedocs.io/en/latest/contributing/contributing.html" style="box-sizing: border-box; color: hsl(283, 39%, 53%); text-decoration: none; cursor: pointer; outline: 0px; font-family: Lato, proxima-nova, &quot;Helvetica Neue&quot;, Arial, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 99%);">Contributing guide</a>';
