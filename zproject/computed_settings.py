@@ -71,6 +71,7 @@ from .configured_settings import (
     USING_CAPTCHA,
     USING_PGROONGA,
     ZULIP_ADMINISTRATOR,
+    ZULIP_SERVICE_ADVERTISE_REALM,
     ZULIP_SERVICE_PUSH_NOTIFICATIONS,
     ZULIP_SERVICE_SECURITY_ALERTS,
     ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS,
@@ -108,6 +109,7 @@ if raw_keys is not None:
 
 
 service_name_to_required_upload_level = {
+    "advertise_realm": AnalyticsDataUploadLevel.BASIC,
     "security_alerts": AnalyticsDataUploadLevel.BASIC,
     "mobile_push": AnalyticsDataUploadLevel.BILLING,
     "submit_usage_statistics": AnalyticsDataUploadLevel.ALL,
@@ -135,6 +137,8 @@ if ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS:
     services_append("submit_usage_statistics")
 if ZULIP_SERVICE_SECURITY_ALERTS:
     services_append("security_alerts")
+if ZULIP_SERVICE_ADVERTISE_REALM:
+    services_append("advertise_realm")
 
 if services is None and PUSH_NOTIFICATION_BOUNCER_URL is not None:
     # ZULIP_SERVICE_* are the new settings that control the services
@@ -156,7 +160,7 @@ if services is None and PUSH_NOTIFICATION_BOUNCER_URL is not None:
         services_append("submit_usage_statistics")
 
 if services is not None and set(services).intersection(
-    {"submit_usage_statistics", "security_alerts", "mobile_push"}
+    {"submit_usage_statistics", "security_alerts", "mobile_push", "advertise_realm"}
 ):
     # None of these make sense enabled without ZULIP_SERVICES_URL.
     assert ZULIP_SERVICES_URL is not None, (
