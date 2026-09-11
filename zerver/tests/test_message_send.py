@@ -3936,7 +3936,7 @@ class CheckMessageTest(ZulipTestCase):
 
     def test_bot_pm_feature(self) -> None:
         """We send a direct message to a bot's owner if their bot sends a
-        message to an unsubscribed stream"""
+        message to an unsubscribed stream, an unauthorized stream, or an unauthorized topic"""
         parent = self.example_user("othello")
         bot = do_create_user(
             email="othello-bot@zulip.com",
@@ -3968,7 +3968,7 @@ class CheckMessageTest(ZulipTestCase):
 
         # Try sending to stream that exists with no subscribers soon
         # after; due to rate-limiting, this should send nothing.
-        self.make_stream(stream_name)
+        stream = self.make_stream(stream_name)
         ret = check_message(sender, client, addressee, message_content)
         new_count = message_stream_count(parent)
         self.assertEqual(new_count, old_count + 1)
@@ -3985,6 +3985,42 @@ class CheckMessageTest(ZulipTestCase):
         self.assertEqual(new_count, old_count + 2)
         self.assertEqual(ret.message.sender.email, "othello-bot@zulip.com")
         self.assertIn("does not have any subscribers", most_recent_message(parent).content)
+
+        # Test unauthorized stream access notification for bot owner
+        private_stream = self.make_stream("secret_bot_stream", invite_only=True)
+        private_addressee = Addressee.for_stream(private_stream, "test_topic")
+        sender.last_reminder -= timedelta(hours=1)
+        sender.save(update_fields=["last_reminder"])
+        with self.assertRaises(JsonableError):
+            check_message(sender, client, private_addressee, message_content)
+
+        new_count = message_stream_count(parent)
+        self.assertEqual(new_count, old_count + 3)
+        self.assertIn(
+            "does not have permission to post there. You can manage permissions",
+            most_recent_message(parent).content,
+        )
+
+        # Test unauthorized topic creation notification for bot owner
+        self.subscribe(parent, stream.name)
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm=parent.realm, is_system_group=True
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_create_topic_group", nobody_group, acting_user=parent
+        )
+        new_topic_addressee = Addressee.for_stream_name(stream.name, "brand_new_topic")
+        sender.last_reminder -= timedelta(hours=1)
+        sender.save(update_fields=["last_reminder"])
+        with self.assertRaises(JsonableError):
+            check_message(sender, client, new_topic_addressee, message_content)
+
+        new_count = message_stream_count(parent)
+        self.assertEqual(new_count, old_count + 4)
+        self.assertIn(
+            "does not have permission to post to this topic.",
+            most_recent_message(parent).content,
+        )
 
     def test_bot_pm_error_handling(self) -> None:
         # This just test some defensive code.
