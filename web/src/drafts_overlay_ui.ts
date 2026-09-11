@@ -14,6 +14,7 @@ import {show_copied_confirmation} from "./copied_tooltip.ts";
 import type {FormattedDraft, LocalStorageDraft} from "./drafts.ts";
 import * as drafts from "./drafts.ts";
 import {$t} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
 import * as markdown from "./markdown.ts";
 import {message_render_response_schema} from "./message_store.ts";
 import * as message_view from "./message_view.ts";
@@ -406,6 +407,24 @@ function setup_event_handlers(): void {
         toggle_checkbox_icon_state($(e.target), !is_checked);
         update_bulk_delete_ui();
     });
+    $("#drafts_table .overlay_message_controls .copy-overlay-message").on("keydown", function (e) {
+        if (keydown_util.is_enter_event(e) || e.key === " ") {
+            e.preventDefault();
+            e.stopPropagation();
+            $(this).trigger("click");
+        }
+    });
+
+    $("#drafts_table .overlay_message_controls .draft-selection-tooltip").on(
+        "keydown",
+        function (e) {
+            if (keydown_util.is_enter_event(e) || e.key === " ") {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).find(".draft-selection-checkbox").trigger("click");
+            }
+        },
+    );
 }
 
 function setup_bulk_actions_handlers(): void {
@@ -539,10 +558,10 @@ export function initialize(): void {
         if (!(e.target instanceof HTMLElement)) {
             return;
         }
-        const draft_row = e.target.closest(".overlay-message-info-box");
-        if (draft_row instanceof HTMLElement) {
+        // const draft_row = e.target.closest(".overlay-message-info-box");
+        if (e.target.matches(".overlay-message-info-box")) {
             // A draft gained focus; mark it as the selected draft.
-            messages_overlay_ui.activate_element(draft_row, keyboard_handling_context);
+            messages_overlay_ui.activate_element(e.target, keyboard_handling_context);
         } else if (e.target.matches(overlay_util.OVERLAY_FOCUSABLE_SELECTOR)) {
             // Another focusable element (e.g. a header button) gained focus;
             // draft info-boxes are already handled by the branch above, so
