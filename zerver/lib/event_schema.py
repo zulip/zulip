@@ -633,6 +633,9 @@ def check_stream_update(
     elif prop == "topics_policy":
         assert extra_keys == set()
         assert value in [e.name for e in StreamTopicsPolicyEnum]
+    elif prop == "message_content_allowed_in_email_notifications":
+        assert extra_keys == set()
+        assert isinstance(value, bool)
     elif prop == "is_recently_active":
         assert extra_keys == set()
         assert isinstance(value, bool)
