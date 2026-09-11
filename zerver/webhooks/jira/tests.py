@@ -35,7 +35,6 @@ class JiraHookTests(WebhookTestCase):
             "issuelink_created",
             "issuelink_deleted",
             "jira:version_released",
-            "jira:worklog_updated",
             "sprint_closed",
             "sprint_started",
             "worklog_created",
@@ -58,6 +57,16 @@ class JiraHookTests(WebhookTestCase):
         expected_topic_name = "TEST-4: Test Created Assignee"
         expected_message = "Bo Williams created [TEST-4: Test Created Assignee](https://zulipp.atlassian.net/browse/TEST-4) with major priority (assigned to Kevin Lin)."
         self.check_webhook("issue_created_with_assignee", expected_topic_name, expected_message)
+
+    def test_worklog_updated(self) -> None:
+        expected_topic_name = "SCRUM-23: Improve the payment gateway"
+        expected_message = "@_**Othello, the Moor of Venice|12** updated a work log entry on [SCRUM-23: Improve the payment gateway](https://zulipp.atlassian.net/browse/SCRUM-23); total time spent is now 5h 51m."
+        self.check_webhook("worklog_updated__edited", expected_topic_name, expected_message)
+
+    def test_worklog_deleted(self) -> None:
+        expected_topic_name = "SCRUM-23: Improve the payment gateway"
+        expected_message = "@_**Othello, the Moor of Venice|12** deleted a work log entry from [SCRUM-23: Improve the payment gateway](https://zulipp.atlassian.net/browse/SCRUM-23)."
+        self.check_webhook("worklog_updated__deleted", expected_topic_name, expected_message)
 
     def test_deleted(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
