@@ -1536,4 +1536,79 @@ class AdvertiseRealmDataTest(BouncerTestCase):
         )
         self.assert_json_success(result)
 
-        # TODO: Extend it when implementing bouncer side of this feature.
+    @activate_push_notification_service()
+    @responses.activate
+    @override_settings(ZULIP_SERVICE_ADVERTISE_REALM=True)
+    def test_directory_fields_synced_to_remote_realm(self) -> None:
+        self.add_mock_response()
+        realm = get_realm("zulip")
+
+        # Nothing is synced while the realm is not asking to be advertised.
+        self.assertFalse(realm.want_advertise_in_communities_directory)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        remote_realm = RemoteRealm.objects.get(uuid=realm.uuid)
+        self.assertFalse(remote_realm.asks_to_advertise_in_communities_directory)
+        self.assertEqual(remote_realm.description, "")
+        self.assertEqual(remote_realm.icon_url, "")
+
+        # Now the realm is asking to be advertised.
+        do_set_realm_property(
+            realm, "want_advertise_in_communities_directory", True, acting_user=None
+        )
+        do_set_realm_property(realm, "description", "A place to talk about Zulip", acting_user=None)
+        do_set_realm_property(realm, "invite_required", False, acting_user=None)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        remote_realm.refresh_from_db()
+        self.assertTrue(remote_realm.asks_to_advertise_in_communities_directory)
+        self.assertEqual(remote_realm.description, "A place to talk about Zulip")
+        # The bouncer fetches this URL, so it always has to be absolute.
+        self.assertTrue(remote_realm.icon_url.startswith(("http://", "https://")))
+        self.assertFalse(remote_realm.invite_required)
+        self.assertFalse(remote_realm.emails_restricted_to_domains)
+        self.assertTrue(remote_realm.has_web_public_streams)
+        self.assertFalse(remote_realm.is_demo_organization)
+
+        # Later edits are synced too.
+        do_set_realm_property(realm, "description", "An edited description", acting_user=None)
+        do_set_realm_property(realm, "invite_required", True, acting_user=None)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        remote_realm.refresh_from_db()
+        self.assertEqual(remote_realm.description, "An edited description")
+        self.assertTrue(remote_realm.invite_required)
+        self.assertEqual(
+            [
+                audit_log.extra_data
+                for audit_log in RemoteRealmAuditLog.objects.filter(
+                    remote_realm=remote_realm,
+                    event_type=AuditLogEventType.REMOTE_REALM_VALUE_UPDATED,
+                ).order_by("id")
+                if audit_log.extra_data["attr_name"] in ("description", "invite_required")
+            ],
+            [
+                {
+                    "attr_name": "description",
+                    "old_value": "",
+                    "new_value": "A place to talk about Zulip",
+                },
+                {"attr_name": "invite_required", "old_value": True, "new_value": False},
+                {
+                    "attr_name": "description",
+                    "old_value": "A place to talk about Zulip",
+                    "new_value": "An edited description",
+                },
+                {"attr_name": "invite_required", "old_value": False, "new_value": True},
+            ],
+        )
+
+        # Opting out stops syncing. The values bouncer last saw are kept.
+        do_set_realm_property(
+            realm, "want_advertise_in_communities_directory", False, acting_user=None
+        )
+        do_set_realm_property(realm, "description", "Final edit", acting_user=None)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        remote_realm.refresh_from_db()
+        self.assertFalse(remote_realm.asks_to_advertise_in_communities_directory)
+        self.assertEqual(remote_realm.description, "An edited description")
