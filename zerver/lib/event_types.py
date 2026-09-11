@@ -120,7 +120,7 @@ class DetailedCustomProfile(DetailedCustomProfileCore):
 
 
 class CustomProfileFieldsEvent(BaseEvent):
-    type: Literal["custom_profile_fields"]
+    type: Literal["custom_profile_fields"] = "custom_profile_fields"
     fields: list[DetailedCustomProfile]
 
 
