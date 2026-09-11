@@ -2629,6 +2629,7 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         expected_message: str | None = None,
         content_type: str | None = "application/json",
         expect_noop: bool = False,
+        custom_payload: str | dict[str, Any] | None = None,
         **extra: str,
     ) -> None:
         """
@@ -2650,10 +2651,19 @@ You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this w
         see send_and_test_private_message.
 
         When no message is expected to be sent, set `expect_noop` to True.
+
+        Pass `custom_payload` to send something other than the fixture's
+        contents, typically a fixture edited to exercise a different value
+        of a field, so that we don't need a near-duplicate fixture for it.
+        A dict also bypasses any `get_payload` override defined by the test
+        class.
         """
         self.subscribe(self.test_user, self.channel_name)
 
-        payload = self.get_payload(fixture_name)
+        if custom_payload is not None:
+            payload = custom_payload
+        else:
+            payload = self.get_payload(fixture_name)
         if content_type is not None:
             extra["content_type"] = content_type
         headers = call_fixture_to_headers(self.webhook_dir_name, fixture_name)
