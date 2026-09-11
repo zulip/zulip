@@ -1,20 +1,21 @@
 <div class="popover-menu" id="stream-card-popover" data-simplebar data-simplebar-tab-index="-1">
     <ul role="menu" class="popover-menu-list">
-        <li role="none" class="popover-stream-header text-item popover-menu-list-item">
+        <li role="none" class="popover-card-header text-item popover-menu-list-item">
             <span class="stream-privacy-original-color-{{stream.stream_id}} stream-privacy filter-icon" style="color: {{stream.color}}">
                 {{> ../stream_privacy
                   invite_only=stream.invite_only
                   is_web_public=stream.is_web_public
                   is_archived=stream.is_archived }}
             </span>
-            <span class="popover-stream-name">{{stream.name}}</span>
+            <span class="popover-card-name">{{stream.name}}</span>
         </li>
-        <li role="none" class="popover-stream-info-menu-description text-item popover-menu-list-item">
-            {{> ../stream_settings/stream_description
-              rendered_description=stream.rendered_description
-              use_view_only_styling=false
-              }}
+        <li role="none" class="popover-card-description-item text-item popover-menu-list-item">
+            <div class="popover-card-description">{{> ../stream_settings/stream_description
+                  rendered_description=stream.rendered_description
+                  use_view_only_styling=false}}
+            </div>
         </li>
+        <li role="separator" class="popover-menu-separator"></li>
         <li role="none" class="popover-menu-list-item text-item italic">
             {{#tr}}
             {subscribers_count, plural, =0 {No subscribers} =1 {1 subscriber} other {# subscribers}}
