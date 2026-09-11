@@ -2,6 +2,7 @@ import base64
 import os
 import signal
 import time
+import uuid
 from collections import defaultdict
 from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager, suppress
@@ -16,14 +17,23 @@ from django.db.utils import IntegrityError
 from django.test import override_settings
 from typing_extensions import override
 
+from zerver.actions.create_realm import do_create_realm
+from zerver.actions.create_user import do_create_user
+from zerver.lib.avatar import generate_and_upload_jdenticon_avatar, generate_avatar_jdenticon
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
-from zerver.lib.queue import MAX_REQUEST_RETRIES
+from zerver.lib.queue import MAX_REQUEST_RETRIES, queue_json_publish_rollback_unsafe
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.lib.send_email import EmailNotDeliveredError, FromAddress
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import mock_queue_publish
-from zerver.models import ScheduledMessageNotificationEmail, UserActivity, UserProfile
+from zerver.lib.test_helpers import avatar_disk_path, mock_queue_publish
+from zerver.models import (
+    RealmAuditLog,
+    ScheduledMessageNotificationEmail,
+    UserActivity,
+    UserProfile,
+)
 from zerver.models.clients import get_client
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream
@@ -838,3 +848,71 @@ class WorkerTest(ZulipTestCase):
         self.assertNotIn("soft_reactivation", get_active_worker_queues())
         with override_settings(DEDICATED_SOFT_REACTIVATION_QUEUE=True):
             self.assertIn("soft_reactivation", get_active_worker_queues())
+
+    def test_reupload_jdenticon_avatars(self) -> None:
+        realm = do_create_realm("reupload-jdenticon", "Jdenticon Test")
+        imported_realm_uuid = str(uuid.uuid4())
+
+        user_a = do_create_user("a@jd.test", None, realm, "A", acting_user=None)
+        user_b = do_create_user("b@jd.test", None, realm, "B", acting_user=None)
+        jdenticon_users = [user_a, user_b]
+        versions_before = {}
+        for user in jdenticon_users:
+            self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
+            versions_before[user.id] = user.avatar_version
+            # Reproduce the bug: store an avatar salted with the imported
+            # realm's UUID rather than the user's own realm's UUID.
+            generate_and_upload_jdenticon_avatar(user, imported_realm_uuid, future=False)
+            with open(avatar_disk_path(user), "rb") as f:
+                self.assertEqual(
+                    f.read(),
+                    generate_avatar_jdenticon(f"{imported_realm_uuid}:{user.id}", medium=False),
+                )
+
+        # A non-Jdenticon user in the realm must be left untouched.
+        user_c = do_create_user(
+            "c@jd.test",
+            None,
+            realm,
+            "C",
+            avatar_source=UserProfile.AVATAR_FROM_USER,
+            acting_user=None,
+        )
+        versions_before[user_c.id] = user_c.avatar_version
+
+        audit_logs_before = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.USER_AVATAR_SOURCE_CHANGED
+        ).count()
+
+        event = {"type": "reupload_jdenticon_avatars", "realm_id": realm.id}
+        # One realm_user avatar-update event is sent per repaired user.
+        with self.capture_send_event_calls(expected_num_events=len(jdenticon_users)) as events:
+            queue_json_publish_rollback_unsafe("deferred_work", event)
+
+        for user in jdenticon_users:
+            user.refresh_from_db()
+            # Verify avatar_version is bumped.
+            self.assertEqual(user.avatar_version, versions_before[user.id] + 1)
+            # The stored avatar is now salted with the user's own realm UUID.
+            for medium in (False, True):
+                with open(avatar_disk_path(user, medium=medium), "rb") as f:
+                    self.assertEqual(
+                        f.read(),
+                        generate_avatar_jdenticon(f"{realm.uuid}:{user.id}", medium=medium),
+                    )
+
+        for event_data in events:
+            self.assertEqual(event_data["event"]["type"], "realm_user")
+            self.assertEqual(event_data["event"]["op"], "update")
+
+        # The non-Jdenticon user remains untouched.
+        user_c.refresh_from_db()
+        self.assertEqual(user_c.avatar_version, versions_before[user_c.id])
+
+        # The avatar source did not change, so no audit log is written.
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                event_type=AuditLogEventType.USER_AVATAR_SOURCE_CHANGED
+            ).count(),
+            audit_logs_before,
+        )
