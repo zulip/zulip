@@ -196,6 +196,17 @@ def custom_profile_fields_for_realm(realm_id: int) -> QuerySet[CustomProfileFiel
     return CustomProfileField.objects.filter(realm=realm_id).order_by("order")
 
 
+def get_first_pronoun_field(realm: Realm) -> CustomProfileField | None:
+    return (
+        CustomProfileField.objects.filter(
+            realm=realm,
+            field_type=CustomProfileField.PRONOUNS,
+        )
+        .order_by("order")
+        .first()
+    )
+
+
 class CustomProfileFieldValue(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     field = models.ForeignKey(CustomProfileField, on_delete=CASCADE)

@@ -452,6 +452,7 @@ export const realm_schema = z.object({
     max_avatar_file_size_mib: z.number(),
     max_channel_folder_description_length: z.number(),
     max_channel_folder_name_length: z.number(),
+    max_display_in_profile_summary_fields: z.number(),
     max_file_upload_size_mib: z.number(),
     max_icon_file_size_mib: z.number(),
     max_logo_file_size_mib: z.number(),

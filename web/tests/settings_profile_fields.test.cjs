@@ -14,12 +14,14 @@ const DROPDOWN_ID = 3;
 const EXTERNAL_ACCOUNT_ID = 7;
 const PARAGRAPH_ID = 2;
 const USER_FIELD_ID = 6;
+const PRONOUNS_ID = 8;
 
 const SHORT_TEXT_NAME = "Short text";
 const DROPDOWN_NAME = "Dropdown";
 const EXTERNAL_ACCOUNT_NAME = "External account";
 const PARAGRAPH_NAME = "Paragraph";
 const USER_FIELD_NAME = "Person";
+const PRONOUNS_NAME = "Pronouns";
 
 const custom_profile_field_types = {
     SHORT_TEXT: {
@@ -41,6 +43,10 @@ const custom_profile_field_types = {
     USER: {
         id: USER_FIELD_ID,
         name: USER_FIELD_NAME,
+    },
+    PRONOUNS: {
+        id: PRONOUNS_ID,
+        name: PRONOUNS_NAME,
     },
 };
 
@@ -84,7 +90,7 @@ function test_populate(opts, template_data) {
 run_test("populate_profile_fields", ({mock_template, override}) => {
     make_list_widget_only_render_items(override);
 
-    override(realm, "custom_profile_fields", {});
+    override(realm, "custom_profile_fields", []);
     override(realm, "realm_default_external_accounts", JSON.stringify({}));
 
     const template_data = [];
@@ -159,6 +165,7 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
                 display_in_profile_summary: false,
                 valid_to_display_in_summary: true,
                 required: false,
+                is_first_pronoun_field: false,
             },
             can_modify: true,
             realm_default_external_accounts: realm.realm_default_external_accounts,
@@ -172,6 +179,7 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
                 display_in_profile_summary: false,
                 valid_to_display_in_summary: true,
                 required: false,
+                is_first_pronoun_field: false,
             },
             can_modify: true,
             realm_default_external_accounts: realm.realm_default_external_accounts,
@@ -185,6 +193,7 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
                 display_in_profile_summary: true,
                 valid_to_display_in_summary: true,
                 required: false,
+                is_first_pronoun_field: false,
             },
             can_modify: true,
             realm_default_external_accounts: realm.realm_default_external_accounts,
@@ -198,6 +207,7 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
                 display_in_profile_summary: true,
                 valid_to_display_in_summary: true,
                 required: false,
+                is_first_pronoun_field: false,
             },
             can_modify: true,
             realm_default_external_accounts: realm.realm_default_external_accounts,
@@ -212,4 +222,44 @@ run_test("populate_profile_fields", ({mock_template, override}) => {
         },
         template_data,
     );
+});
+
+run_test("get_first_field_id_by_type_and_order", ({override}) => {
+    override(realm, "custom_profile_fields", []);
+    assert.equal(settings_profile_fields.get_first_field_id_by_type_and_order(PRONOUNS_ID), null);
+
+    override(realm, "custom_profile_fields", [
+        {id: 10, type: PRONOUNS_ID, order: 5, name: "Pronouns", hint: "", field_data: ""},
+    ]);
+    assert.equal(settings_profile_fields.get_first_field_id_by_type_and_order(PRONOUNS_ID), 10);
+
+    override(realm, "custom_profile_fields", [
+        {id: 20, type: PRONOUNS_ID, order: 10, name: "Pronouns B", hint: "", field_data: ""},
+        {id: 10, type: PRONOUNS_ID, order: 3, name: "Pronouns A", hint: "", field_data: ""},
+        {id: 30, type: PRONOUNS_ID, order: 7, name: "Pronouns C", hint: "", field_data: ""},
+    ]);
+    assert.equal(settings_profile_fields.get_first_field_id_by_type_and_order(PRONOUNS_ID), 10);
+
+    override(realm, "custom_profile_fields", [
+        {id: 40, type: SHORT_TEXT_ID, order: 1, name: "Color", hint: "", field_data: ""},
+    ]);
+    assert.equal(settings_profile_fields.get_first_field_id_by_type_and_order(PRONOUNS_ID), null);
+});
+
+run_test("get_first_pronoun_field_id_by_order", ({override}) => {
+    override(realm, "custom_profile_field_types", custom_profile_field_types);
+
+    override(realm, "custom_profile_fields", []);
+    assert.equal(settings_profile_fields.get_first_pronoun_field_id_by_order(), null);
+
+    override(realm, "custom_profile_fields", [
+        {id: 99, type: PRONOUNS_ID, order: 1, name: "Pronouns", hint: "", field_data: ""},
+    ]);
+    assert.equal(settings_profile_fields.get_first_pronoun_field_id_by_order(), 99);
+
+    override(realm, "custom_profile_fields", [
+        {id: 50, type: PRONOUNS_ID, order: 20, name: "Pronouns B", hint: "", field_data: ""},
+        {id: 40, type: PRONOUNS_ID, order: 5, name: "Pronouns A", hint: "", field_data: ""},
+    ]);
+    assert.equal(settings_profile_fields.get_first_pronoun_field_id_by_order(), 40);
 });
