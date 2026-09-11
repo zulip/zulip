@@ -843,6 +843,7 @@ class ScheduledMessageFieldsCore(BaseModel):
     rendered_content: str
     scheduled_delivery_timestamp: int
     failed: bool
+    split_group_id: str | None
 
 
 class ScheduledMessageFields(ScheduledMessageFieldsCore):

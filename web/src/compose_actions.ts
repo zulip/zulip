@@ -138,6 +138,7 @@ function show_compose_box(opts: ComposeActionsOpts): void {
 
 export let clear_textarea = (): void => {
     $("#compose").find("input[type=text], textarea").val("");
+    $("textarea#compose-textarea").prop("readonly", false);
 };
 
 export function rewire_clear_textarea(value: typeof clear_textarea): void {
@@ -152,6 +153,7 @@ function clear_box(): void {
     compose_validate.clear_stream_wildcard_warnings($("#compose_banners"));
     compose_validate.clear_guest_in_dm_recipient_warning();
     compose_validate.set_user_acknowledged_stream_wildcard_flag(false);
+    compose_banner.clear_split_messages_info_banner();
 
     compose_state.set_recipient_edited_manually(false);
     compose_state.set_is_content_unedited_restored_draft(false);
@@ -218,6 +220,8 @@ export let complete_starting_tasks = (opts: ComposeActionsOpts): void => {
     compose_recipient.update_compose_area_placeholder_text();
     compose_recipient.update_narrow_to_recipient_visibility();
     compose_recipient.update_recipient_row_attention_level();
+    compose_banner.update_split_messages_info_banner();
+    compose_validate.check_overflow_text($("#send_message_form"));
 
     // This logic catches the corner case of starting a new topic
     // from within an existing *general chat* topic via buttons

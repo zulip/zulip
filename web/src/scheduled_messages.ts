@@ -76,10 +76,15 @@ export function update_scheduled_message(scheduled_message: ScheduledMessage): v
     scheduled_messages_by_id.set(scheduled_message.scheduled_message_id, scheduled_message);
 }
 
-export function delete_scheduled_message(scheduled_msg_id: number, success?: () => void): void {
+export function delete_scheduled_message(
+    scheduled_msg_id: number,
+    success?: () => void,
+    error?: () => void,
+): void {
     void channel.del({
         url: "/json/scheduled_messages/" + scheduled_msg_id,
         success,
+        error,
     });
 }
 

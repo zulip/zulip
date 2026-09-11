@@ -40,3 +40,9 @@
     line-height: var(--base-line-height-unitless);
     font-family: inherit;
 }
+
+.scheduled-split-message-count {
+    font-style: italic;
+    color: hsl(0deg 0% 53%);
+    margin-bottom: 4px;
+}
