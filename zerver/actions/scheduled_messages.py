@@ -237,6 +237,8 @@ def edit_scheduled_message(
             realm=realm,
         )
 
+    update_fields = []
+
     if recipient_type_name is not None or message_to is not None:
         assert send_request is not None
         # User has updated the scheduled message's recipient.
@@ -245,6 +247,7 @@ def edit_scheduled_message(
         # Update the topic based on the new recipient information.
         new_topic_name = send_request.message.topic_name()
         scheduled_message_object.set_topic_name(topic_name=new_topic_name)
+        update_fields.extend(["recipient", "stream", "subject"])
     elif topic_name is not None and existing_recipient_type_name == "stream":
         # User has updated the scheduled message's topic, but not
         # the existing recipient information. We ignore topics sent
@@ -252,6 +255,7 @@ def edit_scheduled_message(
         check_stream_topic(topic_name)
         new_topic_name = truncate_topic(topic_name)
         scheduled_message_object.set_topic_name(topic_name=new_topic_name)
+        update_fields.append("subject")
 
     if message_content is not None:
         assert send_request is not None
@@ -262,13 +266,16 @@ def edit_scheduled_message(
             scheduled_message_object, send_request.rendering_result
         )
         scheduled_message_object.has_attachment = attachment_reference_change.did_attachment_change
+        update_fields.extend(["content", "rendered_content", "has_attachment"])
 
     if deliver_at is not None:
         # User has updated the scheduled message's send timestamp.
         scheduled_message_object.scheduled_timestamp = deliver_at
+        update_fields.append("scheduled_timestamp")
 
     # Update for most recent Client information.
     scheduled_message_object.sending_client = client
+    update_fields.append("sending_client")
 
     # If the user is editing a scheduled message that the server tried
     # and failed to send, we need to update the `failed` boolean field
@@ -276,8 +283,9 @@ def edit_scheduled_message(
     if scheduled_message_object.failed:
         scheduled_message_object.failed = False
         scheduled_message_object.failure_message = None
+        update_fields.extend(["failed", "failure_message"])
 
-    scheduled_message_object.save()
+    scheduled_message_object.save(update_fields=update_fields)
 
     notify_update_scheduled_message(sender, scheduled_message_object)
 
