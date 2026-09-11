@@ -10982,8 +10982,8 @@ paths:
         parameter is required. Clients should also enforce and communicate this
         behavior in the UI.
 
-        **Changes**: In Zulip 13.0 (feature level 511), this endpoint
-        now returns an error if the message report fails to be sent to the
+        **Changes**: Before Zulip 13.0 (feature level 511), this endpoint
+        did not return an error if the message report failed to be sent to the
         moderation request channel.
 
         **Changes**: New in Zulip 11.0 (feature level 382). This API builds on
