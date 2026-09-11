@@ -337,9 +337,14 @@ export function get_add_reaction_button(message_id: number): JQuery {
     return $add_button;
 }
 
-export let set_reaction_vote_text = ($reaction: JQuery, vote_text: string): void => {
+export let set_reaction_vote_text = ($reaction: JQuery, vote_text: string[]): void => {
     const $count_element = $reaction.find(".message_reaction_count");
-    $count_element.text(vote_text);
+    const $spans = vote_text.map((name, index) =>
+        $("<span>")
+            .addClass("message_reaction_name")
+            .text(index < vote_text.length - 1 ? `${name},` : name),
+    );
+    $count_element.empty().append($spans);
 };
 
 export function rewire_set_reaction_vote_text(value: typeof set_reaction_vote_text): void {
@@ -454,7 +459,7 @@ export let insert_new_reaction = (
         local_id: get_local_reaction_id(clean_reaction_object),
         emoji_alt_code: user_settings.emojiset === "text",
         is_realm_emoji,
-        vote_text: "", // Updated below
+        vote_text: [], // Updated below
         class: reaction_class,
     };
 
@@ -715,7 +720,7 @@ function build_reaction_data(
     count: number;
     label: string;
     class: string;
-    vote_text: string;
+    vote_text: string[];
 } {
     return {
         count: user_ids.length,
@@ -762,11 +767,11 @@ function get_reaction_counts_and_user_ids(message: Message): ReactionUserIdAndCo
         .toArray();
 }
 
-export function get_vote_text(user_ids: number[], should_display_reactors: boolean): string {
+export function get_vote_text(user_ids: number[], should_display_reactors: boolean): string[] {
     if (should_display_reactors) {
-        return comma_separated_usernames(user_ids);
+        return get_reaction_user_names(user_ids);
     }
-    return `${user_ids.length}`;
+    return [`${user_ids.length}`];
 }
 
 function check_should_display_reactors(
@@ -783,18 +788,15 @@ function check_should_display_reactors(
     return total_reactions <= 3;
 }
 
-function comma_separated_usernames(user_list: number[]): string {
+function get_reaction_user_names(user_list: number[]): string[] {
     const usernames = people.get_display_full_names(user_list);
     const current_user_has_reacted = user_list.includes(current_user.user_id);
 
     if (current_user_has_reacted) {
         const current_user_index = user_list.indexOf(current_user.user_id);
-        usernames[current_user_index] = $t({
-            defaultMessage: "You",
-        });
+        usernames[current_user_index] = $t({defaultMessage: "You"});
     }
-    const comma_separated_usernames = usernames.join(", ");
-    return comma_separated_usernames;
+    return usernames;
 }
 
 export let update_vote_text_on_message = (message: Message): void => {
