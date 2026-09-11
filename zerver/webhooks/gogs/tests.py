@@ -79,22 +79,22 @@ class GogsHookTests(WebhookTestCase):
         self.check_webhook("pull_request__merged", expected_topic_name, expected_message)
 
     def test_pull_request_reopened(self) -> None:
-        expected_topic_name = "test / PR #1349 reopened"
+        expected_topic_name = "test / PR #2 reopened"
         expected_message = """kostekIV reopened [PR #2](https://try.gogs.io/kostekIV/test/pulls/2) from `c` to `master`."""
         self.check_webhook("pull_request__reopened", expected_topic_name, expected_message)
 
     def test_pull_request_edited(self) -> None:
-        expected_topic_name = "test / PR #1349 Test"
+        expected_topic_name = "test / PR #2 Test"
         expected_message = """kostekIV edited [PR #2](https://try.gogs.io/kostekIV/test/pulls/2)."""
         self.check_webhook("pull_request__edited", expected_topic_name, expected_message)
 
     def test_pull_request_assigned(self) -> None:
-        expected_topic_name = "test / PR #1349 Test"
+        expected_topic_name = "test / PR #2 Test"
         expected_message = """kostekIV assigned kostekIV to [PR #2](https://try.gogs.io/kostekIV/test/pulls/2) from `c` to `master`."""
         self.check_webhook("pull_request__assigned", expected_topic_name, expected_message)
 
     def test_pull_request_synchronized(self) -> None:
-        expected_topic_name = "test / PR #1349 Test"
+        expected_topic_name = "test / PR #2 Test"
         expected_message = """kostekIV synchronized [PR #2](https://try.gogs.io/kostekIV/test/pulls/2) from `c` to `master`."""
         self.check_webhook("pull_request__synchronized", expected_topic_name, expected_message)
 
