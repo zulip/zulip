@@ -7,5 +7,7 @@ module.exports = {
     baseSelector: ".zulip-icon",
     cssTemplate: "./template.hbs",
     ligature: false,
-    types: ["woff2"], // https://github.com/jeerbl/webfonts-loader/pull/219
+    // Keep woff2 as the preferred format, but emit woff as a fallback for
+    // browsers/WebViews that fail to load the custom icon font reliably.
+    types: ["woff2", "woff"],
 };

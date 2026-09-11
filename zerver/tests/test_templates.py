@@ -5,7 +5,7 @@ from zerver.lib.test_classes import ZulipTestCase
 
 
 class TemplateTestCase(ZulipTestCase):
-    def test_markdown_in_template(self) -> None:
+    def test_markdown_in_template(self: "TemplateTestCase") -> None:
         template = get_template("tests/test_markdown.html")
         context = {
             "markdown_test_file": "zerver/tests/markdown/test_markdown.md",
@@ -18,7 +18,7 @@ class TemplateTestCase(ZulipTestCase):
             'header<h1id="hello">Hello!</h1><p>Thisissome<em>boldtext</em>.</p>footer',
         )
 
-    def test_markdown_tabbed_sections_extension(self) -> None:
+    def test_markdown_tabbed_sections_extension(self: "TemplateTestCase") -> None:
         template = get_template("tests/test_markdown.html")
         context = {
             "markdown_test_file": "zerver/tests/markdown/test_tabbed_sections.md",
@@ -90,7 +90,7 @@ footer
         expected_html_sans_whitespace = expected_html.replace(" ", "").replace("\n", "")
         self.assertEqual(content_sans_whitespace, expected_html_sans_whitespace)
 
-    def test_markdown_tabbed_sections_missing_tabs(self) -> None:
+    def test_markdown_tabbed_sections_missing_tabs(self: "TemplateTestCase") -> None:
         template = get_template("tests/test_markdown.html")
         context = {
             "markdown_test_file": "zerver/tests/markdown/test_tabbed_sections_missing_tabs.md",
@@ -99,7 +99,7 @@ footer
         with self.assertRaisesRegex(ValueError, expected_regex):
             template.render(context)
 
-    def test_markdown_nested_code_blocks(self) -> None:
+    def test_markdown_nested_code_blocks(self: "TemplateTestCase") -> None:
         template = get_template("tests/test_markdown.html")
         context = {
             "markdown_test_file": "zerver/tests/markdown/test_nested_code_blocks.md",
@@ -116,7 +116,7 @@ footer
         )
         self.assertEqual(content_sans_whitespace, expected)
 
-    def test_custom_markdown_include_extension(self) -> None:
+    def test_custom_markdown_include_extension(self: "TemplateTestCase") -> None:
         template = get_template("tests/test_markdown.html")
         context = {
             "markdown_test_file": "zerver/tests/markdown/test_custom_include_extension.md",
@@ -127,7 +127,9 @@ footer
         ):
             template.render(context)
 
-    def test_custom_markdown_include_extension_empty_macro(self) -> None:
+    def test_custom_markdown_include_extension_empty_macro(
+        self: "TemplateTestCase",
+    ) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
             "markdown_test_file": "zerver/tests/markdown/test_custom_include_extension_empty.md",
