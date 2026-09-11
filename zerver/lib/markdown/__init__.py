@@ -1438,9 +1438,12 @@ class AutoLink(CompiledPattern):
         return url_to_a(db_data, url)
 
 
+ZULIP_LIST_TAB_LENGTH = 2
+
+
 class OListProcessor(sane_lists.SaneOListProcessor):
     def __init__(self, parser: BlockParser) -> None:
-        parser.md.tab_length = 2
+        parser.md.tab_length = ZULIP_LIST_TAB_LENGTH
         super().__init__(parser)
         parser.md.tab_length = 4
 
@@ -1449,7 +1452,7 @@ class UListProcessor(sane_lists.SaneUListProcessor):
     """Unordered lists, but with 2-space indent"""
 
     def __init__(self, parser: BlockParser) -> None:
-        parser.md.tab_length = 2
+        parser.md.tab_length = ZULIP_LIST_TAB_LENGTH
         super().__init__(parser)
         parser.md.tab_length = 4
 
@@ -1464,7 +1467,7 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
         # HACK: Set the tab length to 2 just for the initialization of
         # this class, so that bulleted lists (and only bulleted lists)
         # work off 2-space indentation.
-        parser.md.tab_length = 2
+        parser.md.tab_length = ZULIP_LIST_TAB_LENGTH
         super().__init__(parser)
         parser.md.tab_length = 4
 
@@ -1533,6 +1536,94 @@ class Fence:
     is_code: bool
 
 
+LIST_ITEM_REGEX = re.compile(
+    r"""
+    ^(?P<quote>(?:[ ]*>[ ]*)*)
+    (?P<indent>[ \t]*)
+    (?P<marker>[*+-]|\d+\.)
+    [ ]+
+    (?P<content>.*)
+    $
+    """,
+    re.VERBOSE,
+)
+
+
+PREFIXED_FENCE_RE = re.compile(
+    r"""
+    ^[ ]*(?:>[ ]*)*
+    (?P<fence>(?:~{3,}|`{3,}))
+    [ ]*
+    (?:
+        \{?\.?
+        (?P<lang>[a-zA-Z0-9_\+\.-]+)
+        [ ]*
+        (?P<header>[^ ~`][^~`]*)?
+        \}?
+    )?
+    $
+    """,
+    re.VERBOSE,
+)
+
+
+def line_is_in_code_fence(line: str, open_fences: list[Fence]) -> bool:
+    """Update `open_fences` in place based on `line`, and return whether
+    we are currently inside a non-quote fenced code block. Shared by
+    preprocessors that need to skip fenced code while scanning lines."""
+    m = FENCE_RE.match(line) or PREFIXED_FENCE_RE.match(line)
+    if m:
+        fence_str = m.group("fence")
+        lang: str | None = m.group("lang")
+        is_code = lang not in ("quote", "quoted")
+        matches_last_fence = fence_str == open_fences[-1].fence_str if open_fences else False
+        closes_last_fence = not lang and matches_last_fence
+
+        if closes_last_fence:
+            open_fences.pop()
+        else:
+            open_fences.append(Fence(fence_str, is_code))
+
+    return any(fence.is_code for fence in open_fences)
+
+
+class TabIndentedListPreprocessor(markdown.preprocessors.Preprocessor):
+    """Convert leading tabs of tab-indented nested list items to
+    Zulip's 2-space list indentation.
+
+    This is needed because Python-Markdown's NormalizeWhitespace
+    preprocessor, which runs after this one, would expand tabs to
+    4 spaces, preventing the items from nesting under Zulip's 2-space
+    list indentation convention.
+    """
+
+    @override
+    def run(self, lines: list[str]) -> list[str]:
+        copy: list[str] = []
+        open_fences: list[Fence] = []
+        prev_quote_depth = -1
+        for line in lines:
+            in_code_fence = line_is_in_code_fence(line, open_fences)
+            if in_code_fence:
+                prev_quote_depth = -1
+            else:
+                m = LIST_ITEM_REGEX.match(line)
+                if m:
+                    quote_str = m.group("quote")
+                    quote_depth = quote_str.count(">")
+                    indent = m.group("indent")
+
+                    if prev_quote_depth == quote_depth and "\t" in indent:
+                        new_indent = indent.expandtabs(ZULIP_LIST_TAB_LENGTH)
+                        line = quote_str + new_indent + line[len(quote_str) + len(indent) :]
+
+                    prev_quote_depth = quote_depth
+                else:
+                    prev_quote_depth = -1
+            copy.append(line)
+        return copy
+
+
 class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     """Allows list blocks that come directly after another block
     to be rendered as a list.
@@ -1541,46 +1632,26 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     directly after a line of text, and inserts a newline between
     to satisfy Markdown"""
 
-    LI_RE = re.compile(r"^[ ]*([*+-]|\d\.)[ ]+(.*)", re.MULTILINE)
-
     @override
     def run(self, lines: list[str]) -> list[str]:
         """Insert a newline between a paragraph and ulist if missing"""
         inserts = 0
-        in_code_fence: bool = False
         open_fences: list[Fence] = []
         copy = lines[:]
         for i in range(len(lines) - 1):
-            # Ignore anything that is inside a fenced code block but not quoted.
-            # We ignore all lines where some parent is a non-quote code block.
-            m = FENCE_RE.match(lines[i])
-            if m:
-                fence_str = m.group("fence")
-                lang: str | None = m.group("lang")
-                is_code = lang not in ("quote", "quoted")
-                matches_last_fence = (
-                    fence_str == open_fences[-1].fence_str if open_fences else False
-                )
-                closes_last_fence = not lang and matches_last_fence
-
-                if closes_last_fence:
-                    open_fences.pop()
-                else:
-                    open_fences.append(Fence(fence_str, is_code))
-
-                in_code_fence = any(fence.is_code for fence in open_fences)
-
-            # If we're not in a fenced block and we detect an upcoming list
-            # hanging off any block (including a list of another type), add
-            # a newline.
-            li1 = self.LI_RE.match(lines[i])
-            li2 = self.LI_RE.match(lines[i + 1])
+            in_code_fence = line_is_in_code_fence(lines[i], open_fences)
+            li1 = LIST_ITEM_REGEX.match(lines[i])
+            li2 = LIST_ITEM_REGEX.match(lines[i + 1])
             if (
                 not in_code_fence
                 and lines[i]
                 and (
                     (li2 and not li1)
-                    or (li1 and li2 and (len(li1.group(1)) == 1) != (len(li2.group(1)) == 1))
+                    or (
+                        li1
+                        and li2
+                        and (len(li1.group("marker")) == 1) != (len(li2.group("marker")) == 1)
+                    )
                 )
             ):
                 copy.insert(i + inserts + 1, "")
@@ -2234,6 +2305,7 @@ class ZulipMarkdown(markdown.Markdown):
         # reference - references don't make sense in a chat context.
         preprocessors = markdown.util.Registry[markdown.preprocessors.Preprocessor]()
         preprocessors.register(MarkdownListPreprocessor(self), "hanging_lists", 35)
+        preprocessors.register(TabIndentedListPreprocessor(self), "tab_indented_lists", 32)
         preprocessors.register(
             markdown.preprocessors.NormalizeWhitespace(self), "normalize_whitespace", 30
         )
