@@ -403,6 +403,11 @@ test("insert_one_user_into_empty_list", ({override}) => {
             status_emoji_info: undefined,
             status_text: undefined,
             has_status_text: false,
+            display_offline_users: {
+                AUTOMATIC: false,
+                NEVER: false,
+            },
+            active_status: true,
             user_list_style: {
                 COMPACT: false,
                 WITH_STATUS: true,
@@ -656,4 +661,22 @@ test("check_should_redraw_new_user", ({override}) => {
     override(realm, "realm_presence_disabled", false);
     // A new user that didn't have presence info should not be redrawn.
     assert.equal(activity_ui.check_should_redraw_new_user(99999), false);
+});
+
+test("display_offline_users_right_sidebar", ({override}) => {
+    override(padded_widget, "update_padding", noop);
+    presence.presence_info.set(me.user_id, {status: "active"});
+    presence.presence_info.set(alice.user_id, {status: "active"});
+    presence.presence_info.set(fred.user_id, {status: "offline"});
+
+    override(user_settings, "display_offline_users", 2);
+
+    clear_buddy_list(buddy_list);
+    buddy_list.populate({
+        all_user_ids: [me.user_id, alice.user_id, fred.user_id],
+    });
+
+    // Fred (offline) should be excluded from rendered section user_ids
+    assert.ok(buddy_list.other_users_section.user_ids.includes(alice.user_id));
+    assert.ok(!buddy_list.other_users_section.user_ids.includes(fred.user_id));
 });

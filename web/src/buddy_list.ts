@@ -22,6 +22,7 @@ import * as padded_widget from "./padded_widget.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
+import * as presence from "./presence.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as settings_config from "./settings_config.ts";
 import * as sidebar_header_sticky_shadow from "./sidebar_header_sticky_shadow.ts";
@@ -66,6 +67,29 @@ function get_total_human_subscriber_count(
     return 0;
 }
 
+function get_total_human_online_subscribers_count_only(
+    current_sub: StreamSubscription | undefined,
+    pm_ids_set: Set<number>,
+): number {
+    if (current_sub) {
+        return peer_data.get_online_subscriber_count(current_sub.stream_id);
+    }
+    if (pm_ids_set.size > 0) {
+        // The current user is only in the provided recipients list
+        // for direct message conversations with oneself.
+        const all_recipient_user_ids_set = pm_ids_set.union(new Set([current_user.user_id]));
+
+        let human_user_count = 0;
+        for (const pm_id of all_recipient_user_ids_set) {
+            if (!people.is_valid_bot_user(pm_id) && presence.get_status(pm_id) === "active") {
+                human_user_count += 1;
+            }
+        }
+        return human_user_count;
+    }
+    return 0;
+}
+
 function should_hide_headers(
     current_sub: StreamSubscription | undefined,
     pm_ids_set: Set<number>,
@@ -85,9 +109,14 @@ type BuddyListRenderData = {
     // production.
     total_human_subscribers_count: number;
     other_users_count: number;
+    other_users_count_online: number;
     hide_headers: boolean;
     // Might include unsubscribed participants
     get_all_participant_ids: () => Set<number>;
+
+    // This calculation is based on the logic of total_human_subscriber_count,
+    // but filtering for users who are currently online.
+    total_human_online_subscribers_count: number;
 };
 
 function get_render_data(): BuddyListRenderData {
@@ -95,7 +124,13 @@ function get_render_data(): BuddyListRenderData {
     const pm_ids_set = narrow_state.pm_ids_set();
 
     const total_human_subscribers_count = get_total_human_subscriber_count(current_sub, pm_ids_set);
+    const total_human_online_subscribers_count = get_total_human_online_subscribers_count_only(
+        current_sub,
+        pm_ids_set,
+    );
     const other_users_count = people.get_active_human_count() - total_human_subscribers_count;
+    const other_users_count_online =
+        presence.get_active_human_count_online() - total_human_online_subscribers_count;
     const hide_headers = should_hide_headers(current_sub, pm_ids_set);
     const get_all_participant_ids = buddy_data.get_conversation_participants_callback();
 
@@ -103,7 +138,9 @@ function get_render_data(): BuddyListRenderData {
         current_sub,
         pm_ids_set,
         total_human_subscribers_count,
+        total_human_online_subscribers_count,
         other_users_count,
+        other_users_count_online,
         hide_headers,
         get_all_participant_ids,
     };
@@ -188,9 +225,13 @@ export class BuddyList extends BuddyListConf {
 
     initialize_tooltips(): void {
         const non_participant_users_matching_view_count = async (): Promise<number | null> =>
-            await this.non_participant_users_matching_view_count();
+            user_settings.display_offline_users === 1
+                ? await this.non_participant_users_matching_view_count()
+                : await this.non_participant_users_matching_view_count_online();
         const total_human_subscribers_count = (): number =>
-            this.render_data.total_human_subscribers_count;
+            user_settings.display_offline_users === 1
+                ? this.render_data.total_human_subscribers_count
+                : this.render_data.total_human_online_subscribers_count;
 
         async function set_tooltip_text(instance: tippy.Instance): Promise<void> {
             let tooltip_text;
@@ -286,7 +327,11 @@ export class BuddyList extends BuddyListConf {
                             void set_tooltip_text(instance);
                         } else {
                             const other_users_count =
-                                people.get_active_human_count() - total_human_subscribers_count();
+                                user_settings.display_offline_users === 1
+                                    ? people.get_active_human_count() -
+                                      total_human_subscribers_count()
+                                    : presence.get_active_human_count_online() -
+                                      total_human_subscribers_count();
                             const tooltip_text = $t(
                                 {
                                     defaultMessage:
@@ -352,6 +397,40 @@ export class BuddyList extends BuddyListConf {
         }
         return (
             this.render_data.total_human_subscribers_count - subscribed_human_participant_ids.length
+        );
+    }
+
+    async non_participant_users_matching_view_count_online(): Promise<number | null> {
+        const {current_sub, get_all_participant_ids} = this.render_data;
+        // We don't show "participants" for DMs, we just show the
+        // "in this narrow" section (i.e. everyone in the conversation).
+        // Confusingly, we do call this "participants" in the UI.
+        if (current_sub === undefined) {
+            return this.render_data.total_human_online_subscribers_count;
+        }
+        const participant_ids_list = [...get_all_participant_ids()];
+        const subscribed_human_participant_ids = [];
+        for (const user_id of participant_ids_list) {
+            const is_subscribed = await peer_data.maybe_fetch_is_user_subscribed(
+                current_sub.stream_id,
+                user_id,
+                false,
+            );
+            // This means a request failed and we don't know the count.
+            if (is_subscribed === null) {
+                return null;
+            }
+            if (
+                is_subscribed &&
+                !people.is_valid_bot_user(user_id) &&
+                presence.get_status(user_id) === "active"
+            ) {
+                subscribed_human_participant_ids.push(user_id);
+            }
+        }
+        return (
+            this.render_data.total_human_online_subscribers_count -
+            subscribed_human_participant_ids.length
         );
     }
 
@@ -508,25 +587,51 @@ export class BuddyList extends BuddyListConf {
     }
 
     async update_section_header_counts(): Promise<void> {
-        const {other_users_count, current_sub} = this.render_data;
         const all_participant_ids = this.render_data.get_all_participant_ids();
-
+        const {other_users_count, other_users_count_online, current_sub} = this.render_data;
         // Hide the counts until we have the data
         if (current_sub && !peer_data.has_full_subscriber_data(current_sub.stream_id)) {
             $(".buddy-list-heading-user-count-with-parens").addClass("hide");
         }
 
-        const formatted_participants_count = get_formatted_user_count(all_participant_ids.size);
-        const non_participant_users_matching_view_count =
-            await this.non_participant_users_matching_view_count();
-        // This means a request failed and we can't calculate the counts.
-        if (non_participant_users_matching_view_count === null) {
-            return;
+        let formatted_participants_count;
+        let non_participant_users_matching_view_count;
+        let formatted_matching_users_count;
+        let formatted_other_users_count;
+
+        if (user_settings.display_offline_users === 1) {
+            formatted_participants_count = get_formatted_user_count(all_participant_ids.size);
+            non_participant_users_matching_view_count =
+                await this.non_participant_users_matching_view_count();
+            // This means a request failed and we can't calculate the counts.
+            if (non_participant_users_matching_view_count === null) {
+                return;
+            }
+
+            formatted_matching_users_count = get_formatted_user_count(
+                non_participant_users_matching_view_count,
+            );
+
+            formatted_other_users_count = get_formatted_user_count(other_users_count);
+        } else {
+            formatted_participants_count = get_formatted_user_count(
+                [...all_participant_ids].filter(
+                    (user_id) => presence.get_status(user_id) === "active",
+                ).length,
+            );
+            non_participant_users_matching_view_count =
+                await this.non_participant_users_matching_view_count_online();
+
+            // This means a request failed and we can't calculate the counts.
+            if (non_participant_users_matching_view_count === null) {
+                return;
+            }
+            formatted_matching_users_count = get_formatted_user_count(
+                non_participant_users_matching_view_count,
+            );
+
+            formatted_other_users_count = get_formatted_user_count(other_users_count_online);
         }
-        const formatted_matching_users_count = get_formatted_user_count(
-            non_participant_users_matching_view_count,
-        );
-        const formatted_other_users_count = get_formatted_user_count(other_users_count);
 
         // After the `await`, we might have changed to a different channel view.
         // If so, we shouldn't update the DOM anymore, and should let the newer `populate`
@@ -546,18 +651,22 @@ export class BuddyList extends BuddyListConf {
         );
         $(".buddy-list-heading-user-count-with-parens").removeClass("hide");
 
-        $("#buddy-list-participants-section-heading").attr(
-            "data-user-count",
-            all_participant_ids.size,
-        );
+        const participants_count =
+            user_settings.display_offline_users === 1
+                ? all_participant_ids.size
+                : [...all_participant_ids].filter(
+                      (user_id) => presence.get_status(user_id) === "active",
+                  ).length;
+        const other_count =
+            user_settings.display_offline_users === 1
+                ? other_users_count
+                : other_users_count_online;
+        $("#buddy-list-participants-section-heading").attr("data-user-count", participants_count);
         $("#buddy-list-users-matching-view-section-heading").attr(
             "data-user-count",
             non_participant_users_matching_view_count,
         );
-        $("#buddy-list-users-other-users-section-heading").attr(
-            "data-user-count",
-            other_users_count,
-        );
+        $("#buddy-list-users-other-users-section-heading").attr("data-user-count", other_count);
     }
 
     async render_section_headers(): Promise<void> {
@@ -683,6 +792,9 @@ export class BuddyList extends BuddyListConf {
         const all_participant_ids = this.render_data.get_all_participant_ids();
 
         for (const item of items) {
+            if (!item.active_status && user_settings.display_offline_users === 2) {
+                continue;
+            }
             if (all_participant_ids.has(item.user_id)) {
                 participants.push(item);
                 this.participants_section.user_ids.push(item.user_id);

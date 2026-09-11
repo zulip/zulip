@@ -113,6 +113,20 @@ export const user_list_style_values: {
     },
 };
 
+export const display_offline_users: {
+    automatic: SettingDescription<number>;
+    never: SettingDescription<number>;
+} = {
+    automatic: {
+        code: 1,
+        description: $t({defaultMessage: "Auto"}),
+    },
+    never: {
+        code: 2,
+        description: $t({defaultMessage: "Never"}),
+    },
+};
+
 export const web_animate_image_previews_values: Record<
     "always" | "on_hover" | "never",
     SettingDescription<string>

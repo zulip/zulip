@@ -24,6 +24,7 @@ const channel = mock_esm("../src/channel");
 const {GENERIC_BOT_TYPE_INT, INCOMING_WEBHOOK_BOT_TYPE_INT} = zrequire("bot_type_values");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
+const presence = zrequire("presence");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
@@ -494,6 +495,40 @@ test("get_subscriber_count", async () => {
     // Now we know Gail isn't subscribed, so we don't decrement the count
     peer_data.remove_subscriber(india.stream_id, gail.user_id);
     assert.deepStrictEqual(peer_data.get_subscriber_count(india.stream_id), 2);
+});
+
+test("get_online_subscriber_count", () => {
+    people.add_active_user(fred);
+    people.add_active_user(gail);
+
+    const bot = make_bot({
+        email: "testbot@zulip.com",
+        full_name: "Test Bot",
+        user_id: 107,
+        bot_type: GENERIC_BOT_TYPE_INT,
+    });
+    people.add_active_user(bot);
+
+    const india = make_stream({
+        stream_id: 102,
+        name: "India",
+        subscribed: true,
+        subscriber_count: 0,
+    });
+    stream_data.clear_subscriptions();
+
+    blueslip.expect("warn", "We called get_subscriber_count for an untracked stream: 102");
+    assert.equal(peer_data.get_online_subscriber_count(102), 0);
+    blueslip.reset();
+    stream_data.add_sub_for_tests(india);
+
+    peer_data.set_subscribers(india.stream_id, [fred.user_id, gail.user_id, bot.user_id]);
+
+    presence.presence_info.set(fred.user_id, {status: "active"});
+    presence.presence_info.set(gail.user_id, {status: "idle"});
+    presence.presence_info.set(bot.user_id, {status: "active"});
+
+    assert.equal(peer_data.get_online_subscriber_count(india.stream_id), 1);
 });
 
 test("is_subscriber_subset", async () => {
