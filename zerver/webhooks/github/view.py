@@ -1228,13 +1228,20 @@ def api_github_webhook(
 
     # Ignore 'comment edited' events (except discussion comments)
     # if the comment body remains unchanged.
+    action = payload.get("action", "").tame(check_string)
     if (
         "comment" in header_event
         and "discussion" not in header_event
-        and payload.get("action", "").tame(check_string) == "edited"
+        and action == "edited"
         and payload["changes"]["body"]["from"].tame(check_string)
         == payload["comment"]["body"].tame(check_string)
     ):
+        return json_success(request)
+
+    # Deleting a label removes it from all issues, PRs, and discussions.
+    # Suppress noisy per-item "unlabeled" notifications when the "label"
+    # does not exist.
+    if action == "unlabeled" and "label" not in payload:
         return json_success(request)
 
     event = get_zulip_event_name(header_event, payload, branches)
