@@ -2581,7 +2581,9 @@ class GetOldMessagesTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
 
-        do_change_avatar_fields(hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        do_change_avatar_fields(
+            hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None, notify_user=False
+        )
         self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
         do_change_user_setting(

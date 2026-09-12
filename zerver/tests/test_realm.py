@@ -3634,11 +3634,15 @@ class ScrubRealmTest(ZulipTestCase):
 
         for i in range(1, 5):
             if i == 3:
-                do_change_avatar_fields(iago, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=iago)
+                do_change_avatar_fields(
+                    iago, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=iago, notify_user=False
+                )
                 continue
             with get_test_image_file("img.png") as img_file:
                 upload_avatar_image(img_file, iago, content_type="image/png")
-                do_change_avatar_fields(iago, UserProfile.AVATAR_FROM_USER, acting_user=iago)
+                do_change_avatar_fields(
+                    iago, UserProfile.AVATAR_FROM_USER, acting_user=iago, notify_user=False
+                )
         avatar_files = [
             *glob.glob(f"{settings.LOCAL_AVATARS_DIR}/{zulip.id}/*.original"),
             *glob.glob(f"{settings.LOCAL_AVATARS_DIR}/{zulip.id}/*.png"),
