@@ -29,6 +29,11 @@ is the feed of starred messages sent by user ID to everywhere but
 channel 14. The search documentation covers the valid operators and
 their meaning.
 
+Note that there are a couple of specialized operator/operand pairs
+that appear in message feed URLs that are used to [anchor the message
+feed view](/api/construct-narrow#narrow-terms-that-dont-filter-messages)
+around a message ID or a date, and not as search filters.
+
 See also the relevant [message formatting
 documentation](/api/message-formatting) for details on Markdown
 representations of Zulip-internal links that will be translated into
