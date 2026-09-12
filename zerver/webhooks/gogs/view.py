@@ -122,7 +122,7 @@ def format_issues_event(payload: WildValue, include_title: bool = False) -> str:
     )
 
 
-def format_issue_comment_event(payload: WildValue, include_title: bool = False) -> str:
+def format_issue_comment_event(payload: WildValue, type: str, include_title: bool = False) -> str:
     action = payload["action"].tame(check_string)
     comment = payload["comment"]
     issue = payload["issue"]
@@ -133,7 +133,7 @@ def format_issue_comment_event(payload: WildValue, include_title: bool = False) 
         action = f"{action} a [comment]"
     action += "({}) on".format(comment["html_url"].tame(check_string))
 
-    return get_issue_event_message(
+    return get_pull_request_event_message(
         user_name=payload["sender"]["login"].tame(check_string),
         action=action,
         url=get_issue_url(
@@ -142,6 +142,7 @@ def format_issue_comment_event(payload: WildValue, include_title: bool = False) 
         number=issue["number"].tame(check_int),
         message=comment["body"].tame(check_string),
         title=issue["title"].tame(check_string) if include_title else None,
+        type=type,
     )
 
 
@@ -236,13 +237,20 @@ def gogs_webhook_main(
             title=payload["issue"]["title"].tame(check_string),
         )
     elif event == "issue_comment":
+        if "pull_request" in payload["issue"] and isinstance(
+            payload["issue"]["pull_request"], dict
+        ):
+            comment_type = "PR"
+        else:
+            comment_type = "issue"
         body = format_issue_comment_event(
             payload,
+            type=comment_type,
             include_title=user_specified_topic is not None,
         )
         topic_name = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=repo,
-            type="issue",
+            type=comment_type,
             id=payload["issue"]["number"].tame(check_int),
             title=payload["issue"]["title"].tame(check_string),
         )
