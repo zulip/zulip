@@ -2428,7 +2428,11 @@
     /* Emoji-picker colors */
     --color-background-emoji-picker-popover: light-dark(
         hsl(0deg 0% 93%),
-        hsl(0deg 0% 0% / 20%)
+        color-mix(
+            in srgb,
+            var(--color-background-popover-menu) 80%,
+            hsl(0deg 0% 0%)
+        )
     );
     --color-background-emoji-picker-popover-tab-item-active: light-dark(
         hsl(0deg 0% 100% / 20%),
@@ -2455,9 +2459,8 @@
         hsl(0deg 0% 20% / 70%)
     );
     /* Same color as background color of header / footer */
-    --color-border-emoji-picker-tippy-arrow: light-dark(
-        hsl(0deg 0% 93%),
-        hsl(211.58deg 33.33% 11.18%)
+    --color-border-emoji-picker-tippy-arrow: var(
+        --color-background-emoji-picker-popover
     );
 
     /* Dropdown / Typeahead constants */
