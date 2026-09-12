@@ -152,6 +152,18 @@ that also accept a `narrow` parameter; see
 [GET /messages][anchor-get-messages] and
 [POST /messages/flags/narrow][anchor-post-flags].
 
+The [help center](/help/search-for-messages#search-by-date) similarly
+documents the `date` operator for searching for messages around a
+calendar date. Like `near`, this operator has no effect on filtering
+messages when sent to the server, and it is not a valid server-side
+narrow term. When the `date` operator is used to search for messages,
+or is part of a URL fragment such as `/#narrow/date/2026-01-01`,
+clients should omit it from the `narrow` parameter and instead pass
+`anchor` as `date` and `anchor_date` as the operand; see
+[GET /messages][anchor-get-messages]. The operand is an ISO 8601
+date. Clients should convert that calendar date to
+the user's local midnight when sending `anchor_date`.
+
 **Changes**: Prior to Zulip 8.0 (feature level 194), the message ID
 operand for the `id` operator needed to be encoded as a string.
 
