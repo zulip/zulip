@@ -68,27 +68,19 @@ def get_topic_for_http_request(payload: WildValue) -> str:
 
 
 def get_body_for_http_request(payload: WildValue, event_type: str) -> str:
-    if event_type == "Up":
-        monitor_friendly_name = payload["monitor_friendly_name"].tame(check_string)
-        monitor_url = payload["monitor_url"].tame(check_string)
-        alert_details = payload["alert_details"].tame(check_string)
-        alert_friendly_duration = payload["alert_friendly_duration"].tame(check_string)
-        body = UPTIMEROBOT_MESSAGE_UP_TEMPLATE.format(
-            monitor_friendly_name=monitor_friendly_name,
-            monitor_url=monitor_url,
-            alert_details=alert_details,
-            alert_friendly_duration=alert_friendly_duration,
-        )
-    elif event_type == "Down":
-        monitor_friendly_name = payload["monitor_friendly_name"].tame(check_string)
-        monitor_url = payload["monitor_url"].tame(check_string)
-        alert_details = payload["alert_details"].tame(check_string)
-        body = UPTIMEROBOT_MESSAGE_DOWN_TEMPLATE.format(
-            monitor_friendly_name=monitor_friendly_name,
-            monitor_url=monitor_url,
-            alert_details=alert_details,
-        )
-    else:
-        raise UnsupportedWebhookEventTypeError(event_type)
-
-    return body
+    match event_type:
+        case "Up":
+            return UPTIMEROBOT_MESSAGE_UP_TEMPLATE.format(
+                monitor_friendly_name=payload["monitor_friendly_name"].tame(check_string),
+                monitor_url=payload["monitor_url"].tame(check_string),
+                alert_details=payload["alert_details"].tame(check_string),
+                alert_friendly_duration=payload["alert_friendly_duration"].tame(check_string),
+            )
+        case "Down":
+            return UPTIMEROBOT_MESSAGE_DOWN_TEMPLATE.format(
+                monitor_friendly_name=payload["monitor_friendly_name"].tame(check_string),
+                monitor_url=payload["monitor_url"].tame(check_string),
+                alert_details=payload["alert_details"].tame(check_string),
+            )
+        case _:  # nocoverage
+            raise UnsupportedWebhookEventTypeError(event_type)
