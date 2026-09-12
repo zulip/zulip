@@ -710,6 +710,19 @@ def get_pull_request_review_body(helper: Helper) -> str:
     )
 
 
+def get_requested_reviewer_link(payload: WildValue) -> str:
+    # Requested review from a user
+    if "requested_reviewer" in payload:
+        reviewer = payload["requested_reviewer"]
+        reviewer_name = reviewer["login"].tame(check_string)
+    # Requested review from a team
+    else:
+        reviewer = payload["requested_team"]
+        reviewer_name = reviewer["name"].tame(check_string)
+
+    return f"[{reviewer_name}]({reviewer['html_url'].tame(check_string)})"
+
+
 def get_pull_request_review_request_removed_body(helper: Helper) -> str:
     payload = helper.payload
 
@@ -817,22 +830,9 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
     )
     body = message_with_title if include_title else message
 
-    if "requested_reviewer" in payload:
-        reviewer = payload["requested_reviewer"]
-        reviewers = "[{login}]({html_url})".format(
-            login=reviewer["login"].tame(check_string),
-            html_url=reviewer["html_url"].tame(check_string),
-        )
-    else:
-        team_reviewer = payload["requested_team"]
-        reviewers = "[{name}]({html_url})".format(
-            name=team_reviewer["name"].tame(check_string),
-            html_url=team_reviewer["html_url"].tame(check_string),
-        )
-
     return body.format(
         sender=sender,
-        reviewers=reviewers,
+        reviewers=get_requested_reviewer_link(payload),
         pr_number=pr_number,
         pr_url=pr_url,
         title=payload["pull_request"]["title"].tame(check_string) if include_title else None,
