@@ -37,6 +37,8 @@ from zerver.lib.avatar import (
 from zerver.lib.cache import cache_delete, cache_get, get_realm_used_upload_space_cache_key
 from zerver.lib.create_user import copy_default_settings
 from zerver.lib.initial_password import initial_password
+from zerver.lib.markdown import get_markdown_link_for_url
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.realm_logo import get_realm_logo_url
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
@@ -44,6 +46,7 @@ from zerver.lib.test_helpers import (
     avatar_disk_path,
     consume_response,
     get_test_image_file,
+    most_recent_message,
     ratelimit_rule,
 )
 from zerver.lib.upload import MAX_FILE_NAME_LENGTH, sanitize_name, upload_message_attachment
@@ -57,6 +60,7 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     RealmDomain,
+    Recipient,
     UserProfile,
 )
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -1876,6 +1880,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         iago = self.example_user("iago")
         do_set_realm_property(hamlet.realm, "avatar_changes_disabled", True, acting_user=None)
         now = timezone_now()
+        old_avatar_url = avatar_url(hamlet, medium=True)
 
         self.login("iago")
         with get_test_image_file("img.png") as image_file:
@@ -1887,6 +1892,29 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(hamlet.avatar_version, 2)
         self.assertEqual(response_dict["avatar_url"], avatar_url(hamlet))
 
+        new_avatar_url = avatar_url(hamlet, medium=True)
+        # Test the notification
+        message = most_recent_message(hamlet)
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, hamlet.realm.id)
+        dm_group_recipient = self.get_dm_group_recipient(notification_bot, hamlet)
+        self.assertEqual(message.recipient, dm_group_recipient)
+
+        self.assertIn(
+            f"{silent_mention_syntax_for_user(iago)} has made the following changes to your account.",
+            message.content,
+        )
+        # The notification encases them in markdown
+        assert old_avatar_url is not None
+        assert new_avatar_url is not None
+        old_avatar = get_markdown_link_for_url("View", old_avatar_url)
+        new_avatar = get_markdown_link_for_url("View", new_avatar_url)
+
+        self.assertIn(
+            f"**Old profile picture:** {old_avatar}\n- **New profile picture:** {new_avatar}",
+            message.content,
+        )
         # Check to see if both the admin and target are correct
         self.assertEqual(
             RealmAuditLog.objects.filter(
@@ -1930,13 +1958,13 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         realm = hamlet.realm
         hamlet.avatar_source = UserProfile.AVATAR_FROM_USER
         hamlet.save()
-
+        old_avatar_url = avatar_url(hamlet, medium=True)
         do_set_realm_property(realm, "avatar_changes_disabled", True, acting_user=None)
         # On deletion, hamlet's avatar should be Jdenticon generated.
         do_set_realm_property(
             realm, "default_avatar_source", Realm.AVATAR_FROM_JDENTICON, acting_user=None
         )
-
+        iago = self.example_user("iago")
         self.login("iago")
         result = self.client_delete(f"/json/users/{hamlet.id}/avatar")
         response_dict = self.assert_json_success(result)
@@ -1945,6 +1973,29 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_JDENTICON)
         self.assertEqual(hamlet.avatar_version, 2)
         self.assertEqual(response_dict["avatar_url"], avatar_url(hamlet))
+
+        new_avatar_url = avatar_url(hamlet, medium=True)
+        message = most_recent_message(hamlet)
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT, hamlet.realm.id)
+        dm_group_recipient = self.get_dm_group_recipient(notification_bot, hamlet)
+        self.assertEqual(message.recipient, dm_group_recipient)
+
+        self.assertIn(
+            f"{silent_mention_syntax_for_user(iago)} has made the following changes to your account.",
+            message.content,
+        )
+        # The notification encases them in markdown
+        assert old_avatar_url is not None
+        assert new_avatar_url is not None
+        old_avatar = get_markdown_link_for_url("View", old_avatar_url)
+        new_avatar = get_markdown_link_for_url("View", new_avatar_url)
+
+        self.assertIn(
+            f"**Old profile picture:** {old_avatar}\n- **New profile picture:** {new_avatar}",
+            message.content,
+        )
 
         result = self.client_delete(f"/json/users/{hamlet.id}/avatar")
         response_dict = self.assert_json_success(result)

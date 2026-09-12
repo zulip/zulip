@@ -397,7 +397,9 @@ def set_avatar_backend_for_user_by_id(
     _filename, content_type = get_file_info(user_file)
 
     upload_avatar_image(user_file, target, content_type=content_type)
-    do_change_avatar_fields(target, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
+    do_change_avatar_fields(
+        target, UserProfile.AVATAR_FROM_USER, acting_user=user_profile, notify_user=True
+    )
     user_avatar_url = avatar_url(target)
     json_result = dict(
         avatar_url=user_avatar_url,
@@ -417,7 +419,7 @@ def delete_avatar_backend_for_user_by_id(
     )
 
     if target.avatar_source == UserProfile.AVATAR_FROM_USER:
-        set_avatar_to_default(target, acting_user=user_profile)
+        set_avatar_to_default(target, acting_user=user_profile, notify_user=True)
 
     default_avatar_url = avatar_url(target)
     json_result = dict(
@@ -633,7 +635,7 @@ def patch_bot_backend(
         _filename, content_type = get_file_info(user_file)
         upload_avatar_image(user_file, bot, content_type=content_type)
         avatar_source = UserProfile.AVATAR_FROM_USER
-        do_change_avatar_fields(bot, avatar_source, acting_user=user_profile)
+        do_change_avatar_fields(bot, avatar_source, acting_user=user_profile, notify_user=False)
     else:
         raise JsonableError(_("You may only upload one file at a time"))
 

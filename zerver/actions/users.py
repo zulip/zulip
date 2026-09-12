@@ -515,7 +515,10 @@ def do_deactivate_user(
                 # TODO: Change avatar image to that of an inaccessible user.
                 if user_profile.avatar_source != UserProfile.AVATAR_FROM_GRAVATAR:
                     do_change_avatar_fields(
-                        user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=acting_user
+                        user_profile,
+                        UserProfile.AVATAR_FROM_GRAVATAR,
+                        acting_user=acting_user,
+                        notify_user=False,
                     )
 
             delete_deactivated_user_messages(

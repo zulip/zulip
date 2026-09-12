@@ -367,7 +367,9 @@ class PermissionTest(ZulipTestCase):
         admin = self.example_user("iago")
         self.login_user(user)
 
-        do_change_avatar_fields(user, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        do_change_avatar_fields(
+            user, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None, notify_user=False
+        )
         self.assertEqual(user.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
         # First, verify client_gravatar works normally
@@ -3282,7 +3284,9 @@ class BulkUsersTest(ZulipTestCase):
         self.login("cordelia")
 
         hamlet = self.example_user("hamlet")
-        do_change_avatar_fields(hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        do_change_avatar_fields(
+            hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None, notify_user=False
+        )
         self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
         def get_hamlet_avatar(client_gravatar: bool) -> str | None:

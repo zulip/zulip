@@ -427,7 +427,9 @@ def delete_avatar_for_user() -> dict[str, object]:
     )
     with get_test_image_file("img.png") as image_file:
         upload_avatar_image(image_file, user_profile, content_type="image/png")
-    do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER, acting_user=None)
+    do_change_avatar_fields(
+        user_profile, UserProfile.AVATAR_FROM_USER, acting_user=None, notify_user=False
+    )
     return {"user_id": user_profile.id}
 
 
