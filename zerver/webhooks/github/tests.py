@@ -546,9 +546,31 @@ class GitHubWebhookTest(WebhookTestCase):
         )
 
     def test_pull_request_review_request_removed_msg(self) -> None:
-        expected_message = "soheil-star01 unassigned redolat from [PR #1 Feat/webhook](https://github.com/techpillars-oy/test1/pull/1)."
+        expected_message = "soheil-star01 unassigned [redolat](https://github.com/redolat) from [PR #1](https://github.com/techpillars-oy/test1/pull/1)."
         self.check_webhook(
             "pull_request__review_request_removed", "test1 / PR #1 Feat/webhook", expected_message
+        )
+
+    def test_pull_request_review_request_removed_with_custom_topic_in_url(self) -> None:
+        self.url = self.build_webhook_url(topic="notifications")
+        expected_message = "soheil-star01 unassigned [redolat](https://github.com/redolat) from [PR #1 Feat/webhook](https://github.com/techpillars-oy/test1/pull/1)."
+        self.check_webhook(
+            "pull_request__review_request_removed", "notifications", expected_message
+        )
+
+    def test_pull_request_review_request_removed_team_reviewer_msg(self) -> None:
+        payload = orjson.loads(self.get_body("pull_request__review_request_removed"))
+        del payload["requested_reviewer"]
+        payload["requested_team"] = orjson.loads(
+            self.get_body("pull_request__review_requested_team_reviewer")
+        )["requested_team"]
+
+        expected_message = "soheil-star01 unassigned [authority](https://github.com/orgs/test-org965/teams/authority) from [PR #1](https://github.com/techpillars-oy/test1/pull/1)."
+        self.check_webhook(
+            "pull_request__review_request_removed",
+            "test1 / PR #1 Feat/webhook",
+            expected_message,
+            custom_payload=payload,
         )
 
     def test_pull_request_milestoned_msg(self) -> None:

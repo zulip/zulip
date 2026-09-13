@@ -723,16 +723,21 @@ def get_requested_reviewer_link(payload: WildValue) -> str:
     return f"[{reviewer_name}]({reviewer['html_url'].tame(check_string)})"
 
 
-def get_pull_request_review_request_removed_body(helper: Helper) -> str:
+def get_pull_request_review_requested_or_removed_body(helper: Helper) -> str:
     payload = helper.payload
-
     sender = get_sender_name(helper)
-    reviewer = payload["requested_reviewer"]["login"].tame(check_string)
+    reviewer_link = get_requested_reviewer_link(payload)
     pr_number = payload["pull_request"]["number"].tame(check_int)
-    title = payload["pull_request"]["title"].tame(check_string)
+    pr_title = payload["pull_request"]["title"].tame(check_string)
     pr_url = payload["pull_request"]["html_url"].tame(check_string)
+    pr_reference = f"PR #{pr_number} {pr_title}" if helper.include_title else f"PR #{pr_number}"
+    review_request_change = (
+        f"requested {reviewer_link} for a review on"
+        if payload["action"].tame(check_string) == "review_requested"
+        else f"unassigned {reviewer_link} from"
+    )
 
-    return f"{sender} unassigned {reviewer} from [PR #{pr_number} {title}]({pr_url})."
+    return f"{sender} {review_request_change} [{pr_reference}]({pr_url})."
 
 
 def get_pull_request_converted_to_draft_body(helper: Helper) -> str:
@@ -814,28 +819,6 @@ def get_pull_request_review_comment_body(helper: Helper) -> str:
         type="PR review comment",
         title=title if include_title else None,
         emoji=PR_REVIEW_COMMENT_EMOJI if helper.include_emoji_indicators else None,
-    )
-
-
-def get_pull_request_review_requested_body(helper: Helper) -> str:
-    payload = helper.payload
-    include_title = helper.include_title
-
-    sender = get_sender_name(helper)
-    pr_number = payload["pull_request"]["number"].tame(check_int)
-    pr_url = payload["pull_request"]["html_url"].tame(check_string)
-    message = "{sender} requested {reviewers} for a review on [PR #{pr_number}]({pr_url})."
-    message_with_title = (
-        "{sender} requested {reviewers} for a review on [PR #{pr_number} {title}]({pr_url})."
-    )
-    body = message_with_title if include_title else message
-
-    return body.format(
-        sender=sender,
-        reviewers=get_requested_reviewer_link(payload),
-        pr_number=pr_number,
-        pr_url=pr_url,
-        title=payload["pull_request"]["title"].tame(check_string) if include_title else None,
     )
 
 
@@ -1131,12 +1114,12 @@ EVENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], str]] = {
     "pull_request_ready_for_review": get_pull_request_ready_for_review_body,
     "pull_request_review": get_pull_request_review_body,
     "pull_request_review_comment": get_pull_request_review_comment_body,
-    "pull_request_review_requested": get_pull_request_review_requested_body,
+    "pull_request_review_requested": get_pull_request_review_requested_or_removed_body,
     "pull_request_milestoned_or_demilestoned": get_pull_request_milestoned_or_demilestoned_body,
     "pull_request_enqueued_or_dequeued": get_pull_request_enqueued_or_dequeued_body,
     "pull_request_labeled_or_unlabeled": get_pull_request_labeled_or_unlabeled_body,
     "pull_request_converted_to_draft": get_pull_request_converted_to_draft_body,
-    "pull_request_review_request_removed": get_pull_request_review_request_removed_body,
+    "pull_request_review_request_removed": get_pull_request_review_requested_or_removed_body,
     "pull_request_auto_merge": get_pull_request_auto_merge_body,
     "locked_or_unlocked_pull_request": get_locked_or_unlocked_pull_request_body,
     "push_commits": get_push_commits_body,
