@@ -59,7 +59,17 @@ def bulk_insert_ums(ums: list[UserMessageLite]) -> None:
     if not ums:
         return
 
-    vals = [(um.user_profile_id, um.message_id, um.flags) for um in ums]
+    # PostgreSQL automatically acquires a FOR KEY SHARE row-lock
+    # on the referenced tables: zerver_userprofile and zerver_message.
+    # We sort the rows by message_id so zerver_message rows
+    # are locked in a consistent order; this prevents potential
+    # deadlock with codepaths that take FOR UPDATE lock,
+    # in that same order (ascending), on those same rows.
+    vals = [
+        (um.user_profile_id, um.message_id, um.flags)
+        for um in sorted(ums, key=lambda um: um.message_id)
+    ]
+
     query = SQL(
         """
         INSERT into
@@ -78,6 +88,11 @@ def bulk_insert_all_ums(
 ) -> None:
     if not user_ids or not message_ids:
         return
+
+    # As in bulk_insert_ums: sort message_ids so
+    # zerver_message rows are locked in a consistent order,
+    # avoiding deadlocks.
+    message_ids = sorted(message_ids)
 
     query = SQL(
         """
