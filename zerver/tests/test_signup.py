@@ -1380,7 +1380,7 @@ class UserSignUpTest(ZulipTestCase):
         realm: Realm | None = None,
         subdomain: str | None = None,
         timezone: str | None = None,
-        HTTP_ACCEPT_LANGUAGE: str | None = None,  # noqa: N803
+        browser_locale: str | None = None,
         email_address_visibility: int | None = None,
         default_stream_groups: list[str] | None = None,
         source_realm_id: str | None = None,
@@ -1419,8 +1419,8 @@ class UserSignUpTest(ZulipTestCase):
         extra_kwargs: dict[str, Any] = {}
         if timezone is not None:
             extra_kwargs["timezone"] = timezone
-        if HTTP_ACCEPT_LANGUAGE is not None:
-            extra_kwargs["HTTP_ACCEPT_LANGUAGE"] = HTTP_ACCEPT_LANGUAGE
+        if browser_locale is not None:
+            extra_kwargs["HTTP_ACCEPT_LANGUAGE"] = browser_locale
         if email_address_visibility is not None:
             extra_kwargs["email_address_visibility"] = email_address_visibility
         if default_stream_groups is not None:
@@ -1582,7 +1582,7 @@ class UserSignUpTest(ZulipTestCase):
             email=email,
             password=password,
             timezone=timezone,
-            HTTP_ACCEPT_LANGUAGE="fr,en;q=0.9",
+            browser_locale="fr,en;q=0.9",
         )
 
         user_profile = self.nonreg_user("newguy")
@@ -1602,7 +1602,7 @@ class UserSignUpTest(ZulipTestCase):
         self.verify_signup(
             email=email,
             password=password,
-            HTTP_ACCEPT_LANGUAGE="en-IND",
+            browser_locale="en-IND",
         )
 
         user_profile = self.nonreg_user("newguy")
