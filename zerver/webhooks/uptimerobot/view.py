@@ -39,14 +39,8 @@ def api_uptimerobot_webhook(
     *,
     payload: JsonBodyPayload[WildValue],
 ) -> HttpResponse:
-    event_type = payload["alert_type_friendly_name"].tame(check_string)
-    if event_type == "Up":
-        event = "up"
-    elif event_type == "Down":
-        event = "down"
-
     try:
-        body = get_body_for_http_request(payload, event_type)
+        event, body = get_event_and_body_for_http_request(payload)
         topic_name = get_topic_for_http_request(payload)
     except ValidationError:
         message = MISCONFIGURED_PAYLOAD_ERROR_MESSAGE.format(
@@ -67,20 +61,21 @@ def get_topic_for_http_request(payload: WildValue) -> str:
     )
 
 
-def get_body_for_http_request(payload: WildValue, event_type: str) -> str:
-    match event_type:
+def get_event_and_body_for_http_request(payload: WildValue) -> tuple[str, str]:
+    alert_type = payload["alert_type_friendly_name"].tame(check_string)
+    match alert_type:
         case "Up":
-            return UPTIMEROBOT_MESSAGE_UP_TEMPLATE.format(
+            return "up", UPTIMEROBOT_MESSAGE_UP_TEMPLATE.format(
                 monitor_friendly_name=payload["monitor_friendly_name"].tame(check_string),
                 monitor_url=payload["monitor_url"].tame(check_string),
                 alert_details=payload["alert_details"].tame(check_string),
                 alert_friendly_duration=payload["alert_friendly_duration"].tame(check_string),
             )
         case "Down":
-            return UPTIMEROBOT_MESSAGE_DOWN_TEMPLATE.format(
+            return "down", UPTIMEROBOT_MESSAGE_DOWN_TEMPLATE.format(
                 monitor_friendly_name=payload["monitor_friendly_name"].tame(check_string),
                 monitor_url=payload["monitor_url"].tame(check_string),
                 alert_details=payload["alert_details"].tame(check_string),
             )
         case _:  # nocoverage
-            raise UnsupportedWebhookEventTypeError(event_type)
+            raise UnsupportedWebhookEventTypeError(alert_type)
