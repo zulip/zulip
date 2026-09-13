@@ -734,7 +734,7 @@ def get_pull_request_review_requested_or_removed_body(helper: Helper) -> str:
     review_request_change = (
         f"requested {reviewer_link} for a review on"
         if payload["action"].tame(check_string) == "review_requested"
-        else f"unassigned {reviewer_link} from"
+        else f"removed the review request for {reviewer_link} from"
     )
 
     return f"{sender} {review_request_change} [{pr_reference}]({pr_url})."
