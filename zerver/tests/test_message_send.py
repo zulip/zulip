@@ -80,13 +80,7 @@ from zerver.models.groups import SystemGroups
 from zerver.models.realms import RealmTopicsPolicyEnum, get_realm
 from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
-from zerver.models.users import (
-    get_system_bot,
-    get_user,
-    get_user_by_delivery_email,
-    is_cross_realm_bot_email,
-)
-from zerver.views.message_send import InvalidMirrorInputError
+from zerver.models.users import get_system_bot, get_user_by_delivery_email, is_cross_realm_bot_email
 
 
 class MessagePOSTTest(ZulipTestCase):
@@ -1349,80 +1343,129 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Message must have recipients")
 
-    def test_mirrored_direct_message_group(self) -> None:
+    def test_forged_direct_message(self) -> None:
         """
-        Sending a mirrored group direct message works
+        A user with can_forge_sender can send a direct message as another
+        user in their organization.
         """
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        do_change_can_forge_sender(cordelia, True)
+
         result = self.api_post(
-            self.mit_user("starnine"),
+            cordelia,
             "/api/v1/messages",
             {
                 "type": "direct",
-                "sender": self.mit_email("sipbtest"),
+                "sender": hamlet.email,
                 "content": "Test message",
-                "client": "irc_mirror",
-                "to": orjson.dumps(
-                    [self.mit_email("starnine"), self.mit_email("espuser")]
-                ).decode(),
+                "to": orjson.dumps([cordelia.id, othello.id]).decode(),
             },
-            subdomain="zephyr",
         )
         self.assert_json_success(result)
 
-    def test_mirrored_personal(self) -> None:
-        """
-        Sending a mirrored personal message works
-        """
+        message = self.get_last_message()
+        self.assertEqual(message.sender_id, hamlet.id)
+        self.assertEqual(message.content, "Test message")
+
+    def test_forged_direct_message_without_permission(self) -> None:
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+
         result = self.api_post(
-            self.mit_user("starnine"),
+            cordelia,
             "/api/v1/messages",
             {
                 "type": "direct",
-                "sender": self.mit_email("sipbtest"),
+                "sender": hamlet.email,
                 "content": "Test message",
-                "client": "irc_mirror",
-                "to": orjson.dumps([self.mit_email("starnine")]).decode(),
+                "to": orjson.dumps([cordelia.id]).decode(),
             },
-            subdomain="zephyr",
-        )
-        self.assert_json_success(result)
-
-    def test_mirrored_personal_browser(self) -> None:
-        """
-        Sending a mirrored personal message via the browser should not work.
-        """
-        user = self.mit_user("starnine")
-        self.login_user(user)
-        result = self.client_post(
-            "/json/messages",
-            {
-                "type": "direct",
-                "sender": self.mit_email("sipbtest"),
-                "content": "Test message",
-                "client": "irc_mirror",
-                "to": orjson.dumps([self.mit_email("starnine")]).decode(),
-            },
-            subdomain="zephyr",
-        )
-        self.assert_json_error(result, "Invalid mirrored message")
-
-    def test_mirrored_personal_to_someone_else(self) -> None:
-        """
-        Sending a mirrored personal message to someone else is not allowed.
-        """
-        result = self.api_post(
-            self.mit_user("starnine"),
-            "/api/v1/messages",
-            {
-                "type": "direct",
-                "sender": self.mit_email("sipbtest"),
-                "content": "Test message",
-                "client": "irc_mirror",
-                "to": orjson.dumps([self.mit_email("espuser")]).decode(),
-            },
-            subdomain="zephyr",
         )
         self.assert_json_error(result, "User not authorized for this query")
+
+    def test_forged_direct_message_to_conversation_one_is_not_in(self) -> None:
+        """
+        Forging a direct message is limited to conversations that the
+        forging user is part of themselves.
+        """
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        do_change_can_forge_sender(cordelia, True)
+
+        result = self.api_post(
+            cordelia,
+            "/api/v1/messages",
+            {
+                "type": "direct",
+                "sender": hamlet.email,
+                "content": "Test message",
+                "to": orjson.dumps([othello.id]).decode(),
+            },
+        )
+        self.assert_json_error(result, "User not authorized for this query")
+
+    def test_forged_direct_message_with_forged_flag(self) -> None:
+        """
+        Setting the `forged` flag lifts the restriction to conversations
+        that the forging user is part of themselves.
+        """
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        do_change_can_forge_sender(cordelia, True)
+
+        result = self.api_post(
+            cordelia,
+            "/api/v1/messages",
+            {
+                "type": "direct",
+                "sender": hamlet.email,
+                "forged": "true",
+                "content": "Test message",
+                "to": orjson.dumps([othello.id]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        direct_message_group = get_or_create_direct_message_group([hamlet.id, othello.id])
+        message = self.get_last_message()
+        self.assertEqual(message.sender_id, hamlet.id)
+        self.assertEqual(message.recipient_id, direct_message_group.recipient_id)
+
+    def test_forged_sender_must_be_an_existing_user(self) -> None:
+        cordelia = self.example_user("cordelia")
+        do_change_can_forge_sender(cordelia, True)
+
+        result = self.api_post(
+            cordelia,
+            "/api/v1/messages",
+            {
+                "type": "direct",
+                "sender": "irc-user@irc.zulip.com",
+                "content": "Test message",
+                "to": orjson.dumps([cordelia.id]).decode(),
+            },
+        )
+        self.assert_json_error(result, "No such user")
+
+    def test_forged_sender_cannot_be_in_another_organization(self) -> None:
+        cordelia = self.example_user("cordelia")
+        do_change_can_forge_sender(cordelia, True)
+
+        result = self.api_post(
+            cordelia,
+            "/api/v1/messages",
+            {
+                "type": "direct",
+                "sender": self.mit_email("sipbtest"),
+                "content": "Test message",
+                "to": orjson.dumps([cordelia.id]).decode(),
+            },
+        )
+        self.assert_json_error(result, "No such user")
 
     def test_message_with_null_bytes(self) -> None:
         """
@@ -1524,137 +1567,36 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_error(result, "User not authorized for this query")
 
-    def test_send_message_when_sender_is_not_set(self) -> None:
-        result = self.api_post(
-            self.mit_user("starnine"),
-            "/api/v1/messages",
-            {
-                "type": "direct",
-                "content": "Test message",
-                "client": "irc_mirror",
-                "to": orjson.dumps([self.mit_email("starnine")]).decode(),
-            },
-            subdomain="zephyr",
-        )
-        self.assert_json_error(result, "Missing sender")
+    def test_forged_channel_message(self) -> None:
+        hamlet = self.example_user("hamlet")
+        bot = self.create_test_bot(short_name="forger", user_profile=self.example_user("cordelia"))
+        do_change_can_forge_sender(bot, True)
+        self.subscribe(bot, "Verona")
 
-    def test_send_message_as_not_superuser_when_type_is_not_private(self) -> None:
-        result = self.api_post(
-            self.mit_user("starnine"),
-            "/api/v1/messages",
-            {
-                "type": "channel",
-                "sender": self.mit_email("sipbtest"),
-                "content": "Test message",
-                "client": "irc_mirror",
-                "to": orjson.dumps([self.mit_email("starnine")]).decode(),
-            },
-            subdomain="zephyr",
-        )
-        self.assert_json_error(result, "User not authorized for this query")
+        # A forged message can carry the timestamp of the message that
+        # it was copied from, in both the modern and legacy spellings.
+        for forged_value in ["true", "yes"]:
+            fake_date_sent = timezone_now() - timedelta(minutes=37)
+            fake_timestamp = datetime_to_timestamp(fake_date_sent)
 
-    @mock.patch("zerver.views.message_send.create_mirrored_message_users")
-    def test_send_message_create_mirrored_message_user_returns_invalid_input(
-        self, create_mirrored_message_users_mock: Any
-    ) -> None:
-        create_mirrored_message_users_mock.side_effect = InvalidMirrorInputError()
-        result = self.api_post(
-            self.mit_user("starnine"),
-            "/api/v1/messages",
-            {
-                "type": "direct",
-                "sender": self.mit_email("sipbtest"),
-                "content": "Test message",
-                "client": "irc_mirror",
-                "to": orjson.dumps([self.mit_email("starnine")]).decode(),
-            },
-            subdomain="zephyr",
-        )
-        self.assert_json_error(result, "Invalid mirrored message")
+            result = self.api_post(
+                bot,
+                "/api/v1/messages",
+                {
+                    "type": "channel",
+                    "forged": forged_value,
+                    "time": fake_timestamp,
+                    "sender": hamlet.email,
+                    "content": "Test message",
+                    "topic": "forged",
+                    "to": orjson.dumps("Verona").decode(),
+                },
+            )
+            self.assert_json_success(result)
 
-    @mock.patch("zerver.views.message_send.create_mirrored_message_users")
-    def test_send_message_when_client_is_mirror_but_recipient_is_user_id(
-        self, create_mirrored_message_users_mock: Any
-    ) -> None:
-        create_mirrored_message_users_mock.return_value = mock.Mock()
-        user = self.mit_user("starnine")
-        self.login_user(user)
-        result = self.api_post(
-            user,
-            "/api/v1/messages",
-            {
-                "type": "direct",
-                "sender": self.mit_email("sipbtest"),
-                "content": "Test message",
-                "client": "irc_mirror",
-                "to": orjson.dumps([user.id]).decode(),
-            },
-            subdomain="zephyr",
-        )
-        self.assert_json_error(result, "Mirroring not allowed with recipient user IDs")
-
-    def test_send_message_irc_mirror(self) -> None:
-        reset_email_visibility_to_everyone_in_zulip_realm()
-        self.login("hamlet")
-        bot_info = {
-            "full_name": "IRC bot",
-            "short_name": "irc",
-        }
-        result = self.client_post("/json/bots", bot_info)
-        self.assert_json_success(result)
-
-        email = "irc-bot@zulip.testserver"
-        user = get_user(email, get_realm("zulip"))
-        user.can_forge_sender = True
-        user.save()
-        user = get_user(email, get_realm("zulip"))
-        self.subscribe(user, "IRCland")
-
-        # Simulate a mirrored message with a slightly old timestamp.
-        fake_date_sent = timezone_now() - timedelta(minutes=37)
-        fake_timestamp = datetime_to_timestamp(fake_date_sent)
-
-        result = self.api_post(
-            user,
-            "/api/v1/messages",
-            {
-                "type": "channel",
-                "forged": "true",
-                "time": fake_timestamp,
-                "sender": "irc-user@irc.zulip.com",
-                "content": "Test message",
-                "client": "irc_mirror",
-                "topic": "from irc",
-                "to": orjson.dumps("IRCLand").decode(),
-            },
-        )
-        self.assert_json_success(result)
-
-        msg = self.get_last_message()
-        self.assertEqual(int(datetime_to_timestamp(msg.date_sent)), int(fake_timestamp))
-
-        # Now test again using forged=yes
-        fake_date_sent = timezone_now() - timedelta(minutes=22)
-        fake_timestamp = datetime_to_timestamp(fake_date_sent)
-
-        result = self.api_post(
-            user,
-            "/api/v1/messages",
-            {
-                "type": "channel",
-                "forged": "yes",
-                "time": fake_timestamp,
-                "sender": "irc-user@irc.zulip.com",
-                "content": "Test message",
-                "client": "irc_mirror",
-                "topic": "from irc",
-                "to": orjson.dumps("IRCLand").decode(),
-            },
-        )
-        self.assert_json_success(result)
-
-        msg = self.get_last_message()
-        self.assertEqual(int(datetime_to_timestamp(msg.date_sent)), int(fake_timestamp))
+            message = self.get_last_message()
+            self.assertEqual(message.sender_id, hamlet.id)
+            self.assertEqual(int(datetime_to_timestamp(message.date_sent)), int(fake_timestamp))
 
     def test_send_message_in_archived_stream(self) -> None:
         self.login("hamlet")
@@ -1693,9 +1635,9 @@ class MessagePOSTTest(ZulipTestCase):
 
         self.unsubscribe(cordelia, stream_name)
 
-        # As long as Cordelia cam_forge_sender, she can send messages
-        # to ANY stream, even one she is not unsubscribed to, and
-        # she can do it for herself or on behalf of a mirrored user.
+        # As long as Cordelia can_forge_sender, she can send messages
+        # to ANY stream, even one she is not subscribed to, and she
+        # can do it for herself or on behalf of another user.
 
         def test_with(sender_email: str, client: str, forged: bool) -> None:
             payload = dict(
@@ -1707,7 +1649,7 @@ class MessagePOSTTest(ZulipTestCase):
                 forged=orjson.dumps(forged).decode(),
             )
 
-            # Only pass the 'sender' property when doing mirroring behavior.
+            # Only pass the 'sender' property when forging a sender.
             if forged:
                 payload["sender"] = sender_email
 
@@ -1730,8 +1672,8 @@ class MessagePOSTTest(ZulipTestCase):
         )
 
         test_with(
-            sender_email="irc_person@zulip.com",
-            client="irc_mirror",
+            sender_email=self.example_user("hamlet").email,
+            client="test suite",
             forged=True,
         )
 
@@ -2770,7 +2712,7 @@ class StreamMessagesTest(ZulipTestCase):
         result = self.api_get(cordelia, "/api/v1/messages/" + str(msg_id))
         self.assert_json_success(result)
 
-    def test_stream_message_mirroring(self) -> None:
+    def test_stream_message_forging(self) -> None:
         user = self.mit_user("starnine")
         self.subscribe(user, "Verona")
 
@@ -2782,7 +2724,6 @@ class StreamMessagesTest(ZulipTestCase):
                 "type": "channel",
                 "to": orjson.dumps("Verona").decode(),
                 "sender": self.mit_email("sipbtest"),
-                "client": "irc_mirror",
                 "topic": "announcement",
                 "content": "Everyone knows Iago rules",
                 "forged": "true",
@@ -2799,7 +2740,6 @@ class StreamMessagesTest(ZulipTestCase):
                 "type": "channel",
                 "to": orjson.dumps("Verona").decode(),
                 "sender": self.mit_email("sipbtest"),
-                "client": "irc_mirror",
                 "topic": "announcement",
                 "content": "Everyone knows Iago rules",
                 "forged": "true",

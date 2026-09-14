@@ -615,17 +615,16 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     last_active_message_id = models.IntegerField(null=True)
 
     # Mirror dummies are fake (!is_active) users used to provide
-    # message senders in cross-protocol mirroring integrations, so
-    # that we can display mirrored content like native Zulip messages
-    # (with a name + avatar, etc.).  We also abuse this for data
-    # imports and deleted users.
+    # message senders for content imported from other products and for
+    # deleted users, so that we can display their messages like native
+    # Zulip messages (with a name + avatar, etc.).
     is_mirror_dummy = models.BooleanField(default=False)
 
     # Flag used for imported users who have not activated their account.
     is_imported_stub = models.BooleanField(default=False)
 
     # Users with this flag set are allowed to forge messages as sent by another
-    # user and to send to private streams; also used for Jabber mirroring.
+    # user and to send to private streams.
     can_forge_sender = models.BooleanField(default=False, db_index=True)
     # Users with this flag set can create other users via API.
     can_create_users = models.BooleanField(default=False, db_index=True)

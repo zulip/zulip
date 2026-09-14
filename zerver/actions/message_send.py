@@ -4,13 +4,12 @@ from collections.abc import Callable, Collection, Sequence
 from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from datetime import timedelta
-from email.headerregistry import Address
 from typing import Any, Literal, TypedDict, cast
 
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
+from django.db import transaction
 from django.db.models import Exists, F, OuterRef, QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
@@ -25,8 +24,6 @@ from zerver.actions.user_topics import (
 )
 from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import get_alert_word_automaton
-from zerver.lib.cache import cache_with_key, user_profile_delivery_email_cache_key
-from zerver.lib.create_user import create_user
 from zerver.lib.exceptions import (
     DirectMessageInitiationError,
     DirectMessagePermissionError,
@@ -130,51 +127,8 @@ from zerver.models.streams import (
     get_realm_stream,
     get_stream_by_id_in_realm,
 )
-from zerver.models.users import (
-    active_guest_user_ids,
-    get_system_bot,
-    get_user_by_delivery_email,
-    is_cross_realm_bot_email,
-)
+from zerver.models.users import active_guest_user_ids, get_system_bot, is_cross_realm_bot_email
 from zerver.tornado.django_api import send_event_on_commit
-
-
-def compute_irc_user_fullname(email: str) -> str:
-    return Address(addr_spec=email).username + " (IRC)"
-
-
-def compute_jabber_user_fullname(email: str) -> str:
-    return Address(addr_spec=email).username + " (XMPP)"
-
-
-def get_user_profile_delivery_email_cache_key(
-    realm: Realm, email: str, email_to_fullname: Callable[[str], str]
-) -> str:
-    return user_profile_delivery_email_cache_key(email, realm.id)
-
-
-@cache_with_key(
-    get_user_profile_delivery_email_cache_key,
-    timeout=3600 * 24 * 7,
-)
-def create_mirror_user_if_needed(
-    realm: Realm, email: str, email_to_fullname: Callable[[str], str]
-) -> UserProfile:
-    try:
-        return get_user_by_delivery_email(email, realm)
-    except UserProfile.DoesNotExist:
-        try:
-            # Forge a user for this person
-            return create_user(
-                email=email,
-                password=None,
-                realm=realm,
-                full_name=email_to_fullname(email),
-                active=False,
-                is_mirror_dummy=True,
-            )
-        except IntegrityError:
-            return get_user_by_delivery_email(email, realm)
 
 
 def render_incoming_message(
@@ -1942,11 +1896,6 @@ def check_message(
 
     elif addressee.is_private():
         recipient_users = addressee.user_profiles()
-        mirror_message = client.name in [
-            "irc_mirror",
-            "jabber_mirror",
-            "JabberMirror",
-        ]
 
         dm_involved_user_ids = {user.id for user in recipient_users} | {sender.id}
 
@@ -1956,13 +1905,9 @@ def check_message(
             realm, sender, recipient_users
         )
 
-        # API super-users who set the `forged` flag are allowed to
-        # forge messages sent by any user, so we disable the
-        # `forwarded_mirror_message` security check in that case.
-        forwarded_mirror_message = mirror_message and not forged
         try:
             recipient = recipient_for_user_profiles(
-                recipient_users, forwarded_mirror_message, forwarder_user_profile, sender
+                recipient_users, forwarder_user_profile, sender, forged=forged
             )
         except ValidationError as e:
             assert isinstance(e.messages[0], str)
