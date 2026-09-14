@@ -68,6 +68,12 @@ import * as util from "./util.ts";
 // textarea element which has the modified content.
 // Storing textarea makes it easy to get the current content.
 export const currently_editing_messages = new Map<number, JQuery<HTMLTextAreaElement>>();
+// Stores the raw content each message had when its edit box was
+// opened. We cannot read this from `message.raw_content` when saving,
+// because we deliberately avoid caching that for messages in channels
+// the user is not subscribed to; see
+// `message_store.maybe_update_raw_content`.
+const pre_edit_raw_content = new Map<number, string>();
 const resized_edit_box_height = new Map<number, number>();
 let currently_topic_editing_message_ids: number[] = [];
 const currently_echoing_messages = new Map<number, EchoedMessageData>();
@@ -799,6 +805,7 @@ function start_edit_with_content(
     content: string,
     edit_box_open_callback?: () => void,
 ): void {
+    pre_edit_raw_content.set(rows.id($row), content);
     start_edit_maintaining_scroll($row, content);
     if (edit_box_open_callback) {
         edit_box_open_callback();
@@ -1144,6 +1151,7 @@ export function end_message_row_edit($row: JQuery): void {
     if (message !== undefined && currently_editing_messages.has(message.id)) {
         typing.stop_message_edit_notifications(message.id);
         currently_editing_messages.delete(message.id);
+        pre_edit_raw_content.delete(message.id);
         resized_edit_box_height.delete(message.id);
         message_lists.current.hide_edit_message($row);
         compose_call_session_manager.abandon_session(message.id.toString());
@@ -1178,6 +1186,7 @@ export function end_message_edit(message_id: number): void {
         // We should delete the message_id from currently_editing_messages
         // if it exists there but we cannot find the row.
         currently_editing_messages.delete(message_id);
+        pre_edit_raw_content.delete(message_id);
     }
 }
 
@@ -1319,7 +1328,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
     let edit_locally_echoed = false;
 
     let new_content;
-    const old_content = message.raw_content;
+    const old_content = pre_edit_raw_content.get(message_id);
     assert(old_content !== undefined);
 
     const $edit_content_input = $row.find<HTMLTextAreaElement>("textarea.message_edit_content");
@@ -1377,7 +1386,9 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
         currently_echoing_messages.set(message_id, {
             raw_content: new_content ?? "",
             orig_content: message.content,
-            orig_raw_content: message.raw_content ?? "",
+            // The raw content counterpart to orig_content above; we have
+            // no cached copy of it for channels we're not subscribed to.
+            orig_raw_content: message.raw_content ?? old_content,
             starred: message.starred,
             historical: message.historical,
             collapsed: message.collapsed,
@@ -1446,6 +1457,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
                     $row = message_lists.current.get_row(message_id);
                     if (!currently_editing_messages.has(message_id)) {
                         // Return to the message editing open UI state with the edited content.
+                        pre_edit_raw_content.set(message_id, echo_data.orig_raw_content);
                         start_edit_maintaining_scroll($row, echo_data.raw_content);
                     }
                 }
