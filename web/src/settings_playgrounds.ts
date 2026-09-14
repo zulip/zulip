@@ -1,5 +1,6 @@
 import {$} from "jquery";
 
+import render_admin_playground_add_form from "../templates/settings/admin_playground_add_form.hbs";
 import render_admin_playground_list from "../templates/settings/admin_playground_list.hbs";
 
 import {Typeahead} from "./bootstrap_typeahead.ts";
@@ -7,7 +8,7 @@ import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as realm_playground from "./realm_playground.ts";
 import type {RealmPlayground} from "./realm_playground.ts";
@@ -16,6 +17,8 @@ import {current_user, realm} from "./state_data.ts";
 import * as typeahead from "./typeahead.ts";
 import {render_typeahead_item} from "./typeahead_helper.ts";
 import * as ui_report from "./ui_report.ts";
+import * as ui_util from "./ui_util.ts";
+import * as util from "./util.ts";
 
 let pygments_typeahead: Typeahead<string>;
 
@@ -107,51 +110,17 @@ function build_page(): void {
         });
     });
 
-    $(".organization form.admin-playground-form")
-        .off("submit")
-        .on("submit", (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const $playground_status = $("#admin-playground-status");
-            const $add_playground_button = $(".new-playground-form button");
-            $add_playground_button.prop("disabled", true);
-            $playground_status.hide();
-            const data = {
-                name: $("#playground_name").val(),
-                pygments_language: $("#playground_pygments_language").val(),
-                url_template: $("#playground_url_template").val(),
-            };
-            void channel.post({
-                url: "/json/realm/playgrounds",
-                data,
-                success() {
-                    $("#playground_pygments_language").val("");
-                    $("#playground_name").val("");
-                    $("#playground_url_template").val("");
-                    $add_playground_button.prop("disabled", false);
-                    ui_report.success(
-                        $t_html({defaultMessage: "Custom playground added!"}),
-                        $playground_status,
-                        3000,
-                    );
-                    // FIXME: One thing to note here is that the "view code in playground"
-                    // option for an already rendered code block (tagged with this newly added
-                    // language) would not be visible without a re-render. To fix this, we should
-                    // probably do some extraction in `rendered_markdown.ts` which does a
-                    // live-update of the `data-code-language` parameter in code blocks. Or change
-                    // how we do the HTML in the frontend so that the icon labels/behavior are
-                    // computed dynamically when you hover over the message based on configured
-                    // playgrounds. Since this isn't high priority right now, we can probably
-                    // take this up later.
-                },
-                error(xhr) {
-                    $add_playground_button.prop("disabled", false);
-                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, $playground_status);
-                },
-            });
-        });
+    $("#playground-settings").on("click", "#add-playground-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        open_playground_add_form();
+    });
+}
 
-    const $search_pygments_box = $<HTMLInputElement>("input#playground_pygments_language");
+function initialize_playground_typeahead($modal: JQuery): void {
+    const $search_pygments_box = $modal.find<HTMLInputElement>(
+        "input#playground_pygments_language",
+    );
     let language_labels = new Map<string, string>();
 
     const bootstrap_typeahead_input: TypeaheadInputElement = {
@@ -220,5 +189,67 @@ function build_page(): void {
         $search_pygments_box.trigger("select");
         e.preventDefault();
         e.stopPropagation();
+    });
+}
+
+function open_playground_add_form(): void {
+    const modal_content_html = render_admin_playground_add_form();
+
+    function submit_playground_form(dialog_widget_id: string): void {
+        const $modal = $(`#${CSS.escape(dialog_widget_id)}`);
+
+        const data = {
+            name: $modal.find<HTMLInputElement>("input#playground_name").val()!.trim(),
+            pygments_language: $modal
+                .find<HTMLInputElement>("input#playground_pygments_language")
+                .val()!
+                .trim(),
+            url_template: $modal
+                .find<HTMLInputElement>("input#playground_url_template")
+                .val()!
+                .trim(),
+        };
+
+        const url = "/json/realm/playgrounds";
+        const opts = {
+            success_continuation() {
+                ui_report.success(
+                    $t_html({defaultMessage: "Custom playground added!"}),
+                    $("#admin-playground-status").expectOne(),
+                    3000,
+                );
+                // FIXME: One thing to note here is that the "view code in playground"
+                // option for an already rendered code block (tagged with this newly added
+                // language) would not be visible without a re-render. To fix this, we should
+                // probably do some extraction in `rendered_markdown.ts` which does a
+                // live-update of the `data-code-language` parameter in code blocks. Or change
+                // how we do the HTML in the frontend so that the icon labels/behavior are
+                // computed dynamically when you hover over the message based on configured
+                // playgrounds. Since this isn't high priority right now, we can probably
+                // take this up later.
+            },
+        };
+        dialog_widget.submit_api_request(channel.post, url, data, opts);
+    }
+
+    const dialog_widget_id = dialog_widget.launch({
+        modal_title_html: $t_html({defaultMessage: "Add a new code playground"}),
+        help_link: "/help/code-blocks#code-playgrounds",
+        modal_content_html,
+        modal_submit_button_text: $t({defaultMessage: "Add"}),
+        id: "add-playground-modal",
+        form_id: "add-playground-form-modal",
+        loading_spinner: true,
+        on_click() {
+            submit_playground_form(dialog_widget_id);
+        },
+        on_shown() {
+            const $modal = $(`#${CSS.escape(dialog_widget_id)}`);
+            initialize_playground_typeahead($modal);
+            const $language_input = $modal.find<HTMLInputElement>(
+                "input#playground_pygments_language",
+            );
+            ui_util.place_caret_at_end(util.the($language_input));
+        },
     });
 }

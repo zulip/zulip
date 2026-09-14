@@ -259,10 +259,6 @@ a.help_link_widget {
     }
 }
 
-#playground-settings .new-playground-form input {
-    width: calc(100% - 10em - 6em);
-}
-
 #language_selection_modal {
     & table {
         width: 90%;
@@ -985,17 +981,6 @@ input[type="checkbox"] {
     }
 }
 
-.add-new-playground-box {
-    & button {
-        margin-left: calc(10em + 20px);
-    }
-    margin-bottom: 15px;
-
-    .checkbox {
-        margin-top: 5px;
-    }
-}
-
 .settings-highlight-box .wrapper {
     margin: 10px 0;
 }
@@ -1130,8 +1115,7 @@ input[type="checkbox"] {
     }
 }
 
-.admin-linkifier-form,
-.admin-playground-form {
+.admin-linkifier-form {
     & label {
         float: left;
         padding-top: 5px;
@@ -2154,22 +2138,6 @@ label.preferences-radio-choice-label {
         margin: auto;
     }
 
-    #playground-settings .new-playground-form input {
-        width: calc(
-            100% - 2 * var(--input-horizontal-padding) - 2 *
-                var(--input-border-width)
-        );
-    }
-
-    #playground-settings .new-playground-form label {
-        display: block;
-        width: 120px;
-        padding: 0;
-        text-align: center;
-        margin: auto;
-        float: none;
-    }
-
     #change_password_modal,
     #change_email_modal {
         width: 400px;
@@ -2193,14 +2161,6 @@ label.preferences-radio-choice-label {
         .profile_field_name,
         .profile_field_hint {
             min-width: 8em;
-        }
-    }
-
-    .add-new-playground-box {
-        .action-button {
-            margin-left: 0;
-            width: 100%;
-            box-sizing: border-box;
         }
     }
 
