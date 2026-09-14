@@ -286,14 +286,14 @@ class Command(ZulipBaseCommand):
         react_native, _created = Client.objects.get_or_create(name="ZulipMobile")
         flutter, _created = Client.objects.get_or_create(name="ZulipFlutter")
         API, _created = Client.objects.get_or_create(name="API: Python")
-        irc_mirror, _created = Client.objects.get_or_create(name="irc_mirror")
+        terminal, _created = Client.objects.get_or_create(name="ZulipTerminal")
         unused, _created = Client.objects.get_or_create(name="unused")
         long_webhook, _created = Client.objects.get_or_create(name="ZulipLooooooooooongNameWebhook")
 
         stat = COUNT_STATS["messages_sent:client:day"]
         user_data = {
             website.id: self.generate_fixture_data(stat, 2, 1, 1.5, 0.6, 8),
-            irc_mirror.id: self.generate_fixture_data(stat, 0, 0.3, 1.5, 0.6, 8),
+            terminal.id: self.generate_fixture_data(stat, 0, 0.3, 1.5, 0.6, 8),
         }
         insert_fixture_data(stat, user_data, UserCount)
         realm_data = {
@@ -304,7 +304,7 @@ class Command(ZulipBaseCommand):
             react_native.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             flutter.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             API.id: self.generate_fixture_data(stat, 5, 5, 5, 0.6, 3),
-            irc_mirror.id: self.generate_fixture_data(stat, 1, 1, 3, 0.6, 3),
+            terminal.id: self.generate_fixture_data(stat, 1, 1, 3, 0.6, 3),
             unused.id: self.generate_fixture_data(stat, 0, 0, 0, 0, 0),
             long_webhook.id: self.generate_fixture_data(stat, 5, 5, 2, 0.6, 3),
         }
@@ -317,7 +317,7 @@ class Command(ZulipBaseCommand):
             flutter.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             react_native.id: self.generate_fixture_data(stat, 5, 5, 10, 0.6, 3),
             API.id: self.generate_fixture_data(stat, 50, 50, 5, 0.6, 3),
-            irc_mirror.id: self.generate_fixture_data(stat, 10, 10, 3, 0.6, 3),
+            terminal.id: self.generate_fixture_data(stat, 10, 10, 3, 0.6, 3),
             unused.id: self.generate_fixture_data(stat, 0, 0, 0, 0, 0),
             long_webhook.id: self.generate_fixture_data(stat, 50, 50, 2, 0.6, 3),
         }

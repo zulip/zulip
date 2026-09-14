@@ -86,7 +86,7 @@ def further_validated_draft_dict(
         # check access before calling it.
         check_sender_can_access_recipients(user_profile.realm, user_profile, to_users)
         try:
-            recipient_id = recipient_for_user_profiles(to_users, False, None, user_profile).id
+            recipient_id = recipient_for_user_profiles(to_users, None, user_profile).id
         except ValidationError as e:  # nocoverage
             raise JsonableError(e.messages[0])
 

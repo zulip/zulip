@@ -562,7 +562,6 @@ class NarrowBuilder:
 
             recipient = recipient_for_user_profiles(
                 user_profiles=user_profiles,
-                forwarded_mirror_message=False,
                 forwarder_user_profile=None,
                 sender=self.user_profile,
                 allow_deactivated=True,
