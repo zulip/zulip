@@ -8,6 +8,7 @@ from django.utils.translation import gettext as _
 from pydantic import Json, PositiveInt
 
 from zerver.context_processors import get_valid_realm_from_request
+from zerver.lib.client_type import ClientType, infer_client_type
 from zerver.lib.compatibility import is_pronouns_field_type_supported
 from zerver.lib.events import DEFAULT_CLIENT_CAPABILITIES, ClientCapabilities, do_events_register
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
@@ -48,6 +49,7 @@ def events_register_backend(
     event_types: Json[list[str]] | None = None,
     fetch_event_types: Json[list[str]] | None = None,
     include_subscribers: Literal["true", "false", "partial"] = "false",
+    client_type: ClientType | None = None,
     narrow: Json[NarrowT] | None = None,
     presence_history_limit_days: Json[int] | None = None,
     idle_queue_timeout: Json[PositiveInt | Literal["mobile"]] | None = None,
@@ -103,6 +105,12 @@ def events_register_backend(
     client = RequestNotes.get_notes(request).client
     assert client is not None
 
+    resolved_client_type = infer_client_type(
+        client_type=client_type,
+        client_name=client.name,
+        user_agent=request.headers.get("User-Agent"),
+    )
+
     pronouns_field_type_supported = is_pronouns_field_type_supported(
         request.headers.get("User-Agent")
     )
@@ -130,5 +138,6 @@ def events_register_backend(
         fetch_event_types=fetch_event_types,
         spectator_requested_language=spectator_requested_language,
         pronouns_field_type_supported=pronouns_field_type_supported,
+        client_type=resolved_client_type,
     )
     return json_success(request, data=ret)
