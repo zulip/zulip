@@ -19,7 +19,7 @@ from zerver.actions.user_settings import do_scrub_avatar_images
 from zerver.lib.demo_organizations import demo_organization_owner_email_exists
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
-from zerver.lib.queue import queue_json_publish_rollback_unsafe
+from zerver.lib.queue import high_latency_queue_name, queue_json_publish_rollback_unsafe
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import FromAddress, send_email, send_email_to_admins
 from zerver.lib.sessions import delete_realm_user_sessions
@@ -660,7 +660,7 @@ def do_deactivate_realm(
                 "type": "scrub_deactivated_realm",
                 "realm_id": realm.id,
             }
-            queue_json_publish_rollback_unsafe("deferred_work", event)
+            queue_json_publish_rollback_unsafe(high_latency_queue_name(), event)
 
     # Don't deactivate the users, as that would lose a lot of state if
     # the realm needs to be reactivated, but do delete their sessions
