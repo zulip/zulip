@@ -702,10 +702,13 @@ export function parse({
     // class-specific highlighting.
     renderer.code = (code: string): string => fenced_code.wrap_code(code) + "\n\n";
 
-    // Prohibit empty links for some reason.
     const old_link = renderer.link;
-    renderer.link = (href: string, title: string, text: string): string =>
-        old_link.call(renderer, href, title, text.trim() ? text : href);
+    renderer.link = (href: string, title: string, text: string): string => {
+        // The server percent-encodes spaces in link URLs; see sanitize_url.
+        href = href.replaceAll(" ", "%20");
+        // Prohibit empty links for some reason.
+        return old_link.call(renderer, href, title, text.trim() ? text : href);
+    };
 
     // Put a newline after a <br> in the generated HTML to match Markdown
     renderer.br = function () {
