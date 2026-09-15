@@ -5,9 +5,11 @@ import logging
 import os
 import pwd
 import shlex
+import socket
 import subprocess
 import sys
 import time
+from typing import Any
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from scripts.lib.setup_path import setup_path
@@ -77,6 +79,27 @@ def update_tornado_sharding() -> list[int]:
         os.rename(f"{path}.tmp", path)
 
     return list(affected_tornados)
+
+
+def uwsgi_stats() -> dict[str, Any]:
+    try:
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as sock:
+            sock.settimeout(2)
+            sock.connect("/home/zulip/deployments/uwsgi-stats")
+            data = b""
+            while True:
+                chunk = sock.recv(4096)
+                if not chunk:
+                    break
+                data += chunk
+        return json.loads(data)
+    except (OSError, ValueError) as e:
+        logging.warning("Unable to read uWSGI stats: %s", e)
+        return {}
+
+
+def uwsgi_respawn_counts(stats: dict[str, Any]) -> dict[int, int]:
+    return {w["id"]: w["respawn_count"] for w in stats.get("workers", [])}
 
 
 action = "restart"
@@ -281,12 +304,16 @@ if has_application_server():
                 # "c" is chain-reloading:
                 # https://uwsgi-docs.readthedocs.io/en/latest/MasterFIFO.html#available-commands
                 control_socket.write("c")
-            n = 0
+
+            initial_counts = uwsgi_respawn_counts(uwsgi_stats())
             while not os.path.exists("/var/lib/zulip/django-workers.ready"):
-                time.sleep(1)
-                n += 1
-                if n % 5 == 0:
-                    logging.info("...")
+                time.sleep(5)
+                worker_cnts = uwsgi_respawn_counts(uwsgi_stats())
+                reloaded = sum(
+                    1 for id, cnt in worker_cnts.items() if cnt > initial_counts.get(id, 0)
+                )
+                logging.info("%d of %d workers reloaded.", reloaded, len(initial_counts))
+
             logging.info("Chain reloading complete")
         else:
             logging.info("Starting django server")
