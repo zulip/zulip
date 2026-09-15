@@ -19,6 +19,10 @@ class kandra::prod_app_frontend_once {
     hour   => '17',
     minute => '0',
   }
+  zulip::cron { 'probe-remote-realms-for-communities-directory':
+    hour   => '9',
+    minute => '0',
+  }
 
   zulip::cron { 'check_send_receive_time':
     hour      => '*',
