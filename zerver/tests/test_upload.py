@@ -51,7 +51,7 @@ from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import Attachment, Message, OnboardingStep, Realm, RealmDomain, UserProfile
 from zerver.models.realms import get_realm
-from zerver.models.users import get_system_bot, get_user_by_delivery_email
+from zerver.models.users import active_user_ids, get_system_bot, get_user_by_delivery_email
 from zerver.upload_handler import TEMPORARY_FILE_MAX_EXTENSION_LENGTH, truncate_filename_extension
 
 
@@ -2379,6 +2379,30 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         data3 = b"even-more-data!"
         upload_message_attachment("dummy3.txt", "text/plain", data3, self.user_profile)
         self.assertEqual(len(data2) + len(data3), self.realm.currently_used_upload_space_bytes())
+
+    def test_upload_quota_used_bytes_event_audience(self) -> None:
+        # The attachment event describes a single user's file, so it goes
+        # only to that user. The organization's total usage is not private
+        # to them, though, and every client needs it to warn as the quota
+        # fills up, so it is sent to the whole organization separately.
+        data = b"zulip!"
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            upload_message_attachment("dummy.txt", "text/plain", data, self.user_profile)
+
+        self.assertEqual(events[0]["event"]["type"], "attachment")
+        self.assertEqual(events[0]["users"], [self.user_profile.id])
+
+        self.assertEqual(
+            events[1]["event"],
+            dict(
+                type="realm",
+                op="update_dict",
+                property="default",
+                data=dict(upload_quota_used_bytes=len(data)),
+            ),
+        )
+        self.assertIn(self.example_user("othello").id, events[1]["users"])
+        self.assertEqual(events[1]["users"], active_user_ids(self.realm.id))
 
 
 class DecompressionBombTests(ZulipTestCase):

@@ -116,6 +116,7 @@ from zerver.lib.event_types import (
     UpdateMessageEvent,
     UpdateMessageFlagsAddEvent,
     UpdateMessageFlagsRemoveEvent,
+    UploadQuotaUsedData,
     UserGroupAddEvent,
     UserGroupAddMembersEvent,
     UserGroupAddSubgroupsEvent,
@@ -550,6 +551,8 @@ def check_realm_update_dict(
             sub_type = GroupSettingUpdateData
         elif "plan_type" in event["data"]:
             sub_type = PlanTypeData
+        elif "upload_quota_used_bytes" in event["data"]:
+            sub_type = UploadQuotaUsedData
         elif "topics_policy" in event["data"]:
             sub_type = RealmTopicsPolicyData
         elif "description" in event["data"]:
