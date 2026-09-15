@@ -9,6 +9,7 @@ from django.template.response import TemplateResponse
 from django.urls import reverse
 from pydantic import Json
 
+from corporate.lib.communities_directory import meets_communities_directory_base_criteria
 from corporate.lib.decorator import (
     authenticated_remote_realm_management_endpoint,
     authenticated_remote_server_management_endpoint,
@@ -334,22 +335,19 @@ def communities_view(request: HttpRequest) -> HttpResponse:
             want_advertise_in_communities_directory=True,
         )
         .exclude(
-            # Filter out realms who haven't changed their description from the default.
-            description="",
-        )
-        .exclude(
-            # Filter out demo organizations.
-            demo_organization_scheduled_deletion_date__isnull=False,
-        )
-        .exclude(
             # Filter out deactivated organizations.
             deactivated=True,
         )
         .order_by("name")
     )
     for realm in want_to_be_advertised_realms:
-        open_to_public = not realm.invite_required and not realm.emails_restricted_to_domains
-        if realm.allow_web_public_streams_access() or open_to_public:
+        if meets_communities_directory_base_criteria(
+            description=realm.description,
+            invite_required=realm.invite_required,
+            emails_restricted_to_domains=realm.emails_restricted_to_domains,
+            has_web_public_streams=realm.allow_web_public_streams_access(),
+            is_demo_organization=realm.demo_organization_scheduled_deletion_date is not None,
+        ):
             [org_type] = (
                 org_type
                 for org_type in Realm.ORG_TYPES
