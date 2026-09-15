@@ -29,6 +29,9 @@ const user_topics = mock_esm("../src/user_topics", {
     is_topic_unmuted_or_followed() {
         return false;
     },
+    is_topic_visible_in_home() {
+        return true;
+    },
 });
 const narrow_state = mock_esm("../src/narrow_state", {
     topic() {},
@@ -179,6 +182,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
         is_active_topic: true,
         url: "#narrow/channel/556-general/topic/topic.2011",
         contains_unread_mention: false,
+        is_unmuted_resolved_with_unreads: false,
     });
 
     override(narrow_state, "topic", () => "topic 6");
@@ -197,6 +201,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
 
     assert.deepEqual(list_info.items[5], {
         contains_unread_mention: false,
+        is_unmuted_resolved_with_unreads: false,
         is_active_topic: false,
         is_muted: false,
         is_followed: false,
@@ -213,6 +218,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
 
     assert.deepEqual(list_info.items[0], {
         contains_unread_mention: false,
+        is_unmuted_resolved_with_unreads: false,
         is_active_topic: false,
         is_muted: false,
         is_followed: false,
@@ -238,6 +244,7 @@ test("get_list_info w/real stream_topic_history", ({override}) => {
 
     assert.deepEqual(list_info.items[0], {
         contains_unread_mention: false,
+        is_unmuted_resolved_with_unreads: false,
         is_active_topic: false,
         is_muted: false,
         is_followed: false,
@@ -658,6 +665,12 @@ test("get_list_info demotes resolved topics", ({override}) => {
         "✔ issue 3",
     ]);
     assert.equal(list_info.more_topics_unreads, 0);
+    assert.deepEqual(
+        list_info.items
+            .filter((li) => li.is_unmuted_resolved_with_unreads)
+            .map((li) => li.topic_name),
+        ["✔ issue 1", "✔ issue 3"],
+    );
 
     // In a muted channel, unmuted or followed topics come first
     // within the unresolved and resolved groups.
@@ -717,6 +730,27 @@ test("get_list_info demotes resolved topics", ({override}) => {
     assert.equal(list_info.more_topics_unreads, 3);
     general.is_muted = false;
     override(user_topics, "is_topic_unmuted_or_followed", () => false);
+
+    // Topics not visible in the home view don't count as resolved
+    // topics with unreads.
+    function unmuted_resolved_with_unreads(list_info) {
+        return list_info.items
+            .filter((li) => li.is_unmuted_resolved_with_unreads)
+            .map((li) => li.topic_name);
+    }
+    list_info = get_list_info(true);
+    assert.deepEqual(unmuted_resolved_with_unreads(list_info), [
+        "✔ issue 1",
+        "✔ issue 3",
+        "✔ issue 7",
+    ]);
+    override(user_topics, "is_topic_visible_in_home", (stream_id, topic_name) => {
+        assert.equal(stream_id, general.stream_id);
+        return topic_name !== "✔ issue 7";
+    });
+    list_info = get_list_info(true);
+    assert.deepEqual(unmuted_resolved_with_unreads(list_info), ["✔ issue 1", "✔ issue 3"]);
+    override(user_topics, "is_topic_visible_in_home", () => true);
 
     // The active topic is always shown, in the resolved group if
     // it is resolved.
