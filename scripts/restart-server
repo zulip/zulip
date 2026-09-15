@@ -31,6 +31,54 @@ from scripts.lib.zulip_tools import (
     su_to_zulip,
 )
 
+
+def restart_or_start(service: str) -> None:
+    our_verb = action
+    existing_services = list_supervisor_processes([service])
+    running_services = list_supervisor_processes([service], only_running=True)
+    if our_verb == "restart" and len(running_services) == 0:
+        our_verb = "start"
+    elif our_verb == "start" and existing_services == running_services:
+        logging.info("%s already started!", service)
+        return
+    subprocess.check_call(["supervisorctl", our_verb, service])
+
+
+def ports_as_set(val: int | list[int]) -> frozenset[int]:
+    return frozenset(val) if isinstance(val, list) else frozenset([val])
+
+
+def update_tornado_sharding() -> list[int]:
+    with open("/etc/zulip/sharding.json") as old_shard_fh:
+        old_sharding = json.load(old_shard_fh)
+    with open("/etc/zulip/sharding.json.tmp") as new_shard_fh:
+        new_sharding = json.load(new_shard_fh)
+    affected_tornados: set[int] = set()
+    for realm in set().union(old_sharding["shard_map"], new_sharding["shard_map"]):
+        old_ports = ports_as_set(old_sharding["shard_map"].get(realm, []))
+        new_ports = ports_as_set(new_sharding["shard_map"].get(realm, []))
+        if old_ports != new_ports:
+            # A realm sharded across multiple ports gets requests at
+            # random from nginx, and each does an X-Accel-Redirect to
+            # the user's right Tornado instance. So all ports in the
+            # set need a restart when we add or remove ports.
+            affected_tornados |= old_ports | new_ports
+    old_regex_set = {
+        (regex, ports_as_set(ports)) for (regex, ports) in old_sharding["shard_regexes"]
+    }
+    new_regex_set = {
+        (regex, ports_as_set(ports)) for (regex, ports) in new_sharding["shard_regexes"]
+    }
+    for regex, ports in old_regex_set ^ new_regex_set:
+        affected_tornados |= ports
+
+    tornado_reshard_files = ["/etc/zulip/sharding.json", "/etc/zulip/nginx_sharding_map.conf"]
+    for path in tornado_reshard_files:
+        os.rename(f"{path}.tmp", path)
+
+    return list(affected_tornados)
+
+
 action = "restart"
 if not sys.argv[0].endswith("restart-server"):
     action = "start"
@@ -168,53 +216,6 @@ elif action == "start":
         else:
             logging.info("Zulip is already started; nothing to do!")
         sys.exit(0)
-
-
-def restart_or_start(service: str) -> None:
-    our_verb = action
-    existing_services = list_supervisor_processes([service])
-    running_services = list_supervisor_processes([service], only_running=True)
-    if our_verb == "restart" and len(running_services) == 0:
-        our_verb = "start"
-    elif our_verb == "start" and existing_services == running_services:
-        logging.info("%s already started!", service)
-        return
-    subprocess.check_call(["supervisorctl", our_verb, service])
-
-
-def ports_as_set(val: int | list[int]) -> frozenset[int]:
-    return frozenset(val) if isinstance(val, list) else frozenset([val])
-
-
-def update_tornado_sharding() -> list[int]:
-    with open("/etc/zulip/sharding.json") as old_shard_fh:
-        old_sharding = json.load(old_shard_fh)
-    with open("/etc/zulip/sharding.json.tmp") as new_shard_fh:
-        new_sharding = json.load(new_shard_fh)
-    affected_tornados: set[int] = set()
-    for realm in set().union(old_sharding["shard_map"], new_sharding["shard_map"]):
-        old_ports = ports_as_set(old_sharding["shard_map"].get(realm, []))
-        new_ports = ports_as_set(new_sharding["shard_map"].get(realm, []))
-        if old_ports != new_ports:
-            # A realm sharded across multiple ports gets requests at
-            # random from nginx, and each does an X-Accel-Redirect to
-            # the user's right Tornado instance. So all ports in the
-            # set need a restart when we add or remove ports.
-            affected_tornados |= old_ports | new_ports
-    old_regex_set = {
-        (regex, ports_as_set(ports)) for (regex, ports) in old_sharding["shard_regexes"]
-    }
-    new_regex_set = {
-        (regex, ports_as_set(ports)) for (regex, ports) in new_sharding["shard_regexes"]
-    }
-    for regex, ports in old_regex_set ^ new_regex_set:
-        affected_tornados |= ports
-
-    tornado_reshard_files = ["/etc/zulip/sharding.json", "/etc/zulip/nginx_sharding_map.conf"]
-    for path in tornado_reshard_files:
-        os.rename(f"{path}.tmp", path)
-
-    return list(affected_tornados)
 
 
 if action == "restart" and len(workers) > 0:
