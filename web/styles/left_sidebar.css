@@ -2169,6 +2169,56 @@ li.active-sub-filter {
     }
 }
 
+/* Floats over the bottom of the zoomed-in topic list while
+   resolved topics with unreads are scrolled out of view, like the
+   message feed's scroll-to-bottom button. */
+.resolved-topics-unreads-jump {
+    grid-area: conversation-list;
+    place-self: end center;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--left-sidebar-icon-content-gap);
+    /* Clear the browser's link preview at the bottom of the window. */
+    margin-bottom: var(--sidebar-bottom-spacing);
+    padding: 0.25em 0.75em;
+    border: 1px solid var(--color-shadow-sidebar-row-hover);
+    border-radius: 2em;
+    /* Opaque, so the topic rows don't show through. */
+    background-color: var(--color-background);
+    color: var(--color-text-sidebar-action-heading);
+    /* Buttons don't inherit the page font by default. */
+    font-family: inherit;
+    font-size: var(--font-size-sidebar-action-heading);
+    font-weight: var(--font-weight-sidebar-action-heading);
+    font-variant: var(--font-variant-sidebar-action-heading);
+    font-feature-settings: var(--font-feature-settings-sidebar-action-heading);
+    text-transform: var(--text-transform-sidebar-action-heading);
+    line-height: var(--line-height-sidebar-row-prominent);
+
+    &:hover {
+        /* The translucent tint is layered over the opaque background. */
+        background-image: linear-gradient(
+            var(--color-background-sidebar-action-heading-hover),
+            var(--color-background-sidebar-action-heading-hover)
+        );
+        color: var(--color-text-sidebar-action-heading-hover);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-outline-focus);
+        outline-offset: -2px;
+    }
+
+    &.hide {
+        display: none;
+    }
+
+    .zulip-icon {
+        flex-shrink: 0;
+    }
+}
+
 .channel-new-topic-button,
 .channel-search-topics-button {
     /* display: flex; is set on visible channels and
