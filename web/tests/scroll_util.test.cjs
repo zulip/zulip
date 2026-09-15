@@ -120,4 +120,15 @@ run_test("scroll_element_into_container", () => {
     };
     scroll_util.scroll_element_into_container($elem2, $container);
     assert.equal($container.scrollTop(), 250 - 100 + 3 + 15);
+
+    // An element within the bottom overlay is scrolled to clear it.
+    const $elem3 = {
+        innerHeight: () => 10,
+        offset: () => ({
+            top: 90,
+        }),
+    };
+    const scroll_top_before = $container.scrollTop();
+    scroll_util.scroll_element_into_container($elem3, $container, 0, 30);
+    assert.equal($container.scrollTop(), scroll_top_before + 30);
 });
