@@ -1,9 +1,12 @@
 from typing import Any
 from unittest import mock
 
+from django.utils.timezone import now as timezone_now
+
 from zerver.actions.submessage import do_add_submessage
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import Message, SubMessage
 
 
@@ -12,6 +15,7 @@ class TestBasics(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
         stream_name = "Verona"
+        timestamp = timezone_now()
 
         message_id = self.send_stream_message(
             sender=cordelia,
@@ -31,6 +35,7 @@ class TestBasics(ZulipTestCase):
             content="stuff1",
             message_id=message_id,
             sender=cordelia,
+            timestamp=timestamp,
         )
 
         sm2 = SubMessage.objects.create(
@@ -38,6 +43,7 @@ class TestBasics(ZulipTestCase):
             content="stuff2",
             message_id=message_id,
             sender=hamlet,
+            timestamp=timestamp,
         )
 
         expected_data = [
@@ -47,6 +53,7 @@ class TestBasics(ZulipTestCase):
                 sender_id=cordelia.id,
                 msg_type="whatever",
                 content="stuff1",
+                timestamp=timestamp,
             ),
             dict(
                 id=sm2.id,
@@ -54,6 +61,7 @@ class TestBasics(ZulipTestCase):
                 sender_id=hamlet.id,
                 msg_type="whatever",
                 content="stuff2",
+                timestamp=timestamp,
             ),
         ]
 
@@ -63,12 +71,30 @@ class TestBasics(ZulipTestCase):
         message_json = MessageDict.wide_dict(message)
         rows = message_json["submessages"]
         rows.sort(key=lambda r: r["id"])
-        self.assertEqual(rows, expected_data)
+        expected_for_json = [
+            dict(
+                id=sm1.id,
+                message_id=message_id,
+                sender_id=cordelia.id,
+                msg_type="whatever",
+                content="stuff1",
+                timestamp=datetime_to_timestamp(timestamp),
+            ),
+            dict(
+                id=sm2.id,
+                message_id=message_id,
+                sender_id=hamlet.id,
+                msg_type="whatever",
+                content="stuff2",
+                timestamp=datetime_to_timestamp(timestamp),
+            ),
+        ]
+        self.assertEqual(rows, expected_for_json)
 
         msg_rows = MessageDict.ids_to_dict([message_id])
         rows = msg_rows[0]["submessages"]
         rows.sort(key=lambda r: r["id"])
-        self.assertEqual(rows, expected_data)
+        self.assertEqual(rows, expected_for_json)
 
     def test_endpoint_errors(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -155,15 +181,18 @@ class TestBasics(ZulipTestCase):
             result = self.client_post("/json/submessage", payload)
         self.assert_json_success(result)
 
-        submessage = SubMessage.objects.get(message_id=message_id)
+        rows = SubMessage.get_raw_db_rows([message_id])
+        self.assert_length(rows, 1)
+        row = rows[0]
 
         expected_data = dict(
             message_id=message_id,
-            submessage_id=submessage.id,
+            submessage_id=row["id"],
             content=payload["content"],
             msg_type="whatever",
             sender_id=cordelia.id,
             type="submessage",
+            timestamp=datetime_to_timestamp(row["timestamp"]),
         )
 
         data = events[0]["event"]
@@ -172,16 +201,13 @@ class TestBasics(ZulipTestCase):
         self.assertIn(cordelia.id, users)
         self.assertIn(hamlet.id, users)
 
-        rows = SubMessage.get_raw_db_rows([message_id])
-        self.assert_length(rows, 1)
-        row = rows[0]
-
         expected_data = dict(
             id=row["id"],
             message_id=message_id,
             content='{"name": "alice", "salary": 20}',
             msg_type="whatever",
             sender_id=cordelia.id,
+            timestamp=row["timestamp"],
         )
         self.assertEqual(row, expected_data)
 
@@ -224,11 +250,14 @@ class TestBasics(ZulipTestCase):
         self.assert_length(response_dict["message"]["submessages"], 1)
 
         submessage = response_dict["message"]["submessages"][0]
+        row = SubMessage.objects.get(id=submessage["id"])
+        assert row.timestamp is not None
         expected_data = dict(
             id=submessage["id"],
             message_id=message_id,
             content='{"name": "alice", "salary": 20}',
             msg_type="whatever",
             sender_id=cordelia.id,
+            timestamp=datetime_to_timestamp(row.timestamp),
         )
         self.assertEqual(submessage, expected_data)
