@@ -26,6 +26,7 @@ export type TopicInfo = {
     is_active_topic: boolean;
     url: string;
     contains_unread_mention: boolean;
+    is_unmuted_resolved_with_unreads: boolean;
 };
 
 type TopicChoiceState = {
@@ -67,6 +68,10 @@ function build_topic_info_item(
         is_active_topic,
         url: stream_topic_history.channel_topic_permalink_hash(stream_id, topic_name),
         contains_unread_mention,
+        is_unmuted_resolved_with_unreads:
+            topic_resolved_prefix !== "" &&
+            num_unread > 0 &&
+            user_topics.is_topic_visible_in_home(stream_id, topic_name),
     };
     return topic_info;
 }
