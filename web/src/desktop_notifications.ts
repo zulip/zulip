@@ -2,14 +2,22 @@ import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import {electron_bridge} from "./electron_bridge.ts";
-import type {Message} from "./message_store.ts";
+import type {EmojiRenderingDetails} from "./emoji";
+
+export type NotifiedReaction = {
+    user_id: number;
+    emoji_detail: EmojiRenderingDetails;
+};
+
+export type NotificationData =
+    | {type: "message"; message_id: number; msg_count: number}
+    | {type: "reaction"; message_id: number; reactions: Map<string, NotifiedReaction>};
 
 type NoticeMemory = Map<
     string,
     {
         obj: Notification | ElectronBridgeNotification;
-        msg_count: number;
-        message_id: number;
+        data: NotificationData;
     }
 >;
 
@@ -70,6 +78,47 @@ if (electron_bridge?.new_notification) {
     NotificationAPI = window.Notification;
 }
 
+export function create_notification(opts: {
+    notification_options: NotificationOptions;
+    key: string;
+    title: string;
+    data: NotificationData;
+    on_click?: (() => void) | undefined;
+}): void {
+    const {notification_options, key, title, data, on_click} = opts;
+
+    assert(NotificationAPI !== undefined);
+    const existing_notification = notice_memory.get(key);
+    if (existing_notification) {
+        existing_notification.obj.close();
+    }
+    const notification_object = new NotificationAPI(title, notification_options);
+    notice_memory.set(key, {
+        obj: notification_object,
+        data,
+    });
+
+    if (typeof notification_object.addEventListener === "function") {
+        // Sadly, some third-party Electron apps like Franz/Ferdi
+        // misimplement the Notification API not inheriting from
+        // EventTarget.  This results in addEventListener being
+        // unavailable for them.
+        notification_object.addEventListener("click", () => {
+            notification_object.close();
+            on_click?.();
+            window.focus();
+        });
+        notification_object.addEventListener("close", () => {
+            const current_notice_memory = notice_memory.get(key);
+            // This check helps avoid race between close event for current notification
+            // object and the previous notification_object close handler.
+            if (current_notice_memory?.obj === notification_object) {
+                notice_memory.delete(key);
+            }
+        });
+    }
+}
+
 export function get_notifications(): NoticeMemory {
     return notice_memory;
 }
@@ -97,9 +146,9 @@ export function permission_state(): string {
     return "denied";
 }
 
-export function close_notification(message: Message): void {
+export function close_notification(message_id: number): void {
     for (const [key, notice_mem_entry] of notice_memory) {
-        if (notice_mem_entry.message_id === message.id) {
+        if (notice_mem_entry.data.message_id === message_id) {
             notice_mem_entry.obj.close();
             notice_memory.delete(key);
         }
