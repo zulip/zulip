@@ -19,6 +19,8 @@ paths:
   entries to understand which pages load the file. Prefer scoped
   overrides (e.g., `.parent .target`) over modifying shared rules,
   to avoid unintended changes to other parts of the app.
+- Use class or ID selectors, not bare tag selectors or attribute
+  selectors. If no suitable class exists, add one.
 
 When removing a CSS dependency (e.g., Bootstrap), audit the full
 property list of every rule, not just visually obvious properties like

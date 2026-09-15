@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from typing import TYPE_CHECKING, Optional, TypedDict
 
 from django.db.models import QuerySet
@@ -132,10 +133,15 @@ def bulk_fetch_stream_names(
 
 def bulk_fetch_user_display_recipients(
     recipient_tuples: set[tuple[int, int, int]],
+    recipient_dm_user_ids: Mapping[int, set[int]] = {},
 ) -> dict[int, list[UserDisplayRecipient]]:
     """
     Takes set of tuples of the form (recipient_id, recipient_type, recipient_type_id)
     Returns dict mapping recipient_id to corresponding display_recipient
+
+    The participants of a DirectMessageGroup are fixed when it is created, so
+    a caller that already knows them for some recipients can pass them in via
+    dm_involved_user_ids to avoid looking them up again.
     """
 
     from zerver.models.recipients import bulk_get_direct_message_group_user_ids
@@ -146,9 +152,16 @@ def bulk_fetch_user_display_recipients(
     get_recipient_id = lambda tup: tup[0]
 
     direct_message_group_recipient_ids = [get_recipient_id(tup) for tup in recipient_tuples]
+
+    # Query only DirectMessageGroup participants who are not already loaded.
     user_ids_in_direct_message_groups = bulk_get_direct_message_group_user_ids(
-        direct_message_group_recipient_ids
+        [
+            recipient_id
+            for recipient_id in direct_message_group_recipient_ids
+            if recipient_id not in recipient_dm_user_ids
+        ]
     )
+    user_ids_in_direct_message_groups.update(recipient_dm_user_ids)
 
     # Find all user ids whose UserProfiles we will need to fetch:
     user_ids_to_fetch: set[int] = set()
@@ -172,6 +185,7 @@ def bulk_fetch_user_display_recipients(
 
 def bulk_fetch_display_recipients(
     recipient_tuples: set[tuple[int, int, int]],
+    recipient_dm_user_ids: Mapping[int, set[int]] = {},
 ) -> dict[int, DisplayRecipientT]:
     """
     Takes set of tuples of the form (recipient_id, recipient_type, recipient_type_id)
@@ -187,7 +201,7 @@ def bulk_fetch_display_recipients(
 
     stream_display_recipients = bulk_fetch_stream_names(stream_recipients)
     direct_message_display_recipients = bulk_fetch_user_display_recipients(
-        direct_message_recipients
+        direct_message_recipients, recipient_dm_user_ids
     )
 
     # Glue the dicts together and return:

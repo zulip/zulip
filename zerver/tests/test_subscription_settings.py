@@ -59,9 +59,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                 ).decode()
             },
         )
-        self.assert_json_error(
-            result, "Invalid subscription_data[0]: Value error, color is not a valid hex color code"
-        )
+        self.assert_json_error(result, "color is not a valid hex color code")
 
     def test_set_color_missing_stream_id(self) -> None:
         """
@@ -395,9 +393,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
                 ).decode()
             },
         )
-        self.assert_json_error(
-            result, "Invalid subscription_data[0]: Value error, color is not a valid hex color code"
-        )
+        self.assert_json_error(result, "color is not a valid hex color code")
 
     def test_json_subscription_property_invalid_stream(self) -> None:
         test_user = self.example_user("hamlet")

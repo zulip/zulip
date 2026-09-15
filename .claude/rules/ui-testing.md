@@ -11,19 +11,28 @@ catches issues that automated tests miss. **Treat this checklist as
 blocking, not advisory** — every applicable item must be verified
 before the change is ready.
 
+Most of these items can be completed by an agent. Start with
+analyzing the files, because it is cheaper than the `/visual-test`
+skill (`.claude/skills/visual-test/SKILL.md`). For things you aren't
+sure about, ensure either the user completes the relevant visual
+tests or you've run the visual test skill on them.
+
 ## Visual appearance
 
-- Is the new UI consistent with similar elements (fonts, colors, sizes)?
-  Find the closest existing analogues and compare carefully.
+- Is the new UI consistent with similar elements (alignment, spacing,
+  fonts, colors, sizes)? Find the closest existing analogues and compare
+  carefully.
 - Is alignment correct, both vertically and horizontally? Measure
   programmatically with `getBoundingClientRect()` when in doubt —
   don't eyeball it.
-- Do clickable elements have hover behavior consistent with similar UI?
-- If elements can be disabled, does the disabled state look right?
+- Does every state look right and match similar UI: hover, active,
+  disabled, focused, selected, empty, overflowing?
 - Did the change accidentally affect other parts of the UI? Use
-  `git grep` to check if modified CSS is used elsewhere. CSS changes
-  are notorious for unintended consequences — check every page and
-  component that shares the selectors you modified.
+  `git grep` to check if modified CSS is used elsewhere.
+- CSS changes are notorious for unintended consequences — check every
+  page and component that shares the selectors you modified, and
+  demonstrate with pixel-precise before/after comparisons that there
+  are none.
 - Check all of the above in both light and dark themes when the
   change could plausibly affect colors, contrast, or theme-dependent
   imagery. Pure geometry/typography changes (`font-size`,
@@ -36,13 +45,16 @@ before the change is ready.
 
 - Does the UI look good at different window sizes? Check wide desktop
   (1920px), typical laptop (1280px), tablet, and narrow phone (480px).
+  Any widths between these values should also work.
 - Would the UI break if translated strings were 1.5x longer than
   English? What if they were half as long? Both directions matter.
+  Think about right-to-left languages too.
 
 ## Functionality
 
 - Are live updates working as expected?
 - Is keyboard navigation, including tabbing to interactive elements, working?
+- Do screen readers get sensible labels and roles for new elements?
 - If the feature affects the message view, try different narrows: topic,
   channel, Combined feed, direct messages.
 - If the feature affects the compose box, test both channel messages and

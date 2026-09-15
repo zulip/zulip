@@ -5,6 +5,18 @@ the Zulip codebase. These guidelines are designed to produce
 contributions that meet the same high standards we expect from human
 contributors.
 
+When doing any work with AI assistants, it is crucial to follow our
+AI use policy and guidelines (the "AI use policy and guidelines"
+section in `CONTRIBUTING.md`). In particular:
+
+> **Do not submit an AI-generated PR you haven't personally
+> understood and tested**, as this wastes maintainers' time. PRs that
+> appear to violate this guideline will be closed without review.
+
+> **Do not post AI-generated messages** in the [Zulip development
+> community](https://zulip.com/development-community/) -- we want to
+> read your own genuine expression of your thoughts.
+
 Claude Code automatically uses `.claude/rules/` and `.claude/skills/`.
 If you are a different agent, read the files in these folders to see
 the rest of the agent instructions and when they're relevant. Rules
@@ -36,39 +48,13 @@ change should make the codebase more maintainable and easier to read.
 
 ### No detail is too small
 
-Zulip holds itself to a high bar for polish because users depend on
-this software daily, and because the project is built to last for
-decades. There is no category of "minor issue" that is acceptable
-to ship — if something is broken in any context where a user would
-encounter it, it must be fixed before merging. The project's
-extensive investment in testing, tooling, and review processes exists
-precisely so that these issues get caught and fixed, not so that they
-can be classified as low-priority and deferred.
-
-This philosophy extends to every aspect of the product:
-
-- **Visual precision matters.** Alignment, spacing, colors, and font
-  sizes must be consistent with similar existing UI. When making CSS
-  changes, you must demonstrate with pixel-precise before/after
-  comparisons that there are no unintended side effects.
-- **Every state matters.** UI must look correct in all its states:
-  hover, active, disabled, focused, selected, empty, overflowing.
-  Changes that could plausibly affect colors, contrast, or
-  theme-dependent imagery must work in both light and dark themes;
-  changes whose effect can't reasonably vary with theme (pure
-  geometry/typography — `font-size`, `line-height`, `margin`,
-  `padding`, `display`, `font-weight`, etc.) only need a single
-  theme verified.
-- **Every window size matters.** UI must look good from wide desktop
-  (1920px) down to narrow phone screens (480px).
-- **Every language matters.** Translated strings can be 1.5x longer
-  than English or half as short. UI must handle both extremes without
-  breaking layout. Think about right-to-left languages too.
-- **Every interaction path matters.** Keyboard navigation, screen
-  readers, permission levels, feature interactions (banners
-  overlapping, resolved topics, muted messages), and edge cases in
-  data (empty lists, very long names, single items vs. many) must all
-  be considered.
+There is no category of "minor issue" that is acceptable to ship —
+if something is broken in any state, size, theme, or language where
+a user would encounter it, it must be fixed before merging. If a fix
+would require a design decision, raise it as a question rather than
+shipping the broken state. See `.claude/rules/ui-testing.md` for
+what to test for UI changes (the file loads automatically when you
+work on frontend files).
 
 The right attitude is: "What could go wrong, and how do I verify that
 it doesn't?" not "It looks fine to me." **What isn't tested probably
@@ -109,9 +95,6 @@ git log --oneline -20 -- path/to/file.py
 # Check for related issues on GitHub
 ```
 
-Always show existing similar code and explain how it works before proposing
-changes.
-
 ### 2. Propose an Approach
 
 Before writing code, explain the plan:
@@ -141,14 +124,8 @@ commit from other changes.
 
 ### 4. Verify Before Finalizing
 
-Run tests before making a commit. Always manage your time by running
-specific test collections, not the entire test suite:
-
-```bash
-# Includes mypy and typescript checkers
-./tools/lint path/to/changed/files.py
-./tools/test-backend zerver.tests.test_relevant_module
-```
+Run the linter and the relevant tests before making each commit; see
+"Testing Requirements" below for instructions.
 
 Run through the `/self-review` skill's checklist before suggesting opening
 a PR (`.claude/skills/self-review/SKILL.md`).
@@ -160,6 +137,7 @@ a PR (`.claude/skills/self-review/SKILL.md`).
 Zulip has over 185,000 words of developer documentation. Before working on any area:
 
 - Read documentation from docs/, starlight_help/src/content/docs/, and api_docs/.
+  `docs/subsystems/directory-structure.md` explains where code lives.
 - Read existing code in the area you're modifying.
 - Use `git grep` to find similar patterns in the codebase and read those.
 
@@ -174,9 +152,28 @@ Zulip has over 185,000 words of developer documentation. Before working on any a
   code, especially where access control or subtle correctness is involved.
 - Run `./tools/lint` to catch style issues before committing, including mypy issues.
 - Prefer writing code that is readable without explanation over heavily
-  commented code using clever tricks. Comments should explain "why" when
-  the reason isn't obvious, not narrate "what" the code does.
+  commented code using clever tricks.
+- Don't reference line numbers (e.g., `filter.ts:493`) in comments, commit
+  messages, or PR descriptions; they get stale when files are edited.
+  Reference symbol names instead.
+
+**Comments**
+
+- Comments should explain "why" when the reason isn't obvious, not
+  narrate "what" the code does.
 - Comments should have a line to themself except for CSS px math.
+- Comments should never describe the change being made or a bug
+  being fixed. They should read as if they were there all along.
+  Descriptions of the diff belong in the commit message instead.
+- Match comment density of nearby code and similar functions.
+  If similar code doesn't comment on something, don't comment
+  on it in new code.
+- Avoid metaphors in favor of clear descriptive language. Match
+  existing idioms verbatim for comments describing specific
+  situations (e.g., `/* Override bootstrap defaults */`) rather
+  than writing a new or longer explanation.
+
+**Further rules**
 
 Frontend rules can be found in `.claude/rules/frontend.md` (loaded
 automatically when you work on frontend JS/TS and template files).
@@ -187,7 +184,7 @@ automatically when you work on CSS files).
 Python rules can be found in `.claude/rules/python.md` (loaded
 automatically when you work on .py files).
 
-See: https://zulip.readthedocs.io/en/latest/contributing/code-style.html
+See: `docs/contributing/code-style.md`
 
 ## Commit Discipline
 
@@ -216,6 +213,15 @@ coherent idea."** This is non-negotiable.
   When a commit is flagged as potentially droppable, verify all
   earlier commits work correctly without it.
 
+### Open Independently Useful Fixes as Separate PRs
+
+If, while building a feature, you find and fix a pre-existing bug or
+make a refactor that would be worth merging even if the feature never
+lands, split this into its own PR. A small isolated PR gets more
+scrutiny than the same change as part of a large PR. Prep commits
+that mainly make sense in the context of the feature PR should stay
+in the feature's PR.
+
 ### Commit Message Format
 
 Use the `/commit-message` skill whenever you write or reword a
@@ -230,12 +236,14 @@ When writing tests, follow our testing philosophy in
 `.claude/rules/testing.md` (loaded automatically when you work on
 test files).
 
-### Before Submitting:
+Manage your time by running specific backend test collections, not
+the entire suite; the node suite is fast enough to run in full.
 
 ```bash
-./tools/test-js-with-node       # JavaScript tests; full suite fast enough
-./tools/lint                    # Run all linters
-./tools/test-backend            # Python tests
+# Includes mypy and typescript checkers
+./tools/lint path/to/changed/files.py
+./tools/test-backend zerver.tests.test_relevant_module
+./tools/test-js-with-node
 ```
 
 ### Manual Testing for UI Changes
@@ -243,59 +251,6 @@ test files).
 If a PR makes frontend changes, manually verify the affected UI
 using the checklist in `.claude/rules/ui-testing.md` (loaded
 automatically when you work on frontend files).
-
-## Common Pitfalls
-
-### Treating Known Issues as Acceptable
-
-A common failure mode is discovering a problem during verification
-and then noting it as a known limitation rather than fixing it. At
-Zulip, there is no category of "known minor issue" that is acceptable
-to ship. If it's broken in any state, size, theme, or language, it
-needs to be fixed.
-
-**Mitigation:** When you find any issue during verification, fix it
-before presenting the work. If a fix would require a design decision,
-raise it as a question rather than shipping the broken state.
-
-### Overconfident Code Generation
-
-You may generate code that looks correct but doesn't match Zulip patterns.
-
-**Mitigation:** Always show existing similar code first before implementing.
-
-### Incomplete Type Annotations
-
-Python code must be fully typed for mypy.
-
-**Mitigation:** Ensure all functions have complete type annotations. Run mypy
-(perhaps via the linter) to verify.
-
-### Missing Test Updates
-
-Tests must be in the same commit as the code they test.
-
-**Mitigation:** Include test updates in each commit. Show what tests need to
-change.
-
-### Verbose Commit Messages
-
-Zulip commits are concise -- say everything that's important for a
-reviewer to understand about the motivation for the work and changes,
-and nothing more. Avoid wordiness and details obvious to someone who
-is looking at the commit and its metadata (lists of filenames, etc).
-
-**Mitigation:** Keep summary under 72 characters. Body should explain why,
-not what.
-
-### Mixing Concerns
-
-Multiple changes in one commit makes review difficult.
-
-**Mitigation:** Each commit should do exactly one thing. Plan
-necessary refactoring and preparatory commits in advance of functional
-changes. You can split into good commits after the fact, but it's much
-faster and easier to just plan and write them well the first time.
 
 ## What Not To Do
 
@@ -330,7 +285,8 @@ Recommend pausing for discussion when:
 
 - The approach involves security-sensitive code
 - Database migrations are needed (See `docs/subsystems/schema-migrations.md`).
-- The change affects many files (>10)
+- The change alters behavior in several subsystems at once (renames
+  and type annotation changes that touch many files do not count)
 - Performance implications are unclear
 - The feature design isn't fully specified
 - The API or data model design isn't fully specified
@@ -341,12 +297,16 @@ Recommend pausing for discussion when:
 
 ### For Bug Fixes
 
-1. Show the relevant code and explain what's happening
-2. Brainstorm theories for how the bug might be possible
+1. Look at the relevant code and brainstorm theories for
+   how the bug might be possible
+2. Provide a clear explanation for the bug, and ideally
+   provide steps for reproducing the bug on `main` in the
+   dev environment. Verify the cause of the bug before
+   suggesting a fix, unless a bug is very difficult to verify,
+   in which case say so and explain a hypothesis instead.
 3. Analyze and propose a fix with a clear explanation
 4. Write tests that would have caught this bug if possible
-5. Format as a single commit following commit guidelines
-6. Audit for whether the bug may exist elsewhere or might be
+5. Audit for whether the bug may exist elsewhere or might be
    re-introduced and propose appropriate changes to address if so.
 
 ### For New Features
@@ -354,8 +314,7 @@ Recommend pausing for discussion when:
 1. Read the relevant documentation in docs/
 2. Show similar existing features in the codebase
 3. Propose an implementation approach before coding
-4. Implement in minimal, coherent commits
-5. Each commit must pass tests independently
+4. Implement, following "Commit Discipline" above
 
 ### For Refactoring
 
@@ -369,32 +328,13 @@ Recommend pausing for discussion when:
 
 ## Key Documentation Links
 
-- Contributing guide: https://zulip.readthedocs.io/en/latest/contributing/contributing.html
-- Code style: https://zulip.readthedocs.io/en/latest/contributing/code-style.html
-- Commit discipline: https://zulip.readthedocs.io/en/latest/contributing/commit-discipline.html
-- Testing overview: https://zulip.readthedocs.io/en/latest/testing/testing.html
-- Backend tests: https://zulip.readthedocs.io/en/latest/testing/testing-with-django.html
-- Code review: https://zulip.readthedocs.io/en/latest/contributing/code-reviewing.html
-- mypy guide: https://zulip.readthedocs.io/en/latest/testing/mypy.html
-
-## Repository Structure Quick Reference
-
-```
-zerver/           # Main Django app
-  models/         # Database models
-  views/          # API endpoints
-  lib/            # Shared utilities
-  tests/          # Backend tests
-  webhooks/       # Integration webhooks
-web/              # Frontend TypeScript/JavaScript
-  src/            # Main frontend code
-  styles/         # CSS
-  templates/      # Frontend HTML
-  tests/          # Frontend tests
-templates/        # Jinja2/Handlebars templates
-tools/            # Development and testing scripts
-docs/             # ReadTheDocs documentation source
-```
+- Contributing guide: `docs/contributing/contributing.md`
+- Code style: `docs/contributing/code-style.md`
+- Commit discipline: `docs/contributing/commit-discipline.md`
+- Testing overview: `docs/testing/testing.md`
+- Backend tests: `docs/testing/testing-with-django.md`
+- Code review: `docs/contributing/code-reviewing.md`
+- mypy guide: `docs/testing/mypy.md`
 
 ## Help Center Documentation
 
@@ -424,7 +364,20 @@ content.
 git grep "pattern"          # Search codebase (use extensively!)
 ```
 
+Most of these commands take minutes, so run them in the background.
+
 If a tool complains that provision is outdated, run `./tools/provision`
 to fix it. Do not use `--skip-provision-check` to work around the
 error; the check exists because tests and linters depend on provisioned
 dependencies being current.
+
+If the development environment runs in a container (Vagrant/Docker),
+run `./tools/` commands inside it. Files and new screenshots will be
+accessible on both sides.
+
+```bash
+vagrant ssh -c 'cd ~/zulip && ./tools/lint path/to/changed/files.py'
+```
+
+If `vagrant ssh` fails with a Docker daemon error, Docker Desktop isn't
+running; ask the user to start it.

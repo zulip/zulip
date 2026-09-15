@@ -929,6 +929,10 @@ def get_messages_iterator(
 thread_parent_map: dict[str, str] = {}
 
 
+def reset_import_state() -> None:
+    thread_parent_map.clear()
+
+
 def get_parent_user_id_from_thread_message(thread_message: ZerverFieldsT, subtype: str) -> str:
     """
     This retrieves the user id of the sender of the original thread
@@ -966,11 +970,6 @@ def get_parent_user_id_from_thread_message(thread_message: ZerverFieldsT, subtyp
                 return thread_message["bot_id"]
     except KeyError:
         # If Slack doesn't specify the parent user/bot ID in this message, use the cached one.
-        #
-        # TODO: Our caching strategy works under the assumption that we visit thread messages
-        # in the order of oldest-to-newest - so that we see the thread's parent message before
-        # thread replies. If messages are unsorted, we might process a
-        # reply before its parent, resulting in KeyError because the parent’s user ID hasn’t been cached yet.
         return thread_parent_map[thread_message["thread_ts"]]
 
 
@@ -983,10 +982,15 @@ def get_zulip_thread_topic_name(
     e.g "2024-05-22 Hello this is a long message that will be c… (1)"
     """
     thread_date = thread_ts.date().isoformat()
+    # Topic names must be a single line, so collapse each run of whitespace
+    # before truncating; otherwise blank lines in the middle of the message
+    # would consume most of the snippet.
+    content_for_topic_name = " ".join(message_content.split())
+    topic_name_without_counter = f"{thread_date} {content_for_topic_name}".strip()
 
     # Truncate
     truncated_zulip_topic_name = truncate_content(
-        f"{thread_date} {message_content}".strip(), MAX_TOPIC_NAME_LENGTH, "…"
+        topic_name_without_counter, MAX_TOPIC_NAME_LENGTH, "…"
     )
     collision = thread_counter[truncated_zulip_topic_name]
     thread_counter[truncated_zulip_topic_name] += 1
@@ -995,9 +999,7 @@ def get_zulip_thread_topic_name(
     # Important: The count is at the end, after …, so we need to
     # subtract its length when doing truncation.
     final_topic_name = (
-        truncate_content(
-            f"{thread_date} {message_content}".strip(), MAX_TOPIC_NAME_LENGTH - len(f"{count}"), "…"
-        )
+        truncate_content(topic_name_without_counter, MAX_TOPIC_NAME_LENGTH - len(f"{count}"), "…")
         + f"{count}"
     )
     return final_topic_name
@@ -1125,7 +1127,7 @@ def get_thread_reply_notification(
 def create_topic_name_for_message(
     added_channels: AddedChannelsT,
     channel_name: str | None,
-    content: str,
+    topic_name_content: str,
     convert_slack_threads: bool,
     is_direct_message_type: bool,
     message: ZerverFieldsT,
@@ -1151,7 +1153,9 @@ def create_topic_name_for_message(
         # Send the thread parent message to the main import topic; the
         # cross-linking notice to the thread topic is appended by
         # get_thread_reply_notification.
-        thread_topic_name = get_zulip_thread_topic_name(content, thread_ts_datetime, thread_counter)
+        thread_topic_name = get_zulip_thread_topic_name(
+            topic_name_content, thread_ts_datetime, thread_counter
+        )
 
         thread_map[thread_key] = ThreadMetadata(
             topic_link_syntax=get_stream_topic_link_syntax(
@@ -1274,18 +1278,22 @@ def channel_message_to_zerver_message(
         has_attachment = file_info["has_attachment"]
         has_image = file_info["has_image"]
 
+        # Part of the thread topic name is based on the message content. Use the
+        # raw content before we add attachment URLs to reduce the likelihood of
+        # generating topic names with URLs.
+        unannotated_content = content
+        content = "\n".join([part for part in [content, file_info["content"]] if part != ""])
+
         topic_name = create_topic_name_for_message(
             added_channels=added_channels,
             channel_name=channel_name,
-            content=content,
+            topic_name_content=unannotated_content,
             convert_slack_threads=convert_slack_threads,
             is_direct_message_type=is_direct_message_type,
             message=message,
             thread_counter=thread_counter,
             thread_map=thread_map,
         )
-
-        content = "\n".join([part for part in [content, file_info["content"]] if part != ""])
 
         content += get_thread_reply_notification(
             convert_slack_threads, message, thread_map, thread_reply_counts
@@ -1793,6 +1801,10 @@ def do_convert_directory(
     processes: int = 6,
     convert_slack_threads: bool = False,
 ) -> None:
+    # Start from a clean slate: the module-level id maps below persist across
+    # Slack imports in a long-lived worker, so reset them before touching
+    # anything.
+    reset_import_state()
     check_slack_token_access(token, SLACK_IMPORT_TOKEN_SCOPES)
 
     os.makedirs(output_dir, exist_ok=True)

@@ -3583,6 +3583,24 @@ class SubscriptionRestApiTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Unknown subscription property: invalid")
 
+    def test_api_invalid_color_value(self) -> None:
+        """
+        An invalid color is reported to the client, rather than raising
+        an uncaught pydantic ValidationError.
+        """
+        user = self.example_user("hamlet")
+
+        self.login_user(user)
+        subs = gather_subscriptions(user)[0]
+
+        for invalid_color in ["true", "3ffrff"]:
+            result = self.api_patch(
+                user,
+                "/api/v1/users/me/subscriptions/{}".format(subs[0]["stream_id"]),
+                {"property": "color", "value": invalid_color},
+            )
+            self.assert_json_error(result, "color is not a valid hex color code")
+
     def test_api_invalid_stream_id(self) -> None:
         """
         Trying to set an invalid stream id returns a JSON error.

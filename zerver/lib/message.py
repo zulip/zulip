@@ -187,6 +187,8 @@ class SendMessageRequest:
     disable_external_notifications: bool = False
     automatic_new_visibility_policy: int | None = None
     recipients_for_user_creation_events: dict[UserProfile, set[int]] | None = None
+    # None for a channel message or for caller that bypass check_message.
+    dm_involved_user_ids: set[int] | None = None
     reminder_target_message_id: int | None = None
     reminder_note: str | None = None
     # Computed during do_send_messages, for the POST /messages response.

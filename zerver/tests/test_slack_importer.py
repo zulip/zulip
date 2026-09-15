@@ -67,6 +67,7 @@ from zerver.data_import.slack import (
     process_message_files,
     slack_emoji_name_to_codepoint,
     slack_workspace_to_realm,
+    thread_parent_map,
     users_to_zerver_userprofile,
 )
 from zerver.lib.exceptions import SlackImportInvalidFileError
@@ -1548,26 +1549,26 @@ class SlackImporter(ZulipTestCase):
 
         ### THREAD 2 CONVERSATION ###
         # Test thread topic name contains message snippet
-        expected_thread_2_topic_name = "2015-06-12 message body text"
+        expected_thread_2_topic_name = "2018-10-18 another thread message"
         thread_2_topic_link_syntax = get_stream_topic_link_syntax(
             slack_recipient_name_to_zulip_recipient_id["random"],
             "random",
             expected_thread_2_topic_name,
         )
-        original_thread_2_message_1_content = "message body text"
+        original_thread_2_message_1_content = "another thread message"
         expected_thread_2_message_1_content = f"""
 {original_thread_2_message_1_content}
 
 *1 reply in {thread_2_topic_link_syntax}*
 """.strip()
 
-        self.assertEqual(zerver_message[1]["content"], expected_thread_2_message_1_content)
-        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(zerver_message[3]["content"], expected_thread_2_message_1_content)
+        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
 
         # Thread reply is in the correct thread topic
-        expected_thread_2_message_2_content = "random"
-        self.assertEqual(zerver_message[2]["content"], expected_thread_2_message_2_content)
-        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
+        expected_thread_2_message_2_content = "another reply"
+        self.assertEqual(zerver_message[4]["content"], expected_thread_2_message_2_content)
+        self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
 
     def test_thread_cross_link_across_chunk_boundary(self) -> None:
         # A thread's parent message and its replies are not necessarily
@@ -1843,6 +1844,49 @@ message body text
         self.assertEqual(zerver_message[0]["content"], expected_thread_message_1_content)
         self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
         self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+
+    def test_convert_thread_topic_name_with_whitespace(self) -> None:
+        slack_recipient_name_to_zulip_recipient_id = {
+            "random": 2,
+            "general": 1,
+        }
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
+            ["threads_with_whitespace_in_topic_name"],
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
+        )
+
+        zerver_message = conversion_result.zerver_message
+
+        self.assert_length(zerver_message, 4)
+
+        ### THREAD 1 CONVERSATION ###
+        # Newlines and tabs are not valid topic name characters, so each run
+        # of whitespace in the message snippet becomes a single space.
+        expected_thread_1_topic_name = "2015-08-18 Hi there friend"
+        thread_1_topic_link_syntax = get_stream_topic_link_syntax(
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            expected_thread_1_topic_name,
+        )
+        original_thread_1_message_1_content = "Hi\n\nthere\tfriend"
+        expected_thread_1_message_1_content = f"""
+{original_thread_1_message_1_content}
+
+*1 reply in {thread_1_topic_link_syntax}*
+""".strip()
+
+        # The message itself keeps its original whitespace; only the topic
+        # name derived from it is collapsed.
+        self.assertEqual(zerver_message[0]["content"], expected_thread_1_message_1_content)
+        self.assertEqual(zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
+
+        ### THREAD 2 CONVERSATION ###
+        # Collapsing happens before truncation, so a long run of blank lines
+        # in the middle of the message doesn't consume the whole snippet.
+        expected_thread_2_topic_name = "2019-01-10 Release notes: - fixed the thing"
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
+        self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
 
     @mock.patch("zerver.data_import.slack.build_usermessages", return_value=(2, 4))
     def test_channel_message_to_zerver_message_with_integration_bots(
@@ -2346,10 +2390,16 @@ To Do
             status=200,
         )
 
+        # A conversion must not read thread state cached by an earlier
+        # import in the same process; see reset_import_state.
+        thread_parent_map["0000000000.000000"] = "USTALEPARENT"
+
         with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
             # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
             # uses it to generate email addresses for users without an email specified.
             do_convert_zipfile(test_slack_zip_file, output_dir, token, processes=1)
+
+        self.assertNotIn("0000000000.000000", thread_parent_map)
 
         realm_id = 0
         uploads_folder = os.path.join(output_dir, "uploads", str(realm_id))
