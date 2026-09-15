@@ -83,6 +83,7 @@ run_test("get_unread_ids", () => {
         unread: true,
         mentioned: true,
         mentioned_me_directly: true,
+        alerted: true,
     };
 
     const private_msg = {
@@ -167,6 +168,11 @@ run_test("get_unread_ids", () => {
     assert.deepEqual(unread_ids, [stream_msg.id]);
 
     terms = [{operator: "is", operand: "mentioned"}];
+    set_filter(terms);
+    unread_ids = candidate_ids();
+    assert.deepEqual(unread_ids, [stream_msg.id]);
+
+    terms = [{operator: "is", operand: "alerted"}];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [stream_msg.id]);

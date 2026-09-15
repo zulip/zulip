@@ -416,6 +416,17 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         ),
     );
 
+    current_filter = set_filter([["is", "alerted"]]);
+    narrow_banner.show_empty_narrow_message(current_filter);
+    assert.equal(
+        $(".empty_feed_notice_main").html(),
+        empty_narrow_html(
+            "translated: You have no messages with alert words.",
+            undefined,
+            'translated: Alert words and phrases notify you when they appear in a message. For example, you can set up an alert for the name of a product you\'re responsible for. <a target="_blank" rel="noopener noreferrer" href="/help/dm-mention-alert-notifications#alert-words">Learn more</a>',
+        ),
+    );
+
     override(realm, "realm_direct_message_permission_group", everyone.id);
     override(realm, "realm_direct_message_initiator_group", everyone.id);
     current_filter = set_filter([["is", "dm"]]);
@@ -463,15 +474,6 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
         empty_narrow_html("translated: You have no messages in muted topics and channels."),
     );
 
-    current_filter = set_filter([["is", "alerted"]]);
-    narrow_banner.show_empty_narrow_message(current_filter);
-    assert.equal(
-        $(".empty_feed_notice_main").html(),
-        empty_narrow_html(
-            undefined,
-            `translated: No search results from <a href="/help/search-for-messages#search-shared-history" target="_blank" rel="noopener noreferrer">your message history</a>.`,
-        ),
-    );
     // organization has disabled sending direct messages
     override(realm, "realm_direct_message_permission_group", nobody.id);
 

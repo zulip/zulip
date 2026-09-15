@@ -1,0 +1,25 @@
+import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
+
+import ZulipTip from "../../components/ZulipTip.astro";
+
+import ExclamationCircleIcon from "~icons/zulip-icon/exclamation-circle";
+import MoreVerticalIcon from "~icons/zulip-icon/more-vertical";
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <Steps>
+      1. Click on <ExclamationCircleIcon /> **Alert words** in the left
+         sidebar. If the **views** section is collapsed, click on the
+         **ellipsis** (<MoreVerticalIcon />), and select
+         <ExclamationCircleIcon /> **Alert words**.
+      1. Browse your alert word messages. You can click on a message recipient
+         bar to go to the [conversation](/help/reading-conversations) where the
+         alert word appeared.
+    </Steps>
+
+    <ZulipTip>
+      You can also [search for messages with your alert
+      words](/help/search-for-messages) using the `is:alerted` filter.
+    </ZulipTip>
+  </TabItem>
+</Tabs>
