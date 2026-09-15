@@ -5,6 +5,9 @@ import * as scroll_util from "./scroll_util.ts";
 
 type List<Key> = {
     scroll_container_selector: string;
+    // Height of anything floating over the bottom of the scroll
+    // container, which the highlighted row should clear.
+    bottom_overlay_height?: () => number;
     find_li: (opts: {key: Key; force_render: boolean}) => JQuery | undefined;
     first_key: () => Key | undefined;
     prev_key: (key: Key) => Key | undefined;
@@ -81,7 +84,12 @@ export class ListCursor<Key> {
 
     adjust_scroll($li: JQuery): void {
         const $scroll_container = $(this.list.scroll_container_selector);
-        scroll_util.scroll_element_into_container($li, $scroll_container);
+        scroll_util.scroll_element_into_container(
+            $li,
+            $scroll_container,
+            0,
+            this.list.bottom_overlay_height?.() ?? 0,
+        );
     }
 
     redraw(): void {
