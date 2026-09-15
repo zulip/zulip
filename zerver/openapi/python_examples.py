@@ -2087,6 +2087,49 @@ def remove_alert_words(client: Client) -> None:
     validate_against_openapi_schema(result, "/users/me/alert_words", "delete", "200")
 
 
+@openapi_test_function("/users/me/watched_phrases:get")
+def get_watched_phrases(client: Client) -> None:
+    # {code_example|start}
+    # Get all of the user's configured watched phrases.
+    result = client.call_endpoint(url="/users/me/watched_phrases", method="GET")
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/users/me/watched_phrases", "get", "200")
+
+
+@openapi_test_function("/users/me/watched_phrases:post")
+def add_watched_phrases(client: Client) -> None:
+    # {code_example|start}
+    # Add words (or phrases) to the user's set of configured watched phrases,
+    # automatically following topics where "foo" is used.
+    request = {
+        "watched_phrases": json.dumps(
+            [
+                {"watched_phrase": "foo", "automatically_follow_topics": True},
+                {"watched_phrase": "bar"},
+            ]
+        )
+    }
+    result = client.call_endpoint(url="/users/me/watched_phrases", method="POST", request=request)
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/users/me/watched_phrases", "post", "200")
+
+
+@openapi_test_function("/users/me/watched_phrases:delete")
+def remove_watched_phrases(client: Client) -> None:
+    result = client.call_endpoint(url="/users/me/watched_phrases", method="GET")
+    phrases = [phrase["watched_phrase"] for phrase in result["watched_phrases"]]
+    assert len(phrases) > 0
+    # {code_example|start}
+    # Remove words (or phrases) from the user's set of configured watched phrases.
+    request = {"watched_phrases": json.dumps(phrases)}
+    result = client.call_endpoint(url="/users/me/watched_phrases", method="DELETE", request=request)
+    # {code_example|end}
+    assert_success_response(result)
+    validate_against_openapi_schema(result, "/users/me/watched_phrases", "delete", "200")
+
+
 @openapi_test_function("/user_groups/create:post")
 def create_user_group(client: Client) -> None:
     user_ids = [6, 7, 8, 10]
@@ -2243,6 +2286,9 @@ def test_users(client: Client, owner_client: Client) -> None:
     get_alert_words(client)
     add_alert_words(client)
     remove_alert_words(client)
+    get_watched_phrases(client)
+    add_watched_phrases(client)
+    remove_watched_phrases(client)
     deactivate_own_user(client, owner_client)
     add_user_mute(client)
     remove_user_mute(client)

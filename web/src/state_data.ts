@@ -184,6 +184,13 @@ export const custom_profile_field_schema = z.object({
 
 export type CustomProfileField = z.output<typeof custom_profile_field_schema>;
 
+export const watched_phrase_schema = z.object({
+    watched_phrase: z.string(),
+    automatically_follow_topics: z.boolean(),
+});
+
+export type WatchedPhrase = z.output<typeof watched_phrase_schema>;
+
 export const scheduled_message_schema = z.intersection(
     z.object({
         scheduled_message_id: z.number(),
@@ -647,7 +654,7 @@ export const realm_schema = z.object({
 });
 
 export const split_state_data_schema = z.object({
-    alert_words: z.object({alert_words: z.array(z.string())}),
+    alert_words: z.object({watched_phrases: z.array(watched_phrase_schema)}),
     emoji: z.object({realm_emoji: realm_emoji_map_schema}),
     realm_billing: z.object({realm_billing: realm_billing_schema}),
     bot: z.object({realm_bots: z.array(server_add_bot_schema)}),

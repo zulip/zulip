@@ -6,6 +6,15 @@
             <span class="value">{{word}}</span>
         </div>
     </td>
+    <td class="follow-topic-cell">
+        {{!-- No `id`/`for` pair here, since an alert word can be any
+        phrase, including one containing spaces, which is not a valid
+        `id`. The nested input is associated with the label anyway. --}}
+        <label class="checkbox">
+            <input class="alert-word-follow-topic" type="checkbox" {{#if automatically_follow_topics}} checked="checked" {{/if}} data-word="{{word}}" />
+            <span class="rendered-checkbox"></span>
+        </label>
+    </td>
     <td>
         {{> ../components/icon_button
           icon="trash"

@@ -1,7 +1,18 @@
+from operator import itemgetter
+
 import orjson
 
-from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
-from zerver.lib.alert_words import alert_words_in_realm, user_alert_words
+from zerver.actions.alert_words import (
+    do_add_alert_words,
+    do_add_watched_phrases,
+    do_remove_watched_phrases,
+)
+from zerver.lib.alert_words import (
+    WatchedPhraseData,
+    alert_words_in_realm,
+    user_alert_words,
+    user_watched_phrases,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, most_recent_usermessage
 from zerver.models import AlertWord, UserProfile
@@ -66,7 +77,7 @@ class AlertWordTests(ZulipTestCase):
         self.assert_length(realm_alert_words[user.id], 3)
 
         # Test the case-insensitivity of removing words
-        do_remove_alert_words(user, {"ALert"})
+        do_remove_watched_phrases(user, {"ALert"})
         words = user_alert_words(user)
         self.assertEqual(set(words), set(self.interesting_alert_word_list) - {"alert"})
         realm_alert_words = alert_words_in_realm(user.realm)
@@ -74,14 +85,14 @@ class AlertWordTests(ZulipTestCase):
 
     def test_remove_word(self) -> None:
         """
-        Removing alert words works via do_remove_alert_words, even
+        Removing alert words works via do_remove_watched_phrases, even
         for multi-word and non-ascii words.
         """
         user = self.get_user()
         expected_remaining_alerts = set(self.interesting_alert_word_list)
         do_add_alert_words(user, self.interesting_alert_word_list)
         for alert_word in self.interesting_alert_word_list:
-            do_remove_alert_words(user, [alert_word])
+            do_remove_watched_phrases(user, [alert_word])
             expected_remaining_alerts.remove(alert_word)
             actual_remaining_alerts = user_alert_words(user)
             self.assertEqual(set(actual_remaining_alerts), expected_remaining_alerts)
@@ -94,7 +105,7 @@ class AlertWordTests(ZulipTestCase):
         user = self.get_user()
         do_add_alert_words(user, ["hello", "world", "python"])
         # Delete using different casing — should still match
-        do_remove_alert_words(user, ["HELLO", "World"])
+        do_remove_watched_phrases(user, ["HELLO", "World"])
         remaining = user_alert_words(user)
         self.assertEqual(set(remaining), {"python"})
 
@@ -171,6 +182,159 @@ class AlertWordTests(ZulipTestCase):
         )
         response_dict = self.assert_json_success(result)
         self.assertEqual(set(response_dict["alert_words"]), {"two", "three"})
+
+    def test_watched_phrases_list(self) -> None:
+        user = self.get_user()
+        self.login_user(user)
+
+        result = self.client_get("/json/users/me/watched_phrases")
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(response_dict["watched_phrases"], [])
+
+        do_add_watched_phrases(
+            user,
+            [
+                WatchedPhraseData(watched_phrase="one", automatically_follow_topics=True),
+                WatchedPhraseData(watched_phrase="two"),
+            ],
+        )
+
+        result = self.client_get("/json/users/me/watched_phrases")
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(
+            sorted(response_dict["watched_phrases"], key=itemgetter("watched_phrase")),
+            [
+                {"watched_phrase": "one", "automatically_follow_topics": True},
+                {"watched_phrase": "two", "automatically_follow_topics": False},
+            ],
+        )
+
+    def test_watched_phrases_add(self) -> None:
+        user = self.get_user()
+        self.login_user(user)
+
+        result = self.client_post(
+            "/json/users/me/watched_phrases",
+            {
+                "watched_phrases": orjson.dumps(
+                    [
+                        {"watched_phrase": "one ", "automatically_follow_topics": True},
+                        {"watched_phrase": "\n two"},
+                        # A phrase that is only whitespace is ignored.
+                        {"watched_phrase": "  "},
+                    ]
+                ).decode()
+            },
+        )
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(
+            sorted(response_dict["watched_phrases"], key=itemgetter("watched_phrase")),
+            [
+                {"watched_phrase": "one", "automatically_follow_topics": True},
+                {"watched_phrase": "two", "automatically_follow_topics": False},
+            ],
+        )
+
+        result = self.client_post(
+            "/json/users/me/watched_phrases",
+            {"watched_phrases": orjson.dumps([{"watched_phrase": "long" * 26}]).decode()},
+        )
+        self.assert_json_error(
+            result, 'watched_phrases[0]["watched_phrase"] is too long (limit: 100 characters)'
+        )
+
+    def test_watched_phrases_update_configuration(self) -> None:
+        user = self.get_user()
+        self.login_user(user)
+
+        do_add_watched_phrases(
+            user, [WatchedPhraseData(watched_phrase="one", automatically_follow_topics=True)]
+        )
+
+        # Posting an existing phrase updates its configuration, matching
+        # case-insensitively, rather than creating a duplicate.
+        result = self.client_post(
+            "/json/users/me/watched_phrases",
+            {
+                "watched_phrases": orjson.dumps(
+                    [{"watched_phrase": "ONE", "automatically_follow_topics": False}]
+                ).decode()
+            },
+        )
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(
+            response_dict["watched_phrases"],
+            [{"watched_phrase": "one", "automatically_follow_topics": False}],
+        )
+
+        # Omitting `automatically_follow_topics` leaves the existing
+        # configuration alone.
+        do_add_watched_phrases(
+            user, [WatchedPhraseData(watched_phrase="one", automatically_follow_topics=True)]
+        )
+        result = self.client_post(
+            "/json/users/me/watched_phrases",
+            {"watched_phrases": orjson.dumps([{"watched_phrase": "one"}]).decode()},
+        )
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(
+            response_dict["watched_phrases"],
+            [{"watched_phrase": "one", "automatically_follow_topics": True}],
+        )
+
+        # When one request configures the same phrase more than once,
+        # the last entry wins.
+        result = self.client_post(
+            "/json/users/me/watched_phrases",
+            {
+                "watched_phrases": orjson.dumps(
+                    [
+                        {"watched_phrase": "one", "automatically_follow_topics": False},
+                        {"watched_phrase": "ONE", "automatically_follow_topics": True},
+                    ]
+                ).decode()
+            },
+        )
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(
+            response_dict["watched_phrases"],
+            [{"watched_phrase": "one", "automatically_follow_topics": True}],
+        )
+
+        # The legacy `alert_words` endpoint, which cannot express this
+        # configuration, must not reset it either.
+        result = self.client_post(
+            "/json/users/me/alert_words",
+            {"alert_words": orjson.dumps(["one"]).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertEqual(
+            user_watched_phrases(user),
+            [{"watched_phrase": "one", "automatically_follow_topics": True}],
+        )
+
+    def test_watched_phrases_remove(self) -> None:
+        user = self.get_user()
+        self.login_user(user)
+
+        do_add_watched_phrases(
+            user,
+            [
+                WatchedPhraseData(watched_phrase="one", automatically_follow_topics=True),
+                WatchedPhraseData(watched_phrase="two"),
+            ],
+        )
+
+        # Removal is case-insensitive, like the legacy endpoint.
+        result = self.client_delete(
+            "/json/users/me/watched_phrases",
+            {"watched_phrases": orjson.dumps(["ONE"]).decode()},
+        )
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(
+            response_dict["watched_phrases"],
+            [{"watched_phrase": "two", "automatically_follow_topics": False}],
+        )
 
     def message_does_alert(self, user: UserProfile, message: str) -> bool:
         """Send a bunch of messages as othello, so our user is notified"""

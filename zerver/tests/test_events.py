@@ -19,7 +19,11 @@ import time_machine
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
-from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
+from zerver.actions.alert_words import (
+    do_add_alert_words,
+    do_add_watched_phrases,
+    do_remove_watched_phrases,
+)
 from zerver.actions.bots import (
     do_change_bot_owner,
     do_change_default_all_public_streams,
@@ -164,6 +168,7 @@ from zerver.actions.users import (
     do_update_outgoing_webhook_service,
 )
 from zerver.actions.video_calls import do_set_video_call_provider_token
+from zerver.lib.alert_words import WatchedPhraseData
 from zerver.lib.drafts import DraftData, do_create_drafts, do_delete_draft, do_edit_draft
 from zerver.lib.event_schema import (
     check_alert_words,
@@ -253,6 +258,7 @@ from zerver.lib.event_schema import (
     check_user_settings_update,
     check_user_status,
     check_user_topic,
+    check_watched_phrases,
 )
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.markdown import render_message_markdown
@@ -2066,13 +2072,37 @@ class NormalActionsTest(BaseAction):
         check_user_group_add_members("events[1]", events[1])
 
     def test_alert_words_events(self) -> None:
-        with self.verify_action() as events:
+        # Adding or removing a phrase sends both the `watched_phrases`
+        # event and the deprecated `alert_words` event, for clients that
+        # haven't migrated to the former.
+        with self.verify_action(num_events=2) as events:
             do_add_alert_words(self.user_profile, ["alert_word"])
-        check_alert_words("events[0]", events[0])
+        check_watched_phrases("events[0]", events[0])
+        check_alert_words("events[1]", events[1])
+        self.assertEqual(
+            events[0]["watched_phrases"],
+            [{"watched_phrase": "alert_word", "automatically_follow_topics": False}],
+        )
+        self.assertEqual(events[1]["alert_words"], ["alert_word"])
 
+        # Changing only a phrase's configuration leaves the set of
+        # phrases unchanged, so there is nothing to tell legacy clients.
         with self.verify_action() as events:
-            do_remove_alert_words(self.user_profile, ["alert_word"])
-        check_alert_words("events[0]", events[0])
+            do_add_watched_phrases(
+                self.user_profile,
+                [WatchedPhraseData(watched_phrase="alert_word", automatically_follow_topics=True)],
+            )
+        check_watched_phrases("events[0]", events[0])
+        self.assertEqual(
+            events[0]["watched_phrases"],
+            [{"watched_phrase": "alert_word", "automatically_follow_topics": True}],
+        )
+
+        with self.verify_action(num_events=2) as events:
+            do_remove_watched_phrases(self.user_profile, ["alert_word"])
+        check_watched_phrases("events[0]", events[0])
+        check_alert_words("events[1]", events[1])
+        self.assertEqual(events[0]["watched_phrases"], [])
 
     def test_saved_replies_events(self) -> None:
         with self.verify_action() as events:
