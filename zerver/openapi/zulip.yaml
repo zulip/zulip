@@ -1990,13 +1990,27 @@ paths:
                                 attachment:
                                   type: object
                                   description: |
-                                    Dictionary containing the ID of the deleted attachment.
+                                    Dictionary containing details of the deleted attachment.
                                   additionalProperties: false
+                                  required:
+                                    - id
+                                    - path_id
+                                    - message_ids
                                   properties:
                                     id:
                                       type: integer
                                       description: |
                                         The ID of the deleted attachment.
+                                    path_id:
+                                      type: string
+                                      description: |
+                                        The path_id of the deleted attachment.
+                                    message_ids:
+                                      type: array
+                                      items:
+                                        type: integer
+                                      description: |
+                                        The IDs of the messages that referenced the deleted attachment.
                                 upload_space_used:
                                   type: integer
                                   description: |
@@ -2006,7 +2020,12 @@ paths:
                                 {
                                   "type": "attachment",
                                   "op": "remove",
-                                  "attachment": {"id": 1},
+                                  "attachment":
+                                    {
+                                      "id": 1,
+                                      "path_id": "2/ce/2Xpnnwgh8JWKxBXtTfD6BHKV/zulip.txt",
+                                      "message_ids": [79],
+                                    },
                                   "upload_space_used": 0,
                                   "id": 0,
                                 }

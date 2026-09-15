@@ -13,6 +13,7 @@ import * as dialog_widget from "./dialog_widget.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
 import * as loading from "./loading.ts";
+import * as message_live_update from "./message_live_update.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
 import * as settings_config from "./settings_config.ts";
@@ -35,7 +36,7 @@ type AttachmentEvent =
       }
     | {
           op: "remove";
-          attachment: {id: number};
+          attachment: {id: number; path_id: string; message_ids: number[]};
           upload_space_used: number;
       };
 
@@ -198,6 +199,12 @@ function format_attachment_data(attachment: ServerAttachment): Attachment {
 }
 
 export function update_attachments(event: AttachmentEvent): void {
+    if (event.op === "remove") {
+        message_live_update.update_media_previews_for_deleted_attachment(
+            event.attachment.message_ids,
+            event.attachment.path_id,
+        );
+    }
     if (attachments === undefined) {
         // If we haven't fetched attachment data yet, there's nothing to do.
         return;

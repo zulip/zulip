@@ -289,13 +289,14 @@ run_test("saved_snippets", ({override}) => {
 });
 
 run_test("attachments", ({override}) => {
-    const event = event_fixtures.attachment__add;
-    const stub = make_stub();
-    // attachments_ui is hard to test deeply
-    override(attachments_ui, "update_attachments", stub.f);
-    dispatch(event);
-    assert.equal(stub.num_calls, 1);
-    assert_same(stub.get_args("event").event, event);
+    for (const event of [event_fixtures.attachment__add, event_fixtures.attachment__remove]) {
+        const stub = make_stub();
+        // attachments_ui is hard to test deeply
+        override(attachments_ui, "update_attachments", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(stub.get_args("event").event, event);
+    }
 });
 
 run_test("user groups", ({override}) => {
