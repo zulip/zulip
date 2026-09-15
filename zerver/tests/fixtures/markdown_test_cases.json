@@ -493,6 +493,16 @@
       "expected_output": "<p><a href=\"https://github.com\">https://github.com</a></p>"
     },
     {
+      "name": "link_with_space_in_url",
+      "input": "[foo](<http://example.com/a b>)",
+      "expected_output": "<p><a href=\"http://example.com/a%20b\">foo</a></p>"
+    },
+    {
+      "name": "link_with_space_in_url_and_empty_text",
+      "input": "[](<http://example.com/a b>)",
+      "expected_output": "<p><a href=\"http://example.com/a%20b\">http://example.com/a%20b</a></p>"
+    },
+    {
       "name": "fragment_link",
       "input": "[foo](http://zulip.testserver/#narrow/channel/1-Denmark)",
       "expected_output": "<p><a href=\"#narrow/channel/1-Denmark\">foo</a></p>",
