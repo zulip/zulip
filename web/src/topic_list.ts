@@ -14,6 +14,7 @@ import {ListCursor} from "./list_cursor.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
+import * as resolved_topics_jump_button from "./resolved_topics_jump_button.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
@@ -62,6 +63,7 @@ function initialize_topic_list_cursor(): void {
         highlight_class: "highlighted_row",
         list: {
             scroll_container_selector: ZOOMED_IN_SCROLL_CONTAINER_SELECTOR,
+            bottom_overlay_height: resolved_topics_jump_button.get_height,
             find_li(opts) {
                 return opts.key;
             },
@@ -148,6 +150,7 @@ function leave_zoomed_state(): number | undefined {
     zoomed_in_widget = undefined;
     topic_list_cursor.clear();
     ui_util.enable_left_sidebar_search();
+    resolved_topics_jump_button.handle_zoom_out();
     return stream_id;
 }
 
@@ -492,10 +495,22 @@ export class LeftSidebarTopicListWidget extends TopicListWidget {
 
         super.build(spinner, formatter);
 
+        if (this.for_modal) {
+            resolved_topics_jump_button.update_for_rebuilt_topic_list(
+                zoomed_in_channel_lists_resolved_topics_last(),
+            );
+        }
         if (active_topic_was_visible) {
             keep_zoomed_in_active_topic_visible();
         }
     }
+}
+
+function zoomed_in_channel_lists_resolved_topics_last(): boolean {
+    const stream_id = zoomed_in_widget?.my_stream_id;
+    return (
+        zoomed && stream_id !== undefined && stream_data.should_list_resolved_topics_last(stream_id)
+    );
 }
 
 export function clear_topic_search(e: JQuery.Event): void {
@@ -594,7 +609,10 @@ function is_zoomed_in_active_topic_visible(): boolean {
     const $scroll_container = get_zoomed_in_scroll_container();
     const container_rect = util.the($scroll_container).getBoundingClientRect();
     const row_rect = util.the($selected_topic).getBoundingClientRect();
-    return row_rect.top >= container_rect.top && row_rect.bottom <= container_rect.bottom;
+    return (
+        row_rect.top >= container_rect.top &&
+        row_rect.bottom <= container_rect.bottom - resolved_topics_jump_button.get_height()
+    );
 }
 
 // Does nothing when the active topic is not in the list, e.g.
@@ -605,7 +623,12 @@ export function keep_zoomed_in_active_topic_visible(): void {
         return;
     }
     const $scroll_container = get_zoomed_in_scroll_container();
-    scroll_util.scroll_element_into_container($selected_topic, $scroll_container, 0);
+    scroll_util.scroll_element_into_container(
+        $selected_topic,
+        $scroll_container,
+        0,
+        resolved_topics_jump_button.get_height(),
+    );
 }
 
 export function left_sidebar_scroll_zoomed_in_topic_into_view(): void {
@@ -663,6 +686,8 @@ export function zoom_in($stream_li: JQuery, stream_id: number): void {
     const spinner = true;
     zoomed_in_widget.build(spinner);
     reset_topic_list_cursor({show_highlight: false});
+
+    resolved_topics_jump_button.handle_zoom_in();
 
     function on_success(): void {
         if (!active_widgets.has(stream_id)) {
@@ -882,6 +907,11 @@ export function initialize({
     }
     $("#more-topics-modal").on("click", ".topic-box", on_topic_box_click);
     $("#stream_filters").on("click", ".topic-box", on_topic_box_click);
+
+    resolved_topics_jump_button.initialize({
+        get_scroll_container: get_zoomed_in_scroll_container,
+        get_topic_items,
+    });
 
     $("body").on("input", "#left-sidebar-filter-topic-input", (): void => {
         const stream_id = active_stream_id();
