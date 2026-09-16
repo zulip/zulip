@@ -2130,7 +2130,7 @@ body:not(.spectator-view) {
         visibility 500ms,
         opacity 500ms ease-in-out;
 
-    &.show {
+    #compose:not(.compose-fullscreen) &.show {
         visibility: visible;
         opacity: 1;
     }
