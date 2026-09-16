@@ -728,6 +728,9 @@ export async function initialize_everything(state_data) {
         // especially when user is away from screen and the window is focused.
         if (activity.received_new_messages && activity.new_user_input) {
             unread_ops.process_visible();
+            // The new messages may have pushed the bottom of the feed
+            // out of view without the feed having been scrolled.
+            scroll_to_bottom_button.update();
             activity.set_received_new_messages(false);
         }
     });
