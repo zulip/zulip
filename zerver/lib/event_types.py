@@ -574,16 +574,8 @@ class AuthenticationMethodDict(AuthenticationMethodDictCore):
     unavailable_reason: str | None = None
 
 
-class AuthenticationDict(BaseModel):
-    Google: AuthenticationMethodDict
-    Dev: AuthenticationMethodDict
-    LDAP: AuthenticationMethodDict
-    GitHub: AuthenticationMethodDict
-    Email: AuthenticationMethodDict
-
-
 class AuthenticationData(BaseModel):
-    authentication_methods: AuthenticationDict
+    authentication_methods: dict[str, AuthenticationMethodDict]
 
 
 class IconData(BaseModel):
