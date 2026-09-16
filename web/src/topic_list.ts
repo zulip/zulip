@@ -133,11 +133,21 @@ export function clear_zoomed(): void {
     zoomed_in_widget?.remove();
 }
 
+// Resets the zoomed-in state, returning the stream_id of the widget
+// that was zoomed in, if any.
+function leave_zoomed_state(): number | undefined {
+    const stream_id = zoomed_in_widget?.my_stream_id;
+    zoomed = false;
+    zoomed_in_widget = undefined;
+    topic_list_cursor.clear();
+    ui_util.enable_left_sidebar_search();
+    return stream_id;
+}
+
 export function close(): void {
     clear();
     if (zoomed) {
-        zoomed = false;
-        ui_util.enable_left_sidebar_search();
+        leave_zoomed_state();
     }
 }
 
@@ -146,16 +156,11 @@ export function zoom_out(): void {
         return;
     }
 
-    zoomed = false;
-    topic_list_cursor.clear();
-    ui_util.enable_left_sidebar_search();
-
-    const stream_id = zoomed_in_widget?.my_stream_id;
+    const stream_id = leave_zoomed_state();
     if (stream_id === undefined) {
         blueslip.error("Expected a topic list to zoom out.");
         return;
     }
-    zoomed_in_widget = undefined;
 
     const widget = active_widgets.get(stream_id);
     assert(widget !== undefined);
@@ -858,6 +863,10 @@ export function initialize({
         const left_sidebar_scroll_container = scroll_util.get_left_sidebar_scroll_container();
         if (search_term === "") {
             requestAnimationFrame(() => {
+                if (!zoomed) {
+                    // The topic list was closed before this frame.
+                    return;
+                }
                 zoomed_in_widget!.build();
                 // Restore previous scroll position.
                 left_sidebar_scroll_container.scrollTop(pre_search_scroll_position);
@@ -882,6 +891,10 @@ export function initialize({
                 pre_search_scroll_position = left_sidebar_scroll_container.scrollTop()!;
             }
             requestAnimationFrame(() => {
+                if (!zoomed) {
+                    // The topic list was closed before this frame.
+                    return;
+                }
                 zoomed_in_widget!.build();
                 // Always scroll to top when there is a search term present.
                 left_sidebar_scroll_container.scrollTop(0);
