@@ -10,6 +10,65 @@ lifecycle](../overview/release-lifecycle.md).
 
 ## Zulip Server 12.x series
 
+### Zulip Server 12.3
+
+_Released 2026-09-21_
+
+- GHSA-42mq-rxcr-wj72: An organization member could send a group
+  direct message that appeared to come from another user, with no
+  indication to recipients that it was forged; this also allowed
+  bypassing restrictions on who may send or initiate direct messages.
+  Exploiting this required using the API with a forged client
+  identifier, and was not possible through the Zulip apps. It was also
+  limited to organizations that restrict sign-ups to a list of email
+  domains, and, unless the organization's hostname is one of those
+  domains, only users whose email address is visible to everyone could
+  be forged as the sender. The forged message could only be placed in
+  a conversation that already included the attacker, and gave no
+  access to data they could not already see. This vulnerability was
+  discovered by Ada Logics using Google's security automation tooling.
+- GHSA-7w3h-65w5-m522: When messages were moved from a public
+  channel to a private channel, users who had received those messages
+  in the public channel, but were not subscribed to the private
+  channel, continued to receive the content of later edits to them.
+  Any topic such a user had muted or followed was also carried into
+  the private channel, exposing its ID and the new topic name. The
+  practical impact of this bug was limited by the fact that only a
+  message's sender can edit its content, and only within the
+  organization's time limit for doing so (10 minutes by default), so
+  the content leak generally required the move and the edit to happen
+  soon after the message was sent. This vulnerability was discovered
+  in an internal audit and independently reported by @bruhdev1290.
+- GHSA-wj5v-8mqg-gvqw: The typing notifications endpoint did not
+  check whether the sender is allowed to access the recipients,
+  allowing a guest to gain access to the user ID and Zulip API email
+  address of every user in the organization. This issue only
+  impacted organizations that limit user visibility for guests, as
+  otherwise that information is normally accessible. This
+  vulnerability was reported by @JebeenLee.
+- GHSA-3x2r-gh27-7h4f: The CSP violation reporting endpoint logged
+  several attacker-controlled fields verbatim. Since the endpoint is
+  unauthenticated, anyone could forge log entries, inject terminal
+  escape sequences into the server logs, or grow them without bound.
+  This vulnerability was reported by bugwizard12 via our HackerOne
+  program.
+- Added a startup check that the `JITSI_SERVER_URL` setting is a
+  valid URL; previously, an invalid value caused the web app to fail
+  to load, with no indication of the cause.
+- Fixed incorrect UTC offsets in the time zone picker in personal
+  settings: the offsets did not account for daylight saving time,
+  and were also wrong for time zones with negative fractional-hour
+  offsets (e.g., `America/St_Johns`).
+- Restored the integration for self-hosted Bitbucket, removed in
+  Zulip 12.0 when Bitbucket Server was discontinued; its successor,
+  Bitbucket Data Center, sends identical webhook payloads, and thus
+  the original integration works with it unchanged.
+- Fixed viewing a message's edit history in organizations
+  configured to show move history only.
+- Fixed the Mattermost import tool crashing when the export contains
+  channels whose names differ only in capitalization.
+- Updated Python dependencies.
+
 ### Zulip Server 12.2
 
 _Released 2026-08-10_
