@@ -79,7 +79,7 @@ function scroll_finish(): void {
     // Don't present the "scroll to bottom" widget if the current
     // scroll was triggered by the keyboard.
     if (!message_scroll_state.keyboard_triggered_current_scroll) {
-        scroll_to_bottom_button.show_scroll_to_bottom_button();
+        scroll_to_bottom_button.handle_non_keyboard_scroll();
     }
     message_scroll_state.set_keyboard_triggered_current_scroll(false);
 

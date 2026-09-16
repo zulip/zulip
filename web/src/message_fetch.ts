@@ -477,6 +477,9 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                 // for many common errors, and those have nicer HTML formatting,
                 // we certainly don't for every possible 400 error.
                 message_feed_loading.hide_indicators();
+                if (opts.msg_list?.is_current_message_list()) {
+                    scroll_to_bottom_button.hide_after_failed_fetch();
+                }
 
                 if (
                     message_lists.current !== undefined &&

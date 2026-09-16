@@ -163,9 +163,12 @@ type TargetMessageIdInfo = {
 export function preserves_topics_kept_unread_by_user(trigger: string | undefined): boolean {
     return (
         trigger !== undefined &&
-        ["next_topic_unread_hotkey", "old_unreads_missing", "retarget message location"].includes(
-            trigger,
-        )
+        [
+            "next_topic_unread_hotkey",
+            "next_unread_topic_button",
+            "old_unreads_missing",
+            "retarget message location",
+        ].includes(trigger)
     );
 }
 
