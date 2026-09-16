@@ -25,6 +25,7 @@ export function hide_scroll_to_bottom(): void {
         return;
     }
 
+    clearInterval(hide_scroll_to_bottom_timer);
     hide_scroll_to_bottom_timer = setInterval(() => {
         // Check if the user is hovered over the scroll-to-bottom
         // button every 3 seconds to allow time for interaction.
