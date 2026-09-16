@@ -37,6 +37,7 @@ export function build_widget(
     $preview_text?: JQuery,
     $preview_image?: JQuery,
     max_file_upload_size = default_max_file_size,
+    $drop_zone: JQuery = $upload_button,
 ): UploadWidget {
     function accept(file: File): void {
         $file_name_field.text(file.name);
@@ -67,12 +68,17 @@ export function build_widget(
         e.preventDefault();
     });
 
-    $upload_button.on("drop", (e) => {
+    $drop_zone.on("dragover", (e) => {
+        e.preventDefault();
+    });
+
+    $drop_zone.on("drop", (e) => {
         const files = e.originalEvent?.dataTransfer?.files;
         if (files === null || files === undefined || files.length === 0) {
             return false;
         }
         util.the(get_file_input()).files = files;
+        get_file_input().trigger("input").trigger("change");
         e.preventDefault();
         return false;
     });
@@ -112,7 +118,8 @@ export function build_widget(
     function close(): void {
         clear();
         $clear_button.off("click");
-        $upload_button.off("drop");
+        $drop_zone.off("dragover");
+        $drop_zone.off("drop");
         get_file_input().off("change");
         $upload_button.off("click");
     }

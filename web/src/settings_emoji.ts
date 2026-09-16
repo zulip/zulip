@@ -174,6 +174,7 @@ export function add_custom_emoji_post_render(): void {
     const $input_error = $("#emoji_file_input_error");
     const $clear_button = $("#emoji_image_clear_button");
     const $upload_button = $("#emoji_upload_button");
+    const $drop_zone = $("#emoji_upload_widget");
     const $preview_text = $("#emoji_preview_text");
     const $preview_image = $("#emoji_preview_image");
     const $placeholder_icon = $("#emoji_placeholder_icon");
@@ -188,6 +189,8 @@ export function add_custom_emoji_post_render(): void {
         $upload_button,
         $preview_text,
         $preview_image,
+        undefined,
+        $drop_zone,
     );
 
     get_file_input().on("input", () => {
