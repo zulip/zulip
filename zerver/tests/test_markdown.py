@@ -491,6 +491,21 @@ class MarkdownListPreprocessorTest(ZulipTestCase):
         original, expected = self.split_message("List without a gap\n<>* One\n* Two")
         self.assertEqual(preprocessor.run(original), expected)
 
+    def test_nested_list_of_different_type(self) -> None:
+        preprocessor = MarkdownListPreprocessor()
+        original, expected = self.split_message("1. Parent item\n  * nested bullet")
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_nested_list_of_different_type_under_bullet(self) -> None:
+        preprocessor = MarkdownListPreprocessor()
+        original, expected = self.split_message("* Parent item\n  1. nested bullet")
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_sibling_lists_of_different_type(self) -> None:
+        preprocessor = MarkdownListPreprocessor()
+        original, expected = self.split_message("* One\n<>1. Two")
+        self.assertEqual(preprocessor.run(original), expected)
+
     def test_list_after_quotes(self) -> None:
         preprocessor = MarkdownListPreprocessor()
         original, expected = self.split_message(
