@@ -160,12 +160,15 @@ export function add_custom_emoji_post_render(): void {
     $("#add-custom-emoji-modal .dialog_submit_button").prop("disabled", true);
 
     $("#add-custom-emoji-form").on("input", "input", () => {
+        const files = util.the($<HTMLInputElement>("#emoji_file_input")).files;
+        const has_multiple_files = files !== null && files.length > 1;
+        $(".emoji_name_input").toggle(!has_multiple_files);
         $("#add-custom-emoji-modal .dialog_submit_button").prop(
             "disabled",
-            $("#emoji_name").val() === "" || $("#emoji_file_input").val() === "",
+            (!has_multiple_files && $("#emoji_name").val() === "") ||
+                $("#emoji_file_input").val() === "",
         );
     });
-
     const get_file_input = function (): JQuery<HTMLInputElement> {
         return $("#emoji_file_input");
     };
@@ -190,6 +193,7 @@ export function add_custom_emoji_post_render(): void {
         $preview_text,
         $preview_image,
         undefined,
+        true,
         $drop_zone,
     );
 
@@ -220,13 +224,101 @@ export function add_custom_emoji_post_render(): void {
     });
 }
 
+export function derive_name_from_filename(filename: string): string {
+    return filename.replace(/\.[^/.]+$/, "").replaceAll(" ", "_");
+}
+
 function show_modal(): void {
     const modal_content_html = render_add_emoji({});
+
+    async function submit_one_emoji(
+        name: string,
+        file: File,
+    ): Promise<{name: string; success: boolean}> {
+        const formData = new FormData();
+        formData.append("file-0", file);
+        return new Promise((resolve) => {
+            void channel.post({
+                url: "/json/realm/emoji/" + encodeURIComponent(name),
+                data: formData,
+                cache: false,
+                processData: false,
+                contentType: false,
+                success() {
+                    resolve({name, success: true});
+                },
+                error() {
+                    resolve({name, success: false});
+                },
+            });
+        });
+    }
+
+    function finish_multi_upload(uploads: {name: string; file: File}[]): void {
+        const $emoji_status = $("#dialog_error");
+        void (async () => {
+            const results = [];
+            for (const upload of uploads) {
+                results.push(await submit_one_emoji(upload.name, upload.file));
+            }
+            const failed = results.filter((r) => !r.success);
+            dialog_widget.hide_dialog_spinner();
+            if (failed.length === 0) {
+                dialog_widget.close();
+            } else if (failed.length < results.length) {
+                ui_report.client_error(
+                    $t_html(
+                        {
+                            defaultMessage:
+                                "Failed to add: {names}. Other emoji were added successfully.",
+                        },
+                        {names: failed.map((f) => f.name).join(", ")},
+                    ),
+                    $emoji_status,
+                );
+            } else {
+                ui_report.client_error(
+                    $t_html(
+                        {defaultMessage: "Failed to add: {names}."},
+                        {names: failed.map((f) => f.name).join(", ")},
+                    ),
+                    $emoji_status,
+                );
+            }
+        })();
+    }
 
     function add_custom_emoji(): void {
         dialog_widget.show_dialog_spinner();
 
         const $emoji_status = $("#dialog_error");
+        const files = util.the($<HTMLInputElement>("#emoji_file_input")).files;
+        assert(files !== null && files.length > 0);
+
+        // Multi-file path: names are derived from filenames, no
+        // per-file default/custom override confirmation (out of
+        // scope for this first version).
+        if (files.length > 1) {
+            const uploads = [...files].map((file) => ({
+                name: derive_name_from_filename(file.name),
+                file,
+            }));
+            for (const upload of uploads) {
+                if (upload.name === "") {
+                    ui_report.client_error(
+                        $t_html({defaultMessage: "Failed: Emoji name is required."}),
+                        $emoji_status,
+                    );
+                    dialog_widget.hide_dialog_spinner();
+                    return;
+                }
+            }
+            finish_multi_upload(uploads);
+            return;
+        }
+
+        // Single-file path: preserves original behavior exactly,
+        // including the default-emoji override confirmation.
         const emoji: Record<string, string> = {};
 
         function submit_custom_emoji_request(formData: FormData): void {
@@ -274,11 +366,7 @@ function show_modal(): void {
         }
 
         const formData = new FormData();
-        const files = util.the($<HTMLInputElement>("input#emoji_file_input")).files;
-        assert(files !== null);
-        for (const [i, file] of [...files].entries()) {
-            formData.append("file-" + i, file);
-        }
+        formData.append("file-0", files[0]!);
 
         if (is_default_emoji(emoji["name"])) {
             if (!current_user.is_admin) {
@@ -309,6 +397,7 @@ function show_modal(): void {
             submit_custom_emoji_request(formData);
         }
     }
+
     dialog_widget.launch({
         modal_title_html: $t_html({defaultMessage: "Add a new emoji"}),
         modal_content_html,
