@@ -4,11 +4,10 @@ const {Role} = require("./example_user.cjs");
 
 //  These events are not guaranteed to be perfectly
 //  representative of what the server sends.  We
-//  have a tool called check-schemas that tries
-//  to validate this data against server side schemas,
-//  but there are certain edge cases that the tool now
-//  skips.  And even when the data matches the schema,
-//  it may not be completely representative.
+//  have a tool called check-schemas that validates
+//  this data against server side schemas, but even
+//  when the data matches the schema, it may not be
+//  completely representative.
 
 const test_user = {
     email: "test@example.com",
@@ -470,17 +469,32 @@ exports.fixtures = {
         value: 42,
     },
 
-    realm__update_dict__default: {
+    realm__update_dict__allow_message_editing: {
         type: "realm",
         op: "update_dict",
         property: "default",
         data: {
             allow_message_editing: true,
-            message_content_edit_limit_seconds: 5,
-            create_multiuse_invite_group: 3,
+        },
+    },
+
+    realm__update_dict__authentication_methods: {
+        type: "realm",
+        op: "update_dict",
+        property: "default",
+        data: {
             authentication_methods: {
                 Google: {enabled: true, available: true},
             },
+        },
+    },
+
+    realm__update_dict__group_settings: {
+        type: "realm",
+        op: "update_dict",
+        property: "default",
+        data: {
+            create_multiuse_invite_group: 3,
             can_add_custom_emoji_group: 3,
             can_add_subscribers_group: 3,
             can_create_bots_group: 3,
@@ -489,10 +503,6 @@ exports.fixtures = {
             can_move_messages_between_topics_group: 3,
             can_resolve_topics_group: 1,
             direct_message_permission_group: 3,
-            plan_type: 3,
-            upload_quota_mib: 50000,
-            max_file_upload_size_mib: 1024,
-            topics_policy: "disable_empty_topic",
         },
     },
 
@@ -516,6 +526,15 @@ exports.fixtures = {
         },
     },
 
+    realm__update_dict__message_content_edit_limit_seconds: {
+        type: "realm",
+        op: "update_dict",
+        property: "default",
+        data: {
+            message_content_edit_limit_seconds: 5,
+        },
+    },
+
     realm__update_dict__night_logo: {
         type: "realm",
         op: "update_dict",
@@ -523,6 +542,27 @@ exports.fixtures = {
         data: {
             night_logo_url: "night_logo.png",
             night_logo_source: "U",
+        },
+    },
+
+    realm__update_dict__plan_type: {
+        type: "realm",
+        op: "update_dict",
+        property: "default",
+        data: {
+            plan_type: 3,
+            upload_quota_mib: 50000,
+            max_file_upload_size_mib: 1024,
+        },
+    },
+
+    realm__update_dict__topics_policy: {
+        type: "realm",
+        op: "update_dict",
+        property: "default",
+        data: {
+            topics_policy: "disable_empty_topic",
+            mandatory_topics: true,
         },
     },
 
