@@ -7,6 +7,19 @@ import * as message_viewport from "./message_viewport.ts";
 import {the} from "./util.ts";
 
 let hide_scroll_to_bottom_timer: ReturnType<typeof setInterval> | undefined;
+
+function above_bottom_of_view(): boolean {
+    assert(message_lists.current !== undefined);
+    return (
+        !message_lists.current.visibly_empty() &&
+        (!message_viewport.bottom_rendered_message_visible() ||
+            !message_lists.current.view.is_fetched_end_rendered() ||
+            // False while newer messages are being fetched, when
+            // there may turn out to be none.
+            message_lists.current.data.fetch_status.can_load_newer_messages())
+    );
+}
+
 export function hide_scroll_to_bottom(): void {
     const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
     if (message_lists.current === undefined) {
@@ -15,12 +28,7 @@ export function hide_scroll_to_bottom(): void {
         return;
     }
 
-    if (
-        message_viewport.bottom_rendered_message_visible() ||
-        message_lists.current.visibly_empty()
-    ) {
-        // If last message is visible, just hide the
-        // scroll to bottom button.
+    if (!above_bottom_of_view()) {
         $show_scroll_to_bottom_button.removeClass("show");
         return;
     }
@@ -40,10 +48,7 @@ export function hide_scroll_to_bottom(): void {
 }
 
 export function show_scroll_to_bottom_button(): void {
-    if (message_viewport.bottom_rendered_message_visible()) {
-        // Only show scroll to bottom button when
-        // last message is not visible in the
-        // current scroll position.
+    if (!above_bottom_of_view()) {
         return;
     }
 

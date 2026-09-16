@@ -22,11 +22,20 @@ const scroll_to_bottom_button = zrequire("scroll_to_bottom_button");
 const $container = () => $("#scroll-to-bottom-button-container");
 const $clickable_area = () => $("#scroll-to-bottom-button-clickable-area");
 
-function set_feed(override, {bottom_visible = true, empty = false} = {}) {
+function set_feed(
+    override,
+    {bottom_visible = true, fetched_end_rendered = true, newest = "found", empty = false} = {},
+) {
     override(message_viewport, "bottom_rendered_message_visible", () => bottom_visible, {
         unused: false,
     });
-    override(message_lists, "current", {visibly_empty: () => empty});
+    override(message_lists, "current", {
+        visibly_empty: () => empty,
+        view: {is_fetched_end_rendered: () => fetched_end_rendered},
+        data: {
+            fetch_status: {can_load_newer_messages: () => newest === "not_fetched"},
+        },
+    });
 }
 
 function is_shown() {
@@ -77,9 +86,33 @@ test("hidden at the bottom of the feed", ({override}) => {
 
 test("hidden in an empty feed", ({override}) => {
     set_feed(override, {bottom_visible: false, empty: true});
-    $container().addClass("show");
 
+    scroll_to_bottom_button.show_scroll_to_bottom_button();
+    assert.ok(!is_shown());
+
+    $container().addClass("show");
     scroll_to_bottom_button.hide_scroll_to_bottom();
+    assert.ok(!is_shown());
+});
+
+test("shown when newer messages are fetched but not rendered", ({override}) => {
+    set_feed(override, {fetched_end_rendered: false});
+
+    mouse_scroll();
+    assert.ok(is_shown());
+});
+
+test("shown when newer messages are yet to be fetched", ({override}) => {
+    set_feed(override, {newest: "not_fetched"});
+
+    mouse_scroll();
+    assert.ok(is_shown());
+});
+
+test("not shown while the newest messages are being fetched", ({override}) => {
+    set_feed(override, {newest: "loading"});
+
+    mouse_scroll();
     assert.ok(!is_shown());
 });
 
