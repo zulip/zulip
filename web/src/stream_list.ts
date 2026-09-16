@@ -28,6 +28,7 @@ import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
+import * as resize from "./resize.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -819,6 +820,9 @@ export function zoom_out_topics(): void {
     $("#stream_filters li.narrow-filter").toggleClass("hide", false);
     $("#more-topics-modal").empty();
     zoomed_in_row = undefined;
+    // The left sidebar search and navigation area are visible again,
+    // so the scroll container's max height needs to be recomputed.
+    resize.resize_stream_filters_container();
 }
 
 export function set_in_home_view(stream_id: number, in_home: boolean): void {
