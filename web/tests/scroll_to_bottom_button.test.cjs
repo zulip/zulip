@@ -137,6 +137,23 @@ test("another mouse scroll restarts the three seconds", ({override}) => {
     assert.ok(!is_shown());
 });
 
+test("a keyboard scroll does not make a later hide come early", ({override}) => {
+    set_feed(override, {bottom_visible: false});
+    mouse_scroll();
+
+    clock.tick(1000);
+    keydown();
+    scroll_to_bottom_button.hide_scroll_to_bottom();
+
+    clock.tick(4500);
+    mouse_scroll();
+    clock.tick(2999);
+    assert.ok(is_shown());
+
+    clock.tick(1);
+    assert.ok(!is_shown());
+});
+
 test("hidden by a keypress without modifiers", () => {
     for (const modifier of ["shiftKey", "ctrlKey", "metaKey"]) {
         $container().addClass("show");
