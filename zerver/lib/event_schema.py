@@ -135,10 +135,6 @@ from zerver.models.streams import StreamTopicsPolicyEnum
 
 
 def validate_with_model(data: dict[str, object], model: type[BaseModel]) -> None:
-    allowed_fields = set(model.model_fields.keys())
-    if not set(data.keys()).issubset(allowed_fields):  # nocoverage
-        raise ValueError(f"Extra fields not allowed: {set(data.keys()) - allowed_fields}")
-
     model.model_validate(data, strict=True)
 
 

@@ -5,6 +5,7 @@
 # and zerver/lib/data_types.py systems for validating the schemas of
 # events; it also uses the OpenAPI tools to validate our documentation.
 import copy
+import inspect
 import time
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
@@ -17,6 +18,7 @@ from unittest import mock
 import orjson
 import time_machine
 from django.utils.timezone import now as timezone_now
+from pydantic import BaseModel
 from typing_extensions import override
 
 from zerver.actions.alert_words import do_add_alert_words, do_remove_alert_words
@@ -164,6 +166,7 @@ from zerver.actions.users import (
     do_update_outgoing_webhook_service,
 )
 from zerver.actions.video_calls import do_set_video_call_provider_token
+from zerver.lib import event_types
 from zerver.lib.drafts import DraftData, do_create_drafts, do_delete_draft, do_edit_draft
 from zerver.lib.event_schema import (
     check_alert_words,
@@ -5897,3 +5900,12 @@ class ChannelFolderActionTest(BaseAction):
 
         check_channel_folder_reorder("events[0]", events[0])
         self.assertEqual(events[0]["order"], new_order)
+
+
+class EventTypesTest(ZulipTestCase):
+    def test_models_forbid_extra_fields(self) -> None:
+        # A model extending pydantic's BaseModel directly would fall
+        # back to extra="ignore" and silently drop undeclared fields.
+        for name, model in inspect.getmembers(event_types, inspect.isclass):
+            if model.__module__ == event_types.__name__ and issubclass(model, BaseModel):
+                self.assertEqual(model.model_config.get("extra"), "forbid", name)
