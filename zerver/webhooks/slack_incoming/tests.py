@@ -368,6 +368,20 @@ Sample footer.
             expected_message,
         )
 
+    def test_attachment_relative_title_link(self) -> None:
+        expected_topic_name = ""
+        expected_message = """
+## Sample title.
+
+Sample text.
+        """.strip()
+
+        self.check_webhook(
+            "attachment_relative_title_link",
+            expected_topic_name,
+            expected_message,
+        )
+
     def test_attachment_pieces_all_null(self) -> None:
         self.check_webhook("attachment_pieces_all_null", expect_noop=True)
 

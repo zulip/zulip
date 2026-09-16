@@ -7,9 +7,11 @@ from typing_extensions import override
 from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
     get_user_full_name,
+    render_attachment,
 )
 from zerver.lib import mdiff
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.validator import wrap_wild_value
 
 
 class SlackMessageConversion(ZulipTestCase):
@@ -104,6 +106,12 @@ class SlackMessageConversion(ZulipTestCase):
         )
         self.assertEqual(text, message)
         self.assertEqual(mentioned_users, [])
+
+    def test_render_attachment_invalid_title_link(self) -> None:
+        attachment = wrap_wild_value(
+            "attachment", {"title": "Sample title.", "title_link": "https://"}
+        )
+        self.assertEqual(render_attachment(attachment), "## Sample title.")
 
     def test_has_link(self) -> None:
         slack_user_map: dict[str, int] = {}

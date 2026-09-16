@@ -413,8 +413,12 @@ def render_attachment(attachment: WildValue) -> str:
     if attachment.get("title"):
         title = attachment["title"].tame(check_string)
         if attachment.get("title_link"):
-            title_link = attachment["title_link"].tame(check_url)
-            pieces.append(f"## [{title}]({title_link})")
+            try:
+                title_link = attachment["title_link"].tame(check_url)
+                title_text = f"## [{title}]({title_link})"
+            except ValidationError:
+                title_text = f"## {title}"
+            pieces.append(title_text)
         else:
             pieces.append(f"## {title}")
     if attachment.get("pretext"):
