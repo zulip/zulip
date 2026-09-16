@@ -521,7 +521,6 @@ export function make_compose_box_full_size(): void {
     // Set the `top` property of compose-box.
     set_compose_box_top(true);
 
-    $("#scroll-to-bottom-button-container").removeClass("show");
     $("textarea#compose-textarea").trigger("focus");
 }
 
