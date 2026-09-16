@@ -760,7 +760,6 @@ run_test("realm settings", ({override}) => {
     dispatch(event);
     assert_same(realm.realm_media_preview_size, 150);
 
-    event = event_fixtures.realm__update_dict__default;
     override(realm, "realm_create_multiuse_invite_group", 1);
     override(realm, "realm_allow_message_editing", false);
     override(realm, "realm_message_content_edit_limit_seconds", 0);
@@ -797,7 +796,12 @@ run_test("realm settings", ({override}) => {
         assert.deepEqual(sub, {...events.test_streams.devel, can_add_subscribers: false});
         add_subscribers_element_updated = true;
     });
-    dispatch(event);
+    dispatch(event_fixtures.realm__update_dict__allow_message_editing);
+    dispatch(event_fixtures.realm__update_dict__message_content_edit_limit_seconds);
+    dispatch(event_fixtures.realm__update_dict__authentication_methods);
+    dispatch(event_fixtures.realm__update_dict__group_settings);
+    dispatch(event_fixtures.realm__update_dict__plan_type);
+    dispatch(event_fixtures.realm__update_dict__topics_policy);
     assert_same(realm.realm_create_multiuse_invite_group, 3);
     assert_same(realm.realm_allow_message_editing, true);
     assert_same(realm.realm_message_content_edit_limit_seconds, 5);
@@ -813,6 +817,7 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_can_resolve_topics_group, 1);
     assert_same(realm.realm_direct_message_permission_group, 3);
     assert_same(realm.realm_topics_policy, "disable_empty_topic");
+    assert_same(realm.realm_mandatory_topics, true);
     assert_same(realm.realm_plan_type, 3);
     assert_same(realm.realm_upload_quota_mib, 50000);
     assert_same(realm.max_file_upload_size_mib, 1024);
