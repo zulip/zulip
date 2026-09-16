@@ -196,6 +196,15 @@ export function add_custom_emoji_post_render(): void {
     get_file_input().on("input", () => {
         $placeholder_icon.hide();
         $preview_image.show();
+
+        const files = util.the(get_file_input()).files;
+        const $emoji_name_field = $("#emoji_name");
+
+        if (files?.[0] !== undefined && $emoji_name_field.val() === "") {
+            const file_name = files[0].name;
+            const name_without_extension = file_name.replace(/\.[^/.]+$/, "");
+            $emoji_name_field.val(name_without_extension).trigger("input");
+        }
     });
 
     $preview_text.show();

@@ -28,3 +28,19 @@ run_test("add_custom_emoji_post_render", () => {
     settings_emoji.add_custom_emoji_post_render();
     assert.ok(build_widget_stub);
 });
+
+
+run_test("auto_fill_emoji_name_from_filename", () => {
+    upload_widget.build_widget = () => {};
+    settings_emoji.add_custom_emoji_post_render();
+
+    const $emoji_file_input = $("#emoji_file_input");
+    const $emoji_name = $("#emoji_name");
+
+    $emoji_file_input[0].files = [{name: "party-parrot.png"}];
+    $emoji_name.val("");
+
+    $emoji_file_input.trigger("input");
+
+    assert.equal($emoji_name.val(), "party-parrot");
+});
