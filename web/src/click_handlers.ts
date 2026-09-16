@@ -32,6 +32,7 @@ import * as popover_menus_data from "./popover_menus_data.ts";
 import * as reactions from "./reactions.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as rows from "./rows.ts";
+import * as scroll_to_bottom_button from "./scroll_to_bottom_button.ts";
 import * as settings_config from "./settings_config.ts";
 import * as settings_panel_menu from "./settings_panel_menu.ts";
 import * as settings_toggle from "./settings_toggle.ts";
@@ -333,8 +334,25 @@ export function initialize(): void {
 
         // Since it take a few milliseconds for this button complete disappear transition,
         // it is possible for user to click it before it hides when switching narrows.
-        if (narrow_state.is_message_feed_visible()) {
-            navigate.to_end();
+        if (!narrow_state.is_message_feed_visible()) {
+            return;
+        }
+
+        switch (scroll_to_bottom_button.mode) {
+            case "scroll_to_bottom":
+                navigate.to_end();
+                break;
+            case "next_unread_topic":
+                message_view.narrow_to_next_topic({
+                    trigger: "next_unread_topic_button",
+                    only_followed_topics: false,
+                });
+                break;
+            case "next_unread_dm_conversation":
+                message_view.narrow_to_next_pm_string({
+                    trigger: "next_unread_dm_conversation_button",
+                });
+                break;
         }
     });
 
