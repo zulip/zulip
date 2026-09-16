@@ -1,0 +1,9 @@
+{
+    "attachments": [
+        {
+            "title": "Sample title.",
+            "title_link": "/#/alerts?receiver=default",
+            "text": "Sample text."
+        }
+    ]
+}
