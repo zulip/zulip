@@ -1571,8 +1571,10 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
                 in_code_fence = any(fence.is_code for fence in open_fences)
 
             # If we're not in a fenced block and we detect an upcoming list
-            # hanging off any block (including a list of another type), add
-            # a newline.
+            # hanging off any block (including a sibling list of another
+            # type at the same indentation level), add a newline. A nested
+            # list of a different type than its parent is valid Markdown
+            # without a blank line.
             li1 = self.LI_RE.match(lines[i])
             li2 = self.LI_RE.match(lines[i + 1])
             if (
@@ -1580,7 +1582,12 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
                 and lines[i]
                 and (
                     (li2 and not li1)
-                    or (li1 and li2 and (len(li1.group(1)) == 1) != (len(li2.group(1)) == 1))
+                    or (
+                        li1
+                        and li2
+                        and li2.start(1) == li1.start(1)
+                        and (len(li1.group(1)) == 1) != (len(li2.group(1)) == 1)
+                    )
                 )
             ):
                 copy.insert(i + inserts + 1, "")
