@@ -933,7 +933,9 @@ def reset_import_state() -> None:
     thread_parent_map.clear()
 
 
-def get_parent_user_id_from_thread_message(thread_message: ZerverFieldsT, subtype: str) -> str:
+def get_parent_user_id_from_thread_message(
+    thread_message: ZerverFieldsT, subtype: str | None
+) -> str:
     """
     This retrieves the user id of the sender of the original thread
     message.
@@ -1048,7 +1050,7 @@ def is_thread_parent_message(message: ZerverFieldsT) -> bool:
 
 
 def get_thread_key(message: ZerverFieldsT) -> str:
-    subtype = message.get("subtype", False)
+    subtype: str | None = message.get("subtype")
     parent_user_id = get_parent_user_id_from_thread_message(message, subtype)
     return f"{message['thread_ts']}-{parent_user_id}"
 
@@ -1208,7 +1210,7 @@ def channel_message_to_zerver_message(
 
         slack_user_id = get_message_sending_user(message)
         assert slack_user_id
-        subtype = message.get("subtype", False)
+        subtype: str | None = message.get("subtype")
 
         raw_content = process_slack_block_and_attachment(
             (to_wild_value("message", json.dumps(message))),
