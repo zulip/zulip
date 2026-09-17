@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
+from zerver.lib.event_types import Export, RealmExportEvent
 from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.upload import delete_export_tarball
 from zerver.models import Realm, RealmAuditLog, RealmExport, UserProfile
@@ -9,7 +10,9 @@ from zerver.tornado.django_api import send_event_on_commit
 
 
 def notify_realm_export(realm: Realm) -> None:
-    event = dict(type="realm_export", exports=get_realm_exports_serialized(realm))
+    event = RealmExportEvent(
+        exports=[Export(**export) for export in get_realm_exports_serialized(realm)],
+    )
     send_event_on_commit(realm, event, realm.get_human_admin_users().values_list("id", flat=True))
 
 

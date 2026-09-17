@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
+from zerver.lib.event_types import RealmUpdateDictEvent
 from zerver.lib.realm_logo import get_realm_logo_data
 from zerver.models import Realm, RealmAuditLog, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -29,9 +30,7 @@ def do_change_logo_source(
         acting_user=acting_user,
     )
 
-    event = dict(
-        type="realm",
-        op="update_dict",
+    event = RealmUpdateDictEvent(
         property="night_logo" if night else "logo",
         data=get_realm_logo_data(realm, night),
     )

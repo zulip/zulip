@@ -165,6 +165,7 @@ test("process_new_message", () => {
         sender_email: denise.email,
         sender_id: denise.user_id,
         type: "stream",
+        content: "",
         display_recipient: "Zoolippy",
         topic: "cool thing",
         subject: "the_subject",
@@ -352,6 +353,7 @@ test("update_booleans", () => {
 test("update_property", () => {
     let message1 = {
         type: "stream",
+        content: "",
         sender_full_name: alice.full_name,
         sender_id: alice.user_id,
         small_avatar_url: "alice_url",
@@ -365,6 +367,7 @@ test("update_property", () => {
     };
     let message2 = {
         type: "stream",
+        content: "",
         sender_full_name: bob.full_name,
         sender_id: bob.user_id,
         small_avatar_url: "bob_url",
@@ -411,6 +414,7 @@ test("update_property", () => {
 test("remove", () => {
     const message1 = {
         type: "stream",
+        content: "",
         sender_full_name: alice.full_name,
         sender_id: alice.user_id,
         stream_id: devel.stream_id,
@@ -424,6 +428,7 @@ test("remove", () => {
     };
     const message2 = {
         type: "stream",
+        content: "",
         sender_full_name: bob.full_name,
         sender_id: bob.user_id,
         stream_id: denmark.stream_id,
@@ -465,6 +470,7 @@ test("remove", () => {
 test("get_message_ids_in_stream", () => {
     const message1 = {
         type: "stream",
+        content: "",
         sender_full_name: alice.full_name,
         sender_id: alice.user_id,
         stream_id: devel.stream_id,
@@ -490,6 +496,7 @@ test("get_message_ids_in_stream", () => {
     };
     const message3 = {
         type: "stream",
+        content: "",
         sender_full_name: cindy.full_name,
         sender_id: cindy.user_id,
         stream_id: denmark.stream_id,
@@ -503,6 +510,7 @@ test("get_message_ids_in_stream", () => {
     };
     const message4 = {
         type: "stream",
+        content: "",
         sender_full_name: me.full_name,
         sender_id: me.user_id,
         stream_id: devel.stream_id,
@@ -531,6 +539,7 @@ test("maybe_update_raw_content", () => {
         id: 1,
         raw_content: undefined,
         type: "stream",
+        content: "",
         stream: devel.name,
         stream_id: devel.stream_id,
     };
@@ -539,6 +548,7 @@ test("maybe_update_raw_content", () => {
         id: 2,
         raw_content: undefined,
         type: "stream",
+        content: "",
         stream: denmark.name,
         stream_id: denmark.stream_id,
     };
@@ -547,6 +557,7 @@ test("maybe_update_raw_content", () => {
         id: 3,
         raw_content: "should be reset",
         type: "stream",
+        content: "",
         stream: denmark.name,
         stream_id: denmark.stream_id,
     };
@@ -594,6 +605,13 @@ test("save_topic_links", () => {
     // If the link isn't a narrow link, it doesn't save anything.
     let link = "bad-link";
     message_store.save_topic_links(message_with_content(`<div><a href='${link}'>a link!</a>`));
+    assert_maps_empty();
+
+    // Same when the message only mentions a narrow link without linking to one.
+    link = "https://example.com";
+    message_store.save_topic_links(
+        message_with_content(`<div><a href='${link}'>see #narrow/channel/10-design</a>`),
+    );
     assert_maps_empty();
 
     // Malformed link doesn't throw an error
