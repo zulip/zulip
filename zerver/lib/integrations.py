@@ -211,13 +211,16 @@ class Integration:
         self.doc = doc
 
     def is_enabled_in_catalog(self) -> bool:
-        return self.name not in (
-            # Integrations being incrementally added
-            "intercom",
-            "notion",
-            # Broken integrations awaiting fixes
-            "hubot",
-        )
+        if self.name in INTEGRATIONS_DISABLED_IN_CATALOG:
+            return False
+
+        # Exclude custom integrations in self-hosted servers lacking docs.
+        return self.has_doc()
+
+    def has_doc(self) -> bool:
+        from zerver.lib.templates import markdown_path_exists
+
+        return markdown_path_exists(self.doc)
 
     def get_logo_path(self) -> str:
         paths_to_check = [
@@ -1188,6 +1191,15 @@ INTEGRATIONS: dict[str, Integration] = {
 }
 
 hubot_integration_names = {integration.name for integration in HUBOT_INTEGRATIONS}
+
+# Add integrations that are deliberately kept out of the catalog here.
+INTEGRATIONS_DISABLED_IN_CATALOG: set[str] = {
+    # Integrations being incrementally added
+    "intercom",
+    "notion",
+    # Broken integrations awaiting fixes
+    "hubot",
+}
 
 # Add integrations whose example screenshots are not yet automated here
 INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
