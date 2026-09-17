@@ -567,6 +567,19 @@ Outside. Should convert:<>
         original, expected = self.split_message(msg)
         self.assertEqual(preprocessor.run(original), expected)
 
+    def test_nested_list_different_type(self) -> None:
+        preprocessor = MarkdownListPreprocessor()
+        # A nested list of a different type should not get a blank line.
+        original, expected = self.split_message(
+            "1. Parent item\n   * nested bullet\n* Another item\n   1. nested ordered"
+        )
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_sibling_list_different_type(self) -> None:
+        preprocessor = MarkdownListPreprocessor()
+        original, expected = self.split_message("1. ordered item\n<>* unordered item")
+        self.assertEqual(preprocessor.run(original), expected)
+
 
 class MarkdownFixtureTest(ZulipTestCase):
     def load_markdown_tests(self) -> tuple[dict[str, Any], list[list[str]]]:
