@@ -240,8 +240,10 @@ export function append_user_group_from_name(
 }
 
 export async function get_pill_user_ids(pill_widget: CombinedPillContainer): Promise<number[]> {
-    const user_ids = user_pill.get_user_ids(pill_widget);
     const stream_user_ids = await stream_pill.get_user_ids(pill_widget);
+    // Read the other pills only after waiting for subscriber data,
+    // since pills may have been removed while we were waiting.
+    const user_ids = user_pill.get_user_ids(pill_widget);
     const group_user_ids = user_group_pill.get_user_ids(pill_widget);
     return [...user_ids, ...stream_user_ids, ...group_user_ids];
 }
