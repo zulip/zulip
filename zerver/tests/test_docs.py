@@ -389,6 +389,17 @@ class DocPageTest(ZulipTestCase):
             ["Zulip Dev", "Some description", 'data-category="research"'], result
         )
 
+        # Reset
+        realm.demo_organization_scheduled_deletion_date = None
+        realm.save(update_fields=["demo_organization_scheduled_deletion_date"])
+        self._test("/communities/", ["Open communities directory", "Zulip Dev", "Some description"])
+
+        # Deactivated organizations are not shown.
+        realm.deactivated = True
+        realm.save(update_fields=["deactivated"])
+        result = self.client_get("/communities/")
+        self.assert_not_in_success_response(["Zulip Dev"], result)
+
     def test_integration_doc_endpoints(self) -> None:
         images_in_docs = set()
 
