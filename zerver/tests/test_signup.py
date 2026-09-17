@@ -1379,6 +1379,8 @@ class UserSignUpTest(ZulipTestCase):
         full_name: str = "New user's name",
         realm: Realm | None = None,
         subdomain: str | None = None,
+        timezone: str | None = None,
+        browser_locale: str | None = None,
     ) -> Union[UserProfile, "TestHttpResponse"]:
         """Common test function for signup tests.  It is a goal to use this
         common function for all signup tests to avoid code duplication; doing
@@ -1408,8 +1410,14 @@ class UserSignUpTest(ZulipTestCase):
 
         # Pick a password and agree to the ToS. This should create our
         # account, log us in, and redirect to the app.
+        extra_kwargs: dict[str, Any] = {}
+        if timezone is not None:
+            extra_kwargs["timezone"] = timezone
+        if browser_locale is not None:
+            extra_kwargs["HTTP_ACCEPT_LANGUAGE"] = browser_locale
+        if email_address_visibility is not None:
         result = self.submit_reg_form_for_user(
-            email, password, full_name=full_name, **client_kwargs
+            email, password, full_name=full_name, **client_kwargs, **extra_kwargs
         )
 
         if result.status_code == 200:
@@ -1556,24 +1564,12 @@ class UserSignUpTest(ZulipTestCase):
         realm = get_realm("zulip")
         do_set_realm_property(realm, "default_language", "de", acting_user=None)
 
-        result = self.client_post("/accounts/home/", {"email": email})
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
+        self.verify_signup(
+            email=email,
+            password=password,
+            timezone=timezone,
+            browser_locale="fr,en;q=0.9",
         )
-        result = self.client_get(result["Location"])
-        self.assert_in_response("check your email", result)
-
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
-
-        # Pick a password and agree to the ToS.
-        result = self.submit_reg_form_for_user(
-            email, password, timezone=timezone, HTTP_ACCEPT_LANGUAGE="fr,en;q=0.9"
-        )
-        self.assertEqual(result.status_code, 302)
 
         user_profile = self.nonreg_user("newguy")
         self.assertNotEqual(user_profile.default_language, realm.default_language)
@@ -1589,22 +1585,11 @@ class UserSignUpTest(ZulipTestCase):
         realm = get_realm("zulip")
         do_set_realm_property(realm, "default_language", "de", acting_user=None)
 
-        result = self.client_post("/accounts/home/", {"email": email})
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
+        self.verify_signup(
+            email=email,
+            password=password,
+            browser_locale="en-IND",
         )
-        result = self.client_get(result["Location"])
-        self.assert_in_response("check your email", result)
-
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
-
-        # Pick a password and agree to the ToS.
-        result = self.submit_reg_form_for_user(email, password, HTTP_ACCEPT_LANGUAGE="en-IND")
-        self.assertEqual(result.status_code, 302)
 
         user_profile = self.nonreg_user("newguy")
         self.assertEqual(user_profile.default_language, realm.default_language)
@@ -1625,21 +1610,7 @@ class UserSignUpTest(ZulipTestCase):
             realm_user_default, "twenty_four_hour_time", True, acting_user=None
         )
 
-        result = self.client_post("/accounts/home/", {"email": email})
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
-        )
-        result = self.client_get(result["Location"])
-        self.assert_in_response("check your email", result)
-
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
-
-        result = self.submit_reg_form_for_user(email, password)
-        self.assertEqual(result.status_code, 302)
+        self.verify_signup(email=email, password=password)
 
         user_profile = self.nonreg_user("newguy")
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
