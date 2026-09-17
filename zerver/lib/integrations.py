@@ -210,13 +210,7 @@ class Integration:
         self.doc = doc
 
     def is_enabled_in_catalog(self) -> bool:
-        return self.name not in (
-            # Integrations being incrementally added
-            "intercom",
-            "notion",
-            # Broken integrations awaiting fixes
-            "hubot",
-        )
+        return self.name not in INTEGRATIONS_DISABLED_IN_CATALOG
 
     def get_logo_path(self) -> str:
         paths_to_check = [
@@ -1193,6 +1187,15 @@ INTEGRATIONS: dict[str, Integration] = {
 }
 
 hubot_integration_names = {integration.name for integration in HUBOT_INTEGRATIONS}
+
+# Add integrations that are deliberately kept out of the catalog here.
+INTEGRATIONS_DISABLED_IN_CATALOG: set[str] = {
+    # Integrations being incrementally added
+    "intercom",
+    "notion",
+    # Broken integrations awaiting fixes
+    "hubot",
+}
 
 # Add integrations whose example screenshots are not yet automated here
 INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
