@@ -15,7 +15,12 @@ from corporate.models.customers import Customer
 from corporate.models.plans import CustomerPlan
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.context_processors import get_apps_page_url
-from zerver.lib.integrations import BOT_INTEGRATIONS, CATEGORIES, INTEGRATIONS
+from zerver.lib.integrations import (
+    BOT_INTEGRATIONS,
+    CATEGORIES,
+    INTEGRATIONS,
+    IncomingWebhookIntegration,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.url_redirects import INTEGRATION_CATEGORY_SLUGS
@@ -572,6 +577,21 @@ class DocPageTest(ZulipTestCase):
         url = "/integrations/"
         og_title = '<meta property="og:title" content="Zulip integrations" />'
         self._test(url, [og_title, og_description, get_canonical_url(url)])
+
+    def test_integration_without_doc(self) -> None:
+        documented = IncomingWebhookIntegration("documented", ["misc"], doc="json/doc.md")
+        undocumented = IncomingWebhookIntegration("undocumented", ["misc"])
+        with mock.patch.dict(
+            INTEGRATIONS, {documented.name: documented, undocumented.name: undocumented}
+        ):
+            result = self.client_get("/integrations/category/misc")
+            self.assert_in_success_response(
+                ['<a href="/integrations/documented?category=misc">'], result
+            )
+            self.assert_not_in_success_response(["/integrations/undocumented"], result)
+
+            result = self.client_get("/integrations/undocumented")
+            self.assertEqual(result.status_code, 404)
 
     def test_integration_404s(self) -> None:
         # We don't need to test all the pages for 404

@@ -13,6 +13,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.template import Library, engines
 from django.template.backends.jinja2 import Jinja2
 from django.utils.safestring import mark_safe
+from jinja2 import TemplateNotFound
 from markupsafe import Markup
 
 import zerver.lib.markdown.api_arguments_table_generator
@@ -100,6 +101,17 @@ def get_markdown_source(markdown_file_path: str) -> str:
     assert isinstance(jinja, Jinja2)
     assert jinja.env.loader is not None
     return jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
+
+
+# Unlike functools.cache, this is bypassed in development, so new
+# docs are found without restarting the server.
+@ignore_unhashable_lru_cache(512)
+def markdown_path_exists(markdown_file_path: str) -> bool:
+    try:
+        get_markdown_source(markdown_file_path)
+    except (FileNotFoundError, TemplateNotFound):
+        return False
+    return True
 
 
 # render_markdown_path is passed a context dictionary (unhashable), which

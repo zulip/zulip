@@ -210,7 +210,16 @@ class Integration:
         self.doc = doc
 
     def is_enabled_in_catalog(self) -> bool:
-        return self.name not in INTEGRATIONS_DISABLED_IN_CATALOG
+        if self.name in INTEGRATIONS_DISABLED_IN_CATALOG:
+            return False
+
+        # Custom integrations on self-hosted servers may not have docs.
+        return self.has_doc()
+
+    def has_doc(self) -> bool:
+        from zerver.lib.templates import markdown_path_exists
+
+        return markdown_path_exists(self.doc)
 
     def get_logo_path(self) -> str:
         paths_to_check = [
@@ -453,8 +462,9 @@ class EmbeddedBotIntegration(Integration):
 
     @override
     def is_enabled_in_catalog(self) -> bool:
-        # Only integrations with docs can be part of the catalog
-        # Embedded bots do not have docs
+        # Embedded bots have no catalog docs. has_doc() can't be relied
+        # on to exclude them, since their default doc path can match
+        # another integration's doc (e.g., giphy).
         return False
 
 
