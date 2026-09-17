@@ -7,6 +7,7 @@ from zerver.lib.integrations import (
     HUBOT_INTEGRATIONS,
     INCOMING_WEBHOOK_INTEGRATIONS,
     INTEGRATIONS,
+    INTEGRATIONS_DISABLED_IN_CATALOG,
     NO_SCREENSHOT_CONFIG,
     PLUGIN_INTEGRATIONS,
     PYTHON_API_INTEGRATIONS,
@@ -14,6 +15,7 @@ from zerver.lib.integrations import (
     VIDEO_CALL_INTEGRATIONS,
     ZAPIER_INTEGRATIONS,
     BotIntegration,
+    EmbeddedBotIntegration,
     HubotIntegration,
     IncomingWebhookIntegration,
     Integration,
@@ -93,6 +95,27 @@ class IntegrationsTestCase(ZulipTestCase):
             + "\n".join(integrations_using_fallback_logo)
             + '\nAdd an SVG for each to "static/images/integrations/logos", or run'
             + '\n"./tools/provision" if these are bot integrations.',
+        )
+
+    def test_no_missing_doc(self) -> None:
+        # Official integrations should have docs. Custom integrations in
+        # self-hosted servers may not, and are left out of the catalog.
+        # Embedded bots are excluded from the catalog, so they aren't tested.
+        integrations_missing_docs = {
+            integration.name
+            for integration in INTEGRATIONS.values()
+            if not isinstance(integration, EmbeddedBotIntegration)
+            and integration.name not in INTEGRATIONS_DISABLED_IN_CATALOG
+            and not integration.has_doc()
+        }
+
+        self.assertEqual(
+            integrations_missing_docs,
+            set(),
+            "\n\nThe documentation of the following integrations is missing:\n"
+            + "\n".join(integrations_missing_docs)
+            + '\nAdd a doc for each, or run "./tools/provision" if these are'
+            + "\nbot integrations.",
         )
 
     def test_no_missing_doc_screenshot_config(self) -> None:
