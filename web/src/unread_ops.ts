@@ -265,7 +265,11 @@ function bulk_update_read_flags_for_narrow(
 
             if (!data.found_newest) {
                 assert(data.last_processed_id !== null);
-                show_read_flag_update_progress_banner(operation, messages_read_till_now, operation_banner);
+                show_read_flag_update_progress_banner(
+                    operation,
+                    messages_read_till_now,
+                    operation_banner,
+                );
 
                 bulk_update_read_flags_for_narrow(
                     narrow,
@@ -279,7 +283,11 @@ function bulk_update_read_flags_for_narrow(
                     caller_modal_id,
                 );
             } else {
-                show_read_flag_update_success_banner(operation, messages_read_till_now, operation_banner);
+                show_read_flag_update_success_banner(
+                    operation,
+                    messages_read_till_now,
+                    operation_banner,
+                );
 
                 if (_.isEqual(narrow, all_unread_messages_narrow) && unread.old_unreads_missing) {
                     // In the rare case that the user had more than
@@ -587,7 +595,11 @@ function do_mark_unread_by_narrow(
             ];
             if (!data.found_newest) {
                 assert(data.last_processed_id !== null);
-                show_read_flag_update_progress_banner("unread", messages_marked_unread_till_now, banner);
+                show_read_flag_update_progress_banner(
+                    "unread",
+                    messages_marked_unread_till_now,
+                    banner,
+                );
 
                 do_mark_unread_by_narrow(
                     data.last_processed_id,
@@ -599,7 +611,11 @@ function do_mark_unread_by_narrow(
                     banner,
                 );
             } else {
-                show_read_flag_update_success_banner("unread", messages_marked_unread_till_now, banner);
+                show_read_flag_update_success_banner(
+                    "unread",
+                    messages_marked_unread_till_now,
+                    banner,
+                );
                 if (unsubscribed_ignored_channels.length > 0) {
                     handle_skipped_unsubscribed_streams(unsubscribed_ignored_channels);
                     unsubscribed_ignored_channels = [];
