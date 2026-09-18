@@ -24,6 +24,7 @@ from zerver.views.development.integrations import (
     check_send_webhook_fixture_message,
     dev_panel,
     get_fixtures,
+    recalculate_signature,
     send_all_webhook_fixture_messages,
 )
 from zerver.views.development.registration import (
@@ -98,6 +99,10 @@ urls = [
         "devtools/integrations/send_all_webhook_fixture_messages", send_all_webhook_fixture_messages
     ),
     path("devtools/integrations/<integration_name>/fixtures", get_fixtures),
+    path(
+        "devtools/integrations/recalculate_signature",
+        recalculate_signature,
+    ),
     path("config-error/<error_name>", config_error, name="config_error"),
     # Special endpoint to remove all the server-side caches.
     path("flush_caches", remove_caches),

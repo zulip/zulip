@@ -49,6 +49,8 @@ const integrations_api_response_schema = z.object({
 
 type ServerResponse = z.infer<typeof integrations_api_response_schema>;
 
+let last_computed_header_key: string | null = null; // Tracks the current signature header for auto-clearing when switching integrations
+
 const loaded_fixtures = new Map<string, Fixtures>();
 const url_base = "/api/v1/external/";
 
@@ -231,11 +233,83 @@ function update_url(): void {
                 params.set("topic", topic_name);
             }
         }
+        const webhook_secret = $<HTMLInputElement>("input#webhook_secret").val()!;
         const url = `${url_base}${integration_name}?${params.toString()}`;
         url_field!.value = url;
+
+        sync_signature_headers(integration_name, webhook_secret);
+    }
+}
+
+function sync_signature_headers(integration_name: string, webhook_secret: string): void {
+    const $custom_headers_field = $<HTMLTextAreaElement>("textarea#custom_http_headers");
+    const current_headers_raw = $custom_headers_field.val()?.toString().trim() ?? "";
+
+    let headers_object: Record<string, string> = {};
+    if (current_headers_raw !== "") {
+        try {
+            headers_object = z
+                .record(z.string(), z.string())
+                .parse(JSON.parse(current_headers_raw));
+        } catch {
+            headers_object = {};
+        }
     }
 
-    return;
+    if (last_computed_header_key && Object.hasOwn(headers_object, last_computed_header_key)) {
+        Reflect.deleteProperty(headers_object, last_computed_header_key);
+    }
+
+    if (webhook_secret.trim() === "") {
+        last_computed_header_key = null;
+        if (Object.keys(headers_object).length === 0) {
+            $custom_headers_field.val("{}");
+        } else {
+            $custom_headers_field.val(JSON.stringify(headers_object, null, 4));
+        }
+        return;
+    }
+
+    const raw_payload = $<HTMLTextAreaElement>("textarea#fixture_body").val() ?? "";
+    let cleaned_payload: string;
+
+    try {
+        cleaned_payload = JSON.stringify(JSON.parse(raw_payload));
+    } catch {
+        cleaned_payload = raw_payload.trim();
+    }
+
+    channel.post({
+        url: "/devtools/integrations/recalculate_signature",
+        data: JSON.stringify({
+            secret: webhook_secret,
+            payload: cleaned_payload,
+            integration_name,
+        }),
+        success(raw_data: unknown) {
+            const data = z
+                .object({
+                    supported: z.optional(z.boolean()),
+                    clear_signature: z.optional(z.boolean()),
+                    header_key: z.string(),
+                    signature: z.string(),
+                })
+                .parse(raw_data);
+
+            if (!data.supported || data.clear_signature) {
+                last_computed_header_key = null;
+                if (Object.keys(headers_object).length === 0) {
+                    $custom_headers_field.val("{}");
+                } else {
+                    $custom_headers_field.val(JSON.stringify(headers_object, null, 4));
+                }
+            } else {
+                headers_object[data.header_key] = data.signature;
+                last_computed_header_key = data.header_key;
+                $custom_headers_field.val(JSON.stringify(headers_object, null, 4));
+            }
+        },
+    });
 }
 
 // API callers: These methods handle communicating with the Python backend API.
@@ -440,4 +514,6 @@ $(() => {
     $("#stream_name").on("change", update_url);
 
     $("#topic_name").on("change", update_url);
+
+    $("#webhook_secret").on("change", update_url);
 });

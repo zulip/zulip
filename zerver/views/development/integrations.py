@@ -3,17 +3,23 @@ from contextlib import suppress
 from typing import TYPE_CHECKING, Any
 
 import orjson
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.http.response import HttpResponseBase
 from django.shortcuts import render
 from django.test import Client
+from django.utils.encoding import force_bytes
+from django.views.decorators.csrf import csrf_exempt
 from pydantic import Json
 
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
-from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
+from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS, WEBHOOK_SIGNATURE_CONFIGS
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
-from zerver.lib.webhooks.common import call_fixture_to_headers, standardize_headers
+from zerver.lib.webhooks.common import (
+    call_fixture_to_headers,
+    compute_webhook_signature,
+    standardize_headers,
+)
 from zerver.models import UserProfile
 from zerver.models.realms import get_realm
 
@@ -156,3 +162,49 @@ def send_all_webhook_fixture_messages(
             }
         )
     return json_success(request, data={"responses": responses})
+
+
+@csrf_exempt
+def recalculate_signature(request: HttpRequest) -> JsonResponse:
+    """
+    Endpoint invoked by the frontend UI dev panel to compute
+    and format signature header blocks based on the integration.
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    try:
+        data = orjson.loads(request.body)
+        secret = data.get("secret", "")
+        payload_string = data.get("payload", "")
+        integration_name = data.get("integration_name", "").lower().strip()
+
+        if integration_name not in WEBHOOK_SIGNATURE_CONFIGS:
+            return JsonResponse(
+                {"supported": False, "msg": "No signature rules configured for this platform."}
+            )
+
+        if not secret:
+            return JsonResponse({"supported": True, "clear_signature": True})
+
+        try:
+            payload_bytes = orjson.dumps(orjson.loads(payload_string))
+        except Exception:
+            payload_bytes = force_bytes(payload_string)
+
+        webhook_secret_bytes = force_bytes(secret)
+        config = WEBHOOK_SIGNATURE_CONFIGS[integration_name]
+        header_key = config.header
+        header_value = compute_webhook_signature(webhook_secret_bytes, payload_bytes, config)
+
+        return JsonResponse(
+            {
+                "supported": True,
+                "clear_signature": False,
+                "header_key": header_key,
+                "signature": header_value,
+            }
+        )
+
+    except Exception:
+        return JsonResponse({"error": "Invalid request payload."}, status=400)
