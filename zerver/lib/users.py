@@ -137,6 +137,11 @@ def check_valid_bot_config(
     if bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
         from zerver.lib.integrations import INCOMING_WEBHOOK_INTEGRATIONS
 
+        # integration_id is stored alongside the integration's own
+        # config options to identify which integration this bot is for,
+        # but is not itself one of them; exclude it from validation.
+        config_data = {k: v for k, v in config_data.items() if k != "integration_id"}
+
         config_options = None
         for integration in INCOMING_WEBHOOK_INTEGRATIONS:
             if integration.name == service_name:
