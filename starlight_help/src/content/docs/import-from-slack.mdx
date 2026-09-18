@@ -193,8 +193,14 @@ in mind about the import process:
   | Single Channel Guest    | Guest         |
   | Multi Channel Guest     | Guest         |
   | Channel creator         | none          |
+* Messages that are not part of a thread are imported into a topic named
+  "imported from Slack" in the channel where they were sent.
 * Slack threads are imported as topics with names that include snippets of the
-  original message, such as "2023-05-30 Hi, can anyone reply if you're o…".
+  original message, such as "2023-05-30 Hi, can anyone reply if you're o…". The
+  message that started the thread stays in the "imported from Slack" topic,
+  where it links to the thread's topic, and the thread's first reply
+  [quotes](/help/quote-or-forward-a-message) the message that started the
+  thread.
 * Message edit history and `@user joined #channel_name` messages are not imported.
 
 ## Clean up after the Slack export

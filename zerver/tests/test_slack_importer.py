@@ -199,6 +199,18 @@ def slack_import_integrity_error(constraint_name: str) -> IntegrityError:
     return error
 
 
+def get_expected_quote_context(
+    sender_mention: str, stream_id: int, channel_name: str, message_id: int
+) -> str:
+    """The line the importer puts above a quoted thread message, which is
+    always the thread message left behind in the main import topic."""
+    topic_url = f"#narrow/channel/{stream_id}-{channel_name}/topic/imported.20from.20Slack"
+    return (
+        f"{sender_mention} [said]({topic_url}/near/{message_id})"
+        f" in [#{channel_name} > imported from Slack]({topic_url}/with/{message_id}):"
+    )
+
+
 class SlackImporter(ZulipTestCase):
     @override
     def setUp(self) -> None:
@@ -1551,8 +1563,22 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[1]["content"], expected_thread_1_message_1_content)
         self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
 
-        # Thread reply is in the correct thread topic
-        expected_thread_1_message_2_content = "random"
+        # The thread reply is in the correct thread topic, and being the
+        # thread's first reply, it quotes the thread message left behind
+        # in the main topic.
+        thread_1_message_1_quote_context = get_expected_quote_context(
+            "@_**Jane**",
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            zerver_message[1]["id"],
+        )
+        expected_thread_1_message_2_content = f"""
+{thread_1_message_1_quote_context}
+```quote
+{original_thread_1_message_1_content}
+```
+random
+""".strip()
         self.assertEqual(zerver_message[2]["content"], expected_thread_1_message_2_content)
         self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_1_topic_name)
 
@@ -1574,8 +1600,19 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[3]["content"], expected_thread_2_message_1_content)
         self.assertEqual(zerver_message[3][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
 
-        # Thread reply is in the correct thread topic
-        expected_thread_2_message_2_content = "another reply"
+        thread_2_message_1_quote_context = get_expected_quote_context(
+            "@_**Jon**",
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            zerver_message[3]["id"],
+        )
+        expected_thread_2_message_2_content = f"""
+{thread_2_message_1_quote_context}
+```quote
+{original_thread_2_message_1_content}
+```
+another reply
+""".strip()
         self.assertEqual(zerver_message[4]["content"], expected_thread_2_message_2_content)
         self.assertEqual(zerver_message[4][EXPORT_TOPIC_NAME], expected_thread_2_topic_name)
 
@@ -1636,9 +1673,23 @@ message body text
         self.assertEqual(first_chunk.zerver_message[0]["content"], expected_parent_content)
         self.assertEqual(first_chunk.zerver_message[0][EXPORT_TOPIC_NAME], MAIN_SLACK_IMPORT_TOPIC)
 
-        # The reply, converted in the second chunk, is routed to the thread topic.
+        # The reply, converted in the second chunk, is routed to the thread
+        # topic and quotes the thread message from the first chunk.
+        thread_message_quote_context = get_expected_quote_context(
+            "@_**Jane**",
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            first_chunk.zerver_message[0]["id"],
+        )
+        expected_reply_content = f"""
+{thread_message_quote_context}
+```quote
+message body text
+```
+random
+""".strip()
         self.assert_length(second_chunk.zerver_message, 1)
-        self.assertEqual(second_chunk.zerver_message[0]["content"], "random")
+        self.assertEqual(second_chunk.zerver_message[0]["content"], expected_reply_content)
         self.assertEqual(
             second_chunk.zerver_message[0][EXPORT_TOPIC_NAME], expected_thread_topic_name
         )
@@ -1677,6 +1728,236 @@ message body text
         self.assertEqual(conversion_result.zerver_message[0][EXPORT_TOPIC_NAME], Message.DM_TOPIC)
         self.assertEqual(conversion_result.zerver_message[1]["content"], "dm thread reply")
         self.assertEqual(conversion_result.zerver_message[1][EXPORT_TOPIC_NAME], Message.DM_TOPIC)
+
+    def test_only_first_thread_reply_quotes_thread_message(self) -> None:
+        slack_recipient_name_to_zulip_recipient_id = {"random": 2, "general": 1}
+        thread = [
+            {
+                "text": "thread message",
+                "user": "U061A5N1G",
+                "ts": "1434139102.000002",
+                "thread_ts": "1434139102.000002",
+                "channel_name": "random",
+            },
+            {
+                "text": "first reply",
+                "user": "U061A1R2R",
+                "ts": "1434139103.000002",
+                "parent_user_id": "U061A5N1G",
+                "thread_ts": "1434139102.000002",
+                "channel_name": "random",
+            },
+            {
+                "text": "second reply",
+                "user": "U061A1R2R",
+                "ts": "1434139104.000002",
+                "parent_user_id": "U061A5N1G",
+                "thread_ts": "1434139102.000002",
+                "channel_name": "random",
+            },
+        ]
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
+            [],
+            all_messages=thread,
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
+        )
+
+        zerver_message = conversion_result.zerver_message
+        self.assert_length(zerver_message, 3)
+
+        expected_thread_topic_name = "2015-06-12 thread message"
+        thread_message_quote_context = get_expected_quote_context(
+            "@_**Jane**",
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            zerver_message[0]["id"],
+        )
+        expected_first_reply_content = f"""
+{thread_message_quote_context}
+```quote
+thread message
+```
+first reply
+""".strip()
+        self.assertEqual(zerver_message[1]["content"], expected_first_reply_content)
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], expected_thread_topic_name)
+
+        self.assertEqual(zerver_message[2]["content"], "second reply")
+        self.assertEqual(zerver_message[2][EXPORT_TOPIC_NAME], expected_thread_topic_name)
+
+    def test_first_thread_reply_quotes_thread_message_files(self) -> None:
+        slack_recipient_name_to_zulip_recipient_id = {"random": 2, "general": 1}
+        thread = [
+            {
+                "text": "thread message",
+                "user": "U061A5N1G",
+                "ts": "1434139102.000002",
+                "thread_ts": "1434139102.000002",
+                "channel_name": "random",
+                "files": [
+                    {
+                        "url_private": "https://files.slack.com/apple.png",
+                        "title": "Apple",
+                        "name": "apple.png",
+                        "mimetype": "image/png",
+                        "timestamp": 9999,
+                        "created": 8888,
+                        "size": 3000000,
+                    }
+                ],
+            },
+            {
+                "text": "first reply",
+                "user": "U061A1R2R",
+                "ts": "1434139103.000002",
+                "parent_user_id": "U061A5N1G",
+                "thread_ts": "1434139102.000002",
+                "channel_name": "random",
+            },
+        ]
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
+            [],
+            all_messages=thread,
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
+        )
+
+        zerver_message = conversion_result.zerver_message
+        self.assert_length(zerver_message, 2)
+
+        self.assert_length(conversion_result.zerver_attachment, 1)
+        attachment = conversion_result.zerver_attachment[0]
+
+        # The message ids for the attachment has both the thread parent and the first thread
+        # reply.
+        self.assertEqual(attachment.messages, [zerver_message[0]["id"], zerver_message[1]["id"]])
+        self.assertTrue(zerver_message[1]["has_attachment"])
+
+        thread_message_quote_context = get_expected_quote_context(
+            "@_**Jane**",
+            slack_recipient_name_to_zulip_recipient_id["random"],
+            "random",
+            zerver_message[0]["id"],
+        )
+        expected_first_reply_content = f"""
+{thread_message_quote_context}
+```quote
+thread message
+[Apple](/user_uploads/{attachment.path_id})
+```
+first reply
+""".strip()
+        self.assertEqual(zerver_message[1]["content"], expected_first_reply_content)
+
+    def test_first_thread_reply_without_known_thread_message_sender(self) -> None:
+        # A thread message whose sender isn't among the imported users can't
+        # be attributed in a quote, so its first reply is imported unquoted.
+        slack_recipient_name_to_zulip_recipient_id = {"random": 2, "general": 1}
+        thread = [
+            {
+                "text": "thread message",
+                "user": "U0UNKNOWN",
+                "ts": "1434139102.000002",
+                "thread_ts": "1434139102.000002",
+                "channel_name": "random",
+            },
+            {
+                "text": "first reply",
+                "user": "U061A1R2R",
+                "ts": "1434139103.000002",
+                "parent_user_id": "U0UNKNOWN",
+                "thread_ts": "1434139102.000002",
+                "channel_name": "random",
+            },
+        ]
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
+            [],
+            all_messages=thread,
+            slack_user_id_to_zulip_user_id={"U0UNKNOWN": 7, "U061A1R2R": 43},
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
+        )
+
+        zerver_message = conversion_result.zerver_message
+        self.assert_length(zerver_message, 2)
+        self.assertEqual(zerver_message[1]["content"], "first reply")
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], "2015-06-12 thread message")
+
+    def test_first_thread_reply_status_message_is_not_quoted(self) -> None:
+        # A status message has to start with "/me ", so a first reply that
+        # is one is imported without the quote.
+        slack_recipient_name_to_zulip_recipient_id = {"random": 2, "general": 1}
+        thread = [
+            {
+                "text": "thread message",
+                "user": "U061A5N1G",
+                "ts": "1434139102.000002",
+                "thread_ts": "1434139102.000002",
+                "channel_name": "random",
+            },
+            {
+                "subtype": "me_message",
+                "text": "waves",
+                "user": "U061A1R2R",
+                "ts": "1434139103.000002",
+                "parent_user_id": "U061A5N1G",
+                "thread_ts": "1434139102.000002",
+                "channel_name": "random",
+            },
+        ]
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
+            [],
+            all_messages=thread,
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
+        )
+
+        zerver_message = conversion_result.zerver_message
+        self.assert_length(zerver_message, 2)
+        self.assertEqual(zerver_message[1]["content"], "/me waves")
+        self.assertEqual(zerver_message[1][EXPORT_TOPIC_NAME], "2015-06-12 thread message")
+
+    def test_thread_quote_and_reply_truncates_long_content(self) -> None:
+        # A long thread message and a long reply together can't both fit, so
+        # each is truncated to its share and the result stays within the
+        # maximum message length.
+        slack_recipient_name_to_zulip_recipient_id = {"random": 2, "general": 1}
+        thread_message_content = "a" * 2000
+        reply_content = "b" * settings.MAX_MESSAGE_LENGTH
+        thread = [
+            {
+                "text": thread_message_content,
+                "user": "U061A5N1G",
+                "ts": "1434139102.000002",
+                "thread_ts": "1434139102.000002",
+                "channel_name": "random",
+            },
+            {
+                "text": reply_content,
+                "user": "U061A1R2R",
+                "ts": "1434139103.000002",
+                "parent_user_id": "U061A5N1G",
+                "thread_ts": "1434139102.000002",
+                "channel_name": "random",
+            },
+        ]
+        conversion_result = self.run_channel_message_to_zerver_message_with_fixtures(
+            [],
+            all_messages=thread,
+            slack_recipient_name_to_zulip_recipient_id=slack_recipient_name_to_zulip_recipient_id,
+        )
+
+        first_reply_content = conversion_result.zerver_message[1]["content"]
+        # Each side is truncated to its own share, using the length limit
+        # exactly.
+        self.assert_length(first_reply_content, settings.MAX_MESSAGE_LENGTH)
+        # The quoted thread message is cut down to the 1000 characters left
+        # for it, marked as truncated, and still closes its fence.
+        self.assertIn(
+            f"```quote\n{'a' * 980}\n[message truncated]\n```\n",
+            first_reply_content,
+        )
+        # The reply keeps everything the quote and the template syntax leave.
+        truncated_reply = first_reply_content.split("```\n")[-1]
+        self.assertTrue(truncated_reply.endswith("\n[message truncated]"))
+        self.assertSetEqual(set(truncated_reply.removesuffix("\n[message truncated]")), {"b"})
 
     def test_convert_thread_topic_name_cut_off(self) -> None:
         slack_recipient_name_to_zulip_recipient_id = {

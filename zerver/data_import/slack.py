@@ -55,8 +55,10 @@ from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
     get_user_full_name,
+    get_zulip_mention_for_slack_user,
     process_slack_block_and_attachment,
 )
+from zerver.lib.compose_reply import compose_quote_and_reply_for_channel_message
 from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
@@ -66,7 +68,11 @@ from zerver.lib.parallel import run_parallel_queue
 from zerver.lib.partial import partial
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, resize_realm_icon
-from zerver.lib.topic_link_util import get_stream_topic_link_syntax
+from zerver.lib.topic_link_util import (
+    get_stream_topic_conversation_link,
+    get_stream_topic_link_syntax,
+)
+from zerver.lib.url_encoding import message_link_url
 from zerver.lib.validator import to_wild_value
 from zerver.models import (
     CustomProfileField,
@@ -1017,9 +1023,19 @@ class MessageConversionResult:
 
 
 @dataclass
+class ThreadMessageData:
+    content: str
+    attachments: list[AttachmentRecordData]
+    url: str
+    topic_pretty_link: str
+
+
+@dataclass
 class ThreadMetadata:
+    first_thread_message: ThreadMessageData
     topic_link_syntax: str
     topic_name: str
+    thread_length: int
 
 
 MAIN_SLACK_IMPORT_TOPIC = "imported from Slack"
@@ -1074,20 +1090,47 @@ def build_thread_metadata(
     added_channels: AddedChannelsT,
     channel_name: str,
     topic_name_content: str,
+    content: str,
+    attachments: list[AttachmentRecordData],
     message: ZerverFieldsT,
+    message_id: int,
     thread_counter: dict[str, int],
 ) -> ThreadMetadata:
     thread_ts_datetime = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
     thread_topic_name = get_zulip_thread_topic_name(
         topic_name_content, thread_ts_datetime, thread_counter
     )
+
+    channel_id = added_channels[channel_name][1]
+    first_thread_message = ThreadMessageData(
+        content=content,
+        attachments=attachments,
+        url=message_link_url(
+            realm=None,
+            message=dict(
+                type="stream",
+                id=message_id,
+                stream_id=channel_id,
+                display_recipient=channel_name,
+                topic=MAIN_SLACK_IMPORT_TOPIC,
+            ),
+        ),
+        topic_pretty_link=get_stream_topic_conversation_link(
+            stream_id=channel_id,
+            stream_name=channel_name,
+            topic_name=MAIN_SLACK_IMPORT_TOPIC,
+            message_id=message_id,
+        ),
+    )
     return ThreadMetadata(
+        first_thread_message=first_thread_message,
         topic_link_syntax=get_stream_topic_link_syntax(
-            stream_id=added_channels[channel_name][1],
+            stream_id=channel_id,
             stream_name=channel_name,
             topic_name=thread_topic_name,
         ),
         topic_name=thread_topic_name,
+        thread_length=1,
     )
 
 
@@ -1160,9 +1203,7 @@ def get_topic_name_for_message(
         # get_thread_reply_notification.
         return MAIN_SLACK_IMPORT_TOPIC
     elif thread_metadata is not None:
-        # For thread replies, send them to the thread topic.
-        # TODO: Make the first reply in the thread quote the thread message
-        # in the main topic.
+        # For thread replies, send them to the thread's topic.
         return thread_metadata.topic_name
     else:
         # This can occur when the original thread message isn't imported,
@@ -1290,12 +1331,17 @@ def channel_message_to_zerver_message(
                     added_channels=added_channels,
                     channel_name=channel_name,
                     topic_name_content=unannotated_content,
+                    content=content,
+                    attachments=file_info["attachments"],
                     message=message,
+                    message_id=message_id,
                     thread_counter=thread_counter,
                 )
                 content += get_thread_reply_notification(
                     thread_map[thread_key], thread_reply_counts.get(thread_key, 0)
                 )
+            elif thread_key in thread_map:
+                thread_map[thread_key].thread_length += 1
             thread_metadata = thread_map.get(thread_key)
 
         topic_name = get_topic_name_for_message(
@@ -1304,6 +1350,42 @@ def channel_message_to_zerver_message(
             thread_key=thread_key,
             thread_metadata=thread_metadata,
         )
+
+        # If this is the first thread reply, make it quote the thread parent
+        # message.
+        if (
+            thread_metadata is not None
+            and thread_metadata.thread_length == 2
+            # A status message has to start with "/me ", so it
+            # can't open with a quote.
+            and not content.startswith("/me ")
+        ):
+            parent_user_id = get_parent_user_id_from_thread_message(message, subtype)
+            first_thread_message = thread_metadata.first_thread_message
+            first_thread_sender_mention = get_zulip_mention_for_slack_user(
+                slack_user_id=parent_user_id,
+                slack_user_shortname=None,
+                users=users,
+                silent=True,
+            )
+
+            # Senders missing from the export are added as mirror dummies or bot
+            # users, so this is likely never None in practice. If it is None, skip
+            # the quote.
+            if first_thread_sender_mention is not None:
+                content = compose_quote_and_reply_for_channel_message(
+                    reply_content=content,
+                    quote_content=first_thread_message.content,
+                    quote_message_sender_silent_mention=first_thread_sender_mention,
+                    quote_message_url=first_thread_message.url,
+                    quote_message_topic_pretty_link=first_thread_message.topic_pretty_link,
+                )
+
+                # Include the first reply's message ID in the parent message's attachment
+                # records so import rewrites the quoted links in the reply too.
+                for attachment in first_thread_message.attachments:
+                    attachment.messages.append(message_id)
+                    has_attachment = True
 
         zulip_message = build_message(
             topic_name=topic_name,
@@ -1374,6 +1456,7 @@ def process_message_files(
         files = [message["file"]]
 
     markdown_links = []
+    attachments = []
 
     for fileinfo in files:
         if fileinfo.get("mode", "") in ["tombstone", "hidden_by_limit"]:
@@ -1424,7 +1507,7 @@ def process_message_files(
                 ),
             )
 
-            build_attachment(
+            attachment = build_attachment(
                 realm_id,
                 {message_id},
                 slack_user_id_to_zulip_user_id[slack_user_id],
@@ -1432,6 +1515,7 @@ def process_message_files(
                 attachment_data.path_id,
                 zerver_attachment,
             )
+            attachments.append(attachment)
         else:
             # For attachments with link not from Slack
             # Example: Google drive integration
@@ -1446,6 +1530,7 @@ def process_message_files(
 
     return dict(
         content=content,
+        attachments=attachments,
         has_attachment=has_attachment,
         has_image=has_image,
         has_link=has_link,
