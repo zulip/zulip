@@ -513,6 +513,15 @@ export function update_default_push_notifications(
     sub.default_push_notifications = default_push_notifications;
 }
 
+export function update_default_color(sub: StreamSubscription, default_color: string | null): void {
+    sub.default_color = default_color;
+    if (!sub.subscribed) {
+        // Keep the preview swatch (and the color that will be submitted
+        // if the user subscribes) in sync with the channel's default.
+        sub.color = default_color ?? color_data.pick_color();
+    }
+}
+
 export function update_stream_permission_group_setting(
     setting_name: StreamPermissionGroupSetting,
     sub: StreamSubscription,
@@ -1211,7 +1220,10 @@ export function create_sub_from_server_data(
         push_notifications: null,
         email_notifications: null,
         wildcard_mentions_notify: null,
-        color: "color" in server_attrs ? server_attrs.color : color_data.pick_color(),
+        color:
+            "color" in server_attrs
+                ? server_attrs.color
+                : (server_attrs.default_color ?? color_data.pick_color()),
         subscribed,
         previously_subscribed,
         ...attrs,

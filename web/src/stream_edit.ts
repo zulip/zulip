@@ -524,6 +524,7 @@ export function show_settings_for(node: HTMLElement): void {
 
     show_subscription_settings(sub);
     settings_org.set_message_retention_setting_dropdown(sub);
+    settings_org.set_default_color_setting_dropdown(sub);
     set_up_channel_privacy_dropdown_widget(undefined, sub);
     setup_group_setting_widgets(slim_sub);
     stream_ui_updates.enable_or_disable_permission_settings_in_edit_panel(sub);
@@ -1043,6 +1044,29 @@ export function initialize(): void {
                 "id_stream_message_retention_custom_input",
                 message_retention_setting_dropdown_value === "custom_period",
             );
+        },
+    );
+
+    $<HTMLSelectElement>("#channels_overlay_container").on(
+        "change",
+        "select.default_color_setting_select",
+        function (this: HTMLSelectElement) {
+            const default_color_setting_dropdown_value = this.value;
+            settings_components.change_element_block_display_property(
+                "id_default_color_custom_input",
+                default_color_setting_dropdown_value === "custom",
+            );
+            const $custom_input = $<HTMLInputElement>("#id_default_color_custom_input");
+            // A browser color input with no value defaults to black. If the
+            // admin hasn't picked a color yet, start from a real color
+            // instead of black.
+            if (
+                default_color_setting_dropdown_value === "custom" &&
+                $custom_input.val() === "#000000"
+            ) {
+                const stream_id = get_stream_id(this);
+                $custom_input.val(stream_data.get_color(stream_id));
+            }
         },
     );
 

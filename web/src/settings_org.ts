@@ -364,6 +364,25 @@ export function set_message_retention_setting_dropdown(sub: StreamSubscription |
     );
 }
 
+export function set_default_color_setting_dropdown(sub: StreamSubscription): void {
+    const setting_value = sub.default_color;
+    const dropdown_val = setting_value === null ? "none" : "custom";
+
+    const $dropdown_elem = $("#id_default_color");
+    $dropdown_elem.val(dropdown_val);
+
+    const $custom_input_elem = $dropdown_elem.parent().find(".default-color-custom-input").val("");
+    if (dropdown_val === "custom") {
+        assert(setting_value !== null);
+        $custom_input_elem.val(setting_value);
+    }
+
+    settings_components.change_element_block_display_property(
+        $custom_input_elem.attr("id")!,
+        dropdown_val === "custom",
+    );
+}
+
 function set_org_join_restrictions_dropdown(): void {
     const value = settings_components.get_realm_settings_property_value(
         "realm_org_join_restrictions",
@@ -814,6 +833,9 @@ export function discard_stream_property_element_changes(
     switch (property_name) {
         case "message_retention_days":
             set_message_retention_setting_dropdown(sub);
+            break;
+        case "default_color":
+            set_default_color_setting_dropdown(sub);
             break;
         case "channel_privacy": {
             settings_components.set_dropdown_list_widget_setting_value(
