@@ -10002,7 +10002,7 @@ paths:
                     Passing the empty string will mean that no language
                     will be used to render code blocks.
 
-                    **Changes**: New in Zulip 13.0 (feature level ZF-991763).
+                    **Changes**: New in Zulip 13.0 (feature level 512).
                   type: string
                   example: python
                   default: ""
@@ -31687,7 +31687,7 @@ components:
         When set to empty string, realm's default code block
         language is used.
 
-        **Changes**: New in Zulip 13.0 (feature level ZF-991763).
+        **Changes**: New in Zulip 13.0 (feature level 512).
       type: string
       example: python
 

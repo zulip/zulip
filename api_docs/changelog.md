@@ -20,6 +20,21 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 13.0
 
+**Feature level 512**
+
+* [`POST /users/me/subscriptions`](/api/subscribe),
+  [`PATCH /streams/{stream_id}`](/api/update-stream): Added
+  `default_code_block_language` parameter to support setting
+  and changing the default language used for code blocks in
+  the channel.
+* [`GET /users/me/subscriptions`](/api/get-subscriptions),
+  [`GET /streams`](/api/get-streams), [`GET /events`](/api/get-events),
+  [`POST /register`](/api/register-queue): Added `default_code_block_language`
+  field to channel and subscription objects.
+* [`POST /messages/render`](/api/render-message): Added
+  `default_code_block_language` which will be used when rendering
+  code blocks in a message.
+
 **Feature level 511**
 
 * [`POST /messages/{message_id}/report`](/api/report-message): This endpoint
