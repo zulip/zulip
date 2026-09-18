@@ -10,7 +10,7 @@ declare -A sha256=(
 )
 
 check_version() {
-    out="$(uv --version)" && [[ "$out" = "uv $version ("* ]]
+    out="$(/usr/local/bin/uv --version)" && [[ "$out" = "uv $version ("* ]]
 }
 
 if ! check_version 2>/dev/null; then
