@@ -7,6 +7,7 @@ from collections import defaultdict
 from collections.abc import Callable, Hashable, Iterable, Iterator, Mapping
 from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
+from datetime import datetime
 from email.errors import HeaderDefect
 from email.headerregistry import Address
 from typing import Any, Generic, Protocol, TypeAlias, TypeVar
@@ -25,7 +26,7 @@ from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.email_validation import validate_email_is_valid
 from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.markdown import get_markdown_link_for_url
-from zerver.lib.message import normalize_body_for_import
+from zerver.lib.message import normalize_body_for_import, truncate_content
 from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_type
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.parallel import run_parallel
@@ -44,6 +45,7 @@ from zerver.models import (
     Subscription,
     UserProfile,
 )
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
 from zproject.backends import all_default_backend_names
 
 # stubs
@@ -1026,3 +1028,35 @@ def scrub_missing_upload_records_after_download(
             if os.path.isfile(os.path.join(output_dir, "uploads", upload_record.path))
         ],
     )
+
+
+def get_zulip_thread_topic_name(
+    message_content: str, thread_ts: datetime, thread_counter: dict[str, int]
+) -> str:
+    """
+    The topic name format is date + message snippet + counter.
+
+    e.g "2024-05-22 Hello this is a long message that will be c… (1)"
+    """
+    thread_date = thread_ts.date().isoformat()
+    # Topic names must be a single line, so collapse each run of whitespace
+    # before truncating; otherwise blank lines in the middle of the message
+    # would consume most of the snippet.
+    content_for_topic_name = " ".join(message_content.split())
+    topic_name_without_counter = f"{thread_date} {content_for_topic_name}".strip()
+
+    # Truncate
+    truncated_zulip_topic_name = truncate_content(
+        topic_name_without_counter, MAX_TOPIC_NAME_LENGTH, "…"
+    )
+    collision = thread_counter[truncated_zulip_topic_name]
+    thread_counter[truncated_zulip_topic_name] += 1
+    count = (f" ({collision + 1})") if collision > 0 else ""
+
+    # Important: The count is at the end, after …, so we need to
+    # subtract its length when doing truncation.
+    final_topic_name = (
+        truncate_content(topic_name_without_counter, MAX_TOPIC_NAME_LENGTH - len(f"{count}"), "…")
+        + f"{count}"
+    )
+    return final_topic_name
