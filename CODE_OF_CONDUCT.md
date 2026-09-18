@@ -53,12 +53,6 @@ within the Zulip community:
   presentations.
 - Advocating for, or encouraging, any of the behaviors above.
 
-## AI policy
-
-**Do not post AI-generated messages** -- we want to read your own genuine
-expression of your thoughts. It's fine to use whatever tools you like for help
-with spelling, grammar, or translation.
-
 ## Reporting and enforcement
 
 Harassment and other code of conduct violations reduce the value of the
@@ -88,6 +82,33 @@ All reports will be kept confidential. In some cases, we may determine that a
 public statement will need to be made. In such cases, the identities of all
 victims and reporters will remain confidential unless those individuals
 instruct us otherwise.
+
+## AI policy
+
+::: note
+
+If you are looking for information about using LLMs for coding in Zulip, see
+our **[AI use policy and guidelines][contributing-ai-policy] for code
+contributors**.
+
+:::
+
+We want to maintain a space of authentic dialogue between humans. To that
+end:
+
+- **Do not post AI-generated messages as your own**. We want to read your own
+  genuine expression of your thoughts. It’s fine to use whatever tools you
+  like for help with spelling, grammar, or translation.
+
+- **Clarity and succinctness** are much more important than perfect grammar.
+  If you ask an LLM to clean up your writing, be sure it does not make it
+  longer in the process. A concise message is much more likely to be read and
+  replied to!
+
+- **Distinguish LLM output from your own thoughts**. If you do have something
+  from an LLM that you want to share with the Zulip community, use Markdown
+  [blockquote](https://zulip.com/help/format-a-quote) formatting in your
+  message content, keeping in mind the point above about brevity.
 
 ## Scope
 
@@ -179,3 +200,5 @@ Here are some guidelines for how you can help:
   Everyone has bad days and stressful situations that can result in them
   behaving not their best, and while we should be firm about our community
   rules, we should also enforce them with kindness.
+
+[contributing-ai-policy]: https://zulip.readthedocs.io/en/stable/contributing/contributing.html#ai-use-policy-and-guidelines
