@@ -17,7 +17,7 @@ case $arch in
 esac
 
 check_version() {
-    out="$(node --version)" && [ "$out" = "v$version" ] \
+    out="$(/srv/zulip-node/bin/node --version)" && [ "$out" = "v$version" ] \
         && [ /usr/local/bin/pnpm -ef /srv/zulip-node/lib/node_modules/corepack/dist/pnpm.js ]
 }
 
