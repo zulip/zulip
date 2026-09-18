@@ -1321,7 +1321,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
         stream_id = Number.parseInt(stream_id_data, 10);
     }
     const msg_list = message_lists.current;
-    let message_id = rows.id($row);
+    const message_id = rows.id($row);
     const message = message_lists.current.get(message_id);
     assert(message !== undefined);
     let changed = false;
@@ -1433,78 +1433,86 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
             }
         },
         error(xhr) {
-            if (msg_list === message_lists.current) {
-                message_id = rows.id($row);
+            // The save is over, so stop indicating progress on the row
+            // we started from, which may since have been detached.
+            hide_message_edit_spinner($row);
 
-                if (edit_locally_echoed) {
-                    const echoed_message = message_store.get(message_id);
-                    assert(echoed_message !== undefined);
-                    const echo_data = currently_echoing_messages.get(message_id);
-                    assert(echo_data !== undefined);
+            let echo_data: EchoedMessageData | undefined;
+            if (edit_locally_echoed) {
+                echo_data = currently_echoing_messages.get(message_id);
+                assert(echo_data !== undefined);
 
-                    delete echoed_message.local_edit_timestamp;
-                    currently_echoing_messages.delete(message_id);
+                delete message.local_edit_timestamp;
+                currently_echoing_messages.delete(message_id);
 
-                    // Restore the original content.
-                    echo.edit_locally(echoed_message, {
-                        content: echo_data.orig_content,
-                        raw_content: echo_data.orig_raw_content,
-                        mentioned: echo_data.mentioned,
-                        mentioned_me_directly: echo_data.mentioned_me_directly,
-                        alerted: echo_data.alerted,
-                    });
+                // Restore the original content.
+                echo.edit_locally(message, {
+                    content: echo_data.orig_content,
+                    raw_content: echo_data.orig_raw_content,
+                    mentioned: echo_data.mentioned,
+                    mentioned_me_directly: echo_data.mentioned_me_directly,
+                    alerted: echo_data.alerted,
+                });
+            }
 
-                    $row = message_lists.current.get_row(message_id);
-                    if (!currently_editing_messages.has(message_id)) {
-                        // Return to the message editing open UI state with the edited content.
-                        pre_edit_raw_content.set(message_id, echo_data.orig_raw_content);
-                        start_edit_maintaining_scroll($row, echo_data.raw_content);
+            if (msg_list !== message_lists.current) {
+                // Reopening the edit form takes keyboard focus and
+                // scrolls the message feed, which we don't want to do
+                // to whatever view the user has moved on to. Leave
+                // the message alone now that its content is restored.
+                return;
+            }
+
+            if (echo_data !== undefined) {
+                $row = message_lists.current.get_row(message_id);
+                if (!currently_editing_messages.has(message_id)) {
+                    // Return to the message editing open UI state with the edited content.
+                    pre_edit_raw_content.set(message_id, echo_data.orig_raw_content);
+                    start_edit_maintaining_scroll($row, echo_data.raw_content);
+                }
+            }
+
+            if (xhr.readyState !== 0) {
+                const $container = compose_banner.get_compose_banner_container(
+                    $row.find("textarea"),
+                );
+
+                if (xhr.responseJSON !== undefined) {
+                    const {code} = z.object({code: z.string()}).parse(xhr.responseJSON);
+                    if (code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
+                        const new_row_html = render_wildcard_mention_not_allowed_error({
+                            banner_type: compose_banner.ERROR,
+                            classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
+                        });
+                        compose_banner.append_compose_banner_to_banner_list(
+                            $(new_row_html),
+                            $container,
+                        );
+                        return;
+                    }
+                    if (code === "EXPECTATION_MISMATCH") {
+                        const message = $t({
+                            defaultMessage:
+                                "Error editing message: Message was edited by another client.",
+                        });
+                        compose_banner.show_error_message(
+                            message,
+                            compose_banner.CLASSNAMES.generic_compose_error,
+                            $container,
+                        );
+                        return;
                     }
                 }
 
-                hide_message_edit_spinner($row);
-                if (xhr.readyState !== 0) {
-                    const $container = compose_banner.get_compose_banner_container(
-                        $row.find("textarea"),
-                    );
-
-                    if (xhr.responseJSON !== undefined) {
-                        const {code} = z.object({code: z.string()}).parse(xhr.responseJSON);
-                        if (code === "TOPIC_WILDCARD_MENTION_NOT_ALLOWED") {
-                            const new_row_html = render_wildcard_mention_not_allowed_error({
-                                banner_type: compose_banner.ERROR,
-                                classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
-                            });
-                            compose_banner.append_compose_banner_to_banner_list(
-                                $(new_row_html),
-                                $container,
-                            );
-                            return;
-                        }
-                        if (code === "EXPECTATION_MISMATCH") {
-                            const message = $t({
-                                defaultMessage:
-                                    "Error editing message: Message was edited by another client.",
-                            });
-                            compose_banner.show_error_message(
-                                message,
-                                compose_banner.CLASSNAMES.generic_compose_error,
-                                $container,
-                            );
-                            return;
-                        }
-                    }
-
-                    const message = channel.xhr_error_message(
-                        $t({defaultMessage: "Error editing message"}),
-                        xhr,
-                    );
-                    compose_banner.show_error_message(
-                        message,
-                        compose_banner.CLASSNAMES.generic_compose_error,
-                        $container,
-                    );
-                }
+                const message = channel.xhr_error_message(
+                    $t({defaultMessage: "Error editing message"}),
+                    xhr,
+                );
+                compose_banner.show_error_message(
+                    message,
+                    compose_banner.CLASSNAMES.generic_compose_error,
+                    $container,
+                );
             }
         },
     });
