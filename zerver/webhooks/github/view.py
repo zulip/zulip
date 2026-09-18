@@ -9,6 +9,7 @@ from typing_extensions import override
 from zerver.decorator import log_unsupported_webhook_event, webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
+from zerver.lib.integrations import WEBHOOK_SIGNATURE_CONFIGS
 from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.partial import partial
@@ -1196,7 +1197,12 @@ IGNORED_TEAM_ACTIONS = [
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 
 
-@webhook_view("GitHub", notify_bot_owner_on_invalid_json=True, all_event_types=ALL_EVENT_TYPES)
+@webhook_view(
+    "GitHub",
+    notify_bot_owner_on_invalid_json=True,
+    all_event_types=ALL_EVENT_TYPES,
+    signature_config=WEBHOOK_SIGNATURE_CONFIGS["github"],
+)
 @typed_endpoint
 def api_github_webhook(
     request: HttpRequest,

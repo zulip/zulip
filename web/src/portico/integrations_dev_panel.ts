@@ -231,6 +231,7 @@ function update_url(): void {
                 params.set("topic", topic_name);
             }
         }
+        const webhook_secret = $<HTMLInputElement>("input#webhook_secret").val()!;
         const url = `${url_base}${integration_name}?${params.toString()}`;
         url_field!.value = url;
     }

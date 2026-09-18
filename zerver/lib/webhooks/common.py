@@ -25,6 +25,8 @@ from zerver.actions.message_send import (
     check_send_stream_message_by_id,
     send_rate_limited_pm_notification_to_bot_owner,
 )
+from zerver.lib.bot_config import ConfigError, get_bot_config
+from zerver.lib.bot_config import ConfigError, get_bot_config
 from zerver.lib.exceptions import (
     AnomalousWebhookPayloadError,
     ErrorCode,
@@ -58,6 +60,8 @@ that this integration expects!
 SETUP_MESSAGE_TEMPLATE = "{integration} webhook has been successfully configured"
 SETUP_MESSAGE_USER_PART = " by {user_name}"
 
+WEBHOOK_SECRET_TOKEN_KEY = "{integration_name}:webhook_secret_token"
+
 OptionalUserSpecifiedTopicStr: TypeAlias = Annotated[str | None, ApiParamConfig("topic")]
 
 
@@ -72,6 +76,16 @@ class WebhookConfigOption:
     name: str
     label: str
     validator: Callable[[str, str], str | bool | None]
+
+
+@dataclass(frozen=True)
+class WebhookSignatureConfig:
+    integration_name: str
+    header: str
+    algorithm: str = "sha256"
+    prefix: str = ""
+    # This will override the default compute_webhook_signature function if provided for unique formats
+    custom_formatter: Callable[[str], str] | None = None
 
 
 @dataclass
@@ -320,25 +334,51 @@ def parse_multipart_string(body: str) -> dict[str, str]:
     return data
 
 
-def validate_webhook_signature(
-    request: HttpRequest, payload: str, signature: str, algorithm: str = "sha256"
+def validate_webhook_delivery(
+    request: HttpRequest, signature_header_name: str, algorithm: str = "sha256"
 ) -> None:
-    if not settings.VERIFY_WEBHOOK_SIGNATURES:  # nocoverage
+    try:
+        config = get_bot_config(request.user)
+        webhook_secret = config.get("webhook_secret", "")
+    except ConfigError:
+        webhook_secret = ""
+
+    if not webhook_secret:
+        raise JsonableError(_("Webhook secret is not configured for this bot."))
+
+    signature_header = request.headers.get(signature_header_name, "")
+    signature = signature_header.split("=")[-1] if "=" in signature_header else signature_header
+
+    payload = request.body.decode("utf-8")
+
+    try:
+        validate_webhook_signature(
+            request=request, payload=payload, signature=signature, algorithm=algorithm
+        )
+    except JsonableError:
+        raise
+    except Exception as err:  # nocoverage
+        raise JsonableError(str(err))
+
+
+def validate_webhook_signature(
+    payload: str,
+    signature: str,
+    secret: str,
+    algorithm: str = "sha256",
+) -> None:
+    if not settings.VERIFY_WEBHOOK_SIGNATURES or not config:
         return
 
-    if algorithm not in hashlib.algorithms_available:
+    if config.algorithm not in hashlib.algorithms_available:
         raise AssertionError(
-            _("The algorithm '{algorithm}' is not supported.").format(algorithm=algorithm)
+            _("The algorithm '{algorithm}' is not supported.").format(algorithm=config.algorithm)
         )
 
-    webhook_secret: str | None = request.GET.get("webhook_secret")
-    if webhook_secret is None:
-        raise JsonableError(
-            _(
-                "The webhook secret is missing. Please set the webhook_secret while generating the URL."
-            )
-        )
-    webhook_secret_bytes = force_bytes(webhook_secret)
+    if not secret:
+        raise JsonableError(_("Webhook secret is not configured for this bot."))
+
+    webhook_secret_bytes = force_bytes(secret)
     payload_bytes = force_bytes(payload)
 
     signed_payload = hmac.new(
@@ -349,6 +389,26 @@ def validate_webhook_signature(
 
     if not constant_time_compare(signed_payload, signature):
         raise JsonableError(_("Webhook signature verification failed."))
+
+
+def compute_webhook_signature(
+    secret_bytes: bytes,
+    payload_bytes: bytes,
+    config: WebhookSignatureConfig,
+) -> str:
+    """Computes and formats the HMAC signature for a webhook payload."""
+    signer = hmac.new(
+        secret_bytes,
+        payload_bytes,
+        config.algorithm,
+    )
+    digest = signer.hexdigest()
+
+    if config.custom_formatter is not None:
+        digest = config.custom_formatter(digest)
+    if config.prefix:
+        return f"{config.prefix}{digest}"
+    return digest
 
 
 def guess_zulip_user_from_external_account(
