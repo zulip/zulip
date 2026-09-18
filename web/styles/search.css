@@ -401,8 +401,6 @@
 
     .typeahead-menu .simplebar-content > li > a {
         padding: 3px var(--search-left-padding);
-        /* Override white-space: nowrap from zulip.css */
-        white-space: normal;
 
         .search_list_item {
             max-width: 100%;
@@ -411,8 +409,19 @@
             align-items: center;
         }
 
+        .search_list_item > * {
+            /* Share the row equally, but never grow past the content
+               width. Space an item does not need goes to the others,
+               so the widest item is the one cut off when the row is
+               too narrow. */
+            flex: 1 1 0;
+            max-width: max-content;
+        }
+
         .search_list_item .description {
             margin: 2px 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .search_list_item .pill-container {
@@ -421,7 +430,6 @@
             border: none;
             cursor: pointer;
             padding: 0;
-            max-width: 100%;
         }
 
         .pill {
@@ -465,10 +473,5 @@
             line-height: var(--height-input-pill);
             align-self: center;
         }
-    }
-
-    /* Break really long words (unlikely to happen). */
-    .search_list_item span {
-        overflow-wrap: anywhere;
     }
 }
