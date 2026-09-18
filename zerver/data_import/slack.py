@@ -42,6 +42,7 @@ from zerver.data_import.import_util import (
     get_attachment_path_and_content,
     get_data_file,
     get_domain_name_for_import,
+    get_thread_reply_notification_string,
     get_zulip_thread_topic_name,
     long_term_idle_helper,
     make_subscriber_map,
@@ -1086,9 +1087,9 @@ def get_thread_reply_notification(
         # exported, or if the thread's replies were deleted.
         return ""
 
-    reply_string = "replies" if number_of_replies > 1 else "reply"
-    # e.g "\n\n*3 replies in #**channel>2023-05-23 foobar***"
-    return f"\n\n*{number_of_replies} {reply_string} in {thread_map[thread_key].topic_link_syntax}*"
+    return get_thread_reply_notification_string(
+        number_of_replies, thread_map[thread_key].topic_link_syntax
+    )
 
 
 def create_topic_name_for_message(

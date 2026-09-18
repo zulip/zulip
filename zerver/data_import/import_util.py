@@ -1030,6 +1030,12 @@ def scrub_missing_upload_records_after_download(
     )
 
 
+def get_thread_reply_notification_string(number_of_replies: int, topic_link_syntax: str) -> str:
+    """Example: \n\n*3 replies in #**channel>2023-05-23 foobar***"""
+    reply_string = "replies" if number_of_replies > 1 else "reply"
+    return f"\n\n*{number_of_replies} {reply_string} in {topic_link_syntax}*"
+
+
 def get_zulip_thread_topic_name(
     message_content: str, thread_ts: datetime, thread_counter: dict[str, int]
 ) -> str:
