@@ -302,6 +302,7 @@ def update_stream_backend(
     can_resolve_topics_group: Json[GroupSettingChangeRequest] | None = None,
     can_send_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_subscribe_group: Json[GroupSettingChangeRequest] | None = None,
+    default_color: Json[str | None] | MissingType = Missing,
     default_push_notifications: Json[bool] | None = None,
     description: ChannelDescription = None,
     folder_id: Json[int | None] | MissingType = Missing,
@@ -440,6 +441,16 @@ def update_stream_backend(
         do_change_stream_message_retention_days(
             stream, user_profile, new_message_retention_days_value
         )
+
+    if not isinstance(default_color, MissingType):
+        if not user_profile.is_realm_admin:
+            raise JsonableError(_("Insufficient permission"))
+        if default_color is not None:
+            try:
+                default_color = check_color("default_color", default_color)
+            except ValueError as e:
+                raise JsonableError(str(e))
+        do_set_stream_property(stream, "default_color", default_color, user_profile)
 
     if default_push_notifications is not None:
         if not user_profile.is_realm_admin:

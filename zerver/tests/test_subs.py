@@ -2475,6 +2475,206 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.subscribe(user_profile, "test_push_default")
         self.assertFalse(stream.default_push_notifications)
 
+    def test_stream_default_color_default_value(self) -> None:
+        """New streams default to default_color=None, and the API exposes
+        it as null until an organization administrator configures one."""
+        user_profile = self.example_user("iago")
+        self.login_user(user_profile)
+        stream = self.subscribe(user_profile, "test_color_default")
+        self.assertIsNone(stream.default_color)
+
+        result = self.client_get("/json/streams", {"include_subscribed": "true"})
+        streams = self.assert_json_success(result)["streams"]
+        [stream_dict] = [s for s in streams if s["name"] == "test_color_default"]
+        self.assertIsNone(stream_dict["default_color"])
+
+    def test_admin_can_set_default_color(self) -> None:
+        """Organization administrators can set a channel's default color."""
+        admin = self.example_user("iago")
+        self.login_user(admin)
+        stream = self.subscribe(admin, "color_default_stream")
+
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"default_color": orjson.dumps("#76ce90").decode()},
+        )
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertEqual(stream.default_color, "#76ce90")
+
+        default_color_log = RealmAuditLog.objects.filter(
+            event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
+            modified_stream=stream,
+            extra_data__contains={"property": "default_color"},
+        ).last()
+        assert default_color_log is not None
+        self.assertEqual(
+            default_color_log.extra_data,
+            {
+                RealmAuditLog.OLD_VALUE: None,
+                RealmAuditLog.NEW_VALUE: "#76ce90",
+                "property": "default_color",
+            },
+        )
+
+    def test_admin_can_clear_default_color(self) -> None:
+        """Setting default_color to null clears a previously configured default."""
+        admin = self.example_user("iago")
+        self.login_user(admin)
+        stream = self.subscribe(admin, "color_clear_stream")
+
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"default_color": orjson.dumps("#76ce90").decode()},
+        )
+        self.assert_json_success(result)
+
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"default_color": orjson.dumps(None).decode()},
+        )
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+        self.assertIsNone(stream.default_color)
+
+    def test_non_admin_cannot_set_default_color(self) -> None:
+        """Only organization administrators can set a channel's default color."""
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        stream = self.subscribe(hamlet, "color_default_permission_stream")
+
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"default_color": orjson.dumps("#76ce90").decode()},
+        )
+        self.assert_json_error(result, "Insufficient permission")
+        stream.refresh_from_db()
+        self.assertIsNone(stream.default_color)
+
+    def test_invalid_default_color_rejected(self) -> None:
+        """An invalid hex color is reported to the client, not saved."""
+        admin = self.example_user("iago")
+        self.login_user(admin)
+        stream = self.subscribe(admin, "invalid_color_default_stream")
+
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"default_color": orjson.dumps("not-a-color").decode()},
+        )
+        self.assert_json_error(result, "default_color is not a valid hex color code")
+        stream.refresh_from_db()
+        self.assertIsNone(stream.default_color)
+
+    def test_notification_on_changing_default_color(self) -> None:
+        """Changing a channel's default color sends a notification-bot
+        message to the channel's "channel events" topic."""
+        admin = self.example_user("iago")
+        self.login_user(admin)
+        realm = admin.realm
+        stream = self.subscribe(admin, "color_notification_stream")
+
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"default_color": orjson.dumps("#76ce90").decode()},
+        )
+        self.assert_json_success(result)
+
+        messages = get_topic_messages(admin, stream, "channel events")
+        expected_notification = (
+            f"@_**{admin.full_name}|{admin.id}** changed the default color "
+            "for this channel from No default color to **#76ce90**."
+        )
+        self.assertEqual(messages[-1].content, expected_notification)
+
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"default_color": orjson.dumps(None).decode()},
+        )
+        self.assert_json_success(result)
+
+        stream = get_stream("color_notification_stream", realm)
+        messages = get_topic_messages(admin, stream, "channel events")
+        expected_notification = (
+            f"@_**{admin.full_name}|{admin.id}** changed the default color "
+            "for this channel from **#76ce90** to No default color."
+        )
+        self.assertEqual(messages[-1].content, expected_notification)
+
+    def test_new_subscription_gets_default_color_from_stream(self) -> None:
+        """When a channel has a default_color configured, brand-new
+        subscriptions are assigned that color instead of an automatically
+        picked one."""
+        admin = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        self.login_user(admin)
+
+        stream = self.subscribe(admin, "color_inherit_stream")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"default_color": orjson.dumps("#76ce90").decode()},
+        )
+        self.assert_json_success(result)
+        stream.refresh_from_db()
+
+        self.login_user(hamlet)
+        result = self.client_post(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps([{"name": "color_inherit_stream"}]).decode()},
+        )
+        self.assert_json_success(result)
+        sub = Subscription.objects.get(
+            user_profile=hamlet,
+            recipient=stream.recipient,
+        )
+        self.assertEqual(sub.color, "#76ce90")
+
+    def test_explicit_color_choice_overrides_stream_default(self) -> None:
+        """A subscriber's explicit color choice takes priority over the
+        channel's configured default color."""
+        admin = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        self.login_user(admin)
+
+        stream = self.subscribe(admin, "color_override_stream")
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"default_color": orjson.dumps("#76ce90").decode()},
+        )
+        self.assert_json_success(result)
+
+        request = {
+            "add": orjson.dumps([{"name": "color_override_stream", "color": "#e79ab5"}]).decode(),
+        }
+        result = self.api_patch(hamlet, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_success(result)
+        sub = Subscription.objects.get(
+            user_profile=hamlet,
+            recipient=stream.recipient,
+        )
+        self.assertEqual(sub.color, "#e79ab5")
+
+    def test_existing_subscription_unaffected_by_new_default_color(self) -> None:
+        """Configuring a channel default color only applies to brand-new
+        subscriptions; existing subscribers keep their current color."""
+        admin = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        self.login_user(admin)
+
+        stream = self.subscribe(admin, "color_existing_sub_stream")
+        self.subscribe(hamlet, "color_existing_sub_stream")
+        original_color = Subscription.objects.get(
+            user_profile=hamlet, recipient=stream.recipient
+        ).color
+
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"default_color": orjson.dumps("#76ce90").decode()},
+        )
+        self.assert_json_success(result)
+
+        sub = Subscription.objects.get(user_profile=hamlet, recipient=stream.recipient)
+        self.assertEqual(sub.color, original_color)
+
     def test_new_subscription_gets_push_notifications_from_stream(self) -> None:
         """When a stream has default_push_notifications=True, brand-new
         subscriptions get push_notifications=True, overriding the user default."""
@@ -2555,6 +2755,55 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(sub.active)
         # push_notifications should remain False, not be reset to True.
         self.assertFalse(sub.push_notifications)
+
+    def test_resubscription_preserves_color_over_new_default(self) -> None:
+        """Re-subscribing a previously unsubscribed user keeps their old
+        subscription color, even if the channel's default_color has
+        since changed; only brand-new subscriptions pick up the current
+        default (matching how push_notifications is handled above)."""
+        admin = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        self.login_user(admin)
+
+        stream = self.subscribe(admin, "resubscribe_color_stream")
+
+        request = {
+            "add": orjson.dumps(
+                [{"name": "resubscribe_color_stream", "color": "#111111"}]
+            ).decode(),
+        }
+        result = self.api_patch(hamlet, "/api/v1/users/me/subscriptions", request)
+        self.assert_json_success(result)
+        sub = Subscription.objects.get(user_profile=hamlet, recipient=stream.recipient)
+        self.assertEqual(sub.color, "#111111")
+
+        self.login_user(hamlet)
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps(["resubscribe_color_stream"]).decode()},
+        )
+        self.assert_json_success(result)
+        sub.refresh_from_db()
+        self.assertFalse(sub.active)
+
+        self.login_user(admin)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"default_color": orjson.dumps("#222222").decode()},
+        )
+        self.assert_json_success(result)
+
+        # Re-subscribing reactivates the old row and keeps its old
+        # color, rather than picking up the newly-set channel default.
+        self.login_user(hamlet)
+        result = self.client_post(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps([{"name": "resubscribe_color_stream"}]).decode()},
+        )
+        self.assert_json_success(result)
+        sub.refresh_from_db()
+        self.assertTrue(sub.active)
+        self.assertEqual(sub.color, "#111111")
 
     def do_test_change_stream_permission_setting(self, setting_name: str) -> None:
         user_profile = self.example_user("iago")

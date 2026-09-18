@@ -1905,6 +1905,7 @@ def stream_to_dict(
         can_subscribe_group=can_subscribe_group,
         creator_id=stream.creator_id,
         date_created=datetime_to_timestamp(stream.date_created),
+        default_color=stream.default_color,
         default_push_notifications=stream.default_push_notifications,
         description=stream.description,
         first_message_id=stream.first_message_id,

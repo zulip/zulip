@@ -481,6 +481,7 @@ def send_subscription_add_events(
                 is_web_public=stream_dict["is_web_public"],
                 message_retention_days=stream_dict["message_retention_days"],
                 name=stream_dict["name"],
+                default_color=stream_dict["default_color"],
                 default_push_notifications=stream_dict["default_push_notifications"],
                 rendered_description=stream_dict["rendered_description"],
                 stream_id=stream_dict["stream_id"],
@@ -775,6 +776,10 @@ def bulk_add_subscriptions(
         assert stream.recipient_id is not None
         recipient_ids_set.add(stream.recipient_id)
         color: str | None = color_map.get(stream.name, None)
+        if color is None:
+            # If the subscriber didn't request a color, a channel default
+            # color takes priority over automatic per-user assignment.
+            color = stream.default_color
         if color is not None:
             recipient_color_map[stream.recipient_id] = color
 
@@ -1743,41 +1748,57 @@ def do_set_stream_property(stream: Stream, name: str, value: Any, acting_user: U
 
     send_event_on_commit(stream.realm, event, can_access_stream_metadata_user_ids(stream))
 
-    if name != "topics_policy":
+    if name not in ("topics_policy", "default_color"):
         return
 
     sender = get_system_bot(settings.NOTIFICATION_BOT, stream.realm_id)
 
-    empty_topic_display_name = get_topic_display_name("", stream.realm.default_language)
+    notification_message: str | None = None
 
-    TOPICS_POLICY_DISPLAY_NAME_MAP: dict[int, Any] = {
-        StreamTopicsPolicyEnum.inherit.value: _("Automatic"),
-        StreamTopicsPolicyEnum.allow_empty_topic.value: _(
-            "*{empty_topic_display_name}* topic allowed"
-        ).format(empty_topic_display_name=empty_topic_display_name),
-        StreamTopicsPolicyEnum.disable_empty_topic.value: _(
-            "No *{empty_topic_display_name}* topic"
-        ).format(empty_topic_display_name=empty_topic_display_name),
-        StreamTopicsPolicyEnum.empty_topic_only.value: _(
-            "Only *{empty_topic_display_name}* topic allowed"
-        ).format(empty_topic_display_name=empty_topic_display_name),
-    }
+    if name == "topics_policy":
+        empty_topic_display_name = get_topic_display_name("", stream.realm.default_language)
 
-    NOTIFICATION_MESSAGES = {
-        "topics_policy": _(
+        TOPICS_POLICY_DISPLAY_NAME_MAP: dict[int, Any] = {
+            StreamTopicsPolicyEnum.inherit.value: _("Automatic"),
+            StreamTopicsPolicyEnum.allow_empty_topic.value: _(
+                "*{empty_topic_display_name}* topic allowed"
+            ).format(empty_topic_display_name=empty_topic_display_name),
+            StreamTopicsPolicyEnum.disable_empty_topic.value: _(
+                "No *{empty_topic_display_name}* topic"
+            ).format(empty_topic_display_name=empty_topic_display_name),
+            StreamTopicsPolicyEnum.empty_topic_only.value: _(
+                "Only *{empty_topic_display_name}* topic allowed"
+            ).format(empty_topic_display_name=empty_topic_display_name),
+        }
+
+        notification_message = _(
             '{user_name} changed the "Allow posting to the *general chat* topic?" setting from {old_topics_policy} to {new_topics_policy}.'
         ).format(
             user_name=silent_mention_syntax_for_user(acting_user),
             old_topics_policy=f"**{TOPICS_POLICY_DISPLAY_NAME_MAP[old_value]}**",
             new_topics_policy=f"**{TOPICS_POLICY_DISPLAY_NAME_MAP[value]}**",
-        ),
-    }
-    if NOTIFICATION_MESSAGES.get(name) is not None:
+        )
+    elif name == "default_color":
+
+        def default_color_display_name(color: str | None) -> str:
+            if color is None:
+                return _("No default color")
+            return f"**{color}**"
+
+        notification_message = _(
+            "{user_name} changed the default color for this channel from {old_color} to {new_color}."
+        ).format(
+            user_name=silent_mention_syntax_for_user(acting_user),
+            old_color=default_color_display_name(old_value),
+            new_color=default_color_display_name(value),
+        )
+
+    if notification_message is not None:
         with override_language(stream.realm.default_language):
             maybe_send_channel_events_notice(
                 sender,
                 stream,
-                NOTIFICATION_MESSAGES[name],
+                notification_message,
                 archived_channel_notice=stream.deactivated,
             )
 
