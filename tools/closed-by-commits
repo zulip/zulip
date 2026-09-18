@@ -272,7 +272,7 @@ class CommitRangeAnalyzer:
 
     def get_issues_for_commit(
         self, commit_sha: str, console: Console
-    ) -> tuple[dict[Issue, set[PullRequest]], set[int]]:
+    ) -> tuple[dict[Issue, set[PullRequest]], set[PullRequest]]:
         _, result = self.github.requester.graphql_query(
             self.COMMIT_PRS_QUERY, {"oid": commit_sha, "repo": self.reponame}
         )
@@ -291,13 +291,13 @@ class CommitRangeAnalyzer:
         pr_nodes = commit_obj.get("associatedPullRequests", {}).get("nodes", [])
 
         results: dict[Issue, set[PullRequest]] = defaultdict(set)
-        all_seen_prs: set[int] = set()
+        all_seen_prs: set[PullRequest] = set()
         for pr_node in pr_nodes:
             pr = PullRequest(
                 number=pr_node["number"],
                 title=pr_node["title"].strip(),
             )
-            all_seen_prs.add(pr.number)
+            all_seen_prs.add(pr)
             pr_comments = pr_node.get("comments", {}).get("nodes", [])
             for node in [pr_node, *pr_comments]:
                 pr.czo_urls.update(self._extract_czo_urls(node.get("body")))
@@ -333,7 +333,7 @@ class CommitRangeAnalyzer:
 
         return results, all_seen_prs
 
-    def analyze_range(self, base: str, head: str) -> list[Issue]:
+    def analyze_range(self, base: str, head: str) -> tuple[list[Issue], list[PullRequest]]:
         console = Console(stderr=True, log_path=False)
 
         repository = self.github.get_repo(f"zulip/{self.reponame}")
@@ -341,7 +341,7 @@ class CommitRangeAnalyzer:
         commit_shas = [commit.sha for commit in comparison.commits]
         console.log(f"Found {len(commit_shas)} commits")
 
-        all_seen_prs = set()
+        all_seen_prs: set[PullRequest] = set()
         issue_to_prs: dict[Issue, set[PullRequest]] = defaultdict(set)
         with Progress(console=console) as progress:
             task = progress.add_task("Processing commits...", total=len(commit_shas))
@@ -360,12 +360,17 @@ class CommitRangeAnalyzer:
 
             issue.closed_by_prs = sorted(prs, key=lambda p: p.number)
 
-        unique_prs = len({pr for prs in issue_to_prs.values() for pr in prs})
+        linked_prs = {pr for prs in issue_to_prs.values() for pr in prs}
+        unlinked_prs = all_seen_prs - linked_prs
         console.log(
-            f"Found {len(all_seen_prs)} unique PRs, of which {unique_prs} PRs closed {len(issue_to_prs)} issues",
+            f"Found {len(all_seen_prs)} unique PRs, of which {len(linked_prs)} PRs closed {len(issue_to_prs)} issues",
         )
+        console.log(f"Found {len(unlinked_prs)} PRs not linked to an issue")
 
-        return sorted(issue_to_prs.keys(), key=lambda x: x.number)
+        return (
+            sorted(issue_to_prs.keys(), key=lambda x: x.number),
+            sorted(unlinked_prs, key=lambda x: x.number),
+        )
 
 
 def validate_github_token(value: str) -> str:
@@ -415,7 +420,11 @@ def main(
     lines = []
     prefix = repo_issue_prefixes[repo]
     analyzer = CommitRangeAnalyzer(token, repo.value, prefix)
-    for issue in analyzer.analyze_range(base_commit, head_commit):
+    issues, unlinked_prs = analyzer.analyze_range(base_commit, head_commit)
+
+    if issues:
+        lines.append("### Issues resolved")
+    for issue in issues:
         lines.append(f"#### #{prefix}{issue.number}: {issue.title}")
         if issue.duplicate_issue_ids:
             lines.append(
@@ -427,6 +436,16 @@ def main(
         )
         lines.extend(f" - {czo_url}" for czo_url in sorted(issue.czo_urls))
 
+        lines.append("")
+
+    # zulip-cloud-deploy.yaml splits this output into messages at blank
+    # lines. Without a blank line after every PR entry, a long list would
+    # be one block and could be cut in the middle of a line.
+    if unlinked_prs:
+        lines.append("### PRs not linked to an issue")
+    for pr in unlinked_prs:
+        lines.append(f" - #{prefix}{pr.number}: {pr.title}")
+        lines.extend(f"   - {czo_url}" for czo_url in sorted(pr.czo_urls))
         lines.append("")
 
     print("\n".join(lines))
