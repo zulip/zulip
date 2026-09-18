@@ -107,12 +107,20 @@ class PullRequest:
         return isinstance(other, PullRequest) and self.number == other.number
 
 
+@dataclass
+class Commit:
+    sha: str
+    subject: str
+    czo_urls: set[str] = field(default_factory=set)
+
+
 class CommitRangeAnalyzer:
     COMMIT_PRS_QUERY = """
     query($oid: GitObjectID!, $repo: String!) {
       repository(owner: "zulip", name: $repo) {
         object(oid: $oid) {
           ... on Commit {
+            messageHeadline
             messageBody
             associatedPullRequests(first: 10) {
               nodes {
@@ -272,7 +280,7 @@ class CommitRangeAnalyzer:
 
     def get_issues_for_commit(
         self, commit_sha: str, console: Console
-    ) -> tuple[dict[Issue, set[PullRequest]], set[PullRequest]]:
+    ) -> tuple[dict[Issue, set[PullRequest]], set[PullRequest], Commit | None]:
         _, result = self.github.requester.graphql_query(
             self.COMMIT_PRS_QUERY, {"oid": commit_sha, "repo": self.reponame}
         )
@@ -284,7 +292,7 @@ class CommitRangeAnalyzer:
         data = result.get("data", {})
 
         if not data.get("repository", {}).get("object"):
-            return dict(), set()
+            return dict(), set(), None
 
         commit_obj = data["repository"]["object"]
         commit_message = commit_obj.get("messageBody", "")
@@ -324,6 +332,7 @@ class CommitRangeAnalyzer:
             for issue in issues_dict.values():
                 results[issue].add(pr)
 
+        unlinked_commit = None
         if not pr_nodes:
             for issue_num in self._extract_issue_numbers(self.reponame, commit_message):
                 maybe_issue = self._fetch_issue(issue_num, console)
@@ -331,9 +340,20 @@ class CommitRangeAnalyzer:
                     continue
                 results[maybe_issue].update()
 
-        return results, all_seen_prs
+            if not results:
+                # Unlike PRs, we don't search chat.zulip.org for the commit
+                # hash, since hashes are rarely pasted in chat.
+                unlinked_commit = Commit(
+                    sha=commit_sha,
+                    subject=commit_obj.get("messageHeadline", "").strip(),
+                    czo_urls=self._extract_czo_urls(commit_message),
+                )
 
-    def analyze_range(self, base: str, head: str) -> tuple[list[Issue], list[PullRequest]]:
+        return results, all_seen_prs, unlinked_commit
+
+    def analyze_range(
+        self, base: str, head: str
+    ) -> tuple[list[Issue], list[PullRequest], list[Commit]]:
         console = Console(stderr=True, log_path=False)
 
         repository = self.github.get_repo(f"zulip/{self.reponame}")
@@ -343,15 +363,20 @@ class CommitRangeAnalyzer:
 
         all_seen_prs: set[PullRequest] = set()
         issue_to_prs: dict[Issue, set[PullRequest]] = defaultdict(set)
+        unlinked_commits: list[Commit] = []
         with Progress(console=console) as progress:
             task = progress.add_task("Processing commits...", total=len(commit_shas))
             for sha in commit_shas:
                 progress.console.log(f"Processing {sha}")
 
-                this_issue_to_prs, this_seen_prs = self.get_issues_for_commit(sha, console)
+                this_issue_to_prs, this_seen_prs, unlinked_commit = self.get_issues_for_commit(
+                    sha, console
+                )
                 for issue, prs in this_issue_to_prs.items():
                     issue_to_prs[issue].update(prs)
                 all_seen_prs.update(this_seen_prs)
+                if unlinked_commit is not None:
+                    unlinked_commits.append(unlinked_commit)
                 progress.advance(task)
 
         for issue, prs in issue_to_prs.items():
@@ -366,10 +391,12 @@ class CommitRangeAnalyzer:
             f"Found {len(all_seen_prs)} unique PRs, of which {len(linked_prs)} PRs closed {len(issue_to_prs)} issues",
         )
         console.log(f"Found {len(unlinked_prs)} PRs not linked to an issue")
+        console.log(f"Found {len(unlinked_commits)} commits with no PR or issue")
 
         return (
             sorted(issue_to_prs.keys(), key=lambda x: x.number),
             sorted(unlinked_prs, key=lambda x: x.number),
+            unlinked_commits,
         )
 
 
@@ -420,7 +447,7 @@ def main(
     lines = []
     prefix = repo_issue_prefixes[repo]
     analyzer = CommitRangeAnalyzer(token, repo.value, prefix)
-    issues, unlinked_prs = analyzer.analyze_range(base_commit, head_commit)
+    issues, unlinked_prs, unlinked_commits = analyzer.analyze_range(base_commit, head_commit)
 
     if issues:
         lines.append("### Issues resolved")
@@ -439,13 +466,22 @@ def main(
         lines.append("")
 
     # zulip-cloud-deploy.yaml splits this output into messages at blank
-    # lines. Without a blank line after every PR entry, a long list would
-    # be one block and could be cut in the middle of a line.
+    # lines. Without a blank line after every PR and commit entry, a long
+    # list would be one block and could be cut in the middle of a line.
     if unlinked_prs:
         lines.append("### PRs not linked to an issue")
     for pr in unlinked_prs:
         lines.append(f" - #{prefix}{pr.number}: {pr.title}")
         lines.extend(f"   - {czo_url}" for czo_url in sorted(pr.czo_urls))
+        lines.append("")
+
+    if unlinked_commits:
+        lines.append("### Commits not linked to a PR or issue")
+    for commit in unlinked_commits:
+        # 11 characters matches get_short_sha in zerver/lib/webhooks/git.py,
+        # so hashes look the same as in messages from the git integrations.
+        lines.append(f" - {commit.sha[:11]}: {commit.subject}")
+        lines.extend(f"   - {czo_url}" for czo_url in sorted(commit.czo_urls))
         lines.append("")
 
     print("\n".join(lines))
