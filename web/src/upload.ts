@@ -224,7 +224,8 @@ export let hide_upload_banner = (
     ) {
         if (config.mode === "compose") {
             compose_validate.set_upload_in_progress(false);
-        } else {
+        } else if (!config.send_button().hasClass("saving")) {
+            // Leave Save disabled while a previous edit is still saving.
             config.send_button().prop("disabled", false);
         }
     }
