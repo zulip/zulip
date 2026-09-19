@@ -74,6 +74,7 @@ from zerver.views.message_edit import (
     delete_message_backend,
     get_message_edit_history,
     json_fetch_raw_message,
+    update_link_previews_backend,
     update_message_backend,
 )
 from zerver.views.message_fetch import get_messages_backend, messages_in_narrow_backend
@@ -438,6 +439,7 @@ v1_api_and_json_patterns = [
     rest_path("messages/flags", POST=update_message_flags),
     rest_path("messages/flags/narrow", POST=update_message_flags_for_narrow),
     rest_path("messages/<int:message_id>/history", GET=get_message_edit_history),
+    rest_path("messages/<int:message_id>/link_previews", PATCH=update_link_previews_backend),
     rest_path("messages/matches_narrow", GET=messages_in_narrow_backend),
     rest_path("users/me/subscriptions/properties", POST=update_subscription_properties_backend),
     rest_path("users/me/subscriptions/<int:stream_id>", PATCH=update_subscriptions_property),
