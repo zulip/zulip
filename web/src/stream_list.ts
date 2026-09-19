@@ -47,6 +47,7 @@ import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 import type {FullUnreadCountsData, StreamCountInfo} from "./unread.ts";
 import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 let pending_stream_list_rerender = false;
 let zoomed_in = false;
@@ -1578,7 +1579,10 @@ export function set_event_handlers({
 
         if ($(e.target).closest(".zoomed-new-topic").length > 0) {
             trigger = "zoomed new topic";
-            topic = $("#topic_filter_query").text().trim().slice(0, realm.max_topic_length);
+            topic = util.truncate_to_max_code_points(
+                $("#topic_filter_query").text().trim(),
+                realm.max_topic_length,
+            );
         }
 
         compose_actions.start({
