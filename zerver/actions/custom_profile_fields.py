@@ -5,6 +5,13 @@ from django.db import transaction
 from django.utils.translation import gettext as _
 
 from zerver.actions.message_send import send_user_profile_update_notification
+from zerver.lib.event_types import CustomProfileField as CustomProfileFieldData
+from zerver.lib.event_types import (
+    CustomProfileFieldsEvent,
+    DetailedCustomProfile,
+    PersonCustomProfileField,
+    RealmUserUpdateEvent,
+)
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.mention import silent_mention_syntax_for_user
@@ -19,7 +26,9 @@ from zerver.tornado.django_api import send_event_on_commit
 
 def notify_realm_custom_profile_fields(realm: Realm) -> None:
     fields = custom_profile_fields_for_realm(realm.id)
-    event = dict(type="custom_profile_fields", fields=[f.as_dict() for f in fields])
+    event = CustomProfileFieldsEvent(
+        fields=[DetailedCustomProfile(**f.as_dict()) for f in fields],
+    )
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
@@ -120,13 +129,7 @@ def remove_custom_profile_field_value_if_required(
 
     for user_profile in updated_users:
         notify_user_update_custom_profile_data(
-            user_profile,
-            {
-                "id": field.id,
-                "value": None,
-                "rendered_value": None,
-                "type": field.field_type,
-            },
+            user_profile, field_id=field.id, value=None, rendered_value=None
         )
 
 
@@ -186,14 +189,20 @@ def try_reorder_realm_custom_profile_fields(realm: Realm, order: Iterable[int]) 
 
 
 def notify_user_update_custom_profile_data(
-    user_profile: UserProfile, field: dict[str, int | str | list[int] | None]
+    user_profile: UserProfile,
+    *,
+    field_id: int,
+    value: str | None,
+    rendered_value: str | None,
 ) -> None:
-    data = dict(id=field["id"], value=field["value"])
-
-    if field["rendered_value"]:
-        data["rendered_value"] = field["rendered_value"]
-    payload = dict(user_id=user_profile.id, custom_profile_field=data)
-    event = dict(type="realm_user", op="update", person=payload)
+    custom_profile_field = CustomProfileFieldData(id=field_id, value=value)
+    if rendered_value:
+        custom_profile_field.rendered_value = rendered_value
+    event = RealmUserUpdateEvent(
+        person=PersonCustomProfileField(
+            user_id=user_profile.id, custom_profile_field=custom_profile_field
+        ),
+    )
     send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
 
 
@@ -235,12 +244,9 @@ def do_update_user_custom_profile_data_if_changed(
             field_value.save(update_fields=["value"])
         notify_user_update_custom_profile_data(
             user_profile,
-            {
-                "id": field_value.field_id,
-                "value": field_value.value,
-                "rendered_value": field_value.rendered_value,
-                "type": field_value.field.field_type,
-            },
+            field_id=field_value.field_id,
+            value=field_value.value,
+            rendered_value=field_value.rendered_value,
         )
 
         new_value = get_custom_profile_field_display_value(field_value)
@@ -298,13 +304,7 @@ def check_remove_custom_profile_field_value(
         old_value = get_custom_profile_field_display_value(field_value)
         field_value.delete()
         notify_user_update_custom_profile_data(
-            user_profile,
-            {
-                "id": field_id,
-                "value": None,
-                "rendered_value": None,
-                "type": custom_profile_field.field_type,
-            },
+            user_profile, field_id=field_id, value=None, rendered_value=None
         )
         if notify:
             changes: list[UserProfileChangeDict] = [
