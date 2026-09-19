@@ -112,9 +112,12 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         switch (property) {
             case "can_subscribe_group":
             case "can_add_subscribers_group":
+            case "can_remove_subscribers_group":
+            case "can_unsubscribe_group":
                 stream_settings_ui.update_subscription_elements(sub);
                 break;
             case "can_administer_channel_group": {
+                stream_settings_ui.update_subscription_elements(sub);
                 const settings_sub = stream_settings_data.get_sub_for_settings(sub);
                 stream_ui_updates.update_add_subscriptions_elements(settings_sub);
                 break;
