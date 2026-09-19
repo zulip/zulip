@@ -468,6 +468,15 @@ class MentionData:
         return self.mention_backend.get_topic_info_map(channel_topics, acting_user=acting_user)
 
 
+def silence_mentions(content: str) -> str:
+    """
+    Silence all mentions inside content.
+    """
+    content = MENTIONS_RE.sub(lambda m: "@_**{}**".format(m.group("match")), content)
+    content = USER_GROUP_MENTIONS_RE.sub(lambda m: "@_*{}*".format(m.group("match")), content)
+    return content
+
+
 def silent_mention_syntax_for_user(user_profile: UserProfile | UserDisplayRecipient) -> str:
     if isinstance(user_profile, UserProfile):
         return f"@_**{user_profile.full_name}|{user_profile.id}**"
