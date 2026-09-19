@@ -253,19 +253,20 @@ def add_quote_prefix_in_text(content: str) -> str:
 def get_channel_privacy_icon(channel: Stream) -> str:
     """
     Return the relevant icon for given channel.
+    Keep this logic consistent with web/templates/stream_privacy.hbs to avoid drift.
     """
-    # TODO: Implement emoji icons (🔒, 🌍, etc.) here.
-    #       Emojis were approved in #design > digest email design; when working
-    #       on this, include comments to keep this logic consistent with the
-    #       web app and avoid future drift.
-
+    if channel.invite_only:
+        return "🔒"
+    if channel.is_web_public:
+        return "🌍"
     return "#"
 
 
 def build_message_list(
     user: UserProfile,
     messages: list[Message],
-    stream_id_map: dict[int, Stream] | None = None,  # only needs id, name
+    stream_id_map: dict[int, Stream]
+    | None = None,  # only needs id, name, is_web_public, invite_only
 ) -> MessageListPayload:
     """
     Builds the message list object for the message notification email and
