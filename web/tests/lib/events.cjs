@@ -405,6 +405,13 @@ exports.fixtures = {
         value: false,
     },
 
+    realm__update__jitsi_server_url: {
+        type: "realm",
+        op: "update",
+        property: "jitsi_server_url",
+        value: "https://jitsi.example.com",
+    },
+
     realm__update__media_preview_size: {
         type: "realm",
         op: "update",
