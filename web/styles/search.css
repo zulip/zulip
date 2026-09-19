@@ -413,6 +413,11 @@
 
         .search_list_item .description {
             margin: 2px 0;
+            /* Keep each suggestion on a single line, truncating
+               long channel or topic names. */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .search_list_item .pill-container {
