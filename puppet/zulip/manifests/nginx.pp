@@ -26,16 +26,6 @@ class zulip::nginx {
     notify  => Service['nginx'],
   }
 
-  file { '/etc/nginx/dhparam.pem':
-    ensure  => file,
-    require => Package[$zulip::common::nginx],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    notify  => Service['nginx'],
-    source  => 'puppet:///modules/zulip/nginx/dhparam.pem',
-  }
-
   if $facts['os']['family'] == 'Debian' {
     $ca_crt = '/etc/ssl/certs/ca-certificates.crt'
   } else {
