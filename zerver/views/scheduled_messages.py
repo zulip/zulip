@@ -7,6 +7,7 @@ from pydantic import Json, NonNegativeInt
 
 from zerver.actions.scheduled_messages import (
     check_schedule_message,
+    check_schedule_split_message,
     delete_scheduled_message,
     edit_scheduled_message,
 )
@@ -130,12 +131,16 @@ def update_scheduled_message_backend(
     return json_success(request)
 
 
+MAX_SPLIT_MESSAGE_PARTS = 20
+
+
 @typed_endpoint
 def create_scheduled_message_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     *,
-    message_content: Annotated[str, ApiParamConfig("content")],
+    message_content: Annotated[str | None, ApiParamConfig("content")] = None,
+    split_message_contents: Json[list[str]] | None = None,
     read_by_sender: Json[bool] | None = None,
     req_to: Annotated[Json[int | list[int]], ApiParamConfig("to")],
     req_type: Annotated[
@@ -145,6 +150,18 @@ def create_scheduled_message_backend(
     scheduled_delivery_timestamp: Json[int],
     topic_name: OptionalTopic = None,
 ) -> HttpResponse:
+    if (message_content is None) == (split_message_contents is None):
+        raise JsonableError(_("Exactly one of content or split_message_contents is required."))
+
+    if split_message_contents is not None and not (
+        2 <= len(split_message_contents) <= MAX_SPLIT_MESSAGE_PARTS
+    ):
+        raise JsonableError(
+            _("Number of split messages must be between 2 and {max_parts}.").format(
+                max_parts=MAX_SPLIT_MESSAGE_PARTS
+            )
+        )
+
     recipient_type_name = req_type
     if recipient_type_name == "direct":
         # For now, use "private" from Message.API_RECIPIENT_TYPES.
@@ -171,6 +188,21 @@ def create_scheduled_message_backend(
     else:
         message_to = extract_direct_message_recipient_ids(req_to)
 
+    if split_message_contents is not None:
+        scheduled_message_ids = check_schedule_split_message(
+            sender,
+            client,
+            recipient_type_name,
+            message_to,
+            topic_name,
+            split_message_contents,
+            deliver_at,
+            realm=user_profile.realm,
+            read_by_sender=read_by_sender,
+        )
+        return json_success(request, data={"scheduled_message_ids": scheduled_message_ids})
+
+    assert message_content is not None
     scheduled_message_id = check_schedule_message(
         sender,
         client,

@@ -1,5 +1,5 @@
 {{#each scheduled_messages_data}}
-    <div class="scheduled-message-row overlay-message-row" data-scheduled-message-id="{{scheduled_message_id}}">
+    <div class="scheduled-message-row overlay-message-row" data-scheduled-message-id="{{scheduled_message_id}}" data-split-message-ids="{{split_message_ids}}">
         <div class="scheduled-message-info-box overlay-message-info-box" tabindex="0">
             {{#if is_stream}}
             <div class="message_header message_header_stream restore-overlay-message overlay-message-header">
@@ -43,6 +43,11 @@
                                 {{> ./components/icon_button intent="danger" custom_classes="delete-overlay-message tippy-zulip-delayed-tooltip" icon="trash" data-tooltip-template-id="delete-scheduled-message-tooltip-template" aria-label=(t "Delete") }}
                             </div>
                         </div>
+                        {{#if is_split_message}}
+                        <div class="scheduled-split-message-count">
+                            {{t "Will be sent as {split_message_count} messages." }}
+                        </div>
+                        {{/if}}
                         <div class="message_content rendered_markdown restore-overlay-message">{{rendered_markdown rendered_content}}</div>
                     </div>
                 </div>
