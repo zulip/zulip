@@ -585,8 +585,8 @@ class InviteUserTest(InviteUserBase):
             result = self.invite(self.nonreg_email("alice"), ["Denmark"])
         self.assert_json_success(result)
 
-        ledger.licenses_at_next_renewal = get_latest_seat_count(user.realm)
-        ledger.save(update_fields=["licenses_at_next_renewal"])
+        ledger.workplace_licenses_at_next_renewal = get_latest_seat_count(user.realm)
+        ledger.save(update_fields=["workplace_licenses_at_next_renewal"])
         with self.settings(BILLING_ENABLED=True):
             result = self.invite(self.nonreg_email("bob"), ["Denmark"])
         self.assert_json_error_contains(
@@ -594,9 +594,9 @@ class InviteUserTest(InviteUserBase):
             "Your organization does not have enough Zulip licenses. Invitations were not sent.",
         )
 
-        ledger.licenses_at_next_renewal = 50
-        ledger.licenses = get_latest_seat_count(user.realm) + 1
-        ledger.save(update_fields=["licenses", "licenses_at_next_renewal"])
+        ledger.workplace_licenses_at_next_renewal = 50
+        ledger.workplace_licenses = get_latest_seat_count(user.realm) + 1
+        ledger.save(update_fields=["workplace_licenses", "workplace_licenses_at_next_renewal"])
         with self.settings(BILLING_ENABLED=True):
             invitee_emails = self.nonreg_email("bob") + "," + self.nonreg_email("alice")
             result = self.invite(invitee_emails, ["Denmark"])
@@ -605,8 +605,8 @@ class InviteUserTest(InviteUserBase):
             "Your organization does not have enough Zulip licenses. Invitations were not sent.",
         )
 
-        ledger.licenses = get_latest_seat_count(user.realm)
-        ledger.save(update_fields=["licenses"])
+        ledger.workplace_licenses = get_latest_seat_count(user.realm)
+        ledger.save(update_fields=["workplace_licenses"])
         with self.settings(BILLING_ENABLED=True):
             result = self.invite(self.nonreg_email("bob"), ["Denmark"])
         self.assert_json_error_contains(
