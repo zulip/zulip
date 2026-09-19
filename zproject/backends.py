@@ -1989,7 +1989,7 @@ def validate_custom_profile_field_data_for_sync(
             )
 
         try:
-            validate_user_custom_profile_field(realm_id, field, value)
+            value = validate_user_custom_profile_field(realm_id, field, value)
         except ValidationError as error:
             raise SyncUserError(f"Invalid data for {var_name} field: {error.message}")
         profile_data.append(
