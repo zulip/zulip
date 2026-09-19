@@ -7,7 +7,9 @@ import logging
 import os
 import re
 import shutil
+from collections import defaultdict
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Any, TypeAlias
 
 import orjson
@@ -36,6 +38,8 @@ from zerver.data_import.import_util import (
     create_converted_data_files,
     get_attachment_path_and_content,
     get_domain_name_for_import,
+    get_thread_reply_notification_string,
+    get_zulip_thread_topic_name,
     make_subscriber_map,
     make_user_messages,
 )
@@ -46,6 +50,7 @@ from zerver.lib.export import do_common_export_processes
 from zerver.lib.import_realm import validate_and_resolve_relative_path
 from zerver.lib.markdown import IMAGE_EXTENSIONS
 from zerver.lib.message import truncate_content
+from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.upload import sanitize_name
 from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
@@ -56,6 +61,7 @@ from zerver.models.streams import Stream
 class ChannelMetadata:
     zulip_channel_id: int
     zulip_recipient_id: int
+    zulip_channel_name: str
 
 
 AddedChannelsT: TypeAlias = dict[str, ChannelMetadata]
@@ -310,7 +316,9 @@ def convert_channel_data(
             zerver_realm[0]["zulip_update_announcements_stream"] = stream_id
 
         added_channels[mattermost_channel_id] = ChannelMetadata(
-            zulip_channel_id=stream_id, zulip_recipient_id=recipient_id
+            zulip_channel_id=stream_id,
+            zulip_recipient_id=recipient_id,
+            zulip_channel_name=channel_display_name,
         )
     return added_channels
 
@@ -508,6 +516,9 @@ def process_message_attachments(
     return content, has_image
 
 
+MAIN_MATTERMOST_IMPORT_TOPIC = "imported from mattermost"
+
+
 def process_raw_message_batch(
     realm_id: int,
     raw_messages: list[dict[str, Any]],
@@ -599,7 +610,7 @@ def process_raw_message_batch(
                 content += "\n\n"
             content += attachment_markdown
 
-        topic_name = "imported from mattermost"
+        topic_name = raw_message.get("topic_name", "")
 
         message = build_message(
             content=content,
@@ -715,21 +726,51 @@ def process_posts(
         if post_dict.get("attachments"):
             message_dict["attachments"] = post_dict["attachments"]
 
+        if "topic_name" in post_dict:
+            message_dict["topic_name"] = post_dict["topic_name"]
+
         return message_dict
 
-    raw_messages = []
+    raw_messages: list[dict[str, Any]] = []
+    thread_counter: dict[str, int] = defaultdict(int)
     for post_dict in post_data_list:
+        is_channel_message = "channel" in post_dict
+
+        if is_channel_message:
+            post_dict["topic_name"] = MAIN_MATTERMOST_IMPORT_TOPIC
+
         message_dict = message_to_dict(post_dict)
         if message_dict is None:  # nocoverage
             continue
         raw_messages.append(message_dict)
         message_replies = post_dict["replies"]
-        # Replies to a message in Mattermost are stored in the main message object.
-        # For now, we just append the replies immediately after the original message.
         if message_replies is not None:
+            thread_topic_name: str | None = None
+            if is_channel_message:
+                channel_meta = added_channels[message_dict["channel_name"]]
+                thread_ts_datetime = datetime.fromtimestamp(
+                    message_dict["date_sent"], tz=timezone.utc
+                )
+                thread_topic_name = get_zulip_thread_topic_name(
+                    message_dict["content"],
+                    thread_ts_datetime,
+                    thread_counter,
+                )
+                topic_link_syntax = get_stream_topic_link_syntax(
+                    channel_meta.zulip_channel_id,
+                    channel_meta.zulip_channel_name,
+                    thread_topic_name,
+                )
+                message_dict["content"] += get_thread_reply_notification_string(
+                    len(message_replies),
+                    topic_link_syntax,
+                )
+
             for reply in message_replies:
-                if "channel" in post_dict:
+                if is_channel_message:
                     reply["channel"] = post_dict["channel"]
+                    assert thread_topic_name is not None
+                    reply["topic_name"] = thread_topic_name
                 else:  # nocoverage
                     reply["channel_members"] = post_dict["channel_members"]
                 reply_dict = message_to_dict(reply)
