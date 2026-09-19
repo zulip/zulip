@@ -45,6 +45,10 @@ COMMON_YUM_VENV_DEPENDENCIES = [
     "jq",
     "vips",  # For thumbnailing
     "vips-tools",
+    # For building pyicu; gcc-c++ is a separate package from gcc here,
+    # unlike build-essential on Debian.
+    "gcc-c++",
+    "libicu-devel",
 ]
 
 REDHAT_VENV_DEPENDENCIES = [
