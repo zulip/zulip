@@ -1,0 +1,197 @@
+{
+  "event_name": "task.attachment.created",
+  "time": "2026-01-21T11:34:12.383358773Z",
+  "data": {
+    "attachment": {
+      "created": "2026-01-21T12:34:12.352752987+01:00",
+      "created_by": {
+        "created": "2026-01-16T13:18:58+01:00",
+        "id": 1,
+        "name": "John Doe",
+        "updated": "2026-01-21T12:21:44+01:00",
+        "username": "jdoe"
+      },
+      "file": {
+        "created": "2026-01-21T12:34:12.347026023+01:00",
+        "id": 95,
+        "mime": "",
+        "name": "image.png",
+        "size": 645982
+      },
+      "id": 75,
+      "task_id": 677
+    },
+    "doer": {
+      "id": 1,
+      "name": "John Doe",
+      "username": "jdoe",
+      "created": "2026-01-16T13:18:58+01:00",
+      "updated": "2026-01-21T12:21:44+01:00"
+    },
+    "project": {
+      "id": 26,
+      "title": "Meeting",
+      "description": "",
+      "identifier": "",
+      "hex_color": "",
+      "parent_project_id": 21,
+      "owner": {
+        "id": 2,
+        "name": "",
+        "username": "admin",
+        "created": "2026-01-16T13:32:33+01:00",
+        "updated": "2026-01-19T10:07:36+01:00"
+      },
+      "is_archived": false,
+      "background_information": {
+        "Type": "upload"
+      },
+      "background_blur_hash": "LwJICFIVV@oeyZxZaxj].8t7ogbH",
+      "is_favorite": false,
+      "position": 1703936,
+      "views": [
+        {
+          "id": 101,
+          "title": "List",
+          "project_id": 26,
+          "view_kind": "list",
+          "filter": {
+            "s": "",
+            "sort_by": null,
+            "order_by": null,
+            "filter": "done = false",
+            "filter_include_nulls": false
+          },
+          "position": 100,
+          "bucket_configuration_mode": "none",
+          "bucket_configuration": null,
+          "default_bucket_id": 0,
+          "done_bucket_id": 0,
+          "updated": "2026-01-16T13:37:36+01:00",
+          "created": "2026-01-16T13:37:36+01:00"
+        },
+        {
+          "id": 102,
+          "title": "Gantt",
+          "project_id": 26,
+          "view_kind": "gantt",
+          "filter": null,
+          "position": 200,
+          "bucket_configuration_mode": "none",
+          "bucket_configuration": null,
+          "default_bucket_id": 0,
+          "done_bucket_id": 0,
+          "updated": "2026-01-16T13:37:36+01:00",
+          "created": "2026-01-16T13:37:36+01:00"
+        },
+        {
+          "id": 103,
+          "title": "Table",
+          "project_id": 26,
+          "view_kind": "table",
+          "filter": null,
+          "position": 300,
+          "bucket_configuration_mode": "none",
+          "bucket_configuration": null,
+          "default_bucket_id": 0,
+          "done_bucket_id": 0,
+          "updated": "2026-01-16T13:37:36+01:00",
+          "created": "2026-01-16T13:37:36+01:00"
+        },
+        {
+          "id": 104,
+          "title": "Kanban",
+          "project_id": 26,
+          "view_kind": "kanban",
+          "filter": null,
+          "position": 400,
+          "bucket_configuration_mode": "manual",
+          "bucket_configuration": null,
+          "default_bucket_id": 0,
+          "done_bucket_id": 198,
+          "updated": "2026-01-16T13:37:38+01:00",
+          "created": "2026-01-16T13:37:36+01:00"
+        }
+      ],
+      "max_permission": 0,
+      "created": "2026-01-16T13:37:36+01:00",
+      "updated": "2026-01-21T11:41:02+01:00"
+    },
+    "task": {
+      "id": 677,
+      "title": ":P",
+      "description": "<p>neu</p>",
+      "done": false,
+      "done_at": "0001-01-01T00:00:00Z",
+      "due_date": "0001-01-01T00:00:00Z",
+      "reminders": null,
+      "project_id": 26,
+      "repeat_after": 0,
+      "repeat_mode": 0,
+      "priority": 0,
+      "start_date": "0001-01-01T00:00:00Z",
+      "end_date": "0001-01-01T00:00:00Z",
+      "assignees": null,
+      "labels": null,
+      "hex_color": "",
+      "percent_done": 0,
+      "identifier": "#50",
+      "index": 50,
+      "related_tasks": {},
+      "attachments": [
+        {
+          "id": 75,
+          "task_id": 677,
+          "created_by": {
+            "id": 1,
+            "name": "John Doe",
+            "username": "jdoe",
+            "created": "2026-01-16T13:18:58+01:00",
+            "updated": "2026-01-21T12:21:44+01:00"
+          },
+          "file": {
+            "id": 95,
+            "name": "image.png",
+            "mime": "",
+            "size": 645982,
+            "created": "2026-01-21T12:34:12+01:00"
+          },
+          "created": "2026-01-21T12:34:12+01:00"
+        }
+      ],
+      "cover_image_attachment_id": 0,
+      "is_favorite": false,
+      "subscription": {
+        "id": 3,
+        "entity": "task",
+        "entity_id": 677,
+        "created": "2026-01-21T11:16:30+01:00"
+      },
+      "created": "2026-01-20T15:39:36+01:00",
+      "updated": "2026-01-21T12:30:03+01:00",
+      "bucket_id": 0,
+      "buckets": [
+        {
+          "id": 190,
+          "title": "Agenda",
+          "project_view_id": 104,
+          "limit": 0,
+          "count": 0,
+          "position": 12451840,
+          "created": "2026-01-16T13:37:36+01:00",
+          "updated": "2026-01-16T13:37:36+01:00",
+          "created_by": null
+        }
+      ],
+      "position": 0,
+      "reactions": null,
+      "created_by": {
+        "id": 1,
+        "name": "John Doe",
+        "username": "jdoe",
+        "created": "2026-01-16T13:18:58+01:00",
+        "updated": "2026-01-21T12:21:44+01:00"
+      }
+    }
+  }
+}
