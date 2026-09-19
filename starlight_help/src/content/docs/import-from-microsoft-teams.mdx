@@ -24,7 +24,7 @@ The import will include your organization's:
 * **Name**
 * **Users**, including names, emails, roles
 * **Teams** as Zulip channels, including all user subscriptions
-* **Message history**, excluding direct messages and messages in private channels
+* **Message history**, excluding messages in private channels
 
 <ZulipNote>
   This feature is currently in beta. If you run into any problems, please
@@ -84,6 +84,8 @@ APIs](https://learn.microsoft.com/en-us/microsoftteams/migration-from-teams#step
 Some organization data is not exported by the Teams data export tool. The Zulip import
 tool will call several Microsoft Graph APIs to collect the following data:
 
+* **Chat members**.
+
 * [**Hosted contents**](https://learn.microsoft.com/en-us/graph/api/resources/chatmessagehostedcontent?view=graph-rest-1.0).
   Teams content hosted in a chat message, such as images or code snippets.
 
@@ -113,6 +115,8 @@ token](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-clien
      * `ChannelMessage.Read.All`
      * `User.Read.All`
      * `RoleManagement.Read.Directory`
+     * `ChatMember.Read.All`
+     * `Chat.Read.All`
 
      See the [required token permissions](#required-token-permissions) section for more
      details about these tokens and the endpoints that the import tool calls.
@@ -145,12 +149,13 @@ token](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-clien
 The following Microsoft Graph API endpoints are used by the Zulip import
 tool:
 
-| Endpoint                                                                                                                            | Uses                                                   | Least-privileged permission     |
-| ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ------------------------------- |
-| [directory role list member](https://learn.microsoft.com/en-us/graph/api/directoryrole-list-members?view=graph-rest-1.0\&tabs=http) | Used to find users who are global administrators.      | `User.Read.All`                 |
-| [list directory role](https://learn.microsoft.com/en-us/graph/api/directoryrole-list?view=graph-rest-1.0\&tabs=http)                | Used to find the ID for the global administrator role. | `RoleManagement.Read.Directory` |
-| [list user](https://learn.microsoft.com/en-us/graph/api/user-list?view=graph-rest-1.0\&tabs=http)                                   | Used to find guest accounts.                           | `User.Read.All`                 |
-| [get hosted content](https://learn.microsoft.com/en-us/graph/api/chatmessagehostedcontent-get?view=graph-rest-1.0\&tabs=http)       | Used to download hosted content attachments.           | `ChannelMessage.Read.All`       |
+| Endpoint                                                                                                                            | Uses                                                          | Least-privileged permission                   |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | --------------------------------------------- |
+| [directory role list member](https://learn.microsoft.com/en-us/graph/api/directoryrole-list-members?view=graph-rest-1.0\&tabs=http) | Used to find users who are global administrators.             | `User.Read.All`                               |
+| [list directory role](https://learn.microsoft.com/en-us/graph/api/directoryrole-list?view=graph-rest-1.0\&tabs=http)                | Used to find the ID for the global administrator role.        | `RoleManagement.Read.Directory`               |
+| [list user](https://learn.microsoft.com/en-us/graph/api/user-list?view=graph-rest-1.0\&tabs=http)                                   | Used to find guest accounts.                                  | `User.Read.All`                               |
+| [get hosted content](https://learn.microsoft.com/en-us/graph/api/chatmessagehostedcontent-get?view=graph-rest-1.0\&tabs=http)       | Used to download hosted content attachments.                  | `ChannelMessage.Read.All` and `Chat.Read.All` |
+| [list chat members](https://learn.microsoft.com/en-us/graph/api/chat-list-members?view=graph-rest-1.0)                              | Used to list members of chats for converting direct messages. | `ChatMember.Read.All`                         |
 
 ### Import your data into Zulip
 
@@ -202,7 +207,7 @@ into Zulip. If importing any of this data is important for your organization,
 contact [support@zulip.com](mailto:support@zulip.com) to see if the import tool
 can be extended to include it.
 
-* Direct messages and messages in private channels
+* Messages in private channels
 * Meeting chats and recordings
 * Message attachments stored in Microsoft SharePoint are not imported.
 * Message reactions
@@ -214,6 +219,10 @@ A couple of additional caveats to keep in mind:
 
 * Mentions in messages are not converted to Zulip mentions.
 * Message thread replies will be combined to the main topic.
+* Microsoft Teams allows multiple group chats with an identical set of
+  members, but Zulip doesn't. When several group chats share the same
+  set of members, only one of them is imported; messages in the others
+  are not imported.
 
 #### User roles
 
