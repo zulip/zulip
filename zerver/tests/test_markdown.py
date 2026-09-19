@@ -503,6 +503,26 @@ class MarkdownListPreprocessorTest(ZulipTestCase):
         original, expected = self.split_message("```\nList without a gap\n* One\n* Two\n```")
         self.assertEqual(preprocessor.run(original), expected)
 
+    def test_multi_digit_ordered_item_after_nested_unordered_list(self) -> None:
+        preprocessor = MarkdownListPreprocessor()
+        # "10. ten" must be recognized as an ordered list item resuming after
+        # the nested unordered list, not as part of it.
+        original, expected = self.split_message("8. eight\n9. nine\n  - sub item\n<>10. ten")
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_nested_list_of_different_type(self) -> None:
+        preprocessor = MarkdownListPreprocessor()
+        # A differently-typed sub-list nested under a list item is handled by
+        # Markdown itself; a blank line here would wrap the parent item in <p>.
+        original, expected = self.split_message("1. Parent item\n  * nested bullet")
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_sibling_list_of_different_type(self) -> None:
+        preprocessor = MarkdownListPreprocessor()
+        # A differently-typed list at the same level still needs the separator.
+        original, expected = self.split_message("* bullet\n<>1. ordered")
+        self.assertEqual(preprocessor.run(original), expected)
+
     def test_complex_nesting_with_different_fences(self) -> None:
         preprocessor = MarkdownListPreprocessor()
         msg = """```quote
