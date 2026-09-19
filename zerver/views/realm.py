@@ -763,6 +763,13 @@ def update_realm_user_settings_defaults(
     left_side_userlist: Json[bool] | None = None,
     message_content_in_email_notifications: Json[bool] | None = None,
     notification_sound: str | None = None,
+    web_dm_collapse_policy: Json[
+        Annotated[
+            int,
+            check_int_in_validator(UserProfile.WEB_DM_COLLAPSE_POLICY_CHOICES),
+        ]
+    ]
+    | None = None,
     pm_content_in_desktop_notifications: Json[bool] | None = None,
     presence_enabled: Json[bool] | None = None,
     realm_name_in_email_notifications_policy: Json[
