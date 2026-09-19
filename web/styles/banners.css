@@ -151,6 +151,29 @@
     }
 }
 
+.banner-in-modal {
+    .banner-content {
+        flex-direction: column;
+    }
+
+    .banner-label {
+        /* Reset to initial value */
+        flex: 0 1 auto;
+    }
+
+    .banner-action-buttons {
+        max-width: 100%;
+    }
+
+    .action-button {
+        min-width: 0;
+    }
+
+    .action-button-label {
+        max-width: none;
+    }
+}
+
 .banner-neutral {
     background-color: var(--color-background-neutral-banner);
     color: var(--color-text-neutral-banner);
