@@ -308,7 +308,8 @@ class HomeTest(ZulipTestCase):
         # Verify succeeds once logged-in
         with (
             self.assert_database_query_count(56),
-            patch("zerver.lib.cache.cache_set") as cache_mock,
+            patch("zerver.lib.cache.cache_set") as cache_set_mock,
+            patch("zerver.lib.cache.cache_cas") as cache_cas_mock,
         ):
             result = self._get_home_page(stream="Denmark")
             self.check_rendered_logged_in_app(result)
@@ -316,7 +317,9 @@ class HomeTest(ZulipTestCase):
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
-        self.assert_length(cache_mock.call_args_list, 7)
+        # Cache fills go through cache_cas (read-through mark-then-fill);
+        # direct cache_set calls are rare.
+        self.assert_length(cache_set_mock.call_args_list + cache_cas_mock.call_args_list, 7)
 
         html = result.content.decode()
 
@@ -659,11 +662,14 @@ class HomeTest(ZulipTestCase):
         self.login("iago")
         with (
             self.assert_database_query_count(58),
-            patch("zerver.lib.cache.cache_set") as cache_mock,
+            patch("zerver.lib.cache.cache_set") as cache_set_mock,
+            patch("zerver.lib.cache.cache_cas") as cache_cas_mock,
         ):
             result = self._get_home_page()
             self.check_rendered_logged_in_app(result)
-            self.assert_length(cache_mock.call_args_list, 9)
+            # Cache fills go through cache_cas (read-through mark-then-fill);
+            # direct cache_set calls are rare.
+            self.assert_length(cache_set_mock.call_args_list + cache_cas_mock.call_args_list, 9)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")
