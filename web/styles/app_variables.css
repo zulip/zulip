@@ -818,6 +818,14 @@
 
     /* Colors used across the app */
     --color-date: light-dark(hsl(0deg 0% 15% / 75%), hsl(0deg 0% 100% / 75%));
+    --color-background-simplebar-scrollbar: light-dark(
+        hsl(0deg 0% 0%),
+        hsl(0deg 0% 100%)
+    );
+    --color-box-shadow-simplebar-scrollbar: light-dark(
+        hsl(0deg 0% 100% / 33%),
+        hsl(0deg 0% 0% / 33%)
+    );
     --color-background-private-message-header: light-dark(
         hsl(46deg 35% 93%),
         hsl(46deg 15% 20%)
@@ -1802,6 +1810,14 @@
     --color-border-rendered-markdown-table: light-dark(
         hsl(0deg 0% 80%),
         hsl(0deg 0% 33%)
+    );
+    --color-background-rendered-markdown-time: light-dark(
+        hsl(0deg 0% 93%),
+        hsl(0deg 0% 0% / 20%)
+    );
+    --color-box-shadow-rendered-markdown-time: light-dark(
+        hsl(0deg 0% 80%),
+        hsl(0deg 0% 0% / 40%)
     );
 
     /* Tab-switcher colors */

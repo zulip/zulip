@@ -123,11 +123,6 @@
         color: inherit;
     }
 
-    & time {
-        background: hsl(0deg 0% 0% / 20%);
-        box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 40%);
-    }
-
     .tip {
         color: inherit;
     }
@@ -217,15 +212,6 @@
         filter: invert(100%);
     }
 
-    .simplebar-track .simplebar-scrollbar::before {
-        background-color: hsl(0deg 0% 100%);
-        box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 33%);
-    }
-
-    .collapse-settings-button:hover {
-        color: hsl(200deg 79% 66%);
-    }
-
     #loading_older_messages_indicator,
     #recent_view_loading_messages_indicator {
         & path {
@@ -259,10 +245,6 @@
                 color: inherit;
             }
         }
-    }
-
-    .help_link_widget:hover {
-        color: inherit;
     }
 
     #uppy-editor .uppy-ImageCropper {
