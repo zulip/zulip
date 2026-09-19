@@ -206,10 +206,56 @@ def do_update_user_custom_profile_data_if_changed(
 ) -> None:
     changes: list[UserProfileChangeDict] = []
 
-    for custom_profile_field in data:
-        field_value, created = CustomProfileFieldValue.objects.get_or_create(
-            user_profile=user_profile, field_id=custom_profile_field["id"]
+    field_ids = [custom_profile_field["id"] for custom_profile_field in data]
+
+    existing_field_values_by_field_id = {
+        field_value.field_id: field_value
+        for field_value in CustomProfileFieldValue.objects.filter(
+            user_profile=user_profile, field_id__in=field_ids
+        ).select_related("field")
+    }
+
+    field_values_to_create = [
+        CustomProfileFieldValue(user_profile=user_profile, field=field)
+        for field in CustomProfileField.objects.filter(
+            realm_id=user_profile.realm_id,
+            id__in=[
+                field_id
+                for field_id in field_ids
+                if field_id not in existing_field_values_by_field_id
+            ],
         )
+    ]
+    field_ids_to_create = {field_value.field_id for field_value in field_values_to_create}
+
+    if field_values_to_create:
+        # Two requests can both see no existing value for a field and
+        # both attempt to create one; ignore_conflicts lets whichever
+        # request's INSERT lands second be silently skipped instead of
+        # raising IntegrityError on the unique_together(user_profile,
+        # field) constraint. Django doesn't populate the inserted
+        # objects in this mode, so we re-fetch to get the current,
+        # authoritative rows -- which may belong to the other request.
+        CustomProfileFieldValue.objects.bulk_create(field_values_to_create, ignore_conflicts=True)
+        refetched_field_values_by_field_id = {
+            field_value.field_id: field_value
+            for field_value in CustomProfileFieldValue.objects.filter(
+                user_profile=user_profile, field_id__in=field_ids_to_create
+            ).select_related("field")
+        }
+    else:
+        refetched_field_values_by_field_id = {}
+
+    field_values_by_field_id: dict[int, CustomProfileFieldValue] = {
+        **existing_field_values_by_field_id,
+        **refetched_field_values_by_field_id,
+    }
+
+    modified_field_values: list[CustomProfileFieldValue] = []
+
+    for custom_profile_field in data:
+        field_id = custom_profile_field["id"]
+        field_value = field_values_by_field_id[field_id]
 
         # field_value.value is a TextField() so we need to have field["value"]
         # in string form to correctly make comparisons and assignments.
@@ -218,9 +264,11 @@ def do_update_user_custom_profile_data_if_changed(
         else:
             custom_profile_field_value_string = orjson.dumps(custom_profile_field["value"]).decode()
 
-        if not created and field_value.value == custom_profile_field_value_string:
+        if field_value.value == custom_profile_field_value_string:
             # If the field value isn't actually being changed to a different one,
-            # we have nothing to do here for this field.
+            # we have nothing to do here for this field. A freshly created
+            # value's default is the empty string, so this only skips a
+            # brand-new field when the submitted value is also empty.
             continue
 
         old_value = get_custom_profile_field_display_value(field_value)
@@ -230,9 +278,8 @@ def do_update_user_custom_profile_data_if_changed(
             field_value.rendered_value = render_stream_description(
                 custom_profile_field_value_string, user_profile.realm
             )
-            field_value.save(update_fields=["value", "rendered_value"])
-        else:
-            field_value.save(update_fields=["value"])
+        modified_field_values.append(field_value)
+
         notify_user_update_custom_profile_data(
             user_profile,
             {
@@ -252,6 +299,8 @@ def do_update_user_custom_profile_data_if_changed(
                 new_value=new_value,
             )
         )
+
+    CustomProfileFieldValue.objects.bulk_update(modified_field_values, ["value", "rendered_value"])
 
     if changes and notify:
         send_user_profile_update_notification(
