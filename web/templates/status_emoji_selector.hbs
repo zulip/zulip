@@ -2,7 +2,7 @@
     {{#if selected_emoji.emoji_alt_code}}
         <div class="emoji_alt_code">&nbsp;:{{selected_emoji.emoji_name}}:</div>
     {{else if selected_emoji.url}}
-        <img src="{{selected_emoji.url}}" class="emoji selected-emoji" />
+        {{> realm_emoji url=selected_emoji.url still_url=selected_emoji.still_url emoji_animation_setting=selected_emoji.emoji_animation_setting custom_classes="selected-emoji" }}
     {{else}}
         <div class="emoji selected-emoji emoji-{{selected_emoji.emoji_code}}"></div>
     {{/if}}

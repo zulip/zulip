@@ -36,6 +36,7 @@ import * as message_live_update from "./message_live_update.ts";
 import * as message_reminder from "./message_reminder.ts";
 import * as message_store from "./message_store.ts";
 import * as message_view from "./message_view.ts";
+import * as message_view_header from "./message_view_header.ts";
 import * as muted_users_ui from "./muted_users_ui.ts";
 import * as narrow_title from "./narrow_title.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
@@ -1053,10 +1054,21 @@ export function dispatch_normal_event(event) {
                     stream_list.update_streams_sidebar(true);
                     break;
                 case "web_animate_image_previews":
+                    // Refresh the cached status emoji display settings so
+                    // that the rerenders below pick up the new value.
+                    user_status.refresh_cached_display_settings_for_all_users();
                     // Rerender the whole message list UI
                     for (const msg_list of message_lists.all_rendered_message_lists()) {
                         msg_list.rerender();
                     }
+                    // Rerender so that status_emojis reflect the new setting.
+                    activity_ui.build_user_sidebar();
+                    pm_list.update_private_messages();
+                    inbox_ui.complete_rerender();
+                    recent_view_ui.complete_rerender();
+                    message_view_header.render_title_area();
+                    settings_emoji.populate_emoji();
+                    settings_folders.populate_channel_folders();
                     break;
                 case "web_stream_unreads_count_display_policy":
                     stream_list.build_stream_list(true);
@@ -1110,6 +1122,9 @@ export function dispatch_normal_event(event) {
                     settings_preferences.report_emojiset_change(
                         settings_preferences.user_settings_panel,
                     );
+                    // Refresh the cached status emoji display settings so
+                    // that the rerenders below pick up the new value.
+                    user_status.refresh_cached_display_settings_for_all_users();
                     // Rerender the whole message list UI
                     for (const msg_list of message_lists.all_rendered_message_lists()) {
                         msg_list.rerender();
