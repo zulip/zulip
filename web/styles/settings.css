@@ -37,7 +37,7 @@ label,
 
 /* TODO: This should ideally be added to help_link_widget.hbs,
    allowing us to deduplicate at least the opacity CSS with the
-   fa-question-circle-o logic above. */
+   zulip-icon-help logic above. */
 .settings-info-icon {
     padding-left: 3px;
     opacity: 0.7;
@@ -52,9 +52,10 @@ a.help_link_widget {
     color: inherit;
     margin-left: 3px;
 
-    .fa-question-circle-o {
-        position: relative;
-        top: 1px;
+    .zulip-icon-help {
+        /* Eyeballed to sit on the text baseline. */
+        font-size: 0.88em;
+        vertical-align: -0.16em;
     }
 
     &:hover {
