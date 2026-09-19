@@ -57,7 +57,7 @@ function build_pill_widget({
         $pill_container,
         get_potential_subscribers,
         get_user_groups,
-        with_add_button: false,
+        with_action_button: false,
         onPillCreateAction: add_user_ids,
         // It is better to sync the current set of user ids in the input
         // instead of removing user_ids from the user_ids_set, otherwise

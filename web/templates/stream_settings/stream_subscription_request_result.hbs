@@ -1,5 +1,31 @@
 {{#if error_message}}
     {{error_message}}
+{{else if is_unsubscribe}}
+    {{#if (and (eq unsubscribed_users_count 0) (eq already_not_subscribed_users_count 0))}}
+        {{t "No users to unsubscribe."}}
+    {{else}}
+        {{#if (not is_total_user_count_more_than_five)}}
+            {{#unless (eq unsubscribed_users_count 0)}}
+                {{t "Unsubscribed:" }} {{> user_links users=unsubscribed_users}}.
+            {{/unless}}
+            {{#unless (eq already_not_subscribed_users_count 0)}}
+                {{t "Already unsubscribed:" }} {{> user_links users=already_not_subscribed_users}}.
+            {{/unless}}
+        {{else}}
+            {{#unless (eq unsubscribed_users_count 0)}}
+                {{t "{unsubscribed_users_count, plural,
+                  one {Unsubscribed: {unsubscribed_users_count} user.}
+                other {Unsubscribed: {unsubscribed_users_count} users.}
+            }"}}
+            {{/unless}}
+            {{#unless (eq already_not_subscribed_users_count 0)}}
+                {{t "{already_not_subscribed_users_count, plural,
+                  one {Already unsubscribed: {already_not_subscribed_users_count} user.}
+                other {Already unsubscribed: {already_not_subscribed_users_count} users.}
+            }"}}
+            {{/unless}}
+        {{/if}}
+    {{/if}}
 {{else}}
     {{!-- We want to show ignored deactivated users message even when there are
     no new subscribers --}}
