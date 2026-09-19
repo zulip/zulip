@@ -89,12 +89,32 @@ def get_browser_language_code(request: HttpRequest) -> str | None:
     return None
 
 
+def get_language_cookie_code(request: HttpRequest) -> str | None:
+    language_cookie = getattr(request, "COOKIES", {}).get(settings.LANGUAGE_COOKIE_NAME)
+    if language_cookie is None:
+        return None
+
+    try:
+        language_code = translation.get_supported_language_variant(language_cookie, strict=True)
+    except LookupError:
+        return None
+
+    if language_code not in get_available_language_codes():
+        return None
+
+    return language_code
+
+
 def get_default_language_for_new_user(realm: Realm, *, request: HttpRequest | None) -> str:
     if request is None:
         # Users created via the API or LDAP will not have a
         # browser/request associated with them, and should just use
         # the realm's default language.
         return realm.default_language
+
+    language_cookie_code = get_language_cookie_code(request)
+    if language_cookie_code is not None:
+        return language_cookie_code
 
     browser_language_code = get_browser_language_code(request)
     if browser_language_code is not None:
