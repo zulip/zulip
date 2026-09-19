@@ -26,6 +26,7 @@ import * as popup_banners from "./popup_banners.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import {get_retry_backoff_seconds} from "./retry_backoff.ts";
+import * as scroll_to_bottom_button from "./scroll_to_bottom_button.ts";
 import {narrow_operator_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -276,6 +277,13 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
         // change, or new-message event) would leave messages unread
         // even though the user is looking at the bottom of the view.
         unread_ops.process_visible();
+    }
+
+    if (message_lists.current !== undefined && opts.msg_list === message_lists.current) {
+        // The fetched messages and the loading indicator that just
+        // went away may have moved the bottom of the feed into or out
+        // of view, and only now do we know we have the end of it.
+        scroll_to_bottom_button.update();
     }
 }
 
