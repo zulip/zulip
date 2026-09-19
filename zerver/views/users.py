@@ -292,7 +292,9 @@ def update_user_backend(
     role: Json[RoleParamType] | None = None,
 ) -> HttpResponse:
     if new_email is not None and (
-        not user_profile.can_change_user_emails or not user_profile.is_realm_admin
+        not settings.ADMINS_CAN_CHANGE_USER_EMAILS
+        or not user_profile.can_change_user_emails
+        or not user_profile.is_realm_admin
     ):
         raise JsonableError(_("User not authorized to change user emails"))
 
@@ -350,7 +352,6 @@ def update_user_backend(
         )
 
     if new_email is not None and target.delivery_email != new_email:
-        assert user_profile.can_change_user_emails and user_profile.is_realm_admin
         try:
             validators.validate_email(new_email)
         except ValidationError:
