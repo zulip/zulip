@@ -1097,6 +1097,12 @@ paths:
                               description: |
                                 Event type for messages.
 
+                                **Changes**: In Zulip 13.0 (feature level ZF-916282),
+                                the sender of a message to a channel they are not
+                                subscribed to receives this event for their own
+                                message; previously they received no event, since
+                                they have no `UserMessage` row for it.
+
                                 **Changes**: In Zulip 3.1 (feature level 26), the
                                 `sender_short_name` field was removed from message
                                 objects.
@@ -2800,6 +2806,12 @@ paths:
                                 message.
 
                                 [inline-url-previews]: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#inline-url-previews
+
+                                **Changes**: In Zulip 13.0 (feature level ZF-916282),
+                                a user editing a message in a channel they are not
+                                subscribed to receives this event for their own edit;
+                                previously they received no event, since they have no
+                                `UserMessage` row for the message.
 
                                 **Changes**: In Zulip 10.0 (feature level 284), removed the
                                 `prev_rendered_content_version` field as it is an internal

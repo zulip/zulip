@@ -68,6 +68,11 @@ import * as util from "./util.ts";
 // textarea element which has the modified content.
 // Storing textarea makes it easy to get the current content.
 export const currently_editing_messages = new Map<number, JQuery<HTMLTextAreaElement>>();
+// The raw content each open edit box started from. We can't rely on
+// message.raw_content here, since we deliberately don't cache raw_content for
+// messages in channels the user isn't subscribed to; see
+// message_store.maybe_update_raw_content.
+export const original_raw_content_being_edited = new Map<number, string>();
 const resized_edit_box_height = new Map<number, number>();
 let currently_topic_editing_message_ids: number[] = [];
 const currently_echoing_messages = new Map<number, EchoedMessageData>();
@@ -650,6 +655,7 @@ function edit_message($row: JQuery, raw_content: string): void {
     const $message_edit_content = $form.find<HTMLTextAreaElement>("textarea.message_edit_content");
     assert($message_edit_content.length === 1);
     currently_editing_messages.set(message.id, $message_edit_content);
+    original_raw_content_being_edited.set(message.id, raw_content);
     const previous_height = resized_edit_box_height.get(message.id);
     const do_autosize = previous_height === undefined;
     message_lists.current.show_edit_message($row, $form, do_autosize);
@@ -1144,6 +1150,7 @@ export function end_message_row_edit($row: JQuery): void {
     if (message !== undefined && currently_editing_messages.has(message.id)) {
         typing.stop_message_edit_notifications(message.id);
         currently_editing_messages.delete(message.id);
+        original_raw_content_being_edited.delete(message.id);
         resized_edit_box_height.delete(message.id);
         message_lists.current.hide_edit_message($row);
         compose_call_session_manager.abandon_session(message.id.toString());
@@ -1178,6 +1185,7 @@ export function end_message_edit(message_id: number): void {
         // We should delete the message_id from currently_editing_messages
         // if it exists there but we cannot find the row.
         currently_editing_messages.delete(message_id);
+        original_raw_content_being_edited.delete(message_id);
     }
 }
 
@@ -1319,7 +1327,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
     let edit_locally_echoed = false;
 
     let new_content;
-    const old_content = message.raw_content;
+    const old_content = original_raw_content_being_edited.get(message_id) ?? message.raw_content;
     assert(old_content !== undefined);
 
     const $edit_content_input = $row.find<HTMLTextAreaElement>("textarea.message_edit_content");
@@ -1377,7 +1385,7 @@ export async function save_message_row_edit($row: JQuery): Promise<void> {
         currently_echoing_messages.set(message_id, {
             raw_content: new_content ?? "",
             orig_content: message.content,
-            orig_raw_content: message.raw_content ?? "",
+            orig_raw_content: old_content,
             starred: message.starred,
             historical: message.historical,
             collapsed: message.collapsed,
