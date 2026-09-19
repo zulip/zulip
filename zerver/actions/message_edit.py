@@ -345,13 +345,13 @@ def send_message_moved_breadcrumbs(
     new_topic_name = message_edit_request.target_topic_name
     old_topic_link = get_stream_topic_link_syntax(old_stream.id, old_stream.name, old_topic_name)
     new_topic_link = get_stream_topic_link_syntax(new_stream.id, new_stream.name, new_topic_name)
-    message = {
-        "id": target_message.id,
-        "stream_id": new_stream.id,
-        "display_recipient": new_stream.name,
-        "topic": new_topic_name,
-    }
-    moved_message_link = stream_message_url(target_message.realm, message)
+    moved_message_link = stream_message_url(
+        target_message.realm,
+        message_id=target_message.id,
+        stream_id=new_stream.id,
+        stream_name=new_stream.name,
+        topic_name=new_topic_name,
+    )
 
     if new_thread_notification_string is not None:
         with override_language(new_stream.realm.default_language):
