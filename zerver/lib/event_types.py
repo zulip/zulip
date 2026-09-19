@@ -1179,6 +1179,12 @@ class Group(BaseModel):
     deactivated: bool
 
 
+class UrlEmbedDataEvent(BaseEvent):
+    type: Literal["url_embed_data"]
+    content: str
+    rendered_content: str
+
+
 class UserGroupAddEvent(BaseEvent):
     type: Literal["user_group"]
     op: Literal["add"]

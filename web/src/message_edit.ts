@@ -1860,10 +1860,24 @@ export function render_preview_area($row: JQuery): void {
         $row.find(".markdown_preview_spinner"),
         $row.find(".preview_content"),
         content,
+        true,
+        true,
     );
     const edit_height = $msg_edit_content.height();
     $preview_message_area.css({"min-height": edit_height + "px"});
     $preview_message_area.show();
+}
+
+export function update_preview_embeds(content: string, rendered_content: string): void {
+    for (const $message_edit_content of currently_editing_messages.values()) {
+        if ($message_edit_content.val() === content) {
+            compose_ui.apply_embeds_to_preview(
+                $message_edit_content.closest(".message_row"),
+                content,
+                rendered_content,
+            );
+        }
+    }
 }
 
 export function clear_preview_area($element: JQuery): void {
