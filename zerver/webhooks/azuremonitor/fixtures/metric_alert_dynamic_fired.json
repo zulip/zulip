@@ -1,0 +1,50 @@
+{
+    "schemaId": "azureMonitorCommonAlertSchema",
+    "data": {
+        "essentials": {
+            "alertId": "/subscriptions/<subscription ID>/providers/Microsoft.AlertsManagement/alerts/aaaa0a0a-bb1b-cc2c-dd3d-eeeeee4e4e4e",
+            "alertRule": "Egress-Alert",
+            "severity": "Sev3",
+            "signalType": "Metric",
+            "monitorCondition": "Fired",
+            "monitoringService": "Platform",
+            "alertTargetIDs": [
+                "/subscriptions/<subscription ID>/resourcegroups/pipelinealertrg/providers/microsoft.storage/storageaccounts/mystorageaccount"
+            ],
+            "configurationItems": [
+                "mystorageaccount"
+            ],
+            "originAlertId": "3f2d4487-b0fc-4125-8bd5-7ad17384221e_PipeLineAlertRG_microsoft.insights_metricAlerts_Egress-Alert_-117781227",
+            "firedDateTime": "2021-07-20T05:12:26.363Z",
+            "description": "",
+            "essentialsVersion": "1.0",
+            "alertContextVersion": "1.0"
+        },
+        "alertContext": {
+            "properties": null,
+            "conditionType": "DynamicThresholdCriteria",
+            "condition": {
+                "windowSize": "PT5M",
+                "allOf": [
+                    {
+                        "alertSensitivity": "High",
+                        "failingPeriods": {
+                            "numberOfEvaluationPeriods": 1,
+                            "minFailingPeriodsToAlert": 1
+                        },
+                        "ignoreDataBefore": null,
+                        "metricName": "Egress",
+                        "metricNamespace": "microsoft.storage/storageaccounts",
+                        "operator": "GreaterThan",
+                        "threshold": "47658",
+                        "timeAggregation": "Total",
+                        "dimensions": [],
+                        "metricValue": 50101
+                    }
+                ],
+                "windowStartTime": "2021-07-20T05:07:26.363Z",
+                "windowEndTime": "2021-07-20T05:12:26.363Z"
+            }
+        }
+    }
+}
