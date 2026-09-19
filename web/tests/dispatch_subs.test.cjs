@@ -20,7 +20,7 @@ mock_esm("../src/inbox_ui", {
 });
 const message_events = mock_esm("../src/message_events");
 const overlays = mock_esm("../src/overlays");
-mock_esm("../src/recent_view_ui", {
+const recent_view_ui = mock_esm("../src/recent_view_ui", {
     complete_rerender: noop,
 });
 const settings_org = mock_esm("../src/settings_org");
@@ -252,12 +252,27 @@ test("stream delete (normal)", ({override, override_rewire}) => {
 
     override(stream_list, "update_subscribe_to_more_streams_link", noop);
 
-    override(unread_ops, "process_read_messages_event", noop);
+    // Recent view is redrawn before each channel's reads are processed,
+    // which would otherwise find the channel's rows still on screen.
+    const recent_view_calls = [];
+    override(recent_view_ui, "complete_rerender", () => {
+        recent_view_calls.push("complete_rerender");
+    });
+    override(unread_ops, "process_read_messages_event", () => {
+        recent_view_calls.push("process_read_messages_event");
+    });
     override(message_events, "remove_messages", noop);
     override(user_group_edit, "update_group_permissions_panel_on_losing_stream_access", noop);
     dispatch(event);
 
     assert.deepEqual(removed_stream_ids, [event.stream_ids[0], event.stream_ids[1]]);
+    assert.deepEqual(recent_view_calls, [
+        "complete_rerender",
+        "process_read_messages_event",
+        "complete_rerender",
+        "process_read_messages_event",
+        "complete_rerender",
+    ]);
 });
 
 test("stream delete (special streams)", ({override, override_rewire}) => {
