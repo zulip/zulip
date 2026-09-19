@@ -28,6 +28,22 @@ export function get_subgroups(): number[] {
     return user_group_create_members_data.get_subgroups();
 }
 
+export async function finalize_pending_edit(): Promise<boolean> {
+    if (!pill_widget.has_pending_edit()) {
+        return true;
+    }
+    if (!pill_widget.finalize_pending_edit()) {
+        return false;
+    }
+    // The pill hooks that sync our member list run asynchronously, so a
+    // just-committed edit has not reached it before the caller reads it.
+    sync_members(
+        await add_group_members_pill.get_pill_user_ids(pill_widget),
+        add_group_members_pill.get_pill_group_ids(pill_widget),
+    );
+    return true;
+}
+
 function redraw_member_list(): void {
     all_users_list_widget.replace_list_data(user_group_create_members_data.sorted_members());
 }

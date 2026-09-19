@@ -697,23 +697,33 @@ export class Typeahead<ItemType extends string | object> {
                 this.blur(e);
             });
 
-        $(window).on("resize", this.resizeHandler.bind(this));
+        $(window).on("resize", this.resizeHandler);
     }
 
     unlisten(): void {
         this.hide();
         this.$container.remove();
-        const events = ["blur", "keydown", "keyup", "keypress", "click", "focus"];
+        const events = [
+            "blur",
+            "keydown",
+            "keyup",
+            "keypress",
+            "click",
+            "focus",
+            "typeahead.refreshPosition",
+        ];
         for (const event of events) {
             $(this.input_element.$element).off(event);
         }
+        $(window).off("resize", this.resizeHandler);
     }
 
-    resizeHandler(): void {
+    // An arrow function so `listen` and `unlisten` use the same reference.
+    resizeHandler = (): void => {
         if (this.shown) {
             this.show();
         }
-    }
+    };
 
     maybeStopAdvance(e: JQuery.KeyPressEvent | JQuery.KeyUpEvent | JQuery.KeyDownEvent): void {
         if (
