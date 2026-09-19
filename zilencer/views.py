@@ -738,7 +738,85 @@ def update_remote_realm_last_request_datetime_helper(
             remote_realm.save(update_fields=["last_request_datetime"])
 
 
-def delete_duplicate_registrations(
+def delete_registrations_missed_by_e2ee_cleanup(
+    devices: list[RemotePushDeviceToken], remote_realm: RemoteRealm
+) -> list[RemotePushDeviceToken]:
+    """Filter out (and delete) stale legacy `RemotePushDeviceToken`
+    rows for devices that already have an E2EE `RemotePushDevice`
+    registration in the same remote_realm.
+
+    When a device upgrades to E2EE, the server is expected to delete
+    its legacy bouncer row, but that network call can fail; without
+    this fallback, the device receives both the legacy and the E2EE
+    notifications until the user re-registers, or upgrades the mobile
+    app on every other device they have registered to this realm.
+    """
+    if not devices:
+        return devices
+
+    # All devices passed here should be of the same kind (apple vs android).
+    assert len({device.kind for device in devices}) == 1
+    kind = devices[0].kind
+
+    # APNs tokens are case-insensitive, so a device's legacy
+    # RemotePushDeviceToken and its E2EE RemotePushDevice registration
+    # may store the same token in different cases. We match the two
+    # case-insensitively, so that a case mismatch doesn't leave the
+    # legacy row behind and cause the double-notification bug
+    # this cleanup exists to prevent. FCM tokens are case-sensitive,
+    # so they're matched verbatim.
+    if kind == RemotePushDeviceToken.APNS:
+        legacy_tokens = {device.token.lower() for device in devices}
+        e2ee_tokens = set(
+            RemotePushDevice.objects.annotate(lower_token=Lower("token"))
+            .filter(
+                remote_realm=remote_realm,
+                token_kind=RemotePushDevice.TokenKind.APNS,
+                lower_token__in=legacy_tokens,
+            )
+            .values_list("lower_token", flat=True)
+        )
+
+        def device_token(device: RemotePushDeviceToken) -> str:
+            return device.token.lower()
+    else:
+        legacy_tokens = {device.token for device in devices}
+        e2ee_tokens = set(
+            RemotePushDevice.objects.filter(
+                remote_realm=remote_realm,
+                token_kind=RemotePushDevice.TokenKind.FCM,
+                token__in=legacy_tokens,
+            ).values_list("token", flat=True)
+        )
+
+        def device_token(device: RemotePushDeviceToken) -> str:
+            return device.token
+
+    if not e2ee_tokens:
+        return devices
+
+    stale_ids: list[int] = []
+    retained: list[RemotePushDeviceToken] = []
+    for device in devices:
+        if device_token(device) in e2ee_tokens:
+            stale_ids.append(device.id)
+        else:
+            retained.append(device)
+
+    if stale_ids:
+        logger.info(
+            "Cleaning up %d stale legacy %s registration(s) on remote_realm id:%s "
+            "(device already has an E2EE registration)",
+            len(stale_ids),
+            "APNs" if kind == RemotePushDeviceToken.APNS else "FCM",
+            remote_realm.id,
+        )
+        RemotePushDeviceToken.objects.filter(id__in=stale_ids).delete()
+
+    return retained
+
+
+def delete_duplicate_user_id_registrations(
     registrations: list[RemotePushDeviceToken], server_id: int, user_id: int, user_uuid: str
 ) -> list[RemotePushDeviceToken]:
     """
@@ -957,7 +1035,7 @@ def remote_server_notify_push(
         ).order_by("id")
     )
     if android_devices and user_id is not None and user_uuid is not None:
-        android_devices = delete_duplicate_registrations(
+        android_devices = delete_duplicate_user_id_registrations(
             android_devices, server.id, user_id, user_uuid
         )
 
@@ -969,7 +1047,26 @@ def remote_server_notify_push(
         ).order_by("id")
     )
     if apple_devices and user_id is not None and user_uuid is not None:
-        apple_devices = delete_duplicate_registrations(apple_devices, server.id, user_id, user_uuid)
+        apple_devices = delete_duplicate_user_id_registrations(
+            apple_devices, server.id, user_id, user_uuid
+        )
+
+    if remote_realm is not None:
+        ensure_devices_set_remote_realm(
+            android_devices=android_devices, apple_devices=apple_devices, remote_realm=remote_realm
+        )
+        android_devices = delete_registrations_missed_by_e2ee_cleanup(android_devices, remote_realm)
+        apple_devices = delete_registrations_missed_by_e2ee_cleanup(apple_devices, remote_realm)
+        do_increment_logging_stat(
+            remote_realm,
+            COUNT_STATS["mobile_pushes_received::day"],
+            None,
+            timezone_now(),
+            increment=len(android_devices) + len(apple_devices),
+        )
+
+        remote_realm.last_request_datetime = timezone_now()
+        remote_realm.save(update_fields=["last_request_datetime"])
 
     logger.info(
         "Sending mobile push notifications for remote user %s:%s: %s via FCM devices, %s via APNs devices",
@@ -985,20 +1082,6 @@ def remote_server_notify_push(
         timezone_now(),
         increment=len(android_devices) + len(apple_devices),
     )
-    if remote_realm is not None:
-        ensure_devices_set_remote_realm(
-            android_devices=android_devices, apple_devices=apple_devices, remote_realm=remote_realm
-        )
-        do_increment_logging_stat(
-            remote_realm,
-            COUNT_STATS["mobile_pushes_received::day"],
-            None,
-            timezone_now(),
-            increment=len(android_devices) + len(apple_devices),
-        )
-
-        remote_realm.last_request_datetime = timezone_now()
-        remote_realm.save(update_fields=["last_request_datetime"])
 
     # Truncate incoming pushes to 200, due to APNs maximum message
     # sizes; see handle_remove_push_notification for the version of
