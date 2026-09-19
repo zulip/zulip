@@ -6,6 +6,22 @@ const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
+const compose_banner = mock_esm("../src/compose_banner", {
+    CLASSNAMES: {generic_compose_error: "generic_compose_error"},
+    get_compose_banner_container: () => ({}),
+    show_error_message() {},
+});
+mock_esm("../src/compose_tooltips", {
+    hide_compose_control_button_tooltips() {},
+});
+mock_esm("../src/markdown", {
+    // message_renders_blank renders the content; return an empty math element
+    // (no visible text or container) so the blank-render guard fires.
+    render: () => ({content: '<p><span class="katex"></span></p>'}),
+});
+const message_lists = mock_esm("../src/message_lists");
+const rows = mock_esm("../src/rows");
+
 const message_edit = zrequire("message_edit");
 const {set_current_user, set_realm} = zrequire("state_data");
 
@@ -303,4 +319,39 @@ run_test("stream_and_topic_exist_in_edit_history", () => {
         ),
         false,
     );
+});
+
+run_test("save_message_row_edit blank-render guard", async ({override}) => {
+    const message = {raw_content: "old content", stream_wildcard_mentioned: false};
+    message_lists.current = {get: () => message};
+    override(rows, "id", () => 42);
+    override(rows, "get_message_recipient_header", () => ({attr: () => undefined}));
+
+    let content = "";
+    const $textarea = {val: () => content, attr: () => undefined};
+    const $row = {
+        find: (selector) => (selector === "textarea.message_edit_content" ? $textarea : {}),
+    };
+
+    let error_count = 0;
+    override(compose_banner, "show_error_message", (html) => {
+        error_count += 1;
+        assert.equal(html, "translated: Message must not be empty.");
+    });
+
+    // Content that renders to nothing visible is blocked with an error.
+    content = "```math\n\n```";
+    await message_edit.save_message_row_edit($row);
+    assert.equal(error_count, 1);
+
+    // Clearing all text is a valid edit (the backend turns it into
+    // "(deleted)"), so the guard is skipped; execution continues past it to
+    // the (unmocked) save path, which throws harmlessly here.
+    content = "";
+    try {
+        await message_edit.save_message_row_edit($row);
+    } catch {
+        // Downstream save path isn't mocked.
+    }
+    assert.equal(error_count, 1);
 });
