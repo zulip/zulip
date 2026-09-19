@@ -397,13 +397,13 @@ def avatar_by_id(
         if maybe_user_profile.is_authenticated and not check_can_access_user(
             avatar_user_profile, maybe_user_profile
         ):
-            url = get_avatar_for_inaccessible_user()
+            url = get_avatar_for_inaccessible_user(medium)
         else:
             # If there is a valid user account passed in, use its avatar
             url = avatar_url(avatar_user_profile, medium=medium)
         assert url is not None
     except UserProfile.DoesNotExist:
-        url = get_avatar_for_inaccessible_user()
+        url = get_avatar_for_inaccessible_user(medium)
 
     assert url is not None
     if request.META["QUERY_STRING"]:
@@ -432,7 +432,7 @@ def avatar_by_email(
         avatar_user_profile = get_user_including_cross_realm(email, realm)
         url: str | None = None
         if not check_can_access_user(avatar_user_profile, maybe_user_profile):
-            url = get_avatar_for_inaccessible_user()
+            url = get_avatar_for_inaccessible_user(medium)
         else:
             # If there is a valid user account passed in, use its avatar
             url = avatar_url(avatar_user_profile, medium=medium)

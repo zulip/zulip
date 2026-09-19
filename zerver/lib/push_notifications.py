@@ -1206,7 +1206,7 @@ def get_message_payload_gcm(
         # inaccessible user as we allow unsubscribed users to send
         # messages to streams. For direct messages, the guest gains
         # access to the user if they where previously inaccessible.
-        sender_avatar_url = get_avatar_for_inaccessible_user()
+        sender_avatar_url = get_avatar_for_inaccessible_user(medium=False)
         sender_name = str(UserProfile.INACCESSIBLE_USER_NAME)
     else:
         sender_avatar_url = absolute_avatar_url(message.sender, message.realm.url)
