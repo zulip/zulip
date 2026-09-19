@@ -162,6 +162,28 @@ class OembedTestCase(ZulipTestCase):
         data = get_oembed_data(url)
         self.assertIsNone(data)
 
+    @mock.patch("zerver.lib.url_preview.oembed.requests.get")
+    def test_oembed_request_uses_preview_headers_and_timeout(self, mock_get: mock.Mock) -> None:
+        mock_response = mock.Mock()
+        mock_response.ok = True
+        # pyoembed validates rich embeds against a minimal schema, so the mock needs
+        # the fields that the real parser would see from a successful response.
+        mock_response.text = (
+            '{"version": "1.0", "type": "rich", "title": "Example", '
+            '"html": "<p>example</p>", "width": 640, "height": 480}'
+        )
+        mock_response.headers = {"content-type": "application/json"}
+        mock_get.return_value = mock_response
+
+        data = get_oembed_data("http://instagram.com/p/BLtI2WdAymy")
+
+        self.assertIsNotNone(data)
+        self.assertEqual(mock_get.call_count, 1)
+        self.assertIn("headers", mock_get.call_args.kwargs)
+        self.assertIn("timeout", mock_get.call_args.kwargs)
+        self.assertEqual(mock_get.call_args.kwargs["timeout"], 15)
+        self.assertIn("User-Agent", mock_get.call_args.kwargs["headers"])
+
     def test_oembed_html(self) -> None:
         html = '<iframe src="//www.instagram.com/embed.js"></iframe>'
         stripped_html = strip_cdata(html)
