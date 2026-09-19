@@ -41,6 +41,10 @@ export function at_rendered_top(): boolean {
     return scrollTop() <= 0;
 }
 
+export function message_feed_visible_top(): number {
+    return util.the($("#top_of_feed_loading_indicator")).getBoundingClientRect().bottom;
+}
+
 export function message_viewport_info(): MessageViewportInfo {
     // Return a structure that tells us details of the viewport
     // accounting for fixed elements like the top navbar.
@@ -49,14 +53,13 @@ export function message_viewport_info(): MessageViewportInfo {
     // message pane, which should make sense for callers, who will
     // generally be concerned about whether actual message content is
     // visible.
-    const $element_just_above_us = $("#navbar-fixed-container");
     const $element_just_below_us = $("#compose");
 
-    let visible_top = $element_just_above_us.outerHeight() ?? 0;
+    let visible_top = message_feed_visible_top();
 
     const $sticky_header = $(".sticky_header");
     if ($sticky_header.length > 0) {
-        visible_top += $sticky_header.outerHeight() ?? 0;
+        visible_top += util.the($sticky_header).getBoundingClientRect().height;
     }
 
     const visible_bottom = $element_just_below_us.position().top;
@@ -258,12 +261,11 @@ function add_to_visible<T>(
 
 const top_of_feed = new util.CachedValue({
     compute_value() {
-        const $header = $("#navbar-fixed-container");
-        let visible_top = $header.outerHeight() ?? 0;
+        let visible_top = message_feed_visible_top();
 
         const $sticky_header = $(".sticky_header");
         if ($sticky_header.length > 0) {
-            visible_top += $sticky_header.outerHeight() ?? 0;
+            visible_top += util.the($sticky_header).getBoundingClientRect().height;
         }
         return visible_top;
     },
