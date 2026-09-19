@@ -37,14 +37,28 @@ export function build_widget(
     $preview_text?: JQuery,
     $preview_image?: JQuery,
     max_file_upload_size = default_max_file_size,
+    allow_multiple = false,
+    $drop_zone: JQuery = $upload_button,
 ): UploadWidget {
-    function accept(file: File): void {
-        $file_name_field.text(file.name);
+    function accept(files: FileList): void {
+        if (files.length === 1) {
+            $file_name_field.text(files[0]!.name);
+        } else {
+            $file_name_field.text(
+                $t(
+                    {
+                        defaultMessage:
+                            "{count, plural, one {# file selected} other {# files selected}}",
+                    },
+                    {count: files.length},
+                ),
+            );
+        }
         $input_error.hide();
         $clear_button.show();
         $upload_button.hide();
         if ($preview_text !== undefined && $preview_image !== undefined) {
-            const image_blob = URL.createObjectURL(file);
+            const image_blob = URL.createObjectURL(files[0]!);
             $preview_image.attr("src", image_blob);
             $preview_image.addClass("upload_widget_image_preview");
             $preview_text.show();
@@ -67,37 +81,54 @@ export function build_widget(
         e.preventDefault();
     });
 
-    $upload_button.on("drop", (e) => {
+    $drop_zone.on("dragover", (e) => {
+        e.preventDefault();
+    });
+
+    $drop_zone.on("drop", (e) => {
         const files = e.originalEvent?.dataTransfer?.files;
         if (files === null || files === undefined || files.length === 0) {
             return false;
         }
         util.the(get_file_input()).files = files;
+        get_file_input().trigger("input").trigger("change");
         e.preventDefault();
         return false;
     });
 
     get_file_input().attr("accept", [...SUPPORTED_IMAGE_TYPES].toString());
+    if (allow_multiple) {
+        get_file_input().attr("multiple", "multiple");
+    }
     get_file_input().on("change", (e) => {
-        if (e.target.files?.[0] === undefined) {
+        const files = e.target.files;
+        if (files?.[0] === undefined) {
             $input_error.hide();
-        } else if (e.target.files.length === 1) {
-            const file = e.target.files[0];
-            if (file.size > max_file_upload_size * 1024 * 1024) {
-                $input_error.text(
-                    $t(
-                        {defaultMessage: "File size must be at most {max_file_size} MiB."},
-                        {max_file_size: max_file_upload_size},
-                    ),
-                );
-                $input_error.show();
-                clear();
-            } else if (!is_supported_image_type(file.type)) {
-                $input_error.text($t({defaultMessage: "File type is not supported."}));
-                $input_error.show();
+        } else if (files.length === 1 || allow_multiple) {
+            let has_error = false;
+            for (const file of files) {
+                if (file.size > max_file_upload_size * 1024 * 1024) {
+                    $input_error.text(
+                        $t(
+                            {defaultMessage: "File size must be at most {max_file_size} MiB."},
+                            {max_file_size: max_file_upload_size},
+                        ),
+                    );
+                    $input_error.show();
+                    has_error = true;
+                    break;
+                }
+                if (!is_supported_image_type(file.type)) {
+                    $input_error.text($t({defaultMessage: "File type is not supported."}));
+                    $input_error.show();
+                    has_error = true;
+                    break;
+                }
+            }
+            if (has_error) {
                 clear();
             } else {
-                accept(file);
+                accept(files);
             }
         } else {
             $input_error.text($t({defaultMessage: "Please just upload one file."}));
@@ -112,7 +143,8 @@ export function build_widget(
     function close(): void {
         clear();
         $clear_button.off("click");
-        $upload_button.off("drop");
+        $drop_zone.off("dragover");
+        $drop_zone.off("drop");
         get_file_input().off("change");
         $upload_button.off("click");
     }
@@ -284,7 +316,6 @@ export function build_direct_upload_widget(
         assert(files[0] !== undefined);
         open_uppy_editor(files[0], property_name, $file_input, $upload_button, upload_function);
     }
-
     function clear(): void {
         const $control = get_file_input();
         $control.val("");
