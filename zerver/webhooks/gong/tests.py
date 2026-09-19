@@ -39,7 +39,6 @@ class GongHookTests(WebhookTestCase):
             "call_completed",
             self.EXPECTED_TOPIC,
             self.EXPECTED_CALL_MESSAGE.format(title=self.CALL_TITLE),
-            content_type="application/json",
         )
 
     def test_gong_test_call(self) -> None:
@@ -49,7 +48,6 @@ class GongHookTests(WebhookTestCase):
             "call_completed",
             "Gong Test",
             f"Gong webhook has been successfully configured.\n\n{self.EXPECTED_CALL_MESSAGE.format(title=self.CALL_TITLE)}",
-            content_type="application/json",
             custom_payload=payload,
         )
 
@@ -60,7 +58,6 @@ class GongHookTests(WebhookTestCase):
             "call_completed",
             "Gong call (ID: 5599332235511222779)",
             self.EXPECTED_CALL_MESSAGE.format(title="Gong call"),
-            content_type="application/json",
             custom_payload=payload,
         )
 
@@ -72,7 +69,6 @@ class GongHookTests(WebhookTestCase):
             "call_completed",
             self.EXPECTED_TOPIC,
             f"{intro}\n\n{self.TRACKERS_SECTION}\n\n{self.TOPICS_SECTION}",
-            content_type="application/json",
             custom_payload=payload,
         )
 
@@ -84,7 +80,6 @@ class GongHookTests(WebhookTestCase):
             "call_completed",
             self.EXPECTED_TOPIC,
             f"{intro}\n\n{self.PARTICIPANTS_SECTION}\n\n{self.TOPICS_SECTION}",
-            content_type="application/json",
             custom_payload=payload,
         )
 
@@ -96,7 +91,6 @@ class GongHookTests(WebhookTestCase):
             "call_completed",
             self.EXPECTED_TOPIC,
             f"{intro}\n\n{self.PARTICIPANTS_SECTION}\n\n{self.TRACKERS_SECTION}",
-            content_type="application/json",
             custom_payload=payload,
         )
 
@@ -107,7 +101,6 @@ class GongHookTests(WebhookTestCase):
             "call_completed",
             self.EXPECTED_TOPIC,
             f"{intro}\n\n{self.PARTICIPANTS_SECTION}\n\n{self.TOPICS_SECTION}",
-            content_type="application/json",
         )
 
     def test_call_with_top_topics_disabled(self) -> None:
@@ -117,7 +110,6 @@ class GongHookTests(WebhookTestCase):
             "call_completed",
             self.EXPECTED_TOPIC,
             f"{intro}\n\n{self.PARTICIPANTS_SECTION}\n\n{self.TRACKERS_SECTION}",
-            content_type="application/json",
         )
 
     def test_call_with_participants_disabled(self) -> None:
@@ -127,7 +119,6 @@ class GongHookTests(WebhookTestCase):
             "call_completed",
             self.EXPECTED_TOPIC,
             f"{intro}\n\n{self.TRACKERS_SECTION}\n\n{self.TOPICS_SECTION}",
-            content_type="application/json",
         )
 
     def test_call_with_participant_contacts_disabled(self) -> None:
@@ -142,7 +133,6 @@ class GongHookTests(WebhookTestCase):
             "call_completed",
             self.EXPECTED_TOPIC,
             f"{intro}\n\n{participants}\n\n{self.TRACKERS_SECTION}\n\n{self.TOPICS_SECTION}",
-            content_type="application/json",
         )
 
     def test_call_with_participants_off_but_contacts_on(self) -> None:
@@ -154,7 +144,6 @@ class GongHookTests(WebhookTestCase):
             "call_completed",
             self.EXPECTED_TOPIC,
             f"{intro}\n\n{self.TRACKERS_SECTION}\n\n{self.TOPICS_SECTION}",
-            content_type="application/json",
         )
 
     def test_call_with_public_comments_enabled(self) -> None:
@@ -166,7 +155,6 @@ class GongHookTests(WebhookTestCase):
             "call_completed",
             self.EXPECTED_TOPIC,
             f"{self.EXPECTED_CALL_MESSAGE.format(title=self.CALL_TITLE)}\n\n{comments}",
-            content_type="application/json",
         )
 
     def test_get_participants(self) -> None:
