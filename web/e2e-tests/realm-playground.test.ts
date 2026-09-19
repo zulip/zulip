@@ -51,7 +51,7 @@ async function test_successful_playground_creation(page: Page): Promise<void> {
         url_template: "https://python.example.com?code={code}",
     };
     const status = await _add_playground_and_return_status(page, payload);
-    assert.strictEqual(status, "Custom playground added!");
+    assert.strictEqual(status, "Custom playground added! Language recognized as Python.");
     await page.waitForSelector(".playground_row", {visible: true});
     assert.strictEqual(
         await common.get_text_from_selector(
@@ -68,6 +68,65 @@ async function test_successful_playground_creation(page: Page): Promise<void> {
         await common.get_text_from_selector(page, ".playground_row span.playground_url_template"),
         "https://python.example.com?code={code}",
     );
+}
+
+async function test_mixed_case_standard_language_normalization(page: Page): Promise<void> {
+    await page.click("#playground_pygments_language");
+    await page.type("#playground_pygments_language", "RuST");
+
+    await common.fill_form(page, "form.admin-playground-form", {
+        playground_name: "Mixed case Rust playground",
+        url_template: "https://play.rust-lang.org/?code={code}",
+    });
+
+    await page.$eval("button#submit_playground_button", (el) => {
+        el.click();
+    });
+
+    await page.waitForSelector("button#submit_playground_button:not([disabled])", {
+        visible: true,
+    });
+
+    await page.waitForSelector("div#admin-playground-status", {visible: true});
+
+    const status = await common.get_text_from_selector(page, "div#admin-playground-status");
+
+    assert.strictEqual(status, "Custom playground added! Language recognized as Rust.");
+    await delete_first_playground(page);
+}
+
+async function test_uppercase_custom_language_normalization(page: Page): Promise<void> {
+    await page.click("#playground_pygments_language");
+    await page.type("#playground_pygments_language", "MYCUSTOMLANG");
+
+    await common.fill_form(page, "form.admin-playground-form", {
+        playground_name: "Uppercase custom playground",
+        url_template: "https://example.com/?code={code}",
+    });
+
+    await page.$eval("button#submit_playground_button", (el) => {
+        el.click();
+    });
+
+    await page.waitForSelector("button#submit_playground_button:not([disabled])", {
+        visible: true,
+    });
+
+    await page.waitForSelector("div#admin-playground-status", {visible: true});
+
+    const status = await common.get_text_from_selector(page, "div#admin-playground-status");
+
+    assert.strictEqual(status, "Custom playground added! Language names are stored in lowercase.");
+    await delete_first_playground(page);
+}
+
+async function delete_first_playground(page: Page): Promise<void> {
+    await page.waitForSelector(".playground_row button.delete", {visible: true});
+    await page.click(".playground_row button.delete");
+
+    await common.wait_for_micromodal_to_open(page);
+    await page.click("#confirm_delete_code_playgrounds_modal .dialog_submit_button");
+    await common.wait_for_micromodal_to_close(page);
 }
 
 async function test_invalid_playground_parameters(page: Page): Promise<void> {
@@ -102,6 +161,8 @@ async function playground_test(page: Page): Promise<void> {
     await page.click("li[data-section='playground-settings']");
 
     await test_successful_playground_creation(page);
+    await test_mixed_case_standard_language_normalization(page);
+    await test_uppercase_custom_language_normalization(page);
     await test_invalid_playground_parameters(page);
     await test_successful_playground_deletion(page);
 }
