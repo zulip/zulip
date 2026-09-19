@@ -27,6 +27,7 @@ from requests import Response
 from requests_oauthlib import OAuth2Session
 from typing_extensions import TypedDict, override
 
+from version import ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.video_calls import do_set_video_call_provider_token
 from zerver.decorator import zulip_login_required
 from zerver.lib.cache import (
@@ -586,16 +587,29 @@ def get_bigbluebutton_url(
 ) -> HttpResponse:
     # https://docs.bigbluebutton.org/dev/api.html#create for reference on the API calls
     # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
-    id = "zulip-" + str(random.randint(100000000000, 999999999999))
+    meeting_id = "zulip-" + str(random.randint(100000000000, 999999999999))
+    metadata = {
+        "bbb-origin": "Zulip",
+        "bbb-origin-version": ZULIP_VERSION,
+        "bbb-origin-server-name": user_profile.realm.host,
+        "bbb-origin-server-common-name": user_profile.realm.name,
+        "bbb-origin-tag": ZULIP_MERGE_BASE,
+        "bbb-context": user_profile.realm.name,
+        "bbb-context-id": user_profile.realm_id,
+        "bbb-context-name": user_profile.realm.name,
+        "bbb-context-label": user_profile.realm.string_id,
+        "bbb-recording-name": meeting_name,
+    }
 
     # We sign our data here to ensure a Zulip user cannot tamper with
     # the join link to gain access to other meetings that are on the
     # same bigbluebutton server.
     signed = Signer().sign_object(
         {
-            "meeting_id": id,
+            "meeting_id": meeting_id,
             "name": meeting_name,
             "lock_settings_disable_cam": voice_only,
+            "metadata": metadata,
             "moderator": request.user.id,
         }
     )
@@ -627,6 +641,10 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
             "meetingID": bigbluebutton_data["meeting_id"],
             "name": bigbluebutton_data["name"],
             "lockSettingsDisableCam": bigbluebutton_data["lock_settings_disable_cam"],
+            **{
+                f"meta_{key}": value
+                for key, value in bigbluebutton_data.get("metadata", {}).items()
+            },
         },
         quote_via=quote,
     )
