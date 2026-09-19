@@ -228,6 +228,7 @@ ZULIP_SERVICES_URL = f"http://push.{EXTERNAL_HOST}"
 ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
 ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = False
 ZULIP_SERVICE_SECURITY_ALERTS = False
+ZULIP_SERVICE_ADVERTISE_REALM = False
 
 # Hack: This should be computed in computed_settings, but the transmission
 # of test settings overrides is wonky. See test_settings for more details.
