@@ -1004,3 +1004,128 @@ class NextcloudVideoCallTest(ZulipTestCase):
 
         json = self.assert_json_success(response)
         self.assertEqual(json["url"], "https://nextcloud.example.com/index.php/call/abc123token")
+
+
+@override_settings(
+    VIDEO_GOOGLE_MEET_CLIENT_ID="google_client_id",
+    VIDEO_GOOGLE_MEET_CLIENT_SECRET="google_client_secret",
+    VIDEO_GOOGLE_MEET_OAUTH_URL="https://googleoauth.example.com/o/oauth2/v2/auth",
+    VIDEO_GOOGLE_MEET_TOKEN_URL="https://googletoken.example.com/token",
+    VIDEO_GOOGLE_MEET_API_URL="https://meet.example.com/v2/spaces",
+)
+class GoogleMeetVideoCallTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.user = self.example_user("hamlet")
+        self.login_user(self.user)
+
+    def test_register_google_meet_no_settings(self) -> None:
+        with self.settings(VIDEO_GOOGLE_MEET_CLIENT_ID=None):
+            response = self.client_get("/calls/google_meet/register")
+            self.assert_json_error(
+                response,
+                "Google Meet credentials have not been configured",
+            )
+
+    def test_register_google_meet_request(self) -> None:
+        response = self.client_get("/calls/google_meet/register")
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(
+            "https://googleoauth.example.com/o/oauth2/v2/auth",
+            response["Location"],
+        )
+        self.assertIn("access_type=offline", response["Location"])
+        self.assertIn("prompt=consent", response["Location"])
+
+    @responses.activate
+    def test_create_google_meet_link(self) -> None:
+        responses.add(
+            responses.POST,
+            "https://googletoken.example.com/token",
+            json={"access_token": "token", "expires_in": 3600},
+        )
+
+        response = self.client_get(
+            "/calls/google_meet/complete",
+            {"code": "code", "state": '{"realm":"zulip","sid":""}'},
+        )
+        self.assertEqual(response.status_code, 200)
+
+        responses.add(
+            responses.POST,
+            "https://meet.example.com/v2/spaces",
+            json={"meetingUri": "https://meet.google.com/abc-mnop-xyz"},
+        )
+
+        response = self.client_post("/json/calls/google_meet/create")
+        self.assertEqual(
+            responses.calls[-1].request.url,
+            "https://meet.example.com/v2/spaces",
+        )
+        self.assertEqual(
+            responses.calls[-1].request.headers["Authorization"],
+            "Bearer token",
+        )
+        json = self.assert_json_success(response)
+        self.assertEqual(json["url"], "https://meet.google.com/abc-mnop-xyz")
+
+        # Token is cleared on logout; subsequent call must re-authorize.
+        self.logout()
+        self.login_user(self.user)
+
+        response = self.client_post("/json/calls/google_meet/create")
+        self.assert_json_error(response, "Invalid Google Meet access token")
+
+    def test_create_google_meet_realm_redirect(self) -> None:
+        response = self.client_get(
+            "/calls/google_meet/complete",
+            {"code": "code", "state": '{"realm":"zephyr","sid":"somesid"}'},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("http://zephyr.testserver/", response["Location"])
+        self.assertIn("somesid", response["Location"])
+
+    def test_create_google_meet_sid_error(self) -> None:
+        response = self.client_get(
+            "/calls/google_meet/complete",
+            {"code": "code", "state": '{"realm":"zulip","sid":"bad"}'},
+        )
+        self.assert_json_error(response, "Invalid Google Meet session identifier")
+
+    @responses.activate
+    def test_create_google_meet_credential_error(self) -> None:
+        responses.add(
+            responses.POST,
+            "https://googletoken.example.com/token",
+            status=400,
+        )
+
+        response = self.client_get(
+            "/calls/google_meet/complete",
+            {"code": "code", "state": '{"realm":"zulip","sid":""}'},
+        )
+        self.assert_json_error(response, "Invalid Google Meet credentials")
+
+    @responses.activate
+    def test_create_google_meet_refresh_error(self) -> None:
+        responses.add(
+            responses.POST,
+            "https://googletoken.example.com/token",
+            json={"access_token": "token", "expires_in": -60},
+        )
+
+        response = self.client_get(
+            "/calls/google_meet/complete",
+            {"code": "code", "state": '{"realm":"zulip","sid":""}'},
+        )
+        self.assertEqual(response.status_code, 200)
+
+        responses.replace(
+            responses.POST,
+            "https://googletoken.example.com/token",
+            status=400,
+        )
+
+        response = self.client_post("/json/calls/google_meet/create")
+        self.assert_json_error(response, "Invalid Google Meet access token")
