@@ -44,6 +44,10 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     # realm used by the test server, breaking the curl examples that
     # run after it.
     "deactivate-realm",
+    # Redirects to the organization's icon rather than returning JSON.
+    "get-realm-icon",
+    # Redirects to the organization's logo rather than returning JSON.
+    "get-realm-logo",
 }
 
 
