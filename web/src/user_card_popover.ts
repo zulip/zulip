@@ -173,6 +173,10 @@ function elem_to_user_id($elem: JQuery): number {
     return Number.parseInt($elem.attr("data-user-id")!, 10);
 }
 
+function element_has_tippy(element: tippy.ReferenceElement): boolean {
+    return element._tippy !== undefined;
+}
+
 function clipboard_enable(arg: HTMLElement | string): ClipboardJS {
     // arg is a selector or element
     // We extract this function for testing purpose.
@@ -894,8 +898,13 @@ function register_click_handlers(): void {
         function (this: HTMLElement, e) {
             const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id")!, 10);
             const user = people.get_by_user_id(user_id);
-            if ($(this).closest(".user-card-popover-bot-owner-field").length > 0) {
+            // If this element's own card is open, let it toggle closed below.
+            // Otherwise close any open card, which Tippy does for a real click
+            // but not for a keyboard-synthesized one, so they'd stack up.
+            if (!element_has_tippy(this)) {
                 hide_all_user_card_popovers();
+            }
+            if ($(this).closest(".user-card-popover-bot-owner-field").length > 0) {
                 toggle_user_card_popover_for_bot_owner(this, user);
             } else {
                 toggle_user_card_popover(this, user);
