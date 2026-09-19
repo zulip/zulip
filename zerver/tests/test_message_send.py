@@ -1280,6 +1280,26 @@ class MessagePOSTTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Missing topic")
 
+    def test_topic_with_tab_is_converted_to_space(self) -> None:
+        """
+        Topics pasted in with tab characters (e.g. from a spreadsheet)
+        should have the tabs converted to spaces rather than being
+        rejected as an invalid character.
+        """
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps("Verona").decode(),
+                "topic": "Alejandra\t27264093835",
+                "content": "Test message",
+            },
+        )
+        self.assert_json_success(result)
+        message = self.get_last_message()
+        self.assertEqual(message.topic_name(), "Alejandra 27264093835")
+
     def test_invalid_topic(self) -> None:
         """
         Sending a message with invalid 'Cc', 'Cs' and 'Cn' category of unicode characters
