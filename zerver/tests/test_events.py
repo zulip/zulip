@@ -964,7 +964,9 @@ class NormalActionsTest(BaseAction):
             UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )
-        do_change_avatar_fields(hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        do_change_avatar_fields(
+            hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None, notify_user=False
+        )
         self.assertEqual(hamlet.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
         with self.verify_action(client_gravatar=True) as events:
@@ -2618,7 +2620,10 @@ class NormalActionsTest(BaseAction):
     def test_change_avatar_fields(self) -> None:
         with self.verify_action() as events:
             do_change_avatar_fields(
-                self.user_profile, UserProfile.AVATAR_FROM_USER, acting_user=self.user_profile
+                self.user_profile,
+                UserProfile.AVATAR_FROM_USER,
+                acting_user=self.user_profile,
+                notify_user=False,
             )
         check_realm_user_update("events[0]", events[0], "avatar_fields")
         assert isinstance(events[0]["person"]["avatar_url"], str)
@@ -2632,7 +2637,10 @@ class NormalActionsTest(BaseAction):
         )
         with self.verify_action() as events:
             do_change_avatar_fields(
-                self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=self.user_profile
+                self.user_profile,
+                UserProfile.AVATAR_FROM_GRAVATAR,
+                acting_user=self.user_profile,
+                notify_user=False,
             )
         check_realm_user_update("events[0]", events[0], "avatar_fields")
         self.assertEqual(events[0]["person"]["avatar_url"], None)
@@ -2643,7 +2651,7 @@ class NormalActionsTest(BaseAction):
         cordelia = self.example_user("cordelia")
         with self.verify_action(num_events=0, state_change_expected=False) as events:
             do_change_avatar_fields(
-                cordelia, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=cordelia
+                cordelia, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=cordelia, notify_user=False
             )
 
     def test_change_full_name(self) -> None:
@@ -2694,7 +2702,7 @@ class NormalActionsTest(BaseAction):
             acting_user=None,
         )
         do_change_avatar_fields(
-            self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None
+            self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None, notify_user=False
         )
         self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
         # Important: We need to refresh from the database here so that
@@ -2719,7 +2727,7 @@ class NormalActionsTest(BaseAction):
             acting_user=None,
         )
         do_change_avatar_fields(
-            self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None
+            self.user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None, notify_user=False
         )
         self.assertEqual(self.user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
         # Important: We need to refresh from the database here so that
@@ -3541,7 +3549,9 @@ class NormalActionsTest(BaseAction):
     def test_change_bot_avatar_source(self) -> None:
         bot = self.create_bot("test")
         with self.verify_action(num_events=1) as events:
-            do_change_avatar_fields(bot, bot.AVATAR_FROM_USER, acting_user=self.user_profile)
+            do_change_avatar_fields(
+                bot, bot.AVATAR_FROM_USER, acting_user=self.user_profile, notify_user=False
+            )
         check_realm_user_update("events[0]", events[0], "avatar_fields")
 
     def test_change_realm_icon_source(self) -> None:
