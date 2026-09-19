@@ -6,6 +6,7 @@ from collections.abc import Callable
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
+from pydantic import Json
 
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import AnomalousWebhookPayloadError, UnsupportedWebhookEventTypeError
@@ -32,6 +33,30 @@ IGNORED_EVENTS = [
     "worklog_created",
     "worklog_updated",
 ]
+
+
+class Helper:
+    def __init__(
+        self,
+        payload: WildValue,
+        user_profile: UserProfile,
+        include_priority: bool,
+        include_assignee: bool,
+        include_issue_type: bool,
+        include_status: bool,
+        include_components: bool,
+        include_versions: bool,
+        include_labels: bool,
+    ) -> None:
+        self.payload = payload
+        self.user_profile = user_profile
+        self.include_priority = include_priority
+        self.include_assignee = include_assignee
+        self.include_issue_type = include_issue_type
+        self.include_status = include_status
+        self.include_components = include_components
+        self.include_versions = include_versions
+        self.include_labels = include_labels
 
 
 def guess_zulip_user_from_jira(jira_username: str, realm: Realm) -> UserProfile | None:
@@ -108,6 +133,53 @@ def get_in(payload: WildValue, keys: list[str], default: str = "") -> WildValue:
     except (AttributeError, KeyError, TypeError, ValidationError):
         return WildValue("default", default)
     return payload
+
+
+def get_list_field(payload: WildValue, field: str, key: str | None = None) -> str:
+    """Comma-separate a Jira list field.
+
+    Such fields hold either plain strings (labels) or objects carrying
+    their name under `key` (components, versions). Entries missing that
+    name are skipped, since indexing for it would raise.
+    """
+    field_payload = get_in(payload, ["issue", "fields", field])
+    if not isinstance(field_payload.value, list):
+        return ""
+
+    names = [
+        entry.tame(check_string)
+        if key is None
+        else entry.get(key).tame(check_none_or(check_string))
+        for entry in field_payload
+    ]
+    return ", ".join(name for name in names if name)
+
+
+def get_additional_issue_fields(helper: Helper) -> str:
+    """Render the enabled issue fields as a Markdown bullet list.
+
+    Empty and absent fields are skipped, so enabling an option for a
+    field a project does not populate leaves no empty bullet behind.
+    """
+    payload = helper.payload
+    fields: list[tuple[str, str]] = []
+
+    if helper.include_issue_type:
+        fields.append(
+            ("Type", get_in(payload, ["issue", "fields", "issuetype", "name"]).tame(check_string))
+        )
+    if helper.include_status:
+        fields.append(
+            ("Status", get_in(payload, ["issue", "fields", "status", "name"]).tame(check_string))
+        )
+    if helper.include_components:
+        fields.append(("Components", get_list_field(payload, "components", "name")))
+    if helper.include_versions:
+        fields.append(("Versions", get_list_field(payload, "versions", "name")))
+    if helper.include_labels:
+        fields.append(("Labels", get_list_field(payload, "labels")))
+
+    return "".join(f"\n* {label}: {value}" for label, value in fields if value)
 
 
 def get_issue_string(
@@ -209,7 +281,10 @@ def add_change_info(
     return content
 
 
-def handle_updated_issue_event(payload: WildValue, user_profile: UserProfile) -> str:
+def handle_updated_issue_event(helper: Helper) -> str:
+    payload = helper.payload
+    user_profile = helper.user_profile
+
     # Reassigned, commented, reopened, and resolved events are all bundled
     # into this one 'updated' event type, so we try to extract the meaningful
     # event that happened
@@ -223,7 +298,9 @@ def handle_updated_issue_event(payload: WildValue, user_profile: UserProfile) ->
     else:
         assignee_mention = ""
 
-    if assignee_mention != "":
+    # The changelog below still reports assignee changes when this option
+    # is off; it describes a change rather than decorating the header.
+    if helper.include_assignee and assignee_mention != "":
         assignee_blurb = f" (assigned to {assignee_mention})"
     else:
         assignee_blurb = ""
@@ -254,25 +331,35 @@ def handle_updated_issue_event(payload: WildValue, user_profile: UserProfile) ->
     return content
 
 
-def handle_created_issue_event(payload: WildValue, user_profile: UserProfile) -> str:
-    priority = get_in(payload, ["issue", "fields", "priority", "name"]).tame(check_string).lower()
+def handle_created_issue_event(helper: Helper) -> str:
+    payload = helper.payload
+    user_profile = helper.user_profile
+
+    author = get_issue_author(payload, user_profile.realm)
+    issue_string = get_issue_string(payload, with_title=True)
+    content = f"{author} created {issue_string}"
+
+    if helper.include_priority:
+        priority = (
+            get_in(payload, ["issue", "fields", "priority", "name"]).tame(check_string).lower()
+        )
+        content += f" with {priority} priority"
 
     assignee_payload = get_in(payload, ["issue", "fields", "assignee"])
-    if assignee_payload.value and isinstance(assignee_payload.value, dict):
-        assignee_blurb = f" (assigned to {get_user_mention(user_profile.realm, assignee_payload)})"
-    else:
-        assignee_blurb = ""
+    if (
+        helper.include_assignee
+        and assignee_payload.value
+        and isinstance(assignee_payload.value, dict)
+    ):
+        content += f" (assigned to {get_user_mention(user_profile.realm, assignee_payload)})"
 
-    template = "{author} created {issue_string} with {priority} priority{assignee_blurb}."
-    return template.format(
-        author=get_issue_author(payload, user_profile.realm),
-        issue_string=get_issue_string(payload, with_title=True),
-        priority=priority,
-        assignee_blurb=assignee_blurb,
-    )
+    return content + "." + get_additional_issue_fields(helper)
 
 
-def handle_deleted_issue_event(payload: WildValue, user_profile: UserProfile) -> str:
+def handle_deleted_issue_event(helper: Helper) -> str:
+    payload = helper.payload
+    user_profile = helper.user_profile
+
     template = "{author} deleted {issue_string}{punctuation}"
     title = get_issue_title(payload)
     punctuation = "." if title[-1] not in string.punctuation else ""
@@ -298,7 +385,10 @@ def get_comment_author(comment_payload: WildValue, realm: Realm) -> str:
     return get_user_mention(realm, author_payload)
 
 
-def handle_comment_created_event(payload: WildValue, user_profile: UserProfile) -> str:
+def handle_comment_created_event(helper: Helper) -> str:
+    payload = helper.payload
+    user_profile = helper.user_profile
+
     return "{author} commented on {issue_string}\
 \n``` quote\n{comment}\n```\n".format(
         author=get_comment_author(payload["comment"], user_profile.realm),
@@ -309,7 +399,10 @@ def handle_comment_created_event(payload: WildValue, user_profile: UserProfile) 
     )
 
 
-def handle_comment_updated_event(payload: WildValue, user_profile: UserProfile) -> str:
+def handle_comment_updated_event(helper: Helper) -> str:
+    payload = helper.payload
+    user_profile = helper.user_profile
+
     return "{author} updated their comment on {issue_string}\
 \n``` quote\n{comment}\n```\n".format(
         author=get_comment_author(payload["comment"], user_profile.realm),
@@ -320,7 +413,10 @@ def handle_comment_updated_event(payload: WildValue, user_profile: UserProfile) 
     )
 
 
-def handle_comment_deleted_event(payload: WildValue, user_profile: UserProfile) -> str:
+def handle_comment_deleted_event(helper: Helper) -> str:
+    payload = helper.payload
+    user_profile = helper.user_profile
+
     return "{author} deleted their comment on {issue_string}\
 \n``` quote\n~~{comment}~~\n```\n".format(
         author=get_comment_author(payload["comment"], user_profile.realm),
@@ -331,7 +427,7 @@ def handle_comment_deleted_event(payload: WildValue, user_profile: UserProfile) 
     )
 
 
-JIRA_CONTENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue, UserProfile], str] | None] = {
+JIRA_CONTENT_FUNCTION_MAPPER: dict[str, Callable[[Helper], str] | None] = {
     "jira:issue_created": handle_created_issue_event,
     "jira:issue_deleted": handle_deleted_issue_event,
     "jira:issue_updated": handle_updated_issue_event,
@@ -350,6 +446,13 @@ def api_jira_webhook(
     user_profile: UserProfile,
     *,
     payload: JsonBodyPayload[WildValue],
+    include_priority: Json[bool] = True,
+    include_assignee: Json[bool] = True,
+    include_issue_type: Json[bool] = False,
+    include_status: Json[bool] = False,
+    include_components: Json[bool] = False,
+    include_versions: Json[bool] = False,
+    include_labels: Json[bool] = False,
 ) -> HttpResponse:
     event = payload.get("webhookEvent").tame(check_none_or(check_string))
     if event in IGNORED_EVENTS:
@@ -364,8 +467,19 @@ def api_jira_webhook(
     if content_func is None:
         raise UnsupportedWebhookEventTypeError(event)
 
+    helper = Helper(
+        payload,
+        user_profile,
+        include_priority=include_priority,
+        include_assignee=include_assignee,
+        include_issue_type=include_issue_type,
+        include_status=include_status,
+        include_components=include_components,
+        include_versions=include_versions,
+        include_labels=include_labels,
+    )
     topic_name = get_issue_topic(payload)
-    content: str = content_func(payload, user_profile)
+    content: str = content_func(helper)
 
     check_send_webhook_message(
         request, user_profile, topic_name, content, event, unquote_url_parameters=True
