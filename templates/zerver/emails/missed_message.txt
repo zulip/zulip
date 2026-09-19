@@ -34,7 +34,15 @@ This email does not include message content because you have chosen to hide mess
 {% elif followed_topic_email_notify %}
 {% trans %}You are receiving this because you have email notifications enabled for topics you follow.{% endtrans %}
 {% elif stream_email_notify %}
+{% if mandatory_email_notifications %}
+{% if user_can_unsubscribe_from_channel %}
+{% trans unsubscribe_url=unsubscribe_channel_url, deactivate_url=deactivate_account_help_url %}This channel is configured to send email notifications to all subscribers. You can unsubscribe from the channel ({{ unsubscribe_url }}) or deactivate your account ({{ deactivate_url }}) to stop receiving these notifications.{% endtrans %}
+{% else %}
+{% trans deactivate_url=deactivate_account_help_url %}This channel is configured to send email notifications to all subscribers, and your subscription to this channel is required by administrators. You can deactivate your account ({{ deactivate_url }}) to stop receiving these notifications.{% endtrans %}
+{% endif %}
+{% else %}
 {% trans %}You are receiving this because you have email notifications enabled for #{{ channel_name }}.{% endtrans %}
+{% endif %}
 {% endif %}
 
 {% if reply_to_zulip  %}
