@@ -440,7 +440,7 @@ def get_integrations_activity(request: HttpRequest) -> HttpResponse:
         join zerver_realm realm on realm.id = up.realm_id
         where
             (query in ('send_message_backend', '/api/v1/send_message')
-            and client.name not in ('Android', 'ZulipiOS')
+            and client.name not in ('Android', 'ZulipiOS', 'ZulipMobile', 'ZulipFlutter', 'ZulipElectron', 'ZulipTerminal', 'website')
             and client.name not like 'test: Zulip%%'
             )
         or
