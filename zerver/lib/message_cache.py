@@ -90,7 +90,20 @@ def update_message_cache(
 
 
 def save_message_rendered_content(message: Message, content: str) -> str:
-    rendering_result = render_message_markdown(message, content, realm=message.get_realm())
+    # Import here to avoid circular imports
+    from zerver.lib.message import get_default_code_block_language
+
+    realm = message.get_realm()
+    stream = None
+    if message.recipient.type == Recipient.STREAM:
+        stream = Stream.objects.get(id=message.recipient.type_id)
+
+    rendering_result = render_message_markdown(
+        message,
+        content,
+        realm=realm,
+        default_code_block_language=get_default_code_block_language(stream, realm),
+    )
     rendered_content = None
     if rendering_result is not None:
         rendered_content = rendering_result.rendered_content
@@ -449,7 +462,7 @@ class MessageDict:
             # of going to the DB here should be overshadowed by the cost of rendering
             # and updating the row.
             # TODO: see #1379 to eliminate Markdown dependencies
-            message = Message.objects.select_related("sender").get(id=message_id)
+            message = Message.objects.select_related("sender", "recipient").get(id=message_id)
 
             assert message is not None  # Hint for mypy.
             # It's unfortunate that we need to have side effects on the message

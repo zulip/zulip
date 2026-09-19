@@ -156,6 +156,14 @@ export function rewire_stream_name(value: typeof stream_name): void {
     stream_name = value;
 }
 
+export function stream(): sub_store.StreamSubscription | undefined {
+    const id = stream_id();
+    if (id !== undefined) {
+        return sub_store.get(id);
+    }
+    return undefined;
+}
+
 export function set_stream_id(stream_id: number | ""): void {
     set_selected_recipient_id(stream_id);
 }

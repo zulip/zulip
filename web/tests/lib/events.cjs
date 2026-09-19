@@ -68,6 +68,7 @@ exports.test_streams = {
         is_recently_active: true,
         default_push_notifications: false,
         subscriber_count: 10,
+        default_code_block_language: "text",
     },
     test: {
         is_archived: false,
@@ -96,6 +97,7 @@ exports.test_streams = {
         is_recently_active: true,
         default_push_notifications: false,
         subscriber_count: 2,
+        default_code_block_language: "text",
     },
 };
 

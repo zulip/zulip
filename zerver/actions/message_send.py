@@ -45,6 +45,7 @@ from zerver.lib.mention import MentionBackend, MentionData, silent_mention_synta
 from zerver.lib.message import (
     SendMessageRequest,
     check_user_group_mention_allowed,
+    get_default_code_block_language,
     normalize_body,
     set_visibility_policy_possible,
     stream_wildcard_mention_allowed,
@@ -181,6 +182,7 @@ def render_incoming_message(
     message: Message,
     content: str,
     realm: Realm,
+    default_code_block_language: str,
     mention_data: MentionData | None = None,
     url_embed_data: dict[str, UrlEmbedData | None] | None = None,
     email_gateway: bool = False,
@@ -199,6 +201,7 @@ def render_incoming_message(
             email_gateway=email_gateway,
             no_previews=no_previews,
             acting_user=acting_user,
+            default_code_block_language=default_code_block_language,
         )
     except MarkdownRenderingError:
         raise JsonableError(_("Unable to render message"))
@@ -719,6 +722,8 @@ def build_message_send_dict(
         dm_involved_user_ids=dm_involved_user_ids,
     )
 
+    default_code_block_language = get_default_code_block_language(stream, realm)
+
     # Render our message_dicts.
     assert message.rendered_content is None
 
@@ -730,6 +735,7 @@ def build_message_send_dict(
         email_gateway=email_gateway,
         acting_user=acting_user,
         no_previews=no_previews,
+        default_code_block_language=default_code_block_language,
     )
     message.rendered_content = rendering_result.rendered_content
     message.rendered_content_version = markdown_version
@@ -1395,11 +1401,16 @@ def do_send_messages(
         send_event_on_commit(send_request.realm, event, users)
 
         if send_request.links_for_embed:
+            default_code_block_language = get_default_code_block_language(
+                send_request.stream, send_request.realm
+            )
+
             event_data = {
                 "message_id": send_request.message.id,
                 "message_content": send_request.message.content,
                 "message_realm_id": send_request.realm.id,
                 "urls": list(send_request.links_for_embed),
+                "default_code_block_language": default_code_block_language,
             }
             queue_event_on_commit("embed_links", event_data)
 

@@ -1763,3 +1763,9 @@ def get_user_mentions_for_display(user_list: list[UserProfile | UserDisplayRecip
     if len(recipient_list) > 1:
         other_users += ","
     return _("{other_users} and {last_user}").format(other_users=other_users, last_user=last_user)
+
+
+def get_default_code_block_language(stream: Stream | None, realm: Realm) -> str:
+    if stream is not None and stream.default_code_block_language:
+        return stream.default_code_block_language
+    return realm.default_code_block_language
