@@ -61,7 +61,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             mention_data = MentionData(
                 mention_backend=MentionBackend(message.realm_id),
                 content=message.content,
-                message_sender=message.sender,
+                acting_user=message.sender,
             )
             rendering_result = render_incoming_message(
                 message,
