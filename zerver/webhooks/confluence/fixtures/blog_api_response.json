@@ -1,0 +1,136 @@
+{
+  "id": "234567",
+  "type": "blogpost",
+  "status": "current",
+  "title": "Q3 Engineering Update",
+  "space": {
+    "id": 65547,
+    "key": "ENG",
+    "name": "Engineering",
+    "status": "current",
+    "type": "global",
+    "creator": {
+      "type": "known",
+      "username": "admin",
+      "userKey": "2c9280839e460b0f019e460ba6440000",
+      "displayName": "Alice Jones",
+      "_links": {
+        "self": "https://wiki.example.com/rest/api/user?key=2c9280839e460b0f019e460ba6440000"
+      },
+      "_expandable": {
+        "profilePicture": "",
+        "status": ""
+      }
+    },
+    "creationDate": "2019-08-01T15:41:14.448Z",
+    "lastModifier": {
+      "type": "known",
+      "username": "admin",
+      "userKey": "2c9280839e460b0f019e460ba6440000",
+      "displayName": "Alice Jones",
+      "_links": {
+        "self": "https://wiki.example.com/rest/api/user?key=2c9280839e460b0f019e460ba6440000"
+      },
+      "_expandable": {
+        "profilePicture": "",
+        "status": ""
+      }
+    },
+    "lastModificationDate": "2019-08-01T15:41:14.851Z",
+    "_links": {
+      "webui": "/spaces/ENG/overview",
+      "self": "https://wiki.example.com/rest/api/space/ENG"
+    },
+    "_expandable": {
+      "metadata": "",
+      "permissions": "",
+      "icon": "",
+      "description": "",
+      "retentionPolicy": "",
+      "homepage": "/rest/api/content/234500"
+    }
+  },
+  "history": {
+    "latest": true,
+    "createdBy": {
+      "type": "known",
+      "username": "admin",
+      "userKey": "2c9280839e460b0f019e460ba6440000",
+      "profilePicture": {
+        "path": "/images/icons/profilepics/default.svg",
+        "width": 48,
+        "height": 48,
+        "isDefault": true
+      },
+      "displayName": "Alice Jones",
+      "_links": {
+        "self": "https://wiki.example.com/rest/api/user?key=2c9280839e460b0f019e460ba6440000"
+      },
+      "_expandable": {
+        "status": ""
+      }
+    },
+    "createdDate": "2019-08-16T17:10:00.000Z",
+    "_links": {
+      "self": "https://wiki.example.com/rest/api/content/234567/history"
+    },
+    "_expandable": {
+      "lastUpdated": "",
+      "previousVersion": "",
+      "contributors": "",
+      "nextVersion": ""
+    }
+  },
+  "version": {
+    "by": {
+      "type": "known",
+      "username": "admin",
+      "userKey": "2c9280839e460b0f019e460ba6440000",
+      "profilePicture": {
+        "path": "/images/icons/profilepics/default.svg",
+        "width": 48,
+        "height": 48,
+        "isDefault": true
+      },
+      "displayName": "Alice Jones",
+      "_links": {
+        "self": "https://wiki.example.com/rest/api/user?key=2c9280839e460b0f019e460ba6440000"
+      },
+      "_expandable": {
+        "status": ""
+      }
+    },
+    "when": "2019-08-16T17:10:39.086Z",
+    "message": "",
+    "number": 2,
+    "minorEdit": false,
+    "hidden": false,
+    "_links": {
+      "self": "https://wiki.example.com/rest/experimental/content/234567/version/2"
+    },
+    "_expandable": {
+      "content": "/rest/api/content/234567"
+    }
+  },
+  "position": -1,
+  "_links": {
+    "webui": "/spaces/ENG/blog/2019/08/16/234567/Q3+Engineering+Update",
+    "edit": "/pages/resumedraft.action?draftId=234567&draftShareId=c064b9f3-3f95-4445-b4c8-31b709676e3c",
+    "tinyui": "/x/YQAC",
+    "collection": "/rest/api/content",
+    "base": "https://wiki.example.com",
+    "context": "",
+    "self": "https://wiki.example.com/rest/api/content/234567"
+  },
+  "_expandable": {
+    "container": "/rest/api/space/ENG",
+    "metadata": "",
+    "operations": "",
+    "children": "/rest/api/content/234567/child",
+    "restrictions": "/rest/api/content/234567/restriction/byOperation",
+    "ancestors": "",
+    "body": "",
+    "descendants": "/rest/api/content/234567/descendant",
+    "relevantViewRestrictions": "/rest/api/content/234567/restriction/relevantViewRestrictions"
+  }
+}

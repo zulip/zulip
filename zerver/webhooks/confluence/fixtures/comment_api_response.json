@@ -1,0 +1,140 @@
+{
+  "id": "789012",
+  "type": "comment",
+  "status": "current",
+  "title": "Re: Architecture Overview",
+  "space": {
+    "id": 65547,
+    "key": "ENG",
+    "name": "Engineering",
+    "status": "current",
+    "type": "global",
+    "creator": {
+      "type": "known",
+      "username": "admin",
+      "userKey": "2c9280839e460b0f019e460ba6440000",
+      "displayName": "John Smith",
+      "_links": {
+        "self": "https://wiki.example.com/rest/api/user?key=2c9280839e460b0f019e460ba6440000"
+      },
+      "_expandable": {
+        "profilePicture": "",
+        "status": ""
+      }
+    },
+    "creationDate": "2019-08-01T15:41:14.448Z",
+    "lastModifier": {
+      "type": "known",
+      "username": "admin",
+      "userKey": "2c9280839e460b0f019e460ba6440000",
+      "displayName": "John Smith",
+      "_links": {
+        "self": "https://wiki.example.com/rest/api/user?key=2c9280839e460b0f019e460ba6440000"
+      },
+      "_expandable": {
+        "profilePicture": "",
+        "status": ""
+      }
+    },
+    "lastModificationDate": "2019-08-01T15:41:14.851Z",
+    "_links": {
+      "webui": "/spaces/ENG/overview",
+      "self": "https://wiki.example.com/rest/api/space/ENG"
+    },
+    "_expandable": {
+      "metadata": "",
+      "permissions": "",
+      "icon": "",
+      "description": "",
+      "retentionPolicy": "",
+      "homepage": "/rest/api/content/123400"
+    }
+  },
+  "history": {
+    "latest": true,
+    "createdBy": {
+      "type": "known",
+      "username": "admin",
+      "userKey": "2c9280839e460b0f019e460ba6440000",
+      "profilePicture": {
+        "path": "/images/icons/profilepics/default.svg",
+        "width": 48,
+        "height": 48,
+        "isDefault": true
+      },
+      "displayName": "John Smith",
+      "_links": {
+        "self": "https://wiki.example.com/rest/api/user?key=2c9280839e460b0f019e460ba6440000"
+      },
+      "_expandable": {
+        "status": ""
+      }
+    },
+    "createdDate": "2019-08-16T17:30:43.965Z",
+    "_links": {
+      "self": "https://wiki.example.com/rest/api/content/789012/history"
+    },
+    "_expandable": {
+      "lastUpdated": "",
+      "previousVersion": "",
+      "contributors": "",
+      "nextVersion": ""
+    }
+  },
+  "version": {
+    "by": {
+      "type": "known",
+      "username": "admin",
+      "userKey": "2c9280839e460b0f019e460ba6440000",
+      "profilePicture": {
+        "path": "/images/icons/profilepics/default.svg",
+        "width": 48,
+        "height": 48,
+        "isDefault": true
+      },
+      "displayName": "John Smith",
+      "_links": {
+        "self": "https://wiki.example.com/rest/api/user?key=2c9280839e460b0f019e460ba6440000"
+      },
+      "_expandable": {
+        "status": ""
+      }
+    },
+    "when": "2019-08-16T17:30:43.965Z",
+    "message": "",
+    "number": 1,
+    "minorEdit": false,
+    "hidden": false,
+    "_links": {
+      "self": "https://wiki.example.com/rest/experimental/content/789012/version/1"
+    },
+    "_expandable": {
+      "content": "/rest/api/content/789012"
+    }
+  },
+  "position": -1,
+  "extensions": {
+    "location": "footer",
+    "_expandable": {
+      "resolution": ""
+    }
+  },
+  "_links": {
+    "webui": "/spaces/ENG/pages/123456/Architecture+Overview?focusedCommentId=789012#comment-789012",
+    "collection": "/rest/api/content",
+    "base": "https://wiki.example.com",
+    "context": "",
+    "self": "https://wiki.example.com/rest/api/content/789012"
+  },
+  "_expandable": {
+    "container": "/rest/api/content/123456",
+    "metadata": "",
+    "operations": "",
+    "children": "/rest/api/content/789012/child",
+    "restrictions": "/rest/api/content/789012/restriction/byOperation",
+    "ancestors": "",
+    "body": "",
+    "descendants": "/rest/api/content/789012/descendant",
+    "relevantViewRestrictions": "/rest/api/content/789012/restriction/relevantViewRestrictions"
+  }
+}
