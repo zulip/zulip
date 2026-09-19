@@ -168,19 +168,46 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("fork", TOPIC_REPO, expected_message)
 
     def test_issues_edited_body(self) -> None:
+        self.url = self.build_webhook_url(compact_edit_format="false")
         expected_topic_name = "test-repo / issue #6 New Issue edited"
         expected_message = "Pritesh-30 edited [issue #6](https://github.com/Pritesh-30/test-repo/issues/6):\n\n``` quote\nThe body of the issue is edited.\n```"
         self.check_webhook("issues__edited_body", expected_topic_name, expected_message)
 
     def test_issues_edited_title(self) -> None:
+        self.url = self.build_webhook_url(compact_edit_format="false")
         long_title = "This is a very long issue title used to exceed Zulip's maximum topic length so that truncation logic is exercised when the issue title is edited via the GitHub webhook"
         expected_topic_name = truncate_topic(f"test-repo / issue #6 {long_title}")
         expected_message = "Pritesh-30 edited [issue #6](https://github.com/Pritesh-30/test-repo/issues/6):\n\n``` quote\nThe body of the issue is edited.\n```"
         self.check_webhook("issues__edited_title", expected_topic_name, expected_message)
 
+    def test_issues_edited_body_compact(self) -> None:
+        expected_topic_name = "test-repo / issue #6 New Issue edited"
+        expected_message = (
+            "Pritesh-30 edited [issue #6](https://github.com/Pritesh-30/test-repo/issues/6)."
+        )
+        self.check_webhook("issues__edited_body", expected_topic_name, expected_message)
+
     def test_issue_comment_msg(self) -> None:
         expected_message = "baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n``` quote\nYou are totally right! I'll get this fixed right away.\n```"
         self.check_webhook("issue_comment", TOPIC_ISSUE, expected_message)
+
+    def test_issue_comment_edited_msg(self) -> None:
+        # Both issue and PR comments come under the `issue_comment` event.
+        payload = orjson.loads(self.get_body("issue_comment__edited__unchanged"))
+        payload["comment"]["body"] = "The comment, after being edited."
+        comment_link = "[comment](https://github.com/Niloth-p/webhook-tester/pull/1#issuecomment-2555981590) on [PR #1](https://github.com/Niloth-p/webhook-tester/pull/1)"
+        expected_messages = {
+            "true": f"AnotherUser edited a {comment_link}.",
+            "false": f"AnotherUser edited a {comment_link}:\n\n``` quote\nThe comment, after being edited.\n```",
+        }
+        for compact_edit_format, expected_message in expected_messages.items():
+            self.url = self.build_webhook_url(compact_edit_format=compact_edit_format)
+            self.check_webhook(
+                "issue_comment__edited__unchanged",
+                "webhook-tester / PR #1 Generic issue title",
+                expected_message,
+                custom_payload=payload,
+            )
 
     def test_issue_comment_deleted_msg(self) -> None:
         expected_topic_name = "Scheduler / issue #5 This is a new issue"
@@ -446,6 +473,24 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = ":speech_balloon: baxterthehacker created [PR review comment on #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692):\n\n``` quote\nMaybe you should use more emojji on this line.\n```"
         self.check_webhook("pull_request_review_comment", expected_topic_name, expected_message)
 
+    def test_pull_request_review_comment_edited_msg(self) -> None:
+        payload = orjson.loads(self.get_body("pull_request_review_comment"))
+        payload["action"] = "edited"
+        payload["changes"] = {"body": {"from": "The comment, before being edited."}}
+        comment_link = "[PR review comment](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692)"
+        expected_messages = {
+            "true": f":speech_balloon: baxterthehacker edited {comment_link}.",
+            "false": f":speech_balloon: baxterthehacker edited {comment_link}:\n\n``` quote\nMaybe you should use more emojji on this line.\n```",
+        }
+        for compact_edit_format, expected_message in expected_messages.items():
+            self.url = self.build_webhook_url(compact_edit_format=compact_edit_format)
+            self.check_webhook(
+                "pull_request_review_comment",
+                TOPIC_PR,
+                expected_message,
+                custom_payload=payload,
+            )
+
     def test_pull_request_locked(self) -> None:
         expected_message = "tushar912 has locked [PR #1](https://github.com/tushar912/public-repo/pull/1) as off-topic and limited conversation to collaborators."
         self.check_webhook("pull_request__locked", TOPIC_PR, expected_message)
@@ -475,7 +520,14 @@ class GitHubWebhookTest(WebhookTestCase):
         self.check_webhook("pull_request__edited", TOPIC_PR, expected_message)
 
     def test_pull_request_edited_with_body_change(self) -> None:
+        self.url = self.build_webhook_url(compact_edit_format="false")
         expected_message = "cozyrohan edited [PR #1](https://github.com/cozyrohan/public-repo/pull/1):\n\n``` quote\nPR EDITED\n```"
+        self.check_webhook("pull_request__edited_with_body_change", TOPIC_PR, expected_message)
+
+    def test_pull_request_edited_with_body_change_compact(self) -> None:
+        expected_message = (
+            "cozyrohan edited [PR #1](https://github.com/cozyrohan/public-repo/pull/1)."
+        )
         self.check_webhook("pull_request__edited_with_body_change", TOPIC_PR, expected_message)
 
     def test_pull_request_synchronized_with_body(self) -> None:
@@ -760,7 +812,12 @@ A temporary team so that I can get some webhook fixtures!
         self.check_webhook("discussion__edited_title", expected_topic, expected_message)
 
     def test_discussion_edited_body(self) -> None:
+        self.url = self.build_webhook_url(compact_edit_format="false")
         expected_message = "Niloth-p edited [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3):\n\n``` quote\nWriting good commit messages is an art, but it's also an important part of maintaining a clear and understandable project history. What are some tips and tricks you've learned for writing clear and concise commit messages? Do you have any favorite templates or formats?\r\nAny advice would be greatly appreciated!\n```"
+        self.check_webhook("discussion__edited_body", TOPIC_DISCUSSION, expected_message)
+
+    def test_discussion_edited_body_compact(self) -> None:
+        expected_message = "Niloth-p edited [discussion #3](https://github.com/Niloth-p/webhook-tester/discussions/3)."
         self.check_webhook("discussion__edited_body", TOPIC_DISCUSSION, expected_message)
 
     def test_discussion_labeled(self) -> None:
@@ -810,7 +867,12 @@ A temporary team so that I can get some webhook fixtures!
         self.check_webhook("discussion_comment", expected_topic_name, expected_message)
 
     def test_discussion_comment_edited_msg(self) -> None:
+        self.url = self.build_webhook_url(compact_edit_format="false")
         expected_message = "sbansal1999 edited a [comment](https://github.com/sbansal1999/testing-gh/discussions/20#discussioncomment-6332416) on [discussion #20](https://github.com/sbansal1999/testing-gh/discussions/20):\n\n``` quote\nsome random comment edited\n```"
+        self.check_webhook("discussion_comment__edited", TOPIC_DISCUSSION_COMMENT, expected_message)
+
+    def test_discussion_comment_edited_msg_compact(self) -> None:
+        expected_message = "sbansal1999 edited a [comment](https://github.com/sbansal1999/testing-gh/discussions/20#discussioncomment-6332416) on [discussion #20](https://github.com/sbansal1999/testing-gh/discussions/20)."
         self.check_webhook("discussion_comment__edited", TOPIC_DISCUSSION_COMMENT, expected_message)
 
     def test_comment_edited_unchanged_skipped(self) -> None:
