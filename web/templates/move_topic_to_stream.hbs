@@ -28,7 +28,9 @@
             <select name="propagate_mode" id="message_move_select_options" class="message_edit_topic_propagate modal_select bootstrap-focus-style">
                 <option value="change_one" {{#if (eq message_placement "last")}}selected{{/if}}> {{t "Move only this message" }}</option>
                 <option value="change_later" {{#if (eq message_placement "intermediate")}}selected{{/if}}> {{t "Move this and all following messages in this topic" }}</option>
+                {{#if can_move_oldest_message_in_data}}
                 <option value="change_all" {{#if (eq message_placement "first")}}selected{{/if}}> {{t "Move all messages in this topic" }}</option>
+                {{/if}}
             </select>
         </div>
         {{/if}}
