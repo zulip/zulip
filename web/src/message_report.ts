@@ -137,6 +137,7 @@ export function show_message_report_modal(message: Message): void {
             ...message_preview_body_args,
             message_list_id: "",
         },
+        show_channel_name: true,
         invite_only,
         is_web_public,
         is_archived,
