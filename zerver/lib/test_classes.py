@@ -85,6 +85,7 @@ from zerver.lib.test_helpers import (
     get_test_image_file,
     instrument_url,
     queries_captured,
+    stub_event_queue_user_events,
 )
 from zerver.lib.thumbnail import ThumbnailFormat
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_message
@@ -120,6 +121,7 @@ from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_realm_stream, get_stream
 from zerver.models.users import get_system_bot, get_user, get_user_by_delivery_email
 from zerver.openapi.openapi import validate_test_request, validate_test_response
+from zerver.tornado.django_api import EventQueueData
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 
 if settings.ZILENCER_ENABLED:
@@ -789,6 +791,18 @@ Output:
         # that we treated this request as a normal logged-in session,
         # not as a spectator.
         self.assertEqual(page_params["is_spectator"], False)
+
+    def register_via_api(
+        self, info: Mapping[str, Any] = {}, subdomain: str = DEFAULT_SUBDOMAIN
+    ) -> dict[str, Any]:
+        """Returns the initial state from POST /json/register for the
+        logged-in session, with the Tornado event queue stubbed out."""
+        queue_data = EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600)
+        with stub_event_queue_user_events(queue_data, []):
+            result = self.client_post("/json/register", info, subdomain=subdomain)
+        state = self.assert_json_success(result)
+        del state["result"], state["msg"]
+        return state
 
     def login_with_return(
         self, email: str, password: str | None = None, **extra: str
