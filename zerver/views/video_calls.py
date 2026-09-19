@@ -3,11 +3,13 @@ import hashlib
 import json
 import logging
 import random
+import secrets
 from abc import ABC, abstractmethod
 from base64 import b64encode
 from typing import Any, Literal
 from urllib.parse import quote, urlencode, urljoin, urlsplit
 
+import jwt
 import requests
 from defusedxml import ElementTree
 from django.conf import settings
@@ -15,6 +17,7 @@ from django.core.signing import Signer
 from django.http import HttpRequest, HttpResponse
 from django.middleware import csrf
 from django.shortcuts import redirect, render
+from django.utils import translation
 from django.utils.crypto import constant_time_compare, salted_hmac
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -22,7 +25,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from oauthlib.oauth2 import OAuth2Error
-from pydantic import Json
+from pydantic import BaseModel, Json, ValidationError
 from requests import Response
 from requests_oauthlib import OAuth2Session
 from typing_extensions import TypedDict, override
@@ -35,6 +38,7 @@ from zerver.lib.cache import (
     zoom_server_access_token_cache_key,
 )
 from zerver.lib.exceptions import ErrorCode, JsonableError
+from zerver.lib.i18n import get_and_set_request_language, get_language_translation_data
 from zerver.lib.message import truncate_content
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.partial import partial
@@ -416,6 +420,15 @@ class WebexAdhocMeetingPayload(TypedDict):
     roomId: str
 
 
+class LiveKitCallPayload(BaseModel):
+    version: Literal[1]
+    room_id: str
+    room_display_name: str
+    is_video_call: bool
+    realm_id: int
+    admin: int
+
+
 @never_cache
 @zulip_login_required
 @typed_endpoint
@@ -763,3 +776,158 @@ def create_nextcloud_talk_url(
 
     call_url = urljoin(settings.NEXTCLOUD_SERVER, f"/index.php/call/{token}")
     return json_success(request, data={"url": call_url})
+
+
+# The signed URL payload carries this string; cap it so a long
+# display name can't bloat the join URL.
+MAX_LIVEKIT_ROOM_DISPLAY_NAME_LENGTH = 255
+
+
+@typed_endpoint
+def create_livekit_call_url(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    is_video_call: Json[bool] = True,
+    room_display_name: str = "",
+) -> HttpResponse:
+    if (
+        settings.LIVEKIT_URL is None
+        or settings.LIVEKIT_API_KEY is None
+        or settings.LIVEKIT_API_SECRET is None
+    ):
+        raise VideoCallProviderNotConfiguredError("LiveKit")
+
+    room_display_name = truncate_content(
+        room_display_name, MAX_LIVEKIT_ROOM_DISPLAY_NAME_LENGTH, "..."
+    )
+    room_id = "zulip-" + secrets.token_urlsafe(18)
+
+    # Sign so a Zulip user can't tamper with room_id (join private
+    # rooms), admin (grant themselves LiveKit admin), or realm_id.
+    payload = LiveKitCallPayload(
+        version=1,
+        room_id=room_id,
+        room_display_name=room_display_name,
+        is_video_call=is_video_call,
+        realm_id=user_profile.realm_id,
+        admin=user_profile.id,
+    )
+    signed = Signer().sign_object(payload.model_dump())
+    url = append_url_query_string("/calls/livekit/join", "call=" + signed)
+    return json_success(request, data={"url": url})
+
+
+def unsign_livekit_call_payload(call: str, user_profile: UserProfile) -> LiveKitCallPayload:
+    try:
+        raw = Signer().unsign_object(call)
+    except Exception:
+        raise JsonableError(_("Invalid signature."))
+
+    # Signed links live in Zulip messages indefinitely; bump `version`
+    # and handle older versions here if the payload shape ever changes.
+    try:
+        data = LiveKitCallPayload.model_validate(raw)
+    except ValidationError:
+        raise JsonableError(_("Invalid call link."))
+
+    if data.realm_id != user_profile.realm_id:
+        raise JsonableError(_("Invalid call link."))
+
+    return data
+
+
+@zulip_login_required
+@never_cache
+@typed_endpoint
+def join_livekit_call(request: HttpRequest, *, call: str) -> HttpResponse:
+    if (
+        settings.LIVEKIT_URL is None
+        or settings.LIVEKIT_API_KEY is None
+        or settings.LIVEKIT_API_SECRET is None
+    ):
+        raise VideoCallProviderNotConfiguredError("LiveKit")
+
+    assert isinstance(request.user, UserProfile)
+    data = unsign_livekit_call_payload(call, request.user)
+
+    request_language = get_and_set_request_language(
+        request,
+        request.user.default_language,
+        translation.get_language_from_path(request.path_info),
+    )
+
+    # Sync this with livekit_call_params_schema in base_page_params.ts.
+    page_params = dict(
+        page_type="livekit_call",
+        livekit_url=settings.LIVEKIT_URL,
+        call_payload=call,
+        room_display_name=data.room_display_name,
+        is_video_call=data.is_video_call,
+        full_name=request.user.full_name,
+        translation_data=get_language_translation_data(request_language),
+    )
+
+    return render(
+        request,
+        "zerver/livekit_call.html",
+        context={"page_params": page_params},
+    )
+
+
+def generate_livekit_token(
+    api_key: str,
+    api_secret: str,
+    room_id: str,
+    identity: str,
+    name: str,
+    *,
+    is_admin: bool = False,
+    ttl_seconds: int = 600,
+) -> str:
+    now = datetime.datetime.now(tz=datetime.timezone.utc)
+    claims = {
+        # https://docs.livekit.io/frontends/reference/tokens-grants/#token-structure
+        "sub": identity,
+        "iss": api_key,
+        "nbf": int(now.timestamp()),
+        "exp": int((now + datetime.timedelta(seconds=ttl_seconds)).timestamp()),
+        "name": name,
+        "video": {
+            "roomJoin": True,
+            "room": room_id,
+            "roomAdmin": is_admin,
+            "roomCreate": True,
+            "canPublish": True,
+            "canSubscribe": True,
+        },
+    }
+    return jwt.encode(claims, api_secret, algorithm="HS256")
+
+
+@typed_endpoint
+def get_livekit_token(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    *,
+    call: str,
+) -> HttpResponse:
+    if (
+        settings.LIVEKIT_URL is None
+        or settings.LIVEKIT_API_KEY is None
+        or settings.LIVEKIT_API_SECRET is None
+    ):
+        raise VideoCallProviderNotConfiguredError("LiveKit")
+
+    data = unsign_livekit_call_payload(call, user_profile)
+
+    identity = f"{user_profile.realm_id}:{user_profile.id}"
+    token = generate_livekit_token(
+        settings.LIVEKIT_API_KEY,
+        settings.LIVEKIT_API_SECRET,
+        data.room_id,
+        identity,
+        user_profile.full_name,
+        is_admin=data.admin == user_profile.id,
+    )
+    return json_success(request, data={"token": token})
