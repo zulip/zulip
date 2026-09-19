@@ -12,13 +12,13 @@ from zerver.lib.streams import render_stream_description
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData, UserProfileChangeDict
 from zerver.lib.users import get_user_ids_who_can_access_user
 from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, UserProfile
-from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
+from zerver.models.custom_profile_fields import rendered_custom_profile_fields_for_realm
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 
 def notify_realm_custom_profile_fields(realm: Realm) -> None:
-    fields = custom_profile_fields_for_realm(realm.id)
+    fields = rendered_custom_profile_fields_for_realm(realm.id)
     event = dict(type="custom_profile_fields", fields=[f.as_dict() for f in fields])
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
@@ -144,8 +144,10 @@ def try_update_realm_custom_profile_field(
 ) -> None:
     if name is not None:
         field.name = name
+        field.rendered_name = None
     if hint is not None:
         field.hint = hint
+        field.rendered_hint = None
     if required is not None:
         field.required = required
     if editable_by_user is not None:

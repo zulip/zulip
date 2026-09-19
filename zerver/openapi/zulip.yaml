@@ -2307,6 +2307,8 @@ paths:
                                         "name": "Phone number",
                                         "type": 1,
                                         "hint": "",
+                                        "rendered_name": "Phone number",
+                                        "rendered_hint": "",
                                         "field_data": "",
                                         "order": 1,
                                         "required": true,
@@ -2317,6 +2319,8 @@ paths:
                                         "name": "Biography",
                                         "type": 2,
                                         "hint": "What are you known for?",
+                                        "rendered_name": "Biography",
+                                        "rendered_hint": "What are you known for?",
                                         "field_data": "",
                                         "order": 2,
                                         "required": true,
@@ -2327,6 +2331,8 @@ paths:
                                         "name": "Favorite food",
                                         "type": 1,
                                         "hint": "Or drink, if you'd prefer",
+                                        "rendered_name": "Favorite food",
+                                        "rendered_hint": "Or drink, if you'd prefer",
                                         "field_data": "",
                                         "order": 3,
                                         "required": false,
@@ -2337,6 +2343,8 @@ paths:
                                         "name": "Favorite editor",
                                         "type": 3,
                                         "hint": "",
+                                        "rendered_name": "Favorite editor",
+                                        "rendered_hint": "",
                                         "field_data": '{"0":{"text":"Vim","order":"1"},"1":{"text":"Emacs","order":"2"}}',
                                         "order": 4,
                                         "display_in_profile_summary": true,
@@ -2348,6 +2356,8 @@ paths:
                                         "name": "Birthday",
                                         "type": 4,
                                         "hint": "",
+                                        "rendered_name": "Birthday",
+                                        "rendered_hint": "",
                                         "field_data": "",
                                         "order": 5,
                                         "required": false,
@@ -2358,6 +2368,8 @@ paths:
                                         "name": "Favorite website",
                                         "type": 5,
                                         "hint": "Or your personal blog's URL",
+                                        "rendered_name": "Favorite website",
+                                        "rendered_hint": "Or your personal blog's URL",
                                         "field_data": "",
                                         "order": 6,
                                         "display_in_profile_summary": true,
@@ -2369,6 +2381,8 @@ paths:
                                         "name": "Mentor",
                                         "type": 6,
                                         "hint": "",
+                                        "rendered_name": "Mentor",
+                                        "rendered_hint": "",
                                         "field_data": "",
                                         "order": 7,
                                         "required": true,
@@ -2379,6 +2393,8 @@ paths:
                                         "name": "GitHub",
                                         "type": 7,
                                         "hint": "Enter your GitHub username",
+                                        "rendered_name": "GitHub",
+                                        "rendered_hint": "Enter your GitHub username",
                                         "field_data": '{"subtype":"github"}',
                                         "order": 8,
                                         "required": true,
@@ -15257,6 +15273,8 @@ paths:
                               "name": "Phone number",
                               "type": 1,
                               "hint": "",
+                              "rendered_name": "Phone number",
+                              "rendered_hint": "",
                               "field_data": "",
                               "order": 1,
                               "required": true,
@@ -15267,6 +15285,8 @@ paths:
                               "name": "Biography",
                               "type": 2,
                               "hint": "What are you known for?",
+                              "rendered_name": "Biography",
+                              "rendered_hint": "What are you known for?",
                               "field_data": "",
                               "order": 2,
                               "required": true,
@@ -15277,6 +15297,8 @@ paths:
                               "name": "Favorite food",
                               "type": 1,
                               "hint": "Or drink, if you'd prefer",
+                              "rendered_name": "Favorite food",
+                              "rendered_hint": "Or drink, if you'd prefer",
                               "field_data": "",
                               "order": 3,
                               "required": false,
@@ -15287,6 +15309,8 @@ paths:
                               "name": "Favorite editor",
                               "type": 3,
                               "hint": "",
+                              "rendered_name": "Favorite editor",
+                              "rendered_hint": "",
                               "field_data": '{"0":{"text":"Vim","order":"1"},"1":{"text":"Emacs","order":"2"}}',
                               "order": 4,
                               "display_in_profile_summary": true,
@@ -15298,6 +15322,8 @@ paths:
                               "name": "Birthday",
                               "type": 4,
                               "hint": "",
+                              "rendered_name": "Birthday",
+                              "rendered_hint": "",
                               "field_data": "",
                               "order": 5,
                               "required": false,
@@ -15308,6 +15334,8 @@ paths:
                               "name": "Favorite website",
                               "type": 5,
                               "hint": "Or your personal blog's URL",
+                              "rendered_name": "Favorite website",
+                              "rendered_hint": "Or your personal blog's URL",
                               "field_data": "",
                               "order": 6,
                               "display_in_profile_summary": true,
@@ -15319,6 +15347,8 @@ paths:
                               "name": "Mentor",
                               "type": 6,
                               "hint": "",
+                              "rendered_name": "Mentor",
+                              "rendered_hint": "",
                               "field_data": "",
                               "order": 7,
                               "required": true,
@@ -15329,6 +15359,8 @@ paths:
                               "name": "GitHub",
                               "type": 7,
                               "hint": "Enter your GitHub username",
+                              "rendered_name": "GitHub",
+                              "rendered_hint": "Enter your GitHub username",
                               "field_data": '{"subtype":"github"}',
                               "order": 8,
                               "required": true,
@@ -15340,6 +15372,8 @@ paths:
                               "name": "Pronouns",
                               "type": 8,
                               "hint": "What pronouns should people use to refer to you?",
+                              "rendered_name": "Pronouns",
+                              "rendered_hint": "What pronouns should people use to refer to you?",
                               "order": 9,
                               "required": false,
                               "editable_by_user": true,
@@ -28277,6 +28311,26 @@ components:
           description: |
             The help text to be displayed for the custom profile field in user-facing
             settings UI for configuring custom profile fields.
+        rendered_name:
+          type: string
+          description: |
+            The name of the custom profile field rendered as HTML. Only
+            inline formatting is rendered (bold, italic, code, links,
+            strikethrough). Everything else, such as block elements,
+            user mentions, channel links, timestamps, emoji, and math, is
+            shown as plain text (for example, a mention renders as `@name`).
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-a7bf25).
+        rendered_hint:
+          type: string
+          description: |
+            The help text of the custom profile field rendered as HTML. Only
+            inline formatting is rendered (bold, italic, code, links,
+            strikethrough). Everything else, such as block elements,
+            user mentions, channel links, timestamps, emoji, and math, is
+            shown as plain text (for example, a mention renders as `@name`).
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-a7bf25).
         field_data:
           type: string
           description: |
@@ -28341,6 +28395,8 @@ components:
         - order
         - name
         - hint
+        - rendered_name
+        - rendered_hint
         - required
         - editable_by_user
     CustomProfileFieldHintSchema:
