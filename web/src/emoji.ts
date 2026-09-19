@@ -1,8 +1,11 @@
+import {isEmojiSupported} from "is-emoji-supported";
 import _ from "lodash";
 import type * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import type {StateData, realm_emoji_map_schema, server_emoji_schema} from "./state_data.ts";
+import {parse_unicode_emoji_code} from "./typeahead.ts";
+import {user_settings} from "./user_settings.ts";
 
 // This is the data structure that we get from the server on initialization.
 export type ServerEmoji = z.infer<typeof server_emoji_schema>;
@@ -56,6 +59,9 @@ export type EmojiRenderingDetails = {
     emoji_code: string;
     url?: string;
     still_url?: string | null;
+    // The Unicode glyph, set only for the "native" emojiset when the
+    // platform can render this emoji (see get_native_emoji_info).
+    unicode_emoji?: string;
 };
 
 // We will get actual values when we get initialized.
@@ -289,6 +295,22 @@ function rebuild_emoji_data(): void {
     });
 }
 
+// Returns {unicode_emoji} when the "native" emojiset is active and the
+// platform can render this Unicode emoji as a color glyph, else {}.
+// Kept out of get_emoji_details_by_name, which builds the (sprite-only)
+// typeahead catalog, to avoid running this detection over every emoji.
+export function get_native_emoji_info(emoji_details: EmojiRenderingDetails): {
+    unicode_emoji?: string;
+} {
+    if (user_settings.emojiset === "native" && emoji_details.reaction_type === "unicode_emoji") {
+        const emoji_text = parse_unicode_emoji_code(emoji_details.emoji_code);
+        if (isEmojiSupported(emoji_text)) {
+            return {unicode_emoji: emoji_text};
+        }
+    }
+    return {};
+}
+
 // This function will provide required parameters that would
 // need by template to render an emoji.
 export function get_emoji_details_by_name(emoji_name: string): EmojiRenderingDetails {
@@ -339,11 +361,12 @@ export function get_emoji_details_for_rendering(opts: {
         };
     }
     // else
-    return {
+    const details: EmojiRenderingDetails = {
         emoji_name: opts.emoji_name,
         emoji_code: opts.emoji_code,
         reaction_type: opts.reaction_type,
     };
+    return {...details, ...get_native_emoji_info(details)};
 }
 
 function build_default_emoji_aliases({

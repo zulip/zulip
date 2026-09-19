@@ -21,9 +21,10 @@ const emojisets = new Map<string, EmojiSet>([
     ["twitter", {css: twitter_css, sheet: twitter_sheet}],
 ]);
 
-// For `text` emoji set we fallback to `google` emoji set
+// For `text` and `native` emoji sets we fallback to `google` emoji set
 // for displaying emojis in emoji picker and typeahead.
 emojisets.set("text", emojisets.get("google")!);
+emojisets.set("native", emojisets.get("google")!);
 
 let current_emojiset: EmojiSet | undefined;
 
