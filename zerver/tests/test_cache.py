@@ -15,6 +15,7 @@ from zerver.lib.cache import (
     cache_set,
     cache_set_many,
     cache_with_key,
+    open_graph_description_cache_key,
     safe_cache_get_many,
     safe_cache_set_many,
     user_profile_by_id_cache_key,
@@ -331,3 +332,21 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
             id_fetcher=get_user_email,
         )
         self.assertEqual(result, {})
+
+
+class CacheKeyFunctionTest(ZulipTestCase):
+    def test_open_graph_description_cache_key_includes_content(self) -> None:
+        """open_graph_description_cache_key must produce distinct keys
+        when the same URL serves different content."""
+        url = "/help/getting-started"
+        key_v1 = open_graph_description_cache_key(b"<p>Version 1</p>", url)
+        key_v2 = open_graph_description_cache_key(b"<p>Version 2</p>", url)
+        self.assertNotEqual(key_v1, key_v2)
+
+    def test_open_graph_description_cache_key_same_content_same_url(self) -> None:
+        """Identical content and URL should produce the same cache key."""
+        url = "/help/getting-started"
+        content = b"<p>Hello world</p>"
+        key_a = open_graph_description_cache_key(content, url)
+        key_b = open_graph_description_cache_key(content, url)
+        self.assertEqual(key_a, key_b)
