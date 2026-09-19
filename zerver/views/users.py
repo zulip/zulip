@@ -30,6 +30,7 @@ from zerver.actions.user_settings import (
     do_change_avatar_fields,
     do_change_user_delivery_email,
     do_regenerate_api_key,
+    set_avatar_to_default,
 )
 from zerver.actions.users import (
     do_change_user_role,
@@ -479,6 +480,7 @@ def patch_bot_backend(
     default_all_public_streams: Json[bool] | None = None,
     default_events_register_stream: str | None = None,
     default_sending_stream: str | None = None,
+    delete_avatar: Json[bool] = False,
     full_name: str | None = None,
     role: Json[RoleParamType] | None = None,
     service_interface: Json[int] = 1,
@@ -568,7 +570,13 @@ def patch_bot_backend(
     if config_data is not None:
         do_update_bot_config_data(bot, config_data)
 
-    if len(request.FILES) == 0:
+    if delete_avatar:
+        if len(request.FILES) > 0:
+            raise JsonableError(
+                _("You cannot both upload and delete the bot's avatar in the same request.")
+            )
+        set_avatar_to_default(bot, acting_user=user_profile)
+    elif len(request.FILES) == 0:
         pass
     elif len(request.FILES) == 1:
         [user_file] = request.FILES.values()
