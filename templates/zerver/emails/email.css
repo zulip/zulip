@@ -4,12 +4,21 @@
    because hex color codes are rendered by all email clients
    consistently; HSL colors aren't supported by Hotmail. */
 
-.illustration img,
-img.bottom-illustration {
+:root {
+    color-scheme: light dark;
+}
+
+.email-logo img {
     border: none;
     -ms-interpolation-mode: bicubic;
     max-width: 100%;
     vertical-align: bottom;
+}
+
+/* Centered Zulip logo above the content card. */
+.email-logo {
+    padding: 28px 0 24px;
+    text-align: center;
 }
 
 body.default-email-font-settings {
@@ -42,13 +51,14 @@ table.layout > tbody > tr > td {
    .body element will be the equivalent of our outer element. */
 .body {
     width: 100%;
-    background-color: #f5f9f8;
+    background-color: #ebebf5;
+    color: #0c0c0e;
 }
 
 .container {
     display: block;
     margin: 0 auto !important;
-    max-width: 500px;
+    max-width: 680px;
     padding: 10px;
 }
 
@@ -64,13 +74,11 @@ img.responsive-width {
     max-width: 700px;
 }
 
-/* Mystery: .container contains .content, but the max-widths for this
-   element are 80px wider than those for .container. */
 .content {
     box-sizing: border-box;
     display: block;
     margin: 20px auto 0;
-    max-width: 580px;
+    max-width: 660px;
     padding: 10px;
 }
 
@@ -83,14 +91,13 @@ img.responsive-width {
 */
 .main {
     background-color: #fff;
-    border-radius: 3px;
+    border-radius: 8px;
     width: 100%;
 }
 
-/* Right/left padding to keep content away from edges of email client winder. */
 .wrapper {
     box-sizing: border-box;
-    padding: 0 20px 20px;
+    padding: 48px;
 }
 
 /* Footer section, containing unsubscribe links and the like. */
@@ -108,8 +115,8 @@ img.responsive-width {
 */
 .footer-content-block,
 .physical-address {
-    color: #5f5ec7;
-    font-size: 12px;
+    color: #0c0c0e;
+    font-size: 16px;
     text-align: center;
 }
 
@@ -146,13 +153,21 @@ p.digest_paragraph,
 .body p li,
 .content ul li,
 .content ol li {
-    list-style-position: outside;
+    list-style: none;
     margin-left: 15px;
 }
 
 /* Link color styling carefully tuned to not apply to user content
    inside missed-message emails. */
-.body a,
+.body a {
+    color: #5f5fff;
+    text-decoration: underline;
+}
+
+.body a:hover {
+    color: #2e2eff !important;
+}
+
 .digest_paragraph a,
 .sponsorship_request_link,
 .support_request_link,
@@ -162,7 +177,6 @@ p.digest_paragraph,
     text-decoration: underline;
 }
 
-.body a:hover,
 .digest_paragraph a:hover,
 .sponsorship_request_link:hover,
 .support_request_link:hover,
@@ -174,11 +188,10 @@ p.digest_paragraph,
 .body .button {
     display: block;
     padding: 10px 0;
-    margin: 20px auto;
+    margin: 20px 0;
     width: 200px;
-    color: #5f5ec7;
-    border: 2px solid #5f5ec7;
-    background-color: #fff;
+    color: #fff; /* white for sufficient contrast on the filled button */
+    background-color: #5f5fff;
     border-radius: 4px;
     font-size: 16px;
     outline: none;
@@ -189,7 +202,7 @@ p.digest_paragraph,
 }
 
 .body a.button:hover {
-    background-color: #5f5ec7;
+    background-color: #2e2eff;
     color: #fff;
     text-decoration: none;
 }
@@ -208,15 +221,6 @@ p.digest_paragraph,
     mso-hide: all;
     visibility: hidden;
     width: 0;
-}
-
-/* Illustrations appear over the top of the boundary between the
-   blank space at the top of the email and the content box; for
-   that reason they need a high z-index. */
-.illustration {
-    pointer-events: none;
-    cursor: default !important;
-    z-index: 100;
 }
 
 /* Styling for empty topic placeholders. */
@@ -272,10 +276,47 @@ p.digest_paragraph,
 .deactivated-user-text {
     padding: 0 0 0 15px;
     margin: 0 0 20px;
-    border-left: 5px solid #eee;
+    border-left: 5px solid #a1a2c9;
     white-space: pre-line;
     font-family: sans-serif;
     font-size: 14px;
+}
+
+@media (prefers-color-scheme: dark) {
+    .body {
+        background-color: #17172b !important;
+        color: #e4e4e7 !important;
+    }
+
+    .main {
+        background-color: #272845 !important;
+    }
+
+    .footer-content-block,
+    .physical-address {
+        color: #e4e4e7 !important;
+    }
+
+    .body a {
+        color: #b8b8ff !important;
+    }
+
+    .body a:hover {
+        color: #e5e5ff !important;
+    }
+
+    .body a.button,
+    .body a.button:hover {
+        color: #fff !important;
+    }
+
+    .body a.button:hover {
+        background-color: #2e2eff !important;
+    }
+
+    .deactivated-user-text {
+        border-left-color: #3a3b64 !important;
+    }
 }
 
 @media only screen and (max-width: 620px) {
@@ -294,7 +335,7 @@ p.digest_paragraph,
     }
 
     table[class="body"] .wrapper {
-        padding: 0 10px 10px;
+        padding: 24px;
     }
 
     table[class="body"] .content {
