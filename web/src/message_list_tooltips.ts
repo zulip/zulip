@@ -12,6 +12,7 @@ import * as compose_validate from "./compose_validate.ts";
 import * as flatpickr from "./flatpickr.ts";
 import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
+import * as narrow_state from "./narrow_state.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as reactions from "./reactions.ts";
 import * as rows from "./rows.ts";
@@ -169,6 +170,20 @@ function get_time_string(timestamp: number): string {
 export function initialize(): void {
     message_list_tooltip(".tippy-narrow-tooltip", {
         delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            const in_topic_view =
+                instance.reference.matches(".focused-message-list .narrows_by_topic") &&
+                narrow_state.narrowed_by_topic_reply();
+            const in_dm_view =
+                instance.reference.matches(
+                    ".focused-message-list .message_header_private_message .narrows_by_recipient",
+                ) && narrow_state.narrowed_by_pm_reply();
+
+            if (in_topic_view || in_dm_view) {
+                return false;
+            }
+            return undefined;
+        },
         onCreate(instance) {
             // We sniff the href, rather than looking up the user's settings
             // so that the tooltip always matches the link.
