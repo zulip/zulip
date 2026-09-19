@@ -1021,6 +1021,17 @@ urls += [
     path("api/v1/", include(v1_api_mobile_patterns)),
 ]
 
+# Experimental oauth provider support.
+if settings.ENABLE_ZULIP_OAUTH:
+    # Import only when enabled so oauth2_provider need not be installed
+    # in INSTALLED_APPS (and need not be importable at URL-load time)
+    # when the feature is off.
+    from zerver.lib.oauth2 import oauth2_endpoint_views
+
+    urls += [
+        path("o/", include((oauth2_endpoint_views, "oauth2_provider"))),
+    ]
+
 # Healthcheck URL
 urls += [path("health", health)]
 
