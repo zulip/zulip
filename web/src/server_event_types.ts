@@ -23,6 +23,7 @@ export const FETCH_EVENT_TYPES: string[] = [
     "onboarding_steps",
     "presence",
     "realm",
+    "realm_big_blue_button_options",
     "realm_billing",
     "realm_bot",
     "realm_domains",

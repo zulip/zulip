@@ -186,6 +186,7 @@ ALL_ZULIP_TABLES = {
     "zerver_pushdevicetoken",
     "zerver_reaction",
     "zerver_realm",
+    "zerver_realmbigbluebutton",
     "zerver_realmauditlog",
     "zerver_realmauthenticationmethod",
     "zerver_realmcreationstatus",
