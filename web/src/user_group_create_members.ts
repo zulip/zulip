@@ -7,6 +7,8 @@ import render_new_user_group_users from "../templates/user_group_settings/new_us
 import * as add_group_members_pill from "./add_group_members_pill.ts";
 import * as ListWidget from "./list_widget.ts";
 import type {ListWidget as ListWidgetType} from "./list_widget.ts";
+import * as loading from "./loading.ts";
+import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import {current_user} from "./state_data.ts";
@@ -64,6 +66,47 @@ export function clear_member_list(): void {
     redraw_member_list();
 }
 
+export async function add_members_from_pills(): Promise<
+    {status: "synced" | "form_closed"} | {status: "fetch_failed"; failed_stream_id: number}
+> {
+    // Subscriber data for a channel pill may still be fetching from
+    // the server, in which case the members of that channel are not
+    // yet in the data set. Wait for the fetch and sync the pills'
+    // members, so that the group is not created without them.
+    const $spinner = $("#people_to_add_in_group .add-group-member-loading-spinner");
+    loading.make_indicator($spinner, {
+        height: 28, // 2em at 14px / 1em
+    });
+    // Disable the pill input while we wait, since pills added or
+    // removed during the wait would not be reflected in the group.
+    const $add_members_container = $("#people_to_add_in_group .add_members_container");
+    $add_members_container.addClass("add_members_disabled");
+    $add_members_container.find(".input").prop("contenteditable", false);
+    const current_pill_widget = pill_widget;
+    const user_ids = await add_group_members_pill.get_pill_user_ids(pill_widget);
+    $add_members_container.removeClass("add_members_disabled");
+    $add_members_container.find(".input").prop("contenteditable", true);
+    // Make sure the creation form was not closed, or closed and
+    // rebuilt, while we were waiting for subscriber data. Closing
+    // the groups overlay hides it without resetting the panes, so
+    // also check that the overlay itself is still open. We don't
+    // need to destroy the spinner in that case, because build_widgets
+    // re-renders its container every time the form opens.
+    if (
+        pill_widget !== current_pill_widget ||
+        !overlays.groups_open() ||
+        $("#user-group-creation").css("display") === "none"
+    ) {
+        return {status: "form_closed"};
+    }
+    loading.destroy_indicator($spinner);
+    if (!Array.isArray(user_ids)) {
+        return {status: "fetch_failed", failed_stream_id: user_ids.failed_stream_id};
+    }
+    add_members(user_ids, add_group_members_pill.get_pill_group_ids(pill_widget));
+    return {status: "synced"};
+}
+
 function sync_members(user_ids: number[], subgroup_ids: number[]): void {
     user_group_create_members_data.sync_user_ids(user_ids);
     user_group_create_members_data.sync_subgroup_ids(subgroup_ids);
@@ -73,19 +116,33 @@ function sync_members(user_ids: number[], subgroup_ids: number[]): void {
 function build_pill_widget({$parent_container}: {$parent_container: JQuery}): void {
     const $pill_container = $parent_container.find(".pill-container");
 
-    pill_widget = add_group_members_pill.create({
+    const new_pill_widget = add_group_members_pill.create({
         $pill_container,
         get_potential_members: user_group_create_members_data.get_potential_members,
         get_potential_groups: user_group_create_members_data.get_potential_subgroups,
         with_add_button: false,
-        onPillCreateAction: add_members,
+        onPillCreateAction(user_ids, subgroup_ids) {
+            // This runs after subscriber data is fetched, by which
+            // time the form may have been closed and rebuilt with a
+            // new widget. Ignore the stale widget's actions.
+            if (pill_widget !== new_pill_widget) {
+                return;
+            }
+            add_members(user_ids, subgroup_ids);
+        },
         // It is better to sync the current set of user and subgroup ids
         // in the input instead of removing them from the user_ids_set
         // and subgroup_id_set, otherwise we'll have to have more complex
         // logic of when to remove a user and when not to depending upon
         // their channel and individual pills.
-        onPillRemoveAction: sync_members,
+        onPillRemoveAction(user_ids, subgroup_ids) {
+            if (pill_widget !== new_pill_widget) {
+                return;
+            }
+            sync_members(user_ids, subgroup_ids);
+        },
     });
+    pill_widget = new_pill_widget;
 }
 
 export function create_handlers($container: JQuery): void {

@@ -15,13 +15,18 @@ import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import * as user_pill from "./user_pill.ts";
 
-async function get_pill_user_ids(pill_widget: CombinedPillContainer): Promise<number[]> {
+export async function get_pill_user_ids(
+    pill_widget: CombinedPillContainer,
+): Promise<number[] | {failed_stream_id: number}> {
     const user_ids = user_pill.get_user_ids(pill_widget);
     const stream_user_ids = await stream_pill.get_user_ids(pill_widget);
+    if (!Array.isArray(stream_user_ids)) {
+        return stream_user_ids;
+    }
     return [...user_ids, ...stream_user_ids];
 }
 
-function get_pill_group_ids(pill_widget: CombinedPillContainer): number[] {
+export function get_pill_group_ids(pill_widget: CombinedPillContainer): number[] {
     const group_user_ids = user_group_pill.get_group_ids(pill_widget);
     return group_user_ids;
 }
@@ -112,10 +117,12 @@ export function create({
         pill_widget.onPillCreate(() => {
             void (async () => {
                 loading.make_indicator($(".add-group-member-loading-spinner"), {
-                    height: 56, // 4em at 14px / 1em
+                    height: 28, // 2em at 14px / 1em
                 });
                 const user_ids = await get_pill_user_ids(pill_widget);
-                onPillCreateAction(user_ids, get_pill_group_ids(pill_widget));
+                if (Array.isArray(user_ids)) {
+                    onPillCreateAction(user_ids, get_pill_group_ids(pill_widget));
+                }
                 loading.destroy_indicator($(".add-group-member-loading-spinner"));
             })();
         });
@@ -125,6 +132,9 @@ export function create({
         pill_widget.onPillRemove(() => {
             void (async () => {
                 const user_ids = await get_pill_user_ids(pill_widget);
+                if (!Array.isArray(user_ids)) {
+                    return;
+                }
                 onPillRemoveAction(user_ids, get_pill_group_ids(pill_widget));
             })();
         });
@@ -189,7 +199,7 @@ export function set_up_handlers({
         const pill_widget = get_pill_widget();
         void (async () => {
             loading.make_indicator($(".add-group-member-loading-spinner"), {
-                height: 56, // 4em at 14px / 1em
+                height: 28, // 2em at 14px / 1em
             });
             const pill_user_ids = await get_pill_user_ids(pill_widget);
             // If we're no longer in the same view after fetching
@@ -201,6 +211,9 @@ export function set_up_handlers({
                 return;
             }
             loading.destroy_indicator($(".add-group-member-loading-spinner"));
+            if (!Array.isArray(pill_user_ids)) {
+                return;
+            }
             const pill_group_ids = get_pill_group_ids(pill_widget);
             action({pill_user_ids, pill_group_ids});
         })();

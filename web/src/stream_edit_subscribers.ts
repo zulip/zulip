@@ -133,9 +133,12 @@ async function stream_edit_update_notification_choice(): Promise<void> {
     loading.make_indicator($(".add-subscriber-loading-spinner"), {
         height: 28, // 2em at 14px / 1em
     });
-    const pill_count = (await add_subscribers_pill.get_pill_user_ids(pill_widget)).length;
-    update_notification_choice_checkbox(pill_count);
+    const pill_user_ids = await add_subscribers_pill.get_pill_user_ids(pill_widget);
     loading.destroy_indicator($(".add-subscriber-loading-spinner"));
+    if (!Array.isArray(pill_user_ids)) {
+        return;
+    }
+    update_notification_choice_checkbox(pill_user_ids.length);
 }
 
 export function enable_subscriber_management({
@@ -187,10 +190,12 @@ async function render_subscriber_list_widget(
         text: $t({defaultMessage: "Loading…"}),
     });
 
-    // Because we're using `retry_on_failure=true`, this will only return once it
-    // succeeds, so we can't get `null`.
     const user_ids = await peer_data.get_subscribers_with_possible_fetch(sub.stream_id, true);
-    assert(user_ids !== null);
+    // The channel was deleted or we lost access to it while waiting.
+    if (user_ids === null) {
+        loading.destroy_indicator($(".subscriber-list-settings-loading"));
+        return;
+    }
 
     // Make sure we're still editing this stream after waiting for subscriber data.
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
