@@ -634,6 +634,19 @@ A temporary team so that I can get some webhook fixtures!
         payload = self.get_body("pull_request_review__edited_empty_changes")
         self.verify_post_is_ignored(payload, "pull_request_review")
 
+    def test_unlabeled_by_label_deletion_ignored(self) -> None:
+        # GitHub omits the "label" field when a deleted label is
+        # automatically removed from the items it was applied to.
+        event_types_and_fixtures = [
+            ("pull_request", "pull_request__unlabeled"),
+            ("issues", "issues__unlabeled"),
+            ("discussion", "discussion__unlabeled"),
+        ]
+        for http_x_github_event, fixture_name in event_types_and_fixtures:
+            payload = orjson.loads(self.get_body(fixture_name))
+            del payload["label"]
+            self.verify_post_is_ignored(orjson.dumps(payload).decode(), http_x_github_event)
+
     def test_ignored_team_actions(self) -> None:
         ignored_actions = [
             "added_to_repository",

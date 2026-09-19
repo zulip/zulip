@@ -1217,24 +1217,7 @@ def api_github_webhook(
     """
     header_event = get_event_header(request, "X-GitHub-Event", "GitHub")
 
-    # Ignore events from private repositories if the URL option is set
-    if (
-        "repository" in payload
-        and payload["repository"]["private"].tame(check_bool)
-        and ignore_private_repositories
-    ):
-        # Ignore private repository events
-        return json_success(request)
-
-    # Ignore 'comment edited' events (except discussion comments)
-    # if the comment body remains unchanged.
-    if (
-        "comment" in header_event
-        and "discussion" not in header_event
-        and payload.get("action", "").tame(check_string) == "edited"
-        and payload["changes"]["body"]["from"].tame(check_string)
-        == payload["comment"]["body"].tame(check_string)
-    ):
+    if is_ignored_event(header_event, payload, ignore_private_repositories):
         return json_success(request)
 
     event = get_zulip_event_name(header_event, payload, branches)
@@ -1259,6 +1242,38 @@ def api_github_webhook(
 
     check_send_webhook_message(request, user_profile, topic_name, body, event)
     return json_success(request)
+
+
+def is_ignored_event(
+    header_event: str,
+    payload: WildValue,
+    ignore_private_repositories: bool,
+) -> bool:
+    action = payload.get("action", "").tame(check_string)
+
+    # Ignore events from private repositories if the URL option is set.
+    if (
+        "repository" in payload
+        and payload["repository"]["private"].tame(check_bool)
+        and ignore_private_repositories
+    ):
+        return True
+
+    # Ignore 'comment edited' events (except discussion comments)
+    # if the comment body remains unchanged.
+    if (
+        "comment" in header_event
+        and "discussion" not in header_event
+        and action == "edited"
+        and payload["changes"]["body"]["from"].tame(check_string)
+        == payload["comment"]["body"].tame(check_string)
+    ):
+        return True
+
+    # Deleting a label removes it from all issues, PRs, and discussions.
+    # Suppress noisy per-item "unlabeled" notifications when the "label"
+    # does not exist.
+    return action == "unlabeled" and "label" not in payload
 
 
 def is_empty_pull_request_review_event(payload: WildValue) -> bool:
