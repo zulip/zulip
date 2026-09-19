@@ -21,6 +21,7 @@ if [ "$#" -eq 0 ]; then
             ':!tools/build-demo-organization-wordlist' \
             ':!tools/setup/emoji/emoji_map.json' \
             ':!tools/setup/emoji/emoji_names.py' \
+            ':!tools/triage/areas/area_aliases.csv' \
             ':!pnpm-lock.yaml' \
             ':!zerver/management/data/unified_reactions.json'
     )"
