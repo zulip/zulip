@@ -186,10 +186,21 @@ help center because they are primarily useful to API clients:
     in the web or desktop apps. A channel ID can be found when [browsing
     channels][browse-channels] in the web or desktop apps.
 
-The operands for these search options must be encoded either as an
-integer ID or a JSON list of integer IDs. For example, to query
-messages sent by a user 1234 to a direct message thread with yourself,
-user 1234, and user 5678, the correct JSON-encoded query is:
+When encoding these search options for the API:
+
+* For `channel`, `sender`, and `dm-including`, the operand must be
+  encoded as an integer ID (e.g., `1234`).
+* For `dm`, the operand must be encoded as a JSON array of integer user IDs:
+    * For a 1-on-1 direct message conversation with another user, the array
+      contains that user's ID (e.g., `[1234]`).
+    * For a group direct message conversation, the array contains the user IDs
+      of the other participants (e.g., `[1234, 5678]`).
+    * For a direct message conversation with yourself (self-DM), the array
+      must contain your own user ID (e.g., `[1234]`).
+
+For example, to query messages sent by user 1234 to a group direct message
+thread with yourself, user 1234, and user 5678, the correct JSON-encoded
+query is:
 
 ```json
 [
