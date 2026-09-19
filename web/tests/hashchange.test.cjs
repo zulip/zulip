@@ -12,13 +12,16 @@ const {page_params} = require("./lib/zpage_params.cjs");
 let $window_stub;
 set_global("to_$", () => $window_stub);
 
-set_global("document", "document-stub");
+set_global("document", {title: ""});
 const history = set_global("history", {state: null});
 
 const admin = mock_esm("../src/admin");
 const drafts_overlay_ui = mock_esm("../src/drafts_overlay_ui");
 const info_overlay = mock_esm("../src/info_overlay");
 const message_viewport = mock_esm("../src/message_viewport");
+const narrow_title = mock_esm("../src/narrow_title", {
+    redraw_title() {},
+});
 const overlays = mock_esm("../src/overlays");
 const popovers = mock_esm("../src/popovers");
 const recent_view_ui = mock_esm("../src/recent_view_ui");
@@ -205,6 +208,10 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     override(sidebar_ui, "hide_all", () => {
         sidebar_hide_all_called = true;
     });
+    let redraw_title_calls = 0;
+    override(narrow_title, "redraw_title", () => {
+        redraw_title_calls += 1;
+    });
     window.location.hash = "#unknown_hash";
 
     browser_history.clear_for_testing();
@@ -217,6 +224,7 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
     ]);
+    assert.equal(redraw_title_calls, 0);
 
     window.location.hash = "#feed";
     hide_all_called = false;
@@ -301,9 +309,11 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     // Test a narrow that spectators are not permitted to access.
     window.location.hash = "#narrow/is/resolved/is/unread";
 
+    redraw_title_calls = 0;
     helper.clear_events();
     $window_stub.trigger("hashchange");
     helper.assert_events([[spectators, "login_to_access"]]);
+    assert.equal(redraw_title_calls, 0);
 
     page_params.is_spectator = false;
 
@@ -330,9 +340,11 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     recent_view_ui_shown = false;
     window.location.hash = "#reload:send_after_reload=0...";
 
+    redraw_title_calls = 0;
     helper.clear_events();
     $window_stub.trigger("hashchange");
     helper.assert_events([]);
+    assert.equal(redraw_title_calls, 0);
     // If it's reload hash it shouldn't show the home view.
     assert.equal(recent_view_ui_shown, false);
 
@@ -356,12 +368,14 @@ run_test("hash_interactions", ({override, override_rewire}) => {
 
     window.location.hash = "#drafts";
 
+    redraw_title_calls = 0;
     helper.clear_events();
     $window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [drafts_overlay_ui, "launch"],
     ]);
+    assert.equal(redraw_title_calls, 1);
 
     window.location.hash = "#settings/alert-words";
 
@@ -411,6 +425,14 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     browser_history.exit_overlay();
 
     helper.assert_events([[ui_util, "blur_active_element"]]);
+
+    // Internal hash changes return before normal hashchange processing, but
+    // still need to redraw the title for the new browser history entry.
+    redraw_title_calls = 0;
+    helper.clear_events();
+    $window_stub.trigger("hashchange");
+    assert.equal(redraw_title_calls, 1);
+    helper.assert_events([]);
 });
 
 run_test("update_hash_to_match_filter", ({override, override_rewire}) => {
