@@ -219,6 +219,7 @@ from zerver.views.upload import (
     serve_local_avatar_unauthed,
     upload_file_backend,
 )
+from zerver.views.url_preview import get_url_preview_data
 from zerver.views.user_groups import (
     add_user_group,
     deactivate_user_group,
@@ -435,6 +436,7 @@ v1_api_and_json_patterns = [
         ),
     ),
     rest_path("messages/render", POST=render_message_backend),
+    rest_path("url_preview", GET=get_url_preview_data),
     rest_path("messages/flags", POST=update_message_flags),
     rest_path("messages/flags/narrow", POST=update_message_flags_for_narrow),
     rest_path("messages/<int:message_id>/history", GET=get_message_edit_history),
