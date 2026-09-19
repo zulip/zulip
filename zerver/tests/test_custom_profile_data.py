@@ -112,6 +112,18 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         error_msg = "field_data is not valid JSON"
         self.assert_json_error(result, error_msg)
 
+        data["field_type"] = CustomProfileField.EXTERNAL_ACCOUNT
+        data["field_data"] = orjson.dumps({}).decode()
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, "subtype key is missing from field_data")
+
+        data["field_data"] = orjson.dumps({"subtype": 123}).decode()
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'field_data["subtype"]["dict[str,str]"] is not a dict')
+
+        # Switch back to DROPDOWN for the remainder of the test
+        data["field_type"] = CustomProfileField.DROPDOWN
+
         data["field_data"] = orjson.dumps(
             {
                 "python": ["1"],
@@ -237,6 +249,16 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
             },
         )
         self.assert_json_success(result)
+
+        # Updating a default external account field with any field_data change is
+        # blocked by the default-field guard before field_data validation runs.
+        result = self.client_patch(
+            f"/json/realm/profile_fields/{field.id}",
+            info={
+                "field_data": orjson.dumps({}).decode(),
+            },
+        )
+        self.assert_json_error(result, "Default custom field cannot be updated.")
 
         result = self.client_delete(f"/json/realm/profile_fields/{field.id}")
         self.assert_json_success(result)
