@@ -43,7 +43,7 @@ from zerver.lib.url_encoding import (
     stream_narrow_url,
     topic_narrow_url,
 )
-from zerver.models import Message, Realm, Recipient, Stream, UserMessage, UserProfile
+from zerver.models import Message, Realm, Recipient, Stream, Subscription, UserMessage, UserProfile
 from zerver.models.messages import get_context_for_message
 from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.users import get_user_profile_by_id
@@ -53,6 +53,7 @@ from zerver.models.users import get_user_profile_by_id
 class FormattedText:
     plain: str
     html: Markup
+    recipient_bar_color: str | None = None
 
 
 @dataclass
@@ -262,10 +263,29 @@ def get_channel_privacy_icon(channel: Stream) -> str:
     return "#"
 
 
+def blend_with_white(hex_color: str, opacity: float = 0.22) -> str:
+    """Blends a 6-digit hex stream color over white to produce a solid hex color,
+    matching the web app light-theme recipient header appearance without rgba()."""
+    try:
+        clean_hex = hex_color.lstrip("#")
+        if len(clean_hex) != 6:
+            raise ValueError
+        r = int(clean_hex[0:2], 16)
+        g = int(clean_hex[2:4], 16)
+        b = int(clean_hex[4:6], 16)
+        blended_r = round(r * opacity + 255 * (1 - opacity))
+        blended_g = round(g * opacity + 255 * (1 - opacity))
+        blended_b = round(b * opacity + 255 * (1 - opacity))
+        return f"#{blended_r:02x}{blended_g:02x}{blended_b:02x}"
+    except ValueError:
+        return Subscription.DEFAULT_STREAM_COLOR
+
+
 def build_message_list(
     user: UserProfile,
     messages: list[Message],
     stream_id_map: dict[int, Stream] | None = None,  # only needs id, name
+    subscription_colors: dict[int, str] | None = None,
 ) -> MessageListPayload:
     """
     Builds the message list object for the message notification email and
@@ -333,7 +353,10 @@ def build_message_list(
         sender = sender_string(message)
         return SenderPayload(sender=sender, content=[build_message_payload(message, sender)])
 
-    def digest_block_header(message: Message) -> FormattedText:
+    def digest_block_header(
+        message: Message,
+        subscription_colors: dict[int, str] | None = None,
+    ) -> FormattedText:
         assert message.recipient.type == Recipient.STREAM
         stream_id = message.recipient.type_id
         assert stream_id_map is not None
@@ -363,7 +386,17 @@ def build_message_list(
             narrow_link=narrow_link,
             topic_html=topic_html,
         )
-        return FormattedText(plain=header, html=header_html)
+        stream_color = (
+            subscription_colors.get(stream_id, Subscription.DEFAULT_STREAM_COLOR)
+            if subscription_colors
+            else Subscription.DEFAULT_STREAM_COLOR
+        )
+        recipient_bar_color = blend_with_white(stream_color, 0.22)
+        return FormattedText(
+            plain=header,
+            html=header_html,
+            recipient_bar_color=recipient_bar_color,
+        )
 
     assert len(messages) > 0
     recipients = {(message.recipient_id, message.topic_name().lower()) for message in messages}
@@ -375,7 +408,10 @@ def build_message_list(
 
     if stream_id_map:
         # Needed only for digest emails
-        messages_to_render.header = digest_block_header(messages[0])
+        messages_to_render.header = digest_block_header(
+            messages[0],
+            subscription_colors=subscription_colors,
+        )
 
     for message in messages[1:]:
         sender = sender_string(message)

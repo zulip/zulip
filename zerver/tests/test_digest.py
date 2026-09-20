@@ -34,7 +34,9 @@ from zerver.models import (
     Message,
     Realm,
     RealmAuditLog,
+    Recipient,
     Stream,
+    Subscription,
     UserActivityInterval,
     UserProfile,
     UserTopic,
@@ -74,7 +76,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
         # Clear the LRU cache on the stream topics
         get_recent_topics.cache_clear()
-        with self.assert_database_query_count(11):
+        with self.assert_database_query_count(12):
             bulk_handle_digest_email([othello.id], cutoff)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
@@ -90,12 +92,16 @@ class TestDigestEmailMessages(ZulipTestCase):
         teaser_messages = hot_convo.first_few_messages.senders
         self.assertIn("some content", teaser_messages[0].content[0].plain)
         self.assertIn(teaser_messages[0].sender, expected_participants)
+        header = hot_convo.first_few_messages.header
+        self.assertIsNotNone(header)
+        assert header is not None
+        self.assertIsNotNone(header.recipient_bar_color)
 
         # If we run another batch, we reuse the topic queries; there
         # are 3 reused streams and one new one, for a net of two fewer
         # than before.
         iago = self.example_user("iago")
-        with self.assert_database_query_count(11):
+        with self.assert_database_query_count(12):
             bulk_handle_digest_email([iago.id], cutoff)
         self.assertEqual(get_recent_topics.cache_info().hits, 3)
         self.assertEqual(get_recent_topics.cache_info().currsize, 6)
@@ -104,16 +110,99 @@ class TestDigestEmailMessages(ZulipTestCase):
         # the above.
         cordelia = self.example_user("cordelia")
         prospero = self.example_user("prospero")
-        with self.assert_database_query_count(10):
+        with self.assert_database_query_count(11):
             bulk_handle_digest_email([cordelia.id, prospero.id], cutoff)
         self.assertEqual(get_recent_topics.cache_info().hits, 7)
         self.assertEqual(get_recent_topics.cache_info().currsize, 7)
 
         # If we use a different cutoff, it clears the cache.
-        with self.assert_database_query_count(13):
+        with self.assert_database_query_count(14):
             bulk_handle_digest_email([cordelia.id, prospero.id], cutoff + 1)
         self.assertEqual(get_recent_topics.cache_info().hits, 1)
         self.assertEqual(get_recent_topics.cache_info().currsize, 4)
+
+    @mock.patch("zerver.lib.digest.enough_traffic", return_value=True)
+    @mock.patch("zerver.lib.digest.send_future_email")
+    def test_digest_with_custom_stream_color(
+        self, mock_send_future_email: mock.MagicMock, mock_enough_traffic: mock.MagicMock
+    ) -> None:
+        othello = self.example_user("othello")
+        self.subscribe(othello, "Verona")
+
+        verona = get_stream("Verona", othello.realm)
+        subscription = Subscription.objects.get(
+            user_profile=othello,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=verona.id,
+        )
+        subscription.color = "#ff0000"
+        subscription.save(update_fields=["color"])
+
+        one_day_ago = timezone_now() - timedelta(days=1)
+        Message.objects.all().update(date_sent=one_day_ago)
+        one_hour_ago = timezone_now() - timedelta(seconds=3600)
+        cutoff = time.mktime(one_hour_ago.timetuple())
+
+        senders = ["hamlet", "cordelia"]
+        self.simulate_stream_conversation("Verona", senders)
+
+        RealmAuditLog.objects.all().delete()
+        one_click_unsubscribe_link(othello, "digest")
+        get_recent_topics.cache_clear()
+
+        bulk_handle_digest_email([othello.id], cutoff)
+
+        self.assertEqual(mock_send_future_email.call_count, 1)
+        kwargs = mock_send_future_email.call_args[1]
+        hot_convo = kwargs["context"]["hot_conversations"][0]
+        header = hot_convo.first_few_messages.header
+        self.assertIsNotNone(header)
+        assert header is not None
+        # Blended #ff0000 with 0.22 opacity gives #ffc7c7
+        self.assertEqual(header.recipient_bar_color, "#ffc7c7")
+
+    @mock.patch("zerver.lib.digest.enough_traffic", return_value=True)
+    @mock.patch("zerver.lib.digest.send_future_email")
+    def test_digest_with_muted_subscription(
+        self, mock_send_future_email: mock.MagicMock, mock_enough_traffic: mock.MagicMock
+    ) -> None:
+        othello = self.example_user("othello")
+        self.subscribe(othello, "Verona")
+        self.subscribe(othello, "Scotland")
+
+        # Mute Verona
+        verona = get_stream("Verona", othello.realm)
+        subscription = Subscription.objects.get(
+            user_profile=othello,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=verona.id,
+        )
+        subscription.is_muted = True
+        subscription.save(update_fields=["is_muted"])
+
+        one_day_ago = timezone_now() - timedelta(days=1)
+        Message.objects.all().update(date_sent=one_day_ago)
+        one_hour_ago = timezone_now() - timedelta(seconds=3600)
+        cutoff = time.mktime(one_hour_ago.timetuple())
+
+        senders = ["hamlet", "cordelia"]
+        self.simulate_stream_conversation("Verona", senders)
+        self.simulate_stream_conversation("Scotland", senders)
+
+        RealmAuditLog.objects.all().delete()
+        one_click_unsubscribe_link(othello, "digest")
+        get_recent_topics.cache_clear()
+
+        bulk_handle_digest_email([othello.id], cutoff)
+
+        self.assertEqual(mock_send_future_email.call_count, 1)
+        kwargs = mock_send_future_email.call_args[1]
+        hot_conversations = kwargs["context"]["hot_conversations"]
+        self.assert_length(hot_conversations, 1)
+        scotland_header = hot_conversations[0].first_few_messages.header
+        self.assertIsNotNone(scotland_header)
+        assert scotland_header is not None
+        self.assertIn("Scotland", scotland_header.plain)
 
     @mock.patch("zerver.lib.digest.enough_traffic", return_value=True)
     @mock.patch("zerver.lib.digest.send_future_email")
@@ -252,7 +341,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         # To trigger this, we call the one_click_unsubscribe_link function below.
         one_click_unsubscribe_link(polonius, "digest")
         get_recent_topics.cache_clear()
-        with self.assert_database_query_count(10):
+        with self.assert_database_query_count(11):
             bulk_handle_digest_email([polonius.id], cutoff)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
@@ -314,7 +403,7 @@ class TestDigestEmailMessages(ZulipTestCase):
             digest_user_ids = [user.id for user in digest_users]
 
             get_recent_topics.cache_clear()
-            with self.assert_database_query_count(17), self.assert_memcached_count(0):
+            with self.assert_database_query_count(18), self.assert_memcached_count(0):
                 bulk_handle_digest_email(digest_user_ids, cutoff)
 
         self.assert_length(digest_users, mock_send_future_email.call_count)
@@ -668,7 +757,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         one_click_unsubscribe_link(othello, "digest")
         # Clear the LRU cache on the stream topics
         get_recent_topics.cache_clear()
-        with self.assert_database_query_count(10):
+        with self.assert_database_query_count(11):
             bulk_handle_digest_email([othello.id], cutoff)
 
         self.assertEqual(mock_send_future_email.call_count, 1)
@@ -681,7 +770,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         stream.date_created = timezone_now() - timedelta(days=3)
         stream.save()
 
-        with self.assert_database_query_count(10):
+        with self.assert_database_query_count(11):
             bulk_handle_digest_email([othello.id], cutoff)
 
         self.assertEqual(mock_send_future_email.call_count, 2)
