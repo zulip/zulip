@@ -4,8 +4,8 @@ Receive Zabbix notifications in Zulip!
 
 !!! warn ""
 
-    **Note:** This guide is for Zabbix 5.4 and above; some older Zabbix
-    versions have a different workflow for creating an outgoing webhook.
+    **Note:** This guide is for Zabbix 7.x and above; older Zabbix
+    versions (such as 5.4 to 6.x) have different menu layouts for Users and Actions, and pre-5.4 versions have a different workflow for creating an outgoing webhook.
 
 {start_tabs}
 
@@ -14,13 +14,13 @@ Receive Zabbix notifications in Zulip!
 1. {!generate-webhook-url-basic.md!}
 
 1. Go to **Administration** in your Zabbix web interface. Click on
-   **General**, and select **Macros** from the dropdown. Click **Add**.
+   **Macros** from the dropdown. Click **Add**.
 
 1. Set the macro to `{$ZABBIX_URL}`. Set the value as the URL to your
    Zabbix server, e.g., `https://zabbix.example.com`, and ensure that there
    are no trailing slashes. Click **Update**.
 
-1. Go back to **Administration** in your Zabbix web interface. Select
+1. Go to **Alerts** in your Zabbix web interface. Select
    **Media Types**, and click **Create Media Type**.
 
 1. Set **Name** to a name of your choice, such as `Zulip`. Set **Type** to
@@ -92,27 +92,28 @@ Receive Zabbix notifications in Zulip!
             "link": "{$ZABBIX_URL}/tr_events.php?triggerid={TRIGGER.ID}&eventid={EVENT.ID}"
          }
 
-1. Go back to **Administration** in your Zabbix web interface. Click on
-   **Users**, and select the alias of the user you would like to use to
-   set the notification. Select **Media**, and click **Add**.
+1. Click on **Users** in the main left sidebar of your Zabbix web interface,
+   and select the alias of the user you would like to use to set the notification.
+   Select the **Media** tab, and click **Add**.
 
 1. Set **Type** to the name you assigned to the media type above.
-   Set **Send To** to `Zulip` or any text, as this field requires text, but
+   Set **Send to** to `Zulip` or any text, as this field requires text, but
    it isn't used. Set the severity and active periods for notifications as
    suitable, and check the **Enabled** option. Click **Add**, and
    select **Update**.
 
-1. Go back to your Zabbix web interface, and click **Configuration**.
-   Select **Actions**, and choose **Create Action**.
+1. Go back to your Zabbix web interface's main left sidebar, expand **Alerts**,
+   select **Actions**, and choose **Trigger actions**. Click **Create action**.
 
-1. Set **Name** to a name of your choice, such as `Zulip`. Under
-   **New Conditions**, add the conditions for triggering a notification.
-   Check the **Enabled** option, and click **Operations**.
+1. Set **Name** to a name of your choice, such as `Zulip`. Under the **Action** tab,
+   add the conditions for triggering a notification. Check the **Enabled** option,
+   and switch to the **Operations** tab.
 
-1. Under **Operations**, click **Add**, and then set **Operation Type** to
-   `Send Message`. Under **Send to Users**, choose **Add**, and select the user
-   you added the alert to above, and click **Select**. Under **Send only to**,
-   select **Zulip** or the name of your media type. Click **Add** twice.
+1. Under **Operations**, click **Add**. Ensure **Operation** is set to `Send message`.
+   Next to **Send to users**, click **Select** to choose the user you added the alert to above.
+   Set **Send to media type** to **Zulip** or the name of your media type.
+   Click **Add** in the operation details modal to finalize the operation,
+   and then click **Add** again to save the action.
 
 {end_tabs}
 
