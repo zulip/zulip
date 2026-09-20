@@ -346,6 +346,11 @@
             );
             scale: 0.98;
         }
+
+        .message_length_toggle_label {
+            position: relative;
+            top: -0.05em;
+        }
     }
 
     &.content_edit_mode .message_length_controller {
