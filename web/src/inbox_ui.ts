@@ -2361,28 +2361,10 @@ function move_focus_to_visible_area(): void {
 
     const inbox_filters_props = util.the($("#inbox-filters")).getBoundingClientRect();
     const compose_top = window.innerHeight - $("#compose").outerHeight(true)!;
-    const inbox_center_x = (inbox_filters_props.left + inbox_filters_props.right) / 2;
     const inbox_center_y = (compose_top + inbox_filters_props.bottom) / 2;
-    const element_in_row = views_util.find_element_at_point(
-        inbox_center_x,
-        inbox_center_y,
-        ".inbox-row, .inbox-header",
-    );
-    if (element_in_row === undefined) {
-        // The table is too short for there to be a row element
-        // at the center of the table region; in that case, we just
-        // select the last element.
-        row_focus = $all_rows.length - 1;
-    } else {
-        const $element_in_row = $(element_in_row);
-
-        let $inbox_row = $element_in_row.closest(".inbox-row");
-        if ($inbox_row.length === 0) {
-            $inbox_row = $element_in_row.closest(".inbox-header");
-        }
-
-        row_focus = $all_rows.index($inbox_row.get(0));
-    }
+    row_focus =
+        views_util.find_first_row_index_at_or_below($all_rows.toArray(), inbox_center_y) ??
+        $all_rows.length - 1;
     revive_current_focus();
 }
 
