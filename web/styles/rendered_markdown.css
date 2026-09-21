@@ -852,6 +852,20 @@
             background-position: center;
         }
 
+        .message_embed_image_placeholder {
+            grid-area: thumbnail;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--color-background-message-embed-placeholder);
+            border-radius: 4px;
+
+            .zulip-icon {
+                font-size: 1.5em;
+                opacity: 0.4;
+            }
+        }
+
         .data-container {
             grid-area: data-container;
         }
