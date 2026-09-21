@@ -2330,12 +2330,12 @@ function center_focus_if_offscreen(): void {
 }
 
 function move_focus_to_visible_area(): void {
+    // If the focused row isn't visible, focus the row at the
+    // center of the visible part of the list instead.
     if (is_waiting_for_revive_current_focus) {
         return;
     }
 
-    // Focus on the row below inbox filters if the focused
-    // row is not visible.
     if (!inbox_util.is_visible() || !is_navigated_to_list()) {
         return;
     }
