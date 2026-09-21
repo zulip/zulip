@@ -74,6 +74,7 @@ function build_pill_widget({$parent_container}: {$parent_container: JQuery}): vo
     const $pill_container = $parent_container.find(".pill-container");
 
     pill_widget = add_group_members_pill.create({
+        $parent_container,
         $pill_container,
         get_potential_members: user_group_create_members_data.get_potential_members,
         get_potential_groups: user_group_create_members_data.get_potential_subgroups,

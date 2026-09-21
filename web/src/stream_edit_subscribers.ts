@@ -129,13 +129,13 @@ function update_notification_choice_checkbox(added_user_count: number): void {
     }
 }
 
-async function stream_edit_update_notification_choice(): Promise<void> {
-    loading.make_indicator($(".add-subscriber-loading-spinner"), {
+async function stream_edit_update_notification_choice($loading_spinner: JQuery): Promise<void> {
+    loading.make_indicator($loading_spinner, {
         height: 28, // 2em at 14px / 1em
     });
     const pill_count = (await add_subscribers_pill.get_pill_user_ids(pill_widget)).length;
     update_notification_choice_checkbox(pill_count);
-    loading.destroy_indicator($(".add-subscriber-loading-spinner"));
+    loading.destroy_indicator($loading_spinner);
 }
 
 export function enable_subscriber_management({
@@ -156,10 +156,12 @@ export function enable_subscriber_management({
         return peer_data.potential_subscribers(stream_id);
     }
 
+    const $loading_spinner = $parent_container.find(".add-subscriber-loading-spinner");
     const pill_update_callback = function (): void {
-        void stream_edit_update_notification_choice();
+        void stream_edit_update_notification_choice($loading_spinner);
     };
     pill_widget = add_subscribers_pill.create({
+        $parent_container,
         $pill_container,
         get_potential_subscribers,
         onPillCreateAction: pill_update_callback,
@@ -556,6 +558,7 @@ export function initialize(): void {
         $parent_container: $("#channels_overlay_container"),
         pill_selector: ".edit_subscribers_for_stream .pill-container",
         button_selector: ".edit_subscribers_for_stream .add-subscriber-button",
+        spinner_selector: ".edit_subscribers_for_stream .add-subscriber-loading-spinner",
         action: subscribe_new_users,
     });
 
