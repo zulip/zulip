@@ -54,6 +54,7 @@ function build_pill_widget({
     const get_potential_subscribers = stream_create_subscribers_data.get_potential_subscribers;
     const get_user_groups = user_groups.get_all_realm_user_groups;
     return add_subscribers_pill.create({
+        $parent_container,
         $pill_container,
         get_potential_subscribers,
         get_user_groups,

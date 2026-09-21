@@ -1,4 +1,3 @@
-import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import * as add_subscribers_pill from "./add_subscribers_pill.ts";
@@ -87,6 +86,7 @@ export function create_item_from_text(
 }
 
 export function create({
+    $parent_container,
     $pill_container,
     get_potential_members,
     get_potential_groups,
@@ -94,6 +94,7 @@ export function create({
     onPillCreateAction,
     onPillRemoveAction,
 }: {
+    $parent_container: JQuery;
     $pill_container: JQuery;
     get_potential_members: () => User[];
     get_potential_groups: () => UserGroup[];
@@ -111,14 +112,24 @@ export function create({
     });
 
     if (onPillCreateAction) {
+        // Each pill starts its own subscriber fetch, and a fetch waits
+        // only for the pills present when it started, so only the most
+        // recent fetch knows about every pill and may hide the spinner.
+        let latest_fetch_id = 0;
+        const $loading_spinner = $parent_container.find(".add-group-member-loading-spinner");
         pill_widget.onPillCreate(() => {
             void (async () => {
-                loading.make_indicator($(".add-group-member-loading-spinner"), {
+                latest_fetch_id += 1;
+                const fetch_id = latest_fetch_id;
+                loading.make_indicator($loading_spinner, {
                     height: 56, // 4em at 14px / 1em
                 });
                 const user_ids = await get_pill_user_ids(pill_widget);
+                if (fetch_id !== latest_fetch_id) {
+                    return;
+                }
                 onPillCreateAction(user_ids, get_pill_group_ids(pill_widget));
-                loading.destroy_indicator($(".add-group-member-loading-spinner"));
+                loading.destroy_indicator($loading_spinner);
             })();
         });
     }
@@ -167,12 +178,14 @@ export function set_up_handlers({
     $parent_container,
     pill_selector,
     button_selector,
+    spinner_selector,
     action,
 }: {
     get_pill_widget: () => CombinedPillContainer;
     $parent_container: JQuery;
     pill_selector: string;
     button_selector: string;
+    spinner_selector: string;
     action: ({
         pill_user_ids,
         pill_group_ids,
@@ -189,8 +202,9 @@ export function set_up_handlers({
     */
     function callback(): void {
         const pill_widget = get_pill_widget();
+        const $loading_spinner = $parent_container.find(spinner_selector);
         void (async () => {
-            loading.make_indicator($(".add-group-member-loading-spinner"), {
+            loading.make_indicator($loading_spinner, {
                 height: 56, // 4em at 14px / 1em
             });
             const pill_user_ids = await get_pill_user_ids(pill_widget);
@@ -202,7 +216,7 @@ export function set_up_handlers({
             if (get_pill_widget() !== pill_widget) {
                 return;
             }
-            loading.destroy_indicator($(".add-group-member-loading-spinner"));
+            loading.destroy_indicator($loading_spinner);
             const pill_group_ids = get_pill_group_ids(pill_widget);
             action({pill_user_ids, pill_group_ids});
         })();
