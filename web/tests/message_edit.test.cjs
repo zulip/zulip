@@ -5,12 +5,14 @@ const assert = require("node:assert/strict");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const {$} = require("./lib/zjquery.cjs");
 
 const message_edit = zrequire("message_edit");
 const {set_current_user, set_realm} = zrequire("state_data");
 
 const is_content_editable = message_edit.is_content_editable;
 
+const compose_ui = mock_esm("../src/compose_ui");
 const stream_data = mock_esm("../src/stream_data");
 
 const realm = make_realm();
@@ -303,4 +305,30 @@ run_test("stream_and_topic_exist_in_edit_history", () => {
         ),
         false,
     );
+});
+
+run_test("update_preview_embeds", ({override}) => {
+    const content = "http://example.com/";
+    const rendered_content = "<p>message with an embed</p>";
+    const $row = $.create("message row being edited");
+    const $message_edit_content = $.create("textarea.message_edit_content");
+    $message_edit_content.set_closest_results(".message_row", $row);
+    message_edit.currently_editing_messages.set(17, $message_edit_content);
+
+    const applied_to = [];
+    override(compose_ui, "apply_embeds_to_preview", ($preview_container) => {
+        applied_to.push($preview_container.selector);
+    });
+
+    // The message has been edited since the fetch: the update is dropped.
+    $message_edit_content.val("http://example.com/ edited");
+    message_edit.update_preview_embeds(content, rendered_content);
+    assert.equal(applied_to.length, 0);
+
+    // The edit box still holds the content that was rendered.
+    $message_edit_content.val(content);
+    message_edit.update_preview_embeds(content, rendered_content);
+    assert.deepEqual(applied_to, ["message row being edited"]);
+
+    message_edit.currently_editing_messages.clear();
 });
