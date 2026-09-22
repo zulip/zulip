@@ -167,7 +167,7 @@ function set_up_uppy_widget(property_name: "realm_icon" | "realm_logo" | "user_a
             dragMode: "move",
             minCropBoxHeight: 50,
             background: true,
-            initialAspectRatio: property_name === "realm_logo" ? 8 : 1,
+            initialAspectRatio: property_name === "realm_logo" ? 10 : 1,
             // For realm logo, crop box is not restricted to any aspect ratio.
             aspectRatio: property_name === "realm_logo" ? NaN : 1,
         },
