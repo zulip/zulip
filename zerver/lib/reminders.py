@@ -73,7 +73,6 @@ def get_reminder_formatted_content(
                 "topic": message.topic_name(),
             },
             conversation_link=True,
-            include_base_url=False,
         )
         escape = escape_invalid_stream_topic_characters
         topic_pretty_link = TOPIC_LINK_SYNTAX_FOR_DISPLAY.format(
