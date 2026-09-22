@@ -3074,6 +3074,20 @@ class GetOldMessagesTest(ZulipTestCase):
         results = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
         self.assertEqual(results["messages"][0]["id"], msg_id)
 
+        narrow = [
+            dict(operator="with", operand=msg_id, negated=True),
+        ]
+        result = self.client_get(
+            "/json/messages",
+            dict(
+                anchor=msg_id,
+                num_before=0,
+                num_after=5,
+                narrow=orjson.dumps(narrow).decode(),
+            ),
+        )
+        self.assert_json_error(result, "Invalid narrow operator: Negated 'with' operator")
+
         # Test `with` operator ineffective when targeting a topic with
         # message that can not be accessed by the user.
         #
