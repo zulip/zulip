@@ -206,7 +206,7 @@ function open_uppy_editor(
             uppy_widget.getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!.selectFile(uppy_file);
 
             let resizing_dimension_opts = {};
-            // The resizing dimensions should be kept in sync with the client-side
+            // The resizing dimensions should be kept in sync with the server-side
             // resizing code in zerver/lib/thumbnail.py.
             if (property_name === "user_avatar") {
                 resizing_dimension_opts = {
