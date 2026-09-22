@@ -200,10 +200,6 @@
         opacity: 0.7;
     }
 
-    .history-limited-box {
-        background-color: hsl(0deg 0% 0% / 20%);
-    }
-
     .searching-for-more-topics img {
         filter: invert(100%);
     }
