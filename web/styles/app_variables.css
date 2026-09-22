@@ -1802,6 +1802,10 @@
         transparent,
         hsl(0deg 0% 0% / 20%)
     );
+    --color-background-history-limited-box: light-dark(
+        transparent,
+        hsl(0deg 0% 0% / 20%)
+    );
     /* Markdown colors */
     --color-background-rendered-markdown-thead: light-dark(
         hsl(0deg 0% 93%),

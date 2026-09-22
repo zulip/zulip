@@ -228,6 +228,7 @@ p.n-margin {
     padding-left: 26px;
     text-indent: -10px;
     color: hsl(16deg 60% 45%);
+    background-color: var(--color-background-history-limited-box);
     border: 1px solid hsl(16deg 60% 45%);
     box-shadow: 0 0 2px hsl(16deg 60% 45%);
 }
