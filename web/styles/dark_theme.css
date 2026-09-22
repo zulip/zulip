@@ -90,10 +90,6 @@
         }
     }
 
-    textarea.schedule-reminder-note:focus {
-        border-color: hsl(0deg 0% 0% / 90%);
-    }
-
     .popover hr,
     hr {
         opacity: 0.2;
