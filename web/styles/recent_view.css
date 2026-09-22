@@ -952,6 +952,10 @@
             top: -7px;
         }
     }
+
+    #recent_view_loading_messages_indicator path {
+        fill: var(--color-zulip-logo-loading);
+    }
 }
 
 #recent_view_folder_filter_container {
