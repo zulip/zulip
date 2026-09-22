@@ -1605,25 +1605,13 @@ function recenter_focus_if_off_screen(): void {
     }
 
     if (topic_offset !== "visible") {
-        // Get the element at the center of the table.
+        // Get the row at the center of the table.
         const thead_props = util.the($("#recent-view-table-headers")).getBoundingClientRect();
         const compose_top = window.innerHeight - $("#compose").outerHeight(true)!;
-        const topic_center_x = (thead_props.left + thead_props.right) / 2;
         const topic_center_y = (thead_props.bottom + compose_top) / 2;
-
-        const topic_element = views_util.find_element_at_point(
-            topic_center_x,
-            topic_center_y,
-            "#recent-view-content-tbody",
-        );
-        if (topic_element === undefined) {
-            // The table is too short for there to be a topic row element
-            // at the center of the table region; in that case, we just
-            // select the last element.
-            row_focus = $topic_rows.length - 1;
-        } else {
-            row_focus = $topic_rows.index($(topic_element).closest("tr")[0]);
-        }
+        row_focus =
+            views_util.find_first_row_index_at_or_below($topic_rows.toArray(), topic_center_y) ??
+            $topic_rows.length - 1;
 
         set_table_focus(row_focus, col_focus);
     }
