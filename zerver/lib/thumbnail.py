@@ -21,6 +21,11 @@ DEFAULT_AVATAR_SIZE = 100
 MEDIUM_AVATAR_SIZE = 500
 DEFAULT_EMOJI_SIZE = 64
 
+# Organization logos are scaled down to fit inside these bounds, which
+# are unrelated to the avatar sizes above.
+MAX_REALM_LOGO_WIDTH = 800
+MAX_REALM_LOGO_HEIGHT = 100
+
 # We refuse to deal with any image whose total pixelcount exceeds
 # this.  This is chosen to be around a quarter of a gigabyte for a
 # 24-bit (3bpp) image.
@@ -220,8 +225,8 @@ def resize_realm_icon(image_data: bytes) -> bytes:
 
 def resize_logo(image_data: bytes) -> bytes:
     # This will only scale the image down, and will resize it to
-    # preserve aspect ratio and be contained within 8*AVATAR by AVATAR
-    # pixels; it does not add any padding to make it exactly that
+    # preserve aspect ratio and be contained within the maximum logo
+    # dimensions; it does not add any padding to make it exactly that
     # size.  A 1000x10 pixel image will end up as 800x8; a 10x10 will
     # end up 10x10.
     # The resizing dimensions should be kept in sync with the client-side
@@ -229,8 +234,8 @@ def resize_logo(image_data: bytes) -> bytes:
     with libvips_check_image(image_data):
         return pyvips.Image.thumbnail_buffer(
             image_data,
-            8 * DEFAULT_AVATAR_SIZE,
-            height=DEFAULT_AVATAR_SIZE,
+            MAX_REALM_LOGO_WIDTH,
+            height=MAX_REALM_LOGO_HEIGHT,
             size=pyvips.Size.DOWN,
         ).write_to_buffer(".png")
 
