@@ -1236,6 +1236,10 @@ nav {
     margin: 10px;
 }
 
+#loading_older_messages_indicator path {
+    fill: var(--color-zulip-logo-loading);
+}
+
 #loading_older_messages_indicator_box_container,
 #loading_more_indicator_box_container {
     position: absolute;
