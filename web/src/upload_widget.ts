@@ -221,7 +221,7 @@ function open_uppy_editor(
             } else {
                 resizing_dimension_opts = {
                     maxHeight: 100,
-                    maxWidth: 800,
+                    maxWidth: 1000,
                 };
             }
 
