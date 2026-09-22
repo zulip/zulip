@@ -938,11 +938,14 @@
 }
 
 #recent_view_bottom_whitespace {
+    /* Positioning context for the loading indicator below. */
+    position: relative;
+
     #recent_view_loading_messages_indicator,
     .bottom-messages-logo {
         display: block;
         position: absolute;
-        top: 200px;
+        top: 2.5em; /* 40px at 16px/1em */
         left: 0;
         right: 0;
         margin: auto;
