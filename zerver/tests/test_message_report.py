@@ -116,7 +116,6 @@ class ReportMessageTest(ZulipTestCase):
                 display_recipient=channel_name,
                 topic=topic_name,
             ),
-            include_base_url=False,
         )
 
         expected_message_link_html = (
