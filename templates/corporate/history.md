@@ -128,8 +128,8 @@ other team chat apps, earning Capterra's [Best Value
 badge](https://www.capterra.com/p/197945/Zulip/).
 
 Since then, Zulip has continued to provide a user-respecting
-[alternative](https://blog.zulip.com/2024/11/04/choosing-a-team-chat-app/) to
-team chat apps developed by mega-corporations.
+[alternative](/choosing-a-team-chat-app/) to team chat apps developed by
+mega-corporations.
 
 ## The Zulip Foundation
 
