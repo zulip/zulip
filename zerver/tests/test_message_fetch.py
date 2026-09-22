@@ -3074,6 +3074,20 @@ class GetOldMessagesTest(ZulipTestCase):
         results = self.get_and_check_messages(dict(narrow=orjson.dumps(narrow).decode()))
         self.assertEqual(results["messages"][0]["id"], msg_id)
 
+        narrow = [
+            dict(operator="with", operand=msg_id, negated=True),
+        ]
+        result = self.client_get(
+            "/json/messages",
+            dict(
+                anchor=msg_id,
+                num_before=0,
+                num_after=5,
+                narrow=orjson.dumps(narrow).decode(),
+            ),
+        )
+        self.assert_json_error(result, "Invalid narrow operator: Negated 'with' operator")
+
         # Test `with` operator ineffective when targeting a topic with
         # message that can not be accessed by the user.
         #
@@ -3795,6 +3809,12 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertIn("a href=", message["match_content"])
         self.assertIn("http://foo.com", message["match_content"])
         self.assertEqual(message[MATCH_TOPIC], "test_topic")
+
+        params["narrow"] = orjson.dumps(
+            [dict(operator="with", operand=good_id, negated=True)]
+        ).decode()
+        result = self.client_get("/json/messages/matches_narrow", params)
+        self.assert_json_error(result, "Invalid narrow operator: Negated 'with' operator")
 
     def test_get_messages_with_only_searching_anchor(self) -> None:
         """

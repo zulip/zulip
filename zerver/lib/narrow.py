@@ -887,6 +887,9 @@ def update_narrow_terms_containing_with_operator(
         return narrow
 
     with_term = with_operator_terms[0]
+    if with_term.negated:
+        raise BadNarrowOperatorError(_("Negated 'with' operator"))
+
     narrow.remove(with_term)
     try:
         message_id = int(with_term.operand)
