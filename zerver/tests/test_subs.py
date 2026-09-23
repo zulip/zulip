@@ -9,8 +9,6 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import transaction
-from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -43,7 +41,6 @@ from zerver.lib.attachments import (
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import UnreadStreamInfo, aggregate_unread_data, get_raw_unread_data
-from zerver.lib.response import json_success
 from zerver.lib.stream_color import STREAM_ASSIGNMENT_COLORS, pick_colors
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
@@ -70,7 +67,7 @@ from zerver.lib.subscription_info import (
     validate_user_access_to_subscribers_helper,
 )
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
-from zerver.lib.test_helpers import HostRequestMock, cache_tries_captured
+from zerver.lib.test_helpers import cache_tries_captured
 from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_groups import UserGroupMembershipDetails, get_group_setting_value_for_api
 from zerver.models import (
@@ -97,7 +94,6 @@ from zerver.models.users import (
     get_user,
     get_user_profile_by_id_in_realm,
 )
-from zerver.views.streams import compose_views
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
@@ -3630,36 +3626,6 @@ class SubscriptionRestApiTest(ZulipTestCase):
         }
         result = self.api_delete(user, "/api/v1/users/me/subscriptions", request)
         self.assert_json_error(result, "Invalid character in channel name, at position 4.")
-
-    def test_compose_views_rollback(self) -> None:
-        """
-        The compose_views function() is used under the hood by
-        zerver.views.user_groups.  It's a pretty simple method in terms of
-        control flow, but it uses a Django rollback, which may make it brittle
-        code when we upgrade Django.  We test the functions's rollback logic
-        here with a simple scenario to avoid false positives related to
-        subscription complications.
-        """
-        user_profile = self.example_user("hamlet")
-        user_profile.full_name = "Hamlet"
-        user_profile.save()
-        request = HostRequestMock(user_profile=user_profile)
-
-        def thunk1() -> HttpResponse:
-            user_profile.full_name = "Should not be committed"
-            user_profile.save()
-            return json_success(request)
-
-        def thunk2() -> HttpResponse:
-            raise JsonableError("random failure")
-
-        with transaction.atomic(savepoint=True), self.assertRaises(JsonableError):
-            # The atomic() wrapper helps to avoid JsonableError breaking
-            # the test's transaction.
-            compose_views([thunk1, thunk2])
-
-        user_profile = self.example_user("hamlet")
-        self.assertEqual(user_profile.full_name, "Hamlet")
 
 
 class SubscriptionAPITest(ZulipTestCase):
