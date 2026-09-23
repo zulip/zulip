@@ -2058,7 +2058,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_get_settings_logo(self) -> None:
         self.login("hamlet")
-        with self.settings(DEFAULT_LOGO_URI="http://other.server/logo.svg"):
+        with self.settings(DEFAULT_LOGO_URL="http://other.server/logo.svg"):
             response = self.client_get(
                 "/json/realm/logo", {"night": orjson.dumps(self.night).decode()}
             )
@@ -2066,6 +2066,19 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual(
                 redirect_url,
                 f"http://other.server/logo.svg?night={str(self.night).lower()}",
+            )
+
+        # Test backward-compatibility fallback with legacy DEFAULT_LOGO_URI
+        with self.settings(
+            DEFAULT_LOGO_URL=None, DEFAULT_LOGO_URI="http://other.server/legacy-logo.svg"
+        ):
+            response = self.client_get(
+                "/json/realm/logo", {"night": orjson.dumps(self.night).decode()}
+            )
+            redirect_url = response["Location"]
+            self.assertEqual(
+                redirect_url,
+                f"http://other.server/legacy-logo.svg?night={str(self.night).lower()}",
             )
 
     def test_get_realm_logo(self) -> None:
