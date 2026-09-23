@@ -162,6 +162,8 @@ SENTRY_FRONTEND_TRACE_RATE: float = 0.1
 DEFAULT_AVATAR_URL: str | None = None
 # Deprecated old name for DEFAULT_AVATAR_URL; still accepted for compatibility.
 DEFAULT_AVATAR_URI: str | None = None
+DEFAULT_LOGO_URL: str | None = None
+# Deprecated old name for DEFAULT_LOGO_URL; still accepted for compatibility.
 DEFAULT_LOGO_URI: str | None = None
 S3_AVATAR_BUCKET = ""
 S3_AUTH_UPLOADS_BUCKET = ""

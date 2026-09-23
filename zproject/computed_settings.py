@@ -34,6 +34,8 @@ from .configured_settings import (
     DEBUG_ERROR_REPORTING,
     DEFAULT_AVATAR_URI,
     DEFAULT_AVATAR_URL,
+    DEFAULT_LOGO_URI,
+    DEFAULT_LOGO_URL,
     DEFAULT_RATE_LIMITING_RULES,
     EMAIL_BACKEND,
     EMAIL_HOST,
@@ -620,6 +622,8 @@ if STATIC_URL is None:
 # /etc/zulip/settings.py has not been migrated yet.
 if DEFAULT_AVATAR_URL is None and DEFAULT_AVATAR_URI is not None:
     DEFAULT_AVATAR_URL = DEFAULT_AVATAR_URI
+if DEFAULT_LOGO_URL is None and DEFAULT_LOGO_URI is not None:
+    DEFAULT_LOGO_URL = DEFAULT_LOGO_URI
 
 LOCAL_AVATARS_DIR = os.path.join(LOCAL_UPLOADS_DIR, "avatars") if LOCAL_UPLOADS_DIR else None
 LOCAL_FILES_DIR = os.path.join(LOCAL_UPLOADS_DIR, "files") if LOCAL_UPLOADS_DIR else None
