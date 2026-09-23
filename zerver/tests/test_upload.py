@@ -2036,7 +2036,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_get_settings_logo(self) -> None:
         self.login("hamlet")
-        with self.settings(DEFAULT_LOGO_URI="http://other.server/logo.svg"):
+        with self.settings(DEFAULT_LOGO_URL="http://other.server/logo.svg"):
             response = self.client_get(
                 "/json/realm/logo", {"night": orjson.dumps(self.night).decode()}
             )
