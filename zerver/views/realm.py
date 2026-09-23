@@ -123,6 +123,7 @@ def update_realm(
     can_delete_any_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_delete_own_message_group: Json[GroupSettingChangeRequest] | None = None,
     can_invite_users_group: Json[GroupSettingChangeRequest] | None = None,
+    can_bots_invite_users_group: Json[GroupSettingChangeRequest] | None = None,
     can_manage_all_groups: Json[GroupSettingChangeRequest] | None = None,
     can_manage_billing_group: Json[GroupSettingChangeRequest] | None = None,
     can_mention_many_users_group: Json[GroupSettingChangeRequest] | None = None,
@@ -282,6 +283,7 @@ def update_realm(
         or create_multiuse_invite_group is not None
         or can_create_groups is not None
         or can_invite_users_group is not None
+        or can_bots_invite_users_group is not None
         or can_manage_all_groups is not None
         or can_manage_billing_group is not None
     ) and not user_profile.is_realm_owner:

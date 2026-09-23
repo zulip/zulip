@@ -497,6 +497,7 @@ export const realm_schema = z.object({
     realm_can_delete_any_message_group: group_setting_value_schema,
     realm_can_delete_own_message_group: group_setting_value_schema,
     realm_can_invite_users_group: group_setting_value_schema,
+    realm_can_bots_invite_users_group: group_setting_value_schema,
     realm_can_manage_all_groups: group_setting_value_schema,
     realm_can_manage_billing_group: group_setting_value_schema,
     realm_can_mention_many_users_group: group_setting_value_schema,

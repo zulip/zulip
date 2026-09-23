@@ -770,6 +770,9 @@ export const all_group_setting_labels = {
             defaultMessage: "Who can create reusable invitation links",
         }),
         can_invite_users_group: $t({defaultMessage: "Who can send email invitations to new users"}),
+        can_bots_invite_users_group: $t({
+            defaultMessage: "Which bots can invite users to the organization",
+        }),
         can_create_public_channel_group: $t({defaultMessage: "Who can create public channels"}),
         can_create_web_public_channel_group: $t({
             defaultMessage: "Who can create web-public channels",
@@ -865,7 +868,7 @@ export const realm_group_permission_settings: {
     {
         subsection_heading: $t({defaultMessage: "Joining the organization"}),
         subsection_key: "org-join-settings",
-        settings: ["can_invite_users_group", "create_multiuse_invite_group"],
+        settings: ["can_invite_users_group", "can_bots_invite_users_group", "create_multiuse_invite_group"],
     },
     {
         subsection_heading: $t({defaultMessage: "Channel permissions"}),
@@ -932,6 +935,7 @@ export const realm_group_permission_settings: {
 export const owner_editable_realm_group_permission_settings = new Set([
     "can_create_groups",
     "can_invite_users_group",
+    "can_bots_invite_users_group",
     "can_manage_all_groups",
     "can_manage_billing_group",
     "create_multiuse_invite_group",
