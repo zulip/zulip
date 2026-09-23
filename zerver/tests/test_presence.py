@@ -681,6 +681,50 @@ class SingleUserPresenceTests(ZulipTestCase):
         result = self.client_get("/json/users/email@zulip.com/presence")
         self.assert_json_error(result, "No presence data for email@zulip.com")
 
+    def test_email_access_after_email_address_visibility_change(self) -> None:
+        self.login("hamlet")
+
+        othello = self.example_user("othello")
+        self.api_post(othello, "/api/v1/users/me/presence", {"status": "active"})
+        do_change_user_setting(
+            othello,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
+        real_email = othello.delivery_email
+        self.assertEqual(othello.email, real_email)
+
+        # This caches the lookup of othello by the real email address.
+        result = self.client_get(f"/json/users/{real_email}/presence")
+        self.assert_json_success(result)
+
+        do_change_user_setting(
+            othello,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
+        )
+        dummy_email = othello.email
+        self.assertNotEqual(dummy_email, real_email)
+
+        result = self.client_get(f"/json/users/{real_email}/presence")
+        self.assert_json_error(result, "No such user")
+        result = self.client_get(f"/json/users/{dummy_email}/presence")
+        self.assert_json_success(result)
+
+        do_change_user_setting(
+            othello,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
+
+        result = self.client_get(f"/json/users/{dummy_email}/presence")
+        self.assert_json_error(result, "No such user")
+        result = self.client_get(f"/json/users/{real_email}/presence")
+        self.assert_json_success(result)
+
     def test_single_user_get(self) -> None:
         reset_email_visibility_to_everyone_in_zulip_realm()
 
