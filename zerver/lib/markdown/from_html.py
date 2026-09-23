@@ -5,7 +5,8 @@ import warnings
 from urllib.parse import urlsplit
 
 import markdownify
-from bs4 import MarkupResemblesLocatorWarning, Tag
+from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning, Tag
+from typing_extensions import override
 
 from zerver.lib.markdown import get_markdown_link_for_url, sanitize_url
 
@@ -44,6 +45,20 @@ class ZulipMarkdownConverter(markdownify.MarkdownConverter):
 
     def convert_title(self, el: Tag, text: str, parent_tags: set[str]) -> str:
         return ""
+
+    @override
+    def convert_soup(self, soup: BeautifulSoup) -> str:
+        # Markdown tables can't nest, and their cells can't hold block
+        # content. A table containing another table is page layout, so
+        # convert its own rows and cells as if they were <div>s.
+        for table in soup.find_all("table"):
+            if table.find("table") is None:
+                continue
+            for part in table.find_all(["thead", "tbody", "tfoot", "tr", "th", "td"]):
+                if part.find_parent("table") is table:
+                    part.name = "div"
+            table.name = "div"
+        return super().convert_soup(soup)
 
 
 def convert_html_to_markdown(
