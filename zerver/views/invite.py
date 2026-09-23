@@ -17,7 +17,7 @@ from zerver.actions.invites import (
     do_revoke_user_invite,
     do_send_user_invite_email,
 )
-from zerver.decorator import require_human_non_guest_user
+from zerver.decorator import require_non_guest_user
 from zerver.lib.exceptions import InvitationError, JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.response import json_success
 from zerver.lib.streams import access_stream_by_id, get_streams_to_which_user_cannot_add_subscribers
@@ -39,6 +39,11 @@ from zerver.models import (
 # to be Optional[int] to avoid a mypy error when using it as the default value.
 # https://github.com/python/mypy/issues/13234
 INVITATION_LINK_VALIDITY_MINUTES: int | None = 24 * 60 * settings.INVITATION_LINK_VALIDITY_DAYS
+
+
+def check_bot_invite_permission(user_profile: UserProfile) -> None:
+    if user_profile.bot_type is not None and not user_profile.can_bots_invite_users():
+        raise JsonableError(_("This endpoint does not accept bot requests."))
 
 
 def check_role_based_permissions(
@@ -132,7 +137,7 @@ def access_user_groups_for_invite(
     return user_groups
 
 
-@require_human_non_guest_user
+@require_non_guest_user
 @typed_endpoint
 def invite_users_backend(
     request: HttpRequest,
@@ -155,6 +160,8 @@ def invite_users_backend(
         ),
     ] = None,
 ) -> HttpResponse:
+    check_bot_invite_permission(user_profile)
+
     if not user_profile.can_invite_users_by_email():
         # Guest users case will not be handled here as it will
         # be handled by the decorator above.
@@ -225,43 +232,47 @@ def get_invitees_set(invitee_emails_raw: str) -> set[Invitee]:
     }
 
 
-@require_human_non_guest_user
+@require_non_guest_user
 def get_user_invites(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    check_bot_invite_permission(user_profile)
     all_users = do_get_invites_controlled_by_user(user_profile)
     return json_success(request, data={"invites": all_users})
 
 
-@require_human_non_guest_user
+@require_non_guest_user
 @typed_endpoint
 def revoke_user_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
+    check_bot_invite_permission(user_profile)
     prereg_user = access_invite_by_id(user_profile, invite_id)
     do_revoke_user_invite(prereg_user, acting_user=user_profile)
     return json_success(request)
 
 
-@require_human_non_guest_user
+@require_non_guest_user
 @typed_endpoint
 def revoke_multiuse_invite(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
+    check_bot_invite_permission(user_profile)
     invite = access_multiuse_invite_by_id(user_profile, invite_id)
     do_revoke_multi_use_invite(invite, acting_user=user_profile)
     return json_success(request)
 
 
-@require_human_non_guest_user
+@require_non_guest_user
 @typed_endpoint
 def resend_user_invite_email(
     request: HttpRequest, user_profile: UserProfile, *, invite_id: PathOnly[int]
 ) -> HttpResponse:
+    check_bot_invite_permission(user_profile)
     prereg_user = access_invite_by_id(user_profile, invite_id)
     do_send_user_invite_email(prereg_user, event_time=timezone_now())
     return json_success(request)
 
 
-@require_human_non_guest_user
+@require_non_guest_user
 @typed_endpoint
 def generate_multiuse_invite_backend(
     request: HttpRequest,
@@ -284,6 +295,7 @@ def generate_multiuse_invite_backend(
 ) -> HttpResponse:
     if stream_ids is None:
         stream_ids = []
+    check_bot_invite_permission(user_profile)
     if not user_profile.can_create_multiuse_invite_to_realm():
         # Guest users case will not be handled here as it will
         # be handled by the decorator above.

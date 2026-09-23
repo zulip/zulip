@@ -323,6 +323,7 @@ export function dispatch_normal_event(event) {
                 can_delete_any_message_group: noop,
                 can_delete_own_message_group: noop,
                 can_invite_users_group: noop,
+                can_bots_invite_users_group: noop,
                 can_manage_all_groups: user_group_edit.update_group_management_ui,
                 can_manage_billing_group: noop,
                 can_mention_many_users_group: noop,

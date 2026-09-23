@@ -53,6 +53,7 @@ const realm_group_setting_names_supporting_anonymous_groups = [
     "can_delete_any_message_group",
     "can_delete_own_message_group",
     "can_invite_users_group",
+    "can_bots_invite_users_group",
     "can_manage_all_groups",
     "can_manage_billing_group",
     "can_mention_many_users_group",

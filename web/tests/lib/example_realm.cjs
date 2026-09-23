@@ -55,6 +55,7 @@ exports.make_realm = (opts = {}) => {
         },
         realm_can_delete_own_message_group: 0,
         realm_can_invite_users_group: 0,
+        realm_can_bots_invite_users_group: 0,
         realm_can_manage_all_groups: 0,
         realm_can_manage_billing_group: 0,
         realm_can_mention_many_users_group: 0,

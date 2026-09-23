@@ -343,6 +343,11 @@ class Realm(models.Model):
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
     )
 
+    # UserGroup whose bot members are allowed to invite other users to organization.
+    can_bots_invite_users_group = models.ForeignKey(
+        "UserGroup", null=True, on_delete=models.RESTRICT, related_name="+"
+    )
+
     # UserGroup whose members are allowed to summarize topics.
     can_summarize_topics_group = models.ForeignKey(
         "UserGroup", on_delete=models.RESTRICT, related_name="+"
@@ -870,6 +875,11 @@ class Realm(models.Model):
             allow_nobody_group=True,
             allow_everyone_group=False,
             default_group_name=SystemGroups.MEMBERS,
+        ),
+        can_bots_invite_users_group=GroupPermissionSetting(
+            allow_nobody_group=True,
+            allow_everyone_group=False,
+            default_group_name=SystemGroups.NOBODY,
         ),
         can_manage_all_groups=GroupPermissionSetting(
             allow_nobody_group=False,

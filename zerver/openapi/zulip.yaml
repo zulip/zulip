@@ -5355,6 +5355,21 @@ paths:
                                             setting controlled this permission; `true` corresponded to `Admins`, and
                                             `false` to `Members`.
                                         - $ref: "#/components/schemas/GroupSettingValue"
+                                    can_bots_invite_users_group:
+                                      allOf:
+                                        - description: |
+                                            A [group-setting value](/api/group-setting-values) defining the set of
+                                            bots that are allowed to use the [invitation endpoints](/api/send-invites).
+                                            Bots that are members of this group may send invitations, list invitations
+                                            they can manage, and revoke or resend them, subject to the same
+                                            `can_invite_users_group` and `create_multiuse_invite_group` permissions
+                                            that apply to human users.
+
+                                            The default value is the Nobody system group.
+
+                                            **Changes**: New in Zulip 13.0 (feature level ZF-7c4e91). Previously,
+                                            bots were not allowed to call invitation endpoints.
+                                        - $ref: "#/components/schemas/GroupSettingValue"
                                     can_mention_many_users_group:
                                       allOf:
                                         - description: |
@@ -17731,7 +17746,14 @@ paths:
 
         Note that administrators can manage invitations that were created by other users.
 
-        **Changes**: Prior to Zulip 8.0 (feature level 209), non-admin users could
+        Bots may use this endpoint if they belong to the organization's
+        `can_bots_invite_users_group`.
+
+        **Changes**: In Zulip 13.0 (feature level ZF-7c4e91), bots belonging to
+        `can_bots_invite_users_group` were allowed to use this endpoint. Previously,
+        this endpoint did not accept bot requests.
+
+        Prior to Zulip 8.0 (feature level 209), non-admin users could
         only create email invitations, and therefore the response would never include
         reusable invitation links for these users.
       responses:
@@ -17789,7 +17811,14 @@ paths:
       description: |
         Send [invitations](/help/invite-new-users) to specified email addresses.
 
-        **Changes**: In Zulip 6.0 (feature level 126), the `invite_expires_in_days`
+        Bots may use this endpoint if they belong to both the organization's
+        `can_bots_invite_users_group` and `can_invite_users_group`.
+
+        **Changes**: In Zulip 13.0 (feature level ZF-7c4e91), bots belonging to
+        `can_bots_invite_users_group` were allowed to use this endpoint. Previously,
+        this endpoint did not accept bot requests.
+
+        In Zulip 6.0 (feature level 126), the `invite_expires_in_days`
         parameter was removed and replaced by `invite_expires_in_minutes`.
 
         In Zulip 5.0 (feature level 117), added support for passing `null` as
@@ -18012,7 +18041,14 @@ paths:
         Create a [reusable invitation link](/help/invite-new-users#create-a-reusable-invitation-link)
         which can be used to invite new users to the organization.
 
-        **Changes**: In Zulip 8.0 (feature level 209), added support for non-admin
+        Bots may use this endpoint if they belong to both the organization's
+        `can_bots_invite_users_group` and `create_multiuse_invite_group`.
+
+        **Changes**: In Zulip 13.0 (feature level ZF-7c4e91), bots belonging to
+        `can_bots_invite_users_group` were allowed to use this endpoint. Previously,
+        this endpoint did not accept bot requests.
+
+        In Zulip 8.0 (feature level 209), added support for non-admin
         users [with permission](/help/restrict-account-creation#change-who-can-send-invitations)
         to use this endpoint. Previously, it was restricted to administrators only.
 
@@ -18197,6 +18233,13 @@ paths:
 
         A user can only revoke [invitations that they can
         manage](/help/invite-new-users#manage-pending-invitations).
+
+        Bots may use this endpoint if they belong to the organization's
+        `can_bots_invite_users_group`.
+
+        **Changes**: In Zulip 13.0 (feature level ZF-7c4e91), bots belonging to
+        `can_bots_invite_users_group` were allowed to use this endpoint. Previously,
+        this endpoint did not accept bot requests.
       parameters:
         - name: invite_id
           in: path
@@ -18236,7 +18279,14 @@ paths:
         A user can only revoke [invitations that they can
         manage](/help/invite-new-users#manage-pending-invitations).
 
-        **Changes**: Prior to Zulip 8.0 (feature level 209), only organization
+        Bots may use this endpoint if they belong to the organization's
+        `can_bots_invite_users_group`.
+
+        **Changes**: In Zulip 13.0 (feature level ZF-7c4e91), bots belonging to
+        `can_bots_invite_users_group` were allowed to use this endpoint. Previously,
+        this endpoint did not accept bot requests.
+
+        Prior to Zulip 8.0 (feature level 209), only organization
         administrators were able to create and revoke reusable invitation links.
       parameters:
         - name: invite_id
@@ -18287,6 +18337,13 @@ paths:
 
         A user can only resend [invitations that they can
         manage](/help/invite-new-users#manage-pending-invitations).
+
+        Bots may use this endpoint if they belong to the organization's
+        `can_bots_invite_users_group`.
+
+        **Changes**: In Zulip 13.0 (feature level ZF-7c4e91), bots belonging to
+        `can_bots_invite_users_group` were allowed to use this endpoint. Previously,
+        this endpoint did not accept bot requests.
       parameters:
         - name: invite_id
           in: path
@@ -20707,6 +20764,23 @@ paths:
                               Before Zulip 4.0 (feature level 50), the `invite_by_admins_only` boolean
                               setting controlled this permission; `true` corresponded to `Admins`, and
                               `false` to `Members`.
+                          - $ref: "#/components/schemas/GroupSettingValue"
+                      realm_can_bots_invite_users_group:
+                        allOf:
+                          - description: |
+                              Present if `realm` is present in `fetch_event_types`.
+
+                              A [group-setting value](/api/group-setting-values) defining the set of
+                              bots that are allowed to use the [invitation endpoints](/api/send-invites).
+                              Bots that are members of this group may send invitations, list invitations
+                              they can manage, and revoke or resend them, subject to the same
+                              `can_invite_users_group` and `create_multiuse_invite_group` permissions
+                              that apply to human users.
+
+                              The default value is the Nobody system group.
+
+                              **Changes**: New in Zulip 13.0 (feature level ZF-7c4e91). Previously,
+                              bots were not allowed to call invitation endpoints.
                           - $ref: "#/components/schemas/GroupSettingValue"
                       realm_can_mention_many_users_group:
                         allOf:

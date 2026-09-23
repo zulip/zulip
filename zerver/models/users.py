@@ -913,6 +913,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def can_invite_users_by_email(self, realm: Optional["Realm"] = None) -> bool:
         return self.has_permission("can_invite_users_group", realm)
 
+    def can_bots_invite_users(self, realm: Optional["Realm"] = None) -> bool:
+        return self.has_permission("can_bots_invite_users_group", realm)
+
     def can_create_multiuse_invite_to_realm(self) -> bool:
         return self.has_permission("create_multiuse_invite_group")
 

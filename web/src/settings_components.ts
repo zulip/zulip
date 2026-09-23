@@ -890,6 +890,7 @@ export function check_realm_settings_property_changed(elem: HTMLElement): boolea
         case "realm_can_delete_any_message_group":
         case "realm_can_delete_own_message_group":
         case "realm_can_invite_users_group":
+        case "realm_can_bots_invite_users_group":
         case "realm_can_manage_all_groups":
         case "realm_can_manage_billing_group":
         case "realm_can_mention_many_users_group":
@@ -1150,6 +1151,7 @@ export function populate_data_for_realm_settings_request(
                     "can_delete_any_message_group",
                     "can_delete_own_message_group",
                     "can_invite_users_group",
+                    "can_bots_invite_users_group",
                     "can_mention_many_users_group",
                     "can_move_messages_between_channels_group",
                     "can_move_messages_between_topics_group",
@@ -1677,6 +1679,7 @@ export const group_setting_widget_map = new Map<string, GroupSettingPillContaine
     ["realm_can_delete_any_message_group", null],
     ["realm_can_delete_own_message_group", null],
     ["realm_can_invite_users_group", null],
+    ["realm_can_bots_invite_users_group", null],
     ["realm_can_manage_all_groups", null],
     ["realm_can_manage_billing_group", null],
     ["realm_can_mention_many_users_group", null],

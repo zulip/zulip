@@ -216,6 +216,15 @@ exports.server_supported_permission_settings = {
             default_for_system_groups: null,
             allowed_system_groups: [],
         },
+        can_bots_invite_users_group: {
+            require_system_group: false,
+            allow_internet_group: false,
+            allow_nobody_group: true,
+            allow_everyone_group: false,
+            default_group_name: "role:nobody",
+            default_for_system_groups: null,
+            allowed_system_groups: [],
+        },
         can_manage_all_groups: {
             require_system_group: false,
             allow_internet_group: false,

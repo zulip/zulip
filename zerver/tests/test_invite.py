@@ -1283,6 +1283,68 @@ class InviteUserTest(InviteUserBase):
             "Insufficient permission",
         )
 
+    def test_can_bots_invite_users_group(self) -> None:
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        bot = self.create_test_bot("invite-bot", iago)
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
+        )
+        invite_payload = {
+            "invitee_emails": "bot-invitee@zulip.com",
+            "stream_ids": orjson.dumps([]).decode(),
+        }
+
+        result = self.api_post(bot, "/api/v1/invites", invite_payload)
+        self.assert_json_error(result, "This endpoint does not accept bot requests.")
+
+        result = self.api_get(bot, "/api/v1/invites")
+        self.assert_json_error(result, "This endpoint does not accept bot requests.")
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_bots_invite_users_group",
+            members_system_group,
+            acting_user=None,
+        )
+
+        with self.captureOnCommitCallbacks(execute=True):
+            result = self.api_post(bot, "/api/v1/invites", invite_payload)
+        self.assert_json_success(result)
+
+        result = self.api_get(bot, "/api/v1/invites")
+        self.assert_json_success(result)
+
+        other_bot = self.create_test_bot("other-invite-bot", iago)
+        invite_bots_group = check_add_user_group(realm, "Invite bots", [bot], acting_user=iago)
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_bots_invite_users_group",
+            invite_bots_group,
+            acting_user=None,
+        )
+        result = self.api_post(
+            other_bot,
+            "/api/v1/invites",
+            {
+                "invitee_emails": "other-bot-invitee@zulip.com",
+                "stream_ids": orjson.dumps([]).decode(),
+            },
+        )
+        self.assert_json_error(result, "This endpoint does not accept bot requests.")
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_invite_users_group",
+            nobody_system_group,
+            acting_user=None,
+        )
+        result = self.api_post(bot, "/api/v1/invites", invite_payload)
+        self.assert_json_error(result, "Insufficient permission")
+
     def test_invite_user_signup_initial_history(self) -> None:
         """
         Test that a new user invited to a stream receives some initial

@@ -2984,6 +2984,9 @@ class RealmAPITest(ZulipTestCase):
     def test_can_invite_users_group_setting_requires_owner(self) -> None:
         self.do_test_changing_groups_setting_by_owners_only("can_invite_users_group")
 
+    def test_can_bots_invite_users_group_setting_requires_owner(self) -> None:
+        self.do_test_changing_groups_setting_by_owners_only("can_bots_invite_users_group")
+
     def test_can_manage_all_groups_setting_requires_owner(self) -> None:
         self.do_test_changing_groups_setting_by_owners_only("can_manage_all_groups")
 
