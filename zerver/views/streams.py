@@ -1,9 +1,7 @@
 import time
 from collections import defaultdict
-from collections.abc import Callable
 from typing import Annotated, Any, Literal
 
-import orjson
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.db import transaction
@@ -570,23 +568,6 @@ class AddSubscriptionData(BaseModel):
         if self.color is not None:
             self.color = check_color("color", self.color)
         return self
-
-
-def compose_views(thunks: list[Callable[[], HttpResponse]]) -> dict[str, Any]:
-    """
-    This takes a series of thunks and calls them in sequence, and it
-    smushes all the json results into a single response when
-    everything goes right.  (This helps clients avoid extra latency
-    hops.)  It rolls back the transaction when things go wrong in any
-    one of the composed methods.
-    """
-
-    json_dict: dict[str, Any] = {}
-    with transaction.atomic(savepoint=False):
-        for thunk in thunks:
-            response = thunk()
-            json_dict.update(orjson.loads(response.content))
-    return json_dict
 
 
 @typed_endpoint

@@ -1,3 +1,7 @@
+from collections.abc import Callable
+from typing import Any
+
+import orjson
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
@@ -50,7 +54,23 @@ from zerver.lib.users import access_user_by_id, user_ids_to_users
 from zerver.models import NamedUserGroup, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.users import get_system_bot
-from zerver.views.streams import compose_views
+
+
+def compose_views(thunks: list[Callable[[], HttpResponse]]) -> dict[str, Any]:
+    """
+    This takes a series of thunks and calls them in sequence, and it
+    smushes all the json results into a single response when
+    everything goes right.  (This helps clients avoid extra latency
+    hops.)  It rolls back the transaction when things go wrong in any
+    one of the composed methods.
+    """
+
+    json_dict: dict[str, Any] = {}
+    with transaction.atomic(savepoint=False):
+        for thunk in thunks:
+            response = thunk()
+            json_dict.update(orjson.loads(response.content))
+    return json_dict
 
 
 @transaction.atomic(durable=True)
