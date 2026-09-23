@@ -1372,11 +1372,23 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         cordelia.avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
         cordelia.save()
         with self.settings(
-            ENABLE_GRAVATAR=False, DEFAULT_AVATAR_URI="http://other.server/avatar.svg"
+            ENABLE_GRAVATAR=False, DEFAULT_AVATAR_URL="http://other.server/avatar.svg"
         ):
             response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
             redirect_url = response["Location"]
             self.assertEqual(redirect_url, "http://other.server/avatar.svg?version=1&foo=bar")
+
+        # Test backward-compatibility fallback with legacy DEFAULT_AVATAR_URI
+        with self.settings(
+            ENABLE_GRAVATAR=False,
+            DEFAULT_AVATAR_URL=None,
+            DEFAULT_AVATAR_URI="http://other.server/legacy-avatar.svg",
+        ):
+            response = self.client_get("/avatar/cordelia@zulip.com", {"foo": "bar"})
+            redirect_url = response["Location"]
+            self.assertEqual(
+                redirect_url, "http://other.server/legacy-avatar.svg?version=1&foo=bar"
+            )
 
     def _test_get_avatar(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -1872,11 +1884,21 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
     def test_get_settings_realm_icon(self) -> None:
         self.login("hamlet")
         with self.settings(
-            ENABLE_GRAVATAR=False, DEFAULT_AVATAR_URI="http://other.server/icon.svg"
+            ENABLE_GRAVATAR=False, DEFAULT_AVATAR_URL="http://other.server/icon.svg"
         ):
             response = self.client_get("/json/realm/icon", {"foo": "bar"})
             redirect_url = response["Location"]
             self.assertEqual(redirect_url, "http://other.server/icon.svg?foo=bar")
+
+        # Test backward-compatibility fallback with legacy DEFAULT_AVATAR_URI
+        with self.settings(
+            ENABLE_GRAVATAR=False,
+            DEFAULT_AVATAR_URL=None,
+            DEFAULT_AVATAR_URI="http://other.server/legacy-icon.svg",
+        ):
+            response = self.client_get("/json/realm/icon", {"foo": "bar"})
+            redirect_url = response["Location"]
+            self.assertEqual(redirect_url, "http://other.server/legacy-icon.svg?foo=bar")
 
     def test_get_uploaded_realm_icon(self) -> None:
         self.login("hamlet")
