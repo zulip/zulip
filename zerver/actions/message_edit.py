@@ -44,6 +44,7 @@ from zerver.lib.message import (
     bulk_access_stream_messages_query,
     check_user_group_mention_allowed,
     event_recipient_ids_for_action_on_messages,
+    get_default_code_block_language,
     normalize_body,
     stream_wildcard_mention_allowed,
     topic_wildcard_mention_allowed,
@@ -1773,6 +1774,13 @@ def check_update_message(
         content=content,
     )
 
+    if isinstance(message_edit_request, StreamMessageEditRequest):
+        default_code_block_language = get_default_code_block_language(
+            message_edit_request.orig_stream, message.realm
+        )
+    else:
+        default_code_block_language = get_default_code_block_language(None, message.realm)
+
     if (
         isinstance(message_edit_request, StreamMessageEditRequest)
         and message_edit_request.is_topic_edited
@@ -1806,6 +1814,7 @@ def check_update_message(
             message_edit_request.content,
             user_profile.realm,
             mention_data=mention_data,
+            default_code_block_language=default_code_block_language,
         )
         links_for_embed |= rendering_result.links_for_preview
 
@@ -1900,6 +1909,7 @@ def check_update_message(
             # `render_incoming_message` call earlier in this function.
             "message_realm_id": user_profile.realm_id,
             "urls": list(links_for_embed),
+            "default_code_block_language": default_code_block_language,
         }
         queue_event_on_commit("embed_links", event_data)
 

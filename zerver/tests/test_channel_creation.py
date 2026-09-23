@@ -1462,3 +1462,20 @@ class TestCreateStreams(ZulipTestCase):
         self.assert_json_success(result)
         stream = get_stream("push_create_via_channels_api", realm)
         self.assertTrue(stream.default_push_notifications)
+
+    def test_default_code_block_language_on_stream_creation(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = get_realm("zulip")
+
+        subscriptions = [{"name": "new_stream1", "description": ""}]
+        result = self.subscribe_via_post(hamlet, subscriptions)
+        self.assert_json_success(result)
+        stream = get_stream("new_stream1", realm)
+        self.assertEqual(stream.default_code_block_language, "")
+
+        subscriptions = [{"name": "new_stream2", "description": ""}]
+        extra_post_data = {"default_code_block_language": "rust"}
+        result = self.subscribe_via_post(hamlet, subscriptions, extra_post_data)
+        self.assert_json_success(result)
+        stream = get_stream("new_stream2", realm)
+        self.assertEqual(stream.default_code_block_language, "rust")

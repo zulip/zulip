@@ -27,8 +27,9 @@ import type {PseudoMentionUser, User} from "./people.ts";
 import * as pm_conversations from "./pm_conversations.ts";
 import * as realm_playground from "./realm_playground.ts";
 import * as rows from "./rows.ts";
+import * as settings_components from "./settings_components.ts";
 import * as settings_data from "./settings_data.ts";
-import {current_user, realm} from "./state_data.ts";
+import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamPillData} from "./stream_pill.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
@@ -981,6 +982,7 @@ export function get_candidates(
     query: string,
     input_element: TypeaheadInputElement,
     typeahead_instance: Typeahead<TypeaheadSuggestion>,
+    default_code_block_language: string,
 ): TypeaheadSuggestion[] {
     const split = split_at_cursor(query, input_element.$element);
     let current_token: string | boolean = tokenize_compose_str(split[0]);
@@ -1028,10 +1030,9 @@ export function get_candidates(
         completing = "syntax";
         token = current_token;
 
-        const default_language = realm.realm_default_code_block_language;
         const language_list = realm_playground.get_pygments_typeahead_list_for_composebox();
-        if (default_language) {
-            language_list.unshift(default_language);
+        if (default_code_block_language) {
+            language_list.unshift(default_code_block_language);
         }
         compose_ui.set_code_formatting_button_triggered(false);
         const matcher = get_language_matcher(token);
@@ -1040,7 +1041,7 @@ export function get_candidates(
             language,
             type: "syntax",
         }));
-        return typeahead_helper.sort_languages(matches_list, token);
+        return typeahead_helper.sort_languages(matches_list, token, default_code_block_language);
     }
 
     // Only start the emoji autocompleter if : is directly after one
@@ -1320,6 +1321,7 @@ export function get_candidates(
 
 export function content_item_html(
     _query: string,
+    default_code_block_language: string,
 ): (item: TypeaheadSuggestion) => string | undefined {
     return function (item: TypeaheadSuggestion): string | undefined {
         switch (item.type) {
@@ -1342,8 +1344,7 @@ export function content_item_html(
                 return typeahead_helper.render_typeahead_item({
                     primary: item.language,
                     is_default_language:
-                        item.language !== "" &&
-                        item.language === realm.realm_default_code_block_language,
+                        item.language !== "" && item.language === default_code_block_language,
                 });
             case "topic_jump":
                 return typeahead_helper.render_typeahead_item({primary: item.message});
@@ -1742,7 +1743,10 @@ function set_recipient_from_typeahead(item: UserGroupPillData | UserPillData): v
     }
 }
 
-export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElement>): void {
+export function initialize_compose_typeahead(
+    $element: JQuery<HTMLTextAreaElement>,
+    get_default_code_block_language: () => string,
+): void {
     const bootstrap_typeahead_input: TypeaheadInputElement = {
         $element,
         type: "textarea",
@@ -1756,8 +1760,14 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
             // matching and sorting inside the `source` field to avoid
             // O(n) behavior in the number of users in the organization
             // inside the typeahead library.
-            source: get_candidates,
-            item_html: content_item_html,
+            source: (query, input_element, typeahead_instance) =>
+                get_candidates(
+                    query,
+                    input_element,
+                    typeahead_instance,
+                    get_default_code_block_language(),
+                ),
+            item_html: (query) => content_item_html(query, get_default_code_block_language()),
             matcher(_query: string) {
                 return () => true;
             },
@@ -1780,7 +1790,7 @@ export function initialize_compose_typeahead($element: JQuery<HTMLTextAreaElemen
                 } else if (item.type === "syntax") {
                     if (
                         item.language !== "" &&
-                        item.language === realm.realm_default_code_block_language
+                        item.language === get_default_code_block_language()
                     ) {
                         return `<em>${$t({defaultMessage: "(default)"})}</em>`;
                     }
@@ -1975,5 +1985,7 @@ export function initialize({
         stopAdvance: true, // Do not advance to the next field on a Tab or Enter
     });
 
-    initialize_compose_typeahead($("textarea#compose-textarea"));
+    initialize_compose_typeahead($("textarea#compose-textarea"), () =>
+        settings_components.get_default_code_block_language(compose_state.stream()),
+    );
 }

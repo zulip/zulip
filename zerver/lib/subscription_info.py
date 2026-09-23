@@ -99,6 +99,7 @@ def get_web_public_subs(
         )
         creator_id = stream.creator_id
         date_created = datetime_to_timestamp(stream.date_created)
+        default_code_block_language = stream.default_code_block_language
         default_push_notifications = stream.default_push_notifications
         description = stream.description
         first_message_id = stream.first_message_id
@@ -151,6 +152,7 @@ def get_web_public_subs(
             color=color,
             creator_id=creator_id,
             date_created=date_created,
+            default_code_block_language=default_code_block_language,
             default_push_notifications=default_push_notifications,
             description=description,
             desktop_notifications=desktop_notifications,
@@ -260,6 +262,7 @@ def build_stream_api_dict(
         can_resolve_topics_group=can_resolve_topics_group,
         creator_id=raw_stream_dict["creator_id"],
         date_created=datetime_to_timestamp(raw_stream_dict["date_created"]),
+        default_code_block_language=raw_stream_dict["default_code_block_language"],
         default_push_notifications=raw_stream_dict["default_push_notifications"],
         description=raw_stream_dict["description"],
         first_message_id=raw_stream_dict["first_message_id"],
@@ -300,6 +303,7 @@ def build_stream_dict_for_sub(
     can_subscribe_group = stream_dict["can_subscribe_group"]
     creator_id = stream_dict["creator_id"]
     date_created = stream_dict["date_created"]
+    default_code_block_language = stream_dict["default_code_block_language"]
     default_push_notifications = stream_dict["default_push_notifications"]
     description = stream_dict["description"]
     first_message_id = stream_dict["first_message_id"]
@@ -350,6 +354,7 @@ def build_stream_dict_for_sub(
         color=color,
         creator_id=creator_id,
         date_created=date_created,
+        default_code_block_language=default_code_block_language,
         default_push_notifications=default_push_notifications,
         description=description,
         desktop_notifications=desktop_notifications,
@@ -385,6 +390,7 @@ def build_stream_dict_for_never_sub(
 ) -> NeverSubscribedStreamDict:
     creator_id = raw_stream_dict["creator_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
+    default_code_block_language = raw_stream_dict["default_code_block_language"]
     default_push_notifications = raw_stream_dict["default_push_notifications"]
     description = raw_stream_dict["description"]
     first_message_id = raw_stream_dict["first_message_id"]
@@ -461,6 +467,7 @@ def build_stream_dict_for_never_sub(
         can_subscribe_group=can_subscribe_group_value,
         creator_id=creator_id,
         date_created=date_created,
+        default_code_block_language=default_code_block_language,
         default_push_notifications=default_push_notifications,
         description=description,
         first_message_id=first_message_id,

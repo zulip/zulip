@@ -472,7 +472,7 @@ test("sort_languages", ({override, override_rewire}) => {
     });
 
     let test_langs = language_items(["pascal", "perl", "php", "python", "spoiler", "javascript"]);
-    test_langs = th.sort_languages(test_langs, "p");
+    test_langs = th.sort_languages(test_langs, "p", default_language);
 
     // Sort languages by matching first letter, and then by popularity
     assert.deepEqual(
@@ -483,7 +483,7 @@ test("sort_languages", ({override, override_rewire}) => {
     // Test if popularity between two languages are the same
     pygments_data.langs.php = {priority: 26};
     test_langs = language_items(["pascal", "perl", "php", "python", "spoiler", "javascript"]);
-    test_langs = th.sort_languages(test_langs, "p");
+    test_langs = th.sort_languages(test_langs, "p", default_language);
 
     assert.deepEqual(
         test_langs,
@@ -498,14 +498,14 @@ test("sort_languages", ({override, override_rewire}) => {
         "python",
         "javascript",
     ]);
-    const test_langs_for_default = th.sort_languages(test_langs, "d");
+    const test_langs_for_default = th.sort_languages(test_langs, "d", default_language);
 
     assert.deepEqual(
         test_langs_for_default,
         language_items([default_language, "text", "quote", "math", "javascript", "python"]),
     );
 
-    test_langs = th.sort_languages(test_langs, "t");
+    test_langs = th.sort_languages(test_langs, "t", default_language);
 
     assert.deepEqual(
         test_langs,
@@ -522,19 +522,19 @@ test("sort_languages on actual data", () => {
     let test_langs = language_items(["j", "java", "javascript", "js"]);
 
     // Sort according to priority only.
-    test_langs = th.sort_languages(test_langs, "jav");
+    test_langs = th.sort_languages(test_langs, "jav", "");
     assert.deepEqual(test_langs, language_items(["javascript", "java", "j"]));
 
     // Push exact matches to top, regardless of priority
-    test_langs = th.sort_languages(test_langs, "java");
+    test_langs = th.sort_languages(test_langs, "java", "");
     assert.deepEqual(test_langs, language_items(["java", "javascript", "j"]));
-    test_langs = th.sort_languages(test_langs, "j");
+    test_langs = th.sort_languages(test_langs, "j", "");
     assert.deepEqual(test_langs, language_items(["j", "javascript", "java"]));
 
     // (Only one alias should be shown per language
     // (e.g. searching for "js" shouldn't show "javascript")
     test_langs = language_items(["js", "javascript", "java"]);
-    test_langs = th.sort_languages(test_langs, "js");
+    test_langs = th.sort_languages(test_langs, "js", "");
     assert.deepEqual(test_langs, language_items(["js", "java"]));
 });
 

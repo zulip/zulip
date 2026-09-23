@@ -25,6 +25,7 @@ import * as reload from "./reload.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_state from "./server_events_state.ts";
+import * as settings_components from "./settings_components.ts";
 import {current_user} from "./state_data.ts";
 import * as transmit from "./transmit.ts";
 import * as typing from "./typing.ts";
@@ -92,6 +93,7 @@ export function render_preview_area(): void {
         $("#compose .markdown_preview_spinner"),
         $("#compose .preview_content"),
         content,
+        settings_components.get_default_code_block_language(compose_state.stream()),
     );
     const edit_height = $compose_textarea.height();
     $preview_message_area.css({"min-height": edit_height + "px"});

@@ -3,6 +3,8 @@ from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.actions.streams import do_change_default_code_block_language
 from zerver.lib.cache import cache_delete, to_dict_cache_key_id
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.markdown import version as markdown_version
@@ -217,6 +219,25 @@ class MessageDictTest(ZulipTestCase):
         message = Message.objects.get(id=message.id)
         self.assertEqual(message.rendered_content, expected_content)
         self.assertEqual(message.rendered_content_version, markdown_version)
+
+    def test_applying_markdown_uses_channel_code_block_language(self) -> None:
+        sender = self.example_user("othello")
+        realm = sender.realm
+        do_set_realm_property(realm, "default_code_block_language", "javascript", acting_user=None)
+        stream = self.make_stream("test channel")
+        self.subscribe(sender, stream.name)
+        do_change_default_code_block_language(stream, "python", acting_user=sender)
+
+        msg_id = self.send_stream_message(sender, stream.name, "```\nprint('hello')\n```")
+
+        # Simulate a Markdown version bump, so that building the
+        # message dict re-renders and re-saves the message.
+        Message.objects.filter(id=msg_id).update(rendered_content_version=markdown_version - 1)
+
+        dct = MessageDict.ids_to_dict([msg_id])[0]
+        self.assertIn('data-code-language="Python"', dct["rendered_content"])
+        message = Message.objects.get(id=msg_id)
+        self.assertEqual(message.rendered_content, dct["rendered_content"])
 
     @mock.patch("zerver.lib.message_cache.render_message_markdown")
     def test_applying_markdown_invalid_format(self, convert_mock: Any) -> None:

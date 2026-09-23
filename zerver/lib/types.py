@@ -182,6 +182,7 @@ class RawStreamDict(TypedDict):
     creator_id: int | None
     date_created: datetime
     deactivated: bool
+    default_code_block_language: str
     default_push_notifications: bool
     description: str
     first_message_id: int | None
@@ -238,6 +239,7 @@ class SubscriptionStreamDict(TypedDict):
     color: str
     creator_id: int | None
     date_created: int
+    default_code_block_language: str
     default_push_notifications: bool
     description: str
     desktop_notifications: bool | None
@@ -281,6 +283,7 @@ class NeverSubscribedStreamDict(TypedDict):
     can_subscribe_group: int | UserGroupMembersDict
     creator_id: int | None
     date_created: int
+    default_code_block_language: str
     default_push_notifications: bool
     description: str
     first_message_id: int | None
@@ -322,6 +325,7 @@ class DefaultStreamDict(TypedDict):
     can_subscribe_group: int | UserGroupMembersDict
     creator_id: int | None
     date_created: int
+    default_code_block_language: str
     default_push_notifications: bool
     description: str
     first_message_id: int | None
