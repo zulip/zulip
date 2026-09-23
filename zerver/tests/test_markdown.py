@@ -4098,3 +4098,50 @@ class TestHtmlToMarkdown(ZulipTestCase):
         self.assertEqual(
             convert_html_to_markdown("<p>line one<br>\nline two</p>"), "line one  \nline two"
         )
+
+    def test_table(self) -> None:
+        html = (
+            "<table>"
+            "<tr><th>Name</th><th>Role</th></tr>"
+            "<tr><td>Alice</td><td>Admin</td></tr>"
+            "</table>"
+        )
+        self.assertEqual(
+            convert_html_to_markdown(html), "| Name | Role |\n| --- | --- |\n| Alice | Admin |"
+        )
+
+    def test_layout_table(self) -> None:
+        # HTML emails often use an outer table for page layout, with other
+        # tables nested inside it.
+        html = (
+            "<table>"
+            "<tr><td>Left column</td><td>Right column</td></tr>"
+            "<tr><td>"
+            "<p>First paragraph</p>"
+            "<p>Line one<br>Line two</p>"
+            "<table><tr><th>Name</th></tr><tr><td>Alice</td></tr></table>"
+            "</td></tr>"
+            "</table>"
+        )
+        self.assertEqual(
+            convert_html_to_markdown(html),
+            "Left column\n\nRight column\n\n"
+            "First paragraph\n\n"
+            "Line one  \nLine two\n\n"
+            "| Name |\n| --- |\n| Alice |",
+        )
+
+    def test_nested_layout_tables(self) -> None:
+        html = (
+            "<table><tr><td>"
+            "Outer layout"
+            "<table><tr><td>"
+            "Inner layout"
+            "<table><tr><th>Name</th></tr><tr><td>Alice</td></tr></table>"
+            "</td></tr></table>"
+            "</td></tr></table>"
+        )
+        self.assertEqual(
+            convert_html_to_markdown(html),
+            "Outer layout\n\nInner layout\n\n| Name |\n| --- |\n| Alice |",
+        )
