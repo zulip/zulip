@@ -278,9 +278,7 @@ class CommitRangeAnalyzer:
         except Exception:
             return None
 
-    def get_issues_for_commit(
-        self, commit_sha: str, console: Console
-    ) -> tuple[dict[Issue, set[PullRequest]], set[PullRequest], Commit | None]:
+    def _fetch_commit(self, commit_sha: str) -> dict[str, Any] | None:
         _, result = self.github.requester.graphql_query(
             self.COMMIT_PRS_QUERY, {"oid": commit_sha, "repo": self.reponame}
         )
@@ -290,11 +288,15 @@ class CommitRangeAnalyzer:
             raise RuntimeError(f"GraphQL errors: {', '.join(error_messages)}")
 
         data = result.get("data", {})
+        return data.get("repository", {}).get("object")
 
-        if not data.get("repository", {}).get("object"):
+    def get_issues_for_commit(
+        self, commit_sha: str, console: Console
+    ) -> tuple[dict[Issue, set[PullRequest]], set[PullRequest], Commit | None]:
+        commit_obj = self._fetch_commit(commit_sha)
+        if commit_obj is None:
             return dict(), set(), None
 
-        commit_obj = data["repository"]["object"]
         commit_message = commit_obj.get("messageBody", "")
         pr_nodes = commit_obj.get("associatedPullRequests", {}).get("nodes", [])
 
