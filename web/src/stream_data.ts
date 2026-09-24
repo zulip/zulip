@@ -590,11 +590,7 @@ export function has_metadata_access(sub: StreamSubscription): boolean {
         return true;
     }
 
-    if (sub.subscribed) {
-        return true;
-    }
-
-    if (can_administer_channel(sub)) {
+    if (sub.subscribed || can_administer_channel(sub)) {
         return true;
     }
 
@@ -820,11 +816,10 @@ export function can_subscribe_others(sub: StreamSubscription): boolean {
         return false;
     }
 
-    if (settings_data.can_subscribe_others_to_all_accessible_streams()) {
-        return true;
-    }
-
-    if (can_administer_channel(sub)) {
+    if (
+        settings_data.can_subscribe_others_to_all_accessible_streams() ||
+        can_administer_channel(sub)
+    ) {
         return true;
     }
 
@@ -894,11 +889,7 @@ export let can_post_messages_in_stream = function (
     stream: StreamSubscription,
     sender_id: number = current_user.user_id,
 ): boolean {
-    if (stream.is_archived) {
-        return false;
-    }
-
-    if (page_params.is_spectator) {
+    if (stream.is_archived || page_params.is_spectator) {
         return false;
     }
 
@@ -996,11 +987,7 @@ export function is_topic_creation_enabled(stream_id: number | undefined): boolea
 }
 
 export function user_can_move_messages_out_of_channel(stream: StreamSubscription): boolean {
-    if (page_params.is_spectator) {
-        return false;
-    }
-
-    if (stream.is_archived) {
+    if (page_params.is_spectator || stream.is_archived) {
         return false;
     }
 
@@ -1025,11 +1012,7 @@ export function user_can_move_messages_out_of_channel(stream: StreamSubscription
 }
 
 export function user_can_move_messages_within_channel(stream: StreamSubscription): boolean {
-    if (page_params.is_spectator) {
-        return false;
-    }
-
-    if (stream.is_archived) {
+    if (page_params.is_spectator || stream.is_archived) {
         return false;
     }
 

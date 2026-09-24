@@ -84,11 +84,7 @@ export function is_overlay_hash(hash: string | undefined): boolean {
 export function is_editing_stream(desired_stream_id: number): boolean {
     const hash_components = window.location.hash.slice(1).split(/\//);
 
-    if (hash_components[0] !== "channels") {
-        return false;
-    }
-
-    if (!hash_components[2]) {
+    if (hash_components[0] !== "channels" || !hash_components[2]) {
         return false;
     }
 
@@ -108,10 +104,7 @@ export function is_create_new_stream_narrow(): boolean {
 export function is_subscribers_section_opened_for_stream(): boolean {
     const hash_components = window.location.hash.slice(1).split(/\//);
 
-    if (hash_components[0] !== "channels") {
-        return false;
-    }
-    if (!hash_components[3]) {
+    if (hash_components[0] !== "channels" || !hash_components[3]) {
         return false;
     }
     return hash_components[3] === "subscribers";

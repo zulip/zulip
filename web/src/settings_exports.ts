@@ -600,11 +600,7 @@ export function remove_export_consent_data_and_redraw(user_id: number): void {
 }
 
 export function update_export_consent_data_and_redraw(export_consent: ExportConsent): void {
-    if (!meta.loaded) {
-        return;
-    }
-
-    if (maybe_store_export_consent_data_and_return(export_consent)) {
+    if (!meta.loaded || maybe_store_export_consent_data_and_return(export_consent)) {
         return;
     }
 

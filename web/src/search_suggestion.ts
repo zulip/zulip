@@ -486,11 +486,10 @@ function get_group_suggestions(
         // operand (not including the last part).
         const person_matcher = people.build_person_matcher(new_query);
         let persons = people.filter_all_persons((person) => {
-            if (person.user_id === people.my_current_user_id()) {
-                return false;
-            }
-
-            if (existing_user_ids.includes(person.user_id)) {
+            if (
+                person.user_id === people.my_current_user_id() ||
+                existing_user_ids.includes(person.user_id)
+            ) {
                 return false;
             }
             return new_query === "" || person_matcher(person);

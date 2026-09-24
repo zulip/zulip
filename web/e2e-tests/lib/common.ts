@@ -359,15 +359,11 @@ export async function wait_for_fully_processed_message(page: Page, content: stri
                       re-rendered based on server info?
             */
             const last_msg = zulip_test.current_msg_list?.last();
-            if (last_msg === undefined) {
-                return false;
-            }
-
-            if (last_msg.raw_content !== content) {
-                return false;
-            }
-
-            if (last_msg.locally_echoed) {
+            if (
+                last_msg === undefined ||
+                last_msg.raw_content !== content ||
+                last_msg.locally_echoed
+            ) {
                 return false;
             }
 

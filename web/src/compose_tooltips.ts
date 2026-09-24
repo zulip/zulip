@@ -99,15 +99,11 @@ let intro_go_to_conversation_tooltip_instance: tippy.Instance | null = null;
 
 export function maybe_show_intro_go_to_conversation_tooltip(): void {
     const $button = $(".conversation-arrow");
-    if (!$button.hasClass("narrow_to_compose_recipients")) {
-        return;
-    }
-
-    if ($("#compose_banners .main-view-banner").length > 0) {
-        return;
-    }
-
-    if (intro_go_to_conversation_tooltip_instance !== null) {
+    if (
+        !$button.hasClass("narrow_to_compose_recipients") ||
+        $("#compose_banners .main-view-banner").length > 0 ||
+        intro_go_to_conversation_tooltip_instance !== null
+    ) {
         return;
     }
 

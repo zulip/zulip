@@ -197,11 +197,7 @@ export function handle_reaction_removal_on_message(info: {
     const {emoji_id, message_id, is_me} = info;
 
     const reaction_usage = reaction_data.get(emoji_id);
-    if (reaction_usage === undefined) {
-        return;
-    }
-
-    if (!reaction_usage.message_ids.has(message_id)) {
+    if (!reaction_usage?.message_ids.has(message_id)) {
         return;
     }
     reaction_usage.message_ids.delete(message_id);

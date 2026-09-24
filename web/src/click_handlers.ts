@@ -598,10 +598,12 @@ export function initialize(): void {
     });
 
     $(".buddy-list-section").on("click", ".selectable_sidebar_block", (e) => {
-        if (e.metaKey || e.ctrlKey || e.shiftKey) {
-            return;
-        }
-        if ($(e.target).parents(".user-profile-picture").length === 1) {
+        if (
+            e.metaKey ||
+            e.ctrlKey ||
+            e.shiftKey ||
+            $(e.target).parents(".user-profile-picture").length === 1
+        ) {
             return;
         }
         if (mouse_drag.is_drag(e)) {

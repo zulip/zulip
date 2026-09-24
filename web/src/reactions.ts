@@ -500,11 +500,7 @@ export let remove_reaction = (event: ReactionEvent): void => {
 
     const clean_reaction_object = message.clean_reactions.get(local_id);
 
-    if (!clean_reaction_object) {
-        return;
-    }
-
-    if (!clean_reaction_object.user_ids.includes(user_id)) {
+    if (!clean_reaction_object?.user_ids.includes(user_id)) {
         return;
     }
 

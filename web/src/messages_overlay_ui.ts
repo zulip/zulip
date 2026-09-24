@@ -248,10 +248,7 @@ function scroll_toward_visible(
 }
 
 function scroll_to_element($element: JQuery, context: Context): void {
-    if ($element[0] === undefined) {
-        return;
-    }
-    if ($element[0].firstElementChild === null) {
+    if ($element[0] === undefined || $element[0].firstElementChild === null) {
         return;
     }
     assert($element[0].firstElementChild instanceof HTMLElement);

@@ -68,10 +68,7 @@ export function percentage_used_space(uploads_size: number): string | null {
 }
 
 function set_upload_space_stats(): void {
-    if (realm.realm_upload_quota_mib === null) {
-        return;
-    }
-    if (current_user.is_guest) {
+    if (realm.realm_upload_quota_mib === null || current_user.is_guest) {
         return;
     }
 
