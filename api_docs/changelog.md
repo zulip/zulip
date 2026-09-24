@@ -20,6 +20,16 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 13.0
 
+**Feature level 512**
+
+* The undocumented `PATCH /users/me/subscriptions` endpoint for
+  updating channel subscriptions has been deprecated and
+  removed. It was a duplicate of the documented bulk-subscribe
+  ([`POST /users/me/subscriptions`](/api/subscribe)) and
+  bulk-unsubscribe ([`DELETE /users/me/subscriptions`](/api/unsubscribe))
+  endpoints, which clients should use to subscribe/unsubscribe
+  users from channels.
+
 **Feature level 511**
 
 * [`POST /messages/{message_id}/report`](/api/report-message): This endpoint
