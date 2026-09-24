@@ -630,13 +630,11 @@ export function process_messages(
 
     let conversation_data_updated = false;
     const updated_rows = new Set<string>();
-    if (messages.length > 0) {
-        for (const msg of messages) {
-            if (recent_view_data.process_message(msg)) {
-                conversation_data_updated = true;
-                const key = recent_view_util.get_key_from_message(msg);
-                updated_rows.add(key);
-            }
+    for (const msg of messages) {
+        if (recent_view_data.process_message(msg)) {
+            conversation_data_updated = true;
+            const key = recent_view_util.get_key_from_message(msg);
+            updated_rows.add(key);
         }
     }
 
