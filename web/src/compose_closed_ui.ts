@@ -30,7 +30,7 @@ export type RecipientLabel = {
     user_ids?: number[];
 };
 
-export function get_stream_recipient_label(
+export function get_channel_recipient_label(
     stream_id: number,
     topic: string,
 ): RecipientLabel | undefined {
@@ -84,7 +84,7 @@ export function get_recipient_label(
             recipient_information.stream_id !== undefined &&
             recipient_information.topic !== undefined
         ) {
-            return get_stream_recipient_label(
+            return get_channel_recipient_label(
                 recipient_information.stream_id,
                 recipient_information.topic,
             );
@@ -111,7 +111,7 @@ export function get_recipient_label(
         const topic = narrow_state.topic();
         const user_ids_string = narrow_state.pm_ids_string();
         if (stream_id !== undefined && topic !== undefined) {
-            return get_stream_recipient_label(stream_id, topic);
+            return get_channel_recipient_label(stream_id, topic);
         }
         if (user_ids_string !== undefined) {
             // Check for validity of user ids to avoid any errors in case user
@@ -130,7 +130,7 @@ export function get_recipient_label(
     const selected_message = message_lists.current.selected_message();
     if (selected_message !== undefined) {
         if (selected_message?.is_stream) {
-            return get_stream_recipient_label(selected_message.stream_id, selected_message.topic);
+            return get_channel_recipient_label(selected_message.stream_id, selected_message.topic);
         }
         const user_ids = people.user_ids_string_to_ids_array(selected_message.to_user_ids);
         return get_direct_message_recipient_label(user_ids);
