@@ -20,10 +20,10 @@ function should_ignore_reaction(
     reaction_sender_id?: number,
 ): boolean {
     if (message.type === "stream") {
-        if (user_topics.is_topic_muted(message.stream_id, message.topic)) {
-            return true;
-        }
-        if (stream_data.is_muted(message.stream_id)) {
+        if (
+            user_topics.is_topic_muted(message.stream_id, message.topic) ||
+            stream_data.is_muted(message.stream_id)
+        ) {
             return true;
         }
     }
@@ -48,10 +48,7 @@ export function update_frequently_used_emojis_list(): void {
 export function update_emoji_frequency_on_add_reaction_event(event: reactions.ReactionEvent): void {
     const message_id = event.message_id;
     const message = message_store.get(message_id);
-    if (message === undefined) {
-        return;
-    }
-    if (should_ignore_reaction(message, event.user_id)) {
+    if (message === undefined || should_ignore_reaction(message, event.user_id)) {
         return;
     }
     const emoji_id = reactions.get_local_reaction_id(event);
@@ -78,10 +75,7 @@ export function update_emoji_frequency_on_remove_reaction_event(
 ): void {
     const message_id = event.message_id;
     const message = message_store.get(message_id);
-    if (message === undefined) {
-        return;
-    }
-    if (should_ignore_reaction(message, event.user_id)) {
+    if (message === undefined || should_ignore_reaction(message, event.user_id)) {
         return;
     }
 

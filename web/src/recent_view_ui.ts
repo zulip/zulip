@@ -143,10 +143,10 @@ export function set_hide_other_views(callback: () => void): void {
 const ORIGINAL_ICON_CLASS_DATA_ATTR = "data-vdots-original-icon-class";
 
 function swap_visibility_icon_to_vdots($icon: JQuery): void {
-    if ($icon.hasClass("recent-view-row-topic-menu")) {
-        return;
-    }
-    if ($icon.attr(ORIGINAL_ICON_CLASS_DATA_ATTR) !== undefined) {
+    if (
+        $icon.hasClass("recent-view-row-topic-menu") ||
+        $icon.attr(ORIGINAL_ICON_CLASS_DATA_ATTR) !== undefined
+    ) {
         return;
     }
     const icon_element = $icon.get(0);
@@ -1184,10 +1184,7 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
 }
 
 export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): boolean => {
-    if (!recent_view_util.is_visible()) {
-        return false;
-    }
-    if (!recent_view_data.conversations.has(topic_key)) {
+    if (!recent_view_util.is_visible() || !recent_view_data.conversations.has(topic_key)) {
         return false;
     }
 

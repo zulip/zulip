@@ -802,11 +802,10 @@ export function initialize(finished_initial_fetch: () => void): void {
         // Since we backfill a lot more messages here compared to rendered message list,
         // we can try populating them if we can do so locally.
         for (const msg_list_data of message_list_data_cache.all()) {
-            if (msg_list_data === recent_view_messages_data) {
-                continue;
-            }
-
-            if (!msg_list_data.filter.can_apply_locally()) {
+            if (
+                msg_list_data === recent_view_messages_data ||
+                !msg_list_data.filter.can_apply_locally()
+            ) {
                 continue;
             }
 

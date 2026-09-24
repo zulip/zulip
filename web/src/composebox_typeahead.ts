@@ -1626,10 +1626,7 @@ export function should_suppress_topic_typeahead(
     query: string,
     items: (string | UserPillData)[],
 ): boolean {
-    if (!query) {
-        return false;
-    }
-    if (items.some((item) => typeof item !== "string")) {
+    if (!query || items.some((item) => typeof item !== "string")) {
         return false;
     }
     const topics = items.filter((item): item is string => typeof item === "string");

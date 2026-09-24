@@ -348,11 +348,8 @@ function render_widgets(
 
 function setup_event_handlers(): void {
     $("#drafts_table .restore-overlay-message").on("click", function (e) {
-        if (mouse_drag.is_drag(e)) {
-            return;
-        }
-
         if (
+            mouse_drag.is_drag(e) ||
             messages_overlay_ui.handle_overlay_media_click(
                 e,
                 "drafts",

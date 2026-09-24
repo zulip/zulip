@@ -158,11 +158,7 @@ export function open(
     });
 
     $micromodal.find(".modal__overlay").on("click", (e) => {
-        if (!$(e.target).is(".modal__overlay")) {
-            return;
-        }
-
-        if ($(e.target).hasClass("ignore-overlay-click")) {
+        if (!$(e.target).is(".modal__overlay") || $(e.target).hasClass("ignore-overlay-click")) {
             return;
         }
 

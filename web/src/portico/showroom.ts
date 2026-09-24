@@ -471,10 +471,7 @@ $(window).on("load", () => {
             const solid_button = current_banner.buttons.find(
                 (button) => button.variant === "solid",
             );
-            if (solid_button === undefined) {
-                return;
-            }
-            if (!solid_button.icon) {
+            if (!solid_button?.icon) {
                 return;
             }
             solid_button.icon = this.value;
@@ -561,10 +558,7 @@ $(window).on("load", () => {
             const subtle_button = current_banner.buttons.find(
                 (button) => button.variant === "subtle",
             );
-            if (subtle_button === undefined) {
-                return;
-            }
-            if (!subtle_button.icon) {
+            if (!subtle_button?.icon) {
                 return;
             }
             subtle_button.icon = this.value;
@@ -649,10 +643,7 @@ $(window).on("load", () => {
         "change",
         function () {
             const text_button = current_banner.buttons.find((button) => button.variant === "text");
-            if (text_button === undefined) {
-                return;
-            }
-            if (!text_button.icon) {
+            if (!text_button?.icon) {
                 return;
             }
             text_button.icon = this.value;

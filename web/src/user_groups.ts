@@ -455,11 +455,7 @@ export function check_group_can_be_subgroup(
     }
 
     const already_subgroup_ids = target_user_group.direct_subgroup_ids;
-    if (subgroup.id === target_user_group.id) {
-        return false;
-    }
-
-    if (already_subgroup_ids.has(subgroup.id)) {
+    if (subgroup.id === target_user_group.id || already_subgroup_ids.has(subgroup.id)) {
         return false;
     }
 

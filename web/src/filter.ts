@@ -1021,10 +1021,10 @@ export class Filter {
 
     static is_spectator_compatible(terms: NarrowTerm[]): boolean {
         for (const term of terms) {
-            if (term.operand === undefined) {
-                return false;
-            }
-            if (!hash_parser.is_an_allowed_web_public_narrow(term.operator, term.operand)) {
+            if (
+                term.operand === undefined ||
+                !hash_parser.is_an_allowed_web_public_narrow(term.operator, term.operand)
+            ) {
                 return false;
             }
         }
@@ -1338,47 +1338,19 @@ export class Filter {
             return true;
         }
 
-        if (_.isEqual(term_types, ["channel", "topic"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, ["dm", "with"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, ["dm"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, ["channel"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, ["is-dm"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, ["not-is-dm"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, ["is-resolved"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, ["in-home"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, ["not-is-muted"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, ["in-all"])) {
-            return true;
-        }
-
-        if (_.isEqual(term_types, ["not-channels-archived"])) {
+        if (
+            _.isEqual(term_types, ["channel", "topic"]) ||
+            _.isEqual(term_types, ["dm", "with"]) ||
+            _.isEqual(term_types, ["dm"]) ||
+            _.isEqual(term_types, ["channel"]) ||
+            _.isEqual(term_types, ["is-dm"]) ||
+            _.isEqual(term_types, ["not-is-dm"]) ||
+            _.isEqual(term_types, ["is-resolved"]) ||
+            _.isEqual(term_types, ["in-home"]) ||
+            _.isEqual(term_types, ["not-is-muted"]) ||
+            _.isEqual(term_types, ["in-all"]) ||
+            _.isEqual(term_types, ["not-channels-archived"])
+        ) {
             return true;
         }
 
@@ -1401,25 +1373,15 @@ export class Filter {
             return true;
         }
         const term_types = this.sorted_term_types();
-        if (_.isEqual(term_types, ["is-mentioned"])) {
-            return true;
-        }
-        if (_.isEqual(term_types, ["is-starred"])) {
-            return true;
-        }
-        if (_.isEqual(term_types, ["channels-public"])) {
-            return true;
-        }
-        if (_.isEqual(term_types, ["channels-web-public"])) {
-            return true;
-        }
-        if (_.isEqual(term_types, ["channels-archived"])) {
-            return true;
-        }
-        if (_.isEqual(term_types, ["sender"])) {
-            return true;
-        }
-        if (_.isEqual(term_types, ["is-followed"])) {
+        if (
+            _.isEqual(term_types, ["is-mentioned"]) ||
+            _.isEqual(term_types, ["is-starred"]) ||
+            _.isEqual(term_types, ["channels-public"]) ||
+            _.isEqual(term_types, ["channels-web-public"]) ||
+            _.isEqual(term_types, ["channels-archived"]) ||
+            _.isEqual(term_types, ["sender"]) ||
+            _.isEqual(term_types, ["is-followed"])
+        ) {
             return true;
         }
         if (
