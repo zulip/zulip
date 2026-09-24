@@ -115,6 +115,10 @@ class Commit:
 
 
 class CommitRangeAnalyzer:
+    CHERRY_PICK_TRAILER = re.compile(
+        r"^\(cherry picked from commit ([0-9a-f]{40})\)$", re.MULTILINE
+    )
+
     COMMIT_PRS_QUERY = """
     query($oid: GitObjectID!, $repo: String!) {
       repository(owner: "zulip", name: $repo) {
@@ -290,12 +294,36 @@ class CommitRangeAnalyzer:
         data = result.get("data", {})
         return data.get("repository", {}).get("object")
 
+    def _fetch_cherry_pick_source(
+        self, commit_sha: str, commit_obj: dict[str, Any], console: Console
+    ) -> dict[str, Any] | None:
+        match = self.CHERRY_PICK_TRAILER.search(commit_obj.get("messageBody", ""))
+        if match is None:
+            return None
+
+        source_sha = match[1]
+        source_obj = self._fetch_commit(source_sha)
+        if source_obj is None:
+            console.log(f"{commit_sha} was cherry-picked from unknown commit {source_sha}")
+            return None
+        if not source_obj.get("associatedPullRequests", {}).get("nodes", []):
+            return None
+        return source_obj
+
     def get_issues_for_commit(
         self, commit_sha: str, console: Console
     ) -> tuple[dict[Issue, set[PullRequest]], set[PullRequest], Commit | None]:
         commit_obj = self._fetch_commit(commit_sha)
         if commit_obj is None:
             return dict(), set(), None
+
+        # A commit cherry-picked onto a release branch has a new hash
+        # that GitHub does not associate with the original PR, so
+        # look up the commit it was picked from instead.
+        if not commit_obj.get("associatedPullRequests", {}).get("nodes", []):
+            source_obj = self._fetch_cherry_pick_source(commit_sha, commit_obj, console)
+            if source_obj is not None:
+                commit_obj = source_obj
 
         commit_message = commit_obj.get("messageBody", "")
         pr_nodes = commit_obj.get("associatedPullRequests", {}).get("nodes", [])
