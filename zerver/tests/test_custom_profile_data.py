@@ -7,6 +7,7 @@ from typing_extensions import override
 
 from zerver.actions.custom_profile_fields import (
     do_remove_realm_custom_profile_field,
+    do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
     try_reorder_realm_custom_profile_fields,
 )
@@ -923,7 +924,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             )
 
         # Update value of field
-        with self.assert_database_query_count(36):
+        with self.assert_database_query_count(13):
             result = self.client_patch(
                 "/json/users/me/profile_data",
                 {
@@ -960,6 +961,45 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         for field_dict in iago.profile_data():
             if field_dict["id"] == field.id:
                 self.assertEqual(field_dict["value"], "foobar")
+
+    def test_update_profile_data_handles_concurrent_creation(self) -> None:
+        """
+        Two requests can both observe that a user has no CustomProfileFieldValue for a field
+        and both try to create one; the unique constraint on (user_profile, field) means only
+        one INSERT can succeed. Verify the race is handled.
+        """
+        realm = get_realm("zulip")
+        iago = self.example_user("iago")
+        field = CustomProfileField.objects.get(name="GitHub username", realm=realm)
+        CustomProfileFieldValue.objects.filter(user_profile=iago, field=field).delete()
+
+        real_bulk_create = CustomProfileFieldValue.objects.bulk_create
+
+        def racing_bulk_create(*args: Any, **kwargs: Any) -> Any:
+            # Simulate a concurrent request creating the same row
+            # first, in the window between our own SELECT and this
+            # bulk_create call.
+            CustomProfileFieldValue.objects.create(
+                user_profile=iago, field=field, value="raced-in-value"
+            )
+            return real_bulk_create(*args, **kwargs)
+
+        with mock.patch.object(
+            CustomProfileFieldValue.objects, "bulk_create", side_effect=racing_bulk_create
+        ):
+            do_update_user_custom_profile_data_if_changed(
+                iago,
+                [{"id": field.id, "value": "our-value"}],
+                iago,
+                notify=False,
+            )
+
+        # Verify the request finished gracefully, with one row holding our value.
+        values = CustomProfileFieldValue.objects.filter(user_profile=iago, field=field)
+        self.assertEqual(values.count(), 1)
+        value = values.first()
+        assert value is not None
+        self.assertEqual(value.value, "our-value")
 
     def test_update_invalid_dropdown_field(self) -> None:
         field_name = "Favorite editor"
