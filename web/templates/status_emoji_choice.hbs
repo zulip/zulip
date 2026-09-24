@@ -1,0 +1,11 @@
+{{! Renders one status emoji: text colon syntax, native Unicode glyph,
+realm image, or sprite span. `extra_class` is the context-specific class. }}
+{{#if emoji_alt_code}}
+<div class="emoji_alt_code">&nbsp;:{{emoji_name}}:</div>
+{{else if unicode_emoji}}
+<div class="emoji {{extra_class}} emoji-native">{{unicode_emoji}}</div>
+{{else if url}}
+<img src="{{url}}" class="emoji {{extra_class}}" />
+{{else}}
+<div class="emoji {{extra_class}} emoji-{{emoji_code}}"></div>
+{{/if}}
