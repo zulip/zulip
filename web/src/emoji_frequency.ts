@@ -19,13 +19,12 @@ function should_ignore_reaction(
     message: message_store.Message,
     reaction_sender_id?: number,
 ): boolean {
-    if (message.type === "stream") {
-        if (
-            user_topics.is_topic_muted(message.stream_id, message.topic) ||
-            stream_data.is_muted(message.stream_id)
-        ) {
-            return true;
-        }
+    if (
+        message.type === "stream" &&
+        (user_topics.is_topic_muted(message.stream_id, message.topic) ||
+            stream_data.is_muted(message.stream_id))
+    ) {
+        return true;
     }
     if (reaction_sender_id && muted_users.is_user_muted(reaction_sender_id)) {
         return true;
