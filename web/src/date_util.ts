@@ -105,6 +105,150 @@ export function get_matching_default_date_suggestions(operand: string): string[]
     return [...date_suggestions, ...filtered_default_suggestions];
 }
 
+type DatePillLabel = {
+    label: string;
+    operand: string;
+};
+
+// Pill labels a user can type instead of a yyyy-MM-dd operand.
+// The day-before-yesterday pill already shows an ISO date, so it is
+// not a phrase we should glue back together.
+function date_pill_labels(): DatePillLabel[] {
+    return Object.values(get_default_suggestions())
+        .filter(
+            (suggestion) =>
+                maybe_get_parsed_iso_8601_date(suggestion.search_pill_value) === undefined,
+        )
+        .map((suggestion) => ({
+            label: suggestion.search_pill_value,
+            operand: suggestion.operand,
+        }));
+}
+
+// True when the user has typed this whole pill phrase, either alone
+// or with a space and more words after it. "a week" is not finished;
+// "a week ago bugs" is, and "bugs" is not part of the phrase.
+function pill_label_was_typed_in_full(pill_label: string, typed_text: string): boolean {
+    const typed_lower = typed_text.toLowerCase();
+    const label_lower = pill_label.toLowerCase();
+    return typed_lower === label_lower || typed_lower.startsWith(label_lower + " ");
+}
+
+export type DatePillPhraseMatch = {
+    // yyyy-MM-dd operands. One entry when a full label was consumed,
+    // or every label the typed text could still complete.
+    operands: string[];
+    // Search text after a completed label. Empty while the label is
+    // still being typed, so the caller does not treat those words as a query.
+    remainder: string;
+    // True when a whole pill label was consumed. False when `typed` is
+    // only a prefix, so a later operator must not be rewritten as if the
+    // phrase were finished.
+    label_consumed: boolean;
+};
+
+// A fully typed label consumes only itself. "a week ago bugs" is that
+// day, plus a search for "bugs".
+function match_fully_typed_date_phrase(
+    labels: DatePillLabel[],
+    typed: string,
+): DatePillPhraseMatch | undefined {
+    const completed = labels.find((entry) => pill_label_was_typed_in_full(entry.label, typed));
+    if (completed === undefined) {
+        return undefined;
+    }
+    // The match is case-insensitive, but the label and the typed
+    // prefix are the same length, so slicing keeps the remainder's case.
+    return {
+        operands: [completed.operand],
+        remainder: typed.slice(completed.label.length).trim(),
+        label_consumed: true,
+    };
+}
+
+// "a week" and "a w" are not finished labels. Every label the text
+// could still become is offered, and the words stay out of the query.
+function match_date_phrase_prefix(
+    labels: DatePillLabel[],
+    typed: string,
+): DatePillPhraseMatch | undefined {
+    const typed_lower = typed.toLowerCase();
+    const prefix_matches = labels.filter((entry) =>
+        entry.label.toLowerCase().startsWith(typed_lower),
+    );
+    if (prefix_matches.length === 0) {
+        return undefined;
+    }
+    return {
+        operands: prefix_matches.map((entry) => entry.operand),
+        remainder: "",
+        label_consumed: false,
+    };
+}
+
+// How many leading words of `typed_words` are a tail of `label`.
+// Zero when it is not. One word is never enough: "ago" is in both
+// "a week ago" and "a month ago", and belongs to the search operator.
+function suffix_word_count(label: string, typed_words: string[]): number {
+    const label_words = label.toLowerCase().split(/\s+/);
+    for (let length = Math.min(label_words.length, typed_words.length); length >= 2; length -= 1) {
+        const suffix = label_words.slice(-length).join(" ");
+        const head = typed_words
+            .slice(0, length)
+            .map((word) => word.toLowerCase())
+            .join(" ");
+        if (suffix === head) {
+            return length;
+        }
+    }
+    return 0;
+}
+
+// "week ago" is the tail of "a week ago", not a prefix. The four
+// labels do not share a suffix of two or more words, so a longer
+// match always belongs to one label.
+function match_date_phrase_suffix(
+    labels: DatePillLabel[],
+    typed: string,
+): DatePillPhraseMatch | undefined {
+    const typed_words = typed.split(/\s+/).filter((word) => word !== "");
+    let suffix_match: {operand: string; consumed: number} | undefined;
+    for (const entry of labels) {
+        const consumed = suffix_word_count(entry.label, typed_words);
+        if (consumed === 0) {
+            continue;
+        }
+        if (suffix_match === undefined || consumed > suffix_match.consumed) {
+            suffix_match = {operand: entry.operand, consumed};
+        }
+    }
+    if (suffix_match === undefined) {
+        return undefined;
+    }
+    return {
+        operands: [suffix_match.operand],
+        remainder: typed_words.slice(suffix_match.consumed).join(" "),
+        label_consumed: true,
+    };
+}
+
+// `typed` is a date operand and any following search words, already
+// glued into one string. A fully typed label wins over a prefix, and a
+// prefix wins over a suffix. Undefined means this is not a pill phrase.
+export function match_date_pill_phrase(typed: string): DatePillPhraseMatch | undefined {
+    const trimmed = typed.trim();
+    if (trimmed.length === 0) {
+        return undefined;
+    }
+
+    const labels = date_pill_labels();
+    return (
+        match_fully_typed_date_phrase(labels, trimmed) ??
+        match_date_phrase_prefix(labels, trimmed) ??
+        match_date_phrase_suffix(labels, trimmed)
+    );
+}
+
 // The goal here is to keep matching a potentially half-formed
 // operand with the target date until it diverts explicitly.
 // When it diverts, we just switch to using "01" for the

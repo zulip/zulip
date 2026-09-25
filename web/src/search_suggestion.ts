@@ -183,10 +183,13 @@ const PERSON_OPS: ReadonlySet<NarrowCanonicalOperator> = new Set([
     "mentions",
 ]);
 
+const DATE_PHRASE_OPS: ReadonlySet<NarrowCanonicalOperator> = new Set(["date"]);
+
 // If `text_search_terms` ends in `<operator>:<word1> search:<word2>` where
 // `operator` is in `supported_ops`, return the combined `<operator>:<word1>
-// <word2>` term. The caller uses this to replace the two trailing terms
-// with the merged one, so the multi-word operand can be matched.
+// <word2>` term. Callers pass either the whole query or a two-term slice.
+// The merged operand is what gets matched: a channel or topic name, or a
+// date pill label (`date:a` + `search:week ago` → `a week ago`).
 function compute_multi_word_merged_term(
     text_search_terms: NarrowCanonicalTermSuggestion[],
     supported_ops: ReadonlySet<NarrowCanonicalOperator>,
@@ -670,6 +673,8 @@ function ignore_resolved_topic_prefix(entry: ChannelTopicEntry, case_insensitive
     return topic_name;
 }
 
+// Only the last operand is passed in. Filter.parse splits an unquoted
+// phrase, and `get_suggestions` handles that before this runs.
 function get_date_suggestions(
     last: NarrowCanonicalTermSuggestion,
     terms: NarrowCanonicalTerm[],
@@ -1527,13 +1532,153 @@ function get_suggestions_for_multi_word_channel_or_topic(
     return attacher.get_result().slice(0, max_items);
 }
 
+type DatePillPhrase = {
+    negated: boolean;
+    match: date_util.DatePillPhraseMatch;
+    // Index of the `date` term in the text terms this phrase was found in.
+    index: number;
+    // The phrase is the trailing `date` + `search` pair, so the user is
+    // still typing it. A later operator means they have moved on.
+    tail_search: boolean;
+    // True when the rest of the label was a following `search` term.
+    // Filter.parse split the label. A second `date:` plus that split
+    // has no single reading, so suggestions are dropped.
+    label_was_split: boolean;
+};
+
+// A following `search` term is part of the phrase, so `date:a` +
+// `week ago bugs` is matched as one string. An operand that is
+// already `yyyy-MM-dd` is not a phrase.
+function find_date_pill_phrase(
+    text_search_terms: NarrowCanonicalTermSuggestion[],
+): DatePillPhrase | undefined {
+    for (let i = 0; i < text_search_terms.length; i += 1) {
+        const term = text_search_terms[i]!;
+        if (
+            term.operator !== "date" ||
+            date_util.maybe_get_parsed_iso_8601_date(term.operand) !== undefined
+        ) {
+            continue;
+        }
+
+        const next = text_search_terms[i + 1];
+        if (next?.operator === "search") {
+            const merged = compute_multi_word_merged_term(
+                text_search_terms.slice(i, i + 2),
+                DATE_PHRASE_OPS,
+            );
+            assert(merged !== undefined);
+            const match = date_util.match_date_pill_phrase(merged.operand);
+            if (match === undefined) {
+                continue;
+            }
+            return {
+                negated: term.negated === true,
+                match,
+                index: i,
+                tail_search: i + 2 === text_search_terms.length,
+                label_was_split: true,
+            };
+        }
+
+        // `date:today has:link` has no search term to squash. A quoted
+        // operand can hold the label and the words after it in one term.
+        if (i === text_search_terms.length - 1 && !term.operand.includes(" ")) {
+            continue;
+        }
+        const match = date_util.match_date_pill_phrase(term.operand);
+        if (match?.label_consumed !== true) {
+            continue;
+        }
+        if (match.remainder === "" && i === text_search_terms.length - 1) {
+            // The operand is a finished label and nothing follows it, as in
+            // `date:"a week ago"`. `get_date_suggestions` handles that for us.
+            continue;
+        }
+        return {
+            negated: term.negated === true,
+            match,
+            index: i,
+            tail_search: false,
+            label_was_split: false,
+        };
+    }
+    return undefined;
+}
+
+function date_phrase_blocked(
+    pill_search_terms: NarrowCanonicalTerm[],
+    text_search_terms: NarrowCanonicalTermSuggestion[],
+): boolean {
+    if (match_criteria(pill_search_terms, incompatible_patterns.date)) {
+        return true;
+    }
+    return text_search_terms.some(
+        (term) =>
+            term.operator === "near" ||
+            (term.operator === "date" &&
+                date_util.maybe_get_parsed_iso_8601_date(term.operand) !== undefined),
+    );
+}
+
+// Turn the phrase `find_date_pill_phrase` returned into a
+// `date:<yyyy-MM-dd>` term at `phrase.index`. When the label was
+// split onto a following search term, that term is replaced too.
+// Words after the label stay a search operand.
+function rewrite_finished_date_phrase(
+    text_search_terms: NarrowCanonicalTermSuggestion[],
+    phrase: DatePillPhrase,
+): NarrowCanonicalTermSuggestion[] {
+    const operand = phrase.match.operands[0];
+    assert(operand !== undefined);
+    // The date term, plus the search term the label was split onto.
+    const consumed_terms = phrase.label_was_split ? 2 : 1;
+    const rewritten = text_search_terms.slice(0, phrase.index);
+    rewritten.push({
+        operator: "date",
+        operand,
+        raw_operand: operand,
+        negated: false,
+    });
+    if (phrase.match.remainder !== "") {
+        rewritten.push({
+            operator: "search",
+            operand: phrase.match.remainder,
+            raw_operand: phrase.match.remainder,
+            negated: false,
+        });
+    }
+    rewritten.push(...text_search_terms.slice(phrase.index + consumed_terms));
+    return rewritten;
+}
+
+// The first word of a date phrase is not itself a date,
+// so showing it would drop the phrase.
+function suggest_unfinished_date_phrase(
+    pill_search_terms: NarrowCanonicalTerm[],
+    text_search_terms: NarrowCanonicalTermSuggestion[],
+    phrase: DatePillPhrase,
+): Suggestion[] {
+    const valid_text_terms_before = text_search_terms
+        .slice(0, phrase.index)
+        .map((term) => Filter.convert_suggestion_to_term(term))
+        .filter((term) => term !== undefined);
+    const base_terms = [...pill_search_terms, ...valid_text_terms_before];
+    const base_line = get_default_suggestion_line(base_terms);
+    const attacher = new Attacher(base_line, false, false);
+    for (const operand of phrase.match.operands) {
+        attacher.push([...base_line, format_as_suggestion([{operator: "date", operand}])]);
+    }
+    return attacher.get_result().slice(0, max_num_of_search_results);
+}
+
 export let get_suggestions = function (
     pill_search_terms: NarrowCanonicalTerm[],
     text_search_terms_non_canonical: NarrowTermSuggestion[],
     add_current_filter = false,
 ): Suggestion[] {
     let suggestion_line: SuggestionLine;
-    const text_search_terms: NarrowCanonicalTermSuggestion[] = text_search_terms_non_canonical.map(
+    let text_search_terms: NarrowCanonicalTermSuggestion[] = text_search_terms_non_canonical.map(
         (term) => {
             // Try to parse term into canonical form first to
             // perform any necessary conversions.
@@ -1554,6 +1699,29 @@ export let get_suggestions = function (
             };
         },
     );
+    // Filter.parse splits an unquoted label on spaces, so
+    // `date:a week ago bugs` arrives as `date:a` plus a search for
+    // `week ago bugs`. The date filterer would drop `a` and the top
+    // row would be a keyword search, so match the pill label first.
+    const date_phrase = find_date_pill_phrase(text_search_terms);
+    if (date_phrase?.negated === true) {
+        return [];
+    }
+    const date_operator_count = text_search_terms.filter((term) => term.operator === "date").length;
+    if (
+        date_phrase !== undefined &&
+        (date_phrase_blocked(pill_search_terms, text_search_terms) ||
+            (date_phrase.label_was_split && date_operator_count > 1))
+    ) {
+        return [];
+    }
+    if (
+        date_phrase !== undefined &&
+        date_phrase.match.label_consumed &&
+        date_operator_count === 1
+    ) {
+        text_search_terms = rewrite_finished_date_phrase(text_search_terms, date_phrase);
+    }
     // search_terms correspond to the terms for the query in the input.
     // This includes the entire query entered in the searchbox.
     // terms correspond to the terms for the entire query entered in the searchbox.
@@ -1586,6 +1754,11 @@ export let get_suggestions = function (
             merged_term,
             add_current_filter,
         );
+    }
+
+    // The words after `date:` are still the phrase, not a search.
+    if (date_phrase !== undefined && !date_phrase.match.label_consumed && date_phrase.tail_search) {
+        return suggest_unfinished_date_phrase(pill_search_terms, text_search_terms, date_phrase);
     }
 
     // Handle spaces inside the operand of a person operator. For e.g.
