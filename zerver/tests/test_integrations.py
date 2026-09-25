@@ -43,23 +43,17 @@ class IntegrationsTestCase(ZulipTestCase):
         self.assertEqual(image_path, "static/images/integrations/ci/002.png")
 
     def test_get_logo_path(self) -> None:
-        # Test with an integration that passed logo as an argument
+        # Test integration with logo argument, so no logo in default paths
         integration = INTEGRATIONS["slack_incoming"]
-        with self.assertRaises(AssertionError):
-            integration.get_logo_path()
+        self.assertEqual(integration.get_logo_path(), Integration.ZULIP_LOGO_STATIC_PATH_PNG)
 
         # Test with an integration that has only a PNG option
         integration = INTEGRATIONS["onyx"]
         self.assertEqual(integration.get_logo_path(), "images/integrations/logos/onyx.png")
 
         # Test the fallback logo with an embedded integration without a logo
-        ZULIP_LOGO_STATIC_PATH_PNG = "images/logo/zulip-icon-128x128.png"
         integration = EMBEDDED_BOTS[0]
-        with self.assertRaises(AssertionError):
-            integration.get_logo_path()
-        self.assertEqual(
-            integration.get_logo_path(ZULIP_LOGO_STATIC_PATH_PNG), ZULIP_LOGO_STATIC_PATH_PNG
-        )
+        self.assertEqual(integration.get_logo_path(), Integration.ZULIP_LOGO_STATIC_PATH_PNG)
 
         # Test with a bot integration that has a logo
         # They use different DEFAULT_* paths.
@@ -74,8 +68,32 @@ class IntegrationsTestCase(ZulipTestCase):
             integration.get_bot_avatar_path(), "images/integrations/bot_avatars/prometheus.png"
         )
 
-        with self.assertRaises(AssertionError):
-            integration = Integration("alertmanager", ["misc"])
+        # bot avatar path for an integration using the fallback Zulip logo
+        integration = Integration("alertmanager", ["misc"])
+        self.assertEqual(
+            integration.get_bot_avatar_path(),
+            "images/integrations/bot_avatars/zulip-icon-128x128.png",
+        )
+
+    def test_no_missing_logo(self) -> None:
+        # Integrations without logos in self-hosted servers can use the
+        # fallback Zulip logo. Official integrations should have their own
+        # logos.
+        integrations_using_fallback_logo = {
+            integration.name
+            for integration in INTEGRATIONS.values()
+            if integration.is_enabled_in_catalog()
+            and integration.logo_path == Integration.ZULIP_LOGO_STATIC_PATH_PNG
+        }
+
+        self.assertEqual(
+            integrations_using_fallback_logo,
+            set(),
+            "\n\nThe following integrations have no logo of their own:\n"
+            + "\n".join(integrations_using_fallback_logo)
+            + '\nAdd an SVG for each to "static/images/integrations/logos", or run'
+            + '\n"./tools/provision" if these are bot integrations.',
+        )
 
     def test_no_missing_doc_screenshot_config(self) -> None:
         integration_names = {
