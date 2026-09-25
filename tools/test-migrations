@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 echo 'Testing whether migrations are consistent with models'
 
 # Check if any migration looks to have a meaningless 'auto' name,
