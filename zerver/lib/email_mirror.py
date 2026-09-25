@@ -295,11 +295,11 @@ talon_initialized = False
 
 
 def extract_plaintext_body(message: EmailMessage, include_quotes: bool = False) -> str | None:
-    import talon_core
+    import talon
 
     global talon_initialized
     if not talon_initialized:
-        talon_core.init()
+        talon.init()
         talon_initialized = True
 
     plaintext_content = get_message_part_by_type(message, "text/plain")
@@ -307,17 +307,17 @@ def extract_plaintext_body(message: EmailMessage, include_quotes: bool = False) 
         if include_quotes:
             return plaintext_content
         else:
-            return talon_core.quotations.extract_from_plain(plaintext_content)
+            return talon.quotations.extract_from_plain(plaintext_content)
     else:
         return None
 
 
 def extract_html_body(message: EmailMessage, include_quotes: bool = False) -> str | None:
-    import talon_core
+    import talon
 
     global talon_initialized
     if not talon_initialized:  # nocoverage
-        talon_core.init()
+        talon.init()
         talon_initialized = True
 
     html_content = get_message_part_by_type(message, "text/html")
@@ -325,7 +325,7 @@ def extract_html_body(message: EmailMessage, include_quotes: bool = False) -> st
         if include_quotes:
             return convert_html_to_markdown(html_content)
         else:
-            return convert_html_to_markdown(talon_core.quotations.extract_from_html(html_content))
+            return convert_html_to_markdown(talon.quotations.extract_from_html(html_content))
     else:
         return None
 

@@ -8,7 +8,7 @@ import tempfile
 from collections.abc import Callable, Collection, Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Union, cast
+from typing import TYPE_CHECKING, Any, Union
 from unittest import TestResult, mock, skipUnless
 from urllib.parse import parse_qs, quote, urlencode
 
@@ -764,7 +764,7 @@ Output:
     def _get_page_params(self, result: "TestHttpResponse") -> dict[str, Any]:
         """Helper for parsing page_params after fetching the web app's home view."""
         doc = lxml.html.document_fromstring(result.content)
-        div = cast(lxml.html.HtmlMixin, doc).get_element_by_id("page-params")
+        div = doc.get_element_by_id("page-params")
         assert div is not None
         page_params_json = div.get("data-params")
         assert page_params_json is not None
@@ -774,10 +774,10 @@ Output:
     def _get_sentry_params(self, response: "TestHttpResponse") -> dict[str, Any] | None:
         doc = lxml.html.document_fromstring(response.content)
         try:
-            script = cast(lxml.html.HtmlMixin, doc).get_element_by_id("sentry-params")
+            script = doc.get_element_by_id("sentry-params")
         except KeyError:
             return None
-        assert script is not None and script.text is not None
+        assert script.text is not None
         return orjson.loads(script.text)
 
     def check_rendered_logged_in_app(self, result: "TestHttpResponse") -> None:
