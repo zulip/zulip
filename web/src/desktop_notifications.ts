@@ -74,8 +74,19 @@ export function get_notifications(): NoticeMemory {
     return notice_memory;
 }
 
+let ignore_next_focus_close = false;
+
+export function suppress_next_focus_close(): void {
+    ignore_next_focus_close = true;
+}
+
 export function initialize(): void {
     $(window).on("focus", () => {
+        if (ignore_next_focus_close) {
+            ignore_next_focus_close = false;
+            return;
+        }
+
         for (const notice_mem_entry of notice_memory.values()) {
             notice_mem_entry.obj.close();
         }

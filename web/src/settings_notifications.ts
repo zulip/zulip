@@ -399,9 +399,13 @@ export function set_up(settings_panel: SettingsPanel): void {
         // do not need to do a mobile check here--as that banner is
         // not shown in a mobile context anyway.
         void (async () => {
+            desktop_notifications.suppress_next_focus_close();
             const permission = await Notification.requestPermission();
             if (permission === "granted") {
                 update_desktop_notification_banner();
+                message_notifications.send_test_notification(
+                    $t({defaultMessage: "Zulip desktop notifications enabled"}),
+                );
             } else if (permission === "denied") {
                 window.open(
                     "/help/desktop-notifications#check-platform-settings",
