@@ -717,9 +717,30 @@ export function build_and_process_quote_assets_for_messages(
 function quote_multiple_messages(opts: QuoteMessageOpts): void {
     const highlighted_message_ids = opts.highlighted_message_ids;
     assert(highlighted_message_ids !== undefined && highlighted_message_ids.length > 1);
+
+    // Read the bookend selection before the async fetch clears it; middle
+    // messages are always quoted in full.
+    const selection = window.getSelection();
+    const partial_markdown_by_id = new Map<number, string>();
+    if (selection !== null) {
+        const bookend_ids = [highlighted_message_ids[0]!, highlighted_message_ids.at(-1)!];
+        for (const message_id of bookend_ids) {
+            const markdown = get_selection_markdown_for_message(message_id, selection);
+            if (markdown !== undefined && markdown !== "") {
+                partial_markdown_by_id.set(message_id, markdown);
+            }
+        }
+    }
+
     build_and_process_quote_assets_for_messages(
         highlighted_message_ids,
         (quote_assets: QuoteAsset[]) => {
+            for (const asset of quote_assets) {
+                const partial_markdown = partial_markdown_by_id.get(asset.message.id);
+                if (partial_markdown !== undefined) {
+                    asset.quote_content = partial_markdown;
+                }
+            }
             const msg_for_compose_box = quote_assets[0]!.message;
             const messages = quote_assets.map((asset) => asset.message);
             const status = get_multi_message_quote_status(messages);
@@ -886,6 +907,52 @@ function get_range_intersection_with_element(range: Range, element: Node): Range
     return intersection;
 }
 
+function get_selection_markdown_for_message(
+    message_id: number,
+    selection: Selection,
+): string | undefined {
+    // Markdown of the selected part of a partially-selected bookend message;
+    // undefined if the whole content, or none of it, is selected.
+    if (message_lists.current === undefined) {
+        return undefined;
+    }
+    const message_content = message_lists.current.get_row(message_id).find(".message_content")[0];
+    if (message_content === undefined) {
+        return undefined;
+    }
+
+    const full_content_range = document.createRange();
+    full_content_range.selectNodeContents(message_content);
+
+    let html_to_convert = "";
+    for (let i = 0; i < selection.rangeCount; i += 1) {
+        const range = selection.getRangeAt(i);
+        if (!range.intersectsNode(message_content)) {
+            continue;
+        }
+        // A fresh range, so expanding it doesn't mutate the visible selection.
+        const intersection = get_range_intersection_with_element(range, message_content);
+        copy_messages.improve_special_element_selection_range(intersection);
+        if (
+            intersection.compareBoundaryPoints(Range.START_TO_START, full_content_range) <= 0 &&
+            intersection.compareBoundaryPoints(Range.END_TO_END, full_content_range) >= 0
+        ) {
+            // The selection spans this message's content in full.
+            return undefined;
+        }
+        // Preserve ancestors when the selection sits inside a nested block
+        // (e.g. a code block or list) to keep its structure in the markdown.
+        const preserve_ancestors =
+            $(intersection.commonAncestorContainer).parents(".message_content").length > 0;
+        html_to_convert += extract_range_html(intersection, preserve_ancestors);
+    }
+
+    if (html_to_convert === "") {
+        return undefined;
+    }
+    return compose_paste.paste_handler_converter(html_to_convert).trim();
+}
+
 export let get_message_selection = (selection = window.getSelection()): string => {
     assert(selection !== null);
     let selected_message_content_raw = "";
@@ -896,7 +963,7 @@ export let get_message_selection = (selection = window.getSelection()): string =
     // in one selection), and also compute their combined bounding rect.
     for (let i = 0; i < selection.rangeCount; i += 1) {
         let range = selection.getRangeAt(i);
-        copy_messages.improve_mention_selection_range(range);
+        copy_messages.improve_special_element_selection_range(range);
         const range_common_ancestor = range.commonAncestorContainer;
         let html_to_convert;
         let message_content;
