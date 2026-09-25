@@ -66,7 +66,8 @@ class Command(BaseCommand):
             "https://storage.googleapis.com/",
         ):
             tusd_args.append(f"-gcs-bucket={settings.S3_AUTH_UPLOADS_BUCKET}")
-            env_vars["GCS_SERVICE_ACCOUNT_FILE"] = "/etc/zulip/gcp_key.json"
+            if os.path.exists("/etc/zulip/gcp_key.json"):
+                env_vars["GCS_SERVICE_ACCOUNT_FILE"] = "/etc/zulip/gcp_key.json"
         else:
             tusd_args.append(f"-s3-bucket={settings.S3_AUTH_UPLOADS_BUCKET}")
             if settings.S3_ENDPOINT_URL is not None:
