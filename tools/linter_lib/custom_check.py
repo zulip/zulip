@@ -569,6 +569,7 @@ html_rules: list["Rule"] = [
             "templates/corporate/jobs.html",
             "templates/corporate/zulip-cloud.html",
             "templates/corporate/for/business.html",
+            "templates/corporate/slack-alternative.html",
             "templates/corporate/support/support_request.html",
             "templates/corporate/support/support_request_thanks.html",
             "templates/zerver/emails/support_request.html",
