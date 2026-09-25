@@ -1,3 +1,15 @@
+{{#if is_dm_narrow}}
+<div class="navbar-dm-avatars">
+    {{#each dm_users}}
+        <div class="navbar-dm-avatar" data-user-id="{{user_id}}" data-tippy-content="{{name}}" role="button" tabindex="0">
+            <div class="navbar-dm-avatar-image avatar-preload-background">
+                <img loading="lazy" src="{{avatar_url}}" alt="{{name}}" />
+            </div>
+            <span class="zulip-icon zulip-icon-{{user_circle_class}} {{user_circle_class}} user-circle"></span>
+        </div>
+    {{/each}}
+</div>
+{{else}}
 {{#if zulip_icon}}
 <i class="navbar-icon zulip-icon zulip-icon-{{zulip_icon}}" aria-hidden="true"></i>
 {{else if icon}}
@@ -15,4 +27,5 @@
         <i class="archived-indicator">({{t 'archived' }})</i>
     </span>
     {{/if}}
+{{/if}}
 {{/if}}
