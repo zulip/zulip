@@ -633,13 +633,6 @@
     --flatpickr-confirm-button-font-size: 18px;
 
     /*
-    Width to be reserved for document scrollbar when scrolling is disabled.
-    Using `scrollbar-gutter` would be more appropriate but doesn't has wide
-    support and doesn't work for `fixed` elements.
-    */
-    --disabled-scrollbar-width: 0px;
-
-    /*
     Right offset of simplebar scrollbar for `.column-right` when browser has
     overlay scrollbars which don't occupy any space. Currently only
     known to present on Mac (all browsers) and Firefox (all OS?). This seems
