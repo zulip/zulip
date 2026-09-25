@@ -1,0 +1,35 @@
+{
+    "id": "uev_00000000000000000000000005",
+    "type": "deployment.promoted",
+    "createdAt": 1740000005000,
+    "region": "sfo1",
+    "payload": {
+        "team": {
+            "id": "team_00000000000000000000000000"
+        },
+        "user": {
+            "id": "user_0000000000000000000000"
+        },
+        "project": {
+            "id": "prj_00000000000000000000000000"
+        },
+        "target": "production",
+        "plan": "pro",
+        "regions": [
+            "sfo1"
+        ],
+        "deployment": {
+            "id": "dpl_00000000000000000000000005",
+            "name": "my-app",
+            "url": "my-app-000005.vercel.app",
+            "meta": {
+                "githubCommitRef": "main",
+                "githubCommitMessage": "Ship the new pricing page"
+            }
+        },
+        "links": {
+            "deployment": "https://vercel.com/acme/my-app/dpl_00000000000000000000000005",
+            "project": "https://vercel.com/acme/my-app"
+        }
+    }
+}

@@ -1,0 +1,35 @@
+{
+    "id": "uev_00000000000000000000000001",
+    "type": "deployment.created",
+    "createdAt": 1740000001000,
+    "region": "sfo1",
+    "payload": {
+        "team": {
+            "id": "team_00000000000000000000000000"
+        },
+        "user": {
+            "id": "user_0000000000000000000000"
+        },
+        "project": {
+            "id": "prj_00000000000000000000000000"
+        },
+        "target": null,
+        "plan": "pro",
+        "regions": [
+            "sfo1"
+        ],
+        "deployment": {
+            "id": "dpl_00000000000000000000000001",
+            "name": "my-app",
+            "url": "my-app-000001.vercel.app",
+            "meta": {
+                "githubCommitRef": "preview-branch",
+                "githubCommitMessage": "Test preview build"
+            }
+        },
+        "links": {
+            "deployment": "https://vercel.com/acme/my-app/dpl_00000000000000000000000001",
+            "project": "https://vercel.com/acme/my-app"
+        }
+    }
+}
