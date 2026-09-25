@@ -147,6 +147,7 @@ export function enable_member_management({
     if (!group.is_system_group) {
         const $pill_container = $parent_container.find(".pill-container");
         pill_widget = add_group_members_pill.create({
+            $parent_container,
             $pill_container,
             get_potential_members,
             get_potential_groups: get_potential_subgroups,
@@ -617,6 +618,7 @@ export function initialize(): void {
         $parent_container: $("#groups_overlay_container"),
         pill_selector: ".edit_members_for_user_group .pill-container",
         button_selector: ".edit_members_for_user_group .add-member-button",
+        spinner_selector: ".edit_members_for_user_group .add-group-member-loading-spinner",
         action: add_new_members,
     });
 

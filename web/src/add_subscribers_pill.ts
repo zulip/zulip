@@ -1,4 +1,3 @@
-import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import * as blueslip from "./blueslip.ts";
@@ -8,6 +7,7 @@ import * as loading from "./loading.ts";
 import type {User} from "./people.ts";
 import * as pill_typeahead from "./pill_typeahead.ts";
 import * as stream_pill from "./stream_pill.ts";
+import type {UserIdsFetchResult} from "./stream_pill.ts";
 import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_group_pill from "./user_group_pill.ts";
 import * as user_groups from "./user_groups.ts";
@@ -139,6 +139,7 @@ export function set_up_handlers_for_add_button_state(
 }
 
 export function create({
+    $parent_container,
     $pill_container,
     get_potential_subscribers,
     get_user_groups,
@@ -148,6 +149,7 @@ export function create({
     add_button_pill_update_callback,
     onTextInputCallback,
 }: {
+    $parent_container: JQuery;
     $pill_container: JQuery;
     get_potential_subscribers: () => User[];
     get_user_groups: () => UserGroup[];
@@ -167,14 +169,26 @@ export function create({
     });
 
     if (onPillCreateAction) {
+        // Each pill starts its own subscriber fetch, and a fetch waits
+        // only for the pills present when it started, so only the most
+        // recent fetch knows about every pill and may hide the spinner.
+        let latest_fetch_id = 0;
+        const $loading_spinner = $parent_container.find(".add-subscriber-loading-spinner");
         pill_widget.onPillCreate(() => {
             void (async () => {
-                loading.make_indicator($(".add-subscriber-loading-spinner"), {
+                latest_fetch_id += 1;
+                const fetch_id = latest_fetch_id;
+                loading.make_indicator($loading_spinner, {
                     height: 28, // 2em at 14px / 1em
                 });
-                const user_ids = await get_pill_user_ids(pill_widget);
-                onPillCreateAction(user_ids);
-                loading.destroy_indicator($(".add-subscriber-loading-spinner"));
+                const result = await get_pill_user_ids(pill_widget);
+                if (fetch_id !== latest_fetch_id) {
+                    return;
+                }
+                if (result.status === "success") {
+                    onPillCreateAction(result.user_ids);
+                }
+                loading.destroy_indicator($loading_spinner);
             })();
         });
     }
@@ -182,8 +196,11 @@ export function create({
     if (onPillRemoveAction) {
         pill_widget.onPillRemove(() => {
             void (async () => {
-                const user_ids = await get_pill_user_ids(pill_widget);
-                onPillRemoveAction(user_ids);
+                const result = await get_pill_user_ids(pill_widget);
+                if (result.status === "failed") {
+                    return;
+                }
+                onPillRemoveAction(result.user_ids);
             })();
         });
     }
@@ -239,13 +256,21 @@ export function append_user_group_from_name(
     user_group_pill.append_user_group(user_group, pill_widget);
 }
 
-export async function get_pill_user_ids(pill_widget: CombinedPillContainer): Promise<number[]> {
-    const stream_user_ids = await stream_pill.get_user_ids(pill_widget);
+export async function get_pill_user_ids(
+    pill_widget: CombinedPillContainer,
+): Promise<UserIdsFetchResult> {
+    const stream_result = await stream_pill.get_user_ids(pill_widget);
+    if (stream_result.status === "failed") {
+        return stream_result;
+    }
     // Read the other pills only after waiting for subscriber data,
     // since pills may have been removed while we were waiting.
     const user_ids = user_pill.get_user_ids(pill_widget);
     const group_user_ids = user_group_pill.get_user_ids(pill_widget);
-    return [...user_ids, ...stream_user_ids, ...group_user_ids];
+    return {
+        status: "success",
+        user_ids: [...user_ids, ...stream_result.user_ids, ...group_user_ids],
+    };
 }
 
 export function set_up_handlers({
@@ -253,12 +278,14 @@ export function set_up_handlers({
     $parent_container,
     pill_selector,
     button_selector,
+    spinner_selector,
     action,
 }: {
     get_pill_widget: () => CombinedPillContainer;
     $parent_container: JQuery;
     pill_selector: string;
     button_selector: string;
+    spinner_selector: string;
     action: ({pill_user_ids}: {pill_user_ids: number[]}) => void;
 }): void {
     /*
@@ -290,11 +317,12 @@ export function set_up_handlers({
     */
     function callback(): void {
         const pill_widget = get_pill_widget();
+        const $loading_spinner = $parent_container.find(spinner_selector);
         void (async () => {
-            loading.make_indicator($(".add-subscriber-loading-spinner"), {
+            loading.make_indicator($loading_spinner, {
                 height: 28, // 2em at 14px / 1em
             });
-            const pill_user_ids = await get_pill_user_ids(pill_widget);
+            const result = await get_pill_user_ids(pill_widget);
             // If we're no longer in the same view after fetching
             // subscriber data, don't update the UI. We don't need
             // to destroy the loading spinner because the tab re-renders
@@ -303,8 +331,11 @@ export function set_up_handlers({
             if (get_pill_widget() !== pill_widget) {
                 return;
             }
-            loading.destroy_indicator($(".add-subscriber-loading-spinner"));
-            action({pill_user_ids});
+            loading.destroy_indicator($loading_spinner);
+            if (result.status === "failed") {
+                return;
+            }
+            action({pill_user_ids: result.user_ids});
         })();
     }
 

@@ -129,13 +129,16 @@ function update_notification_choice_checkbox(added_user_count: number): void {
     }
 }
 
-async function stream_edit_update_notification_choice(): Promise<void> {
-    loading.make_indicator($(".add-subscriber-loading-spinner"), {
+async function stream_edit_update_notification_choice($loading_spinner: JQuery): Promise<void> {
+    loading.make_indicator($loading_spinner, {
         height: 28, // 2em at 14px / 1em
     });
-    const pill_count = (await add_subscribers_pill.get_pill_user_ids(pill_widget)).length;
-    update_notification_choice_checkbox(pill_count);
-    loading.destroy_indicator($(".add-subscriber-loading-spinner"));
+    const result = await add_subscribers_pill.get_pill_user_ids(pill_widget);
+    loading.destroy_indicator($loading_spinner);
+    if (result.status === "failed") {
+        return;
+    }
+    update_notification_choice_checkbox(result.user_ids.length);
 }
 
 export function enable_subscriber_management({
@@ -156,10 +159,12 @@ export function enable_subscriber_management({
         return peer_data.potential_subscribers(stream_id);
     }
 
+    const $loading_spinner = $parent_container.find(".add-subscriber-loading-spinner");
     const pill_update_callback = function (): void {
-        void stream_edit_update_notification_choice();
+        void stream_edit_update_notification_choice($loading_spinner);
     };
     pill_widget = add_subscribers_pill.create({
+        $parent_container,
         $pill_container,
         get_potential_subscribers,
         onPillCreateAction: pill_update_callback,
@@ -187,10 +192,12 @@ async function render_subscriber_list_widget(
         text: $t({defaultMessage: "Loading…"}),
     });
 
-    // Because we're using `retry_on_failure=true`, this will only return once it
-    // succeeds, so we can't get `null`.
     const user_ids = await peer_data.get_subscribers_with_possible_fetch(sub.stream_id, true);
-    assert(user_ids !== null);
+    // The channel was deleted or we lost access to it while waiting.
+    if (user_ids === null) {
+        loading.destroy_indicator($(".subscriber-list-settings-loading"));
+        return;
+    }
 
     // Make sure we're still editing this stream after waiting for subscriber data.
     if (!hash_parser.is_editing_stream(sub.stream_id)) {
@@ -556,6 +563,7 @@ export function initialize(): void {
         $parent_container: $("#channels_overlay_container"),
         pill_selector: ".edit_subscribers_for_stream .pill-container",
         button_selector: ".edit_subscribers_for_stream .add-subscriber-button",
+        spinner_selector: ".edit_subscribers_for_stream .add-subscriber-loading-spinner",
         action: subscribe_new_users,
     });
 

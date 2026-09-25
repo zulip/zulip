@@ -2,6 +2,7 @@ import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
 
+import {$t} from "./i18n.ts";
 import type {InputPillContainer} from "./input_pill.ts";
 import * as peer_data from "./peer_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -16,6 +17,9 @@ export type StreamPill = {
 export type StreamPillWidget = InputPillContainer<StreamPill>;
 
 export type StreamPillData = StreamSubscription & {type: "stream"};
+
+export type UserIdsFetchResult =
+    {status: "success"; user_ids: number[]} | {status: "failed"; failed_stream_id: number};
 
 export function create_item_from_stream_name(
     stream_name: string,
@@ -57,9 +61,28 @@ export function get_stream_name_from_item(item: StreamPill): string {
     return stream.name;
 }
 
+export function get_subscriber_fetch_failure_message(failed_stream_id: number): string {
+    const sub = stream_data.get_sub_by_id(failed_stream_id);
+    if (sub === undefined) {
+        return $t({
+            defaultMessage:
+                "Failed to fetch subscribers of a channel. Remove the channel and try again.",
+        });
+    }
+    return $t(
+        {
+            defaultMessage:
+                "Failed to fetch subscribers of #{channel_name}. Remove the channel and try again.",
+        },
+        {channel_name: sub.name},
+    );
+}
+
+// Returns the user ids the pills stand for, or the channel whose
+// subscribers could not be fetched.
 export async function get_user_ids(
     pill_widget: StreamPillWidget | CombinedPillContainer,
-): Promise<number[]> {
+): Promise<UserIdsFetchResult> {
     const stream_ids = get_stream_ids(pill_widget);
     const results = await Promise.all(
         stream_ids.map(async (stream_id) =>
@@ -74,13 +97,18 @@ export async function get_user_ids(
         // Double check if the stream pill has been removed from the pill
         // widget while we were doing fetches.
         if (current_stream_ids_in_widget.includes(stream_id)) {
+            // The fetch failed, so we don't know who the subscribers
+            // of this channel are.
+            if (subscribers === null) {
+                return {status: "failed", failed_stream_id: stream_id};
+            }
             user_ids = [...user_ids, ...subscribers];
         }
     }
 
     user_ids = [...new Set(user_ids)];
     user_ids.sort((a, b) => a - b);
-    return user_ids;
+    return {status: "success", user_ids};
 }
 
 export function get_display_value_from_item(item: StreamPill): string {

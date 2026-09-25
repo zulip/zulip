@@ -1,4 +1,3 @@
-import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import * as add_subscribers_pill from "./add_subscribers_pill.ts";
@@ -8,6 +7,7 @@ import * as loading from "./loading.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import * as stream_pill from "./stream_pill.ts";
+import type {UserIdsFetchResult} from "./stream_pill.ts";
 import type {CombinedPill, CombinedPillContainer} from "./typeahead_helper.ts";
 import * as user_group_components from "./user_group_components.ts";
 import * as user_group_pill from "./user_group_pill.ts";
@@ -15,15 +15,20 @@ import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import * as user_pill from "./user_pill.ts";
 
-async function get_pill_user_ids(pill_widget: CombinedPillContainer): Promise<number[]> {
-    const stream_user_ids = await stream_pill.get_user_ids(pill_widget);
+export async function get_pill_user_ids(
+    pill_widget: CombinedPillContainer,
+): Promise<UserIdsFetchResult> {
+    const stream_result = await stream_pill.get_user_ids(pill_widget);
+    if (stream_result.status === "failed") {
+        return stream_result;
+    }
     // Read the user pills only after waiting for subscriber data,
     // since pills may have been removed while we were waiting.
     const user_ids = user_pill.get_user_ids(pill_widget);
-    return [...user_ids, ...stream_user_ids];
+    return {status: "success", user_ids: [...user_ids, ...stream_result.user_ids]};
 }
 
-function get_pill_group_ids(pill_widget: CombinedPillContainer): number[] {
+export function get_pill_group_ids(pill_widget: CombinedPillContainer): number[] {
     const group_user_ids = user_group_pill.get_group_ids(pill_widget);
     return group_user_ids;
 }
@@ -87,6 +92,7 @@ export function create_item_from_text(
 }
 
 export function create({
+    $parent_container,
     $pill_container,
     get_potential_members,
     get_potential_groups,
@@ -94,6 +100,7 @@ export function create({
     onPillCreateAction,
     onPillRemoveAction,
 }: {
+    $parent_container: JQuery;
     $pill_container: JQuery;
     get_potential_members: () => User[];
     get_potential_groups: () => UserGroup[];
@@ -111,14 +118,26 @@ export function create({
     });
 
     if (onPillCreateAction) {
+        // Each pill starts its own subscriber fetch, and a fetch waits
+        // only for the pills present when it started, so only the most
+        // recent fetch knows about every pill and may hide the spinner.
+        let latest_fetch_id = 0;
+        const $loading_spinner = $parent_container.find(".add-group-member-loading-spinner");
         pill_widget.onPillCreate(() => {
             void (async () => {
-                loading.make_indicator($(".add-group-member-loading-spinner"), {
-                    height: 56, // 4em at 14px / 1em
+                latest_fetch_id += 1;
+                const fetch_id = latest_fetch_id;
+                loading.make_indicator($loading_spinner, {
+                    height: 28, // 2em at 14px / 1em
                 });
-                const user_ids = await get_pill_user_ids(pill_widget);
-                onPillCreateAction(user_ids, get_pill_group_ids(pill_widget));
-                loading.destroy_indicator($(".add-group-member-loading-spinner"));
+                const result = await get_pill_user_ids(pill_widget);
+                if (fetch_id !== latest_fetch_id) {
+                    return;
+                }
+                if (result.status === "success") {
+                    onPillCreateAction(result.user_ids, get_pill_group_ids(pill_widget));
+                }
+                loading.destroy_indicator($loading_spinner);
             })();
         });
     }
@@ -126,8 +145,11 @@ export function create({
     if (onPillRemoveAction) {
         pill_widget.onPillRemove(() => {
             void (async () => {
-                const user_ids = await get_pill_user_ids(pill_widget);
-                onPillRemoveAction(user_ids, get_pill_group_ids(pill_widget));
+                const result = await get_pill_user_ids(pill_widget);
+                if (result.status === "failed") {
+                    return;
+                }
+                onPillRemoveAction(result.user_ids, get_pill_group_ids(pill_widget));
             })();
         });
     }
@@ -167,12 +189,14 @@ export function set_up_handlers({
     $parent_container,
     pill_selector,
     button_selector,
+    spinner_selector,
     action,
 }: {
     get_pill_widget: () => CombinedPillContainer;
     $parent_container: JQuery;
     pill_selector: string;
     button_selector: string;
+    spinner_selector: string;
     action: ({
         pill_user_ids,
         pill_group_ids,
@@ -189,11 +213,12 @@ export function set_up_handlers({
     */
     function callback(): void {
         const pill_widget = get_pill_widget();
+        const $loading_spinner = $parent_container.find(spinner_selector);
         void (async () => {
-            loading.make_indicator($(".add-group-member-loading-spinner"), {
-                height: 56, // 4em at 14px / 1em
+            loading.make_indicator($loading_spinner, {
+                height: 28, // 2em at 14px / 1em
             });
-            const pill_user_ids = await get_pill_user_ids(pill_widget);
+            const result = await get_pill_user_ids(pill_widget);
             // If we're no longer in the same view after fetching
             // subscriber data, don't update the UI. We don't need
             // to destroy the loading spinner because the tab re-renders
@@ -202,9 +227,12 @@ export function set_up_handlers({
             if (get_pill_widget() !== pill_widget) {
                 return;
             }
-            loading.destroy_indicator($(".add-group-member-loading-spinner"));
+            loading.destroy_indicator($loading_spinner);
+            if (result.status === "failed") {
+                return;
+            }
             const pill_group_ids = get_pill_group_ids(pill_widget);
-            action({pill_user_ids, pill_group_ids});
+            action({pill_user_ids: result.user_ids, pill_group_ids});
         })();
     }
 
