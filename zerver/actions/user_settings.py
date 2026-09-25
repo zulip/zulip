@@ -579,6 +579,9 @@ def bulk_change_user_setting(
             # that field, so we can save work and return here.
             return
 
+        # The other cache flushes for this change only see the new
+        # email address, so flush the caches keyed by the old one.
+        delete_user_profile_caches([user_profile], user_profile.realm_id)
         user_profile.email = get_display_email_address(user_profile)
         user_profile.save(update_fields=["email"])
 
