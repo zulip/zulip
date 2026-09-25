@@ -56,3 +56,13 @@ class RhodecodeHookTests(WebhookTestCase):
         expected_topic_name = "u/yuroitaki/zulip-testing / dev"
         expected_message = "yuroitaki pushed 1 commit to branch dev. Commits by Yuro Itaki <yuroitaki@email.com> (1).\n\n* Deleted branch dev ([delete_bran](https://code.rhodecode.com/u/yuroitaki/zulip-testing/changeset/delete_branch=%3Edev))"
         self.check_webhook("push__remove_branch", expected_topic_name, expected_message)
+
+    def test_event_filtering(self) -> None:
+        expected_topic_name = "u/yuroitaki/zulip-testing / master"
+        expected_message = "yuroitaki pushed 1 commit to branch master. Commits by Yuro Itaki <yuroitaki@email.com> (1).\n\n* Modify README ([2b8c0ebf507](https://code.rhodecode.com/u/yuroitaki/zulip-testing/changeset/2b8c0ebf50710bc2e1cdb6a33071dd2435ad667c))"
+
+        self.url = f'{self.build_webhook_url()}&only_events=["repo-push"]'
+        self.check_webhook("push", expected_topic_name, expected_message)
+
+        self.url = f'{self.build_webhook_url()}&exclude_events=["repo-push"]'
+        self.check_webhook("push", expect_noop=True)
