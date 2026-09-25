@@ -41,6 +41,7 @@ import * as stream_topic_history_util from "./stream_topic_history_util.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
 import {LONG_HOVER_DELAY} from "./tippyjs.ts";
+import * as topic_filter_pill from "./topic_filter_pill.ts";
 import * as topic_list from "./topic_list.ts";
 import * as topic_list_data from "./topic_list_data.ts";
 import * as ui_util from "./ui_util.ts";
@@ -430,9 +431,14 @@ export function build_stream_list(force_rerender: boolean): void {
     //
     // The main logic to build the list is in stream_list_sort.ts
     const streams = stream_data.subscribed_stream_ids();
-    const search_term =
-        ui_util.get_left_sidebar_topic_search_term() ?? ui_util.get_left_sidebar_search_term();
-    const stream_groups = stream_list_sort.sort_groups(streams, search_term);
+    const topic_search_term = ui_util.get_left_sidebar_topic_search_term();
+    const raw_search_term = ui_util.get_left_sidebar_search_term();
+    const topics_filter_state =
+        topic_search_term === undefined
+            ? topic_filter_pill.parse_topics_filter_state(raw_search_term)
+            : "";
+    const search_term = topic_search_term ?? (topics_filter_state ? "" : raw_search_term);
+    const stream_groups = stream_list_sort.sort_groups(streams, search_term, topics_filter_state);
 
     if (stream_groups.same_as_before && !force_rerender) {
         return;
@@ -1733,8 +1739,8 @@ export function searching(): boolean {
 
 export function clear_search(): void {
     const $filter = $(".left-sidebar-search-input").expectOne();
-    if ($filter.val() !== "") {
-        $filter.val("");
+    if ($filter.text() !== "") {
+        $filter.text("");
         $filter.trigger("input");
     }
     $filter.trigger("blur");
