@@ -30,7 +30,7 @@ export function eq_array<T>(
         return true;
     }
 
-    if (a === undefined || b === undefined || a.length !== b.length) {
+    if (a === undefined || a.length !== b?.length) {
         return false;
     }
 
