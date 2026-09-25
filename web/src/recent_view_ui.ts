@@ -110,6 +110,7 @@ const ls = localstorage();
 
 let filters = new Set<string>();
 let dropdown_filters = new Set<string>();
+const pending_topic_visibility_updates = new Set<string>();
 let folder_filter_value: number = folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION;
 let folder_filter_dropdown_widget: dropdown_widget.DropdownWidget | undefined;
 
@@ -216,6 +217,7 @@ export function clear_for_tests(): void {
     dropdown_filters.clear();
     folder_filter_value = folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION;
     recent_view_data.conversations.clear();
+    pending_topic_visibility_updates.clear();
     topics_widget = undefined;
 }
 
@@ -507,30 +509,36 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
     return true;
 }
 
-export function get_focused_row_message(): Message | undefined {
-    if (is_table_focused()) {
-        assert(topics_widget !== undefined);
-        if (topics_widget.get_current_list().length === 0) {
-            return undefined;
-        }
-
-        const $topic_rows = $("#recent-view-content-tbody tr");
-        const $topic_row = $topic_rows.eq(row_focus);
-        if ($topic_row.length === 0) {
-            // There are less items in the table than `row_focus`.
-            // We don't reset `row_focus` here since that is not the
-            // purpose of this function.
-            return undefined;
-        }
-        const topic_id = $topic_row.attr("id");
-        assert(topic_id !== undefined);
-        const conversation_id = topic_id.slice(recent_conversation_key_prefix.length);
-        const last_conversation = recent_view_data.conversations.get(conversation_id);
-        assert(last_conversation !== undefined);
-        const topic_last_msg_id = last_conversation.last_msg_id;
-        return message_store.get(topic_last_msg_id);
+function get_focused_conversation_key(): string | undefined {
+    if (!is_table_focused()) {
+        return undefined;
     }
-    return undefined;
+    assert(topics_widget !== undefined);
+    if (topics_widget.get_current_list().length === 0) {
+        return undefined;
+    }
+
+    const $topic_rows = $("#recent-view-content-tbody tr");
+    const $topic_row = $topic_rows.eq(row_focus);
+    if ($topic_row.length === 0) {
+        // There are less items in the table than `row_focus`.
+        // We don't reset `row_focus` here since that is not the
+        // purpose of this function.
+        return undefined;
+    }
+    const topic_id = $topic_row.attr("id");
+    assert(topic_id !== undefined);
+    return topic_id.slice(recent_conversation_key_prefix.length);
+}
+
+export function get_focused_row_message(): Message | undefined {
+    const conversation_key = get_focused_conversation_key();
+    if (conversation_key === undefined) {
+        return undefined;
+    }
+    const conversation = recent_view_data.conversations.get(conversation_key);
+    assert(conversation !== undefined);
+    return message_store.get(conversation.last_msg_id);
 }
 
 export function revive_current_focus(): boolean {
@@ -953,11 +961,18 @@ function format_conversation(conversation_data: ConversationData): ConversationC
     };
 }
 
-function get_topic_row(topic_data: ConversationData): JQuery {
-    const msg = message_store.get(topic_data.last_msg_id);
+function get_conversation_key(conversation: ConversationData): string {
+    const msg = message_store.get(conversation.last_msg_id);
     assert(msg !== undefined);
-    const topic_key = recent_view_util.get_key_from_message(msg);
-    return $(`#${CSS.escape(recent_conversation_key_prefix + topic_key)}`);
+    return recent_view_util.get_key_from_message(msg);
+}
+
+function get_conversation_row(conversation_key: string): JQuery {
+    return $(`#${CSS.escape(recent_conversation_key_prefix + conversation_key)}`);
+}
+
+function get_topic_row(topic_data: ConversationData): JQuery {
+    return get_conversation_row(get_conversation_key(topic_data));
 }
 
 export function process_topic_edit(
@@ -1141,48 +1156,95 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
     return false;
 }
 
+// Recomputes the widget's filtered list for a rerender of the given
+// conversations, and returns the conversation the keyboard focus
+// should follow once the rows have settled; see finish_rerender.
+function filter_and_sort_topics_widget(rerendering_keys: string[]): string | undefined {
+    assert(topics_widget !== undefined);
+    // Look up the focused row while row_focus still indexes the rows the
+    // resort may remove.
+    const focused_conversation_key = get_focused_conversation_key();
+    const removed_conversations = topics_widget.filter_and_sort();
+    const focused_row_removed = removed_conversations.some(
+        (conversation) => get_conversation_key(conversation) === focused_conversation_key,
+    );
+    if (focused_row_removed && row_focus >= topics_widget.get_current_list().length) {
+        row_focus = Math.max(topics_widget.get_current_list().length - 1, 0);
+    }
+
+    const stranded_conversations = removed_conversations.filter((conversation) => {
+        const key = get_conversation_key(conversation);
+        return !rerendering_keys.includes(key) && !pending_topic_visibility_updates.has(key);
+    });
+    if (stranded_conversations.length > 0) {
+        // Every event that can hide a rendered conversation should rerender it
+        // or redraw the view; a row removed here was left on screen by one
+        // that does neither, so report it to be handled directly.
+        blueslip.error("Recent view rows hidden without a rerender", {
+            count: stranded_conversations.length,
+            types: [...new Set(stranded_conversations.map((conversation) => conversation.type))],
+            filters: [...filters].toSorted(),
+            dropdown_filters: [...dropdown_filters],
+            has_search_keyword: $<HTMLInputElement>("#recent_view_search").val() !== "",
+            has_folder_filter:
+                folder_filter_value !==
+                folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION,
+        });
+    }
+
+    // The focus follows its conversation's row, unless that conversation is
+    // being rerendered: its row may then move to its sorted place, and the
+    // focus stays where it is, as it does when the row is removed.
+    if (
+        focused_conversation_key === undefined ||
+        rerendering_keys.includes(focused_conversation_key)
+    ) {
+        return undefined;
+    }
+    return focused_conversation_key;
+}
+
+function finish_rerender(conversation_key_to_focus: string | undefined): void {
+    assert(topics_widget !== undefined);
+    // Rows can move during a rerender, and row_focus is a DOM index.
+    if (conversation_key_to_focus !== undefined) {
+        const $row = get_conversation_row(conversation_key_to_focus);
+        if ($row.length > 0) {
+            row_focus = $row.index();
+        }
+    }
+    // Removals can leave the table short of the scroll end with no scroll
+    // event to come. Rendering runs callback_after_render, which does the
+    // rest of the work below.
+    if (topics_widget.maybe_render_more()) {
+        return;
+    }
+    update_unread_sort_header_state();
+    setTimeout(revive_current_focus, 0);
+}
+
 export function bulk_inplace_rerender(row_keys: string[]): void {
     if (!topics_widget || !recent_view_util.is_visible()) {
         return;
     }
 
-    // When doing bulk rerender, we assume that order of rows are not going
-    // to change by default. Row insertion can still change the order but
-    // we ensure the list remains sorted after insertion.
-    //
-    // Save whether all rows were rendered before updating the data,
-    // so we know if it's safe to use render() for new items below.
-    const was_all_rendered = topics_widget.all_rendered();
     topics_widget.replace_list_data(get_list_data_for_widget(), false);
-    topics_widget.filter_and_sort();
-    // Iterate in the order in which the rows should be present so that
-    // we are not inserting rows without any rows being present around them.
-    let processed_count = 0;
-    for (const topic_data of topics_widget.get_rendered_list()) {
-        if (processed_count >= row_keys.length) {
+    const conversation_key_to_focus = filter_and_sort_topics_widget(row_keys);
+
+    const remaining_keys = new Set(row_keys);
+    const current_list = topics_widget.get_current_list();
+    // Update the rows in list order, so that a row inserted next to another
+    // one finds it already in place.
+    for (const topic_data of current_list) {
+        if (remaining_keys.size === 0) {
             break;
         }
-        const msg = message_store.get(topic_data.last_msg_id);
-        assert(msg !== undefined);
-        const topic_key = recent_view_util.get_key_from_message(msg);
-        if (row_keys.includes(topic_key)) {
+        const topic_key = get_conversation_key(topic_data);
+        if (remaining_keys.delete(topic_key)) {
             inplace_rerender(topic_key, true);
-            processed_count += 1;
         }
     }
-    // New conversations from backfilled old messages sort at the end
-    // of the list, beyond the current render offset. Use render() to
-    // efficiently batch-append them in a single DOM operation, rather
-    // than inserting one at a time via insert_rendered_row.
-    //
-    // We can only use render() when the DOM already had all rows up
-    // to the render offset (was_all_rendered), ensuring new items
-    // start right at the offset boundary with no gap.
-    if (processed_count < row_keys.length && was_all_rendered) {
-        topics_widget.render(row_keys.length - processed_count);
-    }
-    update_unread_sort_header_state();
-    setTimeout(revive_current_focus, 0);
+    finish_rerender(conversation_key_to_focus);
 }
 
 export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): boolean => {
@@ -1195,12 +1257,8 @@ export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): b
 
     const topic_data = recent_view_data.conversations.get(topic_key);
     assert(topic_data !== undefined);
-    const $topic_row = get_topic_row(topic_data);
-    // We cannot rely on `topic_widget.meta.filtered_list` to know
-    // if a topic is rendered since the `filtered_list` might have
-    // already been updated via other calls.
-    const is_topic_rendered = $topic_row.length;
     assert(topics_widget !== undefined);
+    let conversation_key_to_focus: string | undefined;
     if (!is_bulk_rerender) {
         // Resorting the topics_widget is important for the case where we
         // are rerendering because of message editing or new messages
@@ -1208,33 +1266,21 @@ export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): b
         //
         // NOTE: This doesn't add any new entry to the original list but updates the filtered list
         // based on the current filters and updated row data.
-        topics_widget.filter_and_sort();
+        conversation_key_to_focus = filter_and_sort_topics_widget([topic_key]);
     }
 
+    // We cannot rely on `topic_widget.meta.filtered_list` to know
+    // if a topic is rendered since the `filtered_list` might have
+    // already been updated via other calls.
+    const is_topic_rendered = get_topic_row(topic_data).length > 0;
     const current_topics_list = topics_widget.get_current_list();
-    if (is_topic_rendered && filters_should_hide_row(topic_data)) {
-        // Since the row needs to be removed from DOM, we need to adjust `row_focus`
-        // if the row being removed is focused and is the last row in the list.
-        // This prevents the row_focus either being reset to the first row or
-        // middle of the visible table rows.
-        // We need to get the current focused row details from DOM since we cannot
-        // rely on `current_topics_list` since it has already been updated and row
-        // doesn't exist inside it.
-        const row_is_focused = get_focused_row_message()?.id === topic_data.last_msg_id;
-        if (row_is_focused && row_focus >= current_topics_list.length) {
-            row_focus = current_topics_list.length - 1;
-        }
-        topics_widget.remove_rendered_row($topic_row);
-    } else if (!is_topic_rendered && filters_should_hide_row(topic_data)) {
-        // In case `topic_row` is not present, our job is already done here
-        // since it has not been rendered yet and we already removed it from
-        // the filtered list in `topic_widget`. So, it won't be displayed in
-        // the future too.
-    } else if (is_topic_rendered && !filters_should_hide_row(topic_data)) {
+    if (filters_should_hide_row(topic_data)) {
+        // Nothing to do: the widget removed the row when the filtered list was
+        // recomputed, and a row never rendered stays out of the list.
+    } else if (is_topic_rendered) {
         // Only a re-render is required in this case.
         topics_widget.render_item(topic_data);
     } else {
-        // Final case: !is_topic_rendered && !filters_should_hide_row(topic_data).
         topics_widget.insert_rendered_row(topic_data, () =>
             current_topics_list.findIndex(
                 (list_item) => list_item.last_msg_id === topic_data.last_msg_id,
@@ -1242,8 +1288,7 @@ export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): b
         );
     }
     if (!is_bulk_rerender) {
-        update_unread_sort_header_state();
-        setTimeout(revive_current_focus, 0);
+        finish_rerender(conversation_key_to_focus);
     }
     return true;
 };
@@ -1252,7 +1297,14 @@ export function rewire_inplace_rerender(value: typeof inplace_rerender): void {
     inplace_rerender = value;
 }
 
-export function update_topic_visibility_policy(stream_id: number, topic: string): boolean {
+// Applies a topic's visibility policy change after delay_ms, which lets
+// a popover anchored on the row finish closing first. Until then the
+// row is stale by design, so a resort removing it is not reported.
+export function update_topic_visibility_policy(
+    stream_id: number,
+    topic: string,
+    delay_ms = 0,
+): boolean {
     const key = recent_view_util.get_topic_key(stream_id, topic);
     if (!recent_view_data.conversations.has(key)) {
         // we receive mute request for a topic we are
@@ -1260,13 +1312,16 @@ export function update_topic_visibility_policy(stream_id: number, topic: string)
         return false;
     }
 
-    inplace_rerender(key);
+    pending_topic_visibility_updates.add(key);
+    setTimeout(() => {
+        pending_topic_visibility_updates.delete(key);
+        inplace_rerender(key);
+    }, delay_ms);
     return true;
 }
 
-export function update_topic_unread_count(message: Message): void {
-    const topic_key = recent_view_util.get_key_from_message(message);
-    inplace_rerender(topic_key);
+export function update_conversations_unread_count(conversation_keys: Set<string>): void {
+    bulk_inplace_rerender([...conversation_keys]);
 }
 
 export function set_filter(filter: string): void {

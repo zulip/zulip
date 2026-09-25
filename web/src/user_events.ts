@@ -18,6 +18,7 @@ import * as navbar_alerts from "./navbar_alerts.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as reactions from "./reactions.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
 import * as settings from "./settings.ts";
 import * as settings_account from "./settings_account.ts";
 import * as settings_bots from "./settings_bots.ts";
@@ -119,6 +120,12 @@ export const update_person = function update(event: UserUpdate): void {
         if (user.is_bot && bot_data.get(event.user_id) !== undefined) {
             bot_data.update(event.user_id, {user_id: event.user_id, full_name: event.full_name});
         }
+    }
+
+    if ("full_name" in event || "new_email" in event || "delivery_email" in event) {
+        // Recent view rows show user names, and its search matches
+        // participants by name and email.
+        recent_view_ui.complete_rerender();
     }
 
     if ("role" in event) {

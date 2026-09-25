@@ -9,8 +9,6 @@ import * as people from "./people.ts";
 import * as pm_conversations from "./pm_conversations.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import {realm} from "./state_data.ts";
-import * as unread from "./unread.ts";
-import * as unread_ui from "./unread_ui.ts";
 import * as user_groups from "./user_groups.ts";
 
 type DirectMessagePermissionHints = {
@@ -60,16 +58,6 @@ export function get_last_message_id_in_narrow(
             // we just ignore the error.
         },
     });
-}
-
-export function do_unread_count_updates(messages: Message[], expect_no_new_unreads = false): void {
-    const any_new_unreads = unread.process_loaded_messages(messages, expect_no_new_unreads);
-
-    if (any_new_unreads) {
-        // The following operations are expensive, and thus should
-        // only happen if we found any unread messages justifying it.
-        unread_ui.update_unread_counts();
-    }
 }
 
 export function get_count_of_messages_in_topic_sent_after_current_message(
