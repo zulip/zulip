@@ -8,7 +8,9 @@ import * as settings_config from "./settings_config.ts";
 import {current_user, realm} from "./state_data.ts";
 import type {CurrentUser, GroupSettingValue} from "./state_data.ts";
 import * as user_groups from "./user_groups.ts";
+import type {UserSettings} from "./user_settings.ts";
 import {user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 /*
     This is a close cousin of settings_config,
@@ -437,4 +439,13 @@ export function two_tier_billing_enabled(): boolean {
         realm.realm_workplace_users_group,
     );
     return workplace_users_group.name !== "role:everyone";
+}
+
+export function effective_web_animate_image_previews(): UserSettings["web_animate_image_previews"] {
+    if (user_settings.web_animate_image_previews === "on_hover" && util.is_mobile()) {
+        // Treat "on_hover" as "always" on mobile web, where hovering is
+        // impossible and there's much less on the screen.
+        return "always";
+    }
+    return user_settings.web_animate_image_previews;
 }

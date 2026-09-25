@@ -1,4 +1,4 @@
-<div class='pill {{#if deactivated}} deactivated-pill {{/if~}}'
+<div class='pill{{#if has_status}} emoji-animation-hover-area{{/if}} {{#if deactivated}} deactivated-pill {{/if~}}'
   {{~#unless (eq user_id undefined)}}data-user-id="{{user_id}}"{{/unless~}}
   {{~#unless (eq group_id undefined)}}data-user-group-id="{{group_id}}"{{/unless~}}
   {{~#unless (eq stream_id undefined)}}data-stream-id="{{stream_id}}"{{/unless~}}
