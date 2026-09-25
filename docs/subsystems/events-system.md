@@ -221,6 +221,12 @@ request; the logic is in `zerver/views/events_register.py` and
   change event, it finds the user data in the `realm_user` data
   structure, and updates it to have the new name.
 
+The Zulip web app makes this same request itself: once the small HTML
+page served for `GET /` has loaded the JavaScript, `web/src/ui_init.js`
+calls `POST /json/register` and passes the response to the
+initialization code for each module (see `state_data_schema` in
+`web/src/state_data.ts` for how the response is parsed and split up).
+
 ### Testing
 
 The design above achieves everything we desire, at the cost that we need to
@@ -399,8 +405,13 @@ the coverage data.
 
 #### page_params
 
-In the Zulip web app, the data returned by the `register` API is
-available via the `page_params` parameter.
+The web app receives its data in two pieces. The HTML for `GET /`
+embeds `page_params`, the handful of values the server has to decide
+before any JavaScript runs, such as the language to render in and
+whether the visitor is a spectator; see
+`build_page_params_for_home_page_load`. Everything the `register` API
+returns arrives separately as `state_data`, from the `POST
+/json/register` the web app makes once it has loaded.
 
 ### Messages
 
@@ -425,10 +436,12 @@ to make sure we handle backwards-compatibility properly.
   `API_FEATURE_LEVEL` and include a `**Changes**` entry in the updated
   `GET /events` API documentation. It's also a good idea to and open
   issues with the mobile and terminal projects to notify them. If the
-  web app should receive the new event type's initial state on browser
-  reload, add it to `FETCH_EVENT_TYPES` in
+  web app should receive the new event type's initial state on page
+  load, add it to `FETCH_EVENT_TYPES` in
   `web/src/server_event_types.ts`, which the web app passes as
-  `fetch_event_types` to `/register`.
+  `fetch_event_types` to `/register`. List the event's own type name
+  there as well, since `/register` drops the events it was not asked
+  for instead of leaving them for the client to receive later.
 - If we're making changes that could confuse existing client app logic
   that parses events (e.g., changing the type/meaning of an existing
   field, or removing a field), we need to be very careful, since Zulip

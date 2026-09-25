@@ -254,9 +254,8 @@ Zulip makes extensive use of caching of data in the browser and mobile
 apps; details like which users exist, with metadata like names and
 avatars, similar details for channels, recent message history, etc.
 
-This data is fetched in the `/register` endpoint (or `page_params`
-for the web app), and kept correct over time. The key to keeping these
-state up to date is Zulip's
+This data is fetched in the `/register` endpoint, and kept correct
+over time. The key to keeping these state up to date is Zulip's
 [real-time events system](events-system.md), which
 allows the server to notify clients whenever state that might be
 cached by clients is changed. Clients are responsible for handling

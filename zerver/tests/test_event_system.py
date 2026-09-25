@@ -1,5 +1,6 @@
 import time
 from collections.abc import Callable
+from datetime import timedelta
 from typing import Any
 from unittest import mock
 from urllib.parse import urlsplit
@@ -11,13 +12,17 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
+from corporate.models.customers import Customer
+from corporate.models.plans import CustomerPlan
 from zerver.actions.channel_folders import check_add_channel_folder
+from zerver.actions.create_user import do_create_user
 from zerver.actions.custom_profile_fields import try_update_realm_custom_profile_field
 from zerver.actions.message_send import check_send_message
 from zerver.actions.presence import do_update_user_presence
+from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
 from zerver.actions.streams import do_change_stream_folder
 from zerver.actions.user_settings import do_change_avatar_fields, do_change_user_setting
-from zerver.actions.users import do_change_user_role
+from zerver.actions.users import change_user_is_active, do_change_user_role
 from zerver.lib.event_schema import check_web_reload_client_event
 from zerver.lib.events import fetch_initial_state_data, post_process_state
 from zerver.lib.exceptions import AccessDeniedError
@@ -29,12 +34,21 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
     stub_event_queue_user_events,
 )
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.users import get_users_for_api
-from zerver.models import CustomProfileField, UserMessage, UserPresence, UserProfile
+from zerver.models import (
+    CustomProfileField,
+    DefaultStream,
+    Draft,
+    Realm,
+    UserMessage,
+    UserPresence,
+    UserProfile,
+)
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
-from zerver.models.users import get_system_bot
+from zerver.models.users import get_system_bot, get_user
 from zerver.tornado.django_api import EventQueueData
 from zerver.tornado.event_queue import (
     DEFAULT_EVENT_QUEUE_TIMEOUT_SECS,
@@ -86,7 +100,10 @@ class EventsEndpointTest(ZulipTestCase):
         # This test is intended to get minimal coverage on the
         # events_register code paths
         user = self.example_user("hamlet")
-        with mock.patch("zerver.views.events_register.do_events_register", return_value={}):
+        with mock.patch(
+            "zerver.views.events_register.do_events_register",
+            return_value={"queue_id": "test-queue-id"},
+        ):
             result = self.api_post(user, "/api/v1/register")
         self.assert_json_success(result)
 
@@ -293,11 +310,17 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(guest_user.role, UserProfile.ROLE_GUEST)
         self.assertEqual(normal_user.role, UserProfile.ROLE_MEMBER)
 
-        with mock.patch("zerver.views.events_register.do_events_register", return_value={}):
+        with mock.patch(
+            "zerver.views.events_register.do_events_register",
+            return_value={"queue_id": "test-queue-id"},
+        ):
             result = self.api_post(normal_user, "/api/v1/register", dict(all_public_streams="true"))
         self.assert_json_success(result)
 
-        with mock.patch("zerver.views.events_register.do_events_register", return_value={}):
+        with mock.patch(
+            "zerver.views.events_register.do_events_register",
+            return_value={"queue_id": "test-queue-id"},
+        ):
             result = self.api_post(guest_user, "/api/v1/register", dict(all_public_streams="true"))
         self.assert_json_error(result, "User not authorized for this query")
 
@@ -872,6 +895,222 @@ class GetEventsTest(ZulipTestCase):
 
 
 class FetchInitialStateDataTest(ZulipTestCase):
+    # Keep this list sorted!!!
+    expected_register_response_keys = [
+        "alert_words",
+        "avatar_source",
+        "avatar_url",
+        "avatar_url_medium",
+        "can_create_private_streams",
+        "can_create_public_streams",
+        "can_create_streams",
+        "can_create_web_public_streams",
+        "can_invite_others_to_realm",
+        "channel_folders",
+        "cross_realm_bots",
+        "custom_profile_field_types",
+        "custom_profile_fields",
+        "delivery_email",
+        "development_environment",
+        "devices",
+        "drafts",
+        "email",
+        "event_queue_longpoll_timeout_seconds",
+        "full_name",
+        "gif_rating_policy_options",
+        "giphy_api_key",
+        "has_webex_token",
+        "has_zoom_token",
+        "idle_queue_timeout_secs",
+        "is_admin",
+        "is_guest",
+        "is_moderator",
+        "is_owner",
+        "jitsi_server_url",
+        "klipy_api_key",
+        "last_event_id",
+        "max_avatar_file_size_mib",
+        "max_bulk_new_subscription_messages",
+        "max_channel_folder_description_length",
+        "max_channel_folder_name_length",
+        "max_file_upload_size_mib",
+        "max_icon_file_size_mib",
+        "max_logo_file_size_mib",
+        "max_message_id",
+        "max_message_length",
+        "max_reminder_note_length",
+        "max_stream_description_length",
+        "max_stream_name_length",
+        "max_topic_length",
+        "muted_topics",
+        "muted_users",
+        "navigation_tour_video_url",
+        "navigation_views",
+        "never_subscribed",
+        "onboarding_steps",
+        "password_max_length",
+        "password_min_guesses",
+        "password_min_length",
+        "presence_last_update_id",
+        "presences",
+        "queue_id",
+        "realm_allow_edit_history",
+        "realm_allow_message_editing",
+        "realm_authentication_methods",
+        "realm_available_video_chat_providers",
+        "realm_avatar_changes_disabled",
+        "realm_billing",
+        "realm_bot_domain",
+        "realm_bots",
+        "realm_can_access_all_users_group",
+        "realm_can_add_custom_emoji_group",
+        "realm_can_add_subscribers_group",
+        "realm_can_create_bots_group",
+        "realm_can_create_groups",
+        "realm_can_create_private_channel_group",
+        "realm_can_create_public_channel_group",
+        "realm_can_create_web_public_channel_group",
+        "realm_can_create_write_only_bots_group",
+        "realm_can_delete_any_message_group",
+        "realm_can_delete_own_message_group",
+        "realm_can_invite_users_group",
+        "realm_can_manage_all_groups",
+        "realm_can_manage_billing_group",
+        "realm_can_mention_many_users_group",
+        "realm_can_move_messages_between_channels_group",
+        "realm_can_move_messages_between_topics_group",
+        "realm_can_resolve_topics_group",
+        "realm_can_set_delete_message_policy_group",
+        "realm_can_set_topics_policy_group",
+        "realm_can_summarize_topics_group",
+        "realm_create_multiuse_invite_group",
+        "realm_create_private_stream_policy",
+        "realm_create_public_stream_policy",
+        "realm_create_web_public_stream_policy",
+        "realm_date_created",
+        "realm_default_avatar_source",
+        "realm_default_code_block_language",
+        "realm_default_external_accounts",
+        "realm_default_language",
+        "realm_default_stream_groups",
+        "realm_default_streams",
+        "realm_description",
+        "realm_digest_emails_enabled",
+        "realm_digest_weekday",
+        "realm_direct_message_initiator_group",
+        "realm_direct_message_permission_group",
+        "realm_disallow_disposable_email_addresses",
+        "realm_domains",
+        "realm_email_auth_enabled",
+        "realm_email_changes_disabled",
+        "realm_emails_restricted_to_domains",
+        "realm_embedded_bots",
+        "realm_emoji",
+        "realm_empty_topic_display_name",
+        "realm_enable_guest_user_dm_warning",
+        "realm_enable_guest_user_indicator",
+        "realm_enable_read_receipts",
+        "realm_enable_spectator_access",
+        "realm_filters",
+        "realm_gif_rating_policy",
+        "realm_icon_source",
+        "realm_icon_url",
+        "realm_incoming_webhook_bots",
+        "realm_inline_image_preview",
+        "realm_inline_url_embed_preview",
+        "realm_invite_required",
+        "realm_jitsi_server_url",
+        "realm_linkifiers",
+        "realm_logo_source",
+        "realm_logo_url",
+        "realm_mandatory_topics",
+        "realm_media_preview_size",
+        "realm_message_content_allowed_in_email_notifications",
+        "realm_message_content_delete_limit_seconds",
+        "realm_message_content_edit_limit_seconds",
+        "realm_message_edit_history_visibility_policy",
+        "realm_message_retention_days",
+        "realm_moderation_request_channel_id",
+        "realm_move_messages_between_streams_limit_seconds",
+        "realm_move_messages_within_stream_limit_seconds",
+        "realm_name",
+        "realm_name_changes_disabled",
+        "realm_new_stream_announcements_stream_id",
+        "realm_night_logo_source",
+        "realm_night_logo_url",
+        "realm_non_active_users",
+        "realm_org_type",
+        "realm_owner_full_content_access",
+        "realm_password_auth_enabled",
+        "realm_plan_type",
+        "realm_playgrounds",
+        "realm_presence_disabled",
+        "realm_push_notifications_enabled",
+        "realm_push_notifications_enabled_end_timestamp",
+        "realm_require_e2ee_push_notifications",
+        "realm_require_unique_names",
+        "realm_send_channel_events_messages",
+        "realm_send_welcome_emails",
+        "realm_signup_announcements_stream_id",
+        "realm_topics_policy",
+        "realm_upload_quota_mib",
+        "realm_uri",
+        "realm_url",
+        "realm_user_groups",
+        "realm_user_settings_defaults",
+        "realm_users",
+        "realm_uuid",
+        "realm_video_chat_provider",
+        "realm_waiting_period_threshold",
+        "realm_want_advertise_in_communities_directory",
+        "realm_welcome_message_custom_text",
+        "realm_wildcard_mention_policy",
+        "realm_workplace_users_group",
+        "realm_zulip_update_announcements_stream_id",
+        "recent_private_conversations",
+        "reminders",
+        "saved_snippets",
+        "scheduled_messages",
+        "server_avatar_changes_disabled",
+        "server_can_summarize_topics",
+        "server_emoji_data_url",
+        "server_generation",
+        "server_inline_image_preview",
+        "server_inline_url_embed_preview",
+        "server_jitsi_server_url",
+        "server_max_deactivated_realm_deletion_days",
+        "server_min_deactivated_realm_deletion_days",
+        "server_name_changes_disabled",
+        "server_needs_upgrade",
+        "server_presence_offline_threshold_seconds",
+        "server_presence_ping_interval_seconds",
+        "server_report_message_types",
+        "server_supported_permission_settings",
+        "server_thumbnail_formats",
+        "server_timestamp",
+        "server_typing_started_expiry_period_milliseconds",
+        "server_typing_started_wait_period_milliseconds",
+        "server_typing_stopped_wait_period_milliseconds",
+        "server_web_public_streams_enabled",
+        "settings_send_digest_emails",
+        "starred_messages",
+        "stop_words",
+        "streams",
+        "subscriptions",
+        "tenor_api_key",
+        "unread_msgs",
+        "unsubscribed",
+        "upgrade_text_for_wide_organization_logo",
+        "user_id",
+        "user_settings",
+        "user_status",
+        "user_topics",
+        "zulip_feature_level",
+        "zulip_merge_base",
+        "zulip_plan_is_not_limited",
+        "zulip_version",
+    ]
+
     # Non-admin users don't have access to all bots
     def test_realm_bots_non_admin(self) -> None:
         user_profile = self.example_user("cordelia")
@@ -1082,6 +1321,520 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assert_length(result["unread_msgs"]["streams"], 1)
         self.assertEqual(result["unread_msgs"]["streams"][0]["topic"], "case DOES not MATTER")
         self.assert_length(result["unread_msgs"]["streams"][0]["unread_message_ids"], 2)
+
+    def test_new_stream_announcements_stream(self) -> None:
+        realm = get_realm("zulip")
+        realm.new_stream_announcements_stream_id = get_stream("Denmark", realm).id
+        realm.save()
+        self.login("hamlet")
+        result = self.register_via_api()
+        self.assertEqual(
+            result["realm_new_stream_announcements_stream_id"],
+            get_stream("Denmark", realm).id,
+        )
+
+    def create_bot(self, owner: UserProfile, bot_email: str, bot_name: str) -> UserProfile:
+        user = do_create_user(
+            email=bot_email,
+            password="123",
+            realm=owner.realm,
+            full_name=bot_name,
+            bot_type=UserProfile.DEFAULT_BOT,
+            bot_owner=owner,
+            acting_user=None,
+        )
+        return user
+
+    def create_non_active_user(self, realm: Realm, email: str, name: str) -> UserProfile:
+        user = do_create_user(
+            email=email, password="123", realm=realm, full_name=name, acting_user=None
+        )
+
+        # Doing a full-stack deactivation would be expensive here,
+        # and we really only need to flip the flag to get a valid
+        # test.
+        change_user_is_active(user, False)
+        return user
+
+    def test_signup_announcements_stream(self) -> None:
+        realm = get_realm("zulip")
+        realm.signup_announcements_stream = get_stream("Denmark", realm)
+        realm.save()
+        self.login("hamlet")
+        result = self.register_via_api()
+        self.assertEqual(
+            result["realm_signup_announcements_stream_id"],
+            get_stream("Denmark", realm).id,
+        )
+
+    def test_zulip_update_announcements_stream(self) -> None:
+        realm = get_realm("zulip")
+        realm.zulip_update_announcements_stream = get_stream("Denmark", realm)
+        realm.save()
+        self.login("hamlet")
+        result = self.register_via_api()
+        self.assertEqual(
+            result["realm_zulip_update_announcements_stream_id"],
+            get_stream("Denmark", realm).id,
+        )
+
+    def test_moderation_request_channel(self) -> None:
+        realm = get_realm("zulip")
+        realm.moderation_request_channel = self.make_stream("private_stream", invite_only=True)
+        realm.save()
+        self.login("hamlet")
+        result = self.register_via_api()
+        self.assertEqual(
+            result["realm_moderation_request_channel_id"],
+            get_stream("private_stream", realm).id,
+        )
+
+    def test_events_are_applied_to_fetched_state(self) -> None:
+        # /register applies the events that arrive while it is computing
+        # the initial state, and advances last_event_id past them. An
+        # event type absent from fetch_event_types is dropped instead,
+        # and the client never hears about it again, so the state names
+        # we fetch and the event names that update them both have to be
+        # listed. Here "video_calls" fetches what "has_zoom_token"
+        # updates.
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        queue_data = EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600)
+        event = dict(id=7, type="has_zoom_token", value=True)
+
+        with stub_event_queue_user_events(queue_data, [event]):
+            result = self.client_post(
+                "/json/register",
+                dict(fetch_event_types=orjson.dumps(["video_calls", "has_zoom_token"]).decode()),
+            )
+        state = self.assert_json_success(result)
+        self.assertEqual(state["last_event_id"], 7)
+        self.assertTrue(state["has_zoom_token"])
+
+        # Without the event's own name, the state keeps the value from
+        # before the event, which is now permanently stale.
+        with stub_event_queue_user_events(queue_data, [event]):
+            result = self.client_post(
+                "/json/register",
+                dict(fetch_event_types=orjson.dumps(["video_calls"]).decode()),
+            )
+        state = self.assert_json_success(result)
+        self.assertEqual(state["last_event_id"], 7)
+        self.assertFalse(state["has_zoom_token"])
+
+    def test_narrow_does_not_scope_state(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        # The newest message hamlet can see is outside the narrow he
+        # registers with below.
+        outside_narrow_id = self.send_stream_message(self.example_user("iago"), "Verona")
+
+        result = self.register_via_api(dict(narrow=orjson.dumps([["stream", "Denmark"]]).decode()))
+
+        # max_message_id is the user's global latest message id, not the
+        # narrow's; see local_message.ts for how it's consumed.
+        self.assertEqual(result["max_message_id"], outside_narrow_id)
+        # The /?stream=X mini-window suppresses desktop notifications
+        # client-side, so the setting comes back unchanged.
+        self.assertEqual(
+            result["user_settings"]["enable_desktop_notifications"],
+            hamlet.enable_desktop_notifications,
+        )
+
+    def test_people(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = get_realm("zulip")
+        self.login_user(hamlet)
+
+        bots = {}
+        for i in range(3):
+            bots[i] = self.create_bot(
+                owner=hamlet,
+                bot_email=f"bot-{i}@zulip.com",
+                bot_name=f"Bot {i}",
+            )
+
+        for i in range(3):
+            defunct_user = self.create_non_active_user(
+                realm=realm,
+                email=f"defunct-{i}@zulip.com",
+                name=f"Defunct User {i}",
+            )
+
+        result = self.register_via_api()
+
+        """
+        We send three lists of users. The first two below are disjoint
+        lists of users, and the records we send for them have identical
+        structure.
+
+        The realm_bots bucket is somewhat redundant, since all bots will
+        be in one of the first two buckets. They do include fields, however,
+        that normal users don't care about, such as default_sending_stream.
+        """
+
+        buckets = [
+            "realm_users",
+            "realm_non_active_users",
+            "realm_bots",
+        ]
+
+        for field in buckets:
+            users = result[field]
+            self.assertGreaterEqual(len(users), 3, field)
+            for rec in users:
+                if field == "realm_bots":
+                    self.assertIn("user_id", rec)
+                    self.assertNotIn("is_bot", rec)
+                    self.assertNotIn("owner_id", rec)
+                    self.assertNotIn("is_active", rec)
+                else:
+                    self.assertEqual(rec["user_id"], get_user(rec["email"], realm).id)
+                    self.assertIn("is_bot", rec)
+                    self.assertNotIn("is_active", rec)
+
+        active_ids = {p["user_id"] for p in result["realm_users"]}
+        non_active_ids = {p["user_id"] for p in result["realm_non_active_users"]}
+        bot_ids = {p["user_id"] for p in result["realm_bots"]}
+
+        self.assertIn(hamlet.id, active_ids)
+        self.assertIn(defunct_user.id, non_active_ids)
+
+        # Bots can show up in multiple buckets.
+        self.assertIn(bots[2].id, bot_ids)
+        self.assertIn(bots[2].id, active_ids)
+
+        # Make sure nobody got misbucketed.
+        self.assertNotIn(hamlet.id, non_active_ids)
+        self.assertNotIn(defunct_user.id, active_ids)
+
+        cross_bots = result["cross_realm_bots"]
+        self.assert_length(cross_bots, 3)
+        cross_bots.sort(key=lambda d: d["email"])
+        for cross_bot in cross_bots:
+            # These are either nondeterministic or boring
+            del cross_bot["timezone"]
+            del cross_bot["avatar_url"]
+            del cross_bot["date_joined"]
+
+        admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        cross_realm_notification_bot = self.notification_bot(admin_realm)
+        cross_realm_email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, admin_realm.id)
+        cross_realm_welcome_bot = get_system_bot(settings.WELCOME_BOT, admin_realm.id)
+
+        by_email = lambda d: d["email"]
+
+        self.assertEqual(
+            sorted(cross_bots, key=by_email),
+            sorted(
+                [
+                    dict(
+                        avatar_version=cross_realm_email_gateway_bot.avatar_version,
+                        bot_owner_id=None,
+                        bot_type=1,
+                        delivery_email=cross_realm_email_gateway_bot.delivery_email,
+                        email=cross_realm_email_gateway_bot.email,
+                        user_id=cross_realm_email_gateway_bot.id,
+                        full_name=cross_realm_email_gateway_bot.full_name,
+                        is_active=True,
+                        is_bot=True,
+                        is_admin=False,
+                        is_owner=False,
+                        role=cross_realm_email_gateway_bot.role,
+                        is_system_bot=True,
+                        is_guest=False,
+                        is_imported_stub=False,
+                    ),
+                    dict(
+                        avatar_version=cross_realm_notification_bot.avatar_version,
+                        bot_owner_id=None,
+                        bot_type=1,
+                        delivery_email=cross_realm_notification_bot.delivery_email,
+                        email=cross_realm_notification_bot.email,
+                        user_id=cross_realm_notification_bot.id,
+                        full_name=cross_realm_notification_bot.full_name,
+                        is_active=True,
+                        is_bot=True,
+                        is_admin=False,
+                        is_owner=False,
+                        role=cross_realm_notification_bot.role,
+                        is_system_bot=True,
+                        is_guest=False,
+                        is_imported_stub=False,
+                    ),
+                    dict(
+                        avatar_version=cross_realm_welcome_bot.avatar_version,
+                        bot_owner_id=None,
+                        bot_type=1,
+                        delivery_email=cross_realm_welcome_bot.delivery_email,
+                        email=cross_realm_welcome_bot.email,
+                        user_id=cross_realm_welcome_bot.id,
+                        full_name=cross_realm_welcome_bot.full_name,
+                        is_active=True,
+                        is_bot=True,
+                        is_admin=False,
+                        is_owner=False,
+                        role=cross_realm_welcome_bot.role,
+                        is_system_bot=True,
+                        is_guest=False,
+                        is_imported_stub=False,
+                    ),
+                ],
+                key=by_email,
+            ),
+        )
+
+    def test_realm_authentication_methods(self) -> None:
+        realm = get_realm("zulip")
+        self.login("desdemona")
+
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.EmailAuthBackend",
+                "zproject.backends.SAMLAuthBackend",
+                "zproject.backends.AzureADAuthBackend",
+            )
+        ):
+            result = self.register_via_api()
+
+            self.assertEqual(
+                result["realm_authentication_methods"],
+                {
+                    "Email": {"enabled": True, "available": True},
+                    "AzureAD": {
+                        "enabled": True,
+                        "available": False,
+                        "unavailable_reason": "You need to upgrade to the Zulip Cloud Standard plan to use this authentication method.",
+                    },
+                    "SAML": {
+                        "enabled": True,
+                        "available": False,
+                        "unavailable_reason": "You need to upgrade to the Zulip Cloud Plus plan to use this authentication method.",
+                    },
+                },
+            )
+
+            # Now try with BILLING_ENABLED=False. This simulates a self-hosted deployment
+            # instead of Zulip Cloud. In this case, all authentication methods should be available.
+            with self.settings(BILLING_ENABLED=False):
+                result = self.register_via_api()
+
+                self.assertEqual(
+                    result["realm_authentication_methods"],
+                    {
+                        "Email": {"enabled": True, "available": True},
+                        "AzureAD": {
+                            "enabled": True,
+                            "available": True,
+                        },
+                        "SAML": {
+                            "enabled": True,
+                            "available": True,
+                        },
+                    },
+                )
+
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.EmailAuthBackend",
+                "zproject.backends.SAMLAuthBackend",
+            )
+        ):
+            result = self.register_via_api()
+
+            self.assertEqual(
+                result["realm_authentication_methods"],
+                {
+                    "Email": {"enabled": True, "available": True},
+                    "SAML": {
+                        "enabled": True,
+                        "available": False,
+                        "unavailable_reason": "You need to upgrade to the Zulip Cloud Plus plan to use this authentication method.",
+                    },
+                },
+            )
+
+        # Changing the plan_type to Standard grants access to AzureAD, but not SAML:
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=None)
+        customer = Customer.objects.create(realm=realm, stripe_customer_id="cus_id")
+        CustomerPlan.objects.create(
+            customer=customer,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            next_invoice_date=timezone_now(),
+            tier=CustomerPlan.TIER_CLOUD_STANDARD,
+            status=CustomerPlan.ACTIVE,
+        )
+
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(
+                "zproject.backends.EmailAuthBackend",
+                "zproject.backends.SAMLAuthBackend",
+                "zproject.backends.AzureADAuthBackend",
+            )
+        ):
+            result = self.register_via_api()
+
+            self.assertEqual(
+                result["realm_authentication_methods"],
+                {
+                    "Email": {"enabled": True, "available": True},
+                    "AzureAD": {
+                        "enabled": True,
+                        "available": True,
+                    },
+                    "SAML": {
+                        "enabled": True,
+                        "available": False,
+                        "unavailable_reason": "You need to upgrade to the Zulip Cloud Plus plan to use this authentication method.",
+                    },
+                },
+            )
+
+            # Now upgrade to Plus and verify that both SAML and AzureAD are available.
+            do_change_realm_plan_type(realm, Realm.PLAN_TYPE_PLUS, acting_user=None)
+            result = self.register_via_api()
+
+            self.assertEqual(
+                result["realm_authentication_methods"],
+                {
+                    "Email": {"enabled": True, "available": True},
+                    "AzureAD": {
+                        "enabled": True,
+                        "available": True,
+                    },
+                    "SAML": {
+                        "enabled": True,
+                        "available": True,
+                    },
+                },
+            )
+
+    @override_settings(MAX_DRAFTS_IN_REGISTER_RESPONSE=5)
+    def test_limit_drafts(self) -> None:
+        hamlet = self.example_user("hamlet")
+        base_time = timezone_now()
+        initial_count = Draft.objects.count()
+
+        step_value = timedelta(seconds=1)
+        # Create 11 drafts.
+        # TODO: This would be better done as an API request.
+        draft_objects = [
+            Draft(
+                user_profile=hamlet,
+                recipient=None,
+                topic="",
+                content="sample draft",
+                last_edit_time=base_time + i * step_value,
+            )
+            for i in range(settings.MAX_DRAFTS_IN_REGISTER_RESPONSE + 1)
+        ]
+        Draft.objects.bulk_create(draft_objects)
+
+        # Now fetch the drafts part of the initial state and make sure
+        # that we only got back settings.MAX_DRAFTS_IN_REGISTER_RESPONSE.
+        # No more. Also make sure that the drafts returned are the most
+        # recently edited ones.
+        self.login("hamlet")
+        result = self.register_via_api(
+            dict(fetch_event_types=orjson.dumps(["drafts", "user_settings"]).decode())
+        )
+        self.assertEqual(result["user_settings"]["enable_drafts_synchronization"], True)
+        self.assert_length(result["drafts"], settings.MAX_DRAFTS_IN_REGISTER_RESPONSE)
+        self.assertEqual(
+            Draft.objects.count(), settings.MAX_DRAFTS_IN_REGISTER_RESPONSE + 1 + initial_count
+        )
+        # +2 for what's already in the test DB.
+        for draft in result["drafts"]:
+            self.assertNotEqual(draft["timestamp"], base_time)
+
+    def test_realm_push_notifications_enabled_end_timestamp(self) -> None:
+        self.login("hamlet")
+        realm = get_realm("zulip")
+        end_timestamp = timezone_now() + timedelta(days=1)
+        realm.push_notifications_enabled_end_timestamp = end_timestamp
+        realm.save()
+
+        result = self.register_via_api()
+        self.assertEqual(
+            result["realm_push_notifications_enabled_end_timestamp"],
+            datetime_to_timestamp(end_timestamp),
+        )
+
+    def test_invalid_default_language(self) -> None:
+        realm = get_realm("zulip")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        do_change_user_setting(cordelia, "default_language", "gl", acting_user=None)
+        do_change_user_setting(hamlet, "default_language", "no", acting_user=None)
+        do_set_realm_property(realm, "default_language", "pt-br", acting_user=None)
+
+        mocked_language_list = [
+            {"code": "de", "locale": "de", "name": "Deutsch", "percent_translated": 97},
+            {"code": "en", "locale": "en", "name": "English"},
+            {"code": "gl", "locale": "gl", "name": "galego", "percent_translated": 1},
+            {"code": "no", "locale": "no", "name": "norsk", "percent_translated": 1},
+            {
+                "code": "pt-br",
+                "locale": "pt_BR",
+                "name": "Português Brasileiro",
+                "percent_translated": 0,
+            },
+        ]
+
+        self.login_user(hamlet)
+        with mock.patch("zerver.lib.i18n.get_language_list", return_value=mocked_language_list):
+            result = self.register_via_api()
+        self.assertEqual(result["user_settings"]["default_language"], "en")
+        realm.refresh_from_db()
+        hamlet.refresh_from_db()
+        self.assertEqual(realm.default_language, "en")
+        self.assertEqual(hamlet.default_language, "en")
+
+        # Test the case when realm's default is a valid value
+        # but user's language is set to an invalid value.
+        do_set_realm_property(realm, "default_language", "de", acting_user=None)
+        self.login_user(cordelia)
+        self.assertEqual(cordelia.default_language, "gl")
+
+        with mock.patch("zerver.lib.i18n.get_language_list", return_value=mocked_language_list):
+            result = self.register_via_api()
+        self.assertEqual(result["user_settings"]["default_language"], "de")
+        cordelia.refresh_from_db()
+        self.assertEqual(cordelia.default_language, "de")
+
+    def test_register_response_keys(self) -> None:
+        self.login("hamlet")
+
+        # Create bot for realm_bots testing. Must be done before registering.
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+        }
+        self.client_post("/json/bots", bot_info)
+
+        result = self.register_via_api()
+        self.assertCountEqual(result, self.expected_register_response_keys)
+
+        realm_bots_expected_keys = [
+            "default_all_public_streams",
+            "default_events_register_stream",
+            "default_sending_stream",
+            "services",
+            "user_id",
+        ]
+        self.assertCountEqual(result["realm_bots"][0], realm_bots_expected_keys)
+
+    def test_register_response_keys_demo_organization(self) -> None:
+        demo_organization_owner = self.create_demo_organization_owner()
+        realm = demo_organization_owner.realm
+
+        result = self.register_via_api(subdomain=realm.subdomain)
+        expected_keys = [
+            *self.expected_register_response_keys,
+            "demo_organization_scheduled_deletion_date",
+        ]
+        self.assertCountEqual(result, expected_keys)
 
 
 class ClientDescriptorsTest(ZulipTestCase):
@@ -1628,6 +2381,57 @@ class FetchQueriesTest(ZulipTestCase):
                     event_types = [event_type]
 
                 fetch_initial_state_data(user, realm=user.realm, event_types=event_types)
+
+    def test_num_queries_for_realm_admin(self) -> None:
+        # Verify number of queries for Realm admin isn't much higher than for normal users.
+        self.login("hamlet")
+        # Register once per user before measuring, so each measurement
+        # sees warm caches rather than paying to fill them.
+        self.register_via_api(dict(include_subscribers="partial"))
+        with (
+            self.assert_database_query_count(51),
+            mock.patch("zerver.lib.cache.cache_set") as cache_mock,
+        ):
+            self.register_via_api(dict(include_subscribers="partial"))
+            self.assert_length(cache_mock.call_args_list, 5)
+
+        self.login("iago")
+        self.register_via_api(dict(include_subscribers="partial"))
+        with (
+            self.assert_database_query_count(56),
+            mock.patch("zerver.lib.cache.cache_set") as cache_mock,
+        ):
+            self.register_via_api(dict(include_subscribers="partial"))
+            self.assert_length(cache_mock.call_args_list, 7)
+
+    def test_num_queries_with_streams(self) -> None:
+        main_user = self.example_user("hamlet")
+        other_user = self.example_user("cordelia")
+
+        realm_id = main_user.realm_id
+
+        self.login_user(main_user)
+
+        # Try to make registering do extra work for various subscribed
+        # streams.
+        for i in range(10):
+            stream_name = "test_stream_" + str(i)
+            stream = self.make_stream(stream_name)
+            DefaultStream.objects.create(
+                realm_id=realm_id,
+                stream_id=stream.id,
+            )
+            for user in [main_user, other_user]:
+                self.subscribe(user, stream_name)
+
+        # Simulate registering the first time to avoid some noise
+        # related to initial logins.
+        self.register_via_api(dict(include_subscribers="partial"))
+
+        with self.assert_database_query_count(51):
+            result = self.register_via_api(dict(include_subscribers="partial"))
+
+        self.assertIn("test_stream_7", [sub["name"] for sub in result["subscriptions"]])
 
 
 class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):
