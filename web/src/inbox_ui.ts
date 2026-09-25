@@ -2115,8 +2115,8 @@ export function update_internal(): void {
         const stream_unread = unread.unread_count_info_for_stream(stream_id);
         const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
         const stream_key = get_stream_key(stream_id);
-        let stream_post_filter_unread_count = 0;
         if (stream_unread_count > 0) {
+            let stream_post_filter_unread_count = 0;
             const stream_topics_data = topics_dict.get(stream_key);
 
             // Stream isn't rendered.
