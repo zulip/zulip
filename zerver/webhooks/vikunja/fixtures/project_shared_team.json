@@ -1,0 +1,140 @@
+{
+  "event_name": "project.shared.team",
+  "time": "2026-01-26T16:23:22.01463116Z",
+  "data": {
+    "doer": {
+      "id": 1,
+      "name": "John Doe",
+      "username": "jdoe",
+      "created": "2026-01-16T13:18:58+01:00",
+      "updated": "2026-01-26T10:20:43+01:00"
+    },
+    "project": {
+      "id": 35,
+      "title": "Test",
+      "description": "<p>Hello</p>",
+      "identifier": "tst",
+      "hex_color": "1973ff",
+      "parent_project_id": 0,
+      "owner": {
+        "id": 1,
+        "name": "John Doe",
+        "username": "jdoe",
+        "created": "2026-01-16T13:18:58+01:00",
+        "updated": "2026-01-26T10:20:43+01:00"
+      },
+      "is_archived": false,
+      "background_information": {
+        "id": 6,
+        "unsplash_id": "db35dVpZlQw",
+        "author": "beckerworks",
+        "author_name": "David Becker"
+      },
+      "background_blur_hash": "LDBW0fM|9G%L0$M{%Lxu9G%1g4M{",
+      "is_favorite": false,
+      "position": 2293760,
+      "views": [
+        {
+          "id": 137,
+          "title": "List",
+          "project_id": 35,
+          "view_kind": "list",
+          "filter": {
+            "s": "",
+            "sort_by": null,
+            "order_by": null,
+            "filter": "done = false",
+            "filter_include_nulls": false
+          },
+          "position": 100,
+          "bucket_configuration_mode": "none",
+          "bucket_configuration": null,
+          "default_bucket_id": 0,
+          "done_bucket_id": 0,
+          "updated": "2026-01-26T17:06:42+01:00",
+          "created": "2026-01-26T17:06:42+01:00"
+        },
+        {
+          "id": 138,
+          "title": "Gantt",
+          "project_id": 35,
+          "view_kind": "gantt",
+          "filter": null,
+          "position": 200,
+          "bucket_configuration_mode": "none",
+          "bucket_configuration": null,
+          "default_bucket_id": 0,
+          "done_bucket_id": 0,
+          "updated": "2026-01-26T17:06:42+01:00",
+          "created": "2026-01-26T17:06:42+01:00"
+        },
+        {
+          "id": 139,
+          "title": "Table",
+          "project_id": 35,
+          "view_kind": "table",
+          "filter": null,
+          "position": 300,
+          "bucket_configuration_mode": "none",
+          "bucket_configuration": null,
+          "default_bucket_id": 0,
+          "done_bucket_id": 0,
+          "updated": "2026-01-26T17:06:42+01:00",
+          "created": "2026-01-26T17:06:42+01:00"
+        },
+        {
+          "id": 140,
+          "title": "Kanban",
+          "project_id": 35,
+          "view_kind": "kanban",
+          "filter": null,
+          "position": 400,
+          "bucket_configuration_mode": "manual",
+          "bucket_configuration": null,
+          "default_bucket_id": 248,
+          "done_bucket_id": 250,
+          "updated": "2026-01-26T17:06:42+01:00",
+          "created": "2026-01-26T17:06:42+01:00"
+        }
+      ],
+      "max_permission": 0,
+      "created": "2026-01-26T17:06:42+01:00",
+      "updated": "2026-01-26T17:23:21+01:00"
+    },
+    "team": {
+      "created": "2026-01-16T13:18:58+01:00",
+      "created_by": {
+        "created": "2026-01-16T13:18:58+01:00",
+        "id": 1,
+        "name": "John Doe",
+        "updated": "2026-01-26T10:20:43+01:00",
+        "username": "jdoe"
+      },
+      "description": "",
+      "external_id": "fab26a43-4f56-4c14-ae86-ffdf5bd6fb69",
+      "id": 1,
+      "include_public": false,
+      "is_public": false,
+      "members": [
+        {
+          "admin": false,
+          "created": "2026-01-16T13:18:58+01:00",
+          "id": 1,
+          "name": "John Doe",
+          "updated": "2026-01-26T10:20:43+01:00",
+          "username": "jdoe"
+        },
+        {
+          "admin": false,
+          "created": "2026-01-16T13:46:25+01:00",
+          "id": 3,
+          "name": "Jane Smith",
+          "updated": "2026-01-20T10:08:00+01:00",
+          "username": "jsmith"
+        }
+      ],
+      "name": "IT (OIDC)",
+      "updated": "2026-01-26T10:20:43+01:00"
+    }
+  }
+}
