@@ -90,8 +90,9 @@ Additionally, a response rejecting a request for having exceeded a
 rate limit (HTTP status 429) sets:
 
 * `Retry-After`: How many seconds the client must wait before making
-  additional requests. The JSON response body contains the same value
-  in its `retry-after` field.
+  additional requests. This is always an integer number of seconds,
+  rounded up. The JSON response body contains the same value in its
+  `retry-after` field.
 
 [Zulip's rate limiting rules are configurable][rate-limiting-rules],
 and can vary by server and over time. The default configuration
