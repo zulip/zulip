@@ -28,6 +28,9 @@ mock_cjs("clipboard", Clipboard);
 
 const realm_playground = mock_esm("../src/realm_playground");
 const copied_tooltip = mock_esm("../src/copied_tooltip");
+mock_esm("../src/ui_util", {
+    parse_html: () => ({}),
+});
 
 const alert_words = zrequire("alert_words");
 const rm = zrequire("rendered_markdown");
@@ -113,6 +116,8 @@ function set_message_for_message_content($content, value) {
     const $message_row = $.create(".message-row");
     $content.set_closest_results(".message_row", $message_row);
     $message_row.set_closest_results(".overlay-message-row", []);
+    // Not a compose/edit preview by default; tests can override.
+    $content.set_closest_results(".preview_content", []);
     const message_id = 100;
     rows.id = ($message_row_) => {
         assert.equal($message_row_[0], $message_row[0]);
@@ -138,6 +143,10 @@ const get_content_element = () => {
     $content.set_find_results(".emoji", []);
     $content.set_find_results("div.spoiler-header", []);
     $content.set_find_results("div.codehilite", []);
+    $content.set_find_results(
+        ".message_embed, .message-media-preview-image, .message-media-preview-video",
+        [],
+    );
     $content.set_find_results(".message_inline_video video", []);
     $content.set_find_results("audio", []);
 
@@ -1148,4 +1157,134 @@ run_test("rtl", () => {
     assert.ok(!$content.hasClass("rtl"));
     rm.update_elements($content);
     assert.ok($content.hasClass("rtl"));
+});
+
+const preview_selector =
+    ".message_embed, .message-media-preview-image, .message-media-preview-video";
+
+// The returned `state` records whether the remove-preview button was
+// appended to the element.
+function make_preview_element(name, link_href) {
+    const $preview = $.create(name);
+    const $link = $.create(name + "-link");
+    if (link_href !== undefined) {
+        $link.attr("href", link_href);
+    }
+    $preview.set_find_results("a", $link);
+
+    const state = {button_added: false};
+    $preview[0].append = () => {
+        state.button_added = true;
+    };
+    return {$preview, state};
+}
+
+run_test("remove preview button - added to a link preview", () => {
+    const $content = get_content_element();
+    const {$preview, state} = make_preview_element(
+        "opengraph-embed",
+        "https://example.com/article",
+    );
+    $content.set_find_results(preview_selector, [$preview]);
+
+    set_message_for_message_content($content, {id: 100});
+
+    rm.update_elements($content);
+    assert.ok(state.button_added);
+});
+
+run_test("remove preview button - skipped for user uploads", () => {
+    // An upload written as a full URL renders as a realm-relative path with
+    // no leading slash, so all three forms have to be recognized.
+    const upload_hrefs = [
+        "/user_uploads/thumb/abc/image.webp",
+        "user_uploads/thumb/abc/image.webp",
+        "http://zulip.zulipdev.com/user_uploads/thumb/abc/image.webp",
+    ];
+    const uploads = upload_hrefs.map((href, index) =>
+        make_preview_element("user-upload-" + index, href),
+    );
+
+    const $content = get_content_element();
+    $content.set_find_results(
+        preview_selector,
+        uploads.map(({$preview}) => $preview),
+    );
+
+    set_message_for_message_content($content, {id: 101});
+
+    rm.update_elements($content);
+    for (const {state} of uploads) {
+        assert.ok(!state.button_added);
+    }
+});
+
+run_test("remove preview button - external upload-like URL", () => {
+    const $content = get_content_element();
+    // A link to another host is a link preview even if its path looks like
+    // one of our upload URLs.
+    const {$preview, state} = make_preview_element(
+        "external-upload-path",
+        "https://example.com/user_uploads/photo.jpg",
+    );
+    $content.set_find_results(preview_selector, [$preview]);
+
+    set_message_for_message_content($content, {id: 102});
+
+    rm.update_elements($content);
+    assert.ok(state.button_added);
+});
+
+run_test("remove preview button - malformed href", () => {
+    const $content = get_content_element();
+    const {$preview, state} = make_preview_element("malformed-href", "http://");
+    $content.set_find_results(preview_selector, [$preview]);
+
+    set_message_for_message_content($content, {id: 103});
+
+    rm.update_elements($content);
+    assert.ok(!state.button_added);
+});
+
+run_test("remove preview button - no URL found", () => {
+    const $content = get_content_element();
+    const {$preview, state} = make_preview_element("embed-no-url", undefined);
+    $content.set_find_results(preview_selector, [$preview]);
+
+    set_message_for_message_content($content, {id: 104});
+
+    rm.update_elements($content);
+    assert.ok(!state.button_added);
+});
+
+run_test("remove preview button - no message context", () => {
+    const $content = get_content_element();
+    const {$preview, state} = make_preview_element(
+        "embed-no-context",
+        "https://example.com/article",
+    );
+    $content.set_find_results(preview_selector, [$preview]);
+
+    set_message_for_message_content($content, undefined);
+
+    rm.update_elements($content);
+    assert.ok(!state.button_added);
+});
+
+run_test("remove preview button - skipped in compose/edit preview", () => {
+    const $content = get_content_element();
+    const {$preview, state} = make_preview_element(
+        "embed-in-preview",
+        "https://example.com/article",
+    );
+    $content.set_find_results(preview_selector, [$preview]);
+
+    // A real message is resolved (the inline edit preview lives inside its
+    // message row), but the content is a compose/edit preview, so no button
+    // should be injected.
+    set_message_for_message_content($content, {id: 105});
+    $content.set_closest_results(".preview_content", [$content]);
+
+    rm.update_elements($content);
+    assert.ok(!state.button_added);
 });
