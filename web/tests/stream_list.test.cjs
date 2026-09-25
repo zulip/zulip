@@ -7,6 +7,7 @@ const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
+const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const {$} = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
@@ -25,6 +26,20 @@ let unread_unmuted_count;
 let stream_has_any_unread_mentions;
 
 const topic_list = mock_esm("../src/topic_list");
+const browser_history = mock_esm("../src/browser_history", {
+    go_to_location: noop,
+});
+// These two are what `narrow_state` reads to describe the current
+// view: `inbox_util` for the "List of topics" channel view, and
+// `message_lists` for message views.
+const message_lists = mock_esm("../src/message_lists", {current: undefined});
+const inbox_util = mock_esm("../src/inbox_util", {
+    filter: undefined,
+    is_visible: () => inbox_util.filter !== undefined,
+    is_channel_view: () => inbox_util.filter !== undefined,
+    get_channel_id: () =>
+        Number.parseInt(inbox_util.filter.terms_with_operator("channel")[0].operand, 10),
+});
 mock_esm("../src/unread", {
     unread_count_info_for_stream: () => ({
         unmuted_count: unread_unmuted_count,
@@ -41,11 +56,13 @@ mock_esm("../src/unread", {
 });
 
 const {Filter} = zrequire("../src/filter");
+const hash_util = zrequire("hash_util");
 const left_sidebar_navigation_area = zrequire("left_sidebar_navigation_area");
 const stream_data = zrequire("stream_data");
 const stream_list = zrequire("stream_list");
 stream_list.set_update_inbox_channel_view_callback(noop);
 const stream_list_sort = zrequire("stream_list_sort");
+const ui_util = zrequire("ui_util");
 const user_groups = zrequire("user_groups");
 const {initialize_user_settings} = zrequire("user_settings");
 const settings_config = zrequire("settings_config");
@@ -428,6 +445,270 @@ test_ui("narrowing", ({override_rewire}) => {
     assert.ok(topics_closed);
 });
 
+function channel_filter(sub) {
+    return new Filter([{operator: "stream", operand: sub.stream_id.toString()}]);
+}
+
+function topic_filter(sub, topic) {
+    return new Filter([
+        {operator: "stream", operand: sub.stream_id.toString()},
+        {operator: "topic", operand: topic},
+    ]);
+}
+
+// The chevron's aria-expanded must track the class it renders, so
+// always assert the two together.
+function assert_topic_list_expanded($sidebar_row, is_expanded) {
+    assert.equal($sidebar_row.hasClass("topic-list-expanded"), is_expanded);
+    assert.equal(
+        $sidebar_row.find(".channel-expand-topics-button").attr("aria-expanded"),
+        is_expanded ? "true" : "false",
+    );
+}
+
+function setup_list_of_topics_test({override, override_rewire}) {
+    override(
+        user_settings,
+        "web_channel_default_view",
+        settings_config.web_channel_default_view_values.list_of_topics.code,
+    );
+
+    topic_list.get_stream_li = noop;
+    override_rewire(stream_list, "scroll_stream_into_view", noop);
+    override_rewire(stream_list, "get_section_id_for_stream_li", () => "normal");
+    override_rewire(stream_list, "maybe_hide_topic_bracket", noop);
+
+    // The channel whose topic list is currently built in the sidebar.
+    const topic_list_state = {stream_id: undefined};
+    topic_list.active_stream_id = () => topic_list_state.stream_id;
+    topic_list.rebuild_left_sidebar = (_$stream_li, stream_id) => {
+        topic_list_state.stream_id = stream_id;
+    };
+    topic_list.close = () => {
+        topic_list_state.stream_id = undefined;
+    };
+
+    initialize_stream_data();
+
+    function sidebar_row(name) {
+        const $sidebar_row = $(`<${name}-sidebar-row-stub>`);
+        $sidebar_row.set_find_results(
+            ".channel-expand-topics-button",
+            $.create(`${name}-expand-topics-button`),
+        );
+        return $sidebar_row;
+    }
+
+    const $devel_row = sidebar_row("devel");
+    const $rome_row = sidebar_row("Rome");
+
+    stream_list.handle_message_view_deactivated();
+
+    // The "List of topics" channel view is rendered by the inbox
+    // code, which is how the sidebar knows that the middle pane is
+    // already showing the channel's topic list.
+    function narrow_to_channel_topic_list_view(sub) {
+        const filter = channel_filter(sub);
+        override(message_lists, "current", undefined);
+        override(inbox_util, "filter", filter);
+        stream_list.handle_narrow_activated(filter);
+    }
+
+    function narrow_to_message_view(filter) {
+        override(inbox_util, "filter", undefined);
+        override(message_lists, "current", {data: {filter}});
+        stream_list.handle_narrow_activated(filter);
+    }
+
+    return {
+        topic_list_state,
+        $devel_row,
+        $rome_row,
+        narrow_to_channel_topic_list_view,
+        narrow_to_message_view,
+    };
+}
+
+test_ui("list_of_topics_expansion_follows_narrow", (helpers) => {
+    const {
+        topic_list_state,
+        $devel_row,
+        $rome_row,
+        narrow_to_channel_topic_list_view,
+        narrow_to_message_view,
+    } = setup_list_of_topics_test(helpers);
+
+    narrow_to_channel_topic_list_view(develSub);
+    assert_topic_list_expanded($devel_row, false);
+    assert.equal(topic_list_state.stream_id, undefined);
+    assert.ok($devel_row.hasClass("active-filter"));
+
+    narrow_to_message_view(topic_filter(develSub, "python"));
+    assert_topic_list_expanded($devel_row, true);
+    assert.equal(topic_list_state.stream_id, develSub.stream_id);
+    assert.ok(!$devel_row.hasClass("active-filter"));
+
+    narrow_to_message_view(channel_filter(develSub));
+    assert_topic_list_expanded($devel_row, true);
+    assert.ok($devel_row.hasClass("active-filter"));
+
+    $("ul#stream_filters li").addClass("topic-list-expanded");
+    narrow_to_channel_topic_list_view(RomeSub);
+    assert.ok(!$("ul#stream_filters li").hasClass("topic-list-expanded"));
+    assert_topic_list_expanded($rome_row, false);
+    assert.equal(topic_list_state.stream_id, undefined);
+
+    narrow_to_message_view(channel_filter(RomeSub));
+    assert_topic_list_expanded($rome_row, true);
+
+    $("ul#stream_filters li").addClass("topic-list-expanded");
+    stream_list.handle_message_view_deactivated();
+    assert.ok(!$("ul#stream_filters li").hasClass("topic-list-expanded"));
+    assert.equal(topic_list_state.stream_id, undefined);
+});
+
+test_ui("list_of_topics_chevron_toggle", (helpers) => {
+    const {
+        topic_list_state,
+        $devel_row,
+        narrow_to_channel_topic_list_view,
+        narrow_to_message_view,
+    } = setup_list_of_topics_test(helpers);
+
+    narrow_to_channel_topic_list_view(develSub);
+    assert_topic_list_expanded($devel_row, false);
+
+    stream_list.toggle_topic_list_expanded(develSub.stream_id);
+    assert_topic_list_expanded($devel_row, true);
+    assert.equal(topic_list_state.stream_id, develSub.stream_id);
+
+    stream_list.toggle_topic_list_expanded(develSub.stream_id);
+    assert_topic_list_expanded($devel_row, false);
+    assert.equal(topic_list_state.stream_id, undefined);
+
+    stream_list.toggle_topic_list_expanded(develSub.stream_id);
+    assert_topic_list_expanded($devel_row, true);
+    assert.equal(topic_list_state.stream_id, develSub.stream_id);
+
+    narrow_to_message_view(topic_filter(develSub, "python"));
+    assert_topic_list_expanded($devel_row, true);
+    assert.ok(!$devel_row.hasClass("active-filter"));
+
+    // ...and collapsing while reading a topic moves the selection
+    // back onto the channel row, since the topic's own row is gone.
+    stream_list.toggle_topic_list_expanded(develSub.stream_id);
+    assert_topic_list_expanded($devel_row, false);
+    assert.ok($devel_row.hasClass("active-filter"));
+
+    // Narrowing away from the channel forgets the choice.
+    narrow_to_message_view(topic_filter(RomeSub, "gardens"));
+    narrow_to_message_view(topic_filter(develSub, "python"));
+    assert_topic_list_expanded($devel_row, true);
+});
+
+test_ui("list_of_topics_sidebar_row_click", (helpers) => {
+    const {override} = helpers;
+    const {
+        topic_list_state,
+        $devel_row,
+        narrow_to_channel_topic_list_view,
+        narrow_to_message_view,
+    } = setup_list_of_topics_test(helpers);
+
+    const go_to_location_stub = make_stub();
+    override(browser_history, "go_to_location", go_to_location_stub.f);
+
+    narrow_to_message_view(topic_filter(develSub, "python"));
+    assert_topic_list_expanded($devel_row, true);
+
+    stream_list.on_sidebar_channel_click(develSub.stream_id, null, noop);
+    assert.equal(go_to_location_stub.num_calls, 1);
+    assert.equal(
+        go_to_location_stub.get_args("url").url,
+        hash_util.by_channel_topic_list_url(develSub.stream_id),
+    );
+    assert_topic_list_expanded($devel_row, true);
+
+    narrow_to_channel_topic_list_view(develSub);
+    assert_topic_list_expanded($devel_row, false);
+    assert.equal(topic_list_state.stream_id, undefined);
+
+    // Clicking the row of the channel we're already viewing assigns an
+    // unchanged hash, so nothing happens; in particular, the click is
+    // not a second control for expanding and collapsing.
+    stream_list.on_sidebar_channel_click(develSub.stream_id, null, noop);
+    assert_topic_list_expanded($devel_row, false);
+
+    stream_list.toggle_topic_list_expanded(develSub.stream_id);
+    stream_list.on_sidebar_channel_click(develSub.stream_id, null, noop);
+    assert_topic_list_expanded($devel_row, true);
+});
+
+test_ui("list_of_topics_expand_button_hidden_for_topic_search", (helpers) => {
+    const {override_rewire} = helpers;
+    const {$devel_row, narrow_to_message_view} = setup_list_of_topics_test(helpers);
+
+    narrow_to_message_view(topic_filter(develSub, "python"));
+    assert.ok(!$devel_row.hasClass("hide-expand-topics-button"));
+
+    // A "topic:" search replaces the sidebar topic lists with its
+    // results, which the chevron has no say over.
+    override_rewire(ui_util, "get_left_sidebar_search_term", () => "topic: python");
+    stream_list.update_stream_sidebar_for_narrow(topic_filter(develSub, "python"));
+    assert.ok($devel_row.hasClass("hide-expand-topics-button"));
+
+    override_rewire(ui_util, "get_left_sidebar_search_term", () => "");
+    stream_list.update_stream_sidebar_for_narrow(topic_filter(develSub, "python"));
+    assert.ok(!$devel_row.hasClass("hide-expand-topics-button"));
+});
+
+test_ui("list_of_topics_expand_button_visibility", ({override, mock_template}) => {
+    override(
+        user_settings,
+        "web_channel_default_view",
+        settings_config.web_channel_default_view_values.list_of_topics.code,
+    );
+
+    function show_expand_topics_button_for(sub) {
+        const $sidebar_row = $("<" + sub.name + "-sidebar-row-stub>");
+        const $subscription_block = $.create(sub.name + "-block");
+        const $unread_count = $.create(sub.name + "-count");
+        const $unread_mention_info = $.create(sub.name + "-mention-info");
+        $sidebar_row.set_find_results(".subscription_block", $subscription_block);
+        $subscription_block.set_find_results(".unread_count", $unread_count);
+        $subscription_block.set_find_results(".unread_mention_info", $unread_mention_info);
+
+        let show_expand_topics_button;
+        mock_template("stream_sidebar_row.hbs", false, (data) => {
+            show_expand_topics_button = data.show_expand_topics_button;
+            return "<" + sub.name + "-sidebar-row-stub>";
+        });
+
+        stream_data.add_sub_for_tests(sub);
+        stream_list.create_sidebar_row(sub);
+        return show_expand_topics_button;
+    }
+
+    const normal = make_stream({
+        name: "normal",
+        stream_id: 7000,
+        subscribed: true,
+        can_create_topic_group: everyone_group.id,
+        can_send_message_group: everyone_group.id,
+    });
+    assert.equal(show_expand_topics_button_for(normal), true);
+
+    const empty_topic_only = make_stream({
+        name: "general",
+        stream_id: 7001,
+        subscribed: true,
+        topics_policy: "empty_topic_only",
+        can_create_topic_group: everyone_group.id,
+        can_send_message_group: everyone_group.id,
+    });
+    assert.equal(show_expand_topics_button_for(empty_topic_only), false);
+});
+
 test_ui("sort_streams", ({override_rewire, mock_template}) => {
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
@@ -585,6 +866,7 @@ test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
             can_post_messages: true,
             is_empty_topic_only_channel: false,
             cannot_create_topics_in_channel: false,
+            show_expand_topics_button: false,
         });
         return "<li-stub>";
     });
