@@ -80,7 +80,7 @@ from zerver.lib.i18n import (
     get_language_name,
 )
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.queue import queue_json_publish_rollback_unsafe
+from zerver.lib.queue import high_latency_queue_name, queue_json_publish_rollback_unsafe
 from zerver.lib.rate_limiter import rate_limit_request_by_ip, readable_expiry_string_for_html
 from zerver.lib.response import json_success
 from zerver.lib.send_email import EmailNotDeliveredError, FromAddress, send_email
@@ -445,7 +445,7 @@ def registration_helper(
 
             logger.info("(%s) Enqueueing Slack import", prereg_realm.string_id)
             queue_json_publish_rollback_unsafe(
-                "deferred_work",
+                high_latency_queue_name(),
                 {
                     "type": "import_slack_data",
                     "preregistration_realm_id": prereg_realm.id,
