@@ -167,8 +167,8 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
     // messages not tracked in unread.ts during this fetching process.
     message_util.do_unread_count_updates(messages, true);
 
-    const is_contiguous_history = true;
     if (messages.length > 0) {
+        const is_contiguous_history = true;
         if (opts.msg_list) {
             if (opts.validate_filter_topic_post_fetch) {
                 opts.msg_list.data.filter.try_adjusting_for_moved_with_target(messages[0]);

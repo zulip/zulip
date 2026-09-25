@@ -369,8 +369,8 @@ function update_load_more_banner(): void {
 }
 
 function get_min_load_count(already_rendered_count: number, load_count: number): number {
-    const extra_rows_for_viewing_pleasure = 15;
     if (row_focus > already_rendered_count + load_count) {
+        const extra_rows_for_viewing_pleasure = 15;
         return row_focus + extra_rows_for_viewing_pleasure - already_rendered_count;
     }
     return load_count;
