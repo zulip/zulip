@@ -1172,10 +1172,13 @@ class InboxTopicListWidget extends topic_list.TopicListWidget {
         hide_channel_view_loading_indicator();
         const is_zoomed = true;
         const $container = $("#inbox-list");
+        // Unlike the left sidebar, this view has room for every topic,
+        // so resolved topics keep their place in the recency order.
         const list_info = topic_list_data.get_list_info(
             this.my_stream_id,
             is_zoomed,
             this.filter_topics,
+            {demote_resolved_topics: false},
         );
 
         const all_topics = list_info.items;
