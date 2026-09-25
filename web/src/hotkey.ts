@@ -566,7 +566,12 @@ function handle_popover_events(event_name: string): boolean {
         return true;
     }
 
-    if (popover_menu_visible_instance) {
+    const user_card_open =
+        user_card_popover.message_user_card.is_open() ||
+        user_card_popover.user_card.is_open() ||
+        user_card_popover.user_sidebar.is_open();
+
+    if (popover_menu_visible_instance && !user_card_open) {
         const $focused_element = $(":focus");
         const focus_in_textarea = $focused_element.is("textarea");
         const focused_element = $focused_element[0];
@@ -898,10 +903,6 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
 
     // `list_util` will process the event in send later modal.
     if (is_any_modal_active && active_modal !== "#send_later_modal") {
-        if (event_name === "toggle_read_receipts" && active_modal === "#read_receipts_modal") {
-            read_receipts.hide_user_list();
-            return true;
-        }
         return false;
     }
 
@@ -1532,7 +1533,7 @@ function process_hotkey(e: JQuery.KeyDownEvent, hotkey: Hotkey): boolean {
             return true;
         }
         case "toggle_read_receipts": {
-            read_receipts.show_user_list(msg.id);
+            read_receipts.toggle_read_receipts(msg.id);
             return true;
         }
         case "zoom_to_message_near": {
