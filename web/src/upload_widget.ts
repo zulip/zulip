@@ -167,7 +167,7 @@ function set_up_uppy_widget(property_name: "realm_icon" | "realm_logo" | "user_a
             dragMode: "move",
             minCropBoxHeight: 50,
             background: true,
-            initialAspectRatio: property_name === "realm_logo" ? 8 : 1,
+            initialAspectRatio: property_name === "realm_logo" ? 10 : 1,
             // For realm logo, crop box is not restricted to any aspect ratio.
             aspectRatio: property_name === "realm_logo" ? NaN : 1,
         },
@@ -206,7 +206,7 @@ function open_uppy_editor(
             uppy_widget.getPlugin<ImageEditor<Meta, Body>>("ImageEditor")!.selectFile(uppy_file);
 
             let resizing_dimension_opts = {};
-            // The resizing dimensions should be kept in sync with the client-side
+            // The resizing dimensions should be kept in sync with the server-side
             // resizing code in zerver/lib/thumbnail.py.
             if (property_name === "user_avatar") {
                 resizing_dimension_opts = {
@@ -221,7 +221,7 @@ function open_uppy_editor(
             } else {
                 resizing_dimension_opts = {
                     maxHeight: 100,
-                    maxWidth: 800,
+                    maxWidth: 1000,
                 };
             }
 
