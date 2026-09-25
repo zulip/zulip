@@ -97,5 +97,5 @@ def api_rhodecode_webhook(
     body_function = EVENT_FUNCTION_MAPPER[event]
     body = body_function(payload)
 
-    check_send_webhook_message(request, user_profile, topic_name, body)
+    check_send_webhook_message(request, user_profile, topic_name, body, event)
     return json_success(request)
