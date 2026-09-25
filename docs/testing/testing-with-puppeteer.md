@@ -74,7 +74,7 @@ integration](continuous-integration.md):
   affects any of the selectors used in the tests? If so, the test may
   just need to be updated for your changes.
 - Does the test fail deterministically when you run it locally using
-  e.g., `./tools/test-js-with-puppeteer compose.ts`? If so, you can
+  e.g., `./tools/test-js-with-puppeteer compose.test.ts`? If so, you can
   iteratively debug to see the failure.
 - Does the test fail nondeterministically? If so, the problem is
   likely that a `waitForSelector` statement is either missing or not
