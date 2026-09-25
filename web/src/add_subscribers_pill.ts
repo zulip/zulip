@@ -17,9 +17,10 @@ import * as user_pill from "./user_pill.ts";
 export function create_item_from_text(
     text: string,
     current_items: CombinedPill[],
+    include_stream_pill = true,
 ): CombinedPill | undefined {
     const funcs = [
-        stream_pill.create_item_from_stream_name,
+        ...(include_stream_pill ? [stream_pill.create_item_from_stream_name] : []),
         user_group_pill.create_item_from_group_name,
         user_pill.create_item_from_user_id,
     ];
@@ -54,27 +55,31 @@ export function set_up_pill_typeahead({
     get_users,
     get_user_groups,
     for_stream_subscribers,
+    include_stream_pill = true,
 }: {
     pill_widget: CombinedPillContainer;
     $pill_container: JQuery;
     get_users: () => User[];
     get_user_groups?: () => UserGroup[];
     for_stream_subscribers: boolean;
+    include_stream_pill?: boolean;
 }): void {
     const opts: {
         user_source: () => User[];
-        stream: boolean;
+        stream?: boolean;
         user_group: boolean;
         user: boolean;
         user_group_source?: () => UserGroup[];
         for_stream_subscribers: boolean;
     } = {
         user_source: get_users,
-        stream: true,
         user_group: true,
         user: true,
         for_stream_subscribers,
     };
+    if (include_stream_pill) {
+        opts.stream = true;
+    }
     if (get_user_groups !== undefined) {
         opts.user_group_source = get_user_groups;
     }
@@ -104,31 +109,31 @@ export function generate_pill_html(item: CombinedPill): string {
     return stream_pill.generate_pill_html(item);
 }
 
-export function set_up_handlers_for_add_button_state(
+export function set_up_handlers_for_pill_action_button_state(
     pill_widget: CombinedPillContainer | user_group_pill.UserGroupPillWidget,
     $pill_container: JQuery,
     pill_update_callback?: () => void,
 ): void {
     const $pill_widget_input = $pill_container.find(".input");
-    const $pill_widget_button = $pill_container.closest(".add-button-container").find("button");
-    // Disable the add button first time the pill container is created.
+    const $pill_widget_button = $pill_container.closest(".pill-action-container").find("button");
+    // Disable the action button first time the pill container is created.
     $pill_widget_button.prop("disabled", true);
 
-    // If all the pills are removed, disable the add button.
+    // If all the pills are removed, disable the action button.
     pill_widget.onPillRemove(() => {
         $pill_widget_button.prop("disabled", pill_widget.items().length === 0);
         if (pill_update_callback) {
             pill_update_callback();
         }
     });
-    // If a pill is added, enable the add button.
+    // If a pill is added, enable the action button.
     pill_widget.onPillCreate(() => {
         $pill_widget_button.prop("disabled", false);
         if (pill_update_callback) {
             pill_update_callback();
         }
     });
-    // Disable the add button when there is no pending text that can be converted
+    // Disable the action button when there is no pending text that can be converted
     // into a pill and the number of existing pills is zero.
     $pill_widget_input.on("input", () =>
         $pill_widget_button.prop(
@@ -142,24 +147,27 @@ export function create({
     $pill_container,
     get_potential_subscribers,
     get_user_groups,
-    with_add_button,
+    with_action_button,
+    include_stream_pill = true,
     onPillCreateAction,
     onPillRemoveAction,
-    add_button_pill_update_callback,
+    action_button_pill_update_callback,
     onTextInputCallback,
 }: {
     $pill_container: JQuery;
     get_potential_subscribers: () => User[];
     get_user_groups: () => UserGroup[];
-    with_add_button: boolean;
+    with_action_button: boolean;
+    include_stream_pill?: boolean;
     onPillCreateAction?: (pill_user_ids: number[]) => void;
     onPillRemoveAction?: (pill_user_ids: number[]) => void;
-    add_button_pill_update_callback?: () => void;
+    action_button_pill_update_callback?: () => void;
     onTextInputCallback?: () => void;
 }): CombinedPillContainer {
     const pill_widget = input_pill.create<CombinedPill>({
         $container: $pill_container,
-        create_item_from_text,
+        create_item_from_text: (text, current_items) =>
+            create_item_from_text(text, current_items, include_stream_pill),
         get_text_from_item,
         get_display_value_from_item,
         generate_pill_html,
@@ -211,13 +219,14 @@ export function create({
         get_users,
         get_user_groups: get_groups,
         for_stream_subscribers: true,
+        include_stream_pill,
     });
 
-    if (with_add_button) {
-        set_up_handlers_for_add_button_state(
+    if (with_action_button) {
+        set_up_handlers_for_pill_action_button_state(
             pill_widget,
             $pill_container,
-            add_button_pill_update_callback,
+            action_button_pill_update_callback,
         );
     }
 
