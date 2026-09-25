@@ -48,11 +48,17 @@ TABLE_LINK_TEMPLATE = """
 
 
 @dataclass
+class ExampleData:
+    value: str
+    label: str | None
+
+
+@dataclass
 class EventData:
     type: str
     description: str
     properties: dict[str, Any]
-    example: str
+    examples: list[ExampleData]
     op_type: str | None = None
 
 
@@ -268,10 +274,14 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             )
         event_strings.append(f"\n{event_data.description}\n\n\n")
         event_strings += self.render_table(event_data.properties, 0)
-        event_strings.append("**Example**")
-        event_strings.append("\n```json\n")
-        event_strings.append(event_data.example)
-        event_strings.append("```\n\n")
+        for example in event_data.examples:
+            if example.label is None:
+                event_strings.append("**Example**")
+            else:
+                event_strings.append(f"**Example: {example.label}**")
+            event_strings.append("\n```json\n")
+            event_strings.append(example.value)
+            event_strings.append("```\n\n")
         event_strings.append("<hr>")
         return event_strings
 
@@ -301,11 +311,26 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
             op_type: str | None = None
             if op is not None:
                 op_type = op["enum"][0]
+            examples: list[ExampleData]
+            if "x-examples" in event:
+                examples = [
+                    ExampleData(
+                        value=json.dumps(example["value"], indent=4, sort_keys=True),
+                        label=example.get("label"),
+                    )
+                    for example in event["x-examples"].values()
+                ]
+            else:
+                examples = [
+                    ExampleData(
+                        value=json.dumps(event["example"], indent=4, sort_keys=True), label=None
+                    )
+                ]
             event_data = EventData(
                 type=event["properties"]["type"]["enum"][0],
                 description=event["description"],
                 properties=event["properties"],
-                example=json.dumps(event["example"], indent=4, sort_keys=True),
+                examples=examples,
                 op_type=op_type,
             )
             events += self.generate_event_strings(event_data)
