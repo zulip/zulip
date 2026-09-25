@@ -340,6 +340,10 @@ def get_topic_history_for_stream(
     return generate_topic_history_from_db_rows(rows, allow_empty_topic_name)
 
 
+def is_topic_resolved(topic_name: str) -> bool:
+    return topic_name.startswith(RESOLVED_TOPIC_PREFIX)
+
+
 def get_topic_resolution_and_bare_name(stored_name: str) -> tuple[bool, str]:
     """
     Resolved topics are denoted only by a title change, not by a boolean toggle in a database column. This
@@ -348,7 +352,7 @@ def get_topic_resolution_and_bare_name(stored_name: str) -> tuple[bool, str]:
     - Whether the topic has been resolved
     - The topic name with the resolution prefix, if present in stored_name, removed
     """
-    if stored_name.startswith(RESOLVED_TOPIC_PREFIX):
+    if is_topic_resolved(stored_name):
         return (True, stored_name.removeprefix(RESOLVED_TOPIC_PREFIX))
 
     return (False, stored_name)
