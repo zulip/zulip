@@ -30,3 +30,17 @@ I'm having a problem with this.
 I've started working on this issue. The problem seems to be in the authentication module.
 ~~~"""
         self.check_webhook("issue_updated", self.TOPIC_NAME, expected_message)
+
+    def test_event_filtering(self) -> None:
+        expected_message = """**test2 user2** updated [#191 Found a bug](https://example.com).
+
+~~~ quote
+I've started working on this issue. The problem seems to be in the authentication module.
+~~~"""
+
+        self.url = f'{self.build_webhook_url()}&only_events=["updated"]'
+        self.check_webhook("issue_updated", self.TOPIC_NAME, expected_message)
+        self.check_webhook("issue_opened", expect_noop=True)
+
+        self.url = f'{self.build_webhook_url()}&exclude_events=["updated"]'
+        self.check_webhook("issue_updated", expect_noop=True)
