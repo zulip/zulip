@@ -1,9 +1,37 @@
 import json
+from collections.abc import Iterator
+from contextlib import contextmanager
+from typing import Any
 
 import requests
+from django.conf import settings
 from pyoembed import PyOembedException, oEmbed
 
+from version import ZULIP_VERSION
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
+
+# Use Chrome User-Agent, since some sites refuse to work on old browsers.
+ZULIP_URL_PREVIEW_USER_AGENT = (
+    f"Mozilla/5.0 (compatible; ZulipURLPreview/{ZULIP_VERSION}; +{settings.ROOT_DOMAIN_URI})"
+)
+HEADERS = {"User-Agent": ZULIP_URL_PREVIEW_USER_AGENT}
+TIMEOUT = 15
+
+
+@contextmanager
+def _patched_oembed_requests() -> Iterator[None]:
+    original_get = requests.get
+
+    def wrapped_get(*args: Any, **kwargs: Any) -> Any:
+        kwargs.setdefault("headers", HEADERS)
+        kwargs.setdefault("timeout", TIMEOUT)
+        return original_get(*args, **kwargs)
+
+    requests.get = wrapped_get
+    try:
+        yield
+    finally:
+        requests.get = original_get
 
 
 def get_oembed_data(url: str, maxwidth: int = 640, maxheight: int = 480) -> UrlEmbedData | None:
@@ -11,7 +39,8 @@ def get_oembed_data(url: str, maxwidth: int = 640, maxheight: int = 480) -> UrlE
     # but they still go through Smokescreen: requests lib honors the
     # HTTP_proxy/HTTPS_proxy variables we set in every process's environment.
     try:
-        data = oEmbed(url, maxwidth=maxwidth, maxheight=maxheight)
+        with _patched_oembed_requests():
+            data = oEmbed(url, maxwidth=maxwidth, maxheight=maxheight)
     except (PyOembedException, json.decoder.JSONDecodeError, requests.exceptions.ConnectionError):
         return None
 

@@ -6,14 +6,12 @@ from urllib.parse import urljoin
 
 import magic
 import requests
-from django.conf import settings
 from django.utils.encoding import smart_str
 
-from version import ZULIP_VERSION
 from zerver.lib.cache import cache_with_key, preview_url_cache_key
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.url_preview.oembed import get_oembed_data
+from zerver.lib.url_preview.oembed import HEADERS, TIMEOUT, get_oembed_data
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 
@@ -26,15 +24,6 @@ link_regex = re.compile(
     r"(?:/?|[/?]\S+)$",
     re.IGNORECASE,
 )
-
-# Use Chrome User-Agent, since some sites refuse to work on old browsers
-ZULIP_URL_PREVIEW_USER_AGENT = (
-    f"Mozilla/5.0 (compatible; ZulipURLPreview/{ZULIP_VERSION}; +{settings.ROOT_DOMAIN_URI})"
-)
-
-# FIXME: This header and timeout are not used by pyoembed, when trying to autodiscover!
-HEADERS = {"User-Agent": ZULIP_URL_PREVIEW_USER_AGENT}
-TIMEOUT = 15
 
 
 class PreviewSession(OutgoingSession):
