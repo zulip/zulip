@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -euo pipefail
+
 # This hook runs gitlint on your commit message.
 
 # If your machine contains a provisioned Zulip development environment, the
@@ -8,7 +10,7 @@
 # Do not invoke gitlint if commit message is empty
 if grep -q '^[^#]' "$1"; then
     if
-        if [ -z "$VIRTUAL_ENV" ] && command -v vagrant >/dev/null && [ -e .vagrant ]; then
+        if [ -z "${VIRTUAL_ENV:-}" ] && command -v vagrant >/dev/null && [ -e .vagrant ]; then
             ! vagrant ssh -c 'cd ~/zulip && gitlint'
         else
             ! gitlint

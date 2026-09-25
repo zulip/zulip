@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 set -x
 
 PGHOST=localhost PGUSER=zulip \
