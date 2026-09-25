@@ -535,6 +535,9 @@ CONSTRUCTOR_GROUPS_SECRET_KEY = get_secret("constructor_groups_secret_key")
 NEXTCLOUD_TALK_USERNAME = get_secret("nextcloud_talk_username")
 NEXTCLOUD_TALK_PASSWORD = get_secret("nextcloud_talk_password")
 
+GALENE_ADMIN_USERNAME = get_secret("galene_admin_username")
+GALENE_ADMIN_PASSWORD = get_secret("galene_admin_password")
+
 # These are the bots that Zulip sends automated messages as.
 INTERNAL_BOTS = [
     {
