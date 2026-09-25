@@ -996,3 +996,104 @@ export function set_up(): void {
         );
     });
 }
+
+export function update_custom_profile_field_ui(
+    user_id: number,
+    field: {id: number; value: string | null},
+): void {
+    const field_id = field.id;
+    const new_value = field.value ?? "";
+
+    const profile_field = realm.custom_profile_fields?.find((f) => f.id === field_id);
+    if (profile_field === undefined) {
+        return;
+    }
+
+    const field_types = realm.custom_profile_field_types;
+    const is_complex_widget =
+        profile_field.type === field_types.DATE.id ||
+        profile_field.type === field_types.USER.id ||
+        profile_field.type === field_types.DROPDOWN.id;
+
+    if (user_id === people.my_current_user_id()) {
+        const $personal_container = $(
+            `#profile-settings .custom_user_field[data-field-id="${CSS.escape(field_id.toString())}"]`,
+        );
+        if ($personal_container.length > 0) {
+            if (is_complex_widget) {
+                const html = custom_profile_fields_ui.render_custom_profile_field(
+                    user_id,
+                    profile_field,
+                    false,
+                );
+                const $new_field = $(html);
+                $personal_container.replaceWith($new_field);
+
+                if (profile_field.type === field_types.DATE.id) {
+                    custom_profile_fields_ui.initialize_custom_date_type_fields(
+                        $new_field,
+                        user_id,
+                        true,
+                    );
+                } else if (profile_field.type === field_types.USER.id) {
+                    const pill_update_handler = (
+                        f: PillUpdateField,
+                        pills: UserPillWidget,
+                    ): void => {
+                        update_user_type_field(f, pills);
+                    };
+                    custom_profile_fields_ui.initialize_custom_user_type_fields(
+                        $new_field,
+                        user_id,
+                        true,
+                        pill_update_handler,
+                    );
+                }
+            } else {
+                $personal_container.find(".custom_user_field_value").val(new_value);
+            }
+        }
+    }
+
+    const $manage_user_form = $("#edit-user-form");
+    if ($manage_user_form.length > 0) {
+        const modal_user_id = Number.parseInt($manage_user_form.attr("data-user-id")!, 10);
+        if (modal_user_id === user_id) {
+            const $modal_container = $manage_user_form.find(
+                `.custom_user_field[data-field-id="${CSS.escape(field_id.toString())}"]`,
+            );
+            if ($modal_container.length > 0) {
+                if (is_complex_widget) {
+                    const html = custom_profile_fields_ui.render_custom_profile_field(
+                        user_id,
+                        profile_field,
+                        true,
+                    );
+                    const $new_field = $(html);
+                    $modal_container.replaceWith($new_field);
+
+                    if (profile_field.type === field_types.DATE.id) {
+                        custom_profile_fields_ui.initialize_custom_date_type_fields(
+                            $new_field,
+                            user_id,
+                        );
+                    } else if (profile_field.type === field_types.USER.id) {
+                        // The manage user modal uses a form input handler to toggle the submit button,
+                        // so we dispatch an input event when pills are updated.
+                        const pill_update_handler = (): void => {
+                            $manage_user_form.find("input").first().trigger("input");
+                        };
+                        custom_profile_fields_ui.initialize_custom_user_type_fields(
+                            $new_field,
+                            user_id,
+                            true,
+                            pill_update_handler,
+                        );
+                    }
+                } else {
+                    $modal_container.find(".custom_user_field_value").val(new_value);
+                }
+            }
+        }
+    }
+}
