@@ -9,11 +9,9 @@ import * as util from "./util.ts";
 
 function get_scheduled_messages_matching_narrow(): ScheduledMessage[] {
     const scheduled_messages_list = scheduled_messages.get_all_scheduled_messages();
-    const filter = narrow_state.filter();
-    const is_conversation_view = filter === undefined ? false : filter.is_conversation_view();
     const current_view_type = narrow_state.narrowed_to_pms() ? "private" : "stream";
 
-    if (!is_conversation_view) {
+    if (!narrow_state.filter()?.is_conversation_view()) {
         return [];
     }
 

@@ -52,10 +52,8 @@ const general = make_stream({
 
 stream_data.add_sub_for_tests(general);
 
-function get_list_info(zoom, search) {
+function get_list_info(zoomed = false, search_term = "") {
     const stream_id = general.stream_id;
-    const zoomed = zoom === undefined ? false : zoom;
-    const search_term = search === undefined ? "" : search;
     return topic_list_data.get_list_info(stream_id, zoomed, (topics) =>
         topic_list_data.filter_topics_by_search_term(stream_id, topics, search_term),
     );

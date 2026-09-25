@@ -35,8 +35,6 @@ export function update_unread_banner(): void {
         return;
     }
 
-    const filter = narrow_state.filter();
-    const is_conversation_view = filter === undefined ? false : filter.is_conversation_view();
     toggle_dummy_banner(false);
 
     if (
@@ -47,7 +45,7 @@ export function update_unread_banner(): void {
     } else if (
         user_settings.web_mark_read_on_scroll_policy ===
             web_mark_read_on_scroll_policy_values.conversation_only.code &&
-        !is_conversation_view
+        !narrow_state.filter()?.is_conversation_view()
     ) {
         set_mark_read_on_scroll_state_banner(render_mark_as_read_only_in_conversation_view());
     } else {

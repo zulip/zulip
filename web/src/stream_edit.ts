@@ -312,9 +312,8 @@ export function stream_settings(sub: StreamSubscription): StreamSetting[] {
 
     return settings_labels.map(([setting, label]) => {
         const parsed_realm_setting = realm_labels_schema.safeParse(setting);
-        const realm_setting = parsed_realm_setting.success
-            ? check_realm_setting[parsed_realm_setting.data]
-            : false;
+        const realm_setting =
+            parsed_realm_setting.success && check_realm_setting[parsed_realm_setting.data];
         const notification_setting = notification_labels_schema.safeParse(setting);
 
         let is_checked;

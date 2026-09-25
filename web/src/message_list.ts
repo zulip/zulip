@@ -379,8 +379,6 @@ export class MessageList {
            * The user has "Automatically mark messages as read" option
              turned on in their user settings.
         */
-        const filter = this.data.filter;
-        const is_conversation_view = filter === undefined ? false : filter.is_conversation_view();
         return (
             this.data.can_mark_messages_read() &&
             !this.reading_prevented &&
@@ -388,7 +386,7 @@ export class MessageList {
                 web_mark_read_on_scroll_policy_values.never.code &&
             (user_settings.web_mark_read_on_scroll_policy !==
                 web_mark_read_on_scroll_policy_values.conversation_only.code ||
-                is_conversation_view)
+                this.data.filter.is_conversation_view())
         );
     }
 
