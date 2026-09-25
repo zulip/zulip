@@ -236,6 +236,11 @@ test_realm_group_settings(
 
 test_realm_group_settings("realm_can_resolve_topics_group", settings_data.user_can_resolve_topic);
 
+test_realm_group_settings(
+    "realm_can_unsubscribe_group",
+    settings_data.user_can_unsubscribe_from_channels,
+);
+
 run_test("using_dark_theme", ({override}) => {
     override(user_settings, "color_scheme", settings_config.color_scheme_values.dark.code);
     assert.equal(settings_data.using_dark_theme(), true);
