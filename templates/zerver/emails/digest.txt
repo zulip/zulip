@@ -26,6 +26,10 @@ This email does not include message content because your organization hides mess
 {% trans help_url=realm_url + "/help/email-notifications#hide-message-content" %}
 This email does not include message content because you have chosen to hide message content in email notifications. See {{ help_url }} for more details.
 {% endtrans %}
+{% elif message_content_disabled_by_all_channels %}
+{% trans hide_content_url=realm_url + "/help/hide-message-content-in-emails" %}
+This email does not include message content because all of your channels with recent activity hide message content in email notifications. See {{ hide_content_url }} for more details.
+{% endtrans %}
 {% endif %}
 {% endif %}
 
