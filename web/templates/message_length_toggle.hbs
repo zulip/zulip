@@ -5,7 +5,8 @@
   {{else}}
   data-enable-tooltip="false"
   {{/if}}>
-    {{ label_text }}
+    <i class="zulip-icon zulip-icon-expand" aria-hidden="true"></i>
+    <span>{{ label_text }}</span>
 </button>
 {{else if (eq toggle_type "condenser")}}
 <button type="button" class="message_condenser message_length_toggle"
@@ -14,6 +15,7 @@
   {{else}}
   data-enable-tooltip="false"
   {{/if}}>
-    {{ label_text }}
+    <i class="zulip-icon zulip-icon-collapse" aria-hidden="true"></i>
+    <span>{{ label_text }}</span>
 </button>
 {{/if}}
