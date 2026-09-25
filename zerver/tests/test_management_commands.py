@@ -104,6 +104,11 @@ class TestZulipBaseCommand(ZulipTestCase):
         user_emails = ",".join(u.delivery_email for u in expected_user_profiles)
         user_profiles = self.get_users_sorted(dict(users=user_emails), self.zulip_realm)
         self.assertEqual(user_profiles, expected_user_profiles)
+        # acquire_lock=True returns the same users, additionally locking the rows.
+        user_profiles = self.get_users_sorted(
+            dict(users=user_emails), self.zulip_realm, acquire_lock=True
+        )
+        self.assertEqual(user_profiles, expected_user_profiles)
         user_profiles = self.get_users_sorted(dict(users=user_emails), None)
         self.assertEqual(user_profiles, expected_user_profiles)
 
@@ -159,6 +164,11 @@ class TestZulipBaseCommand(ZulipTestCase):
             key=lambda x: x.email,
         )
         user_profiles = self.get_users_sorted(dict(users=None, all_users=True), self.zulip_realm)
+        self.assertEqual(user_profiles, expected_user_profiles)
+        # acquire_lock=True returns the same users, additionally locking the rows.
+        user_profiles = self.get_users_sorted(
+            dict(users=None, all_users=True), self.zulip_realm, acquire_lock=True
+        )
         self.assertEqual(user_profiles, expected_user_profiles)
 
         # Test include_deactivated
