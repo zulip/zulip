@@ -9,6 +9,7 @@ from openai.types.chat import ChatCompletionMessageParam
 
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat
 from zerver.lib.markdown import markdown_convert
+from zerver.lib.mention import MentionBackend, MentionData, silence_mentions
 from zerver.lib.message import messages_for_ids
 from zerver.lib.narrow import (
     LARGER_THAN_MAX_MESSAGE_ID,
@@ -47,15 +48,20 @@ def ai_stats_finish() -> None:
     ai_total_time += time.time() - ai_time_start
 
 
+def rewrite_mentions_to_silent_mentions(message_content: str) -> str:
+    # Rewrite every mention to its silent mention syntax.
+    # TODO: We need to either exclude wild card mention or
+    # tell the model, below, how to handle or refer to them.
+    return silence_mentions(message_content)
+
+
 def format_zulip_messages_for_model(zulip_messages: list[dict[str, Any]]) -> str:
     # Format the Zulip messages for processing by the model.
     #
     # - We don't need to encode the recipient, since that's the same for
     #   every message in the conversation.
-    # - We use full names to reference senders, since we want the
-    #   model to refer to users by name. We may want to experiment
-    #   with using silent-mention syntax for users if we move to
-    #   Markdown-rendering what the model returns.
+    # - Every user or group the summary may name is written
+    #   as a silent mention for the model to copy.
     # - We don't include timestamps, since experiments with current models
     #   suggest they do not make relevant use of them.
     # - We haven't figured out a useful way to include reaction metadata (either
@@ -63,7 +69,10 @@ def format_zulip_messages_for_model(zulip_messages: list[dict[str, Any]]) -> str
     # - Polls/TODO widgets are currently sent to the model as empty messages,
     #   since this logic doesn't inspect SubMessage objects.
     zulip_messages_list = [
-        {"sender": message["sender_full_name"], "content": message["content"]}
+        {
+            "sender": f"@_**{message['sender_full_name']}|{message['sender_id']}**",
+            "content": rewrite_mentions_to_silent_mentions(message["content"]),
+        }
         for message in zulip_messages
     ]
     return orjson.dumps(zulip_messages_list).decode()
@@ -157,9 +166,29 @@ def do_summarize_narrow(
     prompt = (
         f"Succinctly summarize this conversation based only on the information provided, "
         f"in up to {max_summary_length} sentences, for someone who is familiar with the context. "
-        f"Mention key conclusions and actions, if any. Refer to specific people as appropriate. "
+        f"Mention key conclusions and actions, if any. "
         f"Don't use an intro phrase. You can use Zulip's CommonMark based formatting."
     )
+
+    # TODO: A model may confuse a wild card mention with a person,
+    # since they have the same mention syntax. We should instruct the model
+    # how to handle a wild card mention in case we decide to leave it.
+    mention_instructions = (
+        " Refer to specific people and groups as appropriate. "
+        "Every person and group in the conversation above is written as a mention: \n"
+        " -person mention: the prefix @_** followed by text identifying that person followed "
+        "by the suffix **. A message's author appears as its sender; anyone else appears within "
+        "the message content.\n"
+        " -group mention: the prefix @_* followed by text identifying that group followed "
+        "by the suffix *.\n"
+        "When you refer to a person or a group, reproduce their whole mention character for "
+        "character, prefix and suffix included. "
+        "Never write a mention that does not appear above; where a person or group is given as "
+        "plain text rather than as a mention, refer to them by that plain text alone."
+    )
+
+    prompt += mention_instructions
+
     messages = [
         make_message(intro, "system"),
         make_message(formatted_conversation),
@@ -208,8 +237,21 @@ def do_summarize_narrow(
 
     summary = response.choices[0].message.content
     assert summary is not None
-    # TODO: This may want to fetch `MentionData`, in order to be able
-    # to process channel or user mentions that might be in the
-    # content. Requires a prompt that supports it.
-    rendered_summary = markdown_convert(summary, message_realm=user_profile.realm).rendered_content
+
+    # We render the LLM summary against MentionData scoped to the acting
+    # user, to handle mention permission for users (senders or mentioned)
+    # that are all now mentioned in the summary, and also in
+    # case the model invents inaccessible/non-existing users.
+    mention_backend = MentionBackend(user_profile.realm_id)
+    mention_data = MentionData(
+        mention_backend=mention_backend,
+        content=summary,
+        message_sender=user_profile,
+    )
+    rendered_summary = markdown_convert(
+        summary,
+        message_realm=user_profile.realm,
+        acting_user=user_profile,
+        mention_data=mention_data,
+    ).rendered_content
     return rendered_summary
