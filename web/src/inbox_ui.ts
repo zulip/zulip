@@ -493,9 +493,8 @@ function format_dm(
         const user_id = recipient_ids[0];
         const is_deactivated = !people.is_active_user_or_system_bot(user_id);
         is_bot = people.is_valid_bot_user(user_id);
-        user_circle_class = is_bot
-            ? false
-            : buddy_data.get_user_circle_class(recipient_ids[0], is_deactivated);
+        user_circle_class =
+            !is_bot && buddy_data.get_user_circle_class(recipient_ids[0], is_deactivated);
     }
     const has_unread_mention = unread.num_unread_mentions_for_user_ids_strings(user_ids_string) > 0;
 
