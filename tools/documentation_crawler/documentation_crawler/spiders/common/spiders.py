@@ -74,7 +74,7 @@ class BaseDocumentationSpider(scrapy.Spider):
         return url.startswith("http") or self._has_extension(url)
 
     def check_existing(self, response: Response) -> None:
-        self.log(response)
+        self.logger.debug(response)
 
     def _is_external_link(self, url: str) -> bool:
         split_url = urlsplit(url)
@@ -111,7 +111,7 @@ class BaseDocumentationSpider(scrapy.Spider):
         return True
 
     def check_fragment(self, response: Response) -> None:
-        self.log(response)
+        self.logger.debug(response)
         xpath_template = "//*[@id='{fragment}' or @name='{fragment}']"
         assert isinstance(response, TextResponse)
         assert response.request is not None
@@ -211,7 +211,7 @@ class BaseDocumentationSpider(scrapy.Spider):
 
     @override
     def parse(self, response: Response) -> Iterator[Request]:
-        self.log(response)
+        self.logger.debug(response)
 
         if getattr(self, "validate_html", False):
             yield Request(

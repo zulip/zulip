@@ -52,7 +52,7 @@ prod = [
 
   # Needed for the email mirror
   "markdownify",
-  "talon-core",
+  "talon",
 
   # Needed for inlining the CSS in emails
   "css-inline",
@@ -295,12 +295,12 @@ dev = [
   "boto3-stubs[s3,ses,sns,sqs]",
   "django-stubs<6.1.0",  # 6.1.0 requires Python ≥ 3.11
   "google-re2-stubs",
-  "lxml-stubs",
   "types-beautifulsoup4",
   "types-boto",
   "types-decorator",
   "types-defusedxml",
   "types-jsonschema",
+  "types-lxml",
   "types-Markdown",
   "types-oauthlib",
   "types-polib",
@@ -345,7 +345,7 @@ no-binary-package = [
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
 # and chardet, cchardet: https://github.com/mailgun/talon/pull/239
 # and fix invalid escape sequences: https://github.com/mailgun/talon/pull/245
-talon-core = { git = "https://github.com/zulip/talon.git", subdirectory = "talon-core", rev = "e87a64dccc3c5ee1b8ea157d4b6e15ecd46f2bed" }
+talon = { git = "https://github.com/mailgun/talon.git" }
 
 # We integrate with these tightly, including fetching content not included in
 # the official PyPI release tarballs, such as logos, assets and documentation
@@ -438,7 +438,7 @@ module = [
     "pyuca.*",
     "pyvips.*",
     "scim2_filter_parser.attr_paths",
-    "talon_core.*",
+    "talon.*", # https://github.com/mailgun/talon/pull/264
     "tlds.*",
     "two_factor.*",
 ]
