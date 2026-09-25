@@ -39,7 +39,7 @@ export function has_complete_subscriber_data(): boolean {
     const all_stream_ids = new Set(sub_store.stream_ids());
     return (
         all_stream_ids.size === fetched_stream_ids.size &&
-        all_stream_ids.difference(fetched_stream_ids).size === 0
+        all_stream_ids.isSubsetOf(fetched_stream_ids)
     );
 }
 

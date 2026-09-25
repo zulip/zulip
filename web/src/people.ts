@@ -1835,7 +1835,7 @@ function get_combined_promise_for_user_ids(user_ids: Set<number>): {
     // Check if we have an ongoing fetch that includes some of the
     // users needed by this request.
     for (const [user_ids_set, promise_data] of fetch_users_storage.promise_for_in_transit) {
-        if (user_ids_set.intersection(user_ids_pending_fetch).size > 0) {
+        if (!user_ids_set.isDisjointFrom(user_ids_pending_fetch)) {
             user_ids_pending_fetch = user_ids_pending_fetch.difference(user_ids_set);
             promises.push(promise_data.promise);
         }
