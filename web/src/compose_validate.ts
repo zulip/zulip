@@ -19,6 +19,7 @@ import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
+import * as markdown from "./markdown.ts";
 import * as message_store from "./message_store.ts";
 import * as message_util from "./message_util.ts";
 import * as narrow_state from "./narrow_state.ts";
@@ -1043,6 +1044,27 @@ export function validate_private_message(show_banner = true): boolean {
     return true;
 }
 
+export function message_renders_blank(message_content: string): boolean {
+    // A blank textarea is an empty message, handled separately.
+    if (message_content.trim() === "") {
+        return false;
+    }
+    // Parse the rendered HTML into an inert document (parseFromString never
+    // runs scripts) and inspect it, since only the parser knows e.g. that
+    // `    $$ $$` is a code block rather than empty math.
+    const rendered = markdown.render(message_content).content;
+    const {body} = new DOMParser().parseFromString(rendered, "text/html");
+    // Not blank if any text survives collapsing ASCII whitespace (a
+    // non-breaking space does not collapse, so it counts as text).
+    if ((body.textContent ?? "").replaceAll(/[ \t\r\n]+/g, "") !== "") {
+        return false;
+    }
+    // With no text, it's blank unless a container or media element renders.
+    return (
+        body.querySelector("img, hr, table, video, audio, pre, blockquote, .spoiler-block") === null
+    );
+}
+
 export function check_overflow_text($container: JQuery): number {
     // This function is called when typing every character in the
     // compose box, so it's important that it not doing anything
@@ -1203,7 +1225,10 @@ export let validate = (scheduling_message: boolean, show_banner = true): boolean
 
     const no_message_content = /^\s*$/.test(message_content);
     set_no_message_content(no_message_content);
-    if (no_message_content) {
+    // A message that renders to nothing visible (e.g. empty math or an empty
+    // fenced block) is blocked too, but it isn't tracked in no_message_content
+    // since the compose box isn't actually empty.
+    if (no_message_content || message_renders_blank(message_content)) {
         if (show_banner) {
             // If you tried actually sending a message with empty
             // compose, flash the textarea as invalid.
