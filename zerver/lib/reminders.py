@@ -2,7 +2,13 @@ from enum import Enum
 
 from django.conf import settings
 from django.utils.translation import gettext as _
+from django_stubs_ext import StrPromise
 
+from zerver.lib.compose_reply import (
+    CHANNEL_MESSAGE_QUOTE_CONTEXT,
+    DIRECT_MESSAGE_QUOTE_CONTEXT,
+    MESSAGE_QUOTE_BODY,
+)
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.event_types import RemindersRemoveEvent
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
@@ -67,7 +73,6 @@ def get_reminder_formatted_content(
                 "topic": message.topic_name(),
             },
             conversation_link=True,
-            include_base_url=False,
         )
         escape = escape_invalid_stream_topic_characters
         topic_pretty_link = TOPIC_LINK_SYNTAX_FOR_DISPLAY.format(
@@ -121,20 +126,18 @@ def get_reminder_formatted_content(
     # Format the message content as a quote.
     content += "\n\n"
 
-    REMINDER_FORMAT = {
+    REMINDER_FORMAT: dict[ReminderRecipientType, dict[str, str | StrPromise]] = {
         ReminderRecipientType.CHANNEL: {
             "widget": _(
                 "{user_silent_mention} [sent]({conversation_url}) a {widget} in {topic_pretty_link}."
             ),
-            "text": _("{user_silent_mention} [said]({conversation_url}) in {topic_pretty_link}:"),
+            "text": CHANNEL_MESSAGE_QUOTE_CONTEXT,
         },
         ReminderRecipientType.PRIVATE: {
             "widget": _(
                 "{user_silent_mention} [sent]({conversation_url}) a {widget} to {list_of_recipient_mentions}."
             ),
-            "text": _(
-                "{user_silent_mention} [said]({conversation_url}) to {list_of_recipient_mentions}:"
-            ),
+            "text": DIRECT_MESSAGE_QUOTE_CONTEXT,
         },
         ReminderRecipientType.NOTE_TO_SELF: {
             "widget": _("You [sent]({conversation_url}) yourself a {widget}."),
@@ -152,15 +155,14 @@ def get_reminder_formatted_content(
         content += REMINDER_FORMAT[format_recipient_type_key]["text"].format_map(context)
         content += "\n"
         fence = get_unused_fence(content)
-        quoted_message = "{fence}quote\n{msg_content}\n{fence}"
         length_without_message_content = len(
-            content + quoted_message.format(fence=fence, msg_content="")
+            content + MESSAGE_QUOTE_BODY.format(fence=fence, content="")
         )
         max_length = settings.MAX_MESSAGE_LENGTH - length_without_message_content
         msg_content = truncate_content(message.content, max_length, "\n[message truncated]")
-        content += quoted_message.format(
+        content += MESSAGE_QUOTE_BODY.format(
             fence=fence,
-            msg_content=msg_content,
+            content=msg_content,
         )
     return content
 

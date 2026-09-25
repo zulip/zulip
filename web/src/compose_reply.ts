@@ -439,7 +439,7 @@ function generate_channel_message_quote_context(message: Message): string {
     //     ```quote
     //     message content
     //     ```
-    // Keep syntax in sync with channel message reminder format in zerver/lib/reminders.py
+    // Keep syntax in sync with channel message quote format in zerver/lib/compose_reply.py
     return $t(
         {
             defaultMessage: "{username} [said]({link_to_message}) in {topic_link}:",
@@ -469,7 +469,7 @@ function generate_private_message_quote_context(message: Message): string {
     //     ```quote
     //     message content
     //     ```
-    // Keep syntax in sync with direct message reminder format in zerver/lib/reminders.py
+    // Keep syntax in sync with direct message quote format in zerver/lib/compose_reply.py
     return $t(
         {
             defaultMessage: "{username} [said]({link_to_message}) to {list_of_recipient_mentions}:",
