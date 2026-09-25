@@ -442,6 +442,8 @@ export function rewire_exit_search(value: typeof exit_search): void {
 
 export let open_search_bar_and_close_narrow_description = (clear = false): void => {
     reset_searchbox(clear);
+    $("#searchbox-input-container").attr("tabindex", "-1");
+    $("#search_query").attr("tabindex", "0");
     $("#search_query").attr("contenteditable", "true");
     $(".navbar-search").addClass("expanded");
     $("#message_view_header").addClass("hidden");
@@ -472,6 +474,8 @@ export function close_search_bar_and_open_narrow_description(): void {
         search_pill_widget.clear(true);
     }
 
+    $("#searchbox-input-container").attr("tabindex", "0");
+    $("#search_query").removeAttr("tabindex");
     $("#search_query").attr("contenteditable", "false");
     $(".navbar-search").removeClass("expanded");
     $("#message_view_header").removeClass("hidden");

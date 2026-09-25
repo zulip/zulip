@@ -325,6 +325,37 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     assert.ok($search_query_box.is(":focus"));
     $searchbox_form.trigger(ev);
     assert.ok(!$search_query_box.is(":focus"));
+
+    let search_opened = false;
+    override_rewire(search, "open_search_bar_and_close_narrow_description", () => {
+        search_opened = true;
+    });
+
+    const $input_container = $("#searchbox-input-container");
+    const container_keydown = $input_container.get_on_handler("keydown");
+    const container_keyup = $input_container.get_on_handler("keyup");
+
+    let container_default_prevented = false;
+    let container_propagation_stopped = false;
+    const enter_event = {
+        key: "Enter",
+        preventDefault() {
+            container_default_prevented = true;
+        },
+        stopPropagation() {
+            container_propagation_stopped = true;
+        },
+    };
+
+    $.set_results("#searchbox .navbar-search.expanded", []);
+    $search_query_box.trigger("blur");
+    container_keydown(enter_event);
+    assert.ok(container_default_prevented);
+    assert.ok(container_propagation_stopped);
+
+    container_keyup(enter_event);
+    assert.ok(search_opened);
+    assert.ok($search_query_box.is(":focus"));
 });
 
 run_test("initiate_search", ({override_rewire}) => {
@@ -338,6 +369,22 @@ run_test("initiate_search", ({override_rewire}) => {
     assert.ok(typeahead_forced_open);
     assert.ok(search_bar_opened);
     assert.equal($("#search_query").text(), "");
+});
+
+run_test("open_and_close_search_bar", () => {
+    search.open_search_bar_and_close_narrow_description();
+    assert.equal($("#searchbox-input-container").attr("tabindex"), "-1");
+    assert.equal($("#search_query").attr("tabindex"), "0");
+    assert.equal($("#search_query").attr("contenteditable"), "true");
+    assert.ok($(".navbar-search").hasClass("expanded"));
+    assert.ok($("#message_view_header").hasClass("hidden"));
+
+    search.close_search_bar_and_open_narrow_description();
+    assert.equal($("#searchbox-input-container").attr("tabindex"), "0");
+    assert.equal($("#search_query").attr("tabindex"), undefined);
+    assert.equal($("#search_query").attr("contenteditable"), "false");
+    assert.ok(!$(".navbar-search").hasClass("expanded"));
+    assert.ok(!$("#message_view_header").hasClass("hidden"));
 });
 
 run_test("close_search", () => {
