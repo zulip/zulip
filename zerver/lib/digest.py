@@ -403,9 +403,10 @@ def get_user_muted_topics_map(user_ids: list[int]) -> dict[int, set[tuple[int, s
 
 
 def get_slim_stream_id_map(stream_ids: set[int]) -> dict[int, Stream]:
-    # "slim" because it only fetches the names of the stream objects,
+    # "slim" because it only fetches the fields of the stream objects
     # suitable for passing into build_message_list.
-    streams = Stream.objects.filter(id__in=stream_ids).only("id", "name")
+    fields = ["id", "name", "is_web_public", "invite_only"]
+    streams = Stream.objects.filter(id__in=stream_ids).only(*fields)
     return {stream.id: stream for stream in streams}
 
 
