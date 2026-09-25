@@ -587,6 +587,7 @@ def can_access_delivery_email(
 class APIUserDict(TypedDict):
     email: str
     user_id: int
+    avatar_source: str
     avatar_version: int
     is_admin: bool
     is_owner: bool
@@ -636,6 +637,7 @@ def format_user_row(
     result = APIUserDict(
         email=row["email"],
         user_id=row["id"],
+        avatar_source=row["avatar_source"],
         avatar_version=row["avatar_version"],
         is_admin=is_admin,
         is_owner=is_owner,
@@ -1005,6 +1007,7 @@ def get_data_for_inaccessible_user(realm: Realm, user_id: int) -> APIUserDict:
         email=fake_email,
         user_id=user_id,
         avatar_version=1,
+        avatar_source=realm.default_avatar_source,
         is_admin=False,
         is_owner=False,
         is_guest=False,

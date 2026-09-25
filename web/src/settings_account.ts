@@ -115,6 +115,7 @@ function upload_avatar(file: File): void {
     form_data.append("csrfmiddlewaretoken", csrf_token);
     form_data.append("file", file);
     $("#user-avatar-upload-widget-error").hide();
+    avatar.show_avatar_spinner();
     channel.post({
         url: "/json/users/me/avatar",
         data: form_data,
@@ -123,11 +124,14 @@ function upload_avatar(file: File): void {
         contentType: false,
         success() {
             dialog_widget.close();
-            $("#user-avatar-upload-widget .image-delete-button").show();
             $("#user-avatar-source").hide();
             // Rest of the work is done via the user_events -> avatar_url event we will get
         },
         error(xhr) {
+            avatar.hide_avatar_spinner();
+            $("#user-avatar-upload-widget .image-delete-button").toggle(
+                current_user.avatar_source === "U",
+            );
             if (current_user.avatar_source === "G") {
                 $("#user-avatar-source").show();
             }
