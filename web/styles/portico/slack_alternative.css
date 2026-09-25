@@ -1,0 +1,499 @@
+/* The hero and comparison buttons scroll to anchors further
+   down the page; animate the jump so the movement reads as
+   navigation within the page. */
+@media (prefers-reduced-motion: no-preference) {
+    html:has(.slack-alternative-page) {
+        scroll-behavior: smooth;
+    }
+}
+
+/* Styles for the /slack-alternative/ landing page. Everything here is
+   scoped under `.slack-alternative-page`; the page otherwise reuses the
+   shared marketing page styles for the hero, feature sections, and
+   pricing. */
+.slack-alternative-page {
+    --color-slack-alternative-accent: hsl(219deg 62% 45%);
+    --color-background-card: hsl(0deg 0% 100%);
+    --color-shadow-card: hsl(224deg 52% 12% / 18%);
+    --color-border-row: hsl(224deg 52% 12% / 18%);
+    --color-text-testimonial: hsl(233deg 14% 26%);
+    --color-text-testimonial-role: hsl(0deg 0% 40%);
+    --color-shadow-testimonial-hover: hsl(208deg 70% 25% / 25%);
+    /* The shaded bands share one width, padding included, so their
+       edges line up down the page. */
+    --width-shaded-band: 1100px;
+
+    /* A shorter hero, so the summary cards are visible without
+       scrolling. The selector repeats the page's classes to outrank
+       `.portico-landing.why-page .hero.why-zulip` in marketing_page.css,
+       which sets padding-bottom. */
+    &.portico-landing.why-page .hero.slack-alternative-hero {
+        padding: 140px 50px 90px;
+
+        @media (width < 900px) {
+            padding: 130px 0 80px;
+        }
+    }
+
+    /* An outline variant for the hero's secondary action. Specific
+       enough to win over `.hero-buttons .button` in marketing_page.css. */
+    .hero-buttons .button.button-secondary {
+        background: transparent;
+        border: 1px solid hsl(0deg 0% 100% / 70%);
+
+        &:hover {
+            background: hsl(0deg 0% 100% / 12%);
+        }
+    }
+
+    /* Two summary cards overlapping the bottom of the hero. Each
+       bullet links to the section that makes that point in full:
+       the left card to the three numbered sections, the right card
+       to the three columns of the "Switching is the easy part"
+       section. */
+    .glance-cards {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+        max-width: 1000px;
+        margin: -50px auto 0;
+        padding: 0 20px;
+        position: relative;
+        z-index: 1;
+
+        @media (width < 768px) {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    .glance-card {
+        padding: 20px 24px 12px;
+        border-radius: 10px;
+        border-top: 5px solid var(--color-prominent-border);
+        background: var(--color-background-card);
+        box-shadow: 0 4px 24px var(--color-shadow-card);
+
+        h2 {
+            margin: 0 0 10px;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+    }
+
+    /* The right card links to the individual columns; stop short of
+       them so the fixed navbar doesn't cover the section heading. */
+    .derisk-column[id] {
+        scroll-margin-top: 150px;
+    }
+
+    .trust-logos {
+        max-width: 1300px;
+        margin: 48px auto 0;
+        padding: 0 20px;
+        text-align: center;
+    }
+
+    .trust-logos-caption {
+        font-size: 16px;
+        margin: 0 0 8px;
+    }
+
+    /* Layout for the shared client logo images; the home page's grid
+       for the same logos lives in hello.css, in another bundle. */
+    .client-logos {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(120px, 180px));
+        grid-template-rows: 72px;
+        justify-content: center;
+        place-items: center;
+
+        @media (width < 900px) {
+            grid-template-columns: repeat(3, minmax(100px, 160px));
+            grid-template-rows: repeat(2, 64px);
+        }
+    }
+
+    /* The shared logo images are white-on-transparent, drawn for the
+       home page's dark hero; invert them for this light background.
+       A fixed height with `auto 100%` sizing renders every logo at
+       the same height, whatever its intrinsic size. */
+    .client-logos .client-logos-div {
+        width: 100%;
+        height: 36px;
+        background-position: center;
+        background-size: auto 100%;
+        background-repeat: no-repeat;
+        filter: invert(1);
+        opacity: 0.6;
+    }
+
+    /* How Slack handles the section's topic, set above the Zulip
+       points that answer it. */
+    .feature-text .feature-lead {
+        margin: 0 0 18px;
+        font-size: 17px;
+        line-height: 1.6;
+    }
+
+    .feature-points .feature-point {
+        margin-bottom: 18px;
+
+        h3 {
+            margin: 0 0 4px;
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        p {
+            margin: 0;
+            font-size: 17px;
+            line-height: 1.6;
+        }
+    }
+
+    .alternative-features {
+        margin-top: 48px;
+    }
+
+    .alternative-features .feature-container {
+        box-sizing: border-box;
+        max-width: var(--width-shaded-band);
+        padding: 24px 4vw;
+
+        /* Section headings are h2 so that the page has a single h1;
+           style them like the h1 headings on the other feature pages. */
+        .feature-text h2 {
+            font-size: 30px;
+            font-weight: 600;
+        }
+
+        /* Shade every other section, so that the eye can tell where
+           one ends. */
+        &:nth-child(even) {
+            background: var(--color-background-box);
+            border-radius: 10px;
+        }
+    }
+
+    .feature-text .intro_quote blockquote {
+        font-size: 17px;
+        margin-top: 24px;
+        margin-bottom: 0;
+    }
+
+    /* The inbox screenshot has room to breathe next to the async copy.
+       Outweigh the shared 400px feature-image img rule. */
+    .feature-image .wide-feature-image {
+        width: 560px;
+    }
+
+    /* Testimonials, presented as the home page presents them:
+       speech bubbles with a tail, and a bold name + italic role.
+       The home page styles live in hello.css, which is in another
+       webpack bundle, so the bubble is drawn again here. */
+    .switched-testimonials {
+        max-width: 1100px;
+        margin: 88px auto 0;
+        padding: 0 20px;
+
+        h2 {
+            text-align: center;
+            font-weight: 600;
+            margin: 0 0 20px;
+        }
+    }
+
+    .switched-testimonials-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 24px 28px;
+
+        @media (width < 768px) {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    /* Specific enough to win over the shared `.portico-landing
+       a:not(.button)` link styles. */
+    .switched-testimonials a.switched-testimonial {
+        /* Stretch the bubble so all three fill the row's height and
+           the attribution lines align. */
+        display: flex;
+        flex-direction: column;
+
+        &,
+        &:hover {
+            text-decoration: none;
+            color: inherit;
+        }
+    }
+
+    .switched-testimonial-text {
+        position: relative;
+        flex: 1;
+        padding: 20px 24px 18px;
+        border-radius: 25px 25px 25px 0;
+        background: var(--color-background-box);
+        font-size: 18px;
+        line-height: 140%;
+        color: var(--color-text-testimonial);
+        transition: box-shadow 0.3s ease-out;
+
+        strong {
+            color: var(--color-slack-alternative-accent);
+            font-weight: 600;
+        }
+
+        &::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -14px;
+            width: 22px;
+            height: 14px;
+            background: var(--color-background-box);
+            clip-path: polygon(0 0, 100% 0, 0 100%);
+        }
+    }
+
+    .switched-testimonial:hover .switched-testimonial-text {
+        box-shadow: 0 8px 24px var(--color-shadow-testimonial-hover);
+    }
+
+    .switched-testimonial-source {
+        margin: 22px 0 0 4px;
+        font-size: 15px;
+
+        i {
+            color: var(--color-text-testimonial-role);
+        }
+    }
+
+    /* The restated claim and the comparison table share one shaded
+       band: the table is the evidence for the claim above it. */
+    .compare-band {
+        box-sizing: border-box;
+        max-width: var(--width-shaded-band);
+        margin: 96px auto 0;
+        padding: 56px 24px 48px;
+        border-radius: 10px;
+        background: var(--color-background-box);
+    }
+
+    .restate-claim {
+        margin: 0 auto;
+        padding: 0 20px;
+        text-align: center;
+    }
+
+    .restate-claim-line {
+        font-size: 28px;
+        font-weight: 600;
+        line-height: 1.4;
+        margin: 0;
+    }
+
+    .restate-claim-sub {
+        margin: 10px 0 0;
+        font-size: 17px;
+        opacity: 0.8;
+    }
+
+    .compare-section {
+        max-width: 900px;
+        margin: 40px auto 0;
+        padding: 0 20px;
+    }
+
+    .vs-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 16px;
+        line-height: 1.5;
+
+        thead th,
+        thead td {
+            font-size: 18px;
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 14px;
+            border-bottom: 2px solid var(--color-prominent-border);
+        }
+
+        tbody th {
+            font-weight: 600;
+            text-align: left;
+            vertical-align: top;
+            padding: 12px 14px;
+            width: 24%;
+        }
+
+        tbody td {
+            vertical-align: top;
+            padding: 12px 14px;
+            width: 38%;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--color-border-row);
+        }
+
+        @media (width < 768px) {
+            font-size: 15px;
+
+            thead th,
+            tbody th,
+            tbody td {
+                padding: 8px;
+            }
+        }
+    }
+
+    .compare-cta {
+        margin-top: 18px;
+    }
+
+    /* Shaded like the other bands, with the three points separated
+       by vertical rules. */
+    .derisk-section {
+        box-sizing: border-box;
+        max-width: var(--width-shaded-band);
+        margin: 88px auto 0;
+        padding: 48px 20px;
+        border-radius: 10px;
+        background: var(--color-background-box);
+
+        h2 {
+            text-align: center;
+            font-weight: 600;
+            margin: 0 0 40px;
+        }
+    }
+
+    .derisk-columns {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        max-width: 1100px;
+        margin: 0 auto;
+
+        @media (width < 768px) {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    .derisk-column {
+        padding: 4px 28px;
+
+        h3 {
+            margin: 0 0 8px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        p {
+            margin: 0;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        &:not(:first-child) {
+            border-left: 1px solid hsl(0deg 0% 80%);
+
+            @media (width < 768px) {
+                border-left: none;
+                border-top: 1px solid hsl(0deg 0% 80%);
+                margin-top: 16px;
+                padding-top: 20px;
+            }
+        }
+    }
+
+    .faq-section {
+        max-width: 760px;
+        margin: 88px auto 0;
+        padding: 0 20px;
+
+        h2 {
+            text-align: center;
+            font-weight: 600;
+            margin: 0 0 16px;
+        }
+
+        details {
+            border-bottom: 1px solid var(--color-border-row);
+            padding: 12px 4px;
+        }
+
+        summary {
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        p {
+            margin: 10px 0 2px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+    }
+
+    .convert-section {
+        max-width: 900px;
+        margin: 88px auto 96px;
+        padding: 0 20px;
+
+        h2 {
+            text-align: center;
+            font-weight: 600;
+            margin: 0 0 20px;
+        }
+    }
+
+    .convert-cards {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+
+        @media (width < 768px) {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    .convert-card {
+        padding: 24px;
+        border-radius: 10px;
+        border-top: 5px solid var(--color-prominent-border);
+        background: var(--color-background-card);
+        box-shadow: 0 4px 24px var(--color-shadow-card);
+        text-align: center;
+
+        h3 {
+            margin: 0 0 8px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        p {
+            font-size: 15px;
+            line-height: 1.5;
+            margin: 0 0 16px;
+        }
+    }
+
+    .convert-contact {
+        margin: 24px 0 0;
+        text-align: center;
+        font-size: 16px;
+    }
+}

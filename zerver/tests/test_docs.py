@@ -325,6 +325,7 @@ class DocPageTest(ZulipTestCase):
         self._test("/use-cases/", ["Use cases and customer stories"])
         self._test("/case-studies/", ["Case studies"])
         self._test("/why-zulip/", ["Why Zulip?"])
+        self._test("/slack-alternative/", ["Slack is a stream you keep up with."])
         # /for/... pages
         self._test("/for/open-source/", ["for open source projects"])
         self._test("/for/events/", ["for conferences and events"])
