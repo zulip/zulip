@@ -5,7 +5,7 @@ import copy
 import logging
 import re
 import time
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from email.headerregistry import Address
 from functools import cache
@@ -871,7 +871,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
 
     def render_olist(ol: lxml.html.HtmlElement) -> str:
         items = []
-        counter = int(ol.get("start")) if ol.get("start") else 1
+        counter = int(ol.get("start", 1))
         nested_levels = sum(1 for ancestor in ol.iterancestors("ol"))
         indent = ("\n" + "  " * nested_levels) if nested_levels else ""
 
@@ -917,7 +917,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
         message_link_elements = []
         anchor_elements = element.cssselect("a[href]")
         for elem in anchor_elements:
-            href = elem.get("href")
+            href = elem.attrib["href"]
             if is_same_server_message_link(href):
                 message_link_elements.append(elem)
 
@@ -931,27 +931,28 @@ def get_mobile_push_content(rendered_content: str) -> str:
         )
         return remaining_text.strip() == ":"
 
-    def get_collapsible_status_array(elements: list[lxml.html.HtmlElement]) -> list[bool]:
+    def get_collapsible_status_array(elements: Iterable[lxml.html.HtmlElement]) -> list[bool]:
         collapsible_status: list[bool] = [
             element.tag == "blockquote" or is_user_said_paragraph(element) for element in elements
         ]
         return collapsible_status
 
     def potentially_collapse_quotes(element: lxml.html.HtmlElement) -> None:
-        children = element.getchildren()
-        collapsible_status = get_collapsible_status_array(children)
+        collapsible_status = get_collapsible_status_array(element)
 
         if all(collapsible_status) or all(not x for x in collapsible_status):
             return
 
         collapse_element = lxml.html.Element("p")
         collapse_element.text = "[…]"
-        for index, child in enumerate(children):
+        for index, child in enumerate(element):
             if collapsible_status[index]:
                 if index > 0 and collapsible_status[index - 1]:
                     child.drop_tree()
                 else:
-                    child.getparent().replace(child, collapse_element)
+                    parent = child.getparent()
+                    assert parent is not None
+                    parent.replace(child, collapse_element)
 
     elem = lxml.html.fragment_fromstring(rendered_content, create_parent=True)
     change_katex_to_raw_latex(elem)

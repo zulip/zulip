@@ -13,7 +13,8 @@ from django.template import loader
 from django.template.response import TemplateResponse
 from django.views.generic import TemplateView
 from lxml import html
-from lxml.etree import Element, SubElement, XPath, _Element
+from lxml.etree import XPath, _Element
+from lxml.html import builder as e
 from markupsafe import Markup
 from typing_extensions import override
 
@@ -282,11 +283,11 @@ class MarkdownDirectoryView(ApiURLView):
             sidebar_html = ""
         tree = html.fragment_fromstring(sidebar_html, create_parent=True)
         if not context.get("page_is_policy_center", False):
-            home_h2 = Element("h2")
-            home_link = SubElement(home_h2, "a")
-            home_link.attrib["class"] = "no-underline"
-            home_link.attrib["href"] = context["doc_root"]
-            home_link.text = context["doc_root_title"] + " home"
+            home_link = e.A(
+                {"class": "no-underline", "href": context["doc_root"]},
+                context["doc_root_title"] + " home",
+            )
+            home_h2 = e.H2(home_link)
             tree.insert(0, home_h2)
         url = context["doc_root"] + article
         # Remove ID attributes from sidebar headings so they don't conflict with index page headings
@@ -301,7 +302,6 @@ class MarkdownDirectoryView(ApiURLView):
         for a in links:
             assert isinstance(a, _Element)
             old_class = a.attrib.get("class", "")
-            assert isinstance(old_class, str)
             a.attrib["class"] = old_class + " highlighted"
         context["sidebar_html"] = Markup().join(
             Markup(html.tostring(child, encoding="unicode")) for child in tree
