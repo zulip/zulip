@@ -4,7 +4,7 @@ from typing import Any
 
 from typing_extensions import override
 
-from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
+from zerver.lib.soft_deactivation import reactivate_user_and_notify_client
 from zerver.models.users import get_user_profile_by_id
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
@@ -20,8 +20,8 @@ class SoftReactivationWorker(QueueProcessingWorker):
     It's undesirable for these jobs to share the deferred_work queue with jobs
     such as realm exports, which can take many minutes: a prolonged delay in
     processing a soft reactivation gives the returning user a bad experience,
-    and can race with the synchronous reactivation that runs when the user
-    loads the app. A server can opt into this dedicated queue via the
+    whether they are waiting on a loading screen for it or about to arrive. A
+    server can opt into this dedicated queue via the
     DEDICATED_SOFT_REACTIVATION_QUEUE setting.
     """
 
@@ -38,4 +38,6 @@ class SoftReactivationWorker(QueueProcessingWorker):
             event["user_profile_id"],
         )
         user_profile = get_user_profile_by_id(event["user_profile_id"])
-        reactivate_user_if_soft_deactivated(user_profile)
+        reactivate_user_and_notify_client(
+            user_profile, notify_client=event.get("notify_client", False)
+        )
