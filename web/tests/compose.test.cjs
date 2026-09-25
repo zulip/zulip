@@ -256,7 +256,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
     assert.ok(draft_deleted);
 });
 
-test_ui("send_message", ({override, override_rewire, mock_template}) => {
+test_ui("send_message", ({override, override_rewire, mock_template, disallow}) => {
     mock_banners();
     clock.setSystemTime(new Date(fake_now * 1000));
 
@@ -285,10 +285,12 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
     });
 
     override_rewire(drafts, "update_draft", () => 100);
-    override(drafts.draft_model, "getDraft", (draft_id) => {
-        assert.equal(draft_id, 100);
-        return {};
-    });
+
+    // The Outbox needs is_sending_saving left set on the echoed send paths, so
+    // they must not read the draft back out to rewrite it. The un-echoed error
+    // path must, and overrides these below.
+    disallow(drafts.draft_model, "getDraft");
+    disallow(drafts.draft_model, "editDraft");
 
     // Tests start here.
     (function test_message_send_success_codepath() {
@@ -404,6 +406,17 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
 
         override(sent_messages, "get_new_local_id", () => "loc-55");
 
+        // With no local echo there is nothing for the Outbox to resend, so
+        // this path makes the message an ordinary draft again.
+        override(drafts.draft_model, "getDraft", () => ({
+            content: "default message",
+            is_sending_saving: true,
+        }));
+        let edit_draft_args;
+        override(drafts.draft_model, "editDraft", (draft_id, edited_draft) => {
+            edit_draft_args = {draft_id, edited_draft};
+        });
+
         compose.send_message();
 
         const state = {
@@ -414,6 +427,10 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.deepEqual(stub_state, state);
         assert.ok(!echo_error_msg_checked);
         assert.ok(banner_rendered);
+        assert.deepEqual(edit_draft_args, {
+            draft_id: 100,
+            edited_draft: {content: "default message", is_sending_saving: false},
+        });
         assert.equal(fake_compose_box.textarea_val(), "default message");
         assert.ok(fake_compose_box.is_textarea_focused());
         assert.ok(!fake_compose_box.is_submit_button_spinner_visible());

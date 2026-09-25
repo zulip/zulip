@@ -880,7 +880,8 @@ input.settings_text_input {
 
     /* min-height: 0 lets the tab pane shrink inside the 1fr grid row
        (grid items default to min-height: auto). */
-    .drafts-tab-pane {
+    .drafts-tab-pane,
+    .outbox-tab-pane {
         min-height: 0;
     }
 
@@ -932,8 +933,12 @@ input.settings_text_input {
             padding: 10px;
 
             .message_content {
-                cursor: pointer;
                 grid-area: message;
+
+                /* Outbox rows aren't restorable, so aren't clickable. */
+                &.restore-overlay-message {
+                    cursor: pointer;
+                }
             }
 
             .message_top_line {
@@ -973,12 +978,19 @@ input.settings_text_input {
                 }
             }
 
-            .delete-overlay-message {
+            .delete-overlay-message,
+            .outbox-resend-message,
+            .outbox-cancel-message {
                 cursor: pointer;
-                color: hsl(357deg 52% 57%);
-                opacity: 0.7;
                 padding: 0;
                 font-size: 1.2em;
+            }
+
+            /* Sets its own opaque color, so it needs its own opacity too;
+               the outbox buttons take both from their icon-button variant. */
+            .delete-overlay-message {
+                color: hsl(357deg 52% 57%);
+                opacity: 0.7;
 
                 &:hover {
                     opacity: 1;
