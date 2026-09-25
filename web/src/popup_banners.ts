@@ -110,6 +110,7 @@ const update_read_flags_for_narrow_banner = (
     operation: "unread" | "read",
     messages_updated: number,
     is_loaded: boolean,
+    banner_id: string,
 ): Banner => {
     let label;
     if (is_loaded) {
@@ -155,19 +156,28 @@ const update_read_flags_for_narrow_banner = (
         label,
         buttons: [],
         close_button: true,
-        custom_classes: "update-read-flags-for-narrow-banner popup-banner",
+        // The per-operation class lets concurrent bulk read-flag operations
+        // each address their own banner instead of a shared one.
+        custom_classes: `update-read-flags-for-narrow-banner update-read-flags-banner-${banner_id} popup-banner`,
     };
 };
 
 export function open_update_read_flags_for_narrow_banner(
     operation: "read" | "unread",
     messages_updated: number,
-    is_loaded = false,
+    is_loaded: boolean,
+    banner_id: string,
 ): void {
-    let $banner = $("#popup_banners_wrapper").find(".update-read-flags-for-narrow-banner");
+    let $banner = $(`#popup_banners_wrapper .update-read-flags-banner-${banner_id}`);
     if ($banner.length > 0) {
-        // If the banner is already open, update the label instead of duplicating the banner.
-        const banner = update_read_flags_for_narrow_banner(operation, messages_updated, is_loaded);
+        // If this operation's banner is already open, update the label
+        // instead of duplicating the banner.
+        const banner = update_read_flags_for_narrow_banner(
+            operation,
+            messages_updated,
+            is_loaded,
+            banner_id,
+        );
         $banner.find(".banner-label").text(banner.label.toString());
 
         if (is_loaded) {
@@ -188,18 +198,20 @@ export function open_update_read_flags_for_narrow_banner(
     }
 
     banners.append(
-        update_read_flags_for_narrow_banner(operation, messages_updated, is_loaded),
+        update_read_flags_for_narrow_banner(operation, messages_updated, is_loaded, banner_id),
         $("#popup_banners_wrapper"),
     );
-    $banner = $("#popup_banners_wrapper").find(".update-read-flags-for-narrow-banner");
+    $banner = $(`#popup_banners_wrapper .update-read-flags-banner-${banner_id}`);
     // We repurpose the banner close button to act as the loading
     // indicator for this banner.
     const $banner_close_button = $banner.find(".banner-close-button");
     buttons.modify_button_icon($banner_close_button, "loader-circle");
 }
 
-export function close_update_read_flags_for_narrow_banner(): boolean {
-    const $banner = $("#popup_banners_wrapper").find(".update-read-flags-for-narrow-banner");
+export function close_update_read_flags_for_narrow_banner(banner_id?: string): boolean {
+    const $banner = banner_id
+        ? $(`#popup_banners_wrapper .update-read-flags-banner-${banner_id}`)
+        : $("#popup_banners_wrapper .update-read-flags-for-narrow-banner");
     if ($banner.length === 0) {
         return false;
     }
