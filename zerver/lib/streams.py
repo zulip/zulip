@@ -836,6 +836,11 @@ def user_has_content_access(
     *,
     is_subscribed: bool,
 ) -> bool:
+    # This is the per-stream form of our content-access rules.
+    # get_content_accessible_streams_queryset implements the same rules as a
+    # channel queryset, and the stream_access_filters in
+    # get_base_query_for_search apply them to a message queryset; keep all
+    # three in sync when changing content-access rules.
     if stream.is_web_public:
         return True
 
@@ -1045,6 +1050,42 @@ def access_stream_by_id(
         require_content_access=require_content_access,
     )
     return (stream, sub)
+
+
+def get_content_accessible_streams_queryset(
+    user_profile: UserProfile,
+    subscribed_stream_ids: QuerySet[Subscription, int],
+    user_recursive_group_ids: set[int],
+) -> QuerySet[Stream]:
+    # This is the bulk queryset form of our content-access rules.
+    # user_has_content_access implements the same rules for a single stream,
+    # and the stream_access_filters in get_base_query_for_search apply them to
+    # a message queryset rather than a stream one; keep all three in sync when
+    # changing content-access rules.
+    realm = user_profile.realm
+
+    if user_profile.is_guest:
+        return Stream.objects.filter(
+            Q(realm=realm)
+            & (Q(id__in=subscribed_stream_ids) | Q(is_web_public=True, invite_only=False))
+        )
+
+    return Stream.objects.filter(
+        Q(realm=realm)
+        & (
+            # Public streams, plus the user's own subscriptions.
+            Q(invite_only=False)
+            | Q(id__in=subscribed_stream_ids)
+            # Private streams the user can subscribe to via group permissions.
+            | (
+                Q(invite_only=True)
+                & (
+                    Q(can_add_subscribers_group_id__in=user_recursive_group_ids)
+                    | Q(can_subscribe_group_id__in=user_recursive_group_ids)
+                )
+            )
+        )
+    )
 
 
 def get_public_streams_queryset(realm: Realm) -> QuerySet[Stream]:

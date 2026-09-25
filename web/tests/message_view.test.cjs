@@ -171,7 +171,7 @@ run_test("empty_narrow_html", ({mock_template}) => {
         <button
           class="search-shared-history hidden-for-spectators action-button action-button-subtle-neutral"
           type="button">
-            translated: Search all public channels
+            translated: Search all channels
         </button>
     </div>
 </div>
@@ -766,6 +766,12 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
             true,
         ),
     );
+    // The action widens the search to every channel the user can access,
+    // not just the public ones.
+    assert.equal(
+        $(".empty_feed_notice .search-shared-history").attr("data-url"),
+        "#narrow/channels/all/has/image",
+    );
     current_filter = set_filter([
         ["has", "reaction"],
         ["sender", me.user_id],
@@ -798,7 +804,7 @@ run_test("show_empty_narrow_message", ({mock_template, override, override_rewire
             "translated: You are not allowed to view messages in this private channel.",
         ),
     );
-    const channels_operands = ["archived", "public", "web-public"];
+    const channels_operands = ["all", "archived", "public", "web-public"];
     for (const operand of channels_operands) {
         current_filter = set_filter([["channels", operand]]);
         narrow_banner.show_empty_narrow_message(current_filter);
