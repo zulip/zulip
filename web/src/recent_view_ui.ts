@@ -2301,8 +2301,7 @@ function load_filters(): void {
     // Verify that the dropdown_filters are valid.
     const valid_filters = new Set(Object.values(views_util.FILTERS));
     // If saved filters are not in the list of valid filters, we reset to default.
-    const is_subset = [...dropdown_filters].every((filter) => valid_filters.has(filter));
-    if (dropdown_filters.size === 0 || !is_subset) {
+    if (dropdown_filters.size === 0 || !dropdown_filters.isSubsetOf(valid_filters)) {
         dropdown_filters = new Set([views_util.FILTERS.UNMUTED_TOPICS]);
     }
 

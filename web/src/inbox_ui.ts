@@ -448,8 +448,7 @@ function load_data_from_ls(): void {
     const saved_filters = new Set(z.optional(z.array(z.string())).parse(ls.get(ls_filter_key)));
     const valid_filters = new Set(Object.values(views_util.FILTERS));
     // If saved filters are not in the list of valid filters, we reset to default.
-    const is_subset = [...saved_filters].every((filter) => valid_filters.has(filter));
-    if (saved_filters.size === 0 || !is_subset) {
+    if (saved_filters.size === 0 || !saved_filters.isSubsetOf(valid_filters)) {
         filters = new Set([views_util.FILTERS.UNMUTED_TOPICS]);
     } else {
         filters = saved_filters;
