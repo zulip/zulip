@@ -1,3 +1,5 @@
+from operator import itemgetter
+
 from django.db import connection
 from psycopg2.extras import execute_values
 from psycopg2.sql import SQL, Composable, Literal
@@ -60,6 +62,15 @@ def bulk_insert_ums(ums: list[UserMessageLite]) -> None:
         return
 
     vals = [(um.user_profile_id, um.message_id, um.flags) for um in ums]
+
+    # PostgreSQL acquires a FOR KEY SHARE row-lock
+    # on the referenced tables: zerver_userprofile and zerver_message.
+    # We sort the rows by message_id so those zerver_message rows
+    # are locked in a consistent order; this avoids potential
+    # deadlock with any code path that takes FOR UPDATE
+    # lock on those zerver_message rows.
+    vals.sort(key=itemgetter(1))
+
     query = SQL(
         """
         INSERT into
@@ -78,6 +89,11 @@ def bulk_insert_all_ums(
 ) -> None:
     if not user_ids or not message_ids:
         return
+
+    # As in bulk_insert_ums above: sort message_ids so zerver_message
+    # rows are locked in a consistent order, avoiding deadlock with
+    # any code path that takes a FOR UPDATE lock on those rows.
+    message_ids.sort()
 
     query = SQL(
         """

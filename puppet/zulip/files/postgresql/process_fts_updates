@@ -87,13 +87,17 @@ def update_fts_columns(conn: psycopg2.extensions.connection) -> int:
                 update_sql = SQL(
                     "search_tsvector = to_tsvector('zulip.english_us_search', subject || rendered_content)"
                 )
+            # Since we change no id and delete no row,
+            # the weaker FOR NO KEY UPDATE lock is enough
+            # to not block a concurrent FOR KEY SHARE lock which
+            # foreign key checks take on these zerver_message rows.
             cursor.execute(
                 SQL(
                     "UPDATE zerver_message SET {update_sql} "
                     "WHERE ctid IN ("
                     "  SELECT ctid FROM zerver_message"
                     "  WHERE id IN %s"
-                    "  ORDER BY id FOR UPDATE"
+                    "  ORDER BY id FOR NO KEY UPDATE"
                     ")"
                 ).format(update_sql=update_sql),
                 (message_ids,),
