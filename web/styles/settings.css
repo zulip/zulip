@@ -147,6 +147,14 @@ a.help_link_widget {
 .change-email {
     display: flex;
     gap: 0.5rem;
+
+    #email_field_container {
+        min-width: 0;
+
+        .settings_text_input {
+            max-width: 100%;
+        }
+    }
 }
 
 .admin-realm-description,
