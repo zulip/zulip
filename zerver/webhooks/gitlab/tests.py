@@ -1,9 +1,16 @@
+from typing import Any
 from unittest.mock import MagicMock, patch
+
+import orjson
 
 from zerver.actions.custom_profile_fields import try_add_realm_default_custom_profile_field
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.lib.webhooks.common import call_fixture_to_headers, standardize_headers
 from zerver.lib.webhooks.git import COMMITS_LIMIT
 from zerver.models.realms import get_realm
+
+INCIDENT_TOPIC_NAME = "Example Project / incident #1 Catalog images failing to load"
+TASK_TOPIC_NAME = "Example Project / task #1 Optimize image loading in catalog"
 
 
 class GitlabHookTests(WebhookTestCase):
@@ -225,6 +232,152 @@ class GitlabHookTests(WebhookTestCase):
 
         self.check_webhook(
             "confidential_issue_hook__issue_reopened", expected_subject, expected_message
+        )
+
+    def test_incident_events(self) -> None:
+        payload = orjson.loads(self.get_body("issue_hook__incident_event"))
+        expected_message = "Bo Williams {verb} [incident #1](https://gitlab.com/bo-williams/example-project/-/issues/1)."
+        for action, verb in [("close", "closed"), ("reopen", "reopened"), ("update", "updated")]:
+            payload["object_attributes"]["action"] = action
+            with self.subTest(action=action):
+                self.check_webhook(
+                    "issue_hook__incident_event",
+                    INCIDENT_TOPIC_NAME,
+                    expected_message.format(verb=verb),
+                    custom_payload=payload,
+                )
+
+    def test_create_incident_with_assignee_event_message(self) -> None:
+        expected_message = "Bo Williams created [incident #1](https://gitlab.com/bo-williams/example-project/-/issues/1) (assigned to Kevin Lin):\n\n``` quote\nProduct images in the catalog are returning 500 errors.\n```"
+        self.check_webhook("issue_hook__incident_event", INCIDENT_TOPIC_NAME, expected_message)
+
+    def test_create_incident_without_assignee_event_message(self) -> None:
+        payload = orjson.loads(self.get_body("issue_hook__incident_event"))
+        payload["object_attributes"]["assignee_id"] = None
+        payload["object_attributes"]["assignee_ids"] = []
+        # GitLab omits this field entirely when unassigned.
+        payload.pop("assignees")
+        expected_message = "Bo Williams created [incident #1](https://gitlab.com/bo-williams/example-project/-/issues/1):\n\n``` quote\nProduct images in the catalog are returning 500 errors.\n```"
+        self.check_webhook(
+            "issue_hook__incident_event",
+            INCIDENT_TOPIC_NAME,
+            expected_message,
+            custom_payload=payload,
+        )
+
+    def test_confidential_incident_events(self) -> None:
+        payload = orjson.loads(self.get_body("confidential_issue_hook__incident_event"))
+        expected_message = "Bo Williams {verb} [incident #1](https://gitlab.com/bo-williams/example-project/-/issues/1)."
+        for action, verb in [("close", "closed"), ("reopen", "reopened"), ("update", "updated")]:
+            payload["object_attributes"]["action"] = action
+            with self.subTest(action=action):
+                self.check_webhook(
+                    "confidential_issue_hook__incident_event",
+                    INCIDENT_TOPIC_NAME,
+                    expected_message.format(verb=verb),
+                    custom_payload=payload,
+                )
+
+    def test_create_confidential_incident_with_assignee_event_message(self) -> None:
+        expected_message = "Bo Williams created [incident #1](https://gitlab.com/bo-williams/example-project/-/issues/1) (assigned to Kevin Lin):\n\n``` quote\nProduct images in the catalog are returning 500 errors.\n```"
+        self.check_webhook(
+            "confidential_issue_hook__incident_event",
+            INCIDENT_TOPIC_NAME,
+            expected_message,
+        )
+
+    def test_create_confidential_incident_without_assignee_event_message(self) -> None:
+        payload = orjson.loads(self.get_body("confidential_issue_hook__incident_event"))
+        payload["object_attributes"]["assignee_id"] = None
+        payload["object_attributes"]["assignee_ids"] = []
+        payload.pop("assignees")
+        expected_message = "Bo Williams created [incident #1](https://gitlab.com/bo-williams/example-project/-/issues/1):\n\n``` quote\nProduct images in the catalog are returning 500 errors.\n```"
+        self.check_webhook(
+            "confidential_issue_hook__incident_event",
+            INCIDENT_TOPIC_NAME,
+            expected_message,
+            custom_payload=payload,
+        )
+
+    def test_task_events(self) -> None:
+        payload = orjson.loads(self.get_body("issue_hook__task_event"))
+        expected_message = "Bo Williams {verb} [task #1](https://gitlab.com/bo-williams/example-project/-/work_items/1)."
+        for action, verb in [("close", "closed"), ("reopen", "reopened"), ("update", "updated")]:
+            payload["object_attributes"]["action"] = action
+            with self.subTest(action=action):
+                self.check_webhook(
+                    "issue_hook__task_event",
+                    TASK_TOPIC_NAME,
+                    expected_message.format(verb=verb),
+                    custom_payload=payload,
+                )
+
+    def test_create_task_with_assignee_event_message(self) -> None:
+        expected_message = "Bo Williams created [task #1](https://gitlab.com/bo-williams/example-project/-/work_items/1) (assigned to Kevin Lin):\n\n``` quote\nImplement lazy loading for images in the catalog to improve load times.\n```"
+        self.check_webhook("issue_hook__task_event", TASK_TOPIC_NAME, expected_message)
+
+    def test_create_task_without_assignee_event_message(self) -> None:
+        payload = orjson.loads(self.get_body("issue_hook__task_event"))
+        payload["object_attributes"]["assignee_id"] = None
+        payload["object_attributes"]["assignee_ids"] = []
+        payload.pop("assignees")
+        expected_message = "Bo Williams created [task #1](https://gitlab.com/bo-williams/example-project/-/work_items/1):\n\n``` quote\nImplement lazy loading for images in the catalog to improve load times.\n```"
+        self.check_webhook(
+            "issue_hook__task_event",
+            TASK_TOPIC_NAME,
+            expected_message,
+            custom_payload=payload,
+        )
+
+    def test_confidential_task_events(self) -> None:
+        payload = orjson.loads(self.get_body("confidential_issue_hook__task_event"))
+        expected_message = "Bo Williams {verb} [task #1](https://gitlab.com/bo-williams/example-project/-/work_items/1)."
+        for action, verb in [("close", "closed"), ("reopen", "reopened"), ("update", "updated")]:
+            payload["object_attributes"]["action"] = action
+            with self.subTest(action=action):
+                self.check_webhook(
+                    "confidential_issue_hook__task_event",
+                    TASK_TOPIC_NAME,
+                    expected_message.format(verb=verb),
+                    custom_payload=payload,
+                )
+
+    def test_create_confidential_task_with_assignee_event_message(self) -> None:
+        expected_message = "Bo Williams created [task #1](https://gitlab.com/bo-williams/example-project/-/work_items/1) (assigned to Kevin Lin):\n\n``` quote\nImplement lazy loading for images in the catalog to improve load times.\n```"
+        self.check_webhook(
+            "confidential_issue_hook__task_event",
+            TASK_TOPIC_NAME,
+            expected_message,
+        )
+
+    def test_create_confidential_task_without_assignee_event_message(self) -> None:
+        payload = orjson.loads(self.get_body("confidential_issue_hook__task_event"))
+        payload["object_attributes"]["assignee_id"] = None
+        payload["object_attributes"]["assignee_ids"] = []
+        payload.pop("assignees")
+        expected_message = "Bo Williams created [task #1](https://gitlab.com/bo-williams/example-project/-/work_items/1):\n\n``` quote\nImplement lazy loading for images in the catalog to improve load times.\n```"
+        self.check_webhook(
+            "confidential_issue_hook__task_event",
+            TASK_TOPIC_NAME,
+            expected_message,
+            custom_payload=payload,
+        )
+
+    def test_unsupported_work_item_event_message(self) -> None:
+        payload = self.webhook_fixture_data(self.webhook_dir_name, "issue_hook__incident_event")
+        data = orjson.loads(payload)
+        data["object_attributes"]["type"] = "Unknown Work Item"
+        headers: dict[str, Any] = standardize_headers(
+            call_fixture_to_headers(self.webhook_dir_name, "issue_hook__incident_event")
+        )
+        result = self.client_post(
+            self.url, orjson.dumps(data).decode(), content_type="application/json", **headers
+        )
+        self.assert_json_success(result)
+        self.assert_in_response(
+            "The 'Issue Hook Unknown Work Item open' event isn't currently supported"
+            " by the GitLab webhook; ignoring",
+            result,
         )
 
     def test_note_commit_event_message(self) -> None:
