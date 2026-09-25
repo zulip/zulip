@@ -2,11 +2,13 @@ import json
 from urllib.parse import urlencode
 
 from django.http import HttpRequest, HttpResponse
+from django.views.decorators.http import require_safe
 
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.streams import get_web_public_streams_queryset
 
 
+@require_safe
 def llms_txt(request: HttpRequest) -> HttpResponse:
     """Serve /llms.txt so that LLMs can discover how to read web-public
     channel messages via the Zulip API without authentication.
