@@ -149,3 +149,7 @@ empty
 `,
     );
 });
+
+run_test("concat", () => {
+    assert.equal(require("./templates/contact.hbs")({}), "test template\n\n");
+});
