@@ -83,22 +83,28 @@ def api_slack_incoming_webhook(
     if user_specified_topic is None:
         user_specified_topic = "(no topic)"
 
-    pieces: list[str] = []
-    if payload.get("blocks"):
-        try:
-            pieces += map(render_block, payload["blocks"])
-        except LossyConversionError:  # nocoverage
-            pieces.append(payload.get("text", "").tame(check_string))
+    target_payload = payload
+    if payload.get("subtype") == "message_changed" and "message" in payload:
+        target_payload = payload["message"]
+    elif payload.get("event") and payload["event"].get("subtype") == "message_changed" and "message" in payload["event"]:
+        target_payload = payload["event"]["message"]
 
-    if payload.get("attachments"):
-        pieces += map(render_attachment, payload["attachments"])
+    pieces: list[str] = []
+    if target_payload.get("blocks"):
+        try:
+            pieces += map(render_block, target_payload["blocks"])
+        except LossyConversionError:  # nocoverage
+            pieces.append(target_payload.get("text", "").tame(check_string))
+
+    if target_payload.get("attachments"):
+        pieces += map(render_attachment, target_payload["attachments"])
 
     body = "\n\n".join(piece.strip() for piece in pieces if piece.strip() != "")
 
-    if body == "" and payload.get("text"):
-        if payload.get("icon_emoji"):
-            body = payload["icon_emoji"].tame(check_string) + " "
-        body += payload["text"].tame(check_string)
+    if body == "" and target_payload.get("text"):
+        if target_payload.get("icon_emoji"):
+            body = target_payload["icon_emoji"].tame(check_string) + " "
+        body += target_payload["text"].tame(check_string)
         body = body.strip()
 
     if body != "":
