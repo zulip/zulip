@@ -87,9 +87,11 @@ description for your pull request, you will:
 - Call out any open questions, concerns, or decisions you are uncertain about.
   The review process will go a lot more smoothly if points of uncertainty are
   explicitly laid out.
-- Include screenshots for all visual changes, so that they can be reviewed
-  without running your code. Be sure to follow our
-  [guide on presenting visual changes](../contributing/presenting-visual-changes.md).
+- [Include screenshots of any parts of the UI impacted by your PR](../contributing/presenting-visual-changes.md),
+  so that your changes can be quickly assessed without a reviewer needing to run
+  your code. It's just as important to document interface changes as it is to
+  demonstrate that your changes do not introduce any regressions to the UI's look
+  or interactions.
 
 If you have a question about a specific part of your code that you expect to be
 resolved during the review process, put it in a PR comment attached to a
