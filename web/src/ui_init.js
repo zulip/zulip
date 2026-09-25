@@ -118,6 +118,7 @@ import * as scheduled_messages from "./scheduled_messages.ts";
 import * as scheduled_messages_overlay_ui from "./scheduled_messages_overlay_ui.ts";
 import * as scheduled_messages_ui from "./scheduled_messages_ui.ts";
 import * as scroll_bar from "./scroll_bar.ts";
+import * as scroll_to_bottom_button from "./scroll_to_bottom_button.ts";
 import * as scroll_util from "./scroll_util.ts";
 import * as search from "./search.ts";
 import {FETCH_EVENT_TYPES} from "./server_event_types.ts";
@@ -678,6 +679,7 @@ export async function initialize_everything(state_data) {
         server_events.finished_initial_fetch();
     });
     message_scroll.initialize();
+    scroll_to_bottom_button.initialize();
     markdown.initialize(markdown_config.get_helpers());
     linkifiers.initialize(realm.realm_linkifiers);
     realm_playground.initialize({
@@ -726,6 +728,9 @@ export async function initialize_everything(state_data) {
         // especially when user is away from screen and the window is focused.
         if (activity.received_new_messages && activity.new_user_input) {
             unread_ops.process_visible();
+            // The new messages may have pushed the bottom of the feed
+            // out of view without the feed having been scrolled.
+            scroll_to_bottom_button.update();
             activity.set_received_new_messages(false);
         }
     });
