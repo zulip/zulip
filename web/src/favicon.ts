@@ -66,3 +66,16 @@ export function update_favicon(new_message_count: number, pm_count: number): voi
         blueslip.error("Failed to update favicon", undefined, error);
     }
 }
+
+// Prevents the browser from caching a stale notification dot when the
+// tab is closed or suspended, which led to incorrect dots showing up
+// on tab restore/wake. See issue #30163.
+if (typeof window !== "undefined" && window.addEventListener) {
+    window.addEventListener("pagehide", () => {
+        try {
+            $("#favicon").attr("href", static_favicon_image);
+        } catch {
+            // Ignore errors
+        }
+    });
+}
