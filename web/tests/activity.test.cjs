@@ -22,9 +22,14 @@ const _document = {
     hasFocus() {
         return true;
     },
+    to_$() {
+        return $("document-stub");
+    },
 };
 
+const browser_idle_detection = mock_esm("../src/browser_idle_detection");
 const buddy_list_presence = mock_esm("../src/buddy_list_presence");
+const {electron_bridge} = mock_esm("../src/electron_bridge", {electron_bridge: {}});
 const keydown_util = mock_esm("../src/keydown_util", {handle() {}});
 const padded_widget = mock_esm("../src/padded_widget");
 const pm_list = mock_esm("../src/pm_list");
@@ -119,7 +124,7 @@ function add_sub_and_set_as_current_narrow(sub) {
 }
 
 function test(label, f) {
-    run_test(label, (helpers) => {
+    run_test(label, async (helpers) => {
         helpers.override(user_settings, "presence_enabled", true);
         // Simulate a small window by having the
         // fill_screen_with_content render the entire
@@ -148,7 +153,7 @@ function test(label, f) {
         activity.clear_for_testing();
         activity_ui.set_cursor_and_filter();
 
-        f(helpers);
+        await f(helpers);
 
         presence.clear_internal_data();
     });
@@ -656,4 +661,112 @@ test("check_should_redraw_new_user", ({override}) => {
     override(realm, "realm_presence_disabled", false);
     // A new user that didn't have presence info should not be redrawn.
     assert.equal(activity_ui.check_should_redraw_new_user(99999), false);
+});
+
+test("browser_idle_detection_skipped_in_desktop_app", ({override, disallow}) => {
+    disallow(browser_idle_detection, "supported");
+    disallow(browser_idle_detection, "on_permission_change");
+    override(electron_bridge, "get_idle_on_system", () => false);
+
+    activity.reset_idle_handler_for_testing();
+    activity.setup_idle_handler();
+
+    assert.equal(activity.compute_active_status(), "active");
+});
+
+test("browser_idle_detection", async ({override, override_rewire}) => {
+    override(browser_idle_detection, "supported", () => false);
+    activity.setup_idle_handler();
+    blueslip.expect("log", "Browser idle detector not supported");
+
+    override(browser_idle_detection, "supported", () => true);
+
+    let presence_update_count = 0;
+    override_rewire(activity, "send_presence_to_server", () => {
+        presence_update_count += 1;
+    });
+
+    let init_count = 0;
+    let init_result;
+    let init_promise;
+    let detector_on_idle;
+    let detector_on_active;
+    override(browser_idle_detection, "init", ({on_idle, on_active}) => {
+        init_count += 1;
+        detector_on_idle = on_idle;
+        detector_on_active = on_active;
+        init_promise = Promise.resolve(init_result);
+        return init_promise;
+    });
+    let stop_count = 0;
+    override(browser_idle_detection, "stop", () => {
+        stop_count += 1;
+    });
+    let handle_permission;
+    override(browser_idle_detection, "on_permission_change", (on_change) => {
+        handle_permission = on_change;
+    });
+
+    activity.reset_idle_handler_for_testing();
+    activity.setup_idle_handler();
+    activity.setup_idle_handler();
+
+    const grant_permission = async (result) => {
+        init_result = result;
+        handle_permission(true);
+        await init_promise;
+    };
+
+    activity.clear_for_testing();
+    handle_permission(false);
+    assert.equal(init_count, 0);
+    presence_update_count = 0;
+    activity.mark_client_active();
+    assert.equal(activity.client_is_active, true);
+    assert.equal(activity.compute_active_status(), "active");
+    assert.equal(presence_update_count, 1);
+    activity.mark_client_idle();
+    assert.equal(activity.compute_active_status(), "idle");
+
+    blueslip.expect("info", "Browser IdleDetector started", 2);
+    await grant_permission("started");
+    assert.equal(init_count, 1);
+
+    presence_update_count = 0;
+    detector_on_active();
+    assert.equal(activity.compute_active_status(), "active");
+    assert.equal(presence_update_count, 1);
+
+    detector_on_idle();
+    assert.equal(activity.compute_active_status(), "idle");
+    assert.equal(presence_update_count, 1);
+
+    activity.clear_for_testing();
+    presence_update_count = 0;
+    activity.mark_client_active();
+    assert.equal(activity.client_is_active, true);
+    assert.equal(activity.compute_active_status(), "idle");
+    assert.equal(presence_update_count, 0);
+
+    stop_count = 0;
+    handle_permission(false);
+    assert.equal(stop_count, 1);
+    assert.equal(activity.compute_active_status(), "active");
+    assert.equal(presence_update_count, 1);
+
+    activity.mark_client_idle();
+    await grant_permission({name: "AbortError"});
+    assert.equal(activity.compute_active_status(), "idle");
+
+    await grant_permission("started");
+    detector_on_idle();
+    activity.mark_client_active();
+    assert.equal(activity.compute_active_status(), "idle");
+    presence_update_count = 0;
+    blueslip.expect("error", "Browser IdleDetector failed to start: error message");
+    await grant_permission({name: "SomeOtherError", message: "error message"});
+    assert.equal(activity.compute_active_status(), "active");
+    assert.equal(presence_update_count, 1);
+
+    activity.mark_client_idle_later.cancel();
 });
