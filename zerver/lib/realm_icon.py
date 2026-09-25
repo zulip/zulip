@@ -16,6 +16,8 @@ def get_realm_icon_url(realm: Realm) -> str:
     elif settings.ENABLE_GRAVATAR:
         hash_key = gravatar_hash(realm.string_id)
         return f"https://secure.gravatar.com/avatar/{hash_key}?d=identicon"
+    elif settings.DEFAULT_AVATAR_URL is not None:
+        return settings.DEFAULT_AVATAR_URL
     elif settings.DEFAULT_AVATAR_URI is not None:
         return settings.DEFAULT_AVATAR_URI
     else:

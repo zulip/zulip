@@ -32,6 +32,8 @@ from .configured_settings import (
     CUSTOM_HOME_NOT_LOGGED_IN,
     DEBUG,
     DEBUG_ERROR_REPORTING,
+    DEFAULT_AVATAR_URI,
+    DEFAULT_LOGO_URI,
     DEFAULT_RATE_LIMITING_RULES,
     EMAIL_BACKEND,
     EMAIL_HOST,
@@ -76,6 +78,8 @@ from .configured_settings import (
     ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS,
     ZULIP_SERVICES_URL,
 )
+from .configured_settings import DEFAULT_AVATAR_URL as DEFAULT_AVATAR_URL
+from .configured_settings import DEFAULT_LOGO_URL as DEFAULT_LOGO_URL
 
 ########################################################################
 # INITIAL SETTINGS
@@ -608,6 +612,12 @@ if STATIC_URL is None:
         STATIC_URL = urljoin(ROOT_DOMAIN_URI, "/static/")
     else:
         STATIC_URL = "http://localhost:9991/static/"
+
+if DEFAULT_AVATAR_URL is None and DEFAULT_AVATAR_URI is not None:
+    DEFAULT_AVATAR_URL = DEFAULT_AVATAR_URI
+
+if DEFAULT_LOGO_URL is None and DEFAULT_LOGO_URI is not None:
+    DEFAULT_LOGO_URL = DEFAULT_LOGO_URI
 
 LOCAL_AVATARS_DIR = os.path.join(LOCAL_UPLOADS_DIR, "avatars") if LOCAL_UPLOADS_DIR else None
 LOCAL_FILES_DIR = os.path.join(LOCAL_UPLOADS_DIR, "files") if LOCAL_UPLOADS_DIR else None

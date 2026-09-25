@@ -931,7 +931,7 @@ LOCAL_UPLOADS_DIR = "/home/zulip/uploads"
 ## To override the default avatar image if ENABLE_GRAVATAR is False, place your
 ## custom default avatar image at /home/zulip/local-static/default-avatar.png
 ## and uncomment the following line.
-# DEFAULT_AVATAR_URI = "/local-static/default-avatar.png"
+# DEFAULT_AVATAR_URL = "/local-static/default-avatar.png"
 
 ## The default CAMO_URI of "/external_content/" is served by the camo
 ## setup in the default Zulip nginx configuration.  Setting CAMO_URI

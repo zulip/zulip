@@ -23,6 +23,8 @@ def get_realm_logo_url(realm: Realm, night: bool) -> str:
         else:
             logo_version = realm.logo_version
         return get_uploaded_realm_logo_url(realm.id, logo_version, night)
+    if settings.DEFAULT_LOGO_URL is not None:
+        return settings.DEFAULT_LOGO_URL
     if settings.DEFAULT_LOGO_URI is not None:
         return settings.DEFAULT_LOGO_URI
     return staticfiles_storage.url("images/logo/zulip-org-logo.svg") + "?version=0"

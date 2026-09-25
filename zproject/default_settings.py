@@ -159,7 +159,9 @@ SENTRY_FRONTEND_TRACE_RATE: float = 0.1
 
 # File uploads and avatars
 # TODO: Rename MAX_FILE_UPLOAD_SIZE to have unit in name.
+DEFAULT_AVATAR_URL: str | None = None
 DEFAULT_AVATAR_URI: str | None = None
+DEFAULT_LOGO_URL: str | None = None
 DEFAULT_LOGO_URI: str | None = None
 S3_AVATAR_BUCKET = ""
 S3_AUTH_UPLOADS_BUCKET = ""
