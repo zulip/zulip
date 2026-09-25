@@ -494,6 +494,7 @@ export let start = (raw_opts: ComposeActionsStartOpts): void => {
     // compose-box do not cover the last messages of the current stream
     // while writing a long message.
     resize.reset_compose_message_max_height();
+    resize.watch_compose_box_for_virtual_keyboard();
     compose_tooltips.initialize_compose_tooltips("compose", "#compose .compose_button_tooltip");
 
     complete_starting_tasks(opts);
@@ -526,6 +527,7 @@ export let cancel = (): void => {
     }
     hide_box();
     clear_box();
+    resize.unwatch_compose_box_for_virtual_keyboard();
     compose_banner.clear_message_sent_banners();
     compose_banner.clear_non_interleaved_view_messages_fading_banner();
     compose_banner.clear_interleaved_view_messages_fading_banner();
