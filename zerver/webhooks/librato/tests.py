@@ -71,12 +71,7 @@ class LibratoHookTests(WebhookTestCase):
 
     def test_bad_request(self) -> None:
         with self.assertRaises(AssertionError) as e:
-            self.check_webhook(
-                "bad",
-                "",
-                "",
-                content_type="application/json",
-            )
+            self.check_webhook("bad", "", "")
         self.assertIn("Malformed JSON input", e.exception.args[0])
 
     def test_bad_msg_type(self) -> None:
