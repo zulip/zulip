@@ -80,7 +80,7 @@ def relative_to_full_url(fragment: lxml.html.HtmlElement, base_url: str) -> None
     for link_info in fragment.iterlinks():
         elem, attrib, link, _pos = link_info
         match = re.match(r"/?#narrow/", link)
-        if match is not None:
+        if attrib is not None and match is not None:
             link = re.sub(r"^/?#narrow/", base_url + "/#narrow/", link)
             elem.set(attrib, link)
             # Only manually linked narrow URLs have title attribute set.
@@ -97,8 +97,10 @@ def relative_to_full_url(fragment: lxml.html.HtmlElement, base_url: str) -> None
         # entire message body will be that image element; here, we need a
         # more drastic edit to the content.
         inner = fragment[0]
-        image_link = inner.find("a").get("href")
-        image_title = inner.find("a").get("title")
+        a = inner.find("a")
+        assert a is not None
+        image_link = a.attrib["href"]
+        image_title = a.get("title")
         title_attr = {} if image_title is None else {"title": image_title}
         inner.clear()
         inner.tag = "p"
@@ -130,17 +132,18 @@ def relative_to_full_url(fragment: lxml.html.HtmlElement, base_url: str) -> None
 
 
 def fix_emojis(fragment: lxml.html.HtmlElement, emojiset: str) -> None:
-    def make_emoji_img_elem(emoji_span_elem: lxml.html.HtmlElement) -> dict[str, Any]:
+    def make_emoji_img_elem(emoji_span_elem: lxml.html.HtmlElement) -> lxml.html.HtmlElement:
         # Convert the emoji spans to img tags.
-        classes = emoji_span_elem.get("class")
+        classes = emoji_span_elem.attrib["class"]
         match = re.search(r"emoji-(?P<emoji_code>\S+)", classes)
         # re.search is capable of returning None,
         # but since the parent function should only be called with a valid css element
         # we assert that it does not.
         assert match is not None
         emoji_code = match.group("emoji_code")
-        emoji_name = emoji_span_elem.get("title")
+        emoji_name = emoji_span_elem.attrib["title"]
         alt_code = emoji_span_elem.text
+        assert alt_code is not None
         # We intentionally do not use staticfiles_storage.url here, so
         # that we don't get any hashed version -- we want a path which
         # may give us content which changes over time, but one which
@@ -163,6 +166,7 @@ def fix_emojis(fragment: lxml.html.HtmlElement, emojiset: str) -> None:
 
     for elem in fragment.cssselect("span.emoji"):
         parent = elem.getparent()
+        assert parent is not None
         img_elem = make_emoji_img_elem(elem)
         parent.replace(elem, img_elem)
 
