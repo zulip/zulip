@@ -52,7 +52,11 @@ import * as util from "./util.ts";
 // that pop up from the left sidebar.
 let stream_widget_value: number | undefined;
 let move_topic_to_stream_topic_typeahead: Typeahead<string> | undefined;
-const last_propagate_mode_for_conversation = new Map<string, string>();
+
+const propagate_mode_schema = z.enum(["change_one", "change_later", "change_all"]);
+type PropagateMode = z.infer<typeof propagate_mode_schema>;
+
+const last_propagate_mode_for_conversation = new Map<string, PropagateMode>();
 
 export function stream_sidebar_menu_handle_keyboard(key: string): void {
     if (popover_menus.is_color_picker_popover_displayed()) {
@@ -376,6 +380,131 @@ async function get_message_placement_in_conversation(
     );
 }
 
+// The current message list contains the topic being moved when it is
+// narrowed to that topic, or to the channel the topic is in. Any other
+// list -- an interleaved view, a search, another conversation, a view
+// of the channel that also filters by something else -- holds only
+// whichever of the topic's messages happen to match it, and views
+// rendered without a message list have none of them, so neither can
+// tell us how many messages the topic has.
+//
+// Containing the topic is not the same as having fetched all of it;
+// `fetch_status` answers that question.
+function current_message_list_contains_topic(stream_id: number, topic_name: string): boolean {
+    const current_filter = message_lists.current?.data.filter;
+    if (current_filter === undefined || narrow_state.stream_id(current_filter) !== stream_id) {
+        return false;
+    }
+
+    // A `near` or `with` term points at one message of the view without
+    // narrowing down which messages the view contains.
+    const term_types = current_filter
+        .sorted_term_types()
+        .filter((term_type) => term_type !== "near" && term_type !== "with");
+
+    // A channel view contains every topic in the channel.
+    if (term_types.length === 1 && term_types[0] === "channel") {
+        return true;
+    }
+
+    // A conversation view contains a single topic.
+    return (
+        term_types.length === 2 &&
+        term_types[0] === "channel" &&
+        term_types[1] === "topic" &&
+        util.lower_same(narrow_state.topic(current_filter), topic_name)
+    );
+}
+
+type MoveMessagesCount = {
+    count: number;
+    // False when the messages we counted may not be all of the ones the
+    // move will take, which makes the count a lower bound.
+    is_exact: boolean;
+};
+
+export function get_move_messages_count(
+    selected_option: PropagateMode,
+    current_stream_id: number,
+    topic_name: string,
+    message_id?: number,
+): MoveMessagesCount {
+    if (selected_option === "change_one") {
+        return {count: 1, is_exact: true};
+    }
+
+    // We prefer the current message list, which can see the whole
+    // history it has fetched for the topic, and fall back to the recent
+    // conversations cache, which is missing the older messages of a
+    // topic that has not been active recently.
+    const contains_topic = current_message_list_contains_topic(current_stream_id, topic_name);
+    const loaded_messages_in_topic = contains_topic
+        ? message_util.get_loaded_messages_in_topic_in_current_view(current_stream_id, topic_name)
+        : message_util.get_loaded_messages_in_topic(current_stream_id, topic_name);
+
+    let count;
+    if (selected_option === "change_later") {
+        // Only the message actions popover offers this option, and it
+        // always knows which message the user selected.
+        assert(message_id !== undefined);
+        count = loaded_messages_in_topic.filter((message) => message.id >= message_id).length;
+    } else {
+        count = loaded_messages_in_topic.length;
+    }
+
+    if (!contains_topic) {
+        return {count, is_exact: false};
+    }
+
+    // We counted all the messages the move will take only if the list
+    // has fetched to the end of the range it takes them from.
+    assert(message_lists.current !== undefined);
+    const fetch_status = message_lists.current.data.fetch_status;
+    if (selected_option === "change_later") {
+        return {count, is_exact: fetch_status.has_found_newest()};
+    }
+
+    // A move also takes the messages that plan restrictions kept out of
+    // our fetch, which we cannot see to count.
+    const is_exact =
+        fetch_status.has_found_newest() &&
+        fetch_status.has_found_oldest() &&
+        !fetch_status.history_limited();
+    return {count, is_exact};
+}
+
+export function update_move_messages_count_text(
+    selected_option: PropagateMode,
+    current_stream_id: number,
+    topic_name: string,
+    message_id?: number,
+): void {
+    const {count: message_move_count, is_exact} = get_move_messages_count(
+        selected_option,
+        current_stream_id,
+        topic_name,
+        message_id,
+    );
+
+    let message_text;
+    if (is_exact) {
+        message_text = $t(
+            {
+                defaultMessage:
+                    "{count, plural, one {# message} other {# messages}} will be moved.",
+            },
+            {count: message_move_count},
+        );
+    } else {
+        message_text = $t(
+            {defaultMessage: "{count}+ messages will be moved."},
+            {count: message_move_count},
+        );
+    }
+
+    $("#move_messages_count").text(message_text);
+}
+
 export async function build_move_topic_to_stream_popover(
     current_stream_id: number,
     topic_name: string,
@@ -502,7 +631,7 @@ export async function build_move_topic_to_stream_popover(
         current_stream_id: z.string(),
         new_topic_name: z.optional(z.string()),
         old_topic_name: z.string(),
-        propagate_mode: z.optional(z.enum(["change_one", "change_later", "change_all"])),
+        propagate_mode: z.optional(propagate_mode_schema),
         send_notification_to_new_thread: z.optional(z.literal("on")),
         send_notification_to_old_thread: z.optional(z.literal("on")),
     });
@@ -982,74 +1111,6 @@ export async function build_move_topic_to_stream_popover(
         }
     }
 
-    // The following logic is correct only when
-    // both message_lists.current.data.fetch_status.has_found_newest
-    // and message_lists.current.data.fetch_status.has_found_oldest are true;
-    // otherwise, we cannot be certain of the correct count.
-    function get_count_of_messages_to_be_moved(
-        selected_option: string,
-        message_id?: number,
-    ): number {
-        if (selected_option === "change_one") {
-            return 1;
-        }
-        if (selected_option === "change_later" && message_id !== undefined) {
-            return message_util.get_count_of_messages_in_topic_sent_after_current_message(
-                current_stream_id,
-                topic_name,
-                message_id,
-            );
-        }
-        return message_util.get_loaded_messages_in_topic(current_stream_id, topic_name).length;
-    }
-
-    function update_move_messages_count_text(selected_option: string, message_id?: number): void {
-        const message_move_count = get_count_of_messages_to_be_moved(selected_option, message_id);
-        const is_topic_narrowed = narrow_state.narrowed_by_topic_reply();
-        const is_stream_narrowed = narrow_state.narrowed_by_stream_reply();
-        const is_same_stream = narrow_state.stream_id() === current_stream_id;
-        const is_same_topic = narrow_state.topic() === topic_name;
-
-        const can_have_exact_count_in_narrow =
-            (is_stream_narrowed && is_same_stream) ||
-            (is_topic_narrowed && is_same_stream && is_same_topic);
-        let exact_message_count = false;
-        if (selected_option === "change_one") {
-            exact_message_count = true;
-        } else if (can_have_exact_count_in_narrow) {
-            const has_found_newest = message_lists.current?.data.fetch_status.has_found_newest();
-            const has_found_oldest = message_lists.current?.data.fetch_status.has_found_oldest();
-
-            if (selected_option === "change_later" && has_found_newest) {
-                exact_message_count = true;
-            }
-            if (selected_option === "change_all" && has_found_newest && has_found_oldest) {
-                exact_message_count = true;
-            }
-        }
-
-        let message_text;
-        if (exact_message_count) {
-            message_text = $t(
-                {
-                    defaultMessage:
-                        "{count, plural, one {# message} other {# messages}} will be moved.",
-                },
-                {count: message_move_count},
-            );
-        } else {
-            message_text = $t(
-                {
-                    defaultMessage:
-                        "At least {count, plural, one {# message} other {# messages}} will be moved.",
-                },
-                {count: message_move_count},
-            );
-        }
-
-        $("#move_messages_count").text(message_text);
-    }
-
     function update_topic_input_placeholder(): void {
         const $topic_not_mandatory_placeholder = $(".move-topic-new-topic-placeholder");
         const $topic_input = $<HTMLInputElement>("#move_topic_form input.move_messages_edit_topic");
@@ -1201,11 +1262,17 @@ export async function build_move_topic_to_stream_popover(
         update_topic_input_placeholder();
 
         if (!args.from_message_actions_popover) {
-            update_move_messages_count_text("change_all");
+            update_move_messages_count_text("change_all", current_stream_id, topic_name);
         } else {
+            // The modal is opened from the message actions popover
+            // exactly when we have the message the user clicked on.
+            assert(message !== undefined);
+
             // Generate unique key for this conversation
             const conversation_key = `${current_stream_id}_${topic_name}`;
-            let selected_option = String($("#message_move_select_options").val());
+            let selected_option = propagate_mode_schema.parse(
+                $("#message_move_select_options").val(),
+            );
 
             // If a user has changed the smart defaults of `propagate_mode` to "change_one", we
             // remember that forced change and apply the same default for `propagate_mode` next
@@ -1218,14 +1285,24 @@ export async function build_move_topic_to_stream_popover(
                 $("#message_move_select_options").val(selected_option);
             }
 
-            update_move_messages_count_text(selected_option, message?.id);
+            update_move_messages_count_text(
+                selected_option,
+                current_stream_id,
+                topic_name,
+                message.id,
+            );
 
             $("#message_move_select_options").on("change", function () {
-                selected_option = String($(this).val());
+                selected_option = propagate_mode_schema.parse($(this).val());
                 last_propagate_mode_for_conversation.set(conversation_key, selected_option);
                 void warn_unsubscribed_participants(selected_option);
                 maybe_show_topic_already_exists_warning();
-                update_move_messages_count_text(selected_option, message?.id);
+                update_move_messages_count_text(
+                    selected_option,
+                    current_stream_id,
+                    topic_name,
+                    message.id,
+                );
             });
         }
         disable_topic_input_if_topics_are_disabled_in_channel(current_stream_id);

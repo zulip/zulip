@@ -99,6 +99,12 @@ export class MessageListData {
         return this._items;
     }
 
+    // Callers asking what this view has loaded, rather than what it
+    // displays, want this one; muting only hides messages.
+    all_messages_including_muted(): Message[] {
+        return this._all_items;
+    }
+
     num_items(): number {
         return this._items.length;
     }
