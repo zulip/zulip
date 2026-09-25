@@ -5,6 +5,7 @@ from unittest import mock
 
 from typing_extensions import override
 
+from zerver.lib.exceptions import RateLimitedError
 from zerver.lib.rate_limiter import (
     RateLimitedIPAddr,
     RateLimitedObject,
@@ -310,6 +311,22 @@ class RateLimiterStringFormattingTest(ZulipTestCase):
         self.assertEqual(readable_expiry_string_for_plaintext(121), "2 minutes")
         self.assertEqual(readable_expiry_string_for_plaintext(86400), "23 hours, 59 minutes")
         self.assertEqual(readable_expiry_string_for_plaintext(90000), "1 day")
+
+
+class RateLimitedErrorTest(ZulipTestCase):
+    def test_retry_after_is_rounded_up(self) -> None:
+        # The unrounded values from the report in #39213 and from the
+        # example error response in our API documentation.
+        self.assertEqual(RateLimitedError(0.008374929428100586).data["retry-after"], 1)
+        self.assertEqual(RateLimitedError(28.706807374954224).data["retry-after"], 29)
+        # Whole numbers of seconds are passed through unchanged.
+        self.assertEqual(RateLimitedError(30).data["retry-after"], 30)
+        # The header carries the same rounded value as the JSON response.
+        self.assertEqual(RateLimitedError(0.5).extra_headers["Retry-After"], 1)
+
+    def test_retry_after_without_secs_to_freedom(self) -> None:
+        self.assertIsNone(RateLimitedError().data["retry-after"])
+        self.assertNotIn("Retry-After", RateLimitedError().extra_headers)
 
 
 # Don't load the base class as a test: https://bugs.python.org/issue17519.

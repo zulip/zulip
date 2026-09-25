@@ -106,14 +106,16 @@ class RateLimitTests(ZulipTestCase):
             json = result.json()
             self.assertEqual(json.get("result"), "error")
             self.assertIn("API usage exceeded rate limit", json.get("msg"))
-            self.assertAlmostEqual(json.get("retry-after"), 0.195, places=2)
-            self.assertTrue("Retry-After" in result.headers)
-            self.assertAlmostEqual(float(result["Retry-After"]), 0.195, places=2)
+            # The underlying wait is 0.195 seconds, rounded up to one
+            # second on both surfaces.
+            self.assertEqual(json.get("retry-after"), 1)
+            self.assertEqual(result["Retry-After"], "1")
 
         def user_facing_assert_func(result: "TestHttpResponse") -> None:
             self.assertEqual(result.status_code, 429)
             self.assertNotEqual(result.headers["Content-Type"], "application/json")
             self.assert_in_response("Rate limit exceeded.", result)
+            self.assert_in_response("You can try again in 1\xa0second.", result)
 
         if is_json:
             assert_func = api_assert_func
@@ -153,6 +155,17 @@ class RateLimitTests(ZulipTestCase):
         self.do_test_hit_ratelimits(
             lambda: self.api_patch(user, "/api/v1/settings", {"email": emails.pop()}),
         )
+
+    @ratelimit_rule(1, 0, domain="email_change_by_user")
+    def test_hit_change_email_ratelimit_allowing_no_requests(self) -> None:
+        user = self.example_user("cordelia")
+
+        # A rule allowing no requests makes the wait infinite, which
+        # has no integer number of seconds to report.
+        result = self.api_patch(user, "/api/v1/settings", {"email": "new-email@zulip.com"})
+        self.assertEqual(result.status_code, 429)
+        self.assertIsNone(result.json()["retry-after"])
+        self.assertNotIn("Retry-After", result.headers)
 
     @ratelimit_rule(1, 5, domain="api_by_ip")
     def test_hit_ratelimits_as_ip(self) -> None:
