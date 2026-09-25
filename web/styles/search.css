@@ -413,6 +413,13 @@
 
         .search_list_item .description {
             margin: 2px 0;
+            /* Give the pills their full width first. The description
+               takes whatever is left and is cut off with an ellipsis. */
+            flex: 1 1 0;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .search_list_item .pill-container {
