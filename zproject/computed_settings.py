@@ -374,7 +374,8 @@ if DEVELOPMENT:
     LOCAL_DATABASE_PASSWORD = get_secret("local_database_password")
     DATABASES["default"].update(
         PASSWORD=LOCAL_DATABASE_PASSWORD,
-        HOST="localhost",
+        HOST=os.environ.get("PGHOST") or "localhost",
+        PORT=os.environ.get("PGPORT") or "",
     )
 elif REMOTE_POSTGRES_HOST != "":
     DATABASES["default"].update(

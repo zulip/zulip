@@ -212,6 +212,20 @@ SCIM_CONFIG: dict[str, SCIMConfigDict] = {
 
 SELF_HOSTING_MANAGEMENT_SUBDOMAIN = "selfhosting"
 DEVELOPMENT_DISABLE_PUSH_BOUNCER_DOMAIN_CHECK = True
+
+# Honor service host/port env vars in development, so a developer
+# running RabbitMQ/Memcached/Redis on non-default ports (or on a
+# different host) doesn't need to edit settings.
+if "RABBITMQ_HOST" in os.environ:
+    RABBITMQ_HOST = os.environ["RABBITMQ_HOST"]
+if "RABBITMQ_PORT" in os.environ:
+    RABBITMQ_PORT = int(os.environ["RABBITMQ_PORT"])
+if "REDIS_HOST" in os.environ:
+    REDIS_HOST = os.environ["REDIS_HOST"]
+if "REDIS_PORT" in os.environ:
+    REDIS_PORT = int(os.environ["REDIS_PORT"])
+if "MEMCACHED_LOCATION" in os.environ:
+    MEMCACHED_LOCATION = os.environ["MEMCACHED_LOCATION"]
 ZULIP_SERVICES_URL = f"http://{EXTERNAL_HOST}"
 
 ZULIP_SERVICE_PUSH_NOTIFICATIONS = True
