@@ -473,6 +473,7 @@ run_test("stream-links", ({mock_template}) => {
         channel_id: stream.stream_id,
         stream,
         channel_name: stream.name,
+        channel_name_html: "test",
         topic_display_name_html: "topic name &gt; still the topic name",
         is_empty_string_topic: false,
         href: `/#narrow/channel/${stream.stream_id}-random/topic/topic.20name.20.3E.20still.20the.20topic.20name`,
@@ -515,6 +516,8 @@ run_test("stream-links alert words", ({mock_template}) => {
 
     const message = {alerted: true};
     set_message_for_message_content($content, message);
+    const original_stream_name = stream.name;
+    stream.name = "alert";
     alert_words.set_words(["alert"]);
 
     rm.update_elements($content);
@@ -528,11 +531,13 @@ run_test("stream-links alert words", ({mock_template}) => {
         channel_id: stream.stream_id,
         stream,
         channel_name: stream.name,
+        channel_name_html: "<span class='alert-word'>alert</span>",
         topic_display_name_html: "important <span class='alert-word'>alert</span> topic",
         is_empty_string_topic: false,
         href: `/#narrow/channel/${stream.stream_id}-test/topic/important.20alert.20topic`,
     });
 
+    stream.name = original_stream_name;
     alert_words.set_words([]);
 });
 
@@ -560,6 +565,7 @@ run_test("message-link alert words", ({mock_template}) => {
 
     assert.deepEqual(channel_message_link_context, {
         channel_name: stream.name,
+        channel_name_html: "test",
         topic_display_name_html: "<span class='alert-word'>alert</span>",
         is_empty_string_topic: false,
         href: `/#narrow/channel/${stream.stream_id}-random/topic/alert/near/123`,
@@ -598,6 +604,7 @@ run_test("topic-link (empty string topic)", ({mock_template}) => {
         channel_id: stream.stream_id,
         stream,
         channel_name: stream.name,
+        channel_name_html: "test",
         topic_display_name_html: `translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}`,
         is_empty_string_topic: true,
         href: `/#narrow/channel/${stream.stream_id}-random/topic/`,
@@ -637,6 +644,7 @@ run_test("message-links", ({mock_template}) => {
     // Final asserts
     assert.deepEqual(channel_message_link_context, {
         channel_name: stream.name,
+        channel_name_html: "test",
         topic_display_name_html: `translated: ${REALM_EMPTY_TOPIC_DISPLAY_NAME}`,
         is_empty_string_topic: true,
         href: `/#narrow/channel/${stream.stream_id}-test/topic//near/123`,
