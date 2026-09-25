@@ -2,6 +2,7 @@
 
 set -e
 set -u
+set -o pipefail
 
 if ! zulip_api_key=$(crudini --get /etc/zulip/zulip-secrets.conf secrets zulip_release_api_key); then
     echo "zulip_notify: No zulip_release_api_key set!  Set zulip_release_api_key in /etc/zulip/zulip-secrets.conf"
