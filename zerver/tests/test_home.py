@@ -109,6 +109,7 @@ class HomeTest(ZulipTestCase):
         "max_bulk_new_subscription_messages",
         "max_channel_folder_description_length",
         "max_channel_folder_name_length",
+        "max_display_in_profile_summary_fields",
         "max_file_upload_size_mib",
         "max_icon_file_size_mib",
         "max_logo_file_size_mib",
