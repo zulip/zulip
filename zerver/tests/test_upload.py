@@ -1539,6 +1539,27 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             response = self.client_get(f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
             self.assertEqual(429, response.status_code)
 
+        self.set_up_db_for_testing_user_access()
+        self.login("polonius")
+
+        # Inaccessible users get the medium-sized variant of the
+        # unknown user avatar for medium avatar requests.
+        response = self.client_get(f"/avatar/{cordelia.id}/medium", {"foo": "bar"})
+        self.assertEqual(302, response.status_code)
+        redirect_url = response["Location"]
+        self.assertTrue(redirect_url.endswith("images/unknown-user-avatar-medium.png?foo=bar"))
+
+        response = self.client_get("/avatar/cordelia@zulip.com/medium", {"foo": "bar"})
+        self.assertEqual(302, response.status_code)
+        redirect_url = response["Location"]
+        self.assertTrue(redirect_url.endswith("images/unknown-user-avatar-medium.png?foo=bar"))
+
+        invalid_user_id = 999
+        response = self.client_get(f"/avatar/{invalid_user_id}/medium", {"foo": "bar"})
+        self.assertEqual(302, response.status_code)
+        redirect_url = response["Location"]
+        self.assertTrue(redirect_url.endswith("images/unknown-user-avatar-medium.png?foo=bar"))
+
     def test_get_user_avatar_medium(self) -> None:
         cordelia = self.example_user("cordelia")
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
