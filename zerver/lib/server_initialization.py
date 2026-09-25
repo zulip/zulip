@@ -99,3 +99,11 @@ def create_users(
         tos_version=tos_version,
         is_imported_stub=is_imported_stub,
     )
+
+
+def server_is_initialized_and_has_no_other_realm(realm: Realm) -> bool:
+    # This is mainly used during import to check if the server has
+    # any Realm other than the one currently being imported.
+    return not Realm.objects.exclude(
+        string_id__in=[settings.SYSTEM_BOT_REALM, realm.string_id]
+    ).exists()

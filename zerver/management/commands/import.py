@@ -11,9 +11,12 @@ from django.core.management import call_command
 from django.core.management.base import CommandError, CommandParser
 from typing_extensions import override
 
+from analytics.management.commands.update_analytics_counts import (
+    Command as UpdateAnalyticsCountsCommand,
+)
 from zerver.forms import OverridableValidationError, check_subdomain_available
 from zerver.lib.import_realm import do_import_realm
-from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.management import ZulipBaseCommand, mutually_exclusive_with
 
 
 class Command(ZulipBaseCommand):
@@ -61,7 +64,11 @@ import a database dump from one or more JSON files."""
         call_command("flush", verbosity=0, skip_checks=True, interactive=False)
         subprocess.check_call([os.path.join(settings.DEPLOY_ROOT, "scripts/setup/flush-memcached")])
 
+    # Importing FillState and the *Count tables would race with a
+    # concurrently running update_analytics_counts; holding its lock
+    # for the duration of the import makes the cron job abort instead.
     @override
+    @mutually_exclusive_with(UpdateAnalyticsCountsCommand.handle)
     def handle(self, *args: Any, **options: Any) -> None:
         num_processes = int(options["processes"])
         if num_processes < 1:
