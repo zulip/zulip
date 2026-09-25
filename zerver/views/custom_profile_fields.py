@@ -86,6 +86,8 @@ def validate_use_for_user_matching_field(field_type: int, use_for_user_matching:
 def is_default_external_field(field_type: int, field_data: ProfileFieldData) -> bool:
     if field_type != CustomProfileField.EXTERNAL_ACCOUNT:
         return False
+    if "subtype" not in field_data:
+        return False  # nocoverage
     if field_data["subtype"] == "custom":
         return False
     return True
@@ -131,7 +133,7 @@ def validate_custom_profile_field_update(
         hint = field.hint
     if field_data is None:
         if field.field_data == "":
-            # We're passing this just for validation, sinec the function won't
+            # We're passing this just for validation, since the function won't
             # accept a string. This won't change the actual value.
             field_data = {}
         else:
@@ -141,7 +143,9 @@ def validate_custom_profile_field_update(
     if use_for_user_matching is None:
         use_for_user_matching = field.use_for_user_matching
 
-    assert field_data is not None
+    if field_data is None:  # nocoverage
+        raise JsonableError(_("Invalid field data."))
+
     validate_custom_profile_field(
         name, hint, field.field_type, field_data, display_in_profile_summary, use_for_user_matching
     )
@@ -201,8 +205,10 @@ def create_realm_custom_profile_field(
     )
     try:
         if is_default_external_field(field_type, field_data):
-            field_subtype = field_data["subtype"]
-            assert isinstance(field_subtype, str)
+            field_subtype = field_data.get("subtype")
+            if not isinstance(field_subtype, str):
+                raise JsonableError(_("Invalid field subtype."))  # nocoverage
+
             field = try_add_realm_default_custom_profile_field(
                 realm=user_profile.realm,
                 field_subtype=field_subtype,
