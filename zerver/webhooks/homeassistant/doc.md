@@ -8,7 +8,7 @@
     ```
     notify:
       - platform: rest
-        resource: http: {{ external_api_uri }}v1/external/homeassistant?api_key=<API key>
+        resource: {{ api_url }}/v1/external/homeassistant?api_key=<API key>
         method: POST_JSON
         title_param_name: topic
     ```
