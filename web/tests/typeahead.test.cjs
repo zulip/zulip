@@ -113,6 +113,60 @@ run_test("query_matches_string_in_order", () => {
     assert_no_match("josé mar", "Jose Maria", " ");
 });
 
+run_test("query_matches_string_in_any_order", () => {
+    // Test standard behavior for spaced languages (e.g., English)
+    assert.equal(typeahead.query_matches_string_in_any_order("cd ef", "ab cd ef", " "), true);
+    assert.equal(typeahead.query_matches_string_in_any_order("b cd", "ab cd ef", " "), false);
+
+    // Test substring matching for unspaced scripts
+    // Japanese (Hiragana/Katakana/Han)
+    assert.equal(typeahead.query_matches_string_in_any_order("らせ", "お知らせ", " "), true);
+    assert.equal(
+        typeahead.query_matches_string_in_any_order("ット", "チャット開発環境", " "),
+        true,
+    );
+    assert.equal(
+        typeahead.query_matches_string_in_any_order("開発", "チャット開発環境", " "),
+        true,
+    );
+
+    // Thai
+    assert.equal(typeahead.query_matches_string_in_any_order("สอบ", "การทดสอบ", " "), true);
+
+    // Lao
+    assert.equal(typeahead.query_matches_string_in_any_order("ສອບ", "ການທົດສອບ", " "), true);
+
+    // Test "in any order" matching for unspaced scripts
+    assert.equal(
+        typeahead.query_matches_string_in_any_order("開発 環境", "Zulip開発環境", " "),
+        true,
+    );
+    assert.equal(
+        typeahead.query_matches_string_in_any_order("環境 開発", "Zulip開発環境", " "),
+        true,
+    );
+
+    // Test mixed scripts (spaced and unspaced) matching
+    assert.equal(
+        typeahead.query_matches_string_in_any_order("Zulip 開発", "Zulip開発環境", " "),
+        true,
+    );
+    assert.equal(
+        typeahead.query_matches_string_in_any_order("開発 Zulip", "Zulip開発環境", " "),
+        true,
+    );
+    assert.equal(
+        typeahead.query_matches_string_in_any_order("開発 ip", "Zulip開発環境", " "),
+        true,
+    );
+
+    // Test tokenization with full-width spaces
+    assert.equal(
+        typeahead.query_matches_string_in_any_order("Zulip　開発", "Zulip開発環境", " "),
+        true,
+    );
+});
+
 run_test("triage", () => {
     const alice = {name: "alice"};
     const alicia = {name: "Alicia"};
