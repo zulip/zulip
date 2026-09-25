@@ -59,7 +59,12 @@ def bulk_insert_ums(ums: list[UserMessageLite]) -> None:
     if not ums:
         return
 
-    vals = [(um.user_profile_id, um.message_id, um.flags) for um in ums]
+    # Keep the insert order consistent with the rows locked by
+    # process_fts_updates, which helps avoid deadlocks during realm imports.
+    vals = sorted(
+        ((um.user_profile_id, um.message_id, um.flags) for um in ums),
+        key=lambda row: (row[1], row[0]),
+    )
     query = SQL(
         """
         INSERT into
