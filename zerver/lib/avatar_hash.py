@@ -37,5 +37,5 @@ def user_avatar_base_path_from_ids(user_profile_id: int, version: int, realm_id:
     return f"{realm_id}/{user_id_hash}"
 
 
-def user_avatar_content_hash(ldap_avatar: bytes) -> str:
-    return hashlib.sha256(ldap_avatar).hexdigest()
+def user_avatar_content_hash(avatar_content: bytes) -> str:
+    return hashlib.sha256(avatar_content).hexdigest()
