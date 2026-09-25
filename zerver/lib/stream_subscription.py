@@ -261,6 +261,7 @@ def get_subscriptions_for_send_message(
     stream_id: int,
     topic_name: str,
     possible_stream_wildcard_mention: bool,
+    mandatory_email_notifications: bool = False,
     topic_participant_user_ids: AbstractSet[int],
     possibly_mentioned_user_ids: AbstractSet[int],
 ) -> QuerySet[Subscription]:
@@ -297,7 +298,7 @@ def get_subscriptions_for_send_message(
         include_deactivated_users=False,
     )
 
-    if possible_stream_wildcard_mention:
+    if possible_stream_wildcard_mention or mandatory_email_notifications:
         return query
 
     query = query.filter(

@@ -1528,7 +1528,8 @@
 
 #subscription_overlay .default-stream,
 #subscription_overlay .history-public-to-subscribers,
-#subscription_overlay .default-push-notifications {
+#subscription_overlay .default-push-notifications,
+#subscription_overlay .mandatory-email-notifications {
     width: fit-content;
 
     .inline {

@@ -396,6 +396,15 @@ function create_stream(): void {
         );
     }
 
+    const $mandatory_email_notifications = $<HTMLInputElement>(
+        "#id_new_mandatory_email_notifications",
+    );
+    if ($mandatory_email_notifications.length > 0) {
+        data["mandatory_email_notifications"] = JSON.stringify(
+            $mandatory_email_notifications.prop("checked"),
+        );
+    }
+
     assert(folder_widget !== undefined);
     const folder_id = folder_widget.value();
     if (folder_id !== settings_config.no_folder_selected) {
