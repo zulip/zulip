@@ -35,7 +35,6 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
             full_name="Embedded bot",
             bot_type=UserProfile.EMBEDDED_BOT,
             service_name="helloworld",
-            config_data=orjson.dumps({"foo": "bar"}).decode(),
         )
 
     def test_pm_to_embedded_bot_using_direct_group_message(self) -> None:
