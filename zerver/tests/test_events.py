@@ -3530,6 +3530,17 @@ class NormalActionsTest(BaseAction):
             )
         check_realm_bot_add("events[3]", events[3], UserProfile.EMBEDDED_BOT)
 
+        # An embedded bot whose handler declares no config keys still
+        # gets a service dict, with an empty config_data.
+        with self.verify_action(num_events=4) as events:
+            self.create_bot(
+                "test_embedded_no_config",
+                full_name="Embedded Bot Without Config",
+                service_name="helloworld",
+                bot_type=UserProfile.EMBEDDED_BOT,
+            )
+        check_realm_bot_add("events[3]", events[3], UserProfile.EMBEDDED_BOT)
+
     def test_change_bot_full_name(self) -> None:
         bot = self.create_bot("test")
         with self.verify_action(num_events=1) as events:
