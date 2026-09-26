@@ -758,3 +758,26 @@ class ScheduledMessageTest(ZulipTestCase):
             [scheduled_message.id],
         )
         self.assertEqual(scheduled_message.has_attachment, True)
+
+    def test_exception_after_delivery_notification_failure(self) -> None:
+        self.login("hamlet")
+
+        self.create_scheduled_message()
+        sm = self.last_scheduled_message()
+        self.assertFalse(sm.delivered)
+        self.assertFalse(sm.failed)
+
+        more_than_scheduled_delivery_datetime = sm.scheduled_timestamp + timedelta(minutes=1)
+
+        with (
+            time_machine.travel(more_than_scheduled_delivery_datetime, tick=False),
+            mock.patch(
+                "zerver.actions.scheduled_messages.notify_remove_scheduled_message",
+                side_effect=Exception("Test Exception"),
+            ),
+        ):
+            self.assertTrue(try_deliver_one_scheduled_message())
+
+        sm.refresh_from_db()
+        self.assertTrue(sm.delivered)
+        self.assertFalse(sm.failed)
