@@ -1,0 +1,10 @@
+{
+  "action": "create",
+  "createdAt": "2023-01-01T00:00:00.000Z",
+  "data": {
+    "id": "123",
+    "emoji": "👍"
+  },
+  "type": "Reaction",
+  "url": "https://linear.app/webhooks/issue/WEB-44"
+}
