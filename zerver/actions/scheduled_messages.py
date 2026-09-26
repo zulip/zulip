@@ -485,7 +485,6 @@ def try_deliver_one_scheduled_message() -> bool:
                     stack_info=True,
                 )
 
-
             if (
                 not was_delivered
                 # Reminders have their own notification system.
