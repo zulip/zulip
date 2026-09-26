@@ -762,24 +762,12 @@ class ScheduledMessageTest(ZulipTestCase):
     def test_exception_after_delivery_notification_failure(self) -> None:
         self.login("hamlet")
 
-        scheduled_delivery_datetime = timezone_now() + timedelta(hours=24)
-        scheduled_delivery_timestamp = int(scheduled_delivery_datetime.timestamp())
-        verona_stream_id = self.get_stream_id("Verona")
-
-        payload = {
-            "type": "stream",
-            "to": f"[{verona_stream_id}]",
-            "content": "Test message",
-            "topic": "Test topic",
-            "scheduled_delivery_timestamp": scheduled_delivery_timestamp,
-        }
-        self.client_post("/json/scheduled_messages", payload)
-
-        sm = ScheduledMessage.objects.last()
+        self.create_scheduled_message()
+        sm = self.last_scheduled_message()
         self.assertFalse(sm.delivered)
         self.assertFalse(sm.failed)
 
-        more_than_scheduled_delivery_datetime = scheduled_delivery_datetime + timedelta(minutes=1)
+        more_than_scheduled_delivery_datetime = sm.scheduled_timestamp + timedelta(minutes=1)
 
         with (
             time_machine.travel(more_than_scheduled_delivery_datetime, tick=False),
