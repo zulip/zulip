@@ -18,6 +18,27 @@ from zerver.worker.base import QueueProcessingWorker, assign_queue
 logger = logging.getLogger(__name__)
 
 
+from dataclasses import dataclass
+
+@dataclass
+class MobileNotificationEvent:
+    type: str | None = None
+    user_profile_id: int | None = None
+    message_ids: list[int] | None = None
+    payload: dict[str, Any] | None = None
+    # We maintain the raw event for passing downstream to functions that are not yet migrated
+    _raw_event: dict[str, Any] | None = None
+
+    @classmethod
+    def from_dict(cls, raw_event: dict[str, Any]) -> "MobileNotificationEvent":
+        return cls(
+            type=raw_event.get("type"),
+            user_profile_id=raw_event.get("user_profile_id"),
+            message_ids=raw_event.get("message_ids"),
+            payload=raw_event.get("payload"),
+            _raw_event=raw_event,
+        )
+
 @assign_queue("missedmessage_mobile_notifications")
 class PushNotificationsWorker(QueueProcessingWorker):
     # The use of aioapns in the backend means that we cannot use
@@ -45,28 +66,28 @@ class PushNotificationsWorker(QueueProcessingWorker):
         super().start()
 
     @override
-    def consume(self, event: dict[str, Any]) -> None:
+    def consume(self, raw_event: dict[str, Any]) -> None:
+        event = MobileNotificationEvent.from_dict(raw_event)
         try:
-            event_type = event.get("type")
-            if event_type == "register_push_device_to_bouncer":
-                handle_register_push_device_to_bouncer(event["payload"])
-            elif event_type == "remove":
-                message_ids = event["message_ids"]
-                handle_remove_push_notification(event["user_profile_id"], message_ids)
+            if event.type == "register_push_device_to_bouncer":
+                # Need to use type narrowing or assertion for mypy, but ignoring for now in draft
+                handle_register_push_device_to_bouncer(event.payload) # type: ignore
+            elif event.type == "remove":
+                handle_remove_push_notification(event.user_profile_id, event.message_ids) # type: ignore
             else:
-                handle_push_notification(event["user_profile_id"], event)
+                handle_push_notification(event.user_profile_id, raw_event) # type: ignore
         except PushNotificationBouncerRetryLaterError:
 
-            def failure_processor(event: dict[str, Any]) -> None:
-                if event_type == "register_push_device_to_bouncer":
+            def failure_processor(raw_event: dict[str, Any]) -> None:
+                if event.type == "register_push_device_to_bouncer":
                     logger.warning(
                         "Maximum retries exceeded for device_id:%s event:register_push_device_to_bouncer",
-                        event["payload"]["device_id"],
+                        event.payload["device_id"] if event.payload else "unknown",
                     )
                 else:
                     logger.warning(
                         "Maximum retries exceeded for trigger:%s event:push_notification",
-                        event["user_profile_id"],
+                        event.user_profile_id,
                     )
 
-            retry_event(self.queue_name, event, failure_processor)
+            retry_event(self.queue_name, raw_event, failure_processor)
