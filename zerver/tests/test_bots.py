@@ -2100,7 +2100,6 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             user_profile=self.example_user("hamlet"),
             bot_type=UserProfile.EMBEDDED_BOT,
             service_name="followup",
-            config_data=orjson.dumps({"key": "value"}).decode(),
         )
         bot = self.get_bot_user("embeddedservicebot-bot@zulip.testserver")
 
@@ -2265,13 +2264,14 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                 **extras,
             )
 
-    def test_create_embedded_bot(self, **extras: Any) -> None:
+    @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
+    def test_create_embedded_bot(self, mock_validate_config: MagicMock, **extras: Any) -> None:
         bot_config_info = {"key": "value"}
         self.create_test_bot(
             short_name="embeddedservicebot",
             user_profile=self.example_user("hamlet"),
             bot_type=UserProfile.EMBEDDED_BOT,
-            service_name="followup",
+            service_name="giphy",
             config_data=orjson.dumps(bot_config_info).decode(),
             **extras,
         )
@@ -2281,7 +2281,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         [service] = get_bot_services(bot.id)
         bot_config = get_bot_config(bot)
         self.assertEqual(bot_config, bot_config_info)
-        self.assertEqual(service.name, "followup")
+        self.assertEqual(service.name, "giphy")
         self.assertEqual(service.user_profile, bot)
 
     def test_create_embedded_bot_with_incorrect_service_name(self, **extras: Any) -> None:
@@ -2291,6 +2291,61 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             bot_type=UserProfile.EMBEDDED_BOT,
             service_name="not_existing_service",
             assert_json_error_msg="Invalid embedded bot name.",
+            **extras,
+        )
+
+    def test_create_embedded_bot_rejects_config_data_when_handler_has_no_config(
+        self, **extras: Any
+    ) -> None:
+        self.fail_to_create_test_bot(
+            short_name="embeddedservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="converter",
+            config_data=orjson.dumps({"key": "value"}).decode(),
+            assert_json_error_msg="This embedded bot doesn't use bot config.",
+            **extras,
+        )
+
+    def test_create_embedded_bot_with_config_without_validate_config(self, **extras: Any) -> None:
+        # The followup bot has a .conf template but its handler does
+        # not define validate_config, so template keys should be
+        # accepted at creation time.
+        self.create_test_bot(
+            short_name="embeddedservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="followup",
+            config_data=orjson.dumps({"stream": "followup"}).decode(),
+            **extras,
+        )
+        bot = self.get_bot_user("embeddedservicebot-bot@zulip.testserver")
+        self.assertEqual(get_bot_config(bot), {"stream": "followup"})
+
+    def test_create_embedded_bot_rejects_unknown_config_key_without_validate_config(
+        self, **extras: Any
+    ) -> None:
+        self.fail_to_create_test_bot(
+            short_name="embeddedservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="followup",
+            config_data=orjson.dumps({"stream": "followup", "unexpected": "value"}).decode(),
+            assert_json_error_msg="Unexpected configuration parameters: {'unexpected'}",
+            **extras,
+        )
+
+    @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
+    def test_create_embedded_bot_rejects_unknown_config_key(
+        self, mock_validate_config: MagicMock, **extras: Any
+    ) -> None:
+        self.fail_to_create_test_bot(
+            short_name="embeddedservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="giphy",
+            config_data=orjson.dumps({"key": "sample", "unexpected": "value"}).decode(),
+            assert_json_error_msg="Unexpected configuration parameters: {'unexpected'}",
             **extras,
         )
 
@@ -2391,6 +2446,15 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                 'Invalid stripe_api_key value _invalid_key (stripe_api_key starts with a "_" and is hence invalid.)',
             ),
             ({"service_name": "stripe"}, "Missing configuration parameters: {'stripe_api_key'}"),
+            (
+                {
+                    "service_name": "stripe",
+                    "config_data": orjson.dumps(
+                        {"stripe_api_key": "sample-api-key", "unexpected": "value"}
+                    ).decode(),
+                },
+                "Unexpected configuration parameters: {'unexpected'}",
+            ),
             ({"service_name": "stripes"}, "Invalid integration 'stripes'."),
         ]:
             with self.subTest(expected_error_message):

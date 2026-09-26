@@ -3517,12 +3517,15 @@ class NormalActionsTest(BaseAction):
         # data for services (in contrast to the first call).
         check_realm_bot_add("events[3]", events[3], UserProfile.OUTGOING_WEBHOOK_BOT)
 
-        with self.verify_action(num_events=4) as events:
+        with (
+            mock.patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config"),
+            self.verify_action(num_events=4) as events,
+        ):
             self.create_bot(
                 "test_embedded",
                 full_name="Embedded Bot",
-                service_name="helloworld",
-                config_data=orjson.dumps({"foo": "bar"}).decode(),
+                service_name="giphy",
+                config_data=orjson.dumps({"key": "value"}).decode(),
                 bot_type=UserProfile.EMBEDDED_BOT,
             )
         check_realm_bot_add("events[3]", events[3], UserProfile.EMBEDDED_BOT)
