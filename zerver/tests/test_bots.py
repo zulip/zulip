@@ -2182,6 +2182,61 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         config_data = orjson.loads(result.content)["config_data"]
         self.assertEqual(config_data, orjson.loads(bot_info["config_data"]))
 
+    @override_settings(BOT_CONFIG_SIZE_LIMIT=20)
+    @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
+    def test_patch_embedded_bot_config_data_exceeds_size_limit(
+        self, mock_validate_config: MagicMock
+    ) -> None:
+        self.create_test_bot(
+            "test",
+            self.example_user("hamlet"),
+            full_name="Bot with config data",
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="giphy",
+            config_data=orjson.dumps({"key": "12345678"}).decode(),
+        )
+        email = "test-bot@zulip.testserver"
+        bot = self.get_bot_user(email)
+        bot_info = {"config_data": orjson.dumps({"key": "x" * 30}).decode()}
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_error(
+            result,
+            "Cannot store configuration. Request would require 33 characters. "
+            "The current configuration size limit is 20 characters.",
+        )
+
+    @override_settings(BOT_CONFIG_SIZE_LIMIT=20)
+    def test_patch_incoming_webhook_bot_config_data_exceeds_size_limit(self) -> None:
+        self.login("hamlet")
+        self.create_bot(
+            full_name="My Bot",
+            short_name="mybot",
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+        )
+        bot = self.get_bot_user("mybot-bot@zulip.testserver")
+        bot_info = {"config_data": orjson.dumps({"key": "x" * 30}).decode()}
+        result = self.client_patch(f"/json/bots/{bot.id}", bot_info)
+        self.assert_json_error(
+            result,
+            "Cannot store configuration. Request would require 33 characters. "
+            "The current configuration size limit is 20 characters.",
+        )
+
+    @override_settings(BOT_CONFIG_SIZE_LIMIT=10)
+    @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
+    def test_create_bot_config_data_exceeds_size_limit(self) -> None:
+        self.login("hamlet")
+        bot_info = self.bot_creation_info(
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            service_name="helloworld",
+        )
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(
+            result,
+            "Cannot store configuration. Request would require 24 characters. "
+            "The current configuration size limit is 10 characters.",
+        )
+
     def test_outgoing_webhook_invalid_interface(self) -> None:
         self.login("hamlet")
         bot_info = {

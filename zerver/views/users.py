@@ -41,7 +41,7 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_human_non_guest_user, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
-from zerver.lib.bot_config import set_bot_config
+from zerver.lib.bot_config import ConfigError, set_bot_config
 from zerver.lib.demo_organizations import check_demo_organization_has_set_email
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
@@ -572,12 +572,18 @@ def patch_bot_backend(
             if service_interface is not None or service_payload_url is not None:
                 raise JsonableError(_("Service fields cannot be updated on embedded bots."))
             if config_data is not None:
-                do_update_bot_config_data(bot, config_data)
+                try:
+                    do_update_bot_config_data(bot, config_data)
+                except ConfigError as e:
+                    raise JsonableError(str(e))
         case UserProfile.INCOMING_WEBHOOK_BOT:
             if service_interface is not None or service_payload_url is not None:
                 raise JsonableError(_("Incoming-webhook bots have no service fields to update."))
             if config_data is not None:
-                do_update_bot_config_data(bot, config_data)
+                try:
+                    do_update_bot_config_data(bot, config_data)
+                except ConfigError as e:
+                    raise JsonableError(str(e))
         case UserProfile.DEFAULT_BOT:
             if (
                 service_interface is not None
@@ -768,12 +774,15 @@ def add_bot_backend(
             token=generate_api_key(),
         )
 
-    if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:
-        set_bot_config(bot_profile, "integration_id", service_name)
+    try:
+        if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:
+            set_bot_config(bot_profile, "integration_id", service_name)
 
-    if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
-        for key, value in config_data.items():
-            set_bot_config(bot_profile, key, value)
+        if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
+            for key, value in config_data.items():
+                set_bot_config(bot_profile, key, value)
+    except ConfigError as e:
+        raise JsonableError(str(e))
 
     notify_created_bot(bot_profile)
 
