@@ -458,15 +458,26 @@ def try_deliver_one_scheduled_message() -> bool:
         except Exception as e:
             scheduled_message.refresh_from_db()
             was_delivered = scheduled_message.delivered
-            scheduled_message.failed = True
 
-            if isinstance(e, JsonableError):
-                scheduled_message.failure_message = e.msg
-                logging.info("Failed with message: %s", e.msg)
+            if not was_delivered:
+                scheduled_message.failed = True
+
+                if isinstance(e, JsonableError):
+                    scheduled_message.failure_message = e.msg
+                    logging.info("Failed with message: %s", e.msg)
+                else:
+                    # An unexpected failure; store and send user a generic
+                    # internal server error in notification message.
+                    scheduled_message.failure_message = _("Internal server error")
+                    logging.exception(
+                        "Unexpected error sending scheduled message %s (sent: %s)",
+                        scheduled_message.id,
+                        was_delivered,
+                        stack_info=True,
+                    )
+
+                scheduled_message.save(update_fields=["failed", "failure_message"])
             else:
-                # An unexpected failure; store and send user a generic
-                # internal server error in notification message.
-                scheduled_message.failure_message = _("Internal server error")
                 logging.exception(
                     "Unexpected error sending scheduled message %s (sent: %s)",
                     scheduled_message.id,
@@ -474,7 +485,6 @@ def try_deliver_one_scheduled_message() -> bool:
                     stack_info=True,
                 )
 
-            scheduled_message.save(update_fields=["failed", "failure_message"])
 
             if (
                 not was_delivered

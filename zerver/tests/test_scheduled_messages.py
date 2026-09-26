@@ -758,3 +758,37 @@ class ScheduledMessageTest(ZulipTestCase):
             [scheduled_message.id],
         )
         self.assertEqual(scheduled_message.has_attachment, True)
+
+    def test_exception_after_delivery_notification_failure(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+
+        scheduled_delivery_datetime = timezone_now() + timedelta(hours=24)
+        scheduled_delivery_timestamp = int(scheduled_delivery_datetime.timestamp())
+        verona_stream_id = self.get_stream_id("Verona")
+
+        payload = {
+            "type": "stream",
+            "to": f"[{verona_stream_id}]",
+            "content": "Test message",
+            "topic": "Test topic",
+            "scheduled_delivery_timestamp": scheduled_delivery_timestamp,
+        }
+        self.client_post("/json/scheduled_messages", payload)
+
+        sm = ScheduledMessage.objects.last()
+        self.assertFalse(sm.delivered)
+        self.assertFalse(sm.failed)
+
+        more_than_scheduled_delivery_datetime = scheduled_delivery_datetime + timedelta(minutes=1)
+
+        with time_machine.travel(more_than_scheduled_delivery_datetime, tick=False):
+            with mock.patch(
+                "zerver.actions.scheduled_messages.notify_remove_scheduled_message",
+                side_effect=Exception("Test Exception"),
+            ):
+                self.assertTrue(try_deliver_one_scheduled_message())
+
+        sm.refresh_from_db()
+        self.assertTrue(sm.delivered)
+        self.assertFalse(sm.failed)
