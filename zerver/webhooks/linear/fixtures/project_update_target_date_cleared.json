@@ -1,0 +1,71 @@
+{
+    "action": "update",
+    "actor": {
+        "id": "e825c109-f691-4716-a85f-b68a2626531c",
+        "name": "Dhruv Shetty",
+        "email": "dhruvshetty2203@gmail.com",
+        "url": "https://linear.app/zulipdhruv/profiles/dhruvshetty2203",
+        "type": "user"
+    },
+    "createdAt": "2026-05-30T08:09:02.389Z",
+    "data": {
+        "id": "b0cfc985-0196-4ef5-925f-11c3d7aa8d14",
+        "createdAt": "2026-05-28T18:22:43.480Z",
+        "updatedAt": "2026-05-30T08:09:02.388Z",
+        "frequencyResolution": "weekly",
+        "name": "Project Zulip",
+        "description": "",
+        "slugId": "c65c2156ca87",
+        "color": "#bec2c8",
+        "statusId": "2bd9226f-7d3a-4987-bea7-190e37029ccc",
+        "creatorId": "e825c109-f691-4716-a85f-b68a2626531c",
+        "leadId": "e825c109-f691-4716-a85f-b68a2626531c",
+        "startDate": "2026-05-21",
+        "startDateResolution": null,
+        "targetDate": null,
+        "targetDateResolution": null,
+        "sortOrder": 916.31,
+        "prioritySortOrder": -470.02,
+        "priority": 0,
+        "lastUpdateId": "4a0814c9-2d39-4c2e-8cbb-947c1bfc61cd",
+        "health": "offTrack",
+        "healthUpdatedAt": "2026-05-28T18:28:25.827Z",
+        "issueCountHistory": [],
+        "completedIssueCountHistory": [],
+        "scopeHistory": [],
+        "completedScopeHistory": [],
+        "inProgressScopeHistory": [],
+        "labelIds": [],
+        "url": "https://linear.app/zulipdhruv/project/project-zulip-c65c2156ca87",
+        "teamIds": [
+            "b36906f3-70ef-40a7-8c0e-12d97e4d5ab4"
+        ],
+        "memberIds": [
+            "e825c109-f691-4716-a85f-b68a2626531c"
+        ],
+        "milestones": [],
+        "initiatives": [],
+        "lead": {
+            "id": "e825c109-f691-4716-a85f-b68a2626531c",
+            "name": "Dhruv Shetty",
+            "email": "dhruvshetty2203@gmail.com",
+            "url": "https://linear.app/zulipdhruv/profiles/dhruvshetty2203"
+        },
+        "status": {
+            "id": "2bd9226f-7d3a-4987-bea7-190e37029ccc",
+            "color": "#D7D8DB",
+            "name": "Planned",
+            "type": "planned"
+        },
+        "content": "This is the description "
+    },
+    "updatedFrom": {
+        "updatedAt": "2026-05-30T08:05:51.321Z",
+        "targetDate": "2026-05-22"
+    },
+    "url": "https://linear.app/zulipdhruv/project/project-zulip-c65c2156ca87",
+    "type": "Project",
+    "organizationId": "498d97b2-c819-42cc-8d65-7bffd494ed23",
+    "webhookTimestamp": 1780128543140,
+    "webhookId": "a9d5653b-3026-4030-9c0e-ac964e3bb507"
+}
