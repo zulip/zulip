@@ -10,7 +10,10 @@ from zerver.lib.push_notifications import (
     handle_remove_push_notification,
     initialize_push_notifications,
 )
-from zerver.lib.push_registration import handle_register_push_device_to_bouncer
+from zerver.lib.push_registration import (
+    RegisterPushDeviceToBouncerQueueItem,
+    handle_register_push_device_to_bouncer,
+)
 from zerver.lib.queue import retry_event
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
 from zerver.worker.base import QueueProcessingWorker, assign_queue
@@ -19,6 +22,8 @@ logger = logging.getLogger(__name__)
 
 
 from dataclasses import dataclass
+from typing import cast
+
 
 @dataclass
 class MobileNotificationEvent:
@@ -38,6 +43,7 @@ class MobileNotificationEvent:
             payload=raw_event.get("payload"),
             _raw_event=raw_event,
         )
+
 
 @assign_queue("missedmessage_mobile_notifications")
 class PushNotificationsWorker(QueueProcessingWorker):
@@ -70,12 +76,18 @@ class PushNotificationsWorker(QueueProcessingWorker):
         event = MobileNotificationEvent.from_dict(raw_event)
         try:
             if event.type == "register_push_device_to_bouncer":
-                # Need to use type narrowing or assertion for mypy, but ignoring for now in draft
-                handle_register_push_device_to_bouncer(event.payload) # type: ignore
+                assert event.payload is not None
+                handle_register_push_device_to_bouncer(
+                    cast(RegisterPushDeviceToBouncerQueueItem, event.payload)
+                )
             elif event.type == "remove":
-                handle_remove_push_notification(event.user_profile_id, event.message_ids) # type: ignore
+                assert event.user_profile_id is not None
+                assert event.message_ids is not None
+                handle_remove_push_notification(event.user_profile_id, event.message_ids)
             else:
-                handle_push_notification(event.user_profile_id, raw_event) # type: ignore
+                assert event.user_profile_id is not None
+                assert event._raw_event is not None
+                handle_push_notification(event.user_profile_id, event._raw_event)
         except PushNotificationBouncerRetryLaterError:
 
             def failure_processor(raw_event: dict[str, Any]) -> None:
