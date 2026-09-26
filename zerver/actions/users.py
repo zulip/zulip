@@ -874,16 +874,18 @@ def get_service_dicts_for_bot(user_profile_id: int) -> list[dict[str, Any]]:
             for service in services
         ]
     elif user_profile.bot_type == UserProfile.EMBEDDED_BOT:
-        try:
-            return [
-                {
-                    "config_data": get_bot_config(user_profile),
-                    "service_name": services[0].name,
-                }
-            ]
-        # A ConfigError just means that there are no config entries for user_profile.
-        except ConfigError:
+        if not services:
             return []
+        try:
+            config_data = get_bot_config(user_profile)
+        except ConfigError:
+            config_data = {}
+        return [
+            {
+                "config_data": config_data,
+                "service_name": services[0].name,
+            }
+        ]
     else:
         return []
 
@@ -916,11 +918,10 @@ def get_service_dicts_for_bots(
                 }
                 for service in services
             ]
-        elif bot_type == UserProfile.EMBEDDED_BOT and bot_profile_id in embedded_bot_configs:
-            bot_config = embedded_bot_configs[bot_profile_id]
+        elif bot_type == UserProfile.EMBEDDED_BOT and services:
             service_dicts = [
                 {
-                    "config_data": bot_config,
+                    "config_data": embedded_bot_configs.get(bot_profile_id, {}),
                     "service_name": services[0].name,
                 }
             ]
