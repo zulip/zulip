@@ -88,3 +88,18 @@ class LinearHookTests(WebhookTestCase):
             content_type="application/json",
         )
         self.assert_json_success(result)
+
+    def test_event_filtering(self) -> None:
+        expected_topic_name = "Issue: Drop-down overflow in the select menu."
+        expected_message = "[Issue](https://linear.app/webhooks/issue/WEB-42/drop-down-overflow-in-the-select-menu) was created in team Webhooks.\nPriority: High, Status: Todo."
+
+        self.url = f'{self.build_webhook_url()}&only_events=["issue"]'
+        self.check_webhook(
+            "issue_create_simple_without_description",
+            expected_topic_name,
+            expected_message,
+        )
+        self.check_webhook("comment_create", expect_noop=True)
+
+        self.url = f'{self.build_webhook_url()}&exclude_events=["issue"]'
+        self.check_webhook("issue_create_simple_without_description", expect_noop=True)

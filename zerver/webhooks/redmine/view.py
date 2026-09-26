@@ -107,6 +107,6 @@ def api_redmine_webhook(
     topic_name = get_issue_topic(redmine_payload)
     content_func = REDMINE_EVENT_FUNCTION_MAPPER[event]
     content = content_func(redmine_payload)
-    check_send_webhook_message(request, user_profile, topic_name, content)
+    check_send_webhook_message(request, user_profile, topic_name, content, event)
 
     return json_success(request)
