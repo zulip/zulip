@@ -16,9 +16,16 @@ from zerver.actions.realm_settings import (
 )
 from zerver.actions.streams import do_change_stream_permission
 from zerver.actions.user_groups import check_add_user_group
-from zerver.actions.users import do_change_can_create_users, do_change_user_role, do_deactivate_user
+from zerver.actions.users import (
+    do_change_can_create_users,
+    do_change_user_role,
+    do_deactivate_user,
+    get_service_dicts_for_bots,
+    get_services_for_bot,
+)
 from zerver.lib.bot_config import ConfigError, get_bot_config
 from zerver.lib.bot_lib import get_bot_handler
+from zerver.lib.event_types import BotServicesEmbedded
 from zerver.lib.integrations import EMBEDDED_BOTS, IncomingWebhookIntegration
 from zerver.lib.request import RequestNotes
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
@@ -2278,6 +2285,44 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(bot_config, bot_config_info)
         self.assertEqual(service.name, "giphy")
         self.assertEqual(service.user_profile, bot)
+
+    def test_get_service_dicts_for_embedded_bot_without_config(self, **extras: Any) -> None:
+        self.create_test_bot(
+            short_name="embeddedservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="followup",
+            **extras,
+        )
+        bot = self.get_bot_user("embeddedservicebot-bot@zulip.testserver")
+        self.assertEqual(
+            get_services_for_bot(bot.id),
+            [BotServicesEmbedded(service_name="followup", config_data={})],
+        )
+        self.assertEqual(
+            get_service_dicts_for_bots(
+                [{"id": bot.id, "bot_type": UserProfile.EMBEDDED_BOT}], bot.realm
+            ),
+            {bot.id: [{"config_data": {}, "service_name": "followup"}]},
+        )
+
+    def test_get_service_dicts_for_embedded_bot_without_service(self, **extras: Any) -> None:
+        self.create_test_bot(
+            short_name="embeddedservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="followup",
+            **extras,
+        )
+        bot = self.get_bot_user("embeddedservicebot-bot@zulip.testserver")
+        Service.objects.filter(user_profile=bot).delete()
+        self.assertEqual(get_services_for_bot(bot.id), [])
+        self.assertEqual(
+            get_service_dicts_for_bots(
+                [{"id": bot.id, "bot_type": UserProfile.EMBEDDED_BOT}], bot.realm
+            ),
+            {bot.id: []},
+        )
 
     def test_create_embedded_bot_with_incorrect_service_name(self, **extras: Any) -> None:
         self.fail_to_create_test_bot(
