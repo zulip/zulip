@@ -565,6 +565,14 @@ export function update_messages(events: UpdateMessageEvent[]): void {
             // Update Inbox UI to reflect the new case.
             unread.update_unread_topic_name_case(old_stream_id, orig_topic, new_topic);
 
+            // The topic links maps are keyed by exact topic name, so
+            // this must run while the messages still have the old topic.
+            message_store.process_topic_edit({
+                message_ids: event.message_ids,
+                new_stream_id: old_stream_id,
+                new_topic,
+            });
+
             // Update each message to reflect the new case.
             for (const message_id of event.message_ids) {
                 const message = message_store.get(message_id);
