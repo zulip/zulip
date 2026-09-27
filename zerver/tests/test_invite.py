@@ -31,7 +31,11 @@ from zerver.actions.create_user import (
     process_new_human_user,
     set_up_streams_and_groups_for_new_human_user,
 )
-from zerver.actions.default_streams import do_add_default_stream, do_remove_default_stream
+from zerver.actions.default_streams import (
+    do_add_default_stream,
+    do_create_default_stream_group,
+    do_remove_default_stream,
+)
 from zerver.actions.invites import (
     do_create_multiuse_invite_link,
     do_get_invites_controlled_by_user,
@@ -53,7 +57,7 @@ from zerver.lib.create_user import create_user
 from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.send_email import queue_scheduled_emails
 from zerver.lib.streams import ensure_stream
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import find_key_by_email
 from zerver.lib.types import Invitee
 from zerver.lib.user_groups import get_direct_user_groups, is_user_in_group
@@ -67,6 +71,7 @@ from zerver.models import (
     RealmAuditLog,
     ScheduledEmail,
     Stream,
+    Subscription,
     UserMessage,
     UserProfile,
 )
@@ -1295,7 +1300,7 @@ class InviteUserTest(InviteUserBase):
         realm.save(update_fields=["signup_announcements_stream"])
 
         private_stream_name = "Secret"
-        self.make_stream(private_stream_name, invite_only=True)
+        private_stream = self.make_stream(private_stream_name, invite_only=True)
         self.subscribe(user_profile, private_stream_name)
         public_msg_id = self.send_stream_message(
             self.example_user("hamlet"),
@@ -1322,11 +1327,36 @@ class InviteUserTest(InviteUserBase):
         self.assertFalse(secret_msg_id in invitee_msg_ids)
         self.assertFalse(invitee_profile.is_realm_admin)
 
-        invitee_msg, signups_stream_msg, inviter_msg, secret_msg = Message.objects.all().order_by(
-            "-id"
-        )[0:4]
+        (
+            invitee_msg,
+            signups_stream_msg,
+            inviter_msg,
+            private_channel_join_msg,
+            secret_msg,
+        ) = Message.objects.all().order_by("-id")[0:5]
 
         self.assertEqual(secret_msg.id, secret_msg_id)
+
+        self.assertEqual(private_channel_join_msg.sender.email, "notification-bot@zulip.com")
+        self.assertEqual(private_channel_join_msg.recipient.type_id, private_stream.id)
+        self.assertEqual(private_channel_join_msg.topic_name(), "channel events")
+        self.assertEqual(
+            private_channel_join_msg.content,
+            f"@_**{user_profile.full_name}|{user_profile.id}** subscribed "
+            f"@_**{invitee_profile.full_name}|{invitee_profile.id}** to this channel.",
+        )
+        self.assertIn(private_channel_join_msg.id, invitee_msg_ids)
+
+        # The invitee's own join notice is marked read; the existing member
+        # (the inviter) still sees it unread.
+        invitee_join_um = UserMessage.objects.get(
+            user_profile=invitee_profile, message=private_channel_join_msg
+        )
+        self.assertTrue(invitee_join_um.flags.read.is_set)
+        inviter_join_um = UserMessage.objects.get(
+            user_profile=user_profile, message=private_channel_join_msg
+        )
+        self.assertFalse(inviter_join_um.flags.read.is_set)
 
         self.assertEqual(inviter_msg.sender.email, "notification-bot@zulip.com")
         self.assertTrue(
@@ -1345,6 +1375,39 @@ class InviteUserTest(InviteUserBase):
         self.assertEqual(invitee_msg.sender.email, "welcome-bot@zulip.com")
         self.assertTrue(invitee_msg.content.startswith("Hello, and welcome to Zulip!"))
         self.assertNotIn("demo organization", invitee_msg.content)
+
+    def test_default_stream_group_private_channel_not_attributed_to_referrer(self) -> None:
+        """
+        A private channel from a default channel group is the new user's own
+        signup selection, so it must not produce a notice naming the referrer.
+        """
+        referrer = self.example_user("hamlet")
+        realm = referrer.realm
+        self.login_user(referrer)
+
+        # A private channel reachable only through a default channel group.
+        group_private_stream = self.make_stream("group-secret", invite_only=True)
+        do_create_default_stream_group(
+            realm, "onboarding", "onboarding description", [group_private_stream]
+        )
+
+        invitee = self.nonreg_email("alice")
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        self.submit_reg_form_for_user(invitee, "password", default_stream_groups=["onboarding"])
+        invitee_profile = self.nonreg_user("alice")
+
+        # The new user is subscribed, but the group's private channel is not
+        # misattributed to the referrer.
+        self.assertTrue(
+            Subscription.objects.filter(
+                user_profile=invitee_profile,
+                recipient=group_private_stream.recipient,
+                active=True,
+            ).exists()
+        )
+        self.assert_length(
+            get_topic_messages(invitee_profile, group_private_stream, "channel events"), 0
+        )
 
     def test_multi_user_invite(self) -> None:
         """
