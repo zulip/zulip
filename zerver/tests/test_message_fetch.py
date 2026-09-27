@@ -698,14 +698,20 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_search_operator_pgroonga(self) -> None:
         term = NarrowParameter(operator="search", operand='"french fries"')
         self._do_add_term_test(
-            term, 'WHERE (CASE WHEN "zerver_message"."id" IN (SELECT message_id FROM fts_update_log) THEN (escape_html("zerver_message"."subject") || ' + "' '" + ' || "zerver_message"."rendered_content") ELSE "zerver_message"."search_pgroonga" END &@~ escape_html(%s)) = %s'
+            term,
+            'WHERE (CASE WHEN "zerver_message"."id" IN (SELECT message_id FROM fts_update_log) THEN (escape_html("zerver_message"."subject") || '
+            + "' '"
+            + ' || "zerver_message"."rendered_content") ELSE "zerver_message"."search_pgroonga" END &@~ escape_html(%s)) = %s',
         )
 
     @override_settings(USING_PGROONGA=True)
     def test_add_term_using_search_operator_and_negated_pgroonga(self) -> None:  # NEGATED
         term = NarrowParameter(operator="search", operand='"french fries"', negated=True)
         self._do_add_term_test(
-            term, 'WHERE NOT ((CASE WHEN "zerver_message"."id" IN (SELECT message_id FROM fts_update_log) THEN (escape_html("zerver_message"."subject") || ' + "' '" + ' || "zerver_message"."rendered_content") ELSE "zerver_message"."search_pgroonga" END &@~ escape_html(%s)) = %s)'
+            term,
+            'WHERE NOT ((CASE WHEN "zerver_message"."id" IN (SELECT message_id FROM fts_update_log) THEN (escape_html("zerver_message"."subject") || '
+            + "' '"
+            + ' || "zerver_message"."rendered_content") ELSE "zerver_message"."search_pgroonga" END &@~ escape_html(%s)) = %s)',
         )
 
     def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
