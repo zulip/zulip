@@ -1,6 +1,7 @@
 import hashlib
 import random
 from collections.abc import Sequence
+from contextlib import redirect_stdout
 from datetime import timedelta
 from io import StringIO
 from typing import TYPE_CHECKING, Any
@@ -9,6 +10,7 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -32,6 +34,7 @@ from zerver.actions.streams import (
     do_deactivate_stream,
     do_set_stream_property,
     do_unarchive_stream,
+    get_subscription_change_notice_content,
 )
 from zerver.actions.user_groups import bulk_add_members_to_user_groups, check_add_user_group
 from zerver.actions.users import do_deactivate_user
@@ -3293,7 +3296,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=18,
+            query_count=34,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -3310,7 +3313,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=18,
+            query_count=34,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -5760,3 +5763,423 @@ class NoRecipientIDsTest(ZulipTestCase):
         #
         # This covers a rare corner case.
         self.assert_length(subs, 0)
+
+
+class PrivateChannelSubscriptionNoticeTest(ZulipTestCase):
+    def silent_mention_syntax_for_user(self, user: UserProfile) -> str:
+        return f"@_**{user.full_name}|{user.id}**"
+
+    def latest_channel_event_message_content(
+        self, recipient_user: UserProfile, stream: Stream
+    ) -> str:
+        return get_topic_messages(recipient_user, stream, "channel events")[-1].content
+
+    def unsubscribe_via_delete(
+        self, streams: Sequence[Stream], principals: Sequence[UserProfile] = ()
+    ) -> "TestHttpResponse":
+        data = {"subscriptions": orjson.dumps([stream.name for stream in streams]).decode()}
+        if principals:
+            data["principals"] = orjson.dumps([user.id for user in principals]).decode()
+        return self.client_delete("/json/users/me/subscriptions", data)
+
+    def assert_latest_channel_event_read_flag(
+        self, stream: Stream, recipient_user: UserProfile, read: bool
+    ) -> None:
+        message = get_topic_messages(recipient_user, stream, "channel events")[-1]
+        self.assertEqual(
+            UserMessage.objects.get(user_profile=recipient_user, message=message).flags.read.is_set,
+            read,
+        )
+
+    def assert_subscribed(
+        self, users: Sequence[UserProfile], streams: Sequence[Stream], subscribed: bool
+    ) -> None:
+        for user in users:
+            for stream in streams:
+                self.assertEqual(
+                    Subscription.objects.filter(
+                        user_profile=user, recipient=stream.recipient, active=True
+                    ).exists(),
+                    subscribed,
+                )
+
+    def test_join_leave_notifications(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        realm = iago.realm
+
+        stream = self.make_stream("secret", realm=realm, invite_only=True)
+        self.subscribe(iago, stream.name)
+        self.assert_length(get_topic_messages(iago, stream, "channel events"), 0)
+
+        iago_mention = self.silent_mention_syntax_for_user(iago)
+        hamlet_mention = self.silent_mention_syntax_for_user(hamlet)
+
+        self.login_user(iago)
+        self.assert_json_success(
+            self.subscribe_via_post(
+                iago, [stream.name], dict(principals=orjson.dumps([hamlet.id]).decode())
+            )
+        )
+        self.assert_subscribed([hamlet], [stream], True)
+        self.assert_length(get_topic_messages(iago, stream, "channel events"), 1)
+        self.assertEqual(
+            self.latest_channel_event_message_content(iago, stream),
+            f"{iago_mention} subscribed {hamlet_mention} to this channel.",
+        )
+
+        self.assert_json_success(self.unsubscribe_via_delete([stream], [hamlet]))
+        self.assert_subscribed([hamlet], [stream], False)
+        self.assert_length(get_topic_messages(iago, stream, "channel events"), 2)
+        self.assertEqual(
+            self.latest_channel_event_message_content(iago, stream),
+            f"{iago_mention} unsubscribed {hamlet_mention} from this channel.",
+        )
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_subscribe_group",
+            UserGroupMembersData(direct_members=[hamlet.id], direct_subgroups=[]),
+            acting_user=iago,
+        )
+        self.login_user(hamlet)
+        self.assert_json_success(self.subscribe_via_post(hamlet, [stream.name]))
+        self.assert_subscribed([hamlet], [stream], True)
+        self.assert_length(get_topic_messages(iago, stream, "channel events"), 3)
+        self.assertEqual(
+            self.latest_channel_event_message_content(iago, stream),
+            f"{hamlet_mention} subscribed to this channel.",
+        )
+
+        self.assert_json_success(self.unsubscribe_via_delete([stream]))
+        self.assert_subscribed([hamlet], [stream], False)
+        self.assert_length(get_topic_messages(iago, stream, "channel events"), 4)
+        self.assertEqual(
+            self.latest_channel_event_message_content(iago, stream),
+            f"{hamlet_mention} unsubscribed from this channel.",
+        )
+
+        public_stream = self.make_stream("not-secret", realm=realm)
+        self.subscribe(iago, public_stream.name)
+        self.login_user(iago)
+        self.assert_json_success(
+            self.subscribe_via_post(
+                iago, [public_stream.name], dict(principals=orjson.dumps([hamlet.id]).decode())
+            )
+        )
+        self.assert_subscribed([hamlet], [public_stream], True)
+        self.assert_json_success(self.unsubscribe_via_delete([public_stream], [hamlet]))
+        self.assert_subscribed([hamlet], [public_stream], False)
+        self.assert_length(get_topic_messages(iago, public_stream, "channel events"), 0)
+
+    def test_notice_is_read_only_for_the_acting_user(self) -> None:
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        realm = iago.realm
+
+        stream = self.make_stream("read-state-secret", realm=realm, invite_only=True)
+        self.subscribe(iago, stream.name)
+        self.subscribe(cordelia, stream.name)
+        self.login_user(iago)
+
+        self.assert_json_success(
+            self.subscribe_via_post(
+                iago, [stream.name], dict(principals=orjson.dumps([hamlet.id]).decode())
+            )
+        )
+        self.assert_latest_channel_event_read_flag(stream, iago, read=True)
+        self.assert_latest_channel_event_read_flag(stream, cordelia, read=False)
+
+        self.assert_json_success(self.unsubscribe_via_delete([stream], [hamlet]))
+        self.assert_latest_channel_event_read_flag(stream, iago, read=True)
+        self.assert_latest_channel_event_read_flag(stream, cordelia, read=False)
+
+    def test_private_stream_bulk_notifications(self) -> None:
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        prospero = self.example_user("prospero")
+        realm = iago.realm
+
+        stream = self.make_stream("bulk-secret", realm=realm, invite_only=True)
+        self.subscribe(iago, stream.name)
+        self.login_user(iago)
+
+        iago_mention = self.silent_mention_syntax_for_user(iago)
+        cordelia_mention = self.silent_mention_syntax_for_user(cordelia)
+        hamlet_mention = self.silent_mention_syntax_for_user(hamlet)
+        othello_mention = self.silent_mention_syntax_for_user(othello)
+
+        def add(users: list[UserProfile]) -> None:
+            self.assert_json_success(
+                self.subscribe_via_post(
+                    iago,
+                    [stream.name],
+                    dict(principals=orjson.dumps([user.id for user in users]).decode()),
+                )
+            )
+            self.assert_subscribed(users, [stream], True)
+
+        def remove(users: list[UserProfile]) -> None:
+            self.assert_json_success(self.unsubscribe_via_delete([stream], users))
+            self.assert_subscribed(users, [stream], False)
+
+        # Two users are named inline, sorted by name rather than input order.
+        add([hamlet, cordelia])
+        self.assertEqual(
+            self.latest_channel_event_message_content(iago, stream),
+            f"{iago_mention} subscribed {cordelia_mention} and {hamlet_mention} to this channel.",
+        )
+        remove([hamlet, cordelia])
+
+        add([othello, cordelia, hamlet])
+        self.assertEqual(
+            self.latest_channel_event_message_content(iago, stream),
+            f"{iago_mention} subscribed {cordelia_mention}, {hamlet_mention}, "
+            f"and {othello_mention} to this channel.",
+        )
+        remove([othello, cordelia, hamlet])
+
+        # Past MAX_INLINE_SUBSCRIPTION_NOTICE_USERS, a single message collapses
+        # to a count with the roster in a spoiler block.
+        members = [prospero, othello, cordelia, hamlet]
+        roster = ", ".join(
+            self.silent_mention_syntax_for_user(user)
+            for user in [cordelia, hamlet, othello, prospero]
+        )
+        add(members)
+        self.assertEqual(
+            self.latest_channel_event_message_content(iago, stream),
+            f"```spoiler {iago_mention} subscribed 4 users to this channel.\n{roster}\n```",
+        )
+        remove(members)
+        self.assertEqual(
+            self.latest_channel_event_message_content(iago, stream),
+            f"```spoiler {iago_mention} unsubscribed 4 users from this channel.\n{roster}\n```",
+        )
+
+        # Past MAX_SUBSCRIPTION_NOTICE_ROSTER_USERS, the rest of the roster is
+        # summarized as a count.
+        with mock.patch("zerver.actions.streams.MAX_SUBSCRIPTION_NOTICE_ROSTER_USERS", 2):
+            add(members)
+        self.assertEqual(
+            self.latest_channel_event_message_content(iago, stream),
+            f"```spoiler {iago_mention} subscribed 4 users to this channel.\n"
+            f"{cordelia_mention}, {hamlet_mention} and 2 other users.\n```",
+        )
+
+    def test_multiple_private_channels_in_one_request(self) -> None:
+        iago = self.example_user("iago")
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        realm = iago.realm
+
+        streams = [
+            self.make_stream(name, realm=realm, invite_only=True)
+            for name in ["multi-secret-1", "multi-secret-2"]
+        ]
+        for stream in streams:
+            self.subscribe(iago, stream.name)
+        self.login_user(iago)
+
+        iago_mention = self.silent_mention_syntax_for_user(iago)
+        cordelia_mention = self.silent_mention_syntax_for_user(cordelia)
+        hamlet_mention = self.silent_mention_syntax_for_user(hamlet)
+
+        with self.assert_database_query_count(75):
+            result = self.subscribe_via_post(
+                iago,
+                [stream.name for stream in streams],
+                dict(principals=orjson.dumps([cordelia.id, hamlet.id]).decode()),
+            )
+        self.assert_json_success(result)
+        self.assert_subscribed([cordelia, hamlet], streams, True)
+
+        # One notice per channel, naming every user whose membership changed.
+        for stream in streams:
+            self.assert_length(get_topic_messages(iago, stream, "channel events"), 1)
+            self.assertEqual(
+                self.latest_channel_event_message_content(iago, stream),
+                f"{iago_mention} subscribed {cordelia_mention} and {hamlet_mention} "
+                "to this channel.",
+            )
+
+        with self.assert_database_query_count(41):
+            result = self.unsubscribe_via_delete(streams, [cordelia, hamlet])
+        self.assert_json_success(result)
+        self.assert_subscribed([cordelia, hamlet], streams, False)
+
+        for stream in streams:
+            self.assert_length(get_topic_messages(iago, stream, "channel events"), 2)
+            self.assertEqual(
+                self.latest_channel_event_message_content(iago, stream),
+                f"{iago_mention} unsubscribed {cordelia_mention} and {hamlet_mention} "
+                "from this channel.",
+            )
+
+    def test_acting_user_included_in_target_list(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        iago_mention = self.silent_mention_syntax_for_user(iago)
+        hamlet_mention = self.silent_mention_syntax_for_user(hamlet)
+        othello_mention = self.silent_mention_syntax_for_user(othello)
+
+        # Acting on themselves alongside others still accounts for everyone
+        # whose membership changed, with the acting user named "themselves".
+        self.assertEqual(
+            get_subscription_change_notice_content(
+                acting_user=iago, users=[iago, hamlet], subscribed=True
+            ),
+            f"{iago_mention} subscribed themselves and {hamlet_mention} to this channel.",
+        )
+        self.assertEqual(
+            get_subscription_change_notice_content(
+                acting_user=iago, users=[iago, hamlet], subscribed=False
+            ),
+            f"{iago_mention} unsubscribed themselves and {hamlet_mention} from this channel.",
+        )
+        self.assertEqual(
+            get_subscription_change_notice_content(
+                acting_user=iago, users=[iago, othello, hamlet], subscribed=True
+            ),
+            f"{iago_mention} subscribed themselves, {hamlet_mention}, "
+            f"and {othello_mention} to this channel.",
+        )
+        self.assertEqual(
+            get_subscription_change_notice_content(
+                acting_user=iago, users=[iago, othello, hamlet], subscribed=False
+            ),
+            f"{iago_mention} unsubscribed themselves, {hamlet_mention}, "
+            f"and {othello_mention} from this channel.",
+        )
+        # Acting only on themselves needs no target list.
+        self.assertEqual(
+            get_subscription_change_notice_content(acting_user=iago, users=[iago], subscribed=True),
+            f"{iago_mention} subscribed to this channel.",
+        )
+        self.assertEqual(
+            get_subscription_change_notice_content(
+                acting_user=iago, users=[iago], subscribed=False
+            ),
+            f"{iago_mention} unsubscribed from this channel.",
+        )
+
+    def test_general_chat_channel_notifications(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        realm = iago.realm
+
+        stream = self.make_stream(
+            "general-chat-secret",
+            realm=realm,
+            invite_only=True,
+            topics_policy=StreamTopicsPolicyEnum.empty_topic_only.value,
+        )
+        self.subscribe(iago, stream.name)
+        self.assert_length(get_topic_messages(iago, stream, ""), 0)
+
+        iago_mention = self.silent_mention_syntax_for_user(iago)
+        hamlet_mention = self.silent_mention_syntax_for_user(hamlet)
+
+        self.login_user(iago)
+        self.assert_json_success(
+            self.subscribe_via_post(
+                iago, [stream.name], dict(principals=orjson.dumps([hamlet.id]).decode())
+            )
+        )
+        self.assert_json_success(self.unsubscribe_via_delete([stream], [hamlet]))
+
+        # A channel with no "channel events" topic notifies in general chat.
+        self.assert_length(get_topic_messages(iago, stream, "channel events"), 0)
+        messages = get_topic_messages(iago, stream, "")
+        self.assertEqual(
+            [message.content for message in messages],
+            [
+                f"{iago_mention} subscribed {hamlet_mention} to this channel.",
+                f"{iago_mention} unsubscribed {hamlet_mention} from this channel.",
+            ],
+        )
+
+    def test_archived_channel_no_notifications(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        realm = iago.realm
+
+        stream = self.make_stream("archived-secret", realm=realm, invite_only=True)
+        self.subscribe(iago, stream.name)
+        self.subscribe(hamlet, stream.name)
+        do_deactivate_stream(stream, acting_user=iago)
+        # Archiving the channel posts a "channel events" notice of its own.
+        notice_count = len(get_topic_messages(iago, stream, "channel events"))
+
+        # Subscriptions survive archiving, so they can still be removed, but an
+        # archived channel accepts no messages.
+        self.login_user(iago)
+        with self.assertNoLogs(level="ERROR"):
+            self.assert_json_success(self.unsubscribe_via_delete([stream], [hamlet]))
+        self.assert_subscribed([hamlet], [stream], False)
+        self.assert_length(get_topic_messages(iago, stream, "channel events"), notice_count)
+
+    def test_bulk_primitives_do_not_send_notifications(self) -> None:
+        """
+        Administrative callers such as user deletion and channel merges use
+        these primitives directly, and must not post to private channels.
+        """
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        realm = iago.realm
+
+        stream = self.make_stream("primitive-secret", realm=realm, invite_only=True)
+        self.subscribe(iago, stream.name)
+
+        bulk_add_subscriptions(realm, [stream], [hamlet], acting_user=None)
+        bulk_remove_subscriptions(realm, [hamlet], [stream], acting_user=None)
+
+        self.assert_length(get_topic_messages(iago, stream, "channel events"), 0)
+
+    def test_no_notice_when_setting_disabled(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        realm = iago.realm
+        do_set_realm_property(realm, "send_channel_events_messages", False, acting_user=None)
+
+        stream = self.make_stream("quiet-secret", realm=realm, invite_only=True)
+        self.subscribe(iago, stream.name)
+
+        self.login_user(iago)
+        self.assert_json_success(
+            self.subscribe_via_post(
+                iago, [stream.name], dict(principals=orjson.dumps([hamlet.id]).decode())
+            )
+        )
+        self.assert_subscribed([hamlet], [stream], True)
+        self.assert_length(get_topic_messages(iago, stream, "channel events"), 0)
+
+    def test_merge_streams_and_delete_user_commands_send_no_notice(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        realm = iago.realm
+
+        # merge_streams moves subscribers from the destroyed private channel to
+        # the surviving one, which Iago is subscribed to.
+        keep = self.make_stream("keep-secret", realm=realm, invite_only=True)
+        destroy = self.make_stream("destroy-secret", realm=realm, invite_only=True)
+        self.subscribe(iago, keep.name)
+        self.subscribe(hamlet, destroy.name)
+        # Both commands print status lines with print(), which the test suite's
+        # console-output check would otherwise reject.
+        with redirect_stdout(StringIO()):
+            call_command("merge_streams", keep.name, destroy.name, "-r", realm.string_id)
+        self.assert_length(get_topic_messages(iago, keep, "channel events"), 0)
+
+        # delete_user unsubscribes the deleted user from every private channel.
+        secret = self.make_stream("delete-secret", realm=realm, invite_only=True)
+        self.subscribe(iago, secret.name)
+        self.subscribe(cordelia, secret.name)
+        with redirect_stdout(StringIO()):
+            call_command("delete_user", "-f", "-r", realm.string_id, "-u", cordelia.delivery_email)
+        self.assert_length(get_topic_messages(iago, secret, "channel events"), 0)
