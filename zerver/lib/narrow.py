@@ -705,8 +705,17 @@ class NarrowBuilder:
             ),
         ).alias(
             _pgroonga_match=RawSQL(  # noqa: S611
-                SQL("{col} &@~ escape_html(%s)")
-                .format(col=Identifier("zerver_message", "search_pgroonga"))
+                SQL(
+                    "CASE WHEN {message_id} IN (SELECT message_id FROM fts_update_log) "
+                    "THEN (escape_html({topic_name}) || ' ' || {rendered_content}) "
+                    "ELSE {col} END &@~ escape_html(%s)"
+                )
+                .format(
+                    col=Identifier("zerver_message", "search_pgroonga"),
+                    message_id=Identifier("zerver_message", "id"),
+                    topic_name=Identifier("zerver_message", DB_TOPIC_NAME),
+                    rendered_content=Identifier("zerver_message", "rendered_content"),
+                )
                 .as_string(connection.connection),
                 [operand],
             )
@@ -743,10 +752,19 @@ class NarrowBuilder:
 
         query = query.alias(
             _tsvector_match=RawSQL(  # noqa: S611
-                SQL("{tsvector} @@ plainto_tsquery(%s, %s)")
-                .format(tsvector=Identifier("zerver_message", "search_tsvector"))
+                SQL(
+                    "CASE WHEN {message_id} IN (SELECT message_id FROM fts_update_log) "
+                    "THEN to_tsvector(%s, {topic_name} || {rendered_content}) "
+                    "ELSE {tsvector} END @@ plainto_tsquery(%s, %s)"
+                )
+                .format(
+                    tsvector=Identifier("zerver_message", "search_tsvector"),
+                    message_id=Identifier("zerver_message", "id"),
+                    topic_name=Identifier("zerver_message", DB_TOPIC_NAME),
+                    rendered_content=Identifier("zerver_message", "rendered_content"),
+                )
                 .as_string(connection.connection),
-                ["zulip.english_us_search", operand],
+                ["zulip.english_us_search", "zulip.english_us_search", operand],
             )
         )
         cond = Q(_tsvector_match=True)
