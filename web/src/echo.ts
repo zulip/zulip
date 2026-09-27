@@ -390,6 +390,12 @@ export function edit_locally(message: Message, request: LocalEditRequest): void 
             num_messages: 1,
             max_removed_msg_id: message.id,
         });
+        // This must run while the message still has its old stream and topic.
+        message_store.process_topic_edit({
+            message_ids: [message.id],
+            new_stream_id: new_stream_id ?? message.stream_id,
+            new_topic: new_topic ?? message.topic,
+        });
 
         if (new_stream_id !== undefined) {
             message.stream_id = new_stream_id;

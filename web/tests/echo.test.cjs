@@ -456,6 +456,42 @@ run_test("edit_locally recomputes content-driven booleans", ({override}) => {
     assert.equal(message.mentioned_me_directly, false);
 });
 
+run_test("edit_locally moves topic links before changing the topic", ({override}) => {
+    override(message_lists, "all_rendered_message_lists", () => [
+        {view: {rerender_messages: noop}},
+    ]);
+    override(stream_list, "update_streams_sidebar", noop);
+    override(pm_list, "update_private_messages", noop);
+
+    const message = {
+        id: 42,
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "old topic",
+        raw_content: "hello",
+        content: "<p>hello</p>",
+    };
+
+    // The message store finds the message's existing topic links by its
+    // current stream and topic, so it must see them before they change.
+    let process_topic_edit_args;
+    override(message_store, "process_topic_edit", (opts) => {
+        process_topic_edit_args = opts;
+        assert.equal(message.stream_id, general_sub.stream_id);
+        assert.equal(message.topic, "old topic");
+    });
+
+    echo.edit_locally(message, {new_stream_id: 102, new_topic: "new topic"});
+
+    assert.deepEqual(process_topic_edit_args, {
+        message_ids: [42],
+        new_stream_id: 102,
+        new_topic: "new topic",
+    });
+    assert.equal(message.stream_id, 102);
+    assert.equal(message.topic, "new topic");
+});
+
 run_test("test reify_message_id", ({override}) => {
     const local_id_float = 103.01;
 
