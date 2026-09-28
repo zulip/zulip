@@ -51,6 +51,7 @@ from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.invites import do_invite_users, do_revoke_user_invite
 from zerver.actions.realm_settings import (
+    do_add_deactivated_redirect,
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
@@ -7040,6 +7041,34 @@ class FetchAuthBackends(ZulipTestCase):
             # With ROOT_DOMAIN_LANDING_PAGE, homepage fails
             result = self.client_get("/api/v1/server_settings", subdomain="")
             self.assert_json_error_contains(result, "Subdomain required", 400)
+
+    def test_get_server_settings_deactivated_redirect(self) -> None:
+        def get_server_settings() -> dict[str, object]:
+            with self.settings(ROOT_DOMAIN_LANDING_PAGE=False):
+                result = self.client_get(
+                    "/api/v1/server_settings", subdomain="zulip", HTTP_USER_AGENT=""
+                )
+            return self.assert_json_success(result)
+
+        realm = get_realm("zulip")
+        redirect_url = "https://zulip.example.com"
+        do_deactivate_realm(
+            realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
+        )
+        self.assertNotIn("realm_deactivated_redirect", get_server_settings())
+
+        do_add_deactivated_redirect(realm, redirect_url)
+        self.assertEqual(get_server_settings()["realm_deactivated_redirect"], redirect_url)
+
+        # A reactivated organization keeps its old redirect URL in the
+        # database, but clients should not be sent elsewhere.
+        do_reactivate_realm(realm)
+        realm.refresh_from_db()
+        self.assertEqual(realm.deactivated_redirect, redirect_url)
+        self.assertNotIn("realm_deactivated_redirect", get_server_settings())
 
 
 class TestTwoFactor(ZulipTestCase):
