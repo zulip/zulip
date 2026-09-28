@@ -913,7 +913,7 @@ export function update_message_content(
     // changed takes a comparable amount of time (recalculating the topic
     // links, and sorting them to compare to current links), so it's easier
     // to just wipe the data and recalculate.
-    remove_message_from_topic_links(message.id);
+    update_or_remove_links_from_message(message.stream_id, message.topic, message.id, undefined);
     save_topic_links(message);
 }
 
