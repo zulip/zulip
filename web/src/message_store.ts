@@ -629,27 +629,15 @@ export function topic_links_to_narrow(stream_id: number, topic: string): TopicLi
     return topic_links_content;
 }
 
-// If new_message_id = undefined, the message has been deleted, so remove
-// all references to it. Otherwise update our maps to store the new message id.
-// If updating, this must be called while the message object still has the
-// old message id, so that we can fetch it from the message store.
-function _remove_or_update_message_id_from_topic_links(
+function update_or_remove_links_to_message(
+    stream_id: number,
+    topic: string,
     old_message_id: number,
     new_message_id: number | undefined,
 ): void {
-    assert(old_message_id !== NO_MESSAGE_ID);
-    assert(new_message_id !== NO_MESSAGE_ID);
-    const updated_message = get(old_message_id);
-    if (updated_message?.type !== "stream") {
-        return;
-    }
-
-    const {stream_id, topic} = updated_message;
-
-    // (1) Update any record of links to this message.
     const links_to_narrow = get_link_map_for_narrow(topic_links_by_to, stream_id, topic);
     if (links_to_narrow?.has(old_message_id)) {
-        // (1a) Update records in `topic_links_by_to` for messages pointing to the message
+        // Update records in `topic_links_by_to` for messages pointing to the message
         // we're updating.
         const messages_linking_to_updated_message = links_to_narrow.get(old_message_id)!;
         links_to_narrow.delete(old_message_id);
@@ -665,7 +653,7 @@ function _remove_or_update_message_id_from_topic_links(
             );
         }
 
-        // (1b) Update/delete the matching links in `topic_links_by_from`
+        // Update/delete the matching links in `topic_links_by_from`
         // i.e. links from messages to this updated message, since they need
         // to point to the correct new message id.
         for (const message_id of messages_linking_to_updated_message) {
@@ -693,18 +681,24 @@ function _remove_or_update_message_id_from_topic_links(
             }
         }
     }
+}
 
-    // (2) Update links from this message to other streams/topics/messages.
+function update_or_remove_links_from_message(
+    stream_id: number,
+    topic: string,
+    old_message_id: number,
+    new_message_id: number | undefined,
+): void {
     const links_from_narrow = get_link_map_for_narrow(topic_links_by_from, stream_id, topic);
     if (links_from_narrow?.has(old_message_id)) {
-        // (2a) Update records in `topic_links_by_from` from message we're updating.
+        // Update records in `topic_links_by_from` from message we're updating.
         const messages_linked_from_updated_message = links_from_narrow.get(old_message_id)!;
         links_from_narrow.delete(old_message_id);
         if (new_message_id) {
             links_from_narrow.set(new_message_id, messages_linked_from_updated_message);
         }
 
-        // (2b) Delete matching records in `topic_links_by_to`,
+        // Delete matching records in `topic_links_by_to`,
         // i.e. links to messages from this updated message, since they need
         // to store correct new message id.
         for (const link of messages_linked_from_updated_message) {
@@ -724,6 +718,26 @@ function _remove_or_update_message_id_from_topic_links(
             }
         }
     }
+}
+
+// If new_message_id = undefined, the message has been deleted, so remove
+// all references to it. Otherwise update our maps to store the new message id.
+// If updating, this must be called while the message object still has the
+// old message id, so that we can fetch it from the message store.
+function _remove_or_update_message_id_from_topic_links(
+    old_message_id: number,
+    new_message_id: number | undefined,
+): void {
+    assert(old_message_id !== NO_MESSAGE_ID);
+    assert(new_message_id !== NO_MESSAGE_ID);
+    const updated_message = get(old_message_id);
+    if (updated_message?.type !== "stream") {
+        return;
+    }
+
+    const {stream_id, topic} = updated_message;
+    update_or_remove_links_to_message(stream_id, topic, old_message_id, new_message_id);
+    update_or_remove_links_from_message(stream_id, topic, old_message_id, new_message_id);
 }
 
 function update_message_id_in_topic_links(old_message_id: number, new_message_id: number): void {
