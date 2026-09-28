@@ -563,6 +563,10 @@ def process_message(message: EmailMessage, rcpt_to: str | None = None) -> None:
 def validate_to_address(address: str, rate_limit: bool = True) -> None:
     if is_missed_message_address(address):
         mm_address = get_usable_missed_message_address(address)
+        if not is_user_active(mm_address.user_profile):
+            raise JsonableError(
+                _("Sending user is not active. Ignoring this message notification email.")
+            )
         if mm_address.message.recipient.type == Recipient.STREAM:
             # ACL's on DMs are harder to apply simply, so we
             # just check channel messages.
