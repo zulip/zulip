@@ -1545,6 +1545,43 @@ test("message links survive a case-only topic rename of the linking message", ()
     assert.deepEqual(message_store.topic_links_to_narrow(design.stream_id, "Logo"), []);
 });
 
+test("editing a message keeps links to it", () => {
+    message_store.clear_topic_links_for_testing();
+    const design = {name: "design", subscribed: true, stream_id: 10};
+    stream_data.add_sub_for_tests(design);
+    const sales = {name: "sales", subscribed: true, stream_id: 12};
+    stream_data.add_sub_for_tests(sales);
+
+    const linked_message = {
+        id: 611,
+        sender_id: alice.user_id,
+        type: "stream",
+        stream_id: design.stream_id,
+        topic: "Logo",
+        content: `<a href="/#narrow/channel/12-sales/topic/Pricing">pricing</a>`,
+    };
+    message_store.update_message_cache({type: "server_message", message: linked_message});
+    const linking_message = {
+        id: 612,
+        sender_id: bob.user_id,
+        type: "stream",
+        stream_id: sales.stream_id,
+        topic: "Renewals",
+        content: `<a href="/#narrow/channel/10-design/topic/Logo/near/${linked_message.id}">link</a>`,
+    };
+    message_store.update_message_cache({type: "server_message", message: linking_message});
+
+    message_store.update_message_content(linked_message, "<p>no links</p>");
+
+    assert.deepEqual(message_store.topic_links_from_narrow(design.stream_id, "Logo"), []);
+    assert.deepEqual(message_store.topic_links_to_narrow(design.stream_id, "Logo"), [
+        {stream_id: sales.stream_id, topic: "Renewals", message_id: linking_message.id},
+    ]);
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Renewals"), [
+        {stream_id: design.stream_id, topic: "Logo", message_id: linked_message.id},
+    ]);
+});
+
 test("process_topic_edit ignores messages missing from the local cache", () => {
     message_store.clear_topic_links_for_testing();
 
