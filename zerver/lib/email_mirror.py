@@ -439,6 +439,9 @@ def check_access_for_channel_email_address(channel_email_address: ChannelEmailAd
     else:
         user_for_access_check = sender
 
+    if not is_user_active(user_for_access_check):
+        raise JsonableError(_("Sending user is not active. Ignoring this channel message email."))
+
     # Raises JsonableError on permission denied
     access_stream_for_send_message(user_for_access_check, channel, forwarder_user_profile=None)
 
