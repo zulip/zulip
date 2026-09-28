@@ -705,7 +705,13 @@ function update_or_remove_links_from_message(
             // If there's no specified `to_message_id`, it was a link to a topic
             // but not a specific message. That uses `NO_MESSAGE_ID`.
             const to_message_id = link.message_id ?? NO_MESSAGE_ID;
-            const link_map = get_link_map_for_narrow(topic_links_by_to, link.stream_id, link.topic);
+            const to_message = link.message_id === undefined ? undefined : get(link.message_id);
+            const to_narrow = to_message?.type === "stream" ? to_message : link;
+            const link_map = get_link_map_for_narrow(
+                topic_links_by_to,
+                to_narrow.stream_id,
+                to_narrow.topic,
+            );
             if (link_map?.has(to_message_id)) {
                 const links_to_message = link_map.get(to_message_id)!;
                 if (new_message_id) {
@@ -776,8 +782,8 @@ export function save_topic_links(message: Message): void {
             continue;
         }
 
-        const to_stream_id = link_data.stream_id;
-        const to_topic = link_data.topic_name;
+        let to_stream_id = link_data.stream_id;
+        let to_topic = link_data.topic_name;
         const to_message_id = link_data.message_id
             ? Number.parseInt(link_data.message_id, 10)
             : undefined;
@@ -790,14 +796,20 @@ export function save_topic_links(message: Message): void {
 
         // If we don't have access to this stream and/or message, or it's a buggy link,
         // or it's a message from a muted user, just ignore it.
-        if (!stream_data.get_sub_by_id(to_stream_id)) {
-            continue;
-        }
         if (to_message_id !== undefined) {
             const to_message = get(to_message_id);
-            if (to_message === undefined || muted_users.is_user_muted(to_message.sender_id)) {
+            if (
+                to_message === undefined ||
+                muted_users.is_user_muted(to_message.sender_id) ||
+                to_message.type !== "stream"
+            ) {
                 continue;
             }
+            to_stream_id = to_message.stream_id;
+            to_topic = to_message.topic;
+        }
+        if (!stream_data.get_sub_by_id(to_stream_id)) {
+            continue;
         }
 
         // (1) Save link in topic_links_by_from
