@@ -2519,6 +2519,32 @@ class TestEmailMirrorServer(ZulipTestCase):
         )
 
     @override_settings(EMAIL_GATEWAY_PATTERN="%s@zulip.example.com")
+    async def test_handler_missedmessage_deactivated_user(self) -> None:
+        othello = await sync_to_async(lambda: self.example_user("othello"))()
+        usermessage = await sync_to_async(lambda: most_recent_usermessage(othello))()
+        mm_address = await sync_to_async(
+            lambda: create_missed_message_address(othello, usermessage.message)
+        )()
+        await sync_to_async(lambda: do_deactivate_user(othello, acting_user=None))()
+        self.assertEqual(
+            await self.handler_response(
+                [
+                    "HELO localhost",
+                    "MAIL FROM: <test@example.com>",
+                    f"RCPT TO: <{mm_address}>",
+                    "QUIT",
+                ]
+            ),
+            [
+                "220 testhost Zulip 1.2.3\r\n",
+                "250 testhost\r\n",
+                "250 OK\r\n",
+                "550 5.7.1 Permission denied: Sending user is not active. Ignoring this message notification email.\r\n",
+                "221 Bye\r\n",
+            ],
+        )
+
+    @override_settings(EMAIL_GATEWAY_PATTERN="%s@zulip.example.com")
     async def test_handler_missedmessage(self) -> None:
         othello = await sync_to_async(lambda: self.example_user("othello"))()
         usermessage = await sync_to_async(lambda: most_recent_usermessage(othello))()
