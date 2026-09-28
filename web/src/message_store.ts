@@ -478,7 +478,7 @@ function get_link_map_for_narrow<T>(
     stream_id: number,
     topic: string,
 ): Map<number, T[]> | undefined {
-    return map.get(stream_id)?.get(topic);
+    return map.get(stream_id)?.get(topic.toLowerCase());
 }
 
 function get_or_create_link_map_for_narrow<T>(
@@ -486,16 +486,22 @@ function get_or_create_link_map_for_narrow<T>(
     stream_id: number,
     topic: string,
 ): Map<number, T[]> {
+    const narrow_map = get_link_map_for_narrow(map, stream_id, topic);
+    if (narrow_map !== undefined) {
+        return narrow_map;
+    }
     if (!map.has(stream_id)) {
         map.set(stream_id, new Map<string, Map<number, T[]>>());
     }
-    if (!map.get(stream_id)!.get(topic)) {
-        map.get(stream_id)!.set(topic, new Map<number, T[]>());
-    }
-    return map.get(stream_id)!.get(topic)!;
+    const new_narrow_map = new Map<number, T[]>();
+    map.get(stream_id)!.set(topic.toLowerCase(), new_narrow_map);
+    return new_narrow_map;
 }
 
-// from_stream_id -> from_topic -> from_message_id -> TopicLink[]
+// Topic names are case-insensitive, so both link maps are keyed by
+// lowercased topic name.
+//
+// from_stream_id -> lowercased from_topic -> from_message_id -> TopicLink[]
 const topic_links_by_from = new Map<number, Map<string, Map<number, TopicLink[]>>>();
 export function topic_links_by_from_for_testing(): Map<
     number,
@@ -504,7 +510,7 @@ export function topic_links_by_from_for_testing(): Map<
     return topic_links_by_from;
 }
 
-// to_stream_id -> to_topic -> to_message_id -> from_message_id[]
+// to_stream_id -> lowercased to_topic -> to_message_id -> from_message_id[]
 // Instead of storing a TopicLink, this only stores the from_message_id
 // since we can get that message's narrow data from its id.
 const topic_links_by_to = new Map<number, Map<string, Map<number, number[]>>>();
@@ -558,10 +564,10 @@ export function topic_links_from_narrow(stream_id: number, topic: string): Topic
             }
             // Hide links from this topic to the same topic, since those feel
             // unnecessary to reference.
-            if (target.stream_id === stream_id && target.topic === topic) {
+            if (target.stream_id === stream_id && util.lower_same(target.topic, topic)) {
                 continue;
             }
-            const link_string = JSON.stringify(target);
+            const link_string = JSON.stringify({...target, topic: target.topic.toLowerCase()});
             if (added_links.has(link_string)) {
                 continue;
             }
@@ -603,10 +609,13 @@ export function topic_links_to_narrow(stream_id: number, topic: string): TopicLi
         assert(message?.type === "stream");
         // Hide links to this topic from the same topic, since those feel
         // unnecessary to reference.
-        if (message.stream_id === stream_id && message.topic === topic) {
+        if (message.stream_id === stream_id && util.lower_same(message.topic, topic)) {
             continue;
         }
-        const stream_topic = JSON.stringify({stream_id: message.stream_id, topic: message.topic});
+        const stream_topic = JSON.stringify({
+            stream_id: message.stream_id,
+            topic: message.topic.toLowerCase(),
+        });
         if (added_narrows.has(stream_topic)) {
             continue;
         }
@@ -825,6 +834,11 @@ export function process_topic_edit(opts: {
         }
         const old_stream_id = message.stream_id;
         const old_topic = message.topic;
+        if (old_stream_id === new_stream_id && util.lower_same(old_topic, new_topic)) {
+            // The narrow's key is unchanged, so its entries are already
+            // in the right place.
+            continue;
+        }
 
         // Move any links from this message stored with the old topic
         const links_from_old_narrow = get_link_map_for_narrow(
