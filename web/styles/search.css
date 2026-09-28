@@ -161,6 +161,7 @@
     }
 
     .typeahead.dropdown-menu {
+        container: search-typeahead / inline-size;
         /* Match the typeahead's width to its parent container. */
         right: 0;
         top: 0;
@@ -472,6 +473,24 @@
             /* Add line-height equal to height to mimic baseline alignment. */
             line-height: var(--height-input-pill);
             align-self: center;
+        }
+
+        @container search-typeahead (width < $cq_sm_min) {
+            /* There is too little room to keep a suggestion on one
+               line, so let it flow onto more lines instead. */
+            white-space: normal;
+            /* Leave more space between suggestions than between the
+               lines of one suggestion, so each suggestion reads as one. */
+            padding-block: 6px;
+
+            .search_list_item {
+                flex-wrap: wrap;
+                row-gap: 0;
+            }
+
+            .search_list_item > * {
+                flex-basis: auto;
+            }
         }
     }
 }
