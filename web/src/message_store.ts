@@ -906,8 +906,10 @@ export function update_message_content(
     // the content and update the map. A prior check to see if anything
     // changed takes a comparable amount of time (recalculating the topic
     // links, and sorting them to compare to current links), so it's easier
-    // to just wipe the data and recalculate.
-    remove_message_from_topic_links(message.id);
+    // to just wipe this message's outgoing links and recalculate them.
+    // Incoming links from other messages don't depend on this message's
+    // content, so they stay as they are.
+    update_or_remove_links_from_message(message.stream_id, message.topic, message.id, undefined);
     save_topic_links(message);
 }
 
