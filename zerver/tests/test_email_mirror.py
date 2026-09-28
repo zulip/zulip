@@ -850,6 +850,38 @@ class TestChannelEmailMessagesPermissions(ZulipTestCase):
             ],
         )
 
+    def test_deactivated_sender_or_creator(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = get_realm("zulip")
+        channel = get_stream("Denmark", realm)
+        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
+        bot = self.create_test_bot("test2", hamlet, full_name="Test bot")
+
+        channel_email_addresses = [
+            encode_email_address(
+                channel.name, get_channel_email_token(channel, creator=hamlet, sender=sender)
+            )
+            for sender in (hamlet, email_gateway_bot, bot)
+        ]
+
+        # Deactivating a user also deactivates their bots.
+        do_deactivate_user(hamlet, acting_user=None)
+        bot.refresh_from_db()
+        self.assertFalse(bot.is_active)
+
+        initial_last_message = self.get_last_message()
+        for channel_email_address in channel_email_addresses:
+            incoming_valid_message = self.create_incoming_valid_message(channel_email_address)
+            with self.assertLogs(logger_name, level="INFO") as m:
+                process_message(incoming_valid_message)
+            self.assertEqual(
+                m.output,
+                [
+                    f"INFO:{logger_name}:Failed to process email to {channel.name} ({realm.string_id}): Sending user is not active. Ignoring this channel message email."
+                ],
+            )
+        self.assertEqual(initial_last_message, self.get_last_message())
+
 
 class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
     def test_message_with_valid_attachment(self) -> None:
@@ -2689,6 +2721,37 @@ class TestEmailMirrorServer(ZulipTestCase):
                 "250 testhost\r\n",
                 "250 OK\r\n",
                 "550 5.7.1 Permission denied: Not authorized to send to channel 'some str'\r\n",
+                "221 Bye\r\n",
+            ],
+        )
+
+    @override_settings(EMAIL_GATEWAY_PATTERN="%s@zulip.example.com")
+    async def test_handler_stream_deactivated_user(self) -> None:
+        stream_name = "some str"
+        realm = await sync_to_async(lambda: get_realm("zulip"))()
+        stream = await sync_to_async(lambda: ensure_stream(realm, stream_name, acting_user=None))()
+        hamlet = await sync_to_async(lambda: self.example_user("hamlet"))()
+        email_token = await sync_to_async(
+            lambda: get_channel_email_token(stream, creator=hamlet, sender=hamlet)
+        )()
+        email_address = encode_email_address(stream.name, email_token)
+
+        await sync_to_async(lambda: do_deactivate_user(hamlet, acting_user=None))()
+
+        self.assertEqual(
+            await self.handler_response(
+                [
+                    "HELO localhost",
+                    "MAIL FROM: <test@example.com>",
+                    f"RCPT TO: <{email_address}>",
+                    "QUIT",
+                ]
+            ),
+            [
+                "220 testhost Zulip 1.2.3\r\n",
+                "250 testhost\r\n",
+                "250 OK\r\n",
+                "550 5.7.1 Permission denied: Sending user is not active. Ignoring this channel message email.\r\n",
                 "221 Bye\r\n",
             ],
         )
