@@ -1457,6 +1457,92 @@ test("get and update topic links to/from narrow", () => {
     assert.deepEqual(message_store.topic_links_to_narrow(design.stream_id, "spending"), [
         {stream_id: development.stream_id, topic: "✔ budget", message_id: message9.id},
     ]);
+
+    // ------ Now let's test that topic names are matched case-insensitively
+    message_store.clear_topic_links_for_testing();
+    const message10 = add_message(600, sales.stream_id, "Pricing");
+    const message11 = add_message(601, design.stream_id, "Logo");
+    // A link written with a different case than the topic it points to.
+    save_message_link(
+        sales.stream_id,
+        "Pricing",
+        message10.id,
+        "/#narrow/channel/10-design/topic/LOGO/",
+    );
+    // Both narrows can be looked up with any casing.
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "pricing"), [
+        {stream_id: design.stream_id, topic: "LOGO", message_id: undefined},
+    ]);
+    assert.deepEqual(message_store.topic_links_to_narrow(design.stream_id, "Logo"), [
+        {stream_id: sales.stream_id, topic: "Pricing", message_id: message10.id},
+    ]);
+    // A link from a topic to itself with a different case is still hidden.
+    save_message_link(
+        design.stream_id,
+        "Logo",
+        message11.id,
+        "/#narrow/channel/10-design/topic/logo/",
+    );
+    assert.deepEqual(message_store.topic_links_from_narrow(design.stream_id, "Logo"), []);
+    assert.deepEqual(message_store.topic_links_to_narrow(design.stream_id, "Logo"), [
+        {stream_id: sales.stream_id, topic: "Pricing", message_id: message10.id},
+    ]);
+    // Renaming a topic to change only its case keeps its links, and
+    // later removing the message deletes them.
+    message_store.process_topic_edit({
+        message_ids: [message10.id],
+        new_stream_id: sales.stream_id,
+        new_topic: "PRICING",
+    });
+    message10.topic = "PRICING";
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "PRICING"), [
+        {stream_id: design.stream_id, topic: "LOGO", message_id: undefined},
+    ]);
+    message_store.remove([message10.id]);
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "PRICING"), []);
+    assert.deepEqual(message_store.topic_links_to_narrow(design.stream_id, "Logo"), []);
+});
+
+test("message links survive a case-only topic rename of the linking message", () => {
+    message_store.clear_topic_links_for_testing();
+    const design = {name: "design", subscribed: true, stream_id: 10};
+    stream_data.add_sub_for_tests(design);
+    const sales = {name: "sales", subscribed: true, stream_id: 12};
+    stream_data.add_sub_for_tests(sales);
+
+    function add_message(message) {
+        message_store.update_message_cache({type: "server_message", message});
+        return message;
+    }
+    const linked_message = add_message({
+        id: 601,
+        sender_id: alice.user_id,
+        type: "stream",
+        stream_id: design.stream_id,
+        topic: "Logo",
+        content: "<ignore>",
+    });
+    const linking_message = add_message({
+        id: 602,
+        sender_id: bob.user_id,
+        type: "stream",
+        stream_id: sales.stream_id,
+        topic: "Renewals",
+        content: `<a href="/#narrow/channel/10-design/topic/Logo/near/${linked_message.id}">link</a>`,
+    });
+    assert.deepEqual(message_store.topic_links_to_narrow(design.stream_id, "Logo"), [
+        {stream_id: sales.stream_id, topic: "Renewals", message_id: linking_message.id},
+    ]);
+
+    // update_messages sets the new topic directly for a rename that only
+    // changes its case, without calling process_topic_edit.
+    linking_message.topic = "renewals";
+
+    // Deleting the linking message and then editing the message it linked
+    // to must still find the link and clean it up.
+    message_store.remove([linking_message.id]);
+    message_store.update_message_content(linked_message, "<p>edited</p>");
+    assert.deepEqual(message_store.topic_links_to_narrow(design.stream_id, "Logo"), []);
 });
 
 test("process_topic_edit ignores messages missing from the local cache", () => {
