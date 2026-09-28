@@ -456,6 +456,37 @@ run_test("edit_locally recomputes content-driven booleans", ({override}) => {
     assert.equal(message.mentioned_me_directly, false);
 });
 
+run_test("edit_locally moves topic links with the message", ({override}) => {
+    override(stream_list, "update_streams_sidebar", noop);
+    override(pm_list, "update_private_messages", noop);
+    override(message_lists, "all_rendered_message_lists", () => [
+        {view: {rerender_messages: noop}},
+    ]);
+
+    const message = {
+        id: 43,
+        type: "stream",
+        stream_id: general_sub.stream_id,
+        topic: "old topic",
+        raw_content: "content",
+    };
+
+    let process_topic_edit_args;
+    override(message_store, "process_topic_edit", (opts) => {
+        process_topic_edit_args = {...opts, topic_at_call: message.topic};
+    });
+
+    echo.edit_locally(message, {new_topic: "new topic"});
+
+    assert.deepEqual(process_topic_edit_args, {
+        message_ids: [43],
+        new_stream_id: general_sub.stream_id,
+        new_topic: "new topic",
+        topic_at_call: "old topic",
+    });
+    assert.equal(message.topic, "new topic");
+});
+
 run_test("test reify_message_id", ({override}) => {
     const local_id_float = 103.01;
 
