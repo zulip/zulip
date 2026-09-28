@@ -151,7 +151,7 @@ def get_reminder_formatted_content(
     else:
         content += REMINDER_FORMAT[format_recipient_type_key]["text"].format_map(context)
         content += "\n"
-        fence = get_unused_fence(content)
+        fence = get_unused_fence(message.content)
         quoted_message = "{fence}quote\n{msg_content}\n{fence}"
         length_without_message_content = len(
             content + quoted_message.format(fence=fence, msg_content="")
