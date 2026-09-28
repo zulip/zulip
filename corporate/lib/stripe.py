@@ -52,6 +52,7 @@ from zerver.lib.send_email import (
     send_email_to_users_with_billing_access_and_realm_owners,
 )
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.lib.user_counts import realm_user_count, realm_workplace_user_count
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Realm, RealmAuditLog, Stream, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -4382,8 +4383,17 @@ class RealmBillingSession(BillingSession):
     def current_counts_for_billed_users(
         self, event_time: datetime | None = None
     ) -> BillingUserCounts:
-        workplace_users = get_latest_seat_count(self.realm)
-        return BillingUserCounts(workplace_users, non_workplace_users=0)
+        plan = get_current_plan_by_realm(self.realm)
+        if plan is None or plan.price_per_external_license is None:
+            return BillingUserCounts(get_latest_seat_count(self.realm), non_workplace_users=0)
+
+        # The discounted rate for users outside workplace_users_group replaces
+        # the discount for guests, so every user counts as one license here.
+        workplace_users = realm_workplace_user_count(self.realm)
+        return BillingUserCounts(
+            workplace_users,
+            non_workplace_users=realm_user_count(self.realm) - workplace_users,
+        )
 
     @override
     def get_audit_log_event(self, event_type: BillingSessionEventType) -> int:
