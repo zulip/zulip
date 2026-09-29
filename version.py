@@ -48,4 +48,4 @@ API_FEATURE_LEVEL = 512
 #   historical commits sharing the same major version, in which case a
 #   minor version bump suffices.
 
-PROVISION_VERSION = (391, 0)  # bumped 2026-09-29 to upgrade JavaScript dependencies
+PROVISION_VERSION = (392, 0)  # bumped 2026-09-29 to remove unused JavaScript dependencies
