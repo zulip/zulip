@@ -168,6 +168,7 @@ ALL_ZULIP_TABLES = {
     "zerver_externalauthid",
     "zerver_groupgroupmembership",
     "zerver_huddle",
+    "zerver_idempotentrequest",
     "zerver_imageattachment",
     "zerver_message",
     "zerver_missedmessageemailaddress",
@@ -291,6 +292,8 @@ NON_EXPORTED_TABLES = {
     "zerver_defaultstreamgroup_streams",
     # Drafts don't need to be exported as they are supposed to be more ephemeral.
     "zerver_draft",
+    # Idempotency-Key results are only kept for a day.
+    "zerver_idempotentrequest",
     # The importer cannot trust ImageAttachment objects anyway and needs to check
     # and process images for thumbnailing on its own.
     "zerver_imageattachment",
