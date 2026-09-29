@@ -595,13 +595,6 @@ export async function select_item_via_typeahead(
     await entry.click();
 }
 
-export async function wait_for_modal_to_close(page: Page): Promise<void> {
-    // This function will ensure that the mouse events are enabled for the background for further tests.
-    await page.waitForFunction(
-        () => document.querySelector(".overlay.show")?.getAttribute("style") === null,
-    );
-}
-
 export async function wait_for_micromodal_to_open(page: Page): Promise<void> {
     // We manually add the `modal--open` class to the modal after the modal animation completes.
     await page.waitForFunction(() => document.querySelector(".modal--open") !== null);
