@@ -41,6 +41,7 @@ from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_u
 from zerver.lib.devices import b64decode_token_id_base64, b64encode_token_id_int
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
+from zerver.lib.event_types import DeviceUpdateEvent
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingRemoteRealmError
 from zerver.lib.message import (
     OnlyMessageFields,
@@ -1591,12 +1592,7 @@ def send_push_notifications(
                 user=user_profile, push_token_id__in=delete_token_ids_int
             )
             for push_device in push_devices:
-                event = dict(
-                    type="device",
-                    op="update",
-                    device_id=push_device.id,
-                    push_token_id=None,
-                )
+                event = DeviceUpdateEvent(device_id=push_device.id, push_token_id=None)
                 send_event_on_commit(user_profile.realm, event, [user_profile.id])
             push_devices.update(push_token_id=None)
 
