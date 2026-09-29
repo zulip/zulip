@@ -1,3 +1,4 @@
+import uuid
 from collections.abc import Iterable
 from datetime import timedelta
 from email.headerregistry import Address
@@ -76,6 +77,7 @@ from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
+    IdempotentRequest,
     Message,
     OnboardingStep,
     PreregistrationUser,
@@ -4125,6 +4127,10 @@ class DeleteUserTest(ZulipTestCase):
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
 
+        IdempotentRequest.objects.create(
+            realm=realm, user=hamlet, idempotency_key=uuid.uuid4(), cached_result={}
+        )
+
         do_delete_user(hamlet, acting_user=None)
 
         hamlet.refresh_from_db()
@@ -4170,6 +4176,7 @@ class DeleteUserTest(ZulipTestCase):
         self.assertEqual(name_change_log.scrubbed, True)
 
         self.assertEqual(ScheduledEmail.objects.count(), 0)
+        self.assertFalse(IdempotentRequest.objects.filter(user=hamlet).exists())
 
         # Verify is_deleted is exposed in the API.
         self.login("iago")
