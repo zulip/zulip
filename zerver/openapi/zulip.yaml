@@ -9160,6 +9160,14 @@ paths:
       description: |
         Send a [channel message](/help/introduction-to-topics) or a
         [direct message](/help/direct-messages).
+
+        Supports the optional
+        [`Idempotency-Key`](/api/http-headers#the-idempotency-key-request-header)
+        request header, which lets clients safely retry sending a message
+        without it being sent twice.
+
+        **Changes**: In Zulip 13.0 (feature level ZF-89b894), added support
+        for the `Idempotency-Key` request header.
       requestBody:
         required: true
         content:
@@ -9433,6 +9441,23 @@ paths:
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously,
                           `wildcard_mention_policy` was not enforced for topic mentions.
+        "409":
+          description: Conflict.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/CodedError"
+                  - example:
+                      {
+                        "code": "BAD_REQUEST",
+                        "msg": "A request with this Idempotency-Key is already in progress",
+                        "result": "error",
+                      }
+                    description: |
+                      An example JSON error response for when another request with the same
+                      [`Idempotency-Key`](/api/http-headers#concurrent-requests) header is
+                      still being processed:
   /messages/{message_id}/history:
     get:
       operationId: get-message-history
