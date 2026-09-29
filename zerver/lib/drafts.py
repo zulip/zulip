@@ -13,6 +13,7 @@ from pydantic import BaseModel, ConfigDict
 from typing_extensions import ParamSpec
 
 from zerver.lib.addressee import get_user_profiles_by_ids
+from zerver.lib.event_types import DraftFields, DraftsAddEvent, DraftsRemoveEvent, DraftsUpdateEvent
 from zerver.lib.exceptions import JsonableError, ResourceNotFoundError
 from zerver.lib.message import normalize_body, truncate_topic
 from zerver.lib.recipient_users import (
@@ -137,11 +138,9 @@ def do_create_drafts(drafts: list[DraftData], user_profile: UserProfile) -> list
     with transaction.atomic(durable=True):
         created_draft_objects = Draft.objects.bulk_create(draft_objects)
 
-        event = {
-            "type": "drafts",
-            "op": "add",
-            "drafts": [draft.to_dict() for draft in created_draft_objects],
-        }
+        event = DraftsAddEvent(
+            drafts=[DraftFields(**draft.to_dict()) for draft in created_draft_objects]
+        )
         send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
     return created_draft_objects
@@ -164,7 +163,7 @@ def do_edit_draft(draft_id: int, draft: DraftData, user_profile: UserProfile) ->
     with transaction.atomic(durable=True):
         draft_object.save()
 
-        event = {"type": "drafts", "op": "update", "draft": draft_object.to_dict()}
+        event = DraftsUpdateEvent(draft=DraftFields(**draft_object.to_dict()))
         send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
 
@@ -179,5 +178,5 @@ def do_delete_draft(draft_id: int, user_profile: UserProfile) -> None:
     draft_id = draft_object.id
     draft_object.delete()
 
-    event = {"type": "drafts", "op": "remove", "draft_id": draft_id}
+    event = DraftsRemoveEvent(draft_id=draft_id)
     send_event_on_commit(user_profile.realm, event, [user_profile.id])

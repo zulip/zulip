@@ -214,20 +214,20 @@ class DraftFields(DraftFieldsCore):
 
 
 class DraftsAddEvent(BaseEvent):
-    type: Literal["drafts"]
-    op: Literal["add"]
+    type: Literal["drafts"] = "drafts"
+    op: Literal["add"] = "add"
     drafts: list[DraftFields]
 
 
 class DraftsRemoveEvent(BaseEvent):
-    type: Literal["drafts"]
-    op: Literal["remove"]
+    type: Literal["drafts"] = "drafts"
+    op: Literal["remove"] = "remove"
     draft_id: int
 
 
 class DraftsUpdateEvent(BaseEvent):
-    type: Literal["drafts"]
-    op: Literal["update"]
+    type: Literal["drafts"] = "drafts"
+    op: Literal["update"] = "update"
     draft: DraftFields
 
 
