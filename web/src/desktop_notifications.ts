@@ -64,10 +64,42 @@ export class ElectronBridgeNotification extends EventTarget {
     }
 }
 
+// Most mobile browsers expose the Notification interface, but
+// support only persistent notifications, which are created via
+// ServiceWorkerRegistration.showNotification().
+// The Notification() constructor throws a TypeError there, so until
+// we register a service worker, treat them as having no support.
+// See https://developer.mozilla.org/en-US/docs/Web/API/Notifications_API#persistent_and_non-persistent_notifications
+export function create_notification(
+    title: string,
+    options: NotificationOptions,
+): ElectronBridgeNotification | Notification | undefined {
+    if (NotificationAPI === undefined) {
+        return undefined;
+    }
+    try {
+        return new NotificationAPI(title, options);
+    } catch (error) {
+        if (!(error instanceof TypeError)) {
+            throw error;
+        }
+        NotificationAPI = undefined;
+        return undefined;
+    }
+}
+
 if (electron_bridge?.new_notification) {
     NotificationAPI = ElectronBridgeNotification;
 } else if (window.Notification) {
     NotificationAPI = window.Notification;
+    if (Notification.permission !== "granted") {
+        // A notification constructed without permission is never
+        // displayed, which lets us check the constructor without
+        // bothering the user. Once permission has been granted we
+        // cannot make this check, so we treat the browser as supported
+        // until a notification first fails to be constructed.
+        create_notification("", {})?.close();
+    }
 }
 
 export function get_notifications(): NoticeMemory {

@@ -184,16 +184,20 @@ export function process_notification(notification: {
 
     const title = get_notification_title(message, msg_count);
 
-    if (notification.desktop_notify && desktop_notifications.NotificationAPI !== undefined) {
+    if (notification.desktop_notify) {
         const icon_url =
             message.type === "test-notification"
                 ? small_avatar_url_for_test_notification(message)
                 : people.small_avatar_url(message);
-        notification_object = new desktop_notifications.NotificationAPI(title, {
+        const new_notification = desktop_notifications.create_notification(title, {
             icon: icon_url,
             body: content,
             tag: message.id.toString(),
         });
+        if (new_notification === undefined) {
+            return;
+        }
+        notification_object = new_notification;
         desktop_notifications.notice_memory.set(key, {
             obj: notification_object,
             msg_count,
