@@ -3544,3 +3544,184 @@ button {
 #engineers-love-zulip-page .intro_quote blockquote {
     max-width: 750px;
 }
+
+.portico-landing.try-zulip-page {
+    .hero.why-zulip {
+        padding: 120px 50px 160px;
+        /* Sizes below are set per element, so undo the
+           global hero font scaling on narrow screens. */
+        font-size: 1em;
+
+        /* Line the hero text up with the text inside
+           .try-zulip-guide, which has its own margin and padding. */
+        @media (width < 900px) {
+            padding-left: 60px;
+            padding-right: 60px;
+        }
+
+        @media (width < 600px) {
+            padding-left: 40px;
+            padding-right: 40px;
+        }
+    }
+
+    .try-zulip-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 40px;
+        max-width: 1300px;
+        margin: 0 auto;
+
+        @media (width >= 900px) {
+            grid-template-columns: 3fr 2fr;
+            align-items: center;
+            gap: 60px;
+            text-align: left;
+        }
+    }
+
+    .try-zulip-screenshot {
+        /* Let the screenshot span to the outer edge of
+           .try-zulip-guide, past the hero's text inset. */
+        @media (width < 900px) {
+            margin: 0 -40px;
+        }
+
+        @media (width < 600px) {
+            margin: 0 -20px;
+        }
+    }
+
+    .try-zulip-screenshot img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 10px 40px hsl(0deg 0% 0% / 40%);
+    }
+
+    .hero h1 {
+        margin-bottom: 15px;
+        font-size: 1.8em;
+        font-weight: 600;
+    }
+
+    .hero p {
+        width: auto;
+        margin: 0 0 25px;
+        font-size: 1.2em;
+        line-height: 1.5;
+        text-align: inherit;
+    }
+
+    .hero-buttons {
+        .button {
+            margin: 0;
+        }
+
+        @media (width >= 900px) {
+            justify-content: flex-start;
+        }
+    }
+
+    .try-zulip-guide {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 30px;
+        /* Match the hero's side padding, so the box lines up
+           with the screenshot above it. */
+        box-sizing: border-box;
+        width: calc(100% - 100px);
+        max-width: 1300px;
+        margin: -110px auto 0;
+        padding: 40px;
+        border-radius: 12px;
+        background-color: var(--color-background-box);
+        z-index: 1;
+
+        @media (width >= 900px) {
+            grid-template-columns: 2fr 3fr;
+            gap: 50px;
+        }
+
+        @media (width < 900px) {
+            width: calc(100% - 40px);
+        }
+
+        @media (width < 600px) {
+            padding: 25px 20px;
+        }
+
+        & h2,
+        & h3 {
+            margin: 0 0 10px;
+            font-weight: 600;
+            color: var(--color-link);
+        }
+
+        & h2 {
+            font-size: 1.4em;
+        }
+
+        & h3 {
+            font-size: 1.2em;
+        }
+
+        & p {
+            margin: 0 0 15px;
+            line-height: 1.5;
+        }
+
+        & a {
+            color: var(--color-link);
+            text-decoration: underline;
+            text-decoration-color: var(--color-link-underline);
+            text-underline-offset: 2px;
+
+            &:hover {
+                color: var(--color-link-hover);
+                text-decoration-color: var(--color-link-underline-hover);
+            }
+        }
+    }
+
+    .try-zulip-participate {
+        align-self: center;
+    }
+
+    .try-zulip-tips {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .try-zulip-tip {
+        padding: 20px 25px;
+        border-radius: 8px;
+        background-color: var(--color-background-marketing-page);
+        box-shadow: 0 2px 8px hsl(0deg 0% 0% / 10%);
+
+        & p:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    .main .inner-content {
+        padding-top: 40px;
+    }
+
+    /* Keep the text column aligned with the text inside
+       .try-zulip-guide on narrow screens. */
+    .main .padded-content {
+        @media (width < 900px) {
+            padding-left: 60px;
+            padding-right: 60px;
+        }
+
+        @media (width < 600px) {
+            padding-left: 40px;
+            padding-right: 40px;
+        }
+    }
+}
