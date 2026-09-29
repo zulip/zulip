@@ -246,7 +246,7 @@ class HeartbeatEvent(BaseEvent):
 
 
 class InvitesChangedEvent(BaseEvent):
-    type: Literal["invites_changed"]
+    type: Literal["invites_changed"] = "invites_changed"
 
 
 class MessageFieldForMessageEvent(BaseEventModel):
