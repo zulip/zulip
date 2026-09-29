@@ -458,8 +458,8 @@ class RealmBotUpdateEvent(BaseEvent):
 
 
 class RealmDeactivatedEvent(BaseEvent):
-    type: Literal["realm"]
-    op: Literal["deactivated"]
+    type: Literal["realm"] = "realm"
+    op: Literal["deactivated"] = "deactivated"
     realm_id: int
 
 
@@ -672,8 +672,8 @@ class RealmUpdateDictEvent(BaseEvent):
 
 
 class RealmUpdateEvent(BaseEvent):
-    type: Literal["realm"]
-    op: Literal["update"]
+    type: Literal["realm"] = "realm"
+    op: Literal["update"] = "update"
     property: str
     value: bool | int | str | None
     rendered_description: str | None = None
@@ -729,8 +729,8 @@ class RealmUserRemoveEvent(BaseEvent):
 
 
 class RealmUserSettingsDefaultsUpdateEvent(BaseEvent):
-    type: Literal["realm_user_settings_defaults"]
-    op: Literal["update"]
+    type: Literal["realm_user_settings_defaults"] = "realm_user_settings_defaults"
+    op: Literal["update"] = "update"
     property: str
     value: bool | int | str
 
