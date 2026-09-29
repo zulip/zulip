@@ -1,13 +1,3 @@
-Are you looking for a team chat app for your business? Perhaps your tools aren’t
-scaling well as your organization grows, or you’re early in your journey and
-want tools that will grow with you. Maybe members of your remote or global team
-are frustrated with your current communication software.
-
-Team chat is often the virtual office for your organization, where employees
-spend a significant portion of their working hours. This makes finding the best
-app for your team one of the most impactful ways to make your organization more
-productive.
-
 As developers of an organized chat app for distributed teams, we’ve talked to
 hundreds of people about the teamwork apps they use. We’ve learned how
 organizations choose communication software, and the impact those choices have.
@@ -16,9 +6,6 @@ day after day.
 
 This guide reviews SaaS team chat apps; we plan to publish a separate guide on
 open-source team chat options you can self-host.
-
-If you’d like guidance from opinionated experts in the chat space, let’s dive
-in!
 
 ## 3 team chat apps to consider
 
