@@ -441,6 +441,14 @@ class FencedBlockPreprocessor(Preprocessor):
     def pop(self) -> None:
         self.handlers.pop()
 
+    def handle_lines(
+        self, lines: Iterable[str], output: MutableSequence[str], default_language: str | None
+    ) -> None:
+        self.handlers: list[ZulipBaseHandler] = []
+        self.push(OuterHandler(self, output, self.run_content_validators, default_language))
+        for line in lines:
+            self.handlers[-1].handle_line(line)
+
     @override
     def run(self, lines: Iterable[str]) -> list[str]:
         """Match and store Fenced Code Blocks in the HtmlStash."""
@@ -449,17 +457,10 @@ class FencedBlockPreprocessor(Preprocessor):
 
         output: list[str] = []
 
-        processor = self
-        self.handlers: list[ZulipBaseHandler] = []
-
         default_language = None
         if isinstance(self.md, ZulipMarkdown) and self.md.zulip_realm is not None:
             default_language = self.md.zulip_realm.default_code_block_language
-        handler = OuterHandler(processor, output, self.run_content_validators, default_language)
-        self.push(handler)
-
-        for line in lines:
-            self.handlers[-1].handle_line(line)
+        self.handle_lines(lines, output, default_language)
 
         while self.handlers:
             self.handlers[-1].done()
