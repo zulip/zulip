@@ -23,6 +23,9 @@ disruptive communication patterns.
 Switching to Zulip is thus one of the best ways to **increase the overall
 productivity of your team**.
 
+Coming from Slack? See why Zulip is [the organized, open-source Slack
+alternative](/slack-alternative/).
+
 > Zulip is everything Slack is, but it's smarter and more powerful.
 >
 > — [Zulip review in The Register](https://www.theregister.com/2021/07/28/zulip_open_source_chat_collaboration_software/)
