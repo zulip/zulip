@@ -398,6 +398,10 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         result = self.client_get("/user_uploads/temporary/badtoken/file.png")
         self.assert_json_error(result, "Invalid token")
 
+        # Valid hexadecimal that decodes to non-UTF-8 bytes.
+        result = self.client_get("/user_uploads/temporary/FF/file.png")
+        self.assert_json_error(result, "Invalid token")
+
     def test_serve_local_file_unauthed_altered_filename(self) -> None:
         self.login("hamlet")
         fp = StringIO("zulip!")
