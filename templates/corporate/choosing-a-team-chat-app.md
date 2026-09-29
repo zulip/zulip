@@ -16,15 +16,14 @@ you may want to seriously consider for your business:
 We also explain why [others](#chat-apps-to-skip) are not the right choice for
 most businesses.
 
-## [Microsoft Teams](https://www.microsoft.com/en-us/microsoft-teams/group-chat-software) — “Streamline communications—all in one place”
+## Microsoft Teams
 
 Teams is the most commonly used business chat app, in large part due to
 Microsoft’s
 [anti-competitive](https://apnews.com/article/microsoft-teams-eu-european-union-antitrust-26d11ada00f504d537d1b054dd6f6bbf)
-strategy of
-[bundling](https://www.microsoft.com/en-us/microsoft-teams/compare-microsoft-teams-business-options?activetab=pivot:primaryr1)
-Teams with the Office 365 suite. It’s been built to check the standard
-procurement department checkboxes, not to provide an excellent user experience.
+strategy of bundling Teams with the Office 365 suite. It’s been built to check
+the standard procurement department checkboxes, not to provide an excellent
+user experience.
 
 We’ve talked to hundreds of Teams users, and they almost universally have
 feelings somewhere **on the “dislike it” to “hate it” spectrum**. The exceptions
@@ -54,7 +53,7 @@ calls, scheduling, and occasional announcements and DMs.
 - **Vendor lock-in.** Teams does not offer a data export tool suitable for
   importing your data into another team chat application.
 
-## [Slack](https://slack.com/) — “Where work happens”
+## Slack
 
 Slack is the premier traditional team chat application, with a history of strong
 focus on the user experience. Widely popular chat features pioneered by Slack
@@ -87,7 +86,7 @@ with the product’s direction.
   many users are **not employees**, such as a customer community for your
   product. On a free plan, messages are hidden after just 90 days.
 
-## [Zulip](/) — “Organized chat app for distributed teams”
+## Zulip
 
 Zulip’s key insight is that a chat app should be organized around clearly
 labeled conversations. Developed as an open-source project since 2015, Zulip is
@@ -142,7 +141,7 @@ communities with up to tens of thousands of members.
 These apps may already be on your mind, but are not good options for most
 businesses.
 
-### [WhatsApp](https://www.whatsapp.com/), [Telegram](https://telegram.org/), [Signal](https://signal.org/), etc.
+### WhatsApp, Telegram, Signal, etc.
 
 Some small teams are happy using WhatsApp or other consumer chat apps, which are
 not designed for serious business use.
@@ -151,13 +150,13 @@ If your team will grow over time, it’s best to switch to an app that will grow
 with you early on, to start establishing communication patterns you’ll be happy
 with down the line.
 
-### [Google Chat](https://workspace.google.com/products/chat/) — “Messaging and team collaboration”
+### Google Chat
 
 Google Chat is included with Google Workplace, but seems to get little love from
 Google, and is not a serious team chat contender. Most people who’ve told us
 they use it for more than DMs are Google employees.
 
-### [Discord](https://discord.com/) — “Group chat that’s all fun & games”
+### Discord
 
 A popular chat app for gamers, Discord has never built the basic security and
 account management features expected for business use.
@@ -180,16 +179,15 @@ account management features expected for business use.
   way to disable an account to remove access to direct messages for a former
   employee.
 - Discord makes it **difficult to create a professional environment**. For
-  example, do your employees really need bold in-app advertisements for [game
-  quests](https://support.discord.com/hc/en-us/articles/22225719947543-Discord-Quests-FAQ)?
+  example, do your employees really need bold in-app advertisements for game
+  quests?
 
 ## What about open-source chat applications?
 
 Several open-source team chat applications have been around for years, and are
 solid options if you are looking to self-host your team chat solution
-([Matrix](https://matrix.org/) / [Element](https://element.io/),
-[Mattermost](https://mattermost.com/), [Rocket.Chat](https://www.rocket.chat/),
-and our own [Zulip](/self-hosting/)).
+(Matrix / Element, Mattermost, Rocket.Chat, and our own
+[Zulip](/self-hosting/)).
 
 Currently, Zulip is the only one of these projects focused on business use,
 rather than on government and defense customers.
