@@ -317,9 +317,6 @@ importers:
       font-subset-loader2:
         specifier: ^1.1.7
         version: 1.1.7(supports-color@10.2.2)
-      fonteditor-core:
-        specifier: ^2.6.3
-        version: 2.6.3
       ga-gtag:
         specifier: ^1.0.1
         version: 1.2.0
@@ -401,9 +398,6 @@ importers:
       re2js:
         specifier: ^2.8.0
         version: 2.8.6
-      regenerator-runtime:
-        specifier: ^0.14.0
-        version: 0.14.1
       shebang-loader:
         specifier: ^0.0.1
         version: 0.0.1
@@ -495,21 +489,9 @@ importers:
       '@types/blueimp-md5':
         specifier: ^2.18.0
         version: 2.18.2
-      '@types/co-body':
-        specifier: ^6.1.3
-        version: 6.1.3
       '@types/confusing-browser-globals':
         specifier: ^1.0.3
         version: 1.0.3
-      '@types/convert-source-map':
-        specifier: ^2.0.3
-        version: 2.0.3
-      '@types/css-tree':
-        specifier: ^3.2.0
-        version: 3.2.0
-      '@types/eslint-config-prettier':
-        specifier: ^6.11.3
-        version: 6.11.3
       '@types/gtag.js':
         specifier: ^0.0.20
         version: 0.0.20
@@ -546,21 +528,12 @@ importers:
       '@types/textarea-caret':
         specifier: ^3.0.3
         version: 3.0.4
-      '@types/throttle-debounce':
-        specifier: ^5.0.2
-        version: 5.0.2
-      '@types/tinycolor2':
-        specifier: ^1.4.5
-        version: 1.4.6
       '@types/turndown':
         specifier: ^5.0.1
         version: 5.0.6
       '@types/uri-template-lite':
         specifier: ^19.12.4
         version: 19.12.4
-      '@typescript-eslint/eslint-plugin':
-        specifier: ^8.2.0
-        version: 8.71.0(@typescript-eslint/parser@8.71.0(@typescript/typescript6@6.0.2)(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2))(@typescript/typescript6@6.0.2)(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
       '@typescript-eslint/parser':
         specifier: ^8.2.0
         version: 8.71.0(@typescript/typescript6@6.0.2)(eslint@10.11.0(jiti@2.7.0)(supports-color@10.2.2))(supports-color@10.2.2)
@@ -570,9 +543,6 @@ importers:
       '@typescript/native':
         specifier: npm:typescript@^7.0.2
         version: typescript@7.0.2
-      astro-eslint-parser:
-        specifier: ^3.0.0
-        version: 3.2.0(supports-color@10.2.2)
       babel-plugin-istanbul:
         specifier: ^8.0.0
         version: 8.0.0(supports-color@10.2.2)
@@ -687,9 +657,6 @@ importers:
       webpack-dev-server:
         specifier: ^6.0.0
         version: 6.0.0(supports-color@10.2.2)(webpack-cli@7.2.3)(webpack@5.111.1)
-      xvfb:
-        specifier: ^0.4.0
-        version: 0.4.0
       yaml:
         specifier: ^2.0.0-8
         version: 2.9.1
@@ -3329,17 +3296,11 @@ packages:
   '@types/cookies@0.9.2':
     resolution: {integrity: sha512-1AvkDdZM2dbyFybL4fxpuNCaWyv//0AwsuUk2DWeXyM1/5ZKm6W3z6mQi24RZ4l2ucY+bkSHzbDVpySqPGuV8A==}
 
-  '@types/css-tree@3.2.0':
-    resolution: {integrity: sha512-J5KXmk6BFIepOT7280FdFyNs4c5fh0Uee0otjKEvzchrRs38Ii9qminqc4ds0L19X8Zd/rT+brR9jkBthygjWw==}
-
   '@types/d3@3.5.53':
     resolution: {integrity: sha512-8yKQA9cAS6+wGsJpBysmnhlaaxlN42Qizqkw+h2nILSlS+MAG2z4JdO6p+PJrJ+ACvimkmLJL281h157e52psQ==}
 
   '@types/debug@4.1.13':
     resolution: {integrity: sha512-KSVgmQmzMwPlmtljOomayoR89W4FynCAi3E8PPs7vmDVPe84hT+vGPKkJfThkmXs0x0jAaa9U8uW8bbfyS2fWw==}
-
-  '@types/eslint-config-prettier@6.11.3':
-    resolution: {integrity: sha512-3wXCiM8croUnhg9LdtZUJQwNcQYGWxxdOWDjPe1ykCqJFPVpzAKfs/2dgSoCtAvdPeaponcWPI7mPcGGp9dkKQ==}
 
   '@types/esrecurse@4.3.1':
     resolution: {integrity: sha512-xJBAbDifo5hpffDBuHl0Y8ywswbiAp/Wi7Y/GtAgSlZyIABppyurxVueOPE8LUQOxdlgi6Zqce7uoEpqNTeiUw==}
@@ -3490,12 +3451,6 @@ packages:
 
   '@types/textarea-caret@3.0.4':
     resolution: {integrity: sha512-epJGYB37/sNrTDbhfyRjHkXsQSAcO6zby0JBDS0QMt6HQ1f1W2E4YpSc7TQkNmWaWmYXv92zOIfN5PHA8CmThg==}
-
-  '@types/throttle-debounce@5.0.2':
-    resolution: {integrity: sha512-pDzSNulqooSKvSNcksnV72nk8p7gRqN8As71Sp28nov1IgmPKWbOEIwAWvBME5pPTtaXJAvG3O4oc76HlQ4kqQ==}
-
-  '@types/tinycolor2@1.4.6':
-    resolution: {integrity: sha512-iEN8J0BoMnsWBqjVbWH/c0G0Hh7O21lpR2/+PrvAVgWdzL7eexIFm4JN/Wn10PTcmNdtS6U67r499mlWMXOxNw==}
 
   '@types/turndown@5.0.6':
     resolution: {integrity: sha512-ru00MoyeeouE5BX4gRL+6m/BsDfbRayOskWqUvh7CLGW+UXxHQItqALa38kKnOiZPqJrtzJUgAC2+F0rL1S4Pg==}
@@ -8687,9 +8642,6 @@ packages:
   regenerate@1.4.2:
     resolution: {integrity: sha512-zrceR/XhGYU/d/opr2EKO7aRHUeiBI8qjtfHqADTwZd6Szfy16la6kqD0MIUs5z5hx6AaKa+PixpPrR289+I0A==}
 
-  regenerator-runtime@0.14.1:
-    resolution: {integrity: sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==}
-
   regex-recursion@6.0.2:
     resolution: {integrity: sha512-0YCaSCq2VRIebiaUviZNs0cBz1kg5kVS2UKUfNIx8YVs1cN3AV7NTctO5FOKBA+UT2BPJIWZauYHPqJODG50cg==}
 
@@ -9230,10 +9182,6 @@ packages:
   slash@5.1.0:
     resolution: {integrity: sha512-ZA6oR3T/pEyuqwMgAKT0/hAv8oAXckzbkmR0UkUosQ+Mc4RxGoJkRmwHgHufaenlyAgE1Mxgpdcrf75y6XcnDg==}
     engines: {node: '>=14.16'}
-
-  sleep@6.1.0:
-    resolution: {integrity: sha512-Z1x4JjJxsru75Tqn8F4tnOFeEu3HjtITTsumYUiuz54sGKdISgLCek9AUlXlVVrkhltRFhNUsJDJE76SFHTDIQ==}
-    engines: {node: '>=0.8.0'}
 
   slice-ansi@4.0.0:
     resolution: {integrity: sha512-qMCMfhY040cVHT43K9BFygqYbUPFZKHOg7K73mtTWJRb8pyP3fzf4Ixd5SzdEJQ6MRUg/WBnOLxghZtKKurENQ==}
@@ -10566,9 +10514,6 @@ packages:
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
-
-  xvfb@0.4.0:
-    resolution: {integrity: sha512-g55AbjcBL4Bztfn7kiUrR0ne8mMUsFODDJ+HFGf5OuHJqKKccpExX2Qgn7VF2eImw1eoh6+riXHser1J4agrFA==}
 
   xxhash-wasm@1.1.0:
     resolution: {integrity: sha512-147y/6YNh+tlp6nd/2pWq38i9h6mz/EuQ6njIrmW8D1BS5nCqs0P6DG+m6zTGnNz5I+uhZ0SHxBs9BsPrwcKDA==}
@@ -13260,15 +13205,11 @@ snapshots:
       '@types/keygrip': 1.0.6
       '@types/node': 24.19.0
 
-  '@types/css-tree@3.2.0': {}
-
   '@types/d3@3.5.53': {}
 
   '@types/debug@4.1.13':
     dependencies:
       '@types/ms': 2.1.0
-
-  '@types/eslint-config-prettier@6.11.3': {}
 
   '@types/esrecurse@4.3.1': {}
 
@@ -13418,10 +13359,6 @@ snapshots:
   '@types/text-table@0.2.5': {}
 
   '@types/textarea-caret@3.0.4': {}
-
-  '@types/throttle-debounce@5.0.2': {}
-
-  '@types/tinycolor2@1.4.6': {}
 
   '@types/turndown@5.0.6': {}
 
@@ -19537,8 +19474,6 @@ snapshots:
 
   regenerate@1.4.2: {}
 
-  regenerator-runtime@0.14.1: {}
-
   regex-recursion@6.0.2:
     dependencies:
       regex-utilities: 2.3.0
@@ -20611,11 +20546,6 @@ snapshots:
       sax: 1.6.1
 
   slash@5.1.0: {}
-
-  sleep@6.1.0:
-    dependencies:
-      nan: 2.29.0
-    optional: true
 
   slice-ansi@4.0.0:
     dependencies:
@@ -22104,10 +22034,6 @@ snapshots:
   xtend@2.2.0: {}
 
   xtend@4.0.2: {}
-
-  xvfb@0.4.0:
-    optionalDependencies:
-      sleep: 6.1.0
 
   xxhash-wasm@1.1.0: {}
 

@@ -32,7 +32,6 @@ allowBuilds:
   esbuild: false
   puppeteer: false
   sharp: false
-  sleep: false
   ttf2woff2: false
   unrs-resolver: false
   vnu-jar: false
