@@ -769,20 +769,18 @@ export function initialize(): void {
 
         const title_data = buddy_data.get_title_data(user_ids_string, is_group, true);
 
-        // Since anything inside `#left_sidebar_scroll_container` can be replaced, it is our target node here.
+        // The zoomed-in list is outside `#left_sidebar_scroll_container`,
+        // so we observe the whole left sidebar.
         function get_target_node(): HTMLElement {
-            return document.querySelector("#left_sidebar_scroll_container")!;
+            return document.querySelector("#left-sidebar")!;
         }
 
-        // Whole list is just replaced, so we need to check for that.
+        // Re-rendering replaces either this row or the whole list.
         function check_reference_removed(
             mutation: MutationRecord,
             instance: tippy.Instance,
         ): boolean {
-            return Array.prototype.includes.call(
-                mutation.removedNodes,
-                $(instance.reference).parents(".dm-list")[0],
-            );
+            return [...mutation.removedNodes].some((node) => node.contains(instance.reference));
         }
 
         const check_subtree = true;
@@ -813,6 +811,7 @@ export function initialize(): void {
                 title_data,
                 get_target_node,
                 check_reference_removed,
+                check_subtree,
             );
         });
     });
