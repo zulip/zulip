@@ -9,14 +9,17 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.event_types import (
     BaseEvent,
+    Group,
     SubscriptionPeerAddEvent,
     UserGroupAddMembersEvent,
     UserGroupAddSubgroupsEvent,
+    UserGroupData,
     UserGroupRemoveEvent,
     UserGroupRemoveMembersEvent,
     UserGroupRemoveSubgroupsEvent,
 )
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.internal_event_types import InternalUserGroupAddEvent, InternalUserGroupUpdateEvent
 from zerver.lib.stream_subscription import get_user_ids_for_streams
 from zerver.lib.stream_traffic import get_streams_traffic
 from zerver.lib.streams import (
@@ -27,7 +30,7 @@ from zerver.lib.streams import (
     send_stream_deletion_event,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.types import UserGroupMembersData, UserGroupMembersDict
+from zerver.lib.types import UserGroupMembersData
 from zerver.lib.user_counts import realm_user_count_by_role, update_billing_records_if_needed
 from zerver.lib.user_groups import (
     convert_to_user_group_members_dict,
@@ -216,10 +219,8 @@ def do_send_create_user_group_event(
             get_group_setting_value_for_api(getattr(user_group, setting_name))
         )
 
-    event = dict(
-        type="user_group",
-        op="add",
-        group=dict(
+    event = InternalUserGroupAddEvent(
+        group=Group(
             name=user_group.name,
             creator_id=creator_id,
             date_created=date_created,
@@ -227,7 +228,7 @@ def do_send_create_user_group_event(
             description=user_group.description,
             id=user_group.id,
             is_system_group=user_group.is_system_group,
-            direct_subgroup_ids=direct_subgroup_ids,
+            direct_subgroup_ids=list(direct_subgroup_ids),
             **setting_values,
             deactivated=False,
         ),
@@ -274,16 +275,13 @@ def check_add_user_group(
         raise JsonableError(_("User group '{group_name}' already exists.").format(group_name=name))
 
 
-def do_send_user_group_update_event(
-    user_group: NamedUserGroup, data: dict[str, str | int | UserGroupMembersDict]
-) -> None:
-    event = dict(type="user_group", op="update", group_id=user_group.id, data=data)
-    if "name" in data:
-        # This field will be popped eventually before sending the event
-        # to client, but is needed to make sure we do not send the
-        # name update event for deactivated groups to client with
-        # 'include_deactivated_groups' client capability set to false.
-        event["deactivated"] = user_group.deactivated
+def do_send_user_group_update_event(user_group: NamedUserGroup, data: UserGroupData) -> None:
+    if data.name is not None:
+        event = InternalUserGroupUpdateEvent(
+            group_id=user_group.id, data=data, deactivated=user_group.deactivated
+        )
+    else:
+        event = InternalUserGroupUpdateEvent(group_id=user_group.id, data=data)
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
@@ -308,7 +306,7 @@ def do_update_user_group_name(
         )
     except django.db.utils.IntegrityError:
         raise JsonableError(_("User group '{group_name}' already exists.").format(group_name=name))
-    do_send_user_group_update_event(user_group, dict(name=name))
+    do_send_user_group_update_event(user_group, UserGroupData(name=name))
 
 
 @transaction.atomic(savepoint=False)
@@ -329,7 +327,7 @@ def do_update_user_group_description(
             RealmAuditLog.NEW_VALUE: description,
         },
     )
-    do_send_user_group_update_event(user_group, dict(description=description))
+    do_send_user_group_update_event(user_group, UserGroupData(description=description))
 
 
 def do_send_user_group_members_update_event(
@@ -715,7 +713,7 @@ def do_deactivate_user_group(
         acting_user=acting_user,
     )
 
-    do_send_user_group_update_event(user_group, dict(deactivated=True))
+    do_send_user_group_update_event(user_group, UserGroupData(deactivated=True))
 
     event = UserGroupRemoveEvent(group_id=user_group.id)
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
@@ -737,7 +735,7 @@ def do_reactivate_user_group(
         acting_user=acting_user,
     )
 
-    do_send_user_group_update_event(user_group, dict(deactivated=False))
+    do_send_user_group_update_event(user_group, UserGroupData(deactivated=False))
 
     direct_member_ids = list(user_group.direct_members.all().values_list("id", flat=True))
     direct_subgroup_ids = list(user_group.direct_subgroups.all().values_list("id", flat=True))
@@ -794,7 +792,9 @@ def do_change_user_group_permission_setting(
         },
     )
 
-    event_data_dict: dict[str, str | int | UserGroupMembersDict] = {
-        setting_name: convert_to_user_group_members_dict(new_setting_api_value)
-    }
-    do_send_user_group_update_event(user_group, event_data_dict)
+    do_send_user_group_update_event(
+        user_group,
+        UserGroupData.model_validate(
+            {setting_name: convert_to_user_group_members_dict(new_setting_api_value)}
+        ),
+    )
