@@ -68,6 +68,8 @@ class ErrorCode(Enum):
     INTERNAL_SERVER_ERROR_ON_BOUNCER = auto()
     ADMIN_ACTION_REQUIRED = auto()
     PERMISSION_DENIED = auto()
+    INVALID_IDEMPOTENCY_KEY = auto()
+    IDEMPOTENCY_KEY_IN_USE = auto()
 
 
 class JsonableError(Exception):
@@ -928,3 +930,29 @@ class PushServiceNotConfiguredError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Server is not configured to use push notification service.")
+
+
+class InvalidIdempotencyKeyError(JsonableError):
+    code = ErrorCode.INVALID_IDEMPOTENCY_KEY
+    data_fields = ["idempotency_key"]
+
+    def __init__(self, idempotency_key: str) -> None:
+        self.idempotency_key = idempotency_key
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Invalid UUID in Idempotency-Key header: '{idempotency_key}'")
+
+
+class IdempotencyKeyInUseError(JsonableError):
+    code = ErrorCode.IDEMPOTENCY_KEY_IN_USE
+    http_status_code = 409
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("A request with this Idempotency-Key is already in progress")

@@ -9192,6 +9192,14 @@ paths:
       description: |
         Send a [channel message](/help/introduction-to-topics) or a
         [direct message](/help/direct-messages).
+
+        Supports the optional
+        [`Idempotency-Key`](/api/http-headers#the-idempotency-key-request-header)
+        request header, which lets clients safely retry sending a message
+        without it being sent twice.
+
+        **Changes**: Before Zulip 14.0 (feature level ZF-89b894), the
+        `Idempotency-Key` request header was ignored.
       requestBody:
         required: true
         content:
@@ -9465,6 +9473,27 @@ paths:
 
                           **Changes**: New in Zulip 8.0 (feature level 229). Previously,
                           `wildcard_mention_policy` was not enforced for topic mentions.
+                  - allOf:
+                      - $ref: "#/components/schemas/InvalidIdempotencyKeyError"
+                      - description: |
+                          An example JSON error response for when the
+                          [`Idempotency-Key`](/api/http-headers#the-idempotency-key-request-header)
+                          header is not a UUID in a supported format.
+
+                          **Changes**: New in Zulip 14.0 (feature level ZF-89b894).
+        "409":
+          description: Conflict.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/IdempotencyKeyInUseError"
+                  - description: |
+                      An example JSON error response for when another request with the same
+                      [`Idempotency-Key`](/api/http-headers#concurrent-requests) header is
+                      still being processed.
+
+                      **Changes**: New in Zulip 14.0 (feature level ZF-89b894).
   /messages/{message_id}/history:
     get:
       operationId: get-message-history
@@ -31318,6 +31347,35 @@ components:
             A typical failed JSON response for when there is a push notification
             configuration issue on the server, such as invalid credentials,
             an expired plan, or an unregistered organization. Admin action is required.
+    InvalidIdempotencyKeyError:
+      allOf:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+            idempotency_key:
+              type: string
+              description: |
+                The value of the `Idempotency-Key` header, which is not a UUID in a
+                supported format.
+          example:
+            {
+              "code": "INVALID_IDEMPOTENCY_KEY",
+              "msg": "Invalid UUID in Idempotency-Key header: 'not-a-uuid'",
+              "result": "error",
+              "idempotency_key": "not-a-uuid",
+            }
+    IdempotencyKeyInUseError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "IDEMPOTENCY_KEY_IN_USE",
+              "msg": "A request with this Idempotency-Key is already in progress",
+              "result": "error",
+            }
     Event_types:
       description: |
         A JSON-encoded array indicating which types of events you're interested

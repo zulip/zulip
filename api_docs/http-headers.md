@@ -97,7 +97,119 @@ When the Zulip server has configured multiple rate limits that apply
 to a given request, the values returned will be for the strictest
 limit.
 
+## The `Idempotency-Key` request header
+
+This optional header lets a client safely retry a request that isn't
+idempotent, like sending a message, without the server doing its work
+twice. While [RFC 9110][rfc9110-retries] states that "a proxy MUST
+NOT automatically retry non-idempotent requests," proxies regularly
+do so, leading to problems like double-sent messages.
+
+A request is identified by its user and idempotency key. The client
+generates a random (version 4) UUID and includes it in the
+`Idempotency-Key` request header, in the standard hyphenated format
+with either uppercase or lowercase letters:
+
+```
+Idempotency-Key: 8e03978e-40d5-43e8-bc93-6894a57f9324
+```
+
+The server also accepts the UUID in double quotes
+(`"8e03978e-40d5-43e8-bc93-6894a57f9324"`), which is the format that
+the [IETF draft][idempotency-key-draft] for this header specifies. It
+rejects values in any other format with a `400 Bad Request` error
+whose `code` is `INVALID_IDEMPOTENCY_KEY`. That includes other ways
+of writing a UUID, like without hyphens or with a `urn:uuid:` prefix.
+
+Once the server has cached the response to a request, a later request
+from that user with the same header gets that response, without the
+server doing the work again. The sections below describe which
+responses are cached, and for how long.
+
+**Changes**: New in Zulip 14.0 (feature level ZF-89b894).
+
+### Supported endpoints
+
+Only endpoints which explicitly document support for this protocol
+honor the `Idempotency-Key` header; currently, that's only
+[`POST /messages`](/api/send-message). The `Idempotency-Key` header
+is silently ignored on all other requests.
+
+### Replayed responses
+
+When a request is served from the idempotency cache, the server
+replays the original response body and status code. Response headers
+are regenerated for each request and may differ from the original --
+in particular, rate-limiting headers reflect the current state, and
+repeated requests count against rate limits as normal.
+
+Before looking up the cached response, the server authenticates the
+request and checks some of its parameters, like whether they're
+well-formed. As a result, a replay can get an error even if the
+original request succeeded, for instance if the user's API key has
+since been regenerated. Other checks, like whether the user can post
+in the channel, are part of the cached response.
+
+### Concurrent requests
+
+If a request with the same `Idempotency-Key` is already being
+concurrently processed, but its results are not yet available, the
+client may receive a `409 Conflict` error whose `code` is
+`IDEMPOTENCY_KEY_IN_USE`. Some endpoints use `409` for other errors,
+so clients should check for this `code` rather than the status.
+
+Clients _should_ retry after a short delay with the same
+`Idempotency-Key`. The retry gets the cached response once the
+original request finishes, or this error again if it is still
+running. If the original request ended without caching a response
+-- for instance, because it failed with a 5xx error, or the backend
+processing it crashed -- the retry is processed from scratch.
+
+### Retrying requests
+
+To retry a request, a client _should_ use the same `Idempotency-Key`
+if the request:
+
+- Got no response, for instance because of a network error or a
+  timeout.
+- Failed with a 5xx error. The server may or may not have completed
+  the work. If it did, the retry gets the cached response; otherwise,
+  the retry is processed from scratch.
+- Failed with an `IDEMPOTENCY_KEY_IN_USE` error, or with an
+  authentication or [rate-limiting](#rate-limiting-response-headers)
+  error. The server doesn't cache these errors.
+
+After any other 4xx error, a client _must_ use a new
+`Idempotency-Key` to try again. The server may cache such an error
+like a successful result, and return it for later requests with the
+same key, even if they would now succeed -- for instance, because the
+user has since been given permission to post in the channel.
+
+### Key reuse across requests
+
+The server does not currently compare the parameters of requests with
+the same `Idempotency-Key`, and will return the cached response for
+the original request even if a subsequent request with the same key
+carries different parameters -- which may be nonsensical in the new
+context. This behavior is not guaranteed: the server may begin
+validating parameter consistency in the future, at which point
+mismatched reuse will return an error.
+
+Clients _must_ therefore use a new `Idempotency-Key` for every
+request other than the retries listed in
+[Retrying requests](#retrying-requests).
+
+### Expiration
+
+The server caches the response for a given `Idempotency-Key` for at
+least 24 hours after it receives the first request with that key, and
+may cache it for longer. Clients should only rely on a retry getting
+the cached response within those 24 hours; a later retry may be
+processed from scratch.
+
 [rate-limiting-rules]: https://zulip.readthedocs.io/en/latest/production/securing-your-zulip-server.html#rate-limiting
 [integrations-channel]: https://chat.zulip.org/#narrow/channel/127-integrations/
 [mdn-auth-headers]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Authorization
 [mdn-basic-auth]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Authorization#basic_authentication_2
+[rfc9110-retries]: https://www.rfc-editor.org/rfc/rfc9110#section-9.2.2
+[idempotency-key-draft]: https://datatracker.ietf.org/doc/draft-ietf-httpapi-idempotency-key-header/
