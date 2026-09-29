@@ -117,6 +117,27 @@ tippy.default.setDefaultProps({
 
 export let typeahead_status_emoji_tooltip: tippy.Instance | undefined;
 
+// Re-rendering can remove a tooltip's reference without a mouseleave
+// event, which would leave a tooltip appended to document.body open.
+const hide_on_reference_removal_plugin: tippy.Plugin = {
+    fn(instance) {
+        let observer: MutationObserver | undefined;
+        return {
+            onMount() {
+                observer = new MutationObserver(() => {
+                    if (!instance.reference.isConnected) {
+                        instance.hide();
+                    }
+                });
+                observer.observe(document.body, {childList: true, subtree: true});
+            },
+            onHidden() {
+                observer?.disconnect();
+            },
+        };
+    },
+};
+
 export const topic_visibility_policy_tooltip_props = {
     delay: LONG_HOVER_DELAY,
     appendTo: () => document.body,
@@ -684,6 +705,7 @@ export function initialize(): void {
             those regions.
         */
 
+        plugins: [hide_on_reference_removal_plugin],
         onHidden(instance) {
             instance.destroy();
         },
