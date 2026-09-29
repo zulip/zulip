@@ -101,6 +101,44 @@ This section details the ways in which it is different:
     it makes when sending messages with large numbers of recipients,
     to ensure its performance.
 
+### Replayed requests
+
+Clients can send an
+[`Idempotency-Key` header](https://zulip.com/api/http-headers#the-idempotency-key-request-header)
+so that a replayed request doesn't send its message twice.
+`send_message_backend` fetches or creates the user's `IdempotentRequest`
+row for that key, and passes it to `check_send_message`, which
+validates and sends the message via `run_idempotently`. That
+function:
+
+- If an earlier request with that key had finished when the row was
+  fetched, returns the row's `cached_result`, or raises its
+  `cached_error`, without validating the message again.
+- Otherwise, validates the message, and then sends it and saves the
+  result in one transaction that locks the row with `NOWAIT`. A
+  concurrent request with the same key that tries to take the lock
+  fails with a 409 error. Validation happens before taking the lock,
+  so that the lock isn't held while rendering the message, and so
+  that a validation error doesn't roll back messages sent during
+  validation, like bot owner notifications.
+- Saves a 4xx error from validating or sending the message as the
+  row's `cached_error`. Otherwise, a replay of the request could send
+  the message after the client was told that it failed and had
+  retried with a new key. Saving the error waits while a concurrent
+  request with the same key holds the lock.
+- If a request with the same key finished after the row was fetched,
+  returns that request's outcome instead of sending the message or
+  saving the error.
+
+Checks in `send_message_backend` itself, like the `can_forge_sender`
+check, run before `run_idempotently`, so they run again on every
+replay, and their errors aren't saved.
+
+The `delete_old_idempotent_requests` cron job deletes rows older than
+a day. Another endpoint can use `zerver/lib/idempotency.py` if its
+work runs in one transaction and returns a dataclass of JSON values,
+once the endpoint is added to the row's unique key.
+
 ## Local echo
 
 An essential feature for a good chat experience is local echo
