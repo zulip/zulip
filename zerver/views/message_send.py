@@ -15,6 +15,7 @@ from zerver.actions.message_send import (
     render_unsaved_message,
 )
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.idempotency import get_or_create_idempotent_request
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import (
@@ -128,6 +129,7 @@ def send_message_backend(
         # automatically marked as read for yourself.
         read_by_sender = client.default_read_by_sender()
 
+    idempotent_request = get_or_create_idempotent_request(request, user_profile)
     data: SendMessageResponseData = {}
     sent_message_result = check_send_message(
         sender,
@@ -144,6 +146,7 @@ def send_message_backend(
         sender_queue_id=queue_id,
         widget_content=widget_content,
         read_by_sender=read_by_sender,
+        idempotent_request=idempotent_request,
     )
     data["id"] = sent_message_result.message_id
     data["message_url"] = sent_message_result.message_url

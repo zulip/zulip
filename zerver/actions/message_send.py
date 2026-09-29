@@ -43,6 +43,7 @@ from zerver.lib.exceptions import (
     TopicsNotAllowedError,
     TopicWildcardMentionNotAllowedError,
 )
+from zerver.lib.idempotency import get_cached_result, run_idempotently
 from zerver.lib.markdown import MessageRenderingResult, render_message_markdown
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
@@ -112,6 +113,7 @@ from zerver.lib.widget import do_widget_post_save_actions
 from zerver.models import (
     Client,
     Device,
+    IdempotentRequest,
     Message,
     PushDeviceToken,
     Realm,
@@ -276,6 +278,8 @@ class UserProfileAnnotations(TypedDict):
     has_push_device_registered: bool
 
 
+# Instances are cached in IdempotentRequest rows, so changes must be
+# able to deserialize rows written by older server versions.
 @dataclass
 class SentMessageResult:
     message_id: int
@@ -1611,7 +1615,12 @@ def check_send_message(
     *,
     skip_stream_access_check: bool = False,
     read_by_sender: bool = False,
+    idempotent_request: IdempotentRequest | None = None,
 ) -> SentMessageResult:
+    cached_result = get_cached_result(idempotent_request, SentMessageResult)
+    if cached_result is not None:
+        return cached_result
+
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     message_request = check_message(
         sender,
@@ -1627,10 +1636,14 @@ def check_send_message(
         widget_content,
         skip_stream_access_check=skip_stream_access_check,
     )
-    return do_send_messages(
-        [message_request],
-        mark_as_read=[sender.id] if read_by_sender else [],
-    )[0]
+    return run_idempotently(
+        idempotent_request,
+        SentMessageResult,
+        lambda: do_send_messages(
+            [message_request],
+            mark_as_read=[sender.id] if read_by_sender else [],
+        )[0],
+    )
 
 
 def send_rate_limited_pm_notification_to_bot_owner(
