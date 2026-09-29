@@ -1,12 +1,21 @@
 from collections.abc import Mapping, Sequence
 from datetime import datetime
-from typing import TypedDict
+from typing import Literal, TypedDict
 
 import django.db.utils
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
+from zerver.lib.event_types import (
+    BaseEvent,
+    SubscriptionPeerAddEvent,
+    UserGroupAddMembersEvent,
+    UserGroupAddSubgroupsEvent,
+    UserGroupRemoveEvent,
+    UserGroupRemoveMembersEvent,
+    UserGroupRemoveSubgroupsEvent,
+)
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.stream_subscription import get_user_ids_for_streams
 from zerver.lib.stream_traffic import get_streams_traffic
@@ -324,9 +333,15 @@ def do_update_user_group_description(
 
 
 def do_send_user_group_members_update_event(
-    event_name: str, user_group: NamedUserGroup, user_ids: list[int]
+    event_name: Literal["add_members", "remove_members"],
+    user_group: NamedUserGroup,
+    user_ids: list[int],
 ) -> None:
-    event = dict(type="user_group", op=event_name, group_id=user_group.id, user_ids=user_ids)
+    event: BaseEvent
+    if event_name == "add_members":
+        event = UserGroupAddMembersEvent(group_id=user_group.id, user_ids=user_ids)
+    else:
+        event = UserGroupRemoveMembersEvent(group_id=user_group.id, user_ids=user_ids)
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
@@ -413,9 +428,7 @@ def bulk_add_members_to_user_groups(
             recent_traffic,
             anonymous_group_membership,
         )
-        peer_add_event = dict(
-            type="subscription",
-            op="peer_add",
+        peer_add_event = SubscriptionPeerAddEvent(
             stream_ids=[stream.id],
             user_ids=sorted(subscriber_ids_for_streams[stream.id]),
         )
@@ -504,11 +517,17 @@ def bulk_remove_members_from_user_groups(
 
 
 def do_send_subgroups_update_event(
-    event_name: str, user_group: NamedUserGroup, subgroup_ids: list[int]
+    event_name: Literal["add_subgroups", "remove_subgroups"],
+    user_group: NamedUserGroup,
+    subgroup_ids: list[int],
 ) -> None:
-    event = dict(
-        type="user_group", op=event_name, group_id=user_group.id, direct_subgroup_ids=subgroup_ids
-    )
+    event: BaseEvent
+    if event_name == "add_subgroups":
+        event = UserGroupAddSubgroupsEvent(group_id=user_group.id, direct_subgroup_ids=subgroup_ids)
+    else:
+        event = UserGroupRemoveSubgroupsEvent(
+            group_id=user_group.id, direct_subgroup_ids=subgroup_ids
+        )
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
@@ -594,9 +613,7 @@ def add_subgroups_to_user_group(
             recent_traffic,
             anonymous_group_membership,
         )
-        peer_add_event = dict(
-            type="subscription",
-            op="peer_add",
+        peer_add_event = SubscriptionPeerAddEvent(
             stream_ids=[stream.id],
             user_ids=sorted(subscriber_ids_for_streams[stream.id]),
         )
@@ -700,7 +717,7 @@ def do_deactivate_user_group(
 
     do_send_user_group_update_event(user_group, dict(deactivated=True))
 
-    event = dict(type="user_group", op="remove", group_id=user_group.id)
+    event = UserGroupRemoveEvent(group_id=user_group.id)
     send_event_on_commit(user_group.realm, event, active_user_ids(user_group.realm_id))
 
 
