@@ -86,7 +86,7 @@ from django.utils.html import escape
 from markdown import Markdown
 from markdown.extensions import Extension, codehilite
 from markdown.extensions.codehilite import CodeHiliteExtension, parse_hl_lines
-from markdown.preprocessors import Preprocessor
+from markdown.preprocessors import NormalizeWhitespace, Preprocessor
 from pygments.lexers import find_lexer_class_by_name
 from pygments.util import ClassNotFound
 from typing_extensions import override
@@ -588,6 +588,38 @@ class FencedBlockPreprocessor(Preprocessor):
         txt = txt.replace(">", "&gt;")
         txt = txt.replace('"', "&quot;")
         return txt
+
+
+class UnclosedFenceFinder(FencedBlockPreprocessor):
+    """Finds the fenced blocks that content leaves open, using the same
+    handlers that parse fenced blocks when rendering a message. Blocks
+    that content closes aren't used, so this skips formatting code and
+    math blocks, which is slow.
+    """
+
+    @override
+    def format_code(self, lang: str | None, text: str) -> str:
+        return text
+
+    @override
+    def format_tex(self, text: str) -> str:
+        return text
+
+    def get_unclosed_fences(self, content: str, default_language: str | None) -> list[str]:
+        # Markdown normalizes whitespace before parsing fenced blocks.
+        lines = NormalizeWhitespace(self.md).run(content.split("\n"))
+        self.handle_lines(lines, [], default_language)
+        return [handler.fence for handler in reversed(self.handlers) if handler.fence is not None]
+
+
+def close_unclosed_fences(content: str, default_language: str | None = None) -> str:
+    """Appends a closing fence for each fenced block that content leaves
+    open, so that the blocks can't swallow text placed after content.
+    default_language is the realm's default code block language, used
+    for fences that don't name a language.
+    """
+    unclosed_fences = UnclosedFenceFinder(Markdown()).get_unclosed_fences(content, default_language)
+    return "\n".join([content, *unclosed_fences])
 
 
 def makeExtension(*args: Any, **kwargs: Any) -> FencedCodeExtension:
