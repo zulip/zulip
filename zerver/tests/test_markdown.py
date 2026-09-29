@@ -1144,7 +1144,12 @@ class MarkdownEmbedsTest(ZulipTestCase):
         # (e.g. rejected for thumbnailing, such as for exceeding
         # IMAGE_BOMB_TOTAL_PIXELS) renders as a link instead of
         # literal Markdown text. See #40229.
-        url = "/user_uploads/path/to/huge_image.png"
+        url = upload_message_attachment(
+            "huge_image.png",
+            "image/png",
+            b"",
+            self.example_user("othello"),
+        )[0]
         path_id = re.sub(r"/user_uploads/", "", url)
         message_id = self.send_message_content(f"![huge_image.png](/user_uploads/{path_id})")
         expected = f'<p><a href="{url}">huge_image.png</a></p>'
