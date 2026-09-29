@@ -1,0 +1,12 @@
+diff --git a/dist/content/vite-plugin-content-assets.js b/dist/content/vite-plugin-content-assets.js
+index 5bbc414b44ea8004fd576fa92111c2d57e90e92b..7095b0f7cf46d61f83a9c9b0c3ab4fb31900bd49 100644
+--- a/dist/content/vite-plugin-content-assets.js
++++ b/dist/content/vite-plugin-content-assets.js
+@@ -101,7 +101,6 @@ function astroContentAssetPropagationPlugin({
+             stringifiedStyles = JSON.stringify(STYLES_PLACEHOLDER);
+           }
+           const code = `
+-					"use astro:head-inject";
+ 					async function getMod() {
+ 						return import(${JSON.stringify(basePath)});
+ 					}
