@@ -395,8 +395,10 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_serve_local_file_unauthed_invalid_token(self) -> None:
-        result = self.client_get("/user_uploads/temporary/badtoken/file.png")
-        self.assert_json_error(result, "Invalid token")
+        for token in ["badtoken", "FF"]:
+            with self.subTest(token=token):
+                result = self.client_get(f"/user_uploads/temporary/{token}/file.png")
+                self.assert_json_error(result, "Invalid token")
 
     def test_serve_local_file_unauthed_altered_filename(self) -> None:
         self.login("hamlet")
