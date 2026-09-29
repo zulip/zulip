@@ -640,11 +640,9 @@ test("user_last_seen_time_status", ({override}) => {
 test("get_items_for_users", ({override}) => {
     add_canned_users();
     set_presence(alice.user_id, "offline");
-    override(user_settings, "emojiset", "google");
     override(user_settings, "user_list_style", 2);
 
     const status_emoji_info = {
-        emoji_alt_code: false,
         emoji_name: "car",
         emoji_code: "1f697",
         reaction_type: "unicode_emoji",

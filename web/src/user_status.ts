@@ -4,13 +4,10 @@ import * as channel from "./channel.ts";
 import * as emoji from "./emoji.ts";
 import type {EmojiRenderingDetails} from "./emoji.ts";
 import type {StateData} from "./state_data.ts";
-import {user_settings} from "./user_settings.ts";
 import {user_status_schema} from "./user_status_types.ts";
 
 export type UserStatus = z.infer<typeof user_status_schema>;
-export type UserStatusEmojiInfo = EmojiRenderingDetails & {
-    emoji_alt_code?: boolean;
-};
+export type UserStatusEmojiInfo = EmojiRenderingDetails;
 
 const user_status_event_schema = z.intersection(
     z.object({
@@ -94,14 +91,14 @@ export function set_status_emoji(event: UserStatusEvent): void {
         return;
     }
 
-    user_status_emoji_info.set(opts.user_id, {
-        emoji_alt_code: user_settings.emojiset === "text",
-        ...emoji.get_emoji_details_for_rendering({
+    user_status_emoji_info.set(
+        opts.user_id,
+        emoji.get_emoji_details_for_rendering({
             emoji_name: opts.emoji_name,
             emoji_code: opts.emoji_code,
             reaction_type: opts.reaction_type,
         }),
-    });
+    );
 }
 
 export function initialize(params: StateData["user_status"]): void {
