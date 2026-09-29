@@ -5,9 +5,16 @@ import * as channel from "./channel.ts";
 import * as compose_banner from "./compose_banner.ts";
 import * as compose_call from "./compose_call.ts";
 import {compose_call_session_manager} from "./compose_call_session.ts";
-import {get_recipient_label} from "./compose_closed_ui.ts";
+import {
+    type RecipientLabel,
+    get_direct_message_recipient_label,
+    get_stream_recipient_label,
+} from "./compose_closed_ui.ts";
+import * as compose_state from "./compose_state.ts";
 import * as compose_ui from "./compose_ui.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as message_store from "./message_store.ts";
+import * as people from "./people.ts";
 import * as rows from "./rows.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as ui_report from "./ui_report.ts";
@@ -18,6 +25,48 @@ const call_response_schema = z.object({
     result: z.string(),
     url: z.string(),
 });
+
+// Builds the meeting/room name label for some video providers from
+// the current compose target or, when editing, from the message
+// being edited.
+export let get_recipient_label_for_call = (
+    edit_message_id: string | undefined,
+): RecipientLabel | undefined => {
+    if (edit_message_id !== undefined) {
+        const message = message_store.get(Number(edit_message_id));
+        if (message === undefined) {
+            return undefined;
+        }
+        if (message.is_stream) {
+            return get_stream_recipient_label(message.stream_id, message.topic);
+        }
+        return get_direct_message_recipient_label(
+            people.user_ids_string_to_ids_array(message.to_user_ids),
+        );
+    }
+    const message_type = compose_state.get_message_type();
+    if (message_type === "stream") {
+        const stream_id = compose_state.stream_id();
+        if (stream_id === undefined) {
+            return undefined;
+        }
+        return get_stream_recipient_label(stream_id, compose_state.topic());
+    }
+    if (message_type === "private") {
+        const recipient_ids = compose_state.private_message_recipient_ids();
+        if (recipient_ids.length === 0) {
+            return undefined;
+        }
+        return get_direct_message_recipient_label(recipient_ids);
+    }
+    return undefined;
+};
+
+export function rewire_get_recipient_label_for_call(
+    value: typeof get_recipient_label_for_call,
+): void {
+    get_recipient_label_for_call = value;
+}
 
 export function update_audio_and_video_chat_button_display(): void {
     update_audio_chat_button_display();
@@ -149,7 +198,8 @@ export function generate_and_insert_audio_or_video_call_link(
     } else {
         switch (realm.realm_video_chat_provider) {
             case available_providers.big_blue_button?.id: {
-                const meeting_name = `${get_recipient_label()?.label_text ?? ""} meeting`;
+                const meeting_name =
+                    `${get_recipient_label_for_call(edit_message_id)?.label_text ?? ""} meeting`.trimStart();
                 const request = {
                     meeting_name,
                     voice_only: is_audio_call,
@@ -207,8 +257,61 @@ export function generate_and_insert_audio_or_video_call_link(
                 });
                 break;
             }
+            case available_providers.galene?.id: {
+                const meeting_label = get_recipient_label_for_call(edit_message_id);
+
+                const data: {group_name: string; subgroup_name: string; is_dm: boolean} =
+                    meeting_label?.user_ids
+                        ? {
+                              // For a DM, use a sorted comma-joined user-id list
+                              // (including our own id) as the Galène room name.
+                              group_name: "dm",
+                              subgroup_name: people.concat_direct_message_group(
+                                  meeting_label.user_ids,
+                                  current_user.user_id,
+                              ),
+                              is_dm: true,
+                          }
+                        : {
+                              group_name: meeting_label?.stream?.name ?? "general_calls",
+                              subgroup_name: meeting_label?.topic_display_name ?? "",
+                              is_dm: false,
+                          };
+
+                const handle_success = (response: unknown): void => {
+                    const callback = (): void => {
+                        const data = call_response_schema.parse(response);
+                        insert_video_call_url(data.url, $target_textarea);
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                const handle_error = (
+                    _xhr: JQuery.jqXHR<unknown>,
+                    status: JQuery.Ajax.ErrorTextStatus,
+                ): void => {
+                    const callback = (): void => {
+                        if (status !== "abort") {
+                            ui_report.generic_embed_error(
+                                $t_html({defaultMessage: "Failed to create video call."}),
+                                2000,
+                            );
+                        }
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                xhr = channel.post({
+                    url: "/json/calls/galene/create",
+                    data,
+                    success: handle_success,
+                    error: handle_error,
+                });
+                break;
+            }
             case available_providers.nextcloud_talk?.id: {
-                const room_name = `${get_recipient_label()?.label_text ?? ""} conversation`;
+                const room_name =
+                    `${get_recipient_label_for_call(edit_message_id)?.label_text ?? ""} conversation`.trimStart();
                 const request = {room_name};
 
                 const handle_success = (response: unknown): void => {

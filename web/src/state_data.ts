@@ -480,6 +480,7 @@ export const realm_schema = z.object({
         zoom_server_to_server: z.optional(z.object({name: z.string(), id: z.number()})),
         big_blue_button: z.optional(z.object({name: z.string(), id: z.number()})),
         constructor_groups: z.optional(z.object({name: z.string(), id: z.number()})),
+        galene: z.optional(z.object({name: z.string(), id: z.number()})),
         nextcloud_talk: z.optional(z.object({name: z.string(), id: z.number()})),
         webex: z.optional(z.object({name: z.string(), id: z.number()})),
     }),

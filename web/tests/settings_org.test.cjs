@@ -442,6 +442,10 @@ test("set_up", ({override, override_rewire}) => {
             id: 8,
             name: "Webex",
         },
+        galene: {
+            id: 9,
+            name: "Galène",
+        },
     });
     override(realm, "realm_message_retention_days", null);
 
