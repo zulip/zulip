@@ -519,7 +519,7 @@ class RealmEmojiUpdateEvent(BaseEvent):
 
 
 class RealmExportConsentEvent(BaseEvent):
-    type: Literal["realm_export_consent"]
+    type: Literal["realm_export_consent"] = "realm_export_consent"
     user_id: int
     consented: bool
 
@@ -1273,8 +1273,8 @@ class UserGroupUpdateEvent(BaseEvent):
 
 
 class UserSettingsUpdateCoreEvent(BaseEvent):
-    type: Literal["user_settings"]
-    op: Literal["update"]
+    type: Literal["user_settings"] = "user_settings"
+    op: Literal["update"] = "update"
     property: str
     value: bool | int | str
 

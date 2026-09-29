@@ -19,6 +19,17 @@ from zerver.lib.cache import (
     user_profile_by_api_key_cache_key,
 )
 from zerver.lib.create_user import get_display_email_address
+from zerver.lib.event_types import (
+    PersonAvatarFields,
+    PersonDateJoined,
+    PersonDeliveryEmail,
+    PersonEmail,
+    PersonFullName,
+    PersonTimezone,
+    RealmExportConsentEvent,
+    RealmUserUpdateEvent,
+    UserSettingsUpdateEvent,
+)
 from zerver.lib.i18n import get_language_name
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
@@ -52,8 +63,8 @@ from zerver.tornado.django_api import send_event_on_commit
 
 
 def send_user_email_update_event(user_profile: UserProfile) -> None:
-    payload = dict(user_id=user_profile.id, new_email=user_profile.email)
-    event = dict(type="realm_user", op="update", person=payload)
+    payload = PersonEmail(user_id=user_profile.id, new_email=user_profile.email)
+    event = RealmUserUpdateEvent(person=payload)
     send_event_on_commit(
         user_profile.realm,
         event,
@@ -96,16 +107,18 @@ def send_delivery_email_update_events(
                 delivery_email_now_invisible_user_ids.append(active_user.id)
 
     if delivery_email_now_visible_user_ids:
-        person = dict(user_id=user_profile.id, delivery_email=user_profile.delivery_email)
-        event = dict(type="realm_user", op="update", person=person)
+        person = PersonDeliveryEmail(
+            user_id=user_profile.id, delivery_email=user_profile.delivery_email
+        )
+        event = RealmUserUpdateEvent(person=person)
         send_event_on_commit(
             user_profile.realm,
             event,
             delivery_email_now_visible_user_ids,
         )
     if delivery_email_now_invisible_user_ids:
-        person = dict(user_id=user_profile.id, delivery_email=None)
-        event = dict(type="realm_user", op="update", person=person)
+        person = PersonDeliveryEmail(user_id=user_profile.id, delivery_email=None)
+        event = RealmUserUpdateEvent(person=person)
         send_event_on_commit(
             user_profile.realm,
             event,
@@ -129,8 +142,8 @@ def do_change_user_delivery_email(
         user_profile.save(update_fields=["delivery_email"])
 
     # We notify all the users who have access to delivery email.
-    payload = dict(user_id=user_profile.id, delivery_email=new_email)
-    event = dict(type="realm_user", op="update", person=payload)
+    payload = PersonDeliveryEmail(user_id=user_profile.id, delivery_email=new_email)
+    event = RealmUserUpdateEvent(person=payload)
     delivery_email_visible_user_ids = get_users_with_access_to_real_email(user_profile)
 
     send_event_on_commit(user_profile.realm, event, delivery_email_visible_user_ids)
@@ -243,10 +256,10 @@ def do_change_full_name(
         event_time=event_time,
         extra_data={RealmAuditLog.OLD_VALUE: old_name, RealmAuditLog.NEW_VALUE: full_name},
     )
-    payload = dict(user_id=user_profile.id, full_name=user_profile.full_name)
+    payload = PersonFullName(user_id=user_profile.id, full_name=user_profile.full_name)
     send_event_on_commit(
         user_profile.realm,
-        dict(type="realm_user", op="update", person=payload),
+        RealmUserUpdateEvent(person=payload),
         get_user_ids_who_can_access_user(user_profile),
     )
 
@@ -353,7 +366,7 @@ def bulk_regenerate_api_keys(user_profile_ids: Iterable[int]) -> None:
 
 
 def notify_avatar_url_change(user_profile: UserProfile) -> None:
-    payload = dict(
+    payload = PersonAvatarFields(
         avatar_source=user_profile.avatar_source,
         avatar_url=avatar_url(user_profile),
         avatar_url_medium=avatar_url(user_profile, medium=True),
@@ -363,7 +376,7 @@ def notify_avatar_url_change(user_profile: UserProfile) -> None:
         user_id=user_profile.id,
     )
 
-    event = dict(type="realm_user", op="update", person=payload)
+    event = RealmUserUpdateEvent(person=payload)
     send_event_on_commit(
         user_profile.realm,
         event,
@@ -518,16 +531,11 @@ def bulk_change_user_setting(
             assert isinstance(db_setting_value, int)
             update_scheduled_email_notifications_time(user_profile, old_value, db_setting_value)
 
-    event = {
-        "type": "user_settings",
-        "op": "update",
-        "property": setting_name,
-        "value": event_value,
-    }
+    event = UserSettingsUpdateEvent(property=setting_name, value=event_value)
 
     if setting_name == "default_language":
         assert isinstance(db_setting_value, str)
-        event["language_name"] = get_language_name(db_setting_value)
+        event.language_name = get_language_name(db_setting_value)
 
     transaction.on_commit(lambda: bulk_flush_users(user_profiles=user_profiles, realm=realm))
 
@@ -537,11 +545,8 @@ def bulk_change_user_setting(
     if setting_name == "allow_private_data_export":
         assert len(user_profiles) == 1
         user_profile = user_profiles[0]
-        realm_export_event = {
-            "type": "realm_export_consent",
-            "user_id": user_profile.id,
-            "consented": event_value,
-        }
+        assert isinstance(event_value, bool)
+        realm_export_event = RealmExportConsentEvent(user_id=user_profile.id, consented=event_value)
         send_event_on_commit(
             user_profile.realm,
             realm_export_event,
@@ -552,12 +557,12 @@ def bulk_change_user_setting(
     if setting_name == "timezone":
         assert len(user_profiles) == 1
         user_profile = user_profiles[0]
-        payload = dict(
+        payload = PersonTimezone(
             email=user_profile.email,
             user_id=user_profile.id,
             timezone=canonicalize_timezone(user_profile.timezone),
         )
-        timezone_event = dict(type="realm_user", op="update", person=payload)
+        timezone_event = RealmUserUpdateEvent(person=payload)
         send_event_on_commit(
             realm,
             timezone_event,
@@ -718,9 +723,11 @@ def do_change_user_date_joined(user_profile: UserProfile, date_joined: datetime)
         },
     )
 
-    payload = dict(user_id=user_profile.id, date_joined=date_joined.isoformat(timespec="minutes"))
+    payload = PersonDateJoined(
+        user_id=user_profile.id, date_joined=date_joined.isoformat(timespec="minutes")
+    )
     send_event_on_commit(
         user_profile.realm,
-        dict(type="realm_user", op="update", person=payload),
+        RealmUserUpdateEvent(person=payload),
         get_user_ids_who_can_access_user(user_profile),
     )
