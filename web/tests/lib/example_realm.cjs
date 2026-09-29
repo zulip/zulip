@@ -64,6 +64,10 @@ exports.make_realm = (opts = {}) => {
         realm_can_set_delete_message_policy_group: 0,
         realm_can_set_topics_policy_group: 0,
         realm_can_summarize_topics_group: 0,
+        realm_can_unsubscribe_group: {
+            direct_subgroups: [],
+            direct_members: [],
+        },
         realm_create_multiuse_invite_group: 0,
         realm_date_created: 0,
         realm_default_code_block_language: "",
