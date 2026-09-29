@@ -814,6 +814,11 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## zulip-secrets.conf.
 # NEXTCLOUD_SERVER = "https://nextcloud.example.com"
 
+## Controls integrated Zulip calling, which is powered by LiveKit.
+## You must also set livekit_api_key and livekit_api_secret in
+## zulip-secrets.conf.
+# LIVEKIT_URL = "wss://livekit.example.com"
+
 ################
 ## AI Features
 ##
