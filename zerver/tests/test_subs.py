@@ -4765,6 +4765,45 @@ class SubscriptionAPITest(ZulipTestCase):
             self.assert_length(event_stream_objects, 1)
             self.assertEqual(event_stream_objects[0]["stream_id"], private.id)
 
+    def test_users_getting_remove_peer_event_via_nested_permission_groups(self) -> None:
+        # Moderators have metadata access to the first channel because
+        # the moderators group is a subgroup of the members group, and
+        # to the second channel via the moderators group directly. When
+        # both channels are processed together, moderators must be
+        # notified about both.
+        hamlet = self.example_user("hamlet")
+        shiva = self.example_user("shiva")
+        realm = hamlet.realm
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        moderators_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
+        )
+
+        members_can_subscribe = self.make_stream("members_can_subscribe", invite_only=True)
+        do_change_stream_group_based_setting(
+            members_can_subscribe, "can_subscribe_group", members_group, acting_user=hamlet
+        )
+        moderators_can_add = self.make_stream("moderators_can_add", invite_only=True)
+        do_change_stream_group_based_setting(
+            moderators_can_add, "can_add_subscribers_group", moderators_group, acting_user=hamlet
+        )
+        self.subscribe(hamlet, members_can_subscribe.name)
+        self.subscribe(hamlet, moderators_can_add.name)
+
+        with self.capture_send_event_calls(expected_num_events=6) as events:
+            do_deactivate_user(hamlet, acting_user=None)
+
+        peer_events = [e for e in events if e["event"].get("op") == "peer_remove"]
+        for stream in [members_can_subscribe, moderators_can_add]:
+            notified_user_ids: set[int] = set()
+            for event in peer_events:
+                if stream.id in event["event"]["stream_ids"]:
+                    self.assertEqual(event["event"]["user_ids"], [hamlet.id])
+                    notified_user_ids |= set(event["users"])
+            self.assertIn(shiva.id, notified_user_ids)
+
     def test_bulk_subscribe_many(self) -> None:
         # Create a whole bunch of streams
         streams = [f"stream_{i}" for i in range(30)]

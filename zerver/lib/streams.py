@@ -308,15 +308,15 @@ def get_users_dict_with_metadata_access_to_streams_via_permission_groups(
     recursive_subgroups = get_root_id_annotated_recursive_subgroups_for_groups(
         all_permission_group_ids, realm_id
     )
-    subgroup_root_id_dict = {}
-    all_subgroup_ids = set()
+    # A group can be a subgroup of several permission groups, so map
+    # each subgroup to every root it is reachable from.
+    subgroup_root_ids_dict: dict[int, set[int]] = defaultdict(set)
     for group in recursive_subgroups:
-        subgroup_root_id_dict[group.id] = group.root_id  # type: ignore[attr-defined]  # root_id is an annotated field.
-        all_subgroup_ids.add(group.id)
+        subgroup_root_ids_dict[group.id].add(group.root_id)  # type: ignore[attr-defined]  # root_id is an annotated field.
 
     group_members = (
         UserGroupMembership.objects.filter(
-            user_group_id__in=list(all_subgroup_ids), user_profile__is_active=True
+            user_group_id__in=list(subgroup_root_ids_dict), user_profile__is_active=True
         )
         .exclude(
             # allow_everyone_group=False is false for both
@@ -329,8 +329,8 @@ def get_users_dict_with_metadata_access_to_streams_via_permission_groups(
     )
     group_members_dict = defaultdict(set)
     for user_group_id, user_profile_id in group_members:
-        root_id = subgroup_root_id_dict[user_group_id]
-        group_members_dict[root_id].add(user_profile_id)
+        for root_id in subgroup_root_ids_dict[user_group_id]:
+            group_members_dict[root_id].add(user_profile_id)
 
     users_with_metadata_access_dict = defaultdict(set)
     for stream in streams:
