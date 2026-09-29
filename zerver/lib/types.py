@@ -21,17 +21,19 @@ RealmUserValidator: TypeAlias = Callable[[int, object, bool], list[int]]
 ProfileDataElementValue: TypeAlias = str | list[int]
 
 
-class ProfileDataElementBase(TypedDict, total=False):
+class ProfileDataElementBase(TypedDict):
     id: int
     name: str
+    rendered_name: str
     type: int
     hint: str
-    display_in_profile_summary: bool
+    rendered_hint: str
     required: bool
     editable_by_user: bool
-    use_for_user_matching: bool
     field_data: str
     order: int
+    display_in_profile_summary: NotRequired[bool]
+    use_for_user_matching: NotRequired[bool]
 
 
 class ProfileDataElement(ProfileDataElementBase):
