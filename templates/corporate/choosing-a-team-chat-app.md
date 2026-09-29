@@ -4,9 +4,6 @@ organizations choose communication software, and the impact those choices have.
 These recommendations are based on their real-world experience using these apps
 day after day.
 
-This guide reviews SaaS team chat apps; we plan to publish a separate guide on
-open-source team chat options you can self-host.
-
 ## 3 team chat apps to consider
 
 To make good use of your time, we focus on the handful of SaaS team chat apps
@@ -192,8 +189,7 @@ Several open-source team chat applications have been around for years, and are
 solid options if you are looking to self-host your team chat solution
 ([Matrix](https://matrix.org/) / [Element](https://element.io/),
 [Mattermost](https://mattermost.com/), [Rocket.Chat](https://www.rocket.chat/),
-and our own [Zulip](/self-hosting/)). We plan to cover these in a separate
-article.
+and our own [Zulip](/self-hosting/)).
 
 Currently, Zulip is the only one of these projects focused on business use,
 rather than on government and defense customers.
