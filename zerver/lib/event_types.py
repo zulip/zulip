@@ -1209,8 +1209,8 @@ class Group(BaseEventModel):
 
 
 class UserGroupAddEvent(BaseEvent):
-    type: Literal["user_group"]
-    op: Literal["add"]
+    type: Literal["user_group"] = "user_group"
+    op: Literal["add"] = "add"
     group: Group
 
 
@@ -1266,8 +1266,8 @@ class UserGroupData(UserGroupDataCore):
 
 
 class UserGroupUpdateEvent(BaseEvent):
-    type: Literal["user_group"]
-    op: Literal["update"]
+    type: Literal["user_group"] = "user_group"
+    op: Literal["update"] = "update"
     group_id: int
     data: UserGroupData
 
