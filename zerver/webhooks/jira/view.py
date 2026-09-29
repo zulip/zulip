@@ -22,7 +22,6 @@ from zerver.models import Realm, UserProfile
 from zerver.models.users import get_user_by_delivery_email
 
 IGNORED_EVENTS = [
-    "attachment_created",
     "issuelink_created",
     "issuelink_deleted",
     "jira:version_released",
@@ -331,6 +330,20 @@ def handle_comment_deleted_event(payload: WildValue, user_profile: UserProfile) 
     )
 
 
+def get_attachment_author(attachment_payload: WildValue, realm: Realm) -> str:
+    author_payload = attachment_payload.get("author")
+    return get_user_mention(realm, author_payload)
+
+
+def handle_attachment_created_event(payload: WildValue, user_profile: UserProfile) -> str:
+    attachment = payload["attachment"]
+    filename = attachment["filename"].tame(check_string)
+    url = attachment["content"].tame(check_string)
+    author = get_attachment_author(attachment, user_profile.realm)
+    issue_string = get_issue_string(payload, with_title=True)
+    return f"{author} uploaded [{filename}]({url}) to {issue_string}."
+
+
 JIRA_CONTENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue, UserProfile], str] | None] = {
     "jira:issue_created": handle_created_issue_event,
     "jira:issue_deleted": handle_deleted_issue_event,
@@ -338,8 +351,8 @@ JIRA_CONTENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue, UserProfile], str] 
     "comment_created": handle_comment_created_event,
     "comment_updated": handle_comment_updated_event,
     "comment_deleted": handle_comment_deleted_event,
+    "attachment_created": handle_attachment_created_event,
 }
-
 ALL_EVENT_TYPES = list(JIRA_CONTENT_FUNCTION_MAPPER.keys())
 
 
