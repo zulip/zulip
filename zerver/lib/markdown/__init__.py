@@ -2096,6 +2096,25 @@ class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
     def __init__(self, pattern: str, zmd: "ZulipMarkdown") -> None:
         super().__init__(pattern, zmd)
         self.zmd = zmd
+        # Used to render `![alt](/user_uploads/...)` as an ordinary
+        # link when the upload can't be shown as an inline image.
+        self.link_processor = LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, zmd)
+
+    def fallback_to_link(self, img: Element) -> Element | None:
+        # Render the same <a> that `[alt](url)` would have produced.
+        # `img` has not been modified yet, so its src is still the raw
+        # value; passing it through LinkInlineProcessor means
+        # sanitizing/relative-URL rewriting behave identically to the
+        # link syntax.
+        src = img.get("src")
+        assert src is not None
+        link = Element("a")
+        link.set("href", src)
+        title = img.get("title")
+        if title is not None:
+            link.set("title", title)
+        link.text = img.get("alt", "")
+        return self.link_processor.zulip_specific_link_changes(link)
 
     def zulip_specific_src_changes(self, img: Element) -> Element | None:
         # function partially copied from LinkInlineProcessor.zulip_specific_link_changes
@@ -2123,7 +2142,10 @@ class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
         # before rendering; Else, its header didn't parse as
         # a valid image type which libvips handles.
         if not db_data or path_id not in db_data.user_upload_previews.image_metadata:
-            return None
+            # No ImageAttachment row (e.g. the file was rejected for
+            # thumbnailing, such as exceeding IMAGE_BOMB_TOTAL_PIXELS).
+            # Show a normal link to the file instead of literal Markdown.
+            return self.fallback_to_link(img)
         else:
             assert path_id in db_data.user_upload_previews.image_metadata
             metadata = db_data.user_upload_previews.image_metadata[path_id]

@@ -1122,7 +1122,7 @@ class MarkdownEmbedsTest(ZulipTestCase):
         with self.assertLogs(level="WARNING"):
             message_id = self.send_message_content(f"![Audio link](/user_uploads/{path_id})")
 
-        expected = f"<p>![Audio link]({url})</p>"
+        expected = f'<p><a href="{url}">Audio link</a></p>'
         self.assert_message_content_is(message_id, expected)
 
         # Test audio files are not previewed when the content type
@@ -1136,7 +1136,18 @@ class MarkdownEmbedsTest(ZulipTestCase):
         )[0]
         path_id = re.sub(r"/user_uploads/", "", url)
         message_id = self.send_message_content(f"![Audio link](/user_uploads/{path_id})")
-        expected = f"<p>![Audio link]({url})</p>"
+        expected = f'<p><a href="{url}">Audio link</a></p>'
+        self.assert_message_content_is(message_id, expected)
+
+    def test_inline_image_no_preview_falls_back_to_link(self) -> None:
+        # Test that an uploaded file with no ImageAttachment row
+        # (e.g. rejected for thumbnailing, such as for exceeding
+        # IMAGE_BOMB_TOTAL_PIXELS) renders as a link instead of
+        # literal Markdown text. See #40229.
+        url = "/user_uploads/path/to/huge_image.png"
+        path_id = re.sub(r"/user_uploads/", "", url)
+        message_id = self.send_message_content(f"![huge_image.png](/user_uploads/{path_id})")
+        expected = f'<p><a href="{url}">huge_image.png</a></p>'
         self.assert_message_content_is(message_id, expected)
 
     @override_settings(INLINE_IMAGE_PREVIEW=False)
