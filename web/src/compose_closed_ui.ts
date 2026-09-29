@@ -140,7 +140,7 @@ export function get_recipient_label(
 }
 
 // Exported for tests
-export let update_reply_button_state = (): void => {
+export function update_reply_button_state(): void {
     const $compose_reply_button_wrapper = $(
         "#legacy-closed-compose-box .compose-reply-button-wrapper",
     );
@@ -170,10 +170,6 @@ export let update_reply_button_state = (): void => {
     } else {
         $compose_reply_button_wrapper.attr("data-reply-button-type", "selected_conversation");
     }
-};
-
-export function rewire_update_reply_button_state(value: typeof update_reply_button_state): void {
-    update_reply_button_state = value;
 }
 
 function update_new_conversation_button(data_attribute_string: "stream" | "non-specific"): void {

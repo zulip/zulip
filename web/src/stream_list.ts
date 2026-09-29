@@ -918,7 +918,7 @@ function set_stream_unread_count(
     );
 }
 
-export let update_streams_sidebar = (force_rerender = false): void => {
+export function update_streams_sidebar(force_rerender = false): void {
     if (!force_rerender && is_zoomed_in()) {
         // We do our best to update topics that are displayed
         // in case user zoomed in. Streams list will be updated,
@@ -951,10 +951,6 @@ export let update_streams_sidebar = (force_rerender = false): void => {
     }
 
     update_stream_sidebar_for_narrow(filter);
-};
-
-export function rewire_update_streams_sidebar(value: typeof update_streams_sidebar): void {
-    update_streams_sidebar = value;
 }
 
 type SectionUnreadCount = {

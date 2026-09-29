@@ -1526,7 +1526,7 @@ function get_suggestions_for_multi_word_channel_or_topic(
     return attacher.get_result().slice(0, max_items);
 }
 
-export let get_suggestions = function (
+export function get_suggestions(
     pill_search_terms: NarrowCanonicalTerm[],
     text_search_terms_non_canonical: NarrowTermSuggestion[],
     add_current_filter = false,
@@ -1633,8 +1633,4 @@ export let get_suggestions = function (
     }
 
     return attacher.get_result().slice(0, max_items);
-};
-
-export function rewire_get_suggestions(value: typeof get_suggestions): void {
-    get_suggestions = value;
 }
