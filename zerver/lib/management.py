@@ -199,6 +199,7 @@ server via `ps -ef` or reading bash history. Prefer
         realm: Realm | None,
         is_bot: bool | None = None,
         include_deactivated: bool = False,
+        acquire_lock: bool = False,
     ) -> QuerySet[UserProfile]:
         if "all_users" in options:
             all_users = options["all_users"]
@@ -217,7 +218,9 @@ server via `ps -ef` or reading bash history. Prefer
                 if not include_deactivated:
                     user_profiles = user_profiles.filter(is_active=True)
                 if is_bot is not None:
-                    return user_profiles.filter(is_bot=is_bot)
+                    user_profiles = user_profiles.filter(is_bot=is_bot)
+                if acquire_lock:
+                    user_profiles = user_profiles.order_by("id").select_for_update(no_key=True)
                 return user_profiles
 
         if options["users"] is None:
@@ -237,6 +240,9 @@ server via `ps -ef` or reading bash history. Prefer
         user_profiles = user_profiles.filter(reduce(lambda a, b: a | b, email_matches)).order_by(
             "id"
         )
+
+        if acquire_lock:
+            user_profiles = user_profiles.select_for_update(of=("self",), no_key=True)
 
         # Return the single query, for ease of composing.
         return user_profiles
