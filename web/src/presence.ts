@@ -4,6 +4,7 @@ import * as z from "zod/mini";
 
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
+import * as server_time from "./server_time.ts";
 import type {StateData, presence_schema} from "./state_data.ts";
 import {realm} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
@@ -220,6 +221,8 @@ export function set_info(
             8: Object { active_timestamp: 1585745578 }
         }
     */
+
+    server_time.update_offset(server_timestamp);
 
     presence_last_update_id = last_update_id;
     const all_active_or_idle_user_ids = new Set(get_active_or_idle_user_ids());
