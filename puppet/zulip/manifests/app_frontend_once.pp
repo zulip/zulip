@@ -53,6 +53,10 @@ class zulip::app_frontend_once {
     hour   => '6',
     minute => '0',
   }
+  zulip::cron { 'delete-old-idempotent-requests':
+    hour   => '7',
+    minute => '0',
+  }
   zulip::cron { 'send-digest-emails':
     hour   => '18',
     minute => '0',
