@@ -11,10 +11,10 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.41.1",
+    "@astrojs/starlight": "^0.42.4",
     "@iconify-json/fa": "^1.2.1",
     "astro": "^7.1.4",
-    "astro-compressor": "^1.1.2",
+    "astro-compressor": "^2.0.1",
     "hast-util-from-html": "^2.0.3",
     "hast-util-to-html": "^9.0.5",
     "mdast-util-to-string": "^4.0.0",
@@ -22,7 +22,7 @@
     "remark-mdx": "^3.1.0",
     "sharp": "^0.35.3",
     "unist-util-visit": "^5.0.0",
-    "unplugin-icons": "^23.0.1"
+    "unplugin-icons": "^24.0.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.3",

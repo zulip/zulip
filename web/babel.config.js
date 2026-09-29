@@ -23,7 +23,7 @@ const config = {
     only: [new RegExp("^" + _.escapeRegExp(path.resolve(import.meta.dirname, "src") + path.sep))],
     plugins: [
         ["formatjs", formatJsOptions],
-        ["polyfill-corejs3", {method: "usage-global", version: "3.49"}],
+        ["polyfill-corejs3", {method: "usage-global", version: "3.50"}],
     ],
     presets: [["@babel/preset-env", presetEnvOptions], "@babel/typescript"],
     env: {
