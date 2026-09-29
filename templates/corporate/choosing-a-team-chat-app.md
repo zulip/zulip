@@ -147,9 +147,6 @@ communities with up to tens of thousands of members.
   [self-hosted Zulip](/self-hosting/) is HIPAA compliant.
 - Your organization is an enterprise with a **complex procurement process**
   that makes it hard to work with a small vendor.
-- Your primary need is a mobile app for quick messages. Zulip’s [mobile
-  app](/apps/) is designed to help you keep up with organized conversations on
-  the go, rather than for casual chat.
 - You want to simplify onboarding by choosing an app most employees have used
   before. It’s best to be **intentional with onboarding** team members to
   Zulip’s unique approach to organizing conversations, e.g., by pointing to
