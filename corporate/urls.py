@@ -146,6 +146,11 @@ landing_page_urls = [
     path("values/", landing_view, {"template_name": "corporate/values.html"}),
     path("partners/", landing_view, {"template_name": "corporate/partners.html"}),
     path("why-zulip/", landing_view, {"template_name": "corporate/why-zulip.html"}),
+    path(
+        "choosing-a-team-chat-app/",
+        landing_view,
+        {"template_name": "corporate/choosing-a-team-chat-app.html"},
+    ),
     path("self-hosting/", landing_view, {"template_name": "corporate/self-hosting.html"}),
     path("zulip-cloud/", landing_view, {"template_name": "corporate/zulip-cloud.html"}),
     path("security/", landing_view, {"template_name": "corporate/security.html"}),
