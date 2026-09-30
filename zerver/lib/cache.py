@@ -766,7 +766,7 @@ def flush_used_upload_space_cache(
     attachment = instance
 
     if created:
-        cache_delete(get_realm_used_upload_space_cache_key(attachment.owner.realm_id))
+        cache_delete(get_realm_used_upload_space_cache_key(attachment.realm_id))
 
 
 def to_dict_cache_key_id(message_id: int) -> str:

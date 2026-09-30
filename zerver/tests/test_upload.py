@@ -2380,6 +2380,19 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         upload_message_attachment("dummy3.txt", "text/plain", data3, self.user_profile)
         self.assertEqual(len(data2) + len(data3), self.realm.currently_used_upload_space_bytes())
 
+    def test_currently_used_upload_space_for_cross_realm_bot_upload(self) -> None:
+        self.assertEqual(0, self.realm.currently_used_upload_space_bytes())
+
+        # The email gateway bot uploads files into the organization the
+        # email was sent to, not its own.
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
+        data = b"zulip!"
+        upload_message_attachment(
+            "dummy.txt", "text/plain", data, email_gateway_bot, target_realm=self.realm
+        )
+        self.assert_length(data, self.realm.currently_used_upload_space_bytes())
+
 
 class DecompressionBombTests(ZulipTestCase):
     @override
