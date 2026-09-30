@@ -121,49 +121,6 @@ def get_actor_name(payload: WildValue) -> str:
     return payload["actor"]["name"].tame(check_string)
 
 
-def get_project_inline_fields(payload: WildValue) -> list[str]:
-    # The project's at-a-glance identity, rendered as a single bold-labeled
-    # line below the create message.
-    fields = []
-    data = payload["data"]
-
-    status = data.get("status")
-    if status:
-        fields.append(f"**Status:** {status['name'].tame(check_string)}")
-
-    lead = data.get("lead")
-    if lead:
-        fields.append(f"**Lead:** {lead['name'].tame(check_string)}")
-
-    if "priority" in data:
-        priority = data["priority"].tame(check_int)
-        if priority in PROJECT_PRIORITY_LABELS:
-            fields.append(f"**Priority:** {PROJECT_PRIORITY_LABELS[priority]}")
-
-    return fields
-
-
-def get_project_date_fields(payload: WildValue) -> list[str]:
-    data = payload["data"]
-    dates = []
-    for date_field, label in (("startDate", "Start date"), ("targetDate", "Target date")):
-        if date_field in data:
-            value = data[date_field].tame(check_none_or(check_string))
-            if value:
-                dates.append(f"**{label}:** {value}")
-    return dates
-
-
-def get_project_milestone_fields(payload: WildValue) -> list[str]:
-    data = payload["data"]
-    if "milestones" in data:
-        milestone_names = [m["name"].tame(check_string) for m in data["milestones"]]
-        if milestone_names:
-            label = "Milestone" if len(milestone_names) == 1 else "Milestones"
-            return [f"**{label}:** {', '.join(milestone_names)}"]
-    return []
-
-
 # Linear's API name "content" is what users edit as the project description;
 # the separate "description" field is a short summary that rarely changes.
 PROJECT_UPDATE_CHANGE_FIELDS = (
@@ -230,42 +187,48 @@ def get_project_create_or_update_body(payload: WildValue, action: str) -> str:
         return f"{message}.\n{sentence}."
 
     message = PROJECT_CREATE_TEMPLATE.format(actor=actor, name=name, url=url)
-    description = (
-        payload["data"]["description"].tame(check_string)
-        if "description" in payload["data"]
-        else ""
-    )
-    inline_fields = get_project_inline_fields(payload)
-    dates = get_project_date_fields(payload)
-    bullets = get_project_milestone_fields(payload)
 
-    # The schedule lives inside the description quote when there is one;
-    # otherwise the dates drop down to bullets alongside the milestones.
-    if description:
-        quote = description
-        if dates:
-            quote += "\n" + " – ".join(dates)
-        message += f":{CONTENT_MESSAGE_TEMPLATE.format(message=quote)}"
-    else:
-        bullets = dates + bullets
+    to_add = []
+    data = payload["data"]
 
-    lines = []
-    if inline_fields:
-        lines.append(" · ".join(inline_fields))
-    lines.extend(f"- {bullet}" for bullet in bullets)
+    status = data.get("status")
+    if status:
+        to_add.append(f"Status: {status['name'].tame(check_string)}")
 
-    if not lines:  # nocoverage
+    lead = data.get("lead")
+    if lead:
+        to_add.append(f"Lead: {lead['name'].tame(check_string)}")
+
+    if "priority" in data:
+        priority = data["priority"].tame(check_int)
+        if priority in PROJECT_PRIORITY_LABELS:
+            to_add.append(f"Priority: {PROJECT_PRIORITY_LABELS[priority]}")
+
+    for date_field, label in (("startDate", "Start date"), ("targetDate", "Target date")):
+        if date_field in data:
+            value = data[date_field].tame(check_none_or(check_string))
+            if value:
+                to_add.append(f"{label}: {value}")
+
+    if "milestones" in data:
+        milestone_names = [m["name"].tame(check_string) for m in data["milestones"]]
+        if milestone_names:
+            label = "Milestone" if len(milestone_names) == 1 else "Milestones"
+            to_add.append(f"{label}: {', '.join(milestone_names)}")
+
+    if to_add:
+        message += f"\n{', '.join(to_add)}."
+    else:  # nocoverage
         # A project always carries at least a status, so this is defensive.
-        if not description:
-            message += "."
-        return message
+        message += "."
 
-    fields = "\n".join(lines)
+    description = data.get("description")
     if description:
-        # The quote template already ends with a newline, so the fields
-        # follow the closing fence directly.
-        return message + fields
-    return f"{message}\n{fields}"
+        description_str = description.tame(check_string)
+        if description_str:
+            message += CONTENT_MESSAGE_TEMPLATE.format(message=description_str)
+
+    return message
 
 
 def get_project_remove_body(payload: WildValue) -> str:

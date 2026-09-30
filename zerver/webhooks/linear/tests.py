@@ -75,24 +75,24 @@ class LinearHookTests(WebhookTestCase):
 
     def test_project_create(self) -> None:
         expected_topic_name = "Project: Project-Zulip"
-        expected_message = "Dhruv Shetty created project [Project-Zulip](https://linear.app/zulipdhruv/project/project-zulip-a98782de01a9):\n~~~ quote\nThis is a project for zulip\n~~~\n**Status:** Backlog"
+        expected_message = "Dhruv Shetty created project [Project-Zulip](https://linear.app/zulipdhruv/project/project-zulip-a98782de01a9)\nStatus: Backlog.\n~~~ quote\nThis is a project for zulip\n~~~"
         self.check_webhook("project_create", expected_topic_name, expected_message)
 
     def test_project_create_complex(self) -> None:
         expected_topic_name = "Project: Zulip-Project"
-        expected_message = "Dhruv Shetty created project [Zulip-Project](https://linear.app/zulipdhruv/project/zulip-project-532c1333013b):\n~~~ quote\nSummary for the Project\n**Start date:** 2026-05-28 – **Target date:** 2026-05-30\n~~~\n**Status:** Planned · **Lead:** Dhruv Shetty · **Priority:** Urgent\n- **Milestone:** Phase 1"
+        expected_message = "Dhruv Shetty created project [Zulip-Project](https://linear.app/zulipdhruv/project/zulip-project-532c1333013b)\nStatus: Planned, Lead: Dhruv Shetty, Priority: Urgent, Start date: 2026-05-28, Target date: 2026-05-30, Milestone: Phase 1.\n~~~ quote\nSummary for the Project\n~~~"
         self.check_webhook("project_create_complex", expected_topic_name, expected_message)
 
     def test_project_create_without_description(self) -> None:
         expected_topic_name = "Project: Project-Manhattan"
-        expected_message = "Dhruv Shetty created project [Project-Manhattan](https://linear.app/zulipdhruv/project/project-manhattan-9719af1a1893)\n**Status:** Backlog"
+        expected_message = "Dhruv Shetty created project [Project-Manhattan](https://linear.app/zulipdhruv/project/project-manhattan-9719af1a1893)\nStatus: Backlog."
         self.check_webhook(
             "project_create_without_description", expected_topic_name, expected_message
         )
 
     def test_project_create_without_description_with_dates(self) -> None:
         expected_topic_name = "Project: Zulip-terminal"
-        expected_message = "Dhruv Shetty created project [Zulip-terminal](https://linear.app/zulipdhruv/project/zulip-terminal-5bfd1327f54b)\n**Status:** Backlog\n- **Start date:** 2026-06-01\n- **Target date:** 2026-06-03"
+        expected_message = "Dhruv Shetty created project [Zulip-terminal](https://linear.app/zulipdhruv/project/zulip-terminal-5bfd1327f54b)\nStatus: Backlog, Start date: 2026-06-01, Target date: 2026-06-03."
         self.check_webhook(
             "project_create_without_description_with_dates", expected_topic_name, expected_message
         )
