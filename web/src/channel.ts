@@ -5,6 +5,7 @@ import * as z from "zod/mini";
 
 import {page_params} from "./base_page_params.ts";
 import * as blueslip from "./blueslip.ts";
+import * as popup_banners from "./popup_banners.ts";
 import * as reload_state from "./reload_state.ts";
 import {normalize_path, shouldCreateSpanForRequest} from "./sentry.ts";
 import * as spectators from "./spectators.ts";
@@ -140,6 +141,12 @@ function call_in_span(
             ) {
                 reload_state.csrf_failed_handler();
             }
+        } else if (xhr.status >= 500 && xhr.responseJSON === undefined) {
+            popup_banners.open_server_error_popup_banner(xhr.status);
+            blueslip.error(`Unexpected ${xhr.status} response from server`, {
+                xhr: xhr.responseText.slice(0, 200),
+                args,
+            });
         }
         orig_error(xhr, error_type, xhn);
     };
