@@ -1814,8 +1814,8 @@ def check_thumbnail_status(client: Client) -> None:
     with open(path_to_file, "rb") as fp:
         result = client.upload_file(fp)
 
-    uri = result["uri"]
-    parts = uri.split("/")
+    url = result["url"]
+    parts = url.split("/")
     realm_id_str = parts[2]
     filename = "/".join(parts[3:])
 
