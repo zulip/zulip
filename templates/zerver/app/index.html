@@ -159,18 +159,18 @@ Accessing messages requires an account and Zulip API key.
         </div>
     </div>
     <div id="app-loading-bottom-content">
-        <p>{% trans %}If this message does not go away, try <a class="reload-lnk">reloading</a> the page.{% endtrans %}</p>
+        <p>{% trans %}If this message does not go away, try <a class="reload-lnk" href="">reloading</a> the page.{% endtrans %}</p>
     </div>
     <div id="app-loading-error">
-        <p>{% trans %}Error loading Zulip. Try <a class="reload-lnk">reloading</a> the page.{% endtrans %}</p>
+        <p>{% trans %}Error loading Zulip. Try <a class="reload-lnk" href="">reloading</a> the page.{% endtrans %}</p>
     </div>
     <script nonce="{{ csp_nonce }}">
-        document.addEventListener('DOMContentLoaded', function () {
-            function reload() {
+        for (const lnk of document.querySelectorAll('.reload-lnk')) {
+            lnk.addEventListener('click', function reload_keeping_hash(e) {
+                e.preventDefault();
                 window.location.reload(true);
-            }
-            document.querySelectorAll('.reload-lnk').forEach(lnk => lnk.addEventListener('click', reload));
-        });
+            });
+        }
     </script>
 </div>
 

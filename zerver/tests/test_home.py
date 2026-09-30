@@ -324,6 +324,10 @@ class HomeTest(ZulipTestCase):
             if html_bit not in html:
                 raise AssertionError(f"{html_bit} not in result")
 
+        # Verify that the reload links work even if no JavaScript runs.
+        self.assertIn('<a class="reload-lnk" href="">', html)
+        self.assertNotIn('<a class="reload-lnk">', html)
+
         page_params = self._get_page_params(result)
 
         self.assertCountEqual(page_params, self.expected_page_params_keys)
