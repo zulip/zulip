@@ -448,7 +448,8 @@ function load_data_from_ls(): void {
     const saved_filters = new Set(z.optional(z.array(z.string())).parse(ls.get(ls_filter_key)));
     const valid_filters = new Set(Object.values(views_util.FILTERS));
     // If saved filters are not in the list of valid filters, we reset to default.
-    if (saved_filters.size === 0 || !saved_filters.isSubsetOf(valid_filters)) {
+    const is_subset = [...saved_filters].every((filter) => valid_filters.has(filter));
+    if (saved_filters.size === 0 || !is_subset) {
         filters = new Set([views_util.FILTERS.UNMUTED_TOPICS]);
     } else {
         filters = saved_filters;
@@ -493,8 +494,9 @@ function format_dm(
         const user_id = recipient_ids[0];
         const is_deactivated = !people.is_active_user_or_system_bot(user_id);
         is_bot = people.is_valid_bot_user(user_id);
-        user_circle_class =
-            !is_bot && buddy_data.get_user_circle_class(recipient_ids[0], is_deactivated);
+        user_circle_class = is_bot
+            ? false
+            : buddy_data.get_user_circle_class(recipient_ids[0], is_deactivated);
     }
     const has_unread_mention = unread.num_unread_mentions_for_user_ids_strings(user_ids_string) > 0;
 
@@ -2114,8 +2116,8 @@ export function update_internal(): void {
         const stream_unread = unread.unread_count_info_for_stream(stream_id);
         const stream_unread_count = stream_unread.unmuted_count + stream_unread.muted_count;
         const stream_key = get_stream_key(stream_id);
+        let stream_post_filter_unread_count = 0;
         if (stream_unread_count > 0) {
-            let stream_post_filter_unread_count = 0;
             const stream_topics_data = topics_dict.get(stream_key);
 
             // Stream isn't rendered.

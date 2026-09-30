@@ -2,7 +2,7 @@ from typing import Annotated, Literal
 
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
-from pydantic import AfterValidator, BaseModel, ConfigDict, Field
+from pydantic import AfterValidator, BaseModel
 
 from zerver.lib.types import UserGroupMembersDict
 from zerver.models.realms import RealmExportSlug
@@ -21,14 +21,7 @@ Url = Annotated[str, AfterValidator(check_url)]
 ReactionType = Literal["realm_emoji", "unicode_emoji", "zulip_extra_emoji"]
 
 
-# BaseEventModel is the BaseModel for events
-class BaseEventModel(BaseModel):
-    # An undeclared field is a schema bug; fail at construction rather
-    # than silently dropping it from the event clients receive.
-    model_config = ConfigDict(extra="forbid")
-
-
-class BaseEvent(BaseEventModel):
+class BaseEvent(BaseModel):
     pass
 
 
@@ -37,7 +30,7 @@ class AlertWordsEvent(BaseEvent):
     alert_words: list[str]
 
 
-class Attachment(BaseEventModel):
+class Attachment(BaseModel):
     id: int
     name: str
     size: int
@@ -53,7 +46,7 @@ class AttachmentAddEvent(BaseEvent):
     upload_space_used: int
 
 
-class AttachmentFieldForAttachmentRemoveEvent(BaseEventModel):
+class AttachmentFieldForAttachmentRemoveEvent(BaseModel):
     id: int
 
 
@@ -71,45 +64,43 @@ class AttachmentUpdateEvent(BaseEvent):
     upload_space_used: int
 
 
-class ChannelFolderForChannelFolderAddEvent(BaseEventModel):
+class ChannelFolderForChannelFolderAddEvent(BaseModel):
     id: int
     name: str
     description: str
     rendered_description: str
-    order: int
     date_created: int
-    creator_id: int | None
+    creator_id: int
     is_archived: bool
 
 
 class ChannelFolderAddEvent(BaseEvent):
-    type: Literal["channel_folder"] = "channel_folder"
-    op: Literal["add"] = "add"
+    type: Literal["channel_folder"]
+    op: Literal["add"]
     channel_folder: ChannelFolderForChannelFolderAddEvent
 
 
-class ChannelFolderDataForUpdate(BaseEventModel):
+class ChannelFolderDataForUpdate(BaseModel):
     # TODO: fix types to avoid optional fields
     name: str | None = None
     description: str | None = None
-    rendered_description: str | None = None
     is_archived: bool | None = None
 
 
 class ChannelFolderReorderEvent(BaseEvent):
-    type: Literal["channel_folder"] = "channel_folder"
-    op: Literal["reorder"] = "reorder"
+    type: Literal["channel_folder"]
+    op: Literal["reorder"]
     order: list[int]
 
 
 class ChannelFolderUpdateEvent(BaseEvent):
-    type: Literal["channel_folder"] = "channel_folder"
-    op: Literal["update"] = "update"
+    type: Literal["channel_folder"]
+    op: Literal["update"]
     channel_folder_id: int
     data: ChannelFolderDataForUpdate
 
 
-class DetailedCustomProfileCore(BaseEventModel):
+class DetailedCustomProfileCore(BaseModel):
     id: int
     type: int
     name: str
@@ -123,15 +114,14 @@ class DetailedCustomProfileCore(BaseEventModel):
 class DetailedCustomProfile(DetailedCustomProfileCore):
     # TODO: fix types to avoid optional fields
     display_in_profile_summary: bool | None = None
-    use_for_user_matching: bool | None = None
 
 
 class CustomProfileFieldsEvent(BaseEvent):
-    type: Literal["custom_profile_fields"] = "custom_profile_fields"
+    type: Literal["custom_profile_fields"]
     fields: list[DetailedCustomProfile]
 
 
-class StreamGroup(BaseEventModel):
+class StreamGroup(BaseModel):
     name: str
     id: int
     description: str
@@ -161,19 +151,19 @@ class DeleteMessageEvent(DeleteMessageCoreEvent):
     topic: str | None = None
 
 
-class TopicLink(BaseEventModel):
+class TopicLink(BaseModel):
     text: str
     url: str
 
 
-class DirectMessageDisplayRecipient(BaseEventModel):
+class DirectMessageDisplayRecipient(BaseModel):
     id: int
     is_mirror_dummy: bool
     email: str
     full_name: str
 
 
-class MessageFieldForDirectMessageEvent(BaseEventModel):
+class MessageFieldForDirectMessageEvent(BaseModel):
     avatar_url: str | None
     client: str
     content: str
@@ -200,7 +190,7 @@ class DirectMessageEvent(BaseEvent):
     message: MessageFieldForDirectMessageEvent
 
 
-class DraftFieldsCore(BaseEventModel):
+class DraftFieldsCore(BaseModel):
     id: int
     type: Literal["", "private", "stream"]
     to: list[int]
@@ -249,7 +239,7 @@ class InvitesChangedEvent(BaseEvent):
     type: Literal["invites_changed"]
 
 
-class MessageFieldForMessageEvent(BaseEventModel):
+class MessageFieldForMessageEvent(BaseModel):
     avatar_url: str | None
     client: str
     content: str
@@ -282,7 +272,7 @@ class MutedTopicsEvent(BaseEvent):
     muted_topics: list[list[str | int]]
 
 
-class MutedUser(BaseEventModel):
+class MutedUser(BaseModel):
     id: int
     timestamp: int
 
@@ -292,7 +282,7 @@ class MutedUsersEvent(BaseEvent):
     muted_users: list[MutedUser]
 
 
-class OnboardingSteps(BaseEventModel):
+class OnboardingSteps(BaseModel):
     type: str
     name: str
 
@@ -325,7 +315,7 @@ class DeviceUpdateEvent(BaseEvent):
     push_registration_error_code: str | None = None
 
 
-class NavigationViewFields(BaseEventModel):
+class NavigationViewFields(BaseModel):
     fragment: str
     is_pinned: bool
     name: str | None
@@ -343,7 +333,7 @@ class NavigationViewRemoveEvent(BaseEvent):
     fragment: str
 
 
-class NavigationViewFieldsForUpdate(BaseEventModel):
+class NavigationViewFieldsForUpdate(BaseModel):
     is_pinned: bool | None = None
     name: str | None = None
 
@@ -355,7 +345,7 @@ class NavigationViewUpdateEvent(BaseEvent):
     data: NavigationViewFieldsForUpdate
 
 
-class LegacyPresence(BaseEventModel):
+class LegacyPresence(BaseModel):
     status: Literal["active", "idle"]
     timestamp: int
     client: str
@@ -374,7 +364,7 @@ class LegacyPresenceEvent(LegacyPresenceCoreEvent):
     email: str | None = None
 
 
-class ModernPresence(BaseEventModel):
+class ModernPresence(BaseModel):
     active_timestamp: int
     idle_timestamp: int
 
@@ -404,18 +394,18 @@ class ReactionRemoveEvent(BaseEvent):
     user_id: int
 
 
-class BotServicesOutgoing(BaseEventModel):
+class BotServicesOutgoing(BaseModel):
     base_url: Url
     interface: int
     token: str
 
 
-class BotServicesEmbedded(BaseEventModel):
+class BotServicesEmbedded(BaseModel):
     service_name: str
     config_data: dict[str, str]
 
 
-class Bot(BaseEventModel):
+class Bot(BaseModel):
     user_id: int
     default_all_public_streams: bool
     default_events_register_stream: str | None
@@ -429,7 +419,7 @@ class RealmBotAddEvent(BaseEvent):
     bot: Bot
 
 
-class BotTypeForDelete(BaseEventModel):
+class BotTypeForDelete(BaseModel):
     user_id: int
 
 
@@ -439,7 +429,7 @@ class RealmBotDeleteEvent(BaseEvent):
     bot: BotTypeForDelete
 
 
-class BotTypeForUpdateCore(BaseEventModel):
+class BotTypeForUpdateCore(BaseModel):
     user_id: int
 
 
@@ -463,7 +453,7 @@ class RealmDeactivatedEvent(BaseEvent):
     realm_id: int
 
 
-class RealmDomain(BaseEventModel):
+class RealmDomain(BaseModel):
     domain: str
     allow_subdomains: bool
 
@@ -486,7 +476,7 @@ class RealmDomainsRemoveEvent(BaseEvent):
     domain: str
 
 
-class RealmEmoji(BaseEventModel):
+class RealmEmoji(BaseModel):
     id: str
     name: str
     source_url: str
@@ -501,7 +491,7 @@ class RealmEmojiAddEvent(BaseEvent):
     emoji: RealmEmoji
 
 
-class RealmEmojiUpdateData(BaseEventModel):
+class RealmEmojiUpdateData(BaseModel):
     deactivated: bool | None = None
 
 
@@ -524,7 +514,7 @@ class RealmExportConsentEvent(BaseEvent):
     consented: bool
 
 
-class Export(BaseEventModel):
+class Export(BaseModel):
     id: int
     export_time: float | int
     acting_user_id: int
@@ -541,7 +531,7 @@ class RealmExportEvent(BaseEvent):
     exports: list[Export]
 
 
-class RealmLinkifier(BaseEventModel):
+class RealmLinkifier(BaseModel):
     pattern: str
     url_template: str
     id: int
@@ -555,7 +545,7 @@ class RealmLinkifiersEvent(BaseEvent):
     realm_linkifiers: list[RealmLinkifier]
 
 
-class RealmPlayground(BaseEventModel):
+class RealmPlayground(BaseModel):
     id: int
     name: str
     pygments_language: str
@@ -567,11 +557,11 @@ class RealmPlaygroundsEvent(BaseEvent):
     realm_playgrounds: list[RealmPlayground]
 
 
-class AllowMessageEditingData(BaseEventModel):
+class AllowMessageEditingData(BaseModel):
     allow_message_editing: bool
 
 
-class AuthenticationMethodDictCore(BaseEventModel):
+class AuthenticationMethodDictCore(BaseModel):
     enabled: bool
     available: bool
 
@@ -581,40 +571,48 @@ class AuthenticationMethodDict(AuthenticationMethodDictCore):
     unavailable_reason: str | None = None
 
 
-class AuthenticationData(BaseEventModel):
-    authentication_methods: dict[str, AuthenticationMethodDict]
+class AuthenticationDict(BaseModel):
+    Google: AuthenticationMethodDict
+    Dev: AuthenticationMethodDict
+    LDAP: AuthenticationMethodDict
+    GitHub: AuthenticationMethodDict
+    Email: AuthenticationMethodDict
 
 
-class IconData(BaseEventModel):
+class AuthenticationData(BaseModel):
+    authentication_methods: AuthenticationDict
+
+
+class IconData(BaseModel):
     icon_url: str
     icon_source: str
 
 
-class LogoData(BaseEventModel):
+class LogoData(BaseModel):
     logo_url: str
     logo_source: str
 
 
-class MessageContentEditLimitSecondsData(BaseEventModel):
+class MessageContentEditLimitSecondsData(BaseModel):
     message_content_edit_limit_seconds: int | None
 
 
-class RealmTopicsPolicyData(BaseEventModel):
+class RealmTopicsPolicyData(BaseModel):
     topics_policy: str
     mandatory_topics: bool
 
 
-class RealmDescriptionData(BaseEventModel):
+class RealmDescriptionData(BaseModel):
     description: str
     rendered_description: str
 
 
-class NightLogoData(BaseEventModel):
+class NightLogoData(BaseModel):
     night_logo_url: str
     night_logo_source: str
 
 
-class GroupSettingUpdateDataCore(BaseEventModel):
+class GroupSettingUpdateDataCore(BaseModel):
     pass
 
 
@@ -647,7 +645,7 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     workplace_users_group: int | UserGroupMembersDict | None = None
 
 
-class PlanTypeData(BaseEventModel):
+class PlanTypeData(BaseModel):
     plan_type: int
     upload_quota_mib: int | None
     max_file_upload_size_mib: int
@@ -666,8 +664,6 @@ class RealmUpdateDictEvent(BaseEvent):
         | NightLogoData
         | GroupSettingUpdateData
         | PlanTypeData
-        | RealmTopicsPolicyData
-        | RealmDescriptionData
     )
 
 
@@ -679,7 +675,7 @@ class RealmUpdateEvent(BaseEvent):
     rendered_description: str | None = None
 
 
-class RealmUserCore(BaseEventModel):
+class RealmUser(BaseModel):
     user_id: int
     email: str
     avatar_url: str | None
@@ -687,37 +683,23 @@ class RealmUserCore(BaseEventModel):
     full_name: str
     is_admin: bool
     is_owner: bool
+    is_bot: bool
     is_guest: bool
     role: Literal[100, 200, 300, 400, 600]
     is_active: bool
-    is_imported_stub: bool
+    profile_data: dict[str, dict[str, object]]
     timezone: str
     date_joined: str
     delivery_email: str | None
-    # TODO: fix types to avoid optional fields
-    is_deleted: bool | None = None
-
-
-class RealmHumanUser(RealmUserCore):
-    is_bot: Literal[False]
-    profile_data: dict[str, dict[str, object]]
-
-
-class RealmBotUser(RealmUserCore):
-    is_bot: Literal[True]
-    bot_type: int
-    bot_owner_id: int | None
-    # TODO: fix types to avoid optional fields
-    is_system_bot: bool | None = None
 
 
 class RealmUserAddEvent(BaseEvent):
     type: Literal["realm_user"]
     op: Literal["add"]
-    person: Annotated[RealmHumanUser | RealmBotUser, Field(discriminator="is_bot")]
+    person: RealmUser
 
 
-class RemovedUser(BaseEventModel):
+class RemovedUser(BaseModel):
     user_id: int
     full_name: str
 
@@ -735,7 +717,7 @@ class RealmUserSettingsDefaultsUpdateEvent(BaseEvent):
     value: bool | int | str
 
 
-class PersonAvatarFields(BaseEventModel):
+class PersonAvatarFields(BaseModel):
     user_id: int
     avatar_source: str
     avatar_url: str | None
@@ -743,12 +725,12 @@ class PersonAvatarFields(BaseEventModel):
     avatar_version: int
 
 
-class PersonBotOwnerId(BaseEventModel):
+class PersonBotOwnerId(BaseModel):
     user_id: int
     bot_owner_id: int
 
 
-class CustomProfileFieldCore(BaseEventModel):
+class CustomProfileFieldCore(BaseModel):
     id: int
     value: str | None
 
@@ -758,48 +740,48 @@ class CustomProfileField(CustomProfileFieldCore):
     rendered_value: str | None = None
 
 
-class PersonCustomProfileField(BaseEventModel):
+class PersonCustomProfileField(BaseModel):
     user_id: int
     custom_profile_field: CustomProfileField
 
 
-class PersonDeliveryEmail(BaseEventModel):
+class PersonDeliveryEmail(BaseModel):
     user_id: int
     delivery_email: str | None
 
 
-class PersonEmail(BaseEventModel):
+class PersonEmail(BaseModel):
     user_id: int
     new_email: str
 
 
-class PersonFullName(BaseEventModel):
+class PersonFullName(BaseModel):
     user_id: int
     full_name: str
 
 
-class PersonRole(BaseEventModel):
+class PersonRole(BaseModel):
     user_id: int
     role: Literal[100, 200, 300, 400, 600]
 
 
-class PersonTimezone(BaseEventModel):
+class PersonTimezone(BaseModel):
     user_id: int
     email: str
     timezone: str
 
 
-class PersonIsActive(BaseEventModel):
+class PersonIsActive(BaseModel):
     user_id: int
     is_active: bool
 
 
-class PersonIsImportedStub(BaseEventModel):
+class PersonIsImportedStub(BaseModel):
     user_id: int
     is_imported_stub: bool
 
 
-class PersonDateJoined(BaseEventModel):
+class PersonDateJoined(BaseModel):
     user_id: int
     date_joined: str
 
@@ -830,7 +812,7 @@ class RestartEvent(BaseEvent):
     server_generation: int
 
 
-class SavedSnippetFields(BaseEventModel):
+class SavedSnippetFields(BaseModel):
     id: int
     title: str
     content: str
@@ -855,7 +837,7 @@ class SavedSnippetsRemoveEvent(BaseEvent):
     saved_snippet_id: int
 
 
-class ScheduledMessageFieldsCore(BaseEventModel):
+class ScheduledMessageFieldsCore(BaseModel):
     scheduled_message_id: int
     type: Literal["private", "stream"]
     to: list[int] | int
@@ -888,7 +870,7 @@ class ScheduledMessagesUpdateEvent(BaseEvent):
     scheduled_message: ScheduledMessageFields
 
 
-class ReminderFields(BaseEventModel):
+class ReminderFields(BaseModel):
     reminder_id: int
     type: Literal["private"]
     to: list[int]
@@ -911,9 +893,8 @@ class RemindersRemoveEvent(BaseEvent):
     reminder_id: int
 
 
-class BasicStreamFields(BaseEventModel):
+class BasicStreamFields(BaseModel):
     is_archived: bool
-    can_add_subscribers_group: int | UserGroupMembersDict
     can_administer_channel_group: int | UserGroupMembersDict
     can_create_topic_group: int | UserGroupMembersDict
     can_delete_any_message_group: int | UserGroupMembersDict
@@ -921,15 +902,11 @@ class BasicStreamFields(BaseEventModel):
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
     can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
-    can_resolve_topics_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
-    can_subscribe_group: int | UserGroupMembersDict
     creator_id: int | None
     date_created: int
-    default_push_notifications: bool
     description: str
     first_message_id: int | None
-    folder_id: int | None
     is_recently_active: bool
     history_public_to_subscribers: bool
     invite_only: bool
@@ -941,7 +918,6 @@ class BasicStreamFields(BaseEventModel):
     stream_id: int
     stream_post_policy: int
     stream_weekly_traffic: int | None
-    subscriber_count: int
     topics_policy: str
 
 
@@ -985,9 +961,8 @@ class SubmessageEvent(BaseEvent):
     content: str
 
 
-class SingleSubscription(BaseEventModel):
+class SingleSubscription(BaseModel):
     is_archived: bool
-    can_add_subscribers_group: int | UserGroupMembersDict
     can_administer_channel_group: int | UserGroupMembersDict
     can_create_topic_group: int | UserGroupMembersDict
     can_delete_any_message_group: int | UserGroupMembersDict
@@ -995,15 +970,12 @@ class SingleSubscription(BaseEventModel):
     can_move_messages_out_of_channel_group: int | UserGroupMembersDict
     can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
-    can_resolve_topics_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
-    can_subscribe_group: int | UserGroupMembersDict
     creator_id: int | None
     date_created: int
     default_push_notifications: bool
     description: str
     first_message_id: int | None
-    folder_id: int | None
     is_recently_active: bool
     history_public_to_subscribers: bool
     invite_only: bool
@@ -1023,7 +995,6 @@ class SingleSubscription(BaseEventModel):
     is_muted: bool
     pin_to_top: bool
     push_notifications: bool | None
-    subscriber_count: int
     subscribers: list[int]
     topics_policy: str
     wildcard_mentions_notify: bool | None
@@ -1049,7 +1020,7 @@ class SubscriptionPeerRemoveEvent(BaseEvent):
     stream_ids: list[int]
 
 
-class RemoveSub(BaseEventModel):
+class RemoveSub(BaseModel):
     name: str
     stream_id: int
 
@@ -1068,7 +1039,7 @@ class SubscriptionUpdateEvent(BaseEvent):
     value: bool | int | str
 
 
-class TypingPerson(BaseEventModel):
+class TypingPerson(BaseModel):
     email: str
     user_id: int
 
@@ -1101,13 +1072,13 @@ class TypingStopEvent(TypingStopCoreEvent):
     topic: str | None = None
 
 
-class RecipientFieldForTypingEditChannelMessage(BaseEventModel):
+class RecipientFieldForTypingEditChannelMessage(BaseModel):
     type: Literal["channel"]
     channel_id: int
     topic: str
 
 
-class RecipientFieldForTypingEditDirectMessage(BaseEventModel):
+class RecipientFieldForTypingEditDirectMessage(BaseModel):
     type: Literal["direct"]
     user_ids: list[int]
 
@@ -1163,7 +1134,7 @@ class UpdateMessageFlagsAddEvent(BaseEvent):
     all: bool
 
 
-class MessageDetailsCore(BaseEventModel):
+class MessageDetailsCore(BaseModel):
     type: Literal["private", "stream"]
 
 
@@ -1190,7 +1161,7 @@ class UpdateMessageFlagsRemoveEvent(UpdateMessageFlagsRemoveCoreEvent):
     message_details: dict[str, MessageDetails] | None = None
 
 
-class Group(BaseEventModel):
+class Group(BaseModel):
     id: int
     name: str
     creator_id: int | None
@@ -1248,7 +1219,7 @@ class UserGroupRemoveSubgroupsEvent(BaseEvent):
     direct_subgroup_ids: list[int]
 
 
-class UserGroupDataCore(BaseEventModel):
+class UserGroupDataCore(BaseModel):
     pass
 
 

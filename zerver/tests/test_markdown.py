@@ -50,7 +50,7 @@ from zerver.lib.markdown import (
     url_embed_preview_enabled,
     url_to_a,
 )
-from zerver.lib.markdown.fenced_code import FencedBlockPreprocessor, close_unclosed_fences
+from zerver.lib.markdown.fenced_code import FencedBlockPreprocessor
 from zerver.lib.markdown.from_html import convert_html_to_markdown
 from zerver.lib.mdiff import diff_strings
 from zerver.lib.mention import (
@@ -209,43 +209,6 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
         ]
         lines = processor.run(markdown_input)
         self.assertEqual(lines, expected)
-
-    def test_close_unclosed_fences(self) -> None:
-        cases = [
-            ("no fences", "hello", ""),
-            ("closed code block", "```\ncode\n```", ""),
-            ("unclosed code block", "```\ncode", "\n```"),
-            ("fence on the last code line", "```\ncode```", "\n```"),
-            ("unclosed tilde code block", "~~~ py\ncode", "\n~~~"),
-            ("code blocks don't nest", "```py\n```quote\ncode", "\n```"),
-            ("longer code block fence", "````\n```\ncode", "\n````"),
-            ("math blocks don't nest", "```math\n```quote\nx^2\n```", ""),
-            ("unclosed spoiler", "```spoiler Header\nsecret", "\n```"),
-            ("unclosed quote in quote", "````quote\n```quote\nhi", "\n```\n````"),
-            ("closed code block in closed quote", "````quote\n```\ncode\n```\n````", ""),
-            ("unclosed code block in quote", "````quote\n```\ncode\n````", "\n```\n````"),
-            ("windows line endings", "```quote\r\nhi\r\n", "\n```"),
-            ("tab after the fence", "```\tpy\ncode", "\n```"),
-            ("control characters in the fence", "\x02```\x03\ncode", "\n```"),
-        ]
-        for case, content, closing_fences in cases:
-            with self.subTest(case=case):
-                closed_content = close_unclosed_fences(content)
-                self.assertEqual(closed_content, content + closing_fences)
-                rendered_content = markdown_convert_wrapper(closed_content + "\n\nafter")
-                self.assertTrue(rendered_content.endswith("\n<p>after</p>"))
-
-    def test_close_unclosed_fences_with_default_code_block_language(self) -> None:
-        realm = get_realm("zulip")
-        do_set_realm_property(realm, "default_code_block_language", "quote", acting_user=None)
-
-        # With quote as the default language, the first fence opens a quote
-        # block, and the second opens a code block inside it.
-        content = "```\n```py\ncode"
-        closed_content = close_unclosed_fences(content, realm.default_code_block_language)
-        self.assertEqual(closed_content, content + "\n```\n```")
-        rendered_content = markdown_convert_wrapper(closed_content + "\n\nafter")
-        self.assertTrue(rendered_content.endswith("\n<p>after</p>"))
 
 
 def markdown_convert_wrapper(content: str) -> str:

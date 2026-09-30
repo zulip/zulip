@@ -179,8 +179,10 @@ export function remove_scheduled_message_id(scheduled_msg_id: number): void {
 
 export function initialize(): void {
     $("body").on("click", ".scheduled-message-row .restore-overlay-message", (e) => {
+        if (mouse_drag.is_drag(e)) {
+            return;
+        }
         if (
-            mouse_drag.is_drag(e) ||
             messages_overlay_ui.handle_overlay_media_click(
                 e,
                 "scheduled",

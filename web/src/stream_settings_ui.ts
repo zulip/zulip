@@ -275,10 +275,11 @@ export function update_channel_folder(sub: StreamSubscription, folder_id: number
 }
 
 export function update_channel_folder_name(folder_id: number): void {
-    if (
-        !overlays.streams_open() ||
-        $("#subscription_overlay .nothing-selected").css("display") !== "none"
-    ) {
+    if (!overlays.streams_open()) {
+        return;
+    }
+
+    if ($("#subscription_overlay .nothing-selected").css("display") !== "none") {
         return;
     }
 

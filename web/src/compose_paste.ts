@@ -164,16 +164,21 @@ function is_from_excel(html_fragment: HTMLBodyElement): boolean {
             (meta.name === "ProgId" && meta.content === "Excel.Sheet") ||
             (meta.name === "Generator" && meta.content?.includes("Microsoft Excel")),
     );
-    if (!has_excel_metadata || !html_tag.querySelector("[class^='xl']")) {
+    if (!has_excel_metadata) {
+        return false;
+    }
+
+    if (!html_tag.querySelector("[class^='xl']")) {
         return false;
     }
 
     const html_outer = html_tag.outerHTML;
 
-    if (
-        !html_outer.includes("<!--StartFragment-->") ||
-        excel_namespaces.every((ns) => !html_outer.includes(ns))
-    ) {
+    if (!html_outer.includes("<!--StartFragment-->")) {
+        return false;
+    }
+
+    if (excel_namespaces.every((ns) => !html_outer.includes(ns))) {
         return false;
     }
 

@@ -246,7 +246,11 @@ export function rewire_complete_starting_tasks(value: typeof complete_starting_t
 }
 
 export function maybe_scroll_up_selected_message(opts: ComposeActionsStartOpts): void {
-    if (opts.skip_scrolling_selected_message || message_lists.current === undefined) {
+    if (opts.skip_scrolling_selected_message) {
+        return;
+    }
+
+    if (message_lists.current === undefined) {
         return;
     }
 

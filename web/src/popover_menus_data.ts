@@ -291,7 +291,10 @@ export function get_actions_popover_content_context(
     const should_display_remind_me_option = not_spectator;
 
     const should_display_message_report_option = (): boolean => {
-        if (page_params.is_spectator || realm.realm_moderation_request_channel_id === -1) {
+        if (page_params.is_spectator) {
+            return false;
+        }
+        if (realm.realm_moderation_request_channel_id === -1) {
             return false;
         }
 

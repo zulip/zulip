@@ -245,7 +245,7 @@ type UserCardPopoverData = {
     show_last_active_status: boolean;
 };
 
-export function fetch_presence_for_popover(user_id: number): void {
+export let fetch_presence_for_popover = (user_id: number): void => {
     if (page_params.is_spectator) {
         return;
     }
@@ -304,6 +304,10 @@ export function fetch_presence_for_popover(user_id: number): void {
             $(selector_to_update).text(buddy_data.user_last_seen_time_status(user_id));
         },
     });
+};
+
+export function rewire_fetch_presence_for_popover(value: (user_id: number) => string): void {
+    fetch_presence_for_popover = value;
 }
 
 function get_user_card_popover_data(

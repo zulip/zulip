@@ -79,7 +79,10 @@ export function toggle(opts: {
     // Returns false if the requested tab is disabled.
     function select_tab(idx: number): boolean {
         const $elem = meta.$ind_tab.eq(idx);
-        if ($elem.hasClass("disabled") || $elem.css("display") === "none") {
+        if ($elem.hasClass("disabled")) {
+            return false;
+        }
+        if ($elem.css("display") === "none") {
             return false;
         }
 

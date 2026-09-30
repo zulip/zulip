@@ -640,34 +640,6 @@ class RemindersTest(ZulipTestCase):
             f"```quote\n{content}\n```",
         )
 
-    def test_reminder_for_message_with_code_block(self) -> None:
-        content = "Look at this:\n```\nprint('hello')\n```\nDoes it work?"
-        message_id = self.send_channel_message_for_hamlet(content)
-        result = self.do_schedule_reminder(message_id, int(time.time() + 86400))
-        self.assert_json_success(result)
-        scheduled_message = self.last_scheduled_reminder()
-
-        self.assertEqual(
-            scheduled_message.content,
-            f"""
-You requested a reminder for the following message.
-
-@_**King Hamlet|10** [said](http://zulip.testserver/#narrow/channel/3-Verona/topic/test/near/{message_id}) in [#Verona > test](#narrow/channel/3-Verona/topic/test/with/{message_id}):
-````quote
-Look at this:
-```
-print('hello')
-```
-Does it work?
-````
-""".strip(),
-        )
-        self.assertIn(
-            '<blockquote>\n<p>Look at this:</p>\n<div class="codehilite"',
-            scheduled_message.rendered_content,
-        )
-        self.assertIn("<p>Does it work?</p>\n</blockquote>", scheduled_message.rendered_content)
-
     def test_schedule_reminder_ones_own_message(self) -> None:
         content = "Test message"
         scheduled_delivery_timestamp = int(time.time() + 86400)

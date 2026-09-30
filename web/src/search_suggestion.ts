@@ -486,10 +486,11 @@ function get_group_suggestions(
         // operand (not including the last part).
         const person_matcher = people.build_person_matcher(new_query);
         let persons = people.filter_all_persons((person) => {
-            if (
-                person.user_id === people.my_current_user_id() ||
-                existing_user_ids.includes(person.user_id)
-            ) {
+            if (person.user_id === people.my_current_user_id()) {
+                return false;
+            }
+
+            if (existing_user_ids.includes(person.user_id)) {
                 return false;
             }
             return new_query === "" || person_matcher(person);
@@ -1526,7 +1527,7 @@ function get_suggestions_for_multi_word_channel_or_topic(
     return attacher.get_result().slice(0, max_items);
 }
 
-export function get_suggestions(
+export let get_suggestions = function (
     pill_search_terms: NarrowCanonicalTerm[],
     text_search_terms_non_canonical: NarrowTermSuggestion[],
     add_current_filter = false,
@@ -1633,4 +1634,8 @@ export function get_suggestions(
     }
 
     return attacher.get_result().slice(0, max_items);
+};
+
+export function rewire_get_suggestions(value: typeof get_suggestions): void {
+    get_suggestions = value;
 }

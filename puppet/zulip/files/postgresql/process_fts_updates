@@ -93,7 +93,7 @@ def update_fts_columns(conn: psycopg2.extensions.connection) -> int:
                     "WHERE ctid IN ("
                     "  SELECT ctid FROM zerver_message"
                     "  WHERE id IN %s"
-                    "  ORDER BY id FOR NO KEY UPDATE"
+                    "  ORDER BY id FOR UPDATE"
                     ")"
                 ).format(update_sql=update_sql),
                 (message_ids,),

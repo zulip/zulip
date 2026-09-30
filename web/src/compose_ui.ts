@@ -1299,8 +1299,9 @@ export let format_text = (
             text.slice(range.start - 1, range.start) === "[" &&
             text.slice(range.end, range.end + 2) === "](" &&
             text.includes(")", range.end + 2) &&
-            (!text.includes("(", range.end + 2) ||
-                text.indexOf(")", range.end + 2) < text.indexOf("(", range.end + 2));
+            (text.includes("(", range.end + 2)
+                ? text.indexOf(")", range.end + 2) < text.indexOf("(", range.end + 2)
+                : true);
 
         if (is_selection_description_of_link()) {
             let url = text.slice(range.end + 2, text.indexOf(")", range.end));

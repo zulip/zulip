@@ -57,10 +57,10 @@ export default defineConfig(
         files: ["**/*.{,[cm]}ts{,x}"],
         extends: [importX.flatConfigs.typescript],
         rules: {
-            "unicorn/no-useless-template-literals": "off",
-            "@typescript-eslint/no-unnecessary-template-expression": "error",
             "unicorn/require-array-sort-compare": "off",
             "@typescript-eslint/require-array-sort-compare": "error",
+            "unicorn/no-useless-template-literals": "off",
+            "@typescript-eslint/no-unnecessary-template-expression": "error",
         },
     },
     {
@@ -117,7 +117,6 @@ export default defineConfig(
                 {functions: false, variables: false},
             ],
             "@typescript-eslint/parameter-properties": "error",
-            "@typescript-eslint/prefer-optional-chain": "off", // https://github.com/typescript-eslint/typescript-eslint/issues/11840
             "@typescript-eslint/promise-function-async": "error",
             "@typescript-eslint/restrict-plus-operands": ["error", {}],
             "@typescript-eslint/restrict-template-expressions": ["error", {}],
