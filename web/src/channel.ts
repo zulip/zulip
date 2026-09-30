@@ -140,6 +140,11 @@ function call_in_span(
             ) {
                 reload_state.csrf_failed_handler();
             }
+        } else if (xhr.status >= 500 && xhr.responseJSON === undefined) {
+            blueslip.error(`Unexpected ${xhr.status} response from server`, {
+                xhr: xhr.responseText.slice(0, 200),
+                args,
+            });
         }
         orig_error(xhr, error_type, xhn);
     };
