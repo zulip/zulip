@@ -165,11 +165,12 @@ def create_attachment(
     # user. The organization's total usage isn't private to them though,
     # and clients use it to warn as the organization approaches its upload
     # quota, so it needs to reach everyone.
-    realm_update_event = RealmUpdateDictEvent(
-        property="default",
-        data=UploadQuotaUsedData(upload_quota_used_bytes=upload_space_used),
-    )
-    send_event_on_commit(realm, realm_update_event, active_user_ids(realm.id))
+    if realm.upload_quota_bytes() is not None:
+        realm_update_event = RealmUpdateDictEvent(
+            property="default",
+            data=UploadQuotaUsedData(upload_quota_used_bytes=upload_space_used),
+        )
+        send_event_on_commit(realm, realm_update_event, active_user_ids(realm.id))
 
 
 def get_file_info(user_file: UploadedFile[bytes]) -> tuple[str, str]:

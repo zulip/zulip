@@ -15,6 +15,7 @@ from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.custom_profile_fields import try_update_realm_custom_profile_field
 from zerver.actions.message_send import check_send_message
 from zerver.actions.presence import do_update_user_presence
+from zerver.actions.realm_settings import do_change_realm_plan_type
 from zerver.actions.streams import do_change_stream_folder
 from zerver.actions.user_settings import do_change_avatar_fields, do_change_user_setting
 from zerver.actions.users import do_change_user_role
@@ -31,7 +32,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.upload import upload_message_attachment
 from zerver.lib.users import get_users_for_api
-from zerver.models import CustomProfileField, UserMessage, UserPresence, UserProfile
+from zerver.models import CustomProfileField, Realm, UserMessage, UserPresence, UserProfile
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -899,15 +900,22 @@ class FetchInitialStateDataTest(ZulipTestCase):
         result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
         self.assertEqual(result["max_message_id"], -1)
 
-    def test_realm_upload_quota_used_bytes_not_present_for_spectators(self) -> None:
+    def test_realm_upload_quota_used_bytes_presence(self) -> None:
         hamlet = self.example_user("hamlet")
         realm = hamlet.realm
 
         data = b"zulip!"
         upload_message_attachment("dummy.txt", "text/plain", data, hamlet)
 
+        # Organizations without an upload quota don't get it.
+        self.assertIsNone(realm.upload_quota_bytes())
+        result = fetch_initial_state_data(hamlet, realm=realm, event_types=["realm"])
+        self.assertNotIn("realm_upload_quota_used_bytes", result)
+
         # Authenticated users who request the "realm" fetch type get the
         # realm's current upload usage.
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        self.assertIsNotNone(realm.upload_quota_bytes())
         result = fetch_initial_state_data(hamlet, realm=realm, event_types=["realm"])
         self.assertEqual(result["realm_upload_quota_used_bytes"], len(data))
 
@@ -1577,7 +1585,7 @@ class FetchQueriesTest(ZulipTestCase):
         self.login_user(user)
 
         with (
-            self.assert_database_query_count(50),
+            self.assert_database_query_count(48),
             mock.patch("zerver.lib.events.always_want") as want_mock,
         ):
             fetch_initial_state_data(user, realm=user.realm)
@@ -1599,11 +1607,10 @@ class FetchQueriesTest(ZulipTestCase):
             navigation_views=1,
             onboarding_steps=1,
             presence=1,
-            # 2 of the 5 queries here are a single query that is used
+            # 2 of the 3 queries here are a single query that is used
             # for all the 'realm', 'stream', 'subscription'
-            # and 'realm_user_groups' event types. Another 2 compute
-            # realm_upload_quota_used_bytes.
-            realm=5,
+            # and 'realm_user_groups' event types.
+            realm=3,
             # Similarly, this query is shared with the realm_user total.
             realm_billing=1,
             realm_bot=1,
@@ -1649,6 +1656,17 @@ class FetchQueriesTest(ZulipTestCase):
                     event_types = [event_type]
 
                 fetch_initial_state_data(user, realm=user.realm, event_types=event_types)
+
+    def test_realm_upload_quota_used_bytes_queries(self) -> None:
+        user = self.example_user("hamlet")
+        # The test realm is self-hosted, which has no upload quota, so
+        # switch to a plan with one to include upload usage.
+        do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+
+        # Computing realm_upload_quota_used_bytes takes 2 queries in
+        # addition to the 3 for the "realm" event type.
+        with self.assert_database_query_count(5):
+            fetch_initial_state_data(user, realm=user.realm, event_types=["realm"])
 
 
 class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):

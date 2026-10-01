@@ -2381,12 +2381,15 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(len(data2) + len(data3), self.realm.currently_used_upload_space_bytes())
 
     def test_currently_used_upload_space_for_cross_realm_bot_upload(self) -> None:
+        # There is no upload quota by default for self hosted realm.
+        do_change_realm_plan_type(self.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
         self.assertEqual(0, self.realm.currently_used_upload_space_bytes())
 
         # The email gateway bot uploads files into the organization the
         # email was sent to, not its own.
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
+
         data = b"zulip!"
         with self.capture_send_event_calls(expected_num_events=2) as events:
             upload_message_attachment(
@@ -2399,8 +2402,18 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
 
     def test_upload_quota_used_bytes_event_sent_to_all_users(self) -> None:
         data = b"zulip!"
-        with self.capture_send_event_calls(expected_num_events=2) as events:
+        # Organizations without an upload quota don't get the event.
+        self.assertIsNone(self.realm.upload_quota_bytes())
+        with self.capture_send_event_calls(expected_num_events=1) as events:
             upload_message_attachment("dummy.txt", "text/plain", data, self.user_profile)
+        self.assertEqual(events[0]["event"]["type"], "attachment")
+
+        do_change_realm_plan_type(self.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        self.assertIsNotNone(self.realm.upload_quota_bytes())
+        self.user_profile.refresh_from_db()
+
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            upload_message_attachment("dummy2.txt", "text/plain", data, self.user_profile)
 
         self.assertEqual(events[0]["event"]["type"], "attachment")
         self.assertEqual(events[0]["users"], [self.user_profile.id])
@@ -2411,7 +2424,7 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
                 type="realm",
                 op="update_dict",
                 property="default",
-                data=dict(upload_quota_used_bytes=len(data)),
+                data=dict(upload_quota_used_bytes=2 * len(data)),
             ),
         )
         self.assertIn(self.example_user("othello").id, events[1]["users"])

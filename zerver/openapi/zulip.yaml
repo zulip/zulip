@@ -5994,7 +5994,8 @@ paths:
                                       type: integer
                                       description: |
                                         The total number of bytes now used for uploaded files in this
-                                        organization, sent when a file is uploaded or deleted.
+                                        organization, sent when a file is uploaded or deleted in an
+                                        organization with an upload quota.
 
                                         **Changes**: New in Zulip 13.0 (feature level ZF-592330).
                                     video_chat_provider:
@@ -21665,8 +21666,10 @@ paths:
                           Clients can use this in combination with `realm_upload_quota_mib`
                           to display upload quota usage to users.
 
-                          Not present for unauthenticated access in realms that have
-                          enabled the [public access option](/help/public-access-option).
+                          Not present if the organization has no upload quota (i.e.,
+                          `realm_upload_quota_mib` is `null`), or for unauthenticated
+                          access in realms that have enabled the
+                          [public access option](/help/public-access-option).
 
                           **Changes**: New in Zulip 13.0 (feature level ZF-592330).
                       realm_org_type:

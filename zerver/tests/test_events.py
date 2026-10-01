@@ -4270,6 +4270,9 @@ class NormalActionsTest(BaseAction):
 
     def test_add_attachment(self) -> None:
         self.login("hamlet")
+        do_change_realm_plan_type(
+            self.user_profile.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None
+        )
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
         url = None
