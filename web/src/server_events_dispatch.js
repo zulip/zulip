@@ -336,7 +336,7 @@ export function dispatch_normal_event(event) {
                 default_avatar_source: noop,
                 default_code_block_language: noop,
                 default_language: noop,
-                description: noop,
+                description: navbar_alerts.maybe_toggle_organization_profile_incomplete_banner,
                 digest_emails_enabled: noop,
                 digest_weekday: noop,
                 direct_message_initiator_group: noop,
@@ -503,11 +503,6 @@ export function dispatch_normal_event(event) {
                     // deactivated.
                     window.location.assign("/accounts/deactivated/");
                     break;
-            }
-            if (current_user.is_admin) {
-                // Update the UI notice about the user's profile being
-                // incomplete, as we might have filled in the missing field(s).
-                navbar_alerts.toggle_organization_profile_incomplete_banner();
             }
             break;
         }

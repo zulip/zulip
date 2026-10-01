@@ -153,19 +153,19 @@ export function is_organization_profile_incomplete(): boolean {
     return false;
 }
 
-export function toggle_organization_profile_incomplete_banner(): void {
+export function maybe_toggle_organization_profile_incomplete_banner(): void {
     const $banner = $("#navbar_alerts_wrapper").find(".banner");
-    if ($banner?.attr("data-process") === "organization-profile-incomplete") {
-        close_navbar_banner_and_resize($banner);
+    if (!is_organization_profile_incomplete()) {
+        if ($banner.attr("data-process") === "organization-profile-incomplete") {
+            close_navbar_banner_and_resize($banner);
+        }
         return;
     }
+    // Don't replace a banner that is already being displayed.
     if (
-        is_organization_profile_incomplete() &&
+        $banner.length === 0 &&
         should_show_organization_profile_incomplete_banner(realm.realm_date_created)
     ) {
-        // Note that this will be a noop unless we'd already displayed
-        // the notice in this session.  This seems OK, given that
-        // this is meant to be a one-time task for administrators.
         open_navbar_banner_and_resize(ORGANIZATION_PROFILE_INCOMPLETE_BANNER);
     }
 }
