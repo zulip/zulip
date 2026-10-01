@@ -194,6 +194,12 @@ class UserBaseSettings(models.Model):
     # conversation where message was sent.
     web_navigate_to_sent_message = models.BooleanField(default=True)
 
+    # Setting to control whether right-clicking on a message opens the
+    # message actions menu instead of the browser's context menu.
+    web_right_click_opens_message_actions_menu = models.BooleanField(
+        default=False, db_default=False
+    )
+
     ### Notifications settings. ###
 
     email_notifications_batching_period_seconds = models.IntegerField(default=120)
@@ -391,6 +397,7 @@ class UserBaseSettings(models.Model):
         web_line_height_percent=int,
         web_mark_read_on_scroll_policy=int,
         web_navigate_to_sent_message=bool,
+        web_right_click_opens_message_actions_menu=bool,
         web_stream_unreads_count_display_policy=int,
         web_suggest_update_timezone=bool,
     )
