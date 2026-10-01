@@ -528,6 +528,25 @@ def registration_helper(
         except ValidationError:
             return redirect_to_email_login_url(email)
 
+        if (
+            prereg_user.multiuse_invite is not None
+            and password_required
+            and not password_auth_enabled(realm)
+        ):
+            # This should only be reachable when a user goes through a multi-use invite
+            # when password auth is enabled, enters an email address and then clicks
+            # the received confirmation link **after** the administrators disable password
+            # auth in the meantime.
+            # When password-based auth methods are disabled, signing up requires
+            # going through an external authentication method (which sets
+            # password_required=False).
+            logger.info(
+                "(%s) Rejected multiuse invite signup for %s: password authentication is disabled",
+                realm.string_id,
+                email,
+            )
+            return HttpResponseRedirect(reverse("login"))
+
         if settings.BILLING_ENABLED:
             from corporate.lib.registration import (
                 check_spare_licenses_available_for_registering_new_user,
