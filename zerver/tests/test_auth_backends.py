@@ -1756,25 +1756,35 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase, ABC):
         multiuse_object_key = multiuse_confirmation.confirmation_key
         account_data_dict = self.get_account_data_dict(email=email, name=name)
 
-        # First, try to sign up for closed realm without using an invitation
-        result = self.social_auth_test(
-            account_data_dict, expect_choose_email_screen=True, subdomain=subdomain, is_signup=True
-        )
-        result = self.client_get(result["Location"])
-        # Verify that we're unable to sign up, since this is a closed realm
-        self.assertEqual(result.status_code, 200)
-        self.assert_in_success_response(["Sign up"], result)
+        # We test with password-based backends disabled, to verify that the additional
+        # restrictions on signup that are exercised in such configurations don't break
+        # the external auth signup flow.
+        backend_path = f"zproject.backends.{self.BACKEND_CLASS.__name__}"
+        with self.settings(
+            AUTHENTICATION_BACKENDS=(backend_path, "zproject.backends.ZulipDummyBackend")
+        ):
+            # First, try to sign up for closed realm without using an invitation
+            result = self.social_auth_test(
+                account_data_dict,
+                expect_choose_email_screen=True,
+                subdomain=subdomain,
+                is_signup=True,
+            )
+            result = self.client_get(result["Location"])
+            # Verify that we're unable to sign up, since this is a closed realm
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_success_response(["Sign up"], result)
 
-        result = self.social_auth_test(
-            account_data_dict,
-            subdomain=subdomain,
-            is_signup=True,
-            expect_choose_email_screen=True,
-            multiuse_object_key=multiuse_object_key,
-        )
-        self.stage_two_of_registration(
-            result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
-        )
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain=subdomain,
+                is_signup=True,
+                expect_choose_email_screen=True,
+                multiuse_object_key=multiuse_object_key,
+            )
+            self.stage_two_of_registration(
+                result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
+            )
 
         # Verify the PreregistrationUser object was set up as expected.
         prereg_user = PreregistrationUser.objects.last()
