@@ -3380,19 +3380,27 @@ class NormalActionsTest(BaseAction):
         members_group = NamedUserGroup.objects.get(
             name=SystemGroups.MEMBERS, realm_for_sharding=realm
         )
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_PLUS, acting_user=self.user_profile)
         do_change_realm_permission_group_setting(
             realm, "can_access_all_users_group", members_group, acting_user=None
         )
 
         state_data = fetch_initial_state_data(self.user_profile, realm=realm)
-        self.assertEqual(state_data["realm_plan_type"], Realm.PLAN_TYPE_SELF_HOSTED)
+        self.assertEqual(state_data["realm_plan_type"], Realm.PLAN_TYPE_PLUS)
         self.assertEqual(state_data["zulip_plan_is_not_limited"], True)
 
-        with self.verify_action(num_events=3) as events:
+        everyone_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm
+        )
+        with self.verify_action(num_events=4) as events:
             do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=self.user_profile)
         check_realm_update("events[0]", events[0], "enable_spectator_access")
         check_realm_update_dict("events[1]", events[1])
+        self.assertEqual(events[1]["data"], {"can_access_all_users_group": everyone_group.id})
         check_realm_update_dict("events[2]", events[2])
+        self.assertIn("authentication_methods", events[2]["data"])
+        check_realm_update_dict("events[3]", events[3])
+        self.assertEqual(events[3]["data"]["plan_type"], Realm.PLAN_TYPE_LIMITED)
 
         state_data = fetch_initial_state_data(self.user_profile, realm=realm)
         self.assertEqual(state_data["realm_plan_type"], Realm.PLAN_TYPE_LIMITED)

@@ -970,6 +970,11 @@ def do_change_realm_plan_type(
                 realm, "can_access_all_users_group", everyone_system_group, acting_user=acting_user
             )
 
+    # This must happen before disabling authentication methods, since the
+    # event for that reports which methods are available on the new plan.
+    realm.plan_type = plan_type
+    realm.save(update_fields=["plan_type"])
+
     # If downgrading, disable authentication methods that are not available on the new plan.
     if settings.BILLING_ENABLED:
         realm_authentication_methods = realm.authentication_methods_dict()
@@ -983,8 +988,6 @@ def do_change_realm_plan_type(
                 realm, realm_authentication_methods, acting_user=acting_user
             )
 
-    realm.plan_type = plan_type
-    realm.save(update_fields=["plan_type"])
     RealmAuditLog.objects.create(
         event_type=AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
         realm=realm,
