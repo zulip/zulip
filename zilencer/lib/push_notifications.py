@@ -55,7 +55,7 @@ def send_e2ee_push_notification_apple(
         tuple[RemotePushDevice, aioapns.common.NotificationResult | BaseException]
     ]:
         results = await asyncio.gather(
-            *(apns_context.apns.send_notification(request) for request in apns_requests),
+            *(apns_context.send_notification(request) for request in apns_requests),
             return_exceptions=True,
         )
         return zip(apns_remote_push_devices, results, strict=False)
