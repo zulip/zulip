@@ -1,3 +1,5 @@
+import orjson
+
 from zerver.lib.test_classes import WebhookTestCase
 
 
@@ -23,3 +25,20 @@ class BuildbotHookTests(WebhookTestCase):
         expected_topic_name = "zulip/zulip-zapier"
         expected_message = "Build [#10434](https://ci.example.org/#builders/79/builds/307) (result: cancelled) for **AMD64 Ubuntu 18.04 Python 3** finished."
         self.check_webhook("finished_cancelled", expected_topic_name, expected_message)
+
+    def test_unsupported_event(self) -> None:
+        payload = orjson.dumps(
+            {
+                "event": "unsupported",
+                "buildid": 33,
+                "buildername": "runtests",
+                "url": "http://exampleurl.com/#builders/1/builds/33",
+                "project": "buildbot-hello",
+            }
+        ).decode()
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assert_json_success(result)
+        self.assert_in_response(
+            "The 'unsupported' event isn't currently supported by the Buildbot webhook; ignoring",
+            result,
+        )
