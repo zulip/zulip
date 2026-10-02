@@ -15,7 +15,7 @@ export function enable_scrolling(): void {
 }
 
 export const OVERLAY_FOCUSABLE_SELECTOR =
-    "input, button, select, .input, .sidebar-item, .ind-tab.first, a[href], a[tabindex='0'], .overlay-message-info-box";
+    "input, button, select, .input, .sidebar-item, .ind-tab.first, a[href], a[tabindex='0'], .overlay-message-info-box, .copy-overlay-message, .draft-selection-tooltip";
 
 export function get_visible_focusable_elements_in_overlay_container(
     $container: JQuery,
