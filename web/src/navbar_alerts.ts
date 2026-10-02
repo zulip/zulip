@@ -15,6 +15,7 @@ import * as feedback_widget from "./feedback_widget.ts";
 import {$t} from "./i18n.ts";
 import type {LocalStorage} from "./localstorage.ts";
 import {localstorage} from "./localstorage.ts";
+import * as message_notifications from "./message_notifications.ts";
 import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -576,7 +577,12 @@ export function initialize(): void {
                 const $banner = $(this).closest(".banner");
                 const permission =
                     await desktop_notifications.request_desktop_notifications_permission();
-                if (permission === "granted" || permission === "denied") {
+                if (permission === "granted") {
+                    close_navbar_banner_and_resize($banner);
+                    message_notifications.send_test_notification(
+                        $t({defaultMessage: "Thanks for enabling Zulip notifications!"}),
+                    );
+                } else if (permission === "denied") {
                     close_navbar_banner_and_resize($banner);
                 }
             })();
