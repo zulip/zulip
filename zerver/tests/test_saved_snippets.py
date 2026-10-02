@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from zerver.actions.saved_snippets import do_create_saved_snippet
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import SavedSnippet, UserProfile
@@ -47,6 +49,19 @@ class SavedSnippetTests(ZulipTestCase):
             result,
             status_code=400,
             msg=f"title is too long (limit: {SavedSnippet.MAX_TITLE_LENGTH} characters)",
+        )
+
+        result = self.client_post(
+            "/json/saved_snippets",
+            {
+                "title": "My Snippet",
+                "content": "A" * (settings.MAX_MESSAGE_LENGTH + 10),
+            },
+        )
+        self.assert_json_error(
+            result,
+            status_code=400,
+            msg=f"content is too long (limit: {settings.MAX_MESSAGE_LENGTH} characters)",
         )
 
     def test_edit_saved_snippet(self) -> None:
