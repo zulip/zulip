@@ -58,6 +58,9 @@ as an empty string.
 
 ## Changes
 
+* In Zulip 13.0 (feature level ZF-cf1fc8), support was added for a new
+  `channels:all` filter, matching messages in all the accessible channels.
+
 * In Zulip 12.0 (feature level 489), support was added for a new
   filter, `channels:archived`, which returns messages the current user
   received in channels that have been [archived](/help/archive-a-channel).
