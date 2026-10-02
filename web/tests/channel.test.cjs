@@ -301,7 +301,44 @@ test("unexpected_403_response", () => {
         },
     });
 });
+test("unexpected_5xx_response", () => {
+    test_with_mock_ajax({
+        xhr: {
+            status: 502,
+            responseJSON: undefined,
+            responseText: "<html>502 Bad Gateway</html>",
+        },
 
+        run_code() {
+            channel.post({url: "/json/endpoint"});
+        },
+
+        check_ajax_options(options) {
+            blueslip.expect("error", "Unexpected 502 response from server");
+            options.simulate_error();
+        },
+    });
+});
+
+test("json_5xx_response_is_not_logged", () => {
+    test_with_mock_ajax({
+        xhr: {
+            status: 500,
+            responseJSON: {result: "error", msg: "Internal server error"},
+            responseText: '{"result":"error","msg":"Internal server error"}',
+        },
+
+        run_code() {
+            channel.post({url: "/json/endpoint"});
+        },
+
+        check_ajax_options(options) {
+            // No blueslip.expect here: if blueslip.error is called,
+            // the test fails.
+            options.simulate_error();
+        },
+    });
+});
 test("xhr_error_message", () => {
     let xhr = {
         status: "200",
