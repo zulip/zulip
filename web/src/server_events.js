@@ -1,11 +1,10 @@
-import {$} from "jquery";
 import _ from "lodash";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as echo from "./echo.ts";
-import * as loading from "./loading.ts";
 import * as message_events from "./message_events.ts";
+import * as message_feed_loading from "./message_feed_loading.ts";
 import {page_params} from "./page_params.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as reload from "./reload.ts";
@@ -267,8 +266,8 @@ export function force_get_events() {
 export function finished_initial_fetch() {
     waiting_on_initial_fetch = false;
     get_events_success([]);
-    // Destroy loading indicator after we added fetched messages.
-    loading.destroy_indicator($("#page_loading_indicator"));
+    // Hide the loading indicator after we added fetched messages.
+    message_feed_loading.hide_loading_initial_page();
 }
 
 export function initialize(params) {
