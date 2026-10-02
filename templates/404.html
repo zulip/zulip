@@ -5,10 +5,13 @@
 {% endblock %}
 
 {% block error_page_content %}
-<img src="{{ static('images/errors/400art.svg') }}" alt=""/>
+{% include "zerver/portico_error_pages/art/400art.svg" %}
 <div class="errorbox">
     <div class="errorcontent">
-        <h1 class="lead">{{ _("Page not found (404)") }}</h1>
+        <h1 class="lead">
+            <span class="error-code-badge">404</span>
+            <span>{{ _("Page not found") }}</span>
+        </h1>
         <p>
             {% trans %}
             If this error is unexpected, you can

@@ -203,7 +203,7 @@ class SelfHostedBillingEndpointBasicTest(RemoteRealmBillingTestCase):
             with self.settings(CORPORATE_ENABLED=True):
                 result = self.client_get(self_hosted_billing_url)
                 self.assertEqual(result.status_code, 404)
-                self.assert_in_response("Page not found (404)", result)
+                self.assert_in_response("Page not found", result)
 
             with self.settings(CORPORATE_ENABLED=False):
                 result = self.client_get(self_hosted_billing_url)
