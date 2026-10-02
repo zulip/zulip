@@ -22,7 +22,7 @@ the registration flow has its own (nearly identical) copy of the fields below in
             <form method="post" id="registration" action="{{ url('accept_terms') }}">
                 {{ csrf_input }}
                 <div id="registration-email">
-                    <label for="id_email">{{ _("Email") }}</label>
+                    <label for="id_email">{{ _("Email address") }}</label>
                     <div class="controls fakecontrol">{{ email }}</div>
                     {% if first_time_login %}
                     {% include 'zerver/create_user/new_user_email_address_visibility.html' %}
