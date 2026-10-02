@@ -55,6 +55,11 @@
                             {{ rendered_markdown body_to_render}}
                         </div>
                         {{/if}}
+                        {{#if history_deleted_by_mention_html}}
+                        <div class="message_content rendered_markdown message_edit_history_content">
+                            <p>{{t "Content deleted from this message's history by" }} {{{history_deleted_by_mention_html}}}.</p>
+                        </div>
+                        {{/if}}
                         {{/if}}
                     </div>
                 </div>
