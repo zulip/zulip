@@ -602,6 +602,7 @@ export default defineConfig({
                         "pin-information",
                         "change-the-privacy-of-a-channel",
                         "enable-mobile-notifications-by-default",
+                        "set-a-default-channel-color",
                         {
                             label: "Delete or archive a channel",
                             link: "/archive-a-channel",

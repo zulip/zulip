@@ -122,6 +122,11 @@ class Stream(models.Model):
     # inheriting from the user's account-level default.
     default_push_notifications = models.BooleanField(default=False, db_default=False)
 
+    # The color new subscribers to this channel should be assigned,
+    # overriding the usual per-user automatic color assignment.  None
+    # means the channel has no configured default color.
+    default_color = models.CharField(max_length=10, null=True, default=None)
+
     # on_delete field for group value settings is set to RESTRICT
     # because we don't want to allow deleting a user group in case it
     # is referenced by the respective setting. We are not using PROTECT
@@ -271,6 +276,7 @@ class Stream(models.Model):
         "creator_id",
         "date_created",
         "deactivated",
+        "default_color",
         "default_push_notifications",
         "description",
         "first_message_id",

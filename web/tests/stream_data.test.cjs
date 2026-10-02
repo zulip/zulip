@@ -1346,6 +1346,26 @@ test("create_sub", () => {
     const antarctica_sub = stream_data.create_sub_from_server_data(antarctica);
     assert.ok(antarctica_sub);
     assert.equal(antarctica_sub.color, "#76ce90");
+
+    // A never-subscribed channel with a configured default color should
+    // preview (and, if the user subscribes, submit) that default color
+    // instead of an arbitrary color picked from the palette.
+    const norway = {
+        stream_id: 104,
+        name: "Norway",
+        subscribed: false,
+        default_color: "#123abc",
+        subscriber_count: 0,
+    };
+    const norway_sub = stream_data.create_sub_from_server_data(norway);
+    assert.ok(norway_sub);
+    assert.equal(norway_sub.color, "#123abc");
+
+    // Once the admin clears the default color, live updates should fall
+    // back to picking a color for the (still unsubscribed) preview.
+    stream_data.update_default_color(norway_sub, null);
+    assert.equal(norway_sub.default_color, null);
+    assert.notEqual(norway_sub.color, "#123abc");
 });
 
 test("creator_id", ({override}) => {
