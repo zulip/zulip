@@ -139,6 +139,14 @@ export function get_user_group_from_name(name: string): UserGroup | undefined {
     return user_group_name_dict.get(name);
 }
 
+export function is_user_group_mention_disallowed(name: string): boolean {
+    const group = get_user_group_from_name(name);
+    return (
+        group !== undefined &&
+        !is_user_in_setting_group(group.can_mention_group, current_user.user_id)
+    );
+}
+
 export function get_realm_user_groups(include_deactivated = false): UserGroup[] {
     const user_groups = user_group_by_id_dict.values().toArray();
     user_groups.sort((a, b) => a.id - b.id);

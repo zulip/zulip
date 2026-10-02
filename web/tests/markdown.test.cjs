@@ -1076,3 +1076,26 @@ test("missing unicode emojis", ({override}) => {
     };
     assert.equal(message.content, "<p>\u{1F6B2}</p>");
 });
+
+run_test("get_user_group_mentions", () => {
+    const names = ["研发 🚀", "R&D <team>", "O'Brien", "a".repeat(100), "role:moderators"];
+    for (const name of names) {
+        assert.deepEqual(markdown.get_user_group_mentions(`@*${name}*`), [name]);
+    }
+    for (const prefix of ["", " ", "\n", "\t", "'", '"', "(", "{", "[", "/", "<"]) {
+        assert.deepEqual(markdown.get_user_group_mentions(`${prefix}@*group*`), ["group"]);
+    }
+    for (const prefix of ["x", "1", ".", ":", "_", "\\"]) {
+        assert.deepEqual(markdown.get_user_group_mentions(`${prefix}@*group*`), []);
+    }
+    for (const content of ["Hello", "@_*group*", "@**user**", "@**all**", "@*group", "@**"]) {
+        assert.deepEqual(markdown.get_user_group_mentions(content), []);
+    }
+    assert.deepEqual(markdown.get_user_group_mentions("@*first* @*second*"), ["first", "second"]);
+    assert.deepEqual(markdown.get_user_group_mentions("x@*unknown @*restricted*"), ["restricted"]);
+    assert.deepEqual(markdown.get_user_group_mentions("@*unknown @*restricted*"), [
+        "unknown @",
+        "restricted",
+    ]);
+    assert.deepEqual(markdown.get_user_group_mentions("```\n@*group*\n```"), ["group"]);
+});
