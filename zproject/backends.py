@@ -677,9 +677,9 @@ class ZulipLDAPSearch(_LDAPUser):
         super().__init__(LDAPBackend(), username="")
 
     def do_search(
-        self, ldap_search: LDAPSearch, kwargs_dict: dict[str, str]
+        self, ldap_search: LDAPSearch, kwargs_dict: dict[str, str], escape: bool = True
     ) -> list[tuple[str, dict[str, list[object]]]]:
-        return ldap_search.execute(self.connection, kwargs_dict)
+        return ldap_search.execute(self.connection, kwargs_dict, escape=escape)
 
 
 class LDAPReverseEmailSearch(ZulipLDAPSearch):
@@ -734,6 +734,30 @@ def ldap_external_auth_id_sync_enabled() -> bool:
         )
 
     return True
+
+
+def binary_ldap_attr_value_to_hex(value: str | bytes) -> str:
+    """
+    django-auth-ldap decodes attribute values from utf-8 when it can, and leaves
+    them as raw bytes when it can't - so the values of a binary attribute reach us
+    as either type, depending on the individual value. Both forms represent the
+    underlying bytes losslessly; we convert them to hex, as binary data can't be
+    stored in a text field.
+    """
+    if isinstance(value, str):
+        value = value.encode()
+
+    return value.hex()
+
+
+def hex_to_escaped_ldap_filter_value(value: str) -> str:
+    r"""
+    Binary values have to be matched in an ldap search filter as escaped octets,
+    e.g. \01\05\00 - see RFC 4515.
+
+    Raises ValueError if the value isn't valid hex.
+    """
+    return "".join(f"\\{byte:02x}" for byte in bytes.fromhex(value))
 
 
 class ZulipLDAPSettings(LDAPSettings):
@@ -1373,7 +1397,15 @@ class ZulipLDAPUser(_LDAPUser):
             return self.dn
 
         external_auth_id = self.attrs[attr_name][0]
-        assert isinstance(external_auth_id, str)
+        if settings.LDAP_UNIQUE_ACCOUNT_ID_IS_BINARY:
+            return binary_ldap_attr_value_to_hex(external_auth_id)
+
+        if not isinstance(external_auth_id, str):
+            raise AssertionError(
+                f"Attribute {attr_name} configured as unique_account_id has non-string values. "
+                "You might need to set LDAP_UNIQUE_ACCOUNT_ID_IS_BINARY to True."
+            )
+
         return external_auth_id
 
     # We intentionally want to create a transaction savepoint here. This only
@@ -1603,16 +1635,39 @@ def prepare_ldap_user_for_sync_by_external_auth_id(
     base_dn = ldap_user_search_obj.base_dn
     scope = ldap_user_search_obj.scope
 
+    escape_filter_value = True
     if not dn_as_external_auth_id:
         ldap_search_args = (base_dn, scope, f"({attr_name}=%(external_auth_id)s)")
-        search_kwargs_dict = {"external_auth_id": ldap_external_auth_id}
+        if settings.LDAP_UNIQUE_ACCOUNT_ID_IS_BINARY:
+            # Values of a binary attribute are stored hex-encoded, and have to be
+            # matched in the search filter as escaped octets - which django-auth-ldap
+            # must therefore not escape again.
+            escape_filter_value = False
+            try:
+                search_value = hex_to_escaped_ldap_filter_value(ldap_external_auth_id)
+            except ValueError:
+                # This can happen with an ExternalAuthID record created before the
+                # unique_account_id attribute was configured as binary. Syncing the user
+                # via their email address will fix up the record.
+                logger.warning(
+                    "ExternalAuthID %s for user %s is not a valid value of the binary attribute %s",
+                    external_auth_id_obj.id,
+                    user_profile.id,
+                    attr_name,
+                )
+                return None
+        else:
+            search_value = ldap_external_auth_id
+        search_kwargs_dict = {"external_auth_id": search_value}
     else:
         # Searching by the DN has a different structure than by a normal attribute.
         ldap_search_args = (ldap_external_auth_id, ldap.SCOPE_BASE, "(objectClass=*)")
         search_kwargs_dict = {}
 
     try:
-        results = ZulipLDAPSearch().do_search(LDAPSearch(*ldap_search_args), search_kwargs_dict)
+        results = ZulipLDAPSearch().do_search(
+            LDAPSearch(*ldap_search_args), search_kwargs_dict, escape=escape_filter_value
+        )
     except ldap.NO_SUCH_OBJECT:
         # This can happen when doing a DN-based lookup when the matching LDAP entry doesn't exist.
         # In the ldap protocol, SCOPE_BASE lookup returns an error (rather than just empty results)
@@ -1737,9 +1792,16 @@ def query_ldap(email: str) -> list[str]:
         ldap_attrs = _LDAPUser(backend, ldap_username).attrs
 
         for django_field, ldap_field in settings.AUTH_LDAP_USER_ATTR_MAP.items():
-            value = ldap_attrs.get(ldap_field, ["LDAP field not present"])[0]
+            if ldap_field not in ldap_attrs:
+                values.append(f"{django_field}: LDAP field not present")
+                continue
+
+            value = ldap_attrs[ldap_field][0]
             if django_field == "avatar" and isinstance(value, bytes):
                 value = "(An avatar image file)"
+            elif django_field == "unique_account_id" and settings.LDAP_UNIQUE_ACCOUNT_ID_IS_BINARY:
+                # Display the value the way it gets stored in the ExternalAuthID record.
+                value = binary_ldap_attr_value_to_hex(value)
             values.append(f"{django_field}: {value}")
         if settings.LDAP_EMAIL_ATTR is not None:
             values.append("{}: {}".format("email", ldap_attrs[settings.LDAP_EMAIL_ATTR][0]))
