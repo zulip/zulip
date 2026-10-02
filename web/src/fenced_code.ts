@@ -25,13 +25,13 @@ type Handler = {
 // See backend fenced_code.py:71 for associated regexp
 const fencestr =
     "^(~{3,}|`{3,})" + // Opening fence
-    "[ ]*" + // Spaces
+    "[ \\t]*" +
     "(" +
     "\\{?\\.?" +
     "([a-zA-Z0-9_+-./#]*)" + // Language
     "\\}?" +
     ")" +
-    "[ ]*" + // Spaces
+    "[ \\t]*" +
     "(" +
     "\\{?\\.?" +
     "([^~`]*)" + // Header (see fenced_code.py)
