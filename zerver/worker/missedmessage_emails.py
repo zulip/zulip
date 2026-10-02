@@ -2,6 +2,7 @@
 import logging
 import threading
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any
 
@@ -20,6 +21,23 @@ from zerver.models.users import get_user_profile_by_id
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class MissedMessageEmailEvent:
+    user_profile_id: int
+    message_id: int
+    trigger: str
+    mentioned_user_group_id: int | None = None
+
+    @classmethod
+    def from_dict(cls, event: dict[str, Any]) -> "MissedMessageEmailEvent":
+        return cls(
+            user_profile_id=event["user_profile_id"],
+            message_id=event["message_id"],
+            trigger=event["trigger"],
+            mentioned_user_group_id=event.get("mentioned_user_group_id"),
+        )
 
 
 @assign_queue("missedmessage_emails")
@@ -45,12 +63,13 @@ class MissedMessageWorker(QueueProcessingWorker):
     # database rows from them.
     @override
     @sentry_sdk.trace
-    def consume(self, event: dict[str, Any]) -> None:
-        logging.debug("Processing missedmessage_emails event: %s", event)
+    def consume(self, raw_event: dict[str, Any]) -> None:
+        event = MissedMessageEmailEvent.from_dict(raw_event)
+        logging.debug("Processing missedmessage_emails event: %s", raw_event)
         # When we consume an event, check if there are existing pending emails
         # for that user, and if so use the same scheduled timestamp.
 
-        user_profile_id: int = event["user_profile_id"]
+        user_profile_id: int = event.user_profile_id
         user_profile = get_user_profile_by_id(user_profile_id)
         batch_duration_seconds = user_profile.email_notifications_batching_period_seconds
         batch_duration = timedelta(seconds=batch_duration_seconds)
@@ -96,10 +115,10 @@ class MissedMessageWorker(QueueProcessingWorker):
             try:
                 ScheduledMessageNotificationEmail.objects.create(
                     user_profile_id=user_profile_id,
-                    message_id=event["message_id"],
-                    trigger=event["trigger"],
+                    message_id=event.message_id,
+                    trigger=event.trigger,
                     scheduled_timestamp=scheduled_timestamp,
-                    mentioned_user_group_id=event.get("mentioned_user_group_id"),
+                    mentioned_user_group_id=event.mentioned_user_group_id,
                 )
                 if not self.has_timeout:
                     self.cv.notify()
