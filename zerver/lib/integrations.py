@@ -588,6 +588,12 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         display_name="CircleCI",
     ),
     IncomingWebhookIntegration(
+        "codebase",
+        ["version-control", "project-management"],
+        [WebhookScreenshotConfig("push.json")],
+        display_name="Codebase",
+    ),
+    IncomingWebhookIntegration(
         "codeship",
         ["continuous-integration", "deployment"],
         [WebhookScreenshotConfig("error_build.json")],
