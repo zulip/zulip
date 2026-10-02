@@ -22,7 +22,10 @@ $(() => {
                 maxFileSize: max_file_upload_size_mib * 1024 * 1024,
             },
             meta: {
-                key,
+                // The tusd hook handler routes uploads carrying this
+                // metadata field to the pending realm registration,
+                // rather than treating them as ordinary attachments.
+                realm_import_registration_key: key,
             },
             locale: {
                 strings: {
