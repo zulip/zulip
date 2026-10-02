@@ -2413,7 +2413,11 @@ body:not(.spectator-view) {
 
     &.folder_id-dropdown-list-container,
     &.new_channel_folder_id-dropdown-list-container {
-        width: calc(var(--modal-input-width) * 0.75);
+        .simplebar-content {
+            width: max-content;
+            min-width: 100%;
+            max-width: var(--modal-input-width);
+        }
 
         /* Alignment adjustments on the channel-folder selector. */
         .dropdown-list .dropdown-list-item-name {
@@ -2428,11 +2432,19 @@ body:not(.spectator-view) {
                buttons. */
             align-items: start;
 
-            .dropdown-list-text-neutral {
+            .dropdown-list-text-neutral,
+            .dropdown-list-text-selected {
                 /* 0.2em is an eyeballed value that keeps the buttons
                    well aligned with the first/only line of text. */
                 padding-top: 0.2em;
+                padding-left: 0.4em;
                 align-self: start;
+                padding-right: 48px;
+                min-width: 0;
+
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
         }
     }
