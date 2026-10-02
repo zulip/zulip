@@ -53,6 +53,23 @@ export function contains_backend_only_syntax(content: string): boolean {
     return contains_preview_link(content) || contains_topic_wildcard_mention(content);
 }
 
+export function get_user_group_mentions(content: string): string[] {
+    // This may match text that the server does not treat as a mention,
+    // such as text in code blocks; the server validates mentions.
+    // We cannot use the exact same regex as the server side uses (in
+    // zerver/lib/mention.py) because lookbehind syntax would keep
+    // browsers without lookbehind support from loading the app at all.
+    // Reframe the lookbehind of a negative character class as a
+    // start-of-string or positive character class.
+    //
+    // The mention itself is matched inside a lookahead so that a match
+    // consumes only the preceding character. Otherwise, a match like
+    // "@*y` @*" in "`x @*y` @*group*" would consume the opening "*" of
+    // "@*group*", and we would miss that mention.
+    const group_mentions = content.matchAll(/(?:^|[\s"'(/<[{])(?=@\*([^*]+)\*)/g);
+    return Array.from(group_mentions, (match) => match[1]!);
+}
+
 export let web_app_helpers: MarkdownHelpers | undefined;
 
 export type AbstractMap<K, V> = {
