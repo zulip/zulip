@@ -23,6 +23,14 @@ Get Linear notifications in Zulip!
 
 {!event-filtering-additional-feature.md!}
 
+The integration sends notifications for the following Linear event
+types:
+
+* **Issues** and sub-issues: created, updated, and removed.
+* **Comments** on issues: created, updated, and removed.
+* **Projects**: created, updated, and removed.
+* **Project updates** (project status posts): created, edited, and removed.
+
 !!! warn ""
 
     **Note**: `comment` events are only supported for comments on
