@@ -351,13 +351,6 @@ class Command(ZulipBaseCommand):
         )
 
         parser.add_argument(
-            "--nodelete",
-            action="store_false",
-            dest="delete",
-            help="Whether to delete all the existing messages.",
-        )
-
-        parser.add_argument(
             "--test-suite",
             action="store_true",
             help="Configures populate_db to create a deterministic data set for the backend tests.",
@@ -391,181 +384,180 @@ class Command(ZulipBaseCommand):
             # with the number of messages.
             options["max_topics"] = 8 + options["num_messages"] // 1000
 
-        if options["delete"]:
-            # Start by clearing all the data in our database
-            clear_database()
+        # Start by clearing all the data in our database
+        clear_database()
 
-            # Create our three default realms
-            # Could in theory be done via zerver.actions.create_realm.do_create_realm, but
-            # welcome-bot (needed for do_create_realm) hasn't been created yet
-            create_internal_realm()
-            zulip_realm = do_create_realm(
-                string_id="zulip",
-                name="Zulip Dev",
-                emails_restricted_to_domains=False,
-                description="The Zulip development environment default organization."
-                "  It's great for testing!",
+        # Create our three default realms
+        # Could in theory be done via zerver.actions.create_realm.do_create_realm, but
+        # welcome-bot (needed for do_create_realm) hasn't been created yet
+        create_internal_realm()
+        zulip_realm = do_create_realm(
+            string_id="zulip",
+            name="Zulip Dev",
+            emails_restricted_to_domains=False,
+            description="The Zulip development environment default organization."
+            "  It's great for testing!",
+            invite_required=False,
+            plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
+            org_type=Realm.ORG_TYPES["business"]["id"],
+            enable_read_receipts=True,
+            enable_spectator_access=True,
+        )
+        RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
+        assert zulip_realm.new_stream_announcements_stream is not None
+        zulip_realm.new_stream_announcements_stream.name = "Verona"
+        zulip_realm.new_stream_announcements_stream.description = "A city in Italy"
+        zulip_realm.new_stream_announcements_stream.save(update_fields=["name", "description"])
+
+        realm_user_default = RealmUserDefault.objects.get(realm=zulip_realm)
+        realm_user_default.enter_sends = True
+        realm_user_default.email_address_visibility = (
+            RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
+        )
+        realm_user_default.save()
+
+        if options["test_suite"]:
+            mit_realm = do_create_realm(
+                string_id="zephyr",
+                name="MIT",
+                emails_restricted_to_domains=True,
                 invite_required=False,
                 plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
                 org_type=Realm.ORG_TYPES["business"]["id"],
-                enable_read_receipts=True,
-                enable_spectator_access=True,
             )
-            RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
-            assert zulip_realm.new_stream_announcements_stream is not None
-            zulip_realm.new_stream_announcements_stream.name = "Verona"
-            zulip_realm.new_stream_announcements_stream.description = "A city in Italy"
-            zulip_realm.new_stream_announcements_stream.save(update_fields=["name", "description"])
+            RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
 
-            realm_user_default = RealmUserDefault.objects.get(realm=zulip_realm)
-            realm_user_default.enter_sends = True
-            realm_user_default.email_address_visibility = (
-                RealmUserDefault.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            lear_realm = do_create_realm(
+                string_id="lear",
+                name="Lear & Co.",
+                emails_restricted_to_domains=False,
+                invite_required=False,
+                plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
+                org_type=Realm.ORG_TYPES["business"]["id"],
             )
-            realm_user_default.save()
 
-            if options["test_suite"]:
-                mit_realm = do_create_realm(
-                    string_id="zephyr",
-                    name="MIT",
-                    emails_restricted_to_domains=True,
-                    invite_required=False,
-                    plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
-                    org_type=Realm.ORG_TYPES["business"]["id"],
-                )
-                RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
+        # Realms should have matching RemoteRealm entries - simulating having realms registered
+        # with the bouncer, which is going to be the primary case for modern servers. Tests
+        # wanting to have missing registrations, or simulating legacy server scenarios,
+        # should delete RemoteRealms to explicit set things up.
 
-                lear_realm = do_create_realm(
-                    string_id="lear",
-                    name="Lear & Co.",
-                    emails_restricted_to_domains=False,
-                    invite_required=False,
-                    plan_type=Realm.PLAN_TYPE_SELF_HOSTED,
-                    org_type=Realm.ORG_TYPES["business"]["id"],
-                )
+        assert isinstance(settings.ZULIP_ORG_ID, str)
+        assert isinstance(settings.ZULIP_ORG_KEY, str)
+        server = RemoteZulipServer.objects.create(
+            uuid=settings.ZULIP_ORG_ID,
+            api_key=settings.ZULIP_ORG_KEY,
+            hostname=settings.EXTERNAL_HOST,
+            last_updated=timezone_now(),
+            contact_email="remotezulipserver@zulip.com",
+        )
+        RemoteZulipServerAuditLog.objects.create(
+            event_type=AuditLogEventType.REMOTE_SERVER_CREATED,
+            server=server,
+            event_time=server.last_updated,
+        )
+        update_remote_realm_data_for_server(server, get_realms_info_for_push_bouncer())
 
-            # Realms should have matching RemoteRealm entries - simulating having realms registered
-            # with the bouncer, which is going to be the primary case for modern servers. Tests
-            # wanting to have missing registrations, or simulating legacy server scenarios,
-            # should delete RemoteRealms to explicit set things up.
+        # Create test Users (UserProfiles are automatically created,
+        # as are subscriptions to the ability to receive personals).
+        names = [
+            ("Zoe", "ZOE@zulip.com"),
+            ("Othello, the Moor of Venice", "othello@zulip.com"),
+            ("Iago", "iago@zulip.com"),
+            ("Prospero from The Tempest", "prospero@zulip.com"),
+            ("Cordelia, Lear's daughter", "cordelia@zulip.com"),
+            ("King Hamlet", "hamlet@zulip.com"),
+            ("aaron", "AARON@zulip.com"),
+            ("Polonius", "polonius@zulip.com"),
+            ("Desdemona", "desdemona@zulip.com"),
+            ("शिव", "shiva@zulip.com"),
+        ]
 
-            assert isinstance(settings.ZULIP_ORG_ID, str)
-            assert isinstance(settings.ZULIP_ORG_KEY, str)
-            server = RemoteZulipServer.objects.create(
-                uuid=settings.ZULIP_ORG_ID,
-                api_key=settings.ZULIP_ORG_KEY,
-                hostname=settings.EXTERNAL_HOST,
-                last_updated=timezone_now(),
-                contact_email="remotezulipserver@zulip.com",
-            )
-            RemoteZulipServerAuditLog.objects.create(
-                event_type=AuditLogEventType.REMOTE_SERVER_CREATED,
-                server=server,
-                event_time=server.last_updated,
-            )
-            update_remote_realm_data_for_server(server, get_realms_info_for_push_bouncer())
+        # For testing really large batches:
+        # Create extra users with semi realistic names to make search
+        # functions somewhat realistic.  We'll still create 1000 users
+        # like Extra222 User for some predictability.
+        num_names = options["extra_users"]
+        num_boring_names = 300
 
-            # Create test Users (UserProfiles are automatically created,
-            # as are subscriptions to the ability to receive personals).
-            names = [
-                ("Zoe", "ZOE@zulip.com"),
-                ("Othello, the Moor of Venice", "othello@zulip.com"),
-                ("Iago", "iago@zulip.com"),
-                ("Prospero from The Tempest", "prospero@zulip.com"),
-                ("Cordelia, Lear's daughter", "cordelia@zulip.com"),
-                ("King Hamlet", "hamlet@zulip.com"),
-                ("aaron", "AARON@zulip.com"),
-                ("Polonius", "polonius@zulip.com"),
-                ("Desdemona", "desdemona@zulip.com"),
-                ("शिव", "shiva@zulip.com"),
+        for i in range(min(num_names, num_boring_names)):
+            full_name = f"Extra{i:03} User"
+            names.append((full_name, f"extrauser{i}@zulip.com"))
+
+        if num_names > num_boring_names:
+            fnames = [
+                "Amber",
+                "Arpita",
+                "Bob",
+                "Cindy",
+                "Daniela",
+                "Dan",
+                "Dinesh",
+                "Faye",
+                "François",
+                "George",
+                "Hank",
+                "Irene",
+                "James",
+                "Janice",
+                "Jenny",
+                "Jill",
+                "John",
+                "Kate",
+                "Katelyn",
+                "Kobe",
+                "Lexi",
+                "Manish",
+                "Mark",
+                "Matt",
+                "Mayna",
+                "Michael",
+                "Pete",
+                "Peter",
+                "Phil",
+                "Phillipa",
+                "Preston",
+                "Sally",
+                "Scott",
+                "Sandra",
+                "Steve",
+                "Stephanie",
+                "Vera",
             ]
-
-            # For testing really large batches:
-            # Create extra users with semi realistic names to make search
-            # functions somewhat realistic.  We'll still create 1000 users
-            # like Extra222 User for some predictability.
-            num_names = options["extra_users"]
-            num_boring_names = 300
-
-            for i in range(min(num_names, num_boring_names)):
-                full_name = f"Extra{i:03} User"
-                names.append((full_name, f"extrauser{i}@zulip.com"))
-
-            if num_names > num_boring_names:
-                fnames = [
-                    "Amber",
-                    "Arpita",
-                    "Bob",
-                    "Cindy",
-                    "Daniela",
-                    "Dan",
-                    "Dinesh",
-                    "Faye",
-                    "François",
-                    "George",
-                    "Hank",
-                    "Irene",
-                    "James",
-                    "Janice",
-                    "Jenny",
-                    "Jill",
-                    "John",
-                    "Kate",
-                    "Katelyn",
-                    "Kobe",
-                    "Lexi",
-                    "Manish",
-                    "Mark",
-                    "Matt",
-                    "Mayna",
-                    "Michael",
-                    "Pete",
-                    "Peter",
-                    "Phil",
-                    "Phillipa",
-                    "Preston",
-                    "Sally",
-                    "Scott",
-                    "Sandra",
-                    "Steve",
-                    "Stephanie",
-                    "Vera",
-                ]
-                mnames = ["de", "van", "von", "Shaw", "T."]
-                lnames = [
-                    "Adams",
-                    "Agarwal",
-                    "Beal",
-                    "Benson",
-                    "Bonita",
-                    "Davis",
-                    "George",
-                    "Harden",
-                    "James",
-                    "Jones",
-                    "Johnson",
-                    "Jordan",
-                    "Lee",
-                    "Leonard",
-                    "Singh",
-                    "Smith",
-                    "Patel",
-                    "Towns",
-                    "Wall",
-                ]
-                non_ascii_names = [
-                    "Günter",
-                    "أحمد",
-                    "Magnús",
-                    "आशी",
-                    "イツキ",
-                    "语嫣",
-                    "அருண்",
-                    "Александр",
-                    "José",
-                ]
-                # to imitate emoji insertions in usernames
-                raw_emojis = ["😎", "😂", "🐱‍👤"]
+            mnames = ["de", "van", "von", "Shaw", "T."]
+            lnames = [
+                "Adams",
+                "Agarwal",
+                "Beal",
+                "Benson",
+                "Bonita",
+                "Davis",
+                "George",
+                "Harden",
+                "James",
+                "Jones",
+                "Johnson",
+                "Jordan",
+                "Lee",
+                "Leonard",
+                "Singh",
+                "Smith",
+                "Patel",
+                "Towns",
+                "Wall",
+            ]
+            non_ascii_names = [
+                "Günter",
+                "أحمد",
+                "Magnús",
+                "आशी",
+                "イツキ",
+                "语嫣",
+                "அருண்",
+                "Александр",
+                "José",
+            ]
+            # to imitate emoji insertions in usernames
+            raw_emojis = ["😎", "😂", "🐱‍👤"]
 
             for i in range(num_boring_names, num_names):
                 fname = random.choice(fnames) + str(i)
@@ -583,380 +575,367 @@ class Command(ZulipBaseCommand):
                 validate_email(email)
                 names.append((full_name, email))
 
-            create_users(zulip_realm, names, tos_version=settings.TERMS_OF_SERVICE_VERSION)
+        create_users(zulip_realm, names, tos_version=settings.TERMS_OF_SERVICE_VERSION)
 
-            # Add time zones to some users. Ideally, this would be
-            # done in the initial create_users calls, but the
-            # tuple-based interface for that function doesn't support
-            # doing so.
-            def assign_time_zone_by_delivery_email(delivery_email: str, new_time_zone: str) -> None:
-                u = get_user_by_delivery_email(delivery_email, zulip_realm)
-                u.timezone = new_time_zone
-                u.save(update_fields=["timezone"])
+        # Add time zones to some users. Ideally, this would be
+        # done in the initial create_users calls, but the
+        # tuple-based interface for that function doesn't support
+        # doing so.
+        def assign_time_zone_by_delivery_email(delivery_email: str, new_time_zone: str) -> None:
+            u = get_user_by_delivery_email(delivery_email, zulip_realm)
+            u.timezone = new_time_zone
+            u.save(update_fields=["timezone"])
 
-            # Note: Hamlet and Imported User keep default time zone of "".
-            assign_time_zone_by_delivery_email("AARON@zulip.com", "US/Pacific")
-            assign_time_zone_by_delivery_email("othello@zulip.com", "US/Pacific")
-            assign_time_zone_by_delivery_email("ZOE@zulip.com", "US/Eastern")
-            assign_time_zone_by_delivery_email("iago@zulip.com", "US/Eastern")
-            assign_time_zone_by_delivery_email("desdemona@zulip.com", "Canada/Newfoundland")
-            assign_time_zone_by_delivery_email("polonius@zulip.com", "Asia/Shanghai")  # China
-            assign_time_zone_by_delivery_email("shiva@zulip.com", "Asia/Kolkata")  # India
-            assign_time_zone_by_delivery_email("cordelia@zulip.com", "UTC")
+        # Note: Hamlet and Imported User keep default time zone of "".
+        assign_time_zone_by_delivery_email("AARON@zulip.com", "US/Pacific")
+        assign_time_zone_by_delivery_email("othello@zulip.com", "US/Pacific")
+        assign_time_zone_by_delivery_email("ZOE@zulip.com", "US/Eastern")
+        assign_time_zone_by_delivery_email("iago@zulip.com", "US/Eastern")
+        assign_time_zone_by_delivery_email("desdemona@zulip.com", "Canada/Newfoundland")
+        assign_time_zone_by_delivery_email("polonius@zulip.com", "Asia/Shanghai")  # China
+        assign_time_zone_by_delivery_email("shiva@zulip.com", "Asia/Kolkata")  # India
+        assign_time_zone_by_delivery_email("cordelia@zulip.com", "UTC")
 
-            iago = get_user_by_delivery_email("iago@zulip.com", zulip_realm)
-            do_change_user_role(
-                iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None, notify=False
-            )
-            iago.is_staff = True
-            iago.save(update_fields=["is_staff"])
+        iago = get_user_by_delivery_email("iago@zulip.com", zulip_realm)
+        do_change_user_role(
+            iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None, notify=False
+        )
+        iago.is_staff = True
+        iago.save(update_fields=["is_staff"])
 
-            # We need to create at least two test draft for Iago for the sake
-            # of the cURL tests. Two since one will be deleted.
-            Draft.objects.create(
-                user_profile=iago,
-                recipient=None,
-                topic="Release Notes",
-                content="Release 4.0 will contain ...",
-                last_edit_time=timezone_now(),
-            )
-            Draft.objects.create(
-                user_profile=iago,
-                recipient=None,
-                topic="Release Notes",
-                content="Release 4.0 will contain many new features such as ... ",
-                last_edit_time=timezone_now(),
-            )
+        # We need to create at least two test draft for Iago for the sake
+        # of the cURL tests. Two since one will be deleted.
+        Draft.objects.create(
+            user_profile=iago,
+            recipient=None,
+            topic="Release Notes",
+            content="Release 4.0 will contain ...",
+            last_edit_time=timezone_now(),
+        )
+        Draft.objects.create(
+            user_profile=iago,
+            recipient=None,
+            topic="Release Notes",
+            content="Release 4.0 will contain many new features such as ... ",
+            last_edit_time=timezone_now(),
+        )
 
-            desdemona = get_user_by_delivery_email("desdemona@zulip.com", zulip_realm)
-            do_change_user_role(
-                desdemona, UserProfile.ROLE_REALM_OWNER, acting_user=None, notify=False
-            )
+        desdemona = get_user_by_delivery_email("desdemona@zulip.com", zulip_realm)
+        do_change_user_role(desdemona, UserProfile.ROLE_REALM_OWNER, acting_user=None, notify=False)
 
-            shiva = get_user_by_delivery_email("shiva@zulip.com", zulip_realm)
-            do_change_user_role(shiva, UserProfile.ROLE_MODERATOR, acting_user=None, notify=False)
+        shiva = get_user_by_delivery_email("shiva@zulip.com", zulip_realm)
+        do_change_user_role(shiva, UserProfile.ROLE_MODERATOR, acting_user=None, notify=False)
 
-            polonius = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
-            do_change_user_role(polonius, UserProfile.ROLE_GUEST, acting_user=None, notify=False)
+        polonius = get_user_by_delivery_email("polonius@zulip.com", zulip_realm)
+        do_change_user_role(polonius, UserProfile.ROLE_GUEST, acting_user=None, notify=False)
 
-            zulip_imported_users = [
-                ("Imported User", "imported-user@zulip.com"),
-            ]
-            create_users(
-                zulip_realm,
-                zulip_imported_users,
-                is_imported_stub=True,
-                tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
-            )
+        zulip_imported_users = [
+            ("Imported User", "imported-user@zulip.com"),
+        ]
+        create_users(
+            zulip_realm,
+            zulip_imported_users,
+            is_imported_stub=True,
+            tos_version=UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN,
+        )
 
-            # These bots are directly referenced from code and thus
-            # are needed for the test suite.
-            zulip_realm_bots = [
-                ("Zulip Default Bot", "default-bot@zulip.com"),
-                *(
-                    (f"Extra Bot {i}", f"extrabot{i}@zulip.com")
-                    for i in range(options["extra_bots"])
-                ),
-            ]
+        # These bots are directly referenced from code and thus
+        # are needed for the test suite.
+        zulip_realm_bots = [
+            ("Zulip Default Bot", "default-bot@zulip.com"),
+            *((f"Extra Bot {i}", f"extrabot{i}@zulip.com") for i in range(options["extra_bots"])),
+        ]
 
-            create_users(
-                zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT, bot_owner=desdemona
-            )
+        create_users(
+            zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT, bot_owner=desdemona
+        )
 
-            zoe = get_user_by_delivery_email("zoe@zulip.com", zulip_realm)
-            zulip_webhook_bots = [
-                ("Zulip Webhook Bot", "webhook-bot@zulip.com"),
-            ]
-            # If a stream is not supplied in the webhook URL, the webhook
-            # will (in some cases) send the notification as a PM to the
-            # owner of the webhook bot, so bot_owner can't be None
-            create_users(
-                zulip_realm,
-                zulip_webhook_bots,
-                bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
-                bot_owner=zoe,
-            )
-            aaron = get_user_by_delivery_email("AARON@zulip.com", zulip_realm)
+        zoe = get_user_by_delivery_email("zoe@zulip.com", zulip_realm)
+        zulip_webhook_bots = [
+            ("Zulip Webhook Bot", "webhook-bot@zulip.com"),
+        ]
+        # If a stream is not supplied in the webhook URL, the webhook
+        # will (in some cases) send the notification as a PM to the
+        # owner of the webhook bot, so bot_owner can't be None
+        create_users(
+            zulip_realm,
+            zulip_webhook_bots,
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            bot_owner=zoe,
+        )
+        aaron = get_user_by_delivery_email("AARON@zulip.com", zulip_realm)
 
-            zulip_outgoing_bots = [
-                ("Outgoing Webhook", "outgoing-webhook@zulip.com"),
-            ]
-            create_users(
-                zulip_realm,
-                zulip_outgoing_bots,
-                bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-                bot_owner=aaron,
-            )
-            outgoing_webhook = get_user("outgoing-webhook@zulip.com", zulip_realm)
-            add_service(
-                "outgoing-webhook",
-                user_profile=outgoing_webhook,
-                interface=Service.GENERIC,
-                base_url="http://127.0.0.1:5002",
-                token=generate_api_key(),
-            )
+        zulip_outgoing_bots = [
+            ("Outgoing Webhook", "outgoing-webhook@zulip.com"),
+        ]
+        create_users(
+            zulip_realm,
+            zulip_outgoing_bots,
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            bot_owner=aaron,
+        )
+        outgoing_webhook = get_user("outgoing-webhook@zulip.com", zulip_realm)
+        add_service(
+            "outgoing-webhook",
+            user_profile=outgoing_webhook,
+            interface=Service.GENERIC,
+            base_url="http://127.0.0.1:5002",
+            token=generate_api_key(),
+        )
 
-            # Add the realm internal bots to each realm.
-            create_if_missing_realm_internal_bots()
+        # Add the realm internal bots to each realm.
+        create_if_missing_realm_internal_bots()
 
-            # Create streams.
-            zulip_discussion_channel_name = str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME)
-            zulip_sandbox_channel_name = str(Realm.ZULIP_SANDBOX_CHANNEL_NAME)
+        # Create streams.
+        zulip_discussion_channel_name = str(Realm.ZULIP_DISCUSSION_CHANNEL_NAME)
+        zulip_sandbox_channel_name = str(Realm.ZULIP_SANDBOX_CHANNEL_NAME)
 
-            stream_list = [
-                "Verona",
-                "Denmark",
-                "Scotland",
-                "Venice",
-                "Rome",
-                "core team",
-                zulip_discussion_channel_name,
-                zulip_sandbox_channel_name,
-            ]
-            stream_dict: dict[str, dict[str, Any]] = {
-                "Denmark": {"description": "A Scandinavian country"},
-                "Scotland": {"description": "Located in the United Kingdom", "creator": iago},
-                "Venice": {"description": "A northeastern Italian city", "creator": polonius},
-                "Rome": {"description": "Yet another Italian city", "is_web_public": True},
-                "core team": {
-                    "description": "A private channel for core team members",
-                    "invite_only": True,
-                    "creator": desdemona,
-                },
+        stream_list = [
+            "Verona",
+            "Denmark",
+            "Scotland",
+            "Venice",
+            "Rome",
+            "core team",
+            zulip_discussion_channel_name,
+            zulip_sandbox_channel_name,
+        ]
+        stream_dict: dict[str, dict[str, Any]] = {
+            "Denmark": {"description": "A Scandinavian country"},
+            "Scotland": {"description": "Located in the United Kingdom", "creator": iago},
+            "Venice": {"description": "A northeastern Italian city", "creator": polonius},
+            "Rome": {"description": "Yet another Italian city", "is_web_public": True},
+            "core team": {
+                "description": "A private channel for core team members",
+                "invite_only": True,
+                "creator": desdemona,
+            },
+        }
+
+        bulk_create_streams(zulip_realm, stream_dict)
+        recipient_streams: list[int] = [
+            Stream.objects.get(name=name, realm=zulip_realm).id for name in stream_list
+        ]
+
+        # Create subscriptions to streams.  The following
+        # algorithm will give each of the users a different but
+        # deterministic subset of the streams (given a fixed list
+        # of users). For the test suite, we have a fixed list of
+        # subscriptions to make sure test data is consistent
+        # across platforms.
+
+        subscriptions_list: list[tuple[UserProfile, Recipient]] = []
+        profiles: Sequence[UserProfile] = list(
+            UserProfile.objects.select_related("realm").filter(is_bot=False).order_by("email")
+        )
+
+        if options["test_suite"]:
+            subscriptions_map = {
+                "AARON@zulip.com": ["Verona"],
+                "cordelia@zulip.com": ["Verona"],
+                "hamlet@zulip.com": [
+                    "Verona",
+                    "Denmark",
+                    "core team",
+                    zulip_discussion_channel_name,
+                    zulip_sandbox_channel_name,
+                ],
+                "iago@zulip.com": [
+                    "Verona",
+                    "Denmark",
+                    "Scotland",
+                    "core team",
+                    zulip_discussion_channel_name,
+                    zulip_sandbox_channel_name,
+                ],
+                "othello@zulip.com": ["Verona", "Denmark", "Scotland"],
+                "prospero@zulip.com": ["Verona", "Denmark", "Scotland", "Venice"],
+                "ZOE@zulip.com": ["Verona", "Denmark", "Scotland", "Venice", "Rome"],
+                "polonius@zulip.com": ["Verona"],
+                "desdemona@zulip.com": [
+                    "Verona",
+                    "Denmark",
+                    "Venice",
+                    "core team",
+                    zulip_discussion_channel_name,
+                    zulip_sandbox_channel_name,
+                ],
+                "shiva@zulip.com": ["Verona", "Denmark", "Scotland"],
+                "imported-user@zulip.com": ["Denmark"],
             }
 
-            bulk_create_streams(zulip_realm, stream_dict)
-            recipient_streams: list[int] = [
-                Stream.objects.get(name=name, realm=zulip_realm).id for name in stream_list
-            ]
+            for profile in profiles:
+                email = profile.delivery_email
+                if email not in subscriptions_map:
+                    raise Exception(f"Subscriptions not listed for user {email}")
 
-            # Create subscriptions to streams.  The following
-            # algorithm will give each of the users a different but
-            # deterministic subset of the streams (given a fixed list
-            # of users). For the test suite, we have a fixed list of
-            # subscriptions to make sure test data is consistent
-            # across platforms.
-
-            subscriptions_list: list[tuple[UserProfile, Recipient]] = []
-            profiles: Sequence[UserProfile] = list(
-                UserProfile.objects.select_related("realm").filter(is_bot=False).order_by("email")
-            )
-
-            if options["test_suite"]:
-                subscriptions_map = {
-                    "AARON@zulip.com": ["Verona"],
-                    "cordelia@zulip.com": ["Verona"],
-                    "hamlet@zulip.com": [
-                        "Verona",
-                        "Denmark",
-                        "core team",
-                        zulip_discussion_channel_name,
-                        zulip_sandbox_channel_name,
-                    ],
-                    "iago@zulip.com": [
-                        "Verona",
-                        "Denmark",
-                        "Scotland",
-                        "core team",
-                        zulip_discussion_channel_name,
-                        zulip_sandbox_channel_name,
-                    ],
-                    "othello@zulip.com": ["Verona", "Denmark", "Scotland"],
-                    "prospero@zulip.com": ["Verona", "Denmark", "Scotland", "Venice"],
-                    "ZOE@zulip.com": ["Verona", "Denmark", "Scotland", "Venice", "Rome"],
-                    "polonius@zulip.com": ["Verona"],
-                    "desdemona@zulip.com": [
-                        "Verona",
-                        "Denmark",
-                        "Venice",
-                        "core team",
-                        zulip_discussion_channel_name,
-                        zulip_sandbox_channel_name,
-                    ],
-                    "shiva@zulip.com": ["Verona", "Denmark", "Scotland"],
-                    "imported-user@zulip.com": ["Denmark"],
-                }
-
-                for profile in profiles:
-                    email = profile.delivery_email
-                    if email not in subscriptions_map:
-                        raise Exception(f"Subscriptions not listed for user {email}")
-
-                    for stream_name in subscriptions_map[email]:
-                        stream = Stream.objects.get(name=stream_name, realm=zulip_realm)
-                        r = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
-                        subscriptions_list.append((profile, r))
-            else:
-                num_streams = len(recipient_streams)
-                num_users = len(profiles)
-                for i, profile in enumerate(profiles):
-                    # Subscribe to some streams.
-                    fraction = float(i) / num_users
-                    num_recips = int(num_streams * fraction) + 1
-
-                    for type_id in recipient_streams[:num_recips]:
-                        r = Recipient.objects.get(type=Recipient.STREAM, type_id=type_id)
-                        subscriptions_list.append((profile, r))
-
-            subscriptions_to_add: list[Subscription] = []
-            subscriber_count_changes: dict[int, set[int]] = defaultdict(set)
-            event_time = timezone_now()
-            all_subscription_logs: list[RealmAuditLog] = []
-
-            for i, (profile, recipient) in enumerate(subscriptions_list, 1):
-                color = STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)]
-                s = Subscription(
-                    recipient=recipient,
-                    user_profile=profile,
-                    is_user_active=profile.is_active,
-                    color=color,
-                )
-
-                subscriptions_to_add.append(s)
-                if profile.is_active:
-                    subscriber_count_changes[recipient.type_id].add(profile.id)
-
-                log = RealmAuditLog(
-                    realm=profile.realm,
-                    modified_user=profile,
-                    modified_stream_id=recipient.type_id,
-                    event_last_message_id=0,
-                    event_type=AuditLogEventType.SUBSCRIPTION_CREATED,
-                    event_time=event_time,
-                )
-                all_subscription_logs.append(log)
-
-            bulk_create_stream_subscriptions(
-                subs=subscriptions_to_add, streams=subscriber_count_changes
-            )
-            RealmAuditLog.objects.bulk_create(all_subscription_logs)
-
-            # Create custom profile field data
-            phone_number = try_add_realm_custom_profile_field(
-                zulip_realm, "Phone number", CustomProfileField.SHORT_TEXT, hint=""
-            )
-            biography = try_add_realm_custom_profile_field(
-                zulip_realm,
-                "Biography",
-                CustomProfileField.PARAGRAPH,
-                hint="What are you known for?",
-            )
-            favorite_food = try_add_realm_custom_profile_field(
-                zulip_realm,
-                "Favorite food",
-                CustomProfileField.SHORT_TEXT,
-                hint="Or drink, if you'd prefer",
-            )
-            field_data: ProfileFieldData = {
-                "0": {"text": "Vim", "order": "1"},
-                "1": {"text": "Emacs", "order": "2"},
-            }
-            favorite_editor = try_add_realm_custom_profile_field(
-                zulip_realm, "Favorite editor", CustomProfileField.DROPDOWN, field_data=field_data
-            )
-            birthday = try_add_realm_custom_profile_field(
-                zulip_realm, "Birthday", CustomProfileField.DATE
-            )
-            favorite_website = try_add_realm_custom_profile_field(
-                zulip_realm,
-                "Favorite website",
-                CustomProfileField.URL,
-                hint="Or your personal blog's URL",
-            )
-            mentor = try_add_realm_custom_profile_field(
-                zulip_realm, "Mentor", CustomProfileField.USER
-            )
-            github_profile = try_add_realm_default_custom_profile_field(zulip_realm, "github")
-            pronouns = try_add_realm_custom_profile_field(
-                zulip_realm,
-                "Pronouns",
-                CustomProfileField.PRONOUNS,
-                hint="What pronouns should people use to refer to you?",
-            )
-
-            # Fill in values for Iago and Hamlet
-            hamlet = get_user_by_delivery_email("hamlet@zulip.com", zulip_realm)
-            do_update_user_custom_profile_data_if_changed(
-                iago,
-                [
-                    {"id": phone_number.id, "value": "+1-234-567-8901"},
-                    {"id": biography.id, "value": "Betrayer of Othello."},
-                    {"id": favorite_food.id, "value": "Apples"},
-                    {"id": favorite_editor.id, "value": "1"},
-                    {"id": birthday.id, "value": "2000-01-01"},
-                    {"id": favorite_website.id, "value": "https://zulip.readthedocs.io/en/latest/"},
-                    {"id": mentor.id, "value": [hamlet.id]},
-                    {"id": github_profile.id, "value": "zulip"},
-                    {"id": pronouns.id, "value": "he/him"},
-                ],
-                None,
-                notify=False,
-            )
-            do_update_user_custom_profile_data_if_changed(
-                hamlet,
-                [
-                    {"id": phone_number.id, "value": "+0-11-23-456-7890"},
-                    {
-                        "id": biography.id,
-                        "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
-                    },
-                    {"id": favorite_food.id, "value": "Dark chocolate"},
-                    {"id": favorite_editor.id, "value": "0"},
-                    {"id": birthday.id, "value": "1900-01-01"},
-                    {"id": favorite_website.id, "value": "https://blog.zulig.org"},
-                    {"id": mentor.id, "value": [iago.id]},
-                    {"id": github_profile.id, "value": "zulipbot"},
-                    {"id": pronouns.id, "value": "he/him"},
-                ],
-                None,
-                notify=False,
-            )
-            # We need to create at least one scheduled message for Iago for the api-test
-            # cURL example to delete an existing scheduled message.
-            check_schedule_message(
-                sender=iago,
-                client=get_client("ZulipDataImport"),
-                recipient_type_name="stream",
-                message_to=[Stream.objects.get(name="Denmark", realm=zulip_realm).id],
-                topic_name="test-api",
-                message_content="It's time to celebrate the anniversary of provisioning this development environment :tada:!",
-                deliver_at=timezone_now() + timedelta(days=365),
-                realm=zulip_realm,
-            )
-            check_schedule_message(
-                sender=iago,
-                client=get_client("ZulipDataImport"),
-                recipient_type_name="private",
-                message_to=[iago.id],
-                topic_name=None,
-                message_content="Note to self: It's been a while since you've provisioned this development environment.",
-                deliver_at=timezone_now() + timedelta(days=365),
-                realm=zulip_realm,
-            )
-            do_add_linkifier(
-                zulip_realm,
-                "#D(?P<id>[0-9]{2,8})",
-                "https://github.com/zulip/zulip-desktop/pull/{id}",
-                acting_user=None,
-            )
-            do_add_linkifier(
-                zulip_realm,
-                "zulip-mobile#(?P<id>[0-9]{2,8})",
-                "https://github.com/zulip/zulip-mobile/pull/{id}",
-                acting_user=None,
-            )
-            do_add_linkifier(
-                zulip_realm,
-                "zulip-(?P<repo>[a-zA-Z-_0-9]+)#(?P<id>[0-9]{2,8})",
-                "https://github.com/zulip/{repo}/pull/{id}",
-                acting_user=None,
-            )
+                for stream_name in subscriptions_map[email]:
+                    stream = Stream.objects.get(name=stream_name, realm=zulip_realm)
+                    r = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
+                    subscriptions_list.append((profile, r))
         else:
-            zulip_realm = get_realm("zulip")
-            recipient_streams = [
-                klass.type_id for klass in Recipient.objects.filter(type=Recipient.STREAM)
-            ]
+            num_streams = len(recipient_streams)
+            num_users = len(profiles)
+            for i, profile in enumerate(profiles):
+                # Subscribe to some streams.
+                fraction = float(i) / num_users
+                num_recips = int(num_streams * fraction) + 1
 
+                for type_id in recipient_streams[:num_recips]:
+                    r = Recipient.objects.get(type=Recipient.STREAM, type_id=type_id)
+                    subscriptions_list.append((profile, r))
+
+        subscriptions_to_add: list[Subscription] = []
+        subscriber_count_changes: dict[int, set[int]] = defaultdict(set)
+        event_time = timezone_now()
+        all_subscription_logs: list[RealmAuditLog] = []
+
+        for i, (profile, recipient) in enumerate(subscriptions_list, 1):
+            color = STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)]
+            s = Subscription(
+                recipient=recipient,
+                user_profile=profile,
+                is_user_active=profile.is_active,
+                color=color,
+            )
+
+            subscriptions_to_add.append(s)
+            if profile.is_active:
+                subscriber_count_changes[recipient.type_id].add(profile.id)
+
+            log = RealmAuditLog(
+                realm=profile.realm,
+                modified_user=profile,
+                modified_stream_id=recipient.type_id,
+                event_last_message_id=0,
+                event_type=AuditLogEventType.SUBSCRIPTION_CREATED,
+                event_time=event_time,
+            )
+            all_subscription_logs.append(log)
+
+        bulk_create_stream_subscriptions(
+            subs=subscriptions_to_add, streams=subscriber_count_changes
+        )
+        RealmAuditLog.objects.bulk_create(all_subscription_logs)
+
+        # Create custom profile field data
+        phone_number = try_add_realm_custom_profile_field(
+            zulip_realm, "Phone number", CustomProfileField.SHORT_TEXT, hint=""
+        )
+        biography = try_add_realm_custom_profile_field(
+            zulip_realm,
+            "Biography",
+            CustomProfileField.PARAGRAPH,
+            hint="What are you known for?",
+        )
+        favorite_food = try_add_realm_custom_profile_field(
+            zulip_realm,
+            "Favorite food",
+            CustomProfileField.SHORT_TEXT,
+            hint="Or drink, if you'd prefer",
+        )
+        field_data: ProfileFieldData = {
+            "0": {"text": "Vim", "order": "1"},
+            "1": {"text": "Emacs", "order": "2"},
+        }
+        favorite_editor = try_add_realm_custom_profile_field(
+            zulip_realm, "Favorite editor", CustomProfileField.DROPDOWN, field_data=field_data
+        )
+        birthday = try_add_realm_custom_profile_field(
+            zulip_realm, "Birthday", CustomProfileField.DATE
+        )
+        favorite_website = try_add_realm_custom_profile_field(
+            zulip_realm,
+            "Favorite website",
+            CustomProfileField.URL,
+            hint="Or your personal blog's URL",
+        )
+        mentor = try_add_realm_custom_profile_field(zulip_realm, "Mentor", CustomProfileField.USER)
+        github_profile = try_add_realm_default_custom_profile_field(zulip_realm, "github")
+        pronouns = try_add_realm_custom_profile_field(
+            zulip_realm,
+            "Pronouns",
+            CustomProfileField.PRONOUNS,
+            hint="What pronouns should people use to refer to you?",
+        )
+
+        # Fill in values for Iago and Hamlet
+        hamlet = get_user_by_delivery_email("hamlet@zulip.com", zulip_realm)
+        do_update_user_custom_profile_data_if_changed(
+            iago,
+            [
+                {"id": phone_number.id, "value": "+1-234-567-8901"},
+                {"id": biography.id, "value": "Betrayer of Othello."},
+                {"id": favorite_food.id, "value": "Apples"},
+                {"id": favorite_editor.id, "value": "1"},
+                {"id": birthday.id, "value": "2000-01-01"},
+                {"id": favorite_website.id, "value": "https://zulip.readthedocs.io/en/latest/"},
+                {"id": mentor.id, "value": [hamlet.id]},
+                {"id": github_profile.id, "value": "zulip"},
+                {"id": pronouns.id, "value": "he/him"},
+            ],
+            None,
+            notify=False,
+        )
+        do_update_user_custom_profile_data_if_changed(
+            hamlet,
+            [
+                {"id": phone_number.id, "value": "+0-11-23-456-7890"},
+                {
+                    "id": biography.id,
+                    "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
+                },
+                {"id": favorite_food.id, "value": "Dark chocolate"},
+                {"id": favorite_editor.id, "value": "0"},
+                {"id": birthday.id, "value": "1900-01-01"},
+                {"id": favorite_website.id, "value": "https://blog.zulig.org"},
+                {"id": mentor.id, "value": [iago.id]},
+                {"id": github_profile.id, "value": "zulipbot"},
+                {"id": pronouns.id, "value": "he/him"},
+            ],
+            None,
+            notify=False,
+        )
+        # We need to create at least one scheduled message for Iago for the api-test
+        # cURL example to delete an existing scheduled message.
+        check_schedule_message(
+            sender=iago,
+            client=get_client("ZulipDataImport"),
+            recipient_type_name="stream",
+            message_to=[Stream.objects.get(name="Denmark", realm=zulip_realm).id],
+            topic_name="test-api",
+            message_content="It's time to celebrate the anniversary of provisioning this development environment :tada:!",
+            deliver_at=timezone_now() + timedelta(days=365),
+            realm=zulip_realm,
+        )
+        check_schedule_message(
+            sender=iago,
+            client=get_client("ZulipDataImport"),
+            recipient_type_name="private",
+            message_to=[iago.id],
+            topic_name=None,
+            message_content="Note to self: It's been a while since you've provisioned this development environment.",
+            deliver_at=timezone_now() + timedelta(days=365),
+            realm=zulip_realm,
+        )
+        do_add_linkifier(
+            zulip_realm,
+            "#D(?P<id>[0-9]{2,8})",
+            "https://github.com/zulip/zulip-desktop/pull/{id}",
+            acting_user=None,
+        )
+        do_add_linkifier(
+            zulip_realm,
+            "zulip-mobile#(?P<id>[0-9]{2,8})",
+            "https://github.com/zulip/zulip-mobile/pull/{id}",
+            acting_user=None,
+        )
+        do_add_linkifier(
+            zulip_realm,
+            "zulip-(?P<repo>[a-zA-Z-_0-9]+)#(?P<id>[0-9]{2,8})",
+            "https://github.com/zulip/{repo}/pull/{id}",
+            acting_user=None,
+        )
         # Extract a list of all users
         user_profiles: list[UserProfile] = list(
             UserProfile.objects.filter(is_bot=False, realm=zulip_realm)
@@ -1053,193 +1032,192 @@ class Command(ZulipBaseCommand):
         # Generate a new set of test data.
         create_test_data()
 
-        if options["delete"]:
-            if options["test_suite"]:
-                # Create test users
-                event_time = timezone_now()
-                testsuite_mit_users = [
-                    ("Fred Sipb (MIT)", "sipbtest@mit.edu"),
-                    ("Athena Consulting Exchange User (MIT)", "starnine@mit.edu"),
-                    ("Esp Classroom (MIT)", "espuser@mit.edu"),
-                ]
-                create_users(
-                    mit_realm, testsuite_mit_users, tos_version=settings.TERMS_OF_SERVICE_VERSION
-                )
+        if options["test_suite"]:
+            # Create test users
+            event_time = timezone_now()
+            testsuite_mit_users = [
+                ("Fred Sipb (MIT)", "sipbtest@mit.edu"),
+                ("Athena Consulting Exchange User (MIT)", "starnine@mit.edu"),
+                ("Esp Classroom (MIT)", "espuser@mit.edu"),
+            ]
+            mit_realm = get_realm("zephyr")
+            create_users(
+                mit_realm, testsuite_mit_users, tos_version=settings.TERMS_OF_SERVICE_VERSION
+            )
 
-                mit_user = get_user_by_delivery_email("sipbtest@mit.edu", mit_realm)
-                bulk_create_streams(
-                    mit_realm,
-                    {
-                        "core team": {
-                            "description": "A private channel for core team members",
-                            "invite_only": True,
-                            "history_public_to_subscribers": False,
-                        }
-                    },
-                )
-                core_team_stream = Stream.objects.get(name="core team", realm=mit_realm)
-                bulk_add_subscriptions(mit_realm, [core_team_stream], [mit_user], acting_user=None)
+            mit_user = get_user_by_delivery_email("sipbtest@mit.edu", mit_realm)
+            bulk_create_streams(
+                mit_realm,
+                {
+                    "core team": {
+                        "description": "A private channel for core team members",
+                        "invite_only": True,
+                        "history_public_to_subscribers": False,
+                    }
+                },
+            )
+            core_team_stream = Stream.objects.get(name="core team", realm=mit_realm)
+            bulk_add_subscriptions(mit_realm, [core_team_stream], [mit_user], acting_user=None)
 
-                testsuite_lear_users = [
-                    ("King Lear", "king@lear.org"),
-                    ("Cordelia, Lear's daughter", "cordelia@zulip.com"),
-                ]
-                create_users(
-                    lear_realm, testsuite_lear_users, tos_version=settings.TERMS_OF_SERVICE_VERSION
-                )
+            testsuite_lear_users = [
+                ("King Lear", "king@lear.org"),
+                ("Cordelia, Lear's daughter", "cordelia@zulip.com"),
+            ]
+            lear_realm = get_realm("lear")
+            create_users(
+                lear_realm, testsuite_lear_users, tos_version=settings.TERMS_OF_SERVICE_VERSION
+            )
 
-                lear_user = get_user_by_delivery_email("king@lear.org", lear_realm)
-                bulk_create_streams(
-                    lear_realm,
-                    {
-                        "core team": {
-                            "description": "A private channel for core team members",
-                            "invite_only": True,
-                        }
-                    },
-                )
-                core_team_stream = Stream.objects.get(name="core team", realm=lear_realm)
-                bulk_add_subscriptions(
-                    lear_realm, [core_team_stream], [lear_user], acting_user=None
-                )
+            lear_user = get_user_by_delivery_email("king@lear.org", lear_realm)
+            bulk_create_streams(
+                lear_realm,
+                {
+                    "core team": {
+                        "description": "A private channel for core team members",
+                        "invite_only": True,
+                    }
+                },
+            )
+            core_team_stream = Stream.objects.get(name="core team", realm=lear_realm)
+            bulk_add_subscriptions(lear_realm, [core_team_stream], [lear_user], acting_user=None)
 
-                core_team_stream = Stream.objects.get(name="core team", realm=zulip_realm)
-                do_set_realm_moderation_request_channel(
-                    zulip_realm, core_team_stream, core_team_stream.id, acting_user=None
-                )
+            core_team_stream = Stream.objects.get(name="core team", realm=zulip_realm)
+            do_set_realm_moderation_request_channel(
+                zulip_realm, core_team_stream, core_team_stream.id, acting_user=None
+            )
 
-            if not options["test_suite"]:
-                # To keep the messages.json fixtures file for the test
-                # suite fast, don't add these users and subscriptions
-                # when running populate_db for the test suite
+        if not options["test_suite"]:
+            # To keep the messages.json fixtures file for the test
+            # suite fast, don't add these users and subscriptions
+            # when running populate_db for the test suite
+
+            # to imitate emoji insertions in stream names
+            raw_emojis = ["😎", "😂", "🐱‍👤"]
+
+            admins_system_group = NamedUserGroup.objects.get(
+                name=SystemGroups.ADMINISTRATORS,
+                realm_for_sharding=zulip_realm,
+                is_system_group=True,
+            )
+
+            engineering_channel_folder = check_add_channel_folder(
+                zulip_realm,
+                "Engineering",
+                "For convenient *channel folder* testing! :octopus:",
+                acting_user=iago,
+            )
+            information_channel_folder = check_add_channel_folder(
+                zulip_realm,
+                "Information",
+                "For user-facing information and questions",
+                acting_user=iago,
+            )
+            zulip_stream_dict: dict[str, dict[str, Any]] = {
+                "devel": {
+                    "description": "For developing",
+                    "folder_id": engineering_channel_folder.id,
+                },
+                # ビデオゲーム - VideoGames (japanese)
+                "ビデオゲーム": {
+                    "description": f"Share your favorite video games!  {raw_emojis[2]}",
+                    "creator": shiva,
+                },
+                "announce": {
+                    "description": "For announcements",
+                    "can_send_message_group": admins_system_group,
+                    "folder_id": information_channel_folder.id,
+                },
+                "design": {"description": "For design", "creator": hamlet},
+                "support": {
+                    "description": "For support",
+                    "folder_id": information_channel_folder.id,
+                },
+                "social": {"description": "For socializing"},
+                "test": {
+                    "description": "For testing `code`",
+                    "folder_id": engineering_channel_folder.id,
+                },
+                "errors": {
+                    "description": "For errors",
+                    "folder_id": engineering_channel_folder.id,
+                },
+                # 조리법 - Recipes (Korean), Пельмени - Dumplings (Russian)
+                "조리법 " + raw_emojis[0]: {
+                    "description": "Everything cooking, from pasta to Пельмени"
+                },
+            }
+
+            extra_stream_names = [
+                "802.11a",
+                "Ad Hoc Network",
+                "Augmented Reality",
+                "Cycling",
+                "DPI",
+                "FAQ",
+                "FiFo",
+                "commits",
+                "Control panel",
+                "desktop",
+                "компьютеры",
+                "Data security",
+                "desktop",
+                "काम",
+                "discussions",
+                "Cloud storage",
+                "GCI",
+                "Vaporware",
+                "Recent Trends",
+                "issues",
+                "live",
+                "Health",
+                "mobile",
+                "空間",
+                "provision",
+                "hidrógeno",
+                "HR",
+                "アニメ",
+            ]
+
+            # Add stream names and stream descriptions
+            for i in range(options["extra_streams"]):
+                extra_stream_name = random.choice(extra_stream_names) + " " + str(i)
 
                 # to imitate emoji insertions in stream names
-                raw_emojis = ["😎", "😂", "🐱‍👤"]
+                if random.random() <= 0.15:
+                    extra_stream_name += random.choice(raw_emojis)
 
-                admins_system_group = NamedUserGroup.objects.get(
-                    name=SystemGroups.ADMINISTRATORS,
-                    realm_for_sharding=zulip_realm,
-                    is_system_group=True,
-                )
-
-                engineering_channel_folder = check_add_channel_folder(
-                    zulip_realm,
-                    "Engineering",
-                    "For convenient *channel folder* testing! :octopus:",
-                    acting_user=iago,
-                )
-                information_channel_folder = check_add_channel_folder(
-                    zulip_realm,
-                    "Information",
-                    "For user-facing information and questions",
-                    acting_user=iago,
-                )
-                zulip_stream_dict: dict[str, dict[str, Any]] = {
-                    "devel": {
-                        "description": "For developing",
-                        "folder_id": engineering_channel_folder.id,
-                    },
-                    # ビデオゲーム - VideoGames (japanese)
-                    "ビデオゲーム": {
-                        "description": f"Share your favorite video games!  {raw_emojis[2]}",
-                        "creator": shiva,
-                    },
-                    "announce": {
-                        "description": "For announcements",
-                        "can_send_message_group": admins_system_group,
-                        "folder_id": information_channel_folder.id,
-                    },
-                    "design": {"description": "For design", "creator": hamlet},
-                    "support": {
-                        "description": "For support",
-                        "folder_id": information_channel_folder.id,
-                    },
-                    "social": {"description": "For socializing"},
-                    "test": {
-                        "description": "For testing `code`",
-                        "folder_id": engineering_channel_folder.id,
-                    },
-                    "errors": {
-                        "description": "For errors",
-                        "folder_id": engineering_channel_folder.id,
-                    },
-                    # 조리법 - Recipes (Korean), Пельмени - Dumplings (Russian)
-                    "조리법 " + raw_emojis[0]: {
-                        "description": "Everything cooking, from pasta to Пельмени"
-                    },
+                zulip_stream_dict[extra_stream_name] = {
+                    "description": "Auto-generated extra stream.",
                 }
 
-                extra_stream_names = [
-                    "802.11a",
-                    "Ad Hoc Network",
-                    "Augmented Reality",
-                    "Cycling",
-                    "DPI",
-                    "FAQ",
-                    "FiFo",
-                    "commits",
-                    "Control panel",
-                    "desktop",
-                    "компьютеры",
-                    "Data security",
-                    "desktop",
-                    "काम",
-                    "discussions",
-                    "Cloud storage",
-                    "GCI",
-                    "Vaporware",
-                    "Recent Trends",
-                    "issues",
-                    "live",
-                    "Health",
-                    "mobile",
-                    "空間",
-                    "provision",
-                    "hidrógeno",
-                    "HR",
-                    "アニメ",
+            bulk_create_streams(zulip_realm, zulip_stream_dict)
+            # Now that we've created the new_stream_announcements_stream, configure it properly.
+            # By default, 'New stream' & 'Zulip update' announcements are sent to the same stream.
+            announce_stream = get_stream("announce", zulip_realm)
+            zulip_realm.new_stream_announcements_stream = announce_stream
+            zulip_realm.zulip_update_announcements_stream = announce_stream
+            zulip_realm.save(
+                update_fields=[
+                    "new_stream_announcements_stream",
+                    "zulip_update_announcements_stream",
                 ]
+            )
 
-                # Add stream names and stream descriptions
-                for i in range(options["extra_streams"]):
-                    extra_stream_name = random.choice(extra_stream_names) + " " + str(i)
-
-                    # to imitate emoji insertions in stream names
-                    if random.random() <= 0.15:
-                        extra_stream_name += random.choice(raw_emojis)
-
-                    zulip_stream_dict[extra_stream_name] = {
-                        "description": "Auto-generated extra stream.",
-                    }
-
-                bulk_create_streams(zulip_realm, zulip_stream_dict)
-                # Now that we've created the new_stream_announcements_stream, configure it properly.
-                # By default, 'New stream' & 'Zulip update' announcements are sent to the same stream.
-                announce_stream = get_stream("announce", zulip_realm)
-                zulip_realm.new_stream_announcements_stream = announce_stream
-                zulip_realm.zulip_update_announcements_stream = announce_stream
-                zulip_realm.save(
-                    update_fields=[
-                        "new_stream_announcements_stream",
-                        "zulip_update_announcements_stream",
-                    ]
+            # Add a few default streams
+            for default_stream_name in ["design", "devel", "social", "support"]:
+                DefaultStream.objects.create(
+                    realm=zulip_realm, stream=get_stream(default_stream_name, zulip_realm)
                 )
 
-                # Add a few default streams
-                for default_stream_name in ["design", "devel", "social", "support"]:
-                    DefaultStream.objects.create(
-                        realm=zulip_realm, stream=get_stream(default_stream_name, zulip_realm)
-                    )
+            # Now subscribe everyone to these streams
+            subscribe_users_to_streams(zulip_realm, zulip_stream_dict)
 
-                # Now subscribe everyone to these streams
-                subscribe_users_to_streams(zulip_realm, zulip_stream_dict)
+        create_user_groups()
 
-            create_user_groups()
-
-            if not options["test_suite"]:
-                # We populate the analytics database here for
-                # development purpose only
-                call_command("populate_analytics_db", skip_checks=True)
+        if not options["test_suite"]:
+            # We populate the analytics database here for
+            # development purpose only
+            call_command("populate_analytics_db", skip_checks=True)
 
         threads = options["threads"]
         jobs: list[tuple[int, list[list[int]], dict[str, Any], int]] = []
@@ -1252,25 +1230,24 @@ class Command(ZulipBaseCommand):
         for job in jobs:
             generate_and_send_messages(job)
 
-        if options["delete"]:
-            if not options["test_suite"]:
-                # These bots are not needed by the test suite
-                # Also, we don't want interacting with each other
-                # in dev setup.
-                internal_zulip_users_nosubs = [
-                    ("Zulip Commit Bot", "commit-bot@zulip.com"),
-                    ("Zulip Trac Bot", "trac-bot@zulip.com"),
-                    ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
-                ]
-                create_users(
-                    zulip_realm,
-                    internal_zulip_users_nosubs,
-                    bot_type=UserProfile.DEFAULT_BOT,
-                    bot_owner=desdemona,
-                )
+        if not options["test_suite"]:
+            # These bots are not needed by the test suite
+            # Also, we don't want interacting with each other
+            # in dev setup.
+            internal_zulip_users_nosubs = [
+                ("Zulip Commit Bot", "commit-bot@zulip.com"),
+                ("Zulip Trac Bot", "trac-bot@zulip.com"),
+                ("Zulip Nagios Bot", "nagios-bot@zulip.com"),
+            ]
+            create_users(
+                zulip_realm,
+                internal_zulip_users_nosubs,
+                bot_type=UserProfile.DEFAULT_BOT,
+                bot_owner=desdemona,
+            )
 
-            mark_all_messages_as_read()
-            self.stdout.write("Successfully populated test database.\n")
+        mark_all_messages_as_read()
+        self.stdout.write("Successfully populated test database.\n")
 
         push_notifications_logger.disabled = False
 
