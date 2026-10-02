@@ -106,7 +106,7 @@ class HomeTest(ZulipTestCase):
         "klipy_api_key",
         "last_event_id",
         "max_avatar_file_size_mib",
-        "max_bulk_new_subscription_messages",
+        "max_bulk_subscription_messages",
         "max_channel_folder_description_length",
         "max_channel_folder_name_length",
         "max_file_upload_size_mib",
