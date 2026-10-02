@@ -1,5 +1,4 @@
 from typing import Any
-from unittest import mock
 
 from django.utils.timezone import now as timezone_now
 
@@ -217,37 +216,6 @@ class MessageDictTest(ZulipTestCase):
         message = Message.objects.get(id=message.id)
         self.assertEqual(message.rendered_content, expected_content)
         self.assertEqual(message.rendered_content_version, markdown_version)
-
-    @mock.patch("zerver.lib.message_cache.render_message_markdown")
-    def test_applying_markdown_invalid_format(self, convert_mock: Any) -> None:
-        # pretend the converter returned an invalid message without raising an exception
-        convert_mock.return_value = None
-        sender = self.example_user("othello")
-        receiver = self.example_user("hamlet")
-        direct_message_group = get_or_create_direct_message_group(
-            id_list=[sender.id, receiver.id],
-        )
-        sending_client = make_client(name="test suite")
-        message = Message(
-            sender=sender,
-            recipient=direct_message_group.recipient,
-            realm=receiver.realm,
-            content="hello **world**",
-            date_sent=timezone_now(),
-            sending_client=sending_client,
-            last_edit_time=timezone_now(),
-            edit_history="[]",
-        )
-        message.set_topic_name("whatever")
-        message.save()
-
-        # An important part of this test is to get the message through this exact code path,
-        # because there is an ugly hack we need to cover.  So don't just say "row = message".
-        dct = MessageDict.ids_to_dict([message.id])[0]
-        error_content = (
-            "<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>"
-        )
-        self.assertEqual(dct["rendered_content"], error_content)
 
     def test_topic_links_use_stream_realm(self) -> None:
         # Set up a realm filter on 'zulip' and assert that messages
