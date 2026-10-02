@@ -1041,6 +1041,7 @@ class Migration(migrations.Migration):
                             ("G", "Hosted by Gravatar"),
                             ("J", "Generated using Jdenticon"),
                             ("U", "Uploaded by user"),
+                            ("S", "Provided by Zulip"),
                         ],
                         default="J",
                         max_length=1,

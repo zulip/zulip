@@ -1988,7 +1988,7 @@ class TestGetGCMPayload(PushNotificationTestCase):
                 "sender_id": hamlet.id,
                 "sender_email": f"user{hamlet.id}@zulip.testserver",
                 "sender_full_name": "Unknown user",
-                "sender_avatar_url": get_avatar_for_inaccessible_user(),
+                "sender_avatar_url": get_avatar_for_inaccessible_user(medium=False),
                 "recipient_type": "stream",
                 "stream": stream.name,
                 "stream_id": stream.id,
