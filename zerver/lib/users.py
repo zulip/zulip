@@ -149,7 +149,18 @@ def check_valid_incoming_webhook_bot_config(
             _("Invalid integration '{integration_name}'.").format(integration_name=service_name)
         )
 
-    missing_keys = {option.name for option in integration.config_options} - config_data.keys()
+    option_names = {option.name for option in integration.config_options}
+    # integration_id is set automatically by Zulip when the bot is created,
+    # and users can update it to switch a bot between integrations.
+    extra_keys = config_data.keys() - option_names - {"integration_id"}
+    if extra_keys:
+        raise JsonableError(
+            _("Unexpected configuration parameters: {keys}").format(
+                keys=extra_keys,
+            )
+        )
+
+    missing_keys = option_names - config_data.keys()
     if missing_keys:
         raise JsonableError(
             _("Missing configuration parameters: {keys}").format(
@@ -169,23 +180,39 @@ def check_valid_incoming_webhook_bot_config(
 
 
 def check_valid_embedded_bot_config(service_name: str, config_data: Mapping[str, str]) -> None:
+    from zerver.lib.bot_config import load_bot_config_template
     from zerver.lib.bot_lib import get_bot_handler
 
     bot_handler = get_bot_handler(service_name)
     if bot_handler is None:
         raise JsonableError(_("Invalid embedded bot name."))
-    if not hasattr(bot_handler, "validate_config"):
+
+    config_template = load_bot_config_template(service_name)
+    if not config_template:
+        if config_data:
+            raise JsonableError(_("This embedded bot doesn't use bot config."))
         return
 
-    try:
-        bot_handler.validate_config(config_data)
-    except ConfigValidationError:
-        # The exception provides a specific error message, but that
-        # message is not tagged translatable, because it is
-        # triggered in the external zulip_bots package.
-        # TODO: Think of some clever way to provide a more specific
-        # error message.
-        raise JsonableError(_("Invalid configuration data!"))
+    extra_keys = config_data.keys() - config_template.keys()
+    if extra_keys:
+        raise JsonableError(
+            _("Unexpected configuration parameters: {keys}").format(
+                keys=extra_keys,
+            )
+        )
+
+    # validate_config is an optional hook for bots that ship custom
+    # validation on top of the .conf template.
+    if hasattr(bot_handler, "validate_config"):
+        try:
+            bot_handler.validate_config(config_data)
+        except ConfigValidationError:
+            # The exception provides a specific error message, but that
+            # message is not tagged translatable, because it is
+            # triggered in the external zulip_bots package.
+            # TODO: Think of some clever way to provide a more specific
+            # error message.
+            raise JsonableError(_("Invalid configuration data!"))
 
 
 # Adds an outgoing webhook or embedded bot service.

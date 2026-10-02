@@ -27990,6 +27990,11 @@ components:
 
             We consider this part of the Zulip API to be unstable; it is used only
             for UI elements for administering bots and is likely to change.
+
+            **Changes**: Before Zulip 13.0 (feature level ZF-96361a), for an
+            embedded bot whose handler declared no config keys, this array
+            was empty instead of a single-element service dict with an empty
+            `config_data`.
           items:
             description: |
               Object with extra configuration details for the bot. The fields in the

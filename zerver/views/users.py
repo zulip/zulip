@@ -41,7 +41,12 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_human_non_guest_user, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
-from zerver.lib.bot_config import set_bot_config
+from zerver.lib.bot_config import (
+    ConfigError,
+    get_bot_configs,
+    get_merged_bot_config,
+    set_bot_config,
+)
 from zerver.lib.demo_organizations import check_demo_organization_has_set_email
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
@@ -97,6 +102,7 @@ from zerver.lib.users import (
 )
 from zerver.lib.utils import generate_api_key
 from zerver.models import Service, Stream, UserProfile
+from zerver.models.bots import get_bot_services
 from zerver.models.realms import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
@@ -481,7 +487,7 @@ def patch_bot_backend(
     default_sending_stream: str | None = None,
     full_name: str | None = None,
     role: Json[RoleParamType] | None = None,
-    service_interface: Json[int] = 1,
+    service_interface: Json[int] | None = None,
     service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
     short_name: str | None = None,
 ) -> HttpResponse:
@@ -555,18 +561,72 @@ def patch_bot_backend(
             bot, default_all_public_streams, acting_user=user_profile
         )
 
-    if service_payload_url is not None:
-        check_valid_interface_type(service_interface)
-        assert service_interface is not None
-        do_update_outgoing_webhook_service(
-            bot,
-            interface=service_interface,
-            base_url=service_payload_url,
-            acting_user=user_profile,
-        )
-
-    if config_data is not None:
-        do_update_bot_config_data(bot, config_data)
+    match bot.bot_type:
+        case UserProfile.OUTGOING_WEBHOOK_BOT:
+            if config_data is not None:
+                raise JsonableError(_("Outgoing-webhook bots have no config data to update."))
+            if service_interface is not None:
+                check_valid_interface_type(service_interface)
+            if service_interface is not None or service_payload_url is not None:
+                do_update_outgoing_webhook_service(
+                    bot,
+                    interface=service_interface,
+                    base_url=service_payload_url,
+                    acting_user=user_profile,
+                )
+        case UserProfile.EMBEDDED_BOT:
+            if service_interface is not None or service_payload_url is not None:
+                raise JsonableError(_("Service fields cannot be updated on embedded bots."))
+            if config_data is not None:
+                merged_config_data = get_merged_bot_config(bot, config_data)
+                existing_service = get_bot_services(bot.id)[0]
+                check_valid_embedded_bot_config(
+                    existing_service.name,
+                    merged_config_data,
+                )
+                try:
+                    do_update_bot_config_data(bot, config_data)
+                except ConfigError as e:
+                    raise JsonableError(str(e))
+        case UserProfile.INCOMING_WEBHOOK_BOT:
+            if service_interface is not None or service_payload_url is not None:
+                raise JsonableError(_("Incoming-webhook bots have no service fields to update."))
+            if config_data is not None:
+                existing_config_data = get_bot_configs([bot.id]).get(bot.id, {})
+                existing_integration_id = existing_config_data.get("integration_id")
+                new_integration_id = config_data.get("integration_id")
+                switching_integration = (
+                    new_integration_id is not None and new_integration_id != existing_integration_id
+                )
+                if switching_integration:
+                    # Switching integrations replaces the bot's config
+                    # entirely: config options from the previous
+                    # integration would be stale under the new schema,
+                    # so require the client to supply the new
+                    # integration's full config in the same request.
+                    proposed_config_data = config_data
+                else:
+                    proposed_config_data = {**existing_config_data, **config_data}
+                if (
+                    proposed_integration_id := proposed_config_data.get("integration_id")
+                ) is not None:
+                    check_valid_incoming_webhook_bot_config(
+                        proposed_integration_id,
+                        proposed_config_data,
+                    )
+                try:
+                    do_update_bot_config_data(bot, config_data, replace=switching_integration)
+                except ConfigError as e:
+                    raise JsonableError(str(e))
+        case UserProfile.DEFAULT_BOT:
+            if (
+                service_interface is not None
+                or service_payload_url is not None
+                or config_data is not None
+            ):
+                raise JsonableError(_("Generic bots have no service or config data to update."))
+        case _:  # nocoverage
+            raise JsonableError(_("Unexpected bot type."))
 
     if len(request.FILES) == 0:
         pass
@@ -581,23 +641,7 @@ def patch_bot_backend(
     else:
         raise JsonableError(_("You may only upload one file at a time"))
 
-    json_result = dict(
-        full_name=bot.full_name,
-        avatar_url=avatar_url(bot),
-        service_interface=service_interface,
-        service_payload_url=service_payload_url,
-        config_data=config_data,
-        default_sending_stream=get_stream_name(bot.default_sending_stream),
-        default_events_register_stream=get_stream_name(bot.default_events_register_stream),
-        default_all_public_streams=bot.default_all_public_streams,
-    )
-
-    # Don't include the bot owner in case it is not set.
-    # Default bots have no owner.
-    if bot.bot_owner is not None:
-        json_result["bot_owner"] = bot.bot_owner.email
-
-    return json_success(request, data=json_result)
+    return json_success(request)
 
 
 @require_human_non_guest_user
@@ -748,12 +792,15 @@ def add_bot_backend(
             token=generate_api_key(),
         )
 
-    if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:
-        set_bot_config(bot_profile, "integration_id", service_name)
+    try:
+        if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:
+            set_bot_config(bot_profile, "integration_id", service_name)
 
-    if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
-        for key, value in config_data.items():
-            set_bot_config(bot_profile, key, value)
+        if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
+            for key, value in config_data.items():
+                set_bot_config(bot_profile, key, value)
+    except ConfigError as e:
+        raise JsonableError(str(e))
 
     notify_created_bot(bot_profile)
 
