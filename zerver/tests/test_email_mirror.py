@@ -850,6 +850,110 @@ class TestChannelEmailMessagesPermissions(ZulipTestCase):
             ],
         )
 
+    def test_deactivated_user_can_send_channel_email_as_themselves(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = get_realm("zulip")
+        channel = get_stream("Denmark", realm)
+
+        email_token = get_channel_email_token(channel, creator=hamlet, sender=hamlet)
+        channel_email_address = encode_email_address(channel.name, email_token)
+
+        do_deactivate_user(hamlet, acting_user=None)
+
+        incoming_valid_message = self.create_incoming_valid_message(channel_email_address)
+        with self.assertLogs(logger_name, level="INFO") as m:
+            process_message(incoming_valid_message)
+        self.assertEqual(
+            m.output,
+            [
+                f"INFO:{logger_name}:Successfully processed email to {channel.name} ({realm.string_id})"
+            ],
+        )
+        message = self.get_last_message()
+        self.assertEqual(message.sender, hamlet)
+        self.assertEqual(message.content, "message body")
+
+    def test_deactivated_user_can_send_channel_email_as_email_gateway_bot(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = get_realm("zulip")
+        channel = get_stream("Denmark", realm)
+        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
+
+        email_token = get_channel_email_token(channel, creator=hamlet, sender=email_gateway_bot)
+        channel_email_address = encode_email_address(channel.name, email_token)
+
+        do_deactivate_user(hamlet, acting_user=None)
+
+        incoming_valid_message = self.create_incoming_valid_message(channel_email_address)
+        with self.assertLogs(logger_name, level="INFO") as m:
+            process_message(incoming_valid_message)
+        self.assertEqual(
+            m.output,
+            [
+                f"INFO:{logger_name}:Successfully processed email to {channel.name} ({realm.string_id})"
+            ],
+        )
+        message = self.get_last_message()
+        self.assertEqual(message.sender, email_gateway_bot)
+        self.assertEqual(message.content, "message body")
+
+    def test_imported_stub_user_can_send_channel_email_as_themselves(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = get_realm("zulip")
+        channel = get_stream("Denmark", realm)
+
+        hamlet.is_imported_stub = True
+        hamlet.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
+        hamlet.set_unusable_password()
+        hamlet.save()
+
+        email_token = get_channel_email_token(channel, creator=hamlet, sender=hamlet)
+        channel_email_address = encode_email_address(channel.name, email_token)
+        incoming_valid_message = self.create_incoming_valid_message(channel_email_address)
+
+        with self.assertLogs(logger_name, level="INFO") as m:
+            process_message(incoming_valid_message)
+        self.assertEqual(
+            m.output,
+            [
+                f"INFO:{logger_name}:Successfully processed email to {channel.name} ({realm.string_id})"
+            ],
+        )
+        message = self.get_last_message()
+        self.assertEqual(message.sender, hamlet)
+        self.assertEqual(message.content, "message body")
+        hamlet.refresh_from_db()
+        self.assertTrue(hamlet.is_imported_stub)
+
+    def test_imported_stub_user_can_send_channel_email_as_email_gateway_bot(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = get_realm("zulip")
+        channel = get_stream("Denmark", realm)
+        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, realm.id)
+
+        hamlet.is_imported_stub = True
+        hamlet.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
+        hamlet.set_unusable_password()
+        hamlet.save()
+
+        email_token = get_channel_email_token(channel, creator=hamlet, sender=email_gateway_bot)
+        channel_email_address = encode_email_address(channel.name, email_token)
+        incoming_valid_message = self.create_incoming_valid_message(channel_email_address)
+
+        with self.assertLogs(logger_name, level="INFO") as m:
+            process_message(incoming_valid_message)
+        self.assertEqual(
+            m.output,
+            [
+                f"INFO:{logger_name}:Successfully processed email to {channel.name} ({realm.string_id})"
+            ],
+        )
+        message = self.get_last_message()
+        self.assertEqual(message.sender, email_gateway_bot)
+        self.assertEqual(message.content, "message body")
+        hamlet.refresh_from_db()
+        self.assertTrue(hamlet.is_imported_stub)
+
 
 class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
     def test_message_with_valid_attachment(self) -> None:
@@ -1752,6 +1856,75 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         # It should get dropped, so the most recent message is unchanged
         self.assertEqual(message, most_recent_message(hamlet))
+
+    def test_imported_stub_user_can_reply_to_dm_notification_email(self) -> None:
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+
+        othello.is_imported_stub = True
+        othello.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
+        othello.set_unusable_password()
+        othello.save()
+
+        mm_address = self.send_dm_and_get_reply_address(hamlet, [othello], reply_sender=othello)
+
+        incoming_valid_message = self.build_missed_message_reply_email(
+            othello, mm_address, "TestMissedMessageEmailMessages body"
+        )
+
+        process_message(incoming_valid_message)
+
+        message = most_recent_message(hamlet)
+
+        direct_group_message = get_or_create_direct_message_group(id_list=[hamlet.id, othello.id])
+        self.assertEqual(message.content, "TestMissedMessageEmailMessages body")
+        self.assertEqual(message.sender, othello)
+        self.assertEqual(message.recipient.type_id, direct_group_message.id)
+        self.assertEqual(message.recipient.type, Recipient.DIRECT_MESSAGE_GROUP)
+        othello.refresh_from_db()
+        self.assertTrue(othello.is_imported_stub)
+
+    def test_imported_stub_user_can_reply_to_channel_message_notification_email(self) -> None:
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+
+        othello.is_imported_stub = True
+        othello.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
+        othello.set_unusable_password()
+        othello.save()
+
+        self.subscribe(hamlet, "Denmark")
+        self.subscribe(othello, "Denmark")
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "stream",
+                "topic": "test topic",
+                "content": "original channel message",
+                "to": orjson.dumps("Denmark").decode(),
+            },
+        )
+        self.assert_json_success(result)
+
+        usermessage = most_recent_usermessage(othello)
+
+        mm_address = create_missed_message_address(othello, usermessage.message)
+
+        incoming_valid_message = self.build_missed_message_reply_email(
+            othello, mm_address, "TestMissedMessageEmailMessages body"
+        )
+
+        process_message(incoming_valid_message)
+
+        message = most_recent_message(hamlet)
+
+        self.assertEqual(message.content, "TestMissedMessageEmailMessages body")
+        self.assertEqual(message.sender, othello)
+        self.assertEqual(message.recipient.type, Recipient.STREAM)
+        self.assertEqual(message.recipient.id, usermessage.message.recipient.id)
+        othello.refresh_from_db()
+        self.assertTrue(othello.is_imported_stub)
 
 
 class TestEmptyGatewaySetting(ZulipTestCase):

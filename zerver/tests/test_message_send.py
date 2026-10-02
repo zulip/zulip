@@ -148,6 +148,34 @@ class MessagePOSTTest(ZulipTestCase):
             )
             self.assert_json_success(result)
 
+    def test_imported_stub_user_can_send_message_via_api(self) -> None:
+        user = self.example_user("hamlet")
+        # What import_realm sets for a user from a third-party import who
+        # hasn't logged in yet.
+        user.is_imported_stub = True
+        user.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
+        user.set_unusable_password()
+        user.save()
+
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps("Verona").decode(),
+                "content": "sent by an imported stub",
+                "topic": "Test topic",
+            },
+        )
+        self.assert_json_success(result)
+
+        message = self.get_last_message()
+        self.assertEqual(message.id, result.json()["id"])
+        self.assertEqual(message.sender, user)
+        self.assertEqual(message.content, "sent by an imported stub")
+        self.assert_message_stream_name(message, "Verona")
+        self.assertTrue(UserProfile.objects.get(id=user.id).is_imported_stub)
+
     def test_message_to_stream_with_nonexistent_id(self) -> None:
         cordelia = self.example_user("cordelia")
         bot = self.create_test_bot(
