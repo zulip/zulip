@@ -139,6 +139,7 @@ a.help_link_widget {
     }
 }
 
+#email_field_container,
 #change_email_button,
 #change_password {
     min-width: 0;
@@ -2401,6 +2402,10 @@ label.preferences-radio-choice-label {
     /* Subtract (2 * horizontal padding) + (2 * border width) */
     width: calc(
         var(--modal-input-width) - 2 * var(--input-horizontal-padding) - 2 *
+            var(--input-border-width)
+    );
+    max-width: calc(
+        100% - 2 * var(--input-horizontal-padding) - 2 *
             var(--input-border-width)
     );
     font-family: inherit;
