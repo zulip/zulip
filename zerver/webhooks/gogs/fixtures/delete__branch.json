@@ -1,0 +1,44 @@
+{
+  "ref": "test-branch-to-delete",
+  "ref_type": "branch",
+  "pusher_type": "user",
+  "repository": {
+    "id": 1,
+    "owner": {
+      "id": 1,
+      "username": "Aneesh-Hegde",
+      "login": "Aneesh-Hegde",
+      "full_name": "",
+      "email": "test@gmail.com",
+      "avatar_url": "https://secure.gravatar.com/avatar/1aedb8d9dc4751e229a335e371db8058?d=identicon"
+    },
+    "name": "test-repo",
+    "full_name": "celebi/test-repo",
+    "description": "",
+    "private": false,
+    "fork": false,
+    "parent": null,
+    "empty": false,
+    "mirror": false,
+    "size": 57344,
+    "html_url": "http://localhost:3000/celebi/test-repo",
+    "ssh_url": "git@localhost:celebi/test-repo.git",
+    "clone_url": "http://localhost:3000/celebi/test-repo.git",
+    "website": "",
+    "stars_count": 0,
+    "forks_count": 1,
+    "watchers_count": 1,
+    "open_issues_count": 1,
+    "default_branch": "master",
+    "created_at": "2025-10-06T19:20:38Z",
+    "updated_at": "2025-10-06T19:39:42Z"
+  },
+  "sender": {
+    "id": 1,
+    "username": "Aneesh-Hegde",
+    "login": "Aneesh-Hegde",
+    "full_name": "",
+    "email": "test@gmail.com",
+    "avatar_url": "https://secure.gravatar.com/avatar/1aedb8d9dc4751e229a335e371db8058?d=identicon"
+  }
+}
