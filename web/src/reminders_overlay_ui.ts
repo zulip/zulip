@@ -149,8 +149,14 @@ export function initialize(): void {
         e.preventDefault();
     });
 
-    $("body").on("focus", ".reminder-info-box", function (this: HTMLElement) {
-        messages_overlay_ui.activate_element(this, keyboard_handling_context);
+    $("body").on("focus", ".reminder-info-box", function (this: HTMLElement, e) {
+        if (!(e.target instanceof HTMLElement)) {
+            return;
+        }
+        // The row, or a control inside it (e.g. the Delete button), gained
+        // focus; mark the row as selected without stealing focus away from
+        // a control the user tabbed to.
+        messages_overlay_ui.handle_row_focus(e.target, this, keyboard_handling_context);
     });
 
     $("body").on("click", ".message-reminder-overlay-link", function (e) {

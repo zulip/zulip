@@ -964,6 +964,8 @@ input.settings_text_input {
 
             .copy-overlay-message {
                 font-size: 1.2em;
+                border: none;
+                background: none;
             }
 
             .restore-overlay-message {
@@ -986,6 +988,13 @@ input.settings_text_input {
                 &:hover {
                     opacity: 1;
                 }
+            }
+
+            .draft-selection-tooltip {
+                display: flex;
+                border: none;
+                background: none;
+                padding: 0;
             }
         }
 
