@@ -464,6 +464,10 @@ OPEN_REALM_CREATION = False
 # Whether it's possible to create web-public streams on this server.
 WEB_PUBLIC_STREAMS_ENABLED = False
 
+# Whether the server exposes the native MCP endpoint (POST /mcp) to
+# organizations that have enabled the enable_mcp_read_access realm setting.
+MCP_SERVER_ENABLED = True
+
 # Setting for where the system bot users are.  Likely has no
 # purpose now that the REALMS_HAVE_SUBDOMAINS migration is finished.
 SYSTEM_ONLY_REALMS = {"zulip"}
