@@ -26,6 +26,7 @@ import * as scheduled_messages from "./scheduled_messages.ts";
 import * as sent_messages from "./sent_messages.ts";
 import * as server_events_state from "./server_events_state.ts";
 import {current_user} from "./state_data.ts";
+import * as topic_drift from "./topic_drift.ts";
 import * as transmit from "./transmit.ts";
 import * as typing from "./typing.ts";
 import {user_settings} from "./user_settings.ts";
@@ -140,6 +141,12 @@ export function send_message_success(
     drafts.draft_model.deleteDrafts([sent_message.draft_id]);
 
     if (sent_message.type === "stream") {
+        topic_drift.check_topic_drift_for_sent_message(
+            sent_message.stream_id,
+            sent_message.topic,
+            data.id,
+        );
+
         if (data.automatic_new_visibility_policy) {
             if (!onboarding_steps.ONE_TIME_NOTICES_TO_DISPLAY.has("visibility_policy_banner")) {
                 return;
