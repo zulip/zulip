@@ -11,7 +11,8 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.lib.compatibility import is_pronouns_field_type_supported
 from zerver.lib.events import DEFAULT_CLIENT_CAPABILITIES, ClientCapabilities, do_events_register
 from zerver.lib.exceptions import JsonableError, MissingAuthenticationError
-from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
+from zerver.lib.narrow import NarrowParameter
+from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import ApiParamConfig, typed_endpoint
@@ -26,10 +27,12 @@ def _default_all_public_streams(user_profile: UserProfile, all_public_streams: b
         return user_profile.default_all_public_streams
 
 
-def _default_narrow(user_profile: UserProfile, narrow: list[list[str]]) -> list[list[str]]:
+def _default_narrow(
+    user_profile: UserProfile, narrow: list[NarrowParameter]
+) -> list[NarrowParameter]:
     default_stream: Stream | None = user_profile.default_events_register_stream
     if not narrow and default_stream is not None:
-        narrow = [["stream", default_stream.name]]
+        narrow = [NarrowParameter(operator="stream", operand=default_stream.name)]
     return narrow
 
 
@@ -48,7 +51,7 @@ def events_register_backend(
     event_types: Json[list[str]] | None = None,
     fetch_event_types: Json[list[str]] | None = None,
     include_subscribers: Literal["true", "false", "partial"] = "false",
-    narrow: Json[NarrowT] | None = None,
+    narrow: Json[list[NarrowParameter]] | None = None,
     presence_history_limit_days: Json[int] | None = None,
     idle_queue_timeout: Json[PositiveInt | Literal["mobile"]] | None = None,
     slim_presence: Json[bool] = False,
@@ -107,9 +110,9 @@ def events_register_backend(
         request.headers.get("User-Agent")
     )
 
-    # TODO: We eventually want to let callers pass in dictionaries over the wire,
-    #       but we will still need to support tuples for a long time.
-    modern_narrow = narrow_dataclasses_from_tuples(narrow)
+    modern_narrow = [
+        NeverNegatedNarrowTerm(operator=term.operator, operand=str(term.operand)) for term in narrow
+    ]
 
     ret = do_events_register(
         user_profile,
