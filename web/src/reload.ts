@@ -167,32 +167,17 @@ function do_reload_app(
     blueslip.log("Starting server requested page reload");
     reload_state.set_state_to_in_progress();
 
-    // Navigate to the same page with ?state_data=deferred, which
-    // tells the server to skip embedding state_data in page_params
-    // (the client will fetch it via /json/register instead). This
-    // is important because the /compatibility check above only
-    // verifies that a small response can be fetched; when the
-    // network is marginal (e.g., Firefox background tabs resuming
-    // from laptop suspend), the multi-megabyte HTML with embedded
-    // state_data can suffer a partial transfer while small requests
-    // succeed. With ?state_data=deferred, the HTML response is
-    // comparable in size to /compatibility, and the state_data is
-    // fetched separately via an API call that has its own error
-    // handling.
-    const reload_url = new URL(window.location.href);
-    reload_url.searchParams.set("state_data", "deferred");
-
-    // Sometimes the navigation we attempt has no immediate effect
-    // (likely by browsers trying to save power by skipping requested
-    // reloads), which can leave the Zulip app in a broken state and
-    // cause lots of confusing tracebacks.  So, we set ourselves to
-    // try reloading a bit later, both periodically and when the user
-    // focuses the window.
+    // Sometimes the window.location.reload that we attempt has no
+    // immediate effect (likely by browsers trying to save power by
+    // skipping requested reloads), which can leave the Zulip app in a
+    // broken state and cause lots of confusing tracebacks. So, we
+    // set ourselves to try reloading a bit later, both periodically
+    // and when the user focuses the window.
     setTimeout(() => {
         // We add this handler after a bit of delay, because in some
-        // browsers, processing the navigation causes the window to
-        // gain focus, and duplicate reload attempts result in the
-        // browser sending duplicate requests to `/`.
+        // browsers, processing window.location.reload causes the
+        // window to gain focus, and duplicate reload attempts result
+        // in the browser sending duplicate requests to `/`.
         $(window).one("focus", () => {
             blueslip.log("Retrying on-focus page reload");
             window.location.reload();
@@ -211,7 +196,7 @@ function do_reload_app(
         blueslip.error("Failed to clean up before reloading", undefined, error);
     }
 
-    window.location.replace(reload_url);
+    window.location.reload();
 }
 
 export function initiate({

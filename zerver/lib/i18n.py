@@ -12,7 +12,7 @@ from django.utils import translation
 from django.utils.translation.trans_real import parse_accept_lang_header
 
 from zerver.lib.request import RequestNotes
-from zerver.models import Realm
+from zerver.models import Realm, UserProfile
 
 
 @lru_cache(None)
@@ -87,6 +87,18 @@ def get_browser_language_code(request: HttpRequest) -> str | None:
         if accept_lang in available_language_codes:
             return accept_lang
     return None
+
+
+def get_default_language_for_user(user_profile: UserProfile) -> str:
+    # fetch_initial_state_data migrates users and organizations off
+    # languages we no longer have translations for; fall back the same
+    # way it will for pages rendered before it runs.
+    available_language_codes = get_available_language_codes()
+    if user_profile.default_language in available_language_codes:
+        return user_profile.default_language
+    if user_profile.realm.default_language in available_language_codes:
+        return user_profile.realm.default_language
+    return "en"
 
 
 def get_default_language_for_new_user(realm: Realm, *, request: HttpRequest | None) -> str:

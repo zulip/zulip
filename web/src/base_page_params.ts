@@ -2,7 +2,7 @@ import * as z from "zod/mini";
 
 import {show_loading_error} from "./loading_error.ts";
 import {get_retry_backoff_seconds} from "./retry_backoff.ts";
-import {narrow_term_schema, state_data_schema} from "./state_data.ts";
+import {narrow_term_schema} from "./state_data.ts";
 
 const t1 = performance.now();
 
@@ -48,12 +48,10 @@ const home_params_schema = z.object({
     narrow: z.optional(z.array(narrow_term_schema)),
     narrow_stream: z.optional(z.string()),
     narrow_topic: z.optional(z.string()),
-    no_event_queue: z.boolean(),
     presence_history_limit_days_for_web_app: z.number(),
     promote_sponsoring_zulip: z.boolean(),
     realm_rendered_description: z.string(),
     show_try_zulip_modal: z.boolean(),
-    state_data: z.nullable(state_data_schema),
     test_suite: z.boolean(),
     translation_data: z.record(z.string(), z.string()),
     two_fa_enabled: z.boolean(),
@@ -137,15 +135,23 @@ function take_params(): string {
 
 const PAGE_PARAMS_RETRY_CAP = 5;
 
-function reload_with_deferred_state_data(): boolean {
+// A partial transfer on a marginal network can truncate the HTML, which
+// mostly means truncating translation_data; refetching often succeeds.
+function schedule_reload_after_parse_failure(): boolean {
     const url = new URL(window.location.href);
-    const previous_retries = Number.parseInt(url.searchParams.get("page_params_retry") ?? "0", 10);
+    // Number() reads an absent parameter and a valueless one alike as 0.
+    const parsed_retries = Number(url.searchParams.get("page_params_retry"));
+    // Treat a counter we can't make sense of as exhausted: a negative one
+    // would otherwise reload with no delay, and forever.
+    const previous_retries =
+        Number.isSafeInteger(parsed_retries) && parsed_retries >= 0
+            ? parsed_retries
+            : PAGE_PARAMS_RETRY_CAP;
     if (previous_retries >= PAGE_PARAMS_RETRY_CAP) {
         clear_page_params_retry_from_url();
         show_loading_error();
         return false;
     }
-    url.searchParams.set("state_data", "deferred");
     url.searchParams.set("page_params_retry", String(previous_retries + 1));
     const backoff_ms =
         get_retry_backoff_seconds(undefined, previous_retries + 1, false, true) * 1000;
@@ -169,7 +175,7 @@ function parse_page_params(): z.infer<typeof page_params_schema> {
         clear_page_params_retry_from_url();
         return params;
     } catch (error) {
-        if (reload_with_deferred_state_data()) {
+        if (schedule_reload_after_parse_failure()) {
             // Halt module loading without logging to Sentry; the
             // user self-heals on the scheduled reload. The matching
             // entry in sentry.ts's ignoreErrors keeps this quiet.

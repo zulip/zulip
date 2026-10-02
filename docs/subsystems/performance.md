@@ -66,8 +66,8 @@ request volume and cost that makes them important.
 That said, it is important to distinguish the load associated with an
 API endpoint from the load associated with a feature. Almost any
 significant new feature is likely to result in its data being sent to
-the client in `page_params` or `GET /messages`, i.e. one of the
-endpoints important to scalability here. As a result, it is important
+the client in the `/register` response or `GET /messages`, i.e. one of
+the endpoints important to scalability here. As a result, it is important
 to thoughtfully implement the data fetch code path for every feature.
 
 Furthermore, a snappy user interface is one of Zulip's design goals, and
@@ -89,12 +89,17 @@ likely to vary dramatically over time.
 | ----------------------- | ------------ | -------------- | -------------- |
 | POST /users/me/presence | 25ms         | 36%            | 9000           |
 | GET /messages           | 70ms         | 3%             | 2100           |
-| GET /                   | 300ms        | 0.3%           | 900            |
+| POST /register          | 300ms        | 0.3%           | 900            |
 | GET /events             | 2ms          | 44%            | 880            |
 | GET /user_uploads/\*    | 12ms         | 5%             | 600            |
 | POST /messages/flags    | 25ms         | 1.5%           | 375            |
 | POST /messages          | 40ms         | 0.5%           | 200            |
 | POST /users/me/\*       | 50ms         | 0.04%          | 20             |
+
+A web app page load makes both a `GET /` and a `POST /register`. The
+former serves a small HTML shell; the `/register` row above covers the
+initial state fetch, which is where essentially all of that page load's
+server cost now lives.
 
 The "Average impact" above is computed by multiplying request volume
 by average time; this tells you roughly that endpoint's **relative**
@@ -167,19 +172,21 @@ presence](https://github.com/zulip/zulip/pull/16381) that we expect to
 result in a substantial improvement in the per-request and thus total
 load resulting from presence requests.
 
-### Fetching page_params
+### Fetching the initial state
 
-The request to generate the `page_params` portion of `GET /`
-(equivalent to the response from [GET
-/api/v1/register](https://zulip.com/api/register-queue) used by
-mobile/terminal apps) is one of Zulip's most complex and expensive.
+The request to generate the response to [POST
+/api/v1/register](https://zulip.com/api/register-queue), which the web
+app makes once the JavaScript served by `GET /` has loaded and the
+mobile/terminal apps make on startup, is one of Zulip's most complex
+and expensive.
 
 Zulip is somewhat unusual among web apps in sending essentially all of the
 data required for the entire Zulip web app in this single request,
-which is part of why the Zulip web app loads very quickly -- one only
-needs a single round trip aside from cacheable assets (avatars, images, JS,
-CSS). Data on other users in the organization, channels, supported
-emoji, custom profile fields, etc., is all included. The nice thing
+which is part of why the Zulip web app loads very quickly -- everything
+needed to render the app arrives in one round trip, after the small HTML
+page and the JavaScript bundle it loads. Data on other users in the
+organization, channels, supported emoji, custom profile fields, etc., is
+all included. The nice thing
 about this model is that essentially every UI element in the Zulip
 client can be rendered immediately without paying latency to the
 server; this is critical to Zulip feeling performant even for users
@@ -197,14 +204,13 @@ request after page load:
 - A few data sets that are only required for administrative settings
   pages are fetched only when loading those parts of the UI.
 
-Requests to `GET /` and `/api/v1/register` that fetch `page_params`
-are pretty rare -- something like 0.3% of total requests, but are
-important for scalability because (1) they are the most expensive read
-requests the Zulip API supports and (2) they can come in a thundering
-herd around server restarts (as discussed in [fetching message
-history](#fetching-message-history).
+Requests to `/api/v1/register` are pretty rare -- something like 0.3% of
+total requests, but are important for scalability because (1) they are
+the most expensive read requests the Zulip API supports and (2) they can
+come in a thundering herd around server restarts (as discussed in
+[fetching message history](#fetching-message-history).
 
-The cost for fetching `page_params` varies dramatically based
+The cost of a `/register` request varies dramatically based
 primarily on the organization's size, varying from 90ms-300ms for a
 typical organization but potentially multiple seconds for large open
 organizations with 10,000s of users. There is also smaller
@@ -212,20 +218,20 @@ variability based on a individual user's personal data state,
 primarily in that having 10,000s of unread messages results in a
 somewhat expensive query to find which channels/topics those are in.
 
-We consider any organization having normal `page_params` fetch times
+We consider any organization having normal `/register` response times
 greater than a second to be a bug, and there is ongoing work to fix that.
 
-It can help when thinking about this to imagine `page_params` as what
-in another web app would have been 25 or so HTTP GET requests, each
-fetching data of a given type (users, channels, custom emoji, etc.); in
-Zulip, we just do all of those in a single API request. In the
+It can help when thinking about this to imagine the `/register` response
+as what in another web app would have been 25 or so HTTP GET requests,
+each fetching data of a given type (users, channels, custom emoji,
+etc.); in Zulip, we just do all of those in a single API request. In the
 future, we will likely move to a design that does much of the database
 fetching work for different features in parallel to improve latency.
 
 For organizations with 10K+ users and many default channels, the
-majority of time spent constructing `page_params` is spent marshalling
-data on which users are subscribed to which channels, which is an area
-of active optimization work.
+majority of time spent constructing the `/register` response is spent
+marshalling data on which users are subscribed to which channels, which
+is an area of active optimization work.
 
 ### Fetching message history
 
