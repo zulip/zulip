@@ -3,7 +3,7 @@ from collections.abc import Callable, Iterable, Iterator
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
-from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
+from zerver.lib.exceptions import AnomalousWebhookPayloadError, UnsupportedWebhookEventTypeError
 from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
@@ -78,9 +78,9 @@ STORY_UPDATE_BATCH_ADD_REMOVE_TEMPLATE = "{operation} with {entity}"
 def get_action_with_primary_id(payload: WildValue) -> WildValue:
     for action in payload["actions"]:
         if payload["primary_id"].tame(check_int) == action["id"].tame(check_int):
-            action_with_primary_id = action
+            return action
 
-    return action_with_primary_id
+    raise AnomalousWebhookPayloadError
 
 
 def get_event(payload: WildValue, action: WildValue) -> str | None:
