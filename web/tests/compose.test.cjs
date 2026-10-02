@@ -41,7 +41,9 @@ const compose_fade = mock_esm("../src/compose_fade");
 const compose_notifications = mock_esm("../src/compose_notifications");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const loading = mock_esm("../src/loading");
-const markdown = mock_esm("../src/markdown");
+const markdown = mock_esm("../src/markdown", {
+    render: () => ({content: "<p>x</p>"}),
+});
 const narrow_state = mock_esm("../src/narrow_state");
 const rendered_markdown = mock_esm("../src/rendered_markdown");
 const resize = mock_esm("../src/resize");
