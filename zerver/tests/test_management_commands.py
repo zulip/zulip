@@ -23,7 +23,7 @@ from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.management import ZulipBaseCommand, skip_unless_locked
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, stdout_suppressed
-from zerver.models import Realm, RealmAuditLog, Recipient, UserProfile
+from zerver.models import Realm, RealmAuditLog, Recipient, UserMessage, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -849,11 +849,7 @@ class TestUserChangeNotifications(ZulipTestCase):
         realm = hamlet.realm
 
         # Count bot messages before changes
-        from zerver.models import Message
-
-        bot_messages_before = Message.objects.filter(
-            realm_id=realm.id, recipient__type_id=bot.id
-        ).count()
+        bot_messages_before = UserMessage.objects.filter(user_profile=bot).count()
 
         import tempfile
 
@@ -885,9 +881,7 @@ class TestUserChangeNotifications(ZulipTestCase):
             self.assertEqual(bot.full_name, "New Bot Name")
 
             # Verify bot did NOT receive a notification
-            bot_messages_after = Message.objects.filter(
-                realm_id=realm.id, recipient__type_id=bot.id
-            ).count()
+            bot_messages_after = UserMessage.objects.filter(user_profile=bot).count()
             self.assertEqual(bot_messages_before, bot_messages_after)
         finally:
             os.unlink(data_file)
@@ -919,11 +913,7 @@ class TestUserChangeNotifications(ZulipTestCase):
         bot = self.example_user("default_bot")
 
         # Count bot messages before changes
-        from zerver.models import Message
-
-        bot_messages_before = Message.objects.filter(
-            realm_id=realm.id, recipient__type_id=bot.id
-        ).count()
+        bot_messages_before = UserMessage.objects.filter(user_profile=bot).count()
 
         with stdout_suppressed():
             call_command(
@@ -935,7 +925,5 @@ class TestUserChangeNotifications(ZulipTestCase):
         self.assertEqual(bot.role, UserProfile.ROLE_MODERATOR)
 
         # Verify bot did NOT receive a notification
-        bot_messages_after = Message.objects.filter(
-            realm_id=realm.id, recipient__type_id=bot.id
-        ).count()
+        bot_messages_after = UserMessage.objects.filter(user_profile=bot).count()
         self.assertEqual(bot_messages_before, bot_messages_after)
