@@ -11,7 +11,7 @@ from zerver.lib.message import access_message
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.validator import validate_poll_data, validate_todo_data
-from zerver.lib.widget import get_widget_type
+from zerver.lib.widget import get_widget_type, render_poll_submessage_content
 from zerver.models import UserProfile
 
 
@@ -54,6 +54,9 @@ def process_submessage(
             validate_todo_data(todo_data=widget_data, is_widget_author=is_widget_author)
         except ValidationError as error:
             raise JsonableError(error.message)
+
+    if widget_type == "poll":
+        content = render_poll_submessage_content(content, user_profile.realm)
 
     do_add_submessage(
         realm=user_profile.realm,

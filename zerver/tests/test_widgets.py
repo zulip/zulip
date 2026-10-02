@@ -1,12 +1,14 @@
 import re
 from typing import TYPE_CHECKING, Any
+from unittest import mock
 
 import orjson
 from django.core.exceptions import ValidationError
 
+from zerver.lib.exceptions import MarkdownRenderingError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.validator import check_widget_content
-from zerver.lib.widget import get_widget_data, get_widget_type
+from zerver.lib.widget import get_widget_data, get_widget_type, render_poll_submessage_content
 from zerver.models import SubMessage, UserProfile
 
 if TYPE_CHECKING:
@@ -258,6 +260,8 @@ class WidgetContentTestCase(ZulipTestCase):
             extra_data=dict(
                 options=["Red", "Green", "Blue", "Yellow"],
                 question="What is your favorite color?",
+                rendered_options_html=["Red", "Green", "Blue", "Yellow"],
+                rendered_question_html="What is your favorite color?",
             ),
         )
 
@@ -277,6 +281,8 @@ class WidgetContentTestCase(ZulipTestCase):
             extra_data=dict(
                 options=[],
                 question="",
+                rendered_options_html=[],
+                rendered_question_html="",
             ),
         )
 
@@ -533,6 +539,246 @@ class WidgetContentTestCase(ZulipTestCase):
         assert_success(dict(type="new_task", key=7, task="eat", desc="", completed=False))
         assert_success(dict(type="strike", key="5,9"))
 
+    def test_poll_option_inline_markdown(self) -> None:
+        """Test that poll options are rendered with inline markdown."""
+        sender = self.example_user("cordelia")
+        stream_name = "Verona"
+
+        # Test emoji, links, timestamps, and formatting in poll options.
+        content = (
+            "/poll When should we meet?\n"
+            "- 10am :tada:\n"
+            "- [Zoom link](https://zoom.us/j/123)\n"
+            "- **Bold option**\n"
+            "- <time:2024-01-15T10:00:00Z>"
+        )
+
+        payload = dict(
+            type="stream",
+            to=orjson.dumps(stream_name).decode(),
+            topic="whatever",
+            content=content,
+        )
+        result = self.api_post(sender, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
+        message = self.get_last_message()
+        submessage = SubMessage.objects.get(message_id=message.id)
+        submessage_data = orjson.loads(submessage.content)
+
+        extra_data = submessage_data["extra_data"]
+
+        # Raw text is preserved.
+        self.assertEqual(extra_data["question"], "When should we meet?")
+        self.assertEqual(
+            extra_data["options"],
+            [
+                "10am :tada:",
+                "[Zoom link](https://zoom.us/j/123)",
+                "**Bold option**",
+                "<time:2024-01-15T10:00:00Z>",
+            ],
+        )
+
+        # Rendered fields are present.
+        self.assertIn("rendered_question_html", extra_data)
+        self.assertIn("rendered_options_html", extra_data)
+        self.assert_length(extra_data["rendered_options_html"], 4)
+
+        # Emoji is rendered.
+        self.assertIn("emoji", extra_data["rendered_options_html"][0])
+
+        # Link is rendered.
+        self.assertIn('<a href="https://zoom.us/j/123"', extra_data["rendered_options_html"][1])
+
+        # Bold is rendered.
+        self.assertIn("<strong>", extra_data["rendered_options_html"][2])
+
+        # Timestamp is rendered.
+        self.assertIn("<time", extra_data["rendered_options_html"][3])
+
+    def test_poll_submessage_new_option_rendered(self) -> None:
+        """Test that new_option submessages include rendered content."""
+        sender = self.example_user("cordelia")
+        stream_name = "Verona"
+        content = "/poll Preference?\n\nyes\nno"
+
+        payload = dict(
+            type="stream",
+            to=orjson.dumps(stream_name).decode(),
+            topic="whatever",
+            content=content,
+        )
+        result = self.api_post(sender, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+        message = self.get_last_message()
+
+        # Add an option with emoji.
+        option_data = dict(type="new_option", idx=1, option="party :tada:")
+        submessage_payload: dict[str, object] = dict(
+            message_id=message.id,
+            msg_type="widget",
+            content=orjson.dumps(option_data).decode(),
+        )
+        result = self.api_post(sender, "/api/v1/submessage", submessage_payload)
+        self.assert_json_success(result)
+
+        # The latest submessage should have rendered_option_html.
+        submessages = SubMessage.objects.filter(message_id=message.id).order_by("id")
+        new_option_submessage = submessages.last()
+        assert new_option_submessage is not None
+        data = orjson.loads(new_option_submessage.content)
+        self.assertEqual(data["option"], "party :tada:")
+        self.assertIn("rendered_option_html", data)
+        self.assertIn("emoji", data["rendered_option_html"])
+
+    def test_poll_submessage_question_rendered(self) -> None:
+        """Test that question update submessages include rendered content."""
+        sender = self.example_user("cordelia")
+        stream_name = "Verona"
+        content = "/poll Preference?\n\nyes\nno"
+
+        payload = dict(
+            type="stream",
+            to=orjson.dumps(stream_name).decode(),
+            topic="whatever",
+            content=content,
+        )
+        result = self.api_post(sender, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+        message = self.get_last_message()
+
+        # Update the question with a link.
+        question_data = dict(type="question", question="See [details](https://example.com)")
+        submessage_payload: dict[str, object] = dict(
+            message_id=message.id,
+            msg_type="widget",
+            content=orjson.dumps(question_data).decode(),
+        )
+        result = self.api_post(sender, "/api/v1/submessage", submessage_payload)
+        self.assert_json_success(result)
+
+        submessages = SubMessage.objects.filter(message_id=message.id).order_by("id")
+        question_submessage = submessages.last()
+        assert question_submessage is not None
+        data = orjson.loads(question_submessage.content)
+        self.assertEqual(data["question"], "See [details](https://example.com)")
+        self.assertIn("rendered_question_html", data)
+        self.assertIn('<a href="https://example.com"', data["rendered_question_html"])
+
+    def test_poll_options_without_rendered_fields_fallback(self) -> None:
+        """Test that polls without rendered fields (old data) still work."""
+        sender = self.example_user("cordelia")
+        stream_name = "Verona"
+        content = "/poll Preference?\n\nyes\nno"
+
+        payload = dict(
+            type="stream",
+            to=orjson.dumps(stream_name).decode(),
+            topic="whatever",
+            content=content,
+        )
+        result = self.api_post(sender, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+        message = self.get_last_message()
+
+        # Simulate old-format submessage without rendered fields by
+        # directly modifying the stored content.
+        submessage = SubMessage.objects.get(message_id=message.id)
+        old_format_content = orjson.dumps(
+            {
+                "widget_type": "poll",
+                "extra_data": {
+                    "question": "Preference?",
+                    "options": ["yes", "no"],
+                },
+            }
+        ).decode()
+        submessage.content = old_format_content
+        submessage.save()
+
+        # Verify the old-format data is preserved and accessible.
+        submessage.refresh_from_db()
+        data = orjson.loads(submessage.content)
+        self.assertEqual(data["extra_data"]["question"], "Preference?")
+        self.assertEqual(data["extra_data"]["options"], ["yes", "no"])
+        self.assertNotIn("rendered_question_html", data["extra_data"])
+        self.assertNotIn("rendered_options_html", data["extra_data"])
+
+    def test_poll_rendering_failure_degrades_gracefully(self) -> None:
+        """Test that MarkdownRenderingError in render_poll_extra_data
+        produces empty rendered fields instead of breaking poll creation."""
+        sender = self.example_user("cordelia")
+        stream_name = "Verona"
+        content = "/poll Favorite color?\nRed\nBlue"
+
+        with mock.patch(
+            "zerver.lib.markdown.markdown_convert_inline",
+            side_effect=MarkdownRenderingError,
+        ):
+            payload = dict(
+                type="stream",
+                to=orjson.dumps(stream_name).decode(),
+                topic="whatever",
+                content=content,
+            )
+            result = self.api_post(sender, "/api/v1/messages", payload)
+            self.assert_json_success(result)
+
+        message = self.get_last_message()
+        submessage = SubMessage.objects.get(message_id=message.id)
+        submessage_data = orjson.loads(submessage.content)
+        extra_data = submessage_data["extra_data"]
+
+        # Raw text is preserved.
+        self.assertEqual(extra_data["question"], "Favorite color?")
+        self.assertEqual(extra_data["options"], ["Red", "Blue"])
+
+        # Rendered fields fall back to empty strings.
+        self.assertEqual(extra_data["rendered_question_html"], "")
+        self.assertEqual(extra_data["rendered_options_html"], ["", ""])
+
+    def test_poll_submessage_rendering_failure_degrades_gracefully(self) -> None:
+        """Test that MarkdownRenderingError in render_poll_submessage_content
+        returns unmodified content instead of a 500."""
+        sender = self.example_user("cordelia")
+        stream_name = "Verona"
+        content = "/poll Preference?\n\nyes\nno"
+
+        payload = dict(
+            type="stream",
+            to=orjson.dumps(stream_name).decode(),
+            topic="whatever",
+            content=content,
+        )
+        result = self.api_post(sender, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+        message = self.get_last_message()
+
+        option_data = dict(type="new_option", idx=1, option="maybe")
+        submessage_payload: dict[str, object] = dict(
+            message_id=message.id,
+            msg_type="widget",
+            content=orjson.dumps(option_data).decode(),
+        )
+
+        with mock.patch(
+            "zerver.lib.markdown.markdown_convert_inline",
+            side_effect=MarkdownRenderingError,
+        ):
+            result = self.api_post(sender, "/api/v1/submessage", submessage_payload)
+            self.assert_json_success(result)
+
+        # The submessage was saved successfully.
+        submessages = SubMessage.objects.filter(message_id=message.id).order_by("id")
+        new_option_submessage = submessages.last()
+        assert new_option_submessage is not None
+        data = orjson.loads(new_option_submessage.content)
+
+        # Raw text is preserved, but no rendered field because rendering failed.
+        self.assertEqual(data["option"], "maybe")
+        self.assertNotIn("rendered_option_html", data)
+
     def test_get_widget_type(self) -> None:
         sender = self.example_user("cordelia")
         stream_name = "Verona"
@@ -566,3 +812,11 @@ class WidgetContentTestCase(ZulipTestCase):
         submessage.content = '{"widget_type": "todo"}'
         submessage.save()
         self.assertEqual(get_widget_type(message_id=message.id), "todo")
+
+    def test_render_poll_submessage_content_invalid_json(self) -> None:
+        invalid = "not-valid-json{{{"
+        self.assertEqual(render_poll_submessage_content(invalid, None), invalid)
+
+    def test_render_poll_submessage_content_non_dict_json(self) -> None:
+        array_content = "[1, 2, 3]"
+        self.assertEqual(render_poll_submessage_content(array_content, None), array_content)
