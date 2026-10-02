@@ -166,8 +166,8 @@ def absolute_avatar_url(
     return urljoin(realm_url, avatar)
 
 
-def is_avatar_new(ldap_avatar: bytes, user_profile: UserProfile) -> bool:
-    new_avatar_hash = user_avatar_content_hash(ldap_avatar)
+def is_avatar_new(avatar_content: bytes, user_profile: UserProfile) -> bool:
+    new_avatar_hash = user_avatar_content_hash(avatar_content)
 
     if user_profile.avatar_hash and user_profile.avatar_hash == new_avatar_hash:
         # If an avatar exists and is the same as the new avatar,
