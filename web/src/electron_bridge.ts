@@ -34,6 +34,8 @@ export type ElectronBridge = {
     get_last_active_on_system?: () => number;
     get_send_notification_reply_message_supported?: () => boolean;
     set_send_notification_reply_message_supported?: (value: boolean) => void;
+    play_notification_sound?: (sound_path: string) => void;
+    set_play_notification_sound_supported?: (supported: boolean) => void;
     decrypt_clipboard?: (version: number) => ClipboardDecrypter;
 };
 
