@@ -67,9 +67,12 @@ Before writing any code, you must understand:
 
 1. What the existing code does and why, including the relevant help center or
    developer-facing documentation.
-2. What problem you're solving, in its full scope.
-3. Why your approach is the right solution, and available alternatives.
-4. How you will verify that your work is correct, and avoid regressions
+2. What the issue, the pull requests and issues it links, and the
+   chat.zulip.org discussion actually request, and whether another
+   open pull request already does that work.
+3. What problem you're solving, in its full scope.
+4. Why your approach is the right solution, and available alternatives.
+5. How you will verify that your work is correct, and avoid regressions
    that are plausible for the type of work you're doing.
 
 The answer to "Why is X an improvement?" should never be "I'm not sure."
