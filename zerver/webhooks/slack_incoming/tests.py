@@ -387,3 +387,12 @@ Sample text.
 
     def test_broken_image(self) -> None:
         self.check_webhook("broken_image", "", "Some image here")
+
+    def test_message_changed(self) -> None:
+        expected_topic_name = "general"
+        expected_message = "Hello world from edited Slack message!"
+        self.check_webhook(
+            "message_changed",
+            expected_topic_name,
+            expected_message,
+        )
