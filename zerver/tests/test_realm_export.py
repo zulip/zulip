@@ -7,6 +7,7 @@ import botocore.exceptions
 import orjson
 import time_machine
 from django.conf import settings
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from analytics.models import RealmCount
@@ -218,6 +219,69 @@ class RealmExportTest(ZulipTestCase):
         # Now try to delete a non-existent export.
         result = self.client_delete("/json/export/realm/0")
         self.assert_json_error(result, "Invalid data export ID")
+
+    @override_settings(DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE=True)
+    def test_export_uses_dedicated_queue_when_enabled(self) -> None:
+        admin = self.example_user("iago")
+        self.login_user(admin)
+
+        with patch("zerver.views.realm_export.queue_event_on_commit") as mock_queue:
+            result = self.client_post("/json/export/realm")
+        self.assert_json_success(result)
+        mock_queue.assert_called_once_with(
+            "deferred_work_high_latency",
+            {
+                "type": "realm_export",
+                "user_profile_id": admin.id,
+                "realm_export_id": orjson.loads(result.content)["id"],
+            },
+        )
+
+        tarball_path = create_dummy_file("test-export.tar.gz")
+        with (
+            patch("zerver.lib.export.do_export_realm", return_value=(tarball_path, dict())),
+            stdout_suppressed(),
+            self.assertLogs(level="INFO") as info_logs,
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            result = self.client_post("/json/export/realm")
+        self.assert_json_success(result)
+        self.assertTrue(
+            info_logs.output[0].startswith("INFO:root:Completed data export for zulip in ")
+        )
+        self.assertEqual(RealmExport.objects.latest("id").status, RealmExport.SUCCEEDED)
+
+    @override_settings(DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE=True)
+    def test_deferred_work_drains_exports_when_dedicated_queue_enabled(self) -> None:
+        """Opting in must not strand realm_export events already sitting in
+        deferred_work, so its handler stays the drain path."""
+        admin = self.example_user("iago")
+        export_row = RealmExport.objects.create(
+            realm=admin.realm,
+            type=RealmExport.EXPORT_PUBLIC,
+            acting_user=admin,
+            status=RealmExport.REQUESTED,
+            date_requested=timezone_now(),
+        )
+        tarball_path = create_dummy_file("test-export.tar.gz")
+        with (
+            patch("zerver.lib.export.do_export_realm", return_value=(tarball_path, dict())),
+            stdout_suppressed(),
+            self.assertLogs(level="INFO") as info_logs,
+        ):
+            queue_json_publish_rollback_unsafe(
+                "deferred_work",
+                {
+                    "type": "realm_export",
+                    "user_profile_id": admin.id,
+                    "realm_export_id": export_row.id,
+                },
+            )
+        self.assertTrue(
+            info_logs.output[0].startswith("INFO:root:Completed data export for zulip in ")
+        )
+        export_row.refresh_from_db()
+        self.assertEqual(export_row.status, RealmExport.SUCCEEDED)
 
     def test_export_tarball_prefix(self) -> None:
         realm = self.example_user("iago").realm
