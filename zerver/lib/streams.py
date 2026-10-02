@@ -565,9 +565,7 @@ def is_user_in_can_administer_channel_group(
     # Important: The caller must have verified the acting user is not
     # a guest, to enforce that can_administer_channel_group has
     # allow_everyone_group=False.
-    group_allowed_to_administer_channel_id = stream.can_administer_channel_group_id
-    assert group_allowed_to_administer_channel_id is not None
-    return group_allowed_to_administer_channel_id in user_recursive_group_ids
+    return stream.can_administer_channel_group_id in user_recursive_group_ids
 
 
 def is_user_in_can_add_subscribers_group(
@@ -576,9 +574,7 @@ def is_user_in_can_add_subscribers_group(
     # Important: The caller must have verified the acting user is not
     # a guest, to enforce that can_add_subscribers_group has
     # allow_everyone_group=False.
-    group_allowed_to_add_subscribers_id = stream.can_add_subscribers_group_id
-    assert group_allowed_to_add_subscribers_id is not None
-    return group_allowed_to_add_subscribers_id in user_recursive_group_ids
+    return stream.can_add_subscribers_group_id in user_recursive_group_ids
 
 
 def is_user_in_can_subscribe_group(stream: Stream, user_recursive_group_ids: set[int]) -> bool:
@@ -606,9 +602,7 @@ def is_user_in_can_remove_subscribers_group(
     # Important: The caller must have verified the acting user is not
     # a guest, to enforce that can_remove_subscribers_group has
     # allow_everyone_group=False.
-    group_allowed_to_remove_subscribers_id = stream.can_remove_subscribers_group_id
-    assert group_allowed_to_remove_subscribers_id is not None
-    return group_allowed_to_remove_subscribers_id in user_recursive_group_ids
+    return stream.can_remove_subscribers_group_id in user_recursive_group_ids
 
 
 def check_stream_access_based_on_can_send_message_group(
@@ -1461,10 +1455,8 @@ def get_streams_to_which_user_cannot_add_subscribers(
 def can_administer_accessible_channel(channel: Stream, user_profile: UserProfile) -> bool:
     # IMPORTANT: This function expects its callers to have already
     # checked that the user can access the provided channel.
-    group_id_allowed_to_administer_channel = channel.can_administer_channel_group_id
-    assert group_id_allowed_to_administer_channel is not None
     return user_has_permission_for_group_setting(
-        group_id_allowed_to_administer_channel,
+        channel.can_administer_channel_group_id,
         user_profile,
         Stream.stream_permission_group_settings["can_administer_channel_group"],
     )

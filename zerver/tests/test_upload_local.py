@@ -302,7 +302,6 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         user_profile = self.example_user("iago")
         self.assertTrue(user_profile.is_realm_admin)
 
-        assert settings.TEST_WORKER_DIR is not None
         tarball_path = os.path.join(settings.TEST_WORKER_DIR, "tarball.tar.gz")
         with open(tarball_path, "w") as f:
             f.write("dummy")

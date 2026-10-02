@@ -1650,9 +1650,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         assert customer.stripe_customer_id is not None
         [charge] = iter(stripe.Charge.list(customer=customer.stripe_customer_id))
         self.assertEqual(1200 * self.seat_count, charge.amount)
-        stripe_customer_id = customer.stripe_customer_id
-        assert stripe_customer_id is not None
-        [invoice] = iter(stripe.Invoice.list(customer=stripe_customer_id))
+        [invoice] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
         self.assertEqual(
             [1200 * self.seat_count],
             [item.amount for item in invoice.lines],
@@ -1675,9 +1673,7 @@ class TestSupportBillingHelpers(StripeTestCase):
             )
         [charge, _] = iter(stripe.Charge.list(customer=customer.stripe_customer_id))
         self.assertEqual(6000 * self.seat_count, charge.amount)
-        stripe_customer_id = customer.stripe_customer_id
-        assert stripe_customer_id is not None
-        [invoice, _] = iter(stripe.Invoice.list(customer=stripe_customer_id))
+        [invoice, _] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
         self.assertEqual(
             [6000 * self.seat_count],
             [item.amount for item in invoice.lines],
@@ -1699,9 +1695,7 @@ class TestSupportBillingHelpers(StripeTestCase):
         plan.next_invoice_date = self.next_year
         plan.save(update_fields=["next_invoice_date"])
         invoice_plans_as_needed(self.next_year + timedelta(days=10))
-        stripe_customer_id = customer.stripe_customer_id
-        assert stripe_customer_id is not None
-        [invoice, _, _] = iter(stripe.Invoice.list(customer=stripe_customer_id))
+        [invoice, _, _] = iter(stripe.Invoice.list(customer=customer.stripe_customer_id))
         self.assertEqual([4000 * self.seat_count], [item.amount for item in invoice.lines])
         realm_audit_log = RealmAuditLog.objects.filter(
             event_type=AuditLogEventType.REALM_DISCOUNT_CHANGED

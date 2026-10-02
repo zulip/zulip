@@ -586,7 +586,6 @@ class ZulipSCIMGroup(SCIMGroup):
 
     def save(self) -> None:
         realm = self.realm
-        assert realm is not None
 
         if not check_can_manage_group_by_scim(self.obj):
             raise scim_exceptions.BadRequestError(

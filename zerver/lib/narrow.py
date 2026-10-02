@@ -124,8 +124,7 @@ class NarrowParameter(BaseModel):
         try:
             self.operand = operand_validator("operand", self.operand)
             self.operator = check_string("operator", self.operator)
-            if self.negated is not None:
-                self.negated = check_bool("negated", self.negated)
+            self.negated = check_bool("negated", self.negated)
         except ValidationError as error:
             raise JsonableError(error.message)
 

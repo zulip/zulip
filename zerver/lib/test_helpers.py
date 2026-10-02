@@ -611,11 +611,9 @@ def load_subdomain_token(response: Union["TestHttpResponse", HttpResponse]) -> E
     match = resolve(urlsplit(response["Location"]).path)
     assert match.func == log_into_subdomain
     token = match.kwargs["token"]
-    data = ExternalAuthResult(
+    return ExternalAuthResult(
         request=mock.MagicMock(), login_token=token, delete_stored_data=False
     ).data_dict
-    assert data is not None
-    return data
 
 
 P = ParamSpec("P")

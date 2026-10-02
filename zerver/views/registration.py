@@ -1605,7 +1605,6 @@ def create_demo_helper(
         how_realm_creator_found_zulip=how_realm_creator_found_zulip,
         how_realm_creator_found_zulip_extra_context=how_realm_creator_found_zulip_extra_context,
     )
-    assert realm is not None
 
     user_default_language = get_default_language_for_new_user(realm, request=request)
     with override_language(user_default_language):

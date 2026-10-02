@@ -1000,7 +1000,6 @@ class RealmTest(ZulipTestCase):
         realm.save(update_fields=["signup_announcements_stream"])
 
         signup_announcements_stream = realm.signup_announcements_stream
-        assert signup_announcements_stream is not None
         self.assertEqual(signup_announcements_stream, verona)
         do_deactivate_stream(signup_announcements_stream, acting_user=None)
         realm.refresh_from_db()
@@ -1075,7 +1074,6 @@ class RealmTest(ZulipTestCase):
         realm.save(update_fields=["zulip_update_announcements_stream"])
 
         zulip_update_announcements_stream = realm.zulip_update_announcements_stream
-        assert zulip_update_announcements_stream is not None
         self.assertEqual(zulip_update_announcements_stream, verona)
         do_deactivate_stream(zulip_update_announcements_stream, acting_user=None)
         realm.refresh_from_db()
@@ -1143,7 +1141,6 @@ class RealmTest(ZulipTestCase):
         realm.save(update_fields=["moderation_request_channel"])
 
         moderation_request_channel = realm.moderation_request_channel
-        assert moderation_request_channel is not None
         self.assertEqual(moderation_request_channel, verona)
         do_deactivate_stream(moderation_request_channel, acting_user=None)
         realm.refresh_from_db()

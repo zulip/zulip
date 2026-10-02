@@ -250,7 +250,6 @@ def get_estimated_arr_and_rate_by_realm() -> tuple[dict[str, int], dict[str, str
     for plan in plans:
         assert plan.customer.realm is not None
         latest_ledger_entry = plan.latest_ledger_entry[0]
-        assert latest_ledger_entry is not None
         renewal_cents = RealmBillingSession(
             realm=plan.customer.realm
         ).get_annual_recurring_revenue_for_support_data(plan, latest_ledger_entry)
@@ -285,10 +284,8 @@ def get_plan_data_by_remote_server() -> dict[int, RemoteActivityPlanData]:  # no
         server_id = None
         assert plan.customer.remote_server is not None
         server_id = plan.customer.remote_server.id
-        assert server_id is not None
 
         latest_ledger_entry = plan.latest_ledger_entry[0]
-        assert latest_ledger_entry is not None
 
         plan_data = get_remote_activity_plan_data(
             plan, latest_ledger_entry, remote_server=plan.customer.remote_server
@@ -335,10 +332,8 @@ def get_plan_data_by_remote_realm() -> dict[int, dict[int, RemoteActivityPlanDat
         server_id = None
         assert plan.customer.remote_realm is not None
         server_id = plan.customer.remote_realm.server_id
-        assert server_id is not None
 
         latest_ledger_entry = plan.latest_ledger_entry[0]
-        assert latest_ledger_entry is not None
 
         plan_data = get_remote_activity_plan_data(
             plan, latest_ledger_entry, remote_realm=plan.customer.remote_realm
@@ -351,7 +346,6 @@ def get_plan_data_by_remote_realm() -> dict[int, dict[int, RemoteActivityPlanDat
             realm_dict = {realm_id: plan_data}
             remote_server_plan_data_by_realm[server_id] = realm_dict
         else:
-            assert current_server_data is not None
             current_realm_data = current_server_data.get(realm_id)
             if current_realm_data is not None:
                 # There should only ever be one CustomerPlan for a remote realm with

@@ -164,7 +164,6 @@ def create_confirmation_object(
         if validity_in_minutes is None:
             expiry_date = None
         else:
-            assert validity_in_minutes is not None
             expiry_date = current_time + timedelta(minutes=validity_in_minutes)
     else:
         expiry_date = current_time + timedelta(days=_properties[confirmation_type].validity_in_days)

@@ -1938,7 +1938,6 @@ def do_change_stream_group_based_setting(
             )
             send_event_on_commit(stream.realm, event, current_user_ids_with_metadata_access)
 
-        assert acting_user is not None
         send_stream_posting_permission_update_notification(
             stream,
             old_setting_value=old_setting_api_value,

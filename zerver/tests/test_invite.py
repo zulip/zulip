@@ -669,7 +669,7 @@ class InviteUserTest(InviteUserBase):
         self.assert_json_success(result)
 
         prereg_user = PreregistrationUser.objects.get(email=mirror_user.email)
-        assert prereg_user.referred_by is not None and inviter is not None
+        assert prereg_user.referred_by is not None
         self.assertEqual(
             prereg_user.referred_by.email,
             inviter.email,

@@ -124,8 +124,6 @@ def serve_s3(
     # get the _unescaped_ new internal request URL in nginx.
     parsed_url = urlsplit(url)
     assert parsed_url.hostname is not None
-    assert parsed_url.path is not None
-    assert parsed_url.query is not None
     escaped_path_parts = parsed_url.hostname + quote(parsed_url.path) + "?" + parsed_url.query
     response = internal_nginx_redirect("/internal/s3/" + escaped_path_parts)
 

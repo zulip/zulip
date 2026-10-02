@@ -1187,7 +1187,6 @@ def get_topics_backend(
         is_web_public_query = False
         assert isinstance(maybe_user_profile, UserProfile)
         user_profile = maybe_user_profile
-        assert user_profile is not None
 
     if is_web_public_query:
         realm = get_valid_realm_from_request(request)

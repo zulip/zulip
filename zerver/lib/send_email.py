@@ -239,8 +239,7 @@ def build_email(
     mail = EmailMultiAlternatives(
         email_subject, message, envelope_from, to_emails, reply_to=reply_to, headers=extra_headers
     )
-    if html_message is not None:
-        mail.attach_alternative(html_message, "text/html")
+    mail.attach_alternative(html_message, "text/html")
     return mail
 
 

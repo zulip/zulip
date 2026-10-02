@@ -188,7 +188,6 @@ def check_update_user_status(
     # If we're asking to set an emoji (not clear it ("") or not adjust
     # it (None)), we need to verify the emoji is valid.
     if emoji_name not in ["", None]:
-        assert emoji_name is not None
         assert emoji_code is not None
         assert emoji_type is not None
         check_emoji_request(realm, emoji_name, emoji_code, emoji_type)

@@ -2433,7 +2433,7 @@ class ActivateTest(ZulipTestCase):
             ScheduledEmail.objects.filter(users__in=[hamlet, iago]).distinct().count(), 1
         )
         email = ScheduledEmail.objects.all().first()
-        assert email is not None and email.users is not None
+        assert email is not None
         self.assertEqual(email.users.count(), 2)
 
     def test_clear_schedule_emails(self) -> None:

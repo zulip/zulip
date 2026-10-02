@@ -1698,8 +1698,6 @@ def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bo
             return False
         ldap_user = ZulipLDAPUser(backend, ldap_username, realm=user_profile.realm)
 
-    assert ldap_user is not None
-
     # What one would expect to see like to do here is just a call to
     # `backend.populate_user`, which in turn just creates the
     # `_LDAPUser` object and calls `ldap_user.populate_user()` on

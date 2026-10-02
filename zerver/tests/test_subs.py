@@ -280,7 +280,6 @@ class StreamAdminTest(ZulipTestCase):
             event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
             modified_stream=stream,
         ).order_by("-id")[1]
-        assert invite_only_log is not None
 
         expected_extra_data = {
             RealmAuditLog.OLD_VALUE: True,
@@ -370,7 +369,6 @@ class StreamAdminTest(ZulipTestCase):
             event_type=AuditLogEventType.CHANNEL_PROPERTY_CHANGED,
             modified_stream=stream,
         ).order_by("-id")[1]
-        assert invite_only_log is not None
 
         expected_extra_data = {
             RealmAuditLog.OLD_VALUE: False,

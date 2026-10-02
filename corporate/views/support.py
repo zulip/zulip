@@ -884,7 +884,6 @@ def remote_servers_support(
                 support_type=SupportType.delete_fixed_price_next_plan,
             )
         elif remote_server_status:
-            assert remote_server is not None
             remote_server_status_billing_session = RemoteServerBillingSession(
                 support_staff=acting_user, remote_server=remote_server
             )

@@ -765,7 +765,6 @@ Output:
         """Helper for parsing page_params after fetching the web app's home view."""
         doc = lxml.html.document_fromstring(result.content)
         div = doc.get_element_by_id("page-params")
-        assert div is not None
         page_params_json = div.get("data-params")
         assert page_params_json is not None
         page_params = orjson.loads(page_params_json)

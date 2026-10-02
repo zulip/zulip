@@ -21,6 +21,5 @@ class Command(crawl.Command):
         self.crawler_process.create_crawler = create_crawler  # type: ignore[method-assign]  # monkey patching
         super().run(args, opts)
         for crawler in crawlers:
-            assert crawler.stats is not None
             if crawler.stats.get_value("log_count/ERROR"):
                 self.exitcode = 1

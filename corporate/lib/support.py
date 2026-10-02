@@ -336,7 +336,6 @@ def get_plan_data_for_support_view(
                 plan_data.warning += USER_DATA_STALE_WARNING
                 plan_data.licenses_used = None
         else:  # nocoverage
-            assert user_count is not None
             plan_data.licenses_used = user_count
 
         if plan_data.current_plan.status in (

@@ -173,7 +173,6 @@ def handle_invoice_paid_event(stripe_invoice: stripe.Invoice, invoice: Invoice) 
         plan_tier = int(metadata["plan_tier"])
         charge_automatically = stripe_invoice.collection_method != "send_invoice"
         if configured_fixed_price_plan and customer.required_plan_tier == plan_tier:
-            assert customer.required_plan_tier is not None
             billing_session.process_initial_upgrade(
                 plan_tier=customer.required_plan_tier,
                 # TODO: Currently licenses don't play any role for fixed price plan.

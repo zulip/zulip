@@ -1570,7 +1570,6 @@ class TestSupportEndpoint(ZulipTestCase):
         )
 
         customer = self.create_customer_and_plan(lear_realm, True)
-        assert customer is not None
         current_plan = get_current_plan_by_customer(customer)
         assert current_plan is not None
         self.assertIsNone(current_plan.end_date)

@@ -39,8 +39,6 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         )
 
     def test_pm_to_embedded_bot_using_direct_group_message(self) -> None:
-        assert self.bot_profile is not None
-
         direct_group_message = get_or_create_direct_message_group(
             id_list=[self.user_profile.id, self.bot_profile.id]
         )
@@ -59,7 +57,6 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         self.assertEqual(display_recipient[1]["email"], self.bot_profile.email)
 
     def test_stream_message_to_embedded_bot(self) -> None:
-        assert self.bot_profile is not None
         self.send_stream_message(
             self.user_profile,
             "Denmark",
@@ -78,7 +75,6 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         self.assertEqual(last_message.content, "foo")
 
     def test_message_to_embedded_bot_with_initialize(self) -> None:
-        assert self.bot_profile is not None
         self.subscribe(self.user_profile, "Denmark")
         with patch(
             "zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.initialize", create=True
@@ -92,7 +88,6 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
             mock_initialize.assert_called_once()
 
     def test_embedded_bot_quit_exception(self) -> None:
-        assert self.bot_profile is not None
         with (
             patch(
                 "zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.handle_message",

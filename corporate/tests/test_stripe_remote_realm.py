@@ -1437,7 +1437,6 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             )
 
         zulip_realm_customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
-        assert zulip_realm_customer is not None
         realm_complimentary_access_plan = get_current_plan_by_customer(zulip_realm_customer)
         assert realm_complimentary_access_plan is not None
         self.assertEqual(realm_complimentary_access_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
@@ -1958,7 +1957,6 @@ class TestRemoteRealmBillingFlow(StripeTestCase, RemoteRealmBillingTestCase):
             )
 
         zulip_realm_customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
-        assert zulip_realm_customer is not None
         realm_complimentary_access_plan = get_current_plan_by_customer(zulip_realm_customer)
         assert realm_complimentary_access_plan is not None
         self.assertEqual(realm_complimentary_access_plan.tier, CustomerPlan.TIER_SELF_HOSTED_LEGACY)
