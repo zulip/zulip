@@ -750,7 +750,7 @@ def add_realm_playground(client: Client) -> None:
     # Add a code playground for Python.
     request = {
         "name": "Python playground",
-        "pygments_language": "Python",
+        "pygments_language": "python",
         "url_template": "https://python.example.com?code={code}",
     }
     result = client.call_endpoint(url="/realm/playgrounds", method="POST", request=request)
