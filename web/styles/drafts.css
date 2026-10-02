@@ -44,10 +44,6 @@
                 }
             }
 
-            .select-state-indicator {
-                width: 15px;
-            }
-
             @media (width < $lg_min) {
                 margin-top: 5px;
                 width: 100%;
@@ -68,11 +64,14 @@
         }
     }
 
-    .draft-selection-checkbox {
-        margin-top: 0.25em;
+    :is(.draft-selection-checkbox, .select-state-indicator) {
+        display: block;
+        line-height: 1;
+        text-align: center;
+        margin: 0 auto;
         /* Required to make sure that the checkbox icon stays inside
            the grid. Any value greater than 13px (original width of
            the checkbox icon) will work. */
-        width: 15px;
+        width: 13px;
     }
 }
