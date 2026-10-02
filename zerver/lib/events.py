@@ -503,6 +503,12 @@ def fetch_initial_state_data(
         state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE_MIB
         upload_quota_bytes = realm.upload_quota_bytes()
         state["realm_upload_quota_mib"] = optional_bytes_to_mib(upload_quota_bytes)
+        if user_profile is not None and upload_quota_bytes is not None:
+            # The upload-quota-usage warning is only shown to organization
+            # members, and only matters if the organization has a quota,
+            # so we skip the couple of extra queries this costs otherwise,
+            # including on every web-public page load.
+            state["realm_upload_quota_used_bytes"] = realm.currently_used_upload_space_bytes()
 
         state["realm_icon_url"] = realm_icon_url(realm)
         state["realm_icon_source"] = realm.icon_source

@@ -355,6 +355,8 @@ class HomeTest(ZulipTestCase):
         expected_state_data_keys = [
             *self.expected_state_data_keys,
             "demo_organization_scheduled_deletion_date",
+            # The demo organization created above has LIMITED plan.
+            "realm_upload_quota_used_bytes",
         ]
         self.assertCountEqual(page_params["state_data"], expected_state_data_keys)
 

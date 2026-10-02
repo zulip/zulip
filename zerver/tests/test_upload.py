@@ -51,7 +51,7 @@ from zerver.lib.upload.local import LocalUploadBackend
 from zerver.lib.upload.s3 import S3UploadBackend
 from zerver.models import Attachment, Message, OnboardingStep, Realm, RealmDomain, UserProfile
 from zerver.models.realms import get_realm
-from zerver.models.users import get_system_bot, get_user_by_delivery_email
+from zerver.models.users import active_user_ids, get_system_bot, get_user_by_delivery_email
 from zerver.upload_handler import TEMPORARY_FILE_MAX_EXTENSION_LENGTH, truncate_filename_extension
 
 
@@ -2379,6 +2379,56 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         data3 = b"even-more-data!"
         upload_message_attachment("dummy3.txt", "text/plain", data3, self.user_profile)
         self.assertEqual(len(data2) + len(data3), self.realm.currently_used_upload_space_bytes())
+
+    def test_currently_used_upload_space_for_cross_realm_bot_upload(self) -> None:
+        # There is no upload quota by default for self hosted realm.
+        do_change_realm_plan_type(self.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        self.assertEqual(0, self.realm.currently_used_upload_space_bytes())
+
+        # The email gateway bot uploads files into the organization the
+        # email was sent to, not its own.
+        internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
+
+        data = b"zulip!"
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            upload_message_attachment(
+                "dummy.txt", "text/plain", data, email_gateway_bot, target_realm=self.realm
+            )
+        self.assert_length(data, self.realm.currently_used_upload_space_bytes())
+
+        self.assertEqual(events[1]["event"]["data"], dict(upload_quota_used_bytes=len(data)))
+        self.assertEqual(events[1]["users"], active_user_ids(self.realm.id))
+
+    def test_upload_quota_used_bytes_event_sent_to_all_users(self) -> None:
+        data = b"zulip!"
+        # Organizations without an upload quota don't get the event.
+        self.assertIsNone(self.realm.upload_quota_bytes())
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            upload_message_attachment("dummy.txt", "text/plain", data, self.user_profile)
+        self.assertEqual(events[0]["event"]["type"], "attachment")
+
+        do_change_realm_plan_type(self.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        self.assertIsNotNone(self.realm.upload_quota_bytes())
+        self.user_profile.refresh_from_db()
+
+        with self.capture_send_event_calls(expected_num_events=2) as events:
+            upload_message_attachment("dummy2.txt", "text/plain", data, self.user_profile)
+
+        self.assertEqual(events[0]["event"]["type"], "attachment")
+        self.assertEqual(events[0]["users"], [self.user_profile.id])
+
+        self.assertEqual(
+            events[1]["event"],
+            dict(
+                type="realm",
+                op="update_dict",
+                property="default",
+                data=dict(upload_quota_used_bytes=2 * len(data)),
+            ),
+        )
+        self.assertIn(self.example_user("othello").id, events[1]["users"])
+        self.assertEqual(events[1]["users"], active_user_ids(self.realm.id))
 
 
 class DecompressionBombTests(ZulipTestCase):

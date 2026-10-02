@@ -15,6 +15,7 @@ from zerver.actions.channel_folders import check_add_channel_folder
 from zerver.actions.custom_profile_fields import try_update_realm_custom_profile_field
 from zerver.actions.message_send import check_send_message
 from zerver.actions.presence import do_update_user_presence
+from zerver.actions.realm_settings import do_change_realm_plan_type
 from zerver.actions.streams import do_change_stream_folder
 from zerver.actions.user_settings import do_change_avatar_fields, do_change_user_setting
 from zerver.actions.users import do_change_user_role
@@ -29,8 +30,9 @@ from zerver.lib.test_helpers import (
     reset_email_visibility_to_everyone_in_zulip_realm,
     stub_event_queue_user_events,
 )
+from zerver.lib.upload import upload_message_attachment
 from zerver.lib.users import get_users_for_api
-from zerver.models import CustomProfileField, UserMessage, UserPresence, UserProfile
+from zerver.models import CustomProfileField, Realm, UserMessage, UserPresence, UserProfile
 from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -898,6 +900,32 @@ class FetchInitialStateDataTest(ZulipTestCase):
         result = fetch_initial_state_data(user_profile, realm=user_profile.realm)
         self.assertEqual(result["max_message_id"], -1)
 
+    def test_realm_upload_quota_used_bytes_presence(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        data = b"zulip!"
+        upload_message_attachment("dummy.txt", "text/plain", data, hamlet)
+
+        # Organizations without an upload quota don't get it.
+        self.assertIsNone(realm.upload_quota_bytes())
+        result = fetch_initial_state_data(hamlet, realm=realm, event_types=["realm"])
+        self.assertNotIn("realm_upload_quota_used_bytes", result)
+
+        # Authenticated users who request the "realm" fetch type get the
+        # realm's current upload usage.
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        self.assertIsNotNone(realm.upload_quota_bytes())
+        result = fetch_initial_state_data(hamlet, realm=realm, event_types=["realm"])
+        self.assertEqual(result["realm_upload_quota_used_bytes"], len(data))
+
+        # Spectators never receive it, even when requesting the same type;
+        # the warning banner is for organization members only.
+        result = fetch_initial_state_data(
+            None, realm=realm, event_types=["realm"], spectator_requested_language="en"
+        )
+        self.assertNotIn("realm_upload_quota_used_bytes", result)
+
     def test_delivery_email_presence_for_non_admins(self) -> None:
         user_profile = self.example_user("aaron")
         hamlet = self.example_user("hamlet")
@@ -1628,6 +1656,17 @@ class FetchQueriesTest(ZulipTestCase):
                     event_types = [event_type]
 
                 fetch_initial_state_data(user, realm=user.realm, event_types=event_types)
+
+    def test_realm_upload_quota_used_bytes_queries(self) -> None:
+        user = self.example_user("hamlet")
+        # The test realm is self-hosted, which has no upload quota, so
+        # switch to a plan with one to include upload usage.
+        do_change_realm_plan_type(user.realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+
+        # Computing realm_upload_quota_used_bytes takes 2 queries in
+        # addition to the 3 for the "realm" event type.
+        with self.assert_database_query_count(5):
+            fetch_initial_state_data(user, realm=user.realm, event_types=["realm"])
 
 
 class TestEventsRegisterAllPublicStreamsDefaults(ZulipTestCase):
