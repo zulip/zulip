@@ -1462,3 +1462,42 @@ class TestCreateStreams(ZulipTestCase):
         self.assert_json_success(result)
         stream = get_stream("push_create_via_channels_api", realm)
         self.assertTrue(stream.default_push_notifications)
+
+    def test_create_stream_with_mandatory_email_notifications(self) -> None:
+        """An admin can set mandatory_email_notifications=True when creating a stream.
+        A non-admin cannot."""
+        admin = self.example_user("iago")
+        non_admin = self.example_user("hamlet")
+        realm = admin.realm
+
+        result = self.subscribe_via_post(
+            non_admin,
+            ["mandatory_email_create_nonadmin"],
+            extra_post_data={"mandatory_email_notifications": orjson.dumps(True).decode()},
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        result = self.create_channel_via_post(
+            non_admin,
+            name="mandatory_email_create_nonadmin_v2",
+            extra_post_data={"mandatory_email_notifications": orjson.dumps(True).decode()},
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        self.subscribe_via_post(
+            admin,
+            ["mandatory_email_create_admin"],
+            extra_post_data={"mandatory_email_notifications": orjson.dumps(True).decode()},
+        )
+        stream = get_stream("mandatory_email_create_admin", realm)
+        self.assertTrue(stream.mandatory_email_notifications)
+
+        result = self.create_channel_via_post(
+            admin,
+            name="mandatory_email_create_via_channels_api",
+            extra_post_data={"mandatory_email_notifications": orjson.dumps(True).decode()},
+        )
+        self.assert_json_success(result)
+        stream = get_stream("mandatory_email_create_via_channels_api", realm)
+        self.assertTrue(stream.mandatory_email_notifications)

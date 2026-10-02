@@ -31,7 +31,7 @@ from zerver.lib.email_notifications import (
 from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, UserMessage, UserProfile, UserTopic
+from zerver.models import Message, Subscription, UserMessage, UserProfile, UserTopic
 from zerver.models.realm_emoji import get_name_keyed_dict_for_active_realm_emoji
 from zerver.models.realms import get_realm
 from zerver.models.recipients import Recipient, get_or_create_direct_message_group
@@ -2113,3 +2113,52 @@ class TestMessageNotificationEmails(ZulipTestCase):
         )
         self.assertEqual(synthetic_root_message_id.count("@"), 1)
         self.assertNotIn(" ", synthetic_root_message_id)
+
+    def test_mandatory_email_notifications_stream_email_footer(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        stream = self.make_stream("mandatory_email_stream", hamlet.realm)
+        stream.mandatory_email_notifications = True
+        stream.save()
+        self.subscribe(hamlet, stream.name)
+        self.subscribe(othello, stream.name)
+
+        hamlet.enable_stream_email_notifications = False
+        hamlet.save()
+        sub = Subscription.objects.get(
+            user_profile=hamlet,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id=stream.id,
+        )
+        sub.email_notifications = False
+        sub.save()
+
+        msg_id = self.send_stream_message(othello, stream.name, "hello")
+        self.handle_missedmessage_emails(
+            hamlet.id,
+            {msg_id: MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL)},
+        )
+        body = self.normalize_string(mail.outbox[0].body)
+        self.assertIn("configured to send email notifications to all subscribers", body)
+        self.assertIn("unsubscribe from the channel", body)
+
+    @patch("zerver.lib.email_notifications.user_can_unsubscribe_from_stream", return_value=False)
+    def test_mandatory_email_notifications_required_subscription_footer(
+        self, ignored: object
+    ) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        stream = self.make_stream("mandatory_email_required_sub", hamlet.realm)
+        stream.mandatory_email_notifications = True
+        stream.save()
+        self.subscribe(hamlet, stream.name)
+        self.subscribe(othello, stream.name)
+
+        msg_id = self.send_stream_message(othello, stream.name, "hello")
+        self.handle_missedmessage_emails(
+            hamlet.id,
+            {msg_id: MissedMessageData(trigger=NotificationTriggers.STREAM_EMAIL)},
+        )
+        body = self.normalize_string(mail.outbox[0].body)
+        self.assertIn("required by administrators", body)
+        self.assertIn("deactivate your account", body)

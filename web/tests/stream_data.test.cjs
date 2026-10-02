@@ -897,6 +897,8 @@ test("stream_settings", ({override}) => {
     assert.equal(sub.can_administer_channel_group, moderators_group.id);
     assert.equal(sub.folder_id, 3);
     assert.equal(sub.default_push_notifications, true);
+    stream_data.update_mandatory_email_notifications(sub, true);
+    assert.equal(sub.mandatory_email_notifications, true);
 
     // For guest user only retrieve subscribed streams
     sub_rows = stream_settings_data.get_updated_unsorted_subs();
@@ -1124,6 +1126,11 @@ test("notifications", ({override}) => {
     india.email_notifications = false;
     assert.ok(!stream_data.receives_notifications(india.stream_id, "email_notifications"));
 
+    india.mandatory_email_notifications = true;
+    assert.ok(stream_data.receives_notifications(india.stream_id, "email_notifications"));
+    india.mandatory_email_notifications = false;
+    assert.ok(!stream_data.receives_notifications(india.stream_id, "email_notifications"));
+
     const canada = {
         stream_id: 103,
         name: "Canada",
@@ -1189,6 +1196,7 @@ test("notifications", ({override}) => {
             stream_name: "Canada",
             stream_id: 103,
             color: "#d80621",
+            mandatory_email_notifications: false,
         },
         {
             desktop_notifications: true,
@@ -1201,6 +1209,7 @@ test("notifications", ({override}) => {
             stream_name: "India",
             stream_id: 102,
             color: "#000080",
+            mandatory_email_notifications: false,
         },
     ];
 

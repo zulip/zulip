@@ -122,6 +122,10 @@ class Stream(models.Model):
     # inheriting from the user's account-level default.
     default_push_notifications = models.BooleanField(default=False, db_default=False)
 
+    # When True, all subscribers receive email notifications for channel messages
+    # when offline, regardless of per-subscription email notification settings.
+    mandatory_email_notifications = models.BooleanField(default=False, db_default=False)
+
     # on_delete field for group value settings is set to RESTRICT
     # because we don't want to allow deleting a user group in case it
     # is referenced by the respective setting. We are not using PROTECT
@@ -272,6 +276,7 @@ class Stream(models.Model):
         "date_created",
         "deactivated",
         "default_push_notifications",
+        "mandatory_email_notifications",
         "description",
         "first_message_id",
         "folder_id",

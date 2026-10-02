@@ -295,6 +295,8 @@ def user_allows_notifications_in_StreamTopic(
     stream_specific_setting: bool | None,
     global_setting: bool,
     channel_specific_setting_overrides_mute: bool,
+    *,
+    mandatory_email_notifications: bool = False,
 ) -> bool:
     """
     Captures the hierarchy of notification settings, where visibility policy is considered first,
@@ -303,10 +305,20 @@ def user_allows_notifications_in_StreamTopic(
     When `channel_specific_setting_overrides_mute` is True (currently used for
     `wildcard_mentions_notify` setting), `stream_specific_setting` overrides
     channel mute, but not topic mute.
+
+    When `mandatory_email_notifications` is True, subscribers receive email
+    notifications for channel messages regardless of per-subscription and global
+    email notification settings, but muted topics and muted channels still
+    suppress notifications.
     """
     # Muted topics always suppress notifications, regardless of other settings.
     if visibility_policy == UserTopic.VisibilityPolicy.MUTED:
         return False
+
+    if mandatory_email_notifications:
+        if stream_is_muted and visibility_policy != UserTopic.VisibilityPolicy.UNMUTED:
+            return False
+        return True
 
     if stream_is_muted and visibility_policy != UserTopic.VisibilityPolicy.UNMUTED:
         if channel_specific_setting_overrides_mute and stream_specific_setting is not None:

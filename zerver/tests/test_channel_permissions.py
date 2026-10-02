@@ -1554,3 +1554,56 @@ class ChannelAdministerPermissionTest(ZulipTestCase):
                 "property": "default_push_notifications",
             },
         )
+
+    def test_update_stream_mandatory_email_notifications(self) -> None:
+        """Only admins can change mandatory_email_notifications; the update
+        fires a stream event and persists the value."""
+        admin = self.example_user("iago")
+        non_admin = self.example_user("hamlet")
+        self.login_user(admin)
+        stream = self.subscribe(admin, "test_mandatory_email_stream")
+        self.subscribe(non_admin, "test_mandatory_email_stream")
+        realm = admin.realm
+
+        self.login_user(non_admin)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"mandatory_email_notifications": orjson.dumps(True).decode()},
+        )
+        self.assert_json_error(result, "You do not have permission to administer this channel.")
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_administer_channel_group",
+            UserGroupMembersData(direct_members=[non_admin.id], direct_subgroups=[]),
+            acting_user=admin,
+        )
+        self.login_user(non_admin)
+        result = self.client_patch(
+            f"/json/streams/{stream.id}",
+            {"mandatory_email_notifications": orjson.dumps(True).decode()},
+        )
+        self.assert_json_error(result, "Insufficient permission")
+
+        self.login_user(admin)
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.client_patch(
+                f"/json/streams/{stream.id}",
+                {"mandatory_email_notifications": orjson.dumps(True).decode()},
+            )
+        self.assert_json_success(result)
+        stream = get_stream("test_mandatory_email_stream", realm)
+        self.assertTrue(stream.mandatory_email_notifications)
+
+        event = events[0]["event"]
+        self.assertEqual(
+            event,
+            dict(
+                op="update",
+                type="stream",
+                property="mandatory_email_notifications",
+                value=True,
+                stream_id=stream.id,
+                name="test_mandatory_email_stream",
+            ),
+        )
