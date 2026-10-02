@@ -930,7 +930,6 @@ class BillingSession(ABC):
         if days_until_due is not None:
             invoice_params["days_until_due"] = days_until_due
         stripe_invoice = stripe.Invoice.create(**invoice_params)
-        assert stripe_invoice.id is not None
 
         price_args: PriceArgs = {}
         if fixed_price is None:
@@ -940,7 +939,6 @@ class BillingSession(ABC):
                 "unit_amount_decimal": Decimal(price_per_license),
             }
         else:
-            assert fixed_price is not None
             amount_due = get_amount_due_fixed_price_plan(fixed_price, billing_schedule)
             price_args = {"amount": amount_due}
 
@@ -1345,7 +1343,6 @@ class BillingSession(ABC):
                 on_free_trial=on_free_trial,
                 current_plan_id=current_plan_id,
             )
-            assert stripe_invoice.id is not None
 
             invoice = Invoice.objects.create(
                 stripe_invoice_id=stripe_invoice.id,
@@ -1362,7 +1359,6 @@ class BillingSession(ABC):
                 stripe_invoice = stripe.Invoice.pay(stripe_invoice.id)
         except Exception as e:
             if stripe_invoice is not None:
-                assert stripe_invoice.id is not None
                 # Void invoice to avoid double charging if customer tries to upgrade again.
                 stripe.Invoice.void_invoice(stripe_invoice.id)
                 invoice.status = Invoice.VOID
@@ -1372,7 +1368,6 @@ class BillingSession(ABC):
             else:  # nocoverage
                 raise
 
-        assert stripe_invoice.id is not None
         return stripe_invoice.id
 
     def create_card_update_session_for_upgrade(
@@ -1896,7 +1891,6 @@ class BillingSession(ABC):
         current_plan_id: int | None = None,
     ) -> str:
         customer = self.update_or_create_stripe_customer()
-        assert customer is not None  # for mypy
         fixed_price_plan_offer = get_configured_fixed_price_plan_offer(customer, plan_tier)
         general_metadata = {
             "billing_modality": billing_modality,
@@ -2252,7 +2246,6 @@ class BillingSession(ABC):
                 # Send an invoice to the customer which expires at the end of free trial.
                 # If the customer fails to pay the invoice before expiration, we downgrade
                 # the customer.
-                assert plan is not None
                 free_trial_days = get_free_trial_days(is_self_hosted_billing)
                 assert free_trial_days is not None
                 self.generate_stripe_invoice(
@@ -2270,7 +2263,6 @@ class BillingSession(ABC):
         if not stripe_invoice_paid:
             # We don't actually expect to ever reach here but this is just a safety net
             # in case any future changes make this possible.
-            assert plan is not None
             self.generate_invoice_for_upgrade(
                 customer,
                 price_per_license=price_per_license,
@@ -2996,20 +2988,19 @@ class BillingSession(ABC):
 
                 if last_send_invoice is not None:
                     invoice = stripe.Invoice.retrieve(last_send_invoice.stripe_invoice_id)
-                    if invoice is not None:
-                        scheduled_upgrade_invoice_amount_due = format_money(invoice.amount_due)
-                        pay_by_invoice_payments_page = f"{self.billing_base_url}/invoices"
+                    scheduled_upgrade_invoice_amount_due = format_money(invoice.amount_due)
+                    pay_by_invoice_payments_page = f"{self.billing_base_url}/invoices"
 
-                        if (
-                            last_send_invoice.plan is not None
-                            and last_send_invoice.is_created_for_free_trial_upgrade
-                        ):
-                            # Automatic payment invoice would have been marked void already.
-                            assert not last_send_invoice.plan.charge_automatically
-                            is_free_trial_invoice_expired_notice = True
-                            free_trial_invoice_expired_notice_page_plan_name = (
-                                last_send_invoice.plan.name
-                            )
+                    if (
+                        last_send_invoice.plan is not None
+                        and last_send_invoice.is_created_for_free_trial_upgrade
+                    ):
+                        # Automatic payment invoice would have been marked void already.
+                        assert not last_send_invoice.plan.charge_automatically
+                        is_free_trial_invoice_expired_notice = True
+                        free_trial_invoice_expired_notice_page_plan_name = (
+                            last_send_invoice.plan.name
+                        )
 
         annual_price, percent_off_annual_price = get_price_per_license_and_discount(
             tier, CustomerPlan.BILLING_SCHEDULE_ANNUAL, customer
@@ -3167,7 +3158,6 @@ class BillingSession(ABC):
         voided_invoices_count = 0
         for invoice in invoices:
             if invoice.status == "open":
-                assert invoice.id is not None
                 stripe.Invoice.void_invoice(invoice.id)
                 voided_invoices_count += 1
         return voided_invoices_count
@@ -3420,7 +3410,6 @@ class BillingSession(ABC):
         if not new_tier_plan.automanage_licenses:  # nocoverage
             licenses_for_new_plan = max(old_plan_licenses_at_next_renewal, licenses_for_new_plan)
 
-        assert licenses_for_new_plan is not None
         self.create_license_ledger_entry(
             plan=new_tier_plan,
             is_renewal=True,
@@ -3463,7 +3452,6 @@ class BillingSession(ABC):
         discount = plan.customer.flat_discount * months
         plan.customer.flat_discounted_months -= months
         plan.customer.save(update_fields=["flat_discounted_months"])
-        assert stripe_invoice.id is not None
         assert plan.customer.stripe_customer_id is not None
         stripe.InvoiceItem.create(
             invoice=stripe_invoice.id,
@@ -3483,7 +3471,6 @@ class BillingSession(ABC):
         invoice_period: stripe.params.InvoiceItemCreateParamsPeriod,
     ) -> stripe.params.InvoiceItemCreateParams:
         assert plan.customer.stripe_customer_id is not None
-        assert stripe_invoice.id is not None
         invoice_item_params = stripe.params.InvoiceItemCreateParams(
             customer=plan.customer.stripe_customer_id,
             currency="usd",
@@ -3511,7 +3498,6 @@ class BillingSession(ABC):
         invoice_period: stripe.params.InvoiceItemCreateParamsPeriod,
     ) -> stripe.params.InvoiceItemCreateParams:
         assert plan.customer.stripe_customer_id is not None
-        assert stripe_invoice.id is not None
         invoice_item_params = stripe.params.InvoiceItemCreateParams(
             customer=plan.customer.stripe_customer_id,
             currency="usd",
@@ -3622,7 +3608,6 @@ class BillingSession(ABC):
                     # Ensure we have a stripe.Invoice for the invoice item.
                     if stripe_invoice is None:
                         stripe_invoice = self.create_stripe_invoice_for_plan(plan)
-                    assert stripe_invoice is not None
 
                     invoice_period = stripe.params.InvoiceItemCreateParamsPeriod(
                         start=datetime_to_timestamp(ledger_entry.event_time),
@@ -4018,7 +4003,6 @@ class BillingSession(ABC):
             statement_descriptor=stripe_invoice.statement_descriptor,
             metadata=stripe_invoice.metadata,
         )
-        assert new_stripe_invoice.id is not None
 
         invoice_items = stripe_invoice.lines.data
         # Stripe does something weird and puts the discount item first, so we need to reverse the order here.
@@ -4054,7 +4038,6 @@ class BillingSession(ABC):
         last_sent_invoice.stripe_invoice_id = str(new_stripe_invoice.id)
         last_sent_invoice.save(update_fields=["stripe_invoice_id"])
 
-        assert stripe_invoice.id is not None
         stripe.Invoice.void_invoice(stripe_invoice.id)
 
     def update_license_ledger_for_manual_plan(
@@ -5920,7 +5903,7 @@ def check_remote_server_audit_log_data(
             context = {
                 "billing_entity": billing_session.billing_entity_display_name,
                 "support_url": billing_session.support_url(),
-                "fixed_price_plan": plan.fixed_price is not None,
+                "fixed_price_plan": True,
                 "notice_reason": "stale_audit_log_data",
             }
             if last_audit_log_update is None:  # nocoverage
@@ -6054,7 +6037,6 @@ def get_all_invoices_for_customer(customer: Customer) -> Generator[stripe.Invoic
         for invoice in invoices:
             yield invoice
             last_invoice = invoice
-        assert last_invoice.id is not None
         invoices = stripe.Invoice.list(
             customer=customer.stripe_customer_id, starting_after=last_invoice.id, limit=100
         )

@@ -1013,7 +1013,6 @@ class RemoteBillingAuthenticationTest(RemoteRealmBillingTestCase):
         # Add server to business plan.
         server_billing_session = RemoteServerBillingSession(self.server)
         server_customer = server_billing_session.update_or_create_customer(stripe_customer_id=None)
-        assert server_customer is not None
 
         # Just create a temporary plan and check if gets transferred or not.
         server_plan = CustomerPlan.objects.create(

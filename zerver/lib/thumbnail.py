@@ -605,7 +605,6 @@ def process_inline_images_to_thumbnails(
         if inline_image_div is not None:
             inline_image_div.decompose()
         else:
-            assert placeholder_image_tag is not None
             placeholder_image_tag.decompose()
 
         return True, None

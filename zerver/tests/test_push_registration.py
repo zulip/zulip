@@ -785,7 +785,6 @@ class RegisterPushDeviceToServer(BouncerTestCase):
             result = self.client_post("/json/mobile_push/register", rotate_push_key_payload)
         self.assert_json_success(result)
         device.refresh_from_db()
-        assert device.push_key is not None
         assert type(rotate_push_key_payload["push_key"]) is str  # for mypy
         self.assertEqual(
             bytes(device.push_key), check_push_key(rotate_push_key_payload["push_key"])

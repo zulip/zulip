@@ -942,7 +942,6 @@ class StripeTest(StripeTestCase):
             )
 
             # Customer pays the invoice
-            assert invoice.id is not None
             stripe.Invoice.pay(invoice.id, paid_out_of_band=True)
             self.send_stripe_webhook_events(cursor, "invoice.paid")
 
@@ -983,7 +982,6 @@ class StripeTest(StripeTestCase):
         customer = Customer.objects.get(realm=user.realm)
         stripe_customer_id = assert_is_not_none(customer.stripe_customer_id)
         [stripe_invoice] = iter(stripe.Invoice.list(customer=stripe_customer_id))
-        assert stripe_invoice.id is not None
         self.assertEqual(stripe_invoice.status, "open")
 
         invoice = Invoice.objects.get(customer=customer, stripe_invoice_id=stripe_invoice.id)
@@ -1208,7 +1206,6 @@ class StripeTest(StripeTestCase):
 
             cursor = self.pin_event_cursor()
             # Customer pays the invoice
-            assert invoice.id is not None
             stripe.Invoice.pay(invoice.id, paid_out_of_band=True)
             self.send_stripe_webhook_events(cursor, "invoice.paid")
 
@@ -1394,7 +1391,6 @@ class StripeTest(StripeTestCase):
 
             # Customer decides to pay later
             cursor = self.pin_event_cursor()
-            assert invoice.id is not None
             stripe.Invoice.pay(invoice.id, paid_out_of_band=True)
             self.send_stripe_webhook_events(cursor, "invoice.paid")
 
@@ -1679,7 +1675,6 @@ class StripeTest(StripeTestCase):
         with self.assertLogs("corporate.stripe", "WARNING"):
             self.send_stripe_webhook_events(cursor_before_upgrade)
 
-        assert hamlet_invoice.id is not None
         self.assert_details_of_valid_invoice_payment_from_event_status_endpoint(
             hamlet_invoice.id,
             {
@@ -2216,7 +2211,6 @@ class StripeTest(StripeTestCase):
         stripe_customer_id = customer.stripe_customer_id
         assert stripe_customer_id is not None
         stripe_invoice = stripe.Invoice.create(customer=stripe_customer_id)
-        assert stripe_invoice.id is not None
         stripe.InvoiceItem.create(
             invoice=stripe_invoice.id, amount=5000, currency="usd", customer=stripe_customer_id
         )
@@ -2753,7 +2747,6 @@ class StripeTest(StripeTestCase):
         self.assertEqual(annual_plan.automanage_licenses, True)
         self.assertEqual(annual_plan.billing_schedule, CustomerPlan.BILLING_SCHEDULE_ANNUAL)
 
-        assert self.now is not None
         with (
             self.assertLogs("corporate.stripe", "INFO") as m,
             time_machine.travel(self.now, tick=False),
@@ -3742,7 +3735,6 @@ class StripeTest(StripeTestCase):
             days_until_due=30,
             statement_descriptor="Zulip Cloud Standard",
         )
-        assert stripe_invoice.id is not None
         stripe.InvoiceItem.create(
             invoice=stripe_invoice.id,
             currency="usd",
@@ -3762,7 +3754,6 @@ class StripeTest(StripeTestCase):
             days_until_due=30,
             statement_descriptor="Zulip Cloud Standard",
         )
-        assert stripe_invoice.id is not None
         stripe.InvoiceItem.create(
             invoice=stripe_invoice.id,
             currency="usd",
@@ -3813,7 +3804,6 @@ class StripeTest(StripeTestCase):
                 days_until_due=DEFAULT_INVOICE_DAYS_UNTIL_DUE,
                 statement_descriptor="Zulip Cloud Standard",
             )
-            assert invoice.id is not None
             stripe.InvoiceItem.create(
                 invoice=invoice.id,
                 amount=10000,

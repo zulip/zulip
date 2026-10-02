@@ -84,7 +84,6 @@ def do_add_reaction(
     ]:
         stream_id = message.recipient.type_id
         (stream, sub) = access_stream_by_id(user_profile, stream_id)
-        assert stream is not None
         if sub:
             new_visibility_policy = visibility_policy_for_participation(user_profile, sub.is_muted)
             if new_visibility_policy and should_change_visibility_policy(

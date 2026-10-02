@@ -31,15 +31,14 @@ def check_and_create_attachments(apps: StateApps, schema_editor: BaseDatabaseSch
                     not stream.invite_only and stream.realm.domain != "mit.edu"
                 )
 
-            if path_id is not None:
-                attachment = Attachment.objects.create(
-                    file_name=os.path.basename(path_id),
-                    path_id=path_id,
-                    owner=user_profile,
-                    realm=user_profile.realm,
-                    is_realm_public=is_message_realm_public,
-                )
-                attachment.messages.add(message)
+            attachment = Attachment.objects.create(
+                file_name=os.path.basename(path_id),
+                path_id=path_id,
+                owner=user_profile,
+                realm=user_profile.realm,
+                is_realm_public=is_message_realm_public,
+            )
+            attachment.messages.add(message)
 
 
 class Migration(migrations.Migration):

@@ -494,7 +494,6 @@ class LocaleMiddleware(DjangoLocaleMiddleware):
         i18n_patterns_used, _ = is_language_prefix_patterns_used(urlconf)
         if not (i18n_patterns_used and language_from_path):
             patch_vary_headers(response, ("Accept-Language",))
-        assert language is not None
         response.setdefault("Content-Language", language)
 
         # An additional responsibility of our override of this middleware is to save the user's language

@@ -216,7 +216,6 @@ def authenticated_remote_server_management_endpoint(
 
             return HttpResponseRedirect(url)
 
-        assert remote_billing_user is not None
         billing_session = RemoteServerBillingSession(
             remote_server, remote_billing_user=remote_billing_user
         )

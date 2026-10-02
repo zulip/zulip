@@ -28,8 +28,6 @@ class RealmEmojiTest(ZulipTestCase):
                 image_file=img_file,
                 content_type="image/png",
             )
-            if realm_emoji is None:
-                raise Exception("Error creating test emoji.")  # nocoverage
         return realm_emoji
 
     def test_list(self) -> None:
@@ -69,7 +67,6 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
         realm_emoji = RealmEmoji.objects.get(name="my_emoji")
-        assert realm_emoji.author is not None
         self.assertEqual(realm_emoji.author.email, email)
 
         result = self.client_get("/json/realm/emoji")
@@ -100,7 +97,6 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
         realm_emoji = RealmEmoji.objects.get(name="smile")
-        assert realm_emoji.author is not None
         self.assertEqual(realm_emoji.author.email, email)
 
     def test_realm_emoji_repr(self) -> None:

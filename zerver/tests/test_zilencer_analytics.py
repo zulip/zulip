@@ -217,7 +217,6 @@ class AnalyticsBouncerTest(BouncerTestCase):
         self.add_mock_response()
         # Send any existing data over, so that we can start the test with a "clean" slate
         remote_server = self.server
-        assert remote_server is not None
         self.assertIsNone(remote_server.last_version)
 
         send_server_data_to_push_bouncer()
@@ -1369,7 +1368,6 @@ class AnalyticsBouncerTest(BouncerTestCase):
 
         # Hard-delete a realm to test the non existent realm uuid case.
         zephyr_realm = get_realm("zephyr")
-        assert zephyr_realm is not None
         deleted_realm_uuid = zephyr_realm.uuid
         zephyr_realm.delete()
 

@@ -413,7 +413,6 @@ class AuthBackendTest(ZulipTestCase):
         result = self.client_get("/login/", {"preview": "true"})
         self.assertEqual(result.status_code, 200)
         self.assert_in_response(realm.description, result)
-        assert realm.name is not None
         self.assert_in_response(realm.name, result)
         self.assert_in_response("Log in to Zulip", result)
 

@@ -1749,7 +1749,6 @@ class RealmImportExportTest(ExportFile):
                 image_file=img_file,
                 content_type="image/png",
             )
-            assert new_realm_emoji is not None
         original_realm_emoji_count = RealmEmoji.objects.count()
         self.assertGreaterEqual(original_realm_emoji_count, 2)
         new_realm_emoji.author = hamlet
@@ -3141,7 +3140,6 @@ class RealmImportExportTest(ExportFile):
             self.assertIn(emoji_id, imported_realm_emoji_dict)
             realm_emoji_info = imported_realm_emoji_dict[emoji_id]
             self.assertEqual(emoji_id, realm_emoji_info["id"])
-            assert imported_realm_emoji.author is not None
             assert isinstance(imported_realm_emoji.author.id, int)
             assert isinstance(realm_emoji_info["author_id"], int)
             self.assertEqual(imported_realm_emoji.author.id, int(realm_emoji_info["author_id"]))

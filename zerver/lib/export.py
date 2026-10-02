@@ -2282,7 +2282,7 @@ def export_files_from_s3(
 
     email_gateway_bot: UserProfile | None = None
 
-    if handle_system_bots and settings.EMAIL_GATEWAY_BOT is not None:
+    if handle_system_bots:
         internal_realm = get_realm(settings.SYSTEM_BOT_REALM)
         email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT, internal_realm.id)
         user_ids.add(email_gateway_bot.id)

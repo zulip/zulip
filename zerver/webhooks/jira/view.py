@@ -358,8 +358,7 @@ def api_jira_webhook(
     if event is None:
         raise AnomalousWebhookPayloadError
 
-    if event is not None:
-        content_func = JIRA_CONTENT_FUNCTION_MAPPER.get(event)
+    content_func = JIRA_CONTENT_FUNCTION_MAPPER.get(event)
 
     if content_func is None:
         raise UnsupportedWebhookEventTypeError(event)

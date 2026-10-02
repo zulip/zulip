@@ -669,13 +669,9 @@ def handle_reupload_emojis_event(realm: Realm, logger: logging.Logger) -> None: 
 
         emoji_bytes_io = io.BytesIO(emoji_file_content)
 
-        user_profile = realm_emoji.author
-        # When this runs, emojis have already been migrated to always have .author set.
-        assert user_profile is not None
-
         logger.info("Reuploading emoji %s", realm_emoji.id)
         realm_emoji.is_animated = upload_emoji_image(
-            emoji_bytes_io, emoji_filename, user_profile, content_type
+            emoji_bytes_io, emoji_filename, realm_emoji.author, content_type
         )
         realm_emoji.save(update_fields=["is_animated"])
 

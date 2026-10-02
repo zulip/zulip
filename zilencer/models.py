@@ -614,7 +614,6 @@ def get_remote_realm_guest_and_non_guest_count(
     )
 
     if latest_audit_log is not None:
-        assert latest_audit_log is not None
         user_count = get_remote_customer_user_count([latest_audit_log])
     else:
         user_count = RemoteCustomerUserCount(guest_user_count=0, non_guest_user_count=0)

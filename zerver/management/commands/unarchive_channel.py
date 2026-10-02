@@ -99,5 +99,4 @@ class Command(ZulipBaseCommand):
                 f"Channel with name '{new_name}' already exists; pass a different --new-name"
             )
 
-        assert channel is not None
         do_unarchive_stream(channel, new_name, acting_user=None)

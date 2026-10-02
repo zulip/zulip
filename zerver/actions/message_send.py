@@ -1076,8 +1076,6 @@ def do_send_messages(
             if send_request.stream is None:
                 stream_id = send_request.message.recipient.type_id
                 send_request.stream = Stream.objects.get(id=stream_id)
-            # assert needed because stubs for django are missing
-            assert send_request.stream is not None
             realm_id = send_request.stream.realm_id
             sender = send_request.message.sender
 
@@ -1606,7 +1604,7 @@ def send_pm_if_empty_stream(
     """If a bot sends a message to a stream that doesn't exist or has no
     subscribers, sends a notification to the bot owner (if not a
     cross-realm bot) so that the owner can correct the issue."""
-    if not sender.is_bot or sender.bot_owner is None:
+    if not sender.is_bot:
         return
 
     if sender.bot_owner is not None:

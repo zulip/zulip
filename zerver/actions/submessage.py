@@ -68,7 +68,6 @@ def do_add_submessage(
     ]:
         stream_id = submessage.message.recipient.type_id
         (stream, sub) = access_stream_by_id(sender, stream_id)
-        assert stream is not None
         if sub:
             new_visibility_policy = visibility_policy_for_participation(sender, sub.is_muted)
             if new_visibility_policy and should_change_visibility_policy(

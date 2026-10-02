@@ -460,7 +460,6 @@ def validate_test_response(request: Request, response: Response) -> bool:
         path = request.path.removeprefix("/api/v1")
     else:
         return False
-    assert request.method is not None
     method = request.method.lower()
     status_code = str(response.status_code)
 
@@ -580,7 +579,6 @@ def validate_test_request(
     status_code: str,
     intentionally_undocumented: bool = False,
 ) -> None:
-    assert request.method is not None
     method = request.method.lower()
     if request.path.startswith("/json/"):
         url = request.path.removeprefix("/json")

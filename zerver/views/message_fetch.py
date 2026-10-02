@@ -186,10 +186,7 @@ def get_messages_backend(
     else:
         assert isinstance(maybe_user_profile, UserProfile)
         user_profile = maybe_user_profile
-        assert user_profile is not None
         is_web_public_query = False
-
-    assert realm is not None
 
     if is_web_public_query:
         # client_gravatar here is just the user-requested value. "finalize_payload" function

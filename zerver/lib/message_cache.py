@@ -450,7 +450,6 @@ class MessageDict:
             # TODO: see #1379 to eliminate Markdown dependencies
             message = Message.objects.select_related("sender").get(id=message_id)
 
-            assert message is not None  # Hint for mypy.
             # It's unfortunate that we need to have side effects on the message
             # in some cases.
             rendered_content = save_message_rendered_content(message, content)

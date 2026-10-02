@@ -3829,7 +3829,6 @@ To Do
                         realm_id,
                     )
 
-                    assert emoji_result.filename is not None
                     self.assertFalse(emoji_result.filename.startswith(emoji_name))
                     self.assertRegex(emoji_result.filename, r"^[a-f0-9]{8}\.\w+$")
                     self.assertTrue(
@@ -3907,7 +3906,6 @@ To Do
                 logs.output,
             )
 
-            assert emoji_result.filename is not None
             self.assertFalse(emoji_result.filename.startswith(emoji_name))
             self.assertRegex(emoji_result.filename, r"^[a-f0-9]{8}\.\w+$")
             self.assertTrue(emoji_result.filename.endswith(".gif"))

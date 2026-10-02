@@ -405,7 +405,6 @@ def avatar_by_id(
     except UserProfile.DoesNotExist:
         url = get_avatar_for_inaccessible_user()
 
-    assert url is not None
     if request.META["QUERY_STRING"]:
         url = append_url_query_string(url, request.META["QUERY_STRING"])
     return redirect(url)
@@ -442,7 +441,6 @@ def avatar_by_email(
         avatar_version = 1
         url = get_gravatar_url(email, avatar_version, realm.id, medium)
 
-    assert url is not None
     if request.META["QUERY_STRING"]:
         url = append_url_query_string(url, request.META["QUERY_STRING"])
     return redirect(url)
@@ -557,7 +555,6 @@ def patch_bot_backend(
 
     if service_payload_url is not None:
         check_valid_interface_type(service_interface)
-        assert service_interface is not None
         do_update_outgoing_webhook_service(
             bot,
             interface=service_interface,
