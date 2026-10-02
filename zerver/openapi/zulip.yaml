@@ -15968,8 +15968,12 @@ paths:
                     - 2 - DMs, mentions, and followed topics
                     - 3 - DMs and mentions
                     - 4 - None
+                    - 5 - Current conversation
 
-                    **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions, and followed
+                    **Changes**: New in Zulip 13.0 (feature level ZF-4d2632). Added
+                    `Current conversation` option with value 5.
+
+                    In Zulip 8.0 (feature level 227), added `DMs, mentions, and followed
                     topics` option, renumbering the options to insert it in order.
                   type: integer
                   enum:
@@ -15977,6 +15981,7 @@ paths:
                     - 2
                     - 3
                     - 4
+                    - 5
                   example: 1
                 realm_name_in_email_notifications_policy:
                   description: |
@@ -20149,8 +20154,12 @@ paths:
                               - 2 - DMs, mentions, and followed topics
                               - 3 - DMs and mentions
                               - 4 - None
+                              - 5 - Current conversation
 
-                              **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions,
+                              **Changes**: New in Zulip 13.0 (feature level ZF-4d2632). Added
+                              `Current conversation` option with value 5.
+
+                              In Zulip 8.0 (feature level 227), added `DMs, mentions,
                               and followed topics` option, renumbering the options to insert it in
                               order.
                           realm_name_in_email_notifications_policy:
@@ -22534,8 +22543,12 @@ paths:
                               - 2 - DMs, mentions, and followed topics
                               - 3 - DMs and mentions
                               - 4 - None
+                              - 5 - Current conversation
 
-                              **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions,
+                              **Changes**: New in Zulip 13.0 (feature level ZF-4d2632). Added
+                              `Current conversation` option with value 5.
+
+                              In Zulip 8.0 (feature level 227), added `DMs, mentions,
                               and followed topics` option, renumbering the options to insert it in
                               order.
                           realm_name_in_email_notifications_policy:
@@ -23995,8 +24008,12 @@ paths:
                     - 2 - DMs, mentions, and followed topics
                     - 3 - DMs and mentions
                     - 4 - None
+                    - 5 - Current conversation
 
-                    **Changes**: In Zulip 8.0 (feature level 227), added `DMs, mentions, and followed
+                    **Changes**: New in Zulip 13.0 (feature level ZF-4d2632). Added
+                    `Current conversation` option with value 5.
+
+                    In Zulip 8.0 (feature level 227), added `DMs, mentions, and followed
                     topics` option, renumbering the options to insert it in order.
 
                     Before Zulip 5.0 (feature level 80), this setting was managed by the
@@ -24007,6 +24024,7 @@ paths:
                     - 2
                     - 3
                     - 4
+                    - 5
                   example: 1
                 realm_name_in_email_notifications_policy:
                   description: |
