@@ -1036,8 +1036,8 @@ class SubscriptionAddEvent(BaseEvent):
 
 
 class SubscriptionPeerAddEvent(BaseEvent):
-    type: Literal["subscription"]
-    op: Literal["peer_add"]
+    type: Literal["subscription"] = "subscription"
+    op: Literal["peer_add"] = "peer_add"
     user_ids: list[int]
     stream_ids: list[int]
 
@@ -1209,41 +1209,41 @@ class Group(BaseEventModel):
 
 
 class UserGroupAddEvent(BaseEvent):
-    type: Literal["user_group"]
-    op: Literal["add"]
+    type: Literal["user_group"] = "user_group"
+    op: Literal["add"] = "add"
     group: Group
 
 
 class UserGroupAddMembersEvent(BaseEvent):
-    type: Literal["user_group"]
-    op: Literal["add_members"]
+    type: Literal["user_group"] = "user_group"
+    op: Literal["add_members"] = "add_members"
     group_id: int
     user_ids: list[int]
 
 
 class UserGroupAddSubgroupsEvent(BaseEvent):
-    type: Literal["user_group"]
-    op: Literal["add_subgroups"]
+    type: Literal["user_group"] = "user_group"
+    op: Literal["add_subgroups"] = "add_subgroups"
     group_id: int
     direct_subgroup_ids: list[int]
 
 
 class UserGroupRemoveEvent(BaseEvent):
-    type: Literal["user_group"]
-    op: Literal["remove"]
+    type: Literal["user_group"] = "user_group"
+    op: Literal["remove"] = "remove"
     group_id: int
 
 
 class UserGroupRemoveMembersEvent(BaseEvent):
-    type: Literal["user_group"]
-    op: Literal["remove_members"]
+    type: Literal["user_group"] = "user_group"
+    op: Literal["remove_members"] = "remove_members"
     group_id: int
     user_ids: list[int]
 
 
 class UserGroupRemoveSubgroupsEvent(BaseEvent):
-    type: Literal["user_group"]
-    op: Literal["remove_subgroups"]
+    type: Literal["user_group"] = "user_group"
+    op: Literal["remove_subgroups"] = "remove_subgroups"
     group_id: int
     direct_subgroup_ids: list[int]
 
@@ -1266,8 +1266,8 @@ class UserGroupData(UserGroupDataCore):
 
 
 class UserGroupUpdateEvent(BaseEvent):
-    type: Literal["user_group"]
-    op: Literal["update"]
+    type: Literal["user_group"] = "user_group"
+    op: Literal["update"] = "update"
     group_id: int
     data: UserGroupData
 
