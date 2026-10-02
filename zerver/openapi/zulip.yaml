@@ -30861,12 +30861,18 @@ components:
               description: |
                 How many seconds the client must wait before making
                 additional requests.
+
+                **Changes**: In Zulip 13.0 (feature level ZF-546a5d), this
+                value is always an integer number of seconds, rounded up.
+                Previously, it was an unrounded number of seconds, and was
+                therefore usually fractional despite being documented as an
+                integer.
           example:
             {
               "code": "RATE_LIMIT_HIT",
               "msg": "API usage exceeded rate limit",
               "result": "error",
-              "retry-after": 28.706807374954224,
+              "retry-after": 29,
             }
     RealmDeactivatedError:
       allOf:
