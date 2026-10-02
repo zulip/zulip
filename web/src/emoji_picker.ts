@@ -800,6 +800,40 @@ function get_default_emoji_popover_options(
         popperOptions: {
             modifiers: [
                 {
+                    name: "emojiArrowColor",
+                    enabled: true,
+                    phase: "beforeWrite",
+                    requires: ["arrow", "computeStyles"],
+                    fn({state}) {
+                        const arrow_styles = (state.styles["arrow"] ??= {});
+                        arrow_styles.color = "var(--color-background-popover-menu)";
+                        const arrow = state.elements.arrow;
+                        const arrow_y = state.modifiersData.arrow?.y;
+                        if (!arrow || arrow_y === undefined) {
+                            return;
+                        }
+
+                        // A side arrow can touch either the main panel or one
+                        // of its shaded sections, depending on available space.
+                        const box = arrow.parentElement!;
+                        const box_top = box.getBoundingClientRect().top;
+                        const arrow_center = arrow_y + arrow.offsetHeight / 2;
+                        const shaded_sections = box.querySelectorAll(
+                            ".emoji-popover-category-tabs, .emoji-showcase-container",
+                        );
+                        const touches_shaded_section = [...shaded_sections].some((section) => {
+                            const rect = section.getBoundingClientRect();
+                            return (
+                                arrow_center >= rect.top - box_top &&
+                                arrow_center <= rect.bottom - box_top
+                            );
+                        });
+                        arrow_styles.color = touches_shaded_section
+                            ? "var(--color-background-emoji-picker-popover)"
+                            : "var(--color-background-popover-menu)";
+                    },
+                },
+                {
                     // The placement is set to top, but if that placement does not fit,
                     // the opposite bottom or left placement will be used.
                     name: "flip",

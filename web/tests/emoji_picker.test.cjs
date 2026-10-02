@@ -26,12 +26,60 @@ const emoji_frequency_data = mock_esm("../src/emoji_frequency_data", {
     },
 });
 
+const popover_menus = mock_esm("../src/popover_menus");
 const emoji_picker = zrequire("emoji_picker");
 const typeahead = zrequire("typeahead");
 
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 
 set_global("document", "document-stub");
+
+run_test("side_arrow_color", ({override}) => {
+    let update_arrow_color;
+    override(popover_menus, "toggle_popover_menu", (_target, options) => {
+        update_arrow_color = options.popperOptions.modifiers.find(
+            (modifier) => modifier.name === "emojiArrowColor",
+        ).fn;
+    });
+    emoji_picker.start_picker_for_message_reaction({}, 1);
+
+    const box = {
+        getBoundingClientRect: () => ({top: 100}),
+        querySelectorAll: () => [
+            {getBoundingClientRect: () => ({top: 140, bottom: 180})},
+            {getBoundingClientRect: () => ({top: 400, bottom: 450})},
+        ],
+    };
+    const state = {
+        styles: {},
+        elements: {arrow: {parentElement: box, offsetHeight: 16}},
+        modifiersData: {arrow: {y: 200}},
+    };
+    const panel_color = "var(--color-background-popover-menu)";
+    const shaded_color = "var(--color-background-emoji-picker-popover)";
+
+    // Moving the same arrow between sections must clear the previous color.
+    for (const [center, expected] of [
+        [208, panel_color],
+        [320, shaded_color],
+        [20, panel_color],
+        [60, shaded_color],
+        [208, panel_color],
+    ]) {
+        state.modifiersData.arrow.y = center - 8;
+        update_arrow_color({state});
+        assert.equal(state.styles.arrow.color, expected);
+    }
+
+    // Vertical placements have no arrow y offset.
+    state.modifiersData.arrow = {x: 100};
+    update_arrow_color({state});
+    assert.equal(state.styles.arrow.color, panel_color);
+
+    delete state.elements.arrow;
+    update_arrow_color({state});
+    assert.equal(state.styles.arrow.color, panel_color);
+});
 
 run_test("initialize", () => {
     emoji.initialize({
