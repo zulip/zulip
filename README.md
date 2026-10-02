@@ -78,3 +78,6 @@ following us on [LinkedIn](https://www.linkedin.com/company/zulip-project/),
 
 Zulip is distributed under the
 [Apache 2.0](https://github.com/zulip/zulip/blob/main/LICENSE) license.
+
+## Open Source Contribution
+This repository was used for learning and demonstrating the GitHub Fork and Pull Request workflow.
