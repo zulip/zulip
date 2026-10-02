@@ -184,6 +184,15 @@ languages:
 * You can also use a custom language name to implement simple integrations.
   For example, a code block tagged with the "language" `send_tweet` could be
   used with a "playground" that sends the content of the code block as a Tweet.
+* Language names are automatically normalized when creating a playground:
+  * For known programming languages, any alias or variation (e.g., `rs`,
+    `rust`, `RUST`) is automatically stored as the standard name (e.g.,
+    `Rust`). You can use the typeahead dropdown to see the standard name.
+  * For custom language names, the name is stored in lowercase (e.g.,
+    `MyLang` becomes `mylang`).
+  * Users can write the language tag in any case in their code blocks, and
+    it will match the correct playground automatically (e.g., `rust`,
+    `Rust`, or `RUST` will all trigger the Rust playground).
 
 If you have any trouble setting up a code playground, please [contact
 us](/help/contact-support) with details on what you're trying to do, and we'll
