@@ -353,6 +353,8 @@ More details on the process are below.
 If you're the author of a PR, please go ahead and
 start the [#api design][] thread yourself.
 Then put a link to it in the PR description.
+The bot that announces the change in [#api documentation][]
+picks the link up from there.
 
 For any discussion that isn't specifically related to the API changes,
 please use a different channel such as [#backend][]. (You can
@@ -445,7 +447,9 @@ and an API reviewer for most API changes.
 See the corresponding subsections above.
 
 After each API change is merged into the server,
-a bot will post a new thread in [#api documentation][].
+a bot will post a new thread in [#api documentation][],
+linking any [#api design][] discussions
+that the pull request's description mentions.
 You should make sure you or someone else
 replies to explicitly decide if there should be a mobile issue
 to track making a corresponding change in the mobile app,
