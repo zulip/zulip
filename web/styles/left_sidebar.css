@@ -756,7 +756,10 @@
                 outline: none;
             }
 
-            .zulip-icon:not(.user-circle) {
+            /* The unread @-mention indicator is a zulip-icon too, but it
+               should match the mention indicator elsewhere rather than the
+               DM partner-icon color/alignment. */
+            .zulip-icon:not(.user-circle, .zulip-icon-at-sign) {
                 color: var(--color-left-sidebar-dm-partners-icon);
                 vertical-align: -0.2em;
             }

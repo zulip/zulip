@@ -291,6 +291,25 @@ run_test("user-mention of inaccessible users", () => {
     assert.equal($cordelia.text(), "@Cordelia");
 });
 
+run_test("mention wrapper at-sign icon", () => {
+    const render_mention_content_wrapper = require("../templates/mention_content_wrapper.hbs");
+
+    // A non-silent mention shows the standardized at-sign icon in
+    // place of the literal "@", while keeping the character in a
+    // visually-hidden element for screen readers and copy-paste.
+    const non_silent = render_mention_content_wrapper({mention_text: "Iago", at_sign: "@"});
+    assert.ok(non_silent.includes("zulip-icon-at-sign"));
+    assert.ok(non_silent.includes('<span class="mention-at-sign-character">@</span>'));
+    assert.ok(non_silent.includes("Iago"));
+
+    // A silent mention has no "@" to replace, so it renders neither
+    // the icon nor the hidden character.
+    const silent = render_mention_content_wrapper({mention_text: "Iago", at_sign: ""});
+    assert.ok(!silent.includes("zulip-icon-at-sign"));
+    assert.ok(!silent.includes("mention-at-sign-character"));
+    assert.ok(silent.includes("Iago"));
+});
+
 run_test("user-mention (stream wildcard)", () => {
     // Setup
     const $content = get_content_element();
