@@ -2296,7 +2296,9 @@ class MarkdownAlertTest(ZulipTestCase):
             do_add_alert_words(user_profile, alert_words)
         sender_user_profile = self.example_user("polonius")
         msg = Message(
-            sender=user_profile, sending_client=get_client("test"), realm=user_profile.realm
+            sender=sender_user_profile,
+            sending_client=get_client("test"),
+            realm=sender_user_profile.realm,
         )
         realm_alert_words_automaton = get_alert_word_automaton(sender_user_profile.realm)
 
