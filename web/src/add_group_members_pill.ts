@@ -15,7 +15,7 @@ import * as user_groups from "./user_groups.ts";
 import type {UserGroup} from "./user_groups.ts";
 import * as user_pill from "./user_pill.ts";
 
-async function get_pill_user_ids(pill_widget: CombinedPillContainer): Promise<number[]> {
+export async function get_pill_user_ids(pill_widget: CombinedPillContainer): Promise<number[]> {
     const stream_user_ids = await stream_pill.get_user_ids(pill_widget);
     // Read the user pills only after waiting for subscriber data,
     // since pills may have been removed while we were waiting.
@@ -23,7 +23,7 @@ async function get_pill_user_ids(pill_widget: CombinedPillContainer): Promise<nu
     return [...user_ids, ...stream_user_ids];
 }
 
-function get_pill_group_ids(pill_widget: CombinedPillContainer): number[] {
+export function get_pill_group_ids(pill_widget: CombinedPillContainer): number[] {
     const group_user_ids = user_group_pill.get_group_ids(pill_widget);
     return group_user_ids;
 }
@@ -189,6 +189,9 @@ export function set_up_handlers({
     */
     function callback(): void {
         const pill_widget = get_pill_widget();
+        if (!pill_widget.finalize_pending_edit()) {
+            return;
+        }
         void (async () => {
             loading.make_indicator($(".add-group-member-loading-spinner"), {
                 height: 56, // 4em at 14px / 1em

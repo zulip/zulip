@@ -222,6 +222,8 @@ export function generate_pill_html(item: UserPill, show_user_status_emoji = fals
 export function create_pills(
     $pill_container: JQuery,
     pill_config?: InputPillConfig,
+    // Some callers only display pills, with no way to add or remove them.
+    {disable_pill_editing = false}: {disable_pill_editing?: boolean} = {},
 ): input_pill.InputPillContainer<UserPill> {
     const pills = input_pill.create({
         $container: $pill_container,
@@ -230,6 +232,7 @@ export function create_pills(
         get_text_from_item: get_unique_full_name_from_item,
         get_display_value_from_item,
         generate_pill_html,
+        disable_pill_editing,
     });
     return pills;
 }
