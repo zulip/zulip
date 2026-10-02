@@ -40,7 +40,8 @@ def get_message(payload: WildValue) -> str:
     elif event == "finished":
         # See http://docs.buildbot.net/latest/developer/results.html
         results = ("success", "warnings", "failure", "skipped", "exception", "retry", "cancelled")
-        status = results[payload["results"].tame(check_int)]
+        result = payload["results"].tame(check_int)
+        status = results[result] if 0 <= result < len(results) else "unknown"
         body = "Build [#{id}]({url}) (result: {status}) for **{name}** finished.".format(
             id=payload["buildid"].tame(check_int),
             name=payload["buildername"].tame(check_string),
