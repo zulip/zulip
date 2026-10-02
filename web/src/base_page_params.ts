@@ -32,6 +32,7 @@ const home_params_schema = z.object({
     embedded_bots_enabled: z.boolean(),
     furthest_read_time: z.nullable(z.number()),
     insecure_desktop_app: z.boolean(),
+    is_long_term_idle: z.boolean(),
     is_node_test: z.optional(z.literal(true)),
     is_spectator: z.boolean(),
     // `language_cookie_name` is only sent for spectators.
