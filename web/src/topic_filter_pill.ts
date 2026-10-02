@@ -98,6 +98,16 @@ export function get_matching_filter_options({
     });
 }
 
+export function parse_topics_filter_state(search_term: string): string {
+    const normalized = search_term.toLowerCase().trim();
+    for (const option of filter_options) {
+        if (normalized === option.syntax) {
+            return option.syntax;
+        }
+    }
+    return "";
+}
+
 export function create_item_from_syntax(
     syntax: string,
     current_items: TopicFilterPill[],

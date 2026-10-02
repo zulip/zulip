@@ -43,6 +43,7 @@ mock_esm("../src/unread", {
 const {Filter} = zrequire("../src/filter");
 const left_sidebar_navigation_area = zrequire("left_sidebar_navigation_area");
 const stream_data = zrequire("stream_data");
+const ui_util = zrequire("ui_util");
 const stream_list = zrequire("stream_list");
 stream_list.set_update_inbox_channel_view_callback(noop);
 const stream_list_sort = zrequire("stream_list_sort");
@@ -164,6 +165,9 @@ function test_ui(label, f) {
 test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
     // Make a couple calls to create_sidebar_row() and make sure they
     // generate the right markup as well as play nice with get_stream_li().
+
+    override_rewire(ui_util, "get_left_sidebar_search_term", () => "");
+
     override(user_settings, "demote_inactive_streams", 1);
     const appended_sections = [];
     override_rewire(stream_list, "stream_list_section_container_html", (section) => {
@@ -246,6 +250,7 @@ test_ui("create_sidebar_row", ({override, override_rewire, mock_template}) => {
 });
 
 test_ui("pinned_streams_never_inactive", ({mock_template, override_rewire}) => {
+    override_rewire(ui_util, "get_left_sidebar_search_term", () => "");
     override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     override_rewire(left_sidebar_navigation_area, "update_dom_with_unread_counts", noop);
@@ -429,6 +434,7 @@ test_ui("narrowing", ({override_rewire}) => {
 });
 
 test_ui("sort_streams", ({override_rewire, mock_template}) => {
+    override_rewire(ui_util, "get_left_sidebar_search_term", () => "");
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
     override_rewire(left_sidebar_navigation_area, "update_dom_with_unread_counts", noop);
@@ -495,6 +501,7 @@ test_ui("sort_streams", ({override_rewire, mock_template}) => {
 });
 
 test_ui("separators_only_pinned_and_dormant", ({override_rewire}) => {
+    override_rewire(ui_util, "get_left_sidebar_search_term", () => "");
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
     override_rewire(left_sidebar_navigation_area, "update_dom_with_unread_counts", noop);
@@ -604,6 +611,7 @@ test_ui("rename_stream", ({mock_template, override, override_rewire}) => {
 });
 
 test_ui("refresh_pin", ({override_rewire}) => {
+    override_rewire(ui_util, "get_left_sidebar_search_term", () => "");
     override_rewire(stream_list, "update_stream_section_mention_indicators", noop);
     override_rewire(stream_list, "update_dom_with_unread_counts", noop);
     override_rewire(stream_list, "maybe_hide_topic_bracket", noop);
