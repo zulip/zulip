@@ -679,6 +679,24 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
         )
 
     @responses.activate
+    def test_join_bigbluebutton_too_many_redirects(self) -> None:
+        url = "https://bbb.example.com/bigbluebutton/api/create?meetingID=a&name=a&lockSettingsDisableCam=True&checksum=33349e6374ca9b2d15a0c6e51a42bc3e8f770de13f88660815c6449859856e20"
+        responses.add(
+            responses.GET,
+            url,
+            status=302,
+            headers={"Location": url},
+            body="Redirecting",
+        )
+        response = self.client_get(
+            "/calls/bigbluebutton/join",
+            {"bigbluebutton": self.signed_bbb_a_object},
+        )
+        self.assert_json_error(
+            response, "Error connecting to the BigBlueButton server: HTTP 302: Redirecting"
+        )
+
+    @responses.activate
     def test_join_bigbluebutton_redirect_error_by_server(self) -> None:
         # Simulate bbb server error
         responses.add(

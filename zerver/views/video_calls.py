@@ -644,7 +644,7 @@ def join_bigbluebutton(request: HttpRequest, *, bigbluebutton: str) -> HttpRespo
         response.raise_for_status()
     except requests.RequestException as e:
         if e.response is not None:
-            reason = f"HTTP {response.status_code}: {response.text:.200}"
+            reason = f"HTTP {e.response.status_code}: {e.response.text:.200}"
         else:
             reason = str(e)
         raise VideoCallServerConnectionError("BigBlueButton", reason=reason)
@@ -751,7 +751,7 @@ def create_nextcloud_talk_url(
         response.raise_for_status()
     except requests.RequestException as e:
         if e.response is not None:
-            reason = f"HTTP {response.status_code}: {response.text:.200}"
+            reason = f"HTTP {e.response.status_code}: {e.response.text:.200}"
         else:
             reason = str(e)
         raise VideoCallServerConnectionError("Nextcloud Talk", reason=reason)
