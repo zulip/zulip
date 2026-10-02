@@ -565,7 +565,9 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
         )
     _filename, content_type = get_file_info(user_file)
     upload_avatar_image(user_file, user_profile, content_type=content_type)
-    do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
+    do_change_avatar_fields(
+        user_profile, UserProfile.AVATAR_FROM_USER, acting_user=user_profile, notify_user=True
+    )
     user_avatar_url = avatar_url(user_profile)
 
     json_result = dict(
@@ -579,7 +581,7 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
         raise JsonableError(str(AVATAR_CHANGES_DISABLED_ERROR))
 
     if user_profile.avatar_source == UserProfile.AVATAR_FROM_USER:
-        set_avatar_to_default(user_profile, acting_user=user_profile)
+        set_avatar_to_default(user_profile, acting_user=user_profile, notify_user=True)
 
     default_avatar_url = avatar_url(user_profile)
     json_result = dict(

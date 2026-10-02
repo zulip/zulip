@@ -100,6 +100,8 @@
 * [Remove your profile data](/api/remove-profile-data)
 * [Upload your profile picture](/api/upload-avatar)
 * [Delete your profile picture](/api/delete-avatar)
+* [Upload a user's profile picture](/api/upload-avatar-for-user)
+* [Delete a user's profile picture](/api/delete-avatar-for-user)
 * [Set "typing" status](/api/set-typing-status)
 * [Set "typing" status for message editing](/api/set-typing-status-for-message-edit)
 * [Get a user's presence](/api/get-user-presence)
