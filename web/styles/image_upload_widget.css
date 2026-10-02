@@ -224,5 +224,17 @@
 
 /* CSS  related to upload widget's preview image */
 .upload_widget_image_preview {
-    object-fit: cover;
+    &.crop {
+        object-fit: cover;
+    }
+
+    &.pad {
+        object-fit: contain;
+    }
+}
+
+.add-custom-emoji-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
 }
