@@ -94,6 +94,7 @@ def our_sqs_queue(session: boto3.session.Session, ses_topic_arn: str) -> Iterato
 
     sqs: SQSClient = session.client("sqs")
     queue_name = "tail-ses-" + secrets.token_hex(10)
+    queue_url = None
     try:
         resp = sqs.create_queue(
             QueueName=queue_name,
@@ -129,6 +130,7 @@ def our_sns_subscription(
     session: boto3.session.Session, ses_topic_arn: str, queue_arn: str
 ) -> Iterator[str]:
     sns: SNSClient = session.client("sns")
+    subscription_arn = None
     try:
         resp = sns.subscribe(
             TopicArn=ses_topic_arn,
