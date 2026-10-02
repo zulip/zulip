@@ -258,6 +258,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
 
 test_ui("send_message", ({override, override_rewire, mock_template}) => {
     mock_banners();
+    const original_try_deliver_locally = echo.try_deliver_locally;
     clock.setSystemTime(new Date(fake_now * 1000));
 
     const fake_compose_box = new FakeComposeBox();
@@ -415,6 +416,42 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.ok(!echo_error_msg_checked);
         assert.ok(banner_rendered);
         assert.equal(fake_compose_box.textarea_val(), "default message");
+        assert.ok(fake_compose_box.is_textarea_focused());
+        assert.ok(!fake_compose_box.is_submit_button_spinner_visible());
+    })();
+
+    (function test_disallowed_group_mention_server_error() {
+        stub_state = initialize_state_stub_dict();
+        fake_compose_box.reset();
+        fake_compose_box.set_textarea_val("Hello @*restricted*");
+        user_groups.add(
+            make_user_group({
+                name: "restricted",
+                can_mention_group: {direct_members: [], direct_subgroups: []},
+            }),
+        );
+        override(realm, "realm_direct_message_initiator_group", everyone.id);
+        override(markdown, "contains_backend_only_syntax", () => false);
+        override_rewire(echo, "try_deliver_locally", original_try_deliver_locally);
+
+        const server_error = "You are not allowed to mention user group 'restricted'.";
+        let banner_rendered = false;
+        mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+            assert.equal(data.classname, "generic_compose_error");
+            assert.equal(data.banner_text, server_error);
+            banner_rendered = true;
+            return "<banner-stub>";
+        });
+        override(transmit, "send_message", (payload, _success, error) => {
+            assert.equal(payload.content, "Hello @*restricted*");
+            assert.equal(payload.locally_echoed, false);
+            error(server_error, "BAD_REQUEST");
+        });
+
+        compose.send_message();
+
+        assert.ok(banner_rendered);
+        assert.equal(fake_compose_box.textarea_val(), "Hello @*restricted*");
         assert.ok(fake_compose_box.is_textarea_focused());
         assert.ok(!fake_compose_box.is_submit_button_spinner_visible());
     })();

@@ -36,6 +36,7 @@ import * as stream_list from "./stream_list.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import type * as transmit from "./transmit.ts";
 import type {TopicLink} from "./types.ts";
+import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -339,6 +340,19 @@ export let try_deliver_locally = (
 
     if (is_slash_command(message_request.content)) {
         return undefined;
+    }
+
+    // This may also match text in code blocks or escaped mentions. Only
+    // skip local echo; the server determines whether the message is valid.
+    // Look ahead so malformed syntax cannot consume a later mention.
+    for (const [, group_name] of message_request.content.matchAll(/(?=@\*([^*]+)\*)/g)) {
+        const group = user_groups.get_user_group_from_name(group_name!);
+        if (
+            group !== undefined &&
+            !user_groups.is_user_in_setting_group(group.can_mention_group, current_user.user_id)
+        ) {
+            return undefined;
+        }
     }
 
     const local_id_float = local_message.get_next_id_float();
