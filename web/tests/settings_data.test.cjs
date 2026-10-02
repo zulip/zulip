@@ -28,6 +28,29 @@ initialize_user_settings({user_settings});
     test people.js.
 */
 
+run_test("effective_web_animate_image_previews", ({override}) => {
+    // Where there is a mouse, the setting is honored as chosen.
+    for (const setting of ["always", "on_hover", "never"]) {
+        override(user_settings, "web_animate_image_previews", setting);
+        assert.equal(settings_data.effective_web_animate_image_previews(), setting);
+    }
+
+    const desktop_navigator = window.navigator;
+    window.navigator = {userAgent: "Android"};
+    try {
+        // "on_hover" is unreachable on mobile web, so animations play
+        // there as though "always" had been chosen.
+        override(user_settings, "web_animate_image_previews", "on_hover");
+        assert.equal(settings_data.effective_web_animate_image_previews(), "always");
+
+        // The other two values mean the same thing everywhere.
+        override(user_settings, "web_animate_image_previews", "never");
+        assert.equal(settings_data.effective_web_animate_image_previews(), "never");
+    } finally {
+        window.navigator = desktop_navigator;
+    }
+});
+
 const admins = make_user_group({
     description: "Administrators",
     name: "role:administrators",

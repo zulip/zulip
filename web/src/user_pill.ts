@@ -3,7 +3,6 @@ import assert from "minimalistic-assert";
 import render_input_pill from "../templates/input_pill.hbs";
 
 import * as blueslip from "./blueslip.ts";
-import type {EmojiRenderingDetails} from "./emoji.ts";
 import * as group_permission_settings from "./group_permission_settings.ts";
 import type {InputPillConfig, InputPillContainer} from "./input_pill.ts";
 import * as input_pill from "./input_pill.ts";
@@ -26,7 +25,7 @@ export type UserPill = {
     full_name: string;
     img_src?: string;
     deactivated?: boolean;
-    status_emoji_info?: (EmojiRenderingDetails & {emoji_alt_code?: boolean}) | undefined; // TODO: Move this in user_status.js
+    status_emoji_info?: user_status.UserStatusEmojiInfo | undefined;
     should_add_guest_user_indicator?: boolean;
     is_bot?: boolean;
 };

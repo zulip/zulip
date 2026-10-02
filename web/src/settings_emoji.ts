@@ -127,6 +127,8 @@ export function populate_emoji(): void {
                     name: item.name,
                     display_name: item.name.replaceAll("_", " "),
                     source_url: item.source_url,
+                    still_url: item.still_url,
+                    emoji_animation_setting: settings_data.effective_web_animate_image_previews(),
                     author,
                     can_delete_emoji: can_delete_emoji(item),
                     is_overriding_default: is_default_emoji(item.name),

@@ -11,10 +11,11 @@ const thumbnail = mock_esm("../src/thumbnail", {
     },
 });
 
+const emoji = zrequire("emoji");
 const {postprocess_content} = zrequire("postprocess_content");
 const {initialize_user_settings} = zrequire("user_settings");
 
-const user_settings = {web_font_size_px: 16};
+const user_settings = {web_font_size_px: 16, web_animate_image_previews: "always"};
 initialize_user_settings({user_settings});
 
 run_test("emoji_only", () => {
@@ -559,5 +560,115 @@ run_test("inline_images", ({override}) => {
             '<img class="inline-image" data-original-src="https://zulip.%20[Click%20to%20join%20video%20call](https://meeting.example.com/abcd1234)%20example.com/user_uploads/2/ab/abcd1234/image.png" src="https://zulip.%20[Click%20to%20join%20video%20call](https://meeting.example.com/abcd1234)%20example.com/user_uploads/2/ab/abcd1234/image.png">',
         ),
         "",
+    );
+});
+
+const ANIMATED_URL = "/user_avatars/2/emoji/images/5.gif";
+const STILL_URL = "/user_avatars/2/emoji/images/still/5.png";
+const STATIC_URL = "/user_avatars/2/emoji/images/6.png";
+
+function animated_emoji_html(src = ANIMATED_URL) {
+    // The trailing text keeps this out of the emoji-only code path.
+    return `<p><img alt=":dancing:" class="emoji" src="${src}" title="dancing"> hi</p>`;
+}
+
+run_test("realm emoji animation setting", ({override}) => {
+    emoji.initialize({
+        realm_emoji: {
+            5: {
+                id: "5",
+                name: "dancing",
+                source_url: ANIMATED_URL,
+                still_url: STILL_URL,
+                deactivated: false,
+            },
+            6: {
+                id: "6",
+                name: "static_custom",
+                source_url: STATIC_URL,
+                still_url: null,
+                deactivated: false,
+            },
+        },
+        emoji_codes: {
+            codepoint_to_name: {},
+            name_to_codepoint: {},
+            emoji_catalog: {},
+            emoticon_conversions: {},
+            names: [],
+        },
+    });
+
+    // "always" is what the server already rendered, so the markup is
+    // left exactly as it came in.
+    override(user_settings, "web_animate_image_previews", "always");
+    assert.equal(postprocess_content(animated_emoji_html()), animated_emoji_html());
+
+    // "on_hover" shows the still frame, and records both URLs so that
+    // emoji_hover_animation.ts can swap between them.
+    override(user_settings, "web_animate_image_previews", "on_hover");
+    assert.equal(
+        postprocess_content(animated_emoji_html()),
+        `<p><img alt=":dancing:" class="emoji" src="${STILL_URL}" title="dancing" data-still-url="${STILL_URL}" data-animated-url="${ANIMATED_URL}"> hi</p>`,
+    );
+
+    // "never" shows the still frame with no hover URLs, so it can never
+    // animate.
+    override(user_settings, "web_animate_image_previews", "never");
+    assert.equal(
+        postprocess_content(animated_emoji_html()),
+        `<p><img alt=":dancing:" class="emoji" src="${STILL_URL}" title="dancing"> hi</p>`,
+    );
+
+    // On mobile web there is no hover, so "on_hover" resolves to
+    // "always" and the server's markup is left alone.
+    const desktop_navigator = window.navigator;
+    window.navigator = {userAgent: "iPhone"};
+    try {
+        override(user_settings, "web_animate_image_previews", "on_hover");
+        assert.equal(postprocess_content(animated_emoji_html()), animated_emoji_html());
+    } finally {
+        window.navigator = desktop_navigator;
+    }
+    override(user_settings, "web_animate_image_previews", "never");
+
+    // A custom emoji that isn't animated has no still frame to show.
+    assert.equal(
+        postprocess_content(animated_emoji_html(STATIC_URL)),
+        animated_emoji_html(STATIC_URL),
+    );
+
+    // Neither does an image we can't resolve, such as a unicode emoji
+    // sprite or an emoji re-uploaded since the content was rendered.
+    assert.equal(
+        postprocess_content(animated_emoji_html("/some/stale/url.gif")),
+        animated_emoji_html("/some/stale/url.gif"),
+    );
+
+    // An <img class="emoji"> with no src at all can't be looked up.
+    assert.equal(
+        postprocess_content('<p><img class="emoji" alt=":dancing:"> hi</p>'),
+        '<p><img class="emoji" alt=":dancing:"> hi</p>',
+    );
+
+    // Surfaces showing your own unsent content opt out, so the emoji
+    // keeps the animated URL the server rendered.
+    override(user_settings, "web_animate_image_previews", "never");
+    assert.equal(
+        postprocess_content(animated_emoji_html(), {honor_emoji_animation_setting: false}),
+        animated_emoji_html(),
+    );
+    override(user_settings, "web_animate_image_previews", "on_hover");
+    assert.equal(
+        postprocess_content(animated_emoji_html(), {honor_emoji_animation_setting: false}),
+        animated_emoji_html(),
+    );
+
+    // Every emoji in the content is processed, not just the first.
+    assert.equal(
+        postprocess_content(
+            `<p><img class="emoji" src="${ANIMATED_URL}"><img class="emoji" src="${ANIMATED_URL}"> hi</p>`,
+        ),
+        `<p><img class="emoji" src="${STILL_URL}" data-still-url="${STILL_URL}" data-animated-url="${ANIMATED_URL}"><img class="emoji" src="${STILL_URL}" data-still-url="${STILL_URL}" data-animated-url="${ANIMATED_URL}"> hi</p>`,
     );
 });

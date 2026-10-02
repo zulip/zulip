@@ -36,12 +36,12 @@
     <ul role="menu" class="popover-menu-list" data-user-id="{{user_id}}">
         {{#if status_content_available}}
             <li role="none" class="text-item popover-menu-list-item hidden-for-spectators">
-                <span class="personal-menu-status-wrapper">
+                <span class="personal-menu-status-wrapper emoji-animation-hover-area">
                     {{#if status_emoji_info}}
                         {{#if status_emoji_info.emoji_alt_code}}
                             <span class="emoji_alt_code">&nbsp;:{{status_emoji_info.emoji_name}}:</span>
                         {{else if status_emoji_info.url}}
-                            <img src="{{status_emoji_info.url}}" class="emoji status_emoji" data-tippy-content=":{{status_emoji_info.emoji_name}}:"/>
+                            {{> ../../realm_emoji url=status_emoji_info.url still_url=status_emoji_info.still_url emoji_animation_setting=status_emoji_info.emoji_animation_setting custom_classes="status_emoji" tippy_emoji_name=status_emoji_info.emoji_name }}
                         {{else}}
                             <span class="emoji status_emoji emoji-{{status_emoji_info.emoji_code}}" data-tippy-content=":{{status_emoji_info.emoji_name}}:"></span>
                         {{/if}}

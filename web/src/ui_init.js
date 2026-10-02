@@ -47,6 +47,7 @@ import * as drafts from "./drafts.ts";
 import * as drafts_overlay_ui from "./drafts_overlay_ui.ts";
 import * as echo from "./echo.ts";
 import * as emoji from "./emoji.ts";
+import * as emoji_hover_animation from "./emoji_hover_animation.ts";
 import * as emoji_picker from "./emoji_picker.ts";
 import * as emojisets from "./emojisets.ts";
 import * as fenced_code from "./fenced_code.ts";
@@ -747,6 +748,7 @@ export async function initialize_everything(state_data) {
     hashchange.initialize();
 
     emoji_picker.initialize();
+    emoji_hover_animation.initialize();
     user_group_popover.initialize();
     user_card_popover.initialize();
     playground_links_popover.initialize();
