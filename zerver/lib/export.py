@@ -648,7 +648,7 @@ class Config:
             normal_parent.children.append(self)
         elif virtual_parent is not None:
             virtual_parent.children.append(self)
-        elif is_seeded is None:
+        elif not is_seeded:
             raise AssertionError(
                 """
                 You must specify a parent if you are
