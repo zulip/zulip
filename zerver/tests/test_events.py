@@ -4201,6 +4201,10 @@ class NormalActionsTest(BaseAction):
         self.subscribe(hamlet, "test_stream1")
         stream = get_stream("test_stream1", self.user_profile.realm)
 
+        # Make all other streams recently active, regardless of when
+        # the test database was built.
+        Message.objects.update(date_sent=timezone_now())
+
         # Delete all messages in the stream so that it becomes inactive.
         Message.objects.filter(recipient__type_id=stream.id, realm=stream.realm).delete()
 

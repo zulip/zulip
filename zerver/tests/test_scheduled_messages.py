@@ -9,6 +9,7 @@ import orjson
 import time_machine
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
+from typing_extensions import override
 
 from zerver.actions.scheduled_messages import (
     SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES,
@@ -28,6 +29,13 @@ if TYPE_CHECKING:
 
 
 class ScheduledMessageTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        # populate_db schedules messages for a year after the test
+        # database was built, which may already be due.
+        ScheduledMessage.objects.all().delete()
+
     def last_scheduled_message(self) -> ScheduledMessage:
         return ScheduledMessage.objects.all().order_by("-id")[0]
 

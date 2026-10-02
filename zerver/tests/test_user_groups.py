@@ -2765,11 +2765,10 @@ class UserGroupAPITestCase(UserGroupTestCase):
             full_members_group,
             acting_user=None,
         )
-        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
-
         othello = self.example_user("othello")
         othello.date_joined = timezone_now() - timedelta(days=9)
         othello.save()
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
 
         check_create_user_group("othello", "Insufficient permission")
 
@@ -3130,10 +3129,11 @@ class UserGroupAPITestCase(UserGroupTestCase):
             full_members_group,
             acting_user=None,
         )
-        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
-
         othello.date_joined = timezone_now() - timedelta(days=9)
         othello.save()
+        cordelia.date_joined = timezone_now() - timedelta(days=9)
+        cordelia.save()
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
         promote_new_full_members()
         check_adding_members_to_group("cordelia", "Insufficient permission")
 
