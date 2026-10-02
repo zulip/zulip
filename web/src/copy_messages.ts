@@ -422,7 +422,7 @@ function improve_time_selection_range(range: Range): void {
     }
 }
 
-export function improve_mention_selection_range(range: Range): void {
+function improve_mention_selection_range(range: Range): void {
     const start_element = get_nearest_html_element(range.startContainer);
     const end_element = get_nearest_html_element(range.endContainer);
     if (!start_element || !end_element) {
@@ -487,6 +487,13 @@ function improve_katex_selection_range(range: Range): void {
 
     expand_range_based_on_katex_parent(start_element, true, range);
     expand_range_based_on_katex_parent(end_element, false, range);
+}
+
+export function improve_special_element_selection_range(range: Range): void {
+    // Expand a boundary landing inside a mention, timestamp or KaTeX span.
+    improve_time_selection_range(range);
+    improve_mention_selection_range(range);
+    improve_katex_selection_range(range);
 }
 
 function maybe_update_range_for_code_blocks(range: Range, ev: ClipboardEvent): boolean {
@@ -578,9 +585,7 @@ export function copy_handler(ev: ClipboardEvent): boolean {
         // we process all ranges individually.
         let custom_handle_copy = false;
         for (let i = 0; i < selection.rangeCount; i += 1) {
-            improve_time_selection_range(selection.getRangeAt(i));
-            improve_mention_selection_range(selection.getRangeAt(i));
-            improve_katex_selection_range(selection.getRangeAt(i));
+            improve_special_element_selection_range(selection.getRangeAt(i));
 
             if (maybe_update_range_for_code_blocks(selection.getRangeAt(i), ev)) {
                 // This will not disturb katex expansions because the clipboard
