@@ -175,6 +175,17 @@ class UserBaseSettings(models.Model):
     ]
     user_list_style = models.PositiveSmallIntegerField(default=USER_LIST_STYLE_WITH_AVATAR)
 
+    # User list show offline users only
+    DISPLAY_OFFLINE_USERS_AUTOMATIC = 1
+    DISPLAY_OFFLINE_USERS_NEVER = 2
+    DISPLAY_OFFLINE_USERS_CHOICES = [
+        DISPLAY_OFFLINE_USERS_AUTOMATIC,
+        DISPLAY_OFFLINE_USERS_NEVER,
+    ]
+    display_offline_users = models.PositiveSmallIntegerField(
+        default=DISPLAY_OFFLINE_USERS_AUTOMATIC
+    )
+
     # Show unread counts for
     WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_ALL_STREAMS = 1
     WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_UNMUTED_STREAMS = 2
@@ -380,6 +391,7 @@ class UserBaseSettings(models.Model):
         translate_emoticons=bool,
         twenty_four_hour_time=bool,
         user_list_style=int,
+        display_offline_users=int,
         web_animate_image_previews=str,
         web_channel_default_view=int,
         web_escape_navigates_to_home_view=bool,
