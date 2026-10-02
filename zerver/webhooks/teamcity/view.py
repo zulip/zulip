@@ -9,6 +9,7 @@ from zerver.actions.message_send import (
     send_rate_limited_pm_notification_to_bot_owner,
 )
 from zerver.decorator import webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
@@ -91,6 +92,8 @@ def api_teamcity_webhook(
             status = f"is still broken with status {build_status}! :thumbs_down:"
     elif build_result == "running":
         status = "has started."
+    else:
+        raise UnsupportedWebhookEventTypeError(build_result)
 
     template = """
 {build_name} build {build_id} {status} See [changes]\
