@@ -1,0 +1,20 @@
+{
+  "object_kind": "work_item",
+  "user": {
+    "name": "Henil",
+    "username": "henil1718"
+  },
+  "project": {
+    "name": "Zulip Test Project",
+    "web_url": "https://gitlab.example.com/zulip/zulip-test",
+    "visibility_level": 20
+  },
+  "object_attributes": {
+    "action": "open",
+    "iid": 42,
+    "title": "Implement new webhook",
+    "url": "https://gitlab.example.com/zulip/zulip-test/-/work_items/42",
+    "description": "This is a test work item."
+  },
+  "assignees": []
+}
