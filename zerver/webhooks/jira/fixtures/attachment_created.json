@@ -1,0 +1,37 @@
+{
+  "timestamp": 1565964017153,
+  "webhookEvent": "attachment_created",
+  "attachment": {
+    "self": "https://f20171170.atlassian.net/rest/api/2/attachment/10000",
+    "id": "10000",
+    "filename": "screenshot.png",
+    "author": {
+      "self": "https://f20171170.atlassian.net/rest/api/2/user?accountId=5c76b994e1bcdf6294d0eb0f",
+      "name": "admin",
+      "key": "admin",
+      "accountId": "5c76b994e1bcdf6294d0eb0f",
+      "avatarUrls": {
+        "48x48": "https://secure.gravatar.com/avatar/bc3f74559ceceb488f4189b7e7bdfec2?size=48",
+        "24x24": "https://secure.gravatar.com/avatar/bc3f74559ceceb488f4189b7e7bdfec2?size=24",
+        "16x16": "https://secure.gravatar.com/avatar/bc3f74559ceceb488f4189b7e7bdfec2?size=16",
+        "32x32": "https://secure.gravatar.com/avatar/bc3f74559ceceb488f4189b7e7bdfec2?size=32"
+      },
+      "displayName": "Hemanth V. Alluri",
+      "active": true,
+      "timeZone": "Asia/Calcutta",
+      "accountType": "atlassian"
+    },
+    "created": "2026-02-16T12:00:00.000+0000",
+    "size": 12345,
+    "mimeType": "image/png",
+    "content": "https://f20171170.atlassian.net/secure/attachment/10000/screenshot.png"
+  },
+  "issue": {
+    "id": "10000",
+    "self": "https://f20171170.atlassian.net/rest/api/2/issue/10000",
+    "key": "BUG-15",
+    "fields": {
+      "summary": "New bug with hook"
+    }
+  }
+}
