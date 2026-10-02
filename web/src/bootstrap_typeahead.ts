@@ -676,11 +676,16 @@ export class Typeahead<ItemType extends string | object> {
         scroll_util.scroll_element_into_container($prev, this.$menu);
     }
 
+    input(): void {
+        this.lookup(false);
+    }
+
     listen(): void {
         $(this.input_element.$element)
             .on("blur", this.blur.bind(this))
             .on("keypress", this.keypress.bind(this))
             .on("keyup", this.keyup.bind(this))
+            .on("input", this.input.bind(this))
             .on("click", this.element_click.bind(this))
             .on("focus", this.element_focus.bind(this))
             .on("keydown", this.keydown.bind(this))
@@ -703,7 +708,7 @@ export class Typeahead<ItemType extends string | object> {
     unlisten(): void {
         this.hide();
         this.$container.remove();
-        const events = ["blur", "keydown", "keyup", "keypress", "click", "focus"];
+        const events = ["blur", "keydown", "keyup", "keypress", "click", "focus", "input"];
         for (const event of events) {
             $(this.input_element.$element).off(event);
         }
