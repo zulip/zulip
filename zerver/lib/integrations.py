@@ -12,7 +12,12 @@ from django.views.decorators.csrf import csrf_exempt
 from typing_extensions import override
 
 from zerver.lib.storage import static_path
-from zerver.lib.webhooks.common import PresetUrlOption, WebhookConfigOption, WebhookUrlOption
+from zerver.lib.webhooks.common import (
+    PresetUrlOption,
+    WebhookConfigOption,
+    WebhookSignatureConfig,
+    WebhookUrlOption,
+)
 from zerver.webhooks import fixtureless_integrations
 
 """This module declares all of the (documented) integrations available
@@ -1210,6 +1215,21 @@ INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
     | {"slack"}
     | hubot_integration_names
 )
+
+
+def compute_sha256_signature_prefix(digest: str) -> str:
+    return f"sha256={digest}"
+
+
+WEBHOOK_SIGNATURE_CONFIGS: dict[str, WebhookSignatureConfig] = {
+    "github": WebhookSignatureConfig(
+        integration_name="github",
+        header="X_HUB_SIGNATURE_256",
+        algorithm="sha256",
+        prefix="sha256=",
+        custom_formatter=compute_sha256_signature_prefix,
+    ),
+}
 
 # Add integrations that are not meant to have example screenshots here
 INTEGRATIONS_WITHOUT_SCREENSHOTS = (
