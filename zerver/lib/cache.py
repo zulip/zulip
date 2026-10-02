@@ -476,6 +476,22 @@ def preview_url_cache_key(url: str) -> str:
     return f"preview_url:{hashlib.sha1(url.encode()).hexdigest()}"
 
 
+def url_embed_data_content_hash(content: str) -> str:
+    return hashlib.sha1(content.encode()).hexdigest()
+
+
+def url_embed_data_pending_cache_key(user_profile_id: int, content: str) -> str:
+    return f"url_embed_data_pending:{user_profile_id}:{url_embed_data_content_hash(content)}"
+
+
+def url_embed_data_latest_cache_key(user_profile_id: int) -> str:
+    return f"url_embed_data_latest:{user_profile_id}"
+
+
+def preview_url_fetch_failed_cache_key(url: str) -> str:
+    return f"preview_url_fetch_failed:{hashlib.sha1(url.encode()).hexdigest()}"
+
+
 def display_recipient_cache_key(recipient_id: int) -> str:
     return f"display_recipient_dict:{recipient_id}"
 

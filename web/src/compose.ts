@@ -92,6 +92,8 @@ export function render_preview_area(): void {
         $("#compose .markdown_preview_spinner"),
         $("#compose .preview_content"),
         content,
+        true,
+        true,
     );
     const edit_height = $compose_textarea.height();
     $preview_message_area.css({"min-height": edit_height + "px"});

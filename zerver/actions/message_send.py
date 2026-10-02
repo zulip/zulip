@@ -24,6 +24,15 @@ from zerver.actions.user_topics import (
 )
 from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import get_alert_word_automaton
+from zerver.lib.cache import (
+    cache_get,
+    cache_set,
+    preview_url_cache_key,
+    preview_url_fetch_failed_cache_key,
+    url_embed_data_content_hash,
+    url_embed_data_latest_cache_key,
+    url_embed_data_pending_cache_key,
+)
 from zerver.lib.exceptions import (
     DirectMessageInitiationError,
     DirectMessagePermissionError,
@@ -157,6 +166,100 @@ def render_incoming_message(
     except MarkdownRenderingError:
         raise JsonableError(_("Unable to render message"))
     return rendering_result
+
+
+def render_unsaved_message(
+    sender: UserProfile,
+    content: str,
+    *,
+    url_embed_data: dict[str, UrlEmbedData | None] | None = None,
+) -> MessageRenderingResult:
+    message = Message()
+    message.sender = sender
+    message.realm = sender.realm
+    message.content = content
+    return render_message_markdown(
+        message=message,
+        content=content,
+        realm=sender.realm,
+        url_embed_data=url_embed_data,
+    )
+
+
+URL_EMBED_DATA_PENDING_TIMEOUT_SECONDS = 60
+
+# Long enough that a job waiting behind a backlog is still matched against the
+# draft that queued it; past the event queue's lifetime there is nowhere to
+# deliver the result anyway.
+URL_EMBED_DATA_LATEST_TIMEOUT_SECONDS = 60 * 10
+
+PREVIEW_URL_FETCH_FAILED_TIMEOUT_SECONDS = 60
+
+
+def get_cached_embeds_and_enqueue_fetch(
+    sender: UserProfile,
+    content: str,
+    links_for_preview: set[str],
+) -> dict[str, UrlEmbedData | None]:
+    """Return the cached embeds to bake into the render, and enqueue an
+    embed_links job for the rest.
+
+    The job lists the cached links alongside the ones to fetch, since the
+    client swaps in the worker's re-render, which would otherwise drop the
+    cached links' cards. A link whose fetch we have given up on is left out,
+    so that a sibling link's job does not refetch it.
+
+    The pending marker is keyed on the draft the job will deliver, not the
+    link, because a job for a draft the user has since edited renders content
+    the client discards. It is best-effort: a lost race costs a redundant job.
+
+    Recording the newest draft separately lets the worker drop jobs for drafts
+    the sender has since replaced.
+    """
+    url_embed_data: dict[str, UrlEmbedData | None] = {}
+    urls_to_fetch = []
+    for url in links_for_preview:
+        cache_entry = cache_get(preview_url_cache_key(url))
+        if cache_entry is not None:
+            # cache_with_key stores values in a singleton tuple.
+            url_embed_data[url] = cache_entry[0]
+        elif cache_get(preview_url_fetch_failed_cache_key(url)) is None:
+            urls_to_fetch.append(url)
+
+    if urls_to_fetch:
+        cache_set(
+            url_embed_data_latest_cache_key(sender.id),
+            url_embed_data_content_hash(content),
+            timeout=URL_EMBED_DATA_LATEST_TIMEOUT_SECONDS,
+        )
+        pending_cache_key = url_embed_data_pending_cache_key(sender.id, content)
+        if cache_get(pending_cache_key) is None:
+            cache_set(
+                pending_cache_key,
+                True,
+                timeout=URL_EMBED_DATA_PENDING_TIMEOUT_SECONDS,
+            )
+            queue_event_on_commit(
+                "embed_links",
+                {
+                    "populate_url_embed_data": True,
+                    "user_id": sender.id,
+                    "content": content,
+                    "urls": [*url_embed_data, *urls_to_fetch],
+                    "uncached_urls": urls_to_fetch,
+                },
+            )
+
+    return url_embed_data
+
+
+def do_send_url_embed_data_event(sender: UserProfile, content: str, rendered_content: str) -> None:
+    event = {
+        "type": "url_embed_data",
+        "content": content,
+        "rendered_content": rendered_content,
+    }
+    send_event_on_commit(sender.realm, event, [sender.id])
 
 
 @dataclass
