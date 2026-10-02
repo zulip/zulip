@@ -7,7 +7,14 @@ from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_global_time
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
-from zerver.lib.validator import WildValue, check_anything, check_int, check_list, check_string
+from zerver.lib.validator import (
+    WildValue,
+    check_dict,
+    check_int,
+    check_list,
+    check_none_or,
+    check_string,
+)
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -175,7 +182,7 @@ def notification_message_error_occurred(payload: WildValue) -> str:
     # Extract each of the keys and values in error_instance for easier handle
 
     # Contains list of tags for the error. Can be empty (null)
-    tags = error_instance["tags"]
+    tags = error_instance["tags"].tame(check_none_or(check_list(check_string)))
 
     # Contains the identity of affected user at the moment this error
     # happened. This surprisingly can be null. Somehow.
@@ -183,12 +190,12 @@ def notification_message_error_occurred(payload: WildValue) -> str:
 
     # Contains custom data for this particular error (if supplied). Can be
     # null.
-    custom_data = error_instance["customData"]
+    custom_data = error_instance["customData"].tame(check_none_or(check_dict()))
 
     if tags is not None:
-        message += "* **Tags**: {}\n".format(", ".join(tags.tame(check_list(check_string))))
+        message += "* **Tags**: {}\n".format(", ".join(tags))
 
-    if affected_user is not None:
+    if affected_user.value is not None:
         user_uuid = affected_user["UUID"].tame(check_string)
         message += f"* **Affected user**: {user_uuid[:6]}...{user_uuid[-5:]}\n"
 
@@ -196,7 +203,7 @@ def notification_message_error_occurred(payload: WildValue) -> str:
         # We don't know what the keys and values beforehand, so we are forced
         # to iterate.
         for key in sorted(custom_data.keys()):
-            message += f"* **{key}**: {custom_data[key].tame(check_anything)}\n"
+            message += f"* **{key}**: {custom_data[key]}\n"
 
     message += make_app_info_chunk(payload["application"])
 

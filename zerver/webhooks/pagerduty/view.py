@@ -86,12 +86,11 @@ def build_pagerduty_formatdict_v2(message: WildValue) -> FormatDictType:
     else:
         format_dict["assignee_info"] = "nobody"
 
-    last_status_change_by = message["incident"].get("last_status_change_by")
-    if last_status_change_by is not None:
-        format_dict["agent_info"] = AGENT_TEMPLATE.format(
-            username=last_status_change_by["summary"].tame(check_string),
-            url=last_status_change_by["html_url"].tame(check_string),
-        )
+    last_status_change_by = message["incident"]["last_status_change_by"]
+    format_dict["agent_info"] = AGENT_TEMPLATE.format(
+        username=last_status_change_by["summary"].tame(check_string),
+        url=last_status_change_by["html_url"].tame(check_string),
+    )
 
     return format_dict
 
@@ -120,8 +119,8 @@ def build_pagerduty_formatdict_v3(event: WildValue) -> FormatDictType:
     else:
         format_dict["assignee_info"] = "nobody"
 
-    agent = event.get("agent")
-    if agent is not None:
+    agent = event["agent"]
+    if agent.value is not None:
         format_dict["agent_info"] = AGENT_TEMPLATE.format(
             username=agent["summary"].tame(check_string),
             url=agent["html_url"].tame(check_string),
