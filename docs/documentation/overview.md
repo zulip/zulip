@@ -49,10 +49,11 @@ to help make reviews efficient.
 If you want to build the developer documentation locally (e.g., to test
 your changes), the dependencies are automatically installed as part of
 Zulip development environment provisioning, and you can build the
-documentation using:
+documentation and run the server using:
 
 ```bash
 ./tools/build-docs
+./tools/run-dev
 ```
 
 and then opening `http://127.0.0.1:9991/docs/index.html` in your
