@@ -1,5 +1,4 @@
 .message_reactions {
-    overflow: hidden;
     user-select: none;
 
     &:has(.message_reaction) {
