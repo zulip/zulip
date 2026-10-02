@@ -29,6 +29,7 @@ const linkifiers = zrequire("linkifiers");
 const markdown = zrequire("markdown");
 const message_events = zrequire("message_events");
 const message_helper = zrequire("message_helper");
+const message_store = zrequire("message_store");
 const {set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const settings_config = zrequire("settings_config");
@@ -250,5 +251,80 @@ run_test(
         const topic_names = stream_topic_history.get_recent_topic_names(denmark.stream_id);
         assert.equal(topic_names[0], new_topic);
         assert.deepEqual(rendered_msgs, [original_message]);
+    },
+);
+
+run_test(
+    "update_messages case-only topic name change keeps topic links findable",
+    ({override_rewire}) => {
+        override_rewire(message_events, "update_views_filtered_on_message_property", () => {}, {
+            unused: false,
+        });
+        message_store.clear_topic_links_for_testing();
+        message_lists.current.view = {rerender_messages: noop};
+        // update_messages checks whether the edit history modal is open.
+        const $message_edit_history_modal = $.create("#message-edit-history");
+        $message_edit_history_modal.set_parents_result(".micromodal", $.create("micromodal"));
+
+        const old_topic = "weekend plans";
+        const new_topic = "Weekend plans";
+        const link = {stream_id: denmark.stream_id, topic: "dinner", message_id: undefined};
+        const raw_message = {
+            id: 333,
+            display_recipient: denmark.name,
+            flags: [],
+            sender_id: alice.user_id,
+            stream_id: denmark.stream_id,
+            topic: old_topic,
+            type: "stream",
+            content: `<a href="/#narrow/channel/${denmark.stream_id}-Denmark/topic/dinner">dinner</a>`,
+            reactions: [],
+            submessages: [],
+            avatar_url: `/avatar/${alice.user_id}`,
+        };
+        const message = message_helper.process_new_message({
+            type: "server_message",
+            raw_message,
+        }).message;
+        assert.deepEqual(message_store.topic_links_from_narrow(denmark.stream_id, old_topic), [
+            link,
+        ]);
+        assert.deepEqual(message_store.topic_links_to_narrow(denmark.stream_id, "dinner"), [
+            {stream_id: denmark.stream_id, topic: old_topic, message_id: message.id},
+        ]);
+
+        const events = [
+            {
+                message_id: message.id,
+                message_ids: [message.id],
+                user_id: alice.user_id,
+                flags: [],
+                edit_timestamp: 1700000000,
+                stream_id: denmark.stream_id,
+                orig_subject: old_topic,
+                topic: new_topic,
+                topic_links: [],
+                rendering_only: false,
+            },
+        ];
+
+        message_events.update_messages(events);
+
+        // The links are still found under either spelling of the topic.
+        assert.equal(message.topic, new_topic);
+        assert.deepEqual(message_store.topic_links_from_narrow(denmark.stream_id, old_topic), [
+            link,
+        ]);
+        assert.deepEqual(message_store.topic_links_from_narrow(denmark.stream_id, new_topic), [
+            link,
+        ]);
+        assert.deepEqual(message_store.topic_links_to_narrow(denmark.stream_id, "dinner"), [
+            {stream_id: denmark.stream_id, topic: new_topic, message_id: message.id},
+        ]);
+
+        // Deleting the message finds its links and removes them.
+        message_store.remove([message.id]);
+        assert.deepEqual(message_store.topic_links_from_narrow(denmark.stream_id, new_topic), []);
+        assert.deepEqual(message_store.topic_links_to_narrow(denmark.stream_id, "dinner"), []);
     },
 );

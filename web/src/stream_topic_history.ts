@@ -392,6 +392,10 @@ export function get_latest_known_message_id_in_topic(
     return history?.topics.get(topic_name)?.message_id;
 }
 
+export function get_known_topic_name(stream_id: number, topic_name: string): string | undefined {
+    return stream_dict.get(stream_id)?.topics.get(topic_name)?.pretty_name;
+}
+
 // We use the topic permalinks if we have access to the last message
 // id of the topic in the cache, by encoding it at the end of the
 // traditional channel-topic url using a `with` operator. If client
