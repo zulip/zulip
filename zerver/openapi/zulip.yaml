@@ -3624,6 +3624,11 @@ paths:
                                 Event sent to a user when [message flags][message-flags] are
                                 removed from messages.
 
+                                For example, the `"starred"` flag is removed when the user loses
+                                content access to a channel, such as by unsubscribing from a
+                                private channel, since the messages no longer count toward the
+                                user's starred messages.
+
                                 See the description for the [`update_message_flags` op:
                                 `add`](/api/get-events#update_message_flags-add) event for
                                 more details about these events.
