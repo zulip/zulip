@@ -262,7 +262,7 @@ def create_user() -> dict[str, object]:
     }
 
 
-@openapi_param_value_generator(["/users/{email]:patch", "/users/{user_id}:patch"])
+@openapi_param_value_generator(["/users/{email}:patch", "/users/{user_id}:patch"])
 def new_email_value() -> dict[str, object]:
     count = 0
     exists = True
