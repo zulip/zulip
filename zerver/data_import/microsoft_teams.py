@@ -588,7 +588,8 @@ def process_messages(
                 content = convert_microsoft_teams_html_to_markdown(message["Body"]["Content"])
             except Exception:  # nocoverage
                 logging.warning(
-                    "Error converting HTML to text for message: '%s'; continuing", content
+                    "Error converting HTML to text for message: '%s'; continuing",
+                    message["Body"]["Content"],
                 )
                 logging.warning(str(message))
                 continue
