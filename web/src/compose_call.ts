@@ -30,6 +30,13 @@ export function get_jitsi_server_url(video_call_id?: string): URL | null {
     return url;
 }
 
+export function jitsi_jwt_enabled(): boolean {
+    // The server's JWT credentials are for its default Jitsi server;
+    // a realm that overrides the URL points at a different server and
+    // must fall back to unauthenticated calls.
+    return realm.realm_jitsi_server_url === null && realm.server_jitsi_jwt_configured;
+}
+
 export function compute_show_video_chat_button(): boolean {
     const available_providers = realm.realm_available_video_chat_providers;
     if (realm.realm_video_chat_provider === available_providers.disabled.id) {
