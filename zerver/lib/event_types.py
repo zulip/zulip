@@ -408,11 +408,13 @@ class BotServicesOutgoing(BaseEventModel):
     base_url: Url
     interface: int
     token: str
+    triggers: list[str]
 
 
 class BotServicesEmbedded(BaseEventModel):
     service_name: str
     config_data: dict[str, str]
+    triggers: list[str]
 
 
 class Bot(BaseEventModel):
