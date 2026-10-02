@@ -1,17 +1,28 @@
+import orjson
+
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.models import Recipient
-from zerver.webhooks.zabbix.view import MISCONFIGURED_PAYLOAD_ERROR_MESSAGE
+from zerver.webhooks.zabbix.view import MISCONFIGURED_PAYLOAD_ERROR_MESSAGE, ZABBIX_SEVERITY_EMOJI
 
 
 class ZabbixHookTests(WebhookTestCase):
-    def test_zabbix_alert_message(self) -> None:
+    def test_zabbix_alert_severities_with_emoji(self) -> None:
         """
         Tests if zabbix alert is handled correctly
         """
-        expected_topic_name = "www.example.com"
-        expected_message = "PROBLEM (Average) alert on [www.example.com](https://zabbix.example.com/tr_events.php?triggerid=14032&eventid=10528):\n* Zabbix agent on www.example.com is unreachable for 5 minutes\n* Agent ping is Up (1)"
-        self.check_webhook("zabbix_alert", expected_topic_name, expected_message)
+        expected_message_template = "{emoji} PROBLEM ({severity}) alert on [www.example.com](https://zabbix.example.com/tr_events.php?triggerid=14032&eventid=10528):\n* Zabbix agent on www.example.com is unreachable for 5 minutes\n* Agent ping is Up (1)"
+        payload = orjson.loads(self.get_body("zabbix_alert"))
+
+        for severity, emoji in ZABBIX_SEVERITY_EMOJI.items():
+            with self.subTest(severity=severity):
+                payload["severity"] = severity
+                self.check_webhook(
+                    "zabbix_alert",
+                    "www.example.com",
+                    expected_message_template.format(emoji=emoji, severity=severity),
+                    custom_payload=payload,
+                )
 
     def test_zabbix_invalid_payload_with_missing_data(self) -> None:
         """
