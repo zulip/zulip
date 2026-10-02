@@ -35,5 +35,18 @@
     <div class="subscriber-list-box">
         {{> stream_members_table .}}
     </div>
+    <h4 class="stream_setting_subsection_title remove-subscribers-heading remove-subscribers-section">
+        {{t "Remove subscribers" }}
+    </h4>
+    <div class="stream_unsubscription_request_result banner-wrapper remove-subscribers-section"></div>
+    {{> remove_subscribers_form .}}
+    <div class="remove-subscribers-subtitle remove-subscribers-section">
+        {{#tr}}
+            Enter a <z-user-roles-link>user role</z-user-roles-link> or
+            <z-user-groups-link>user group</z-user-groups-link> to remove multiple users at once.
+            {{#*inline "z-user-roles-link"}}<a href="/help/user-roles" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+            {{#*inline "z-user-groups-link"}}<a href="/help/user-groups" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </div>
 </div>
 <div class="subscriber-list-settings-loading"></div>

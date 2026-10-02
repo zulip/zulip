@@ -1,0 +1,8 @@
+<p>
+    {{t "{unsubscribed_count, plural, one {This will unsubscribe # user from the channel.} other {This will unsubscribe # users from the channel.}}" }}
+</p>
+{{#unless (eq already_not_subscribed_count 0)}}
+    <p>
+        {{t "{already_not_subscribed_count, plural, one {# of the selected users is not subscribed and will be skipped.} other {# of the selected users are not subscribed and will be skipped.}}" }}
+    </p>
+{{/unless}}
