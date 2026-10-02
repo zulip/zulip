@@ -26,6 +26,20 @@ class BuildbotHookTests(WebhookTestCase):
         expected_message = "Build [#10434](https://ci.example.org/#builders/79/builds/307) (result: cancelled) for **AMD64 Ubuntu 18.04 Python 3** finished."
         self.check_webhook("finished_cancelled", expected_topic_name, expected_message)
 
+    def test_build_unknown_result(self) -> None:
+        expected_topic_name = "buildbot-hello"
+        expected_message = "Build [#33](http://exampleurl.com/#builders/1/builds/33) (result: unknown) for **runtests** finished."
+        for result in [7, -1]:
+            payload = self.get_body("finished_success").replace(
+                '"results": 0', f'"results": {result}'
+            )
+            self.check_webhook(
+                "finished_success",
+                expected_topic_name,
+                expected_message,
+                custom_payload=payload,
+            )
+
     def test_unsupported_event(self) -> None:
         payload = orjson.dumps(
             {
