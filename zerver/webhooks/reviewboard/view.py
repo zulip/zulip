@@ -121,7 +121,7 @@ def get_review_request_published_body(payload: WildValue) -> str:
 
     message = REVIEW_REQUEST_PUBLISHED + REVIEW_REQUEST_DETAILS
     branch = payload["review_request"].get("branch").tame(check_none_or(check_string))
-    if branch and branch is not None:
+    if branch:
         branch_info = BRANCH_TEMPLATE.format(branch_name=branch)
         kwargs["extra_info"] = branch_info
 
@@ -142,7 +142,7 @@ def get_review_request_reopened_body(payload: WildValue) -> str:
 
     message = REVIEW_REQUEST_REOPENED + REVIEW_REQUEST_DETAILS
     branch = payload["review_request"].get("branch").tame(check_none_or(check_string))
-    if branch and branch is not None:
+    if branch:
         branch_info = BRANCH_TEMPLATE.format(branch_name=branch)
         kwargs["extra_info"] = branch_info
 
@@ -163,7 +163,7 @@ def get_review_request_closed_body(payload: WildValue) -> str:
 
     message = REVIEW_REQUEST_CLOSED + REVIEW_REQUEST_DETAILS
     branch = payload["review_request"].get("branch").tame(check_none_or(check_string))
-    if branch and branch is not None:
+    if branch:
         branch_info = BRANCH_TEMPLATE.format(branch_name=branch)
         kwargs["extra_info"] = "{}\n{}".format(kwargs["extra_info"], branch_info)
 

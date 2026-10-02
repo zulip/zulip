@@ -185,7 +185,7 @@ def api_grafana_webhook(
     topic_name = OLD_TOPIC_TEMPLATE.format(alert_title=legacy_alert.title)
 
     eval_matches_text = ""
-    if "evalMatches" in payload and payload["evalMatches"] is not None:
+    if "evalMatches" in payload:
         for match in payload["evalMatches"]:
             eval_matches_text += "**{}:** {}\n".format(
                 match["metric"].tame(check_string),
