@@ -1326,6 +1326,7 @@ class BillingSession(ABC):
             assert stripe_customer.invoice_settings is not None
             assert stripe_customer.invoice_settings.default_payment_method is not None
         stripe_invoice = None
+        invoice = None
         try:
             current_plan_id = metadata.get("current_plan_id")
             on_free_trial = bool(metadata.get("on_free_trial"))
@@ -1361,8 +1362,9 @@ class BillingSession(ABC):
             if stripe_invoice is not None:
                 # Void invoice to avoid double charging if customer tries to upgrade again.
                 stripe.Invoice.void_invoice(stripe_invoice.id)
-                invoice.status = Invoice.VOID
-                invoice.save(update_fields=["status"])
+                if invoice is not None:
+                    invoice.status = Invoice.VOID
+                    invoice.save(update_fields=["status"])
             if isinstance(e, stripe.CardError):
                 raise StripeCardError("card error", e.user_message)
             else:  # nocoverage
