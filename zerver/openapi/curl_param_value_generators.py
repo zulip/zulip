@@ -7,7 +7,6 @@
 # cURL examples as part of the tools/test-api test suite.
 import re
 from collections.abc import Callable
-from functools import wraps
 from typing import Any, cast
 
 from django.utils.timezone import now as timezone_now
@@ -34,8 +33,7 @@ from zerver.models.users import UserProfile, get_user
 from zerver.openapi.openapi import Parameter
 
 GENERATOR_FUNCTIONS: dict[str, Callable[[], dict[str, object]]] = {}
-REGISTERED_GENERATOR_FUNCTIONS: set[str] = set()
-CALLED_GENERATOR_FUNCTIONS: set[str] = set()
+CALLED_GENERATOR_ENDPOINTS: set[str] = set()
 # This is a List rather than just a string in order to make it easier
 # to write to it from another module.
 AUTHENTICATION_LINE: list[str] = [""]
@@ -54,28 +52,21 @@ def openapi_param_value_generator(
     """
 
     def wrapper(generator_func: Callable[[], dict[str, object]]) -> Callable[[], dict[str, object]]:
-        @wraps(generator_func)
-        def _record_calls_wrapper() -> dict[str, object]:
-            CALLED_GENERATOR_FUNCTIONS.add(generator_func.__name__)
-            return generator_func()
-
-        REGISTERED_GENERATOR_FUNCTIONS.add(generator_func.__name__)
         for endpoint in endpoints:
-            GENERATOR_FUNCTIONS[endpoint] = _record_calls_wrapper
+            GENERATOR_FUNCTIONS[endpoint] = generator_func
 
-        return _record_calls_wrapper
+        return generator_func
 
     return wrapper
 
 
 def assert_all_helper_functions_called() -> None:
     """Throws an exception if any registered helpers were not called by tests"""
-    if REGISTERED_GENERATOR_FUNCTIONS == CALLED_GENERATOR_FUNCTIONS:
-        return
-
-    uncalled_functions = str(REGISTERED_GENERATOR_FUNCTIONS - CALLED_GENERATOR_FUNCTIONS)
-
-    raise Exception(f"Registered curl API generators were not called: {uncalled_functions}")
+    uncalled_endpoints = GENERATOR_FUNCTIONS.keys() - CALLED_GENERATOR_ENDPOINTS
+    if uncalled_endpoints:
+        raise Exception(
+            f"Registered curl API generators were not called for: {sorted(uncalled_endpoints)}"
+        )
 
 
 def patch_openapi_example_values(
@@ -85,6 +76,7 @@ def patch_openapi_example_values(
 ) -> tuple[list[Parameter], dict[str, object] | None]:
     if entry not in GENERATOR_FUNCTIONS:
         return parameters, request_body
+    CALLED_GENERATOR_ENDPOINTS.add(entry)
     func = GENERATOR_FUNCTIONS[entry]
     realm_example_values: dict[str, object] = func()
 
