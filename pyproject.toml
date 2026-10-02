@@ -385,6 +385,7 @@ disallow_untyped_calls = false
 warn_return_any = false
 
 # Enable optional errors.
+strict_equality_for_none = true
 enable_error_code = [
     "redundant-self",
     "deprecated",
