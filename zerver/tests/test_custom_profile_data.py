@@ -473,7 +473,7 @@ class DeleteCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assertTrue(self.custom_field_exists_in_realm(field.id))
         self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count)
 
-        do_remove_realm_custom_profile_field(realm, field)
+        do_remove_realm_custom_profile_field(realm, field, acting_user=None)
 
         self.assertFalse(self.custom_field_exists_in_realm(field.id))
         self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count - 1)
@@ -823,10 +823,12 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
     def test_update_is_aware_of_uniqueness(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
-        field_1 = try_add_realm_custom_profile_field(realm, "Phone", CustomProfileField.SHORT_TEXT)
+        field_1 = try_add_realm_custom_profile_field(
+            realm, "Phone", CustomProfileField.SHORT_TEXT, acting_user=None
+        )
 
         field_2 = try_add_realm_custom_profile_field(
-            realm, "Phone 1", CustomProfileField.SHORT_TEXT
+            realm, "Phone 1", CustomProfileField.SHORT_TEXT, acting_user=None
         )
 
         self.assertTrue(self.custom_field_exists_in_realm(field_1.id))
@@ -924,7 +926,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             )
 
         # Update value of field
-        with self.assert_database_query_count(13):
+        with self.assert_database_query_count(14):
             result = self.client_patch(
                 "/json/users/me/profile_data",
                 {
@@ -1032,6 +1034,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             name="Quote",
             hint="Saying or phrase which you known for.",
             field_type=CustomProfileField.SHORT_TEXT,
+            acting_user=None,
         )
 
         iago = self.example_user("iago")
@@ -1246,7 +1249,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
         # Until https://github.com/typeddjango/django-stubs/issues/444 gets resolved,
         # we need the cast here to ensure the value list is correctly typed.
         assert all(isinstance(item, int) for item in order)
-        try_reorder_realm_custom_profile_fields(realm, cast(Iterable[int], order))
+        try_reorder_realm_custom_profile_fields(realm, cast(Iterable[int], order), acting_user=None)
         result = self.client_get("/json/realm/profile_fields")
         content = self.assert_json_success(result)
         self.assertListEqual(
