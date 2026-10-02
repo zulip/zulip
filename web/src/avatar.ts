@@ -3,6 +3,7 @@ import {$} from "jquery";
 import * as channel from "./channel.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
 import {$t_html} from "./i18n.ts";
+import * as modals from "./modals.ts";
 import * as settings_data from "./settings_data.ts";
 import {current_user, realm} from "./state_data.ts";
 import * as upload_widget from "./upload_widget.ts";
@@ -33,38 +34,81 @@ export function build_bot_create_widget(): UploadWidget {
     );
 }
 
-export function build_bot_edit_widget($target: JQuery): UploadWidget {
+export function build_bot_edit_widget(
+    upload_function: UploadFunction,
+    delete_function: (callbacks: {on_success: () => void; on_error: () => void}) => void,
+    avatar_source: string,
+    on_dialog_closed: () => void,
+): void {
     const get_file_input = function (): JQuery<HTMLInputElement> {
-        return $target.find<HTMLInputElement>(".edit_bot_avatar_file_input");
+        return $<HTMLInputElement>("#bot-avatar-upload-widget input.image_file_input").expectOne();
     };
 
-    const $file_name_field = $target.find(".edit_bot_avatar_file");
-    const $input_error = $target.find(".edit_bot_avatar_error");
-    const $clear_button = $target.find(".edit_bot_avatar_clear_button");
-    const $upload_button = $target.find(".edit_bot_avatar_upload_button");
-    const $preview_text = $target.find(".edit_bot_avatar_preview_text");
-    const $preview_image = $target.find(".edit_bot_avatar_preview_image");
+    const $input_error = $(".edit_bot_avatar_error").expectOne();
+    const $upload_button = $("#bot-avatar-upload-widget .image_upload_button").expectOne();
 
-    return upload_widget.build_widget(
+    get_file_input().on("change", (e) => {
+        const file = e.target.files?.[0];
+        if (!file) {
+            return;
+        }
+        // Must be registered before build_direct_upload_widget's handler.
+        e.stopImmediatePropagation();
+        const $file_input = get_file_input();
+
+        modals.close("user-profile-modal", {
+            on_hidden() {
+                upload_widget.open_uppy_editor(
+                    file,
+                    "bot_avatar",
+                    $file_input,
+                    $upload_button,
+                    upload_function,
+                    on_dialog_closed,
+                );
+            },
+        });
+    });
+
+    upload_widget.build_direct_upload_widget(
         get_file_input,
-        $file_name_field,
         $input_error,
-        $clear_button,
         $upload_button,
-        $preview_text,
-        $preview_image,
+        upload_function,
+        realm.max_avatar_file_size_mib,
+        "bot_avatar",
     );
+
+    if (avatar_source !== "U") {
+        $("#bot-avatar-upload-widget .image-delete-button").hide();
+    }
+
+    $("#bot-avatar-upload-widget .image-delete-button").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        display_avatar_delete_started("bot-avatar-upload-widget");
+        delete_function({
+            on_success() {
+                display_avatar_delete_complete("bot-avatar-upload-widget");
+                get_file_input().val("");
+            },
+            on_error() {
+                display_avatar_delete_complete("bot-avatar-upload-widget");
+                $("#bot-avatar-upload-widget .image-delete-button").show();
+            },
+        });
+    });
 }
 
-function display_avatar_delete_complete(): void {
-    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
-    $("#user-avatar-upload-widget .image-upload-text").show();
+function display_avatar_delete_complete(container_id: string): void {
+    $(`#${container_id} .upload-spinner-background`).css({visibility: "hidden"});
+    $(`#${container_id} .image-upload-text`).show();
 }
 
-function display_avatar_delete_started(): void {
-    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "visible"});
-    $("#user-avatar-upload-widget .image-upload-text").hide();
-    $("#user-avatar-upload-widget .image-delete-button").hide();
+function display_avatar_delete_started(container_id: string): void {
+    $(`#${container_id} .upload-spinner-background`).css({visibility: "visible"});
+    $(`#${container_id} .image-upload-text`).hide();
+    $(`#${container_id} .image-delete-button`).hide();
 }
 
 export function build_user_avatar_widget(upload_function: UploadFunction): void {
@@ -90,11 +134,11 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
         e.preventDefault();
         e.stopPropagation();
         function delete_user_avatar(): void {
-            display_avatar_delete_started();
+            display_avatar_delete_started("user-avatar-upload-widget");
             void channel.del({
                 url: "/json/users/me/avatar",
                 success() {
-                    display_avatar_delete_complete();
+                    display_avatar_delete_complete("user-avatar-upload-widget");
 
                     // Need to clear input because of a small edge case
                     // where you try to upload the same image you just deleted.
@@ -102,7 +146,7 @@ export function build_user_avatar_widget(upload_function: UploadFunction): void 
                     // Rest of the work is done via the user_events -> avatar_url event we will get
                 },
                 error() {
-                    display_avatar_delete_complete();
+                    display_avatar_delete_complete("user-avatar-upload-widget");
                     $("#user-avatar-upload-widget .image-delete-button").show();
                 },
             });
