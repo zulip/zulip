@@ -359,7 +359,15 @@ export async function wait_for_fully_processed_message(page: Page, content: stri
                       re-rendered based on server info?
             */
             const last_msg = zulip_test.current_msg_list?.last();
-            if (last_msg?.raw_content !== content || last_msg.locally_echoed) {
+            if (last_msg === undefined) {
+                return false;
+            }
+
+            if (last_msg.raw_content !== content) {
+                return false;
+            }
+
+            if (last_msg.locally_echoed) {
                 return false;
             }
 
@@ -593,6 +601,13 @@ export async function select_item_via_typeahead(
     assert.ok(entry);
     await entry.hover();
     await entry.click();
+}
+
+export async function wait_for_modal_to_close(page: Page): Promise<void> {
+    // This function will ensure that the mouse events are enabled for the background for further tests.
+    await page.waitForFunction(
+        () => document.querySelector(".overlay.show")?.getAttribute("style") === null,
+    );
 }
 
 export async function wait_for_micromodal_to_open(page: Page): Promise<void> {

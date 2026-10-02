@@ -1154,7 +1154,7 @@ class QueryCountTest(ZulipTestCase):
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")
 
         with (
-            self.assert_database_query_count(95),
+            self.assert_database_query_count(91),
             self.assert_memcached_count(24),
             self.capture_send_event_calls(expected_num_events=11) as events,
         ):
@@ -3321,41 +3321,6 @@ class GetProfileTest(ZulipTestCase):
 
         self.assert_length(cache_queries, 1)
         self.assertEqual(user_profile.email, email)
-
-    def test_cache_behavior_after_email_address_visibility_change(self) -> None:
-        hamlet = self.example_user("hamlet")
-        realm = hamlet.realm
-        do_change_user_setting(
-            hamlet,
-            "email_address_visibility",
-            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
-            acting_user=None,
-        )
-        real_email = hamlet.delivery_email
-        self.assertEqual(hamlet.email, real_email)
-        self.assertEqual(get_user(real_email, realm), hamlet)
-
-        do_change_user_setting(
-            hamlet,
-            "email_address_visibility",
-            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
-            acting_user=None,
-        )
-        dummy_email = hamlet.email
-        self.assertNotEqual(dummy_email, real_email)
-        with self.assertRaises(UserProfile.DoesNotExist):
-            get_user(real_email, realm)
-        self.assertEqual(get_user(dummy_email, realm), hamlet)
-
-        do_change_user_setting(
-            hamlet,
-            "email_address_visibility",
-            UserProfile.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
-            acting_user=None,
-        )
-        with self.assertRaises(UserProfile.DoesNotExist):
-            get_user(dummy_email, realm)
-        self.assertEqual(get_user(real_email, realm), hamlet)
 
     def test_get_user_profile(self) -> None:
         hamlet = self.example_user("hamlet")

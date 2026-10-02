@@ -1264,13 +1264,7 @@ export class MessageListView {
         rendered_markdown.update_elements($content);
 
         const id = rows.id($row);
-        // Message lists other than the current one, like the cached
-        // combined feed, restore their edit forms via
-        // restore_edit_state_after_message_view_change when they
-        // become the current list again.
-        if (this.is_current_message_list()) {
-            message_edit.maybe_show_edit($row, id);
-        }
+        message_edit.maybe_show_edit($row, id);
 
         submessage.render_submessage({
             $row,

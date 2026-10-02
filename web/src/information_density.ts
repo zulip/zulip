@@ -226,10 +226,11 @@ export function check_setting_has_recommended_value(
     property: "web_font_size_px" | "web_line_height_percent",
     current_value: number,
 ): boolean {
-    if (
-        current_value > INFO_DENSITY_VALUES_DICT[property].maximum ||
-        current_value < INFO_DENSITY_VALUES_DICT[property].minimum
-    ) {
+    if (current_value > INFO_DENSITY_VALUES_DICT[property].maximum) {
+        return false;
+    }
+
+    if (current_value < INFO_DENSITY_VALUES_DICT[property].minimum) {
         return false;
     }
 

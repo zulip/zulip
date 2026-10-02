@@ -21,7 +21,7 @@ import * as util from "./util.ts";
 // paths in compose_call_ui.ts to build a meeting/room name.
 // The reply-button template uses the structured `stream` / `topic_display_name`
 // fields instead, so it can render the decorated channel icon.
-export type RecipientLabel = {
+type RecipientLabel = {
     label_text: string;
     has_empty_string_topic?: boolean;
     stream?: StreamSubscription;
@@ -30,10 +30,7 @@ export type RecipientLabel = {
     user_ids?: number[];
 };
 
-export function get_channel_recipient_label(
-    stream_id: number,
-    topic: string,
-): RecipientLabel | undefined {
+function get_stream_recipient_label(stream_id: number, topic: string): RecipientLabel | undefined {
     const stream = stream_data.get_sub_by_id(stream_id);
     const topic_display_name = util.get_final_topic_display_name(topic);
     if (stream) {
@@ -48,7 +45,7 @@ export function get_channel_recipient_label(
     return undefined;
 }
 
-export function get_direct_message_recipient_label(user_ids: number[]): RecipientLabel {
+function get_direct_message_recipient_label(user_ids: number[]): RecipientLabel {
     let label_text = "";
     let is_dm_with_self = false;
     if (people.is_direct_message_conversation_with_self(user_ids)) {
@@ -84,7 +81,7 @@ export function get_recipient_label(
             recipient_information.stream_id !== undefined &&
             recipient_information.topic !== undefined
         ) {
-            return get_channel_recipient_label(
+            return get_stream_recipient_label(
                 recipient_information.stream_id,
                 recipient_information.topic,
             );
@@ -111,7 +108,7 @@ export function get_recipient_label(
         const topic = narrow_state.topic();
         const user_ids_string = narrow_state.pm_ids_string();
         if (stream_id !== undefined && topic !== undefined) {
-            return get_channel_recipient_label(stream_id, topic);
+            return get_stream_recipient_label(stream_id, topic);
         }
         if (user_ids_string !== undefined) {
             // Check for validity of user ids to avoid any errors in case user
@@ -130,7 +127,7 @@ export function get_recipient_label(
     const selected_message = message_lists.current.selected_message();
     if (selected_message !== undefined) {
         if (selected_message?.is_stream) {
-            return get_channel_recipient_label(selected_message.stream_id, selected_message.topic);
+            return get_stream_recipient_label(selected_message.stream_id, selected_message.topic);
         }
         const user_ids = people.user_ids_string_to_ids_array(selected_message.to_user_ids);
         return get_direct_message_recipient_label(user_ids);
@@ -140,7 +137,7 @@ export function get_recipient_label(
 }
 
 // Exported for tests
-export function update_reply_button_state(): void {
+export let update_reply_button_state = (): void => {
     const $compose_reply_button_wrapper = $(
         "#legacy-closed-compose-box .compose-reply-button-wrapper",
     );
@@ -170,6 +167,10 @@ export function update_reply_button_state(): void {
     } else {
         $compose_reply_button_wrapper.attr("data-reply-button-type", "selected_conversation");
     }
+};
+
+export function rewire_update_reply_button_state(value: typeof update_reply_button_state): void {
+    update_reply_button_state = value;
 }
 
 function update_new_conversation_button(data_attribute_string: "stream" | "non-specific"): void {

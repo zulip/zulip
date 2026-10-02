@@ -13,7 +13,7 @@ def setup_node_modules(production: bool = DEFAULT_PRODUCTION) -> None:
 
     try:
         with open("node_modules/.pnpm/lock.yaml") as a, open("pnpm-lock.yaml") as b:
-            if a.read() in b.read().split("\n---\n"):
+            if a.read() == b.read():
                 skip = True
     except FileNotFoundError:
         pass

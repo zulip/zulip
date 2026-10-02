@@ -1,9 +1,9 @@
 import crypto from "node:crypto";
 
 import {bodyParser} from "@koa/bodyparser";
-import * as Prometheus from "@prometheus-io/client";
 import * as katex from "katex";
 import Koa from "koa";
+import * as Prometheus from "prom-client";
 
 const host = "localhost";
 const port = Number(process.argv[2] ?? "9700");

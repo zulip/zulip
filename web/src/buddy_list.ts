@@ -424,7 +424,7 @@ export class BuddyList extends BuddyListConf {
             // the user specified otherwise.
             this.set_section_collapse(
                 "#buddy-list-other-users-container",
-                !this.render_data.hide_headers && this.other_users_section.is_collapsed,
+                this.render_data.hide_headers ? false : this.other_users_section.is_collapsed,
             );
         }
 

@@ -143,10 +143,10 @@ export function set_hide_other_views(callback: () => void): void {
 const ORIGINAL_ICON_CLASS_DATA_ATTR = "data-vdots-original-icon-class";
 
 function swap_visibility_icon_to_vdots($icon: JQuery): void {
-    if (
-        $icon.hasClass("recent-view-row-topic-menu") ||
-        $icon.attr(ORIGINAL_ICON_CLASS_DATA_ATTR) !== undefined
-    ) {
+    if ($icon.hasClass("recent-view-row-topic-menu")) {
+        return;
+    }
+    if ($icon.attr(ORIGINAL_ICON_CLASS_DATA_ATTR) !== undefined) {
         return;
     }
     const icon_element = $icon.get(0);
@@ -369,8 +369,8 @@ function update_load_more_banner(): void {
 }
 
 function get_min_load_count(already_rendered_count: number, load_count: number): number {
+    const extra_rows_for_viewing_pleasure = 15;
     if (row_focus > already_rendered_count + load_count) {
-        const extra_rows_for_viewing_pleasure = 15;
         return row_focus + extra_rows_for_viewing_pleasure - already_rendered_count;
     }
     return load_count;
@@ -630,11 +630,13 @@ export function process_messages(
 
     let conversation_data_updated = false;
     const updated_rows = new Set<string>();
-    for (const msg of messages) {
-        if (recent_view_data.process_message(msg)) {
-            conversation_data_updated = true;
-            const key = recent_view_util.get_key_from_message(msg);
-            updated_rows.add(key);
+    if (messages.length > 0) {
+        for (const msg of messages) {
+            if (recent_view_data.process_message(msg)) {
+                conversation_data_updated = true;
+                const key = recent_view_util.get_key_from_message(msg);
+                updated_rows.add(key);
+            }
         }
     }
 
@@ -1184,7 +1186,10 @@ export function bulk_inplace_rerender(row_keys: string[]): void {
 }
 
 export let inplace_rerender = (topic_key: string, is_bulk_rerender?: boolean): boolean => {
-    if (!recent_view_util.is_visible() || !recent_view_data.conversations.has(topic_key)) {
+    if (!recent_view_util.is_visible()) {
+        return false;
+    }
+    if (!recent_view_data.conversations.has(topic_key)) {
         return false;
     }
 
@@ -2301,7 +2306,8 @@ function load_filters(): void {
     // Verify that the dropdown_filters are valid.
     const valid_filters = new Set(Object.values(views_util.FILTERS));
     // If saved filters are not in the list of valid filters, we reset to default.
-    if (dropdown_filters.size === 0 || !dropdown_filters.isSubsetOf(valid_filters)) {
+    const is_subset = [...dropdown_filters].every((filter) => valid_filters.has(filter));
+    if (dropdown_filters.size === 0 || !is_subset) {
         dropdown_filters = new Set([views_util.FILTERS.UNMUTED_TOPICS]);
     }
 

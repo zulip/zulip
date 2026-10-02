@@ -34,7 +34,6 @@ COMMON_YUM_VENV_DEPENDENCIES = [
     "libyaml-devel",
     # Needed by python-xmlsec:
     "gcc",
-    "gcc-c++",
     "python3-devel",
     "libxml2-devel",
     "xmlsec1-devel",

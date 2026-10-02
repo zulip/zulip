@@ -496,7 +496,10 @@ export function decode_dm_recipient_user_ids_from_narrow_url(narrow_url: string)
             return null;
         }
         const terms = parse_narrow(url.hash.split(/\//));
-        if (!terms?.[0] || terms.length > 2) {
+        if (!terms?.[0]) {
+            return null;
+        }
+        if (terms.length > 2) {
             return null;
         }
         // Help Typescript understand that first_term.operator can only be

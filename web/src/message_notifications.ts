@@ -325,7 +325,11 @@ export function should_send_desktop_notification(
         return true;
     }
 
-    if (alert_words.notifies(message) || message.mentioned_me_directly) {
+    if (alert_words.notifies(message)) {
+        return true;
+    }
+
+    if (message.mentioned_me_directly) {
         return true;
     }
 
@@ -393,7 +397,11 @@ export function should_send_audible_notification(
         return true;
     }
 
-    if (alert_words.notifies(message) || message.mentioned_me_directly) {
+    if (alert_words.notifies(message)) {
+        return true;
+    }
+
+    if (message.mentioned_me_directly) {
         return true;
     }
 

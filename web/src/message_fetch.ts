@@ -167,8 +167,8 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
     // messages not tracked in unread.ts during this fetching process.
     message_util.do_unread_count_updates(messages, true);
 
+    const is_contiguous_history = true;
     if (messages.length > 0) {
-        const is_contiguous_history = true;
         if (opts.msg_list) {
             if (opts.validate_filter_topic_post_fetch) {
                 opts.msg_list.data.filter.try_adjusting_for_moved_with_target(messages[0]);
@@ -802,10 +802,11 @@ export function initialize(finished_initial_fetch: () => void): void {
         // Since we backfill a lot more messages here compared to rendered message list,
         // we can try populating them if we can do so locally.
         for (const msg_list_data of message_list_data_cache.all()) {
-            if (
-                msg_list_data === recent_view_messages_data ||
-                !msg_list_data.filter.can_apply_locally()
-            ) {
+            if (msg_list_data === recent_view_messages_data) {
+                continue;
+            }
+
+            if (!msg_list_data.filter.can_apply_locally()) {
                 continue;
             }
 

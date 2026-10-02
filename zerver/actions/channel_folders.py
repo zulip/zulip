@@ -5,13 +5,6 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.lib.channel_folders import get_channel_folder_data, render_channel_folder_description
-from zerver.lib.event_types import (
-    ChannelFolderAddEvent,
-    ChannelFolderDataForUpdate,
-    ChannelFolderForChannelFolderAddEvent,
-    ChannelFolderReorderEvent,
-    ChannelFolderUpdateEvent,
-)
 from zerver.lib.exceptions import JsonableError
 from zerver.models import ChannelFolder, Realm, RealmAuditLog, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -45,10 +38,10 @@ def check_add_channel_folder(
         modified_channel_folder=channel_folder,
     )
 
-    event = ChannelFolderAddEvent(
-        channel_folder=ChannelFolderForChannelFolderAddEvent(
-            **asdict(get_channel_folder_data(channel_folder))
-        ),
+    event = dict(
+        type="channel_folder",
+        op="add",
+        channel_folder=asdict(get_channel_folder_data(channel_folder)),
     )
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
@@ -66,15 +59,19 @@ def try_reorder_realm_channel_folders(realm: Realm, order: list[int]) -> None:
         channel_folder.order = order_mapping[channel_folder.id]
         channel_folder.save(update_fields=["order"])
 
-    event = ChannelFolderReorderEvent(order=order)
+    event = dict(
+        type="channel_folder",
+        op="reorder",
+        order=order,
+    )
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
 def do_send_channel_folder_update_event(
-    channel_folder: ChannelFolder, data: ChannelFolderDataForUpdate
+    channel_folder: ChannelFolder, data: dict[str, str | bool]
 ) -> None:
     realm = channel_folder.realm
-    event = ChannelFolderUpdateEvent(channel_folder_id=channel_folder.id, data=data)
+    event = dict(type="channel_folder", op="update", channel_folder_id=channel_folder.id, data=data)
     send_event_on_commit(realm, event, active_user_ids(realm.id))
 
 
@@ -98,7 +95,7 @@ def do_change_channel_folder_name(
         },
     )
 
-    do_send_channel_folder_update_event(channel_folder, ChannelFolderDataForUpdate(name=name))
+    do_send_channel_folder_update_event(channel_folder, dict(name=name))
 
 
 @transaction.atomic(durable=True)
@@ -126,10 +123,7 @@ def do_change_channel_folder_description(
     )
 
     do_send_channel_folder_update_event(
-        channel_folder,
-        ChannelFolderDataForUpdate(
-            description=description, rendered_description=rendered_description
-        ),
+        channel_folder, dict(description=description, rendered_description=rendered_description)
     )
 
 
@@ -146,9 +140,7 @@ def do_archive_channel_folder(channel_folder: ChannelFolder, *, acting_user: Use
         modified_channel_folder=channel_folder,
     )
 
-    do_send_channel_folder_update_event(
-        channel_folder, ChannelFolderDataForUpdate(is_archived=True)
-    )
+    do_send_channel_folder_update_event(channel_folder, dict(is_archived=True))
 
 
 @transaction.atomic(durable=True)
@@ -164,6 +156,4 @@ def do_unarchive_channel_folder(channel_folder: ChannelFolder, *, acting_user: U
         modified_channel_folder=channel_folder,
     )
 
-    do_send_channel_folder_update_event(
-        channel_folder, ChannelFolderDataForUpdate(is_archived=False)
-    )
+    do_send_channel_folder_update_event(channel_folder, dict(is_archived=False))

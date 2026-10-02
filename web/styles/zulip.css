@@ -1185,15 +1185,11 @@ nav {
 
         .nav-logo {
             display: inline-block;
-            /* Constrain the logo with maximums rather than a fixed
-               height, so that logos wider than the box's aspect ratio
-               scale down proportionally instead of being squashed. */
-            height: auto;
-            max-height: 1.25em; /* 20px at 16px em */
+            height: 1.25em; /* 20px at 16px em */
             max-width: var(--realm-logo-max-width);
 
             @media (height < $short_navbar_cutoff_height) {
-                max-height: 0.9375em; /* 15px at 16px em */
+                height: 0.9375em; /* 15px at 16px em */
             }
         }
 

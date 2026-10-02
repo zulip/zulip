@@ -169,7 +169,11 @@ export function render({
         const option = $poll_option_input.val()!.trim();
         const options = poll_data.get_widget_data().options;
 
-        if (poll_data.is_option_present(options, option) || option === "") {
+        if (poll_data.is_option_present(options, option)) {
+            return;
+        }
+
+        if (option === "") {
             return;
         }
 

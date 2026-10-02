@@ -61,10 +61,10 @@ async function stripe_checkout_session_status_check(stripe_session_id: string): 
     });
     const response_data = stripe_response_schema.parse(response);
 
-    if (
-        response_data.session.status === "created" ||
-        response_data.session.event_handler!.status === "started"
-    ) {
+    if (response_data.session.status === "created") {
+        return false;
+    }
+    if (response_data.session.event_handler!.status === "started") {
         return false;
     }
     if (response_data.session.event_handler!.status === "succeeded") {

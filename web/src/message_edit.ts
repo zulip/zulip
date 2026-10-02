@@ -106,7 +106,11 @@ export let notify_old_thread_default = false;
 export let notify_new_thread_default = true;
 
 export function is_topic_editable(message: Message, edit_limit_seconds_buffer = 0): boolean {
-    if (!is_message_editable_ignoring_permissions(message) || message.type !== "stream") {
+    if (!is_message_editable_ignoring_permissions(message)) {
+        return false;
+    }
+
+    if (message.type !== "stream") {
         return false;
     }
 
@@ -193,12 +197,19 @@ export function is_message_editable_ignoring_permissions(message: Message): bool
 }
 
 export function is_content_editable(message: Message, edit_limit_seconds_buffer = 0): boolean {
-    if (
-        !is_message_editable_ignoring_permissions(message) ||
-        !realm.realm_allow_message_editing ||
-        !message.sent_by_me ||
-        is_widget_message(message)
-    ) {
+    if (!is_message_editable_ignoring_permissions(message)) {
+        return false;
+    }
+
+    if (!realm.realm_allow_message_editing) {
+        return false;
+    }
+
+    if (!message.sent_by_me) {
+        return false;
+    }
+
+    if (is_widget_message(message)) {
         return false;
     }
 
@@ -206,12 +217,15 @@ export function is_content_editable(message: Message, edit_limit_seconds_buffer 
         return false;
     }
 
+    if (realm.realm_message_content_edit_limit_seconds === null) {
+        return true;
+    }
+
     if (
-        realm.realm_message_content_edit_limit_seconds === null ||
         realm.realm_message_content_edit_limit_seconds +
             edit_limit_seconds_buffer +
             (message.timestamp - Date.now() / 1000) >
-            0
+        0
     ) {
         return true;
     }
@@ -227,7 +241,11 @@ export function remaining_content_edit_time(message: Message): number {
 }
 
 export function is_stream_editable(message: Message, edit_limit_seconds_buffer = 0): boolean {
-    if (!is_message_editable_ignoring_permissions(message) || message.type !== "stream") {
+    if (!is_message_editable_ignoring_permissions(message)) {
+        return false;
+    }
+
+    if (message.type !== "stream") {
         return false;
     }
 

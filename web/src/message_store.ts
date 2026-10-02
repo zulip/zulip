@@ -724,7 +724,10 @@ function remove_message_from_topic_links(message_id: number): void {
 const inert_template = new DOMParser().parseFromString("", "text/html").createElement("template");
 
 export function save_topic_links(message: Message): void {
-    if (message.type !== "stream" || muted_users.is_user_muted(message.sender_id)) {
+    if (message.type !== "stream") {
+        return;
+    }
+    if (muted_users.is_user_muted(message.sender_id)) {
         return;
     }
     // Parsing HTML is expensive, and most messages have no narrow links.
@@ -765,7 +768,10 @@ export function save_topic_links(message: Message): void {
         }
         if (to_message_id !== undefined) {
             const to_message = get(to_message_id);
-            if (to_message === undefined || muted_users.is_user_muted(to_message.sender_id)) {
+            if (to_message === undefined) {
+                continue;
+            }
+            if (muted_users.is_user_muted(to_message.sender_id)) {
                 continue;
             }
         }
