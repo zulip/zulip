@@ -59,6 +59,9 @@ mock_esm("../src/compose_recipient", {
 const pm_list = mock_esm("../src/pm_list", {
     update_private_messages() {},
 });
+const recent_view_ui = mock_esm("../src/recent_view_ui", {
+    complete_rerender() {},
+});
 
 const buddy_data = new buddy_list.BuddyList();
 buddy_list.buddy_list = buddy_data;
@@ -126,6 +129,10 @@ run_test("updates", ({override}) => {
     people.add_active_user(isaac);
 
     override(navbar_alerts, "maybe_toggle_empty_required_profile_fields_banner", noop);
+    let recent_view_rerender_count = 0;
+    override(recent_view_ui, "complete_rerender", () => {
+        recent_view_rerender_count += 1;
+    });
     user_events.update_person({
         user_id: isaac.user_id,
         role: settings_config.user_role_values.guest.code,
@@ -178,6 +185,9 @@ run_test("updates", ({override}) => {
     assert.equal(person.user_id, isaac.user_id);
     assert.equal(person.role, settings_config.user_role_values.owner.code);
 
+    // Role changes do not affect recent view.
+    assert.equal(recent_view_rerender_count, 0);
+
     let user_id;
     let full_name;
     message_live_update.update_user_full_name = (user_id_arg, full_name_arg) => {
@@ -200,6 +210,8 @@ run_test("updates", ({override}) => {
     assert.equal(user_id, isaac.user_id);
     assert.equal(full_name, "Sir Isaac");
     assert.equal($navbar_title.text(), "Sir Isaac");
+    // Recent view rows show user names, so a rename redraws them.
+    assert.equal(recent_view_rerender_count, 1);
 
     // Renaming someone the title does not mention leaves it untouched.
     user_events.update_person({user_id: me.user_id, full_name: "Me Interim"});
@@ -231,10 +243,13 @@ run_test("updates", ({override}) => {
     assert.equal(full_name, "Me V2");
     assert.equal(user_list_style_preview_name, "Me V2");
 
+    recent_view_rerender_count = 0;
     user_events.update_person({user_id: isaac.user_id, new_email: "newton@example.com"});
     person = people.get_by_user_id(isaac.user_id);
     assert.equal(person.email, "newton@example.com");
     assert.equal(person.full_name, "Sir Isaac");
+    // Recent view's search matches participants by email too.
+    assert.equal(recent_view_rerender_count, 1);
 
     user_events.update_person({user_id: me.user_id, new_email: "meforu@example.com"});
     person = people.get_by_user_id(me.user_id);
@@ -267,12 +282,14 @@ run_test("updates", ({override}) => {
 
     person = people.get_by_email(isaac.email);
     assert.equal(person.delivery_email, null);
+    recent_view_rerender_count = 0;
     user_events.update_person({
         user_id: isaac.user_id,
         delivery_email: "isaac-delivery@example.com",
     });
     person = people.get_by_email(isaac.email);
     assert.equal(person.delivery_email, "isaac-delivery@example.com");
+    assert.equal(recent_view_rerender_count, 1);
 
     user_events.update_person({user_id: isaac.user_id, delivery_email: null});
     person = people.get_by_email(isaac.email);

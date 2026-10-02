@@ -721,6 +721,18 @@ export function get_unread_messages(messages: Message[]): Message[] {
     return messages.filter((message) => unread_messages.has(message.id));
 }
 
+// The key recent_view_util.get_key_from_message would give for this
+// message, from the data recorded when it became unread: unlike
+// message_store, this covers messages the client never fetched, but
+// only until the message is read.
+export function get_conversation_key(message_id: number): string | undefined {
+    const stream_topic = unread_topic_counter.reverse_lookup.get(message_id);
+    if (stream_topic !== undefined) {
+        return recent_view_util.get_topic_key(stream_topic.stream_id, stream_topic.topic);
+    }
+    return unread_direct_message_counter.reverse_lookup.get(message_id);
+}
+
 export function get_unread_message_count(): number {
     return unread_messages.size;
 }
@@ -760,17 +772,17 @@ export function update_unread_topic_name_case(
 export function process_loaded_messages(
     messages: Message[],
     expect_no_new_unreads = false,
-): boolean {
+): Message[] {
     // Process a set of messages that we have full copies of from the
     // server for whether any are unread but not tracked as such by
     // our data structures. This can occur due to old_unreads_missing,
     // changes in muting configuration, innocent races, or potentially bugs.
     //
-    // Returns whether there were any new unread messages; in that
-    // case, the caller will need to trigger a rerender of UI
+    // Returns the messages newly discovered to be unread; if there
+    // are any, the caller will need to trigger a rerender of UI
     // displaying unread counts.
 
-    let any_untracked_unread_messages = false;
+    const untracked_unread_messages: Message[] = [];
     for (const message of messages) {
         if (message.unread) {
             if (unread_messages.has(message.id)) {
@@ -806,11 +818,11 @@ export function process_loaded_messages(
                     unread: true,
                 });
             }
-            any_untracked_unread_messages = true;
+            untracked_unread_messages.push(message);
         }
     }
 
-    return any_untracked_unread_messages;
+    return untracked_unread_messages;
 }
 
 type UnreadMessageData = {
