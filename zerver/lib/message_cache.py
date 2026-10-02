@@ -91,13 +91,10 @@ def update_message_cache(
 
 def save_message_rendered_content(message: Message, content: str) -> str:
     rendering_result = render_message_markdown(message, content, realm=message.get_realm())
-    rendered_content = None
-    if rendering_result is not None:
-        rendered_content = rendering_result.rendered_content
-    message.rendered_content = rendered_content
+    message.rendered_content = rendering_result.rendered_content
     message.rendered_content_version = markdown_version
     message.save_rendered_content()
-    return rendered_content
+    return rendering_result.rendered_content
 
 
 class ReactionDict:
@@ -436,8 +433,10 @@ class MessageDict:
             edit_history: list[EditHistoryEvent] = orjson.loads(edit_history_json)
             obj["edit_history"] = edit_history
 
-        if Message.need_to_render_content(
-            rendered_content, rendered_content_version, markdown_version
+        if (
+            rendered_content is None
+            or rendered_content_version is None
+            or rendered_content_version < markdown_version
         ):
             # We really shouldn't be rendering objects in this method, but there is
             # a scenario where we upgrade the version of Markdown and fail to run
@@ -456,17 +455,9 @@ class MessageDict:
             # in some cases.
             rendered_content = save_message_rendered_content(message, content)
 
-        if rendered_content is not None:
-            obj["rendered_content"] = rendered_content
-        else:
-            obj["rendered_content"] = (
-                "<p>[Zulip note: Sorry, we could not understand the formatting of your message]</p>"
-            )
+        obj["rendered_content"] = rendered_content
 
-        if rendered_content is not None:
-            obj["is_me_message"] = Message.is_status_message(content, rendered_content)
-        else:
-            obj["is_me_message"] = False
+        obj["is_me_message"] = Message.is_status_message(content, rendered_content)
 
         obj["reactions"] = [
             ReactionDict.build_dict_from_raw_db_row(reaction) for reaction in reactions

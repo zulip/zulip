@@ -289,18 +289,6 @@ class Message(AbstractMessage):
         self.save(update_fields=["rendered_content", "rendered_content_version"])
 
     @staticmethod
-    def need_to_render_content(
-        rendered_content: str | None,
-        rendered_content_version: int | None,
-        markdown_version: int,
-    ) -> bool:
-        return (
-            rendered_content is None
-            or rendered_content_version is None
-            or rendered_content_version < markdown_version
-        )
-
-    @staticmethod
     def is_status_message(content: str, rendered_content: str) -> bool:
         """
         "status messages" start with /me and have special rendering:
