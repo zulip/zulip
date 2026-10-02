@@ -2710,9 +2710,9 @@ class NormalActionsTest(BaseAction):
             do_change_full_name(cordelia, "Cordelia", self.user_profile, notify=False)
 
     def test_change_date_joined(self) -> None:
-        now = timezone_now()
+        new_date_joined = self.user_profile.date_joined - timedelta(days=1)
         with self.verify_action() as events:
-            do_change_user_date_joined(self.user_profile, now)
+            do_change_user_date_joined(self.user_profile, new_date_joined)
         check_realm_user_update("events[0]", events[0], "date_joined")
 
     def test_change_user_delivery_email_email_address_visibility_admins(self) -> None:
