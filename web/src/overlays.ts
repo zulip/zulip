@@ -327,13 +327,26 @@ export function trap_focus_for_settings_overlay(): void {
 
     const overlay_focus_trap_selector =
         "#draft_overlay, #reminders-overlay, #scheduled_messages_overlay, #message-history-overlay, #about-zulip";
-    $("body").on("keydown", overlay_focus_trap_selector, function (this: HTMLElement, e) {
+    $("body").on("keydown", (e) => {
         if (e.key !== "Tab") {
             return;
         }
 
+        if (!(e.target instanceof HTMLElement)) {
+            return;
+        }
+
+        let $overlay = $(e.target).closest(overlay_focus_trap_selector);
+        if ($overlay.length === 0 && active_overlay?.$element.is(overlay_focus_trap_selector)) {
+            $overlay = active_overlay.$element;
+        }
+
+        if ($overlay.length === 0) {
+            return;
+        }
+
         const visible_focusable_elements =
-            overlay_util.get_visible_focusable_elements_in_overlay_container($(this));
+            overlay_util.get_visible_focusable_elements_in_overlay_container($overlay);
 
         if (overlay_util.wrap_overlay_tab_focus(e.shiftKey, visible_focusable_elements)) {
             e.preventDefault();
