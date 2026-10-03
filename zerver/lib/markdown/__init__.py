@@ -2194,21 +2194,27 @@ class ZulipMarkdown(markdown.Markdown):
         linkifiers: list[LinkifierDict],
         linkifiers_key: int,
         email_gateway: bool,
+        *,
+        inline_only: bool = False,
     ) -> None:
         self.linkifiers = linkifiers
         self.linkifiers_key = linkifiers_key
         self.email_gateway = email_gateway
+        self.inline_only = inline_only
 
-        super().__init__(
-            extensions=[
+        extensions = (
+            [nl2br.makeExtension()]
+            if inline_only
+            else [
                 nl2br.makeExtension(),
                 tables.makeExtension(),
                 codehilite.makeExtension(
                     linenums=False,
                     guess_lang=False,
                 ),
-            ],
+            ]
         )
+        super().__init__(extensions=extensions)
         self.set_output_format("html")
 
     @override
@@ -2233,6 +2239,11 @@ class ZulipMarkdown(markdown.Markdown):
         # html_block - insecure
         # reference - references don't make sense in a chat context.
         preprocessors = markdown.util.Registry[markdown.preprocessors.Preprocessor]()
+        if self.inline_only:
+            preprocessors.register(
+                markdown.preprocessors.NormalizeWhitespace(self), "normalize_whitespace", 30
+            )
+            return preprocessors
         preprocessors.register(MarkdownListPreprocessor(self), "hanging_lists", 35)
         preprocessors.register(
             markdown.preprocessors.NormalizeWhitespace(self), "normalize_whitespace", 30
@@ -2255,6 +2266,11 @@ class ZulipMarkdown(markdown.Markdown):
         parser.blockprocessors.register(
             markdown.blockprocessors.EmptyBlockProcessor(parser), "empty", 95
         )
+        if self.inline_only:
+            parser.blockprocessors.register(
+                markdown.blockprocessors.ParagraphProcessor(parser), "paragraph", 50
+            )
+            return parser
         parser.blockprocessors.register(ListIndentProcessor(parser), "indent", 90)
         if not self.email_gateway:
             parser.blockprocessors.register(
@@ -2312,27 +2328,35 @@ class ZulipMarkdown(markdown.Markdown):
         reg.register(
             markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, "strong,em"), "strong_em", 100
         )
-        reg.register(UserMentionPattern(mention.MENTIONS_RE, self), "usermention", 95)
-        reg.register(Tex(TEX_RE, self), "tex", 90)
-        reg.register(
-            StreamTopicMessagePattern(get_compiled_stream_topic_message_link_regex(), self),
-            "stream_topic_message",
-            89,
-        )
-        reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), "topic", 87)
-        reg.register(StreamPattern(get_compiled_stream_link_regex(), self), "stream", 85)
-        reg.register(Timestamp(TIMESTAMP_RE), "timestamp", 75)
-        reg.register(
-            UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 65
-        )
+        if not self.inline_only:
+            reg.register(UserMentionPattern(mention.MENTIONS_RE, self), "usermention", 95)
+            reg.register(Tex(TEX_RE, self), "tex", 90)
+            reg.register(
+                StreamTopicMessagePattern(get_compiled_stream_topic_message_link_regex(), self),
+                "stream_topic_message",
+                89,
+            )
+            reg.register(
+                StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), "topic", 87
+            )
+            reg.register(StreamPattern(get_compiled_stream_link_regex(), self), "stream", 85)
+            reg.register(Timestamp(TIMESTAMP_RE), "timestamp", 75)
+            reg.register(
+                UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self),
+                "usergroupmention",
+                65,
+            )
         reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 60)
-        # We register higher priority on audio patterns, as the processing logic will pass things
-        # onto image patterns in the absence of a supported audio type
-        reg.register(AudioInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), "audio", 58)
-        reg.register(ImageInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), "image", 57)
+        if not self.inline_only:
+            reg.register(
+                AudioInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), "audio", 58
+            )
+            reg.register(
+                ImageInlineProcessor(markdown.inlinepatterns.IMAGE_LINK_RE, self), "image", 57
+            )
         reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
-        # Reserve priority 45-54 for linkifiers
-        reg = self.register_linkifiers(reg)
+        if not self.inline_only:
+            reg = self.register_linkifiers(reg)
         reg.register(
             markdown.inlinepatterns.HtmlInlineProcessor(markdown.inlinepatterns.ENTITY_RE, self),
             "entity",
@@ -2348,10 +2372,12 @@ class ZulipMarkdown(markdown.Markdown):
             "not_strong",
             20,
         )
-        reg.register(Emoji(EMOJI_REGEX, self), "emoji", 15)
-        reg.register(EmoticonTranslation(EMOTICON_RE, self), "translate_emoticons", 10)
-        # We get priority 5 from 'nl2br' extension
-        reg.register(UnicodeEmoji(cast(Pattern[str], POSSIBLE_EMOJI_RE), self), "unicodeemoji", 0)
+        if not self.inline_only:
+            reg.register(Emoji(EMOJI_REGEX, self), "emoji", 15)
+            reg.register(EmoticonTranslation(EMOTICON_RE, self), "translate_emoticons", 10)
+            reg.register(
+                UnicodeEmoji(cast(Pattern[str], POSSIBLE_EMOJI_RE), self), "unicodeemoji", 0
+            )
         return reg
 
     def register_linkifiers(
@@ -2373,12 +2399,13 @@ class ZulipMarkdown(markdown.Markdown):
         treeprocessors.register(markdown.treeprocessors.InlineProcessor(self), "inline", 25)
         treeprocessors.register(markdown.treeprocessors.PrettifyTreeprocessor(self), "prettify", 20)
         treeprocessors.register(markdown.treeprocessors.UnescapeTreeprocessor(self), "unescape", 18)
-        treeprocessors.register(
-            InlineInterestingLinkProcessor(self), "inline_interesting_links", 15
-        )
-        if settings.CAMO_URI:
-            treeprocessors.register(InlineImageProcessor(self), "rewrite_images_proxy", 10)
-            treeprocessors.register(InlineVideoProcessor(self), "rewrite_videos_proxy", 10)
+        if not self.inline_only:
+            treeprocessors.register(
+                InlineInterestingLinkProcessor(self), "inline_interesting_links", 15
+            )
+            if settings.CAMO_URI:
+                treeprocessors.register(InlineImageProcessor(self), "rewrite_images_proxy", 10)
+                treeprocessors.register(InlineVideoProcessor(self), "rewrite_videos_proxy", 10)
         return treeprocessors
 
     def build_postprocessors(self) -> markdown.util.Registry[markdown.postprocessors.Postprocessor]:
@@ -2391,11 +2418,17 @@ class ZulipMarkdown(markdown.Markdown):
         return postprocessors
 
 
-def make_md_engine(linkifiers_key: int, email_gateway: bool) -> ZulipMarkdown:
+def make_md_engine(
+    linkifiers_key: int,
+    email_gateway: bool,
+    *,
+    inline_only: bool = False,
+) -> ZulipMarkdown:
     return ZulipMarkdown(
-        linkifiers=linkifiers_for_realm(linkifiers_key),
+        linkifiers=[] if inline_only else linkifiers_for_realm(linkifiers_key),
         linkifiers_key=linkifiers_key,
         email_gateway=email_gateway,
+        inline_only=inline_only,
     )
 
 
@@ -2563,6 +2596,8 @@ def do_convert(
     email_gateway: bool = False,
     no_previews: bool = False,
     acting_user: UserProfile | None = None,
+    *,
+    inline_only: bool = False,
 ) -> MessageRenderingResult:
     """Convert Markdown to HTML, with Zulip-specific settings and hacks."""
     # This logic is a bit convoluted, but the overall goal is to support a range of use cases:
@@ -2581,7 +2616,7 @@ def do_convert(
     else:
         logging_message_id = "unknown"
 
-    md_engine = make_md_engine(linkifiers_key, email_gateway)
+    md_engine = make_md_engine(linkifiers_key, email_gateway, inline_only=inline_only)
 
     # Filters such as UserMentionPattern need a message.
     rendering_result: MessageRenderingResult = MessageRenderingResult(
@@ -2611,7 +2646,7 @@ def do_convert(
 
     # Pre-fetch data from the DB that is used in the Markdown thread
     user_upload_previews = None
-    if message_realm is not None:
+    if message_realm is not None and not inline_only:
         # Here we fetch the data structures needed to render
         # mentions/stream mentions from the database, but only
         # if there is syntax in the message that might use them, since
@@ -2662,6 +2697,14 @@ def do_convert(
         # errors (e.g. a linkifier that makes some syntax
         # infinite-loop).
         rendering_result.rendered_content = unsafe_timeout(5, lambda: md_engine.convert(content))
+
+        if inline_only:
+            rendered = rendering_result.rendered_content.strip()
+            rendered = re.sub(r"</p>\s*<p>", "<br>", rendered)
+            if rendered.startswith("<p>") and rendered.endswith("</p>"):
+                rendered = rendered[3:-4]
+            rendering_result.rendered_content = rendered
+            return rendering_result
 
         # Post-process the result with the rendered image previews:
         if user_upload_previews is not None:
@@ -2734,6 +2777,8 @@ def markdown_convert(
     email_gateway: bool = False,
     no_previews: bool = False,
     acting_user: UserProfile | None = None,
+    *,
+    inline_only: bool = False,
 ) -> MessageRenderingResult:
     markdown_stats_start()
     ret = do_convert(
@@ -2748,9 +2793,29 @@ def markdown_convert(
         email_gateway,
         no_previews=no_previews,
         acting_user=acting_user,
+        inline_only=inline_only,
     )
     markdown_stats_finish()
     return ret
+
+
+def render_inline_markdown(content: str, realm: Realm) -> str:
+    """Render Markdown for short single-line or inline text fields.
+
+    Only inline formatting (bold, italic, code, links, strikethrough) is
+    rendered, and the outer paragraph wrapper is stripped so the result
+    can be embedded directly within inline UI elements without breaking layout.
+    Block elements (headings, lists, blockquotes) and entity mentions
+    (users, streams, groups, timestamps) are not parsed.
+    """
+    if not content:
+        return ""
+    return markdown_convert(
+        content,
+        message_realm=realm,
+        no_previews=True,
+        inline_only=True,
+    ).rendered_content
 
 
 def render_message_markdown(
