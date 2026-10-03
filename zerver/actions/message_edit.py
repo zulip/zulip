@@ -91,7 +91,6 @@ from zerver.lib.user_groups import (
     get_user_id_annotated_recursive_membership_groups_for_users,
 )
 from zerver.lib.user_message import bulk_insert_all_ums
-from zerver.lib.user_topics import get_users_with_user_topic_visibility_policy
 from zerver.lib.widget import is_widget_message
 from zerver.models import (
     ArchivedAttachment,
@@ -698,35 +697,32 @@ def update_user_topic_visibility_policies_on_move(
     orig_topic_user_profile_to_visibility_policy: dict[UserProfile, int] = {}
     target_topic_user_profile_to_visibility_policy: dict[UserProfile, int] = {}
 
-    orig_topic_user_topics_query = get_users_with_user_topic_visibility_policy(
-        stream_being_edited.id, orig_topic_name
-    )
-    target_topic_user_topics_query = get_users_with_user_topic_visibility_policy(
-        target_stream.id, target_topic_name
+    orig_topic_q = Q(stream_id=stream_being_edited.id, topic_name__iexact=orig_topic_name)
+    target_topic_q = Q(stream_id=target_stream.id, topic_name__iexact=target_topic_name)
+    user_topics_query = UserTopic.objects.filter(orig_topic_q | target_topic_q).select_related(
+        "user_profile", "user_profile__realm"
     )
     if filter_to_user_ids is not None:
-        orig_topic_user_topics_query = orig_topic_user_topics_query.filter(
-            user_profile_id__in=filter_to_user_ids
-        )
-        target_topic_user_topics_query = target_topic_user_topics_query.filter(
-            user_profile_id__in=filter_to_user_ids
-        )
+        user_topics_query = user_topics_query.filter(user_profile_id__in=filter_to_user_ids)
 
+    assert target_stream.recipient_id is not None
     # We annotate whether each user is subscribed to the target
     # channel, so user_has_content_access below needs no extra
     # per-user or subscriber query.
-    assert target_stream.recipient_id is not None
-    orig_topic_user_topics = list(
-        orig_topic_user_topics_query.annotate(
+    user_topics = list(
+        user_topics_query.annotate(
+            is_orig_topic=orig_topic_q,
+            is_target_topic=target_topic_q,
             is_target_stream_subscriber=Exists(
                 Subscription.objects.filter(
                     recipient_id=target_stream.recipient_id,
                     user_profile_id=OuterRef("user_profile_id"),
                     active=True,
                 )
-            )
+            ),
         )
     )
+    orig_topic_user_topics = [user_topic for user_topic in user_topics if user_topic.is_orig_topic]
 
     recursive_group_ids_by_user: dict[int, set[int]] = {}
     if is_stream_edited and not target_stream.is_public():
@@ -757,10 +753,11 @@ def update_user_topic_visibility_policies_on_move(
                 orig_user_topic.visibility_policy
             )
 
-    for user_topic in target_topic_user_topics_query:
-        target_topic_user_profile_to_visibility_policy[user_topic.user_profile] = (
-            user_topic.visibility_policy
-        )
+    for user_topic in user_topics:
+        if user_topic.is_target_topic:
+            target_topic_user_profile_to_visibility_policy[user_topic.user_profile] = (
+                user_topic.visibility_policy
+            )
 
     # User profiles having any of the visibility policies set for either the original or target topic.
     user_profiles_having_visibility_policy: set[UserProfile] = set(
