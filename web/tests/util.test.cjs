@@ -480,7 +480,7 @@ run_test("get_custom_time_in_minutes", () => {
 });
 
 run_test("check_and_validate_custom_time_input", () => {
-    const input_is_zero = 0;
+    const input_is_zero = "0";
     let checked_input = util.check_time_input(input_is_zero);
     assert.equal(checked_input, 0);
     assert.equal(util.validate_custom_time_input(checked_input, true), true);
@@ -507,6 +507,23 @@ run_test("check_and_validate_custom_time_input", () => {
     checked_input = util.check_time_input(input_is_integer);
     assert.equal(checked_input, 10);
     assert.equal(util.validate_custom_time_input(input_is_integer), true);
+});
+
+run_test("check_time_input_numeric_formats", () => {
+    assert.equal(util.check_time_input("1e2"), 100);
+    assert.equal(util.check_time_input("2.45e1"), 24);
+    assert.equal(util.check_time_input("-2.45e1"), -24);
+    assert.equal(util.check_time_input("1e-2"), 0);
+    assert.equal(util.check_time_input("2.45e1", true), 24.5);
+    assert.equal(util.check_time_input("1e"), NaN);
+    assert.equal(util.check_time_input(""), NaN);
+    assert.equal(util.check_time_input(" "), NaN);
+    assert.equal(util.check_time_input("0x10"), 16);
+    assert.equal(util.check_time_input("0x10", true), 16);
+    for (const input of ["Infinity", "-Infinity", "1e309"]) {
+        assert.equal(util.check_time_input(input), NaN);
+        assert.equal(util.check_time_input(input, true), NaN);
+    }
 });
 
 run_test("the", () => {
