@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.event_types import IconData, RealmUpdateDictEvent
+from zerver.lib.event_types import RealmUpdateDictData, RealmUpdateDictEvent
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.models import Realm, RealmAuditLog, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
@@ -28,7 +28,7 @@ def do_change_icon_source(
 
     event = RealmUpdateDictEvent(
         property="icon",
-        data=IconData(icon_source=realm.icon_source, icon_url=realm_icon_url(realm)),
+        data=RealmUpdateDictData(icon_source=realm.icon_source, icon_url=realm_icon_url(realm)),
     )
     send_event_on_commit(
         realm,
