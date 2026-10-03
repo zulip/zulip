@@ -11,6 +11,7 @@ import orjson
 import requests
 import responses
 import time_machine
+from aioapns.connection import APNsBaseConnectionPool, APNsProductionClientProtocol
 from django.conf import settings
 from django.db.models import F, Q
 from django.test import override_settings
@@ -18,6 +19,7 @@ from django.utils.crypto import get_random_string
 from django.utils.timezone import now
 from dns.resolver import NoAnswer as DNSNoAnswer
 from firebase_admin import exceptions as firebase_exceptions
+from h2.exceptions import ProtocolError
 from requests.exceptions import ConnectionError
 from typing_extensions import override
 
@@ -29,6 +31,7 @@ from zerver.actions.user_settings import do_regenerate_api_key
 from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_user
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import (
+    APNS_MAX_RETRIES,
     DeviceToken,
     InvalidRemotePushDeviceTokenError,
     UserPushIdentityCompat,
@@ -1374,6 +1377,89 @@ class TestAPNs(PushNotificationTestCase):
             self.assertIn(
                 f"ERROR:zerver.lib.push_notifications:APNs: ConnectionError sending for user <id:{self.user_profile.id}> to device {self.devices()[0].token}; check certificate expiration",
                 logger.output,
+            )
+
+    def test_retry_after_connection_closed_by_apns(self) -> None:
+        self.setup_apns_tokens()
+        with self.mock_apns() as (apns_context, send_notification):
+
+            async def make_pool() -> APNsBaseConnectionPool:
+                return APNsBaseConnectionPool(topic="org.zulip.Zulip")
+
+            pool = apns_context.loop.run_until_complete(make_pool())
+            apns_context.apns.pool = pool
+            closed_connection = APNsProductionClientProtocol(
+                "org.zulip.Zulip",
+                loop=apns_context.loop,
+                on_connection_lost=mock.Mock(side_effect=pool.discard_connection),
+            )
+            open_connection = APNsProductionClientProtocol(
+                "org.zulip.Zulip", loop=apns_context.loop
+            )
+            pool.connections = [closed_connection, open_connection]
+
+            # Get the exact error h2 raises when sending on a connection
+            # that APNs has closed with GOAWAY.
+            closed_connection.conn.close_connection()
+            with self.assertRaises(ProtocolError) as protocol_error:
+                closed_connection.conn.send_headers(1, [])
+
+            send_notification.side_effect = [
+                protocol_error.exception,
+                send_notification.return_value,
+            ]
+            send_notification.return_value.is_successful = True
+            with (
+                self.assertLogs("aioapns", level="INFO") as aioapns_logger,
+                self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger,
+            ):
+                self.send(devices=self.devices()[0:1])
+
+            self.assertEqual(send_notification.await_count, 2)
+            self.assertEqual(pool.connections, [open_connection])
+            self.assertEqual(aioapns_logger.output, ["INFO:aioapns:Connection released (total: 1)"])
+            self.assertEqual(
+                f"INFO:zerver.lib.push_notifications:APNs: Success sending for user <id:{self.user_profile.id}> to device {self.devices()[0].token}",
+                logger.output[1],
+            )
+
+            # When the transport finishes closing later, aioapns must not
+            # try to discard the connection from the pool again.
+            closed_connection.connection_lost(None)
+            self.assertEqual(pool.connections, [open_connection])
+
+    def test_closed_connection_retry_limit(self) -> None:
+        self.setup_apns_tokens()
+        with (
+            self.mock_apns() as (apns_context, send_notification),
+            mock.patch.object(apns_context, "discard_closed_connections") as discard,
+            self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger,
+        ):
+            send_notification.side_effect = ProtocolError(
+                "Invalid input ConnectionInputs.SEND_HEADERS in state ConnectionState.CLOSED"
+            )
+            self.send(devices=self.devices()[0:1])
+            self.assertEqual(send_notification.await_count, APNS_MAX_RETRIES)
+            self.assertEqual(discard.call_count, APNS_MAX_RETRIES - 1)
+            self.assertIn(
+                f"ERROR:zerver.lib.push_notifications:APNs: Error sending for user <id:{self.user_profile.id}> to device {self.devices()[0].token}",
+                logger.output[1],
+            )
+
+    def test_other_protocol_error_not_retried(self) -> None:
+        self.setup_apns_tokens()
+        with (
+            self.mock_apns() as (apns_context, send_notification),
+            mock.patch.object(apns_context, "discard_closed_connections") as discard,
+            self.assertLogs("zerver.lib.push_notifications", level="INFO") as logger,
+        ):
+            send_notification.side_effect = ProtocolError("Invalid header")
+            self.send(devices=self.devices()[0:1])
+            send_notification.assert_awaited_once()
+            discard.assert_not_called()
+            self.assertIn(
+                f"ERROR:zerver.lib.push_notifications:APNs: Error sending for user <id:{self.user_profile.id}> to device {self.devices()[0].token}",
+                logger.output[1],
             )
 
     def test_other_exception(self) -> None:

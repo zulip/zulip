@@ -172,6 +172,38 @@ class APNsContext:
     apns: "aioapns.APNs"
     loop: asyncio.AbstractEventLoop
 
+    async def send_notification(self, request: "aioapns.NotificationRequest") -> NotificationResult:
+        # TODO: Remove once aioapns stops using closed connections:
+        # https://github.com/Fatal1ty/aioapns/issues/77
+        from h2.exceptions import ProtocolError
+
+        for _attempt in range(APNS_MAX_RETRIES - 1):
+            try:
+                return await self.apns.send_notification(request)
+            except ProtocolError as exc:
+                # If aioapns tried to use a connection that APNs had already closed,
+                # nothing reached APNs. aioapns keeps closed connections in its pool
+                # until their TLS shutdown completes, so discard them before retrying.
+                if (
+                    str(exc)
+                    != "Invalid input ConnectionInputs.SEND_HEADERS in state ConnectionState.CLOSED"
+                ):
+                    raise
+                self.discard_closed_connections()
+        return await self.apns.send_notification(request)
+
+    def discard_closed_connections(self) -> None:
+        from h2.connection import ConnectionState
+
+        pool = self.apns.pool
+        for connection in list(pool.connections):
+            if connection.conn.state_machine.state is ConnectionState.CLOSED:
+                # The transport still calls connection_lost once its TLS shutdown
+                # completes; that would try to discard the connection a second time,
+                # raising ValueError. Set on_connection_lost to None to prevent that.
+                connection.on_connection_lost = None
+                pool.discard_connection(connection)
+
 
 def has_apns_credentials() -> bool:
     return settings.APNS_TOKEN_KEY_FILE is not None or settings.APNS_CERT_FILE is not None
@@ -352,7 +384,7 @@ def send_apple_push_notification(
         )
         try:
             results[device] = apns_context.loop.run_until_complete(
-                apns_context.apns.send_notification(request)
+                apns_context.send_notification(request)
             )
         except BaseException as e:
             results[device] = e
