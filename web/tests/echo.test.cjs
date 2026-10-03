@@ -3,7 +3,9 @@
 const assert = require("node:assert/strict");
 
 const {make_user_group} = require("./lib/example_group.cjs");
+const {make_realm} = require("./lib/example_realm.cjs");
 const {make_stream} = require("./lib/example_stream.cjs");
+const {make_user} = require("./lib/example_user.cjs");
 const {clock, mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {make_stub} = require("./lib/stub.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
@@ -11,7 +13,9 @@ const {$} = require("./lib/zjquery.cjs");
 
 const browser_history = mock_esm("../src/browser_history");
 const compose_notifications = mock_esm("../src/compose_notifications");
+const compose_ui = mock_esm("../src/compose_ui");
 const hash_util = mock_esm("../src/hash_util");
+const local_message = mock_esm("../src/local_message");
 const markdown = mock_esm("../src/markdown");
 const message_lists = mock_esm("../src/message_lists");
 const message_events_util = mock_esm("../src/message_events_util");
@@ -90,12 +94,15 @@ const echo = zrequire("echo");
 const echo_state = zrequire("echo_state");
 const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
-const {set_current_user} = zrequire("state_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
+const user_groups = zrequire("user_groups");
 
 const current_user = {};
 set_current_user(current_user);
+const realm = make_realm();
+set_realm(realm);
 
 const general_sub = make_stream({
     stream_id: 101,
@@ -103,6 +110,137 @@ const general_sub = make_stream({
     subscribed: true,
 });
 stream_data.add_sub_for_tests(general_sub);
+
+run_test("try_deliver_locally with group mentions", ({override}) => {
+    override(current_user, "user_id", 123);
+    people.add_active_user(make_user({user_id: 123}));
+    people.initialize_current_user(123);
+    user_groups.add(
+        make_user_group({
+            name: "allowed",
+            can_mention_group: {
+                direct_members: [123],
+                direct_subgroups: [],
+            },
+        }),
+    );
+    user_groups.add(
+        make_user_group({
+            name: "restricted",
+            can_mention_group: {
+                direct_members: [],
+                direct_subgroups: [],
+            },
+        }),
+    );
+    const mention_permission_group = user_groups.add(make_user_group({members: [123]}));
+    user_groups.add(
+        make_user_group({
+            name: "nested permission",
+            can_mention_group: mention_permission_group.id,
+        }),
+    );
+    const restricted_names = [
+        "研发 🚀",
+        "R&D <team>",
+        "O'Brien",
+        "a".repeat(100),
+        "role:moderators",
+    ];
+    for (const name of restricted_names) {
+        user_groups.add(
+            make_user_group({
+                name,
+                can_mention_group: {direct_members: [], direct_subgroups: []},
+            }),
+        );
+    }
+
+    override(markdown, "contains_backend_only_syntax", () => false);
+    override(markdown, "render", (content) => ({content, flags: []}));
+    override(markdown, "get_topic_links", () => []);
+    override(compose_ui, "is_expanded", () => false);
+
+    let reserved_local_ids = 0;
+    override(local_message, "get_next_id_float", () => {
+        reserved_local_ids += 1;
+        return 100.01;
+    });
+
+    for (const [content, should_echo] of [
+        ["Hello", true],
+        ["@*allowed*", true],
+        ["@*nested permission*", true],
+        ["@*unknown*", true],
+        ["@_*restricted*", true],
+        ["@**restricted**", true],
+        ["@*restricted*", false],
+        ["@*RESTRICTED*", false],
+        ["@*allowed* @*restricted*", false],
+        ["@*restricted* @*allowed*", false],
+        ["@*unknown* @*restricted*", false],
+        ["x@*unknown @*restricted*", false],
+        ["`@*restricted*`", false],
+        ["\\@*restricted*", false],
+        ...restricted_names.map((name) => [`@*${name}*`, false]),
+    ]) {
+        const previous_reserved_local_ids = reserved_local_ids;
+        let inserted_message = false;
+        const message = echo.try_deliver_locally(
+            {
+                type: "stream",
+                stream_id: general_sub.stream_id,
+                topic: "test",
+                content,
+            },
+            ({raw_messages}) => {
+                inserted_message = true;
+                assert.equal(raw_messages[0].raw_content, content);
+                return raw_messages;
+            },
+        );
+        assert.equal(message !== undefined, should_echo, content);
+        assert.equal(
+            reserved_local_ids - previous_reserved_local_ids,
+            Number(should_echo),
+            content,
+        );
+        assert.equal(inserted_message, should_echo, content);
+    }
+
+    override(realm, "realm_direct_message_initiator_group", mention_permission_group.id);
+    people.add_active_user(make_user({user_id: 321}));
+    let inserted_private_message = false;
+    const insert_private_message = ({raw_messages}) => {
+        inserted_private_message = true;
+        return raw_messages;
+    };
+    assert.notEqual(
+        echo.try_deliver_locally(
+            {
+                type: "private",
+                to_user_ids: "321",
+                content: "@*allowed*",
+            },
+            insert_private_message,
+        ),
+        undefined,
+    );
+    assert.equal(inserted_private_message, true);
+    inserted_private_message = false;
+    assert.equal(
+        echo.try_deliver_locally(
+            {
+                type: "private",
+                to_user_ids: "321",
+                content: "@*restricted*",
+            },
+            insert_private_message,
+        ),
+        undefined,
+    );
+    assert.equal(inserted_private_message, false);
+});
 
 run_test("process_from_server for un-echoed messages", () => {
     const waiting_for_ack = new Map();
