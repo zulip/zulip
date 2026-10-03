@@ -14,18 +14,19 @@ from zerver.lib.event_types import (
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
+from zerver.lib.markdown import render_inline_markdown
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.streams import render_stream_description
 from zerver.lib.types import ProfileDataElementUpdateDict, ProfileFieldData, UserProfileChangeDict
 from zerver.lib.users import get_user_ids_who_can_access_user
 from zerver.models import CustomProfileField, CustomProfileFieldValue, Realm, UserProfile
-from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
+from zerver.models.custom_profile_fields import rendered_custom_profile_fields_for_realm
 from zerver.models.users import active_user_ids
 from zerver.tornado.django_api import send_event_on_commit
 
 
 def notify_realm_custom_profile_fields(realm: Realm) -> None:
-    fields = custom_profile_fields_for_realm(realm.id)
+    fields = rendered_custom_profile_fields_for_realm(realm.id)
     event = CustomProfileFieldsEvent(
         fields=[DetailedCustomProfile(**f.as_dict()) for f in fields],
     )
@@ -42,11 +43,15 @@ def try_add_realm_default_custom_profile_field(
     use_for_user_matching: bool = False,
 ) -> CustomProfileField:
     field_data = DEFAULT_EXTERNAL_ACCOUNTS[field_subtype]
+    rendered_name = render_inline_markdown(str(field_data.name), realm)
+    rendered_hint = render_inline_markdown(field_data.hint, realm)
     custom_profile_field = CustomProfileField(
         realm=realm,
         name=str(field_data.name),
+        rendered_name=rendered_name,
         field_type=CustomProfileField.EXTERNAL_ACCOUNT,
         hint=field_data.hint,
+        rendered_hint=rendered_hint,
         field_data=orjson.dumps(dict(subtype=field_subtype)).decode(),
         display_in_profile_summary=display_in_profile_summary,
         required=required,
@@ -72,16 +77,20 @@ def try_add_realm_custom_profile_field(
     editable_by_user: bool = True,
     use_for_user_matching: bool = False,
 ) -> CustomProfileField:
+    rendered_name = render_inline_markdown(name, realm)
+    rendered_hint = render_inline_markdown(hint, realm)
     custom_profile_field = CustomProfileField(
         realm=realm,
         name=name,
+        rendered_name=rendered_name,
         field_type=field_type,
+        hint=hint,
+        rendered_hint=rendered_hint,
         display_in_profile_summary=display_in_profile_summary,
         required=required,
         editable_by_user=editable_by_user,
         use_for_user_matching=use_for_user_matching,
     )
-    custom_profile_field.hint = hint
     if custom_profile_field.field_type in (
         CustomProfileField.DROPDOWN,
         CustomProfileField.EXTERNAL_ACCOUNT,
@@ -147,8 +156,10 @@ def try_update_realm_custom_profile_field(
 ) -> None:
     if name is not None:
         field.name = name
+        field.rendered_name = render_inline_markdown(name, realm)
     if hint is not None:
         field.hint = hint
+        field.rendered_hint = render_inline_markdown(hint, realm)
     if required is not None:
         field.required = required
     if editable_by_user is not None:
