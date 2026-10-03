@@ -337,6 +337,12 @@ export function rename_stream_recipient(
     }
 }
 
+let split_send_draft: {draft_id: string; content: string} | undefined;
+
+export function set_split_send_draft(value: {draft_id: string; content: string} | undefined): void {
+    split_send_draft = value;
+}
+
 export function snapshot_message(force_save = false): LocalStorageDraft | undefined {
     const can_save_message = force_save || compose_state.has_savable_message_content();
     if (!compose_state.composing() || !can_save_message) {
@@ -476,6 +482,10 @@ export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined =>
         draft.is_sending_saving = opts.is_sending_saving;
     } else {
         draft.is_sending_saving = old_draft ? old_draft.is_sending_saving : false;
+    }
+
+    if (split_send_draft !== undefined && split_send_draft.draft_id === draft_id) {
+        draft.content = split_send_draft.content;
     }
 
     // Now that it's been updated, we consider it to be the most recent version.

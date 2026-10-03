@@ -38,7 +38,7 @@ const fencestr =
     "\\}?" +
     ")" +
     "$";
-const fence_re = new RegExp(fencestr);
+export const fence_re = new RegExp(fencestr);
 
 // Default stashing function does nothing
 let stash_func = function (text: string): string {

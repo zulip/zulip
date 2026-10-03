@@ -25,6 +25,7 @@ class FakeComposeBox {
         $compose.set_find_results(".undo_markdown_preview", $("#compose .undo_markdown_preview"));
         $compose.set_find_results(".preview_message_area", this.$preview_message_area);
         $compose.set_find_results(".preview_content", $("#compose .preview_content"));
+        $compose.set_matches("#compose", true);
 
         this.$send_message_form.set_find_results(
             ".message-limit-indicator",
@@ -46,6 +47,7 @@ class FakeComposeBox {
 
         this.$content_textarea.set_height(50);
         this.$content_textarea.val("default message");
+        this.$content_textarea.prop("readonly", false);
         this.$content_textarea.trigger("blur");
 
         $(".compose-submit-button .loader").show();
@@ -103,6 +105,10 @@ class FakeComposeBox {
 
     is_textarea_focused() {
         return this.$content_textarea.is_focused();
+    }
+
+    is_textarea_readonly() {
+        return Boolean(this.$content_textarea.prop("readonly"));
     }
 
     is_submit_button_spinner_visible() {

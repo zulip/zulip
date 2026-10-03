@@ -840,6 +840,7 @@ exports.fixtures = {
                 rendered_content: "<p>Hello there!</p>",
                 scheduled_delivery_timestamp: 1681662420,
                 failed: false,
+                split_group_id: null,
             },
         ],
     },
@@ -861,6 +862,7 @@ exports.fixtures = {
             rendered_content: "<p>Hello there!</p>",
             scheduled_delivery_timestamp: 1681662420,
             failed: false,
+            split_group_id: null,
         },
     },
 
