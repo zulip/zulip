@@ -3386,7 +3386,7 @@ class MultiuseInviteTest(ZulipTestCase):
             self.assertEqual(result["Location"], "/accounts/login/")
 
         expected_log_line = (
-            "INFO:zulip.registration:(zulip) Rejected multiuse invite signup for "
+            "INFO:zulip.registration:(zulip) Rejected signup from email confirmation for "
             f"{email}: password authentication is disabled"
         )
         self.assertEqual(registration_logs.output, [expected_log_line, expected_log_line])
