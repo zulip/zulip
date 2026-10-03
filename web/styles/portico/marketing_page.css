@@ -2965,6 +2965,13 @@ button {
     }
 }
 
+/* Feature pages with a list of alternating sections shade every
+   other section, so that the eye can tell where one ends. */
+.alternative-features .feature-container:nth-child(even) {
+    background: var(--color-background-box);
+    border-radius: 10px;
+}
+
 .discounts-section {
     text-align: center;
 
@@ -3348,11 +3355,6 @@ button {
     .alternative-features {
         .feature-container {
             padding: 30px;
-
-            &:nth-child(even) {
-                background: var(--color-background-box);
-                border-radius: 10px;
-            }
         }
 
         .feature-icon img {
