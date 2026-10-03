@@ -570,19 +570,27 @@ def registration_helper(
             return redirect_to_email_login_url(email)
 
         if (
-            prereg_user.multiuse_invite is not None
-            and password_required
+            password_required
             and not password_auth_enabled(realm)
+            # Only signup from an email invite or in the realm import flow is allowed.
+            and prereg_user.confirmation.get().type != Confirmation.INVITATION
+            and not prereg_user.is_realm_importer
         ):
-            # This should only be reachable when a user goes through a multi-use invite
-            # when password auth is enabled, enters an email address and then clicks
-            # the received confirmation link **after** the administrators disable password
-            # auth in the meantime.
+            # This should only be reachable in two cases:
+            #
+            # 1. The user entered their email address to begin signup by email
+            #    on the registration page while password auth was enabled, and
+            #    clicked the received confirmation link **after** the
+            #    administrators disabled password auth.
+            # 2. The same, but with the email address entered on a multiuse
+            #    invite link's page.
+            #
             # When password-based auth methods are disabled, signing up requires
             # going through an external authentication method (which sets
-            # password_required=False).
+            # password_required=False). Email invitations, which explicitly grant
+            # access to the invited address, and realm import owners are exempt.
             logger.info(
-                "(%s) Rejected multiuse invite signup for %s: password authentication is disabled",
+                "(%s) Rejected signup from email confirmation for %s: password authentication is disabled",
                 realm.string_id,
                 email,
             )
