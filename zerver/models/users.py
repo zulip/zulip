@@ -739,14 +739,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     def profile_data(self) -> ProfileData:
         from zerver.models import CustomProfileFieldValue
-        from zerver.models.custom_profile_fields import custom_profile_fields_for_realm
+        from zerver.models.custom_profile_fields import rendered_custom_profile_fields_for_realm
 
         values = CustomProfileFieldValue.objects.filter(user_profile=self)
         user_data = {
             v.field_id: {"value": v.value, "rendered_value": v.rendered_value} for v in values
         }
         data: ProfileData = []
-        for field in custom_profile_fields_for_realm(self.realm_id):
+        for field in rendered_custom_profile_fields_for_realm(self.realm_id):
             field_values = user_data.get(field.id)
             if field_values:
                 value, rendered_value = (

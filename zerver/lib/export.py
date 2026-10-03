@@ -940,6 +940,9 @@ def get_realm_config() -> Config:
         model=CustomProfileField,
         normal_parent=realm_config,
         include_rows="realm_id__in",
+        # rendered_name and rendered_hint are re-rendered on demand after
+        # import, so we don't carry the source server's HTML across.
+        exclude=["rendered_name", "rendered_hint"],
     )
 
     Config(
