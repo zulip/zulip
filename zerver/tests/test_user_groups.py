@@ -823,6 +823,13 @@ class UserGroupTestCase(ZulipTestCase):
         polonius = self.example_user("polonius")
 
         self.assert_length(get_user_id_annotated_recursive_membership_groups_for_users([]), 0)
+        self.assert_length(
+            get_user_id_annotated_recursive_membership_groups_for_users([]).values_list(
+                "id",
+                "user_id",  # type: ignore[misc]  # user_id is an annotated field.
+            ),
+            0,
+        )
 
         group_memberships = get_user_id_annotated_recursive_membership_groups_for_users(
             [iago.id, hamlet.id, polonius.id]
