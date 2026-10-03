@@ -16,6 +16,7 @@ const {page_params} = require("./lib/zpage_params.cjs");
 const user_groups = zrequire("user_groups");
 
 set_global("document", {
+    hasFocus: () => true,
     querySelector() {},
 });
 set_global("navigator", {});
