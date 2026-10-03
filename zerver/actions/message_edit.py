@@ -732,10 +732,10 @@ def update_user_topic_visibility_policies_on_move(
     if is_stream_edited and not target_stream.is_public():
         # Do not compute group memberships for public streams as it
         # is required only to check content access to private streams.
-        for group in get_user_id_annotated_recursive_membership_groups_for_users(
+        for group_id, user_id in get_user_id_annotated_recursive_membership_groups_for_users(
             [user_topic.user_profile_id for user_topic in orig_topic_user_topics]
-        ):
-            recursive_group_ids_by_user.setdefault(group.user_id, set()).add(group.id)  # type: ignore[attr-defined]  # user_id is an annotated field.
+        ).values_list("id", "user_id"):  # type: ignore[misc]  # user_id is an annotated field.
+            recursive_group_ids_by_user.setdefault(user_id, set()).add(group_id)
 
     for orig_user_topic in orig_topic_user_topics:
         user_profile = orig_user_topic.user_profile
