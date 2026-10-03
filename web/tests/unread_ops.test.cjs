@@ -2,10 +2,9 @@
 
 const assert = require("node:assert/strict");
 
-const {set_global, zrequire} = require("./lib/namespace.cjs");
+const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
-set_global("document", {hasFocus: () => true});
 const unread = zrequire("unread");
 const unread_ops = zrequire("unread_ops");
 
