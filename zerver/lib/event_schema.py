@@ -15,11 +15,9 @@ from pydantic import BaseModel
 
 from zerver.lib.event_types import (
     AlertWordsEvent,
-    AllowMessageEditingData,
     AttachmentAddEvent,
     AttachmentRemoveEvent,
     AttachmentUpdateEvent,
-    AuthenticationData,
     BaseEvent,
     BotServicesEmbedded,
     BotServicesOutgoing,
@@ -37,15 +35,11 @@ from zerver.lib.event_types import (
     DraftsAddEvent,
     DraftsRemoveEvent,
     DraftsUpdateEvent,
-    GroupSettingUpdateData,
     HasWebexTokenEvent,
     HasZoomTokenEvent,
     HeartbeatEvent,
-    IconData,
     InvitesChangedEvent,
     LegacyPresenceEvent,
-    LogoData,
-    MessageContentEditLimitSecondsData,
     MessageEvent,
     ModernPresenceEvent,
     MutedTopicsEvent,
@@ -53,7 +47,6 @@ from zerver.lib.event_types import (
     NavigationViewAddEvent,
     NavigationViewRemoveEvent,
     NavigationViewUpdateEvent,
-    NightLogoData,
     OnboardingStepsEvent,
     PersonAvatarFields,
     PersonBotOwnerId,
@@ -66,14 +59,12 @@ from zerver.lib.event_types import (
     PersonIsImportedStub,
     PersonRole,
     PersonTimezone,
-    PlanTypeData,
     ReactionAddEvent,
     ReactionRemoveEvent,
     RealmBotAddEvent,
     RealmBotDeleteEvent,
     RealmBotUpdateEvent,
     RealmDeactivatedEvent,
-    RealmDescriptionData,
     RealmDomainsAddEvent,
     RealmDomainsChangeEvent,
     RealmDomainsRemoveEvent,
@@ -84,7 +75,6 @@ from zerver.lib.event_types import (
     RealmExportEvent,
     RealmLinkifiersEvent,
     RealmPlaygroundsEvent,
-    RealmTopicsPolicyData,
     RealmUpdateDictEvent,
     RealmUpdateEvent,
     RealmUserAddEvent,
@@ -208,6 +198,7 @@ check_realm_emoji_update_one = make_checker(RealmEmojiUpdateOneEvent)
 check_realm_export_consent = make_checker(RealmExportConsentEvent)
 check_realm_linkifiers = make_checker(RealmLinkifiersEvent)
 check_realm_playgrounds = make_checker(RealmPlaygroundsEvent)
+check_realm_update_dict = make_checker(RealmUpdateDictEvent)
 check_realm_user_add = make_checker(RealmUserAddEvent)
 check_realm_user_remove = make_checker(RealmUserRemoveEvent)
 check_reminder_add = make_checker(RemindersAddEvent)
@@ -268,7 +259,6 @@ _check_realm_default_update = make_checker(RealmUserSettingsDefaultsUpdateEvent)
 _check_realm_emoji_update = make_checker(RealmEmojiUpdateEvent)
 _check_realm_export = make_checker(RealmExportEvent)
 _check_realm_update = make_checker(RealmUpdateEvent)
-_check_realm_update_dict = make_checker(RealmUpdateDictEvent)
 _check_realm_user_update = make_checker(RealmUserUpdateEvent)
 _check_stream_update = make_checker(StreamUpdateEvent)
 _check_subscription_update = make_checker(SubscriptionUpdateEvent)
@@ -524,47 +514,6 @@ def check_realm_default_update(
         prop_type[value]
     else:
         assert isinstance(value, prop_type)
-
-
-def check_realm_update_dict(
-    # handle union types
-    var_name: str,
-    event: dict[str, object],
-) -> None:
-    _check_realm_update_dict(var_name, event)
-
-    if event["property"] == "default":
-        assert isinstance(event["data"], dict)
-
-        if "allow_message_editing" in event["data"]:
-            sub_type: type[BaseModel] = AllowMessageEditingData
-        elif "message_content_edit_limit_seconds" in event["data"]:
-            sub_type = MessageContentEditLimitSecondsData
-        elif "authentication_methods" in event["data"]:
-            sub_type = AuthenticationData
-        elif any(
-            setting_name in event["data"] for setting_name in Realm.REALM_PERMISSION_GROUP_SETTINGS
-        ):
-            sub_type = GroupSettingUpdateData
-        elif "plan_type" in event["data"]:
-            sub_type = PlanTypeData
-        elif "topics_policy" in event["data"]:
-            sub_type = RealmTopicsPolicyData
-        elif "description" in event["data"]:
-            sub_type = RealmDescriptionData
-        else:
-            raise AssertionError("unhandled fields in data")
-
-    elif event["property"] == "icon":
-        sub_type = IconData
-    elif event["property"] == "logo":
-        sub_type = LogoData
-    elif event["property"] == "night_logo":
-        sub_type = NightLogoData
-    else:
-        raise AssertionError("unhandled property: {event['property']}")
-
-    validate_with_model(cast(dict[str, object], event["data"]), sub_type)
 
 
 def check_realm_user_update(

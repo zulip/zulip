@@ -567,10 +567,6 @@ class RealmPlaygroundsEvent(BaseEvent):
     realm_playgrounds: list[RealmPlayground]
 
 
-class AllowMessageEditingData(BaseEventModel):
-    allow_message_editing: bool
-
-
 class AuthenticationMethodDictCore(BaseEventModel):
     enabled: bool
     available: bool
@@ -581,45 +577,26 @@ class AuthenticationMethodDict(AuthenticationMethodDictCore):
     unavailable_reason: str | None = None
 
 
-class AuthenticationData(BaseEventModel):
-    authentication_methods: dict[str, AuthenticationMethodDict]
-
-
-class IconData(BaseEventModel):
-    icon_url: str
-    icon_source: str
-
-
-class LogoData(BaseEventModel):
-    logo_url: str
-    logo_source: str
-
-
-class MessageContentEditLimitSecondsData(BaseEventModel):
-    message_content_edit_limit_seconds: int | None
-
-
-class RealmTopicsPolicyData(BaseEventModel):
-    topics_policy: str
-    mandatory_topics: bool
-
-
-class RealmDescriptionData(BaseEventModel):
-    description: str
-    rendered_description: str
-
-
-class NightLogoData(BaseEventModel):
-    night_logo_url: str
-    night_logo_source: str
-
-
-class GroupSettingUpdateDataCore(BaseEventModel):
-    pass
-
-
-class GroupSettingUpdateData(GroupSettingUpdateDataCore):
-    # TODO: fix types to avoid optional fields
+class RealmUpdateDictData(BaseEventModel):
+    # Every field is optional: each event sets only the subset of
+    # fields that changed, and unset fields are omitted when the event
+    # is sent.
+    allow_message_editing: bool | None = None
+    message_content_edit_limit_seconds: int | None = None
+    topics_policy: str | None = None
+    mandatory_topics: bool | None = None
+    description: str | None = None
+    rendered_description: str | None = None
+    authentication_methods: dict[str, AuthenticationMethodDict] | None = None
+    plan_type: int | None = None
+    upload_quota_mib: int | None = None
+    max_file_upload_size_mib: int | None = None
+    icon_url: str | None = None
+    icon_source: str | None = None
+    logo_url: str | None = None
+    logo_source: str | None = None
+    night_logo_url: str | None = None
+    night_logo_source: str | None = None
     create_multiuse_invite_group: int | UserGroupMembersDict | None = None
     can_access_all_users_group: int | UserGroupMembersDict | None = None
     can_add_custom_emoji_group: int | UserGroupMembersDict | None = None
@@ -647,28 +624,11 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     workplace_users_group: int | UserGroupMembersDict | None = None
 
 
-class PlanTypeData(BaseEventModel):
-    plan_type: int
-    upload_quota_mib: int | None
-    max_file_upload_size_mib: int
-
-
 class RealmUpdateDictEvent(BaseEvent):
     type: Literal["realm"] = "realm"
     op: Literal["update_dict"] = "update_dict"
     property: Literal["default", "icon", "logo", "night_logo"]
-    data: (
-        AllowMessageEditingData
-        | AuthenticationData
-        | IconData
-        | LogoData
-        | MessageContentEditLimitSecondsData
-        | NightLogoData
-        | GroupSettingUpdateData
-        | PlanTypeData
-        | RealmTopicsPolicyData
-        | RealmDescriptionData
-    )
+    data: RealmUpdateDictData
 
 
 class RealmUpdateEvent(BaseEvent):
