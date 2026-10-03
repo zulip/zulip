@@ -26,6 +26,7 @@ from markupsafe import Markup
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.display_recipient import get_display_recipient
+from zerver.lib.emoji_utils import hex_codepoint_to_emoji
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.message import bulk_access_messages
 from zerver.lib.message_cache import MessageDict
@@ -161,14 +162,29 @@ def fix_emojis(fragment: lxml.html.HtmlElement, emojiset: str) -> None:
             height="20",
             width="20",
         )
-        img_elem.tail = emoji_span_elem.tail
         return img_elem
 
     for elem in fragment.cssselect("span.emoji"):
         parent = elem.getparent()
         assert parent is not None
-        img_elem = make_emoji_img_elem(elem)
-        parent.replace(elem, img_elem)
+        if emojiset == "native":
+            # Render the Unicode glyph directly; email clients display it well.
+            classes = elem.attrib["class"]
+            match = re.search(r"emoji-(?P<emoji_code>\S+)", classes)
+            assert match is not None
+            replacement: lxml.html.HtmlElement = e.SPAN(
+                hex_codepoint_to_emoji(match.group("emoji_code"))
+            )
+        elif emojiset == "text":
+            # Plain ":emoji_name:" text, as the "text" emojiset shows in the
+            # message view (and avoids broken "images-text-64/" sprite URLs).
+            emoji_text = elem.text
+            assert emoji_text is not None
+            replacement = e.SPAN(emoji_text)
+        else:
+            replacement = make_emoji_img_elem(elem)
+        replacement.tail = elem.tail
+        parent.replace(elem, replacement)
 
     for realm_emoji in fragment.cssselect("img.emoji"):
         del realm_emoji.attrib["class"]

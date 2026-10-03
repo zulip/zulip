@@ -21,6 +21,8 @@
                     <span class="right">
                         {{#if (eq this.key "text") }}
                         <span class="emoji_alt_code">&nbsp;:relaxed:</span>
+                        {{else if (eq this.key "native") }}
+                        <span class="emoji-native-preview">&nbsp;&#x1f604;&#x1f44d;&#x1f680;&#x1f389;</span>
                         {{else}}
                         <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f604.png" />
                         <img class="emoji" src="/static/generated/emoji/images-{{this.key}}-64/1f44d.png" />
