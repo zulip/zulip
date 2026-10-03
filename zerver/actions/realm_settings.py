@@ -18,15 +18,9 @@ from zerver.actions.user_groups import update_users_in_full_members_system_group
 from zerver.actions.user_settings import do_scrub_avatar_images
 from zerver.lib.demo_organizations import demo_organization_owner_email_exists
 from zerver.lib.event_types import (
-    AllowMessageEditingData,
-    AuthenticationData,
     BaseEvent,
-    GroupSettingUpdateData,
-    MessageContentEditLimitSecondsData,
-    PlanTypeData,
     RealmDeactivatedEvent,
-    RealmDescriptionData,
-    RealmTopicsPolicyData,
+    RealmUpdateDictData,
     RealmUpdateDictEvent,
     RealmUpdateEvent,
     RealmUserSettingsDefaultsUpdateEvent,
@@ -123,12 +117,12 @@ def do_set_realm_property(
     if name == "allow_message_editing":
         event = RealmUpdateDictEvent(
             property="default",
-            data=AllowMessageEditingData(allow_message_editing=value),
+            data=RealmUpdateDictData(allow_message_editing=value),
         )
     if name == "message_content_edit_limit_seconds":
         event = RealmUpdateDictEvent(
             property="default",
-            data=MessageContentEditLimitSecondsData(message_content_edit_limit_seconds=value),
+            data=RealmUpdateDictData(message_content_edit_limit_seconds=value),
         )
     if name == "message_edit_history_visibility_policy":
         event = RealmUpdateEvent(
@@ -138,7 +132,7 @@ def do_set_realm_property(
     if name == "topics_policy":
         event = RealmUpdateDictEvent(
             property="default",
-            data=RealmTopicsPolicyData(
+            data=RealmUpdateDictData(
                 topics_policy=RealmTopicsPolicyEnum(value).name,
                 mandatory_topics=value == RealmTopicsPolicyEnum.disable_empty_topic.value,
             ),
@@ -147,7 +141,7 @@ def do_set_realm_property(
         assert realm.rendered_description is not None
         event = RealmUpdateDictEvent(
             property="default",
-            data=RealmDescriptionData(
+            data=RealmUpdateDictData(
                 description=realm.description,
                 rendered_description=realm.rendered_description,
             ),
@@ -247,8 +241,8 @@ def do_change_realm_permission_group_setting(
 
     event = RealmUpdateDictEvent(
         property="default",
-        data=GroupSettingUpdateData(
-            **{setting_name: convert_to_user_group_members_dict(new_setting_api_value)}
+        data=RealmUpdateDictData.model_validate(
+            {setting_name: convert_to_user_group_members_dict(new_setting_api_value)}
         ),
     )
 
@@ -430,7 +424,7 @@ def do_set_realm_authentication_methods(
 
     event = RealmUpdateDictEvent(
         property="default",
-        data=AuthenticationData(
+        data=RealmUpdateDictData(
             authentication_methods=get_realm_authentication_methods_for_page_params_api(
                 realm, updated_value
             )
@@ -996,7 +990,7 @@ def do_change_realm_plan_type(
 
     event = RealmUpdateDictEvent(
         property="default",
-        data=PlanTypeData(
+        data=RealmUpdateDictData(
             plan_type=plan_type,
             upload_quota_mib=optional_bytes_to_mib(realm.upload_quota_bytes()),
             max_file_upload_size_mib=realm.get_max_file_upload_size_mebibytes(),
