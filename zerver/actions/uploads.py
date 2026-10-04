@@ -65,10 +65,23 @@ def do_claim_attachments(
             )
             continue
 
+        try:
+            attachment = claim_attachment(
+                path_id, message, is_message_realm_public, is_message_web_public
+            )
+        except Attachment.DoesNotExist:
+            # The attachment may have been deleted between validate_attachment_request
+            # and claim_attachment (e.g. in another tab or by retention), so skip
+            # it the same way as a validation failure.
+            logging.warning(
+                "User %s tried to share upload %s in message %s, but it was deleted",
+                user_profile.id,
+                path_id,
+                message.id,
+            )
+            continue
+
         claimed = True
-        attachment = claim_attachment(
-            path_id, message, is_message_realm_public, is_message_web_public
-        )
         if not isinstance(message, ScheduledMessage):
             # attachment update events don't say anything about scheduled messages,
             # so sending an event is pointless.
