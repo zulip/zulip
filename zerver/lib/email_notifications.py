@@ -688,6 +688,9 @@ def handle_missedmessage_emails(
     # filtered previously.
     assert not user_profile.is_bot
 
+    if user_profile.is_imported_stub:
+        return
+
     if not user_profile.enable_offline_email_notifications:
         # BUG: Investigate why it's possible to get here.
         return  # nocoverage

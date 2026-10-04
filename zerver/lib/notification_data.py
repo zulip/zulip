@@ -72,6 +72,7 @@ class UserMessageNotificationsData:
         muted_sender_user_ids: set[int],
         all_bot_user_ids: set[int],
         push_device_registered_user_ids: set[int] | None,
+        imported_stub_user_ids: set[int] | None = None,
     ) -> "UserMessageNotificationsData":
         if user_id in all_bot_user_ids:
             # Don't send any notifications to bots
@@ -177,6 +178,21 @@ class UserMessageNotificationsData:
         followed_topic_push_notify = (
             push_device_registered and user_id in followed_topic_push_user_ids
         )
+
+        is_imported_stub = imported_stub_user_ids is not None and user_id in imported_stub_user_ids
+        if is_imported_stub:
+            dm_email_notify = False
+            mention_email_notify = False
+            topic_wildcard_mention_email_notify = False
+            stream_wildcard_mention_email_notify = False
+            topic_wildcard_mention_in_followed_topic_email_notify = False
+            stream_wildcard_mention_in_followed_topic_email_notify = False
+            stream_email_notify = False
+            followed_topic_email_notify = False
+        else:
+            stream_email_notify = user_id in stream_email_user_ids
+            followed_topic_email_notify = user_id in followed_topic_email_user_ids
+
         return cls(
             user_id=user_id,
             dm_email_notify=dm_email_notify,
@@ -189,9 +205,9 @@ class UserMessageNotificationsData:
             stream_wildcard_mention_push_notify=stream_wildcard_mention_push_notify,
             online_push_enabled=online_push_enabled,
             stream_push_notify=stream_push_notify,
-            stream_email_notify=user_id in stream_email_user_ids,
+            stream_email_notify=stream_email_notify,
             followed_topic_push_notify=followed_topic_push_notify,
-            followed_topic_email_notify=user_id in followed_topic_email_user_ids,
+            followed_topic_email_notify=followed_topic_email_notify,
             topic_wildcard_mention_in_followed_topic_push_notify=topic_wildcard_mention_in_followed_topic_push_notify,
             topic_wildcard_mention_in_followed_topic_email_notify=topic_wildcard_mention_in_followed_topic_email_notify,
             stream_wildcard_mention_in_followed_topic_push_notify=stream_wildcard_mention_in_followed_topic_push_notify,

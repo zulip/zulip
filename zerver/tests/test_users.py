@@ -2937,6 +2937,7 @@ class RecipientInfoTest(ZulipTestCase):
             default_bot_user_ids=set(),
             message_triggered_bot_tuples=[],
             all_bot_user_ids=set(),
+            imported_stub_user_ids=set(),
             topic_participant_user_ids=set(),
             sender_muted_stream=False,
             push_device_registered_user_ids=set(),

@@ -179,6 +179,7 @@ class RecipientInfoResult:
     default_bot_user_ids: set[int]
     message_triggered_bot_tuples: list[tuple[int, int]]
     all_bot_user_ids: set[int]
+    imported_stub_user_ids: set[int]
     topic_participant_user_ids: set[int]
     sender_muted_stream: bool | None
     push_device_registered_user_ids: set[int]
@@ -192,6 +193,7 @@ class ActiveUserDict(TypedDict):
     long_term_idle: bool
     is_bot: bool
     bot_type: int | None
+    is_imported_stub: bool
     has_push_device_registered: bool
 
 
@@ -445,6 +447,7 @@ def get_recipient_info(
                     "enable_offline_push_notifications",
                     "is_bot",
                     "bot_type",
+                    "is_imported_stub",
                     "long_term_idle",
                     "has_push_device_registered",
                 ),
@@ -525,6 +528,7 @@ def get_recipient_info(
     # notifications to them. This set will be directly sent to the event queue code
     # where we determine notifiability of the message for users.
     all_bot_user_ids = {row["id"] for row in rows if row["is_bot"]}
+    imported_stub_user_ids = {row["id"] for row in rows if row["is_imported_stub"]}
 
     # Users who have at least one push device registered to receive push notifications.
     push_device_registered_user_ids = get_ids_for(lambda r: r["has_push_device_registered"])
@@ -548,6 +552,7 @@ def get_recipient_info(
         default_bot_user_ids=default_bot_user_ids,
         message_triggered_bot_tuples=message_triggered_bot_tuples,
         all_bot_user_ids=all_bot_user_ids,
+        imported_stub_user_ids=imported_stub_user_ids,
         topic_participant_user_ids=topic_participant_user_ids,
         sender_muted_stream=sender_muted_stream,
         push_device_registered_user_ids=push_device_registered_user_ids,
@@ -781,6 +786,7 @@ def build_message_send_dict(
         default_bot_user_ids=info.default_bot_user_ids,
         message_triggered_bot_tuples=info.message_triggered_bot_tuples,
         all_bot_user_ids=info.all_bot_user_ids,
+        imported_stub_user_ids=info.imported_stub_user_ids,
         push_device_registered_user_ids=info.push_device_registered_user_ids,
         topic_wildcard_mention_user_ids=topic_wildcard_mention_user_ids,
         stream_wildcard_mention_user_ids=stream_wildcard_mention_user_ids,
@@ -1235,6 +1241,7 @@ def do_send_messages(
                 stream_wildcard_mention_in_followed_topic_user_ids=send_request.stream_wildcard_mention_in_followed_topic_user_ids,
                 muted_sender_user_ids=send_request.muted_sender_user_ids,
                 all_bot_user_ids=send_request.all_bot_user_ids,
+                imported_stub_user_ids=send_request.imported_stub_user_ids,
                 push_device_registered_user_ids=send_request.push_device_registered_user_ids,
             )
             for user_id in send_request.active_user_ids
@@ -1279,6 +1286,7 @@ def do_send_messages(
             ),
             muted_sender_user_ids=list(send_request.muted_sender_user_ids),
             all_bot_user_ids=list(send_request.all_bot_user_ids),
+            imported_stub_user_ids=list(send_request.imported_stub_user_ids),
             push_device_registered_user_ids=list(send_request.push_device_registered_user_ids),
             disable_external_notifications=send_request.disable_external_notifications,
             realm_host=send_request.realm.host,

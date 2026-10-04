@@ -370,6 +370,37 @@ class TestNotificationData(ZulipTestCase):
             )
             self.assertEqual(user_data.is_notifiable(acting_user_id=1000, idle=True), notifiable)
 
+    def test_imported_stub_notifiability(self) -> None:
+        # Normal user (`user_id=9`) should get email, imported stub (`user_id=10`) shouldn't
+        # get email. Both should still get push notifications.
+        for user_id, email_notifiable in [(9, True), (10, False)]:
+            user_data = UserMessageNotificationsData.from_user_id_sets(
+                user_id=user_id,
+                flags=["mentioned"],
+                private_message=True,
+                disable_external_notifications=False,
+                online_push_user_ids=set(),
+                dm_mention_email_disabled_user_ids=set(),
+                dm_mention_push_disabled_user_ids=set(),
+                all_bot_user_ids=set(),
+                imported_stub_user_ids={10, 11},
+                muted_sender_user_ids=set(),
+                stream_email_user_ids=set(),
+                stream_push_user_ids=set(),
+                topic_wildcard_mention_user_ids=set(),
+                stream_wildcard_mention_user_ids=set(),
+                followed_topic_email_user_ids=set(),
+                followed_topic_push_user_ids=set(),
+                topic_wildcard_mention_in_followed_topic_user_ids=set(),
+                stream_wildcard_mention_in_followed_topic_user_ids=set(),
+                push_device_registered_user_ids={9, 10},
+            )
+            self.assertEqual(
+                user_data.is_email_notifiable(acting_user_id=1000, idle=True), email_notifiable
+            )
+            # Push notifications should remain enabled for both normal and imported-stub users.
+            self.assertTrue(user_data.is_push_notifiable(acting_user_id=1000, idle=True))
+
     def test_user_group_mentions_map(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")

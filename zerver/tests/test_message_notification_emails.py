@@ -116,6 +116,34 @@ class TestMessageNotificationEmails(ZulipTestCase):
             )
         m.assert_not_called()
 
+    def test_imported_stub_missed_message_emails(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # Mark Hamlet as an imported stub
+        hamlet.is_imported_stub = True
+        hamlet.save()
+
+        self.login("cordelia")
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "Test message",
+                "to": orjson.dumps([hamlet.email]).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        message = self.get_last_message()
+
+        with mock.patch(
+            "zerver.lib.email_notifications.do_send_missedmessage_events_reply_in_zulip"
+        ) as m:
+            handle_missedmessage_emails(
+                hamlet.id,
+                {message.id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
+            )
+        m.assert_not_called()
+
     def normalize_string(self, s: str | StrPromise) -> str:
         s = s.strip()
         return re.sub(r"\s+", " ", s)

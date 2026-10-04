@@ -1199,6 +1199,7 @@ def process_message_event(
     )
     muted_sender_user_ids = set(event_template.get("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.get("all_bot_user_ids", []))
+    imported_stub_user_ids = set(event_template.get("imported_stub_user_ids", []))
     disable_external_notifications = event_template.get("disable_external_notifications", False)
     user_ids_without_access_to_sender = set(
         event_template.get("user_ids_without_access_to_sender", [])
@@ -1277,6 +1278,7 @@ def process_message_event(
             stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
             muted_sender_user_ids=muted_sender_user_ids,
             all_bot_user_ids=all_bot_user_ids,
+            imported_stub_user_ids=imported_stub_user_ids,
             push_device_registered_user_ids=push_device_registered_user_ids,
         )
 
@@ -1505,6 +1507,7 @@ def process_message_update_event(
     )
     muted_sender_user_ids = set(event_template.pop("muted_sender_user_ids", []))
     all_bot_user_ids = set(event_template.pop("all_bot_user_ids", []))
+    imported_stub_user_ids = set(event_template.pop("imported_stub_user_ids", []))
     disable_external_notifications = event_template.pop("disable_external_notifications", False)
     online_push_user_ids = set(event_template.pop("online_push_user_ids", []))
     stream_name = event_template.get("stream_name")
@@ -1555,6 +1558,7 @@ def process_message_update_event(
                 stream_wildcard_mention_in_followed_topic_user_ids=stream_wildcard_mention_in_followed_topic_user_ids,
                 muted_sender_user_ids=muted_sender_user_ids,
                 all_bot_user_ids=all_bot_user_ids,
+                imported_stub_user_ids=imported_stub_user_ids,
                 push_device_registered_user_ids=push_device_registered_user_ids,
             )
 
