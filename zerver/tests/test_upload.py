@@ -566,6 +566,41 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             ],
         )
 
+    def test_claim_attachment_deleted_concurrently(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        d1 = StringIO("zulip!")
+        d1.name = "dummy_1.txt"
+        result = self.client_post("/json/user_uploads", {"file": d1})
+        response_dict = self.assert_json_success(result)
+        d1_path_id = re.sub(r"/user_uploads/", "", response_dict["url"])
+        host = hamlet.realm.host
+
+        def delete_after_validation(
+            user_profile: UserProfile, path_id: str
+        ) -> tuple[bool, Attachment | None]:
+            result = validate_attachment_request(user_profile, path_id)
+            # Simulate concurrent deletion right after validation passes
+            Attachment.objects.filter(path_id=path_id).delete()
+            return result
+
+        with (
+            mock.patch(
+                "zerver.actions.uploads.validate_attachment_request",
+                side_effect=delete_after_validation,
+            ),
+            self.assertLogs(level="WARNING") as warn_log,
+        ):
+            body = f"Test message ...[zulip.txt](http://{host}/user_uploads/{d1_path_id})"
+            message_id = self.send_stream_message(hamlet, "Denmark", body, "test")
+
+        self.assertEqual(
+            warn_log.output,
+            [
+                f"WARNING:root:User {hamlet.id} tried to share upload {d1_path_id} in message {message_id}, but lacks permission"
+            ],
+        )
+
     def test_multiple_claim_attachments(self) -> None:
         """
         This test tries to claim the same attachment twice. The messages field in
