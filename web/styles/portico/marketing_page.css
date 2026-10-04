@@ -1285,7 +1285,8 @@ button {
            reflect updated brand colors. */
         font-weight: inherit !important;
 
-        &:hover {
+        &:hover,
+        &:focus-visible {
             color: var(--color-link-hover);
             text-decoration: underline;
             text-decoration-color: var(--color-link-underline-hover);
@@ -1312,11 +1313,13 @@ button {
         text-decoration-color: hsl(0deg 0% 100% / 50%);
         transition: text-decoration 0.4s ease-out;
 
-        &:hover {
+        &:hover,
+        &:focus-visible {
             text-decoration-color: hsl(0deg 0% 100%);
             text-decoration-thickness: 2px;
             color: inherit;
             transition: none;
+            outline: none;
         }
     }
 }
