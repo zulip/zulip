@@ -25,6 +25,7 @@ from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
 from zerver.actions.realm_settings import do_change_realm_plan_type, do_set_realm_property
+from zerver.actions.uploads import do_claim_attachments
 from zerver.actions.user_settings import do_scrub_avatar_images
 from zerver.lib.attachments import validate_attachment_request
 from zerver.lib.avatar import (
@@ -563,6 +564,36 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             warn_log.output,
             [
                 f"WARNING:root:User {hamlet.id} tried to share upload {hamlet.realm_id}/64/fake_path_id.txt in message {message_id}, but lacks permission"
+            ],
+        )
+
+    def test_claim_attachment_deleted_concurrently(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        response_dict = self.assert_json_success(result)
+        path_id = re.sub(r"/user_uploads/", "", response_dict["url"])
+
+        self.subscribe(hamlet, "Denmark")
+        message_id = self.send_stream_message(hamlet, "Denmark", "Test message", "test")
+        message = Message.objects.get(id=message_id)
+
+        with (
+            mock.patch(
+                "zerver.actions.uploads.claim_attachment",
+                side_effect=Attachment.DoesNotExist,
+            ),
+            self.assertLogs(level="WARNING") as warn_log,
+        ):
+            claimed = do_claim_attachments(message, [path_id])
+
+        self.assertFalse(claimed)
+        self.assertEqual(
+            warn_log.output,
+            [
+                f"WARNING:root:User {hamlet.id} tried to share upload {path_id} in message {message_id}, but it was deleted"
             ],
         )
 
