@@ -372,7 +372,7 @@ class UserDeactivatedError(AuthenticationFailedError):
         return _("Account is deactivated")
 
 
-class RealmDeactivatedError(AuthenticationFailedError):
+class RealmDeactivatedAuthenticationError(AuthenticationFailedError):
     code: ErrorCode = ErrorCode.REALM_DEACTIVATED
 
     @staticmethod

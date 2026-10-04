@@ -53,7 +53,7 @@ from zerver.lib.exceptions import (
     PasswordAuthDisabledError,
     PasswordResetRequiredError,
     RateLimitedError,
-    RealmDeactivatedError,
+    RealmDeactivatedAuthenticationError,
     UserDeactivatedError,
 )
 from zerver.lib.mobile_auth_otp import otp_encrypt_api_key
@@ -1110,7 +1110,7 @@ def get_api_key_fetch_authenticate_failure(return_data: dict[str, bool]) -> Json
     if return_data.get("inactive_user"):
         return UserDeactivatedError()
     if return_data.get("inactive_realm"):
-        return RealmDeactivatedError()
+        return RealmDeactivatedAuthenticationError()
     if return_data.get("password_auth_disabled"):
         return PasswordAuthDisabledError()
     if return_data.get("password_reset_needed"):
