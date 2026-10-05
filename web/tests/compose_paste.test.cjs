@@ -249,6 +249,24 @@ run_test("paste_handler reverse linkify", ({override, override_rewire}) => {
             expected: "#D42",
             expected_undo_texts: ["https://github.com/zulip/zulip-desktop/issues/42"],
         },
+        {
+            // A link whose text is already the linkifier syntax for its
+            // URL should paste as plain text, not a markdown link.
+            paste_html:
+                'See <a href="https://github.com/zulip/zulip-desktop/pull/1359">#D1359</a> for details.',
+            paste_text: "See #D1359 for details.",
+            expected: "See #D1359 for details.",
+            expected_undo_texts: [],
+        },
+        {
+            // A link whose text looks like linkifier syntax but points
+            // elsewhere should keep its URL.
+            paste_html:
+                'See <a href="https://github.com/zulip/zulip-desktop/pull/42">#D1359</a> for details.',
+            paste_text: "See #D1359 for details.",
+            expected: "See [#D1359](https://github.com/zulip/zulip-desktop/pull/42) for details.",
+            expected_undo_texts: ["See #D1359 for details."],
+        },
     ];
 
     for (const test_case of test_cases) {

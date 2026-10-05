@@ -397,6 +397,10 @@ export function paste_handler_converter(
                 // ignore link's url if it only has an image
                 return content;
             }
+            if (compose_ui.reverse_linkify_text(node.href) === content.trim()) {
+                // The link text is already the linkifier syntax for its URL.
+                return content;
+            }
             return "[" + content + "](" + node.href + ")";
         },
     });
