@@ -15,6 +15,9 @@ class TransitionEvent {
 set_global("TransitionEvent", TransitionEvent);
 
 const message_lists = mock_esm("../src/message_lists", {current: undefined});
+const message_scroll_state = mock_esm("../src/message_scroll_state", {
+    actively_scrolling: false,
+});
 const message_viewport = mock_esm("../src/message_viewport");
 const narrow_state = mock_esm("../src/narrow_state");
 
@@ -45,7 +48,7 @@ function is_shown() {
 
 function mouse_scroll() {
     scroll_to_bottom_button.show_scroll_to_bottom_button();
-    scroll_to_bottom_button.hide_scroll_to_bottom();
+    scroll_to_bottom_button.update();
 }
 
 function keydown(modifiers = {}) {
@@ -93,7 +96,30 @@ test("hidden outside message views", ({override}) => {
     override(message_lists, "current", undefined);
     $container().addClass("show");
 
-    scroll_to_bottom_button.hide_scroll_to_bottom();
+    scroll_to_bottom_button.update();
+    assert.ok(!is_shown());
+});
+
+test("hidden outside message views even during a scroll", ({override}) => {
+    override(message_lists, "current", undefined);
+    override(message_scroll_state, "actively_scrolling", true);
+    $container().addClass("show");
+
+    scroll_to_bottom_button.update();
+    assert.ok(!is_shown());
+});
+
+test("not updated until the scroll has finished", ({override}) => {
+    set_feed(override, {bottom_visible: false});
+    mouse_scroll();
+
+    set_feed(override);
+    override(message_scroll_state, "actively_scrolling", true);
+    scroll_to_bottom_button.update();
+    assert.ok(is_shown());
+
+    override(message_scroll_state, "actively_scrolling", false);
+    scroll_to_bottom_button.update();
     assert.ok(!is_shown());
 });
 
@@ -104,7 +130,7 @@ test("hidden at the bottom of the feed", ({override}) => {
     assert.ok(!is_shown());
 
     $container().addClass("show");
-    scroll_to_bottom_button.hide_scroll_to_bottom();
+    scroll_to_bottom_button.update();
     assert.ok(!is_shown());
 });
 
@@ -115,7 +141,7 @@ test("hidden in an empty feed", ({override}) => {
     assert.ok(!is_shown());
 
     $container().addClass("show");
-    scroll_to_bottom_button.hide_scroll_to_bottom();
+    scroll_to_bottom_button.update();
     assert.ok(!is_shown());
 });
 
@@ -146,14 +172,14 @@ test("shown by a mouse scroll above the bottom", ({override}) => {
     scroll_to_bottom_button.show_scroll_to_bottom_button();
     assert.ok(is_shown());
 
-    scroll_to_bottom_button.hide_scroll_to_bottom();
+    scroll_to_bottom_button.update();
     assert.ok(is_shown());
 });
 
 test("not shown by a keyboard scroll", ({override}) => {
     set_feed(override, {bottom_visible: false});
 
-    scroll_to_bottom_button.hide_scroll_to_bottom();
+    scroll_to_bottom_button.update();
     assert.ok(!is_shown());
 });
 
@@ -189,6 +215,36 @@ test("stays while the mouse is over it", ({override}) => {
     assert.ok(!is_shown());
 });
 
+test("the three seconds start when the scroll finishes", ({override}) => {
+    set_feed(override, {bottom_visible: false});
+    scroll_to_bottom_button.show_scroll_to_bottom_button();
+
+    clock.tick(5000);
+    assert.ok(is_shown());
+
+    scroll_to_bottom_button.update();
+    clock.tick(2999);
+    assert.ok(is_shown());
+
+    clock.tick(1);
+    assert.ok(!is_shown());
+});
+
+test("an update does not restart the three seconds", ({override}) => {
+    set_feed(override, {bottom_visible: false});
+    mouse_scroll();
+
+    clock.tick(2000);
+    scroll_to_bottom_button.update();
+    assert.equal(clock.countTimers(), 1);
+    clock.tick(999);
+    assert.ok(is_shown());
+
+    clock.tick(1);
+    assert.ok(!is_shown());
+    assert.equal(clock.countTimers(), 0);
+});
+
 test("another mouse scroll restarts the three seconds", ({override}) => {
     set_feed(override, {bottom_visible: false});
     mouse_scroll();
@@ -208,7 +264,7 @@ test("a keyboard scroll does not make a later hide come early", ({override}) => 
 
     clock.tick(1000);
     keydown();
-    scroll_to_bottom_button.hide_scroll_to_bottom();
+    scroll_to_bottom_button.update();
 
     clock.tick(4500);
     mouse_scroll();
