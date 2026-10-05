@@ -347,24 +347,6 @@ class APIStreamDict(DefaultStreamDict):
     stream_weekly_traffic: int | None
 
 
-class APISubscriptionDict(APIStreamDict):
-    """Similar to StreamClientDict, it should contain all the fields specified in
-    `zerver.models.Subscription.API_FIELDS` and several additional fields.
-    """
-
-    audible_notifications: bool | None
-    color: str
-    desktop_notifications: bool | None
-    email_notifications: bool | None
-    is_muted: bool
-    pin_to_top: bool
-    push_notifications: bool | None
-    wildcard_mentions_notify: bool | None
-    # Computed fields not specified in `Subscription.API_FIELDS`
-    in_home_view: bool
-    subscribers: list[int]
-
-
 @dataclass
 class SubscriptionInfo:
     subscriptions: list[SubscriptionStreamDict]
