@@ -16,6 +16,7 @@ set_global("TransitionEvent", TransitionEvent);
 
 const message_lists = mock_esm("../src/message_lists", {current: undefined});
 const message_viewport = mock_esm("../src/message_viewport");
+const narrow_state = mock_esm("../src/narrow_state");
 
 const scroll_to_bottom_button = zrequire("scroll_to_bottom_button");
 
@@ -56,11 +57,34 @@ function keydown(modifiers = {}) {
     });
 }
 
+let clicks;
+
+function click() {
+    const event_calls = [];
+    $("body").get_on_handler(
+        "click",
+        "#scroll-to-bottom-button-clickable-area",
+    )({
+        preventDefault() {
+            event_calls.push("preventDefault");
+        },
+        stopPropagation() {
+            event_calls.push("stopPropagation");
+        },
+    });
+    assert.deepEqual(event_calls, ["preventDefault", "stopPropagation"]);
+}
+
 function test(label, f) {
     run_test(label, (helpers) => {
         clock.reset();
         $container().set_matches(":hover", false);
-        scroll_to_bottom_button.initialize();
+        clicks = [];
+        scroll_to_bottom_button.initialize({
+            scroll_to_bottom() {
+                clicks.push("scroll_to_bottom");
+            },
+        });
         f(helpers);
     });
 }
@@ -185,6 +209,20 @@ test("a keyboard scroll does not make a later hide come early", ({override}) => 
 
     clock.tick(1);
     assert.ok(!is_shown());
+});
+
+test("a click scrolls to the bottom", ({override}) => {
+    override(narrow_state, "is_message_feed_visible", () => true);
+
+    click();
+    assert.deepEqual(clicks, ["scroll_to_bottom"]);
+});
+
+test("a click does nothing once the message feed is hidden", ({override}) => {
+    override(narrow_state, "is_message_feed_visible", () => false);
+
+    click();
+    assert.deepEqual(clicks, []);
 });
 
 test("hidden by a keypress without modifiers", () => {
