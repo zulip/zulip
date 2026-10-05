@@ -19,6 +19,13 @@ from zerver.worker.base import InterruptConsumeError, QueueProcessingWorker, ass
 logger = logging.getLogger(__name__)
 
 
+def fetch_link_embed_data(url: str) -> UrlEmbedData | None:
+    start_time = time.time()
+    link_embed_data = url_preview.get_link_embed_data(url)
+    logging.info("Time spent on get_link_embed_data for %s: %s", url, time.time() - start_time)
+    return link_embed_data
+
+
 @assign_queue("embed_links")
 class FetchLinksEmbedData(QueueProcessingWorker):
     # This is a slow queue with network requests, so a disk write is negligible.
@@ -27,13 +34,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
 
     @override
     def consume(self, event: Mapping[str, Any]) -> None:
-        url_embed_data: dict[str, UrlEmbedData | None] = {}
-        for url in event["urls"]:
-            start_time = time.time()
-            url_embed_data[url] = url_preview.get_link_embed_data(url)
-            logging.info(
-                "Time spent on get_link_embed_data for %s: %s", url, time.time() - start_time
-            )
+        url_embed_data = {url: fetch_link_embed_data(url) for url in event["urls"]}
 
         # Ideally, we should use `durable=True` here. However, in the
         # `test_message_update_race_condition` test, this function is not called
