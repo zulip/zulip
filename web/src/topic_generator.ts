@@ -7,6 +7,7 @@ import * as stream_list_sort from "./stream_list_sort.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as unread from "./unread.ts";
 import * as user_topics from "./user_topics.ts";
+import * as util from "./util.ts";
 
 // If there are any unreads in the current topic,
 // user likely wants to avoid reading them right now.
@@ -217,6 +218,30 @@ export function get_next_topic(
         has_unread_messages,
         curr_stream_id,
         curr_topic,
+    );
+}
+
+// Whether get_next_topic has a topic other than the current one to
+// go to, without its side effects or sorting every channel's topics.
+// A topic the user left unread counts, although get_next_topic skips
+// it once.
+export function has_next_unread_topic(
+    curr_stream_id: number | undefined,
+    curr_topic: string | undefined,
+    channels_info: {channel_id: number}[],
+): boolean {
+    function is_current_topic(channel_id: number, topic: string): boolean {
+        return (
+            channel_id === curr_stream_id &&
+            curr_topic !== undefined &&
+            util.lower_same(topic, curr_topic)
+        );
+    }
+
+    return channels_info.some(({channel_id}) =>
+        get_unmuted_topics(channel_id, unread.get_topics_with_unreads(channel_id)).some(
+            (topic) => !is_current_topic(channel_id, topic),
+        ),
     );
 }
 
