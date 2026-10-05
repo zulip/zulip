@@ -8,6 +8,7 @@ import * as loading from "./loading.ts";
 import * as message_events from "./message_events.ts";
 import {page_params} from "./page_params.ts";
 import * as popup_banners from "./popup_banners.ts";
+import * as reaction_events from "./reaction_events.ts";
 import * as reload from "./reload.ts";
 import * as reload_state from "./reload_state.ts";
 import {get_retry_backoff_seconds} from "./retry_backoff.ts";
@@ -36,6 +37,7 @@ let event_queue_expired = false;
 function get_events_success(events) {
     let raw_messages = [];
     const update_message_events = [];
+    const received_reaction_events = [];
     const post_message_events = [];
 
     const clean_event = function clean_event(event) {
@@ -79,6 +81,13 @@ function get_events_success(events) {
 
             case "update_message":
                 update_message_events.push(event);
+                break;
+
+            case "reaction":
+                // Reactions are applied as a batch below, once this
+                // batch's new messages have been inserted, so that a
+                // reaction to one of those messages is not lost.
+                received_reaction_events.push(event);
                 break;
 
             case "delete_message":
@@ -139,6 +148,10 @@ function get_events_success(events) {
         } catch (error) {
             blueslip.error("Failed to update messages", undefined, error);
         }
+    }
+
+    if (received_reaction_events.length > 0) {
+        reaction_events.received_reactions(received_reaction_events);
     }
 
     // We do things like updating message flags and deleting messages last,

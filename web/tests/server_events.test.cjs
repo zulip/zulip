@@ -38,6 +38,10 @@ mock_esm("../src/sent_messages", {
     messages: new Map(),
 });
 
+const reaction_events = mock_esm("../src/reaction_events", {
+    received_reactions() {},
+});
+
 const message_events = mock_esm("../src/message_events", {
     insert_new_messages() {
         throw new Error("insert error");
@@ -101,6 +105,59 @@ run_test("message_event", ({override}) => {
 
     server_events._get_events_success([event]);
     assert.ok(inserted);
+});
+
+run_test("reaction_events", ({override}) => {
+    // Reaction events are processed as a batch, after the batch's new
+    // messages have been inserted.
+    const reaction_add = {
+        id: 1,
+        type: "reaction",
+        op: "add",
+        message_id: 5,
+        message_sender_id: 6,
+        user_id: 7,
+        reaction_type: "unicode_emoji",
+        emoji_name: "tada",
+        emoji_code: "1f389",
+    };
+    const reaction_remove = {...reaction_add, id: 2, op: "remove"};
+
+    const batches = [];
+    override(reaction_events, "received_reactions", (events) => {
+        batches.push(events);
+    });
+
+    server_events._get_events_success([reaction_add, reaction_remove]);
+    assert.deepEqual(batches, [[reaction_add, reaction_remove]]);
+});
+
+run_test("reactions are processed after the batch's new messages", ({override}) => {
+    // A reaction can reach us in the same batch as the message it is on;
+    // it would be lost if it were applied before that message is in
+    // message_store.
+    const calls = [];
+    override(message_events, "insert_new_messages", () => {
+        calls.push("insert_new_messages");
+    });
+    override(reaction_events, "received_reactions", () => {
+        calls.push("received_reactions");
+    });
+
+    server_events._get_events_success([
+        {type: "message", message, flags: []},
+        {
+            type: "reaction",
+            op: "add",
+            message_id: message.id,
+            message_sender_id: message.sender_id,
+            user_id: 7,
+            reaction_type: "unicode_emoji",
+            emoji_name: "tada",
+            emoji_code: "1f389",
+        },
+    ]);
+    assert.deepEqual(calls, ["insert_new_messages", "received_reactions"]);
 });
 
 // Start blueslip tests here

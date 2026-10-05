@@ -54,9 +54,6 @@ const muted_users_ui = mock_esm("../src/muted_users_ui");
 const narrow_title = mock_esm("../src/narrow_title");
 const navbar_alerts = mock_esm("../src/navbar_alerts");
 const pm_list = mock_esm("../src/pm_list");
-const reactions = mock_esm("../src/reactions", {
-    generate_clean_reactions() {},
-});
 const realm_icon = mock_esm("../src/realm_icon");
 const realm_logo = mock_esm("../src/realm_logo");
 const realm_playground = mock_esm("../src/realm_playground");
@@ -493,32 +490,6 @@ run_test("presence", ({override}) => {
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("presences");
     assert_same(args.presences, event.presences);
-});
-
-run_test("reaction", ({override}) => {
-    let event = event_fixtures.reaction__add;
-    {
-        const stub = make_stub();
-        override(reactions, "add_reaction", stub.f);
-        override(emoji_frequency, "update_emoji_frequency_on_add_reaction_event", noop);
-        dispatch(event);
-        assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("event");
-        assert_same(args.event.emoji_name, event.emoji_name);
-        assert_same(args.event.message_id, event.message_id);
-    }
-
-    event = event_fixtures.reaction__remove;
-    {
-        const stub = make_stub();
-        override(reactions, "remove_reaction", stub.f);
-        override(emoji_frequency, "update_emoji_frequency_on_remove_reaction_event", noop);
-        dispatch(event);
-        assert.equal(stub.num_calls, 1);
-        const args = stub.get_args("event");
-        assert_same(args.event.emoji_name, event.emoji_name);
-        assert_same(args.event.message_id, event.message_id);
-    }
 });
 
 run_test("reminders", ({override}) => {
@@ -1781,8 +1752,6 @@ run_test("realm_export_consent", ({override}) => {
 run_test("server_event_dispatch_op_errors", () => {
     blueslip.expect("error", "Unexpected event type subscription/other");
     server_events_dispatch.dispatch_normal_event({type: "subscription", op: "other"});
-    blueslip.expect("error", "Unexpected event type reaction/other");
-    server_events_dispatch.dispatch_normal_event({type: "reaction", op: "other"});
     blueslip.expect("error", "Unexpected event type realm/update_dict/other");
     server_events_dispatch.dispatch_normal_event({
         type: "realm",
