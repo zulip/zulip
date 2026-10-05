@@ -14,7 +14,7 @@ import * as unread_ui from "./unread_ui.ts";
 
 export function scroll_finished(): void {
     message_scroll_state.set_actively_scrolling(false);
-    scroll_to_bottom_button.hide_scroll_to_bottom();
+    scroll_to_bottom_button.update();
 
     if (message_lists.current === undefined) {
         return;
@@ -93,9 +93,7 @@ export function initialize(): void {
         _.throttle(() => {
             if (message_lists.current === undefined) {
                 // When in a non-message view, we don't need to process
-                // message scroll events. We just hide the scroll-to-bottom
-                // button instantly, if it is already visible.
-                scroll_to_bottom_button.hide_scroll_to_bottom();
+                // message scroll events.
                 return;
             }
 

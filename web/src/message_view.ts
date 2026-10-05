@@ -53,6 +53,7 @@ import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages_feed_ui from "./scheduled_messages_feed_ui.ts";
+import * as scroll_to_bottom_button from "./scroll_to_bottom_button.ts";
 import {
     message_edit_history_visibility_policy_values,
     web_mark_read_on_scroll_policy_values,
@@ -324,6 +325,7 @@ function handle_post_message_list_change(
         }
         render_message_list_with_selected_message(render_opts);
     }
+    scroll_to_bottom_button.update();
 
     handle_post_view_change(msg_list, opts);
 

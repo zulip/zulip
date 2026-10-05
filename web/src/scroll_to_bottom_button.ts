@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import type * as tippy from "tippy.js";
 
 import * as message_lists from "./message_lists.ts";
+import * as message_scroll_state from "./message_scroll_state.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {the} from "./util.ts";
@@ -45,8 +46,7 @@ function mouse_is_over_button(): boolean {
 }
 
 function hide_once_not_hovered(): void {
-    stop_hide_timer();
-    hide_timer = setInterval(() => {
+    hide_timer ??= setInterval(() => {
         // Check if the user is hovered over the scroll-to-bottom
         // button every 3 seconds to allow time for interaction.
         // If the user is not hovered on the button, hide the button
@@ -58,10 +58,18 @@ function hide_once_not_hovered(): void {
     }, 3000);
 }
 
-export function hide_scroll_to_bottom(): void {
+// Safe to call whenever the scroll position or the message feed may
+// have changed.
+export function update(): void {
     if (message_lists.current === undefined) {
         // Scroll to bottom button is not for non-message views.
         hide();
+        return;
+    }
+
+    if (message_scroll_state.actively_scrolling) {
+        // The feed is not in its final position yet; we are called
+        // again once the scroll finishes.
         return;
     }
 
@@ -70,7 +78,9 @@ export function hide_scroll_to_bottom(): void {
         return;
     }
 
-    hide_once_not_hovered();
+    if (is_shown()) {
+        hide_once_not_hovered();
+    }
 }
 
 export function show_scroll_to_bottom_button(): void {

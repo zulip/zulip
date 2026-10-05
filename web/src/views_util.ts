@@ -19,6 +19,7 @@ import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as resize from "./resize.ts";
+import * as scroll_to_bottom_button from "./scroll_to_bottom_button.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_list from "./stream_list.ts";
 import * as unread_ui from "./unread_ui.ts";
@@ -110,6 +111,7 @@ export function show(opts: {
     opts.highlight_view_in_left_sidebar();
 
     unread_ui.hide_unread_banner();
+    scroll_to_bottom_button.update();
     opts.update_compose();
     narrow_title.update_narrow_title(narrow_state.filter());
     message_view_header.render_title_area();
