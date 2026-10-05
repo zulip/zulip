@@ -157,6 +157,14 @@ test("not shown by a keyboard scroll", ({override}) => {
     assert.ok(!is_shown());
 });
 
+test("hiding stops the wait", ({override}) => {
+    set_feed(override, {bottom_visible: false});
+    mouse_scroll();
+
+    keydown();
+    assert.equal(clock.countTimers(), 0);
+});
+
 test("hidden three seconds after the scroll", ({override}) => {
     set_feed(override, {bottom_visible: false});
     mouse_scroll();
