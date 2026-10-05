@@ -1,4 +1,7 @@
+import orjson
+
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.webhooks.alertmanager.view import ALERTMANAGER_SEVERITY_EMOJI
 
 
 class AlertmanagerHookTests(WebhookTestCase):
@@ -42,3 +45,17 @@ class AlertmanagerHookTests(WebhookTestCase):
             expected_message,
             "application/json",
         )
+
+    def test_all_severity_emojis(self) -> None:
+        expected_message_template = "{emoji} **FIRING** CPU core temperature is 34.75C"
+        payload = orjson.loads(self.get_body("single_alert_no_url"))
+
+        for severity, emoji in ALERTMANAGER_SEVERITY_EMOJI.items():
+            with self.subTest(severity=severity):
+                payload["alerts"][0]["labels"]["severity"] = severity
+                self.check_webhook(
+                    "single_alert_no_url",
+                    "andromeda",
+                    expected_message_template.format(emoji=emoji, severity=severity),
+                    custom_payload=payload,
+                )
