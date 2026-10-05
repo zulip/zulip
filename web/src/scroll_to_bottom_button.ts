@@ -4,6 +4,7 @@ import type * as tippy from "tippy.js";
 
 import * as message_lists from "./message_lists.ts";
 import * as message_viewport from "./message_viewport.ts";
+import * as narrow_state from "./narrow_state.ts";
 import {the} from "./util.ts";
 
 let hide_scroll_to_bottom_timer: ReturnType<typeof setInterval> | undefined;
@@ -56,7 +57,18 @@ export function show_scroll_to_bottom_button(): void {
     $("#scroll-to-bottom-button-container").addClass("show");
 }
 
-export function initialize(): void {
+export function initialize(on_click: {scroll_to_bottom: () => void}): void {
+    $("body").on("click", "#scroll-to-bottom-button-clickable-area", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Since it take a few milliseconds for this button complete disappear transition,
+        // it is possible for user to click it before it hides when switching narrows.
+        if (narrow_state.is_message_feed_visible()) {
+            on_click.scroll_to_bottom();
+        }
+    });
+
     $(document).on("keydown", (e) => {
         if (e.shiftKey || e.ctrlKey || e.metaKey) {
             return;

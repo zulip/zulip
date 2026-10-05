@@ -24,7 +24,6 @@ import * as message_store from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as narrow_state from "./narrow_state.ts";
-import * as navigate from "./navigate.ts";
 import {page_params} from "./page_params.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -325,17 +324,6 @@ export function initialize(): void {
             force_rerender: true,
             trigger: "bookend load updates",
         });
-    });
-
-    $("body").on("click", "#scroll-to-bottom-button-clickable-area", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Since it take a few milliseconds for this button complete disappear transition,
-        // it is possible for user to click it before it hides when switching narrows.
-        if (narrow_state.is_message_feed_visible()) {
-            navigate.to_end();
-        }
     });
 
     $("body").on("click", ".message_row", function () {

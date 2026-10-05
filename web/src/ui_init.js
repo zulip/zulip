@@ -679,7 +679,7 @@ export async function initialize_everything(state_data) {
         server_events.finished_initial_fetch();
     });
     message_scroll.initialize();
-    scroll_to_bottom_button.initialize();
+    scroll_to_bottom_button.initialize({scroll_to_bottom: navigate.to_end});
     markdown.initialize(markdown_config.get_helpers());
     linkifiers.initialize(realm.realm_linkifiers);
     realm_playground.initialize({
