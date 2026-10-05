@@ -1306,3 +1306,17 @@ run_test("narrow_compute_title", () => {
     filter = new Filter([{operator: "dm", operand: [9999]}]);
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Invalid user");
 });
+
+run_test("preserves_topics_kept_unread_by_user", () => {
+    for (const trigger of [
+        "next_topic_unread_hotkey",
+        "old_unreads_missing",
+        "retarget message location",
+    ]) {
+        assert.ok(message_view.preserves_topics_kept_unread_by_user(trigger));
+    }
+
+    // `p` moves to a direct message conversation.
+    assert.ok(!message_view.preserves_topics_kept_unread_by_user("hotkey"));
+    assert.ok(!message_view.preserves_topics_kept_unread_by_user(undefined));
+});

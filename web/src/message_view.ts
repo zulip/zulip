@@ -160,6 +160,15 @@ type TargetMessageIdInfo = {
     first_unread_msg_id_pending_server_verification: number | undefined;
 };
 
+export function preserves_topics_kept_unread_by_user(trigger: string | undefined): boolean {
+    return (
+        trigger !== undefined &&
+        ["next_topic_unread_hotkey", "old_unreads_missing", "retarget message location"].includes(
+            trigger,
+        )
+    );
+}
+
 function create_and_update_message_list(
     filter: Filter,
     id_info: TargetMessageIdInfo,
@@ -275,12 +284,7 @@ function create_and_update_message_list(
 
     // To keep the behaviour of `n` key consistent and the memory of
     // `topics_kept_unread_by_user` as recent as possible, we clear it.
-    if (
-        !opts.trigger ||
-        !["next_topic_unread_hotkey", "old_unreads_missing", "retarget message location"].includes(
-            opts.trigger,
-        )
-    ) {
+    if (!preserves_topics_kept_unread_by_user(opts.trigger)) {
         topic_generator.reset_topics_kept_unread_by_user();
     }
 
