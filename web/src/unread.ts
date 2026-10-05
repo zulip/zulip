@@ -588,6 +588,21 @@ class UnreadTopicCounter {
         return followed_topic_unread_mentions;
     }
 
+    get_topics_with_unreads(stream_id: number): string[] {
+        const per_stream_bucketer = this.bucketer.get(stream_id);
+        if (!per_stream_bucketer) {
+            return [];
+        }
+
+        const topics = [];
+        for (const [topic, msgs] of per_stream_bucketer) {
+            if (msgs.size > 0) {
+                topics.push(topic);
+            }
+        }
+        return topics;
+    }
+
     topic_has_any_unread(stream_id: number, topic: string): boolean {
         const per_stream_bucketer = this.bucketer.get(stream_id);
 
@@ -1071,6 +1086,10 @@ export function topic_has_any_unread_mentions(stream_id: number, topic: string):
     // Recent Conversations row, it's important for it to run in O(1) time.
     const topic_key = stream_id + ":" + topic.toLowerCase();
     return (unread_mention_topics.get(topic_key)?.size ?? 0) > 0;
+}
+
+export function get_topics_with_unreads(stream_id: number): string[] {
+    return unread_topic_counter.get_topics_with_unreads(stream_id);
 }
 
 export function topic_has_any_unread(stream_id: number, topic: string): boolean {
