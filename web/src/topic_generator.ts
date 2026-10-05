@@ -111,6 +111,31 @@ export function next_topic(
     return undefined;
 }
 
+function get_unmuted_topics(stream_id: number, topics: string[]): string[] {
+    const narrowed_steam_id = narrow_state.stream_id();
+    const narrowed_topic = narrow_state.topic();
+    if (
+        narrowed_steam_id !== undefined &&
+        narrowed_topic !== undefined &&
+        narrowed_steam_id === stream_id &&
+        _.isEqual(narrow_state.filter()?.sorted_term_types(), ["stream", "topic"]) &&
+        !user_topics.is_topic_unmuted_or_followed(stream_id, narrowed_topic)
+    ) {
+        // Here we're using N within a muted stream starting from
+        // a muted topic; advance to the next not-explicitly-muted
+        // unread topic in the stream, to allow using N within
+        // muted streams. We'll jump back into the normal mode if
+        // we land in a followed/unmuted topic, but that's OK.
+
+        /* istanbul ignore next */
+        return topics.filter((topic) => !user_topics.is_topic_muted(stream_id, topic));
+    }
+    if (stream_data.is_muted(stream_id)) {
+        return topics.filter((topic) => user_topics.is_topic_unmuted_or_followed(stream_id, topic));
+    }
+    return topics.filter((topic) => !user_topics.is_topic_muted(stream_id, topic));
+}
+
 export function get_next_topic(
     curr_stream_id: number | undefined,
     curr_topic: string | undefined,
@@ -138,34 +163,6 @@ export function get_next_topic(
         const topics = stream_topic_history.get_recent_topic_names(channel_id);
         return topics.some((topic) => user_topics.is_topic_unmuted_or_followed(channel_id, topic));
     });
-
-    function get_unmuted_topics(stream_id: number): string[] {
-        const narrowed_steam_id = narrow_state.stream_id();
-        const topics = stream_topic_history.get_recent_topic_names(stream_id);
-        const narrowed_topic = narrow_state.topic();
-        if (
-            narrowed_steam_id !== undefined &&
-            narrowed_topic !== undefined &&
-            narrowed_steam_id === stream_id &&
-            _.isEqual(narrow_state.filter()?.sorted_term_types(), ["stream", "topic"]) &&
-            !user_topics.is_topic_unmuted_or_followed(stream_id, narrowed_topic)
-        ) {
-            // Here we're using N within a muted stream starting from
-            // a muted topic; advance to the next not-explicitly-muted
-            // unread topic in the stream, to allow using N within
-            // muted streams. We'll jump back into the normal mode if
-            // we land in a followed/unmuted topic, but that's OK.
-
-            /* istanbul ignore next */
-            return topics.filter((topic) => !user_topics.is_topic_muted(stream_id, topic));
-        }
-        if (stream_data.is_muted(stream_id)) {
-            return topics.filter((topic) =>
-                user_topics.is_topic_unmuted_or_followed(stream_id, topic),
-            );
-        }
-        return topics.filter((topic) => !user_topics.is_topic_muted(stream_id, topic));
-    }
 
     function get_followed_topics(stream_id: number): string[] {
         let topics = stream_topic_history.get_recent_topic_names(stream_id);
@@ -215,7 +212,8 @@ export function get_next_topic(
 
     return next_topic(
         sorted_channels_info,
-        get_unmuted_topics,
+        (stream_id) =>
+            get_unmuted_topics(stream_id, stream_topic_history.get_recent_topic_names(stream_id)),
         has_unread_messages,
         curr_stream_id,
         curr_topic,
