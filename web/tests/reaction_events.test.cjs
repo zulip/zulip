@@ -8,11 +8,23 @@ const blueslip = require("./lib/zblueslip.cjs");
 
 const emoji_frequency = mock_esm("../src/emoji_frequency");
 const message_events = mock_esm("../src/message_events");
-const reactions = mock_esm("../src/reactions");
+const reaction_notifications = mock_esm("../src/reaction_notifications", {
+    reaction_notifications_enabled: () => false,
+    remove_reaction_notification() {},
+});
+const reactions = mock_esm("../src/reactions", {
+    get_reaction_event_key: (event) => `${event.message_id}:${event.user_id}`,
+});
 
 const reaction_events = zrequire("reaction_events");
+const {set_current_user} = zrequire("state_data");
+
+const current_user = {user_id: 1};
+set_current_user(current_user);
 
 function reaction_event(op) {
+    // A reaction by another user to a message not sent by the current
+    // user, so that applying it is all that happens.
     return {
         op,
         message_id: 128,
@@ -59,6 +71,7 @@ run_test("an unexpected op is reported and otherwise ignored", ({disallow}) => {
     disallow(reactions, "add_reaction");
     disallow(reactions, "remove_reaction");
     disallow(message_events, "update_views_filtered_on_message_property");
+    disallow(reaction_notifications, "remove_reaction_notification");
 
     blueslip.expect("error", "Unexpected event type reaction/other");
     reaction_events.received_reactions([reaction_event("other")]);
@@ -81,4 +94,23 @@ run_test("a reaction that fails to apply does not stop the rest", ({override}) =
         {...reaction_event("add"), message_id: 2},
     ]);
     assert.deepEqual(applied, [2]);
+});
+
+run_test("every reaction is applied before any is acted on", ({override}) => {
+    const calls = [];
+    override(reactions, "add_reaction", () => {
+        calls.push("add_reaction");
+    });
+    override(reactions, "remove_reaction", () => {
+        calls.push("remove_reaction");
+    });
+    override(emoji_frequency, "update_emoji_frequency_on_add_reaction_event", noop);
+    override(emoji_frequency, "update_emoji_frequency_on_remove_reaction_event", noop);
+    override(message_events, "update_views_filtered_on_message_property", noop);
+    override(reaction_notifications, "remove_reaction_notification", () => {
+        calls.push("remove_reaction_notification");
+    });
+
+    reaction_events.received_reactions([reaction_event("remove"), reaction_event("add")]);
+    assert.deepEqual(calls, ["remove_reaction", "add_reaction", "remove_reaction_notification"]);
 });

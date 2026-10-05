@@ -84,9 +84,11 @@ function get_events_success(events) {
                 break;
 
             case "reaction":
-                // Reactions are applied as a batch below, once this
+                // Reactions are processed as a batch below, once this
                 // batch's new messages have been inserted, so that a
-                // reaction to one of those messages is not lost.
+                // reaction to one of those messages is not lost, and so
+                // that reactions to messages we don't have cached share a
+                // single fetch of those messages.
                 received_reaction_events.push(event);
                 break;
 

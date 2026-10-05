@@ -105,7 +105,9 @@ export function build_page(): void {
         page_params,
         realm,
         enable_sound_select:
-            user_settings.enable_sounds || user_settings.enable_stream_audible_notifications,
+            user_settings.enable_sounds ||
+            user_settings.enable_stream_audible_notifications ||
+            user_settings.enable_reaction_audible_notifications,
         zuliprc: "zuliprc",
         botserverrc: "botserverrc",
         can_create_new_bots: settings_bots.can_create_incoming_webhooks(),

@@ -350,18 +350,23 @@ export function set_up(settings_panel: SettingsPanel): void {
 
     $notification_sound_dropdown.val(settings_object.notification_sound);
 
-    $container.find(".enable_sounds, .enable_stream_audible_notifications").on("change", () => {
-        if (
-            $container.find(".enable_stream_audible_notifications").prop("checked") ||
-            $container.find(".enable_sounds").prop("checked")
-        ) {
-            $notification_sound_dropdown.prop("disabled", false);
-            $notification_sound_dropdown.parent().removeClass("control-label-disabled");
-        } else {
-            $notification_sound_dropdown.prop("disabled", true);
-            $notification_sound_dropdown.parent().addClass("control-label-disabled");
-        }
-    });
+    $container
+        .find(
+            ".enable_sounds, .enable_stream_audible_notifications, .enable_reaction_audible_notifications",
+        )
+        .on("change", () => {
+            if (
+                $container.find(".enable_stream_audible_notifications").prop("checked") ||
+                $container.find(".enable_sounds").prop("checked") ||
+                $container.find(".enable_reaction_audible_notifications").prop("checked")
+            ) {
+                $notification_sound_dropdown.prop("disabled", false);
+                $notification_sound_dropdown.parent().removeClass("control-label-disabled");
+            } else {
+                $notification_sound_dropdown.prop("disabled", true);
+                $notification_sound_dropdown.parent().addClass("control-label-disabled");
+            }
+        });
 
     set_notification_batching_ui(
         $container,
