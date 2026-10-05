@@ -891,32 +891,24 @@ def update_user_topic_visibility_policies_on_move(
 def get_participant_user_ids_in_moved_messages(
     moved_message_ids: list[int],
 ) -> set[int]:
-    user_ids = set(
-        Message.objects.filter(id__in=moved_message_ids).values_list("sender_id", flat=True)
-    )
+    message_qs = Message.objects.filter(id__in=moved_message_ids)
 
-    user_ids.update(
-        UserMessage.objects.filter(
-            message_id__in=moved_message_ids,
-            flags=~UserMessage.flags.historical,
-        )
-        .filter(Q(flags__andnz=UserMessage.flags.mentioned))
-        .values_list("user_profile_id", flat=True)
-    )
+    user_message_qs = UserMessage.objects.filter(
+        message_id__in=moved_message_ids,
+        flags=~UserMessage.flags.historical,
+    ).filter(Q(flags__andnz=UserMessage.flags.mentioned))
 
-    user_ids.update(
-        Reaction.objects.filter(message_id__in=moved_message_ids).values_list(
-            "user_profile_id", flat=True
-        )
-    )
+    reaction_qs = Reaction.objects.filter(message_id__in=moved_message_ids)
 
-    user_ids.update(
-        SubMessage.objects.filter(message_id__in=moved_message_ids).values_list(
-            "sender_id", flat=True
+    submessage_qs = SubMessage.objects.filter(message_id__in=moved_message_ids)
+
+    return set(
+        message_qs.values_list("sender_id", flat=True).union(
+            user_message_qs.values_list("user_profile_id", flat=True),
+            reaction_qs.values_list("user_profile_id", flat=True),
+            submessage_qs.values_list("sender_id", flat=True),
         )
     )
-
-    return user_ids
 
 
 def apply_automatic_unmute_follow_topics_policy(
