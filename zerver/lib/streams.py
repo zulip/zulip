@@ -10,6 +10,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
+from zerver.lib.event_types import StreamUpdateEvent
 from zerver.lib.exceptions import (
     CannotAdministerChannelError,
     CannotSetTopicsPolicyError,
@@ -2113,9 +2114,7 @@ def do_get_streams(
 
 
 def notify_stream_is_recently_active_update(stream: Stream, value: bool) -> None:
-    event = dict(
-        type="stream",
-        op="update",
+    event = StreamUpdateEvent(
         property="is_recently_active",
         value=value,
         stream_id=stream.id,

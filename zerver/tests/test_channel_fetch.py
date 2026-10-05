@@ -14,12 +14,12 @@ from zerver.actions.streams import (
     do_deactivate_stream,
 )
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
+from zerver.lib.event_types import SingleSubscription
 from zerver.lib.subscription_info import gather_subscriptions, gather_subscriptions_helper
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message
 from zerver.lib.types import (
     APIStreamDict,
-    APISubscriptionDict,
     NeverSubscribedStreamDict,
     SubscriptionInfo,
     UserGroupMembersData,
@@ -576,7 +576,7 @@ class GetSubscribersTest(ZulipTestCase):
 
     def test_api_fields(self) -> None:
         """Verify that all the fields from `Stream.API_FIELDS` and `Subscription.API_FIELDS` present
-        in `APIStreamDict` and `APISubscriptionDict`, respectively.
+        in `APIStreamDict` and `SingleSubscription`, respectively.
         """
         expected_fields = set(Stream.API_FIELDS) | {"stream_id", "is_archived"}
         expected_fields -= {"id", "deactivated"}
@@ -594,11 +594,11 @@ class GetSubscribersTest(ZulipTestCase):
 
         expected_fields = set(Subscription.API_FIELDS)
 
-        subscription_dict_fields = set(APISubscriptionDict.__annotations__.keys())
+        subscription_dict_fields = set(SingleSubscription.model_fields)
         computed_fields = {"in_home_view", "email_address", "stream_weekly_traffic", "subscribers"}
-        # `APISubscriptionDict` is a subclass of `APIStreamDict`, therefore having all the
-        # fields in addition to the computed fields and `Subscription.API_FIELDS` that
-        # need to be excluded here.
+        # `SingleSubscription` has all the fields of `APIStreamDict`, which
+        # need to be excluded here in addition to the computed fields and
+        # `Subscription.API_FIELDS`.
         self.assertEqual(
             subscription_dict_fields - computed_fields - stream_dict_fields,
             expected_fields,

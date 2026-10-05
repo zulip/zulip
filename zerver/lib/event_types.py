@@ -723,8 +723,8 @@ class RemovedUser(BaseEventModel):
 
 
 class RealmUserRemoveEvent(BaseEvent):
-    type: Literal["realm_user"]
-    op: Literal["remove"]
+    type: Literal["realm_user"] = "realm_user"
+    op: Literal["remove"] = "remove"
     person: RemovedUser
 
 
@@ -961,8 +961,8 @@ class StreamDeleteEvent(BaseEvent):
 
 
 class StreamUpdateCoreEvent(BaseEvent):
-    type: Literal["stream"]
-    op: Literal["update"]
+    type: Literal["stream"] = "stream"
+    op: Literal["update"] = "update"
     property: str
     value: bool | int | str | UserGroupMembersDict | None
     name: str
@@ -1030,8 +1030,8 @@ class SingleSubscription(BaseEventModel):
 
 
 class SubscriptionAddEvent(BaseEvent):
-    type: Literal["subscription"]
-    op: Literal["add"]
+    type: Literal["subscription"] = "subscription"
+    op: Literal["add"] = "add"
     subscriptions: list[SingleSubscription]
 
 
@@ -1043,8 +1043,8 @@ class SubscriptionPeerAddEvent(BaseEvent):
 
 
 class SubscriptionPeerRemoveEvent(BaseEvent):
-    type: Literal["subscription"]
-    op: Literal["peer_remove"]
+    type: Literal["subscription"] = "subscription"
+    op: Literal["peer_remove"] = "peer_remove"
     user_ids: list[int]
     stream_ids: list[int]
 
@@ -1055,14 +1055,14 @@ class RemoveSub(BaseEventModel):
 
 
 class SubscriptionRemoveEvent(BaseEvent):
-    type: Literal["subscription"]
-    op: Literal["remove"]
+    type: Literal["subscription"] = "subscription"
+    op: Literal["remove"] = "remove"
     subscriptions: list[RemoveSub]
 
 
 class SubscriptionUpdateEvent(BaseEvent):
-    type: Literal["subscription"]
-    op: Literal["update"]
+    type: Literal["subscription"] = "subscription"
+    op: Literal["update"] = "update"
     property: str
     stream_id: int
     value: bool | int | str
