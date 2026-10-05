@@ -10,6 +10,9 @@ const emoji_frequency = mock_esm("../src/emoji_frequency", {
     update_emoji_frequency_on_add_reaction_event() {},
     update_emoji_frequency_on_remove_reaction_event() {},
 });
+const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area", {
+    update_my_reactions_row() {},
+});
 const message_events = mock_esm("../src/message_events", {
     update_views_filtered_on_message_property() {},
 });
@@ -17,7 +20,10 @@ const reaction_notifications = mock_esm("../src/reaction_notifications", {
     reaction_notifications_enabled: () => false,
     remove_reaction_notification() {},
 });
-const reactions = mock_esm("../src/reactions", {});
+const reactions = mock_esm("../src/reactions", {
+    // Stops a retracted reaction counting towards the left sidebar's count.
+    decrement_new_reaction_count() {},
+});
 
 const reaction_events = zrequire("reaction_events");
 const {set_current_user} = zrequire("state_data");
@@ -146,7 +152,15 @@ run_test("every reaction is applied before any is acted on", ({override}) => {
     override(reaction_notifications, "remove_reaction_notification", () => {
         calls.push("remove_reaction_notification");
     });
+    override(left_sidebar_navigation_area, "update_my_reactions_row", () => {
+        calls.push("update_my_reactions_row");
+    });
 
     reaction_events.received_reactions([reaction_event("remove"), reaction_event("add")]);
-    assert.deepEqual(calls, ["remove_reaction", "add_reaction", "remove_reaction_notification"]);
+    assert.deepEqual(calls, [
+        "remove_reaction",
+        "add_reaction",
+        "remove_reaction_notification",
+        "update_my_reactions_row",
+    ]);
 });

@@ -15,12 +15,15 @@ import {$t} from "./i18n.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import type {Message, MessageCleanReaction, RawMessage} from "./message_store.ts";
+import * as message_viewport from "./message_viewport.ts";
+import * as muted_users from "./muted_users.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
 import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as spectators from "./spectators.ts";
 import {current_user} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
+import * as user_topics from "./user_topics.ts";
 
 const waiting_for_server_request_ids = new Set<string>();
 
@@ -37,6 +40,77 @@ export type ReactionEvent = {
     emoji_name: string;
     emoji_code: string;
 };
+
+// New reactions to the current user's messages, which the left sidebar's
+// Reactions row counts, by message id and then by get_reaction_event_key.
+// Grouped by message so that each message is checked once per scroll and
+// per count. The server does not track which reactions a user has seen,
+// so this is client-side only and starts empty on each page load.
+const new_reactions = new Map<number, Map<string, ReactionEvent>>();
+
+export function increment_new_reaction_count(event: ReactionEvent): void {
+    let message_reactions = new_reactions.get(event.message_id);
+    if (message_reactions === undefined) {
+        message_reactions = new Map();
+        new_reactions.set(event.message_id, message_reactions);
+    }
+    message_reactions.set(get_reaction_event_key(event), event);
+}
+
+export function decrement_new_reaction_count(event: ReactionEvent): void {
+    // A retracted reaction stops counting, as it stops being credited in
+    // a notification.
+    const message_reactions = new_reactions.get(event.message_id);
+    message_reactions?.delete(get_reaction_event_key(event));
+    if (message_reactions?.size === 0) {
+        new_reactions.delete(event.message_id);
+    }
+}
+
+export function discard_new_reactions_to_messages(message_ids: number[]): void {
+    // Reactions to a deleted message never count again.
+    for (const message_id of message_ids) {
+        new_reactions.delete(message_id);
+    }
+}
+
+export function discard_new_reactions_on_screen(): boolean {
+    // A reaction on a message the user has on screen needs no count.
+    // Returns whether any reaction stopped counting.
+    if (!message_viewport.viewport_is_visible_and_focused()) {
+        return false;
+    }
+    let discarded = false;
+    for (const message_id of new_reactions.keys()) {
+        if (message_viewport.is_message_visible(message_id, false)) {
+            new_reactions.delete(message_id);
+            discarded = true;
+        }
+    }
+    return discarded;
+}
+
+export function clear(): void {
+    new_reactions.clear();
+}
+
+export function get_count(): number {
+    // Decided when read rather than when a reaction arrives, since its
+    // message can since have been deleted or muted, or its reactor muted.
+    let count = 0;
+    for (const [message_id, message_reactions] of new_reactions) {
+        const message = message_store.get(message_id);
+        if (message === undefined || !user_topics.is_message_visible_in_home(message)) {
+            continue;
+        }
+        for (const event of message_reactions.values()) {
+            if (!muted_users.is_user_muted(event.user_id)) {
+                count += 1;
+            }
+        }
+    }
+    return count;
+}
 
 export function get_local_reaction_id(rendering_details: EmojiRenderingDetails): string {
     return [rendering_details.reaction_type, rendering_details.emoji_code].join(",");

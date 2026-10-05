@@ -19,7 +19,8 @@ const message_viewport = mock_esm("../src/message_viewport", {
     // The default for these tests is a user who is not watching the message
     // feed, and so has not already seen the reaction arrive.
     viewport_is_visible_and_focused: () => false,
-    // Nor is the message one they can see.
+    // Nor is the message one they can see, whether or not it is in the
+    // current message list.
     is_message_visible: () => false,
     // Composed from the two above, as the real one is, so that tests can
     // set focus and scroll position separately.
@@ -27,9 +28,11 @@ const message_viewport = mock_esm("../src/message_viewport", {
         message_viewport.viewport_is_visible_and_focused() &&
         message_viewport.is_message_visible(message.id, false),
 });
-// Applying a reaction to its message belongs to reaction_events' own
-// tests; these are about when a reaction held for its message's fetch is
-// applied, and what happens once it is.
+const message_lists = mock_esm("../src/message_lists", {current: undefined});
+// The count's row in the DOM belongs to the left sidebar's own tests.
+const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area", {
+    update_my_reactions_row() {},
+});
 const emoji_frequency = mock_esm("../src/emoji_frequency", {
     update_emoji_frequency_on_add_reaction_event() {},
     update_emoji_frequency_on_remove_reaction_event() {},
@@ -101,6 +104,7 @@ function test(label, f) {
         reaction_events.clear_for_testing();
         desktop_notifications.notice_memory.clear();
         muted_users.set_muted_users([]);
+        reactions.clear();
         helpers.override_rewire(reactions, "add_reaction", noop, {unused: false});
         helpers.override_rewire(reactions, "remove_reaction", noop, {unused: false});
         helpers.override(user_settings, "enable_reaction_desktop_notifications", true);
@@ -233,7 +237,7 @@ function my_channel_message(id) {
     };
 }
 
-function raw_message(id) {
+function raw_message(id, topic = "whatever") {
     return {
         avatar_url: "https://example.com/avatar.png",
         client: "website",
@@ -251,13 +255,20 @@ function raw_message(id) {
         flags: ["read"],
         type: "stream",
         stream_id: general.stream_id,
-        topic: "whatever",
+        topic,
         topic_links: [],
     };
 }
 
-function cache_message(id) {
-    message_helper.process_new_server_message(raw_message(id));
+function cache_message(id, topic) {
+    message_helper.process_new_server_message(raw_message(id, topic));
+}
+
+function serve_fetched_messages(override) {
+    override(channel, "get", (opts) => {
+        const message_ids = JSON.parse(opts.data.message_ids);
+        opts.success({messages: message_ids.map((id) => raw_message(id))});
+    });
 }
 
 function capture_fetches(override) {
@@ -350,6 +361,9 @@ test("reactions that cannot notify are dropped", () => {
     // Nor does a reaction from a muted user.
     muted_users.add_muted_user(muted_reactor.user_id);
     assert.ok(!notifies({...event, user_id: muted_reactor.user_id}));
+
+    // Only the baseline reaction counts for the left sidebar, too.
+    assert.equal(reactions.get_count(), 1);
 });
 
 test("reactions that cannot notify are dropped without a fetch", ({override}) => {
@@ -838,6 +852,7 @@ test("a message being fetched is requested once for all its reactions", ({overri
 
     // A failed request drops every reaction waiting for it, and a later
     // reaction requests the message again.
+    const count_before_failure = reactions.get_count();
     received_reaction(reaction_event(1930, alice.user_id));
     received_reaction(reaction_event(1930, bob.user_id));
     assert.equal(fetches.length, 7);
@@ -850,6 +865,7 @@ test("a message being fetched is requested once for all its reactions", ({overri
     const second_fetch_1930 = fetches.at(-1);
     second_fetch_1930.success({messages: [raw_message(1930)]});
     assert.equal(notices.last_title, "translated: Cindy reacted with 🎉");
+    assert.equal(reactions.get_count(), count_before_failure + 1);
 });
 
 test("reactions to a message in one batch share one notification and sound", ({override}) => {
@@ -976,6 +992,7 @@ test("whether a held reaction is acted on is decided when its fetch settles", ({
     notices.last_title = undefined;
     fetch_4440.success({messages: [raw_message(4440)]});
     assert.equal(notices.last_title, undefined);
+    assert.equal(reactions.get_count(), 1);
 });
 
 test("a fetch settles as soon as something else caches its message", ({
@@ -1147,4 +1164,229 @@ test("a reaction or message failing during a fetch does not stop the rest", ({
     });
     assert.ok(!notices.title_by_tag.has("4500"));
     assert.equal(notices.title_by_tag.get("4510"), "translated: Bob and Alice reacted with 🎉");
+});
+
+test("new reactions to your messages are counted for the left sidebar", ({override}) => {
+    serve_fetched_messages(override);
+    const message_id = 4100;
+
+    // Each distinct reaction counts, whether it is another emoji from the
+    // same user or the same emoji from another user.
+    reaction_events.received_reactions([
+        added(reaction_event(message_id, alice.user_id)),
+        added(reaction_event(message_id, alice.user_id, thumbs_up)),
+        added(reaction_event(message_id, bob.user_id)),
+    ]);
+    assert.equal(reactions.get_count(), 3);
+
+    // A duplicate event for a reaction already counted is not new activity.
+    received_reaction(reaction_event(message_id, bob.user_id));
+    assert.equal(reactions.get_count(), 3);
+
+    // Reactions to a different message accumulate alongside them.
+    received_reaction(reaction_event(4200, alice.user_id));
+    assert.equal(reactions.get_count(), 4);
+
+    // Retracting a reaction stops it counting, and a reaction added and
+    // retracted within one batch nets out to nothing.
+    removed_reaction(reaction_event(message_id, alice.user_id, thumbs_up));
+    assert.equal(reactions.get_count(), 3);
+    reaction_events.received_reactions([
+        added(reaction_event(message_id, cindy.user_id)),
+        retracted(reaction_event(message_id, cindy.user_id)),
+    ]);
+    assert.equal(reactions.get_count(), 3);
+
+    // Retracting a reaction that was never counted leaves the count alone.
+    removed_reaction(reaction_event(4300, alice.user_id));
+    assert.equal(reactions.get_count(), 3);
+});
+
+test("reactions are counted only while reaction notifications are enabled", ({override}) => {
+    serve_fetched_messages(override);
+
+    // With both reaction notification settings off, reactions are dropped
+    // before anything is done with them, so they are not counted either.
+    override(user_settings, "enable_reaction_desktop_notifications", false);
+    override(user_settings, "enable_reaction_audible_notifications", false);
+    received_reaction(reaction_event(4500, alice.user_id));
+    assert.equal(reactions.get_count(), 0);
+    assert.equal(notices.shown_count, 0);
+
+    // Either setting being on is enough for a reaction to count.
+    count_sounds(override);
+    received_reaction(reaction_event(4500, bob.user_id));
+    assert.equal(reactions.get_count(), 1);
+});
+
+test("a reaction that fails to notify is still counted", () => {
+    cache_message(4560);
+
+    // A reactor this client does not know trips an assertion while the
+    // notification is built.
+    const unknown_user_id = 9999;
+    blueslip.expect("error", "Failed to process reactions to a message");
+    received_reaction(reaction_event(4560, unknown_user_id));
+    assert.equal(notices.shown_count, 0);
+    assert.equal(reactions.get_count(), 1);
+});
+
+test("a reaction that fails to be counted still notifies", ({override}) => {
+    cache_message(4570);
+
+    // Looking the message up in the current message list fails.
+    override(message_viewport, "viewport_is_visible_and_focused", () => true);
+    override(message_lists, "current", {
+        get() {
+            throw new Error("Cannot read the current message list");
+        },
+    });
+    blueslip.expect("error", "Failed to show reactions to a message in the app");
+    received_reaction(reaction_event(4570, alice.user_id));
+    assert.equal(notices.title_by_tag.get("4570"), "translated: Alice reacted with 🎉");
+    assert.equal(reactions.get_count(), 0);
+});
+
+test("reactions in muted conversations are not counted", ({override}) => {
+    // Muted channels and topics leave out a reaction from the count, as they
+    // do from notifications.
+    const muted_topic_message_id = 4600;
+    cache_message(muted_topic_message_id, "muted topic");
+    received_reaction(reaction_event(muted_topic_message_id, alice.user_id));
+    assert.equal(reactions.get_count(), 0);
+    assert.equal(notices.shown_count, 0);
+
+    // This holds for a message we have to fetch to find out where it is.
+    const fetches = capture_fetches(override);
+    const uncached_muted_topic_message_id = 4610;
+    received_reaction(reaction_event(uncached_muted_topic_message_id, alice.user_id));
+    assert.equal(fetches.length, 1);
+    const muted_topic_fetch = fetches.at(-1);
+    muted_topic_fetch.success({
+        messages: [raw_message(uncached_muted_topic_message_id, "muted topic")],
+    });
+    assert.equal(reactions.get_count(), 0);
+    assert.equal(notices.shown_count, 0);
+
+    // A reaction to an uncached message in a conversation that is not muted
+    // counts once its message arrives.
+    received_reaction(reaction_event(4620, alice.user_id));
+    assert.equal(fetches.length, 2);
+    const fetch_4620 = fetches.at(-1);
+    assert.equal(reactions.get_count(), 0);
+    fetch_4620.success({messages: [raw_message(4620)]});
+    assert.equal(reactions.get_count(), 1);
+});
+
+test("muting or deleting takes a counted reaction out of the count", ({override}) => {
+    // Restored after the test, so that it can mute and unmute the channel.
+    override(general, "is_muted", false);
+
+    // Which reactions count is decided when the count is read, so unmuting
+    // puts a reaction back.
+    cache_message(4700, "later muted");
+    received_reaction(reaction_event(4700, alice.user_id));
+    received_reaction(reaction_event(4700, bob.user_id));
+    assert.equal(reactions.get_count(), 2);
+
+    const {MUTED, INHERIT} = user_topics.all_visibility_policies;
+    user_topics.update_user_topics(general.stream_id, general.name, "later muted", MUTED);
+    assert.equal(reactions.get_count(), 0);
+    user_topics.update_user_topics(general.stream_id, general.name, "later muted", INHERIT);
+    assert.equal(reactions.get_count(), 2);
+
+    general.is_muted = true;
+    assert.equal(reactions.get_count(), 0);
+    general.is_muted = false;
+    assert.equal(reactions.get_count(), 2);
+
+    // Muting a user only takes out their own reactions.
+    muted_users.add_muted_user(alice.user_id);
+    assert.equal(reactions.get_count(), 1);
+    muted_users.remove_muted_user(alice.user_id);
+    assert.equal(reactions.get_count(), 2);
+
+    // Deleting a message discards its reactions from the count.
+    reactions.discard_new_reactions_to_messages([4700]);
+    assert.equal(reactions.get_count(), 0);
+
+    // A message no longer cached is gone from the reactions view too.
+    cache_message(4710);
+    received_reaction(reaction_event(4710, alice.user_id));
+    assert.equal(reactions.get_count(), 1);
+    message_store.remove([4710]);
+    assert.equal(reactions.get_count(), 0);
+});
+
+test("only a reaction the user has no other way to find is counted", ({override}) => {
+    serve_fetched_messages(override);
+    const message_id = 4700;
+    cache_message(message_id);
+    const message = message_store.get(message_id);
+
+    function list_showing(shown_message) {
+        return {get: (id) => (shown_message?.id === id ? shown_message : undefined)};
+    }
+
+    // On screen: the user watches the reaction land, so pointing them at the
+    // reactions view would be noise.
+    override(message_viewport, "viewport_is_visible_and_focused", () => true);
+    override(message_lists, "current", list_showing(message));
+    override(message_viewport, "is_message_visible", viewport_showing(message_id));
+    received_reaction(reaction_event(message_id, alice.user_id));
+    assert.equal(reactions.get_count(), 0);
+
+    // Scrolled out of sight in the conversation the user is reading.
+    override(message_viewport, "is_message_visible", viewport_showing());
+    received_reaction(reaction_event(message_id, bob.user_id));
+    assert.equal(reactions.get_count(), 0);
+
+    // That holds without a desktop notification to take them there, too.
+    override(user_settings, "enable_reaction_desktop_notifications", false);
+    count_sounds(override);
+    received_reaction(reaction_event(message_id, bob.user_id, thumbs_up));
+    assert.equal(reactions.get_count(), 0);
+    override(user_settings, "enable_reaction_desktop_notifications", true);
+    override(user_settings, "enable_reaction_audible_notifications", false);
+
+    // Narrowed to a conversation that does not contain the message, the
+    // reaction has nowhere else to show up, and counts.
+    override(message_lists, "current", list_showing(undefined));
+    received_reaction(reaction_event(message_id, cindy.user_id));
+    assert.equal(reactions.get_count(), 1);
+
+    // A reaction to a message this client has not cached cannot be one the
+    // user is looking at, so it counts once the message is fetched.
+    override(message_lists, "current", list_showing(message));
+    override(message_viewport, "is_message_visible", viewport_showing(message_id));
+    received_reaction(reaction_event(4750, alice.user_id));
+    assert.equal(reactions.get_count(), 2);
+
+    // A reaction that arrives while the feed is not in front of the user
+    // counts too, even with the message in the current list and on screen.
+    override(message_viewport, "viewport_is_visible_and_focused", () => false);
+    received_reaction(reaction_event(message_id, alice.user_id, thumbs_up));
+    assert.equal(reactions.get_count(), 3);
+});
+
+test("the left sidebar row is updated once per batch of reactions", ({override}) => {
+    override(channel, "get", () => {});
+    let row_updates = 0;
+    override(left_sidebar_navigation_area, "update_my_reactions_row", () => {
+        row_updates += 1;
+    });
+
+    reaction_events.received_reactions([
+        added(reaction_event(4800, alice.user_id)),
+        added(reaction_event(4800, bob.user_id)),
+        added(reaction_event(4900, cindy.user_id)),
+    ]);
+    assert.equal(row_updates, 1);
+
+    // A batch that changes nothing still refreshes the row, which costs
+    // nothing and keeps the DOM honest if it had somehow gone stale.
+    reaction_events.received_reactions([
+        added({...reaction_event(5000, alice.user_id), message_sender_id: bob.user_id}),
+    ]);
+    assert.equal(row_updates, 2);
 });

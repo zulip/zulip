@@ -14,6 +14,7 @@ import * as dialog_widget from "./dialog_widget.ts";
 import * as feedback_widget from "./feedback_widget.ts";
 import {Filter} from "./filter.ts";
 import {$t, $t_html} from "./i18n.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as message_flags from "./message_flags.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
@@ -22,6 +23,7 @@ import * as message_viewport from "./message_viewport.ts";
 import * as modals from "./modals.ts";
 import * as people from "./people.ts";
 import * as popup_banners from "./popup_banners.ts";
+import * as reactions from "./reactions.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import {get_retry_backoff_seconds} from "./retry_backoff.ts";
@@ -840,6 +842,10 @@ function process_scrolled_to_bottom(): void {
 // If we ever materially change the algorithm for this function, we
 // may need to update message_notifications.received_messages as well.
 export function process_visible(): void {
+    if (reactions.discard_new_reactions_on_screen()) {
+        left_sidebar_navigation_area.update_my_reactions_row();
+    }
+
     if (
         message_lists.current !== undefined &&
         message_viewport.viewport_is_visible_and_focused() &&

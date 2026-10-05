@@ -1,4 +1,5 @@
 import * as activity_ui from "./activity_ui.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as message_lists from "./message_lists.ts";
 import * as muted_users from "./muted_users.ts";
 import type {RawMutedUser} from "./muted_users.ts";
@@ -20,6 +21,8 @@ export function rerender_for_muted_user(): void {
 
     activity_ui.redraw();
     pm_list.update_private_messages();
+    // The Reactions row leaves out reactions by muted users.
+    left_sidebar_navigation_area.update_my_reactions_row();
 
     typing_events.render_notifications_for_narrow();
 

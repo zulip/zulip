@@ -3,16 +3,20 @@ import * as z from "zod/mini";
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as emoji_frequency from "./emoji_frequency.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as message_events from "./message_events.ts";
 import * as message_helper from "./message_helper.ts";
+import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import {raw_message_schema} from "./message_store.ts";
 import type {Message} from "./message_store.ts";
+import * as message_viewport from "./message_viewport.ts";
 import * as muted_users from "./muted_users.ts";
 import * as reaction_notifications from "./reaction_notifications.ts";
 import * as reactions from "./reactions.ts";
 import type {ReactionEvent} from "./reactions.ts";
 import {current_user} from "./state_data.ts";
+import * as user_topics from "./user_topics.ts";
 
 const fetch_messages_response_schema = z.object({
     messages: z.array(raw_message_schema),
@@ -86,6 +90,28 @@ function is_reaction_event_meaningful(event: ReactionEvent): boolean {
     return event.message_sender_id === current_user.user_id;
 }
 
+function show_reaction_in_app(message: Message, event: ReactionEvent): void {
+    // A count on the left sidebar's Reactions row, for a reaction the user
+    // has no other way to find.
+
+    // Muted channels and topics are excluded from the count, as they are
+    // from notifications.
+    if (!user_topics.is_message_visible_in_home(message)) {
+        return;
+    }
+
+    if (
+        message_viewport.viewport_is_visible_and_focused() &&
+        message_lists.current?.get(message.id) !== undefined
+    ) {
+        // On screen, or scrolled out of sight in the list the user is
+        // reading, so the count has nothing to point them to.
+        return;
+    }
+
+    reactions.increment_new_reaction_count(event);
+}
+
 function process_reactions_to_message(message: Message, message_reactions: ReactionEvent[]): void {
     // A failure to act on one message's reactions should not keep the
     // rest of the batch from being acted on.
@@ -93,6 +119,20 @@ function process_reactions_to_message(message: Message, message_reactions: React
         reaction_notifications.send_reaction_notifications(message, message_reactions);
     } catch (error) {
         blueslip.error("Failed to process reactions to a message", {message_id: message.id}, error);
+    }
+
+    // Nor should a failure to notify keep the reactions from being shown
+    // in the app.
+    try {
+        for (const event of message_reactions) {
+            show_reaction_in_app(message, event);
+        }
+    } catch (error) {
+        blueslip.error(
+            "Failed to show reactions to a message in the app",
+            {message_id: message.id},
+            error,
+        );
     }
 }
 
@@ -175,6 +215,7 @@ function settle_message_fetches(message_ids: number[]): void {
             settle_message_fetch(message);
         }
     }
+    left_sidebar_navigation_area.update_my_reactions_row();
 }
 
 function fetch_messages_for_reactions(
@@ -248,6 +289,7 @@ export function received_reactions(events: ServerReactionEvent[]): void {
         // an earlier notification. A fetch of the message holds the
         // removal too, and drops the reaction when it settles.
         try {
+            reactions.decrement_new_reaction_count(event);
             reaction_notifications.remove_reaction_notification(event);
         } catch (error) {
             blueslip.error(
@@ -294,4 +336,7 @@ export function received_reactions(events: ServerReactionEvent[]): void {
     if (uncached_reactions_by_message_id.size > 0) {
         fetch_messages_for_reactions(uncached_reactions_by_message_id);
     }
+
+    // Update the count in the reactions row.
+    left_sidebar_navigation_area.update_my_reactions_row();
 }
