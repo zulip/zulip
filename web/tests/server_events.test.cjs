@@ -39,6 +39,14 @@ mock_esm("../src/sent_messages", {
     messages: new Map(),
 });
 
+const reaction_events = mock_esm("../src/reaction_events", {
+    received_reactions() {},
+});
+
+const submessage = mock_esm("../src/submessage", {
+    handle_event() {},
+});
+
 const message_events = mock_esm("../src/message_events", {
     insert_new_messages() {
         throw new Error("insert error");
@@ -142,6 +150,37 @@ run_test("message_event", ({override}) => {
     assert.ok(inserted);
 });
 
+run_test("reactions are processed as a batch after the batch's new messages", ({override}) => {
+    // A reaction can reach us in the same batch as the message it is on;
+    // it would be lost if it were applied before that message is in
+    // message_store.
+    const reaction_add = {
+        type: "reaction",
+        op: "add",
+        message_id: message.id,
+        message_sender_id: message.sender_id,
+        user_id: 7,
+        reaction_type: "unicode_emoji",
+        emoji_name: "tada",
+        emoji_code: "1f389",
+    };
+    const reaction_remove = {...reaction_add, op: "remove"};
+    const calls = [];
+    override(message_events, "insert_new_messages", () => {
+        calls.push("insert_new_messages");
+    });
+    override(reaction_events, "received_reactions", (events) => {
+        calls.push(events);
+    });
+
+    server_events._get_events_success([
+        reaction_add,
+        {type: "message", message, flags: []},
+        reaction_remove,
+    ]);
+    assert.deepEqual(calls, ["insert_new_messages", [reaction_add, reaction_remove]]);
+});
+
 // Start blueslip tests here
 
 const setup = () => {
@@ -195,6 +234,36 @@ run_test("event_edit_message_error", () => {
 
     server_events.restart_get_events();
 
+    const logs = blueslip.get_test_logs("error");
+    assert.equal(logs.length, 1);
+    assert.equal(logs[0].more_info, undefined);
+});
+
+run_test("event_reaction_error", ({override}) => {
+    setup();
+    // A failure to process reactions does not stop the events processed
+    // after them.
+    const data = {
+        events: [
+            {type: "reaction", op: "add", id: 1, message_id: message.id},
+            {type: "submessage", id: 2, message_id: message.id},
+        ],
+    };
+    channel.get = (options) => {
+        options.success(data);
+    };
+    override(reaction_events, "received_reactions", () => {
+        throw new Error("reaction error");
+    });
+    let handled_submessage = false;
+    override(submessage, "handle_event", () => {
+        handled_submessage = true;
+    });
+    blueslip.expect("error", "Failed to process reactions");
+
+    server_events.restart_get_events();
+
+    assert.ok(handled_submessage);
     const logs = blueslip.get_test_logs("error");
     assert.equal(logs.length, 1);
     assert.equal(logs[0].more_info, undefined);
