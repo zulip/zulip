@@ -587,8 +587,8 @@ test("maybe_update_raw_content", () => {
 
 test("save_topic_links", () => {
     function assert_maps_empty() {
-        assert.deepEqual(message_store.topic_links_by_to_for_testing(), new Map());
-        assert.deepEqual(message_store.topic_links_by_from_for_testing(), new Map());
+        assert.deepEqual(message_store.topic_links_incoming_for_testing(), new Map());
+        assert.deepEqual(message_store.topic_links_outgoing_for_testing(), new Map());
     }
 
     function message_with_content(content) {
@@ -630,11 +630,11 @@ test("save_topic_links", () => {
     let message = message_with_content(`<div><a href='${link}'>a link!</a>`);
     message_store.save_topic_links(message);
     assert.deepEqual(
-        message_store.topic_links_by_to_for_testing(),
+        message_store.topic_links_incoming_for_testing(),
         new Map([[10, new Map([["hello", new Map([[0, [message.id]]])]])]]),
     );
     assert.deepEqual(
-        message_store.topic_links_by_from_for_testing(),
+        message_store.topic_links_outgoing_for_testing(),
         new Map([
             [
                 message.stream_id,
@@ -682,11 +682,11 @@ test("save_topic_links", () => {
     });
     message_store.save_topic_links(message);
     assert.deepEqual(
-        message_store.topic_links_by_to_for_testing(),
+        message_store.topic_links_incoming_for_testing(),
         new Map([[10, new Map([["hello", new Map([[linked_message.id, [message.id]]])]])]]),
     );
     assert.deepEqual(
-        message_store.topic_links_by_from_for_testing(),
+        message_store.topic_links_outgoing_for_testing(),
         new Map([
             [
                 message.stream_id,
@@ -792,13 +792,13 @@ test("get and update topic links to/from narrow", () => {
         "/#narrow/channel/10-design/topic/goodbye/",
     );
     assert.deepEqual(
-        message_store.topic_links_by_to_for_testing(),
+        message_store.topic_links_incoming_for_testing(),
         new Map([
             [design.stream_id, new Map([["goodbye", new Map([[NO_MESSAGE_ID, [message1.id]]])]])],
         ]),
     );
     assert.deepEqual(
-        message_store.topic_links_by_from_for_testing(),
+        message_store.topic_links_outgoing_for_testing(),
         new Map([
             [
                 development.stream_id,
@@ -838,7 +838,7 @@ test("get and update topic links to/from narrow", () => {
         "/#narrow/channel/10-design/topic/second-goodbye/",
     );
     assert.deepEqual(
-        message_store.topic_links_by_to_for_testing(),
+        message_store.topic_links_incoming_for_testing(),
         new Map([
             [
                 design.stream_id,
@@ -857,7 +857,7 @@ test("get and update topic links to/from narrow", () => {
         ]),
     );
     assert.deepEqual(
-        message_store.topic_links_by_from_for_testing(),
+        message_store.topic_links_outgoing_for_testing(),
         new Map([
             [
                 development.stream_id,
@@ -920,7 +920,7 @@ test("get and update topic links to/from narrow", () => {
         "/#narrow/channel/10-design/topic/hello/",
     );
     assert.deepEqual(
-        message_store.topic_links_by_to_for_testing(),
+        message_store.topic_links_incoming_for_testing(),
         new Map([
             [
                 design.stream_id,
@@ -934,7 +934,7 @@ test("get and update topic links to/from narrow", () => {
         ]),
     );
     assert.deepEqual(
-        message_store.topic_links_by_from_for_testing(),
+        message_store.topic_links_outgoing_for_testing(),
         new Map([
             [
                 development.stream_id,
@@ -1032,7 +1032,7 @@ test("get and update topic links to/from narrow", () => {
 
     // The high level topic maps will have data from both messages.
     assert.deepEqual(
-        message_store.topic_links_by_to_for_testing(),
+        message_store.topic_links_incoming_for_testing(),
         new Map([
             [
                 design.stream_id,
@@ -1051,7 +1051,7 @@ test("get and update topic links to/from narrow", () => {
         ]),
     );
     assert.deepEqual(
-        message_store.topic_links_by_from_for_testing(),
+        message_store.topic_links_outgoing_for_testing(),
         new Map([
             [
                 development.stream_id,
@@ -1149,7 +1149,7 @@ test("get and update topic links to/from narrow", () => {
     );
 
     assert.deepEqual(
-        message_store.topic_links_by_to_for_testing(),
+        message_store.topic_links_incoming_for_testing(),
         new Map([
             [
                 design.stream_id,
@@ -1182,7 +1182,7 @@ test("get and update topic links to/from narrow", () => {
         ]),
     );
     assert.deepEqual(
-        message_store.topic_links_by_from_for_testing(),
+        message_store.topic_links_outgoing_for_testing(),
         new Map([
             [
                 development.stream_id,
@@ -1672,8 +1672,8 @@ test("reify_message_id handles a message that links to itself", () => {
     message_store.remove([632]);
 
     for (const link_map of [
-        message_store.topic_links_by_from_for_testing(),
-        message_store.topic_links_by_to_for_testing(),
+        message_store.topic_links_outgoing_for_testing(),
+        message_store.topic_links_incoming_for_testing(),
     ]) {
         assert.equal(link_map.get(design.stream_id).get("logo").size, 0);
     }
@@ -1694,6 +1694,6 @@ test("process_topic_edit ignores messages missing from the local cache", () => {
         new_topic: "moved",
     });
 
-    assert.deepEqual(message_store.topic_links_by_from_for_testing(), new Map());
-    assert.deepEqual(message_store.topic_links_by_to_for_testing(), new Map());
+    assert.deepEqual(message_store.topic_links_outgoing_for_testing(), new Map());
+    assert.deepEqual(message_store.topic_links_incoming_for_testing(), new Map());
 });
