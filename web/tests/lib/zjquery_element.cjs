@@ -162,6 +162,8 @@ class FakeElement extends RejectMissing {
     classList = new FakeClassList();
     dataset = new FakeDataSet(this);
     innerHTML = "never-been-set";
+    offsetHeight = 0;
+    offsetWidth = 0;
     selectionEnd = undefined;
     selectionStart = undefined;
     style = new FakeStyle();
@@ -174,6 +176,7 @@ class FakeElement extends RejectMissing {
         super();
         fake_element_state.set(this, new FakeElementState());
     }
+    animate() {}
     append() {}
     closest(selector) {
         const state = fake_element_state.get(this);

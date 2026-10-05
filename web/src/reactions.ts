@@ -20,6 +20,7 @@ import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as spectators from "./spectators.ts";
 import {current_user} from "./state_data.ts";
 import {user_settings} from "./user_settings.ts";
+import * as user_topics from "./user_topics.ts";
 
 const waiting_for_server_request_ids = new Set<string>();
 
@@ -36,6 +37,56 @@ export type ReactionEvent = {
     emoji_name: string;
     emoji_code: string;
 };
+
+// The reactions to the current user's own messages that have arrived
+// since this client loaded and that the user has not looked at, which
+// the left sidebar's "Reactions" row shows a count of.
+//
+// The server does not track which reactions a user has seen, so this is
+// deliberately client-side only: the set starts empty on every page
+// load and is built up from the reaction events this client processes.
+// A reload therefore forgets what was counted, which is the tradeoff
+// for the feature needing no new server state. Each reaction maps to
+// the id of the message it is on; see get_count.
+const new_reaction_message_ids = new Map<string, number>();
+
+export function increment_new_reaction_count(event: ReactionEvent): void {
+    new_reaction_message_ids.set(get_reaction_event_key(event), event.message_id);
+}
+
+export function decrement_new_reaction_count(event: ReactionEvent): void {
+    // A reaction its author retracted is no longer activity worth
+    // pointing at, so it stops counting -- just as it stops being
+    // credited in a notification.
+    new_reaction_message_ids.delete(get_reaction_event_key(event));
+}
+
+export function clear(): void {
+    new_reaction_message_ids.clear();
+}
+
+export function get_count(): number {
+    // Whether a reaction still counts is decided here rather than when it
+    // arrives, because its message can since have been deleted (or moved
+    // somewhere the user cannot see, which deletes it for them), or moved
+    // into a muted conversation, or muted -- and the reactions view would
+    // not show it then.
+    let count = 0;
+    for (const message_id of new_reaction_message_ids.values()) {
+        const message = message_store.get(message_id);
+        if (message === undefined) {
+            continue;
+        }
+        if (
+            message.type === "stream" &&
+            !user_topics.is_topic_visible_in_home(message.stream_id, message.topic)
+        ) {
+            continue;
+        }
+        count += 1;
+    }
+    return count;
+}
 
 export function get_local_reaction_id(rendering_details: EmojiRenderingDetails): string {
     return [rendering_details.reaction_type, rendering_details.emoji_code].join(",");
@@ -339,6 +390,36 @@ export let find_reaction = (message_id: number, local_id: string): JQuery => {
 
 export function rewire_find_reaction(value: typeof find_reaction): void {
     find_reaction = value;
+}
+
+export let animate_reaction_arrival = (event: ReactionEvent): void => {
+    // Draws the eye to a reaction that has just landed on a message the user
+    // is looking at. Only the current message list is on screen; other
+    // rendered lists, which may hold the same message, are hidden.
+    const $row = message_lists.current?.get_row(event.message_id) ?? $();
+    const reaction = $row
+        .find(".message_reactions")
+        .find(`[data-reaction-id='${CSS.escape(get_local_reaction_id(event))}']`)[0];
+    if (!reaction || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        return;
+    }
+
+    const reaction_arrival_pop_keyframes: Keyframe[] = [
+        {offset: 0, transform: "scale(1)"},
+        {offset: 0.3, transform: "translateY(-1px) scale(1.25)"},
+        {offset: 0.6, transform: "scale(0.98)"},
+        {offset: 0.8, transform: "scale(1.007)"},
+        {offset: 1, transform: "scale(1)"},
+    ];
+
+    reaction.animate(reaction_arrival_pop_keyframes, {
+        duration: 800,
+        easing: "cubic-bezier(0.34, 1.2, 0.64, 1)",
+    });
+};
+
+export function rewire_animate_reaction_arrival(value: typeof animate_reaction_arrival): void {
+    animate_reaction_arrival = value;
 }
 
 export function get_add_reaction_button(message_id: number): JQuery {

@@ -19,7 +19,8 @@ const message_viewport = mock_esm("../src/message_viewport", {
     // The default for these tests is a user who is not watching the message
     // feed, and so has not already seen the reaction arrive.
     viewport_is_visible_and_focused: () => false,
-    // Nor is the message one they can see.
+    // Nor is the message one they can see, whether or not it is in the
+    // current message list.
     is_message_visible: () => false,
     // Composed from the two above, as the real one is, so that tests can
     // set focus and scroll position separately.
@@ -27,8 +28,13 @@ const message_viewport = mock_esm("../src/message_viewport", {
         message_viewport.viewport_is_visible_and_focused() &&
         message_viewport.is_message_visible(message.id, false),
 });
-// Applying a reaction to its message belongs to reaction_events' own
-// tests; these are about what happens once it is applied.
+const message_lists = mock_esm("../src/message_lists", {current: undefined});
+// The left sidebar's count of new reactions is exercised through
+// reactions below; its row in the DOM belongs to the left sidebar's
+// own tests.
+const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area", {
+    update_my_reactions_row() {},
+});
 mock_esm("../src/emoji_frequency", {
     update_emoji_frequency_on_add_reaction_event() {},
     update_emoji_frequency_on_remove_reaction_event() {},
@@ -94,6 +100,7 @@ function test(label, f) {
         message_store.clear_for_testing();
         desktop_notifications.notice_memory.clear();
         muted_users.set_muted_users([]);
+        reactions.clear();
         helpers.override_rewire(reactions, "add_reaction", noop, {unused: false});
         helpers.override_rewire(reactions, "remove_reaction", noop, {unused: false});
         helpers.override(user_settings, "enable_reaction_desktop_notifications", true);
@@ -223,7 +230,7 @@ function my_channel_message(id) {
     };
 }
 
-function raw_message(id) {
+function raw_message(id, topic = "whatever") {
     return {
         avatar_url: "https://example.com/avatar.png",
         client: "website",
@@ -241,13 +248,20 @@ function raw_message(id) {
         flags: ["read"],
         type: "stream",
         stream_id: general.stream_id,
-        topic: "whatever",
+        topic,
         topic_links: [],
     };
 }
 
-function cache_message(id) {
-    message_helper.process_new_server_message(raw_message(id));
+function cache_message(id, topic) {
+    message_helper.process_new_server_message(raw_message(id, topic));
+}
+
+function serve_fetched_messages(override) {
+    override(channel, "get", (opts) => {
+        const message_ids = JSON.parse(opts.data.message_ids);
+        opts.success({messages: message_ids.map((id) => raw_message(id))});
+    });
 }
 
 function react(message, user_id, emoji = tada) {
@@ -524,11 +538,13 @@ test("a removal dismisses its notification even when notifications are off", ({o
     assert.deepEqual(notices.closed_tags, [message.id.toString()]);
 });
 
-test("reactions notify unless the message is on screen", ({override}) => {
+test("reactions notify unless the message is on screen", ({override, override_rewire}) => {
     const notices = stub_notification_api();
     stub_message_content_parsing();
+    override_rewire(reactions, "animate_reaction_arrival", noop);
     const message_id = 3700;
     cache_message(message_id);
+    const message = message_store.get(message_id);
 
     function reactions_shown() {
         notices.shown_count = 0;
@@ -537,14 +553,30 @@ test("reactions notify unless the message is on screen", ({override}) => {
         return notices.shown_count;
     }
 
+    const list_showing_message = {get: () => message};
+    const list_showing_other_conversation = {get: () => undefined};
+
     // Zulip in the background, an overlay covering the feed, or a view that
-    // replaces the feed entirely: viewport_is_visible_and_focused is false
-    // (the default here) and the reaction notifies.
+    // replaces the feed entirely: viewport_is_visible_and_focused is false and
+    // the reaction notifies, however the feed is scrolled underneath.
+    override(message_viewport, "viewport_is_visible_and_focused", () => false);
+    override(message_lists, "current", list_showing_message);
     assert.equal(reactions_shown(), 1);
 
-    // Watching the feed, but the message is not on screen -- scrolled past,
-    // or in a conversation the user is not viewing: it still notifies.
+    // Focused and watching the feed, but narrowed to a conversation that does
+    // not contain the message: still unseen, so it still notifies.
     override(message_viewport, "viewport_is_visible_and_focused", () => true);
+    override(message_lists, "current", list_showing_other_conversation);
+    assert.equal(reactions_shown(), 1);
+
+    // No message list at all -- Inbox or Recent conversations -- likewise
+    // means the message is not in front of the user.
+    override(message_lists, "current", undefined);
+    assert.equal(reactions_shown(), 1);
+
+    // Reading the conversation the message is in, but scrolled past it: the
+    // reaction lands out of sight, so it notifies like any other.
+    override(message_lists, "current", list_showing_message);
     assert.equal(reactions_shown(), 1);
 
     // The message is on screen: the reaction appears in front of the user,
@@ -1061,4 +1093,264 @@ test("a reaction or message failing during a fetch does not stop the rest", ({
 
     // Let the outstanding request finish, so it does not stay registered.
     fetches[1].error();
+});
+
+test("new reactions to your messages are counted for the left sidebar", ({override}) => {
+    stub_notification_api();
+    stub_message_content_parsing();
+    serve_fetched_messages(override);
+    const message_id = 4100;
+
+    // Each distinct reaction counts, whether it is another emoji from the
+    // same user or the same emoji from another user.
+    reaction_events.received_reactions([
+        added(reaction_event(message_id, alice.user_id)),
+        added(reaction_event(message_id, alice.user_id, thumbs_up)),
+        added(reaction_event(message_id, bob.user_id)),
+    ]);
+    assert.equal(reactions.get_count(), 3);
+
+    // A duplicate event for a reaction already counted is not new activity.
+    received_reaction(reaction_event(message_id, bob.user_id));
+    assert.equal(reactions.get_count(), 3);
+
+    // Reactions to a different message accumulate alongside them.
+    received_reaction(reaction_event(4200, alice.user_id));
+    assert.equal(reactions.get_count(), 4);
+
+    // Retracting a reaction stops it counting, and a reaction added and
+    // retracted within one batch nets out to nothing.
+    removed_reaction(reaction_event(message_id, alice.user_id, thumbs_up));
+    assert.equal(reactions.get_count(), 3);
+    reaction_events.received_reactions([
+        added(reaction_event(message_id, cindy.user_id)),
+        retracted(reaction_event(message_id, cindy.user_id)),
+    ]);
+    assert.equal(reactions.get_count(), 3);
+
+    // Retracting a reaction that was never counted leaves the count alone.
+    removed_reaction(reaction_event(4300, alice.user_id));
+    assert.equal(reactions.get_count(), 3);
+});
+
+test("only reactions worth noticing are counted", ({override}) => {
+    stub_notification_api();
+    stub_message_content_parsing();
+    serve_fetched_messages(override);
+    const message_id = 4400;
+    muted_users.add_muted_user(muted_reactor.user_id);
+
+    // The current user reacting to their own message is not news to them.
+    received_reaction(reaction_event(message_id, current_user.user_id));
+    // Nor is a reaction from a user they have muted.
+    received_reaction(reaction_event(message_id, muted_reactor.user_id));
+    // Nor is a reaction to somebody else's message: the reactions view shows
+    // the messages you sent, so only reactions to those count.
+    received_reaction({
+        ...reaction_event(message_id, alice.user_id),
+        message_sender_id: bob.user_id,
+    });
+    assert.equal(reactions.get_count(), 0);
+
+    received_reaction(reaction_event(message_id, alice.user_id));
+    assert.equal(reactions.get_count(), 1);
+});
+
+test("reactions are counted only while reaction notifications are enabled", ({override}) => {
+    const notices = stub_notification_api();
+    stub_message_content_parsing();
+    serve_fetched_messages(override);
+
+    // With both reaction notification settings off, reactions are dropped
+    // before anything is done with them, so they are not counted either.
+    override(user_settings, "enable_reaction_desktop_notifications", false);
+    override(user_settings, "enable_reaction_audible_notifications", false);
+    received_reaction(reaction_event(4500, alice.user_id));
+    assert.equal(reactions.get_count(), 0);
+    assert.equal(notices.shown_count, 0);
+
+    // Either setting being on is enough for a reaction to count.
+    override(user_settings, "enable_reaction_audible_notifications", true);
+    $("#user-notification-sound-audio")[0].play = async () => {};
+    received_reaction(reaction_event(4500, bob.user_id));
+    assert.equal(reactions.get_count(), 1);
+});
+
+test("reactions in muted conversations are not counted", ({override}) => {
+    const notices = stub_notification_api();
+    stub_message_content_parsing();
+
+    // Muted channels and topics leave out a reaction from the count, as they
+    // do from notifications.
+    const muted_topic_message_id = 4600;
+    cache_message(muted_topic_message_id, "muted topic");
+    received_reaction(reaction_event(muted_topic_message_id, alice.user_id));
+    assert.equal(reactions.get_count(), 0);
+    assert.equal(notices.shown_count, 0);
+
+    // This holds for a message we have to fetch to find out where it is.
+    const fetches = [];
+    override(channel, "get", (opts) => {
+        fetches.push(opts);
+    });
+    const uncached_muted_topic_message_id = 4610;
+    received_reaction(reaction_event(uncached_muted_topic_message_id, alice.user_id));
+    assert.equal(fetches.length, 1);
+    fetches[0].success({messages: [raw_message(uncached_muted_topic_message_id, "muted topic")]});
+    assert.equal(reactions.get_count(), 0);
+    assert.equal(notices.shown_count, 0);
+
+    // A reaction to an uncached message in a conversation that is not muted
+    // counts once its message arrives.
+    received_reaction(reaction_event(4620, alice.user_id));
+    assert.equal(reactions.get_count(), 0);
+    fetches[1].success({messages: [raw_message(4620)]});
+    assert.equal(reactions.get_count(), 1);
+});
+
+test("only a reaction the user has no other way to find is counted", ({
+    override,
+    override_rewire,
+}) => {
+    stub_notification_api();
+    stub_message_content_parsing();
+    override_rewire(reactions, "animate_reaction_arrival", noop);
+    serve_fetched_messages(override);
+    const message_id = 4700;
+    cache_message(message_id);
+    const message = message_store.get(message_id);
+
+    function list_showing(shown_message) {
+        return {get: (id) => (shown_message?.id === id ? shown_message : undefined)};
+    }
+
+    // On screen: the user watches the reaction land, so pointing them at the
+    // reactions view would be noise.
+    override(message_viewport, "viewport_is_visible_and_focused", () => true);
+    override(message_lists, "current", list_showing(message));
+    override(message_viewport, "is_message_visible", viewport_showing(message_id));
+    received_reaction(reaction_event(message_id, alice.user_id));
+    assert.equal(reactions.get_count(), 0);
+
+    // In the conversation the user is reading, but scrolled out of sight: the
+    // reaction is in the conversation in front of them, so the count stays
+    // out of this.
+    override(message_viewport, "is_message_visible", viewport_showing());
+    received_reaction(reaction_event(message_id, bob.user_id));
+    assert.equal(reactions.get_count(), 0);
+
+    // That holds without a desktop notification to take them there, too.
+    override(user_settings, "enable_reaction_desktop_notifications", false);
+    override(user_settings, "enable_reaction_audible_notifications", true);
+    $("#user-notification-sound-audio")[0].play = async () => {};
+    received_reaction(reaction_event(message_id, bob.user_id, thumbs_up));
+    assert.equal(reactions.get_count(), 0);
+    override(user_settings, "enable_reaction_desktop_notifications", true);
+    override(user_settings, "enable_reaction_audible_notifications", false);
+
+    // Narrowed to a conversation that does not contain the message, the
+    // reaction has nowhere else to show up, and counts.
+    override(message_lists, "current", list_showing(undefined));
+    received_reaction(reaction_event(message_id, cindy.user_id));
+    assert.equal(reactions.get_count(), 1);
+
+    // A reaction to a message this client has not cached cannot be one the
+    // user is looking at, so it counts once the message is fetched.
+    override(message_lists, "current", list_showing(message));
+    override(message_viewport, "is_message_visible", viewport_showing(message_id));
+    received_reaction(reaction_event(4750, alice.user_id));
+    assert.equal(reactions.get_count(), 2);
+
+    // A reaction that arrives while the feed is not in front of the user
+    // counts too, even with the message in the current list and on screen.
+    override(message_viewport, "viewport_is_visible_and_focused", () => false);
+    received_reaction(reaction_event(message_id, alice.user_id, thumbs_up));
+    assert.equal(reactions.get_count(), 3);
+});
+
+test("a reaction on screen animates in place of notifying", ({override, override_rewire}) => {
+    const notices = stub_notification_api();
+    stub_message_content_parsing();
+    const message_id = 4650;
+    cache_message(message_id);
+    const message = message_store.get(message_id);
+
+    const animated = [];
+    override_rewire(reactions, "animate_reaction_arrival", (event) => {
+        animated.push(event);
+    });
+
+    override(message_viewport, "viewport_is_visible_and_focused", () => true);
+    override(message_lists, "current", {
+        get: (id) => (id === message_id ? message : undefined),
+    });
+    override(message_viewport, "is_message_visible", viewport_showing(message_id));
+
+    const from_alice = reaction_event(message_id, alice.user_id);
+    received_reaction(from_alice);
+    assert.deepEqual(animated, [added(from_alice)]);
+    assert.equal(notices.shown_count, 0);
+
+    // The animation says "somebody reacted to you", so a reaction to
+    // somebody else's message, and one the user left themselves, do not get
+    // it even with the message on screen.
+    received_reaction({
+        ...reaction_event(message_id, alice.user_id, thumbs_up),
+        message_sender_id: bob.user_id,
+    });
+    received_reaction(reaction_event(message_id, current_user.user_id, thumbs_up));
+    assert.deepEqual(animated, [added(from_alice)]);
+
+    // Scrolled out of sight, a reaction gets a notification instead; there is
+    // nothing on screen for an animation to draw the eye to.
+    override(message_viewport, "is_message_visible", viewport_showing());
+    received_reaction(reaction_event(message_id, bob.user_id));
+    assert.deepEqual(animated, [added(from_alice)]);
+    assert.equal(notices.shown_count, 1);
+});
+
+test("the left sidebar row is updated once per batch of reactions", ({override}) => {
+    stub_notification_api();
+    stub_message_content_parsing();
+    override(channel, "get", () => {});
+    let row_updates = 0;
+    override(left_sidebar_navigation_area, "update_my_reactions_row", () => {
+        row_updates += 1;
+    });
+
+    reaction_events.received_reactions([
+        added(reaction_event(4800, alice.user_id)),
+        added(reaction_event(4800, bob.user_id)),
+        added(reaction_event(4900, cindy.user_id)),
+    ]);
+    assert.equal(row_updates, 1);
+
+    // A batch that changes nothing still refreshes the row, which costs
+    // nothing and keeps the DOM honest if it had somehow gone stale.
+    reaction_events.received_reactions([
+        added({...reaction_event(5000, alice.user_id), message_sender_id: bob.user_id}),
+    ]);
+    assert.equal(row_updates, 2);
+});
+
+test("a new reaction stops counting once its message is deleted or muted", () => {
+    stub_notification_api();
+    stub_message_content_parsing();
+    const message_id = 4900;
+    cache_message(message_id);
+    received_reaction(reaction_event(message_id, alice.user_id));
+    assert.equal(reactions.get_count(), 1);
+
+    // Muting the topic leaves its reactions out of the count, as it would
+    // have had the topic been muted when they arrived; unmuting brings them
+    // back.
+    const {MUTED, INHERIT} = user_topics.all_visibility_policies;
+    user_topics.update_user_topics(general.stream_id, general.name, "whatever", MUTED);
+    assert.equal(reactions.get_count(), 0);
+    user_topics.update_user_topics(general.stream_id, general.name, "whatever", INHERIT);
+    assert.equal(reactions.get_count(), 1);
+
+    // A deleted message's reactions are gone from the reactions view.
+    message_store.remove([message_id]);
+    assert.equal(reactions.get_count(), 0);
 });

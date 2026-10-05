@@ -8,6 +8,7 @@ import * as message_reminder from "./message_reminder.ts";
 import * as navigation_views from "./navigation_views.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
+import * as reactions from "./reactions.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_config from "./settings_config.ts";
@@ -16,6 +17,9 @@ import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
 
 let last_mention_count = 0;
+let last_new_reaction_count = 0;
+// Whether the reactions view is the view selected in the left sidebar.
+let my_reactions_view_selected = false;
 const ls_key = "left_sidebar_views_state";
 const ls = localstorage();
 
@@ -52,6 +56,16 @@ export function update_starred_count(count: number, hidden: boolean): void {
     $starred_li.removeClass("hide_starred_message_count");
 }
 
+export function update_my_reactions_row(skip_animations = false): void {
+    const $my_reactions_li = $(".top_left_my_reactions");
+    const count = reactions.get_count();
+    ui_util.update_unread_count_in_dom($my_reactions_li, count);
+    if (!skip_animations) {
+        animate_unread_changes($my_reactions_li, count, last_new_reaction_count);
+    }
+    last_new_reaction_count = count;
+}
+
 export function update_scheduled_messages_row(): void {
     const $scheduled_li = $(".top_left_scheduled_messages");
     const count = scheduled_messages.get_count();
@@ -86,6 +100,11 @@ export let update_dom_with_unread_counts = function (
     }
 
     last_mention_count = counts.mentioned_message_count;
+
+    // Unread counts are refreshed when topics or channels are muted or
+    // unmuted and when messages move, all of which can change which new
+    // reactions still count.
+    update_my_reactions_row(skip_animations);
 };
 
 export function rewire_update_dom_with_unread_counts(
@@ -107,6 +126,20 @@ export function rewire_select_top_left_corner_item(
     select_top_left_corner_item = func;
 }
 
+function select_view_in_left_sidebar(narrow_to_activate: string): void {
+    // Opening the reactions view, and leaving it, are the closest the
+    // client gets to knowing that the user has looked at the new
+    // reactions it was counting, so both clear the count. Leaving
+    // covers the reactions that arrived while the view was open.
+    const selecting_my_reactions_view = narrow_to_activate === ".top_left_my_reactions";
+    if (selecting_my_reactions_view || my_reactions_view_selected) {
+        reactions.clear();
+        update_my_reactions_row();
+    }
+    my_reactions_view_selected = selecting_my_reactions_view;
+    select_top_left_corner_item(narrow_to_activate);
+}
+
 export function handle_narrow_activated(filter: Filter): void {
     let terms: NarrowTerm[];
     let filter_name: NarrowTerm["operand"];
@@ -124,11 +157,11 @@ export function handle_narrow_activated(filter: Filter): void {
     if (terms[0] !== undefined) {
         filter_name = terms[0].operand;
         if (filter_name === "starred") {
-            select_top_left_corner_item(".top_left_starred_messages");
+            select_view_in_left_sidebar(".top_left_starred_messages");
             return;
         }
         if (filter_name === "mentioned") {
-            select_top_left_corner_item(".top_left_mentions");
+            select_view_in_left_sidebar(".top_left_mentions");
             return;
         }
     }
@@ -137,12 +170,12 @@ export function handle_narrow_activated(filter: Filter): void {
         _.isEqual(term_types, ["sender", "has-reaction"]) &&
         filter.terms_with_operator("sender")[0]!.operand === people.my_current_user_id()
     ) {
-        select_top_left_corner_item(".top_left_my_reactions");
+        select_view_in_left_sidebar(".top_left_my_reactions");
         return;
     }
 
     // If we don't have a specific handler for this narrow, we just clear all.
-    select_top_left_corner_item("");
+    select_view_in_left_sidebar("");
 }
 
 export function expand_views($views_label_container: JQuery, $views_label_icon: JQuery): void {
@@ -217,7 +250,7 @@ export function animate_unread_changes(
 }
 
 export function highlight_inbox_view(): void {
-    select_top_left_corner_item(".top_left_inbox");
+    select_view_in_left_sidebar(".top_left_inbox");
 
     setTimeout(() => {
         resize.resize_stream_filters_container();
@@ -225,7 +258,7 @@ export function highlight_inbox_view(): void {
 }
 
 export function highlight_recent_view(): void {
-    select_top_left_corner_item(".top_left_recent_view");
+    select_view_in_left_sidebar(".top_left_recent_view");
 
     setTimeout(() => {
         resize.resize_stream_filters_container();
@@ -233,7 +266,7 @@ export function highlight_recent_view(): void {
 }
 
 export function highlight_all_messages_view(): void {
-    select_top_left_corner_item(".top_left_all_messages");
+    select_view_in_left_sidebar(".top_left_all_messages");
 
     setTimeout(() => {
         resize.resize_stream_filters_container();
@@ -325,6 +358,8 @@ export function get_built_in_popover_condensed_views(): navigation_views.BuiltIn
         }
         if (view.fragment === "drafts") {
             view.unread_count = drafts.draft_model.getDraftCount();
+        } else if (view.fragment === "narrow/has/reaction/sender/me") {
+            view.unread_count = reactions.get_count();
         }
         // Remove views that are already visible.
         return visible_condensed_views.every(

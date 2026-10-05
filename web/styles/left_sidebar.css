@@ -1271,6 +1271,7 @@ li.active-sub-filter {
 }
 
 .top_left_mentions,
+.top_left_my_reactions,
 #direct-messages-section-header,
 #direct-messages-modal-section-header,
 .dm-list-item {
@@ -1474,7 +1475,6 @@ li.active-sub-filter {
 }
 
 /* Don't show unread counts on views... */
-.top_left_my_reactions,
 .top_left_inbox,
 .top_left_recent_view,
 .top_left_all_messages {

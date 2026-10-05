@@ -3,16 +3,20 @@ import * as z from "zod/mini";
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
 import * as emoji_frequency from "./emoji_frequency.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as message_events from "./message_events.ts";
 import * as message_helper from "./message_helper.ts";
+import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import {raw_message_schema} from "./message_store.ts";
 import type {Message} from "./message_store.ts";
+import * as message_viewport from "./message_viewport.ts";
 import * as muted_users from "./muted_users.ts";
 import * as reaction_notifications from "./reaction_notifications.ts";
 import * as reactions from "./reactions.ts";
 import type {ReactionEvent} from "./reactions.ts";
 import {current_user} from "./state_data.ts";
+import * as user_topics from "./user_topics.ts";
 
 const fetch_messages_response_schema = z.object({
     messages: z.array(raw_message_schema),
@@ -27,7 +31,7 @@ export type ServerReactionEvent = ReactionEvent & {op: string};
 // and then for as long as a request it started is fetching messages. A
 // reaction that is retracted before we act on it is dropped from
 // whichever batches are holding it, so that we do not go on to notify
-// about a reaction that no longer exists.
+// about or count a reaction that no longer exists.
 const pending_reactions_by_batch = new Map<number, Set<string>>();
 let next_reaction_batch_id = 0;
 
@@ -104,11 +108,49 @@ function is_reaction_event_meaningful(event: ReactionEvent): boolean {
     return event.message_sender_id === current_user.user_id;
 }
 
+function show_reaction_in_app(message: Message, event: ReactionEvent): void {
+    // What a reaction to your own message gets inside the app: an animation
+    // on a message the user is looking at, or a count on the left sidebar's
+    // Reactions row for one they have no other way to find. Both are
+    // independent of the reaction notification settings: neither is an
+    // interruption, so a user who declined notifications still gets them.
+    if (message_viewport.is_message_on_screen(message)) {
+        // The user is watching the reaction land, so it needs no
+        // notification; the animation is what points at it.
+        reactions.animate_reaction_arrival(event);
+        return;
+    }
+
+    // Muted channels and topics are excluded from the count, as they are
+    // from notifications.
+    if (
+        message.type === "stream" &&
+        !user_topics.is_topic_visible_in_home(message.stream_id, message.topic)
+    ) {
+        return;
+    }
+
+    if (
+        message_viewport.viewport_is_visible_and_focused() &&
+        message_lists.current?.get(message.id) !== undefined
+    ) {
+        // In the conversation the user is reading, but scrolled out of
+        // sight, and the notification just shown takes them to it, so
+        // there is nothing left for the count to tell them.
+        return;
+    }
+
+    reactions.increment_new_reaction_count(event);
+}
+
 function process_reactions_to_message(message: Message, message_reactions: ReactionEvent[]): void {
     // A failure to act on one message's reactions should not keep the
     // rest of the batch from being acted on.
     try {
         reaction_notifications.send_reaction_notifications(message, message_reactions);
+        for (const event of message_reactions) {
+            show_reaction_in_app(message, event);
+        }
     } catch (error) {
         blueslip.error("Failed to process reactions to a message", {message_id: message.id}, error);
     }
@@ -220,6 +262,7 @@ function fetch_messages_for_reactions(
                     process_reactions_to_message(message, still_pending);
                 }
             }
+            left_sidebar_navigation_area.update_my_reactions_row();
         },
         error() {
             pending_reactions_by_batch.delete(batch_id);
@@ -231,7 +274,8 @@ function fetch_messages_for_reactions(
 
 export function received_reactions(events: ServerReactionEvent[]): void {
     // Apply every reaction to its message first, so that the rest of this
-    // batch sees the message as it now is.
+    // batch sees the message as it now is; the animation, for one, looks
+    // for the reaction in the message's rendered reactions.
     for (const event of events) {
         // A failure to apply one reaction should not keep the rest of
         // the batch from being applied.
@@ -257,8 +301,8 @@ export function received_reactions(events: ServerReactionEvent[]): void {
     // act on before acting on any of them, so that a reaction retracted by
     // a later event in the same batch is dropped from the batch: reacting
     // and unreacting while the user is away is not activity worth a
-    // notification or a sound, whether or not we happen to have the
-    // message cached.
+    // notification, a sound, or a count, whether or not we happen to have
+    // the message cached.
     const pending_keys = new Set<string>();
     const batch_id = next_reaction_batch_id;
     next_reaction_batch_id += 1;
@@ -277,6 +321,7 @@ export function received_reactions(events: ServerReactionEvent[]): void {
                 // reactions, and drop retracted reactions from any batch
                 // still holding them.
                 discard_pending_reaction(event);
+                reactions.decrement_new_reaction_count(event);
                 reaction_notifications.remove_reaction_notification(event);
                 continue;
             }
@@ -325,6 +370,9 @@ export function received_reactions(events: ServerReactionEvent[]): void {
             fetch_messages_for_reactions(uncached_reactions_by_message_id, batch_id, pending_keys);
             fetch_owns_pending_keys = true;
         }
+
+        // Update the count in the reactions row.
+        left_sidebar_navigation_area.update_my_reactions_row();
     } finally {
         // Once a request is on its way, it owns these keys and unregisters
         // them when it settles. Otherwise -- including if we threw partway

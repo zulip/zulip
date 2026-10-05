@@ -7,6 +7,9 @@ const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
 
 const emoji_frequency = mock_esm("../src/emoji_frequency");
+const left_sidebar_navigation_area = mock_esm("../src/left_sidebar_navigation_area", {
+    update_my_reactions_row() {},
+});
 const message_events = mock_esm("../src/message_events");
 const reaction_notifications = mock_esm("../src/reaction_notifications", {
     reaction_notifications_enabled: () => false,
@@ -14,6 +17,8 @@ const reaction_notifications = mock_esm("../src/reaction_notifications", {
 });
 const reactions = mock_esm("../src/reactions", {
     get_reaction_event_key: (event) => `${event.message_id}:${event.user_id}`,
+    // Stops a retracted reaction counting towards the left sidebar's count.
+    decrement_new_reaction_count() {},
 });
 
 const reaction_events = zrequire("reaction_events");
@@ -110,7 +115,15 @@ run_test("every reaction is applied before any is acted on", ({override}) => {
     override(reaction_notifications, "remove_reaction_notification", () => {
         calls.push("remove_reaction_notification");
     });
+    override(left_sidebar_navigation_area, "update_my_reactions_row", () => {
+        calls.push("update_my_reactions_row");
+    });
 
     reaction_events.received_reactions([reaction_event("remove"), reaction_event("add")]);
-    assert.deepEqual(calls, ["remove_reaction", "add_reaction", "remove_reaction_notification"]);
+    assert.deepEqual(calls, [
+        "remove_reaction",
+        "add_reaction",
+        "remove_reaction_notification",
+        "update_my_reactions_row",
+    ]);
 });

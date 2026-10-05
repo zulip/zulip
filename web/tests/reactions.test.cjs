@@ -724,6 +724,67 @@ test("find_reaction", () => {
     assert.equal(reactions.find_reaction(message_id, local_id)[0], $reaction[0]);
 });
 
+test("animate_reaction_arrival", ({disallow, override}) => {
+    const message_id = 99;
+    const local_id = "unicode_emoji,1f44b";
+    const event = {
+        message_id,
+        reaction_type: "unicode_emoji",
+        emoji_code: "1f44b",
+    };
+
+    function rendered_reaction(row_selector, {rendered = true} = {}) {
+        const $reaction = rendered
+            ? $.create(`${row_selector} reaction`)
+            : $.create(`${row_selector} reaction`, {elements: []});
+        const $message_reactions = $.create(`${row_selector} reactions`);
+        $message_reactions.set_find_results(
+            `[data-reaction-id='${CSS.escape(local_id)}']`,
+            $reaction,
+        );
+        const $row = $.create(row_selector);
+        $row.set_find_results(".message_reactions", $message_reactions);
+        return {$row, $reaction};
+    }
+
+    // The same message is also rendered in a list that is not on screen,
+    // which comes first in the document; only the current list's copy is
+    // animated.
+    const hidden = rendered_reaction("hidden-row");
+    const current = rendered_reaction("current-row");
+    const unrendered = rendered_reaction("unrendered-row", {rendered: false});
+    message_lists.all_rendered_row_for_message_id =
+        // istanbul ignore next
+        () => hidden.$row;
+    override(message_lists.current, "get_row", (id) =>
+        id === message_id ? current.$row : unrendered.$row,
+    );
+
+    let prefers_reduced_motion = false;
+    override(window, "matchMedia", (query) => {
+        assert.equal(query, "(prefers-reduced-motion: reduce)");
+        return {matches: prefers_reduced_motion};
+    });
+    const animate_stub = make_stub();
+    override(current.$reaction[0], "animate", animate_stub.f);
+    disallow(hidden.$reaction[0], "animate");
+
+    reactions.animate_reaction_arrival(event);
+    assert.equal(animate_stub.num_calls, 1);
+    const {keyframes, options} = animate_stub.get_args("keyframes", "options");
+    assert.equal(keyframes.at(1).transform, "translateY(-1px) scale(1.25)");
+    assert.deepEqual(options, {duration: 800, easing: "cubic-bezier(0.34, 1.2, 0.64, 1)"});
+
+    prefers_reduced_motion = true;
+    reactions.animate_reaction_arrival(event);
+    assert.equal(animate_stub.num_calls, 1);
+
+    // A message the current list does not show has nothing to animate.
+    prefers_reduced_motion = false;
+    reactions.animate_reaction_arrival({...event, message_id: 100});
+    assert.equal(animate_stub.num_calls, 1);
+});
+
 test("get_reaction_sections", () => {
     const $message_reactions = stub_reactions(555);
 
