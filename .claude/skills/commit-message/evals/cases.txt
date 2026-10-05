@@ -1,0 +1,155 @@
+# The commits used as eval cases. See README.md.
+#
+# How they were chosen:
+#
+# - The target style is how Tim Abbott and Lauryn Menard write, with
+#   no AI help. Claude Code launched in February 2025, and the first
+#   commit here with a Claude co-author line is from February 2026.
+#   So the cases come from commits that landed in 2023 and 2024:
+#   1,558 non-merge commits, 654 by Tim and 904 by Lauryn.
+# - All cases were picked at random within fixed groups, so that the
+#   set covers the kinds of commit a skill must handle.
+# - 80 cases are grouped by author and body length. They come from
+#   commits that change 3 to 700 lines and have no upkeep word in
+#   the summary. Each author has 8 with no body, 12 with 1-3 lines,
+#   14 with 4-9 lines, and 6 with 10 or more. About 30% of their
+#   commits have no body, so a good skill must also know when to
+#   write none.
+# - 10 cases have a word in the summary that often marks routine
+#   upkeep, such as "typo", "version", "upgrade", or "changelog".
+# - 5 cases change fewer than 3 lines, and 5 change more than 700.
+#
+# The cases were not picked by hand or by type of change. The mix of
+# bug fixes, refactors, docs, and migrations is what random sampling
+# gave.
+#
+# The no-body and small cases are the hardest. With only the diff to
+# go on, the current skill still writes a short body for most of
+# them. See "Known limits" in README.md.
+#
+# Format: <hash> # <commit summary>
+#
+# Summaries are copied exactly, typos included, so
+# tools/run-codespell skips this file.
+
+# Tim Abbott, no body
+798391824b4f0e6d0c160f27bcaf536727d03f32 # compose: Refactor dropdown-menu CSS rules.
+9e5c1eff4b93c66fcc67eb053c398aa205fd4b95 # scheduled messages: Fix incorrect mapping of 4PM to 16:00 hours.
+2ce3f520304292425bb832b17d663ad7b330ed73 # gear_menu: Remove logout button, moved to new personal menu.
+807de37561349cc60304a3bd6700057c3a40271f # analytics: Fix misplaced zilencer import statement.
+95f4b31ce73a8c3c015407b020cbafef0b050d25 # billing: Don't require data to add to legacy plan.
+4395c54c23dfb517e3ce904c54ee8d67d15fdfce # css: Remove unused Bootstrap CSS for nav elements.
+563485a37eebdb3ff92734f912a0b744ae7f427d # zulip_updates: Fix line removal logic for bulleted lists.
+1cd11a4c61e52452bc0081a84961cd06c2ec17e5 # zulip_updates: Adjust formatting for initial updates.
+
+# Tim Abbott, body of 1-3 lines
+0232d97ae91c4058df3fe273eee9bc27bcba08ae # actions: Tag resolve topic messages with a message type.
+2b6ec56238f459341a8ed975205a52fe1d856f83 # popovers: Use default our font size for Tippy popovers.
+1c077561504b0a20c6168f0c085634255ae852ba # scheduled messages: Use data-scheduled-message-id.
+859a96e0d7fc8dfc25d0b2246364b273c085308e # message_store: Keep track of wildcard_mentioned.
+59daf54ec95d9c424a68d289e3a3837f1685789c # scheduled_messages: Fix broken node test.
+a379fbe4424c51ef2587d29c94b1b6f91793de45 # portico: Inline common.autofocus.
+03f3e17a40330b0413a1f6b873e6fa0b273dcf32 # narrow: Clarify first parameter to deactivate.
+e32468e97fc5ecc88f5ff3d419e22c342f19692a # compose: Simplify convert_mentions_to_silent_in_direct_messages.
+d0c276d8632b979be0eda213d67b6e086073a2dc # corporate: Fix billing_session variable reuse confusion.
+f37082c4caeba1441711231e6abcac2f9079f90c # models: Switch font size default to non-compact.
+858b93f588d96495a218d2826e1730082e9e822d # settings_config: Allow using new user list style in production.
+9a83d211127b900299a8e180407cf6167eeae03d # settings_users: Recalculate user ID lists after presence fetch.
+
+# Tim Abbott, body of 4-9 lines
+56c5c8902b5bbb9d1abcf144c2ad8d69a22fd7bc # scheduled_messages: Disallow dates in the past in the UI.
+18e2cee572eff958956eb17880ff3946deda57e2 # typeahead: Do not prioritize exact name matches for users.
+804f4732140f3a3c2e4d318dce1e337d6f035a8f # message_list: Extract visibly_empty helper method.
+396cedd0e83f8802ac1f16475a975f4b84dc84ad # ci: Reorder tests to run unique tests first.
+6cdf3d638b5c73f79f927468c04ef4f425dcf1a0 # timerender: Reuse Intl.DateTimeFormat objects.
+e560519dba6d954b3286ea2957b052375d34e2ef # portico: Fix new organization form focus scrolling.
+7db15176f3f013b7927cd86b940bc3d6d1066e45 # push bouncer: Submit basic metadata unconditionally.
+bafa476fd3f26f093ba4b27c61d4864ac6df5329 # presence: Avoid having incomplete missing test coverage.
+d8ec141de28b36eae046b69c48c7dbb8d788570b # navigate: Fix buggy detection of start/end.
+652fea9bdfc32a69aed0a79b6a520648b6970f40 # narrow: Clarify some confusing details.
+5f4e1de661fa8295d4687898c2029639c9e9502f # util: Fix call_function_periodically.
+4ae16b7568e684e29731b0ccfa6101cab067dc1c # stream_list: Fix handling of unsubscribing from last channel.
+eaa02a10a47d60ffeea7347deb980a74dd99f046 # migrations: Squash most confirmation migrations.
+30c54d023b57926e9311da79a51f32f54a549809 # settings: Write fewer values into template settings files.
+
+# Tim Abbott, body of 10 or more lines
+7425079814d674672b5e1208f0742f800ba470c7 # topic_list: Show muted unread counts in muted streams.
+1ce17f74036fc5468c1e4188c85881bad759a018 # message_list: Fix incorrect usage of visible empty check.
+d24e81e1b24aca979055b23178a4233611d5ac20 # unread: Fix exception handling mentions in private messages.
+22d59f113260fa923fa694008956ea0057d9944d # typing notifications: Increase various time constants.
+b9af5ce86e0c3e2fe5b1e04d7adff37182903f3a # unread: Fix process_visible race with fetching.
+525c3d4321c5496c32a667087c3bd35450e32ae7 # migrations: Squash corporate migrations.
+
+# Lauryn Menard, no body
+dd59e83d54947865d9efbfb7f3a19abc412ba615 # welcome-emails: Make some code comments and docstrings more evergreen.
+3d8090a116fc124cf20d9a359fb2c53f601843a2 # sentry-webhook: Revise documentation page to be clearer.
+03ba4df8ee96d5280509d6bf4d2c9a6c50c8b96c # api-docs: Add 'code' field to unauthorized error in delete attachments.
+1b14745b1772f668302d9c0fb3076a0aa3d0da24 # api-docs: Update InvalidMessageError and use for read receipts doc.
+b6d50c158d0721206ad1e6e7ab04bc62b1756658 # support: Add CSS grid for confirmation objects in query results.
+4dbda25e2e5e9d8aea1460c200f35680b0a770de # help: Rename and redirect streams-and-topics for channel.
+265f85fa9583d2465284248de36c714b4790b260 # python-examples: Remove unused result variable assigments.
+1e7f2fe6dd9d13663699528005d206e278b9b2c7 # docs: Add missing links to web-public channels in dev community.
+
+# Lauryn Menard, body of 1-3 lines
+d98ba32588598412f127c28ab05c220aa9bdd637 # rendered-markdown: Copy anchor tag CSS rules from bootstrap.
+87e948267276f85906df6cb9fd4581bb9ad5d412 # api-docs: Update "Zulip display email" to "Zulip API email".
+4b2b278a53dbd108d52f9a737e3326b68b53a526 # dm-conversations: Update direct message data structure name.
+83d6481f6f491c74899e56647f5cf0ea08220a9b # support: Add the remote realm's plan type to the support view.
+4e5c62527cfbc446835983ae9e9633f03da57466 # activity: Update installation total row for moving referrer column.
+3c11872ebd77736054ec29998e66956a048311da # api-docs: Update descriptions in POST /drafts for channel.
+016ffd8078320121a13694fbebda1dfcdc90c104 # api-docs: Update python tests to not use "stream" in channel name.
+03b0a8785af2dd1554cd01e24cd2d0306bd644ae # api-docs: Update GET /messages/{message_id}/history for channel.
+c3577d9cdda0d01a53b79a8c724f4bfe881175b3 # api-docs: Update python example user-facing comments for channel.
+bd9a10cfbb4ad2adf152bda9bc61fbbd60fc00d6 # integration-docs: Update Jira for new doc format.
+95b74a7bfbc85b0a5b29c6f574b0016d6a8ddf40 # integration-docs: Update Intercom for new doc format.
+53e7fc38d68565f5a4aeef79676e36733d87724e # help: Use screenshots for global times examples.
+
+# Lauryn Menard, body of 4-9 lines
+665deac7c0c88583164ed44dd349049381e7aa31 # demo-orgs: Disable show/change API key if email not configured.
+d8b8b34ecd209dbda03d4f15c63caa885c1e016b # profile-settings: Change `name-input` class to a more specific id.
+42d9560413c50a116ee5567240a6ae927dacae44 # message: Use `recipient_type_name` for API message type references.
+e68a69e91f99e09d91757ea71de30448111c5426 # api-docs: Update docs to reference max lengths in register response.
+957382253afa76a297e9da638d58ba19a3a8fb39 # scheduled-messages: Split out edit scheduled message endpoint.
+a4d1211ec6928b0a126e905e218c2c56f336df7b # integrations: Reformat Github pull request assigned message body.
+39bfab0ec4bfd5aa2de0defac669f792518f2761 # corporate: Move plan tier change to separate helper function.
+b167eeff08592109425c819574a7d5dc167f26f8 # corporate: Create change plan tier function for BillingSession.
+1249b5929e4cc18a97ed2c7066308e9a146b68a7 # remote-activity: Update column data for remote realms.
+9c7d0c6e5a7e0f855834807b7489eb05d9681485 # remote-support: Note if emails were sent for remote server sponsorship.
+5892e48ba4a92bfb014c5791de675ee43fbbd7a0 # analytics: Update "Messages sent by client" chart for Flutter app.
+206531f703bb4acc5af38c3630cb8f0f90c53aa2 # help: Fix details in "Change your call provider" section.
+7861c1ba637615efe81c03b7d377962028ebf492 # billing: Enforce manual billing renewal licenses for new users.
+3ebc507ddba49029f2ee476301b7bfe99677c3a8 # signups: Move logic for realm admin notification to corporate app.
+
+# Lauryn Menard, body of 10 or more lines
+c2bcfb52aa7987cfc91c6f7f90a1baeca27203b7 # api-tests: Reduce error output for `/register` openapi validation.
+d3a513f4bd4637ab6e27bdb435f1c2b0c6adb826 # image-upload-widget: Render `image_disabled` div if text to display.
+7abf476443f864772685021c7390ab4c027b4692 # settings_account: Update avatar widget if user/org permissions changed.
+213d0f4990ed79401d23f235158ead93bbd48320 # create-user: Remove notifications sent to admin realm.
+c8a4b401c7585ddb85bbf9900bf9434e1d4a1da5 # unsubscribe-success: Update template for org name and welcome emails.
+d41f12495dafc3f259ab220939c9845f9cd42afe # api-docs: Document create/edit scheduled message endpoint and events.
+
+# Upkeep word in the summary
+5e5d151c0c15ba633e4622fdc6298ba002a26796 # docs: Tweak a few details on the release checklist.
+2a59edda53214d5789ca6f2cc170e88ba78dd461 # version: Update version and changelog following 8.2 release.
+bcff5580d1584c194e14e03f6c89c307e363d8d2 # makemessages: Fix handling of handlebars whitespace control.
+e64b67525f5069da4ca60478e967c86eb17c07b6 # docs: Update changelog with recently merged changes.
+43c0c776103fbc02cf0f0bdf5c74604e33bf1afd # puppet: Update rules for number of uwsgi processes.
+227645ab65d47556eba4638b5c5fdce6683264f7 # corporate: Update setup upgrade checkout to only get price per license.
+2c606ed99ede4096da63036679a8a5b37b63fcec # api-changelog: Revise feature level 164 entry.
+71263ac2abfc294798f0b2baa7d14c3e89e67c05 # support: Include legacy plan without upgrade in remote support tests.
+b86654d10f8c74d8bcb5267613234bec5e4f3bf3 # analytics: Add column for Zulip version in remote installations page.
+0019ce639ca75a506b282ca8399527b40f55fffc # api-docs: Fix small typos and copy/paste errors in API changelog.
+
+# Fewer than 3 changed lines
+3dfc24a908ffa30ead93a8698a4ced8c13111bd5 # test_push_notifications: Fix sort order assumption.
+6c981d938590c0029ce4975fc352967fdd9e749c # custom_profile_fields: Remove unused generic title CSS class.
+f0fe86d5e325ddd9bc34ce66c11c0a7c9bf29803 # api-docs: Move simple success example up to JsonSuccess schema.
+3d5c72f7627ccd6622a571db9626d87993c965bd # invite-modal: Remove "expires_in" for attribute for custom time input.
+d8fd0d85991b6797dd0302f19519f0f235857039 # scheduled-messages-ui: Set channel ID in narrow term to a string.
+
+# More than 700 changed lines
+72942c6bb9be6f4cd765a95744ce3c8faaff549c # portico: Delete now-unused tour,carousel,testimonials CSS.
+c0708a892a5a618383f4e27d7d8c7609708f2744 # bootstrap: Remove tooltip/popovers JS modules.
+0f7341dd48139339f39b15683f090326b0300974 # narrow: Add frontend support for `dm:` narrow and `/dm/...` URL.
+df2f4b6469fa103430939ffa67b8bd18e19619ce # corporate: Move support and activity views to /corporate.
+f4d98b03d5ef3372aa295bc8eb928e7f17ac2344 # migrations: Squash zerver migrations.
