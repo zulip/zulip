@@ -7,7 +7,7 @@ import * as message_viewport from "./message_viewport.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {the} from "./util.ts";
 
-let hide_scroll_to_bottom_timer: ReturnType<typeof setInterval> | undefined;
+let hide_timer: ReturnType<typeof setInterval> | undefined;
 
 function above_bottom_of_view(): boolean {
     assert(message_lists.current !== undefined);
@@ -21,31 +21,56 @@ function above_bottom_of_view(): boolean {
     );
 }
 
-export function hide_scroll_to_bottom(): void {
-    const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container");
-    if (message_lists.current === undefined) {
-        // Scroll to bottom button is not for non-message views.
-        $show_scroll_to_bottom_button.removeClass("show");
-        return;
-    }
+function stop_hide_timer(): void {
+    clearInterval(hide_timer);
+    hide_timer = undefined;
+}
 
-    if (!above_bottom_of_view()) {
-        $show_scroll_to_bottom_button.removeClass("show");
-        return;
-    }
+function hide(): void {
+    stop_hide_timer();
+    $("#scroll-to-bottom-button-container").removeClass("show");
+}
 
-    clearInterval(hide_scroll_to_bottom_timer);
-    hide_scroll_to_bottom_timer = setInterval(() => {
+function show(): void {
+    stop_hide_timer();
+    $("#scroll-to-bottom-button-container").addClass("show");
+}
+
+function is_shown(): boolean {
+    return $("#scroll-to-bottom-button-container").hasClass("show");
+}
+
+function mouse_is_over_button(): boolean {
+    return the($("#scroll-to-bottom-button-container")).matches(":hover");
+}
+
+function hide_once_not_hovered(): void {
+    stop_hide_timer();
+    hide_timer = setInterval(() => {
         // Check if the user is hovered over the scroll-to-bottom
         // button every 3 seconds to allow time for interaction.
         // If the user is not hovered on the button, hide the button
         // and clear the timer until the next scroll event triggers
         // showing the button again.
-        if (!the($show_scroll_to_bottom_button).matches(":hover")) {
-            $show_scroll_to_bottom_button.removeClass("show");
-            clearInterval(hide_scroll_to_bottom_timer);
+        if (!mouse_is_over_button()) {
+            hide();
         }
     }, 3000);
+}
+
+export function hide_scroll_to_bottom(): void {
+    if (message_lists.current === undefined) {
+        // Scroll to bottom button is not for non-message views.
+        hide();
+        return;
+    }
+
+    if (!above_bottom_of_view()) {
+        hide();
+        return;
+    }
+
+    hide_once_not_hovered();
 }
 
 export function show_scroll_to_bottom_button(): void {
@@ -53,8 +78,7 @@ export function show_scroll_to_bottom_button(): void {
         return;
     }
 
-    clearInterval(hide_scroll_to_bottom_timer);
-    $("#scroll-to-bottom-button-container").addClass("show");
+    show();
 }
 
 export function initialize(on_click: {scroll_to_bottom: () => void}): void {
@@ -76,7 +100,7 @@ export function initialize(on_click: {scroll_to_bottom: () => void}): void {
 
         // Hide scroll to bottom button on any keypress.
         // Keyboard users are very less likely to use this button.
-        $("#scroll-to-bottom-button-container").removeClass("show");
+        hide();
     });
 
     const $show_scroll_to_bottom_button = $("#scroll-to-bottom-button-container").expectOne();
@@ -90,7 +114,7 @@ export function initialize(on_click: {scroll_to_bottom: () => void}): void {
                 $<tippy.ReferenceElement>("#scroll-to-bottom-button-clickable-area"),
             )._tippy;
             // make sure the tooltip exists and the class is not currently showing
-            if (tooltip && !$show_scroll_to_bottom_button.hasClass("show")) {
+            if (tooltip && !is_shown()) {
                 tooltip.destroy();
             }
         }
