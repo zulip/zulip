@@ -516,10 +516,11 @@ export let finish = (scheduling_message = false): boolean | undefined => {
         return false;
     }
 
-    const message_sent = scheduling_message ? schedule_message_to_custom_date() : send_message();
-    if (!message_sent) {
-        // The send was refused before dispatch (e.g. too many split parts,
-        // or scheduling a split message); skip the post-send side effects.
+    if (scheduling_message) {
+        schedule_message_to_custom_date();
+    } else if (!send_message()) {
+        // The send was refused before dispatch (e.g. too many split
+        // parts); skip the post-send side effects.
         return false;
     }
     do_post_send_tasks();
@@ -538,23 +539,7 @@ export function do_post_send_tasks(): void {
     reload.maybe_reset_pending_reload_timeout("compose_end");
 }
 
-function schedule_message_to_custom_date(): boolean {
-    if (
-        compose_split_messages.is_split_messages_enabled() &&
-        compose_split_messages.will_split_into_multiple_messages()
-    ) {
-        compose_ui.hide_compose_spinner();
-        compose_banner.show_error_message(
-            $t({
-                defaultMessage:
-                    "Scheduling is not supported for split messages yet. Turn off splitting from the send-later menu, or send now.",
-            }),
-            compose_banner.CLASSNAMES.generic_compose_error,
-            $("#compose_banners"),
-        );
-        return false;
-    }
-
+function schedule_message_to_custom_date(): void {
     const deliver_at = scheduled_messages.get_formatted_selected_send_later_time();
     const scheduled_delivery_timestamp = scheduled_messages.get_selected_send_later_timestamp();
 
@@ -580,6 +565,9 @@ function schedule_message_to_custom_date(): boolean {
         topic: message_type === "stream" ? compose_state.topic() : "",
         content: compose_state.message_content(),
         scheduled_delivery_timestamp,
+        split_message_on_send: JSON.stringify(
+            compose_split_messages.will_split_into_multiple_messages(),
+        ),
     };
 
     const draft_id = drafts.update_draft({
@@ -628,7 +616,6 @@ function schedule_message_to_custom_date(): boolean {
         success,
         error,
     });
-    return true;
 }
 
 export function is_topic_input_focused(): boolean {

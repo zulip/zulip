@@ -74,6 +74,7 @@ const compose_setup = zrequire("compose_setup");
 const drafts = zrequire("drafts");
 const echo = zrequire("echo");
 const people = zrequire("people");
+const scheduled_messages = zrequire("scheduled_messages");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
 const compose_validate = zrequire("compose_validate");
@@ -1010,6 +1011,41 @@ test_ui("finish", ({override, override_rewire}) => {
         compose.clear_compose_box();
         fake_compose_box.assert_preview_mode_is_off();
     })();
+});
+
+test_ui("schedule_split_message", ({override, override_rewire}) => {
+    mock_banners();
+    const fake_compose_box = new FakeComposeBox();
+
+    override(loading, "show_button_spinner", noop);
+    override_rewire(compose_validate, "validate", () => true);
+    override_rewire(drafts, "update_draft", () => 100);
+    compose_state.set_message_type("stream");
+    compose_state.set_stream_id(social.stream_id);
+    fake_compose_box.set_topic_val("lunch");
+    scheduled_messages.set_selected_schedule_timestamp(fake_now + 3600);
+
+    let scheduled_message_data;
+    override(channel, "post", (opts) => {
+        assert.equal(opts.url, "/json/scheduled_messages");
+        scheduled_message_data = opts.data;
+    });
+
+    compose_split_messages.set_split_messages_enabled(true);
+
+    override_rewire(compose_ui, "compose_spinner_visible", false);
+    fake_compose_box.set_textarea_val("part1\n\n\npart2");
+    assert.ok(compose.finish(true));
+    assert.equal(scheduled_message_data.content, "part1\n\n\npart2");
+    assert.equal(scheduled_message_data.split_message_on_send, "true");
+
+    override_rewire(compose_ui, "compose_spinner_visible", false);
+    fake_compose_box.set_textarea_val("single part");
+    assert.ok(compose.finish(true));
+    assert.equal(scheduled_message_data.split_message_on_send, "false");
+
+    compose_split_messages.set_split_messages_enabled(false);
+    scheduled_messages.reset_selected_schedule_timestamp();
 });
 
 test_ui("initialize", ({override}) => {

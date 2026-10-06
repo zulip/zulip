@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 
 import * as compose_actions from "./compose_actions.ts";
 import * as compose_banner from "./compose_banner.ts";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import {$t} from "./i18n.ts";
 import * as message_view from "./message_view.ts";
 import * as people from "./people.ts";
@@ -79,7 +80,9 @@ export function open_scheduled_message_in_compose(
         narrow_via_edit_scheduled_message(compose_args);
     }
 
+    compose_split_messages.set_split_messages_enabled(scheduled_message.split_message_on_send);
     compose_actions.start(compose_args);
+    compose_banner.update_split_messages_info_banner();
     scheduled_messages.set_selected_schedule_timestamp(
         scheduled_message.scheduled_delivery_timestamp,
     );
