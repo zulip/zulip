@@ -11,6 +11,7 @@ from zerver.actions.message_send import (
     check_send_message,
     extract_private_recipients,
     extract_stream_indicator,
+    populate_url_embed_data_for_preview,
     render_unsaved_message,
 )
 from zerver.lib.exceptions import JsonableError
@@ -22,7 +23,6 @@ from zerver.lib.typed_endpoint import (
     OptionalTopic,
     typed_endpoint,
 )
-from zerver.lib.url_preview.preview import get_cached_link_embed_data
 from zerver.lib.zcommand import process_zcommands
 from zerver.models import UserProfile
 from zerver.models.users import get_user_including_cross_realm
@@ -173,7 +173,9 @@ def render_message_backend(
     rendering_result = render_unsaved_message(user_profile, content)
 
     if populate_url_embed_data:
-        url_embed_data = get_cached_link_embed_data(rendering_result.links_for_preview)
+        url_embed_data = populate_url_embed_data_for_preview(
+            user_profile, content, rendering_result.links_for_preview
+        )
         # A link cached as "no preview available" (None) renders identically,
         # so only a real cached embed is worth a second render.
         if any(embed_data is not None for embed_data in url_embed_data.values()):
