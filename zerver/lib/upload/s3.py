@@ -463,6 +463,22 @@ class S3UploadBackend(ZulipUploadBackend):
         # that users use gravatar.)
 
     @override
+    def get_remote_realm_icon_url(self, remote_realm_uuid: str, version: int) -> str:
+        icon_path = self.remote_realm_icon_path(remote_realm_uuid)
+        public_url = self.get_public_upload_url(icon_path)
+        return public_url + f"?version={version}"
+
+    @override
+    def store_remote_realm_icon_image(self, remote_realm_uuid: str, image_data: bytes) -> None:
+        upload_content_to_s3(
+            self.avatar_bucket,
+            self.remote_realm_icon_path(remote_realm_uuid),
+            "image/png",
+            None,
+            resize_realm_icon(image_data),
+        )
+
+    @override
     def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
         if still:
             emoji_path = RealmEmoji.STILL_PATH_ID_TEMPLATE.format(
