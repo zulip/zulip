@@ -19,7 +19,6 @@ from zerver.lib.cache import (
     cache_delete,
     pending_preview_draft_cache_key,
     preview_draft_content_hash,
-    preview_url_cache_key,
 )
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.url_preview import preview as url_preview
@@ -106,14 +105,17 @@ class FetchLinksEmbedData(QueueProcessingWorker):
         content_hash = preview_draft_content_hash(content)
         try:
             fetched_url_embed_data: dict[str, UrlEmbedData | None] = {}
+            unavailable_urls = url_preview.get_unavailable_preview_urls(urls)
             for url in urls:
+                if url in unavailable_urls:
+                    continue
                 if not is_latest_preview_draft(sender.id, content_hash):
                     return
-                fetched_url_embed_data[url] = fetch_link_embed_data(url)
-                if fetched_url_embed_data[url] is None:
-                    # Not cached for good, so that the message, once sent,
-                    # fetches the link afresh.
-                    cache_delete(preview_url_cache_key(url))
+                try:
+                    fetched_url_embed_data[url] = fetch_link_embed_data(url)
+                finally:
+                    if fetched_url_embed_data.get(url) is None:
+                        url_preview.mark_preview_url_unavailable(url)
 
             if not is_latest_preview_draft(sender.id, content_hash):
                 return

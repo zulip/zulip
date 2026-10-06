@@ -254,7 +254,8 @@ users.
   processor instead rerenders the draft and sends it only to its
   author, in a transient `url_embed_data` event. To keep a user who
   renders repeatedly from tying up the queue, the processor only
-  fetches for the user's most recent draft.
+  fetches for the user's most recent draft, and skips links that a
+  preview recently found nothing to show for.
 
 ## Soft deactivation
 
