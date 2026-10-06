@@ -66,7 +66,7 @@ export function update_history_public_to_subscribers_state(
     sub?: StreamSubscription,
 ): void {
     const is_stream_creation = $container.attr("id") === "stream-creation";
-    if (!is_stream_creation && sub !== undefined && !hash_parser.is_editing_stream(sub.stream_id)) {
+    if (sub !== undefined && !hash_parser.is_editing_stream(sub.stream_id)) {
         return;
     }
 
