@@ -12,7 +12,9 @@ from requests.exceptions import ConnectionError
 from typing_extensions import override
 
 from zerver.actions.message_delete import do_delete_messages
-from zerver.lib.cache import cache_delete, cache_get, preview_url_cache_key
+from zerver.actions.message_send import render_unsaved_message
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.lib.cache import cache_delete, cache_get, cache_set, preview_url_cache_key
 from zerver.lib.camo import get_camo_url
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.test_classes import ZulipTestCase
@@ -373,6 +375,86 @@ class PreviewTestCase(ZulipTestCase):
         msg = Message.objects.select_related("sender").get(id=msg_id)
         assert msg.rendered_content is not None
         self.assertIn(embedded_link, msg.rendered_content)
+
+    def render_populating_url_embed_data(self, content: str) -> str:
+        result = self.client_post(
+            "/json/messages/render", {"content": content, "populate_url_embed_data": "true"}
+        )
+        return self.assert_json_success(result)["rendered"]
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_render_without_populate_url_embed_data(self) -> None:
+        self.login("hamlet")
+        url = "http://test.org/"
+        self.create_mock_response(url)
+        get_link_embed_data(url)
+        result = self.client_post("/json/messages/render", {"content": url})
+        rendered = self.assert_json_success(result)["rendered"]
+        self.assertNotIn(f'<a href="{url}" title="The Rock">The Rock</a>', rendered)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_with_website_previews_disabled(self) -> None:
+        user = self.example_user("hamlet")
+        do_set_realm_property(user.realm, "inline_url_embed_preview", False, acting_user=None)
+        self.login_user(user)
+        url = "http://test.org/"
+        self.create_mock_response(url)
+        get_link_embed_data(url)
+        rendered = self.render_populating_url_embed_data(f"{url} http://example.com/")
+        self.assertNotIn(f'<a href="{url}" title="The Rock">The Rock</a>', rendered)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_for_bot(self) -> None:
+        url = "http://test.org/"
+        self.create_mock_response(url)
+        get_link_embed_data(url)
+        result = self.api_post(
+            self.example_user("default_bot"),
+            "/api/v1/messages/render",
+            {"content": f"{url} http://example.com/", "populate_url_embed_data": "true"},
+        )
+        rendered = self.assert_json_success(result)["rendered"]
+        self.assertNotIn(f'<a href="{url}" title="The Rock">The Rock</a>', rendered)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_bakes_in_cached_embed(self) -> None:
+        self.login("hamlet")
+        url = "http://test.org/"
+        self.create_mock_response(url)
+        get_link_embed_data(url)
+
+        rendered = self.render_populating_url_embed_data(url)
+        self.assertIn(f'<a href="{url}" title="The Rock">The Rock</a>', rendered)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_skips_second_render_for_link_without_preview(self) -> None:
+        self.login("hamlet")
+        url = "http://test.org/"
+        cache_set(preview_url_cache_key(url), None)
+
+        with mock.patch(
+            "zerver.views.message_send.render_unsaved_message", wraps=render_unsaved_message
+        ) as mock_render:
+            self.render_populating_url_embed_data(url)
+        mock_render.assert_called_once()
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_mixed_cached_and_uncached_links(self) -> None:
+        self.login("hamlet")
+        cached_url = "http://test.org/"
+        uncached_url = "http://example.com/"
+        self.create_mock_response(cached_url)
+        get_link_embed_data(cached_url)
+
+        rendered = self.render_populating_url_embed_data(f"{cached_url} {uncached_url}")
+        self.assertIn(f'<a href="{cached_url}" title="The Rock">The Rock</a>', rendered)
+        self.assertNotIn(f'<a href="{uncached_url}" title="The Rock">The Rock</a>', rendered)
 
     @responses.activate
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)

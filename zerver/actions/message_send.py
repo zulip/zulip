@@ -159,12 +159,19 @@ def render_incoming_message(
     return rendering_result
 
 
-def render_unsaved_message(sender: UserProfile, content: str) -> MessageRenderingResult:
+def render_unsaved_message(
+    sender: UserProfile,
+    content: str,
+    *,
+    url_embed_data: dict[str, UrlEmbedData | None] | None = None,
+) -> MessageRenderingResult:
     message = Message()
     message.sender = sender
     message.realm = sender.realm
     message.content = content
-    return render_message_markdown(message, content, realm=sender.realm)
+    return render_message_markdown(
+        message, content, realm=sender.realm, url_embed_data=url_embed_data
+    )
 
 
 @dataclass

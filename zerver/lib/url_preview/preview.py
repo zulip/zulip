@@ -1,5 +1,5 @@
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from re import Match
 from typing import Any
 from urllib.parse import urljoin
@@ -10,7 +10,7 @@ from django.conf import settings
 from django.utils.encoding import smart_str
 
 from version import ZULIP_VERSION
-from zerver.lib.cache import cache_with_key, preview_url_cache_key
+from zerver.lib.cache import cache_get_many, cache_with_key, preview_url_cache_key
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.url_preview.oembed import get_oembed_data
@@ -113,3 +113,10 @@ def get_link_embed_data(url: str, maxwidth: int = 640, maxheight: int = 480) -> 
     if data.image:
         data.image = urljoin(response.url, data.image)
     return data
+
+
+def get_cached_link_embed_data(urls: Iterable[str]) -> dict[str, UrlEmbedData | None]:
+    url_by_cache_key = {preview_url_cache_key(url): url for url in urls}
+    cached = cache_get_many(list(url_by_cache_key))
+    # cache_with_key stores values in a singleton tuple.
+    return {url_by_cache_key[key]: value[0] for key, value in cached.items()}
