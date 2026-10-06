@@ -1635,6 +1635,30 @@ run_test("render response superseded by a newer render is discarded", ({override
     assert.equal(preview.$preview_content.html(), "<p>second</p>");
 });
 
+run_test("failed render superseded by a newer render is discarded", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+    override(loading, "make_indicator", noop);
+    override(loading, "destroy_indicator", noop);
+    const preview = make_open_preview("#compose");
+
+    const first_request = start_render(override, preview);
+    const second_request = start_render(override, preview);
+    second_request.success({msg: "", result: "success", rendered: "<p>second</p>"});
+    first_request.error();
+    assert.equal(preview.$preview_content.html(), "<p>second</p>");
+});
+
+run_test("failed render after leaving preview mode is discarded", ({override}) => {
+    override(loading, "make_indicator", noop);
+    const preview = make_open_preview("#compose");
+
+    const request = start_render(override, preview);
+    preview.$container.removeClass("preview_mode");
+    preview.$preview_content.html("");
+    request.error();
+    assert.equal(preview.$preview_content.html(), "");
+});
+
 run_test("render of one preview leaves another's render alone", ({override}) => {
     override(rendered_markdown, "update_elements", noop);
     override(loading, "make_indicator", noop);

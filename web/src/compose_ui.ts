@@ -1757,6 +1757,12 @@ export function render_and_show_preview(
     }
 
     const preview_render_count = increment_preview_render_count($preview_container);
+    function response_is_stale(): boolean {
+        return (
+            preview_render_count !== get_preview_render_count($preview_container) ||
+            !$preview_container.hasClass("preview_mode")
+        );
+    }
 
     if (content.length === 0) {
         apply_preview_render(
@@ -1784,10 +1790,7 @@ export function render_and_show_preview(
             url: "/json/messages/render",
             data: {content},
             success(response_data) {
-                if (
-                    preview_render_count !== get_preview_render_count($preview_container) ||
-                    !$preview_container.hasClass("preview_mode")
-                ) {
+                if (response_is_stale()) {
                     // The user is no longer in preview mode or the compose
                     // input has already been updated with new raw Markdown
                     // since this rendering request was sent off to the server, so
@@ -1798,6 +1801,9 @@ export function render_and_show_preview(
                 apply_server_preview_render($preview_container, content, data.rendered);
             },
             error() {
+                if (response_is_stale()) {
+                    return;
+                }
                 apply_preview_render(
                     $preview_container,
                     content,
