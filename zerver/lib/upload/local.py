@@ -219,6 +219,19 @@ class LocalUploadBackend(ZulipUploadBackend):
         write_local_file("avatars", os.path.join(upload_path, resized_file), resized_data)
 
     @override
+    def get_remote_realm_icon_url(self, remote_realm_uuid: str, version: int) -> str:
+        icon_path = self.remote_realm_icon_path(remote_realm_uuid)
+        return f"/user_avatars/{icon_path}?version={version}"
+
+    @override
+    def store_remote_realm_icon_image(self, remote_realm_uuid: str, image_data: bytes) -> None:
+        write_local_file(
+            "avatars",
+            self.remote_realm_icon_path(remote_realm_uuid),
+            resize_realm_icon(image_data),
+        )
+
+    @override
     def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
         if still:
             return os.path.join(
