@@ -172,9 +172,6 @@ def render_message_backend(
     message.sender = user_profile
     message.realm = user_profile.realm
     message.content = content
-    client = RequestNotes.get_notes(request).client
-    assert client is not None
-    message.sending_client = client
 
     rendering_result = render_message_markdown(message, content, realm=user_profile.realm)
     return json_success(request, data={"rendered": rendering_result.rendered_content})
