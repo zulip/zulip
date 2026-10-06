@@ -589,7 +589,12 @@ export async function initialize_everything(state_data) {
     });
     alert_words.initialize(state_data.alert_words);
     saved_snippets.initialize(state_data.saved_snippets);
-    emojisets.initialize(user_settings.emojiset);
+    emojisets.initialize(
+        emojisets.get_emojiset_for_images(
+            user_settings.emojiset,
+            realm_user_settings_defaults.realm_user_settings_defaults.emojiset,
+        ),
+    );
     scroll_bar.initialize();
     message_viewport.initialize();
     banners.initialize();
