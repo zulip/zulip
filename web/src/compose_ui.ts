@@ -1788,13 +1788,14 @@ export function render_and_show_preview(
         }
         void channel.post({
             url: "/json/messages/render",
-            data: {content},
+            data: {content, populate_url_embed_data: true},
             success(response_data) {
                 if (response_is_stale()) {
-                    // The user is no longer in preview mode or the compose
-                    // input has already been updated with new raw Markdown
-                    // since this rendering request was sent off to the server, so
-                    // there's nothing to do.
+                    // The user is no longer in preview mode, the compose
+                    // input has already been updated with new raw Markdown,
+                    // or the preview has been updated with URL embed data
+                    // since this rendering request was sent off to the
+                    // server, so there's nothing to do.
                     return;
                 }
                 const data = message_render_response_schema.parse(response_data);
@@ -1812,4 +1813,17 @@ export function render_and_show_preview(
             },
         });
     }
+}
+
+export function apply_preview_embeds(
+    $preview_container: JQuery,
+    content: string,
+    rendered_content: string,
+): void {
+    if (!$preview_container.hasClass("preview_mode")) {
+        return;
+    }
+    // Discards the responses to earlier renders, which may lack these embeds.
+    increment_preview_render_count($preview_container);
+    apply_server_preview_render($preview_container, content, rendered_content);
 }
