@@ -10,6 +10,7 @@ import * as bot_data from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import {buddy_list} from "./buddy_list.ts";
 import * as channel_folders from "./channel_folders.ts";
+import * as compose from "./compose.ts";
 import {compose_call_session_manager} from "./compose_call_session.ts";
 import * as compose_call_ui from "./compose_call_ui.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
@@ -1217,6 +1218,11 @@ export function dispatch_normal_event(event) {
             }
             break;
         }
+
+        case "url_embed_data":
+            compose.update_preview_embeds(event.content, event.rendered_content);
+            message_edit.update_preview_embeds(event.content, event.rendered_content);
+            break;
 
         case "user_group":
             switch (event.op) {

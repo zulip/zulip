@@ -1863,6 +1863,18 @@ export function render_preview_area($row: JQuery): void {
     $preview_message_area.show();
 }
 
+export function update_preview_embeds(content: string, rendered_content: string): void {
+    for (const $message_edit_content of currently_editing_messages.values()) {
+        if ($message_edit_content.val() === content) {
+            compose_ui.apply_preview_embeds(
+                rows.get_closest_row($message_edit_content),
+                content,
+                rendered_content,
+            );
+        }
+    }
+}
+
 export function clear_preview_area($element: JQuery): void {
     const $row = rows.get_closest_row($element);
     compose_ui.exit_preview_mode($row);

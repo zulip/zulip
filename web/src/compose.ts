@@ -93,6 +93,12 @@ export function render_preview_area(): void {
     $preview_message_area.show();
 }
 
+export function update_preview_embeds(content: string, rendered_content: string): void {
+    if (content === compose_state.message_content()) {
+        compose_ui.apply_preview_embeds($("#compose"), content, rendered_content);
+    }
+}
+
 export function clear_compose_box(): void {
     /* Before clearing the compose box, we reset it to the
      * default/normal size. Note that for locally echoed messages, we

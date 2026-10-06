@@ -865,6 +865,27 @@ test_ui("on_events", ({override, override_rewire}) => {
     })();
 });
 
+test_ui("update_preview_embeds", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+    override(loading, "destroy_indicator", noop);
+    override(markdown, "is_status_message", () => false);
+    const fake_compose_box = new FakeComposeBox();
+    $("#compose .preview_content").set_find_results(
+        ".image-loading-placeholder",
+        $.create("no-images", {elements: []}),
+    );
+    fake_compose_box.show_message_preview();
+    $("#compose .preview_content").html("");
+
+    fake_compose_box.set_textarea_val("draft edited");
+    compose.update_preview_embeds("draft", "<p>draft</p>");
+    assert.equal(fake_compose_box.preview_content_html(), "");
+
+    fake_compose_box.set_textarea_val("draft");
+    compose.update_preview_embeds("draft", "<p>draft</p>");
+    assert.equal(fake_compose_box.preview_content_html(), "<p>draft</p>");
+});
+
 test_ui("DM policy disabled", ({override}) => {
     // Disable sending direct messages in the organisation
     override(realm, "realm_direct_message_permission_group", nobody.id);
