@@ -2,6 +2,8 @@
 
 const {strict: assert} = require("node:assert/strict");
 
+const split_message_test_cases = require("../../zerver/tests/fixtures/split_message_test_cases.json");
+
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
@@ -9,22 +11,16 @@ const compose_state = mock_esm("../src/compose_state");
 
 const compose_split_messages = zrequire("../src/compose_split_messages");
 
-mock_esm("../src/compose_textarea", {
-    get_code_block_ranges(content) {
-        const ranges = [];
-        const re = /```/g;
-        let open = -1;
-        let m;
-        while ((m = re.exec(content)) !== null) {
-            if (open === -1) {
-                open = m.index;
-            } else {
-                ranges.push([open, m.index + 3]);
-                open = -1;
-            }
-        }
-        return ranges;
-    },
+run_test("split_message_test_cases", () => {
+    compose_split_messages.set_split_messages_enabled(true);
+    for (const test_case of split_message_test_cases.split_message_test_cases) {
+        assert.deepEqual(
+            compose_split_messages.get_all_split_parts(test_case.input),
+            test_case.expected_parts,
+            test_case.name,
+        );
+    }
+    compose_split_messages.set_split_messages_enabled(false);
 });
 
 run_test("trim_except_whitespace_before_text", () => {
