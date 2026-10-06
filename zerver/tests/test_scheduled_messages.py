@@ -11,11 +11,13 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
+from zerver.actions.message_send import check_message
 from zerver.actions.scheduled_messages import (
     SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES,
     try_deliver_one_scheduled_message,
 )
 from zerver.actions.users import change_user_is_active
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import is_message_to_self
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message
@@ -48,6 +50,8 @@ class ScheduledMessageTest(ZulipTestCase):
         to: int | list[str] | list[int],
         msg: str,
         scheduled_delivery_timestamp: int,
+        *,
+        split_message_on_send: bool = False,
     ) -> "TestHttpResponse":
         self.login("hamlet")
 
@@ -62,6 +66,8 @@ class ScheduledMessageTest(ZulipTestCase):
             "topic": topic_name,
             "scheduled_delivery_timestamp": scheduled_delivery_timestamp,
         }
+        if split_message_on_send:
+            payload["split_message_on_send"] = orjson.dumps(True).decode()
 
         result = self.client_post("/json/scheduled_messages", payload)
         return result
@@ -766,3 +772,200 @@ class ScheduledMessageTest(ZulipTestCase):
             [scheduled_message.id],
         )
         self.assertEqual(scheduled_message.has_attachment, True)
+
+    def test_schedule_split_message(self) -> None:
+        verona_stream_id = self.get_stream_id("Verona")
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+        content = "First part\n\n\nSecond part"
+
+        result = self.do_schedule_message(
+            "channel",
+            verona_stream_id,
+            content,
+            scheduled_delivery_timestamp,
+            split_message_on_send=True,
+        )
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_message()
+        self.assertTrue(scheduled_message.split_message_on_send)
+        self.assertEqual(scheduled_message.content, content)
+        self.assertEqual(
+            scheduled_message.rendered_content, "<p>First part</p>\n<hr>\n<p>Second part</p>"
+        )
+
+        result = self.client_get("/json/scheduled_messages")
+        [scheduled_message_dict] = self.assert_json_success(result)["scheduled_messages"]
+        self.assertTrue(scheduled_message_dict["split_message_on_send"])
+
+        result = self.do_schedule_message(
+            "channel", verona_stream_id, content, scheduled_delivery_timestamp
+        )
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_message()
+        self.assertFalse(scheduled_message.split_message_on_send)
+        self.assertEqual(
+            scheduled_message.rendered_content, "<p>First part</p>\n<p>Second part</p>"
+        )
+
+    def test_schedule_split_message_errors(self) -> None:
+        verona_stream_id = self.get_stream_id("Verona")
+        scheduled_delivery_timestamp = int(time.time() + 86400)
+
+        def schedule_split_message(content: str) -> "TestHttpResponse":
+            return self.do_schedule_message(
+                "channel",
+                verona_stream_id,
+                content,
+                scheduled_delivery_timestamp,
+                split_message_on_send=True,
+            )
+
+        too_many_parts = "\n\n\n".join(f"part {i}" for i in range(21))
+        self.assert_json_error(
+            schedule_split_message(too_many_parts), "A split message can have at most 20 parts."
+        )
+
+        overlong_part = "x" * (settings.MAX_MESSAGE_LENGTH + 1) + "\n\n\nshort part"
+        self.assert_json_error(
+            schedule_split_message(overlong_part),
+            f"Each part of a split message must be at most {settings.MAX_MESSAGE_LENGTH} characters.",
+        )
+
+        self.assert_json_error(schedule_split_message(""), "Message must not be empty")
+        self.assert_json_error(schedule_split_message("\n\n\n"), "Message must not be empty")
+
+        self.assertFalse(ScheduledMessage.objects.exists())
+
+    def test_split_scheduled_message_attachment_in_later_part(self) -> None:
+        self.login("hamlet")
+        hamlet = self.example_user("hamlet")
+        attachment_file = StringIO("zulip!")
+        attachment_file.name = "dummy_1.txt"
+        result = self.client_post("/json/user_uploads", {"file": attachment_file})
+        path_id = re.sub(r"/user_uploads/", "", result.json()["url"])
+        attachment = Attachment.objects.get(path_id=path_id)
+
+        content = f"First part\n\n\n[zulip.txt](http://{hamlet.realm.host}/user_uploads/{path_id})"
+        result = self.do_schedule_message(
+            "channel",
+            self.get_stream_id("Verona"),
+            content,
+            int(time.time() + 86400),
+            split_message_on_send=True,
+        )
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_message()
+        self.assertEqual(
+            list(attachment.scheduled_messages.all().values_list("id", flat=True)),
+            [scheduled_message.id],
+        )
+        self.assertTrue(scheduled_message.has_attachment)
+
+    def test_deliver_split_scheduled_message(self) -> None:
+        scheduled_delivery_datetime = timezone_now() + timedelta(minutes=5)
+        result = self.do_schedule_message(
+            "channel",
+            self.get_stream_id("Verona"),
+            "First part\n\n\nSecond part\n\n\nThird part",
+            int(scheduled_delivery_datetime.timestamp()),
+            split_message_on_send=True,
+        )
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_message()
+
+        with (
+            time_machine.travel(
+                scheduled_message.scheduled_timestamp + timedelta(minutes=1), tick=False
+            ),
+            self.assertLogs(level="INFO"),
+        ):
+            self.assertTrue(try_deliver_one_scheduled_message())
+        scheduled_message.refresh_from_db()
+        self.assertTrue(scheduled_message.delivered)
+        self.assertFalse(scheduled_message.failed)
+
+        assert scheduled_message.delivered_message_id is not None
+        delivered_messages = Message.objects.filter(
+            realm_id=scheduled_message.realm_id, id__gte=scheduled_message.delivered_message_id
+        ).order_by("id")
+        self.assertEqual(
+            [message.content for message in delivered_messages],
+            ["First part", "Second part", "Third part"],
+        )
+        for message in delivered_messages:
+            self.assertEqual(message.recipient, scheduled_message.recipient)
+            self.assertEqual(message.topic_name(), "Test topic")
+
+        self.assertFalse(try_deliver_one_scheduled_message())
+
+    def test_split_scheduled_message_delivered_whole_or_not_at_all(self) -> None:
+        scheduled_delivery_datetime = timezone_now() + timedelta(minutes=5)
+        result = self.do_schedule_message(
+            "channel",
+            self.get_stream_id("Verona"),
+            "First part\n\n\nSecond part",
+            int(scheduled_delivery_datetime.timestamp()),
+            split_message_on_send=True,
+        )
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_message()
+
+        def check_message_rejecting_second_part(*args: Any, **kwargs: Any) -> Any:
+            if args[3] == "Second part":
+                raise JsonableError("Second part rejected")
+            return check_message(*args, **kwargs)
+
+        with (
+            time_machine.travel(
+                scheduled_message.scheduled_timestamp + timedelta(minutes=1), tick=False
+            ),
+            mock.patch(
+                "zerver.actions.scheduled_messages.check_message",
+                side_effect=check_message_rejecting_second_part,
+            ),
+        ):
+            self.verify_deliver_scheduled_message_failure(scheduled_message, "Second part rejected")
+        self.assertFalse(
+            Message.objects.filter(
+                realm_id=scheduled_message.realm_id, content="First part"
+            ).exists()
+        )
+
+    def test_edit_split_scheduled_message(self) -> None:
+        result = self.do_schedule_message(
+            "channel",
+            self.get_stream_id("Verona"),
+            "First part\n\n\nSecond part",
+            int(time.time() + 86400),
+            split_message_on_send=True,
+        )
+        self.assert_json_success(result)
+        scheduled_message = self.last_scheduled_message()
+
+        def edit(payload: dict[str, str]) -> "TestHttpResponse":
+            return self.client_patch(f"/json/scheduled_messages/{scheduled_message.id}", payload)
+
+        self.assert_json_success(edit({"content": "New first\n\n\nNew second"}))
+        scheduled_message.refresh_from_db()
+        self.assertTrue(scheduled_message.split_message_on_send)
+        self.assertEqual(
+            scheduled_message.rendered_content, "<p>New first</p>\n<hr>\n<p>New second</p>"
+        )
+
+        self.assert_json_success(edit({"split_message_on_send": orjson.dumps(False).decode()}))
+        scheduled_message.refresh_from_db()
+        self.assertFalse(scheduled_message.split_message_on_send)
+        self.assertEqual(scheduled_message.content, "New first\n\n\nNew second")
+        self.assertEqual(scheduled_message.rendered_content, "<p>New first</p>\n<p>New second</p>")
+
+        self.assert_json_success(edit({"split_message_on_send": orjson.dumps(True).decode()}))
+        scheduled_message.refresh_from_db()
+        self.assertTrue(scheduled_message.split_message_on_send)
+        self.assertEqual(
+            scheduled_message.rendered_content, "<p>New first</p>\n<hr>\n<p>New second</p>"
+        )
+
+        too_many_parts = "\n\n\n".join(f"part {i}" for i in range(21))
+        self.assert_json_error(
+            edit({"content": too_many_parts}), "A split message can have at most 20 parts."
+        )

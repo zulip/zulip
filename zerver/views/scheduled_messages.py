@@ -65,6 +65,7 @@ def update_scheduled_message_backend(
     ] = None,
     scheduled_delivery_timestamp: Json[int] | None = None,
     scheduled_message_id: PathOnly[NonNegativeInt],
+    split_message_on_send: Json[bool] | None = None,
     to: Json[int | list[int]] | None = None,
     topic_name: OptionalTopic = None,
 ) -> HttpResponse:
@@ -74,6 +75,7 @@ def update_scheduled_message_backend(
         and topic_name is None
         and message_content is None
         and scheduled_delivery_timestamp is None
+        and split_message_on_send is None
     ):
         raise JsonableError(_("Nothing to change"))
 
@@ -125,6 +127,7 @@ def update_scheduled_message_backend(
         message_content,
         deliver_at,
         realm=user_profile.realm,
+        split_message_on_send=split_message_on_send,
     )
 
     return json_success(request)
@@ -143,6 +146,7 @@ def create_scheduled_message_backend(
         ApiParamConfig("type"),
     ],
     scheduled_delivery_timestamp: Json[int],
+    split_message_on_send: Json[bool] = False,
     topic_name: OptionalTopic = None,
 ) -> HttpResponse:
     recipient_type_name = req_type
@@ -181,5 +185,6 @@ def create_scheduled_message_backend(
         deliver_at,
         realm=user_profile.realm,
         read_by_sender=read_by_sender,
+        split_message_on_send=split_message_on_send,
     )
     return json_success(request, data={"scheduled_message_id": scheduled_message_id})

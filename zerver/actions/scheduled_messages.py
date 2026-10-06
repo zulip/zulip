@@ -1,3 +1,4 @@
+import dataclasses
 import logging
 from collections.abc import Sequence
 from datetime import datetime, timedelta
@@ -34,6 +35,7 @@ from zerver.lib.message import SendMessageRequest, access_message, truncate_topi
 from zerver.lib.recipient_parsing import extract_direct_message_recipient_ids, extract_stream_id
 from zerver.lib.reminders import get_reminder_formatted_content, notify_remove_reminder
 from zerver.lib.scheduled_messages import access_scheduled_message
+from zerver.lib.split_message import MAX_SPLIT_MESSAGE_PARTS, split_message_content
 from zerver.lib.string_validation import check_stream_topic
 from zerver.lib.timestamp import datetime_to_global_time
 from zerver.models import Client, Realm, ScheduledMessage, Subscription, UserProfile
@@ -41,6 +43,57 @@ from zerver.models.users import get_system_bot, is_cross_realm_bot_email
 from zerver.tornado.django_api import send_event_on_commit
 
 SCHEDULED_MESSAGE_LATE_CUTOFF_MINUTES = 10
+
+
+def check_split_message_parts(message_content: str) -> list[str]:
+    parts = split_message_content(message_content)
+    if not parts:
+        raise JsonableError(_("Message must not be empty"))
+    if len(parts) > MAX_SPLIT_MESSAGE_PARTS:
+        raise JsonableError(
+            _("A split message can have at most {max_parts} parts.").format(
+                max_parts=MAX_SPLIT_MESSAGE_PARTS
+            )
+        )
+    if any(len(part.rstrip()) > settings.MAX_MESSAGE_LENGTH for part in parts):
+        raise JsonableError(
+            _("Each part of a split message must be at most {max_length} characters.").format(
+                max_length=settings.MAX_MESSAGE_LENGTH
+            )
+        )
+    return parts
+
+
+def check_scheduled_message_content(
+    sender: UserProfile,
+    client: Client,
+    addressee: Addressee,
+    message_content: str,
+    realm: Realm | None,
+    *,
+    split_message_on_send: bool,
+) -> SendMessageRequest:
+    if not split_message_on_send:
+        return check_message(sender, client, addressee, message_content, realm=realm)
+
+    send_requests = [
+        check_message(sender, client, addressee, part, realm=realm)
+        for part in check_split_message_parts(message_content)
+    ]
+    send_request = send_requests[0]
+    send_request.message.content = message_content
+    send_request.rendering_result = dataclasses.replace(
+        send_request.rendering_result,
+        rendered_content="\n<hr>\n".join(
+            part_request.rendering_result.rendered_content for part_request in send_requests
+        ),
+        potential_attachment_path_ids=[
+            path_id
+            for part_request in send_requests
+            for path_id in part_request.rendering_result.potential_attachment_path_ids
+        ],
+    )
+    return send_request
 
 
 def check_schedule_message(
@@ -55,14 +108,16 @@ def check_schedule_message(
     *,
     read_by_sender: bool | None = None,
     skip_events: bool = False,
+    split_message_on_send: bool = False,
 ) -> int:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name, realm)
-    send_request = check_message(
+    send_request = check_scheduled_message_content(
         sender,
         client,
         addressee,
         message_content,
-        realm=realm,
+        realm,
+        split_message_on_send=split_message_on_send,
     )
     send_request.deliver_at = deliver_at
 
@@ -80,6 +135,7 @@ def check_schedule_message(
         read_by_sender=read_by_sender,
         skip_events=skip_events,
         delivery_type=ScheduledMessage.SEND_LATER,
+        split_message_on_send=split_message_on_send,
     )[0]
 
 
@@ -109,6 +165,7 @@ def do_schedule_messages(
     read_by_sender: bool = False,
     skip_events: bool = False,
     delivery_type: int,
+    split_message_on_send: bool = False,
 ) -> list[int]:
     scheduled_messages: list[tuple[ScheduledMessage, SendMessageRequest]] = []
 
@@ -127,6 +184,7 @@ def do_schedule_messages(
         scheduled_message.scheduled_timestamp = send_request.deliver_at
         scheduled_message.read_by_sender = read_by_sender
         scheduled_message.delivery_type = delivery_type
+        scheduled_message.split_message_on_send = split_message_on_send
 
         if delivery_type == ScheduledMessage.REMIND:
             scheduled_message.reminder_target_message_id = send_request.reminder_target_message_id
@@ -174,6 +232,7 @@ def edit_scheduled_message(
     message_content: str | None,
     deliver_at: datetime | None,
     realm: Realm,
+    split_message_on_send: bool | None = None,
 ) -> None:
     scheduled_message_object = access_scheduled_message(
         sender, scheduled_message_id, lock_message=True
@@ -194,10 +253,20 @@ def edit_scheduled_message(
         scheduled_message_object.recipient, sender.id
     )
 
+    if split_message_on_send is not None:
+        updated_split_message_on_send = split_message_on_send
+    else:
+        updated_split_message_on_send = scheduled_message_object.split_message_on_send
+
     send_request: SendMessageRequest | None = None
     # If any recipient information or message content has been updated,
     # we check the message again.
-    if recipient_type_name is not None or message_to is not None or message_content is not None:
+    if (
+        recipient_type_name is not None
+        or message_to is not None
+        or message_content is not None
+        or split_message_on_send is not None
+    ):
         # Update message type if changed.
         if recipient_type_name is not None:
             updated_recipient_type_name = recipient_type_name
@@ -232,12 +301,13 @@ def edit_scheduled_message(
         addressee = Addressee.legacy_build(
             sender, updated_recipient_type_name, updated_recipient, updated_topic_name
         )
-        send_request = check_message(
+        send_request = check_scheduled_message_content(
             sender,
             client,
             addressee,
             updated_content,
-            realm=realm,
+            realm,
+            split_message_on_send=updated_split_message_on_send,
         )
 
     if recipient_type_name is not None or message_to is not None:
@@ -256,9 +326,10 @@ def edit_scheduled_message(
         new_topic_name = truncate_topic(topic_name)
         scheduled_message_object.set_topic_name(topic_name=new_topic_name)
 
-    if message_content is not None:
+    if message_content is not None or split_message_on_send is not None:
         assert send_request is not None
         # User has updated the scheduled messages's content.
+        scheduled_message_object.split_message_on_send = updated_split_message_on_send
         scheduled_message_object.content = send_request.message.content
         scheduled_message_object.rendered_content = send_request.rendering_result.rendered_content
         attachment_reference_change = check_attachment_reference_change(
@@ -376,19 +447,26 @@ def send_scheduled_message(scheduled_message: ScheduledMessage) -> None:
     # (for example, mentioning a user by name) will work (or not) as
     # if the message was sent at the delivery time, not the sending
     # time.
-    send_request = check_message(
-        scheduled_message.sender,
-        scheduled_message.sending_client,
-        addressee,
-        scheduled_message.content,
-        scheduled_message.realm,
-    )
+    if scheduled_message.split_message_on_send:
+        contents = split_message_content(scheduled_message.content)
+    else:
+        contents = [scheduled_message.content]
+    send_requests = [
+        check_message(
+            scheduled_message.sender,
+            scheduled_message.sending_client,
+            addressee,
+            content,
+            scheduled_message.realm,
+        )
+        for content in contents
+    ]
 
-    sent_message_result = do_send_messages(
-        [send_request],
+    sent_message_results = do_send_messages(
+        send_requests,
         mark_as_read=[scheduled_message.sender_id] if scheduled_message.read_by_sender else [],
-    )[0]
-    scheduled_message.delivered_message_id = sent_message_result.message_id
+    )
+    scheduled_message.delivered_message_id = sent_message_results[0].message_id
     scheduled_message.delivered = True
     scheduled_message.save(update_fields=["delivered", "delivered_message_id"])
     notify_remove_scheduled_message(scheduled_message.sender, scheduled_message.id)

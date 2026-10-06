@@ -863,6 +863,7 @@ class ScheduledMessageFieldsCore(BaseEventModel):
     rendered_content: str
     scheduled_delivery_timestamp: int
     failed: bool
+    split_message_on_send: bool
 
 
 class ScheduledMessageFields(ScheduledMessageFieldsCore):
