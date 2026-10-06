@@ -775,7 +775,6 @@ test_ui("on_events", ({override, override_rewire}) => {
                     assert.equal($spinner.selector, fake_compose_box.markdown_spinner_selector());
                     destroy_indicator_called = true;
                 });
-                setup_mock_markdown_contains_backend_only_syntax(current_message, true);
 
                 func(param);
 
@@ -787,6 +786,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         });
 
         // Tests start here
+        override(loading, "destroy_indicator", noop);
         fake_compose_box.set_textarea_val("");
         fake_compose_box.hide_message_preview();
 

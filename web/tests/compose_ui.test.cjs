@@ -1647,3 +1647,17 @@ run_test("render of one preview leaves another's render alone", ({override}) => 
     compose_request.success({msg: "", result: "success", rendered: "<p>compose</p>"});
     assert.equal(compose_preview.$preview_content.html(), "<p>compose</p>");
 });
+
+run_test("render superseding another removes its spinner", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+    override(loading, "make_indicator", noop);
+    const preview = make_open_preview("#compose");
+
+    start_render(override, preview);
+    let destroy_indicator_called = false;
+    override(loading, "destroy_indicator", () => {
+        destroy_indicator_called = true;
+    });
+    compose_ui.render_and_show_preview(preview.$container, "");
+    assert.ok(destroy_indicator_called);
+});
