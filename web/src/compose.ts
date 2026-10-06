@@ -243,23 +243,27 @@ export let send_message = (
     // Changes here must also be kept in sync with echo.try_deliver_locally.
     const is_recursive_call = sent_count > 0;
 
-    if (!is_recursive_call) {
-        const part_count = compose_split_messages.get_all_split_parts(message_content).length;
-        if (part_count > compose_split_messages.MAX_SPLIT_PARTS) {
-            compose_banner.show_error_message(
-                $t(
-                    {
-                        defaultMessage:
-                            "Cannot send more than {max} messages at once. Please remove some blank-line separators or split your message manually.",
-                    },
-                    {max: compose_split_messages.MAX_SPLIT_PARTS},
-                ),
-                compose_banner.CLASSNAMES.generic_compose_error,
-                $("#compose_banners"),
-            );
-            compose_ui.hide_compose_spinner();
-            return false;
-        }
+    if (
+        !is_recursive_call &&
+        compose_split_messages.is_split_messages_enabled() &&
+        compose_split_messages.split_content(
+            message_content,
+            compose_split_messages.MAX_SPLIT_PARTS + 1,
+        ).length > compose_split_messages.MAX_SPLIT_PARTS
+    ) {
+        compose_banner.show_error_message(
+            $t(
+                {
+                    defaultMessage:
+                        "Cannot send more than {max} messages at once. Please remove some blank-line separators or split your message manually.",
+                },
+                {max: compose_split_messages.MAX_SPLIT_PARTS},
+            ),
+            compose_banner.CLASSNAMES.generic_compose_error,
+            $("#compose_banners"),
+        );
+        compose_ui.hide_compose_spinner();
+        return false;
     }
 
     const [content_to_send, rest_of_the_content] = compose_split_messages.split_message(
