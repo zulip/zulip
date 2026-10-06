@@ -2,11 +2,14 @@ import logging
 from urllib.parse import urljoin
 
 import requests
+from django.conf import settings
 from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
 
 from corporate.lib.communities_directory import meets_communities_directory_base_criteria
 from zerver.lib.outgoing_http import OutgoingSession
+from zerver.lib.thumbnail import BadImageError
+from zerver.lib.upload import get_upload_backend
 from zilencer.models import RemoteRealm
 
 logger = logging.getLogger(__name__)
@@ -62,6 +65,44 @@ def is_remote_realm_reachable(remote_realm: RemoteRealm) -> bool:
     return True
 
 
+def mirror_remote_realm_icon(remote_realm: RemoteRealm) -> None:
+    """Fetch the remote realm's icon and store our own copy of it."""
+    # The organization's own server caps icons at MAX_ICON_FILE_SIZE_MIB, but
+    # we are reading from a server that need not have honoured that.
+    size_limit = settings.MAX_ICON_FILE_SIZE_MIB * 1024 * 1024
+    image_data = b""
+    try:
+        # Streamed, so that we stop reading an oversized response rather
+        # than holding all of it first.
+        with OutgoingSession(
+            role="communities_directory",
+            timeout=10,
+        ).get(remote_realm.icon_url, stream=True) as response:
+            if response.status_code != 200:
+                logger.info(
+                    "Icon fetch for %s returned status %d", remote_realm.host, response.status_code
+                )
+                return
+
+            for chunk in response.iter_content(chunk_size=64 * 1024):
+                image_data += chunk
+                if len(image_data) > size_limit:
+                    logger.info("Icon for %s is larger than we accept", remote_realm.host)
+                    return
+    except requests.RequestException as e:
+        logger.info("Icon fetch for %s failed: %s", remote_realm.host, e)
+        return
+
+    try:
+        get_upload_backend().store_remote_realm_icon_image(str(remote_realm.uuid), image_data)
+    except BadImageError:
+        logger.info("Icon for %s is not an image we can use", remote_realm.host)
+        return
+
+    remote_realm.last_mirrored_icon_url = remote_realm.icon_url
+    remote_realm.mirrored_icon_version += 1
+
+
 def probe_remote_realms_for_communities_directory() -> None:
     now = timezone_now()
     reached = []
@@ -80,9 +121,18 @@ def probe_remote_realms_for_communities_directory() -> None:
             continue
 
         probed_count += 1
-        if is_remote_realm_reachable(remote_realm):
-            remote_realm.last_reachable_datetime = now
-            reached.append(remote_realm)
+        if not is_remote_realm_reachable(remote_realm):
+            continue
 
-    RemoteRealm.objects.bulk_update(reached, ["last_reachable_datetime"])
+        remote_realm.last_reachable_datetime = now
+        if remote_realm.last_mirrored_icon_url != remote_realm.icon_url:
+            # A failure here leaves the copy we already have in place,
+            # stale icon is shown until next probe - which is acceptable.
+            mirror_remote_realm_icon(remote_realm)
+        reached.append(remote_realm)
+
+    RemoteRealm.objects.bulk_update(
+        reached,
+        ["last_reachable_datetime", "last_mirrored_icon_url", "mirrored_icon_version"],
+    )
     logger.info("Probed %d organizations, reached %d", probed_count, len(reached))

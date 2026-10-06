@@ -580,6 +580,27 @@ class S3Test(ZulipTestCase):
         self.assertEqual(DEFAULT_AVATAR_SIZE, resized_image.width)
 
     @use_s3_backend
+    def test_store_remote_realm_icon_image(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+        remote_realm_uuid = "6cde5f7a-1f7e-4978-9716-49f69ebfc9fe"
+
+        backend = zerver.lib.upload.get_upload_backend()
+        backend.store_remote_realm_icon_image(remote_realm_uuid, read_test_image_file("img.png"))
+
+        # Only the re-encoded copy is stored
+        path_id = os.path.join("remote_realms", remote_realm_uuid, "icon.png")
+        stored_data = bucket.Object(path_id).get()["Body"].read()
+        stored_image = pyvips.Image.new_from_buffer(stored_data, "")
+        self.assertEqual(DEFAULT_AVATAR_SIZE, stored_image.height)
+        self.assertEqual(DEFAULT_AVATAR_SIZE, stored_image.width)
+
+        self.assertTrue(
+            backend.get_remote_realm_icon_url(remote_realm_uuid, 2).endswith(
+                f"remote_realms/{remote_realm_uuid}/icon.png?version=2"
+            )
+        )
+
+    @use_s3_backend
     def _test_upload_logo_image(self, night: bool, file_name: str) -> None:
         bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
 
