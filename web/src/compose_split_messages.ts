@@ -52,6 +52,10 @@ export function split_message(raw_message_content: string): [string, string] {
     if (!is_split_messages_enabled()) {
         return [raw_message_content, ""];
     }
+    return split_off_first_part(raw_message_content);
+}
+
+function split_off_first_part(raw_message_content: string): [string, string] {
     // Trim leading newlines to avoid empty messages due to multiple delimiters.
     // Whitespace before text is markdown syntax for code blocks, so we should not trim it.
     const message_content = trim_except_whitespace_before_text(raw_message_content);
@@ -76,15 +80,20 @@ export function get_all_split_parts(message_content: string): string[] {
     if (cached_input === message_content && cached_parts !== undefined) {
         return cached_parts;
     }
+    const parts = is_split_messages_enabled() ? split_content(message_content) : [message_content];
+    cached_input = message_content;
+    cached_parts = parts;
+    return parts;
+}
+
+export function split_content(content: string): string[] {
     const parts: string[] = [];
-    let remaining_content = message_content;
+    let remaining_content = content;
     while (remaining_content) {
-        const [part, rest] = split_message(remaining_content);
+        const [part, rest] = split_off_first_part(remaining_content);
         parts.push(part);
         remaining_content = rest;
     }
-    cached_input = message_content;
-    cached_parts = parts;
     return parts;
 }
 
