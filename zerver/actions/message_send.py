@@ -91,7 +91,7 @@ from zerver.lib.topic import get_topic_display_name, participants_for_topic
 from zerver.lib.topic_link_util import get_message_link_label, get_stream_link_syntax
 from zerver.lib.types import UserProfileChangeDict
 from zerver.lib.url_encoding import message_link_url, stream_message_url
-from zerver.lib.url_preview.preview import get_cached_link_embed_data
+from zerver.lib.url_preview.preview import get_cached_link_embed_data, get_unavailable_preview_urls
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
@@ -203,8 +203,10 @@ def populate_url_embed_data_for_preview(
 
     url_embed_data = get_cached_link_embed_data(links_for_preview)
     uncached_urls = [url for url in links_for_preview if url not in url_embed_data]
+    unavailable_urls = get_unavailable_preview_urls(uncached_urls)
+    urls_to_fetch = [url for url in uncached_urls if url not in unavailable_urls]
     pending_cache_key = pending_preview_draft_cache_key(sender.id, content_hash)
-    if uncached_urls and cache_get(pending_cache_key) is None:
+    if urls_to_fetch and cache_get(pending_cache_key) is None:
         cache_set(pending_cache_key, True, timeout=URL_EMBED_DATA_JOB_TIMEOUT_SECONDS)
         queue_event_on_commit(
             "embed_links",
@@ -214,7 +216,7 @@ def populate_url_embed_data_for_preview(
                 "content": content,
                 # Needed to render the full draft.
                 "cached_urls": list(url_embed_data),
-                "urls": uncached_urls,
+                "urls": urls_to_fetch,
             },
         )
     return url_embed_data

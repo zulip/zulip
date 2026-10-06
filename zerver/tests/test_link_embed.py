@@ -24,6 +24,7 @@ from zerver.lib.cache import (
     pending_preview_draft_cache_key,
     preview_draft_content_hash,
     preview_url_cache_key,
+    preview_url_unavailable_cache_key,
 )
 from zerver.lib.camo import get_camo_url
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
@@ -31,7 +32,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.url_preview.oembed import get_oembed_data, strip_cdata
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
-from zerver.lib.url_preview.preview import get_link_embed_data
+from zerver.lib.url_preview.preview import get_link_embed_data, mark_preview_url_unavailable
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 from zerver.models import Message, Realm, UserMessage, UserProfile
 from zerver.worker.embed_links import FetchLinksEmbedData
@@ -591,8 +592,9 @@ class PreviewTestCase(ZulipTestCase):
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
     def test_populate_url_embed_data_link_without_preview(self) -> None:
         """
-        A page that doesn't exist yet has no preview. That isn't cached, so
-        once the page is published, the sent message still gets its card.
+        A page that doesn't exist yet has no preview. Previews skip it for a
+        while, but that isn't cached for good, so once the page is published,
+        the sent message still gets its card.
         """
         self.login("hamlet")
         url = "http://test.org/"
@@ -601,6 +603,10 @@ class PreviewTestCase(ZulipTestCase):
 
         self.create_mock_response(url, status=404)
         self.consume_url_embed_data_job(job, expected_num_events=0)
+
+        self.assertIsNotNone(cache_get(preview_url_unavailable_cache_key(url)))
+        _rendered, job = self.render_populating_url_embed_data(f"{url} edited")
+        self.assertIsNone(job)
 
         self.assertIsNone(cache_get(preview_url_cache_key(url)))
         responses.reset()
@@ -614,6 +620,68 @@ class PreviewTestCase(ZulipTestCase):
         msg = Message.objects.get(id=msg_id)
         assert msg.rendered_content is not None
         self.assertIn(f'<a href="{url}" title="The Rock">The Rock</a>', msg.rendered_content)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_link_whose_fetch_fails(self) -> None:
+        self.login("hamlet")
+        failed_url = "http://test.org/"
+        _rendered, job = self.render_populating_url_embed_data(failed_url)
+        assert job is not None
+
+        self.create_mock_response(failed_url, body=ConnectionError())
+        self.consume_url_embed_data_job(job, expected_num_events=0)
+        self.assertIsNone(cache_get(preview_url_cache_key(failed_url)))
+        self.assertIsNotNone(cache_get(preview_url_unavailable_cache_key(failed_url)))
+
+        _rendered, job = self.render_populating_url_embed_data(f"{failed_url} edited")
+        self.assertIsNone(job)
+
+        fresh_url = "http://example.com/"
+        _rendered, job = self.render_populating_url_embed_data(f"{failed_url} {fresh_url}")
+        assert job is not None
+        self.assertEqual(job["cached_urls"], [])
+        self.assertEqual(job["urls"], [fresh_url])
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_link_whose_fetch_raises(self) -> None:
+        """
+        Unlike a network error, an unexpected error aborts the job. The link
+        that raised is then skipped, while the link the job didn't get to is
+        queued again on the next preview.
+        """
+        self.login("hamlet")
+        urls = ["http://test.org/", "http://example.com/"]
+        content = " ".join(urls)
+        _rendered, job = self.render_populating_url_embed_data(content)
+        assert job is not None
+
+        for url in urls:
+            responses.add(responses.GET, url, body=ValueError("unexpected"))
+        with self.assertRaises(ValueError):
+            FetchLinksEmbedData().consume(job)
+        [raised_url] = {call.request.url for call in responses.calls}
+        assert raised_url is not None
+        self.assertIsNotNone(cache_get(preview_url_unavailable_cache_key(raised_url)))
+
+        _rendered, job = self.render_populating_url_embed_data(content)
+        assert job is not None
+        self.assertEqual(job["urls"], [url for url in urls if url != raised_url])
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_skips_link_found_unavailable_while_queued(self) -> None:
+        """
+        Another job, such as another user's, found nothing for the link while
+        this job waited in the queue, so this job doesn't fetch it.
+        """
+        self.login("hamlet")
+        url = "http://test.org/"
+        _rendered, job = self.render_populating_url_embed_data(url)
+        assert job is not None
+        mark_preview_url_unavailable(url)
+        self.consume_dropped_url_embed_data_job(job)
 
     @responses.activate
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
@@ -646,6 +714,7 @@ class PreviewTestCase(ZulipTestCase):
         self.create_mock_response(url, body=html)
         self.consume_url_embed_data_job(job, expected_num_events=0)
         self.assertIsNotNone(cache_get(preview_url_cache_key(url)))
+        self.assertIsNone(cache_get(preview_url_unavailable_cache_key(url)))
 
     @responses.activate
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)

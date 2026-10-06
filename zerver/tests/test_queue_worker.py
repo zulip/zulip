@@ -22,6 +22,7 @@ from zerver.lib.cache import (
     latest_preview_draft_cache_key,
     pending_preview_draft_cache_key,
     preview_draft_content_hash,
+    preview_url_unavailable_cache_key,
 )
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.queue import MAX_REQUEST_RETRIES
@@ -866,6 +867,7 @@ class WorkerTest(ZulipTestCase):
                     f"Timed out in timeout_worker after 1 seconds while fetching URLs for a preview by user {user.id}: ['{url}']",
                 )
 
+        self.assertIsNotNone(cache_get(preview_url_unavailable_cache_key(url)))
         self.assertIsNone(cache_get(pending_cache_key))
 
     def test_worker_noname(self) -> None:
