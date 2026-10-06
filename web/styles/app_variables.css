@@ -975,6 +975,7 @@
         hsl(0deg 0% 13% / 80%),
         hsl(212deg 28% 8% / 75%)
     );
+    --color-text-overlay-header-control: hsl(0deg 0% 67%);
     --color-background-non-empty-overlay-indicator: light-dark(
         hsl(0deg 0% 100% / 90%),
         hsl(212deg 28% 8% / 75%)

@@ -838,7 +838,7 @@ input.settings_text_input {
             position: absolute;
             top: 10px;
             right: 10px;
-            color: hsl(0deg 0% 67%);
+            color: var(--color-text-overlay-header-control);
             cursor: pointer;
 
             .exit-sign {
