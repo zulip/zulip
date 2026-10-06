@@ -1,0 +1,119 @@
+{
+    "split_message_test_cases": [
+        {
+            "name": "empty",
+            "input": "",
+            "expected_parts": []
+        },
+        {
+            "name": "no_delimiter",
+            "input": "hello\n\nworld",
+            "expected_parts": ["hello\n\nworld"]
+        },
+        {
+            "name": "simple_split",
+            "input": "part one\n\n\npart two",
+            "expected_parts": ["part one", "part two"]
+        },
+        {
+            "name": "three_parts",
+            "input": "one\n\n\ntwo\n\n\nthree",
+            "expected_parts": ["one", "two", "three"]
+        },
+        {
+            "name": "extra_blank_lines_are_one_delimiter",
+            "input": "one\n\n\n\n\n\ntwo",
+            "expected_parts": ["one", "two"]
+        },
+        {
+            "name": "whitespace_on_blank_lines",
+            "input": "one\n  \n\t\ntwo",
+            "expected_parts": ["one", "two"]
+        },
+        {
+            "name": "non_breaking_space_on_blank_line",
+            "input": "one\n\u00a0\n\ntwo",
+            "expected_parts": ["one", "two"]
+        },
+        {
+            "name": "leading_and_trailing_blank_lines",
+            "input": "\n\n\none\n\n\ntwo\n\n\n",
+            "expected_parts": ["one", "two"]
+        },
+        {
+            "name": "trailing_spaces_on_part_kept",
+            "input": "one  \n\n\ntwo",
+            "expected_parts": ["one  ", "two"]
+        },
+        {
+            "name": "leading_indentation_of_part_kept",
+            "input": "one\n\n\n    code",
+            "expected_parts": ["one", "    code"]
+        },
+        {
+            "name": "backtick_fence_contains_delimiter",
+            "input": "```\nx\n\n\ny\n```",
+            "expected_parts": ["```\nx\n\n\ny\n```"]
+        },
+        {
+            "name": "fence_with_language",
+            "input": "```python\nx\n\n\ny\n```",
+            "expected_parts": ["```python\nx\n\n\ny\n```"]
+        },
+        {
+            "name": "quote_block_contains_delimiter",
+            "input": "```quote\nx\n\n\ny\n```",
+            "expected_parts": ["```quote\nx\n\n\ny\n```"]
+        },
+        {
+            "name": "code_block_at_start",
+            "input": "```\ncode\n```\n\n\nparagraph",
+            "expected_parts": ["```\ncode\n```", "paragraph"]
+        },
+        {
+            "name": "tilde_fence_contains_delimiter",
+            "input": "pre\n~~~\naaa\n\n\nbbb\n~~~",
+            "expected_parts": ["pre\n~~~\naaa\n\n\nbbb\n~~~"]
+        },
+        {
+            "name": "adjacent_fenced_blocks",
+            "input": "```\nc1\n```\n\n\n```\nc2\n```",
+            "expected_parts": ["```\nc1\n```", "```\nc2\n```"]
+        },
+        {
+            "name": "unclosed_fence_runs_to_end",
+            "input": "```\nx\n\n\ny",
+            "expected_parts": ["```\nx\n\n\ny"]
+        },
+        {
+            "name": "fence_closes_only_on_exact_match",
+            "input": "````\nx\n```\n\n\ny\n````",
+            "expected_parts": ["````\nx\n```\n\n\ny\n````"]
+        },
+        {
+            "name": "indented_fence_is_not_a_code_block",
+            "input": "  ```\nx\n\n\ny\n  ```",
+            "expected_parts": ["  ```\nx", "y\n  ```"]
+        },
+        {
+            "name": "indented_code_block_contains_delimiter",
+            "input": "    a\n\n\n    b",
+            "expected_parts": ["    a\n\n\n    b"]
+        },
+        {
+            "name": "indented_code_block_then_paragraph",
+            "input": "    a\n\n\nb",
+            "expected_parts": ["    a", "b"]
+        },
+        {
+            "name": "fence_right_after_indented_code_block",
+            "input": "    a\n```\nb\n\n\nc\n```\n\n\nd",
+            "expected_parts": ["    a\n```\nb\n\n\nc\n```", "d"]
+        },
+        {
+            "name": "indented_line_without_blank_line_is_not_code",
+            "input": "text\n    not code\n\n\nnext",
+            "expected_parts": ["text\n    not code", "next"]
+        }
+    ]
+}
