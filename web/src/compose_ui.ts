@@ -1607,8 +1607,6 @@ async function check_thumbnail_status(path_id: string): Promise<boolean> {
 
 async function poll_thumbnail_status(
     $preview_container: JQuery,
-    $preview_spinner: JQuery,
-    $preview_content_box: JQuery,
     content: string,
     attempt = 1,
 ): Promise<void> {
@@ -1643,26 +1641,14 @@ async function poll_thumbnail_status(
     // while we were waiting for the thumbnail status
     if ($preview_container.hasClass("preview_mode")) {
         if (any_thumbnail_ready) {
-            render_and_show_preview(
-                $preview_container,
-                $preview_spinner,
-                $preview_content_box,
-                content,
-                false,
-            );
+            render_and_show_preview($preview_container, content, false);
             return;
         }
 
         if (pending_thumbnail_paths.size > 0) {
             const retry_delay_secs = get_retry_backoff_seconds(undefined, attempt, true);
             thumbnail_poll_timeout = setTimeout(() => {
-                void poll_thumbnail_status(
-                    $preview_container,
-                    $preview_spinner,
-                    $preview_content_box,
-                    content,
-                    attempt + 1,
-                );
+                void poll_thumbnail_status($preview_container, content, attempt + 1);
             }, retry_delay_secs * 1000);
         }
     }
@@ -1714,8 +1700,6 @@ export function exit_preview_mode($container: JQuery): void {
 
 function apply_preview_render(
     $preview_container: JQuery,
-    $preview_spinner: JQuery,
-    $preview_content_box: JQuery,
     content: string,
     rendered_content: string,
     raw_content?: string,
@@ -1734,6 +1718,7 @@ function apply_preview_render(
         rendered_preview_html = rendered_content;
     }
 
+    const $preview_content_box = $preview_container.find(".preview_content");
     $preview_content_box.html(postprocess_content(rendered_preview_html));
     rendered_markdown.update_elements($preview_content_box);
 
@@ -1742,22 +1727,16 @@ function apply_preview_render(
     pending_thumbnail_paths = extract_thumbnail_paths($preview_content_box);
 
     if (pending_thumbnail_paths.size > 0) {
-        void poll_thumbnail_status(
-            $preview_container,
-            $preview_spinner,
-            $preview_content_box,
-            content,
-        );
+        void poll_thumbnail_status($preview_container, content);
     }
 }
 
 export function render_and_show_preview(
     $preview_container: JQuery,
-    $preview_spinner: JQuery,
-    $preview_content_box: JQuery,
     content: string,
     show_spinner = true,
 ): void {
+    const $preview_spinner = $preview_container.find(".markdown_preview_spinner");
     if (prevent_next_spinner) {
         show_spinner = false;
     }
@@ -1768,8 +1747,6 @@ export function render_and_show_preview(
     if (content.length === 0) {
         apply_preview_render(
             $preview_container,
-            $preview_spinner,
-            $preview_content_box,
             content,
             $t_html({defaultMessage: "Nothing to preview"}),
         );
@@ -1787,13 +1764,7 @@ export function render_and_show_preview(
             // echoed frontend rendering before receiving the
             // authoritative backend rendering from the server).
             const rendered_content = markdown.render(content).content;
-            apply_preview_render(
-                $preview_container,
-                $preview_spinner,
-                $preview_content_box,
-                content,
-                rendered_content,
-            );
+            apply_preview_render($preview_container, content, rendered_content);
         }
         void channel.post({
             url: "/json/messages/render",
@@ -1813,14 +1784,7 @@ export function render_and_show_preview(
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator($preview_spinner);
                 }
-                apply_preview_render(
-                    $preview_container,
-                    $preview_spinner,
-                    $preview_content_box,
-                    content,
-                    data.rendered,
-                    content,
-                );
+                apply_preview_render($preview_container, content, data.rendered, content);
             },
             error() {
                 if (markdown.contains_backend_only_syntax(content)) {
@@ -1828,8 +1792,6 @@ export function render_and_show_preview(
                 }
                 apply_preview_render(
                     $preview_container,
-                    $preview_spinner,
-                    $preview_content_box,
                     content,
                     $t_html({defaultMessage: "Failed to generate preview"}),
                 );
