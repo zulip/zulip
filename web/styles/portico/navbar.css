@@ -97,7 +97,8 @@ details summary::-webkit-details-marker {
     /*   1280px + 32px for paddings on the edges */
     max-width: 1312px;
     margin: 0 auto;
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
 }
 
@@ -108,6 +109,7 @@ details summary::-webkit-details-marker {
     padding: 14px;
     margin: 0 16px;
     flex-shrink: 0;
+    justify-self: start;
 }
 
 .top-menu-items-group-1,
@@ -116,7 +118,12 @@ details summary::-webkit-details-marker {
 }
 
 .top-menu-items-group-1 {
-    margin-right: 16px;
+    margin-left: 16px;
+}
+
+.top-menu-items-group-2 {
+    justify-self: end;
+    align-items: center;
 }
 
 .top-menu-mobile a {
@@ -168,9 +175,44 @@ details summary::-webkit-details-marker {
     background: none;
 }
 
-.top-menu-item-spacer {
-    flex-shrink: 1;
-    flex-grow: 1;
+.top-menu-item.top-menu-button {
+    font-size: 17px;
+    font-weight: 500;
+    padding: 6px 14px;
+    margin: 0 6px;
+    border-radius: 4px;
+}
+
+.top-menu-item.top-menu-button-primary {
+    &,
+    &:visited,
+    &:hover,
+    &:active {
+        color: hsl(0deg 0% 100%);
+    }
+
+    background: hsl(219deg 62% 54%);
+
+    &:hover {
+        background: hsl(219deg 62% 50%);
+    }
+
+    &:active {
+        background: hsl(219deg 62% 46%);
+    }
+}
+
+.top-menu-item.top-menu-button-secondary {
+    &,
+    &:visited,
+    &:hover,
+    &:active {
+        color: hsl(0deg 0% 100%);
+    }
+
+    /* Inset shadow instead of a border, so that both
+       buttons have the same height. */
+    box-shadow: inset 0 0 0 1px hsl(0deg 0% 100% / 60%);
 }
 
 .top-menu-item input[type="radio"],
@@ -306,50 +348,16 @@ details summary::-webkit-details-marker {
 .top-menu-submenu {
     position: absolute;
     top: var(--navbar-height);
-    display: flex;
+    /* Equal-width columns, each as wide as the menu's widest one. */
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
     gap: 16px;
+    width: max-content;
     opacity: 0;
     visibility: hidden;
     transition: 0.2s;
     transition-property: opacity, visibility;
-}
-
-#case-studies-submenu {
-    width: 100vw;
-    position: fixed;
-    left: 0;
-    justify-content: center;
-
-    @media (width <= 1300px) {
-        flex-wrap: wrap;
-        place-content: baseline flex-start;
-        height: calc(100vh - var(--navbar-height));
-        overflow-y: auto;
-        width: 100vw;
-        padding-left: 10px;
-    }
-
-    & > .top-menu-submenu-column:last-child {
-        /* Bottom padding provides space for the scroll fade
-           indicator so no content is obscured at end of scroll. */
-        padding-bottom: 50px;
-    }
-
-    /* Fade bottom edge to hint at scrollable content. */
-    mask-image: linear-gradient(
-        to bottom,
-        hsl(0deg 0% 0%) calc(100% - 50px),
-        transparent 100%
-    );
-}
-
-/* Prevent background scrolling when the case studies dropdown
-   covers the full viewport height on narrower desktop screens.
-   Lower bound excludes widths where the desktop navbar is hidden. */
-@media (width > 1100px) and (width <= 1300px) {
-    body:has(#top-menu-tab-case-studies:checked) {
-        overflow: hidden;
-    }
 }
 
 .top-menu-tab .top-menu-tab-user-label {
@@ -455,11 +463,86 @@ details summary::-webkit-details-marker {
 }
 
 .top-menu-submenu-section {
-    padding-left: 16px;
+    padding: 0 16px;
     font-size: 17px;
     opacity: 0.6;
     margin-bottom: 4px;
     letter-spacing: 2px;
+}
+
+.top-menu-submenu-list + .top-menu-submenu-section {
+    margin-top: 16px;
+}
+
+/* Dividers are inset to line up with the text of the menu items. */
+.top-menu-submenu-column
+    > .top-menu-submenu-section:first-child
+    + .top-menu-submenu-list,
+.top-menu-submenu-footer {
+    --divider-inset-start: 16px;
+    --divider-inset-end: 16px;
+
+    background: linear-gradient(
+            hsl(0deg 0% 100% / 20%),
+            hsl(0deg 0% 100% / 20%)
+        )
+        var(--divider-inset-start) 0 /
+        calc(100% - var(--divider-inset-start) - var(--divider-inset-end)) 1px
+        no-repeat;
+}
+
+.top-menu-submenu-column
+    > .top-menu-submenu-section:first-child
+    + .top-menu-submenu-list {
+    margin-top: 4px;
+    padding-top: 8px;
+}
+
+.top-menu-submenu.top-menu-submenu-with-footer {
+    display: grid;
+    /* Fixed widths so that the case study titles wrap
+       instead of pushing the menu off narrower screens. */
+    grid-template-columns: repeat(3, 320px);
+    column-gap: 16px;
+
+    /* At the narrowest desktop widths, the menu is too wide to hang
+       from its tab, so it starts where the menu items start instead,
+       with narrower columns. .top-menu is the containing block for
+       position: fixed, because it has a backdrop-filter. */
+    @media (width <= 1280px) {
+        position: fixed;
+        left: calc(16px + 136px + 16px); /* logo margin + logo + menu margin */
+        grid-template-columns: repeat(3, 290px);
+    }
+}
+
+.top-menu-submenu-footer {
+    grid-row: 2;
+    grid-column: 1 / -1;
+    display: flex;
+    margin: 12px 0 0;
+    padding: 12px 0 0;
+    list-style: none;
+
+    .top-menu-submenu-list-item {
+        font-size: 17px;
+        border-radius: 2px;
+
+        &:hover {
+            background: hsl(0deg 0% 100% / 10%);
+        }
+
+        &:active {
+            background: hsl(0deg 0% 100% / 20%);
+        }
+
+        & a {
+            display: block;
+            padding: 6px 16px;
+            text-decoration: none;
+            color: hsl(0deg 0% 100% / 90%);
+        }
+    }
 }
 
 .top-menu-mobile {
