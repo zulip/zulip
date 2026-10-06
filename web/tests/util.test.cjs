@@ -504,6 +504,9 @@ run_test("check_and_validate_custom_time_input", () => {
     assert.equal(util.validate_custom_time_input(input_is_float), true);
 
     const input_is_integer = "10";
+    const input_is_scientific_notation = "1e2";
+    checked_input = util.check_time_input(input_is_scientific_notation);
+    assert.equal(checked_input, 100);
     checked_input = util.check_time_input(input_is_integer);
     assert.equal(checked_input, 10);
     assert.equal(util.validate_custom_time_input(input_is_integer), true);
