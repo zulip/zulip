@@ -70,6 +70,12 @@ export function update_history_public_to_subscribers_state(
         return;
     }
 
+    if (sub !== undefined && !stream_data.can_change_permissions_requiring_metadata_access(sub)) {
+        // The checkbox stays disabled for users who cannot change the
+        // channel's permissions.
+        return;
+    }
+
     let stream_privacy_widget;
     let can_create_topic_group_widget;
     if (is_stream_creation) {
