@@ -1381,6 +1381,8 @@ class UserSignUpTest(ZulipTestCase):
         subdomain: str | None = None,
         timezone: str | None = None,
         browser_locale: str | None = None,
+        email_address_visibility: int | None = None,
+        default_stream_groups: list[str] | None = None,
     ) -> Union[UserProfile, "TestHttpResponse"]:
         """Common test function for signup tests.  It is a goal to use this
         common function for all signup tests to avoid code duplication; doing
@@ -1416,6 +1418,9 @@ class UserSignUpTest(ZulipTestCase):
         if browser_locale is not None:
             extra_kwargs["HTTP_ACCEPT_LANGUAGE"] = browser_locale
         if email_address_visibility is not None:
+            extra_kwargs["email_address_visibility"] = email_address_visibility
+        if default_stream_groups is not None:
+            extra_kwargs["default_stream_groups"] = default_stream_groups
         result = self.submit_reg_form_for_user(
             email, password, full_name=full_name, **client_kwargs, **extra_kwargs
         )
@@ -1624,27 +1629,11 @@ class UserSignUpTest(ZulipTestCase):
         realm = get_realm("zulip")
         realm_user_default = RealmUserDefault.objects.get(realm=realm)
         self.assertEqual(
-            realm_user_default.email_address_visibility, UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS
+        self.verify_signup(
+            email=email,
+            password=password,
+            email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY,
         )
-
-        result = self.client_post("/accounts/home/", {"email": email})
-        self.assertEqual(result.status_code, 302)
-        self.assertTrue(
-            result["Location"].endswith(f"/accounts/send_confirm/?email={quote(email)}")
-        )
-        result = self.client_get(result["Location"])
-        self.assert_in_response("check your email", result)
-
-        # Visit the confirmation link.
-        confirmation_url = self.get_confirmation_url_from_outbox(email)
-        result = self.client_get(confirmation_url)
-        self.assertEqual(result.status_code, 200)
-
-        # Pick a password and agree to the ToS.
-        result = self.submit_reg_form_for_user(
-            email, password, email_address_visibility=UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
-        )
-        self.assertEqual(result.status_code, 302)
 
         # Realm-level default is overridden by the value passed during signup.
         user_profile = self.nonreg_user("newguy")
@@ -1898,7 +1887,11 @@ class UserSignUpTest(ZulipTestCase):
             group1_streams.append(stream)
         do_create_default_stream_group(realm, "group 1", "group 1 description", group1_streams)
 
-        result = self.submit_reg_form_for_user(email, password, default_stream_groups=["group 1"])
+        self.verify_signup(
+            email=email,
+            password=password,
+            default_stream_groups=["group 1"],
+        )
         self.check_user_subscribed_only_to_streams("newguy", default_streams | set(group1_streams))
 
     def test_signup_stream_subscriber_count(self) -> None:
@@ -2036,9 +2029,12 @@ class UserSignUpTest(ZulipTestCase):
             group2_streams.append(stream)
         do_create_default_stream_group(realm, "group 2", "group 2 description", group2_streams)
 
-        result = self.submit_reg_form_for_user(
-            email, password, default_stream_groups=["group 1", "group 2"]
+        self.verify_signup(
+            email=email,
+            password=password,
+            default_stream_groups=["group 1", "group 2"],
         )
+
         self.check_user_subscribed_only_to_streams(
             "newguy", set(default_streams + group1_streams + group2_streams)
         )
