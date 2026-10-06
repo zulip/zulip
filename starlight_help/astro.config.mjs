@@ -350,6 +350,7 @@ export default defineConfig({
                             label: "Preview messages before sending",
                             link: "/preview-your-message-before-sending",
                         },
+                        "send-as-multiple-messages",
                         {
                             label: "Verify a message was sent",
                             link: "/verify-your-message-was-successfully-sent",

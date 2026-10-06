@@ -43,6 +43,11 @@
                                 {{> ./components/icon_button intent="danger" custom_classes="delete-overlay-message tippy-zulip-delayed-tooltip" icon="trash" data-tooltip-template-id="delete-scheduled-message-tooltip-template" aria-label=(t "Delete") }}
                             </div>
                         </div>
+                        {{#if split_message_count}}
+                        <div class="scheduled-split-message-count">
+                            {{t "Will be sent as {split_message_count} messages." }}
+                        </div>
+                        {{/if}}
                         <div class="message_content rendered_markdown restore-overlay-message">{{rendered_markdown rendered_content}}</div>
                     </div>
                 </div>

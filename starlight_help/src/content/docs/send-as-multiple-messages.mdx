@@ -1,0 +1,74 @@
+---
+title: Send as multiple messages
+---
+
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+import ComposeBoxMenu from "../include/_ComposeBoxMenu.mdx";
+import EndComposing from "../include/_EndComposing.mdx";
+import StartComposing from "../include/_StartComposing.mdx";
+
+Zulip lets you write a long message all at once, and then send it as several
+messages. This makes it easy for others to [react](/help/emoji-reactions) to,
+[quote](/help/quote-or-forward-a-message), or reply to each part separately.
+
+Your message is split wherever there are **two consecutive blank lines**.
+Blank lines inside a [code block](/help/code-blocks) don't split your message.
+The resulting messages are sent in order, to the conversation you are
+composing to.
+
+Before you send, a banner above the compose box shows how many messages your
+message will be split into. Each message has to fit within the maximum message
+length, and you can send up to 20 messages at a time.
+
+If one of the messages can't be sent, the messages before it stay sent, and
+everything from the message that failed onward is put back in the compose box,
+so that you can try sending it again.
+
+## Send as multiple messages
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <StartComposing />
+
+      1. Write your message, leaving two blank lines between the parts you
+         want to send as separate messages.
+
+      <ComposeBoxMenu />
+
+      1. Select **Send as multiple messages**.
+
+      <EndComposing />
+    </FlattenedSteps>
+
+    <ZulipTip>
+      [Preview your message](/help/preview-your-message-before-sending) to see
+      how it will be split into messages.
+    </ZulipTip>
+  </TabItem>
+</Tabs>
+
+**Send as multiple messages** is turned off again once your message is sent.
+To send your message as a single message instead, click **Send as a single
+message** in the banner above the compose box.
+
+## Schedule a message to be sent as multiple messages
+
+When you [schedule a message](/help/schedule-a-message) with **Send as multiple
+messages** selected, it will be split into messages when it's sent at the
+scheduled time. If any of them can't be sent, none of them will be.
+
+In the scheduled messages view, such a message is shown as one message, noting
+how many messages it will be sent as. It's edited, rescheduled, or deleted as a
+single message.
+
+## Related articles
+
+* [Preview messages before sending](/help/preview-your-message-before-sending)
+* [Schedule a message](/help/schedule-a-message)
+* [Mastering the compose box](/help/mastering-the-compose-box)
+* [Quote or forward a message](/help/quote-or-forward-a-message)
+* [Code blocks](/help/code-blocks)

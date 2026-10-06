@@ -6531,6 +6531,7 @@ paths:
                                         "rendered_content": "<p>Hello there!</p>",
                                         "scheduled_delivery_timestamp": 1681662420,
                                         "failed": false,
+                                        "split_message_on_send": false,
                                       },
                                     ],
                                 }
@@ -6568,6 +6569,7 @@ paths:
                                       "rendered_content": "<p>Hello there!</p>",
                                       "scheduled_delivery_timestamp": 1681662420,
                                       "failed": false,
+                                      "split_message_on_send": false,
                                     },
                                 }
                             - type: object
@@ -8209,6 +8211,7 @@ paths:
                               "topic": "Introduction",
                               "scheduled_delivery_timestamp": 1681662420,
                               "failed": false,
+                              "split_message_on_send": false,
                             },
                           ],
                       }
@@ -8305,6 +8308,21 @@ paths:
 
                     **Changes**: New in Zulip 8.0 (feature level 236).
                   example: true
+                split_message_on_send:
+                  type: boolean
+                  default: false
+                  description: |
+                    Whether to deliver the `content` as several messages, split
+                    wherever two or more consecutive blank lines appear outside
+                    a code block. The parts are sent in order at the scheduled
+                    time; if any part can't be sent, none of them are.
+
+                    A split message can have at most 20 parts, each of which
+                    must be no longer than the `max_message_length` returned
+                    by the [`POST /register`](/api/register-queue) endpoint.
+
+                    **Changes**: New in Zulip 13.0 (feature level ZF-acaca0).
+                  example: false
               required:
                 - type
                 - to
@@ -8316,6 +8334,8 @@ paths:
               scheduled_delivery_timestamp:
                 contentType: application/json
               read_by_sender:
+                contentType: application/json
+              split_message_on_send:
                 contentType: application/json
       responses:
         "200":
@@ -8479,10 +8499,22 @@ paths:
                     response description at
                     [`GET /scheduled_messages`](/api/get-scheduled-messages#response).
                   example: 3165826990
+                split_message_on_send:
+                  type: boolean
+                  description: |
+                    Whether to deliver the scheduled message's content as
+                    several messages; see the
+                    [`POST /scheduled_messages`](/api/create-scheduled-message)
+                    parameter of the same name.
+
+                    **Changes**: New in Zulip 13.0 (feature level ZF-acaca0).
+                  example: false
             encoding:
               to:
                 contentType: application/json
               scheduled_delivery_timestamp:
+                contentType: application/json
+              split_message_on_send:
                 contentType: application/json
       responses:
         "200":
@@ -29994,6 +30026,19 @@ components:
             get the content of the scheduled message.
 
             **Changes**: New in Zulip 7.0 (feature level 181).
+        split_message_on_send:
+          type: boolean
+          description: |
+            Whether the server will deliver the `content` as several
+            messages, split wherever two or more consecutive blank lines
+            appear outside a code block. The parts are sent in order at
+            the scheduled time. `rendered_content` is the rendered parts,
+            separated by horizontal rules (`<hr>`).
+
+            Clients should present and edit such a scheduled message as
+            one message, and may show how it will be split.
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-acaca0).
       additionalProperties: false
       required:
         - scheduled_message_id
@@ -30003,6 +30048,7 @@ components:
         - rendered_content
         - scheduled_delivery_timestamp
         - failed
+        - split_message_on_send
     ScheduledMessage:
       allOf:
         - $ref: "#/components/schemas/ScheduledMessageBase"
@@ -30016,6 +30062,7 @@ components:
             rendered_content: {}
             scheduled_delivery_timestamp: {}
             failed: {}
+            split_message_on_send: {}
     Reminder:
       type: object
       additionalProperties: false
