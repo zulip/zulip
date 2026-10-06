@@ -24,6 +24,10 @@ mock_esm("../src/message_lists", {
     current: {},
 });
 
+const rendered_markdown = mock_esm("../src/rendered_markdown");
+const channel = mock_esm("../src/channel");
+const loading = mock_esm("../src/loading");
+
 const compose_ui = zrequire("compose_ui");
 const linkifiers = zrequire("linkifiers");
 const stream_data = zrequire("stream_data");
@@ -1591,4 +1595,55 @@ run_test("maybe_set_compose_textarea_typeahead ignores edit box typeaheads", () 
     };
     compose_ui.maybe_set_compose_textarea_typeahead(edit_typeahead);
     assert.equal(compose_ui.compose_textarea_typeahead, compose_typeahead);
+});
+
+function make_open_preview(selector) {
+    const $container = $(selector);
+    const $spinner = $(`${selector} .markdown_preview_spinner`);
+    const $preview_content = $(`${selector} .preview_content`);
+    $preview_content.set_find_results(
+        ".image-loading-placeholder",
+        $.create(`${selector} no thumbnails`, {elements: []}),
+    );
+    $container.set_find_results(".markdown_preview_spinner", $spinner);
+    $container.set_find_results(".preview_content", $preview_content);
+    $container.addClass("preview_mode");
+    return {$container, $preview_content};
+}
+
+const backend_only_content = "@**topic** draft";
+
+function start_render(override, preview) {
+    let request;
+    override(channel, "post", (payload) => {
+        request = payload;
+    });
+    compose_ui.render_and_show_preview(preview.$container, backend_only_content);
+    return request;
+}
+
+run_test("render response superseded by a newer render is discarded", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+    override(loading, "make_indicator", noop);
+    override(loading, "destroy_indicator", noop);
+    const preview = make_open_preview("#compose");
+
+    const first_request = start_render(override, preview);
+    const second_request = start_render(override, preview);
+    second_request.success({msg: "", result: "success", rendered: "<p>second</p>"});
+    first_request.success({msg: "", result: "success", rendered: "<p>first</p>"});
+    assert.equal(preview.$preview_content.html(), "<p>second</p>");
+});
+
+run_test("render of one preview leaves another's render alone", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+    override(loading, "make_indicator", noop);
+    override(loading, "destroy_indicator", noop);
+    const compose_preview = make_open_preview("#compose");
+    const edit_preview = make_open_preview(".message_row");
+
+    const compose_request = start_render(override, compose_preview);
+    start_render(override, edit_preview);
+    compose_request.success({msg: "", result: "success", rendered: "<p>compose</p>"});
+    assert.equal(compose_preview.$preview_content.html(), "<p>compose</p>");
 });

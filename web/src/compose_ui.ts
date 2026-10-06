@@ -17,7 +17,6 @@ import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
-import * as compose_state from "./compose_state.ts";
 import type {TypeaheadSuggestion} from "./composebox_typeahead.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as linkifiers from "./linkifiers.ts";
@@ -1735,6 +1734,18 @@ function apply_server_preview_render(
     apply_preview_render($preview_container, content, rendered_preview_html);
 }
 
+const preview_render_counts = new WeakMap<HTMLElement, number>();
+
+function get_preview_render_count($preview_container: JQuery): number {
+    return preview_render_counts.get(util.the($preview_container)) ?? 0;
+}
+
+function increment_preview_render_count($preview_container: JQuery): number {
+    const preview_render_count = get_preview_render_count($preview_container) + 1;
+    preview_render_counts.set(util.the($preview_container), preview_render_count);
+    return preview_render_count;
+}
+
 export function render_and_show_preview(
     $preview_container: JQuery,
     content: string,
@@ -1745,8 +1756,7 @@ export function render_and_show_preview(
         show_spinner = false;
     }
 
-    const preview_render_count = compose_state.get_preview_render_count() + 1;
-    compose_state.set_preview_render_count(preview_render_count);
+    const preview_render_count = increment_preview_render_count($preview_container);
 
     if (content.length === 0) {
         apply_preview_render(
@@ -1775,7 +1785,7 @@ export function render_and_show_preview(
             data: {content},
             success(response_data) {
                 if (
-                    preview_render_count !== compose_state.get_preview_render_count() ||
+                    preview_render_count !== get_preview_render_count($preview_container) ||
                     !$preview_container.hasClass("preview_mode")
                 ) {
                     // The user is no longer in preview mode or the compose
