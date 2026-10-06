@@ -24,6 +24,13 @@ from zerver.actions.user_topics import (
 )
 from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import get_alert_word_automaton
+from zerver.lib.cache import (
+    cache_get,
+    cache_set,
+    latest_preview_draft_cache_key,
+    pending_preview_draft_cache_key,
+    preview_draft_content_hash,
+)
 from zerver.lib.exceptions import (
     DirectMessageInitiationError,
     DirectMessagePermissionError,
@@ -84,6 +91,7 @@ from zerver.lib.topic import get_topic_display_name, participants_for_topic
 from zerver.lib.topic_link_util import get_message_link_label, get_stream_link_syntax
 from zerver.lib.types import UserProfileChangeDict
 from zerver.lib.url_encoding import message_link_url, stream_message_url
+from zerver.lib.url_preview.preview import get_cached_link_embed_data
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
@@ -172,6 +180,58 @@ def render_unsaved_message(
     return render_message_markdown(
         message, content, realm=sender.realm, url_embed_data=url_embed_data
     )
+
+
+# A job still queued after this long is for a preview the user has most
+# likely moved on from.
+URL_EMBED_DATA_JOB_TIMEOUT_SECONDS = 60 * 10
+
+
+def populate_url_embed_data_for_preview(
+    sender: UserProfile,
+    content: str,
+    links_for_preview: set[str],
+) -> dict[str, UrlEmbedData | None]:
+    content_hash = preview_draft_content_hash(content)
+    cache_set(
+        latest_preview_draft_cache_key(sender.id),
+        content_hash,
+        timeout=URL_EMBED_DATA_JOB_TIMEOUT_SECONDS,
+    )
+    if not links_for_preview:
+        return {}
+
+    url_embed_data = get_cached_link_embed_data(links_for_preview)
+    uncached_urls = [url for url in links_for_preview if url not in url_embed_data]
+    pending_cache_key = pending_preview_draft_cache_key(sender.id, content_hash)
+    if uncached_urls and cache_get(pending_cache_key) is None:
+        cache_set(pending_cache_key, True, timeout=URL_EMBED_DATA_JOB_TIMEOUT_SECONDS)
+        queue_event_on_commit(
+            "embed_links",
+            {
+                "type": "url_embed_data",
+                "user_id": sender.id,
+                "content": content,
+                # Needed to render the full draft.
+                "cached_urls": list(url_embed_data),
+                "urls": uncached_urls,
+            },
+        )
+    return url_embed_data
+
+
+def is_latest_preview_draft(user_profile_id: int, content_hash: str) -> bool:
+    latest_content_hash = cache_get(latest_preview_draft_cache_key(user_profile_id))
+    return latest_content_hash is not None and latest_content_hash[0] == content_hash
+
+
+def do_send_url_embed_data_event(sender: UserProfile, content: str, rendered_content: str) -> None:
+    event = {
+        "type": "url_embed_data",
+        "content": content,
+        "rendered_content": rendered_content,
+    }
+    send_event_on_commit(sender.realm, event, [sender.id])
 
 
 @dataclass
