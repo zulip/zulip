@@ -1701,23 +1701,8 @@ export function exit_preview_mode($container: JQuery): void {
 function apply_preview_render(
     $preview_container: JQuery,
     content: string,
-    rendered_content: string,
-    raw_content?: string,
+    rendered_preview_html: string,
 ): void {
-    // content is passed to check for status messages ("/me ...")
-    // and will be undefined in case of errors
-    let rendered_preview_html;
-    if (raw_content !== undefined && markdown.is_status_message(raw_content)) {
-        // Handle previews of /me messages
-        rendered_preview_html =
-            "<p><strong>" +
-            _.escape(current_user.full_name) +
-            "</strong>" +
-            rendered_content.slice("<p>/me".length);
-    } else {
-        rendered_preview_html = rendered_content;
-    }
-
     const $preview_content_box = $preview_container.find(".preview_content");
     $preview_content_box.html(postprocess_content(rendered_preview_html));
     rendered_markdown.update_elements($preview_content_box);
@@ -1729,6 +1714,25 @@ function apply_preview_render(
     if (pending_thumbnail_paths.size > 0) {
         void poll_thumbnail_status($preview_container, content);
     }
+}
+
+function apply_server_preview_render(
+    $preview_container: JQuery,
+    content: string,
+    rendered_content: string,
+): void {
+    let rendered_preview_html;
+    if (markdown.is_status_message(content)) {
+        // Handle previews of /me messages
+        rendered_preview_html =
+            "<p><strong>" +
+            _.escape(current_user.full_name) +
+            "</strong>" +
+            rendered_content.slice("<p>/me".length);
+    } else {
+        rendered_preview_html = rendered_content;
+    }
+    apply_preview_render($preview_container, content, rendered_preview_html);
 }
 
 export function render_and_show_preview(
@@ -1784,7 +1788,7 @@ export function render_and_show_preview(
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator($preview_spinner);
                 }
-                apply_preview_render($preview_container, content, data.rendered, content);
+                apply_server_preview_render($preview_container, content, data.rendered);
             },
             error() {
                 if (markdown.contains_backend_only_syntax(content)) {
