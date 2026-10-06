@@ -356,7 +356,7 @@ def verify_registration_transfer_challenge_ack_endpoint(
     request: HttpRequest,
     *,
     hostname: str,
-    access_token: str,
+    access_token: Annotated[str, StringConstraints(pattern="^[a-zA-Z0-9_-]+$")],
 ) -> HttpResponse:
     """
     The host should POST to this endpoint to announce it is ready to serve the received

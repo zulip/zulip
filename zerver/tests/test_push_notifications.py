@@ -3043,6 +3043,14 @@ class RegistrationTakeoverFlowTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Registration not found for this hostname")
 
+        for access_token in ["../../user_uploads/foo", "sometoken?", "sometoken#", "some%2Ftoken"]:
+            result = self.client_post(
+                "/api/v1/remotes/server/register/verify_challenge",
+                {"hostname": self.hostname, "access_token": access_token},
+            )
+            self.assert_json_error(result, "access_token has invalid format")
+        self.assert_length(responses.calls, 0)
+
         responses.get(
             "https://example.com/api/v1/zulip-services/verify/sometoken/",
             json={"verification_secret": "foo"},
