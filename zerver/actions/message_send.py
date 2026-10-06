@@ -159,6 +159,14 @@ def render_incoming_message(
     return rendering_result
 
 
+def render_unsaved_message(sender: UserProfile, content: str) -> MessageRenderingResult:
+    message = Message()
+    message.sender = sender
+    message.realm = sender.realm
+    message.content = content
+    return render_message_markdown(message, content, realm=sender.realm)
+
+
 @dataclass
 class RecipientInfoResult:
     active_user_ids: set[int]

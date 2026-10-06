@@ -11,9 +11,9 @@ from zerver.actions.message_send import (
     check_send_message,
     extract_private_recipients,
     extract_stream_indicator,
+    render_unsaved_message,
 )
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.markdown import render_message_markdown
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import (
@@ -23,7 +23,7 @@ from zerver.lib.typed_endpoint import (
     typed_endpoint,
 )
 from zerver.lib.zcommand import process_zcommands
-from zerver.models import Message, UserProfile
+from zerver.models import UserProfile
 from zerver.models.users import get_user_including_cross_realm
 
 
@@ -168,10 +168,5 @@ def render_message_backend(
     *,
     content: Annotated[str, StringConstraints(max_length=settings.MAX_MESSAGE_LENGTH)],
 ) -> HttpResponse:
-    message = Message()
-    message.sender = user_profile
-    message.realm = user_profile.realm
-    message.content = content
-
-    rendering_result = render_message_markdown(message, content, realm=user_profile.realm)
+    rendering_result = render_unsaved_message(user_profile, content)
     return json_success(request, data={"rendered": rendering_result.rendered_content})
