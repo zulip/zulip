@@ -9992,8 +9992,27 @@ paths:
               properties:
                 content:
                   $ref: "#/components/schemas/RequiredContent"
+                populate_url_embed_data:
+                  type: boolean
+                  default: false
+                  example: true
+                  description: |
+                    Whether the server should populate
+                    [URL embed data](/help/image-video-and-website-previews)
+                    for the links in `content`, by including the data it
+                    already has in `rendered`.
+
+                    Only links that would get URL embeds if `content` were sent
+                    as a message are populated. For example, links to websites
+                    are not populated for bots, or if the organization has
+                    disabled website previews.
+
+                    **Changes**: New in Zulip 13.0 (feature level ZF-4c56a7).
               required:
                 - content
+            encoding:
+              populate_url_embed_data:
+                contentType: application/json
       responses:
         "200":
           description: Success.
