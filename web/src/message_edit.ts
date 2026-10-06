@@ -1857,12 +1857,7 @@ export function render_preview_area($row: JQuery): void {
     const content = $msg_edit_content.val();
     assert(content !== undefined);
     const $preview_message_area = $row.find(".preview_message_area");
-    compose_ui.render_and_show_preview(
-        $row,
-        $row.find(".markdown_preview_spinner"),
-        $row.find(".preview_content"),
-        content,
-    );
+    compose_ui.render_and_show_preview($row, content);
     const edit_height = $msg_edit_content.height();
     $preview_message_area.css({"min-height": edit_height + "px"});
     $preview_message_area.show();
