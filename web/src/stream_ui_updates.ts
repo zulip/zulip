@@ -98,10 +98,9 @@ export function update_history_public_to_subscribers_state(
     $history_public_to_subscribers_container
         .find("input")
         .prop("disabled", !is_invite_only || !everyone_can_create_topics);
-    $history_public_to_subscribers_container.toggleClass(
-        "control-label-disabled",
-        !is_invite_only || !everyone_can_create_topics,
-    );
+    $history_public_to_subscribers_container
+        .find(".input-group")
+        .toggleClass("control-label-disabled", !is_invite_only || !everyone_can_create_topics);
 
     // Tooltip is shown only if the checkbox is disabled due to topic creation permission
     // and not when it is disabled because channel privacy is not set to private.
@@ -150,7 +149,9 @@ export function update_history_public_to_subscribers_on_can_create_topic_group_c
 
     if (!everyone_can_create_topics) {
         $history_public_to_subscribers_container.find("input").prop("disabled", true);
-        $history_public_to_subscribers_container.addClass("control-label-disabled");
+        $history_public_to_subscribers_container
+            .find(".input-group")
+            .addClass("control-label-disabled");
         $history_public_to_subscribers_container.addClass(
             "protected_history_with_new_topics_permission_tooltip",
         );
@@ -159,7 +160,9 @@ export function update_history_public_to_subscribers_on_can_create_topic_group_c
 
     if (sub.can_create_topic_group === everyone_group.id) {
         $history_public_to_subscribers_container.find("input").prop("disabled", false);
-        $history_public_to_subscribers_container.removeClass("control-label-disabled");
+        $history_public_to_subscribers_container
+            .find(".input-group")
+            .removeClass("control-label-disabled");
         $history_public_to_subscribers_container.removeClass(
             "protected_history_with_new_topics_permission_tooltip",
         );
@@ -282,7 +285,7 @@ export function update_default_stream_option_state($container: JQuery): void {
             $default_stream.hide();
         } else {
             $default_stream.find("input").prop("disabled", true);
-            $default_stream.addClass("control-label-disabled");
+            $default_stream.find(".input-group").addClass("control-label-disabled");
         }
         return;
     }
@@ -299,10 +302,8 @@ export function update_default_stream_option_state($container: JQuery): void {
 
     // If a private stream option is selected, the default stream option is disabled.
     $default_stream.find("input").prop("disabled", is_invite_only);
-    $default_stream.toggleClass(
-        "control-label-disabled default_stream_private_tooltip",
-        is_invite_only,
-    );
+    $default_stream.find(".input-group").toggleClass("control-label-disabled", is_invite_only);
+    $default_stream.toggleClass("default_stream_private_tooltip", is_invite_only);
     if (is_invite_only) {
         // Private streams cannot be set as default streams so uncheck the checkbox.
         $default_stream.find("input").prop("checked", false);
