@@ -1702,6 +1702,7 @@ function apply_preview_render(
     content: string,
     rendered_preview_html: string,
 ): void {
+    loading.destroy_indicator($preview_container.find(".markdown_preview_spinner"));
     const $preview_content_box = $preview_container.find(".preview_content");
     $preview_content_box.html(postprocess_content(rendered_preview_html));
     rendered_markdown.update_elements($preview_content_box);
@@ -1751,7 +1752,6 @@ export function render_and_show_preview(
     content: string,
     show_spinner = true,
 ): void {
-    const $preview_spinner = $preview_container.find(".markdown_preview_spinner");
     if (prevent_next_spinner) {
         show_spinner = false;
     }
@@ -1766,7 +1766,7 @@ export function render_and_show_preview(
         );
     } else {
         if (markdown.contains_backend_only_syntax(content) && show_spinner) {
-            const $spinner = $preview_spinner.expectOne();
+            const $spinner = $preview_container.find(".markdown_preview_spinner").expectOne();
             loading.make_indicator($spinner);
         } else {
             // For messages that don't appear to contain syntax that
@@ -1795,15 +1795,9 @@ export function render_and_show_preview(
                     return;
                 }
                 const data = message_render_response_schema.parse(response_data);
-                if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator($preview_spinner);
-                }
                 apply_server_preview_render($preview_container, content, data.rendered);
             },
             error() {
-                if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator($preview_spinner);
-                }
                 apply_preview_render(
                     $preview_container,
                     content,
