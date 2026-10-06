@@ -124,7 +124,8 @@
         {{/if}}
     </div>
     <div class="admin-permissions-tip">
-        {{t 'Organization administrators can automatically administer all channels.'}}
+        {{t 'Organization administrators can administer certain aspects of all channels.'}}
+        {{> ../help_link_widget link="/help/configure-who-can-administer-a-channel" }}
     </div>
     {{> ../settings/group_setting_value_pill_input
       setting_name="can_administer_channel_group"
