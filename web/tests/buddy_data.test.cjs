@@ -14,6 +14,7 @@ const {page_params} = require("./lib/zpage_params.cjs");
 
 mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
+    effective_web_animate_image_previews: () => user_settings.web_animate_image_previews,
 });
 const timerender = mock_esm("../src/timerender");
 mock_esm("../src/buddy_list", {
@@ -40,7 +41,7 @@ const realm = make_realm();
 set_realm(realm);
 const current_user = {};
 set_current_user(current_user);
-const user_settings = {};
+const user_settings = {web_animate_image_previews: "on_hover"};
 initialize_user_settings({user_settings});
 
 // The buddy_data module is mostly tested indirectly through
@@ -645,6 +646,7 @@ test("get_items_for_users", ({override}) => {
 
     const status_emoji_info = {
         emoji_alt_code: false,
+        emoji_animation_setting: "on_hover",
         emoji_name: "car",
         emoji_code: "1f697",
         reaction_type: "unicode_emoji",
