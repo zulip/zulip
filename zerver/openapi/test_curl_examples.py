@@ -35,11 +35,8 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     # Having a message for a specific user available to test this endpoint
     # is tricky for testing.
     "delete-reminder",
-    # Video call endpoints that need third-party call provider
-    # to be configured or the realm's video_chat_provider
-    # set to the matching provider to test the curl example for the
-    # endpoint.
-    "create-big-blue-button-video-call",
+    # Video call endpoints that need the third-party call provider
+    # to be configured to test the curl example for the endpoint.
     "create-constructor-groups-video-call",
     "create-nextcloud-talk-video-call",
     "create-webex-video-call",
