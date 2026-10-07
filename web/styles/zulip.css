@@ -1532,6 +1532,14 @@ div.topic_edit_spinner .loading_indicator_spinner {
         font-weight: 600;
     }
 
+    &.arrowTop::after {
+        border-bottom-color: light-dark(hsl(0deg 0% 100%), hsl(212deg 28% 18%));
+    }
+
+    &.arrowBottom::after {
+        border-top-color: light-dark(hsl(0deg 0% 100%), hsl(212deg 28% 18%));
+    }
+
     @media (width < $md_min) {
         /* Center align flatpickr on mobile
          * devices so that it doesn't go out of
