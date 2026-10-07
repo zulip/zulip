@@ -722,7 +722,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.login("iago")
         realm = get_realm("zulip")
 
-        field = CustomProfileField.objects.get(name="Phone number", realm=realm)
+        field = CustomProfileField.objects.get(name="Favorite food", realm=realm)
 
         result = self.client_patch(
             f"/json/realm/profile_fields/{field.id}",
