@@ -20,7 +20,10 @@
         </div>
         <div class="portico-page error">
             <div class="error_page">
-                <img src="/static/images/errors/500art.svg" alt=""/>
+                <picture>
+                    <source srcset="/static/images/errors/server-error-dark.svg" media="(prefers-color-scheme: dark)"/>
+                    <img src="/static/images/errors/server-error-light.svg" width="355" height="199" alt=""/>
+                </picture>
                 <div class="errorbox">
                     <div class="errorcontent">
                         <!-- Keep in sync with templates/500.html -->
