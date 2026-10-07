@@ -1073,11 +1073,6 @@ input#terminal:checked ~ #tab-terminal {
     line-height: normal;
 }
 
-.hourglass-img {
-    width: initial !important;
-    margin-bottom: 25px !important;
-}
-
 #skip-navigation {
     background-color: hsl(170deg 47% 33%);
     color: hsl(0deg 0% 100%);
@@ -1462,10 +1457,12 @@ body:has(.portico-page.error) .portico-header .portico-header-dropdown ul {
     padding: 80px 20px;
 }
 
-/* Per-page illustration: each error template supplies its own art. */
+/* Per-page illustration: each error template supplies its own art, shown
+   at the size it was drawn. */
 .portico-page.error .error_page img {
     width: auto;
-    height: 120px;
+    max-width: 100%;
+    height: auto;
 }
 
 /* No card — text sits directly on the surface, centered. */
