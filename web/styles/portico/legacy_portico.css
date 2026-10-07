@@ -1341,6 +1341,53 @@ label.label-title {
     }
 }
 
+#devtools-error-pages {
+    padding: 0 20px 40px;
+
+    h2 {
+        margin: 32px 0 12px;
+    }
+
+    .error-page-previews {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, 400px);
+        gap: 16px;
+    }
+
+    .error-page-preview {
+        display: block;
+        border: 1px solid hsl(0deg 0% 87%);
+        border-radius: 4px;
+        overflow: hidden;
+
+        &:hover,
+        &:focus-visible {
+            border-color: hsl(0deg 0% 60%);
+        }
+    }
+
+    /* Each page is rendered at a 1280px desktop width and scaled
+       down to fit a 400px column. */
+    .error-page-preview-frame {
+        height: 300px;
+        overflow: hidden;
+    }
+
+    .error-page-preview-frame iframe {
+        width: 1280px;
+        height: 960px;
+        border: 0;
+        transform: scale(0.3125);
+        transform-origin: 0 0;
+        pointer-events: none;
+    }
+
+    .error-page-preview-label {
+        display: block;
+        padding: 6px 10px;
+    }
+}
+
 .portico-page.error {
     padding-bottom: 0;
 }
