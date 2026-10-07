@@ -220,9 +220,7 @@
 
     .message_header {
         position: sticky;
-        /* Just below #top-of-feed-loading-indicator, which sticks to the
-           bottom of the navbar. */
-        top: calc(var(--navbar-fixed-height) + var(--header-padding-bottom));
+        top: var(--navbar-fixed-height);
         /* Needs to be higher than the z-index of date_row. */
         z-index: 4;
         box-shadow: 0 -1px 0 0 var(--color-background);
