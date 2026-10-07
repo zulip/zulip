@@ -24,6 +24,16 @@ export function initialize(): void {
         delay: EXTRA_LONG_HOVER_DELAY,
         appendTo: () => document.body,
         onShow(instance) {
+            // Popover menus focus their first item when opened by a mouse click;
+            // don't show the tooltip for this programmatic focus. Keyboard focus
+            // should still show the tooltip without a hover.
+            if (
+                instance.reference.matches(":focus:not(:focus-visible)") &&
+                !instance.reference.matches(":hover")
+            ) {
+                return false;
+            }
+
             const $container = $(instance.popper).find(".views-tooltip-container");
             let display_count;
             const sidebar_option = $container.attr("data-view-code");
@@ -101,6 +111,7 @@ export function initialize(): void {
                     offset: [0, 40],
                 });
             }
+            return undefined;
         },
         onHidden(instance) {
             instance.destroy();
