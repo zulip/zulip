@@ -3,9 +3,8 @@
 const assert = require("node:assert/strict");
 
 const {make_stream} = require("./lib/example_stream.cjs");
-const {mock_esm, set_global, zrequire} = require("./lib/namespace.cjs");
+const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
-const {$} = require("./lib/zjquery.cjs");
 
 /*
 
@@ -50,8 +49,6 @@ const {$} = require("./lib/zjquery.cjs");
           do nothing at all or return a simple
           value.)
 */
-
-set_global("document", {hasFocus: () => true});
 
 const channel = mock_esm("../src/channel");
 const desktop_notifications = mock_esm("../src/desktop_notifications");
@@ -101,7 +98,7 @@ run_test("unread_ops", ({override}) => {
     unread.process_loaded_messages(test_messages);
 
     // Make our message_viewport appear visible.
-    $("#message_feed_container").show();
+    override(message_viewport, "viewport_is_visible_and_focused", () => true);
 
     // Make our "test" message appear visible.
     override(message_viewport, "bottom_rendered_message_visible", () => true);

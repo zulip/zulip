@@ -4,6 +4,7 @@ import * as tippy from "tippy.js";
 
 import * as drafts from "./drafts.ts";
 import {$t} from "./i18n.ts";
+import * as reactions from "./reactions.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as settings_data from "./settings_data.ts";
 import {disconnect_toggle_class, observe_toggle_class} from "./sidebar_tooltip_helpers.ts";
@@ -49,6 +50,18 @@ export function initialize(): void {
                             {
                                 defaultMessage:
                                     "You have {display_count, plural, =0 {no unread mentions} one {# unread mention} other {# unread mentions}}.",
+                            },
+                            {display_count},
+                        ),
+                    );
+                    break;
+                case "my_reactions":
+                    display_count = reactions.get_count();
+                    $container.find(".views-message-count").text(
+                        $t(
+                            {
+                                defaultMessage:
+                                    "You have {display_count, plural, =0 {no new reactions} one {# new reaction} other {# new reactions}}.",
                             },
                             {display_count},
                         ),

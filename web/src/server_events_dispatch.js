@@ -47,7 +47,6 @@ import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as pm_conversations from "./pm_conversations.ts";
 import * as pm_list from "./pm_list.ts";
-import * as reactions from "./reactions.ts";
 import * as realm_icon from "./realm_icon.ts";
 import * as realm_logo from "./realm_logo.ts";
 import * as realm_playground from "./realm_playground.ts";
@@ -286,27 +285,6 @@ export function dispatch_normal_event(event) {
             reload.initiate(reload_options);
             break;
         }
-
-        case "reaction":
-            switch (event.op) {
-                case "add":
-                    reactions.add_reaction(event);
-                    emoji_frequency.update_emoji_frequency_on_add_reaction_event(event);
-                    break;
-                case "remove":
-                    reactions.remove_reaction(event);
-                    emoji_frequency.update_emoji_frequency_on_remove_reaction_event(event);
-                    break;
-                default:
-                    blueslip.error("Unexpected event type reaction/" + event.op);
-                    break;
-            }
-            message_events.update_views_filtered_on_message_property(
-                [event.message_id],
-                "has-reaction",
-                event.op === "add",
-            );
-            break;
 
         case "realm": {
             const realm_settings = {

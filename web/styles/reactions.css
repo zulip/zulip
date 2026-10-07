@@ -1,5 +1,4 @@
 .message_reactions {
-    overflow: hidden;
     user-select: none;
 
     &:has(.message_reaction) {
@@ -7,6 +6,10 @@
     }
 
     .message_reaction_container {
+        /* Let a pill be narrower than its text, which then ends in an
+           ellipsis, rather than push out past the reactions box. */
+        min-width: 0;
+
         &.disabled {
             cursor: not-allowed;
         }
@@ -73,6 +76,18 @@
             /* Apply the same margins as on graphical emoji. */
             margin: 1px 3px;
             font-size: 0.8em;
+            min-width: 0;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow-x: clip;
+        }
+
+        /* When the emoji name and the names of those who reacted are too
+           long to share a line, cut the names short first, by giving
+           them only the space the emoji name leaves. Only once there is
+           no space left for the names is the emoji name cut short. */
+        &:has(.emoji_alt_code) .message_reaction_count {
+            flex: 1 0 0;
         }
     }
 
@@ -89,6 +104,10 @@
            count/name.
            13px at 12.6/1em */
         line-height: 1.0317em;
+        min-width: 0;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow-x: clip;
     }
 
     .message_reaction:hover .message_reaction_count {

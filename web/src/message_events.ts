@@ -16,6 +16,7 @@ import * as drafts from "./drafts.ts";
 import * as echo from "./echo.ts";
 import type {RawLocalMessage} from "./echo.ts";
 import {Filter} from "./filter.ts";
+import * as left_sidebar_navigation_area from "./left_sidebar_navigation_area.ts";
 import * as lightbox from "./lightbox.ts";
 import * as message_edit from "./message_edit.ts";
 import * as message_edit_history from "./message_edit_history.ts";
@@ -1035,4 +1036,6 @@ export function remove_messages(message_ids: number[]): void {
     starred_messages.remove(message_ids);
     starred_messages_ui.rerender_ui();
     message_store.remove(message_ids);
+    // New reactions to a deleted message no longer count.
+    left_sidebar_navigation_area.update_my_reactions_row();
 }
