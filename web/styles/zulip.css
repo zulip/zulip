@@ -1229,9 +1229,18 @@ nav {
     position: sticky;
     top: var(--navbar-fixed-height);
     height: var(--header-padding-bottom);
-    /* Sticky recipient bars use z-index: 4. */
-    z-index: 5;
+    /* Below sticky recipient bars (z-index: 4), so that a bar pushed
+       out by the next one slides up under the navbar. */
+    z-index: 3;
     background-color: var(--color-background);
+
+    /* While the loading line shows, the gutter covers recipient bars
+       instead, so that a bar pushed out by the next one never slides
+       through the line. */
+    #main_div:has(> #top-of-feed-loading-indicator:is(.loading, .fade-out))
+        > & {
+        z-index: 5;
+    }
 }
 
 /* The loading line is centered in the space between the navbar and
