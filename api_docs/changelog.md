@@ -20,6 +20,18 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 13.0
 
+**Feature level 513**
+
+* [`POST /messages/render`](/api/render-message): Added the
+  `populate_url_embed_data` parameter, which requests that the server
+  populate URL embed data for the content's links: data it already has is
+  included in the rendered content, and the rest is fetched asynchronously
+  and delivered via the new `url_embed_data` event.
+* [`GET /events`](/api/get-events): Added a new `url_embed_data` event,
+  sent to a user when the server has fetched URL embed data for content
+  they asked it to render, so that a client displaying the rendered content
+  can live-update it.
+
 **Feature level 512**
 
 * The undocumented `PATCH /users/me/subscriptions` endpoint for
