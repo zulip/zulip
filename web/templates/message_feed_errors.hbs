@@ -15,8 +15,7 @@
             {{#if is_guest}}
                 {{#tr}}
                     End of results from
-                    <z-link>your message history</z-link>. Include messages in your channels
-                    sent when you weren't subscribed?
+                    <z-link>your message history</z-link>.
                     {{#*inline "z-link"}}<a href="/help/search-for-messages#search-shared-history"
                     target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
                 {{/tr}}
@@ -30,11 +29,13 @@
                 {{/tr}}
             {{/if}}
         </p>
-        <button
-          class="search-shared-history action-button action-button-subtle-neutral"
-          type="button">
-            {{t 'Expand search'}}
-        </button>
+        {{#unless is_guest}}
+            <button
+              class="search-shared-history action-button action-button-subtle-neutral"
+              type="button">
+                {{t 'Expand search'}}
+            </button>
+        {{/unless}}
     </div>
 </div>
 <div class="combined-feed-notice hidden-for-spectators">
