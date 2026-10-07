@@ -41,7 +41,7 @@ from zerver.models import (
     ScheduledMessage,
     UserProfile,
 )
-from zerver.models.users import is_cross_realm_bot_email
+from zerver.models.users import active_user_ids, is_cross_realm_bot_email
 
 
 class RealmUploadQuotaError(JsonableError):
@@ -151,14 +151,26 @@ def create_attachment(
     )
     maybe_thumbnail(file_vips_data, content_type, path_id, realm.id)
     from zerver.lib.event_types import Attachment as AttachmentData
-    from zerver.lib.event_types import AttachmentAddEvent
+    from zerver.lib.event_types import AttachmentAddEvent, RealmUpdateDictEvent, UploadQuotaUsedData
     from zerver.tornado.django_api import send_event_on_commit
 
+    upload_space_used = realm.currently_used_upload_space_bytes()
     event = AttachmentAddEvent(
         attachment=AttachmentData(**attachment.to_dict()),
-        upload_space_used=user_profile.realm.currently_used_upload_space_bytes(),
+        upload_space_used=upload_space_used,
     )
-    send_event_on_commit(user_profile.realm, event, [user_profile.id])
+    send_event_on_commit(realm, event, [user_profile.id])
+
+    # The event above describes one user's file, so it goes only to that
+    # user. The organization's total usage isn't private to them though,
+    # and clients use it to warn as the organization approaches its upload
+    # quota, so it needs to reach everyone.
+    if realm.upload_quota_bytes() is not None:
+        realm_update_event = RealmUpdateDictEvent(
+            property="default",
+            data=UploadQuotaUsedData(upload_quota_used_bytes=upload_space_used),
+        )
+        send_event_on_commit(realm, realm_update_event, active_user_ids(realm.id))
 
 
 def get_file_info(user_file: UploadedFile[bytes]) -> tuple[str, str]:

@@ -681,7 +681,6 @@ run_test("realm settings", ({override}) => {
     override(sidebar_ui, "update_invite_user_option", noop);
     override(gear_menu, "rerender", noop);
     override(narrow_title, "redraw_title", noop);
-    override(navbar_alerts, "toggle_organization_profile_incomplete_banner", noop);
     override(compose_recipient, "update_topic_inputbox_on_topics_policy_change", noop);
     override(compose_recipient, "update_compose_area_placeholder_text", noop);
 
@@ -775,6 +774,7 @@ run_test("realm settings", ({override}) => {
     override(realm, "realm_topics_policy", "allow_empty_topic");
     override(realm, "realm_plan_type", 2);
     override(realm, "realm_upload_quota_mib", 5000);
+    override(realm, "realm_upload_quota_used_bytes", 0);
     override(realm, "max_file_upload_size_mib", 10);
     override(realm, "server_supported_permission_settings", {
         realm: {
@@ -802,6 +802,7 @@ run_test("realm settings", ({override}) => {
     dispatch(event_fixtures.realm__update_dict__group_settings);
     dispatch(event_fixtures.realm__update_dict__plan_type);
     dispatch(event_fixtures.realm__update_dict__topics_policy);
+    dispatch(event_fixtures.realm__update_dict__upload_quota_used_bytes);
     assert_same(realm.realm_create_multiuse_invite_group, 3);
     assert_same(realm.realm_allow_message_editing, true);
     assert_same(realm.realm_message_content_edit_limit_seconds, 5);
@@ -820,6 +821,7 @@ run_test("realm settings", ({override}) => {
     assert_same(realm.realm_mandatory_topics, true);
     assert_same(realm.realm_plan_type, 3);
     assert_same(realm.realm_upload_quota_mib, 50000);
+    assert_same(realm.realm_upload_quota_used_bytes, 1234);
     assert_same(realm.max_file_upload_size_mib, 1024);
     assert_same(add_subscribers_element_updated, true);
 

@@ -5990,6 +5990,14 @@ paths:
                                         **Changes**: New in Zulip 10.0 (feature level 306). Previously,
                                         this was present changed via an `upload_quota` field in `extra_data` property
                                         of [realm/update](#realm-update) event format for `plan_type` events.
+                                    upload_quota_used_bytes:
+                                      type: integer
+                                      description: |
+                                        The total number of bytes now used for uploaded files in this
+                                        organization, sent when a file is uploaded or deleted in an
+                                        organization with an upload quota.
+
+                                        **Changes**: New in Zulip 13.0 (feature level ZF-592330).
                                     video_chat_provider:
                                       type: integer
                                       description: |
@@ -21647,6 +21655,23 @@ paths:
 
                           New in Zulip 5.0 (feature level 72). Previously,
                           this was called `realm_upload_quota`.
+                      realm_upload_quota_used_bytes:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The total number of bytes currently used for uploaded files
+                          in this organization.
+
+                          Clients can use this in combination with `realm_upload_quota_mib`
+                          to display upload quota usage to users.
+
+                          Not present if the organization has no upload quota (i.e.,
+                          `realm_upload_quota_mib` is `null`), or for unauthenticated
+                          access in realms that have enabled the
+                          [public access option](/help/public-access-option).
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-592330).
                       realm_org_type:
                         type: integer
                         description: |
