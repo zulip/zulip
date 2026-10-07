@@ -43,6 +43,107 @@ from zerver.views.errors import config_error
 
 use_prod_static = not settings.DEBUG
 
+# Every error page template, grouped by what the user can do next (each
+# group shares an illustration), so each can be viewed at
+# /errors/<slug>/ and together at /devtools/error_pages/. The context
+# fills in values that the real views compute per request.
+DEV_ERROR_PAGE_GROUPS: list[tuple[str, list[tuple[str, str, dict[str, object]]]]] = [
+    (
+        "Not found",
+        [
+            ("404", "404.html", {}),
+            ("link-does-not-exist", "confirmation/link_does_not_exist.html", {}),
+            ("link-malformed", "confirmation/link_malformed.html", {}),
+        ],
+    ),
+    (
+        "Expired",
+        [
+            ("link-expired", "confirmation/link_expired.html", {}),
+            (
+                "realm-creation-link-invalid",
+                "zerver/portico_error_pages/realm_creation_link_invalid.html",
+                {},
+            ),
+            ("user-deactivated", "zerver/portico_error_pages/user_deactivated.html", {}),
+        ],
+    ),
+    (
+        "No access",
+        [
+            ("403", "4xx.html", {"csrf_failure": True}),
+            ("auth-subdomain", "zerver/portico_error_pages/auth_subdomain.html", {}),
+            (
+                "realm-creation-disabled",
+                "zerver/portico_error_pages/realm_creation_disabled.html",
+                {},
+            ),
+            (
+                "demo-creation-disabled",
+                "zerver/portico_error_pages/demo_creation_disabled.html",
+                {},
+            ),
+        ],
+    ),
+    (
+        "Rate limit",
+        [
+            (
+                "rate-limit-exceeded",
+                "zerver/portico_error_pages/rate_limit_exceeded.html",
+                {"retry_after_string": "5 minutes"},
+            ),
+            (
+                "remote-server-rate-limit-exceeded",
+                "corporate/billing/remote_server_rate_limit_exceeded.html",
+                {"retry_after_string": "5 minutes"},
+            ),
+        ],
+    ),
+    (
+        "Update needed",
+        [
+            (
+                "unsupported-browser",
+                "zerver/portico_error_pages/unsupported_browser.html",
+                {"browser_name": "Internet Explorer"},
+            ),
+            (
+                "insecure-desktop-app",
+                "zerver/portico_error_pages/insecure_desktop_app.html",
+                {},
+            ),
+        ],
+    ),
+    (
+        "Server error",
+        [
+            ("5xx", "500.html", {}),
+            ("405", "4xx.html", {"status_code": 405}),
+        ],
+    ),
+    (
+        "Self-hosted",
+        [
+            (
+                "remote-realm-server-mismatch",
+                "zerver/portico_error_pages/remote_realm_server_mismatch_error.html",
+                {},
+            ),
+            (
+                "remote-realm-login-error",
+                "corporate/billing/remote_realm_login_error_for_server_on_active_plan.html",
+                {"server_plan_name": "Zulip Business"},
+            ),
+            (
+                "remote-server-login-error",
+                "corporate/billing/remote_server_login_error_for_any_realm_on_active_plan.html",
+                {},
+            ),
+        ],
+    ),
+]
+
 urls = [
     # Serve useful development environment resources (docs, coverage reports, etc.)
     path(
@@ -86,8 +187,23 @@ urls = [
         name="register_demo_dev_realm",
     ),
     # Have easy access for error pages
-    path("errors/404/", TemplateView.as_view(template_name="404.html")),
-    path("errors/5xx/", TemplateView.as_view(template_name="500.html")),
+    *(
+        path(f"errors/{slug}/", TemplateView.as_view(template_name=template, extra_context=context))
+        for _, pages in DEV_ERROR_PAGE_GROUPS
+        for slug, template, context in pages
+    ),
+    path(
+        "devtools/error_pages/",
+        TemplateView.as_view(
+            template_name="zerver/development/error_pages.html",
+            extra_context={
+                "error_page_groups": [
+                    (title, [slug for slug, _, _ in pages])
+                    for title, pages in DEV_ERROR_PAGE_GROUPS
+                ]
+            },
+        ),
+    ),
     # Add a convenient way to generate webhook messages from fixtures.
     path("devtools/integrations/", dev_panel),
     path(
