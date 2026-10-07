@@ -213,6 +213,21 @@ export const update_person = function update(event: UserUpdate): void {
 
     if ("custom_profile_field" in event) {
         people.set_custom_profile_field_data(event.user_id, event.custom_profile_field);
+
+        const field_id = event.custom_profile_field.id;
+        const field = realm.custom_profile_fields?.find((f) => f.id === field_id);
+        if (field?.type === realm.custom_profile_field_types.PHONE_NUMBER?.id) {
+            const new_value = event.custom_profile_field.value;
+            $(`.custom_user_field[data-field-id="${field_id}"] .phone_type_field`).each(function (
+                this: HTMLElement,
+            ) {
+                const $input = $(this);
+                if (!$input.is(":focus")) {
+                    $input.val(new_value ?? "");
+                }
+            });
+        }
+
         user_profile.update_user_custom_profile_fields(user);
         if (event.user_id === people.my_current_user_id()) {
             navbar_alerts.maybe_toggle_empty_required_profile_fields_banner();
