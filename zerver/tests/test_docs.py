@@ -305,6 +305,27 @@ class DocPageTest(ZulipTestCase):
     def test_error_endpoints(self) -> None:
         self._test("/errors/404/", ["Page not found"])
         self._test("/errors/5xx/", ["Internal server error"])
+        self._test("/errors/403/", ["Access forbidden (403)"])
+        self._test("/errors/rate-limit-exceeded/", ["Rate limit exceeded.", "5 minutes"])
+        self._test("/devtools/error_pages/", ["/errors/link-expired/"])
+        for slug in [
+            "405",
+            "auth-subdomain",
+            "demo-creation-disabled",
+            "insecure-desktop-app",
+            "link-does-not-exist",
+            "link-expired",
+            "link-malformed",
+            "realm-creation-disabled",
+            "realm-creation-link-invalid",
+            "remote-realm-login-error",
+            "remote-realm-server-mismatch",
+            "remote-server-login-error",
+            "remote-server-rate-limit-exceeded",
+            "unsupported-browser",
+            "user-deactivated",
+        ]:
+            self._test(f"/errors/{slug}/", [])
 
     def test_corporate_portico_endpoints(self) -> None:
         self._test("/team/", ["industry veterans"])
