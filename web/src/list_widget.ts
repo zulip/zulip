@@ -357,23 +357,24 @@ export function create<Key, Item = Key>(
         reduce_rendered_offset();
     }
 
+    // Callers update rows in list order, so the rows before this one are
+    // in place, which the next item's row may not be.
     function insert_row_at_index($row: JQuery, index: number): boolean {
         assert(opts.html_selector !== undefined);
-        if (index + 1 < meta.filtered_list.length) {
-            const $next_row = opts.html_selector(meta.filtered_list[index + 1]!);
-            if ($next_row.length > 0) {
-                $next_row.before($row);
-                return true;
-            }
+        if (meta.offset === 0) {
+            // The container may hold the empty-list message.
+            return false;
         }
-        if (index > 0) {
-            const $previous_row = opts.html_selector(meta.filtered_list[index - 1]!);
-            if ($previous_row.length > 0) {
-                $previous_row.after($row);
-                return true;
-            }
+        if (index === 0) {
+            $container.prepend($row);
+            return true;
         }
-        return false;
+        const $predecessor_row = opts.html_selector(meta.filtered_list[index - 1]!);
+        if ($predecessor_row.length === 0) {
+            return false;
+        }
+        $predecessor_row.after($row);
+        return true;
     }
 
     const widget: ListWidget<Key, Item> = {
@@ -669,9 +670,6 @@ export function create<Key, Item = Key>(
                     return;
                 }
                 const $row = $(opts.modifier_html(item, meta.filter_value));
-                // The new row has no rendered neighbor if no rows are
-                // rendered, or if its neighbors are new items the caller
-                // has not inserted yet; redraw instead.
                 if (insert_row_at_index($row, insert_index)) {
                     increase_rendered_offset();
                 } else {

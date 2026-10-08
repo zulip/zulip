@@ -186,8 +186,18 @@ function make_items(count) {
     return Array.from({length: count}, (_, i) => ({value: i + 1, key: i + 1}));
 }
 
+// Adds items with the given sort keys to the widget's list, as a caller
+// does before inserting their rows.
+function add_items(widget, list, keys) {
+    const items = keys.map((key, i) => ({value: list.length + i + 1, key}));
+    list.push(...items);
+    widget.replace_list_data(list, false);
+    widget.filter_and_sort();
+    return items;
+}
+
 // A widget over `list` with a stand-in for its DOM: `rows` holds the items
-// that have a row, in order, and refuses to render an item twice; `stats`
+// that have a row, in DOM order, and refuses to render an item twice; `stats`
 // counts the redraws that threw rendered rows away.
 function make_tracked_widget(list, opts = {}) {
     const rows = [];
@@ -198,6 +208,12 @@ function make_tracked_widget(list, opts = {}) {
             .map((match) => list[Number(match[1]) - 1])
             .toArray();
     }
+    function insert_items(index, $data) {
+        for (const [i, item] of items_in($data.html()).entries()) {
+            assert.ok(!rows.includes(item), `item ${item.value} was rendered twice`);
+            rows.splice(index + i, 0, item);
+        }
+    }
     function row(item) {
         return {
             get length() {
@@ -207,14 +223,18 @@ function make_tracked_widget(list, opts = {}) {
                 assert.ok(rows.includes(item), "row is not in the DOM");
                 rows.splice(rows.indexOf(item), 1);
             },
+            after($data) {
+                assert.ok(rows.includes(item), "row is not in the DOM");
+                insert_items(rows.indexOf(item) + 1, $data);
+            },
         };
     }
     const $container = make_container();
     $container.append = ($data) => {
-        for (const item of items_in($data.html())) {
-            assert.ok(!rows.includes(item), `item ${item.value} was rendered twice`);
-            rows.push(item);
-        }
+        insert_items(rows.length, $data);
+    };
+    $container.prepend = ($data) => {
+        insert_items(0, $data);
     };
     $container.empty = () => {
         if (rows.length > 0) {
@@ -1086,31 +1106,43 @@ run_test("render_item drops the row of an item moved past the rendered range", (
     assert.equal(rows.at(-1), moved);
 });
 
-run_test("insert_rendered_row falls back to a redraw without counting a row", () => {
+run_test("insert_rendered_row places a row after its predecessor's row", () => {
+    // Two new items sort first and are inserted in list order, like the
+    // new conversations of a bulk rerender in recent view. The first has
+    // no predecessor, and the second has no row yet when the first is
+    // placed.
     const list = make_items(100);
-    const {widget, rows, row, stats} = make_tracked_widget(list, {
+    const {widget, rows, stats} = make_tracked_widget(list, {
         filter: {predicate: () => true},
         init_sort: (a, b) => a.key - b.key,
     });
-    function add_to_list(...items) {
-        list.push(...items);
-        widget.replace_list_data(list, false);
-        widget.filter_and_sort();
+    const [first_new_item, second_new_item] = add_items(widget, list, [0.1, 0.2]);
+    for (const item of [first_new_item, second_new_item]) {
+        widget.insert_rendered_row(item, (items) => items.indexOf(item));
     }
+    assert.deepEqual(rows.slice(0, 3), [first_new_item, second_new_item, list[0]]);
+    assert.equal(rows.length, INITIAL_RENDER_COUNT + 2);
+    assert.deepEqual(widget.get_rendered_list(), rows);
+    assert.equal(stats.redraws, 0);
+});
+
+run_test("insert_rendered_row falls back to a redraw without counting a row", () => {
+    const list = make_items(100);
+    let hide_all = true;
+    const {widget, rows, row, stats} = make_tracked_widget(list, {
+        filter: {predicate: () => !hide_all},
+        init_sort: (a, b) => a.key - b.key,
+    });
     function insert(item) {
         widget.insert_rendered_row(item, (items) => items.indexOf(item));
     }
+    assert.equal(rows.length, 0);
 
-    // Two new items sort first, and are inserted in list order. The first
-    // one has no rendered neighbor: nothing comes before it, and the item
-    // after it is the second one, not inserted yet. The widget redraws,
-    // rendering both, and must not count the row it did not insert.
-    const first_new_item = {value: 101, key: 0.1};
-    const second_new_item = {value: 102, key: 0.2};
-    add_to_list(first_new_item, second_new_item);
-    insert(first_new_item);
-    assert.equal(stats.redraws, 1);
-    assert.deepEqual(rows.slice(0, 2), [first_new_item, second_new_item]);
+    // With no rows rendered, there is no row to place a new one next to.
+    // The widget redraws, and must not count the row it did not insert.
+    hide_all = false;
+    widget.filter_and_sort();
+    insert(list[0]);
     assert.equal(rows.length, INITIAL_RENDER_COUNT);
     assert.equal(widget.get_rendered_list().length, INITIAL_RENDER_COUNT);
 
@@ -1118,10 +1150,9 @@ run_test("insert_rendered_row falls back to a redraw without counting a row", ()
     widget.render(list.length);
     const neighbor = rows.at(-1);
     row(neighbor).remove();
-    const new_last_item = {value: 103, key: neighbor.key + 0.5};
-    add_to_list(new_last_item);
+    const [new_last_item] = add_items(widget, list, [neighbor.key + 0.5]);
     insert(new_last_item);
-    assert.equal(stats.redraws, 2);
+    assert.equal(stats.redraws, 1);
     assert.ok(!rows.includes(new_last_item));
     assert.equal(rows.length, INITIAL_RENDER_COUNT);
     assert.equal(widget.get_rendered_list().length, INITIAL_RENDER_COUNT);
