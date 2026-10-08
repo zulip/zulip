@@ -1,4 +1,5 @@
 import pathlib
+from datetime import timedelta
 from typing import Any
 from uuid import uuid4
 
@@ -14,8 +15,10 @@ from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE
 from zerver.lib.upload import get_upload_backend
 from zilencer.lib.communities_directory import (
+    REACHABILITY_WINDOW,
     get_remote_realms_asking_to_be_advertised,
     probe_remote_realms_for_communities_directory,
+    remote_realm_is_advertised,
 )
 from zilencer.models import RemoteRealm, RemoteZulipServer
 
@@ -230,6 +233,36 @@ class ProbeRemoteRealmsForCommunitiesDirectoryTest(ZulipTestCase):
                 self.assertFalse(
                     self.mirror_succeeds(body=read_test_image_file("img.png"), status=200)
                 )
+
+    def test_remote_realm_is_advertised(self) -> None:
+        # An organization we have reached and copied the icon of.
+        self.remote_realm.last_reachable_datetime = timezone_now()
+        self.remote_realm.save(update_fields=["last_reachable_datetime"])
+        self.assertTrue(remote_realm_is_advertised(self.remote_realm))
+
+        # Nothing is shown for an organization whose icon we do not have.
+        self.remote_realm.mirrored_icon_version = 0
+        self.assertFalse(remote_realm_is_advertised(self.remote_realm))
+        self.remote_realm.mirrored_icon_version = 1
+
+        self.remote_realm.description = ""
+        self.assertFalse(remote_realm_is_advertised(self.remote_realm))
+        self.remote_realm.description = "A place to talk about Zulip"
+
+        # An organization we have never reached is not advertised, so that
+        # the directory never links somewhere we have not checked.
+        self.remote_realm.last_reachable_datetime = None
+        self.assertFalse(remote_realm_is_advertised(self.remote_realm))
+
+        self.remote_realm.last_reachable_datetime = (
+            timezone_now() - REACHABILITY_WINDOW - timedelta(minutes=1)
+        )
+        self.assertFalse(remote_realm_is_advertised(self.remote_realm))
+
+        self.remote_realm.last_reachable_datetime = (
+            timezone_now() - REACHABILITY_WINDOW + timedelta(minutes=1)
+        )
+        self.assertTrue(remote_realm_is_advertised(self.remote_realm))
 
     def test_get_remote_realms_asking_to_be_advertised(self) -> None:
         self.assertEqual(list(get_remote_realms_asking_to_be_advertised()), [self.remote_realm])

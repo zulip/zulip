@@ -1,4 +1,5 @@
 import logging
+from datetime import timedelta
 from urllib.parse import urljoin
 
 import requests
@@ -13,6 +14,11 @@ from zerver.lib.upload import get_upload_backend
 from zilencer.models import RemoteRealm
 
 logger = logging.getLogger(__name__)
+
+# How long an organization keeps being advertised after the last time we
+# reached it. The job that probes runs daily, so this tolerates a server
+# being down for maintenance, or a probe failing once.
+REACHABILITY_WINDOW = timedelta(days=3)
 
 
 def get_remote_realms_asking_to_be_advertised() -> QuerySet[RemoteRealm]:
@@ -63,6 +69,32 @@ def is_remote_realm_reachable(remote_realm: RemoteRealm) -> bool:
         return False
 
     return True
+
+
+def remote_realm_is_advertised(remote_realm: RemoteRealm) -> bool:
+    """Whether the organization should appear in the communities directory.
+
+    Computed rather than stored, so that an organization which stops
+    meeting the criteria drops out on the next page load.
+    """
+    if not meets_communities_directory_base_criteria(
+        description=remote_realm.description,
+        invite_required=remote_realm.invite_required,
+        emails_restricted_to_domains=remote_realm.emails_restricted_to_domains,
+        has_web_public_streams=remote_realm.has_web_public_streams,
+        is_demo_organization=remote_realm.is_demo_organization,
+    ):
+        return False
+
+    if remote_realm.mirrored_icon_version == 0:
+        # The directory shows our own copy of the icon, so there is
+        # nothing to show until we have fetched one.
+        return False
+
+    return (
+        remote_realm.last_reachable_datetime is not None
+        and remote_realm.last_reachable_datetime > timezone_now() - REACHABILITY_WINDOW
+    )
 
 
 def mirror_remote_realm_icon(remote_realm: RemoteRealm) -> None:
