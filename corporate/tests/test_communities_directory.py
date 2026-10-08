@@ -380,6 +380,48 @@ class ProbeRemoteRealmsForCommunitiesDirectoryTest(ZulipTestCase):
         self.assertIsNotNone(self.remote_realm.last_reachable_datetime)
         self.assertEqual(self.remote_realm.mirrored_icon_version, 1)
 
+    @responses.activate
+    def test_posts_to_the_channel_when_the_icon_changes(self) -> None:
+        create_stream_if_needed(get_realm(settings.SYSTEM_BOT_REALM), MODERATION_CHANNEL_NAME)
+        responses.add(
+            responses.GET,
+            self.SERVER_SETTINGS_URL,
+            json={"zulip_version": "11.0", "realm_url": "https://community.example.com"},
+            status=200,
+        )
+        responses.add(
+            responses.GET, self.NEW_ICON_URL, body=read_test_image_file("img.jpg"), status=200
+        )
+        self.remote_realm.icon_url = self.NEW_ICON_URL
+        self.remote_realm.save(update_fields=["icon_url"])
+
+        with self.assertLogs(logger_string, level="INFO"):
+            check_remote_realms_active_for_communities_directory()
+
+        message = Message.objects.latest("id")
+        self.assertEqual(message.topic_name(), str(self.remote_realm.uuid))
+        self.assertEqual(
+            message.content,
+            f"[{self.remote_realm.name}](https://{self.remote_realm.host}) changed its icon."
+            f"\n\n[new icon](/user_avatars/remote_realms/{self.remote_realm.uuid}/icon.png"
+            "?version=2)",
+        )
+
+    @responses.activate
+    def test_a_first_copy_of_the_icon_is_not_announced_as_a_change(self) -> None:
+        admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
+        channel, _ = create_stream_if_needed(admin_realm, MODERATION_CHANNEL_NAME)
+        self.start_unadvertised()
+
+        with self.assertLogs(logger_string, level="INFO"):
+            check_remote_realms_active_for_communities_directory()
+
+        # Only the post announcing the listing, which already shows the icon.
+        self.assert_length(
+            Message.objects.filter(realm=admin_realm, recipient=channel.recipient), 1
+        )
+        self.assertIn("is now listed", Message.objects.latest("id").content)
+
     def test_get_remote_realms_asking_to_be_advertised(self) -> None:
         self.assertEqual(list(get_remote_realms_asking_to_be_advertised()), [self.remote_realm])
 
