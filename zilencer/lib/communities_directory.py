@@ -186,6 +186,16 @@ def post_remote_realm_listing_changed(
     )
 
 
+def post_remote_realm_icon_changed(remote_realm: RemoteRealm) -> None:
+    icon_url = get_upload_backend().get_remote_realm_icon_url(
+        str(remote_realm.uuid), remote_realm.mirrored_icon_version
+    )
+    post_communities_directory_moderation_message(
+        f"[{remote_realm.name}](https://{remote_realm.host}) changed its icon.\n\n"
+        f"![icon]({icon_url})",
+    )
+
+
 def probe_remote_realms_for_communities_directory() -> None:
     now = timezone_now()
     reached = []
@@ -211,7 +221,15 @@ def probe_remote_realms_for_communities_directory() -> None:
         if remote_realm.last_mirrored_icon_url != remote_realm.icon_url:
             # A failure here leaves the copy we already have in place,
             # stale icon is shown until next probe - which is acceptable.
+            previous_icon_version = remote_realm.mirrored_icon_version
             mirror_remote_realm_icon(remote_realm)
+            if (
+                remote_realm.mirrored_icon_version != previous_icon_version
+                # A first copy is shown by the post announcing the listing.
+                and previous_icon_version > 0
+                and remote_realm.first_advertised_datetime is not None
+            ):
+                post_remote_realm_icon_changed(remote_realm)
         if remote_realm.first_advertised_datetime is None and remote_realm_is_advertised(
             remote_realm
         ):
