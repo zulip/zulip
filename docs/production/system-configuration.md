@@ -86,6 +86,10 @@ Options passed by `upgrade-zulip` and `upgrade-zulip-from-git` into
   to run `zulip-puppet-apply` manually after the upgrade.
 - **`--skip-migrations`** skips running database migrations. The
   user will need to run `./manage.py migrate` manually after the upgrade.
+  If you run migrations while the server is running, set
+  `MIGRATIONS_ADD_REMOVE_INDEXES_CONCURRENTLY = True` in
+  `/etc/zulip/settings.py`, so that migrations adding or removing
+  indexes don't lock the table.
 - **`--skip-purge-old-deployments`** skips purging old deployments;
   without it, only deployments with the last two weeks are kept.
 
