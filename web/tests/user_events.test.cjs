@@ -65,6 +65,7 @@ buddy_list.buddy_list = buddy_data;
 
 mock_esm("../src/activity_ui", {
     redraw() {},
+    get_filter_text: () => "",
 });
 mock_esm("../src/settings", {
     update_lock_icon_in_sidebar() {},

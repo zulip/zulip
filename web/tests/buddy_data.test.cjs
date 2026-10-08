@@ -480,6 +480,7 @@ test("get_conversation_participants", () => {
         }),
     );
 
+    activity_ui.set_cursor_and_filter();
     activity_ui.rerender_user_sidebar_participants();
     assert.deepEqual(
         buddy_data.get_conversation_participants_callback()(),
