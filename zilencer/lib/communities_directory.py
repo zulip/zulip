@@ -8,9 +8,14 @@ from django.db.models import QuerySet
 from django.utils.timezone import now as timezone_now
 
 from corporate.lib.communities_directory import meets_communities_directory_base_criteria
+from zerver.actions.message_send import internal_send_stream_message
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.thumbnail import BadImageError
 from zerver.lib.upload import get_upload_backend
+from zerver.models import Stream
+from zerver.models.realms import get_realm
+from zerver.models.streams import get_stream
+from zerver.models.users import get_system_bot
 from zilencer.models import RemoteRealm
 
 logger = logging.getLogger(__name__)
@@ -19,6 +24,9 @@ logger = logging.getLogger(__name__)
 # reached it. The job that probes runs daily, so this tolerates a server
 # being down for maintenance, or a probe failing once.
 REACHABILITY_WINDOW = timedelta(days=3)
+
+MODERATION_CHANNEL_NAME = "signups"
+MODERATION_TOPIC_NAME = "communities directory"
 
 
 def get_remote_realms_asking_to_be_advertised() -> QuerySet[RemoteRealm]:
@@ -135,6 +143,32 @@ def mirror_remote_realm_icon(remote_realm: RemoteRealm) -> None:
     remote_realm.mirrored_icon_version += 1
 
 
+def post_communities_directory_moderation_message(message: str) -> None:
+    """Post to the channel staff watch, so that a human sees what the
+    directory has started showing, or what an organization changed it to.
+    """
+    admin_realm = get_realm(settings.SYSTEM_BOT_REALM)
+    sender = get_system_bot(settings.NOTIFICATION_BOT, admin_realm.id)
+    try:
+        channel = get_stream(MODERATION_CHANNEL_NAME, admin_realm)
+    except Stream.DoesNotExist:
+        logger.error("No channel named %s to post to", MODERATION_CHANNEL_NAME)
+        return
+
+    internal_send_stream_message(sender, channel, MODERATION_TOPIC_NAME, message)
+
+
+def post_remote_realm_first_advertised(remote_realm: RemoteRealm) -> None:
+    icon_url = get_upload_backend().get_remote_realm_icon_url(
+        str(remote_realm.uuid), remote_realm.mirrored_icon_version
+    )
+    post_communities_directory_moderation_message(
+        f"[{remote_realm.name}](https://{remote_realm.host}) is now listed.\n\n"
+        f"{remote_realm.description}\n\n"
+        f"![icon]({icon_url})",
+    )
+
+
 def probe_remote_realms_for_communities_directory() -> None:
     now = timezone_now()
     reached = []
@@ -161,10 +195,20 @@ def probe_remote_realms_for_communities_directory() -> None:
             # A failure here leaves the copy we already have in place,
             # stale icon is shown until next probe - which is acceptable.
             mirror_remote_realm_icon(remote_realm)
+        if remote_realm.first_advertised_datetime is None and remote_realm_is_advertised(
+            remote_realm
+        ):
+            remote_realm.first_advertised_datetime = now
+            post_remote_realm_first_advertised(remote_realm)
         reached.append(remote_realm)
 
     RemoteRealm.objects.bulk_update(
         reached,
-        ["last_reachable_datetime", "last_mirrored_icon_url", "mirrored_icon_version"],
+        [
+            "last_reachable_datetime",
+            "last_mirrored_icon_url",
+            "mirrored_icon_version",
+            "first_advertised_datetime",
+        ],
     )
     logger.info("Probed %d organizations, reached %d", probed_count, len(reached))

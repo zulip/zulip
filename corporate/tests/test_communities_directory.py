@@ -10,11 +10,15 @@ from django.utils.timezone import now as timezone_now
 from requests.exceptions import ConnectionError
 from typing_extensions import override
 
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE
 from zerver.lib.upload import get_upload_backend
+from zerver.models import Message
+from zerver.models.realms import get_realm
 from zilencer.lib.communities_directory import (
+    MODERATION_TOPIC_NAME,
     REACHABILITY_WINDOW,
     get_remote_realms_asking_to_be_advertised,
     probe_remote_realms_for_communities_directory,
@@ -49,9 +53,10 @@ class ProbeRemoteRealmsForCommunitiesDirectoryTest(ZulipTestCase):
             description="A place to talk about Zulip",
             invite_required=False,
             icon_url=self.ICON_URL,
-            # An organization whose icon we have already copied.
+            # An organization already listed, whose icon we have copied.
             last_mirrored_icon_url=self.ICON_URL,
             mirrored_icon_version=1,
+            first_advertised_datetime=timezone_now(),
         )
 
     def recorded_as_reachable(self, **response_kwargs: Any) -> bool:
@@ -263,6 +268,63 @@ class ProbeRemoteRealmsForCommunitiesDirectoryTest(ZulipTestCase):
             timezone_now() - REACHABILITY_WINDOW + timedelta(minutes=1)
         )
         self.assertTrue(remote_realm_is_advertised(self.remote_realm))
+
+    def start_unadvertised(self) -> None:
+        self.remote_realm.mirrored_icon_version = 0
+        self.remote_realm.last_mirrored_icon_url = ""
+        self.remote_realm.first_advertised_datetime = None
+        self.remote_realm.save(
+            update_fields=[
+                "mirrored_icon_version",
+                "last_mirrored_icon_url",
+                "first_advertised_datetime",
+            ]
+        )
+        responses.add(
+            responses.GET, self.SERVER_SETTINGS_URL, json={"zulip_version": "11.0"}, status=200
+        )
+        responses.add(
+            responses.GET, self.ICON_URL, body=read_test_image_file("img.jpg"), status=200
+        )
+
+    @responses.activate
+    def test_posts_to_the_channel_when_first_advertised(self) -> None:
+        create_stream_if_needed(get_realm(settings.SYSTEM_BOT_REALM), "signups")
+        self.start_unadvertised()
+
+        with self.assertLogs(logger_string, level="INFO"):
+            probe_remote_realms_for_communities_directory()
+
+        self.remote_realm.refresh_from_db()
+        self.assertIsNotNone(self.remote_realm.first_advertised_datetime)
+
+        message = Message.objects.latest("id")
+        self.assertEqual(message.topic_name(), MODERATION_TOPIC_NAME)
+        self.assertEqual(
+            message.content,
+            f"[{self.remote_realm.name}](https://{self.remote_realm.host}) is now listed.\n\n"
+            f"{self.remote_realm.description}\n\n"
+            f"![icon](/user_avatars/remote_realms/{self.remote_realm.uuid}/icon.png?version=1)",
+        )
+
+        # A later pass does not announce the same organization again.
+        with self.assertLogs(logger_string, level="INFO"):
+            probe_remote_realms_for_communities_directory()
+
+        self.assertEqual(Message.objects.latest("id").id, message.id)
+
+    @responses.activate
+    def test_missing_moderation_channel_does_not_abort_the_probe(self) -> None:
+        self.start_unadvertised()
+
+        with self.assertLogs(logger_string, level="INFO") as m:
+            probe_remote_realms_for_communities_directory()
+
+        self.assertIn(f"ERROR:{logger_string}:No channel named signups to post to", m.output)
+        # The pass still recorded what it learned.
+        self.remote_realm.refresh_from_db()
+        self.assertIsNotNone(self.remote_realm.last_reachable_datetime)
+        self.assertEqual(self.remote_realm.mirrored_icon_version, 1)
 
     def test_get_remote_realms_asking_to_be_advertised(self) -> None:
         self.assertEqual(list(get_remote_realms_asking_to_be_advertised()), [self.remote_realm])
