@@ -523,6 +523,7 @@ const new_stream_group_setting_widget_map = new Map<string, GroupSettingPillCont
     ["can_move_messages_within_channel_group", null],
     ["can_remove_subscribers_group", null],
     ["can_resolve_topics_group", null],
+    ["can_mention_many_users_group", null],
     ["can_send_message_group", null],
 ]);
 

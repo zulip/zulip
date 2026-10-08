@@ -380,6 +380,36 @@ test_ui("test_stream_wildcard_mention_allowed", ({override}) => {
 
     override(current_user, "user_id", bob.user_id);
     assert.ok(compose_validate.stream_wildcard_mention_allowed());
+
+    // Channel-level permission tests.
+    // Case D: Mock stream without can_mention_many_users_group should not crash and should fall back to realm setting.
+    override(realm, "realm_can_mention_many_users_group", nobody.id);
+    override(current_user, "user_id", alice.user_id);
+    assert.equal(large_stream.can_mention_many_users_group, undefined);
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
+
+    // Case B: Realm permission denies (nobody), but channel permission allows (members).
+    large_stream.can_mention_many_users_group = members.id;
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
+
+    // Guest is not in members group, so denied by channel setting.
+    override(current_user, "user_id", guest.user_id);
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
+
+    // Case C: Realm permission denies (nobody), channel permission allows only admins.
+    large_stream.can_mention_many_users_group = admin.id;
+    override(current_user, "user_id", alice.user_id);
+    assert.ok(!compose_validate.stream_wildcard_mention_allowed());
+
+    // Bob is an admin, so allowed by channel setting.
+    override(current_user, "user_id", bob.user_id);
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
+
+    // Case A: Realm permission allows (everyone), overriding a restrictive channel setting (nobody).
+    override(realm, "realm_can_mention_many_users_group", everyone.id);
+    large_stream.can_mention_many_users_group = nobody.id;
+    override(current_user, "user_id", guest.user_id);
+    assert.ok(compose_validate.stream_wildcard_mention_allowed());
 });
 
 test_ui("validate_stream_message", ({override, mock_template}) => {

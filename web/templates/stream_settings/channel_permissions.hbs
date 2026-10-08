@@ -80,6 +80,12 @@
         </select>
         {{> topics_already_exist_error .}}
     </div>
+
+    {{> ../settings/group_setting_value_pill_input
+      setting_name="can_mention_many_users_group"
+      label=group_setting_labels.can_mention_many_users_group
+      prefix=prefix
+      help_link="/help/restrict-wildcard-mentions" }}
 </div>
 
 <div id="channel-moderation-permissions" class="settings-subsection-parent">

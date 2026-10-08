@@ -94,6 +94,7 @@ export const stream_group_setting_name_schema = z.enum([
     "can_send_message_group",
     "can_subscribe_group",
     "can_resolve_topics_group",
+    "can_mention_many_users_group",
 ]);
 export type StreamGroupSettingName = z.infer<typeof stream_group_setting_name_schema>;
 

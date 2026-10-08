@@ -804,20 +804,36 @@ function is_recipient_large_topic(): boolean {
     return topic_participant_count_more_than_threshold(stream_id, compose_state.topic());
 }
 
-function user_can_mention_many_users(): boolean {
-    return settings_data.user_has_permission_for_group_setting(
-        realm.realm_can_mention_many_users_group,
-        "can_mention_many_users_group",
-        "realm",
-    );
+function user_can_mention_many_users(sub?: StreamSubscription): boolean {
+    if (
+        settings_data.user_has_permission_for_group_setting(
+            realm.realm_can_mention_many_users_group,
+            "can_mention_many_users_group",
+            "realm",
+        )
+    ) {
+        return true;
+    }
+    if (sub?.can_mention_many_users_group !== undefined) {
+        return settings_data.user_has_permission_for_group_setting(
+            sub.can_mention_many_users_group,
+            "can_mention_many_users_group",
+            "stream",
+        );
+    }
+    return false;
 }
 
 export function stream_wildcard_mention_allowed(): boolean {
-    return !is_recipient_large_stream() || user_can_mention_many_users();
+    const stream_id = compose_state.stream_id();
+    const sub = stream_id !== undefined ? stream_data.get_sub_by_id(stream_id) : undefined;
+    return !is_recipient_large_stream() || user_can_mention_many_users(sub);
 }
 
 export function topic_wildcard_mention_allowed(): boolean {
-    return !is_recipient_large_topic() || user_can_mention_many_users();
+    const stream_id = compose_state.stream_id();
+    const sub = stream_id !== undefined ? stream_data.get_sub_by_id(stream_id) : undefined;
+    return !is_recipient_large_topic() || user_can_mention_many_users(sub);
 }
 
 export function set_wildcard_mention_threshold(value: number): void {
@@ -831,7 +847,8 @@ export function validate_stream_message_mentions(opts: StreamWildcardOptions): b
     // stream, check if they permission to do so. If yes, warn them
     // if they haven't acknowledged the wildcard warning yet.
     if (opts.stream_wildcard_mention !== null && subscriber_count > wildcard_mention_threshold) {
-        if (!user_can_mention_many_users()) {
+        const sub = stream_data.get_sub_by_id(opts.stream_id);
+        if (!user_can_mention_many_users(sub)) {
             const new_row_html = render_wildcard_mention_not_allowed_error({
                 banner_type: compose_banner.ERROR,
                 classname: compose_banner.CLASSNAMES.wildcards_not_allowed,
