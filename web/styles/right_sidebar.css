@@ -344,6 +344,10 @@
     }
 }
 
+.user_sidebar_entry.unsubscribed-participant .user-name {
+    font-style: italic;
+}
+
 .user_sidebar_entry .selectable_sidebar_block {
     grid-area: row-content;
     display: grid;
