@@ -2479,6 +2479,198 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_stream_wildcard_mention_message("shiva", test_fails=True)
         self.send_and_verify_stream_wildcard_mention_message("shiva", sub_count=10)
 
+    def test_channel_level_stream_wildcard_mention_restrictions(self) -> None:
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        polonius = self.example_user("polonius")
+        shiva = self.example_user("shiva")
+        hamlet = self.example_user("hamlet")
+        realm = cordelia.realm
+
+        stream_name = "test_stream"
+        stream = self.subscribe(cordelia, stream_name)
+        self.subscribe(iago, stream_name)
+        self.subscribe(polonius, stream_name)
+        self.subscribe(shiva, stream_name)
+        self.subscribe(hamlet, stream_name)
+
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
+        )
+        administrators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.ADMINISTRATORS, realm_for_sharding=realm, is_system_group=True
+        )
+        everyone_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
+        )
+
+        # Set realm-level setting to NOBODY so only channel setting or small subscriber count applies.
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_mention_many_users_group",
+            nobody_system_group,
+            acting_user=None,
+        )
+
+        # Default channel setting is NOBODY.
+        self.assertEqual(
+            stream.can_mention_many_users_group.named_user_group.name, SystemGroups.NOBODY
+        )
+        self.send_and_verify_stream_wildcard_mention_message("cordelia", test_fails=True)
+        # Small channel (<= 15 subscribers) has no restriction.
+        self.send_and_verify_stream_wildcard_mention_message("cordelia", sub_count=10)
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_mention_many_users_group",
+            everyone_system_group,
+            acting_user=cordelia,
+        )
+        self.send_and_verify_stream_wildcard_mention_message("polonius")
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_mention_many_users_group",
+            members_system_group,
+            acting_user=cordelia,
+        )
+        self.send_and_verify_stream_wildcard_mention_message("polonius", test_fails=True)
+        self.send_and_verify_stream_wildcard_mention_message("polonius", sub_count=10)
+        self.send_and_verify_stream_wildcard_mention_message("cordelia")
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_mention_many_users_group",
+            moderators_system_group,
+            acting_user=cordelia,
+        )
+        self.send_and_verify_stream_wildcard_mention_message("cordelia", test_fails=True)
+        self.send_and_verify_stream_wildcard_mention_message("cordelia", sub_count=10)
+        self.send_and_verify_stream_wildcard_mention_message("shiva")
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_mention_many_users_group",
+            administrators_system_group,
+            acting_user=cordelia,
+        )
+        self.send_and_verify_stream_wildcard_mention_message("shiva", test_fails=True)
+        self.send_and_verify_stream_wildcard_mention_message("shiva", sub_count=10)
+        self.send_and_verify_stream_wildcard_mention_message("iago")
+
+        # Test user-defined group.
+        user_group = check_add_user_group(
+            realm, "channel_mention_group", [hamlet, cordelia], acting_user=hamlet
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_mention_many_users_group", user_group, acting_user=cordelia
+        )
+        self.send_and_verify_stream_wildcard_mention_message("hamlet")
+        self.send_and_verify_stream_wildcard_mention_message("cordelia")
+        self.send_and_verify_stream_wildcard_mention_message("iago", test_fails=True)
+        self.send_and_verify_stream_wildcard_mention_message("iago", sub_count=10)
+
+    def test_channel_level_topic_wildcard_mention_restrictions(self) -> None:
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        polonius = self.example_user("polonius")
+        hamlet = self.example_user("hamlet")
+        realm = cordelia.realm
+
+        stream_name = "test_stream"
+        stream = self.subscribe(cordelia, stream_name)
+        self.subscribe(iago, stream_name)
+        self.subscribe(polonius, stream_name)
+        self.subscribe(hamlet, stream_name)
+
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+        everyone_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.EVERYONE, realm_for_sharding=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_mention_many_users_group",
+            nobody_system_group,
+            acting_user=None,
+        )
+
+        self.send_and_verify_topic_wildcard_mention_message("cordelia", test_fails=True)
+        # Less than threshold participants
+        self.send_and_verify_topic_wildcard_mention_message("cordelia", topic_participant_count=10)
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_mention_many_users_group",
+            everyone_system_group,
+            acting_user=cordelia,
+        )
+        self.send_and_verify_topic_wildcard_mention_message("polonius")
+
+        do_change_stream_group_based_setting(
+            stream,
+            "can_mention_many_users_group",
+            members_system_group,
+            acting_user=cordelia,
+        )
+        self.send_and_verify_topic_wildcard_mention_message("polonius", test_fails=True)
+        self.send_and_verify_topic_wildcard_mention_message("cordelia")
+
+    def test_channel_level_wildcard_mention_additive(self) -> None:
+        cordelia = self.example_user("cordelia")
+        iago = self.example_user("iago")
+        shiva = self.example_user("shiva")
+        hamlet = self.example_user("hamlet")
+        realm = cordelia.realm
+
+        stream_name = "test_stream"
+        stream = self.subscribe(cordelia, stream_name)
+        self.subscribe(iago, stream_name)
+        self.subscribe(shiva, stream_name)
+        self.subscribe(hamlet, stream_name)
+
+        moderators_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MODERATORS, realm_for_sharding=realm, is_system_group=True
+        )
+        # Realm allows moderators (and admins).
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_mention_many_users_group",
+            moderators_system_group,
+            acting_user=None,
+        )
+
+        # Channel allows Hamlet (who is just a normal member).
+        user_group = check_add_user_group(
+            realm, "channel_hamlet_group", [hamlet], acting_user=hamlet
+        )
+        do_change_stream_group_based_setting(
+            stream, "can_mention_many_users_group", user_group, acting_user=cordelia
+        )
+
+        # Shiva (moderator) is allowed by realm setting.
+        self.send_and_verify_stream_wildcard_mention_message("shiva")
+        self.send_and_verify_topic_wildcard_mention_message("shiva")
+
+        # Hamlet is allowed by channel setting.
+        self.send_and_verify_stream_wildcard_mention_message("hamlet")
+        self.send_and_verify_topic_wildcard_mention_message("hamlet")
+
+        # Cordelia (regular member, neither in moderator nor in channel group) is disallowed.
+        self.send_and_verify_stream_wildcard_mention_message("cordelia", test_fails=True)
+        self.send_and_verify_topic_wildcard_mention_message("cordelia", test_fails=True)
+
     def test_topic_wildcard_mentioned_flag(self) -> None:
         # For topic wildcard mentions, the 'topic_wildcard_mentioned' flag should be
         # set for all the user messages for topic participants, irrespective of

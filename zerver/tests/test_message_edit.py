@@ -2182,6 +2182,143 @@ class EditMessageTest(ZulipTestCase):
             )
         self.assert_json_success(result)
 
+    def test_channel_level_stream_wildcard_mention(self) -> None:
+        stream_name = "test_stream"
+        cordelia = self.example_user("cordelia")
+        polonius = self.example_user("polonius")
+        realm = cordelia.realm
+
+        stream = self.subscribe(cordelia, stream_name)
+        self.subscribe(polonius, stream_name)
+
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_mention_many_users_group",
+            nobody_system_group,
+            acting_user=None,
+        )
+
+        self.login("cordelia")
+        message_id = self.send_stream_message(cordelia, stream_name, "Hello everyone")
+
+        # By default channel setting is nobody, so cordelia cannot wildcard mention on a large channel.
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {
+                    "content": "Hello @**everyone**",
+                },
+            )
+        self.assert_json_error(
+            result, "You do not have permission to use channel wildcard mentions in this channel."
+        )
+
+        # But cordelia can on a small channel (<= 15 subscribers).
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=14):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {
+                    "content": "Hello @**everyone**",
+                },
+            )
+        self.assert_json_success(result)
+
+        # Grant members permission on the channel.
+        do_change_stream_group_based_setting(
+            stream,
+            "can_mention_many_users_group",
+            members_system_group,
+            acting_user=cordelia,
+        )
+
+        # Now cordelia (member) can edit to add wildcard mention on large channel.
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {
+                    "content": "Hello again @**everyone**",
+                },
+            )
+        self.assert_json_success(result)
+
+        # Polonius (guest) cannot.
+        self.login("polonius")
+        polonius_msg_id = self.send_stream_message(polonius, stream_name, "Hello from guest")
+        with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=17):
+            result = self.client_patch(
+                "/json/messages/" + str(polonius_msg_id),
+                {
+                    "content": "Hello @**everyone** from guest",
+                },
+            )
+        self.assert_json_error(
+            result, "You do not have permission to use channel wildcard mentions in this channel."
+        )
+
+    def test_channel_level_topic_wildcard_mention(self) -> None:
+        stream_name = "test_stream"
+        cordelia = self.example_user("cordelia")
+        realm = cordelia.realm
+
+        stream = self.subscribe(cordelia, stream_name)
+
+        nobody_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
+        )
+        members_system_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+
+        do_change_realm_permission_group_setting(
+            realm,
+            "can_mention_many_users_group",
+            nobody_system_group,
+            acting_user=None,
+        )
+
+        self.login("cordelia")
+        message_id = self.send_stream_message(cordelia, stream_name, "Hello topic")
+
+        participants_user_ids = set(range(1, 20))
+        with mock.patch(
+            "zerver.actions.message_edit.participants_for_topic", return_value=participants_user_ids
+        ):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {
+                    "content": "Hello @**topic**",
+                },
+            )
+        self.assert_json_error(
+            result, "You do not have permission to use topic wildcard mentions in this topic."
+        )
+
+        # Allow members on the channel.
+        do_change_stream_group_based_setting(
+            stream,
+            "can_mention_many_users_group",
+            members_system_group,
+            acting_user=cordelia,
+        )
+
+        with mock.patch(
+            "zerver.actions.message_edit.participants_for_topic", return_value=participants_user_ids
+        ):
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                {
+                    "content": "Hello @**topic**",
+                },
+            )
+        self.assert_json_success(result)
+
     def test_user_group_mentions_via_subgroup_when_editing(self) -> None:
         user_profile = self.example_user("iago")
         self.login("hamlet")
