@@ -86,13 +86,7 @@ export function redraw_user(user_id: number): void {
         return;
     }
 
-    const filter_text = get_filter_text();
-
-    if (!buddy_data.matches_filter(filter_text, user_id)) {
-        return;
-    }
-
-    buddy_list.insert_or_move([user_id]);
+    buddy_list.insert_or_move([user_id], get_filter_text());
     buddy_list_presence.update_indicators();
 }
 
@@ -101,7 +95,7 @@ export function rerender_user_sidebar_participants(): void {
         return;
     }
 
-    buddy_list.rerender_participants();
+    buddy_list.rerender_participants(get_filter_text());
 }
 
 export function check_should_redraw_new_user(user_id: number): boolean {

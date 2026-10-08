@@ -1094,7 +1094,7 @@ export class BuddyList extends BuddyListConf {
         this.update_padding();
     }
 
-    insert_or_move(user_ids: number[]): void {
+    insert_or_move(user_ids: number[], user_filter_text: string): void {
         // TODO: Further optimize this function by clubbing DOM updates from
         // multiple insertions/movements into a single update.
 
@@ -1104,6 +1104,10 @@ export class BuddyList extends BuddyListConf {
             const user_id = user.user_id;
 
             this.maybe_remove_user_id({user_id});
+
+            if (!buddy_data.matches_filter(user_filter_text, user_id)) {
+                continue;
+            }
 
             const new_pos_in_all_users = this.find_position({
                 user_id,
@@ -1155,7 +1159,7 @@ export class BuddyList extends BuddyListConf {
         background_task.run_async_function_without_await(this.render_section_headers.bind(this));
     }
 
-    rerender_participants(): void {
+    rerender_participants(user_filter_text: string): void {
         if (page_params.is_spectator) {
             return;
         }
@@ -1166,7 +1170,10 @@ export class BuddyList extends BuddyListConf {
         // We are just moving the users around since we still want to show the
         // user in buddy list regardless of if they are a participant, so we
         // call `insert_or_move` on both removed and added users.
-        this.insert_or_move([...existing_participant_ids.symmetricDifference(all_participant_ids)]);
+        this.insert_or_move(
+            [...existing_participant_ids.symmetricDifference(all_participant_ids)],
+            user_filter_text,
+        );
     }
 
     fill_screen_with_content(): void {
