@@ -15,7 +15,20 @@ _Unreleased_
 
 ### Upgrade notes for 13.0
 
-- None yet.
+- Migrations that add or remove indexes on large database tables no
+  longer use PostgreSQL's `CONCURRENTLY` option by default. This
+  allows them to run in a transaction, so that an interrupted
+  migration is rolled back cleanly, but blocks writes to the table
+  (and reads, when removing an index) while they run. That is not a
+  problem for the standard [upgrade
+  process](../production/upgrade.md#what-to-expect-during-an-upgrade),
+  which stops the server before running migrations. If you instead
+  run migrations while your server is running, set
+  `MIGRATIONS_ADD_REMOVE_INDEXES_CONCURRENTLY = True` in
+  `/etc/zulip/settings.py` before upgrading. This release's
+  `0808_message_topic_indexes_nulls_first` migration builds four
+  indexes on the message table, so its runtime scales with the
+  number of messages on your server.
 
 ## Zulip Server 12.x series
 
