@@ -157,6 +157,7 @@ import {insertTextIntoField} from "text-field-edit";
 import getCaretCoordinates from "textarea-caret";
 import * as tippy from "tippy.js";
 
+import * as message_viewport from "./message_viewport.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {get_string_diff, the} from "./util.ts";
@@ -273,6 +274,7 @@ export class Typeahead<ItemType extends string | object> {
     // Used for adding a custom classname to the typeahead link.
     getCustomItemClassname: ((item: ItemType) => string) | undefined;
     boundScrollHandler: () => void;
+    suppressScrollHide = false;
 
     constructor(input_element: TypeaheadInputElement, options: TypeaheadOptions<ItemType>) {
         this.input_element = input_element;
@@ -383,12 +385,60 @@ export class Typeahead<ItemType extends string | object> {
             return this;
         }
 
+        if (this.input_element.type === "textarea") {
+            const element = the(this.input_element.$element);
+
+            // Only apply this to message-edit textareas.
+            if (element.closest("#compose") === null) {
+                const caret = getCaretCoordinates(element, element.selectionStart);
+                const element_rect = element.getBoundingClientRect();
+
+                const caret_top = element_rect.top + caret.top - element.scrollTop;
+                const caret_bottom = caret_top + caret.height;
+
+                const {visible_top, visible_bottom} = message_viewport.message_viewport_info();
+
+                const padding = 12;
+                let scroll_adjustment = 0;
+
+                if (caret_top < visible_top + padding) {
+                    scroll_adjustment = caret_top - visible_top - padding;
+                } else if (caret_bottom > visible_bottom - padding) {
+                    scroll_adjustment = caret_bottom - visible_bottom + padding;
+                }
+
+                if (scroll_adjustment !== 0) {
+                    this.suppressScrollHide = true;
+
+                    message_viewport.scrollTop(message_viewport.scrollTop() + scroll_adjustment);
+
+                    requestAnimationFrame(() => {
+                        this.suppressScrollHide = false;
+                    });
+                }
+            }
+        }
+
         // Call this early to avoid duplicate calls.
         this.shown = true;
         this.mouse_moved_since_typeahead = false;
 
         const input_element = this.input_element;
         if (!this.non_tippy_parent_element) {
+            const is_message_edit =
+                input_element.type === "textarea" &&
+                the(input_element.$element).closest("#compose") === null;
+
+            const {visible_top, visible_bottom} = is_message_edit
+                ? message_viewport.message_viewport_info()
+                : {visible_top: 0, visible_bottom: window.innerHeight};
+
+            const safe_padding = {
+                top: visible_top,
+                bottom: Math.max(0, window.innerHeight - visible_bottom),
+                left: 0,
+                right: 0,
+            };
             this.instance = tippy.default(the(input_element.$element), {
                 // Lets typeahead take the width needed to fit the content
                 // and wraps it if it overflows the visible container.
@@ -400,21 +450,19 @@ export class Typeahead<ItemType extends string | object> {
                     strategy: "fixed",
                     modifiers: [
                         {
-                            // This will only work if there is enough space on the fallback
-                            // placement, otherwise `preventOverflow` will be used to position
-                            // it in the visible space.
                             name: "flip",
                             options: {
                                 fallbackPlacements: ["top-start", "bottom-start"],
+                                rootBoundary: "viewport",
+                                padding: safe_padding,
                             },
                         },
                         {
                             name: "preventOverflow",
                             options: {
-                                // This seems required to prevent overflow, maybe because our
-                                // placements are not the usual top, bottom, left, right.
-                                // https://popper.js.org/docs/v2/modifiers/prevent-overflow/#altaxis
                                 altAxis: true,
+                                rootBoundary: "viewport",
+                                padding: safe_padding,
                             },
                         },
                     ],
@@ -585,6 +633,7 @@ export class Typeahead<ItemType extends string | object> {
             return this.show();
         }
 
+        void this.instance?.popperInstance?.update();
         return this;
     }
 
@@ -715,9 +764,16 @@ export class Typeahead<ItemType extends string | object> {
     }
 
     scrollHandler(): void {
-        if (this.shown) {
-            this.hide();
+        if (!this.shown) {
+            return;
         }
+
+        if (this.suppressScrollHide) {
+            void this.instance?.popperInstance?.update();
+            return;
+        }
+
+        this.hide();
     }
 
     resizeHandler(): void {
