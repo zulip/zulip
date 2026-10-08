@@ -2972,6 +2972,38 @@ class StreamAdminTest(ZulipTestCase):
         with self.assertRaises(Message.DoesNotExist):
             Message.objects.get(recipient__type_id=stream.id)
 
+    def test_can_mention_many_users_group(self) -> None:
+        desdemona = self.example_user("desdemona")
+        realm = desdemona.realm
+        self.login_user(desdemona)
+
+        stream = self.make_stream("stream_wildcard_mention", realm=realm)
+        self.subscribe(desdemona, "stream_wildcard_mention")
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=realm, is_system_group=True
+        )
+        members_group = NamedUserGroup.objects.get(
+            name=SystemGroups.MEMBERS, realm_for_sharding=realm, is_system_group=True
+        )
+
+        self.assertEqual(stream.can_mention_many_users_group_id, nobody_group.id)
+
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.client_patch(
+                f"/json/streams/{stream.id}",
+                {"can_mention_many_users_group": orjson.dumps({"new": members_group.id}).decode()},
+            )
+        self.assert_json_success(result)
+        stream = get_stream("stream_wildcard_mention", realm)
+        self.assertEqual(stream.can_mention_many_users_group_id, members_group.id)
+
+        event = events[0]["event"]
+        self.assertEqual(event["op"], "update")
+        self.assertEqual(event["property"], "can_mention_many_users_group")
+        self.assertEqual(event["value"], members_group.id)
+        self.assertEqual(event["stream_id"], stream.id)
+
     def set_up_stream_for_archiving(
         self, stream_name: str, invite_only: bool = False, subscribed: bool = True
     ) -> Stream:

@@ -922,6 +922,7 @@ class BasicStreamFields(BaseEventModel):
     can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
     can_resolve_topics_group: int | UserGroupMembersDict
+    can_mention_many_users_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
     can_subscribe_group: int | UserGroupMembersDict
     creator_id: int | None
@@ -996,6 +997,7 @@ class SingleSubscription(BaseEventModel):
     can_move_messages_within_channel_group: int | UserGroupMembersDict
     can_remove_subscribers_group: int | UserGroupMembersDict
     can_resolve_topics_group: int | UserGroupMembersDict
+    can_mention_many_users_group: int | UserGroupMembersDict
     can_send_message_group: int | UserGroupMembersDict
     can_subscribe_group: int | UserGroupMembersDict
     creator_id: int | None

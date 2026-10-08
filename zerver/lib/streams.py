@@ -105,6 +105,7 @@ class StreamDict(TypedDict, total=False):
     can_send_message_group: UserGroup | None
     can_remove_subscribers_group: UserGroup | None
     can_resolve_topics_group: UserGroup | None
+    can_mention_many_users_group: UserGroup | None
     can_subscribe_group: UserGroup | None
     folder: ChannelFolder | None
 
@@ -389,6 +390,7 @@ def create_stream_if_needed(
     can_send_message_group: UserGroup | None = None,
     can_remove_subscribers_group: UserGroup | None = None,
     can_resolve_topics_group: UserGroup | None = None,
+    can_mention_many_users_group: UserGroup | None = None,
     can_subscribe_group: UserGroup | None = None,
     folder: ChannelFolder | None = None,
     acting_user: UserProfile | None = None,
@@ -537,6 +539,7 @@ def create_streams_if_needed(
             can_send_message_group=stream_dict.get("can_send_message_group", None),
             can_remove_subscribers_group=stream_dict.get("can_remove_subscribers_group", None),
             can_resolve_topics_group=stream_dict.get("can_resolve_topics_group", None),
+            can_mention_many_users_group=stream_dict.get("can_mention_many_users_group", None),
             can_subscribe_group=stream_dict.get("can_subscribe_group", None),
             folder=stream_dict.get("folder", None),
             acting_user=acting_user,
@@ -1329,6 +1332,15 @@ def can_resolve_topics_in_stream(user: UserProfile, stream: Stream) -> bool:
     )
 
 
+def can_mention_many_users_in_channel(user_profile: UserProfile, stream: Stream) -> bool:
+    return user_has_permission_for_group_setting(
+        stream.can_mention_many_users_group_id,
+        user_profile,
+        Stream.stream_permission_group_settings["can_mention_many_users_group"],
+        direct_member_only=False,
+    )
+
+
 def can_resolve_topics(user: UserProfile, orig_stream: Stream, target_stream: Stream) -> bool:
     # Users can only resolve topics if they have either of these permissions:
     #   1) organization-level permission to resolve topics
@@ -1747,6 +1759,9 @@ def list_to_streams(
                 "can_remove_subscribers_group"
             ]
             stream_dict["can_resolve_topics_group"] = group_settings_map["can_resolve_topics_group"]
+            stream_dict["can_mention_many_users_group"] = group_settings_map[
+                "can_mention_many_users_group"
+            ]
             stream_dict["can_subscribe_group"] = group_settings_map["can_subscribe_group"]
 
         # We already filtered out existing streams, so dup_streams
@@ -1876,6 +1891,9 @@ def stream_to_dict(
     can_resolve_topics_group = get_group_setting_value_for_register_api(
         stream.can_resolve_topics_group_id, anonymous_group_membership
     )
+    can_mention_many_users_group = get_group_setting_value_for_register_api(
+        stream.can_mention_many_users_group_id, anonymous_group_membership
+    )
     can_subscribe_group = get_group_setting_value_for_register_api(
         stream.can_subscribe_group_id, anonymous_group_membership
     )
@@ -1895,6 +1913,7 @@ def stream_to_dict(
         can_send_message_group=can_send_message_group,
         can_remove_subscribers_group=can_remove_subscribers_group,
         can_resolve_topics_group=can_resolve_topics_group,
+        can_mention_many_users_group=can_mention_many_users_group,
         can_subscribe_group=can_subscribe_group,
         creator_id=stream.creator_id,
         date_created=datetime_to_timestamp(stream.date_created),
