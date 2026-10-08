@@ -2,12 +2,14 @@
 title: Restrict wildcard mentions
 ---
 
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import AdminOnly from "../include/_AdminOnly.mdx";
+import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
-
-<AdminOnly />
+import SelectChannelViewPermissions from "../include/_SelectChannelViewPermissions.mdx";
 
 Organization administrators can configure who is allowed to use [wildcard
 mentions](/help/dm-mention-alert-notifications#wildcard-mentions) that affect a
@@ -16,8 +18,15 @@ allowed to use `@all` (and, equivalently, `@everyone` and `@channel`) in channel
 with more than 15 subscribers, and `@topic` in topics with more than 15
 participants.
 
-This permission can be granted to any combination of [roles](/help/user-roles),
+These permissions can be granted to any combination of [roles](/help/user-roles),
 [groups](/help/user-groups), and individual [users](/help/introduction-to-users).
+
+In addition to granting organization-wide permissions, you can allow additional
+users to use wildcard mentions in specific channels.
+
+## Configure organization-wide wildcard mention permissions
+
+<AdminOnly />
 
 <FlattenedSteps>
   <NavigationSteps target="settings/organization-permissions" />
@@ -28,6 +37,32 @@ This permission can be granted to any combination of [roles](/help/user-roles),
   <SaveChanges />
 </FlattenedSteps>
 
+## Allow additional users to use wildcard mentions in a channel
+
+Users who have organization-wide permission to use wildcard mentions can always
+use wildcard mentions in any channel. You can also grant this permission to
+additional users in a specific channel.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/channel/all" />
+
+      1. Select a channel.
+
+      <SelectChannelViewPermissions />
+
+      1. Under **Messaging permissions**, configure **Who can notify a large number of
+         users with a wildcard mention**.
+
+      <SaveChanges />
+    </FlattenedSteps>
+
+    <ChannelSettingsNavbarTip />
+  </TabItem>
+</Tabs>
+
 ## Related articles
 
 * [DMs, mentions, and alerts](/help/dm-mention-alert-notifications)
+* [Channel permissions](/help/channel-permissions)
