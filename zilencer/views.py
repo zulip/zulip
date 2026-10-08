@@ -102,6 +102,10 @@ from zilencer.auth import (
     generate_registration_transfer_verification_secret,
     validate_registration_transfer_verification_secret,
 )
+from zilencer.lib.communities_directory import (
+    MODERATED_FIELDS,
+    post_remote_realm_moderated_fields_changed,
+)
 from zilencer.lib.push_notifications import send_e2ee_push_notifications
 from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
@@ -1305,6 +1309,9 @@ def update_remote_realm_data_for_server(
     uuid_to_realm_dict = {str(realm.uuid): realm for realm in server_realms_info}
     remote_realms_to_update = []
     remote_realm_audit_logs = []
+    remote_realms_with_moderated_field_changes: list[
+        tuple[RemoteRealm, list[tuple[str, str, str]]]
+    ] = []
     now = timezone_now()
 
     # Update RemoteRealm entries, for which the corresponding realm's info has changed
@@ -1312,6 +1319,7 @@ def update_remote_realm_data_for_server(
     for remote_realm in already_registered_remote_realms:
         modified = False
         realm = uuid_to_realm_dict[str(remote_realm.uuid)]
+        moderated_field_changes = []
         for remote_realm_attr, new_value in [
             ("host", realm.host),
             ("org_type", realm.org_type),
@@ -1331,6 +1339,9 @@ def update_remote_realm_data_for_server(
 
             if old_value == new_value:
                 continue
+
+            if remote_realm_attr in MODERATED_FIELDS:
+                moderated_field_changes.append((remote_realm_attr, str(old_value), str(new_value)))
 
             setattr(remote_realm, remote_realm_attr, new_value)
             remote_realm_audit_logs.append(
@@ -1364,6 +1375,11 @@ def update_remote_realm_data_for_server(
             )
             modified = True
 
+        if moderated_field_changes and remote_realm.first_advertised_datetime is not None:
+            remote_realms_with_moderated_field_changes.append(
+                (remote_realm, moderated_field_changes)
+            )
+
         if modified:
             remote_realms_to_update.append(remote_realm)
 
@@ -1387,6 +1403,9 @@ def update_remote_realm_data_for_server(
         ],
     )
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
+
+    for remote_realm, changes in remote_realms_with_moderated_field_changes:
+        post_remote_realm_moderated_fields_changed(remote_realm, changes)
 
     remote_realms_to_update = []
     remote_realm_audit_logs = []
