@@ -15,8 +15,10 @@ from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE
 from zerver.lib.upload import get_upload_backend
 from zilencer.lib.communities_directory import (
+    REACHABILITY_WINDOW,
     get_remote_realms_asking_to_be_advertised,
     probe_remote_realms_for_communities_directory,
+    should_advertise_remote_realm,
 )
 from zilencer.models import RemoteRealm, RemoteZulipServer
 
@@ -236,6 +238,33 @@ class ProbeRemoteRealmsForCommunitiesDirectoryTest(ZulipTestCase):
                 self.assertFalse(
                     self.mirror_succeeds(body=read_test_image_file("img.png"), status=200)
                 )
+
+    def test_should_advertise_remote_realm(self) -> None:
+        # An organization we have never reached is not advertised.
+        self.remote_realm.last_reachable_datetime = None
+        self.assertFalse(should_advertise_remote_realm(self.remote_realm))
+
+        self.remote_realm.last_reachable_datetime = timezone_now()
+        self.assertTrue(should_advertise_remote_realm(self.remote_realm))
+
+        # Nothing is shown for an organization whose icon we do not have.
+        self.remote_realm.mirrored_icon_version = 0
+        self.assertFalse(should_advertise_remote_realm(self.remote_realm))
+        self.remote_realm.mirrored_icon_version = 1
+
+        self.remote_realm.description = ""
+        self.assertFalse(should_advertise_remote_realm(self.remote_realm))
+        self.remote_realm.description = "A place to talk about Zulip"
+
+        self.remote_realm.last_reachable_datetime = (
+            timezone_now() - REACHABILITY_WINDOW - timedelta(minutes=1)
+        )
+        self.assertFalse(should_advertise_remote_realm(self.remote_realm))
+
+        self.remote_realm.last_reachable_datetime = (
+            timezone_now() - REACHABILITY_WINDOW + timedelta(minutes=1)
+        )
+        self.assertTrue(should_advertise_remote_realm(self.remote_realm))
 
     def test_get_remote_realms_asking_to_be_advertised(self) -> None:
         self.assertEqual(list(get_remote_realms_asking_to_be_advertised()), [self.remote_realm])
