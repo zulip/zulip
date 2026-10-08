@@ -391,7 +391,7 @@ function maybe_shrink_list(
     return user_ids;
 }
 
-function user_is_eligible_for_buddy_list(
+export function user_is_eligible_for_buddy_list(
     user_id: number,
     direct_message_recipients: Set<number>,
 ): boolean {

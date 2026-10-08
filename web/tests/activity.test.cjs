@@ -570,6 +570,64 @@ test("redraw_muted_user", () => {
     activity_ui.redraw_user(mark.user_id);
 });
 
+function insert_mark_then_check_removed_when_ineligible(override, make_mark_ineligible) {
+    add_sub_and_set_as_current_narrow(rome_sub);
+    peer_data.set_subscribers(rome_sub.stream_id, []);
+
+    let other_users_appended;
+    override(buddy_list.$other_users_list[0], "append", (element) => {
+        other_users_appended = element;
+    });
+    override(padded_widget, "update_padding", noop);
+
+    const $mark_stub = $.create("mark stub");
+    buddy_list_add_other_user(mark.user_id, $mark_stub);
+    let mark_removed = false;
+    $mark_stub[0].remove = () => {
+        mark_removed = true;
+    };
+
+    buddy_list.insert_or_move([mark.user_id]);
+    assert.ok(other_users_appended.innerHTML.includes(`data-user-id="${mark.user_id}"`));
+    assert.ok(buddy_list.all_user_ids.includes(mark.user_id));
+
+    other_users_appended = undefined;
+    make_mark_ineligible();
+    buddy_list.insert_or_move([mark.user_id]);
+    assert.ok(mark_removed);
+    assert.equal(other_users_appended, undefined);
+    assert.ok(!buddy_list.all_user_ids.includes(mark.user_id));
+}
+
+test("insert_or_move_deactivated_user", ({override}) => {
+    insert_mark_then_check_removed_when_ineligible(override, () => {
+        people.deactivate(mark);
+    });
+    people.add_active_user(mark);
+});
+
+test("insert_or_move_muted_user", ({override}) => {
+    insert_mark_then_check_removed_when_ineligible(override, () => {
+        muted_users.add_muted_user(mark.user_id);
+    });
+});
+
+test("insert_or_move_bot", () => {
+    add_sub_and_set_as_current_narrow(rome_sub);
+    peer_data.set_subscribers(rome_sub.stream_id, []);
+
+    const bot = make_user({
+        email: "bot@zulip.com",
+        user_id: 8,
+        full_name: "Bot",
+        is_bot: true,
+    });
+    people.add_active_user(bot);
+
+    buddy_list.insert_or_move([bot.user_id]);
+    assert.ok(!buddy_list.all_user_ids.includes(bot.user_id));
+});
+
 test("update_presence_info", ({override}) => {
     override(pm_list, "update_private_messages", noop);
     override(buddy_list_presence, "update_indicators", noop);
