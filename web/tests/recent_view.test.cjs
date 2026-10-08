@@ -966,6 +966,26 @@ test("bulk_inplace_rerender falls back from the unread sort before updating rows
     assert.deepEqual(calls, ["sort", "rerender"]);
 });
 
+test("inplace_rerender updates one row the way a bulk rerender does", ({override}) => {
+    show_recent_view_with_messages();
+    const [with_row, without_row] = [topic1, topic2].map((topic) => conversation_for(topic));
+    stub_no_row_for(get_topic_key(stream1, topic2));
+    const updates = record_row_updates(override);
+    override(ListWidget, "get_current_list", () => [with_row, without_row]);
+
+    assert.ok(rt.inplace_rerender(get_topic_key(stream1, topic1)));
+    assert.ok(rt.inplace_rerender(get_topic_key(stream1, topic2)));
+    assert.deepEqual(updates, [
+        ["rerender", with_row],
+        ["insert", without_row, 1],
+    ]);
+
+    // A conversation the filters hide is not in the list; the widget's
+    // resort has removed its row, so no row is updated for it.
+    assert.ok(rt.inplace_rerender(get_topic_key(stream1, topic7)));
+    assert.equal(updates.length, 2);
+});
+
 test("basic assertions", ({mock_template, override_rewire}) => {
     override_rewire(rt, "inplace_rerender", noop);
     rt.clear_for_tests();

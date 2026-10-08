@@ -1146,13 +1146,13 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
     return false;
 }
 
-// Recomputes the widget's filtered list, keeping keyboard focus
-// sensible when the resort removed the focused row.
-function filter_and_sort_topics_widget(): void {
+function rerender_conversation_rows(row_keys: Set<string>): void {
     assert(topics_widget !== undefined);
     // Look up the focused row while row_focus still indexes the rows the
     // resort may remove.
     const focused_message_id = get_focused_row_message()?.id;
+    // NOTE: This doesn't add any new entry to the original list but updates the filtered list
+    // based on the current filters and updated row data.
     const removed_conversations = topics_widget.filter_and_sort();
     const focused_row_removed = removed_conversations.some(
         (conversation) => conversation.last_msg_id === focused_message_id,
@@ -1160,15 +1160,6 @@ function filter_and_sort_topics_widget(): void {
     if (focused_row_removed && row_focus >= topics_widget.get_current_list().length) {
         row_focus = Math.max(topics_widget.get_current_list().length - 1, 0);
     }
-}
-
-export function bulk_inplace_rerender(row_keys: Set<string>): void {
-    if (!topics_widget || !recent_view_util.is_visible()) {
-        return;
-    }
-
-    topics_widget.replace_list_data(get_list_data_for_widget(), false);
-    filter_and_sort_topics_widget();
     // Settle the sort before the walk: a redraw during it would otherwise
     // fall back from the unread sort and reorder the list under the walk.
     update_unread_sort_header_state();
@@ -1192,42 +1183,21 @@ export function bulk_inplace_rerender(row_keys: Set<string>): void {
     setTimeout(revive_current_focus, 0);
 }
 
+export function bulk_inplace_rerender(row_keys: Set<string>): void {
+    if (!topics_widget || !recent_view_util.is_visible()) {
+        return;
+    }
+
+    topics_widget.replace_list_data(get_list_data_for_widget(), false);
+    rerender_conversation_rows(row_keys);
+}
+
 export let inplace_rerender = (topic_key: string): boolean => {
     if (!recent_view_util.is_visible() || !recent_view_data.conversations.has(topic_key)) {
         return false;
     }
 
-    const topic_data = recent_view_data.conversations.get(topic_key);
-    assert(topic_data !== undefined);
-    assert(topics_widget !== undefined);
-    // Resorting the topics_widget is important for the case where we
-    // are rerendering because of message editing or new messages
-    // arriving, since those operations often change the sort key.
-    //
-    // NOTE: This doesn't add any new entry to the original list but updates the filtered list
-    // based on the current filters and updated row data.
-    filter_and_sort_topics_widget();
-
-    // We cannot rely on `topic_widget.meta.filtered_list` to know
-    // if a topic is rendered since the `filtered_list` might have
-    // already been updated via other calls.
-    const is_topic_rendered = get_topic_row(topic_data).length > 0;
-    const current_topics_list = topics_widget.get_current_list();
-    if (filters_should_hide_row(topic_data)) {
-        // Nothing to do: the widget removed the row when the filtered list was
-        // recomputed, and a row never rendered stays out of the list.
-    } else if (is_topic_rendered) {
-        // Only a re-render is required in this case.
-        topics_widget.render_item(topic_data);
-    } else {
-        topics_widget.insert_rendered_row(topic_data, () =>
-            current_topics_list.findIndex(
-                (list_item) => list_item.last_msg_id === topic_data.last_msg_id,
-            ),
-        );
-    }
-    update_unread_sort_header_state();
-    setTimeout(revive_current_focus, 0);
+    rerender_conversation_rows(new Set([topic_key]));
     return true;
 };
 
