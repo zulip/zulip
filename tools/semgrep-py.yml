@@ -167,6 +167,28 @@ rules:
       exclude:
         - zilencer/migrations/0038_unique_server_remote_id.py
 
+  - id: set-atomic-for-add_index-remove_index
+    patterns:
+      - pattern-either:
+          - pattern: zerver.lib.migrate.add_index(...)
+          - pattern: zerver.lib.migrate.remove_index(...)
+      - pattern-not-inside: |
+          class Migration(migrations.Migration):
+              ...
+              atomic = False
+              ...
+      - pattern-not-inside: |
+          class Migration(migrations.Migration):
+              ...
+              atomic = not settings.MIGRATIONS_ADD_REMOVE_INDEXES_CONCURRENTLY
+              ...
+    message: 'A migration using add_index/remove_index must set "atomic = not settings.MIGRATIONS_ADD_REMOVE_INDEXES_CONCURRENTLY" on the Migration class, or "atomic = False" if another operation, such as a RunPython backfill, must not run in a single transaction'
+    languages: [python]
+    severity: ERROR
+    paths:
+      include:
+        - "**/migrations"
+
   - id: html-format
     languages: [python]
     pattern-either:
