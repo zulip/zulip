@@ -182,6 +182,17 @@ def post_remote_realm_moderated_fields_changed(
     post_communities_directory_moderation_message(remote_realm, content)
 
 
+def post_remote_realm_icon_changed(remote_realm: RemoteRealm) -> None:
+    icon_url = get_upload_backend().get_remote_realm_icon_url(
+        str(remote_realm.uuid), remote_realm.mirrored_icon_version
+    )
+    content = (
+        f"[{remote_realm.name}](https://{remote_realm.host}) changed its icon.\n\n"
+        f"[new icon]({icon_url})"
+    )
+    post_communities_directory_moderation_message(remote_realm, content)
+
+
 def check_remote_realms_active_for_communities_directory() -> None:
     now = timezone_now()
     reached_count = 0
@@ -204,14 +215,24 @@ def check_remote_realms_active_for_communities_directory() -> None:
             continue
 
         remote_realm.last_reachable_datetime = now
+        icon_changed = False
         if remote_realm.last_mirrored_icon_url != remote_realm.icon_url:
             # A failure here leaves the copy we already have in place,
             # stale icon is shown until next probe - which is acceptable.
             # A remote realm is not listed in the communities directory
             # until an initial copy of its icon has been successfully fetched.
+            previous_icon_version = remote_realm.mirrored_icon_version
             mirror_remote_realm_icon(remote_realm)
+            icon_changed = (
+                remote_realm.mirrored_icon_version != previous_icon_version
+                # Not yet announced; the post announcing it shows the icon.
+                and remote_realm.first_advertised_datetime is not None
+            )
 
         with transaction.atomic(savepoint=False):
+            if icon_changed:
+                post_remote_realm_icon_changed(remote_realm)
+
             if remote_realm.first_advertised_datetime is None and should_advertise_remote_realm(
                 remote_realm
             ):
