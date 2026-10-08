@@ -409,6 +409,7 @@ test("insert_one_user_into_empty_list", ({override}) => {
                 WITH_AVATAR: false,
             },
             should_add_guest_user_indicator: false,
+            is_unsubscribed_participant: false,
         });
         num_calls += 1;
 

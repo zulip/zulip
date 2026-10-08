@@ -708,7 +708,12 @@ export function initialize(): void {
             const should_show_status = is_compact_mode || is_truncated;
 
             const user_id_string = $elem.attr("data-user-id")!;
-            const title_data = buddy_data.get_title_data(user_id_string, false, should_show_status);
+            const title_data = buddy_data.get_title_data(
+                user_id_string,
+                false,
+                should_show_status,
+                buddy_data.get_conversation_participants_callback()(),
+            );
 
             // `target_node` is the `ul` element since it stays in DOM even after updates.
             function get_target_node(): HTMLElement {

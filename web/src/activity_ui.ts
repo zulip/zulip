@@ -3,6 +3,7 @@ import _ from "lodash";
 import assert from "minimalistic-assert";
 
 import * as activity from "./activity.ts";
+import * as background_task from "./background_task.ts";
 import * as blueslip from "./blueslip.ts";
 import * as buddy_data from "./buddy_data.ts";
 import {buddy_list} from "./buddy_list.ts";
@@ -134,9 +135,33 @@ export let build_user_sidebar = (): number[] | undefined => {
     const all_user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
 
     buddy_list.populate({all_user_ids});
+    background_task.run_async_function_without_await(
+        rebuild_user_sidebar_after_fetching_subscribers,
+    );
 
     return all_user_ids; // for testing
 };
+
+// In large channels, we only know which topic participants are
+// unsubscribed once we've fetched the full subscriber list.
+async function rebuild_user_sidebar_after_fetching_subscribers(): Promise<void> {
+    const filter = narrow_state.filter();
+    const stream_id = narrow_state.stream_id(filter, true);
+    if (
+        !stream_id ||
+        narrow_state.topic(filter) === undefined ||
+        peer_data.has_full_subscriber_data(stream_id)
+    ) {
+        return;
+    }
+    await peer_data.fetch_stream_subscribers(stream_id);
+    // If we changed narrows during the fetch, let the new narrow
+    // handle its own state.
+    if (narrow_state.filter() !== filter || !peer_data.has_full_subscriber_data(stream_id)) {
+        return;
+    }
+    build_user_sidebar();
+}
 
 export function rewire_build_user_sidebar(value: typeof build_user_sidebar): void {
     build_user_sidebar = value;
