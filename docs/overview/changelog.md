@@ -15,7 +15,13 @@ _Unreleased_
 
 ### Upgrade notes for 13.0
 
-- None yet.
+- Migrations that add or remove database indexes no longer use
+  PostgreSQL's `CONCURRENTLY` option by default, so they lock the
+  table while they run. This does not affect the standard upgrade
+  process, which stops the server before running migrations. If you
+  run migrations while your server is running, set
+  `MIGRATIONS_ADD_REMOVE_INDEXES_CONCURRENTLY = True` in
+  `/etc/zulip/settings.py` before upgrading.
 
 ## Zulip Server 12.x series
 
