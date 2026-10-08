@@ -9411,11 +9411,15 @@ paths:
                           An example JSON error response for when the message was rejected because
                           the message contains a stream wildcard mention, but the user doesn't have
                           permission to use such a mention in this channel as the user is not present
-                          in `can_mention_many_users_group` and the channel contains a large number
-                          of subscribers.
+                          in either the realm-level or channel-level `can_mention_many_users_group`
+                          and the channel contains a large number of subscribers.
 
-                          **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
-                          error returned the `"BAD_REQUEST"` code.
+                          **Changes**: As of Zulip 13.0 (feature level ZF-bfa80d), the channel-level
+                          `can_mention_many_users_group` setting is also consulted. Previously, only
+                          the realm-level setting was checked.
+
+                          New in Zulip 8.0 (feature level 229). Previously, this error returned the
+                          `"BAD_REQUEST"` code.
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -9428,11 +9432,15 @@ paths:
                           An example JSON error response for when the message was rejected because
                           the message contains a topic wildcard mention, but the user doesn't have
                           permission to use such a mention in this topic as the user is not present
-                          in `can_mention_many_users_group` and the topic contains a large number
-                          of participants.
+                          in either the realm-level or channel-level `can_mention_many_users_group`
+                          and the topic contains a large number of participants.
 
-                          **Changes**: New in Zulip 8.0 (feature level 229). Previously,
-                          `wildcard_mention_policy` was not enforced for topic mentions.
+                          **Changes**: As of Zulip 13.0 (feature level ZF-bfa80d), the channel-level
+                          `can_mention_many_users_group` setting is also consulted. Previously, only
+                          the realm-level setting was checked.
+
+                          New in Zulip 8.0 (feature level 229). Previously, `wildcard_mention_policy`
+                          was not enforced for topic mentions.
   /messages/{message_id}/history:
     get:
       operationId: get-message-history
@@ -10953,11 +10961,15 @@ paths:
                           An example JSON error response for when the message was rejected because
                           the message contains a stream wildcard mention, but the user doesn't have
                           permission to use such a mention in this channel as the user is not present
-                          in `can_mention_many_users_group` and the channel contains a large number
-                          of subscribers.
+                          in either the realm-level or channel-level `can_mention_many_users_group`
+                          and the channel contains a large number of subscribers.
 
-                          **Changes**: New in Zulip 8.0 (feature level 229). Previously, this
-                          error returned the `"BAD_REQUEST"` code.
+                          **Changes**: As of Zulip 13.0 (feature level ZF-bfa80d), the channel-level
+                          `can_mention_many_users_group` setting is also consulted. Previously, only
+                          the realm-level setting was checked.
+
+                          New in Zulip 8.0 (feature level 229). Previously, this error returned the
+                          `"BAD_REQUEST"` code.
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -10970,10 +10982,14 @@ paths:
                           An example JSON error response for when the message was rejected because
                           the message contains a topic wildcard mention, but the user doesn't have
                           permission to use such a mention in this topic as the user is not present
-                          in `can_mention_many_users_group` and the topic contains a large number
-                          of participants.
+                          in either the realm-level or channel-level `can_mention_many_users_group`
+                          and the topic contains a large number of participants.
 
-                          **Changes**: New in Zulip 8.0 (feature level 229). Previously,
+                          **Changes**: As of Zulip 13.0 (feature level ZF-bfa80d), the channel-level
+                          `can_mention_many_users_group` setting is also consulted. Previously, only
+                          the realm-level setting was checked.
+
+                          New in Zulip 8.0 (feature level 229). Previously,
                           `wildcard_mention_policy` was not enforced for topic mentions.
     delete:
       operationId: delete-message
@@ -13395,6 +13411,8 @@ paths:
                   $ref: "#/components/schemas/CanResolveTopicsGroup"
                 can_create_topic_group:
                   $ref: "#/components/schemas/CanCreateTopicGroup"
+                can_mention_many_users_group:
+                  $ref: "#/components/schemas/CanMentionManyUsersGroup"
                 folder_id:
                   description: |
                     This parameter adds the newly created channel to the specified
@@ -13449,6 +13467,8 @@ paths:
               can_resolve_topics_group:
                 contentType: application/json
               can_create_topic_group:
+                contentType: application/json
+              can_mention_many_users_group:
                 contentType: application/json
               folder_id:
                 contentType: application/json
@@ -19522,6 +19542,7 @@ paths:
                                 can_subscribe_group: {}
                                 can_resolve_topics_group: {}
                                 can_create_topic_group: {}
+                                can_mention_many_users_group: {}
                                 subscriber_count: {}
                                 stream_weekly_traffic:
                                   type: integer
@@ -24578,6 +24599,7 @@ paths:
                                 can_resolve_topics_group: {}
                                 can_subscribe_group: {}
                                 can_create_topic_group: {}
+                                can_mention_many_users_group: {}
                                 subscriber_count: {}
                                 stream_weekly_traffic:
                                   type: integer
@@ -25211,6 +25233,26 @@ paths:
                           "old": 15,
                         }
                     - $ref: "#/components/schemas/GroupSettingValueUpdate"
+                can_mention_many_users_group:
+                  allOf:
+                    - description: |
+                        The set of users who have permission to notify a large number of users
+                        with a wildcard mention in this channel expressed as an
+                        [update to a group-setting value][update-group-setting].
+
+                        [update-group-setting]: /api/group-setting-values#updating-group-setting-values
+
+                        Users who are present in the organization-level `can_mention_many_users_group`
+                        setting can always use wildcard mentions in any channel regardless of this setting.
+
+                        **Changes**: New in Zulip 13.0 (feature level ZF-bfa80d).
+                      example:
+                        {
+                          "new":
+                            {"direct_members": [10], "direct_subgroups": [11]},
+                          "old": 15,
+                        }
+                    - $ref: "#/components/schemas/GroupSettingValueUpdate"
 
             encoding:
               is_private:
@@ -25244,6 +25286,8 @@ paths:
               can_resolve_topics_group:
                 contentType: application/json
               can_create_topic_group:
+                contentType: application/json
+              can_mention_many_users_group:
                 contentType: application/json
       responses:
         "200":
@@ -25823,6 +25867,8 @@ paths:
                   $ref: "#/components/schemas/CanSubscribeGroup"
                 can_resolve_topics_group:
                   $ref: "#/components/schemas/CanResolveTopicsGroup"
+                can_mention_many_users_group:
+                  $ref: "#/components/schemas/CanMentionManyUsersGroup"
                 default_push_notifications:
                   $ref: "#/components/schemas/DefaultPushNotifications"
               required:
@@ -25854,6 +25900,8 @@ paths:
               can_send_message_group:
                 contentType: application/json
               can_subscribe_group:
+                contentType: application/json
+              can_mention_many_users_group:
                 contentType: application/json
               subscribers:
                 contentType: application/json
@@ -27787,6 +27835,7 @@ components:
             can_subscribe_group: {}
             can_resolve_topics_group: {}
             can_create_topic_group: {}
+            can_mention_many_users_group: {}
             subscriber_count: {}
             stream_weekly_traffic:
               type: integer
@@ -28001,6 +28050,8 @@ components:
           $ref: "#/components/schemas/CanResolveTopicsGroup"
         can_create_topic_group:
           $ref: "#/components/schemas/CanCreateTopicGroup"
+        can_mention_many_users_group:
+          $ref: "#/components/schemas/CanMentionManyUsersGroup"
         subscriber_count:
           type: number
           description: |
@@ -29228,6 +29279,8 @@ components:
           $ref: "#/components/schemas/CanResolveTopicsGroup"
         can_create_topic_group:
           $ref: "#/components/schemas/CanCreateTopicGroup"
+        can_mention_many_users_group:
+          $ref: "#/components/schemas/CanMentionManyUsersGroup"
         is_archived:
           type: boolean
           description: |
@@ -31455,6 +31508,21 @@ components:
             **Changes**: New in Zulip 11.0 (feature level 396). Prior to this
             change, only the users in `can_move_messages_between_topics_group` were able
             move messages between topics of a channel.
+
+            [setting-values]: /api/group-setting-values
+    CanMentionManyUsersGroup:
+      allOf:
+        - $ref: "#/components/schemas/GroupSettingValue"
+        - description: |
+            A [group-setting value][setting-values] defining the set of users
+            who have permission to notify a large number of users with a wildcard
+            mention in this channel.
+
+            Users present in the organization-level `can_mention_many_users_group`
+            setting can always use wildcard mentions in any channel regardless of
+            this setting.
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-bfa80d).
 
             [setting-values]: /api/group-setting-values
     CanSendMessageGroup:
