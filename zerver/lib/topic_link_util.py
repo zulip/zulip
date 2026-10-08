@@ -14,6 +14,9 @@ def will_produce_broken_stream_topic_link(word: str) -> bool:
     return bool(invalid_stream_topic_regex.search(word))
 
 
+# How a #**channel>topic** link syntax displays once rendered. The
+# Markdown processor doesn't turn this text into a link, so it can be
+# the text of a Markdown link to a different URL.
 TOPIC_LINK_SYNTAX_FOR_DISPLAY = "#{channel_name} > {topic_name}"
 
 escape_mapping = {
