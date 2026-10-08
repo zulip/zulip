@@ -957,8 +957,12 @@ function get_conversation_key(conversation: ConversationData): string {
     return recent_view_util.get_key_from_message(msg);
 }
 
+function get_conversation_row(conversation_key: string): JQuery {
+    return $(`#${CSS.escape(recent_conversation_key_prefix + conversation_key)}`);
+}
+
 function get_topic_row(topic_data: ConversationData): JQuery {
-    return $(`#${CSS.escape(recent_conversation_key_prefix + get_conversation_key(topic_data))}`);
+    return get_conversation_row(get_conversation_key(topic_data));
 }
 
 export function process_topic_edit(
