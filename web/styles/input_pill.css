@@ -178,12 +178,18 @@
     .slashed-circle-icon {
         position: absolute;
         background-color: var(--color-background-deactivated-user-pill);
-        padding: 0.3em 0.22em 0.22em;
         font-size: 0.6em;
-        border-radius: 0.925em;
-        bottom: -0.0625em;
+        bottom: 0;
         left: 1.3em;
         opacity: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 1em;
+        height: 1em;
+        padding: 0.2em;
+        line-height: 1;
+        border-radius: 50%;
     }
 
     &.not-editable {
