@@ -344,6 +344,13 @@
     }
 }
 
+.user_sidebar_entry.unsubscribed-participant .user-name {
+    font-style: italic;
+    /* Italic glyphs like "f" extend past their advance width, so
+       leave room for them inside the `overflow: hidden` box. */
+    padding-right: 0.1em;
+}
+
 .user_sidebar_entry .selectable_sidebar_block {
     grid-area: row-content;
     display: grid;
