@@ -11,11 +11,16 @@ from requests.exceptions import ConnectionError
 from typing_extensions import override
 from urllib3.exceptions import LocationParseError
 
+from zerver.actions.create_user import do_create_user
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import read_test_image_file
+from zerver.lib.test_helpers import most_recent_message, read_test_image_file
 from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE
 from zerver.lib.upload import get_upload_backend
+from zerver.models import Message, UserProfile
+from zerver.models.realms import get_realm
 from zilencer.lib.communities_directory import (
+    MODERATION_CHANNEL_NAME,
     REACHABILITY_WINDOW,
     check_remote_realms_active_for_communities_directory,
     get_remote_realms_asking_to_be_advertised,
@@ -50,10 +55,11 @@ class ProbeRemoteRealmsForCommunitiesDirectoryTest(ZulipTestCase):
             description="A place to talk about Zulip",
             invite_required=False,
             icon_url=self.ICON_URL,
-            # An organization reached by an earlier probe, which copied its icon.
+            # An organization reached by an earlier probe, which copied its icon and announced it.
             last_reachable_datetime=timezone_now() - timedelta(days=1),
             last_mirrored_icon_url=self.ICON_URL,
             mirrored_icon_version=1,
+            first_advertised_datetime=timezone_now() - timedelta(days=1),
         )
 
     def recorded_as_reachable(self, **response_kwargs: Any) -> bool:
@@ -267,6 +273,82 @@ class ProbeRemoteRealmsForCommunitiesDirectoryTest(ZulipTestCase):
             timezone_now() - REACHABILITY_WINDOW + timedelta(minutes=1)
         )
         self.assertTrue(should_advertise_remote_realm(self.remote_realm))
+
+    def start_unadvertised(self) -> None:
+        # An organization that has just asked to be advertised.
+        self.remote_realm.last_reachable_datetime = None
+        self.remote_realm.mirrored_icon_version = 0
+        self.remote_realm.last_mirrored_icon_url = ""
+        self.remote_realm.first_advertised_datetime = None
+        self.remote_realm.save(
+            update_fields=[
+                "last_reachable_datetime",
+                "mirrored_icon_version",
+                "last_mirrored_icon_url",
+                "first_advertised_datetime",
+            ]
+        )
+        responses.add(
+            responses.GET, self.SERVER_SETTINGS_URL, json={"zulip_version": "11.0"}, status=200
+        )
+        responses.add(
+            responses.GET, self.ICON_URL, body=read_test_image_file("img.jpg"), status=200
+        )
+
+    @responses.activate
+    def test_posts_to_the_channel_when_first_advertised(self) -> None:
+        create_stream_if_needed(get_realm(settings.SYSTEM_BOT_REALM), MODERATION_CHANNEL_NAME)
+        self.start_unadvertised()
+
+        with self.assertLogs(logger_string, level="INFO"):
+            check_remote_realms_active_for_communities_directory()
+
+        self.remote_realm.refresh_from_db()
+        self.assertIsNotNone(self.remote_realm.first_advertised_datetime)
+
+        message = Message.objects.latest("id")
+        self.assertEqual(message.topic_name(), str(self.remote_realm.uuid))
+        self.assertEqual(
+            message.content,
+            f"[{self.remote_realm.name}](https://{self.remote_realm.host}) is now listed.\n\n"
+            f"{self.remote_realm.description}\n\n"
+            f"[icon](/user_avatars/remote_realms/{self.remote_realm.uuid}/icon.png?version=1)",
+        )
+
+        # A later pass does not announce the same organization again.
+        with self.assertLogs(logger_string, level="INFO"):
+            check_remote_realms_active_for_communities_directory()
+
+        self.assertEqual(Message.objects.latest("id").id, message.id)
+
+    @responses.activate
+    def test_missing_moderation_channel_direct_messages_the_admins(self) -> None:
+        admin = do_create_user(
+            "admin@zulip.com",
+            "password",
+            get_realm(settings.SYSTEM_BOT_REALM),
+            "Admin",
+            role=UserProfile.ROLE_REALM_ADMINISTRATOR,
+            acting_user=None,
+        )
+        self.start_unadvertised()
+
+        with self.assertLogs(logger_string, level="INFO"):
+            check_remote_realms_active_for_communities_directory()
+
+        message = most_recent_message(admin)
+        self.assertEqual(
+            message.content,
+            f":red_circle: Channel named '{MODERATION_CHANNEL_NAME}' doesn't exist.\n\n"
+            f"[{self.remote_realm.name}](https://{self.remote_realm.host}) is now listed."
+            f"\n\n{self.remote_realm.description}"
+            f"\n\n[icon](/user_avatars/remote_realms/{self.remote_realm.uuid}/icon.png"
+            "?version=1)",
+        )
+        # The pass still recorded what it learned.
+        self.remote_realm.refresh_from_db()
+        self.assertIsNotNone(self.remote_realm.last_reachable_datetime)
+        self.assertEqual(self.remote_realm.mirrored_icon_version, 1)
 
     def test_get_remote_realms_asking_to_be_advertised(self) -> None:
         self.assertEqual(list(get_remote_realms_asking_to_be_advertised()), [self.remote_realm])
