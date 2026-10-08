@@ -28,6 +28,10 @@ REACHABILITY_WINDOW = timedelta(days=3)
 MODERATION_CHANNEL_NAME = "signups"
 MODERATION_TOPIC_NAME = "communities directory"
 
+# The fields the directory shows, other than the icon; a change to any of
+# them changes what visitors see, so a human should look at it.
+MODERATED_FIELDS = ["name", "host", "description"]
+
 
 def get_remote_realms_asking_to_be_advertised() -> QuerySet[RemoteRealm]:
     return RemoteRealm.objects.filter(
@@ -166,6 +170,19 @@ def post_remote_realm_first_advertised(remote_realm: RemoteRealm) -> None:
         f"[{remote_realm.name}](https://{remote_realm.host}) is now listed.\n\n"
         f"{remote_realm.description}\n\n"
         f"![icon]({icon_url})",
+    )
+
+
+def post_remote_realm_listing_changed(
+    remote_realm: RemoteRealm, changes: list[tuple[str, str, str]]
+) -> None:
+    changed_lines = "\n".join(
+        f"**{attr_name}**: ~~{old_value}~~ {new_value}"
+        for attr_name, old_value, new_value in changes
+    )
+    post_communities_directory_moderation_message(
+        f"[{remote_realm.name}](https://{remote_realm.host}) changed what the "
+        f"directory shows.\n\n{changed_lines}",
     )
 
 
