@@ -35,6 +35,8 @@ mock_jquery((arg) => {
 
 const ListWidget = zrequire("list_widget");
 
+const {INITIAL_RENDER_COUNT, LOAD_COUNT} = ListWidget.DEFAULTS;
+
 // We build objects here that simulate jQuery containers.
 // The main thing to do at first is simulate that our
 // scroll container is the nearest ancestor to our main
@@ -204,7 +206,10 @@ run_test("scrolling", () => {
 
     ListWidget.create($container, items, opts);
 
-    assert.deepEqual($container.$appended_data.html(), items.slice(0, 80).join(""));
+    assert.deepEqual(
+        $container.$appended_data.html(),
+        items.slice(0, INITIAL_RENDER_COUNT).join(""),
+    );
     assert.equal(get_scroll_element_called, true);
 
     // Set up our fake geometry so it forces a scroll action.
@@ -215,7 +220,10 @@ run_test("scrolling", () => {
     // Scrolling gets the next two elements from the list into
     // our widget.
     $scroll_container.call_scroll();
-    assert.deepEqual($container.$appended_data.html(), items.slice(80, 100).join(""));
+    assert.deepEqual(
+        $container.$appended_data.html(),
+        items.slice(INITIAL_RENDER_COUNT, INITIAL_RENDER_COUNT + LOAD_COUNT).join(""),
+    );
 });
 
 run_test("not_scrolling", () => {
@@ -256,7 +264,10 @@ run_test("not_scrolling", () => {
 
     ListWidget.create($container, items, opts);
 
-    assert.deepEqual($container.$appended_data.html(), items.slice(0, 80).join(""));
+    assert.deepEqual(
+        $container.$appended_data.html(),
+        items.slice(0, INITIAL_RENDER_COUNT).join(""),
+    );
     assert.equal(get_scroll_element_called, true);
 
     // Set up our fake geometry.
@@ -268,7 +279,10 @@ run_test("not_scrolling", () => {
     // added regardless of scrolling.
     $scroll_container.call_scroll();
     // $appended_data remains the same.
-    assert.deepEqual($container.$appended_data.html(), items.slice(0, 80).join(""));
+    assert.deepEqual(
+        $container.$appended_data.html(),
+        items.slice(0, INITIAL_RENDER_COUNT).join(""),
+    );
     assert.equal(post_scroll__pre_render_callback_called, true);
     assert.equal(get_min_load_count_called, true);
 });
@@ -835,7 +849,6 @@ run_test("opts.get_item", () => {
 run_test("render item", () => {
     const $container = make_container();
     const $scroll_container = make_scroll_container();
-    const INITIAL_RENDER_COUNT = 80; // Keep this in sync with the actual code.
     let called;
     $scroll_container.find = (element) => {
         const query = element.selector;

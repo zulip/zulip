@@ -95,7 +95,8 @@ export type ListWidget<Key, Item = Key> = BaseListWidget & {
     replace_list_data: (list: Key[], should_redraw?: boolean) => void;
 };
 
-const DEFAULTS = {
+// Exported for tests
+export const DEFAULTS = {
     INITIAL_RENDER_COUNT: 80,
     LOAD_COUNT: 20,
     instances: new Map<string, BaseListWidget>(),
