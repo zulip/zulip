@@ -302,6 +302,30 @@ test("unexpected_403_response", () => {
     });
 });
 
+test("rate_limit_429", () => {
+    let rate_limit_seconds;
+    channel.set_rate_limit_handler((seconds) => {
+        rate_limit_seconds = seconds;
+    });
+
+    test_with_mock_ajax({
+        xhr: {
+            status: 429,
+            getResponseHeader: (header) => (header === "Retry-After" ? "120" : null),
+            responseJSON: undefined,
+        },
+
+        run_code() {
+            channel.post({url: "/json/endpoint"});
+        },
+
+        check_ajax_options(options) {
+            options.simulate_error();
+            assert.equal(rate_limit_seconds, 120);
+        },
+    });
+});
+
 test("xhr_error_message", () => {
     let xhr = {
         status: "200",
