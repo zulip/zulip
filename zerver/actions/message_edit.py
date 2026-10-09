@@ -15,7 +15,7 @@ from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
 from django_stubs_ext import StrPromise
 
-from zerver.actions.message_delete import DeleteMessagesEvent, do_delete_messages
+from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_flags import do_update_mobile_push_notification
 from zerver.actions.message_send import (
     filter_presence_idle_user_ids,
@@ -36,6 +36,7 @@ from zerver.lib.exceptions import (
     TopicsNotAllowedError,
     TopicWildcardMentionNotAllowedError,
 )
+from zerver.lib.internal_event_types import InternalDeleteMessageEvent
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
@@ -1179,13 +1180,12 @@ def do_update_message(
             .values_list("id", flat=True),
         ).delete()
 
-        delete_event: DeleteMessagesEvent = {
-            "type": "delete_message",
-            "message_ids": changed_message_ids,
-            "message_type": "stream",
-            "stream_id": stream_being_edited.id,
-            "topic": orig_topic_name,
-        }
+        delete_event = InternalDeleteMessageEvent(
+            message_ids=changed_message_ids,
+            message_type="stream",
+            stream_id=stream_being_edited.id,
+            topic=orig_topic_name,
+        )
         send_event_on_commit(
             user_profile.realm, delete_event, [user.id for user in users_losing_access]
         )
