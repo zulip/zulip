@@ -8,6 +8,10 @@ from django.utils.translation import gettext as _
 
 from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.internal_event_types import (
+    InternalRealmEmojiAddEvent,
+    InternalRealmEmojiUpdateOneEvent,
+)
 from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
 from zerver.lib.upload import upload_emoji_image
@@ -60,7 +64,9 @@ def check_add_realm_emoji(
     # TODO/compatibility: Remove realm_emoji_dict once we can require that clients support
     # the individual_emoji_changes client capability.
     realm_emoji_dict = get_all_custom_emoji_for_realm(realm.id)
-    event = dict(type="realm_emoji", op="add", emoji=new_emoji, realm_emoji=realm_emoji_dict)
+    event = InternalRealmEmojiAddEvent.model_validate(
+        dict(emoji=new_emoji, realm_emoji=realm_emoji_dict)
+    )
     send_event_on_commit(realm, event, active_user_ids(realm.id))
     return realm_emoji
 
@@ -85,13 +91,11 @@ def do_remove_realm_emoji(realm: Realm, name: str, *, acting_user: UserProfile |
     # TODO/compatibility: Remove realm_emoji_dict once we can require that clients support
     # the individual_emoji_changes client capability.
     realm_emoji_dict = get_all_custom_emoji_for_realm(realm.id)
-    event = dict(
-        type="realm_emoji",
-        op="update_one",
-        emoji_id=str(realm_emoji.id),
-        data=dict(
-            deactivated=True,
-        ),
-        realm_emoji=realm_emoji_dict,
+    event = InternalRealmEmojiUpdateOneEvent.model_validate(
+        dict(
+            emoji_id=str(realm_emoji.id),
+            data=dict(deactivated=True),
+            realm_emoji=realm_emoji_dict,
+        )
     )
     send_event_on_commit(realm, event, active_user_ids(realm.id))

@@ -10,7 +10,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
-from zerver.lib.event_types import StreamUpdateEvent
+from zerver.lib.event_types import BasicStreamFields, StreamUpdateEvent
 from zerver.lib.exceptions import (
     CannotAdministerChannelError,
     CannotSetTopicsPolicyError,
@@ -20,6 +20,7 @@ from zerver.lib.exceptions import (
     MissingAuthenticationError,
     OrganizationOwnerRequiredError,
 )
+from zerver.lib.internal_event_types import InternalStreamCreateEvent, InternalStreamDeleteEvent
 from zerver.lib.partial import partial
 from zerver.lib.stream_subscription import (
     get_guest_user_ids_for_streams,
@@ -224,10 +225,12 @@ def send_stream_creation_event(
     anonymous_group_membership: dict[int, UserGroupMembersData] | None = None,
     for_unarchiving: bool = False,
 ) -> None:
-    event = dict(
-        type="stream",
-        op="create",
-        streams=[stream_to_dict(stream, recent_traffic, anonymous_group_membership)],
+    event = InternalStreamCreateEvent(
+        streams=[
+            BasicStreamFields.model_validate(
+                stream_to_dict(stream, recent_traffic, anonymous_group_membership)
+            )
+        ],
         for_unarchiving=for_unarchiving,
     )
     send_event_on_commit(realm, event, user_ids)
@@ -2157,11 +2160,9 @@ def check_update_all_streams_active_status(
 def send_stream_deletion_event(
     realm: Realm, user_ids: Iterable[int], streams: list[Stream], for_archiving: bool = False
 ) -> None:
-    stream_deletion_event = dict(
-        type="stream",
-        op="delete",
+    stream_deletion_event = InternalStreamDeleteEvent(
         # "streams" is deprecated, kept only for compatibility.
-        streams=[dict(stream_id=stream.id) for stream in streams],
+        streams=[{"stream_id": stream.id} for stream in streams],
         stream_ids=[stream.id for stream in streams],
         for_archiving=for_archiving,
     )

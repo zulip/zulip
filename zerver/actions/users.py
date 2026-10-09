@@ -27,7 +27,26 @@ from zerver.actions.user_settings import do_change_avatar_fields, do_change_full
 from zerver.lib.bot_config import ConfigError, get_bot_config, get_bot_configs, set_bot_config
 from zerver.lib.cache import bot_dict_fields, flush_user_profile
 from zerver.lib.create_user import create_user_profile
-from zerver.lib.event_types import BotServicesOutgoing
+from zerver.lib.event_types import (
+    BasicStreamFields,
+    BotServicesEmbedded,
+    BotServicesOutgoing,
+    BotTypeForUpdate,
+    PersonIsActive,
+    PersonIsImportedStub,
+    PersonRole,
+    RealmBotUpdateEvent,
+    RealmUpdateDictData,
+    RealmUpdateDictEvent,
+    RealmUserRemoveEvent,
+    RealmUserUpdateEvent,
+    RemovedUser,
+    SubscriptionPeerAddEvent,
+    UserGroupData,
+    UserGroupRemoveMembersEvent,
+    UserGroupUpdateEvent,
+)
+from zerver.lib.internal_event_types import InternalStreamCreateEvent
 from zerver.lib.invites import revoke_invites_generated_by_user
 from zerver.lib.send_email import FromAddress, clear_scheduled_emails, send_email
 from zerver.lib.sessions import delete_user_sessions
@@ -267,11 +286,11 @@ def send_group_update_event_for_anonymous_group_setting(
                 direct_members=group_members_dict[setting_group.id],
                 direct_subgroups=group_subgroups_dict[setting_group.id],
             )
-            event = dict(
-                type="user_group",
-                op="update",
+            event = UserGroupUpdateEvent(
                 group_id=named_group.id,
-                data={setting_name: convert_to_user_group_members_dict(new_setting_value)},
+                data=UserGroupData.model_validate(
+                    {setting_name: convert_to_user_group_members_dict(new_setting_value)}
+                ),
             )
             send_event_on_commit(realm, event, notify_user_ids)
             return
@@ -290,11 +309,11 @@ def send_realm_update_event_for_anonymous_group_setting(
                 direct_members=group_members_dict[setting_group.id],
                 direct_subgroups=group_subgroups_dict[setting_group.id],
             )
-            event = dict(
-                type="realm",
-                op="update_dict",
+            event = RealmUpdateDictEvent(
                 property="default",
-                data={setting_name: convert_to_user_group_members_dict(new_setting_value)},
+                data=RealmUpdateDictData.model_validate(
+                    {setting_name: convert_to_user_group_members_dict(new_setting_value)}
+                ),
             )
             send_event_on_commit(realm, event, notify_user_ids)
             return
@@ -370,10 +389,8 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
 
     send_peer_remove_events(user_profile.realm, streams, altered_user_dict)
 
-    event_deactivate_user = dict(
-        type="realm_user",
-        op="update",
-        person=dict(user_id=user_profile.id, is_active=False),
+    event_deactivate_user = RealmUserUpdateEvent(
+        person=PersonIsActive(user_id=user_profile.id, is_active=False)
     )
     realm = user_profile.realm
 
@@ -436,12 +453,7 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
             else:
                 deactivated_user_named_groups.append(group)
         for user_group in deactivated_user_named_groups:
-            event = dict(
-                type="user_group",
-                op="remove_members",
-                group_id=user_group.id,
-                user_ids=[user_profile.id],
-            )
+            event = UserGroupRemoveMembersEvent(group_id=user_group.id, user_ids=[user_profile.id])
             send_event_on_commit(
                 user_group.realm, event, list(users_without_access_to_deactivated_user)
             )
@@ -457,10 +469,10 @@ def send_events_for_user_deactivation(user_profile: UserProfile) -> None:
         peer_stream_subscribers - users_with_access_to_deactivated_user
     )
     if users_losing_access_to_deactivated_user:
-        event_remove_user = dict(
-            type="realm_user",
-            op="remove",
-            person=dict(user_id=user_profile.id, full_name=str(UserProfile.INACCESSIBLE_USER_NAME)),
+        event_remove_user = RealmUserRemoveEvent(
+            person=RemovedUser(
+                user_id=user_profile.id, full_name=str(UserProfile.INACCESSIBLE_USER_NAME)
+            ),
         )
         send_event_on_commit(
             realm, event_remove_user, list(users_losing_access_to_deactivated_user)
@@ -566,13 +578,14 @@ def send_stream_events_for_role_update(
             now_accessible_streams
         )
 
-        event = dict(
-            type="stream",
-            op="create",
+        event = InternalStreamCreateEvent(
             streams=[
-                stream_to_dict(stream, recent_traffic, anonymous_group_membership)
+                BasicStreamFields.model_validate(
+                    stream_to_dict(stream, recent_traffic, anonymous_group_membership)
+                )
                 for stream in now_accessible_streams
             ],
+            for_unarchiving=False,
         )
         send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
@@ -580,9 +593,7 @@ def send_stream_events_for_role_update(
             user_profile.realm, now_accessible_streams
         )
         for stream_id, stream_subscriber_set in subscriber_peer_info.subscribed_ids.items():
-            peer_add_event = dict(
-                type="subscription",
-                op="peer_add",
+            peer_add_event = SubscriptionPeerAddEvent(
                 stream_ids=[stream_id],
                 user_ids=sorted(stream_subscriber_set),
             )
@@ -636,8 +647,8 @@ def do_change_user_role(
         },
     )
 
-    event = dict(
-        type="realm_user", op="update", person=dict(user_id=user_profile.id, role=user_profile.role)
+    event = RealmUserUpdateEvent(
+        person=PersonRole.model_validate(dict(user_id=user_profile.id, role=user_profile.role))
     )
     send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
 
@@ -821,22 +832,15 @@ def do_update_outgoing_webhook_service(
 
     service.save(update_fields=updated_fields)
 
-    # Keep the event payload of the updated bot service in sync with the
-    # schema expected by `bot_data.update()` method.
-    updated_service: dict[str, str | int] = BotServicesOutgoing(
+    updated_service = BotServicesOutgoing(
         base_url=service.base_url,
         interface=service.interface,
         token=service.token,
-    ).model_dump()
+    )
     send_event_on_commit(
         bot_profile.realm,
-        dict(
-            type="realm_bot",
-            op="update",
-            bot=dict(
-                user_id=bot_profile.id,
-                services=[updated_service],
-            ),
+        RealmBotUpdateEvent(
+            bot=BotTypeForUpdate(user_id=bot_profile.id, services=[updated_service])
         ),
         bot_owner_user_ids(bot_profile),
     )
@@ -847,39 +851,42 @@ def do_update_bot_config_data(bot_profile: UserProfile, config_data: dict[str, s
     for key, value in config_data.items():
         set_bot_config(bot_profile, key, value)
     updated_config_data = get_bot_config(bot_profile)
+    [service] = get_bot_services(bot_profile.id)
     send_event_on_commit(
         bot_profile.realm,
-        dict(
-            type="realm_bot",
-            op="update",
-            bot=dict(
+        RealmBotUpdateEvent(
+            bot=BotTypeForUpdate(
                 user_id=bot_profile.id,
-                services=[dict(config_data=updated_config_data)],
-            ),
+                services=[
+                    BotServicesEmbedded(service_name=service.name, config_data=updated_config_data)
+                ],
+            )
         ),
         bot_owner_user_ids(bot_profile),
     )
 
 
-def get_service_dicts_for_bot(user_profile_id: int) -> list[dict[str, Any]]:
+def get_services_for_bot(
+    user_profile_id: int,
+) -> list[BotServicesOutgoing | BotServicesEmbedded]:
     user_profile = get_user_profile_by_id(user_profile_id)
     services = get_bot_services(user_profile_id)
     if user_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
         return [
-            {
-                "base_url": service.base_url,
-                "interface": service.interface,
-                "token": service.token,
-            }
+            BotServicesOutgoing(
+                base_url=service.base_url,
+                interface=service.interface,
+                token=service.token,
+            )
             for service in services
         ]
     elif user_profile.bot_type == UserProfile.EMBEDDED_BOT:
         try:
             return [
-                {
-                    "config_data": get_bot_config(user_profile),
-                    "service_name": services[0].name,
-                }
+                BotServicesEmbedded(
+                    config_data=get_bot_config(user_profile),
+                    service_name=services[0].name,
+                )
             ]
         # A ConfigError just means that there are no config entries for user_profile.
         except ConfigError:
@@ -1026,7 +1033,7 @@ def do_change_is_imported_stub(user_profile: UserProfile) -> None:
         event_time=timezone_now(),
     )
 
-    event = dict(
-        type="realm_user", op="update", person=dict(user_id=user_profile.id, is_imported_stub=False)
+    event = RealmUserUpdateEvent(
+        person=PersonIsImportedStub(user_id=user_profile.id, is_imported_stub=False)
     )
     send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
