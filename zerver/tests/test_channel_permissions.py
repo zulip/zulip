@@ -746,6 +746,46 @@ class ChannelSubscriptionPermissionTest(ZulipTestCase):
             skip_changing_group_setting=True,
         )
 
+        # A user who can administer one channel and is present in the
+        # remove subscribers group of another channel should be able to
+        # unsubscribe other users from both channels in a single request.
+        prospero = self.example_user("prospero")
+        prospero_group_member_dict = UserGroupMembersData(
+            direct_members=[prospero.id], direct_subgroups=[]
+        )
+        administered_stream = self.make_stream("administered_stream")
+        removable_stream = self.make_stream("removable_stream")
+        do_change_stream_group_based_setting(
+            administered_stream,
+            "can_administer_channel_group",
+            prospero_group_member_dict,
+            acting_user=prospero,
+        )
+        do_change_stream_group_based_setting(
+            removable_stream,
+            "can_remove_subscribers_group",
+            prospero_group_member_dict,
+            acting_user=prospero,
+        )
+        check_unsubscribing_user(
+            prospero,
+            prospero_group_member_dict,
+            stream_list=[administered_stream],
+            skip_changing_group_setting=True,
+        )
+        check_unsubscribing_user(
+            prospero,
+            prospero_group_member_dict,
+            stream_list=[removable_stream],
+            skip_changing_group_setting=True,
+        )
+        check_unsubscribing_user(
+            prospero,
+            prospero_group_member_dict,
+            stream_list=[administered_stream, removable_stream],
+            skip_changing_group_setting=True,
+        )
+
     def test_change_stream_message_retention_days_requires_realm_owner(self) -> None:
         user_profile = self.example_user("iago")
         self.login_user(user_profile)

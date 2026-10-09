@@ -1378,12 +1378,19 @@ def bulk_can_remove_subscribers_from_streams(
     if not bool(permission_failure_streams):
         return True
 
-    existing_recipient_ids = [assert_is_not_none(stream.recipient_id) for stream in streams]
+    # Channels that the user can administer need no further checks.
+    non_administered_streams = [
+        stream for stream in streams if stream.id in permission_failure_streams
+    ]
+
+    existing_recipient_ids = [
+        assert_is_not_none(stream.recipient_id) for stream in non_administered_streams
+    ]
     sub_recipient_ids = Subscription.objects.filter(
         user_profile=user_profile, recipient_id__in=existing_recipient_ids, active=True
     ).values_list("recipient_id", flat=True)
 
-    for stream in streams:
+    for stream in non_administered_streams:
         assert stream.recipient_id is not None
         is_subscribed = stream.recipient_id in sub_recipient_ids
         if not check_basic_stream_access(
@@ -1391,7 +1398,7 @@ def bulk_can_remove_subscribers_from_streams(
         ):
             return False
 
-    for stream in streams:
+    for stream in non_administered_streams:
         if not is_user_in_can_remove_subscribers_group(stream, user_recursive_group_ids):
             return False
 
