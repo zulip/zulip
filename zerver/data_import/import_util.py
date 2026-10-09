@@ -572,7 +572,7 @@ class AttachmentRecordData:
     create_time: float
     file_name: str
     id: int
-    is_realm_public: bool
+    is_realm_public: bool | None
     is_web_public: bool
     messages: list[int]
     owner: int
@@ -606,7 +606,9 @@ def build_attachment(
         id=attachment_id,
         size=fileinfo["size"],
         create_time=fileinfo["created"],
-        is_realm_public=True,
+        # Computed from the messages containing the file when it is
+        # first accessed.
+        is_realm_public=None,
         path_id=s3_path,
         file_name=fileinfo["name"],
         content_type=fileinfo.get("mimetype"),

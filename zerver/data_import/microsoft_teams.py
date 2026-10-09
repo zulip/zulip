@@ -469,7 +469,8 @@ def download_and_export_microsoft_teams_upload_file(
             file_name=os.path.basename(file_output_path),
             # IDs will be assigned later after all uploads have been downloaded.
             id=0,
-            is_realm_public=True,
+            # Computed when the file is first accessed.
+            is_realm_public=None,
             messages=[args.message_id],
             owner=args.sender_id,
             path_id=upload_file_request.output_file_path_id,

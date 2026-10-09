@@ -905,8 +905,8 @@ class MatterMostImporter(MattermostImportTestBase):
         self.assertEqual(
             user_handler.get_user(zerver_attachments[0].owner)["email"], "ron@zulip.com"
         )
-        # TODO: Assert this for False after fixing the file permissions in direct messages
-        self.assertTrue(zerver_attachments[0].is_realm_public)
+        # The cache is left unset, to be computed on first access.
+        self.assertIsNone(zerver_attachments[0].is_realm_public)
 
         self.assert_length(uploads_list, 1)
         self.assertEqual(uploads_list[0].user_profile_id, 2)
