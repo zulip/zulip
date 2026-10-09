@@ -1,8 +1,9 @@
+import importlib
 import os
 from unittest import mock
 
 from zerver.lib.test_classes import ZulipTestCase
-from zproject import config
+from zproject import computed_settings, config, configured_settings
 
 
 class ConfigTest(ZulipTestCase):
@@ -18,3 +19,71 @@ class ConfigTest(ZulipTestCase):
         with mock.patch.dict(os.environ, {"DISABLE_MANDATORY_SECRET_CHECK": "True"}):
             secret = config.get_mandatory_secret("nonexistent")
         self.assertEqual(secret, "")
+
+
+class ComputedSettingsTest(ZulipTestCase):
+    def test_legacy_avatar_uri_fallback(self) -> None:
+        self.addCleanup(importlib.reload, computed_settings)
+
+        # Fall back to legacy DEFAULT_AVATAR_URI when DEFAULT_AVATAR_URL is not set
+        with (
+            mock.patch.object(configured_settings, "DEFAULT_AVATAR_URL", None),
+            mock.patch.object(
+                configured_settings, "DEFAULT_AVATAR_URI", "http://example.com/legacy-avatar.svg"
+            ),
+        ):
+            importlib.reload(computed_settings)
+            self.assertEqual(
+                computed_settings.DEFAULT_AVATAR_URL,
+                "http://example.com/legacy-avatar.svg",
+            )
+
+        # Canonical DEFAULT_AVATAR_URL takes precedence when both are set
+        with (
+            mock.patch.object(
+                configured_settings,
+                "DEFAULT_AVATAR_URL",
+                "http://example.com/canonical-avatar.svg",
+            ),
+            mock.patch.object(
+                configured_settings, "DEFAULT_AVATAR_URI", "http://example.com/legacy-avatar.svg"
+            ),
+        ):
+            importlib.reload(computed_settings)
+            self.assertEqual(
+                computed_settings.DEFAULT_AVATAR_URL,
+                "http://example.com/canonical-avatar.svg",
+            )
+
+    def test_legacy_logo_uri_fallback(self) -> None:
+        self.addCleanup(importlib.reload, computed_settings)
+
+        # Fall back to legacy DEFAULT_LOGO_URI when DEFAULT_LOGO_URL is not set
+        with (
+            mock.patch.object(configured_settings, "DEFAULT_LOGO_URL", None),
+            mock.patch.object(
+                configured_settings, "DEFAULT_LOGO_URI", "http://example.com/legacy-logo.svg"
+            ),
+        ):
+            importlib.reload(computed_settings)
+            self.assertEqual(
+                computed_settings.DEFAULT_LOGO_URL,
+                "http://example.com/legacy-logo.svg",
+            )
+
+        # Canonical DEFAULT_LOGO_URL takes precedence when both are set
+        with (
+            mock.patch.object(
+                configured_settings,
+                "DEFAULT_LOGO_URL",
+                "http://example.com/canonical-logo.svg",
+            ),
+            mock.patch.object(
+                configured_settings, "DEFAULT_LOGO_URI", "http://example.com/legacy-logo.svg"
+            ),
+        ):
+            importlib.reload(computed_settings)
+            self.assertEqual(
+                computed_settings.DEFAULT_LOGO_URL,
+                "http://example.com/canonical-logo.svg",
+            )
