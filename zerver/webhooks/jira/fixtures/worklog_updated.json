@@ -1,0 +1,43 @@
+{
+  "timestamp": 1790102953744,
+  "webhookEvent": "worklog_updated",
+  "worklog": {
+    "self": "https://zulipp.atlassian.net/rest/api/2/issue/10014/worklog/10066",
+    "author": {
+      "self": "https://zulipp.atlassian.net/rest/api/2/user?accountId=99%3A27935d01-92a7-4687-8272-a9b8d3b2ae2e",
+      "accountId": "99:27935d01-92a7-4687-8272-a9b8d3b2ae2e",
+      "avatarUrls": {
+        "48x48": "https://secure.gravatar.com/avatar/00000000000000000000000000000000?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIS-0.png",
+        "24x24": "https://secure.gravatar.com/avatar/00000000000000000000000000000000?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIS-0.png",
+        "16x16": "https://secure.gravatar.com/avatar/00000000000000000000000000000000?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIS-0.png",
+        "32x32": "https://secure.gravatar.com/avatar/00000000000000000000000000000000?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIS-0.png"
+      },
+      "displayName": "Leo Franchi",
+      "active": true,
+      "timeZone": "Asia/Calcutta",
+      "accountType": "atlassian"
+    },
+    "updateAuthor": {
+      "self": "https://zulipp.atlassian.net/rest/api/2/user?accountId=99%3A27935d01-92a7-4687-8272-a9b8d3b2ae2e",
+      "accountId": "99:27935d01-92a7-4687-8272-a9b8d3b2ae2e",
+      "avatarUrls": {
+        "48x48": "https://secure.gravatar.com/avatar/00000000000000000000000000000000?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIS-0.png",
+        "24x24": "https://secure.gravatar.com/avatar/00000000000000000000000000000000?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIS-0.png",
+        "16x16": "https://secure.gravatar.com/avatar/00000000000000000000000000000000?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIS-0.png",
+        "32x32": "https://secure.gravatar.com/avatar/00000000000000000000000000000000?d=https%3A%2F%2Favatar-management--avatars.us-west-2.prod.public.atl-paas.net%2Finitials%2FIS-0.png"
+      },
+      "displayName": "Leo Franchi",
+      "active": true,
+      "timeZone": "Asia/Calcutta",
+      "accountType": "atlassian"
+    },
+    "comment": "",
+    "created": "2026-09-23T00:18:35.652+0530",
+    "updated": "2026-09-23T00:19:13.744+0530",
+    "started": "2026-09-21T08:16:58.108+0530",
+    "timeSpent": "4d",
+    "timeSpentSeconds": 115200,
+    "id": "10066",
+    "issueId": "10014"
+  }
+}
