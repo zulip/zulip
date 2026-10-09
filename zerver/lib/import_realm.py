@@ -1093,7 +1093,7 @@ def process_avatars(sanitized_record: SanitizedRecord) -> None:
             user_profile.id,
         )
         # Delete the record of the avatar to avoid 404s.
-        set_avatar_to_default(user_profile, acting_user=None)
+        set_avatar_to_default(user_profile, acting_user=None, notify_user=False)
 
 
 def process_emojis(

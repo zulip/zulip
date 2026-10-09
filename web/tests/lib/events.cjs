@@ -692,6 +692,7 @@ exports.fixtures = {
         op: "add",
         person: {
             ...test_user,
+            avatar_source: "G",
             avatar_url: `/avatar/${test_user.user_id}`,
             avatar_version: 1,
             is_admin: false,
@@ -713,6 +714,7 @@ exports.fixtures = {
         op: "add",
         person: {
             ...test_user,
+            avatar_source: "G",
             avatar_url: `/avatar/${test_user.user_id}`,
             avatar_version: 1,
             is_admin: false,

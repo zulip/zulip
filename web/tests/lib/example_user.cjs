@@ -39,6 +39,7 @@ const bot_or_user_props = (opts = {}) => {
         is_guest: role === Role.GUEST,
         is_moderator: role === Role.OWNER || role === Role.ADMINISTRATOR || role === Role.MODERATOR,
         timezone: "UTC",
+        avatar_source: "G",
         avatar_version: 0,
         role,
     };
