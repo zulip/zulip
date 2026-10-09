@@ -1,0 +1,414 @@
+/* Styles for the /slack-alternative/ landing page. Everything here is
+   scoped under `.slack-alternative-page`; the page otherwise reuses the
+   shared marketing page styles for the hero, feature sections, and
+   pricing. */
+.slack-alternative-page {
+    --color-slack-alternative-accent: hsl(219deg 62% 45%);
+    --color-background-glance-card: hsl(0deg 0% 100%);
+    --color-shadow-glance-card: hsl(224deg 52% 12% / 18%);
+    --color-text-testimonial: hsl(233deg 14% 26%);
+    --color-text-testimonial-role: hsl(0deg 0% 40%);
+    --color-shadow-testimonial-hover: hsl(208deg 70% 25% / 25%);
+    --color-border-row: hsl(224deg 52% 12% / 18%);
+
+    /* A shorter hero, so the "at a glance" cards are visible without
+       scrolling. The selector repeats the page's classes to outrank
+       `.portico-landing.why-page .hero.why-zulip` in marketing_page.css,
+       which sets padding-bottom. */
+    &.portico-landing.why-page .hero.slack-alternative-hero {
+        padding: 140px 50px 90px;
+
+        @media (width < 900px) {
+            padding: 130px 20px 80px;
+        }
+
+        /* On phones the first line of the title wraps; keep
+           "open-source" from breaking at its hyphen. */
+        .keep-together {
+            white-space: nowrap;
+        }
+    }
+
+    .glance-cards {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 20px;
+        max-width: 1000px;
+        margin: -50px auto 0;
+        padding: 0 20px;
+        position: relative;
+        z-index: 1;
+
+        @media (width < 768px) {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    .glance-card {
+        padding: 20px 24px 12px;
+        border-radius: 10px;
+        border-top: 5px solid var(--color-prominent-border);
+        background: var(--color-background-glance-card);
+        box-shadow: 0 4px 24px var(--color-shadow-glance-card);
+
+        h2 {
+            margin: 0 0 10px;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+    }
+
+    .trust-logos {
+        max-width: 1300px;
+        margin: 48px auto 0;
+        padding: 0 20px;
+        text-align: center;
+    }
+
+    .trust-logos-caption {
+        font-size: 16px;
+        margin: 0 0 8px;
+    }
+
+    /* Layout for the shared client logo images; the home page's grid
+       for the same logos lives in hello.css, in another bundle. */
+    .client-logos {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(120px, 180px));
+        grid-template-rows: 72px;
+        justify-content: center;
+        place-items: center;
+
+        @media (width < 900px) {
+            grid-template-columns: repeat(3, minmax(100px, 160px));
+            grid-template-rows: repeat(2, 64px);
+        }
+
+        @media (width < 500px) {
+            grid-template-columns: repeat(2, minmax(100px, 160px));
+            grid-template-rows: repeat(3, 56px);
+        }
+    }
+
+    /* The shared logo images are white-on-transparent, drawn for the
+       home page's dark hero; invert them for this light background.
+       `contain` sizing renders every logo at the same height, and
+       shrinks a logo that is wider than its grid cell to fit. */
+    .client-logos .client-logos-div {
+        width: 100%;
+        height: 36px;
+        background-position: center;
+        background-size: contain;
+        background-repeat: no-repeat;
+        filter: invert(1);
+        opacity: 0.6;
+    }
+
+    .alternative-features .feature-container {
+        padding: 24px 4vw;
+
+        /* Section headings are h2 so that the page has a single h1;
+           style them like the h1 headings on the other feature pages. */
+        .feature-text h2 {
+            font-size: 30px;
+            font-weight: 600;
+        }
+
+        /* Plain bullets instead of the checkmark icons the shared
+           feature list styles use. */
+        .feature-text ul {
+            list-style: disc;
+            padding-left: 22px;
+
+            li::before {
+                content: none;
+            }
+
+            .list-content {
+                margin-left: 0;
+            }
+        }
+    }
+
+    .feature-text .intro_quote blockquote {
+        font-size: 17px;
+        margin-top: 24px;
+        margin-bottom: 0;
+    }
+
+    .alternative-features .feature-image img {
+        max-width: 100%;
+    }
+
+    /* The inbox screenshot has room to breathe next to the async copy.
+       Outweigh the shared 400px feature-image img rule. */
+    .feature-image .wide-feature-image {
+        width: 560px;
+    }
+
+    /* In the other sections, the 400px image sets the width of the
+       image column. Give this section's narrower graphic a column of
+       the same width, so that the section lines up with the others. */
+    #moving {
+        @media (width >= 768px) {
+            grid-template-columns: 43% minmax(0, 400px);
+        }
+    }
+
+    /* Slack, a hand-drawn arrow, Zulip: the move in one picture. */
+    .switch-art {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        padding: 24px 0;
+
+        @media (width < 360px) {
+            gap: 12px;
+        }
+    }
+
+    .switch-art-slack {
+        flex: none;
+        font-size: 40px;
+        font-weight: 600;
+
+        @media (width < 360px) {
+            font-size: 32px;
+        }
+    }
+
+    .switch-art-arrow {
+        width: 100px;
+        height: 46px;
+        flex: none;
+        fill: none;
+        stroke: var(--color-slack-alternative-accent);
+        stroke-width: 3;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+
+        @media (width < 360px) {
+            width: 72px;
+            height: 33px;
+        }
+    }
+
+    /* Outweigh the shared 400px feature-image img rule. */
+    .switch-art .switch-art-zulip {
+        width: 86px;
+        height: 86px;
+        flex: none;
+
+        @media (width < 360px) {
+            width: 68px;
+            height: 68px;
+        }
+    }
+
+    /* The restated claim and the comparison table share one shaded
+       band: the table is the evidence for the claim above it. */
+    .compare-band {
+        box-sizing: border-box;
+        max-width: 1100px;
+        margin: 48px auto 0;
+        padding: 56px 24px 48px;
+        border-radius: 10px;
+        background: var(--color-background-box);
+    }
+
+    .restate-claim {
+        margin: 0 auto;
+        padding: 0 20px;
+        text-align: center;
+    }
+
+    .restate-claim-line {
+        font-size: 28px;
+        font-weight: 600;
+        line-height: 1.4;
+        margin: 0;
+    }
+
+    .restate-claim-sub {
+        margin: 10px 0 0;
+        font-size: 17px;
+        opacity: 0.8;
+    }
+
+    .compare-section {
+        max-width: 900px;
+        margin: 40px auto 0;
+        padding: 0 20px;
+
+        @media (width < 640px) {
+            padding: 0;
+        }
+    }
+
+    .vs-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 16px;
+        line-height: 1.5;
+
+        thead th,
+        thead td {
+            font-size: 18px;
+            font-weight: 600;
+            text-align: left;
+            padding: 10px 14px;
+            border-bottom: 2px solid var(--color-prominent-border);
+        }
+
+        tbody th {
+            font-weight: 600;
+            text-align: left;
+            vertical-align: top;
+            padding: 12px 14px;
+            width: 24%;
+        }
+
+        tbody td {
+            vertical-align: top;
+            padding: 12px 14px;
+            width: 38%;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--color-border-row);
+        }
+
+        @media (width < 768px) {
+            font-size: 15px;
+
+            thead th,
+            tbody th,
+            tbody td {
+                padding: 8px;
+            }
+        }
+
+        /* Three columns leave each cell only a few words wide on
+           phones, so each feature name gets a line of its own, with
+           the Slack and Zulip cells side by side below it. */
+        @media (width < 640px) {
+            tr {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                column-gap: 16px;
+            }
+
+            thead td {
+                display: none;
+            }
+
+            tbody th {
+                grid-column: 1 / -1;
+                width: auto;
+                padding-bottom: 0;
+            }
+
+            tbody td {
+                width: auto;
+            }
+        }
+    }
+
+    .compare-cta {
+        margin-top: 18px;
+    }
+
+    /* Testimonials, presented as the home page presents them:
+       speech bubbles with a tail, and a bold name + italic role.
+       The home page styles live in hello.css, which is in another
+       webpack bundle, so the bubble is drawn again here. */
+    .switched-testimonials {
+        max-width: 1100px;
+        margin: 24px auto 0;
+        padding: 0 20px;
+
+        h2 {
+            text-align: center;
+            font-weight: 600;
+            margin: 0 0 20px;
+        }
+    }
+
+    .switched-testimonials-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 24px 28px;
+
+        @media (width < 768px) {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+
+    /* Specific enough to win over the shared `.portico-landing
+       a:not(.button)` link styles. */
+    .switched-testimonials a.switched-testimonial {
+        /* Stretch the bubble so all three fill the row's height and
+           the attribution lines align. */
+        display: flex;
+        flex-direction: column;
+
+        &,
+        &:hover {
+            text-decoration: none;
+            color: inherit;
+        }
+    }
+
+    .switched-testimonial-text {
+        position: relative;
+        flex: 1;
+        padding: 20px 24px 18px;
+        border-radius: 25px 25px 25px 0;
+        background: var(--color-background-box);
+        font-size: 18px;
+        line-height: 140%;
+        color: var(--color-text-testimonial);
+        transition: box-shadow 0.3s ease-out;
+
+        strong {
+            color: var(--color-slack-alternative-accent);
+            font-weight: 600;
+        }
+
+        &::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -14px;
+            width: 22px;
+            height: 14px;
+            background: var(--color-background-box);
+            clip-path: polygon(0 0, 100% 0, 0 100%);
+        }
+    }
+
+    .switched-testimonial:hover .switched-testimonial-text {
+        box-shadow: 0 8px 24px var(--color-shadow-testimonial-hover);
+    }
+
+    .switched-testimonial-source {
+        margin: 22px 0 0 4px;
+        font-size: 15px;
+
+        i {
+            color: var(--color-text-testimonial-role);
+        }
+    }
+}
