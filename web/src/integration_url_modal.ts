@@ -17,6 +17,7 @@ import {$t, $t_html} from "./i18n.ts";
 import * as branch_pill from "./integration_branch_pill.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as ui_util from "./ui_util.ts";
 import * as util from "./util.ts";
 
 type UrlOption = {
@@ -59,7 +60,6 @@ export function show_generate_integration_url_modal(api_key: string): void {
     };
     const modal_content_html = render_generate_integration_url_modal({
         default_url_message,
-        max_topic_length: realm.max_topic_length,
         empty_string_topic_display_name: util.get_final_topic_display_name(""),
     });
 
@@ -93,10 +93,22 @@ export function show_generate_integration_url_modal(api_key: string): void {
         const $topic_placeholder = $("#integration-url-topic-placeholder");
 
         $topic_input.on("input focus", () => {
+            if (
+                ui_util.truncate_input_to_max_code_points(
+                    util.the($topic_input),
+                    realm.max_topic_length,
+                )
+            ) {
+                $topic_input.addClass("input-validation-shake");
+            }
             $topic_placeholder.toggleClass(
                 "visible",
                 $topic_input.val() === "" && channel_allows_empty_topic,
             );
+        });
+
+        $topic_input.on("animationend", () => {
+            $topic_input.removeClass("input-validation-shake");
         });
 
         $dialog_submit_button.prop("disabled", true);
