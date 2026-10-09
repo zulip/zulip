@@ -377,7 +377,14 @@ class LogRequests(MiddlewareMixin):
 
 
 class JsonErrorHandler(MiddlewareMixin):
+    def request_expects_json(self, request: HttpRequest) -> bool:
+        error_format = RequestNotes.get_notes(request).error_format
+        if error_format == "JSON":
+            return True
+        return request.path.startswith("/api") or request.path.startswith("/json")
+
     def process_exception(self, request: HttpRequest, exception: Exception) -> HttpResponse | None:
+        expect_json = self.request_expects_json(request)
         if isinstance(exception, MissingAuthenticationError):
             if request.get_preferred_type(["application/json", "text/html"]) == "text/html":
                 # If this looks like a request from a top-level page in a
@@ -410,7 +417,7 @@ class JsonErrorHandler(MiddlewareMixin):
                 # `InternalBouncerServerError` raised (status code 502) as
                 # it helps the client to show the user a more accurate error message.
                 return response
-        elif RequestNotes.get_notes(request).error_format == "JSON" and not settings.TEST_SUITE:
+        elif expect_json and not settings.TEST_SUITE:
             response = json_response(
                 res_type="error", msg=_("Internal server error"), status=500, exception=exception
             )
