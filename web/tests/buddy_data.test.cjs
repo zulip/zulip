@@ -240,6 +240,7 @@ test("title_data", ({override}) => {
         second_line: "",
         third_line: "translated: Active now",
         show_you: true,
+        is_unsubscribed_participant: false,
     };
     override(current_user, "user_id", me.user_id);
     assert.deepEqual(buddy_data.get_title_data(me.user_id, is_group, false), expected_data);
@@ -249,6 +250,7 @@ test("title_data", ({override}) => {
         second_line: "out to lunch",
         third_line: "translated: Active now",
         show_you: true,
+        is_unsubscribed_participant: false,
     };
     override(current_user, "user_id", me.user_id);
     assert.deepEqual(buddy_data.get_title_data(me.user_id, is_group, true), expected_data);
@@ -258,8 +260,25 @@ test("title_data", ({override}) => {
         second_line: "translated: Not active in the last year",
         third_line: "",
         show_you: false,
+        is_unsubscribed_participant: false,
     };
     assert.deepEqual(buddy_data.get_title_data(old_user.user_id, is_group, true), expected_data);
+
+    // Topic participants who aren't subscribed to the channel.
+    const rome_sub = make_stream({name: "Rome", stream_id: 1001});
+    stream_data.add_sub_for_tests(rome_sub);
+    peer_data.set_subscribers(rome_sub.stream_id, [me.user_id]);
+    message_lists.set_current(
+        make_message_list([
+            {operator: "channel", operand: String(rome_sub.stream_id)},
+            {operator: "topic", operand: "Foo"},
+        ]),
+    );
+    expected_data = {...expected_data, is_unsubscribed_participant: true};
+    assert.deepEqual(
+        buddy_data.get_title_data(old_user.user_id, is_group, true, new Set([old_user.user_id])),
+        expected_data,
+    );
 
     // Deactivated users.
     people.deactivate(selma);
@@ -637,6 +656,38 @@ test("user_last_seen_time_status", ({override}) => {
     );
 });
 
+test("user_is_unsubscribed_participant", () => {
+    people.add_active_user(selma);
+    people.add_active_user(alice);
+    people.add_active_user(fred);
+
+    const rome_sub = make_stream({name: "Rome", stream_id: 1001});
+    stream_data.add_sub_for_tests(rome_sub);
+    peer_data.set_subscribers(rome_sub.stream_id, [selma.user_id, me.user_id]);
+
+    const participants = new Set([selma.user_id, alice.user_id]);
+
+    // Outside of a channel view, nobody is an unsubscribed participant.
+    assert.ok(!buddy_data.user_is_unsubscribed_participant(alice.user_id, participants));
+
+    message_lists.set_current(
+        make_message_list([
+            {operator: "channel", operand: String(rome_sub.stream_id)},
+            {operator: "topic", operand: "Foo"},
+        ]),
+    );
+    assert.ok(!buddy_data.user_is_unsubscribed_participant(selma.user_id, participants));
+    assert.ok(buddy_data.user_is_unsubscribed_participant(alice.user_id, participants));
+    // Fred isn't subscribed, but also isn't a participant.
+    assert.ok(!buddy_data.user_is_unsubscribed_participant(fred.user_id, participants));
+
+    // With only partial subscriber data, we don't know whether Alice
+    // is subscribed, so we don't mark her as unsubscribed.
+    peer_data.clear_for_testing();
+    peer_data.set_subscribers(rome_sub.stream_id, [selma.user_id, me.user_id], false);
+    assert.ok(!buddy_data.user_is_unsubscribed_participant(alice.user_id, participants));
+});
+
 test("get_items_for_users", ({override}) => {
     add_canned_users();
     set_presence(alice.user_id, "offline");
@@ -662,6 +713,20 @@ test("get_items_for_users", ({override}) => {
         user_status.set_status_emoji({user_id, ...status_emoji_info_event});
     }
 
+    // Alice has posted in the topic, but isn't subscribed to the channel.
+    const rome_sub = make_stream({name: "Rome", stream_id: 1001});
+    stream_data.add_sub_for_tests(rome_sub);
+    peer_data.set_subscribers(rome_sub.stream_id, [me.user_id, fred.user_id]);
+    message_lists.set_current(
+        make_message_list(
+            [
+                {operator: "channel", operand: String(rome_sub.stream_id)},
+                {operator: "topic", operand: "Foo"},
+            ],
+            {visible_participants: [alice.user_id, fred.user_id]},
+        ),
+    );
+
     const user_list_style = {
         COMPACT: false,
         WITH_STATUS: true,
@@ -682,6 +747,7 @@ test("get_items_for_users", ({override}) => {
             user_id: 1001,
             user_list_style,
             should_add_guest_user_indicator: false,
+            is_unsubscribed_participant: false,
         },
         {
             href: "#narrow/dm/1002-Alice-Smith",
@@ -696,6 +762,7 @@ test("get_items_for_users", ({override}) => {
             user_id: 1002,
             user_list_style,
             should_add_guest_user_indicator: false,
+            is_unsubscribed_participant: true,
         },
         {
             href: "#narrow/dm/1003-Fred-Flintstone",
@@ -710,6 +777,7 @@ test("get_items_for_users", ({override}) => {
             user_id: 1003,
             user_list_style,
             should_add_guest_user_indicator: false,
+            is_unsubscribed_participant: false,
         },
     ]);
 });
