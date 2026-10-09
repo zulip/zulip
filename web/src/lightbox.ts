@@ -627,6 +627,23 @@ export function next(): void {
     $(".image-list .image.selected").next().trigger("click");
 }
 
+// Called from hotkey.ts's Enter/Space handling when a lightbox video is open.
+export function toggle_video_playback(): boolean {
+    if (!is_open) {
+        return false;
+    }
+    const video = $("#lightbox_overlay .video-player video")[0];
+    if (video instanceof HTMLVideoElement) {
+        if (video.paused) {
+            void video.play();
+        } else {
+            video.pause();
+        }
+        return true;
+    }
+    return false;
+}
+
 function update_arrow_visibility(): void {
     const $selected = $(".image-list .image.selected");
     const has_prev = $selected.prev(".image").length > 0;
