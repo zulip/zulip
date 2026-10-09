@@ -288,8 +288,11 @@ function handle_bulleting_or_numbering(
     $textarea: JQuery<HTMLTextAreaElement>,
     e: JQuery.KeyDownEvent,
 ): void {
-    // We only want this functionality if the cursor is not in a code block
+    // We only want this functionality if the cursor is not in a code
+    // block; there, we just insert a newline.
     if (compose_ui.cursor_inside_code_block($textarea)) {
+        compose_ui.insert_and_scroll_into_view("\n", $textarea);
+        e.preventDefault();
         return;
     }
     // handles automatic insertion or removal of bulleting or numbering
