@@ -119,6 +119,7 @@ class UserBaseSettings(models.Model):
 
     # UI setting controlling whether the Zulip web app's left sidebar
     # lists a channel's resolved topics after its unresolved ones.
+    # Subscriptions can override it per channel.
     WEB_LEFT_SIDEBAR_TOPICS_ORDER_RECENT_ACTIVITY = 1
     WEB_LEFT_SIDEBAR_TOPICS_ORDER_UNRESOLVED_FIRST = 2
 

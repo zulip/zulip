@@ -397,6 +397,19 @@ class Subscription(models.Model):
     DEFAULT_STREAM_COLOR = "#c2c2c2"
     color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)
     pin_to_top = models.BooleanField(default=False)
+    # Whether the left sidebar lists the channel's resolved topics
+    # after its unresolved ones. INHERIT follows the user's
+    # web_left_sidebar_topics_order setting, whose values
+    # the other choices share.
+    WEB_LEFT_SIDEBAR_TOPICS_ORDER_INHERIT = 0
+    WEB_LEFT_SIDEBAR_TOPICS_ORDER_CHOICES = [
+        WEB_LEFT_SIDEBAR_TOPICS_ORDER_INHERIT,
+        *UserProfile.WEB_LEFT_SIDEBAR_TOPICS_ORDER_CHOICES,
+    ]
+    web_left_sidebar_topics_order = models.PositiveSmallIntegerField(
+        default=WEB_LEFT_SIDEBAR_TOPICS_ORDER_INHERIT,
+        db_default=WEB_LEFT_SIDEBAR_TOPICS_ORDER_INHERIT,
+    )
 
     # These fields are stream-level overrides for the user's default
     # configuration for notification, configured in UserProfile.  The
@@ -443,6 +456,7 @@ class Subscription(models.Model):
         "is_muted",
         "pin_to_top",
         "push_notifications",
+        "web_left_sidebar_topics_order",
         "wildcard_mentions_notify",
     ]
 

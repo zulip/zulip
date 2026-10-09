@@ -1189,6 +1189,7 @@ export function create_sub_from_server_data(
         newly_subscribed: false,
         is_muted: false,
         pin_to_top: false,
+        web_left_sidebar_topics_order: settings_config.web_left_sidebar_topics_order_inherit,
         desktop_notifications: null,
         audible_notifications: null,
         push_notifications: null,

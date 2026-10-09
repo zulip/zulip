@@ -949,6 +949,7 @@ exports.fixtures = {
                 pin_to_top: false,
                 push_notifications: false,
                 stream_weekly_traffic: 40,
+                web_left_sidebar_topics_order: 0,
                 wildcard_mentions_notify: false,
                 subscribers: [5, 8, 13, 21],
             },

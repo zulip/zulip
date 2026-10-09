@@ -213,6 +213,7 @@ class RawSubscriptionDict(TypedDict):
     pin_to_top: bool
     push_notifications: bool | None
     recipient_id: int
+    web_left_sidebar_topics_order: int
     wildcard_mentions_notify: bool | None
 
 
@@ -264,6 +265,7 @@ class SubscriptionStreamDict(TypedDict):
     subscriber_count: int
     subscribers: NotRequired[list[int]]
     topics_policy: str
+    web_left_sidebar_topics_order: int
     wildcard_mentions_notify: bool | None
 
 

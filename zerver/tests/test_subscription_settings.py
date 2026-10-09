@@ -1,9 +1,14 @@
+from typing import TYPE_CHECKING
+
 import orjson
 
 from zerver.lib.subscription_info import gather_subscriptions, gather_subscriptions_helper
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
 from zerver.models import Recipient, Subscription
+
+if TYPE_CHECKING:
+    from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
 
 
 class SubscriptionPropertiesTest(ZulipTestCase):
@@ -198,6 +203,52 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.assert_json_success(result)
         updated_sub = get_subscription(sub["name"], user)
         self.assertEqual(updated_sub.pin_to_top, not new_pin_to_top)
+
+    def test_set_web_left_sidebar_topics_order(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        old_subs, _ = gather_subscriptions(user)
+        sub = old_subs[0]
+        stream_id = sub["stream_id"]
+        self.assertEqual(sub["web_left_sidebar_topics_order"], 0)
+
+        def set_order(value: object) -> "TestHttpResponse":
+            return self.api_post(
+                user,
+                "/api/v1/users/me/subscriptions/properties",
+                {
+                    "subscription_data": orjson.dumps(
+                        [
+                            {
+                                "property": "web_left_sidebar_topics_order",
+                                "stream_id": stream_id,
+                                "value": value,
+                            }
+                        ]
+                    ).decode()
+                },
+            )
+
+        result = set_order(2)
+        self.assert_json_success(result)
+        updated_sub = get_subscription(sub["name"], user)
+        self.assertEqual(updated_sub.web_left_sidebar_topics_order, 2)
+
+        for value in (3, True, "2"):
+            result = set_order(value)
+            self.assert_json_error(result, "Invalid web_left_sidebar_topics_order")
+        updated_sub = get_subscription(sub["name"], user)
+        self.assertEqual(updated_sub.web_left_sidebar_topics_order, 2)
+
+        result = self.api_patch(
+            user,
+            f"/api/v1/users/me/subscriptions/{stream_id}",
+            {"property": "web_left_sidebar_topics_order", "value": "1"},
+        )
+        self.assert_json_success(result)
+        updated_sub = get_subscription(sub["name"], user)
+        self.assertEqual(updated_sub.web_left_sidebar_topics_order, 1)
 
     def test_change_is_muted(self) -> None:
         test_user = self.example_user("hamlet")

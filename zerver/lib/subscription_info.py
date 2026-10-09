@@ -133,6 +133,7 @@ def get_web_public_subs(
         stream_weekly_traffic = get_average_weekly_stream_traffic(
             stream.id, stream.date_created, {}
         )
+        web_left_sidebar_topics_order = Subscription.WEB_LEFT_SIDEBAR_TOPICS_ORDER_INHERIT
         wildcard_mentions_notify = True
 
         sub = SubscriptionStreamDict(
@@ -175,6 +176,7 @@ def get_web_public_subs(
             stream_weekly_traffic=stream_weekly_traffic,
             subscriber_count=stream.subscriber_count,
             topics_policy=StreamTopicsPolicyEnum(topics_policy).name,
+            web_left_sidebar_topics_order=web_left_sidebar_topics_order,
             wildcard_mentions_notify=wildcard_mentions_notify,
         )
         subscribed.append(sub)
@@ -322,6 +324,7 @@ def build_stream_dict_for_sub(
     # Handle Subscription.API_FIELDS.
     color = sub_dict["color"]
     is_muted = sub_dict["is_muted"]
+    web_left_sidebar_topics_order = sub_dict["web_left_sidebar_topics_order"]
     pin_to_top = sub_dict["pin_to_top"]
     audible_notifications = sub_dict["audible_notifications"]
     desktop_notifications = sub_dict["desktop_notifications"]
@@ -374,6 +377,7 @@ def build_stream_dict_for_sub(
         stream_weekly_traffic=stream_weekly_traffic,
         subscriber_count=subscriber_count,
         topics_policy=topics_policy,
+        web_left_sidebar_topics_order=web_left_sidebar_topics_order,
         wildcard_mentions_notify=wildcard_mentions_notify,
     )
 

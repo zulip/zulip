@@ -995,6 +995,7 @@ class SingleSubscription(BaseEventModel):
     subscriber_count: int
     subscribers: list[int]
     topics_policy: str
+    web_left_sidebar_topics_order: int
     wildcard_mentions_notify: bool | None
 
 

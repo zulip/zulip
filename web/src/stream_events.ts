@@ -187,6 +187,9 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             update_stream_setting(sub, value, "pin_to_top");
             stream_list.refresh_pinned_or_unpinned_stream(sub);
         },
+        web_left_sidebar_topics_order(value) {
+            sub.web_left_sidebar_topics_order = value;
+        },
         invite_only(value) {
             assert(other_values !== undefined);
             stream_settings_ui.update_stream_privacy(sub, {

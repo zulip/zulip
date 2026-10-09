@@ -474,6 +474,7 @@ def send_subscription_add_events(
                 is_muted=subscription.is_muted,
                 pin_to_top=subscription.pin_to_top,
                 push_notifications=subscription.push_notifications,
+                web_left_sidebar_topics_order=subscription.web_left_sidebar_topics_order,
                 wildcard_mentions_notify=subscription.wildcard_mentions_notify,
                 # Computed fields not present in Subscription.API_FIELDS
                 in_home_view=not subscription.is_muted,
