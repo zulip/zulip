@@ -20,6 +20,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 from requests.models import PreparedRequest
+from typing_extensions import override
 
 from confirmation import settings as confirmation_settings
 from confirmation.models import Confirmation, create_confirmation_link, get_object_from_key
@@ -65,6 +66,7 @@ from zerver.data_import.slack import (
     get_subscription,
     get_user_timezone,
     process_message_files,
+    reset_import_state,
     slack_emoji_name_to_codepoint,
     slack_workspace_to_realm,
     thread_parent_map,
@@ -198,6 +200,13 @@ def slack_import_integrity_error(constraint_name: str) -> IntegrityError:
 
 
 class SlackImporter(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        # Thread parents are cached across conversions; start each test
+        # without the ones earlier tests converted.
+        reset_import_state()
+
     def run_channel_message_to_zerver_message_with_fixtures(
         self, fixture_names: list[str], **kwargs: Any
     ) -> MessageConversionResult:
