@@ -2986,6 +2986,24 @@ test("begins_typeahead", ({override, override_rewire}) => {
         "#**Sweden**totally new topic",
         typed_topics("Sweden", ["totally new topic"], is_new_topic),
     );
+    // Punctuation right after the complete link ends the sentence rather
+    // than starting a topic.
+    for (const punctuation of [",", ".", ":", ";", "?", "!", "-", "(", ")", "[", "]", '"', "'"]) {
+        assert_typeahead_equals(`#**Sweden**${punctuation}`, []);
+    }
+    assert_typeahead_equals("#**Sweden**. Now see", []);
+    assert.deepEqual(
+        get_values("#**Sweden**. Now see #den", "").map((item) => item.name),
+        ["Denmark", "Sweden"],
+    );
+    // The same applies to the markdown fallback link form.
+    assert.deepEqual(
+        get_values("[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)", "").map(
+            (item) => item.topic,
+        ),
+        ["A* Algorithm"],
+    );
+    assert_typeahead_equals("[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm).", []);
     // A space immediately after the complete link means the user has
     // moved on to the message body: the complete-link pattern doesn't
     // match, and with no other token present there are no suggestions.

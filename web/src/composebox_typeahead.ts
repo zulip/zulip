@@ -52,6 +52,13 @@ import * as util from "./util.ts";
 /* Maximum channel name length + link syntax (#**>**) + some topic characters */
 const MAX_LOOKBACK_FOR_TYPEAHEAD_COMPLETION = 60 + 6 + 20;
 
+const CHANNEL_LINK_TERMINATING_PUNCTUATION = ",.:;?!-()[]\"'";
+
+function starts_with_terminating_punctuation(link_tokens: RegExpExecArray | null): boolean {
+    const query = link_tokens?.at(-1) ?? "";
+    return query !== "" && CHANNEL_LINK_TERMINATING_PUNCTUATION.includes(query[0]!);
+}
+
 // **********************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS
 // **********************************
@@ -1156,12 +1163,18 @@ export function get_candidates(
         // after picking a channel), not when the cursor lands after an
         // existing link.
         const typeahead_already_shown = compose_ui.compose_textarea_typeahead?.shown ?? false;
-        const complete_channel_link_tokens = typeahead_already_shown
+        let complete_channel_link_tokens = typeahead_already_shown
             ? complete_stream_regex.exec(split[0])
             : null;
-        const complete_fallback_link_tokens = typeahead_already_shown
+        let complete_fallback_link_tokens = typeahead_already_shown
             ? complete_fallback_stream_regex.exec(split[0])
             : null;
+        if (starts_with_terminating_punctuation(complete_channel_link_tokens)) {
+            complete_channel_link_tokens = null;
+        }
+        if (starts_with_terminating_punctuation(complete_fallback_link_tokens)) {
+            complete_fallback_link_tokens = null;
+        }
         const tokens =
             partial_stream_topic_tokens ?? // #**channel>topic
             topic_shortcut_tokens ?? // #>topic
