@@ -665,38 +665,41 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             self.add_oembed_data(root, link, extracted_data)
             return
 
-        if extracted_data.image is None:
-            # Don't add an embed if an image is not found
+        title = extracted_data.title.strip() if extracted_data.title else ""
+        description = extracted_data.description.strip() if extracted_data.description else ""
+        if extracted_data.image is None and not title and not description:
+            # Don't add an embed if there is no useful data to show.
             return
 
         container = SubElement(root, "div")
         container.set("class", "message_embed")
 
-        img_link = get_camo_url(extracted_data.image)
-        img = SubElement(container, "a")
-        img.set(
-            "style",
-            'background-image: url("'
-            + img_link.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\a ")
-            + '")',
-        )
-        img.set("href", link)
-        img.set("class", "message_embed_image")
+        if extracted_data.image is not None:
+            img_link = get_camo_url(extracted_data.image)
+            img = SubElement(container, "a")
+            img.set(
+                "style",
+                'background-image: url("'
+                + img_link.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\a ")
+                + '")',
+            )
+            img.set("href", link)
+            img.set("class", "message_embed_image")
 
         data_container = SubElement(container, "div")
         data_container.set("class", "data-container")
 
-        if extracted_data.title:
+        if title:
             title_elm = SubElement(data_container, "div")
             title_elm.set("class", "message_embed_title")
             a = SubElement(title_elm, "a")
             a.set("href", link)
-            a.set("title", extracted_data.title)
-            a.text = extracted_data.title
-        if extracted_data.description:
+            a.set("title", title)
+            a.text = title
+        if description:
             description_elm = SubElement(data_container, "div")
             description_elm.set("class", "message_embed_description")
-            description_elm.text = extracted_data.description
+            description_elm.text = description
 
     def get_actual_image_url(self, url: str) -> str:
         # Add specific per-site cases to convert image-preview URLs to image URLs.
@@ -1068,8 +1071,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     continue
 
                 # If there is data, but it's None, we did process the URL,
-                # but it was not valid to preview. If no image was found,
-                # `add_embed` below will skip building the embed.
+                # but it was not valid to preview.
                 extracted_data = self.zmd.url_embed_data[url]
                 if extracted_data is None:
                     continue
