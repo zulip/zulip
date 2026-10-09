@@ -1,0 +1,93 @@
+{% extends "zerver/marketing_page.html" %}
+
+{% set PAGE_TITLE = "Try Zulip | Zulip" %}
+
+{% set PAGE_DESCRIPTION = "See Zulip in action by exploring the Zulip
+  development community. No account required." %}
+
+
+{% block marketing_content %}
+
+<div class="portico-landing why-page solutions-page try-zulip-page">
+    <div class="hero bg-pycon why-zulip">
+        <div class="bg-dimmer"></div>
+        <div class="content try-zulip-hero">
+            <picture class="try-zulip-screenshot">
+                <source type="image/webp" srcset="{{ static('images/landing-page/hello/generated/try-zulip-screenshot-2x.webp') }}"/>
+                <img alt="" width="1333" height="815" src="{{ static('images/landing-page/hello/generated/try-zulip-screenshot-2x.jpg') }}"/>
+            </picture>
+            <div class="try-zulip-hero-text">
+                <h1>See it in action</h1>
+                <p>
+                    The <strong>Zulip development community</strong> is
+                    where we collaborate with hundreds of participants to
+                    improve Zulip. Many parts of the community are open
+                    for public access, so you can start exploring without
+                    creating an account.
+                </p>
+                <div class="hero-buttons">
+                    <a href="https://chat.zulip.org/?show_try_zulip_modal" class="button">
+                        {{ _('Check it out') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="try-zulip-guide">
+        <div class="try-zulip-participate">
+            <h2>Going deeper</h2>
+            <p>
+                To fully experience Zulip, <a href="https://chat.zulip.org/join/t5crtoe62bpcxyisiyglmtvb/">create an account</a>
+                in the development community and introduce yourself in
+                the <a href="https://chat.zulip.org/#narrow/channel/95-new-members">#new members</a>
+                channel.
+            </p>
+            <p>
+                Come back later to see how Zulip makes it easy to catch up
+                on the conversations you’ve missed.
+            </p>
+            <p>
+                Please be sure to follow the <a href="/development-community/">community guidelines</a>,
+                and send any test messages to the <a href="https://chat.zulip.org/#narrow/channel/7-test-here">#test here</a>
+                channel.
+            </p>
+        </div>
+        <div class="try-zulip-tips">
+            <div class="try-zulip-tip">
+                <h3>Recent conversations</h3>
+                <p>
+                    You’ll see a list of recent conversations as soon as
+                    you open the app. Each one is labeled with a topic by
+                    the person who started it.
+                </p>
+            </div>
+            <div class="try-zulip-tip">
+                <h3>Channels</h3>
+                <p>
+                    Click on the name of a channel to open a list of its
+                    recent conversation topics. For example, explore
+                    discussions of Zulip design changes in <a href="https://chat.zulip.org/#narrow/channel/101-design">#design</a>,
+                    or follow bug investigations in <a href="https://chat.zulip.org/#narrow/channel/9-issues">#issues</a>.
+                </p>
+            </div>
+            <div class="try-zulip-tip">
+                <h3>Topics</h3>
+                <p>
+                    Click on each topic in a channel to view conversations
+                    one at a time. Notice how Zulip makes it easy to have
+                    many conversations at once, without them getting in
+                    each other’s way.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content markdown">
+                {{ render_markdown_path('corporate/try-zulip.md') }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
