@@ -12,6 +12,7 @@
 * [Fetch a single message](/api/get-message)
 * [Check if messages match a narrow](/api/check-messages-match-narrow)
 * [Get a message's edit history](/api/get-message-history)
+* [Delete a message's edit history](/api/delete-message-history)
 * [Update personal message flags](/api/update-message-flags)
 * [Update personal message flags for narrow](/api/update-message-flags-for-narrow)
 * [Mark all messages as read](/api/mark-all-as-read)
