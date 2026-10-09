@@ -1756,8 +1756,6 @@ run_test("user_status", ({override}) => {
             emoji_name: "smiley",
             emoji_code: "1f603",
             reaction_type: "unicode_emoji",
-            // Extra parameters that were added by `emoji.get_emoji_details_by_name`
-            emoji_alt_code: false,
         });
     }
 
@@ -1839,8 +1837,19 @@ run_test("realm_user_settings_defaults", ({override}) => {
     let event = event_fixtures.realm_user_settings_defaults__emojiset;
     override(realm_user_settings_defaults, "emojiset", "text");
     override(settings_realm_user_settings_defaults, "update_page", noop);
+    const select_emojiset_stub = make_stub();
+    override(settings_preferences, "select_emojiset_for_images", select_emojiset_stub.f);
+    override(user_settings, "emojiset", "twitter");
     dispatch(event);
     assert_same(realm_user_settings_defaults.emojiset, "google");
+    assert.equal(select_emojiset_stub.num_calls, 0);
+
+    // Users with the plain-text emoji set display emoji images using
+    // the organization's default emoji set.
+    override(realm_user_settings_defaults, "emojiset", "text");
+    override(user_settings, "emojiset", "text");
+    dispatch(event);
+    assert.equal(select_emojiset_stub.num_calls, 1);
 
     event = event_fixtures.realm_user_settings_defaults__notification_sound;
     override(realm_user_settings_defaults, "notification_sound", "zulip");

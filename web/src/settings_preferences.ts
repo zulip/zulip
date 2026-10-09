@@ -15,6 +15,7 @@ import * as information_density from "./information_density.ts";
 import * as loading from "./loading.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
+import {realm_user_settings_defaults} from "./realm_user_settings_defaults.ts";
 import type {RealmDefaultSettings} from "./realm_user_settings_defaults.ts";
 import * as settings_components from "./settings_components.ts";
 import type {RequestOpts} from "./settings_ui.ts";
@@ -307,6 +308,15 @@ export function set_up(settings_panel: SettingsPanel): void {
     render_language_dropdown_widget();
 }
 
+export async function select_emojiset_for_images(): Promise<void> {
+    await emojisets.select(
+        emojisets.get_emojiset_for_images(
+            user_settings.emojiset,
+            realm_user_settings_defaults.emojiset,
+        ),
+    );
+}
+
 export async function report_emojiset_change(settings_panel: SettingsPanel): Promise<void> {
     // TODO: Clean up how this works so we can use
     // change_display_setting.  The challenge is that we don't want to
@@ -314,7 +324,7 @@ export async function report_emojiset_change(settings_panel: SettingsPanel): Pro
     // causes the actual sprite sheet to change.  The current
     // implementation is wrong, though, in that it displays the UI
     // update in all active browser windows.
-    await emojisets.select(settings_panel.settings_object.emojiset);
+    await select_emojiset_for_images();
 
     const $spinner = $(settings_panel.container).find(".emoji-preferences-settings-status");
     if ($spinner.length > 0) {

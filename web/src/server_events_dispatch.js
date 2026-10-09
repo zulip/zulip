@@ -627,6 +627,10 @@ export function dispatch_normal_event(event) {
                     realm_user_settings_defaults,
                 );
             }
+
+            if (event.property === "emojiset" && user_settings.emojiset === "text") {
+                void settings_preferences.select_emojiset_for_images();
+            }
             break;
         }
 
