@@ -124,6 +124,7 @@ def get_web_public_subs(
         # new user subscription set.
         audible_notifications = True
         color = get_next_color()
+        demote_resolved_topics = False
         desktop_notifications = True
         email_notifications = True
         in_home_view = True
@@ -152,6 +153,7 @@ def get_web_public_subs(
             creator_id=creator_id,
             date_created=date_created,
             default_push_notifications=default_push_notifications,
+            demote_resolved_topics=demote_resolved_topics,
             description=description,
             desktop_notifications=desktop_notifications,
             email_notifications=email_notifications,
@@ -321,6 +323,7 @@ def build_stream_dict_for_sub(
 
     # Handle Subscription.API_FIELDS.
     color = sub_dict["color"]
+    demote_resolved_topics = sub_dict["demote_resolved_topics"]
     is_muted = sub_dict["is_muted"]
     pin_to_top = sub_dict["pin_to_top"]
     audible_notifications = sub_dict["audible_notifications"]
@@ -351,6 +354,7 @@ def build_stream_dict_for_sub(
         creator_id=creator_id,
         date_created=date_created,
         default_push_notifications=default_push_notifications,
+        demote_resolved_topics=demote_resolved_topics,
         description=description,
         desktop_notifications=desktop_notifications,
         email_notifications=email_notifications,
