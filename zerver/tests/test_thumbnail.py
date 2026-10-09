@@ -25,6 +25,7 @@ from zerver.lib.thumbnail import (
     get_transcoded_format,
     missing_thumbnails,
     resize_emoji,
+    resize_fit,
     split_thumbnail_path,
 )
 from zerver.lib.upload import (
@@ -205,6 +206,19 @@ class ThumbnailEmojiTest(ZulipTestCase):
         self.assertEqual(emoji_image.width, 50)
         self.assertEqual(emoji_image.get_n_pages(), 1)
         assert no_still_data is None
+
+    def test_resize_fit_adds_alpha_for_noalpha_image(self) -> None:
+        """A no-alpha image gets alpha channel"""
+        with get_test_image_file("img.jpg") as fp:
+            input_data = fp.read()
+
+        input_image = pyvips.Image.new_from_buffer(input_data, "")
+        self.assertFalse(input_image.hasalpha())
+
+        output_data = resize_fit(input_data, size=64)
+
+        output_image = pyvips.Image.new_from_buffer(output_data, "")
+        self.assertTrue(output_image.hasalpha())
 
     def test_non_image_format_wrong_content_type(self) -> None:
         """A file that is not an image"""
