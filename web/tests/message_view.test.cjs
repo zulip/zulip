@@ -1124,7 +1124,7 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
         selected = {id, opts};
     };
     message_lists.current = list;
-    $("#navbar-fixed-container").set_height(50);
+    $("#navbar-fixed-container")[0].getBoundingClientRect = () => ({bottom: 50});
     $(".message_header").set_height(30);
     // Date jumps should place the selected message below the sticky
     // message header, increasing the target scroll offset by the

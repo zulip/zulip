@@ -196,10 +196,6 @@
         }
     }
 
-    .top-messages-logo {
-        opacity: 0.7;
-    }
-
     .searching-for-more-topics img {
         filter: invert(100%);
     }
