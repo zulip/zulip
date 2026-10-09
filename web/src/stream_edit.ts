@@ -69,7 +69,9 @@ type StreamSetting = {
     is_checked: boolean;
 };
 
-const settings_labels_schema = z.keyof(z.omit(stream_properties_schema, {color: true}));
+const settings_labels_schema = z.keyof(
+    z.omit(stream_properties_schema, {color: true, web_left_sidebar_topics_order: true}),
+);
 
 const realm_labels_schema = z.enum([
     "push_notifications",

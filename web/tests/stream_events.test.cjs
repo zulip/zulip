@@ -244,6 +244,12 @@ test("update_property", ({override, override_rewire}) => {
         assert.equal($checkbox.prop("checked"), true);
     }
 
+    // Test left sidebar topics order
+    {
+        stream_events.update_property(stream_id, "web_left_sidebar_topics_order", 2);
+        assert.equal(sub.web_left_sidebar_topics_order, 2);
+    }
+
     // Test change in stream active status
     {
         let sidebar_updated_for_stream_active_status = false;
