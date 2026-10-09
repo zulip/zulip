@@ -101,7 +101,11 @@ from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ProfileDataElementUpdateDict
 from zerver.lib.user_groups import check_user_group_name, get_role_based_system_groups_dict
-from zerver.lib.users import check_full_name, validate_user_custom_profile_field
+from zerver.lib.users import (
+    check_full_name,
+    check_group_permission_updates_for_deactivating_user,
+    validate_user_custom_profile_field,
+)
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.validator import LONG_STRING_MAX_LENGTH, SHORT_STRING_MAX_LENGTH
 from zerver.models import (
@@ -1479,7 +1483,18 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
                         "Deactivating user %s because they are disabled in LDAP.",
                         user.delivery_email,
                     )
-                    do_deactivate_user(user, acting_user=None)
+                    # Deactivation driven by LDAP sync always succeeds; any
+                    # permission setting left with no one is reset to its
+                    # replacement group rather than blocking the sync.
+                    group_setting_updates = check_group_permission_updates_for_deactivating_user(
+                        user, ignore_objections=True
+                    )
+                    do_deactivate_user(
+                        user,
+                        group_setting_updates=group_setting_updates,
+                        acting_user=None,
+                        ignore_objections=True,
+                    )
                 # Do an early return to avoid trying to sync additional data.
                 return (user, built)
             elif not user.is_active:
@@ -1690,7 +1705,18 @@ def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bo
                 if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS is None
                 else settings.LDAP_DEACTIVATE_NON_MATCHING_USERS
             ):
-                do_deactivate_user(user_profile, acting_user=None)
+                # Deactivation driven by LDAP sync always succeeds; any
+                # permission setting left with no one is reset to its
+                # replacement group rather than blocking the sync.
+                group_setting_updates = check_group_permission_updates_for_deactivating_user(
+                    user_profile, ignore_objections=True
+                )
+                do_deactivate_user(
+                    user_profile,
+                    group_setting_updates=group_setting_updates,
+                    acting_user=None,
+                    ignore_objections=True,
+                )
                 logger.info("Deactivated non-matching user: %s", user_profile.delivery_email)
                 return True
             elif user_profile.is_active:
