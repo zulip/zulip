@@ -1315,6 +1315,7 @@ class SubscriptionPropertyChangeRequest(BaseModel):
             "push_notifications",
             "email_notifications",
             "pin_to_top",
+            "demote_resolved_topics",
             "wildcard_mentions_notify",
         }
 

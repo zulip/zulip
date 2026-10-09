@@ -977,6 +977,7 @@ class SingleSubscription(BaseEventModel):
     stream_weekly_traffic: int | None
     audible_notifications: bool | None
     color: str
+    demote_resolved_topics: bool
     desktop_notifications: bool | None
     email_notifications: bool | None
     in_home_view: bool

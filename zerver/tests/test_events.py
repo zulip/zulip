@@ -2836,6 +2836,26 @@ class NormalActionsTest(BaseAction):
                 value=pinned,
             )
 
+    def test_change_demote_resolved_topics(self) -> None:
+        stream = get_stream("Denmark", self.user_profile.realm)
+        sub = get_subscription(stream.name, self.user_profile)
+        for value in (True, False):
+            with self.verify_action() as events:
+                do_change_subscription_property(
+                    self.user_profile,
+                    sub,
+                    stream,
+                    "demote_resolved_topics",
+                    value,
+                    acting_user=None,
+                )
+            check_subscription_update(
+                "events[0]",
+                events[0],
+                property="demote_resolved_topics",
+                value=value,
+            )
+
     def test_mute_and_unmute_stream(self) -> None:
         stream = get_stream("Denmark", self.user_profile.realm)
         sub = get_subscription(stream.name, self.user_profile)

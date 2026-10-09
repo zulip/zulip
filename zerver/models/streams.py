@@ -397,6 +397,9 @@ class Subscription(models.Model):
     DEFAULT_STREAM_COLOR = "#c2c2c2"
     color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)
     pin_to_top = models.BooleanField(default=False)
+    # Whether the left sidebar lists the channel's resolved topics
+    # after its unresolved ones.
+    demote_resolved_topics = models.BooleanField(default=False, db_default=False)
 
     # These fields are stream-level overrides for the user's default
     # configuration for notification, configured in UserProfile.  The
@@ -438,6 +441,7 @@ class Subscription(models.Model):
     API_FIELDS = [
         "audible_notifications",
         "color",
+        "demote_resolved_topics",
         "desktop_notifications",
         "email_notifications",
         "is_muted",

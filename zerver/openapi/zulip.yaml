@@ -839,6 +839,7 @@ paths:
                                         "color": "#76ce90",
                                         "is_muted": false,
                                         "pin_to_top": false,
+                                        "demote_resolved_topics": false,
                                         "audible_notifications": null,
                                         "desktop_notifications": null,
                                         "email_notifications": null,
@@ -13155,6 +13156,7 @@ paths:
                               "invite_only": false,
                               "name": "Denmark",
                               "pin_to_top": false,
+                              "demote_resolved_topics": false,
                               "push_notifications": false,
                               "stream_id": 1,
                               "subscribers": [7, 10, 11, 12, 14],
@@ -13170,6 +13172,7 @@ paths:
                               "invite_only": false,
                               "name": "Scotland",
                               "pin_to_top": false,
+                              "demote_resolved_topics": false,
                               "push_notifications": false,
                               "stream_id": 3,
                               "subscribers": [7, 11, 12, 14],
@@ -29089,6 +29092,13 @@ components:
           description: |
             A boolean specifying whether the given channel has been pinned
             to the top.
+        demote_resolved_topics:
+          type: boolean
+          description: |
+            Whether the channel's resolved topics are listed after its
+            unresolved topics in the left sidebar.
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-02efb5).
         is_muted:
           type: boolean
           description: |
@@ -31562,6 +31572,7 @@ components:
         - is_muted
         - in_home_view
         - pin_to_top
+        - demote_resolved_topics
         - desktop_notifications
         - audible_notifications
         - push_notifications
@@ -31585,6 +31596,10 @@ components:
           backwards-compatibility, modern Zulip still accepts that property.
 
         - `"pin_to_top"`: Whether to pin the channel at the top of the channel list.
+
+        - `"demote_resolved_topics"`: Whether the channel's resolved topics are
+          listed after its unresolved topics in the left sidebar.<br>
+          **Changes**: New in Zulip 13.0 (feature level ZF-02efb5).
 
         - `"desktop_notifications"`: Whether to show desktop notifications
           for all messages sent to the channel.
