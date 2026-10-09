@@ -2839,6 +2839,26 @@ class NormalActionsTest(BaseAction):
                 value=pinned,
             )
 
+    def test_change_left_sidebar_resolved_topics_order(self) -> None:
+        stream = get_stream("Denmark", self.user_profile.realm)
+        sub = get_subscription(stream.name, self.user_profile)
+        for value in (2, 1, 0):
+            with self.verify_action() as events:
+                do_change_subscription_property(
+                    self.user_profile,
+                    sub,
+                    stream,
+                    "left_sidebar_resolved_topics_order",
+                    value,
+                    acting_user=None,
+                )
+            check_subscription_update(
+                "events[0]",
+                events[0],
+                property="left_sidebar_resolved_topics_order",
+                value=value,
+            )
+
     def test_mute_and_unmute_stream(self) -> None:
         stream = get_stream("Denmark", self.user_profile.realm)
         sub = get_subscription(stream.name, self.user_profile)
