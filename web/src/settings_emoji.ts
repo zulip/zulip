@@ -61,7 +61,15 @@ export function reset(): void {
     meta.loaded = false;
 }
 
-function sort_author_full_name(a: ServerEmoji, b: ServerEmoji): number {
+// Exported for tests
+export function sort_author_full_name(a: ServerEmoji, b: ServerEmoji): number {
+    const current_user_is_author_a = a.author_id !== null && people.is_my_user_id(a.author_id);
+    const current_user_is_author_b = b.author_id !== null && people.is_my_user_id(b.author_id);
+
+    if (current_user_is_author_a !== current_user_is_author_b) {
+        return current_user_is_author_a ? -1 : 1;
+    }
+
     const author_a = a.author?.full_name;
     const author_b = b.author?.full_name;
 
