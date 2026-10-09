@@ -49,6 +49,16 @@
               tooltip_message=push_notifications_tooltip
               }}
         </div>
+        <div class="mandatory-email-notifications">
+            {{> ../settings/settings_checkbox
+              prefix=prefix
+              setting_name="mandatory_email_notifications"
+              is_checked=false
+              is_disabled=disable_mandatory_email_notifications
+              label=(t "Require email notifications for all subscribers")
+              tooltip_message=mandatory_email_notifications_tooltip
+              }}
+        </div>
         {{/if}}
     {{/unless}}
 </div>

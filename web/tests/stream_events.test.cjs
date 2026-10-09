@@ -307,6 +307,17 @@ test("update_property", ({override, override_rewire}) => {
         assert.equal(args.val, false);
     }
 
+    // Test stream mandatory_email_notifications change event
+    {
+        const stub = make_stub();
+        override(stream_settings_ui, "update_mandatory_email_notifications_setting", stub.f);
+        stream_events.update_property(stream_id, "mandatory_email_notifications", true);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("sub", "val");
+        assert.equal(args.sub.stream_id, stream_id);
+        assert.equal(args.val, true);
+    }
+
     // Test stream can_remove_subscribers_group change event
     {
         const stub = make_stub();

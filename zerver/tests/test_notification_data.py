@@ -1,9 +1,14 @@
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.mention import MentionBackend, MentionData
-from zerver.lib.notification_data import UserMessageNotificationsData, get_user_group_mentions_data
+from zerver.lib.notification_data import (
+    UserMessageNotificationsData,
+    get_user_group_mentions_data,
+    user_allows_notifications_in_StreamTopic,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models.scheduled_jobs import NotificationTriggers
+from zerver.models.user_topics import UserTopic
 
 
 class TestNotificationData(ZulipTestCase):
@@ -511,3 +516,45 @@ class TestNotificationData(ZulipTestCase):
         self.assertFalse(user_data.followed_topic_push_notify)
         self.assertFalse(user_data.topic_wildcard_mention_in_followed_topic_push_notify)
         self.assertFalse(user_data.stream_wildcard_mention_in_followed_topic_push_notify)
+
+    def test_user_allows_notifications_with_mandatory_email_notifications(self) -> None:
+        self.assertTrue(
+            user_allows_notifications_in_StreamTopic(
+                stream_is_muted=False,
+                visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
+                stream_specific_setting=False,
+                global_setting=False,
+                channel_specific_setting_overrides_mute=False,
+                mandatory_email_notifications=True,
+            )
+        )
+        self.assertFalse(
+            user_allows_notifications_in_StreamTopic(
+                stream_is_muted=True,
+                visibility_policy=UserTopic.VisibilityPolicy.INHERIT,
+                stream_specific_setting=False,
+                global_setting=False,
+                channel_specific_setting_overrides_mute=False,
+                mandatory_email_notifications=True,
+            )
+        )
+        self.assertTrue(
+            user_allows_notifications_in_StreamTopic(
+                stream_is_muted=True,
+                visibility_policy=UserTopic.VisibilityPolicy.UNMUTED,
+                stream_specific_setting=False,
+                global_setting=False,
+                channel_specific_setting_overrides_mute=False,
+                mandatory_email_notifications=True,
+            )
+        )
+        self.assertFalse(
+            user_allows_notifications_in_StreamTopic(
+                stream_is_muted=False,
+                visibility_policy=UserTopic.VisibilityPolicy.MUTED,
+                stream_specific_setting=True,
+                global_setting=True,
+                channel_specific_setting_overrides_mute=False,
+                mandatory_email_notifications=True,
+            )
+        )

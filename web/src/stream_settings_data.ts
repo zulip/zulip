@@ -137,6 +137,7 @@ export function get_unmatched_streams_for_notification_settings(): ({
                 color: row.color,
                 invite_only: row.invite_only,
                 is_web_public: row.is_web_public,
+                mandatory_email_notifications: row.mandatory_email_notifications ?? false,
             });
         }
     }

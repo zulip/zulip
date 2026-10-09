@@ -40,7 +40,15 @@
     {% elif followed_topic_email_notify %}
     {% trans %}You are receiving this because you have email notifications enabled for topics you follow.{% endtrans %}<br />
     {% elif stream_email_notify %}
+    {% if mandatory_email_notifications %}
+    {% if user_can_unsubscribe_from_channel %}
+    {% trans unsubscribe_url=unsubscribe_channel_url, deactivate_url=deactivate_account_help_url %}This channel is configured to send email notifications to all subscribers. You can <a href="{{ unsubscribe_url }}">unsubscribe from the channel</a> or <a href="{{ deactivate_url }}">deactivate your account</a> to stop receiving these notifications.{% endtrans %}<br />
+    {% else %}
+    {% trans deactivate_url=deactivate_account_help_url %}This channel is configured to send email notifications to all subscribers, and your subscription to this channel is required by administrators. You can <a href="{{ deactivate_url }}">deactivate your account</a> to stop receiving these notifications.{% endtrans %}<br />
+    {% endif %}
+    {% else %}
     {% trans %}You are receiving this because you have email notifications enabled for #{{ channel_name }}.{% endtrans %}<br />
+    {% endif %}
     {% endif %}
     {% if reply_to_zulip %}
     {% trans notif_url=realm_url + "/#settings/notifications" %}Reply to this email directly, <a href="{{ narrow_url }}">view it in {{ realm_name }} Zulip</a>, or <a href="{{ notif_url }}">manage email preferences</a>.{% endtrans %}
