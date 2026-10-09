@@ -90,6 +90,16 @@ class GitlabHookTests(WebhookTestCase):
 
         self.check_webhook("tag_push_hook__remove_tag", expected_topic_name, expected_message)
 
+    def test_create_epic_work_item_event_message(self) -> None:
+        expected_topic_name = "my-awesome-project / epic #1 Epic title"
+        expected_message = "Tomasz Kolek created [epic #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1):\n\n``` quote\nEpic description\n```"
+        self.check_webhook("work_item_hook__epic_opened", expected_topic_name, expected_message)
+
+    def test_update_task_work_item_event_message(self) -> None:
+        expected_topic_name = "my-awesome-project / task #2 Task title"
+        expected_message = "Tomasz Kolek updated [task #2](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2)."
+        self.check_webhook("work_item_hook__task_updated", expected_topic_name, expected_message)
+
     def test_create_issue_without_assignee_event_message(self) -> None:
         expected_topic_name = "my-awesome-project / issue #1 Issue title"
         expected_message = "Tomasz Kolek created [issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1):\n\n``` quote\nIssue description\n```"
