@@ -951,6 +951,9 @@ input.settings_text_input {
         }
 
         .overlay_message_controls {
+            --draft-overlay-action-control-size: calc(
+                1em + var(--icon-button-padding) + var(--icon-button-padding)
+            );
             display: flex;
             align-items: center;
             justify-content: center;
@@ -960,10 +963,6 @@ input.settings_text_input {
             [data-tippy-root] {
                 width: max-content;
                 overflow-wrap: unset;
-            }
-
-            .copy-overlay-message {
-                font-size: 1.2em;
             }
 
             .restore-overlay-message {
@@ -980,11 +979,36 @@ input.settings_text_input {
                 cursor: pointer;
                 color: hsl(357deg 52% 57%);
                 opacity: 0.7;
-                padding: 0;
-                font-size: 1.2em;
 
-                &:hover {
+                &:hover,
+                &:focus-visible,
+                &:active {
                     opacity: 1;
+                }
+            }
+
+            :is(
+                .copy-overlay-message,
+                .delete-overlay-message,
+                .draft-selection-tooltip
+            ) {
+                box-sizing: border-box;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: var(--draft-overlay-action-control-size);
+                height: var(--draft-overlay-action-control-size);
+                min-width: var(--draft-overlay-action-control-size);
+                min-height: var(--draft-overlay-action-control-size);
+                flex: 0 0 var(--draft-overlay-action-control-size);
+                padding: var(--icon-button-padding);
+                font-size: 1.2em;
+                line-height: 1;
+
+                &:hover,
+                &:focus-visible,
+                &:active {
+                    background-color: transparent;
                 }
             }
         }
