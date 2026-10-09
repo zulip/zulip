@@ -115,6 +115,52 @@ class RealmPlaygroundTests(ZulipTestCase):
         result = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
         self.assert_json_error(result, "Language 'math' is not allowed.")
 
+        # Test that restricted keywords cannot bypass validation using uppercase letters
+        payload = {
+            "name": "Uppercase restricted keyword",
+            "pygments_language": "MATH",
+            "url_template": "https://example.com/{code}",
+        }
+        result = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+        self.assert_json_error(result, "Language 'math' is not allowed.")
+
+    def test_language_normalization(self) -> None:
+        iago = self.example_user("iago")
+
+        # Standard language alias is normalized to canonical Pygments name
+        payload = {
+            "name": "Rust playground",
+            "pygments_language": "rs",
+            "url_template": "https://play.rust-lang.org/?code={code}",
+        }
+        result = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+        self.assert_json_success(result)
+        playground = RealmPlayground.objects.get(id=result.json()["id"])
+        self.assertEqual(playground.pygments_language, "Rust")
+
+        # Custom language is stored in lowercase
+        payload = {
+            "name": "Custom playground",
+            "pygments_language": "MyCustomLang",
+            "url_template": "https://example.com/?code={code}",
+        }
+        result = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+        self.assert_json_success(result)
+        playground = RealmPlayground.objects.get(id=result.json()["id"])
+        self.assertEqual(playground.pygments_language, "mycustomlang")
+
+        # Standard language whose canonical name contains invalid characters
+        # (e.g., "Python 2.x" has a space) falls back to lowercase alias
+        payload = {
+            "name": "Python2 playground",
+            "pygments_language": "Python2",
+            "url_template": "https://python2.example.com/?code={code}",
+        }
+        result = self.api_post(iago, "/api/v1/realm/playgrounds", payload)
+        self.assert_json_success(result)
+        playground = RealmPlayground.objects.get(id=result.json()["id"])
+        self.assertEqual(playground.pygments_language, "python2")
+
     def test_create_already_existing_playground(self) -> None:
         iago = self.example_user("iago")
 
