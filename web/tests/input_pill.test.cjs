@@ -278,6 +278,7 @@ run_test("comma", ({mock_template}) => {
     });
 
     assert.deepEqual(widget.items(), [items.blue, items.red]);
+    assert.ok($pill_input.hasClass("input-validation-shake"));
 
     $pill_input.text(" yellow");
 
@@ -287,6 +288,79 @@ run_test("comma", ({mock_template}) => {
     });
 
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
+
+    // Test with allow_comma_in_item_text: true
+    {
+        $.clear_all_elements();
+        const info = set_up();
+        const config = {
+            ...info.config,
+            allow_comma_in_item_text: true,
+            create_pill_on_comma: true,
+            show_outline_on_invalid_input: true,
+        };
+        const widget = input_pill.create(config);
+        widget.appendValue("blue");
+
+        const key_handler = info.$container.get_on_handler("keydown", ".input");
+        const $pill_input = info.$pill_input;
+
+        let prevent_default_count = 0;
+        const preventDefault = () => {
+            prevent_default_count += 1;
+        };
+
+        // Pressing comma on empty input should NOT prevent default
+        $pill_input.text("");
+        key_handler({
+            key: ",",
+            preventDefault,
+        });
+        assert.equal(prevent_default_count, 0);
+        assert.deepEqual(widget.items(), [items.blue]);
+
+        // Invalid item should NOT clear the input when a comma is pressed
+        $pill_input.text(" yel");
+        key_handler({
+            key: ",",
+            preventDefault,
+        });
+        assert.equal(prevent_default_count, 0);
+        assert.deepEqual(widget.items(), [items.blue]);
+        assert.equal($pill_input.text(), " yel");
+        assert.ok(!$pill_input.hasClass("input-validation-shake"));
+        assert.ok(!info.$container.hasClass("invalid"));
+
+        // Valid item SHOULD be converted to a pill and the input cleared
+        $pill_input.text(" yellow");
+        key_handler({
+            key: ",",
+            preventDefault,
+        });
+        assert.equal(prevent_default_count, 1);
+        assert.deepEqual(widget.items(), [items.blue, items.yellow]);
+        assert.equal($pill_input.text(), "");
+    }
+});
+
+run_test("comma_in_search_text", () => {
+    const info = set_up();
+    const widget = input_pill.create({
+        ...info.config,
+        allow_comma_in_item_text: true,
+        convert_to_pill_on_enter: false,
+    });
+    const key_handler = info.$container.get_on_handler("keydown", ".input");
+    for (const text of ["", "hello", "blue"]) {
+        info.$pill_input.text(text);
+        key_handler({
+            key: ",",
+            preventDefault: assert.fail,
+        });
+        assert.equal(info.$pill_input.text(), text);
+        assert.deepEqual(widget.items(), []);
+        assert.ok(!info.$pill_input.hasClass("input-validation-shake"));
+    }
 });
 
 run_test("Enter key with text", ({mock_template}) => {

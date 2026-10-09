@@ -119,12 +119,12 @@ function get_common_invitation_data(): CommonInvitationData {
             .join(","),
         include_realm_default_subscriptions: JSON.stringify(include_realm_default_subscriptions),
     };
-    const current_email = email_pill.get_current_email(email_pill_widget);
-    if (current_email) {
+    const current_emails = email_pill.get_current_emails(email_pill_widget);
+    if (current_emails) {
         if (email_pill_widget.items().length === 0) {
-            data.invitee_emails = current_email;
+            data.invitee_emails = current_emails;
         } else {
-            data.invitee_emails += "," + current_email;
+            data.invitee_emails += "," + current_emails;
         }
     }
 
@@ -568,7 +568,7 @@ function open_invite_user_modal(e: JQuery.ClickEvent<Document, undefined>): void
                 !user_has_email_set ||
                     (selected_tab === "invite-email-tab" &&
                         email_pill_widget.items().length === 0 &&
-                        email_pill.get_current_email(email_pill_widget) === null) ||
+                        email_pill.get_current_emails(email_pill_widget) === null) ||
                     ($expires_in.val() === "custom" && !valid_custom_time),
             );
             if (selected_tab === "invite-email-tab") {
