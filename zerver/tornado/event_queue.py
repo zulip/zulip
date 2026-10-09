@@ -400,6 +400,30 @@ class EventQueue:
         event["id"] = self.next_event_id
         self.next_event_id += 1
         full_event_type = compute_full_event_type(event)
+        if (
+            event["type"] == "update_message_flags"
+            and not event["all"]
+            and event["operation"] in ("add", "remove")
+        ):
+            # Before doing anything else with this event, check whether
+            # there's a pending (not yet delivered) virtual event for the
+            # *opposite* operation on this same flag that already contains
+            # some of these message ids. If so, those messages' presence
+            # in that opposite virtual event is now stale -- this new
+            # event supersedes it for those specific messages -- so we
+            # must remove them before they can be delivered at the wrong,
+            # stale position.
+            opposite_operation = "remove" if event["operation"] == "add" else "add"
+            opposite_full_event_type = f"flags/{opposite_operation}/{event['flag']}"
+            opposite_virtual_event = self.virtual_events.get(opposite_full_event_type)
+            if opposite_virtual_event is not None:
+                incoming_ids = set(event["messages"])
+                opposite_virtual_event["messages"] = [
+                    m for m in opposite_virtual_event["messages"] if m not in incoming_ids
+                ]
+                if len(opposite_virtual_event["messages"]) == 0:
+                    del self.virtual_events[opposite_full_event_type]
+
         if full_event_type.startswith("flags/") and not full_event_type.startswith(
             "flags/remove/read"
         ):
@@ -413,10 +437,10 @@ class EventQueue:
             # We need to exclude flags/remove/read, because it has an
             # extra message_details field that cannot be compressed.
             #
-            # BUG: This compression algorithm is incorrect in the
-            # presence of mark-as-unread, since it does not respect
-            # the ordering of "mark as read" and "mark as unread"
-            # updates for a given message.
+            # Note: we handle the ordering interaction between this
+            # compression and mark-as-unread/mark-as-unstarred/etc.
+            # events above, by pruning stale entries from the opposite
+            # operation's virtual event before reaching this point.
             if full_event_type not in self.virtual_events:
                 self.virtual_events[full_event_type] = copy.deepcopy(event)
                 return
