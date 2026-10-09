@@ -1,0 +1,30 @@
+{
+  "timestamp": 1565964900000,
+  "webhookEvent": "comment_created",
+  "userKey": "def456",
+  "user": {
+    "type": "known",
+    "username": "ajones",
+    "userKey": "def456",
+    "accountId": "5c76b994e1bcdf6294d0eb10",
+    "displayName": "Alice Jones",
+    "_links": {
+      "base": "https://example.atlassian.net/wiki",
+      "context": "/wiki",
+      "self": "https://example.atlassian.net/wiki/rest/api/user?accountId=def456"
+    }
+  },
+  "comment": {
+    "id": "",
+    "container": {
+      "id": "234567",
+      "type": "blogpost",
+      "status": "current",
+      "title": "Q3 Engineering Update",
+      "_links": {
+        "base": "https://example.atlassian.net/wiki",
+        "webui": "/spaces/ENG/blog/234567"
+      }
+    }
+  }
+}
