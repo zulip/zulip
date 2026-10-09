@@ -5,6 +5,7 @@ import render_stream_card_popover from "../templates/popovers/stream_card_popove
 
 import * as browser_history from "./browser_history.ts";
 import * as hash_util from "./hash_util.ts";
+import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as stream_data from "./stream_data.ts";
@@ -36,6 +37,8 @@ export function initialize(): void {
                                 ...sub_store.get(stream_id),
                             },
                             subscribers_count,
+                            // Spectators have no channel settings to open.
+                            can_open_settings: !page_params.is_spectator,
                         }),
                     ),
                 );
