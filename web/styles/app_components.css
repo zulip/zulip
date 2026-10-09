@@ -169,7 +169,7 @@ textarea::-webkit-resizer {
             background-color: var(
                 --color-background-tab-switcher-ind-tab-selected
             );
-            color: hsl(0deg 0% 100%);
+            color: var(--color-text-on-solid);
             border: 1px solid var(--color-border-tab-switcher-ind-tab-selected);
             z-index: 2;
         }
@@ -509,7 +509,7 @@ input.settings_text_input {
 }
 
 .animated-purple-button {
-    color: hsl(0deg 0% 100%);
+    color: var(--color-text-on-solid);
     transition: 80ms linear;
     transition-property: background-color, box-shadow;
     box-shadow: none;
@@ -554,10 +554,10 @@ input.settings_text_input {
     &:hover {
         cursor: pointer;
         background-color: var(--color-background-animated-button-hover);
-        color: hsl(0deg 0% 100%);
+        color: var(--color-text-on-solid);
 
         .color-animated-button-text {
-            color: hsl(0deg 0% 100%);
+            color: var(--color-text-on-solid);
             transition: color 0.2s ease;
         }
 

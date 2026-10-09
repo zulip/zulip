@@ -1546,6 +1546,7 @@
 
     /* Text colors */
     --color-text-default: light-dark(hsl(0deg 0% 20%), hsl(0deg 0% 87%));
+    --color-text-on-solid: hsl(0deg 0% 100%);
     /* Unlike the light theme, the dark theme renders message
        text in the default color. */
     --color-text-message-default: light-dark(

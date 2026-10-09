@@ -1526,7 +1526,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     }
 
     .flatpickr-confirm {
-        color: hsl(0deg 0% 100%);
+        color: var(--color-text-on-solid);
         background-color: hsl(213deg 90% 65%);
         font-size: var(--flatpickr-confirm-button-font-size);
         font-weight: 600;
