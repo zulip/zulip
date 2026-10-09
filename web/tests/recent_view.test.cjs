@@ -1110,6 +1110,38 @@ test("a topic's visibility update rerenders its row after the delay", ({override
     assert.deepEqual(rerendered_keys, [get_topic_key(stream1, topic1)]);
 });
 
+test("a topic's row stays listed until its delayed visibility update", () => {
+    // The filters would hide the muted topic at once, but a popover may
+    // be anchored on its row.
+    show_recent_view_with_messages();
+    const muted_conversation = conversation_for(topic7);
+    assert.ok(rt.filters_should_hide_row(muted_conversation));
+
+    rt.schedule_topic_visibility_update(stream1, topic7, 500);
+    clock.tick(499);
+    assert.ok(!rt.filters_should_hide_row(muted_conversation));
+
+    clock.tick(1);
+    assert.ok(rt.filters_should_hide_row(muted_conversation));
+});
+
+test("a conversation without a row stays unlisted until its visibility update", () => {
+    // The update gives a topic that is no longer hidden its row. A
+    // rerender before that must not list the topic: the widget counts a
+    // row for every conversation it lists in its rendered range.
+    show_recent_view_with_messages();
+    const conversation = conversation_for(topic1);
+    stub_no_row_for(get_topic_key(stream1, topic1));
+    assert.ok(!rt.filters_should_hide_row(conversation));
+
+    rt.schedule_topic_visibility_update(stream1, topic1, 500);
+    clock.tick(499);
+    assert.ok(rt.filters_should_hide_row(conversation));
+
+    clock.tick(1);
+    assert.ok(!rt.filters_should_hide_row(conversation));
+});
+
 test("basic assertions", ({mock_template}) => {
     rt.clear_for_tests();
     rt.set_filters_for_tests();
