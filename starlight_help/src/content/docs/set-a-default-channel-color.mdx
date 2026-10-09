@@ -1,0 +1,46 @@
+---
+title: Set a default channel color
+---
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import AdminOnly from "../include/_AdminOnly.mdx";
+import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
+import SaveChanges from "../include/_SaveChanges.mdx";
+import SelectChannelViewPermissions from "../include/_SelectChannelViewPermissions.mdx";
+
+<AdminOnly />
+
+Zulip automatically [assigns each user a
+color](/help/change-the-color-of-a-channel) for every channel they
+subscribe to. For channels where it's helpful for everyone to see the
+same color, such as a channel used for urgent alerts, organization
+administrators can set a default color that new subscribers will get
+instead.
+
+Setting a default color does not change the color for anyone already
+subscribed to the channel. Any subscriber can still [choose a different
+color](/help/change-the-color-of-a-channel) for themselves at any time.
+
+## Set a default color for a channel
+
+<FlattenedSteps>
+  <NavigationSteps target="relative/channel/all" />
+
+  1. Select a channel.
+
+  <SelectChannelViewPermissions />
+
+  1. Under **Subscription management**, configure **Default channel
+     color**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+<ChannelSettingsNavbarTip />
+
+## Related articles
+
+* [Change the color of a channel](/help/change-the-color-of-a-channel)
+* [Enable mobile notifications by default](/help/enable-mobile-notifications-by-default)
+* [Configure who can administer a channel](/help/configure-who-can-administer-a-channel)

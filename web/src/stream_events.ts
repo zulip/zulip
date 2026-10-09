@@ -203,6 +203,9 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
             sub.default_push_notifications = value;
             stream_settings_ui.update_default_push_notifications_setting(sub, value);
         },
+        default_color(value) {
+            stream_settings_ui.update_default_color_setting(sub, value);
+        },
         topics_policy(value) {
             stream_settings_ui.update_topics_policy_setting(sub, value);
             compose_recipient.update_topic_inputbox_on_topics_policy_change();
