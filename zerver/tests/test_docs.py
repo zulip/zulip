@@ -305,6 +305,9 @@ class DocPageTest(ZulipTestCase):
     def test_error_endpoints(self) -> None:
         self._test("/errors/404/", ["Page not found"])
         self._test("/errors/5xx/", ["Internal server error"])
+        self._test("/errors/403/", ["Access forbidden (403)"])
+        self._test("/errors/rate-limit-exceeded/", ["Rate limit exceeded.", "5 minutes"])
+        self._test("/devtools/error_pages/", ["/errors/link-expired/"])
 
     def test_corporate_portico_endpoints(self) -> None:
         self._test("/team/", ["industry veterans"])

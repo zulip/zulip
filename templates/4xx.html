@@ -1,10 +1,16 @@
 {% extends "zerver/portico_error_pages/portico_error_page.html" %}
+{% from "zerver/portico_error_pages/macros.html" import error_page_art %}
 
 {% block title %}
 <title>{{ _("Error") }} | Zulip</title>
 {% endblock %}
 
 {% block error_page_content %}
+{% if csrf_failure %}
+{{ error_page_art("no-access") }}
+{% elif status_code == 405 %}
+{{ error_page_art("server-error") }}
+{% endif %}
 <div class="errorbox">
     <div class="errorcontent">
         {% if csrf_failure %}

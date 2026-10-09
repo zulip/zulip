@@ -1073,11 +1073,6 @@ input#terminal:checked ~ #tab-terminal {
     line-height: normal;
 }
 
-.hourglass-img {
-    width: initial !important;
-    margin-bottom: 25px !important;
-}
-
 #skip-navigation {
     background-color: hsl(170deg 47% 33%);
     color: hsl(0deg 0% 100%);
@@ -1346,12 +1341,236 @@ label.label-title {
     }
 }
 
+#devtools-error-pages {
+    padding: 0 20px 40px;
+
+    h2 {
+        margin: 32px 0 12px;
+    }
+
+    .error-page-previews {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, 400px);
+        gap: 16px;
+    }
+
+    .error-page-preview {
+        display: block;
+        border: 1px solid hsl(0deg 0% 87%);
+        border-radius: 4px;
+        overflow: hidden;
+
+        &:hover,
+        &:focus-visible {
+            border-color: hsl(0deg 0% 60%);
+        }
+    }
+
+    /* Each page is rendered at a 1280px desktop width and scaled
+       down to fit a 400px column. */
+    .error-page-preview-frame {
+        height: 300px;
+        overflow: hidden;
+    }
+
+    .error-page-preview-frame iframe {
+        width: 1280px;
+        height: 960px;
+        border: 0;
+        transform: scale(0.3125);
+        transform-origin: 0 0;
+        pointer-events: none;
+    }
+
+    .error-page-preview-label {
+        display: block;
+        padding: 6px 10px;
+    }
+}
+
 .portico-page.error {
     padding-bottom: 0;
 }
 
 .portico-page.error .portico-page-container {
     padding: 0;
+}
+
+/* === Error pages: "system surface" treatment. The page, header, and footer
+   share one tone; the error content sits on a recessed inset band. Scoped to
+   error pages via `:has()`, following the
+   `html:has(.portico-landing.integrations)` pattern in integrations.css. === */
+html:has(.portico-page.error) {
+    /* `color-scheme` is what lets light-dark() resolve; without it every
+       pair would silently fall back to its light value. */
+    color-scheme: light dark;
+    /* Page/header/footer surface, and the recessed band the content sits on.
+       The band is the tinted one in both themes, so it reads as inset. */
+    --error-page-bg: light-dark(hsl(0deg 0% 100%), hsl(238deg 28% 21%));
+    --error-page-content-bg: light-dark(
+        hsl(240deg 41% 94%),
+        hsl(240deg 30% 13%)
+    );
+    --error-page-fg: light-dark(hsl(240deg 8% 5%), hsl(240deg 6% 90%));
+    /* Secondary text, such as the steps listed on the 403 page: the
+       foreground moved about a third of the way toward the background. */
+    --error-page-secondary-fg: light-dark(
+        hsl(240deg 8% 35%),
+        hsl(240deg 6% 60%)
+    );
+    /* The logged-in header dropdown. The light values are the dropdown's
+       standard portico colors. */
+    --error-page-menu-bg: light-dark(hsl(0deg 0% 100%), hsl(239deg 27% 26%));
+    --error-page-menu-border: light-dark(hsl(0deg 0% 87%), hsl(239deg 22% 36%));
+    --error-page-menu-hover-bg: light-dark(
+        hsl(190deg 10% 90%),
+        hsl(239deg 27% 31%)
+    );
+    --error-page-menu-fg: light-dark(hsl(0deg 0% 27%), hsl(240deg 6% 90%));
+
+    /* The marketing footer keeps its own background in both themes. In dark
+       that is already the same tone as --error-page-bg, so the footer reads as
+       flush with the page; in light it stays the standard dark footer, as on
+       every other portico page. Overriding it here would put its white text on
+       a white surface. */
+    background-color: var(--error-page-bg);
+    /* No rubber-band/overscroll bounce past the top or bottom. */
+    overscroll-behavior: none;
+}
+
+body:has(.portico-page.error) {
+    background-color: var(--error-page-bg);
+    overscroll-behavior: none;
+}
+
+/* --- Header: the marketing `.portico-header` (template pages) and the simpler
+   `.header` used by the static webpack 5xx fallback pages. --- */
+body:has(.portico-page.error) .portico-header,
+body:has(.portico-page.error) .header {
+    background-color: var(--error-page-bg);
+    border: none;
+    box-shadow: none;
+}
+
+body:has(.portico-page.error) .portico-header a,
+body:has(.portico-page.error) .portico-header span,
+body:has(.portico-page.error) .portico-header .realm-name,
+body:has(.portico-page.error) .header:not(.portico-header) a,
+body:has(.portico-page.error) .header:not(.portico-header) span {
+    color: var(--error-page-fg);
+}
+
+body:has(.portico-page.error) .portico-header .portico-header-dropdown ul {
+    background-color: var(--error-page-menu-bg);
+    border-color: var(--error-page-menu-border);
+
+    &::before {
+        color: var(--error-page-menu-border);
+    }
+
+    & li:hover {
+        background-color: var(--error-page-menu-hover-bg);
+    }
+
+    & li a {
+        color: var(--error-page-menu-fg);
+    }
+}
+
+/* The wordmark is a fixed-color asset, so it can only be recolored with a
+   filter, which light-dark() cannot express. In light theme it already reads
+   against the white surface and is left alone. */
+@media (prefers-color-scheme: dark) {
+    body:has(.portico-page.error) .portico-header .brand img,
+    body:has(.portico-page.error) .portico-header .brand svg,
+    body:has(.portico-page.error) .header:not(.portico-header) img,
+    body:has(.portico-page.error) .header:not(.portico-header) svg {
+        filter: brightness(0) invert(1);
+    }
+}
+
+/* --- Content band --- */
+.portico-page.error,
+.portico-page.error .error_page {
+    background-color: var(--error-page-content-bg);
+}
+
+.portico-page.error .error_page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 64px;
+    padding: 80px 20px;
+}
+
+/* Per-page illustration: each error template supplies its own art, shown
+   at the size it was drawn. */
+.portico-page.error .error_page img {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+}
+
+/* No card — text sits directly on the surface, centered. */
+.portico-page.error .error_page .errorbox {
+    max-width: 600px;
+    margin: 0; /* reset the legacy `margin: auto`, which absorbs flex free space */
+    background: none;
+    border: none;
+    box-shadow: none;
+    font-size: 20px;
+}
+
+.portico-page.error .error_page .errorcontent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 0;
+    /* On `.errorcontent` itself to override the legacy `text-align: left`
+       rule above, which would otherwise win on multi-line paragraphs. */
+    text-align: center;
+}
+
+/* Heading row. */
+.portico-page.error .error_page .lead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 0;
+    color: var(--error-page-fg);
+    font-size: 32px;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.portico-page.error .error_page p {
+    margin: 0;
+    color: var(--error-page-fg);
+    font-size: 20px;
+}
+
+.portico-page.error .error_page a {
+    color: var(--error-page-fg);
+    text-decoration: underline;
+}
+
+.portico-page.error .error_page ol {
+    margin: 0;
+    padding-left: 1.25em;
+    text-align: left;
+}
+
+.portico-page.error .error_page li {
+    color: var(--error-page-secondary-fg);
+    line-height: inherit;
+
+    & + li {
+        margin-top: 8px;
+    }
 }
 
 #third-party-apps {
