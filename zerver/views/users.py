@@ -563,6 +563,8 @@ def patch_bot_backend(
         )
 
     if config_data is not None:
+        if bot.bot_type != UserProfile.EMBEDDED_BOT:
+            raise JsonableError(_("Only embedded bots have config_data."))
         do_update_bot_config_data(bot, config_data)
 
     if len(request.FILES) == 0:
