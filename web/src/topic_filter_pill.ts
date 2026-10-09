@@ -129,10 +129,14 @@ export function create_pills(
         create_item_from_text: create_item_from_syntax,
         get_text_from_item: get_syntax_from_item,
         get_display_value_from_item: get_syntax_from_item,
+        // Picked from a fixed list, and the label ("resolved") isn't the text
+        // they're created from ("is:resolved").
+        disable_pill_editing: true,
         generate_pill_html(item: TopicFilterPill, disabled?: boolean) {
             return render_input_pill({
                 display_value: item.label,
                 disabled,
+                read_only: true,
             });
         },
     });

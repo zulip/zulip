@@ -582,6 +582,20 @@ export function show_new_stream_modal(): void {
 
 let group_setting_widgets: Record<string, GroupSettingPillContainer | undefined> = {};
 
+// Creating the channel must not act on a pill's pre-edit value.
+function finalize_pending_pill_edits(): boolean {
+    if (!stream_create_subscribers.pill_widget.finalize_pending_edit()) {
+        return false;
+    }
+    for (const pill_widget of Object.values(group_setting_widgets)) {
+        assert(pill_widget !== undefined);
+        if (!pill_widget.finalize_pending_edit()) {
+            return false;
+        }
+    }
+    return true;
+}
+
 function set_up_group_setting_widgets(): void {
     for (const setting_name of Object.keys(realm.server_supported_permission_settings.stream)) {
         group_setting_widgets[setting_name] =
@@ -640,6 +654,9 @@ export function set_up_handlers(): void {
 
         assert(stream_create_subscribers.pill_widget !== undefined);
         assert(stream_create_subscribers.pill_widget !== null);
+        if (!finalize_pending_pill_edits()) {
+            return;
+        }
         if (stream_create_subscribers.pill_widget.is_pending()) {
             // We are not appending any value here, but instead this is
             // a proxy to invoke the error state for a group widget
