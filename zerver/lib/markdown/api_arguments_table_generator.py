@@ -143,6 +143,11 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         md_engine = markdown.Markdown(extensions=[])
         parameters = sorted(parameters, key=lambda parameter: parameter.deprecated)
         for parameter in parameters:
+            if parameter.kind == "body":
+                # Document the body's fields directly rather than a row for
+                # typed_endpoint's internal "request" name.
+                lines.append(self.render_object_details(parameter.value_schema, "Request body"))
+                continue
             name = parameter.name
             description = parameter.description
             enums = parameter.value_schema.get("enum")
