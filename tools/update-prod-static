@@ -60,6 +60,9 @@ if settings.CORPORATE_ENABLED:
 
 run(["./tools/build-help-center"])
 
+# Build OpenAPI JSON cache
+run(["./tools/build-openapi-cache"])
+
 # Create webpack bundle
 run(["./tools/webpack", "--quiet"])
 
