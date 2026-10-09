@@ -244,6 +244,38 @@ function get_code_block_language(
 
 export const MENTION_SELECTOR = ".user-mention, .user-group-mention, .topic-mention";
 
+function is_absolute_http_url(url: string): boolean {
+    try {
+        const parsed = new URL(url);
+        return parsed.protocol === "http:" || parsed.protocol === "https:";
+    } catch {
+        return false;
+    }
+}
+
+// The visible text is a raw URL when it equals the serialized href.
+// It is also considered as the raw URL when it equals
+// the href attribute and is an absolute http or https URL.
+// Serialization adds a trailing slash to an empty path, so the
+// attribute can match the visible text when the serialized href
+// does not. A relative reference can equal the attribute without
+// being the resolved URL, which is something we want to avoid classifying
+// as raw URL link text (see comment below for example).
+function is_raw_url_link_text(content: string, node: HTMLAnchorElement): boolean {
+    if (content === node.href) {
+        return true;
+    }
+    const href_attr = node.getAttribute("href") ?? "";
+
+    // For something like `<a href="#usage">#usage</a>`,
+    // `node.href` will be the page URL plus `#usage`, like
+    // `http://zulip.zulipdev.com/#usage`. Emitting `#usage` raw,
+    // just because it is equal to the href would drop that URL.
+    // so we use this check to make it stay
+    // `[#usage](http://zulip.zulipdev.com/#usage)`.
+    return content === href_attr && is_absolute_http_url(content);
+}
+
 export function paste_handler_converter(
     paste_html: string,
     $textarea?: JQuery<HTMLTextAreaElement>,
@@ -389,8 +421,8 @@ export function paste_handler_converter(
         filter: ["a"],
         replacement(content, node) {
             assert(node instanceof HTMLAnchorElement);
-            if (node.href === content) {
-                // Checks for raw links without custom text.
+            // Checks for raw links without custom text.
+            if (is_raw_url_link_text(content, node)) {
                 return content;
             }
             if (node.childNodes.length === 1 && node.firstChild!.nodeName === "IMG") {
