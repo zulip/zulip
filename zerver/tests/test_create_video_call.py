@@ -8,8 +8,10 @@ from django.http import HttpResponseRedirect
 from django.test import override_settings
 from typing_extensions import override
 
+from zerver.actions.realm_settings import do_set_realm_property
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.url_encoding import append_url_query_string
+from zerver.models import Realm
 
 
 @override_settings(VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID=None)
@@ -19,6 +21,12 @@ class ZoomVideoCallTestUserAuth(ZulipTestCase):
         super().setUp()
         self.user = self.example_user("hamlet")
         self.login_user(self.user)
+        do_set_realm_property(
+            self.user.realm,
+            "video_chat_provider",
+            Realm.VIDEO_CHAT_PROVIDERS["zoom"]["id"],
+            acting_user=None,
+        )
 
     def test_register_zoom_request_no_settings(self) -> None:
         with self.settings(VIDEO_ZOOM_CLIENT_ID=None):
@@ -222,6 +230,33 @@ class ZoomVideoCallTestUserAuth(ZulipTestCase):
         )
         self.assert_json_success(response)
 
+    def test_create_zoom_realm_provider_mismatch(self) -> None:
+        do_set_realm_property(
+            self.user.realm,
+            "video_chat_provider",
+            Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"],
+            acting_user=None,
+        )
+        response = self.client_post("/json/calls/zoom/create")
+        self.assert_json_error(
+            response,
+            "This organization is not configured to use Zoom for video calls.",
+        )
+
+    def test_register_zoom_realm_provider_mismatch(self) -> None:
+        for provider_key in ("disabled", "zoom_server_to_server"):
+            do_set_realm_property(
+                self.user.realm,
+                "video_chat_provider",
+                Realm.VIDEO_CHAT_PROVIDERS[provider_key]["id"],
+                acting_user=None,
+            )
+            response = self.client_get("/calls/zoom/register")
+            self.assert_json_error(
+                response,
+                "This organization is not configured to use Zoom General OAuth for video calls.",
+            )
+
 
 class WebexVideoCallTestOAuth(ZulipTestCase):
     @override
@@ -229,6 +264,12 @@ class WebexVideoCallTestOAuth(ZulipTestCase):
         super().setUp()
         self.user = self.example_user("hamlet")
         self.login_user(self.user)
+        do_set_realm_property(
+            self.user.realm,
+            "video_chat_provider",
+            Realm.VIDEO_CHAT_PROVIDERS["webex"]["id"],
+            acting_user=None,
+        )
 
     def test_register_webex_request_no_settings(self) -> None:
         with self.settings(VIDEO_WEBEX_CLIENT_ID=None):
@@ -370,6 +411,32 @@ class WebexVideoCallTestOAuth(ZulipTestCase):
 
         self.assert_json_error(response, "Failed to create Webex public room.")
 
+    def test_create_webex_realm_provider_mismatch(self) -> None:
+        do_set_realm_property(
+            self.user.realm,
+            "video_chat_provider",
+            Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"],
+            acting_user=None,
+        )
+        response = self.client_post("/json/calls/webex/create")
+        self.assert_json_error(
+            response,
+            "This organization is not configured to use Webex for video calls.",
+        )
+
+    def test_register_webex_realm_provider_mismatch(self) -> None:
+        do_set_realm_property(
+            self.user.realm,
+            "video_chat_provider",
+            Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"],
+            acting_user=None,
+        )
+        response = self.client_get("/calls/webex/register")
+        self.assert_json_error(
+            response,
+            "This organization is not configured to use Webex for video calls.",
+        )
+
 
 class ZoomVideoCallTestServerAuth(ZulipTestCase):
     @override
@@ -379,6 +446,12 @@ class ZoomVideoCallTestServerAuth(ZulipTestCase):
         self.login_user(self.user)
         self.user_zoom_meeting_url = (
             f"https://api.zoom.us/v2/users/{self.user.delivery_email}/meetings"
+        )
+        do_set_realm_property(
+            self.user.realm,
+            "video_chat_provider",
+            Realm.VIDEO_CHAT_PROVIDERS["zoom_server_to_server"]["id"],
+            acting_user=None,
         )
 
     @responses.activate
@@ -514,6 +587,19 @@ class ZoomVideoCallTestServerAuth(ZulipTestCase):
         json = self.assert_json_success(response)
         self.assertEqual(json["url"], "example.com")
 
+    def test_zoom_server_to_server_realm_provider_mismatch(self) -> None:
+        do_set_realm_property(
+            self.user.realm,
+            "video_chat_provider",
+            Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"],
+            acting_user=None,
+        )
+        response = self.client_post("/json/calls/zoom/create")
+        self.assert_json_error(
+            response,
+            "This organization is not configured to use Zoom server-to-server for video calls.",
+        )
+
 
 class BigBlueButtonVideoCallTest(ZulipTestCase):
     @override
@@ -521,6 +607,12 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
         super().setUp()
         self.user = self.example_user("hamlet")
         self.login_user(self.user)
+        do_set_realm_property(
+            self.user.realm,
+            "video_chat_provider",
+            Realm.VIDEO_CHAT_PROVIDERS["big_blue_button"]["id"],
+            acting_user=None,
+        )
         self.signer = Signer()
         self.signed_bbb_a_object = self.signer.sign_object(
             {
@@ -719,6 +811,19 @@ class BigBlueButtonVideoCallTest(ZulipTestCase):
             )
             self.assert_json_error(response, "BigBlueButton credentials have not been configured")
 
+    def test_create_bigbluebutton_realm_provider_mismatch(self) -> None:
+        do_set_realm_property(
+            self.user.realm,
+            "video_chat_provider",
+            Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"],
+            acting_user=None,
+        )
+        response = self.client_get("/json/calls/bigbluebutton/create", {"meeting_name": "test"})
+        self.assert_json_error(
+            response,
+            "This organization is not configured to use BigBlueButton for video calls.",
+        )
+
 
 class ConstructorGroupsVideoCallTest(ZulipTestCase):
     @override
@@ -726,6 +831,12 @@ class ConstructorGroupsVideoCallTest(ZulipTestCase):
         super().setUp()
         self.user_profile = self.example_user("hamlet")
         self.login_user(self.user_profile)
+        do_set_realm_property(
+            self.user_profile.realm,
+            "video_chat_provider",
+            Realm.VIDEO_CHAT_PROVIDERS["constructor_groups"]["id"],
+            acting_user=None,
+        )
 
         self.base_api_url = "https://example.constructor.app/api/groups/xapi"
 
@@ -862,6 +973,19 @@ class ConstructorGroupsVideoCallTest(ZulipTestCase):
             self.assertEqual(str(cm.exception.msg), "Failed to create Constructor Groups call")
             self.assertIn("Constructor Groups API request failed", error_log.output[0])
 
+    def test_create_constructor_groups_realm_provider_mismatch(self) -> None:
+        do_set_realm_property(
+            self.user_profile.realm,
+            "video_chat_provider",
+            Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"],
+            acting_user=None,
+        )
+        response = self.client_post("/json/calls/constructorgroups/create")
+        self.assert_json_error(
+            response,
+            "This organization is not configured to use Constructor Groups for video calls.",
+        )
+
 
 class NextcloudVideoCallTest(ZulipTestCase):
     @override
@@ -869,6 +993,12 @@ class NextcloudVideoCallTest(ZulipTestCase):
         super().setUp()
         self.user = self.example_user("hamlet")
         self.login_user(self.user)
+        do_set_realm_property(
+            self.user.realm,
+            "video_chat_provider",
+            Realm.VIDEO_CHAT_PROVIDERS["nextcloud_talk"]["id"],
+            acting_user=None,
+        )
         self.nextcloud_api_url = "https://nextcloud.example.com/ocs/v2.php/apps/spreed/api/v4/room"
 
     @responses.activate
@@ -1021,3 +1151,16 @@ class NextcloudVideoCallTest(ZulipTestCase):
 
         json = self.assert_json_success(response)
         self.assertEqual(json["url"], "https://nextcloud.example.com/index.php/call/abc123token")
+
+    def test_create_nextcloud_talk_realm_provider_mismatch(self) -> None:
+        do_set_realm_property(
+            self.user.realm,
+            "video_chat_provider",
+            Realm.VIDEO_CHAT_PROVIDERS["disabled"]["id"],
+            acting_user=None,
+        )
+        response = self.client_post("/json/calls/nextcloud_talk/create", {"room_name": "test"})
+        self.assert_json_error(
+            response,
+            "This organization is not configured to use Nextcloud Talk for video calls.",
+        )

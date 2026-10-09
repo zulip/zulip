@@ -44,7 +44,7 @@ from zerver.lib.subdomains import get_subdomain
 from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_parameters
 from zerver.lib.url_encoding import append_url_query_string
 from zerver.lib.utils import assert_is_not_none
-from zerver.models import UserProfile
+from zerver.models import Realm, UserProfile
 from zerver.models.realms import get_realm
 
 
@@ -76,6 +76,21 @@ class VideoCallProviderNotConfiguredError(JsonableError):
                 provider_name=provider_name
             )
         )
+
+
+class VideoCallProviderNotEnabledError(JsonableError):
+    def __init__(self, provider_name: str) -> None:
+        super().__init__(
+            _("This organization is not configured to use {provider_name} for video calls.").format(
+                provider_name=provider_name
+            )
+        )
+
+
+def check_realm_video_chat_provider(realm: Realm, provider_key: str) -> None:
+    provider = Realm.VIDEO_CHAT_PROVIDERS[provider_key]
+    if realm.video_chat_provider != provider["id"]:
+        raise VideoCallProviderNotEnabledError(provider["name"])
 
 
 class VideoCallProviderCredentialsError(JsonableError):
@@ -375,12 +390,17 @@ class ZoomGeneralOAuthProvider(OAuthVideoCallProvider):
 @zulip_login_required
 @never_cache
 def register_zoom_user(request: HttpRequest) -> HttpResponse:
+    assert isinstance(request.user, UserProfile)
+    if request.user.realm.video_chat_provider != Realm.VIDEO_CHAT_PROVIDERS["zoom"]["id"]:
+        raise VideoCallProviderNotEnabledError("Zoom General OAuth")
     return ZoomGeneralOAuthProvider().register_user(request=request)
 
 
 @zulip_login_required
 @never_cache
 def register_webex_user(request: HttpRequest) -> HttpResponse:
+    assert isinstance(request.user, UserProfile)
+    check_realm_video_chat_provider(request.user.realm, "webex")
     return WebexOAuthProvider().register_user(request=request)
 
 
@@ -535,12 +555,19 @@ def make_zoom_video_call(
         default_password=True,
     )
     if settings.VIDEO_ZOOM_SERVER_TO_SERVER_ACCOUNT_ID is not None:
+        if (
+            user.realm.video_chat_provider
+            != Realm.VIDEO_CHAT_PROVIDERS["zoom_server_to_server"]["id"]
+        ):
+            raise VideoCallProviderNotEnabledError("Zoom server-to-server")
         return make_server_authenticated_zoom_video_call(request, user, payload=payload)
+    check_realm_video_chat_provider(user.realm, "zoom")
     return ZoomGeneralOAuthProvider().make_video_call(request=request, user=user, payload=payload)
 
 
 @typed_endpoint_without_parameters
 def make_webex_video_call(request: HttpRequest, user: UserProfile) -> HttpResponse:
+    check_realm_video_chat_provider(user.realm, "webex")
     room_id = WebexOAuthProvider().maybe_generate_public_room_id(user)
     payload: WebexAdhocMeetingPayload | WebexPersonalRoomMeetingPayload
 
@@ -584,6 +611,7 @@ def get_bigbluebutton_url(
     meeting_name: str,
     voice_only: Json[bool] = False,
 ) -> HttpResponse:
+    check_realm_video_chat_provider(user_profile.realm, "big_blue_button")
     # https://docs.bigbluebutton.org/dev/api.html#create for reference on the API calls
     # https://docs.bigbluebutton.org/dev/api.html#usage for reference for checksum
     id = "zulip-" + str(random.randint(100000000000, 999999999999))
@@ -693,6 +721,7 @@ def make_constructor_groups_video_call(
     request: HttpRequest,
     user_profile: UserProfile,
 ) -> HttpResponse:
+    check_realm_video_chat_provider(user_profile.realm, "constructor_groups")
     service = ConstructorGroupsService()
     room_name = _("{full_name}'s Zulip room").format(full_name=user_profile.full_name)
 
@@ -718,6 +747,7 @@ MAX_NEXTCLOUD_TALK_ROOM_NAME_LENGTH = 255
 def create_nextcloud_talk_url(
     request: HttpRequest, user: UserProfile, *, room_name: str
 ) -> HttpResponse:
+    check_realm_video_chat_provider(user.realm, "nextcloud_talk")
     if (
         settings.NEXTCLOUD_SERVER is None
         or settings.NEXTCLOUD_TALK_USERNAME is None

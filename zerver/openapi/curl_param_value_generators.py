@@ -19,6 +19,7 @@ from zerver.actions.reactions import do_add_reaction
 from zerver.actions.realm_domains import do_add_realm_domain
 from zerver.actions.realm_linkifiers import do_add_linkifier
 from zerver.actions.realm_playgrounds import check_add_realm_playground
+from zerver.actions.realm_settings import do_set_realm_property
 from zerver.lib.bot_storage import set_bot_storage
 from zerver.lib.events import do_events_register
 from zerver.lib.initial_password import initial_password
@@ -26,7 +27,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import read_test_image_file
 from zerver.lib.types import ProfileFieldData
 from zerver.lib.upload import upload_message_attachment
-from zerver.models import Client, CustomProfileField, Message, NamedUserGroup, UserPresence
+from zerver.models import Client, CustomProfileField, Message, NamedUserGroup, Realm, UserPresence
 from zerver.models.channel_folders import ChannelFolder
 from zerver.models.realms import RealmExport, get_realm
 from zerver.models.users import UserProfile, get_user
@@ -561,3 +562,24 @@ def delete_realm_export() -> dict[str, object]:
         export_path="/dummy",
     )
     return {"export_id": export.id}
+
+
+@openapi_param_value_generator(["/calls/bigbluebutton/create:get"])
+def set_bigbluebutton_video_chat_provider() -> dict[str, object]:
+    realm = get_realm("zulip")
+    do_set_realm_property(
+        realm,
+        "video_chat_provider",
+        Realm.VIDEO_CHAT_PROVIDERS["big_blue_button"]["id"],
+        acting_user=None,
+    )
+
+    test_user = do_create_user(
+        "bbb-curl-test@zulip.com",
+        "secret",
+        realm,
+        "BBB Curl",
+        acting_user=None,
+    )
+    AUTHENTICATION_LINE[0] = f"{test_user.email}:{test_user.api_key}"
+    return {}
