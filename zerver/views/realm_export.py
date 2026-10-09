@@ -11,7 +11,7 @@ from zerver.actions.realm_export import do_delete_realm_export, notify_realm_exp
 from zerver.decorator import require_realm_admin
 from zerver.lib.exceptions import JsonableError, OrganizationOwnerRequiredError
 from zerver.lib.export import get_realm_exports_serialized
-from zerver.lib.queue import queue_event_on_commit
+from zerver.lib.queue import high_latency_queue_name, queue_event_on_commit
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress
 from zerver.lib.typed_endpoint import typed_endpoint
@@ -107,14 +107,13 @@ def export_realm(
     # Allow for UI updates on a pending export
     notify_realm_export(realm)
 
-    # Using the deferred_work queue processor to avoid
-    # killing the process after 60s
+    # Run in a queue processor to avoid killing the process after 60s.
     event = {
         "type": "realm_export",
         "user_profile_id": user.id,
         "realm_export_id": row.id,
     }
-    queue_event_on_commit("deferred_work", event)
+    queue_event_on_commit(high_latency_queue_name(), event)
     return json_success(request, data={"id": row.id})
 
 
