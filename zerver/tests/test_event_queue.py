@@ -1584,6 +1584,48 @@ class EventQueueTest(ZulipTestCase):
         queue.prune(1)
         self.verify_to_dict_end_to_end(client)
 
+    def test_queue_overflow_behavior(self) -> None:
+        client = self.get_client_descriptor()
+        queue = client.event_queue
+        self.assertFalse(queue.overflowed)
+
+        for i in range(queue.MAX_QUEUE_SIZE):
+            queue.push({"type": "arbitrary", "value": i})
+
+        self.assertFalse(queue.overflowed)
+        self.assert_length(queue.queue, queue.MAX_QUEUE_SIZE)
+
+        # Push one more event to trigger overflow
+        queue.push({"type": "overflow_trigger", "value": "overflow"})
+        self.assertTrue(queue.overflowed)
+        # Queue should be cleared to release memory immediately
+        self.assert_length(queue.queue, 0)
+
+        from zerver.lib.exceptions import ErrorCode
+        from zerver.tornado.exceptions import BadEventQueueIdError
+
+        with self.assertRaises(BadEventQueueIdError) as cm:
+            queue.contents(include_internal_data=False)
+        self.assertEqual(cm.exception.code, ErrorCode.BAD_EVENT_QUEUE_ID)
+
+        events = queue.contents(include_internal_data=True)
+        self.assert_length(events, 0)
+
+    def test_queue_overflow_serialization(self) -> None:
+        client = self.get_client_descriptor()
+        queue = client.event_queue
+
+        # Before overflow
+        self.verify_to_dict_end_to_end(client)
+
+        # Trigger overflow
+        for i in range(queue.MAX_QUEUE_SIZE + 1):
+            queue.push({"type": "arbitrary", "value": i})
+        self.assertTrue(queue.overflowed)
+
+        # After overflow
+        self.verify_to_dict_end_to_end(client)
+
 
 class OfflineEventQueueTest(ZulipTestCase):
     """Tests for the offline marking mechanism for long-lived event queues."""
