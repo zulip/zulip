@@ -10,7 +10,8 @@ from zerver.models.users import UserProfile
 class UserActivity(models.Model):
     """Data table recording the last time each user hit Zulip endpoints
     via which Clients; unlike UserPresence, these data are not exposed
-    to users via the Zulip API.
+    to users via the Zulip API, aside from telling a returning
+    long-term-idle user how long they have been away.
 
     Useful for debugging as well as to answer analytics questions like
     "How many users have accessed the Zulip mobile app in the last
