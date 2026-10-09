@@ -138,6 +138,40 @@ class GogsHookTests(WebhookTestCase):
         expected_message = """cestrell published release [Title](https://try.gogs.io/cestrell/zulip_test) for tag v1.4."""
         self.check_webhook("release__published", expected_topic_name, expected_message)
 
+    def test_delete_branch(self) -> None:
+        expected_topic_name = "test-repo / Deleted branch test-branch-to-delete"
+        expected_message = "Aneesh-Hegde deleted branch `test-branch-to-delete`."
+        self.check_webhook("delete__branch", expected_topic_name, expected_message)
+
+    def test_delete_tag(self) -> None:
+        expected_topic_name = "test-repo / Deleted tag v1.0.0-test"
+        expected_message = "Aneesh-Hegde deleted tag `v1.0.0-test`."
+        self.check_webhook("delete__tag", expected_topic_name, expected_message)
+
+    def test_pull_request_comment_created(self) -> None:
+        expected_topic_name = "test-repo / PR comment #1"
+        expected_message = """Aneesh-Hegde [commented](http://localhost:3000/celebi/test-repo/pulls/1#issuecomment-6) on [PR #1"New feature"](http://localhost:3000/celebi/test-repo/pulls/1)
+~~~ quote
+Also ensure to follow guideline.md
+~~~"""
+        self.check_webhook("issue_comment__created_pr", expected_topic_name, expected_message)
+
+    def test_pull_request_comment_deleted(self) -> None:
+        expected_topic_name = "test-repo / PR comment #1"
+        expected_message = """Aneesh-Hegde [deleted a comment](http://localhost:3000/celebi/test-repo/pulls/1#issuecomment-6) on [PR #1"New feature"](http://localhost:3000/celebi/test-repo/pulls/1)
+~~~ quote
+Also ensure to follow guideline.md and readme.md
+~~~"""
+        self.check_webhook("issue_comment__deleted_pr", expected_topic_name, expected_message)
+
+    def test_pull_request_comment_edited(self) -> None:
+        expected_topic_name = "test-repo / PR comment #1"
+        expected_message = """Aneesh-Hegde [edited a comment](http://localhost:3000/celebi/test-repo/pulls/1#issuecomment-6) on [PR #1"New feature"](http://localhost:3000/celebi/test-repo/pulls/1)
+~~~ quote
+from "Also ensure to follow guideline.md" to "Also ensure to follow guideline.md and readme.md"
+~~~"""
+        self.check_webhook("issue_comment__edited_pr", expected_topic_name, expected_message)
+
     @patch("zerver.webhooks.gogs.view.check_send_webhook_message")
     def test_push_filtered_by_branches_ignore(
         self, check_send_webhook_message_mock: MagicMock
