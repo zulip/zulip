@@ -597,6 +597,10 @@ class RealmUpdateDictData(BaseEventModel):
     logo_source: str | None = None
     night_logo_url: str | None = None
     night_logo_source: str | None = None
+    moderation_request_channel_id: int | None = None
+    new_stream_announcements_stream_id: int | None = None
+    signup_announcements_stream_id: int | None = None
+    zulip_update_announcements_stream_id: int | None = None
     create_multiuse_invite_group: int | UserGroupMembersDict | None = None
     can_access_all_users_group: int | UserGroupMembersDict | None = None
     can_add_custom_emoji_group: int | UserGroupMembersDict | None = None
