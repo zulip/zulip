@@ -1000,6 +1000,9 @@ export function calculate_notifiable_count(res: FullUnreadCountsData): number {
     const only_show_dm_mention_followed_topic =
         user_settings.desktop_icon_count_display ===
         settings_config.desktop_icon_count_display_values.dm_mention_followed_topic.code;
+    const show_current_conversation =
+        user_settings.desktop_icon_count_display ===
+        settings_config.desktop_icon_count_display_values.current_conversation.code;
     const no_notifications =
         user_settings.desktop_icon_count_display ===
         settings_config.desktop_icon_count_display_values.none.code;
@@ -1021,8 +1024,12 @@ export function calculate_notifiable_count(res: FullUnreadCountsData): number {
         } else {
             new_message_count = dm_mention_count;
         }
-    } else if (no_notifications) {
+    } else if (show_current_conversation || no_notifications) {
+        // DESKTOP_ICON_COUNT_DISPLAY_CURRENT_CONVERSATION or
         // DESKTOP_ICON_COUNT_DISPLAY_NONE
+        // For "current conversation", the actual count is computed in
+        // narrow_title.ts based on the active narrow. We return 0 here
+        // so the global count path doesn't override it.
         new_message_count = 0;
     } else {
         // DESKTOP_ICON_COUNT_DISPLAY_MESSAGES
