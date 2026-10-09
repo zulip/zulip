@@ -611,9 +611,56 @@ test("check_is_suggestions", ({override}) => {
     ];
     assert.deepEqual(suggestions, expected);
 
+    // A bare "is:" or "-is:" query lists the operands for the
+    // operator the user typed, so the "is:unresolved" alias should
+    // not add a suggestion to either of them.
+    query = "-is:";
+    suggestions = get_suggestions(query);
+    expected = [
+        "-is:dm",
+        "-is:starred",
+        "-is:mentioned",
+        "-is:followed",
+        "-is:alerted",
+        "-is:unread",
+        "-is:muted",
+        "-is:resolved",
+    ];
+    assert.deepEqual(suggestions, expected);
+
     query = "is:st";
     suggestions = get_suggestions(query);
     expected = ["is:starred"];
+    assert.deepEqual(suggestions, expected);
+
+    // "is:unresolved" is an alias for "-is:resolved", so we suggest
+    // "-is:resolved" to anyone typing "is:unresolved".
+    query = "is:unres";
+    suggestions = get_suggestions(query);
+    expected = ["-is:resolved"];
+    assert.deepEqual(suggestions, expected);
+
+    query = "is:unresolved";
+    suggestions = get_suggestions(query);
+    expected = ["-is:resolved"];
+    assert.deepEqual(suggestions, expected);
+
+    query = "-is:unres";
+    suggestions = get_suggestions(query);
+    expected = ["is:resolved"];
+    assert.deepEqual(suggestions, expected);
+
+    query = "is:un";
+    suggestions = get_suggestions(query);
+    expected = ["is:unread", "-is:resolved"];
+    assert.deepEqual(suggestions, expected);
+
+    // The alias suggestion is skipped when "-is:resolved" is
+    // incompatible with another term in the query, just like the
+    // regular "-is:resolved" suggestion.
+    query = "is:dm is:unres";
+    suggestions = get_suggestions(query);
+    expected = [];
     assert.deepEqual(suggestions, expected);
 
     query = "-is:st";

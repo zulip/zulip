@@ -1748,6 +1748,17 @@ test("parse", () => {
     terms = [{operator: "is", operand: "mentioned", negated: true}];
     _test(true);
 
+    // "is:unresolved" is an alias for "-is:resolved". The rewrite
+    // happens in `parse` so that it applies only to typed search
+    // input, not to terms parsed from narrow URLs.
+    string = "is:unresolved";
+    terms = [{operator: "is", operand: "resolved", negated: true}];
+    _test();
+
+    string = "-is:unresolved";
+    terms = [{operator: "is", operand: "resolved"}];
+    _test();
+
     string = "https://www.google.com";
     terms = [{operator: "search", operand: "https://www.google.com"}];
     _test();
@@ -2351,6 +2362,10 @@ test("convert_suggestion_to_term", () => {
         ["has:nonsense", false],
         ["is:unread", true],
         ["is:nonsense", false],
+        // "is:unresolved" is an alias for "-is:resolved", rewritten
+        // by the `Filter.parse` call below.
+        ["is:unresolved", true, {operator: "is", operand: "resolved", negated: true}],
+        ["-is:unresolved", true, {operator: "is", operand: "resolved", negated: false}],
         ["in:home", true],
         ["in:nowhere", false],
         ["id:4", true],
