@@ -348,8 +348,12 @@ def claim_attachment(
 
     assert isinstance(message, Message)
     attachment.messages.add(message)
-    attachment.is_web_public = attachment.is_web_public or is_message_web_public
-    attachment.is_realm_public = attachment.is_realm_public or is_message_realm_public
+    # A non-public message must not turn a None cache, which is
+    # pending recomputation, into False.
+    if is_message_web_public:
+        attachment.is_web_public = True
+    if is_message_realm_public:
+        attachment.is_realm_public = True
     attachment.save()
     return attachment
 

@@ -21,6 +21,7 @@ import zerver.lib.upload
 from analytics.models import RealmCount
 from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user
+from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_icon import do_change_icon_source
 from zerver.actions.realm_logo import do_change_logo_source
@@ -644,6 +645,147 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assertEqual(Attachment.objects.get(path_id=d1_path_id).messages.count(), 4)
         self.assertTrue(Attachment.objects.get(path_id=d1_path_id).is_realm_public)
         self.assertTrue(Attachment.objects.get(path_id=d1_path_id).is_web_public)
+
+    def test_attachment_public_cache_reset_on_message_delete(self) -> None:
+        """
+        Deleting the message that made an attachment realm-public or
+        web-public must revoke that access, even when the attachment
+        is still referenced by another message.
+        """
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        cordelia = self.example_user("cordelia")
+        host = hamlet.realm.host
+
+        self.login_user(hamlet)
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        url = self.assert_json_success(result)["url"]
+        path_id = re.sub(r"/user_uploads/", "", url)
+        body = f"[zulip.txt](http://{host}{url})"
+
+        self.make_stream("web-public-stream", is_web_public=True)
+        self.subscribe(hamlet, "web-public-stream")
+        public_message_id = self.send_stream_message(hamlet, "web-public-stream", body, "test")
+        self.send_personal_message(hamlet, othello, body)
+
+        attachment = Attachment.objects.get(path_id=path_id)
+        self.assertTrue(attachment.is_realm_public)
+        self.assertTrue(attachment.is_web_public)
+
+        self.login_user(cordelia)
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 200)
+        consume_response(response)
+
+        do_delete_messages(
+            hamlet.realm, [Message.objects.get(id=public_message_id)], acting_user=None
+        )
+
+        attachment = Attachment.objects.get(path_id=path_id)
+        self.assertEqual(attachment.messages.count(), 1)
+        self.assertIsNone(attachment.is_realm_public)
+        self.assertIsNone(attachment.is_web_public)
+
+        # A user who did not receive the remaining direct message
+        # can no longer access the file.
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(Attachment.objects.get(path_id=path_id).is_realm_public)
+
+        # Nor can a logged-out visitor.
+        self.logout()
+        with ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file"):
+            response = self.client_get(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.headers["Location"].endswith(f"/login/?next={url}"))
+        self.assertFalse(Attachment.objects.get(path_id=path_id).is_web_public)
+
+        # The recipient of the direct message retains access.
+        self.login_user(othello)
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 200)
+        consume_response(response)
+
+    def test_attachment_public_cache_reset_on_message_edit(self) -> None:
+        """
+        Editing a message to remove an attachment must revoke the
+        access that message granted to the attachment.
+        """
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        host = hamlet.realm.host
+
+        self.login_user(hamlet)
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        url = self.assert_json_success(result)["url"]
+        path_id = re.sub(r"/user_uploads/", "", url)
+
+        self.subscribe(hamlet, "Denmark")
+        message_id = self.send_stream_message(
+            hamlet, "Denmark", f"[zulip.txt](http://{host}{url})", "test"
+        )
+        self.assertTrue(Attachment.objects.get(path_id=path_id).is_realm_public)
+
+        result = self.client_patch(f"/json/messages/{message_id}", {"content": "(deleted)"})
+        self.assert_json_success(result)
+
+        attachment = Attachment.objects.get(path_id=path_id)
+        self.assertEqual(attachment.messages.count(), 0)
+        self.assertIsNone(attachment.is_realm_public)
+        self.assertIsNone(attachment.is_web_public)
+
+        self.login_user(cordelia)
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(Attachment.objects.get(path_id=path_id).is_realm_public)
+
+        # The owner retains access.
+        self.login_user(hamlet)
+        response = self.client_get(url)
+        self.assertEqual(response.status_code, 200)
+        consume_response(response)
+
+    def test_claim_attachment_preserves_unset_public_cache(self) -> None:
+        """
+        Claiming an attachment in a non-public message must not turn
+        an unset is_web_public cache into False, since the attachment
+        may still be referenced by a web-public message.
+        """
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        host = hamlet.realm.host
+
+        self.login_user(hamlet)
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+        result = self.client_post("/json/user_uploads", {"file": fp})
+        url = self.assert_json_success(result)["url"]
+        path_id = re.sub(r"/user_uploads/", "", url)
+        body = f"[zulip.txt](http://{host}{url})"
+
+        self.make_stream("web-public-stream", is_web_public=True)
+        self.subscribe(hamlet, "web-public-stream")
+        self.send_stream_message(hamlet, "web-public-stream", body, "test")
+        direct_message_id = self.send_personal_message(hamlet, othello, body)
+        do_delete_messages(
+            hamlet.realm, [Message.objects.get(id=direct_message_id)], acting_user=None
+        )
+        self.assertIsNone(Attachment.objects.get(path_id=path_id).is_web_public)
+
+        self.send_personal_message(hamlet, othello, body)
+        self.assertIsNone(Attachment.objects.get(path_id=path_id).is_web_public)
+
+        # The file is still in a web-public channel message.
+        self.logout()
+        with ratelimit_rule(86400, 1000, domain="spectator_attachment_access_by_file"):
+            response = self.client_get(url)
+        self.assertEqual(response.status_code, 200)
+        consume_response(response)
+        self.assertTrue(Attachment.objects.get(path_id=path_id).is_web_public)
 
     def test_check_attachment_reference_update(self) -> None:
         f1 = StringIO("file1")

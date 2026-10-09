@@ -122,6 +122,11 @@ def check_attachment_reference_change(
             no_key=True
         )
         message.attachment_set.remove(*attachments_to_update)
+        # Reset the Attachment.is_*_public caches, since this message
+        # may have been the one making these attachments public.
+        Attachment.objects.filter(path_id__in=to_remove).update(
+            is_realm_public=None, is_web_public=None
+        )
 
     sender = message.sender
     detached_attachments_query = Attachment.objects.filter(
