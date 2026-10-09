@@ -17,7 +17,7 @@ from zerver.lib.email_notifications import (
 from zerver.lib.send_email import send_custom_email, send_custom_server_email
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
-from zerver.models import Realm, ScheduledEmail, UserProfile
+from zerver.models import Realm, ScheduledEmail, Subscription, UserProfile
 from zerver.models.realms import get_realm
 from zilencer.models import RemoteZulipServer
 
@@ -664,3 +664,31 @@ class TestUtmParamsInEmailLinks(ZulipTestCase):
         html_query = '<a href="https://blog.zulip.com/?page=2">Blog</a>'
         expected_query = '<a href="https://blog.zulip.com/?page=2&amp;utm_source=newsletter&amp;utm_medium=email&amp;utm_campaign=test_campaign">Blog</a>'
         self.assertEqual(add_utm_params_to_links(html_query, campaign_name), expected_query)
+
+
+class TestBlendWithWhite(ZulipTestCase):
+    def test_blend_with_white(self) -> None:
+        from zerver.lib.email_notifications import blend_with_white
+
+        # Red #ff0000 with 0.22 opacity
+        self.assertEqual(blend_with_white("#ff0000", 0.22), "#ffc7c7")
+
+        # White remains white
+        self.assertEqual(blend_with_white("#ffffff", 0.22), "#ffffff")
+
+        # Black #000000 with 0.22 opacity
+        self.assertEqual(blend_with_white("#000000", 0.22), "#c7c7c7")
+
+        # Case insensitivity
+        self.assertEqual(blend_with_white("#FF0000", 0.22), "#ffc7c7")
+
+        # Boundary opacity 0.0 -> pure white (#ffffff)
+        self.assertEqual(blend_with_white("#000000", 0.0), "#ffffff")
+
+        # Boundary opacity 1.0 -> original color
+        self.assertEqual(blend_with_white("#000000", 1.0), "#000000")
+
+        # Malformed input gracefully falls back to Subscription.DEFAULT_STREAM_COLOR
+        self.assertEqual(blend_with_white("invalid"), Subscription.DEFAULT_STREAM_COLOR)
+        self.assertEqual(blend_with_white("#12"), Subscription.DEFAULT_STREAM_COLOR)
+        self.assertEqual(blend_with_white(""), Subscription.DEFAULT_STREAM_COLOR)

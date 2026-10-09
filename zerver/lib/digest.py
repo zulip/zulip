@@ -86,12 +86,18 @@ class DigestTopic:
     def diversity(self) -> int:
         return len(self.human_senders)
 
-    def teaser_data(self, user: UserProfile, stream_id_map: dict[int, Stream]) -> DigestTeaserData:
+    def teaser_data(
+        self,
+        user: UserProfile,
+        stream_id_map: dict[int, Stream],
+        subscription_colors: dict[int, str] | None = None,
+    ) -> DigestTeaserData:
         teaser_count = self.num_human_messages - len(self.sample_messages)
         first_few_messages = build_message_list(
             user=user,
             messages=self.sample_messages,
             stream_id_map=stream_id_map,
+            subscription_colors=subscription_colors,
         )
         return DigestTeaserData(
             participants=sorted(self.human_senders),
@@ -431,6 +437,20 @@ def bulk_get_digest_context(
     stream_id_map = get_slim_stream_id_map(stream_ids)
     user_muted_topics_map = get_user_muted_topics_map(user_ids)
 
+    subscriptions = Subscription.objects.filter(
+        user_profile_id__in=user_ids,
+        recipient__type=Recipient.STREAM,
+        active=True,
+        is_muted=False,
+    ).values("user_profile_id", "recipient__type_id", "color")
+
+    subscription_colors_by_user: dict[int, dict[int, str]] = {}
+    for sub in subscriptions:
+        user_id = sub["user_profile_id"]
+        if user_id not in subscription_colors_by_user:
+            subscription_colors_by_user[user_id] = {}
+        subscription_colors_by_user[user_id][sub["recipient__type_id"]] = sub["color"]
+
     # ID of the realm's earliest message at or after the `cutoff`.
     # Shared across all users, and computed lazily since it is only
     # needed for users who have message content hidden in emails.
@@ -439,6 +459,7 @@ def bulk_get_digest_context(
 
     for user in users:
         context = common_context(user)
+        subscription_colors = subscription_colors_by_user.get(user.id, {})
 
         # Start building email template data.
         unsubscribe_link = one_click_unsubscribe_link(user, "digest")
@@ -484,7 +505,8 @@ def bulk_get_digest_context(
             hot_topics = get_hot_topics(recent_topics, stream_ids)
 
             context["hot_conversations"] = [
-                hot_topic.teaser_data(user, stream_id_map) for hot_topic in hot_topics
+                hot_topic.teaser_data(user, stream_id_map, subscription_colors)
+                for hot_topic in hot_topics
             ]
             context["new_channels"] = new_streams
             context["new_messages_count"] = 0
