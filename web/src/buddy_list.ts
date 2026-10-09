@@ -1105,13 +1105,17 @@ export class BuddyList extends BuddyListConf {
 
             this.maybe_remove_user_id({user_id});
 
+            const pm_ids_set = narrow_state.pm_ids_set();
+            if (!buddy_data.user_is_eligible_for_buddy_list(user_id, pm_ids_set)) {
+                continue;
+            }
+
             const new_pos_in_all_users = this.find_position({
                 user_id,
                 user_id_list: this.all_user_ids,
             });
 
             const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
-            const pm_ids_set = narrow_state.pm_ids_set();
             const is_subscribed_user = buddy_data.user_matches_narrow_using_loaded_data(
                 user_id,
                 pm_ids_set,

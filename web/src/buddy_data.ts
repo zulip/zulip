@@ -391,45 +391,52 @@ function maybe_shrink_list(
     return user_ids;
 }
 
+export function user_is_eligible_for_buddy_list(
+    user_id: number,
+    direct_message_recipients: Set<number>,
+): boolean {
+    const person = people.maybe_get_user_by_id(user_id, true);
+
+    if (!person) {
+        // See the comments in presence.set_info for details, but this is an expected race.
+        // User IDs for whom we have presence but no user metadata should be skipped.
+        return false;
+    }
+
+    if (person.is_deleted) {
+        // Deleted users are not real users and should not appear in
+        // the right sidebar.
+        return false;
+    }
+
+    if (person.is_bot) {
+        // Bots should never appear in the right sidebar.  This
+        // case should never happen, since bots cannot have
+        // presence data.
+        return false;
+    }
+
+    const is_dm = direct_message_recipients.has(user_id);
+    if (!people.is_person_active(user_id) && !is_dm) {
+        // Deactivated users are hidden in the buddy list except in DM narrows.
+        return false;
+    }
+
+    if (muted_users.is_user_muted(user_id)) {
+        // Muted users are hidden from the right sidebar entirely.
+        return false;
+    }
+
+    return true;
+}
+
 function filter_user_ids(user_filter_text: string, user_ids: number[]): number[] {
     // This first filter is for whether the user is eligible to be
     // displayed in the right sidebar at all.
     const direct_message_recipients = narrow_state.pm_ids_set();
-    user_ids = user_ids.filter((user_id) => {
-        const person = people.maybe_get_user_by_id(user_id, true);
-
-        if (!person) {
-            // See the comments in presence.set_info for details, but this is an expected race.
-            // User IDs for whom we have presence but no user metadata should be skipped.
-            return false;
-        }
-
-        if (person.is_deleted) {
-            // Deleted users are not real users and should not appear in
-            // the right sidebar.
-            return false;
-        }
-
-        if (person.is_bot) {
-            // Bots should never appear in the right sidebar.  This
-            // case should never happen, since bots cannot have
-            // presence data.
-            return false;
-        }
-
-        const is_dm = direct_message_recipients.has(user_id);
-        if (!people.is_person_active(user_id) && !is_dm) {
-            // Deactivated users are hidden in the buddy list except in DM narrows.
-            return false;
-        }
-
-        if (muted_users.is_user_muted(user_id)) {
-            // Muted users are hidden from the right sidebar entirely.
-            return false;
-        }
-
-        return true;
-    });
+    user_ids = user_ids.filter((user_id) =>
+        user_is_eligible_for_buddy_list(user_id, direct_message_recipients),
+    );
 
     if (!user_filter_text) {
         return user_ids;
