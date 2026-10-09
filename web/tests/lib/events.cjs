@@ -947,6 +947,7 @@ exports.fixtures = {
                 in_home_view: false,
                 is_muted: true,
                 pin_to_top: false,
+                left_sidebar_topics_order: 0,
                 push_notifications: false,
                 stream_weekly_traffic: 40,
                 wildcard_mentions_notify: false,
