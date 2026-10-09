@@ -998,6 +998,7 @@ export function dispatch_normal_event(event) {
                 "web_home_view",
                 "web_mark_read_on_scroll_policy",
                 "web_navigate_to_sent_message",
+                "web_right_click_opens_message_actions_menu",
                 "web_stream_unreads_count_display_policy",
                 "web_suggest_update_timezone",
                 "web_left_sidebar_unreads_count_summary",
