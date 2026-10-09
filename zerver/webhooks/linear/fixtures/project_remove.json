@@ -1,0 +1,26 @@
+{
+    "action": "remove",
+    "actor": {
+        "id": "e825c109-f691-4716-a85f-b68a2626531c",
+        "name": "Dhruv Shetty",
+        "email": "dhruvshetty2203@gmail.com",
+        "url": "https://linear.app/zulipdhruv/profiles/dhruvshetty2203",
+        "type": "user"
+    },
+    "createdAt": "2026-05-26T08:00:00.000Z",
+    "data": {
+        "id": "af46c665-4220-4be6-9fcc-9460717f8134",
+        "createdAt": "2026-05-26T07:50:10.584Z",
+        "updatedAt": "2026-05-26T08:00:00.000Z",
+        "name": "Project-Zulip",
+        "slugId": "a98782de01a9",
+        "teamIds": [
+            "3f2043ea-4f81-4feb-a970-743c92028a07"
+        ]
+    },
+    "url": "https://linear.app/zulipdhruv/project/project-zulip-a98782de01a9",
+    "type": "Project",
+    "organizationId": "498d97b2-c819-42cc-8d65-7bffd494ed23",
+    "webhookTimestamp": 1779782400000,
+    "webhookId": "a9d5653b-3026-4030-9c0e-ac964e3bb507"
+}

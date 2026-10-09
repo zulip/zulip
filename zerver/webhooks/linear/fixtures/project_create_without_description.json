@@ -7,15 +7,15 @@
         "url": "https://linear.app/zulipdhruv/profiles/dhruvshetty2203",
         "type": "user"
     },
-    "createdAt": "2026-05-26T07:50:10.584Z",
+    "createdAt": "2026-06-01T17:55:01.650Z",
     "data": {
-        "id": "af46c665-4220-4be6-9fcc-9460717f8134",
-        "createdAt": "2026-05-26T07:50:10.584Z",
-        "updatedAt": "2026-05-26T07:50:10.584Z",
+        "id": "74198d0d-e127-488d-a2ad-bd4742fea109",
+        "createdAt": "2026-06-01T17:55:01.650Z",
+        "updatedAt": "2026-06-01T17:55:01.650Z",
         "frequencyResolution": "weekly",
-        "name": "Project-Zulip",
-        "description": "This is a project for zulip",
-        "slugId": "a98782de01a9",
+        "name": "Project-Manhattan",
+        "description": "",
+        "slugId": "9719af1a1893",
         "color": "#bec2c8",
         "statusId": "3f1ad536-fcf2-4c64-af47-ee92e9272900",
         "creatorId": "e825c109-f691-4716-a85f-b68a2626531c",
@@ -23,8 +23,8 @@
         "startDateResolution": null,
         "targetDate": null,
         "targetDateResolution": null,
-        "sortOrder": -82.95,
-        "prioritySortOrder": 0,
+        "sortOrder": 1837.96,
+        "prioritySortOrder": -259.06,
         "priority": 0,
         "issueCountHistory": [],
         "completedIssueCountHistory": [],
@@ -32,9 +32,9 @@
         "completedScopeHistory": [],
         "inProgressScopeHistory": [],
         "labelIds": [],
-        "url": "https://linear.app/zulipdhruv/project/project-zulip-a98782de01a9",
+        "url": "https://linear.app/zulipdhruv/project/project-manhattan-9719af1a1893",
         "teamIds": [
-            "3f2043ea-4f81-4feb-a970-743c92028a07"
+            "b36906f3-70ef-40a7-8c0e-12d97e4d5ab4"
         ],
         "memberIds": [],
         "milestones": [],
@@ -45,11 +45,11 @@
             "name": "Backlog",
             "type": "backlog"
         },
-        "content": "Description for the project."
+        "content": null
     },
-    "url": "https://linear.app/zulipdhruv/project/project-zulip-a98782de01a9",
+    "url": "https://linear.app/zulipdhruv/project/project-manhattan-9719af1a1893",
     "type": "Project",
     "organizationId": "498d97b2-c819-42cc-8d65-7bffd494ed23",
-    "webhookTimestamp": 1779781812825,
+    "webhookTimestamp": 1780336502056,
     "webhookId": "a9d5653b-3026-4030-9c0e-ac964e3bb507"
 }
