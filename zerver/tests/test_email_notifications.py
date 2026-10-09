@@ -11,10 +11,12 @@ from django_auth_ldap.config import LDAPSearch
 
 from zerver.lib.email_notifications import (
     enqueue_welcome_emails,
+    get_channel_privacy_icon,
     get_onboarding_email_schedule,
     send_account_registered_email,
 )
 from zerver.lib.send_email import send_custom_email, send_custom_server_email
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.models import Realm, ScheduledEmail, UserProfile
@@ -664,3 +666,19 @@ class TestUtmParamsInEmailLinks(ZulipTestCase):
         html_query = '<a href="https://blog.zulip.com/?page=2">Blog</a>'
         expected_query = '<a href="https://blog.zulip.com/?page=2&amp;utm_source=newsletter&amp;utm_medium=email&amp;utm_campaign=test_campaign">Blog</a>'
         self.assertEqual(add_utm_params_to_links(html_query, campaign_name), expected_query)
+
+
+class TestChannelPrivacyIcon(ZulipTestCase):
+    def test_get_channel_privacy_icon(self) -> None:
+        realm = self.example_user("hamlet").realm
+
+        public_stream = create_stream_if_needed(realm, "Public Stream")[0]
+        self.assertEqual(get_channel_privacy_icon(public_stream), "#")
+
+        private_stream = create_stream_if_needed(realm, "Private Stream", invite_only=True)[0]
+        self.assertEqual(get_channel_privacy_icon(private_stream), "🔒")
+
+        web_public_stream = create_stream_if_needed(realm, "Web Public Stream", is_web_public=True)[
+            0
+        ]
+        self.assertEqual(get_channel_privacy_icon(web_public_stream), "🌍")
