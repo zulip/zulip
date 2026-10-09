@@ -204,15 +204,16 @@ export const draft_model = (function () {
         return Object.keys(drafts).length;
     }
 
-    function save(drafts: Record<string, LocalStorageDraft>, update_count = true): void {
+    function save(drafts: Record<string, LocalStorageDraft>, refresh_ui = true): void {
         ls.set(KEY, drafts);
-        if (update_count) {
+        if (refresh_ui) {
             set_count(Object.keys(drafts).length);
             update_compose_draft_count();
+            draft_rerender_listener?.();
         }
     }
 
-    function addDraft(draft: LocalStorageDraft, update_count = true): string {
+    function addDraft(draft: LocalStorageDraft, refresh_ui = true): string {
         const drafts = get();
 
         // use the base16 of the current time + a random string to reduce
@@ -220,7 +221,7 @@ export const draft_model = (function () {
         const id = getTimestamp().toString(16) + "-" + Math.random().toString(16).split(/\./).pop();
 
         drafts[id] = draft;
-        save(drafts, update_count);
+        save(drafts, refresh_ui);
 
         return id;
     }
@@ -262,6 +263,21 @@ export const draft_model = (function () {
         deleteDrafts,
     };
 })();
+
+// Always `drafts_overlay_ui.rerender_drafts` while the overlay is open. It's a
+// callback rather than a direct call because drafts_overlay_ui imports this
+// module. Single-slot: the setter overwrites any previous listener.
+let draft_rerender_listener: (() => void) | undefined;
+
+export function set_draft_rerender_listener(callback: (() => void) | undefined): void {
+    draft_rerender_listener = callback;
+}
+
+export function notify_draft_rerender(): void {
+    // For changes that don't write to the draft model, such as a tracked
+    // echo failing.
+    draft_rerender_listener?.();
+}
 
 export let update_compose_draft_count = (): void => {
     const $count_container = $(".compose-drafts-count-container");
@@ -441,7 +457,7 @@ export function set_compose_draft_id(draft_id: string | undefined): void {
 
 type UpdateDraftOptions = {
     no_notify?: boolean;
-    update_count?: boolean;
+    refresh_ui?: boolean;
     is_sending_saving?: boolean;
     force_save?: boolean;
 };
@@ -492,8 +508,8 @@ export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined =>
     }
 
     // We have never saved a draft for this message, so add one.
-    const update_count = opts.update_count ?? true;
-    const new_draft_id = draft_model.addDraft(draft, update_count);
+    const refresh_ui = opts.refresh_ui ?? true;
+    const new_draft_id = draft_model.addDraft(draft, refresh_ui);
     compose_draft_id = new_draft_id;
     maybe_notify(no_notify);
 
@@ -762,7 +778,7 @@ export function initialize(): void {
 
     // Show exact time when draft was saved in UTC format.
     tippy.delegate("body", {
-        target: ".drafts-list .recipient_row_date",
+        target: "#draft_overlay .recipient_row_date",
         appendTo: () => document.body,
         delay: [750, 20], // LONG_HOVER_DELAY
         onShow(instance) {
