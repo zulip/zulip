@@ -190,6 +190,29 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.assertIsNotNone(updated_sub)
         self.assertEqual(updated_sub.pin_to_top, new_pin_to_top)
 
+    def test_set_demote_resolved_topics(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        old_subs, _ = gather_subscriptions(user)
+        sub = old_subs[0]
+        stream_id = sub["stream_id"]
+        self.assertFalse(sub["demote_resolved_topics"])
+        result = self.api_post(
+            user,
+            "/api/v1/users/me/subscriptions/properties",
+            {
+                "subscription_data": orjson.dumps(
+                    [{"property": "demote_resolved_topics", "stream_id": stream_id, "value": True}]
+                ).decode()
+            },
+        )
+        self.assert_json_success(result)
+
+        updated_sub = get_subscription(sub["name"], user)
+        self.assertIsNotNone(updated_sub)
+        self.assertTrue(updated_sub.demote_resolved_topics)
+
     def test_change_is_muted(self) -> None:
         test_user = self.example_user("hamlet")
         self.login_user(test_user)

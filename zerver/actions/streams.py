@@ -474,6 +474,7 @@ def send_subscription_add_events(
                 # Fields from Subscription.API_FIELDS
                 audible_notifications=subscription.audible_notifications,
                 color=subscription.color,
+                demote_resolved_topics=subscription.demote_resolved_topics,
                 desktop_notifications=subscription.desktop_notifications,
                 email_notifications=subscription.email_notifications,
                 is_muted=subscription.is_muted,
