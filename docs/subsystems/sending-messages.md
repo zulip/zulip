@@ -101,6 +101,30 @@ This section details the ways in which it is different:
     it makes when sending messages with large numbers of recipients,
     to ensure its performance.
 
+### Replayed requests
+
+Clients can send an
+[`Idempotency-Key` header](https://zulip.com/api/http-headers#the-idempotency-key-request-header)
+so that a replayed request doesn't send its message twice.
+`send_message_backend` fetches or creates the user's `IdempotentRequest`
+row for that key, and passes it to `check_send_message`, which:
+
+- Returns the row's `cached_result` if the request already succeeded,
+  without validating the message again.
+- Otherwise, validates the message, and then calls `do_send_messages`
+  via `run_idempotently`, which locks the row with `NOWAIT`, so that a
+  concurrent request with the same key fails with a 409 error, and
+  saves the result in the same transaction as the message. Validation
+  happens before taking the lock, so that the lock isn't held while
+  rendering the message, and so that messages sent during validation,
+  like bot owner notifications, aren't part of that transaction.
+
+Errors aren't cached, and the `delete_old_idempotent_requests` cron
+job deletes rows older than a day. Another endpoint can use
+`zerver/lib/idempotency.py` if its work runs in one transaction and
+returns a dataclass of JSON values, once the endpoint is added to the
+row's unique key.
+
 ## Local echo
 
 An essential feature for a good chat experience is local echo

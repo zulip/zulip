@@ -906,3 +906,27 @@ class PushServiceNotConfiguredError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Server is not configured to use push notification service.")
+
+
+class InvalidIdempotencyKeyError(JsonableError):
+    data_fields = ["idempotency_key"]
+
+    def __init__(self, idempotency_key: str) -> None:
+        self.idempotency_key = idempotency_key
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Invalid UUID in Idempotency-Key header: '{idempotency_key}'")
+
+
+class IdempotencyKeyInUseError(JsonableError):
+    http_status_code = 409
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("A request with this Idempotency-Key is already in progress")

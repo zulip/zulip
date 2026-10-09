@@ -2,6 +2,7 @@ import fcntl
 import os
 import re
 import tempfile
+import uuid
 from datetime import timedelta
 from typing import Any
 from unittest import mock, skipUnless
@@ -15,6 +16,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 from django.db.models.functions import Lower
 from django.test import override_settings
+from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from confirmation.models import Confirmation, generate_realm_creation_url
@@ -23,7 +25,7 @@ from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.management import ZulipBaseCommand, skip_unless_locked
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_message, stdout_suppressed
-from zerver.models import Realm, RealmAuditLog, Recipient, UserProfile
+from zerver.models import IdempotentRequest, Realm, RealmAuditLog, Recipient, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
@@ -839,6 +841,37 @@ class TestSendZulipUpdateAnnouncements(ZulipTestCase):
 
         realm.refresh_from_db()
         self.assertEqual(realm.zulip_update_announcements_level, 5)
+
+
+class TestDeleteOldIdempotentRequests(ZulipTestCase):
+    def test_delete_old_idempotent_requests_in_batches(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        def create_idempotent_request(age: timedelta) -> IdempotentRequest:
+            return IdempotentRequest.objects.create(
+                realm=hamlet.realm,
+                user=hamlet,
+                idempotency_key=uuid.uuid4(),
+                timestamp=timezone_now() - age,
+            )
+
+        expired_requests = [
+            create_idempotent_request(IdempotentRequest.RETENTION_PERIOD + timedelta(hours=hours))
+            for hours in range(1, 4)
+        ]
+        fresh_request = create_idempotent_request(
+            IdempotentRequest.RETENTION_PERIOD - timedelta(hours=1)
+        )
+
+        with (
+            patch(
+                "zerver.management.commands.delete_old_idempotent_requests.BATCH_SIZE",
+                len(expired_requests) - 1,
+            ),
+            stdout_suppressed(),
+        ):
+            call_command("delete_old_idempotent_requests")
+        self.assertEqual(list(IdempotentRequest.objects.all()), [fresh_request])
 
 
 class TestUserChangeNotifications(ZulipTestCase):
