@@ -181,6 +181,26 @@ class RemoteRealm(models.Model):
         choices=[(t["id"], t["name"]) for t in Realm.ORG_TYPES.values()],
     )
 
+    # Whether the realm is asking to be advertised in the communities directory.
+    # This is not the realm's want_advertise_in_communities_directory setting:
+    # it is True only when the server has enabled ZULIP_SERVICE_ADVERTISE_REALMS
+    # and the realm has opted in.
+    asks_to_advertise_in_communities_directory = models.BooleanField(default=False, db_index=True)
+
+    # Values mirrored for the communities directory listing.
+    # Left at whatever we last saw, while the realm is not asking to be advertised.
+    description = models.TextField(default="")
+    icon_url = models.TextField(default="")
+    invite_required = models.BooleanField(default=True)
+    emails_restricted_to_domains = models.BooleanField(default=False)
+    has_web_public_streams = models.BooleanField(default=False)
+    is_demo_organization = models.BooleanField(default=False)
+
+    # When the realm last responded to a liveness probe for communities directory listing.
+    last_reachable_datetime = models.DateTimeField(null=True)
+    # When the realm was first advertised in the communities directory.
+    first_advertised_datetime = models.DateTimeField(null=True)
+
     # The fields below are analogous to RemoteZulipServer fields.
 
     last_updated = models.DateTimeField("last updated", auto_now=True)
