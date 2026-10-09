@@ -357,6 +357,34 @@ export function create<Key, Item = Key>(
         reduce_rendered_offset();
     }
 
+    // Callers update rows in list order, so the rows before this one are
+    // in place, which the next item's row may not be.
+    function insert_row_at_index($row: JQuery, index: number): boolean {
+        assert(opts.html_selector !== undefined);
+        if (meta.offset === 0) {
+            // The container may hold the empty-list message.
+            return false;
+        }
+        if (index === 0) {
+            $container.prepend($row);
+            return true;
+        }
+        const $predecessor_row = opts.html_selector(meta.filtered_list[index - 1]!);
+        if ($predecessor_row.length === 0) {
+            return false;
+        }
+        $predecessor_row.after($row);
+        return true;
+    }
+
+    function is_row_at_index($row: JQuery, index: number): boolean {
+        assert(opts.html_selector !== undefined);
+        if (index === 0) {
+            return $row.prev().length === 0;
+        }
+        return $row.prev().is(opts.html_selector(meta.filtered_list[index - 1]!));
+    }
+
     const widget: ListWidget<Key, Item> = {
         get_current_list() {
             return meta.filtered_list;
@@ -512,10 +540,16 @@ export function create<Key, Item = Key>(
                 blueslip.error("List item is not a string", {item: html});
                 return;
             }
+            const $row = $(html);
 
-            // At this point, we have asserted we have all the information to replace
-            // the html now.
-            $html_item.replaceWith($(html));
+            if (index === -1 || is_row_at_index($html_item, index)) {
+                $html_item.replaceWith($row);
+            } else {
+                $html_item.remove();
+                if (!insert_row_at_index($row, index)) {
+                    widget.clean_redraw();
+                }
+            }
         },
 
         clear() {
@@ -647,37 +681,14 @@ export function create<Key, Item = Key>(
                     blueslip.error(
                         "Please specify modifier and html_selector when creating the widget.",
                     );
+                    return;
                 }
-                const rendered_row = opts.modifier_html(item, meta.filter_value);
-                if (insert_index === meta.filtered_list.length - 1) {
-                    const $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]!);
-                    if ($target_row.length === 0) {
-                        widget.clean_redraw();
-                        return;
-                    }
-                    $target_row.after($(rendered_row));
+                const $row = $(opts.modifier_html(item, meta.filter_value));
+                if (insert_row_at_index($row, insert_index)) {
+                    increase_rendered_offset();
                 } else {
-                    let $target_row = opts.html_selector!(meta.filtered_list[insert_index + 1]!);
-                    if ($target_row.length > 0) {
-                        $target_row.before($(rendered_row));
-                    } else if (insert_index > 0) {
-                        // We don't have a row rendered after row we are trying to insert at.
-                        // So, try looking for the row before current row.
-                        $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]!);
-                        if ($target_row.length > 0) {
-                            $target_row.after($(rendered_row));
-                        }
-                    }
-
-                    // The new row has no rendered neighbor if no rows are
-                    // rendered, or if its neighbors are new items the caller
-                    // has not inserted yet; redraw instead.
-                    if ($target_row.length === 0) {
-                        widget.clean_redraw();
-                        return;
-                    }
+                    widget.clean_redraw();
                 }
-                increase_rendered_offset();
             }
         },
 

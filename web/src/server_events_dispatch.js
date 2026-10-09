@@ -807,6 +807,9 @@ export function dispatch_normal_event(event) {
                             );
                         }
                         const message_ids = message_store.get_message_ids_in_stream(stream_id);
+                        // Redraw first: processing the reads rerenders recent view, which
+                        // should not find the deleted channel's rows still on screen.
+                        recent_view_ui.complete_rerender();
                         unread_ops.process_read_messages_event(message_ids);
                         message_events.remove_messages(message_ids);
                         stream_topic_history.remove_history_for_stream(stream_id);

@@ -14,6 +14,7 @@ const {FoldDict} = zrequire("fold_dict");
 const message_store = zrequire("message_store");
 const user_topics = zrequire("user_topics");
 const people = zrequire("people");
+const recent_view_util = zrequire("recent_view_util");
 const stream_data = zrequire("stream_data");
 const sub_store = zrequire("sub_store");
 const unread = zrequire("unread");
@@ -495,6 +496,63 @@ test("private_messages", () => {
     assert.equal(counts.direct_message_count, 0);
     assert.equal(counts.pm_count.get("999"), 0);
     test_notifiable_count(counts.home_unread_messages, 0);
+});
+
+test("get_unread_message_conversation_key", () => {
+    const stream_message = {
+        id: 21,
+        type: "stream",
+        stream_id: social.stream_id,
+        topic: "Lunch",
+        unread: true,
+    };
+    const dm_message = {
+        id: 22,
+        type: "private",
+        display_recipient: [{id: anybody.user_id}, {id: me.user_id}],
+        unread: true,
+    };
+    unread.process_loaded_messages([stream_message, dm_message]);
+
+    // The keys match recent view's conversation keys, and come from the
+    // unread data rather than message_store, so they are available for
+    // messages this client never fetched.
+    assert.equal(
+        unread.get_unread_message_conversation_key(stream_message.id),
+        recent_view_util.get_topic_key(stream_message.stream_id, stream_message.topic),
+    );
+    assert.equal(
+        unread.get_unread_message_conversation_key(dm_message.id),
+        anybody.user_id.toString(),
+    );
+    assert.equal(unread.get_unread_message_conversation_key(23), undefined);
+
+    unread.mark_as_read(stream_message.id);
+    assert.equal(unread.get_unread_message_conversation_key(stream_message.id), undefined);
+});
+
+test("process_loaded_messages returns newly tracked unreads", () => {
+    const unread_message = {
+        id: 31,
+        type: "stream",
+        stream_id: social.stream_id,
+        topic: "lunch",
+        unread: true,
+    };
+    const read_message = {
+        id: 32,
+        type: "stream",
+        stream_id: social.stream_id,
+        topic: "lunch",
+        unread: false,
+    };
+    assert.deepEqual(unread.process_loaded_messages([unread_message, read_message]), [
+        unread_message,
+    ]);
+    assert.equal(unread.num_unread_for_topic(social.stream_id, "lunch"), 1);
+
+    // Messages already tracked as unread are not reported again.
+    assert.deepEqual(unread.process_loaded_messages([unread_message, read_message]), []);
 });
 
 test("private_messages", () => {
