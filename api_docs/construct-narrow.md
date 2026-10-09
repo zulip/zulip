@@ -58,6 +58,9 @@ as an empty string.
 
 ## Changes
 
+* Before Zulip 13.0 (feature level ZF-f1840d), the server ignored
+  negation on `with` terms and treated them as positive terms.
+
 * In Zulip 12.0 (feature level 489), support was added for a new
   filter, `channels:archived`, which returns messages the current user
   received in channels that have been [archived](/help/archive-a-channel).
@@ -141,6 +144,9 @@ than throwing an error) if the remaining operators uniquely identify a
 conversation (i.e., they contain `channel` and `topic` terms or `dm`
 term). This behavior is intended to provide the best possible
 experience for links to private channels with protected history.
+
+The `with` operator cannot be negated. A `with` term with `"negated": true`
+returns an error: `Invalid narrow operator: Negated 'with' operator`.
 
 The [help center](/help/search-for-messages#search-by-message-id) also
 documents the `near` operator for searching for messages by ID, but
