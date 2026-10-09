@@ -33,5 +33,6 @@ instance of Jitsi Meet.
 - [Zoom integration](/integrations/zoom)
 - [BigBlueButton integration](/integrations/big-blue-button)
 - [Constructor Groups integration](/integrations/constructor-groups)
+- [Google Meet integration](/integrations/google-meet)
 - [Nextcloud Talk integration](/integrations/nextcloud-talk)
 - [Webex integration](/integrations/webex)
