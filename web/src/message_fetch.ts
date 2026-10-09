@@ -26,6 +26,7 @@ import * as popup_banners from "./popup_banners.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
 import {get_retry_backoff_seconds} from "./retry_backoff.ts";
+import * as scroll_to_bottom_button from "./scroll_to_bottom_button.ts";
 import {narrow_operator_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -277,6 +278,10 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
         // even though the user is looking at the bottom of the view.
         unread_ops.process_visible();
     }
+
+    if (opts.msg_list?.is_current_message_list()) {
+        scroll_to_bottom_button.update();
+    }
 }
 
 // This function modifies the narrow data to use integer IDs instead of
@@ -472,6 +477,9 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                 // for many common errors, and those have nicer HTML formatting,
                 // we certainly don't for every possible 400 error.
                 message_feed_loading.hide_indicators();
+                if (opts.msg_list?.is_current_message_list()) {
+                    scroll_to_bottom_button.hide_after_failed_fetch();
+                }
 
                 if (
                     message_lists.current !== undefined &&

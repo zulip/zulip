@@ -2134,7 +2134,7 @@ body:not(.spectator-view) {
         visibility 500ms,
         opacity 500ms ease-in-out;
 
-    &.show {
+    #compose:not(.compose-fullscreen) &.show {
         visibility: visible;
         opacity: 1;
     }
@@ -2155,6 +2155,8 @@ body:not(.spectator-view) {
         }
 
         #scroll-to-bottom-button {
+            color: var(--color-text-scroll-to-bottom-button);
+
             > .zulip-icon {
                 /* We increase the icon size for better visibility */
                 font-size: 1.5em; /* 24px at 16px em */

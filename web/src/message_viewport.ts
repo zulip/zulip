@@ -416,6 +416,14 @@ export function stop_auto_scrolling(): void {
     }
 }
 
+export function is_animating_scroll(): boolean {
+    return $scroll_container.promise().state() === "pending";
+}
+
+export function after_animated_scroll(callback: () => void): void {
+    void $scroll_container.promise().done(callback);
+}
+
 export function system_initiated_animate_scroll(
     scroll_amount: number,
     update_selection_on_scroll = false,

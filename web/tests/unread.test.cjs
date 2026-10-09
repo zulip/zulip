@@ -150,6 +150,8 @@ test("changing_topics", () => {
     assert.ok(unread.topic_has_any_unread(stream_id, "lunch"));
     assert.ok(!unread.topic_has_any_unread(wrong_stream_id, "lunch"));
     assert.ok(!unread.topic_has_any_unread(stream_id, "NOT lunch"));
+    assert.deepEqual(unread.get_topics_with_unreads(stream_id), ["luNch"]);
+    assert.deepEqual(unread.get_topics_with_unreads(wrong_stream_id), []);
 
     count = unread.num_unread_for_topic(stream_id, "NOT lunch");
     assert.equal(count, 0);
@@ -184,6 +186,8 @@ test("changing_topics", () => {
     assert.equal(count, 1);
     assert.ok(unread.topic_has_any_unread(stream_id, "snack"));
     assert.ok(!unread.topic_has_any_unread(wrong_stream_id, "snack"));
+    // The topic that no longer has unread messages is left out.
+    assert.deepEqual(unread.get_topics_with_unreads(stream_id), ["dinner", "snack"]);
 
     unread.update_unread_topic_name_case(stream_id, "snack", "SnaCK");
     const topic_counts = unread.get_unread_topics().topic_counts.get(stream_id);

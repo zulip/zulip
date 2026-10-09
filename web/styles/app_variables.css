@@ -1362,6 +1362,10 @@
     --color-compose-send-control-button-focus-shadow: var(
         --color-compose-send-button-focus-shadow
     );
+    --color-text-scroll-to-bottom-button: light-dark(
+        var(--color-compose-send-control-button),
+        var(--color-text-brand-subtle-action-button)
+    );
     --color-compose-recipient-box-text-color: inherit;
     --color-compose-recipient-box-background-color: light-dark(
         hsl(0deg 0% 100%),

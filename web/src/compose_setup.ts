@@ -36,6 +36,7 @@ import * as resize from "./resize.ts";
 import {unresolve_name} from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
+import * as scroll_to_bottom_button from "./scroll_to_bottom_button.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_settings_components from "./stream_settings_components.ts";
@@ -165,11 +166,12 @@ export function initialize(): void {
     resize.watch_manual_resize("#compose-textarea");
     message_viewport.register_resize_handler(message_edit.maybe_autosize_message_edit_box);
 
-    // Updates compose max-height and scroll to bottom button position when
+    // Updates compose max-height and the scroll to bottom button when
     // there is a change in compose height like when a compose banner is displayed.
     const update_compose_max_height = new ResizeObserver((_entries) => {
         requestAnimationFrame(() => {
             resize.reset_compose_message_max_height();
+            scroll_to_bottom_button.update();
         });
     });
     update_compose_max_height.observe(document.querySelector("#compose")!);

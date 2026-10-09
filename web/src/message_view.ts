@@ -53,6 +53,7 @@ import * as recent_view_ui from "./recent_view_ui.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as resize from "./resize.ts";
 import * as scheduled_messages_feed_ui from "./scheduled_messages_feed_ui.ts";
+import * as scroll_to_bottom_button from "./scroll_to_bottom_button.ts";
 import {
     message_edit_history_visibility_policy_values,
     web_mark_read_on_scroll_policy_values,
@@ -158,6 +159,18 @@ type TargetMessageIdInfo = {
     local_select_id: number | undefined;
     first_unread_msg_id_pending_server_verification: number | undefined;
 };
+
+export function preserves_topics_kept_unread_by_user(trigger: string | undefined): boolean {
+    return (
+        trigger !== undefined &&
+        [
+            "next_topic_unread_hotkey",
+            "next_unread_topic_button",
+            "old_unreads_missing",
+            "retarget message location",
+        ].includes(trigger)
+    );
+}
 
 function create_and_update_message_list(
     filter: Filter,
@@ -274,12 +287,7 @@ function create_and_update_message_list(
 
     // To keep the behaviour of `n` key consistent and the memory of
     // `topics_kept_unread_by_user` as recent as possible, we clear it.
-    if (
-        !opts.trigger ||
-        !["next_topic_unread_hotkey", "old_unreads_missing", "retarget message location"].includes(
-            opts.trigger,
-        )
-    ) {
+    if (!preserves_topics_kept_unread_by_user(opts.trigger)) {
         topic_generator.reset_topics_kept_unread_by_user();
     }
 
@@ -324,6 +332,7 @@ function handle_post_message_list_change(
         }
         render_message_list_with_selected_message(render_opts);
     }
+    scroll_to_bottom_button.update();
 
     handle_post_view_change(msg_list, opts);
 
