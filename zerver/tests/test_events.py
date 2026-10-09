@@ -1752,6 +1752,9 @@ class NormalActionsTest(BaseAction):
                 realm=realm, name="Expertise", field_type=CustomProfileField.PARAGRAPH
             )
         check_custom_profile_fields("events[0]", events[0])
+        [expertise_field] = (f for f in events[0]["fields"] if f["name"] == "Expertise")
+        self.assertEqual(expertise_field["rendered_name"], "Expertise")
+        self.assertEqual(expertise_field["rendered_hint"], "")
 
         with self.verify_action() as events:
             try_add_realm_custom_profile_field(
@@ -1780,6 +1783,9 @@ class NormalActionsTest(BaseAction):
                 display_in_profile_summary=display_in_profile_summary,
             )
         check_custom_profile_fields("events[0]", events[0])
+        [bio_field] = (f for f in events[0]["fields"] if f["name"] == "Biography")
+        self.assertEqual(bio_field["rendered_hint"], "Biography of the user")
+        self.assertEqual(bio_field["rendered_name"], "Biography")
 
         with self.verify_action() as events:
             do_remove_realm_custom_profile_field(realm, field)
