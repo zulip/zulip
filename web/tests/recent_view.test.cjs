@@ -523,6 +523,15 @@ function record_row_updates(override) {
     return updates;
 }
 
+function schedule_visibility_update(override, topic) {
+    let run_update;
+    override(global, "setTimeout", (callback) => {
+        run_update = callback;
+    });
+    rt.schedule_topic_visibility_update(stream1, topic, 500);
+    return run_update;
+}
+
 function test(label, f) {
     run_test(label, (helpers) => {
         page_params.development_environment = true;
@@ -1089,6 +1098,36 @@ test("rerender inserts rows only within the rendered range", ({override}) => {
         ["insert", new_second, 1],
         ["rerender", with_row],
     ]);
+});
+
+test("a topic's row stays listed until its delayed visibility update", ({override}) => {
+    // The filters would hide the muted topic at once, but a popover may
+    // be anchored on its row.
+    show_recent_view_with_messages();
+    const muted_conversation = conversation_for(topic7);
+    assert.ok(rt.filters_should_hide_row(muted_conversation));
+
+    const run_update = schedule_visibility_update(override, topic7);
+    assert.ok(!rt.filters_should_hide_row(muted_conversation));
+
+    run_update();
+    assert.ok(rt.filters_should_hide_row(muted_conversation));
+});
+
+test("a conversation without a row stays unlisted until its visibility update", ({override}) => {
+    // The update gives a topic that is no longer hidden its row. A
+    // rerender before that must not list the topic: the widget counts a
+    // row for every conversation it lists in its rendered range.
+    show_recent_view_with_messages();
+    const conversation = conversation_for(topic1);
+    stub_no_row_for(get_topic_key(stream1, topic1));
+    assert.ok(!rt.filters_should_hide_row(conversation));
+
+    const run_update = schedule_visibility_update(override, topic1);
+    assert.ok(rt.filters_should_hide_row(conversation));
+
+    run_update();
+    assert.ok(!rt.filters_should_hide_row(conversation));
 });
 
 test("basic assertions", ({mock_template, override, override_rewire}) => {

@@ -110,6 +110,7 @@ const ls = localstorage();
 
 let filters = new Set<string>();
 let dropdown_filters = new Set<string>();
+const pending_topic_visibility_updates = new Set<string>();
 let folder_filter_value: number = folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION;
 let folder_filter_dropdown_widget: dropdown_widget.DropdownWidget | undefined;
 
@@ -216,6 +217,7 @@ export function clear_for_tests(): void {
     dropdown_filters.clear();
     folder_filter_value = folder_dropdown_widget.FOLDER_FILTERS.ANY_FOLDER_DROPDOWN_OPTION;
     recent_view_data.conversations.clear();
+    pending_topic_visibility_updates.clear();
     topics_widget = undefined;
 }
 
@@ -1059,6 +1061,14 @@ export function filters_should_hide_row(topic_data: ConversationData): boolean {
         }
     }
 
+    const conversation_key = recent_view_util.get_key_from_message(msg);
+    if (pending_topic_visibility_updates.has(conversation_key)) {
+        // The scheduled update adds or removes the row. Until then, a
+        // popover may be anchored on the row, and the widget would count
+        // a newly listed conversation as rendered without giving it one.
+        return get_conversation_row(conversation_key).length === 0;
+    }
+
     const folder_filters = folder_dropdown_widget.FOLDER_FILTERS;
     if (folder_filter_value !== folder_filters.ANY_FOLDER_DROPDOWN_OPTION) {
         // When a folder filter is active, hide all DMs.
@@ -1268,7 +1278,9 @@ export function schedule_topic_visibility_update(
         return false;
     }
 
+    pending_topic_visibility_updates.add(key);
     setTimeout(() => {
+        pending_topic_visibility_updates.delete(key);
         inplace_rerender(key);
     }, delay_ms);
     return true;
