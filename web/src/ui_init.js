@@ -75,6 +75,7 @@ import * as message_fetch from "./message_fetch.ts";
 import * as message_list_hover from "./message_list_hover.ts";
 import * as message_list_tooltips from "./message_list_tooltips.ts";
 import * as message_lists from "./message_lists.ts";
+import * as message_notifications from "./message_notifications.ts";
 import * as message_reminder from "./message_reminder.ts";
 import * as message_scroll from "./message_scroll.ts";
 import * as message_view from "./message_view.ts";
@@ -593,7 +594,13 @@ export async function initialize_everything(state_data) {
     scroll_bar.initialize();
     message_viewport.initialize();
     banners.initialize();
-    navbar_alerts.initialize();
+    navbar_alerts.initialize({
+        on_desktop_notifications_permission_granted() {
+            message_notifications.send_test_notification(
+                i18n.$t({defaultMessage: "Thanks for enabling Zulip notifications!"}),
+            );
+        },
+    });
     popup_banners.initialize();
     message_list_hover.initialize();
     initialize_kitchen_sink_stuff();
