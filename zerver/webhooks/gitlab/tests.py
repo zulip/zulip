@@ -100,6 +100,15 @@ class GitlabHookTests(WebhookTestCase):
         expected_message = "Tomasz Kolek updated [task #2](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2)."
         self.check_webhook("work_item_hook__task_updated", expected_topic_name, expected_message)
 
+    def test_create_task_work_item_with_null_description_event_message(self) -> None:
+        expected_topic_name = "my-awesome-project / task #7 Task without description"
+        expected_message = "Eeshan Garg created [task #7](https://gitlab.com/eeshangarg/my-awesome-project/issues/7)."
+        self.check_webhook(
+            "work_item_hook__task_opened_with_null_description",
+            expected_topic_name,
+            expected_message,
+        )
+
     def test_create_issue_without_assignee_event_message(self) -> None:
         expected_topic_name = "my-awesome-project / issue #1 Issue title"
         expected_message = "Tomasz Kolek created [issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1):\n\n``` quote\nIssue description\n```"
