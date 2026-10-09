@@ -7,7 +7,7 @@ from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.partial import partial
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
-from zerver.lib.validator import WildValue, check_bool, check_string
+from zerver.lib.validator import WildValue, check_bool, check_none_or, check_string
 from zerver.lib.webhooks.common import check_send_webhook_message, get_setup_webhook_message
 from zerver.models import UserProfile
 
@@ -17,9 +17,24 @@ ADMIN_AWAY_MODE_UPDATED_TEMPLATE = "{name} is {away_status}{reason}."
 
 ADMIN_LOGIN_LOGOUT_TEMPLATE = "{name} {phrase}."
 
+COMPANY_ACTION_TEMPLATE = "{name} was {phrase}."
+
+COMPANY_CONTACT_ACTION_TEMPLATE = (
+    "**{contact_name}** was {phrase} {preposition} company **{company_name}**."
+)
+
 
 def get_admin_name(payload: WildValue) -> str:
     return payload["data"]["item"]["name"].tame(check_string)
+
+
+def get_company_display_name(company: WildValue) -> str:
+    name = company.get("name").tame(check_none_or(check_string))
+    company_id = company.get("company_id").tame(check_none_or(check_string))
+    # The company.deleted event only returns the Intercom internal ID,
+    # without the name or company_id fields.
+    intercom_id = company["id"].tame(check_string)
+    return name or company_id or intercom_id
 
 
 def get_topic_name(event_category: str, payload: WildValue) -> str:
@@ -30,6 +45,18 @@ def get_topic_name(event_category: str, payload: WildValue) -> str:
             if payload["topic"].tame(check_string) == "admin.activity_log_event.created":
                 return "Admin activity log"
             return f"Admin: {get_admin_name(payload)}"
+        case "company":
+            item = payload["data"]["item"]
+            if payload["topic"].tame(check_string).startswith("company.contact."):
+                # Attach/detach events are grouped under the contact's topic,
+                # so that a contact moving between companies reads as one
+                # story instead of being split across two company topics.
+                contact = item["contact"]
+                role = contact["role"].tame(check_string).capitalize()
+                contact_name = contact["name"].tame(check_string)
+                contact_id = contact["id"].tame(check_string)
+                return f"{role}: {contact_name} ({contact_id})"
+            return f"Company: {get_company_display_name(item)}"
         case _:  # nocoverage
             raise UnsupportedWebhookEventTypeError(payload["topic"].tame(check_string))
 
@@ -71,6 +98,24 @@ def get_admin_away_mode_updated_message(payload: WildValue) -> str:
     )
 
 
+def get_company_action_message(phrase: str, payload: WildValue) -> str:
+    company_name = get_company_display_name(payload["data"]["item"])
+    return COMPANY_ACTION_TEMPLATE.format(name=company_name, phrase=phrase)
+
+
+def get_company_contact_action_message(phrase: str, payload: WildValue) -> str:
+    item = payload["data"]["item"]
+    contact_name = item["contact"]["name"].tame(check_string)
+    company_name = get_company_display_name(item["company"])
+    preposition = "from" if phrase == "detached" else "to"
+    return COMPANY_CONTACT_ACTION_TEMPLATE.format(
+        contact_name=contact_name,
+        phrase=phrase,
+        preposition=preposition,
+        company_name=company_name,
+    )
+
+
 IGNORED_EVENTS = [
     # Require purchasing an Intercom number.
     *["call"],
@@ -101,6 +146,11 @@ EVENT_TO_FUNCTION_MAPPER: dict[str, Callable[[WildValue], str]] = {
     "admin.removed_from_workspace": partial(get_admin_role_updated_message, "no longer"),
     "admin.logged_in": partial(get_admin_login_logout_message, "logged in"),
     "admin.logged_out": partial(get_admin_login_logout_message, "logged out"),
+    "company.created": partial(get_company_action_message, "created"),
+    "company.updated": partial(get_company_action_message, "updated"),
+    "company.deleted": partial(get_company_action_message, "deleted"),
+    "company.contact.attached": partial(get_company_contact_action_message, "attached"),
+    "company.contact.detached": partial(get_company_contact_action_message, "detached"),
 }
 
 ALL_EVENT_TYPES = list(EVENT_TO_FUNCTION_MAPPER.keys())
