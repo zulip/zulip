@@ -10,6 +10,7 @@ export type RealmPlayground = z.output<typeof realm_playground_schema>;
 
 const map_language_to_playground_info = new Map<string, RealmPlayground[]>();
 const map_pygments_pretty_name_to_aliases = new Map<string, string[]>();
+const map_canonical_lang_to_aliases = new Map<string, string[]>();
 
 export function update_playgrounds(playgrounds_data: RealmPlayground[]): void {
     map_language_to_playground_info.clear();
@@ -30,11 +31,32 @@ export function update_playgrounds(playgrounds_data: RealmPlayground[]): void {
 }
 
 export function get_playground_info_for_languages(lang: string): RealmPlayground[] | undefined {
-    return map_language_to_playground_info.get(lang);
+    if (map_language_to_playground_info.has(lang)) {
+        return map_language_to_playground_info.get(lang);
+    }
+    const clean_lang = lang.toLowerCase();
+    if (map_language_to_playground_info.has(clean_lang)) {
+        return map_language_to_playground_info.get(clean_lang);
+    }
+    const aliases = get_aliases_for_pretty_name(lang);
+    for (const alias of aliases) {
+        if (map_language_to_playground_info.has(alias)) {
+            return map_language_to_playground_info.get(alias);
+        }
+        const clean_alias = alias.toLowerCase();
+        if (map_language_to_playground_info.has(clean_alias)) {
+            return map_language_to_playground_info.get(clean_alias);
+        }
+    }
+    return undefined;
 }
 
 export function get_aliases_for_pretty_name(pretty_name: string): string[] {
-    return map_pygments_pretty_name_to_aliases.get(pretty_name) ?? [];
+    return (
+        map_pygments_pretty_name_to_aliases.get(pretty_name) ??
+        map_canonical_lang_to_aliases.get(pretty_name) ??
+        []
+    );
 }
 
 function sort_pygments_pretty_names_by_priority(
