@@ -1,5 +1,6 @@
 import time
 from collections import defaultdict
+from collections.abc import Sequence
 from typing import Annotated, Any, Literal
 
 from django.conf import settings
@@ -42,6 +43,8 @@ from zerver.actions.streams import (
     do_set_stream_property,
     do_unarchive_stream,
     get_subscriber_ids,
+    prep_subscription_change_notices,
+    send_subscription_change_notices,
 )
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
 from zerver.context_processors import get_valid_realm_from_request
@@ -601,9 +604,17 @@ def remove_subscriptions_backend(
     )
 
     result: dict[str, list[str]] = dict(removed=[], not_removed=[])
-    (removed, not_subscribed) = bulk_remove_subscriptions(
-        realm, people_to_unsub, streams, acting_user=user_profile
-    )
+    with transaction.atomic(savepoint=False):
+        (removed, not_subscribed) = bulk_remove_subscriptions(
+            realm, people_to_unsub, streams, acting_user=user_profile
+        )
+        send_subscription_change_notices(
+            realm,
+            acting_user=user_profile,
+            changed_subs=removed,
+            subscribed=False,
+            mark_as_read_user_ids={user_profile.id},
+        )
 
     for subscriber, removed_stream in removed:
         result["removed"].append(removed_stream.name)
@@ -912,6 +923,12 @@ def add_subscriptions_backend(
 
     id_to_user_profile: dict[str, UserProfile] = {}
 
+    # Newly created channels are excluded from the join notices, since choosing
+    # a channel's initial members is part of creating it rather than a join
+    # event.
+    created_stream_ids = {stream.id for stream in created_streams}
+    changed_subs: list[tuple[UserProfile, Stream]] = []
+
     result: dict[str, Any] = dict(
         subscribed=defaultdict(list), already_subscribed=defaultdict(list)
     )
@@ -921,6 +938,8 @@ def add_subscriptions_backend(
         user_id = str(subscriber.id)
         result["subscribed"][user_id].append(stream.name)
         id_to_user_profile[user_id] = subscriber
+        if stream.id not in created_stream_ids:
+            changed_subs.append((subscriber, stream))
     for sub_info in already_subscribed:
         subscriber = sub_info.user
         stream = sub_info.stream
@@ -945,6 +964,7 @@ def add_subscriptions_backend(
         created_streams=created_streams,
         announce=announce,
         send_user_subscribed_direct_messages=send_user_subscribed_direct_messages,
+        changed_subs=changed_subs,
     )
 
     result["subscribed"] = dict(result["subscribed"])
@@ -962,6 +982,7 @@ def send_user_subscribed_and_new_channel_notifications(
     created_streams: list[Stream],
     announce: bool,
     send_user_subscribed_direct_messages: bool = True,
+    changed_subs: Sequence[tuple[UserProfile, Stream]] = [],
 ) -> None:
     """
     If a user is subscribing lots of other users to existing channels,
@@ -971,15 +992,22 @@ def send_user_subscribed_and_new_channel_notifications(
     excessive query counts by mocking this function so that it
     doesn't drown out query counts from other code.
     """
-    notifications = []
+    mention_backend = MentionBackend(user_profile.realm_id)
+    # The "channel events" notices come first so the direct messages below stay
+    # the newly subscribed users' most recent message.
+    notifications = prep_subscription_change_notices(
+        user_profile.realm,
+        acting_user=user_profile,
+        changed_subs=changed_subs,
+        subscribed=True,
+        mention_backend=mention_backend,
+    )
     # Inform users if someone else subscribed them to an existing channel.
     if new_subscriptions and send_user_subscribed_direct_messages:
         bots = {str(subscriber.id): subscriber.is_bot for subscriber in subscribers}
 
         newly_created_stream_names = {s.name for s in created_streams}
 
-        realm = user_profile.realm
-        mention_backend = MentionBackend(realm.id)
         for id, subscribed_stream_names in new_subscriptions.items():
             if id == str(user_profile.id):
                 # Don't send a notification DM if you subscribed yourself.
