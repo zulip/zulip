@@ -54,7 +54,9 @@ from zerver.lib.users import is_2fa_verified
 from zerver.lib.utils import has_api_key_format
 from zerver.lib.webhooks.common import (
     MissingHTTPEventHeaderError,
+    WebhookSignatureConfig,
     notify_bot_owner_about_invalid_json,
+    validate_webhook_signature,
 )
 from zerver.models import UserProfile
 from zerver.models.clients import get_client
@@ -372,6 +374,7 @@ def webhook_view(
     webhook_client_name: str,
     notify_bot_owner_on_invalid_json: bool = True,
     all_event_types: Sequence[str] | None = None,
+    signature_config: WebhookSignatureConfig | None = None,
 ) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
     # Unfortunately, callback protocols are insufficient for this:
     # https://mypy.readthedocs.io/en/stable/protocols.html#callback-protocols
@@ -389,6 +392,11 @@ def webhook_view(
                 api_key,
                 allow_webhook_access=True,
                 client_name=full_webhook_client_name(webhook_client_name),
+            )
+            validate_webhook_signature(
+                request,
+                user_profile,
+                signature_config,
             )
 
             request_notes = RequestNotes.get_notes(request)
