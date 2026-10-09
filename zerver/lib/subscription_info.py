@@ -119,6 +119,9 @@ def get_web_public_subs(
 
         # Computed Stream fields
         is_announcement_only = stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS
+        message_content_allowed_in_email_notifications = (
+            stream.message_content_allowed_in_email_notifications
+        )
 
         # Add versions of the Subscription fields based on a simulated
         # new user subscription set.
@@ -176,6 +179,7 @@ def get_web_public_subs(
             subscriber_count=stream.subscriber_count,
             topics_policy=StreamTopicsPolicyEnum(topics_policy).name,
             wildcard_mentions_notify=wildcard_mentions_notify,
+            message_content_allowed_in_email_notifications=message_content_allowed_in_email_notifications,
         )
         subscribed.append(sub)
 
@@ -270,6 +274,9 @@ def build_stream_api_dict(
         is_archived=raw_stream_dict["deactivated"],
         is_recently_active=raw_stream_dict["is_recently_active"],
         is_web_public=raw_stream_dict["is_web_public"],
+        message_content_allowed_in_email_notifications=raw_stream_dict[
+            "message_content_allowed_in_email_notifications"
+        ],
         message_retention_days=raw_stream_dict["message_retention_days"],
         name=raw_stream_dict["name"],
         rendered_description=raw_stream_dict["rendered_description"],
@@ -310,6 +317,9 @@ def build_stream_dict_for_sub(
     is_archived = stream_dict["is_archived"]
     is_recently_active = stream_dict["is_recently_active"]
     is_web_public = stream_dict["is_web_public"]
+    message_content_allowed_in_email_notifications = stream_dict[
+        "message_content_allowed_in_email_notifications"
+    ]
     message_retention_days = stream_dict["message_retention_days"]
     name = stream_dict["name"]
     rendered_description = stream_dict["rendered_description"]
@@ -375,6 +385,7 @@ def build_stream_dict_for_sub(
         subscriber_count=subscriber_count,
         topics_policy=topics_policy,
         wildcard_mentions_notify=wildcard_mentions_notify,
+        message_content_allowed_in_email_notifications=message_content_allowed_in_email_notifications,
     )
 
 
@@ -401,6 +412,9 @@ def build_stream_dict_for_never_sub(
     stream_post_policy = raw_stream_dict["stream_post_policy"]
     subscriber_count = raw_stream_dict["subscriber_count"]
     topics_policy = raw_stream_dict["topics_policy"]
+    message_content_allowed_in_email_notifications = raw_stream_dict[
+        "message_content_allowed_in_email_notifications"
+    ]
 
     if recent_traffic is not None:
         stream_weekly_traffic = get_average_weekly_stream_traffic(
@@ -479,6 +493,7 @@ def build_stream_dict_for_never_sub(
         stream_weekly_traffic=stream_weekly_traffic,
         subscriber_count=subscriber_count,
         topics_policy=topics_policy,
+        message_content_allowed_in_email_notifications=message_content_allowed_in_email_notifications,
     )
 
 
