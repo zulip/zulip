@@ -168,6 +168,11 @@ def run_archiving(
             )
             if new_chunk:
                 move_related_objects_to_archive(new_chunk)
+                # Reset the Attachment.is_*_public caches, since an
+                # attachment may outlive the message making it public.
+                Attachment.objects.filter(messages__in=new_chunk).update(
+                    is_realm_public=None, is_web_public=None
+                )
                 delete_messages(new_chunk, realm, skip_notify=skip_notify, acting_user=acting_user)
                 message_count += len(new_chunk)
             else:
@@ -758,6 +763,11 @@ def restore_data_from_archive(archive_transaction: ArchiveTransaction) -> int:
         restore_models_with_message_key_from_archive(archive_transaction.id)
         restore_attachments_from_archive(archive_transaction.id)
         restore_attachment_messages_from_archive(archive_transaction.id)
+        # Reset the Attachment.is_*_public caches, since the restored
+        # messages may make their attachments public.
+        Attachment.objects.filter(messages__in=msg_ids).update(
+            is_realm_public=None, is_web_public=None
+        )
 
         archive_transaction.restored = True
         archive_transaction.restored_timestamp = timezone_now()
