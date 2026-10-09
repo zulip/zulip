@@ -128,6 +128,13 @@ class ZulipUploadBackend:
     ) -> None:
         raise NotImplementedError
 
+    # Copies of remote realms' icons, for the communities directory.
+    def get_remote_realm_icon_url(self, remote_realm_uuid: str, version: int) -> str:
+        raise NotImplementedError
+
+    def store_remote_realm_icon_image(self, remote_realm_uuid: str, image_data: bytes) -> None:
+        raise NotImplementedError
+
     # Realm emoji uploads
     def get_emoji_url(self, emoji_file_name: str, realm_id: int, still: bool = False) -> str:
         raise NotImplementedError

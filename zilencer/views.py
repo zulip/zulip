@@ -75,6 +75,7 @@ from zerver.lib.push_notifications import (
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.rate_limiter import rate_limit_endpoint_absolute, rate_limit_request_by_ip
 from zerver.lib.remote_server import (
+    AdvertiseRealmData,
     InstallationCountDataForAnalytics,
     RealmAuditLogDataForAnalytics,
     RealmCountDataForAnalytics,
@@ -101,6 +102,7 @@ from zilencer.auth import (
     generate_registration_transfer_verification_secret,
     validate_registration_transfer_verification_secret,
 )
+from zilencer.lib.communities_directory import MODERATED_FIELDS, post_remote_realm_listing_changed
 from zilencer.lib.push_notifications import send_e2ee_push_notifications
 from zilencer.lib.remote_counts import MissingDataError
 from zilencer.models import (
@@ -1224,6 +1226,29 @@ def ensure_devices_set_remote_realm(
     RemotePushDeviceToken.objects.bulk_update(devices_to_update, ["remote_realm"])
 
 
+def get_communities_directory_fields(
+    advertise_realm_data: AdvertiseRealmData | None,
+) -> dict[str, str | bool]:
+    """The RemoteRealm values mirroring what a realm publishes about itself for
+    the communities directory.
+
+    A realm that is not asking to be listed uploads none of this, so there is
+    nothing to sync; we keep the values we last saw, which nothing reads while
+    asks_to_advertise_in_communities_directory is False.
+    """
+    if advertise_realm_data is None:
+        return {}
+
+    return {
+        "description": advertise_realm_data.description or "",
+        "icon_url": advertise_realm_data.icon_url,
+        "invite_required": advertise_realm_data.invite_required,
+        "emails_restricted_to_domains": advertise_realm_data.emails_restricted_to_domains,
+        "has_web_public_streams": advertise_realm_data.has_web_public_streams,
+        "is_demo_organization": advertise_realm_data.is_demo_organization,
+    }
+
+
 def update_remote_realm_data_for_server(
     server: RemoteZulipServer, server_realms_info: list[RealmDataForAnalytics]
 ) -> None:
@@ -1261,6 +1286,8 @@ def update_remote_realm_data_for_server(
             name=realm.name,
             authentication_methods=realm.authentication_methods,
             is_system_bot_realm=realm.is_system_bot_realm,
+            asks_to_advertise_in_communities_directory=realm.advertise_realm_data is not None,
+            **get_communities_directory_fields(realm.advertise_realm_data),
         )
         for realm in server_realms_info
         if realm.uuid not in already_registered_uuids
@@ -1279,6 +1306,7 @@ def update_remote_realm_data_for_server(
     uuid_to_realm_dict = {str(realm.uuid): realm for realm in server_realms_info}
     remote_realms_to_update = []
     remote_realm_audit_logs = []
+    listing_changes: list[tuple[RemoteRealm, list[tuple[str, str, str]]]] = []
     now = timezone_now()
 
     # Update RemoteRealm entries, for which the corresponding realm's info has changed
@@ -1286,19 +1314,29 @@ def update_remote_realm_data_for_server(
     for remote_realm in already_registered_remote_realms:
         modified = False
         realm = uuid_to_realm_dict[str(remote_realm.uuid)]
-        for remote_realm_attr, realm_dict_key in [
-            ("host", "host"),
-            ("org_type", "org_type"),
-            ("name", "name"),
-            ("authentication_methods", "authentication_methods"),
-            ("realm_deactivated", "deactivated"),
-            ("is_system_bot_realm", "is_system_bot_realm"),
+        moderated_changes = []
+        for remote_realm_attr, new_value in [
+            ("host", realm.host),
+            ("org_type", realm.org_type),
+            ("name", realm.name),
+            ("authentication_methods", realm.authentication_methods),
+            ("realm_deactivated", realm.deactivated),
+            ("is_system_bot_realm", realm.is_system_bot_realm),
+            # Uploading no directory data at all is how a realm, or its
+            # server, says it no longer wants to be advertised.
+            (
+                "asks_to_advertise_in_communities_directory",
+                realm.advertise_realm_data is not None,
+            ),
+            *get_communities_directory_fields(realm.advertise_realm_data).items(),
         ]:
             old_value = getattr(remote_realm, remote_realm_attr)
-            new_value = getattr(realm, realm_dict_key)
 
             if old_value == new_value:
                 continue
+
+            if remote_realm_attr in MODERATED_FIELDS:
+                moderated_changes.append((remote_realm_attr, str(old_value), str(new_value)))
 
             setattr(remote_realm, remote_realm_attr, new_value)
             remote_realm_audit_logs.append(
@@ -1332,6 +1370,9 @@ def update_remote_realm_data_for_server(
             )
             modified = True
 
+        if moderated_changes and remote_realm.first_advertised_datetime is not None:
+            listing_changes.append((remote_realm, moderated_changes))
+
         if modified:
             remote_realms_to_update.append(remote_realm)
 
@@ -1345,9 +1386,19 @@ def update_remote_realm_data_for_server(
             "org_type",
             "is_system_bot_realm",
             "realm_locally_deleted",
+            "asks_to_advertise_in_communities_directory",
+            "description",
+            "icon_url",
+            "invite_required",
+            "emails_restricted_to_domains",
+            "has_web_public_streams",
+            "is_demo_organization",
         ],
     )
     RemoteRealmAuditLog.objects.bulk_create(remote_realm_audit_logs)
+
+    for changed_remote_realm, changes in listing_changes:
+        post_remote_realm_listing_changed(changed_remote_realm, changes)
 
     remote_realms_to_update = []
     remote_realm_audit_logs = []
