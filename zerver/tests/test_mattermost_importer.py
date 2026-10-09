@@ -22,6 +22,8 @@ from zerver.data_import.import_util import (
 from zerver.data_import.mattermost import (
     COMPILED_CHANNEL_ID_FORMAT,
     DEFAULT_SINGLE_TEAM_OBJECT,
+    MAIN_MATTERMOST_IMPORT_TOPIC,
+    ChannelMetadata,
     backfill_user_data_from_posts,
     build_reactions,
     check_user_in_team,
@@ -34,6 +36,7 @@ from zerver.data_import.mattermost import (
     make_realm,
     mattermost_data_file_to_dict,
     process_message_attachments,
+    process_posts,
     process_user,
     reset_mirror_dummy_users,
     write_emoticon_data,
@@ -44,6 +47,7 @@ from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES
+from zerver.lib.topic import EXPORT_TOPIC_NAME
 from zerver.models import Attachment, Message, Reaction, Recipient, UserProfile
 from zerver.models.presence import PresenceSequence
 from zerver.models.realms import Realm, get_realm
@@ -994,6 +998,111 @@ class MatterMostImporter(MattermostImportTestBase):
         ids = get_mentioned_user_ids(raw_message, user_id_mapper)
         self.assertEqual(list(ids), [])
 
+    def run_process_posts(
+        self,
+        post_data: list[dict[str, Any]],
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        user_handler = kwargs.get("user_handler")
+        if user_handler is None:
+            user_handler = UserHandler()
+            user_handler.add_user({"id": 1, "short_name": "harry", "full_name": "Harry Potter"})
+
+        user_id_mapper = kwargs.get("user_id_mapper")
+        if user_id_mapper is None:
+            user_id_mapper = IdMapper[str]()
+            user_id_mapper.get("harry")
+
+        added_channels = kwargs.get(
+            "added_channels",
+            {
+                "general": ChannelMetadata(
+                    zulip_channel_id=10,
+                    zulip_recipient_id=20,
+                    zulip_channel_name="general",
+                )
+            },
+        )
+
+        output_dir = kwargs.get("output_dir", self.make_import_output_dir("mattermost"))
+        subscriber_handler = kwargs.get("subscriber_handler", SubscriberHandler[frozenset[str]]())
+        subscriber_map = kwargs.get("subscriber_map", {20: {1}})
+
+        with (
+            patch("zerver.data_import.mattermost.create_converted_data_files") as mock_create_files,
+            self.assertLogs(level="INFO"),
+        ):
+            process_posts(
+                num_teams=kwargs.get("num_teams", 1),
+                team_name=kwargs.get("team_name", "gryffindor"),
+                realm_id=kwargs.get("realm_id", 100),
+                post_data=post_data,
+                added_channels=added_channels,
+                subscriber_handler=subscriber_handler,
+                subscriber_map=subscriber_map,
+                output_dir=output_dir,
+                is_pm_data=kwargs.get("is_pm_data", False),
+                masking_content=kwargs.get("masking_content", False),
+                user_id_mapper=user_id_mapper,
+                user_handler=user_handler,
+                zerver_realmemoji=kwargs.get("zerver_realmemoji", []),
+                total_reactions=kwargs.get("total_reactions", []),
+                uploads_list=kwargs.get("uploads_list", []),
+                zerver_attachment=kwargs.get("zerver_attachment", []),
+                mattermost_data_dir=kwargs.get("mattermost_data_dir", ""),
+            )
+            return mock_create_files.call_args[0][0]
+
+    def test_channel_message_thread_reply_notification(self) -> None:
+        raw_post = {
+            "team": "gryffindor",
+            "channel": "general",
+            "user": "harry",
+            "message": "Hey @harry check this out",
+            "create_at": 1553166657000,
+            "replies": [
+                {
+                    "user": "harry",
+                    "message": "reply message",
+                    "create_at": 1553166658000,
+                }
+            ],
+        }
+        created_data = self.run_process_posts([raw_post])
+        self.assert_length(created_data["zerver_message"], 2)
+        parent_msg = created_data["zerver_message"][0]
+        self.assertEqual(parent_msg[EXPORT_TOPIC_NAME], MAIN_MATTERMOST_IMPORT_TOPIC)
+        self.assertEqual(
+            parent_msg["content"],
+            "Hey @**Harry Potter** check this out\n\n*1 reply in #**general>2019-03-21 Hey @harry check this out***",
+        )
+        reply_msg = created_data["zerver_message"][1]
+        self.assertEqual(reply_msg["content"], "reply message")
+        self.assertEqual(reply_msg[EXPORT_TOPIC_NAME], "2019-03-21 Hey @harry check this out")
+
+    def test_process_posts_unconverted_thread_replies(self) -> None:
+        post_data = [
+            {
+                "team": "gryffindor",
+                "channel": "general",
+                "user": "harry",
+                "message": "Root message with unconverted replies",
+                "create_at": 1553166657000,
+                "replies": [
+                    {
+                        "user": "unknown_user",
+                        "message": "This reply cannot be converted",
+                        "create_at": 1553166658000,
+                    }
+                ],
+            }
+        ]
+        created_data = self.run_process_posts(post_data)
+        self.assert_length(created_data["zerver_message"], 1)
+        msg = created_data["zerver_message"][0]
+        self.assertEqual(msg["content"], "Root message with unconverted replies")
+        self.assertEqual(msg[EXPORT_TOPIC_NAME], MAIN_MATTERMOST_IMPORT_TOPIC)
+
     def test_check_user_in_team(self) -> None:
         fixture_file_name = self.fixture_file_name("export.json", "mattermost_fixtures")
         mattermost_data = mattermost_data_file_to_dict(fixture_file_name)
@@ -1175,7 +1284,25 @@ class MatterMostImporter(MattermostImportTestBase):
         exported_messages_id = self.get_set(messages["zerver_message"], "id")
         self.assertIn(messages["zerver_message"][0]["sender"], exported_user_ids)
         self.assertIn(messages["zerver_message"][0]["recipient"], exported_recipient_ids)
-        self.assertIn(messages["zerver_message"][0]["content"], "harry joined the channel.\n\n")
+
+        # A Mattermost thread is converted into its own Zulip topic. The thread's
+        # parent thread message stays in the main import topic, with a link to the new
+        # thread topic appended to it.
+        parent_thread_message = messages["zerver_message"][0]
+        self.assertEqual(parent_thread_message[EXPORT_TOPIC_NAME], "imported from mattermost")
+        self.assertEqual(
+            parent_thread_message["content"],
+            "harry joined the channel.\n\n"
+            "*1 reply in #**Dumbledores army>2019-03-21 harry joined the channel.***",
+        )
+
+        # The reply is moved into the new per-thread topic.
+        thread_reply_message = messages["zerver_message"][1]
+        self.assertEqual(thread_reply_message["content"], "The weather is so hot!")
+        self.assertEqual(
+            thread_reply_message[EXPORT_TOPIC_NAME],
+            "2019-03-21 harry joined the channel.",
+        )
 
         exported_usermessage_userprofiles = self.get_set(
             messages["zerver_usermessage"], "user_profile"
@@ -1342,7 +1469,11 @@ class MatterMostImporter(MattermostImportTestBase):
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
         messages = self.read_file(harry_team_output_dir, "messages-000001.json")
 
-        self.assertIn(messages["zerver_message"][0]["content"], "xxxxx xxxxxx xxx xxxxxxx.\n\n")
+        self.assertEqual(
+            messages["zerver_message"][0]["content"],
+            "xxxxx xxxxxx xxx xxxxxxx.\n\n"
+            "*1 reply in #**Dumbledores army>2019-03-21 xxxxx xxxxxx xxx xxxxxxx.***",
+        )
 
     def test_import_data_to_existing_database(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
