@@ -2,6 +2,8 @@
     See hotkey.ts for handlers that are more app-wide.
 */
 
+import * as common from "./common.ts";
+
 export const vim_left = "h";
 export const vim_down = "j";
 export const vim_up = "k";
@@ -28,6 +30,31 @@ export function handle(opts: {
             e.stopPropagation();
         }
     });
+}
+
+export function get_mac_ctrl_navigation_key(
+    event: JQuery.KeyboardEventBase,
+): "ArrowUp" | "ArrowDown" | undefined {
+    const is_mac_ctrl_without_other_modifiers =
+        common.has_mac_keyboard() &&
+        event.ctrlKey &&
+        !event.altKey &&
+        !event.metaKey &&
+        !event.shiftKey;
+
+    if (!is_mac_ctrl_without_other_modifiers) {
+        return undefined;
+    }
+
+    if (event.key.toLowerCase() === "n" || event.code === "KeyN") {
+        return "ArrowDown";
+    }
+
+    if (event.key.toLowerCase() === "p" || event.code === "KeyP") {
+        return "ArrowUp";
+    }
+
+    return undefined;
 }
 
 export function is_enter_event(event: JQuery.KeyboardEventBase): boolean {
