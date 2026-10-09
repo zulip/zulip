@@ -1,0 +1,81 @@
+{
+  "id": "901610136716",
+  "name": "Zulip Test Folder",
+  "orderindex": 0,
+  "override_statuses": false,
+  "hidden": false,
+  "space": {
+    "id": "90166065254",
+    "name": "Team Space",
+    "access": true
+  },
+  "task_count": "0",
+  "archived": false,
+  "statuses": [
+    {
+      "id": "p90166065254_DCnaeiSB",
+      "status": "to do",
+      "orderindex": 0,
+      "color": "#87909e",
+      "type": "open"
+    },
+    {
+      "id": "p90166065254_g9uxhsQM",
+      "status": "in progress",
+      "orderindex": 1,
+      "color": "#1090e0",
+      "type": "custom"
+    },
+    {
+      "id": "p90166065254_syqLtYOY",
+      "status": "complete",
+      "orderindex": 2,
+      "color": "#008844",
+      "type": "closed"
+    }
+  ],
+  "deleted": false,
+  "lists": [
+    {
+      "id": "901615563789",
+      "name": "List",
+      "orderindex": 0,
+      "status": null,
+      "priority": null,
+      "assignee": null,
+      "task_count": 0,
+      "due_date": null,
+      "start_date": null,
+      "archived": false,
+      "override_statuses": false,
+      "statuses": [
+        {
+          "id": "p90166065254_DCnaeiSB",
+          "status": "to do",
+          "orderindex": 0,
+          "color": "#87909e",
+          "type": "open",
+          "status_group": "proj_90166065254"
+        },
+        {
+          "id": "p90166065254_g9uxhsQM",
+          "status": "in progress",
+          "orderindex": 1,
+          "color": "#1090e0",
+          "type": "custom",
+          "status_group": "proj_90166065254"
+        },
+        {
+          "id": "p90166065254_syqLtYOY",
+          "status": "complete",
+          "orderindex": 2,
+          "color": "#008844",
+          "type": "closed",
+          "status_group": "proj_90166065254"
+        }
+      ],
+      "permission_level": "create"
+    }
+  ],
+  "permission_level": "create"
+}
