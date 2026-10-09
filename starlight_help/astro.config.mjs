@@ -520,6 +520,7 @@ export default defineConfig({
                 {
                     label: "Import an organization",
                     items: [
+                        "import-from-discord",
                         "import-from-mattermost",
                         "import-from-microsoft-teams",
                         "import-from-slack",
