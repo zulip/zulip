@@ -56,7 +56,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_normal_text",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -68,7 +67,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_normal_text",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -80,7 +78,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_normal_text",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -92,7 +89,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_normal_text",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -104,7 +100,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_normal_text",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -117,7 +112,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_normal_text",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -130,7 +124,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_normal_text",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -143,7 +136,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_normal_text",
             expected_topic_name,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -192,7 +184,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_from_slack_bridge_bot",
             "",
             "",
-            content_type="application/json",
             expect_noop=True,
         )
 
@@ -204,7 +195,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_bullet_points",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -215,7 +205,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_channel_and_user_mentions",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -226,7 +215,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_channel_mentions",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -237,7 +225,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_formatted_texts",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -251,7 +238,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_image_files",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -269,7 +255,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_inline_code",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -280,7 +265,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_ordered_list",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -293,7 +277,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_user_mentions",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -310,7 +293,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_variety_files",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -321,7 +303,6 @@ class SlackWebhookTests(WebhookTestCase):
             "message_with_workspace_mentions",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -344,7 +325,6 @@ To Do""".strip()
             "message_from_slack_integration_bot",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -355,7 +335,6 @@ To Do""".strip()
             "message_with_code_block",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -366,7 +345,6 @@ To Do""".strip()
             "message_with_complex_formatted_texts",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -377,7 +355,6 @@ To Do""".strip()
             "message_with_complex_formatted_mentions",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -388,7 +365,6 @@ To Do""".strip()
             "message_with_quote_block",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @mock_slack_api_calls
@@ -419,7 +395,6 @@ To Do""".strip()
             self.check_webhook(
                 "challenge_handshake_payload",
                 expect_noop=True,
-                content_type="application/json",
             )
 
         s.assert_called_once()
@@ -438,7 +413,6 @@ To Do""".strip()
             self.check_webhook(
                 "challenge_handshake_payload",
                 expect_noop=True,
-                content_type="application/json",
             )
 
         s.assert_called_once()
@@ -469,7 +443,6 @@ To Do""".strip()
             "message_with_normal_text",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
     @responses.activate
@@ -500,7 +473,6 @@ To Do""".strip()
             "message_with_normal_text",
             EXPECTED_TOPIC,
             expected_message,
-            content_type="application/json",
         )
 
 
