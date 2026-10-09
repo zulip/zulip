@@ -1,11 +1,12 @@
 import time
 
-from django.contrib.postgres.operations import AddIndexConcurrently
 from django.db import connection, migrations, models
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from django.db.models import Min
 from psycopg2.sql import SQL
+
+from zerver.lib.migrate import add_index
 
 BATCH_SIZE = 1000
 
@@ -81,7 +82,7 @@ class Migration(migrations.Migration):
         migrations.RunPython(copy_pub_date_to_date_sent, elidable=True),
         migrations.SeparateDatabaseAndState(
             database_operations=[
-                AddIndexConcurrently(
+                add_index(
                     model_name="message",
                     index=models.Index("date_sent", name="zerver_message_date_sent_3b5b05d8"),
                 ),
