@@ -1,9 +1,5 @@
 {% extends "zerver/emails/email_base_default.html" %}
 
-{% block illustration %}
-<img src="{{ email_images_base_url }}/registration_confirmation.png" alt=""/>
-{% endblock %}
-
 {% block content %}
 <p>
     {% trans %}Either you, or someone on your behalf, has requested a log in link to manage the Zulip plan for <b>{{ remote_server_hostname }}</b>.{% endtrans %}
