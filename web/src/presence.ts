@@ -328,3 +328,13 @@ export function last_active_date(user_id: number): Date | undefined {
 export function initialize(params: StateData["presence"]): void {
     set_info(params.presences, params.server_timestamp, params.presence_last_update_id);
 }
+
+export const get_active_human_count_online = (): number => {
+    let count = 0;
+    for (const user_id of people.get_active_user_ids()) {
+        if (!people.is_valid_bot_user(user_id) && get_status(user_id) === "active") {
+            count += 1;
+        }
+    }
+    return count;
+};

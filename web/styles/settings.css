@@ -1397,6 +1397,21 @@ label.preferences-radio-choice-label {
     }
 }
 
+.display_offline_users {
+    max-width: 25em; /* 350px / 14px em */
+
+    .preferences-radio-choice-label {
+        display: grid;
+        grid-template-columns: 10.7143em auto; /* 150px / 14px em */
+        justify-content: left;
+        margin-right: 6px;
+
+        .right {
+            margin-left: unset;
+        }
+    }
+}
+
 .open-user-form {
     min-width: initial !important;
 }

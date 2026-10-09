@@ -10,7 +10,25 @@
         {{#each (object_values display_style_options)}}
             <li role="none" class="display-style-selector link-item" value="{{this.code}}">
                 <label class="popover-menu-link" role="menuitem" tabindex="0">
-                    <input type="radio" class="user_list_style_choice" name="user_list_style" value="{{this.code}}"/>
+                    <input type="radio" class="user_list_style_choice" name="user_list_style" value="{{this.code}}" />
+                    <span class="popover-menu-label">{{this.description}}</span>
+                </label>
+            </li>
+        {{/each}}
+    </ul>
+    <ul role="menu" class="popover-menu-list">
+        <li role="none" class="link-item">
+            <label class="display-style-selector-header popover-menu-link" role="menuitem">
+                <span class="popover-menu-label">
+                    {{t 'Show offline users' }}
+                </span>
+            </label>
+        </li>
+        {{#each (object_values display_offline_users_options)}}
+            <li role="none" class="display-offline-users-selector link-item" value="{{this.code}}">
+                <label class="popover-menu-link" role="menuitem" tabindex="0">
+                    <input type="radio" class="display-offline-users-choice" name="display_offline_users"
+                      value="{{this.code}}" />
                     <span class="popover-menu-label">{{this.description}}</span>
                 </label>
             </li>

@@ -15852,6 +15852,19 @@ paths:
                     - 2
                     - 3
                   example: 1
+                display_offline_users:
+                  description: |
+                    Whether to display offline users in the user list.
+
+                    - 1 - Auto
+                    - 2 - Never
+
+                    **Changes**: New in Zulip 12.0 (feature level 150).
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                  example: 1
                 web_animate_image_previews:
                   description: |
                     Controls how animated images should be played in the message feed in the web/desktop application.
@@ -16240,6 +16253,8 @@ paths:
               demote_inactive_streams:
                 contentType: application/json
               user_list_style:
+                contentType: application/json
+              display_offline_users:
                 contentType: application/json
               web_stream_unreads_count_display_policy:
                 contentType: application/json
@@ -20040,6 +20055,15 @@ paths:
                               - 3 - With avatar and status
 
                               **Changes**: New in Zulip 6.0 (feature level 141).
+                          display_offline_users:
+                            type: integer
+                            description: |
+                              Whether to display offline users in the right sidebar user list.
+
+                              - 1 - Auto
+                              - 2 - Never
+
+                              **Changes**: New in Zulip 12.0 (feature level 510).
                           web_animate_image_previews:
                             type: string
                             description: |
@@ -22449,6 +22473,15 @@ paths:
                               - 3 - With avatar and status
 
                               **Changes**: New in Zulip 6.0 (feature level 141).
+                          display_offline_users:
+                            type: integer
+                            description: |
+                              Whether to display offline users in the right sidebar user list.
+
+                              - 1 - Auto
+                              - 2 - Never
+
+                              **Changes**: New in Zulip 12.0 (feature level 510).
                           web_animate_image_previews:
                             type: string
                             description: |
@@ -23809,6 +23842,19 @@ paths:
                     - 2
                     - 3
                   example: 1
+                display_offline_users:
+                  description: |
+                    Whether to display offline users in the right sidebar user list.
+
+                    - 1 - Auto
+                    - 2 - Never
+
+                    **Changes**: New in Zulip 12.0 (feature level 510).
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                  example: 1
                 web_animate_image_previews:
                   description: |
                     Controls how animated images should be played in the message feed in the web/desktop application.
@@ -24283,6 +24329,8 @@ paths:
               demote_inactive_streams:
                 contentType: application/json
               user_list_style:
+                contentType: application/json
+              display_offline_users:
                 contentType: application/json
               web_stream_unreads_count_display_policy:
                 contentType: application/json

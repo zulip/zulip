@@ -158,7 +158,11 @@ export function set_up(settings_panel: SettingsPanel): void {
     $container
         .find(`.setting_user_list_style_choice[value=${settings_object.user_list_style}]`)
         .prop("checked", true);
-
+    $container
+        .find(
+            `.setting_user_list_show_offline_users[value=${settings_object.display_offline_users}]`,
+        )
+        .prop("checked", true);
     $container
         .find(".setting_web_animate_image_previews")
         .val(settings_object.web_animate_image_previews);
@@ -279,7 +283,7 @@ export function set_up(settings_panel: SettingsPanel): void {
     });
 
     $container.find(".setting_user_list_style_choice").on("click", function () {
-        const data = {user_list_style: $(this).val()};
+        const data = {user_list_style: Number($(this).val())};
         const current_user_list_style = settings_object.user_list_style;
         if (current_user_list_style === data.user_list_style) {
             return;
@@ -293,6 +297,32 @@ export function set_up(settings_panel: SettingsPanel): void {
             success() {
                 // We don't launch any success report, since it is
                 // currently handled by report_user_list_style_change.
+            },
+            error(xhr) {
+                ui_report.error(
+                    settings_ui.strings.failure_html,
+                    xhr,
+                    $container.find(".information-settings-status").expectOne(),
+                );
+            },
+        });
+    });
+
+    $container.find(".setting_user_list_show_offline_users").on("click", function () {
+        const data = {display_offline_users: Number($(this).val())};
+        const current_display_offline_users = settings_object.display_offline_users;
+        if (current_display_offline_users === data.display_offline_users) {
+            return;
+        }
+        const $spinner = $container.find(".information-settings-status").expectOne();
+        loading.make_indicator($spinner, {text: settings_ui.strings.saving});
+
+        void channel.patch({
+            url: "/json/settings",
+            data,
+            success() {
+                // We don't launch any success report, since it is currently handled
+                // by function report_user_list_show_offline_users.
             },
             error(xhr) {
                 ui_report.error(
@@ -357,6 +387,20 @@ export function update_user_list_style_preview_avatar(avatar_url: string): void 
     $(".user_list_style_values .preview .user-profile-picture img").attr("src", avatar_url);
 }
 
+export function report_user_list_offline_user_style_change(settings_panel: SettingsPanel): void {
+    const $spinner = $(settings_panel.container).find(".information-settings-status");
+    if ($spinner.length > 0) {
+        loading.destroy_indicator($spinner);
+        ui_report.success(
+            $t_html({defaultMessage: "User list offline user style changed successfully!"}),
+            $spinner.expectOne(),
+            1000,
+        );
+        $spinner.expectOne();
+        settings_ui.display_checkmark($spinner);
+    }
+}
+
 export function update_page(property: UserSettingsProperty): void {
     if (!overlays.settings_open()) {
         return;
@@ -366,8 +410,22 @@ export function update_page(property: UserSettingsProperty): void {
 
     // settings_org.set_input_element_value doesn't support radio
     // button widgets like these.
-    if (property === "emojiset" || property === "user_list_style") {
-        $container.find(`input[value=${CSS.escape(value.toString())}]`).prop("checked", true);
+    if (property === "emojiset") {
+        $container
+            .find(`.setting_emojiset_choice[value="${CSS.escape(value.toString())}"]`)
+            .prop("checked", true);
+        return;
+    }
+    if (property === "user_list_style") {
+        $container
+            .find(`.setting_user_list_style_choice[value=${CSS.escape(value.toString())}]`)
+            .prop("checked", true);
+        return;
+    }
+    if (property === "display_offline_users") {
+        $container
+            .find(`.setting_user_list_show_offline_users[value=${CSS.escape(value.toString())}]`)
+            .prop("checked", true);
         return;
     }
 
