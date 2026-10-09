@@ -367,7 +367,7 @@ to change this file if your setting fits that framework.
 
 The `fetch_initial_state_data` function is responsible for sending data
 when a client is loaded (data added to the `state` here will be available
-both in `page_params` in the browser, as well as to API clients like the
+both in the web app's `state_data`, as well as to API clients like the
 mobile app). The `apply_event` function in `zerver/lib/events.py` is
 important for making sure the `state` is always correct, even in the
 event of rare race conditions.

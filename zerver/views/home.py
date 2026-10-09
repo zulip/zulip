@@ -19,8 +19,6 @@ from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
 from zerver.lib.compatibility import is_banned_browser, is_outdated_desktop_app
 from zerver.lib.home import build_page_params_for_home_page_load, get_user_permission_info
-from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm
-from zerver.lib.request import RequestNotes
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm, RealmUserDefault, Stream, UserProfile
@@ -129,13 +127,12 @@ def accounts_accept_terms(request: HttpRequest) -> HttpResponse:
 
 def detect_narrowed_window(
     request: HttpRequest, user_profile: UserProfile | None
-) -> tuple[list[NeverNegatedNarrowTerm], Stream | None, str | None]:
+) -> tuple[Stream | None, str | None]:
     """This function implements Zulip's support for a mini Zulip window
     that just handles messages from a single narrow"""
     if user_profile is None:
-        return [], None, None
+        return None, None
 
-    narrow: list[NeverNegatedNarrowTerm] = []
     narrow_stream = None
     narrow_topic_name = request.GET.get("topic")
 
@@ -145,12 +142,9 @@ def detect_narrowed_window(
             narrow_stream_name = request.GET.get("stream")
             assert narrow_stream_name is not None
             (narrow_stream, _sub) = access_stream_by_name(user_profile, narrow_stream_name)
-            narrow = [NeverNegatedNarrowTerm(operator="stream", operand=narrow_stream.name)]
         except Exception:
             logging.warning("Invalid narrow requested, ignoring", extra=dict(request=request))
-        if narrow_stream is not None and narrow_topic_name is not None:
-            narrow.append(NeverNegatedNarrowTerm(operator="topic", operand=narrow_topic_name))
-    return narrow, narrow_stream, narrow_topic_name
+    return narrow_stream, narrow_topic_name
 
 
 def update_last_reminder(user_profile: UserProfile | None) -> None:
@@ -241,21 +235,16 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if need_accept_tos(user_profile):
         return accounts_accept_terms(request)
 
-    narrow, narrow_stream, narrow_topic_name = detect_narrowed_window(request, user_profile)
+    narrow_stream, narrow_topic_name = detect_narrowed_window(request, user_profile)
 
-    queue_id, page_params = build_page_params_for_home_page_load(
+    page_params = build_page_params_for_home_page_load(
         request=request,
         user_profile=user_profile,
         realm=realm,
         insecure_desktop_app=insecure_desktop_app,
-        narrow=narrow,
         narrow_stream=narrow_stream,
         narrow_topic_name=narrow_topic_name,
     )
-
-    log_data = RequestNotes.get_notes(request).log_data
-    assert log_data is not None
-    log_data["extra"] = f"[{queue_id}]"
 
     csp_nonce = secrets.token_hex(24)
 

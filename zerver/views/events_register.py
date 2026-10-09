@@ -131,4 +131,11 @@ def events_register_backend(
         spectator_requested_language=spectator_requested_language,
         pronouns_field_type_supported=pronouns_field_type_supported,
     )
+
+    if ret["queue_id"] is not None:
+        # Log the queue ID so this fetch can be correlated with the
+        # client's subsequent event polling.
+        log_data = RequestNotes.get_notes(request).log_data
+        assert log_data is not None
+        log_data["extra"] = f"[{ret['queue_id']}]"
     return json_success(request, data=ret)
