@@ -4,15 +4,18 @@ import os
 import re
 import shutil
 import tempfile
-from collections import defaultdict
 from dataclasses import dataclass
+from functools import cached_property
 from typing import Any, TypeAlias
 from urllib.parse import parse_qs, urlsplit
 
 import orjson
 import responses
+from bs4 import BeautifulSoup
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from requests import PreparedRequest
+from typing_extensions import override
 
 from zerver.data_import.import_util import AttachmentRecordData, get_data_file
 from zerver.data_import.microsoft_teams import (
@@ -38,18 +41,18 @@ from zerver.data_import.microsoft_teams_message_conversion import (
     convert_microsoft_teams_html_to_markdown,
 )
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
-from zerver.lib.import_realm import do_import_realm
 from zerver.lib.partial import partial
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_classes import (
+    ExpectedChannel,
+    ExpectedMessage,
+    ExpectedUser,
+    ImporterContractTestBase,
+    ZulipTestCase,
+)
 from zerver.lib.test_helpers import read_test_image_file
-from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES
 from zerver.lib.topic import messages_for_topic
-from zerver.models.messages import Attachment, Message
-from zerver.models.realms import Realm, get_realm
-from zerver.models.streams import Stream, Subscription
-from zerver.models.users import UserProfile, get_system_bot
-from zerver.tests.test_import_export import make_export_output_dir
-from zproject import settings
+from zerver.models.streams import Stream
+from zerver.models.users import UserProfile
 
 ResponseTuple: TypeAlias = tuple[int, dict[str, str], str]
 
@@ -92,15 +95,6 @@ EXPORTED_MICROSOFT_TEAMS_TEAM_ID: dict[str, str] = {
 }
 
 
-def get_exported_microsoft_teams_user_data() -> list[MicrosoftTeamsFieldsT]:
-    test_class = ZulipTestCase()
-    return json.loads(
-        test_class.fixture_data(
-            "usersList.json", "microsoft_teams_fixtures/TeamsData_ZulipChat/users"
-        )
-    )
-
-
 def get_exported_team_data(team_id: str) -> MicrosoftTeamsFieldsT:
     test_class = ZulipTestCase()
     team_list = json.loads(
@@ -121,6 +115,17 @@ def get_exported_team_data(team_id: str) -> MicrosoftTeamsFieldsT:
         team_data for team_data in team_settings if team_data["Id"] == team_id
     )
     return {**team_list_data, **team_settings_data}
+
+
+def get_exported_team_ids() -> list[str]:
+    test_class = ZulipTestCase()
+    team_settings = json.loads(
+        test_class.fixture_data(
+            "teamsSettings.json",
+            "microsoft_teams_fixtures/TeamsData_ZulipChat/teams",
+        )
+    )
+    return [team_data["Id"] for team_data in team_settings]
 
 
 def get_exported_team_subscription_list(team_id: str) -> list[MicrosoftTeamsFieldsT]:
@@ -163,6 +168,13 @@ def get_exported_team_channel_metadata(team_id: str) -> dict[str, ChannelMetadat
             team_id=team_id,
         )
     return microsoft_teams_channel_metadata
+
+
+@dataclass
+class ConvertibleExportedMessage:
+    message: MicrosoftTeamsFieldsT
+    team_name: str
+    microsoft_teams_channel: ChannelMetadata
 
 
 def graph_api_users_callback(request: PreparedRequest) -> ResponseTuple:
@@ -229,19 +241,6 @@ def add_microsoft_graph_api_responses(requests_mock: responses.RequestsMock) -> 
     )
 
 
-def get_channel_subscriber_emails(realm: Realm, channel: str | Stream) -> set[str]:
-    if isinstance(channel, str):
-        imported_channel = Stream.objects.get(
-            name=channel,
-            realm=realm,
-        )
-    else:
-        imported_channel = channel  # nocoverage
-    subscriptions = Subscription.objects.filter(recipient=imported_channel.recipient)
-    users = {sub.user_profile.email for sub in subscriptions}
-    return users
-
-
 class MicrosoftTeamsImportTestCase(ZulipTestCase):
     def get_exported_microsoft_teams_user_data(self) -> list[MicrosoftTeamsFieldsT]:
         return json.loads(
@@ -251,266 +250,212 @@ class MicrosoftTeamsImportTestCase(ZulipTestCase):
         )
 
 
-class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
-    def convert_microsoft_teams_export_fixture(self, fixture_folder: str) -> None:
-        fixture_file_path = self.fixture_file_name(fixture_folder, "microsoft_teams_fixtures")
-        if not os.path.isdir(fixture_file_path):
-            raise AssertionError(f"Fixture file not found: {fixture_file_path}")
+class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase, ImporterContractTestBase):
+    """Translates the Microsoft Teams export fixture into the
+    importer-agnostic expectations checked by ImporterContractTestBase."""
+
+    IMPORT_SOURCE = "microsoft_teams"
+    converted_output_dir: str
+
+    @classmethod
+    @override
+    def convert_export(cls) -> str:
+        cls.converted_output_dir = cls.make_converted_output_dir()
+        fixture_dir = os.path.join(
+            os.path.dirname(__file__), "fixtures", "microsoft_teams_fixtures", "TeamsData_ZulipChat"
+        )
         with (
-            self.assertLogs(level="INFO") as log,
-            self.settings(EXTERNAL_HOST="zulip.example.com"),
             responses.RequestsMock(assert_all_requests_are_fired=False) as requests_mock,
+            override_settings(EXTERNAL_HOST="zulip.example.com"),
         ):
             add_microsoft_graph_api_responses(requests_mock)
             do_convert_directory(
-                fixture_file_path,
-                self.converted_file_output_dir,
+                fixture_dir,
+                cls.converted_output_dir,
                 "MICROSOFT_GRAPH_API_TOKEN",
                 processes=1,
             )
-        with self.subTest("no records for failed downloads"):
-            self.assertIn("INFO:root:HTTP error: 400, Response: ", log.output)
-            uploads_records_path = os.path.join(
-                self.converted_file_output_dir, "uploads", "records.json"
-            )
-            with open(uploads_records_path, "rb") as f:
-                upload_records = orjson.loads(f.read())
+        return cls.converted_output_dir
 
-            for record in upload_records:
-                file_path = os.path.join(self.converted_file_output_dir, "uploads", record["path"])
-                self.assertTrue(os.path.isfile(file_path))
+    @cached_property
+    def exported_user_data_map(self) -> dict[str, MicrosoftTeamsFieldsT]:
+        return {user["Id"]: user for user in self.get_exported_microsoft_teams_user_data()}
 
-            attachment_records_path = os.path.join(
-                self.converted_file_output_dir, "attachment.json"
-            )
-            with open(attachment_records_path, "rb") as f:
-                attachment_records = orjson.loads(f.read())
-
-            for record in attachment_records["zerver_attachment"]:
-                file_path = os.path.join(
-                    self.converted_file_output_dir, "uploads", record["path_id"]
+    def get_convertible_exported_messages(self) -> list[ConvertibleExportedMessage]:
+        """Returns every exported message that should be converted."""
+        convertible_exported_messages = []
+        for team_id in get_exported_team_ids():
+            team_name = get_exported_team_data(team_id)["Name"]
+            channel_metadata = get_exported_team_channel_metadata(team_id)
+            for message in get_exported_team_message_list(team_id):
+                if is_microsoft_teams_event_message(message):
+                    continue
+                microsoft_teams_channel = channel_metadata[message["ChannelIdentity"]["ChannelId"]]
+                if microsoft_teams_channel.membership_type == "private":
+                    continue
+                convertible_exported_messages.append(
+                    ConvertibleExportedMessage(
+                        message=message,
+                        team_name=team_name,
+                        microsoft_teams_channel=microsoft_teams_channel,
+                    )
                 )
-                self.assertTrue(os.path.isfile(file_path))
+        return convertible_exported_messages
 
-    def import_microsoft_teams_export_fixture(self, fixture_folder: str) -> None:
-        self.convert_microsoft_teams_export_fixture(fixture_folder)
-        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            do_import_realm(self.converted_file_output_dir, self.test_realm_subdomain)
+    def get_deleted_user_ids(self) -> set[str]:
+        return {
+            get_microsoft_teams_sender_id_from_message(exported_message.message)
+            for exported_message in self.get_convertible_exported_messages()
+        } - self.exported_user_data_map.keys()
 
-    def do_import_realm_fixture(self, fixture: str = "TeamsData_ZulipChat/") -> None:
-        self.converted_file_output_dir = make_export_output_dir()
-        self.test_realm_subdomain = "test-import-teams-realm"
-        self.import_microsoft_teams_export_fixture(fixture)
-        exported_user_data = get_exported_microsoft_teams_user_data()
-        self.exported_user_data_map = {u["Id"]: u for u in exported_user_data}
+    def get_expected_email(self, microsoft_teams_user_id: str) -> str:
+        if microsoft_teams_user_id in self.exported_user_data_map:
+            return self.exported_user_data_map[microsoft_teams_user_id]["Mail"]
+        # Deleted users are imported as mirror dummies.
+        return f"{microsoft_teams_user_id}@zulip.example.com"
 
-    def get_imported_realm_user_field_values(self, field: str, **kwargs: Any) -> list[str | int]:
-        return list(
-            UserProfile.objects.filter(
-                realm=get_realm(self.test_realm_subdomain),
-                **kwargs,
-            ).values_list(field, flat=True)
-        )
-
-    def test_imported_users(self) -> None:
-        self.do_import_realm_fixture()
-        imported_user_emails = set(
-            self.get_imported_realm_user_field_values(
-                "email", is_mirror_dummy=False, is_active=True
+    @override
+    def get_expected_users(self) -> list[ExpectedUser]:
+        expected_users = []
+        for user in self.get_exported_microsoft_teams_user_data():
+            if user["Mail"] in EXPORTED_REALM_OWNER_EMAILS:
+                role = UserProfile.ROLE_REALM_OWNER
+            elif user["Mail"] in GUEST_USER_EMAILS:
+                role = UserProfile.ROLE_GUEST
+            else:
+                role = UserProfile.ROLE_MEMBER
+            expected_users.append(
+                ExpectedUser(
+                    email=user["Mail"],
+                    full_name=user["DisplayName"],
+                    role=role,
+                    is_bot=False,
+                    bot_type=None,
+                    is_active=True,
+                    is_mirror_dummy=False,
+                )
             )
+        expected_users.extend(
+            ExpectedUser(
+                email=self.get_expected_email(user_id),
+                full_name=f"Deleted Teams user {user_id}",
+                role=UserProfile.ROLE_MEMBER,
+                is_bot=False,
+                bot_type=None,
+                is_active=False,
+                is_mirror_dummy=True,
+            )
+            for user_id in self.get_deleted_user_ids()
         )
-        self.assertSetEqual(imported_user_emails, set(EXPORTED_MICROSOFT_TEAMS_USER_EMAIL.values()))
+        return expected_users
 
-        mirror_dummy_accounts = self.get_imported_realm_user_field_values(
-            "id", is_mirror_dummy=True, is_active=False
-        )
-        self.assert_length(mirror_dummy_accounts, 1)
+    @override
+    def get_expected_channels(self) -> list[ExpectedChannel]:
+        expected_channels = []
+        for team_id in get_exported_team_ids():
+            raw_team_data = get_exported_team_data(team_id)
+            expected_channels.append(
+                ExpectedChannel(
+                    name=raw_team_data["Name"],
+                    description=raw_team_data["Description"] or "",
+                    invite_only=raw_team_data["Visibility"] == "private",
+                    deactivated=raw_team_data["IsArchived"],
+                    subscriber_emails=frozenset(
+                        self.get_expected_email(subscription["UserId"])
+                        for subscription in get_exported_team_subscription_list(team_id)
+                    ),
+                )
+            )
+        return expected_channels
 
-        imported_realm_owner_emails = set(
-            self.get_imported_realm_user_field_values("email", role=UserProfile.ROLE_REALM_OWNER)
-        )
-        self.assertSetEqual(imported_realm_owner_emails, set(EXPORTED_REALM_OWNER_EMAILS))
-
-        imported_guest_user_emails = set(
-            self.get_imported_realm_user_field_values("email", role=UserProfile.ROLE_GUEST)
-        )
-        self.assertSetEqual(imported_guest_user_emails, set(GUEST_USER_EMAILS))
-
-        raw_exported_users_data = self.get_exported_microsoft_teams_user_data()
-
-        raw_exported_user_full_names = [user["DisplayName"] for user in raw_exported_users_data]
-        deleted_user_full_names = [
-            f"Deleted Teams user {user_id}" for user_id in DELETED_MICROSOFT_TEAMS_USERS
+    @override
+    def get_expected_messages(self) -> list[ExpectedMessage]:
+        # Microsoft Teams channels are converted into topics in the
+        # channel for their team.
+        return [
+            ExpectedMessage(
+                sender_email=self.get_expected_email(
+                    get_microsoft_teams_sender_id_from_message(exported_message.message)
+                ),
+                date_sent=get_timestamp_from_message(exported_message.message),
+                channel_name=exported_message.team_name,
+                topic_name=exported_message.microsoft_teams_channel.display_name,
+                direct_message_participant_emails=None,
+            )
+            for exported_message in self.get_convertible_exported_messages()
         ]
 
-        imported_user_full_names = self.get_imported_realm_user_field_values("full_name")
-        self.assertEqual(
-            sorted(raw_exported_user_full_names + deleted_user_full_names),
-            sorted(imported_user_full_names),
+    @override
+    def get_expected_attachment_file_names(self) -> list[str]:
+        # Hosted-content images are downloaded and named after their
+        # message's ID; a failed download is skipped.
+        expected_attachment_file_names = []
+        for exported_message in self.get_convertible_exported_messages():
+            message = exported_message.message
+            message_html = BeautifulSoup(message["Body"]["Content"], "html.parser")
+            for image in message_html.find_all("img"):
+                image_url = image.get("src")
+                if (
+                    isinstance(image_url, str)
+                    and re.fullmatch(HOSTED_CONTENT_GRAPH_API_URL_REGEX, image_url)
+                    and image_url != FAILED_HOSTED_CONTENT_DOWNLOAD_URL
+                ):
+                    expected_attachment_file_names.append(message["Id"])
+        return expected_attachment_file_names
+
+    def test_failed_download_has_no_upload_records(self) -> None:
+        self.assertIn("INFO:root:HTTP error: 400, Response: ", self.conversion_log_output)
+
+        uploads_records_path = os.path.join(self.converted_output_dir, "uploads", "records.json")
+        with open(uploads_records_path, "rb") as f:
+            upload_records = orjson.loads(f.read())
+        for record in upload_records:
+            file_path = os.path.join(self.converted_output_dir, "uploads", record["path"])
+            self.assertTrue(os.path.isfile(file_path))
+
+        attachment_records_path = os.path.join(self.converted_output_dir, "attachment.json")
+        with open(attachment_records_path, "rb") as f:
+            attachment_records = orjson.loads(f.read())
+        for record in attachment_records["zerver_attachment"]:
+            file_path = os.path.join(self.converted_output_dir, "uploads", record["path_id"])
+            self.assertTrue(os.path.isfile(file_path))
+
+    def test_deleted_users_imported_as_mirror_dummies(self) -> None:
+        # test_imported_users derives deleted users from the export, so
+        # check that the fixture actually has one.
+        self.assertSetEqual(self.get_deleted_user_ids(), set(DELETED_MICROSOFT_TEAMS_USERS))
+        mirror_dummy_emails = UserProfile.objects.filter(
+            realm=self.imported_realm, is_mirror_dummy=True, is_active=False
+        ).values_list("email", flat=True)
+        self.assertCountEqual(
+            mirror_dummy_emails,
+            [f"{user_id}@zulip.example.com" for user_id in DELETED_MICROSOFT_TEAMS_USERS],
         )
 
-    def test_imported_channels(self) -> None:
-        self.do_import_realm_fixture()
-        all_imported_channels = Stream.objects.filter(
-            realm=get_realm(self.test_realm_subdomain),
-        )
+    def test_private_channel_messages_not_imported(self) -> None:
+        # test_imported_messages skips private channels when deriving
+        # expected messages, so check that the fixture actually has
+        # messages in one.
+        team_id = EXPORTED_MICROSOFT_TEAMS_TEAM_ID["Core team"]
+        channel_metadata = get_exported_team_channel_metadata(team_id)
+        private_channel_messages = [
+            message
+            for message in get_exported_team_message_list(team_id)
+            if not is_microsoft_teams_event_message(message)
+            and message["ChannelIdentity"]["ChannelId"] in PRIVATE_MICROSOFT_TEAMS_CHANNELS
+        ]
+        self.assertNotEqual(private_channel_messages, [])
 
-        self.assert_length(all_imported_channels, len(EXPORTED_MICROSOFT_TEAMS_TEAM_ID))
-
-        for channel in all_imported_channels:
-            channel_name = channel.name
-
-            # Teams data are imported correctly
-            raw_team_data = get_exported_team_data(EXPORTED_MICROSOFT_TEAMS_TEAM_ID[channel_name])
-            self.assertEqual(channel_name, raw_team_data["Name"])
-            self.assertEqual(channel.description, raw_team_data["Description"] or "")
-            self.assertEqual(channel.deactivated, raw_team_data["IsArchived"])
-            self.assertEqual(channel.invite_only, raw_team_data["Visibility"] == "private")
-
-            # Teams subscription are imported correctly.
-            imported_channel_subscriber_emails = get_channel_subscriber_emails(
-                get_realm(self.test_realm_subdomain), channel_name
+        team_channel = Stream.objects.get(realm=self.imported_realm, name="Core team")
+        assert team_channel.recipient_id is not None
+        for private_channel_id in PRIVATE_MICROSOFT_TEAMS_CHANNELS:
+            private_channel = channel_metadata[private_channel_id]
+            self.assertEqual(private_channel.membership_type, "private")
+            self.assertFalse(
+                messages_for_topic(
+                    self.imported_realm.id, team_channel.recipient_id, private_channel.display_name
+                ).exists()
             )
-            raw_subscription_list = get_exported_team_subscription_list(
-                EXPORTED_MICROSOFT_TEAMS_TEAM_ID[channel_name]
-            )
-            expected_subscriber_emails: set[str] = {
-                self.exported_user_data_map[sub["UserId"]]["Mail"] for sub in raw_subscription_list
-            }
-            self.assertSetEqual(expected_subscriber_emails, imported_channel_subscriber_emails)
-
-    def test_imported_channel_messages(self) -> None:
-        self.do_import_realm_fixture()
-        channel_name = "Core team"
-        exported_team_messages = get_exported_team_message_list(
-            EXPORTED_MICROSOFT_TEAMS_TEAM_ID[channel_name]
-        )
-        test_realm = get_realm(self.test_realm_subdomain)
-        channel = Stream.objects.get(
-            name=channel_name,
-            realm=test_realm,
-        )
-        assert channel.recipient is not None
-
-        convertable_exported_messages: list[MicrosoftTeamsFieldsT] = []
-        convertable_exported_message_datetimes: list[float] = []
-        exported_sender_messages_map: dict[str, list[float]] = defaultdict(list)
-        private_channel_message_exists: bool
-        deleted_user_message_exists: bool
-
-        for message in exported_team_messages:
-            if is_microsoft_teams_event_message(message):
-                continue
-            if message["ChannelIdentity"]["ChannelId"] in PRIVATE_MICROSOFT_TEAMS_CHANNELS:
-                private_channel_message_exists = True
-                continue
-            sender_id = get_microsoft_teams_sender_id_from_message(message)
-            if sender_id not in self.exported_user_data_map:
-                assert sender_id in DELETED_MICROSOFT_TEAMS_USERS
-                sender_email = f"{sender_id}@zulip.example.com"
-                deleted_user_message_exists = True
-            else:
-                sender_email = self.exported_user_data_map[sender_id]["Mail"]
-
-            convertable_exported_messages.append(message)
-            message_datetime = get_timestamp_from_message(message)
-            convertable_exported_message_datetimes.append(message_datetime)
-            exported_sender_messages_map[sender_email].append(message_datetime)
-        self.assertTrue(private_channel_message_exists)
-        self.assertTrue(deleted_user_message_exists)
-
-        imported_channel_messages = (
-            Message.objects.filter(
-                recipient=channel.recipient,
-                realm=test_realm,
-            )
-            .exclude(sender_id=get_system_bot(settings.WELCOME_BOT, test_realm.id).id)
-            .order_by("id")
-        )
-        self.assertTrue(imported_channel_messages.exists())
-
-        imported_message_datetimes: list[float] = []
-        imported_sender_messages_map: dict[str, list[float]] = defaultdict(list)
-        last_date_sent: float = float("-inf")
-
-        for imported_message in imported_channel_messages:
-            message_date_sent = imported_message.date_sent.timestamp()
-            # Imported messages are sorted chronologically.
-            self.assertLessEqual(last_date_sent, message_date_sent)
-            last_date_sent = max(last_date_sent, message_date_sent)
-
-            # Message content is not empty.
-            self.assertIsNotNone(imported_message.content)
-            self.assertIsNotNone(imported_message.rendered_content)
-
-            imported_message_datetimes.append(message_date_sent)
-            imported_sender_messages_map[imported_message.sender.email].append(message_date_sent)
-
-        self.assertListEqual(
-            sorted(imported_message_datetimes),
-            sorted(convertable_exported_message_datetimes),
-        )
-
-        # Message sender is correct.
-        for sender_email, exported_message_datetimes in exported_sender_messages_map.items():
-            self.assertListEqual(
-                sorted(exported_message_datetimes),
-                sorted(imported_sender_messages_map[sender_email]),
-            )
-
-        microsoft_team_channel_metadata = get_exported_team_channel_metadata(
-            EXPORTED_MICROSOFT_TEAMS_TEAM_ID[channel_name]
-        )
-
-        # Microsoft Teams channels are correctly converted and imported
-        # as Zulip topics.
-        for (
-            microsoft_team_channel_id,
-            microsoft_team_channel_data,
-        ) in microsoft_team_channel_metadata.items():
-            messages_in_a_microsoft_team_channel = [
-                m
-                for m in convertable_exported_messages
-                if m["ChannelIdentity"]["ChannelId"] == microsoft_team_channel_id
-            ]
-
-            topic_name = microsoft_team_channel_data.display_name
-
-            imported_messages_in_a_zulip_topic = messages_for_topic(
-                test_realm.id, channel.recipient.id, topic_name
-            )
-            self.assertEqual(
-                len(messages_in_a_microsoft_team_channel), len(imported_messages_in_a_zulip_topic)
-            )
-
-        imported_attachments = Attachment.objects.filter(realm=test_realm)
-        self.assertTrue(imported_attachments.exists())
-        message_ids_with_attachment = set()
-        for attachment in imported_attachments:
-            for message_with_attachment in Message.objects.filter(
-                realm=test_realm, attachment=attachment
-            ):
-                self.assertTrue(message_with_attachment.has_attachment)
-                self.assertEqual(
-                    message_with_attachment.has_image,
-                    attachment.content_type in THUMBNAIL_ACCEPT_IMAGE_TYPES,
-                )
-                assert isinstance(message_with_attachment.rendered_content, str)
-                self.assertIn(
-                    f"/user_uploads/{attachment.path_id}", message_with_attachment.rendered_content
-                )
-                message_ids_with_attachment.add(message_with_attachment.id)
-
-        # No message claims an attachment it doesn't have, e.g. because
-        # its file failed to download.
-        self.assertSetEqual(
-            message_ids_with_attachment,
-            set(
-                Message.objects.filter(realm=test_realm, has_attachment=True).values_list(
-                    "id", flat=True
-                )
-            ),
-        )
 
 
 class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
@@ -925,3 +870,7 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                         )
         finally:
             shutil.rmtree(output_dir)
+
+
+# Abstract base class; the subclasses above run its tests.
+del ImporterContractTestBase
