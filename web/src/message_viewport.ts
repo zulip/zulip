@@ -5,6 +5,8 @@ import * as blueslip from "./blueslip.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_scroll_state from "./message_scroll_state.ts";
 import type {Message} from "./message_store.ts";
+import * as modals from "./modals.ts";
+import * as overlays from "./overlays.ts";
 import * as rows from "./rows.ts";
 import * as util from "./util.ts";
 
@@ -15,6 +17,14 @@ export type MessageViewportInfo = {
 };
 
 export const $scroll_container = $(":root");
+
+// When you start Zulip, window_focused should be true, but it might not be the
+// case after a server-initiated reload.
+let window_focused = document.hasFocus();
+
+function is_window_focused(): boolean {
+    return window_focused;
+}
 
 let window_resize_handler: () => void;
 
@@ -68,6 +78,18 @@ export function message_viewport_info(): MessageViewportInfo {
         visible_bottom,
         visible_height,
     };
+}
+
+export function viewport_is_visible_and_focused(): boolean {
+    if (
+        overlays.any_active() ||
+        modals.any_active() ||
+        !is_window_focused() ||
+        $("#message_feed_container").css("display") === "none"
+    ) {
+        return false;
+    }
+    return true;
 }
 
 // Important note: These functions just look at the state of the
@@ -605,6 +627,16 @@ export function can_scroll(): boolean {
 }
 
 export function initialize(): void {
+    // These handlers must be placed before all focus handlers in our
+    // application that check is_window_focused.
+    $(window)
+        .on("focus", () => {
+            window_focused = true;
+        })
+        .on("blur", () => {
+            window_focused = false;
+        });
+
     // This handler must be placed before all resize handlers in our application
     $(window).on("resize", () => {
         cached_width.reset();

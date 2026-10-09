@@ -19,6 +19,7 @@ mock_esm("../src/resize", {
     watch_manual_resize() {},
 });
 set_global("document", {
+    hasFocus: () => true,
     querySelector() {},
 });
 set_global("navigator", {});

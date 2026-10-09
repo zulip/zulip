@@ -709,3 +709,17 @@ run_test("parse_youtube_start_time", () => {
     assert.equal(util.parse_youtube_start_time("https://youtu.be/ID?t=1h30m"), 5400);
     assert.equal(util.parse_youtube_start_time("https://youtu.be/ID?t=invalid"), undefined);
 });
+
+run_test("convert_emoji_code_to_unicode", () => {
+    assert.equal(util.convert_emoji_code_to_unicode("1f419"), "🐙");
+    assert.equal(util.convert_emoji_code_to_unicode("1F419"), "🐙");
+    assert.equal(util.convert_emoji_code_to_unicode("1f468-200d-1f373"), "👨‍🍳");
+
+    // Codepoints must be valid hex within the Unicode range.
+    assert.equal(util.convert_emoji_code_to_unicode("110000"), undefined);
+    assert.equal(util.convert_emoji_code_to_unicode("zzzz"), undefined);
+    assert.equal(util.convert_emoji_code_to_unicode(""), undefined);
+    // A single invalid codepoint invalidates the whole emoji.
+    assert.equal(util.convert_emoji_code_to_unicode("1f468-110000-1f373"), undefined);
+    assert.equal(util.convert_emoji_code_to_unicode("1f468--1f373"), undefined);
+});

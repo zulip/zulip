@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
+const blueslip = require("./lib/zblueslip.cjs");
 const {$} = require("./lib/zjquery.cjs");
 
 const ui_util = zrequire("ui_util");
@@ -118,4 +119,10 @@ run_test("replace_emoji_name_with_emoji_unicode", () => {
     $emoji.attr("class", "emoji emoji-1f468-200d-1f373");
     const man_cook_emoji = "👨‍🍳";
     assert.equal(man_cook_emoji, ui_util.convert_emoji_element_to_unicode($emoji));
+
+    // An invalid codepoint falls back to the element's text.
+    $emoji.attr("class", "emoji emoji-1f468-110000-1f373");
+    $emoji.text(":man_cook:");
+    blueslip.expect("error", "Invalid unicode codepoint for emoji");
+    assert.equal(ui_util.convert_emoji_element_to_unicode($emoji), ":man_cook:");
 });
