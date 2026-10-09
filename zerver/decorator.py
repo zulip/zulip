@@ -37,7 +37,7 @@ from zerver.lib.exceptions import (
     JsonableError,
     OrganizationAdministratorRequiredError,
     OrganizationOwnerRequiredError,
-    RealmDeactivatedError,
+    RealmDeactivatedAuthenticationError,
     UnauthorizedError,
     UnsupportedWebhookEventTypeError,
     UserDeactivatedError,
@@ -279,7 +279,7 @@ def validate_api_key(
 
 def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfile) -> None:
     if user_profile.realm.deactivated:
-        raise RealmDeactivatedError
+        raise RealmDeactivatedAuthenticationError
     if not user_profile.is_active:
         raise UserDeactivatedError
 
