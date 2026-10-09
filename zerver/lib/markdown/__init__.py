@@ -62,6 +62,7 @@ from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 from zerver.models import Message, Realm, UserProfile
 from zerver.models.linkifiers import linkifiers_for_realm
 from zerver.models.realm_emoji import EmojiInfo, get_name_keyed_dict_for_active_realm_emoji
+from zerver.models.streams import StreamTopicsPolicyEnum
 
 ReturnT = TypeVar("ReturnT")
 
@@ -1777,6 +1778,19 @@ class StreamTopicMessageProcessor(CompiledInlineProcessor):
         stream_id = db_data.stream_names.get(name)
         return stream_id
 
+    def is_empty_topic_only_channel(self, name: str) -> bool:
+        db_data: DbData | None = self.zmd.zulip_db_data
+        if db_data is None:
+            return False
+        channel_info = db_data.mention_data.get_channel_info(name)
+        if channel_info is None:
+            return False
+        topics_policy = channel_info.topics_policy
+        if topics_policy == StreamTopicsPolicyEnum.inherit.value:
+            assert self.zmd.zulip_realm is not None
+            topics_policy = self.zmd.zulip_realm.topics_policy
+        return topics_policy == StreamTopicsPolicyEnum.empty_topic_only.value
+
 
 class StreamPattern(StreamTopicMessageProcessor):
     @override
@@ -1821,6 +1835,10 @@ class StreamTopicPattern(StreamTopicMessageProcessor):
         stream_id = self.find_stream_id(stream_name)
         if stream_id is None or topic_name is None:
             return None, None, None
+        if topic_name != "" and self.is_empty_topic_only_channel(stream_name):
+            # This channel only allows the empty topic, so a non-empty
+            # topic can never exist in it; don't linkify it.
+            return None, None, None
         el = Element("a")
         el.set("class", "stream-topic")
         el.set("data-stream-id", str(stream_id))
@@ -1860,6 +1878,10 @@ class StreamTopicMessagePattern(StreamTopicMessageProcessor):
 
         stream_id = self.find_stream_id(stream_name)
         if stream_id is None or topic_name is None:
+            return None, None, None
+        if topic_name != "" and self.is_empty_topic_only_channel(stream_name):
+            # This channel only allows the empty topic, so a non-empty
+            # topic can never exist in it; don't linkify it.
             return None, None, None
         el = Element("a")
         el.set("class", "message-link")
