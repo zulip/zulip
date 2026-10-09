@@ -4,7 +4,7 @@
 # This script is idempotent, so it can be restarted at any time, and it
 # will usually run fairly quickly when your dependencies are up to date.
 
-set -e
+set -euo pipefail
 if [ "$EUID" -eq 0 ]; then
     echo "Error: The provision script must not be run as root" >&2
     exit 1
@@ -69,7 +69,7 @@ if [ "$failed" -ne 0 ]; then
     echo "* Logs are here: zulip/var/log/provision.log"
     echo -e "$ENDC"
     exit "$failed"
-elif [ "$VIRTUAL_ENV" != "$PARENT_PATH/.venv" ] && [ -z "${SKIP_VENV_SHELL_WARNING}" ]; then
+elif [ "${VIRTUAL_ENV:-}" != "$PARENT_PATH/.venv" ] && [ -z "${SKIP_VENV_SHELL_WARNING:-}" ]; then
     echo -e "$WARNING"
     echo "WARNING: This shell does not have the Zulip Python 3 virtualenv activated."
     echo "Zulip commands will fail until you activate the virtualenv."
