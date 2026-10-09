@@ -410,6 +410,10 @@ exports.FakeJQuery = class extends RejectMissing {
         }
         return this;
     }
+    eq(index) {
+        const element = [...this].at(index);
+        return new exports.FakeJQuery(element === undefined ? [] : [element]);
+    }
     expectOne() {
         // silently do nothing
         return this;
@@ -507,6 +511,11 @@ exports.FakeJQuery = class extends RejectMissing {
             element.innerHTML = arg;
         }
         return this;
+    }
+    index(...args) {
+        assert.equal(args.length, 0, "zjquery does not support this index() call");
+        assert.equal(this.length, 1);
+        return [...this[0].parentNode.children].indexOf(this[0]);
     }
     insertAfter(...args) {
         args = dom_args(args);
