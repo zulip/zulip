@@ -90,6 +90,17 @@ class GitlabHookTests(WebhookTestCase):
 
         self.check_webhook("tag_push_hook__remove_tag", expected_topic_name, expected_message)
 
+    def test_work_item_open(self) -> None:
+        expected_topic_name = "Zulip Test Project / work item #42 Implement new webhook"
+        expected_message = "Henil created [issue #42](https://gitlab.example.com/zulip/zulip-test/-/work_items/42):\n\n``` quote\nThis is a test work item.\n```"
+
+        self.check_webhook(
+            "work_item_hook__open", 
+            expected_topic_name, 
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Work Item Hook"
+        )
+
     def test_create_issue_without_assignee_event_message(self) -> None:
         expected_topic_name = "my-awesome-project / issue #1 Issue title"
         expected_message = "Tomasz Kolek created [issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1):\n\n``` quote\nIssue description\n```"
