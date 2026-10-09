@@ -29,7 +29,7 @@ import orjson
 from django.apps import apps
 from django.conf import settings
 from django.db import connection
-from django.db.models import Exists, Model, OuterRef, Q, QuerySet
+from django.db.models import Exists, Max, Model, OuterRef, Q, QuerySet
 from django.forms.models import model_to_dict
 from django.utils.timezone import is_naive as timezone_is_naive
 from django.utils.timezone import now as timezone_now
@@ -1972,7 +1972,9 @@ def export_partial_message_files(
     all_message_ids: set[int] = set()
 
     for message_query in message_queries:
-        message_ids = set(get_id_list_gently_from_database(base_query=message_query, id_field="id"))
+        message_ids = set(
+            get_realm_message_ids_gently_from_database(realm=realm, base_query=message_query)
+        )
 
         # We expect our queries to be disjoint, although this assertion
         # isn't strictly necessary if you don't mind a little bit of
@@ -2877,6 +2879,54 @@ def get_id_list_gently_from_database(*, base_query: Any, id_field: str) -> list[
             break
         all_ids += new_ids
         min_id = new_ids[-1]
+
+    return all_ids
+
+
+def get_realm_message_ids_gently_from_database(
+    *, realm: Realm, base_query: QuerySet[Message], batch_size: int = 10000
+) -> list[int]:
+    """
+    Like get_id_list_gently_from_database, but for a base_query of
+    messages in the given realm.
+
+    The core point of this function is to avoid batching with
+    `ORDER BY id LIMIT N` on a query with complex, correlated
+    filtering conditions.  For such queries, Postgres can badly
+    underestimate how many rows match, and choose an extremely
+    inefficient plan: fetching *all* the matching rows, sorting
+    them, and only then applying the LIMIT -- on every batch.
+
+    The sender and recipient conditions used in the export are
+    strongly correlated with realm_id, so the estimate can be off by
+    orders of magnitude.
+
+    Instead, we find each batch's id range with a *simple* query on
+    the realm's messages, using the (realm_id, id) index, and only
+    fetch base_query's matches within that range.
+    """
+    min_id = -1
+    all_ids: list[int] = []
+
+    while True:
+        # Unlike on base_query, this ORDER BY id LIMIT is safe:
+        # the index matches both the filter and the ordering, so Postgres does a
+        # straightforward index scan and stops after batch_size entries.
+        max_id = (
+            # Uses index: zerver_message_realm_id
+            Message.objects.filter(realm_id=realm.id, id__gt=min_id)
+            .order_by("id")[:batch_size]
+            .aggregate(Max("id"))["id__max"]
+        )
+        if max_id is None:
+            break
+        all_ids += (
+            base_query.filter(id__gt=min_id, id__lte=max_id)
+            .order_by("id")
+            .values_list("id", flat=True)
+        )
+        logging.info("Fetched %s message ids", len(all_ids))
+        min_id = max_id
 
     return all_ids
 

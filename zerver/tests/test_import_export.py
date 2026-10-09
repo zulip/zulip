@@ -53,6 +53,7 @@ from zerver.lib.export import (
     do_export_realm,
     do_export_user,
     get_consented_user_ids,
+    get_realm_message_ids_gently_from_database,
 )
 from zerver.lib.import_realm import (
     do_import_realm,
@@ -681,6 +682,27 @@ class RealmImportExportTest(ExportFile):
         self.assertIn(pm_b_msg_id, exported_message_ids)
         self.assertIn(pm_c_msg_id, exported_message_ids)
         self.assertIn(pm_d_msg_id, exported_message_ids)
+
+    def test_get_realm_message_ids_gently_from_database(self) -> None:
+        realm = get_realm("zulip")
+        base_query = Message.objects.filter(realm_id=realm.id, sender=self.example_user("hamlet"))
+        expected_message_ids = sorted(base_query.values_list("id", flat=True))
+
+        with self.assertLogs(level="INFO") as mock_log:
+            message_ids = get_realm_message_ids_gently_from_database(
+                realm=realm, base_query=base_query, batch_size=7
+            )
+        self.assertEqual(sorted(message_ids), expected_message_ids)
+        self.assertEqual(
+            mock_log.output,
+            [
+                "INFO:root:Fetched 1 message ids",
+                "INFO:root:Fetched 4 message ids",
+                "INFO:root:Fetched 5 message ids",
+                "INFO:root:Fetched 6 message ids",
+                "INFO:root:Fetched 6 message ids",
+            ],
+        )
 
     def test_get_consented_user_ids(self) -> None:
         realm = get_realm("zulip")
