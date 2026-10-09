@@ -7,6 +7,10 @@
         {{else}}
             <div class="emoji emoji-{{this.emoji_code}}"></div>
         {{/if}}
-        <div class="message_reaction_count">{{this.vote_text}}</div>
+        <div class="message_reaction_count">
+            {{#each this.vote_text}}
+                <span class="message_reaction_name">{{this}}{{#unless @last}},{{/unless}}</span>
+            {{/each}}
+        </div>
     </div>
 </div>
