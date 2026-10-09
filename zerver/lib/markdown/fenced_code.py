@@ -104,7 +104,7 @@ FENCE_RE = re.compile(
         ^(?:~{3,}|`{3,})
     )
 
-    [ ]* # spaces
+    [ \t]*
 
     (?:
         # language, like ".py" or "{javascript}"
@@ -115,7 +115,7 @@ FENCE_RE = re.compile(
     + r"""
         ) # "py" or "javascript"
 
-        [ ]* # spaces
+        [ \t]*
 
         # header for features that use fenced block header syntax (like spoilers)
         (?P<header>
