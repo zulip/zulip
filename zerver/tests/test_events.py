@@ -164,6 +164,7 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
     do_change_is_imported_stub,
     do_deactivate_user,
+    do_update_bot_config_data,
     do_update_outgoing_webhook_service,
 )
 from zerver.actions.video_calls import do_set_video_call_provider_token
@@ -3695,6 +3696,23 @@ class NormalActionsTest(BaseAction):
                 base_url="http://hostname.domain2.com",
                 acting_user=self.user_profile,
             )
+
+    def test_do_update_bot_config_data(self) -> None:
+        bot = self.create_bot(
+            "test_embedded",
+            full_name="Embedded Bot",
+            service_name="helloworld",
+            config_data=orjson.dumps({"foo": "bar"}).decode(),
+            bot_type=UserProfile.EMBEDDED_BOT,
+        )
+        with self.verify_action() as events:
+            do_update_bot_config_data(bot, {"foo": "baz"})
+
+        check_realm_bot_update("events[0]", events[0], "services")
+        self.assertEqual(
+            events[0]["bot"]["services"],
+            [{"service_name": "helloworld", "config_data": {"foo": "baz"}}],
+        )
 
     def test_do_deactivate_bot(self) -> None:
         bot = self.create_bot("test")
