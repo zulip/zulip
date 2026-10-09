@@ -175,6 +175,28 @@ The currently configured preset URL options are:
   `ignore_private_repositories` boolean parameter will be added to the
   [generated integration URL](https://zulip.com/help/generate-integration-url).
 
+- **`ENABLE_TOPIC_RENAME`**: This preset is intended to be used for
+  integrations whose notifications go to a topic named after something that
+  can be renamed in the third-party service, like a pull request in a
+  [version control
+  integration](https://zulip.com/integrations/category/version-control) or
+  an issue in a [project management
+  integration](https://zulip.com/integrations/category/project-management),
+  and adds UI for the user to choose whether renaming that thing also
+  renames the topic, moving the messages already in that topic along with
+  it. The option is only offered when the notifications go to a channel and
+  are not all sent to a single topic. In the webhook, the `enable_topic_rename`
+  boolean parameter defaults to `False`, so that integration URLs generated
+  before this option existed keep their original behavior.
+
+  Renaming uses `check_topic_rename`, which respects the same permissions
+  and time limits as a user moving a topic. It skips the move if the bot
+  cannot [move messages](https://zulip.com/help/restrict-moving-messages)
+  between topics, or if the conversation is older than the organization's
+  time limit for moving messages, 7 days by default. Skipping is silent, so
+  the new notification starts a fresh topic while the earlier messages stay
+  under the old title.
+
 - **`CHANNEL_MAPPING`**: This preset is intended to be used for [chat-app
   integrations](https://zulip.com/integrations/category/communication)
   (like Slack), and adds a special option, **Matching Zulip channel**, to
