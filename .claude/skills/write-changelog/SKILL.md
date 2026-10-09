@@ -311,6 +311,24 @@ matches, default to fold or skip. This catches commits whose
 subjects look like new-feature additions but actually document or
 extend something already in the changelog.
 
+### 7b. Have a subagent try to refute each entry
+
+An entry drafted from commit subjects often sounds right but
+misstates a detail of what happened, and your own re-reading tends
+to confirm what you already wrote. For every entry you added or
+changed, record the commits it describes, then get an independent
+check. Give a fresh subagent only the entry text and the commit
+hashes for each entry, without your notes or reasoning (several
+entries per subagent is fine). Ask it to read the diffs and try to
+find a claim in each entry that the code does not support: the
+wrong symptom, overstated or understated severity, a missing or
+wrong limiting condition, the wrong trigger, or a misstated fix. It
+should reply, per entry, with either "supported" or the specific
+claim that is wrong and what the code shows instead.
+
+Fix every entry it flags, after confirming the objection against
+the diff yourself.
+
 ### 8. Verify
 
 Re-read the full updated section once for:
@@ -330,6 +348,22 @@ Re-read the full updated section once for:
 
 **Polish pass.** Re-read each existing bullet you didn't touch and
 copyedit obvious infelicities.
+
+**Stale-claim check.** A bullet written at an earlier update
+describes the code as it was then. Before finishing, make a list
+of:
+
+- every existing bullet in the section that states a limitation or
+  a state of progress ("not yet", "(Unfinished)", "currently",
+  "only", "does not support"), and
+- every existing bullet you reworded or folded something into.
+
+For each bullet on the list, check each of its statements against
+the current code (not only against the commit subjects), and
+update anything that is no longer true. Include the list in your
+final summary, with what you checked for each bullet and whether
+you changed it. Once you edit a bullet, every claim in it is
+yours.
 
 **Retraction check** — look for commits walking back prior claims:
 
