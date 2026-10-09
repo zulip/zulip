@@ -23,14 +23,22 @@ from zerver.actions.user_groups import (
 )
 from zerver.actions.users import (
     change_user_is_active,
-    get_service_dicts_for_bot,
+    get_services_for_bot,
     send_update_events_for_anonymous_group_settings,
 )
 from zerver.lib.avatar import generate_and_upload_jdenticon_avatar
 from zerver.lib.create_user import create_user
 from zerver.lib.default_streams import get_slim_realm_default_streams
 from zerver.lib.email_notifications import enqueue_welcome_emails, send_account_registered_email
+from zerver.lib.event_types import (
+    Bot,
+    PersonIsActive,
+    RealmBotAddEvent,
+    RealmExportConsentEvent,
+    RealmUserUpdateEvent,
+)
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.internal_event_types import InternalRealmUserAddEvent
 from zerver.lib.invites import notify_invites_changed
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.send_email import clear_scheduled_invitation_emails
@@ -458,27 +466,29 @@ def notify_created_user(user_profile: UserProfile, notify_user_ids: list[int]) -
 
     if user_ids_with_real_email_access:
         assert person_for_real_email_access_users is not None
-        event: dict[str, Any] = dict(
-            type="realm_user", op="add", person=person_for_real_email_access_users
+        event = InternalRealmUserAddEvent.model_validate(
+            dict(person=person_for_real_email_access_users, inaccessible_user=False)
         )
         send_event_on_commit(user_profile.realm, event, user_ids_with_real_email_access)
 
     if user_ids_without_real_email_access:
         assert person_for_without_real_email_access_users is not None
-        event = dict(type="realm_user", op="add", person=person_for_without_real_email_access_users)
+        event = InternalRealmUserAddEvent.model_validate(
+            dict(person=person_for_without_real_email_access_users, inaccessible_user=False)
+        )
         send_event_on_commit(user_profile.realm, event, user_ids_without_real_email_access)
 
     if user_ids_without_access_to_created_user:
-        event = dict(
-            type="realm_user",
-            op="add",
-            person=get_data_for_inaccessible_user(user_profile.realm, user_profile.id),
-            inaccessible_user=True,
+        event = InternalRealmUserAddEvent.model_validate(
+            dict(
+                person=get_data_for_inaccessible_user(user_profile.realm, user_profile.id),
+                inaccessible_user=True,
+            )
         )
         send_event_on_commit(user_profile.realm, event, user_ids_without_access_to_created_user)
 
 
-def created_bot_event(user_profile: UserProfile) -> dict[str, Any]:
+def created_bot_event(user_profile: UserProfile) -> RealmBotAddEvent:
     def stream_name(stream: Stream | None) -> str | None:
         if not stream:
             return None
@@ -487,15 +497,15 @@ def created_bot_event(user_profile: UserProfile) -> dict[str, Any]:
     default_sending_stream_name = stream_name(user_profile.default_sending_stream)
     default_events_register_stream_name = stream_name(user_profile.default_events_register_stream)
 
-    bot = dict(
+    bot = Bot(
         user_id=user_profile.id,
         default_sending_stream=default_sending_stream_name,
         default_events_register_stream=default_events_register_stream_name,
         default_all_public_streams=user_profile.default_all_public_streams,
-        services=get_service_dicts_for_bot(user_profile.id),
+        services=get_services_for_bot(user_profile.id),
     )
 
-    return dict(type="realm_bot", op="add", bot=bot)
+    return RealmBotAddEvent(bot=bot)
 
 
 def notify_created_bot(user_profile: UserProfile) -> None:
@@ -756,14 +766,11 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
 
     update_billing_records_if_needed(user_profile.realm, user=user_profile, event_time=event_time)
 
-    event = dict(
-        type="realm_user", op="update", person=dict(user_id=user_profile.id, is_active=True)
-    )
+    event = RealmUserUpdateEvent(person=PersonIsActive(user_id=user_profile.id, is_active=True))
     send_event_on_commit(user_profile.realm, event, get_user_ids_who_can_access_user(user_profile))
 
     if not user_profile.is_bot:
-        realm_export_consent_event = dict(
-            type="realm_export_consent",
+        realm_export_consent_event = RealmExportConsentEvent(
             user_id=user_profile.id,
             consented=user_profile.allow_private_data_export,
         )

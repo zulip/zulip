@@ -2044,6 +2044,18 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         config_data = orjson.loads(result.content)["config_data"]
         self.assertEqual(config_data, orjson.loads(bot_info["config_data"]))
 
+    def test_patch_bot_config_data_for_non_embedded_bot(self) -> None:
+        self.create_test_bot(
+            "test",
+            self.example_user("hamlet"),
+            full_name="Bot without config data",
+            bot_type=UserProfile.DEFAULT_BOT,
+        )
+        bot_info = {"config_data": orjson.dumps({"key": "87654321"}).decode()}
+        email = "test-bot@zulip.testserver"
+        result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
+        self.assert_json_error(result, "Only embedded bots have config_data.")
+
     def test_outgoing_webhook_invalid_interface(self) -> None:
         self.login("hamlet")
         bot_info = {

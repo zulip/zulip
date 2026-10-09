@@ -22,6 +22,8 @@ from zerver.lib.cache import (
     to_dict_cache_key_id,
 )
 from zerver.lib.event_types import (
+    RealmUpdateDictData,
+    RealmUpdateDictEvent,
     RealmUserRemoveEvent,
     RemovedUser,
     RemoveSub,
@@ -121,11 +123,9 @@ def maybe_set_moderation_or_announcement_channels_none(stream: Stream) -> None:
         for field in update_realm_moderation_or_announcement_channels:
             event_data[field] = -1
 
-        event = dict(
-            type="realm",
-            op="update_dict",
+        event = RealmUpdateDictEvent(
             property="default",
-            data=event_data,
+            data=RealmUpdateDictData.model_validate(event_data),
         )
         send_event_on_commit(realm, event, active_user_ids(realm.id))
 

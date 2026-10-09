@@ -496,8 +496,8 @@ class RealmEmoji(BaseEventModel):
 
 
 class RealmEmojiAddEvent(BaseEvent):
-    type: Literal["realm_emoji"]
-    op: Literal["add"]
+    type: Literal["realm_emoji"] = "realm_emoji"
+    op: Literal["add"] = "add"
     emoji: RealmEmoji
 
 
@@ -506,8 +506,8 @@ class RealmEmojiUpdateData(BaseEventModel):
 
 
 class RealmEmojiUpdateOneEvent(BaseEvent):
-    type: Literal["realm_emoji"]
-    op: Literal["update_one"]
+    type: Literal["realm_emoji"] = "realm_emoji"
+    op: Literal["update_one"] = "update_one"
     emoji_id: str
     data: RealmEmojiUpdateData
 
@@ -597,6 +597,10 @@ class RealmUpdateDictData(BaseEventModel):
     logo_source: str | None = None
     night_logo_url: str | None = None
     night_logo_source: str | None = None
+    moderation_request_channel_id: int | None = None
+    new_stream_announcements_stream_id: int | None = None
+    signup_announcements_stream_id: int | None = None
+    zulip_update_announcements_stream_id: int | None = None
     create_multiuse_invite_group: int | UserGroupMembersDict | None = None
     can_access_all_users_group: int | UserGroupMembersDict | None = None
     can_add_custom_emoji_group: int | UserGroupMembersDict | None = None
@@ -672,8 +676,8 @@ class RealmBotUser(RealmUserCore):
 
 
 class RealmUserAddEvent(BaseEvent):
-    type: Literal["realm_user"]
-    op: Literal["add"]
+    type: Literal["realm_user"] = "realm_user"
+    op: Literal["add"] = "add"
     person: Annotated[RealmHumanUser | RealmBotUser, Field(discriminator="is_bot")]
 
 
@@ -906,14 +910,14 @@ class BasicStreamFields(BaseEventModel):
 
 
 class StreamCreateEvent(BaseEvent):
-    type: Literal["stream"]
-    op: Literal["create"]
+    type: Literal["stream"] = "stream"
+    op: Literal["create"] = "create"
     streams: list[BasicStreamFields]
 
 
 class StreamDeleteEvent(BaseEvent):
-    type: Literal["stream"]
-    op: Literal["delete"]
+    type: Literal["stream"] = "stream"
+    op: Literal["delete"] = "delete"
     # Streams is a legacy field for backwards-compatibility, and will
     # be removed in the future.
     streams: list[dict[Literal["stream_id"], int]]
