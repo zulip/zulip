@@ -17,6 +17,7 @@ import * as message_fetch from "./message_fetch.ts";
 import * as message_view from "./message_view.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as modals from "./modals.ts";
+import * as narrow_title from "./narrow_title.ts";
 import * as overlays from "./overlays.ts";
 import {page_params} from "./page_params.ts";
 import * as people from "./people.ts";
@@ -566,6 +567,7 @@ function hashchanged(
 
     const was_internal_change = browser_history.save_old_hash();
     if (was_internal_change) {
+        narrow_title.redraw_title();
         return undefined;
     }
 
@@ -584,6 +586,7 @@ function hashchanged(
     popovers.hide_all();
 
     if (hash_parser.is_overlay_hash(current_hash)) {
+        narrow_title.redraw_title();
         browser_history.state.changing_hash = true;
         modals.close_active_if_any();
         do_hashchange_overlay(old_hash);
