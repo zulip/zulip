@@ -128,6 +128,11 @@ class GogsHookTests(WebhookTestCase):
         expected_message = """kostekIV [commented](https://try.gogs.io/kostekIV/test/issues/3#issuecomment-3635) on [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n``` quote\nTest comment\n```"""
         self.check_webhook("issue_comment__new", expected_topic_name, expected_message)
 
+    def test_issue_comment_in_pr(self) -> None:
+        expected_topic_name = "test / PR #2 test"
+        expected_message = """thedance [commented](https://try.gogs.io/thedance/test/pulls/2#issuecomment-341) on [PR #2](https://try.gogs.io/thedance/test/pulls/2):\n\n``` quote\nthis is a PR comment\n```"""
+        self.check_webhook("issue_comment__in_pr", expected_topic_name, expected_message)
+
     def test_issue_comment_edited(self) -> None:
         expected_topic_name = "test / issue #3 New test issue"
         expected_message = """kostekIV edited a [comment](https://try.gogs.io/kostekIV/test/issues/3#issuecomment-3634) on [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n``` quote\nedit comment\n```"""
