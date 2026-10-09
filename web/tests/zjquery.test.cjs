@@ -109,6 +109,21 @@ run_test("finding_related_objects", () => {
     $elem.set_parents_result(".folder", $my_parents);
     $elem.parents(".folder").addClass("active");
     assert.ok($my_parents.hasClass("active"));
+
+    /*
+    Positions work the same way. eq() picks an element of a result
+    by its position there, and index() gives an element's position
+    among the children of its parent, both of which you set up.
+    */
+    const $list = $("#todo-list");
+    const $first_item = $("#todo-1");
+    const $second_item = $("#todo-2");
+    $list.set_children([...$first_item, ...$second_item]);
+    $second_item.set_parent($list);
+
+    assert.equal($list.children().eq(1)[0], $second_item[0]);
+    assert.equal($list.children().eq(2).length, 0);
+    assert.equal($second_item.index(), 1);
 });
 
 run_test("clicks", () => {
