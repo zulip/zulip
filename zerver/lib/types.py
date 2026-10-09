@@ -210,6 +210,7 @@ class RawSubscriptionDict(TypedDict):
     desktop_notifications: bool | None
     email_notifications: bool | None
     is_muted: bool
+    left_sidebar_topics_order: int
     pin_to_top: bool
     push_notifications: bool | None
     recipient_id: int
@@ -252,6 +253,7 @@ class SubscriptionStreamDict(TypedDict):
     is_muted: bool
     is_recently_active: bool
     is_web_public: bool
+    left_sidebar_topics_order: int
     message_retention_days: int | None
     name: str
     partial_subscribers: NotRequired[list[int]]

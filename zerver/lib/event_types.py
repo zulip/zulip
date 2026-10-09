@@ -990,6 +990,7 @@ class SingleSubscription(BaseEventModel):
     email_notifications: bool | None
     in_home_view: bool
     is_muted: bool
+    left_sidebar_topics_order: int
     pin_to_top: bool
     push_notifications: bool | None
     subscriber_count: int

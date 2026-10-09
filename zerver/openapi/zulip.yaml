@@ -839,6 +839,7 @@ paths:
                                         "color": "#76ce90",
                                         "is_muted": false,
                                         "pin_to_top": false,
+                                        "left_sidebar_topics_order": 0,
                                         "audible_notifications": null,
                                         "desktop_notifications": null,
                                         "email_notifications": null,
@@ -13194,6 +13195,7 @@ paths:
                               "invite_only": false,
                               "name": "Denmark",
                               "pin_to_top": false,
+                              "left_sidebar_topics_order": 0,
                               "push_notifications": false,
                               "stream_id": 1,
                               "subscribers": [7, 10, 11, 12, 14],
@@ -13209,6 +13211,7 @@ paths:
                               "invite_only": false,
                               "name": "Scotland",
                               "pin_to_top": false,
+                              "left_sidebar_topics_order": 0,
                               "push_notifications": false,
                               "stream_id": 3,
                               "subscribers": [7, 11, 12, 14],
@@ -15987,6 +15990,8 @@ paths:
                   description: |
                     Whether the web/desktop application's left sidebar lists a
                     channel's resolved topics after its unresolved ones.
+                    Subscriptions can override this per channel with the
+                    `left_sidebar_topics_order` subscription property.
 
                     - 1 - Resolved topics in order of recent activity
                     - 2 - Resolved topics after unresolved topics
@@ -20179,6 +20184,8 @@ paths:
                             description: |
                               Whether the web/desktop application's left sidebar lists a
                               channel's resolved topics after its unresolved ones.
+                              Subscriptions can override this per channel with the
+                              `left_sidebar_topics_order` subscription property.
 
                               - 1 - Resolved topics in order of recent activity
                               - 2 - Resolved topics after unresolved topics
@@ -22626,6 +22633,8 @@ paths:
                             description: |
                               Whether the web/desktop application's left sidebar lists a
                               channel's resolved topics after its unresolved ones.
+                              Subscriptions can override this per channel with the
+                              `left_sidebar_topics_order` subscription property.
 
                               - 1 - Resolved topics in order of recent activity
                               - 2 - Resolved topics after unresolved topics
@@ -24013,6 +24022,8 @@ paths:
                   description: |
                     Whether the web/desktop application's left sidebar lists a
                     channel's resolved topics after its unresolved ones.
+                    Subscriptions can override this per channel with the
+                    `left_sidebar_topics_order` subscription property.
 
                     - 1 - Resolved topics in order of recent activity
                     - 2 - Resolved topics after unresolved topics
@@ -29310,6 +29321,23 @@ components:
             **Changes**: Prior to Zulip 2.1.0, this feature was
             represented by the more confusingly named `in_home_view` (with the
             opposite value, `in_home_view=!is_muted`).
+        left_sidebar_topics_order:
+          type: integer
+          enum:
+            - 0
+            - 1
+            - 2
+          description: |
+            Whether the web/desktop application's left sidebar lists the
+            channel's resolved topics after its unresolved ones.
+
+            - 0 - The value of this setting should be inherited from the
+              user-level default setting, `web_left_sidebar_topics_order`,
+              for this channel.
+            - 1 - Resolved topics in order of recent activity
+            - 2 - Resolved topics after unresolved topics
+
+            **Changes**: New in Zulip 14.0 (feature level ZF-02efb5).
         in_home_view:
           type: boolean
           deprecated: true
@@ -31778,6 +31806,7 @@ components:
         - push_notifications
         - email_notifications
         - wildcard_mentions_notify
+        - left_sidebar_topics_order
       description: |
         One of the channel properties described below:
 
@@ -31811,12 +31840,22 @@ components:
 
         - `"wildcard_mentions_notify"`: Whether wildcard mentions trigger
           notifications as though they were personal mentions in this channel.
+
+        - `"left_sidebar_topics_order"`: Whether the web/desktop
+          application's left sidebar lists the channel's resolved topics
+          after its unresolved ones: 0 to follow the user's
+          `web_left_sidebar_topics_order` setting, 1 for order of recent
+          activity, 2 for resolved topics after unresolved topics.<br>
+          **Changes**: New in Zulip 14.0 (feature level ZF-02efb5).
       example: "pin_to_top"
     SubscriptionPropertyValue:
       oneOf:
         - type: boolean
           description: |
             The new boolean value for the specified property.
+        - type: integer
+          description: |
+            The new integer value for the specified property.
         - type: string
           description: |
             The hex value of the user's display color for the channel.
@@ -31825,8 +31864,12 @@ components:
 
         If the property is `"color"`, then `value` is a string
         representing the hex value of the user's display
-        color for the channel. For all other above properties,
-        `value` is a boolean.
+        color for the channel. If the property is
+        `"left_sidebar_topics_order"`, then `value` is an integer.
+        For all other above properties, `value` is a boolean.
+
+        **Changes**: Integer values are new in Zulip 14.0 (feature level
+        ZF-02efb5).
       example: "true"
 
   ###################
