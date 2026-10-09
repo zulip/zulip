@@ -88,8 +88,8 @@ class GiteaHookTests(WebhookTestCase):
         self.check_webhook("issue_comment__new", expected_topic_name, expected_message)
 
     def test_issue_comment_in_pr(self) -> None:
-        expected_topic_name = "test / issue #1 dummy"
-        expected_message = """kostekIV [commented](https://try.gitea.io/kostekIV/test/pulls/1/files#issuecomment-24399) on [issue #1](https://try.gitea.io/kostekIV/test/issues/1):\n\n``` quote\ntest comment\n```"""
+        expected_topic_name = "test / PR #1 dummy"
+        expected_message = """kostekIV [commented](https://try.gitea.io/kostekIV/test/pulls/1/files#issuecomment-24399) on [PR #1](https://try.gitea.io/kostekIV/test/issues/1):\n\n``` quote\ntest comment\n```"""
         self.check_webhook("issue_comment__in_pr", expected_topic_name, expected_message)
 
     def test_issue_comment_edited(self) -> None:
