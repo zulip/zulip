@@ -37,7 +37,11 @@ from zerver.actions.streams import (
     do_deactivate_stream,
     do_set_stream_property,
 )
-from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_user_group
+from zerver.actions.user_groups import (
+    add_subgroups_to_user_group,
+    check_add_user_group,
+    do_change_user_group_permission_setting,
+)
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
 from zerver.lib.addressee import Addressee
@@ -2543,6 +2547,57 @@ class StreamMessagesTest(ZulipTestCase):
         assert UserMessage.objects.get(
             user_profile=user_profile, message=message
         ).flags.mentioned.is_set
+
+    def test_bulk_user_group_mentions(self) -> None:
+        sender = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        sending_client = make_client(name="test suite")
+
+        senders_group = check_add_user_group(sender.realm, "senders", [sender], acting_user=sender)
+        for i in range(3):
+            group = check_add_user_group(sender.realm, f"group_{i}", [othello], acting_user=sender)
+            # A non-default can_mention_group is what costs a query
+            # to check the permission to mention a group.
+            do_change_user_group_permission_setting(
+                group,
+                "can_mention_group",
+                senders_group,
+                acting_user=sender,
+            )
+
+        content = "@*group_0*"
+
+        # Send a message with a single group mention.
+        with self.assert_database_query_count(20):
+            message_id = check_send_stream_message(
+                sender=sender,
+                client=sending_client,
+                stream_name="Denmark",
+                topic_name="test",
+                body=content,
+            )
+        self.assertTrue(
+            UserMessage.objects.get(
+                user_profile=othello, message_id=message_id
+            ).flags.mentioned.is_set
+        )
+
+        content = "@*group_0*, @*group_1*, @*group_2*"
+
+        # Send a message with multiple group mentions.
+        with self.assert_database_query_count(20):
+            message_id = check_send_stream_message(
+                sender=sender,
+                client=sending_client,
+                stream_name="Denmark",
+                topic_name="test",
+                body=content,
+            )
+        self.assertTrue(
+            UserMessage.objects.get(
+                user_profile=othello, message_id=message_id
+            ).flags.mentioned.is_set
+        )
 
     def test_user_group_mention_restrictions(self) -> None:
         iago = self.example_user("iago")
