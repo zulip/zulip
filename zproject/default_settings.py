@@ -60,6 +60,9 @@ AUTH_LDAP_USERNAME_ATTR: str | None = None
 AUTH_LDAP_USER_ATTR_MAP: dict[str, str] = {
     "full_name": "cn",
 }
+# Whether the attribute configured as unique_account_id has binary values,
+# like Active Directory's objectSid.
+LDAP_UNIQUE_ACCOUNT_ID_IS_BINARY = False
 # Automatically deactivate users not found by the AUTH_LDAP_USER_SEARCH query.
 LDAP_DEACTIVATE_NON_MATCHING_USERS: bool | None = None
 # AUTH_LDAP_CONNECTION_OPTIONS: we set ldap.OPT_REFERRALS in settings.py if unset.

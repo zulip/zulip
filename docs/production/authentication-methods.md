@@ -415,6 +415,19 @@ For Active Directory installations, the immutable Security Identifier
 [`objectSid`](https://ldapwiki.com/wiki/Wiki.jsp?page=Security%20Identifier)
 is recommended.
 
+Some attributes, including Active Directory's `objectSid`, have binary rather
+than textual values. When using such an attribute, you must additionally set
+`LDAP_UNIQUE_ACCOUNT_ID_IS_BINARY`:
+
+```python
+AUTH_LDAP_USER_ATTR_MAP = {
+    # ...
+    "unique_account_id": "objectSid",
+}
+
+LDAP_UNIQUE_ACCOUNT_ID_IS_BINARY = True
+```
+
 #### Manually handling LDAP email changes
 
 If you don't have `unique_account_id` enabled, when a user's email
