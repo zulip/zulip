@@ -684,7 +684,7 @@ export function handle_keydown(
         event.preventDefault();
     }
 
-    if (isCmdOrCtrl && (key === "]" || key === "[")) {
+    if (isCmdOrCtrl && !event.shiftKey && (key === "]" || key === "[")) {
         if (handle_list_indent($textarea, key === "]")) {
             event.preventDefault();
             event.stopPropagation();
