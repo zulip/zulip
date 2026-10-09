@@ -1,23 +1,15 @@
 from collections.abc import Iterable
-from typing import TypedDict
 
 from django.db.models import Q
 from pydantic import BaseModel
 
 from zerver.lib import retention
+from zerver.lib.event_types import StreamUpdateEvent
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.streams import get_public_streams_queryset
 from zerver.models import Message, Realm, Stream, UserProfile
 from zerver.models.recipients import Recipient
 from zerver.tornado.django_api import send_event_on_commit
-
-
-class DeleteMessagesEvent(TypedDict, total=False):
-    type: str
-    message_ids: list[int]
-    message_type: str
-    topic: str
-    stream_id: int
 
 
 class DeactivateUserActions(BaseModel):
@@ -45,9 +37,7 @@ def check_update_first_message_id(
     stream.first_message_id = current_first_message_id
     stream.save(update_fields=["first_message_id"])
 
-    stream_event = dict(
-        type="stream",
-        op="update",
+    stream_event = StreamUpdateEvent(
         property="first_message_id",
         value=stream.first_message_id,
         stream_id=stream.id,
