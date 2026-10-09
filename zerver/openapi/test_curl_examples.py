@@ -28,10 +28,15 @@ UNTESTED_GENERATED_CURL_EXAMPLES = {
     # Requires organization-specific JWT_AUTH_KEYS configuration.
     "jwt-fetch-api-key",
     # Would need push notification bouncer set up to test the
-    # generated curl example for the following three endpoints.
+    # generated curl example for the following endpoints.
     "e2ee-test-notify",
     "test-notify",
     "register-remote-push-device",
+    "deactivate-remote-server",
+    "remote-server-check-analytics",
+    "transfer-remote-server-registration",
+    "remote-server-post-analytics",
+    "remote-realm-billing-entry",
     # Having a message for a specific user available to test this endpoint
     # is tricky for testing.
     "delete-reminder",
