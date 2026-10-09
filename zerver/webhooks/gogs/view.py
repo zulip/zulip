@@ -24,6 +24,7 @@ from zerver.lib.webhooks.git import (
     get_push_commits_event_message,
     get_release_event_message,
     is_branch_name_notifiable,
+    is_pull_request_comment_event,
 )
 from zerver.models import UserProfile
 
@@ -32,6 +33,10 @@ fixture_to_headers = default_fixture_to_headers("HTTP_X_GOGS_EVENT")
 
 def get_issue_url(repo_url: str, issue_nr: int) -> str:
     return f"{repo_url}/issues/{issue_nr}"
+
+
+def get_pr_url(repo_url: str, pr_nr: int) -> str:
+    return f"{repo_url}/pulls/{pr_nr}"
 
 
 def format_push_event(payload: WildValue) -> str:
@@ -133,15 +138,19 @@ def format_issue_comment_event(payload: WildValue, include_title: bool = False) 
         action = f"{action} a [comment]"
     action += "({}) on".format(comment["html_url"].tame(check_string))
 
-    return get_issue_event_message(
+    is_pr_comment = is_pull_request_comment_event(payload)
+    repo_url = payload["repository"]["html_url"].tame(check_string)
+    number = issue["number"].tame(check_int)
+    url = get_pr_url(repo_url, number) if is_pr_comment else get_issue_url(repo_url, number)
+
+    return get_pull_request_event_message(
         user_name=payload["sender"]["login"].tame(check_string),
         action=action,
-        url=get_issue_url(
-            payload["repository"]["html_url"].tame(check_string), issue["number"].tame(check_int)
-        ),
-        number=issue["number"].tame(check_int),
+        url=url,
+        number=number,
         message=comment["body"].tame(check_string),
         title=issue["title"].tame(check_string) if include_title else None,
+        type="PR" if is_pr_comment else "issue",
     )
 
 
@@ -242,7 +251,7 @@ def gogs_webhook_main(
         )
         topic_name = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=repo,
-            type="issue",
+            type="PR" if is_pull_request_comment_event(payload) else "issue",
             id=payload["issue"]["number"].tame(check_int),
             title=payload["issue"]["title"].tame(check_string),
         )
