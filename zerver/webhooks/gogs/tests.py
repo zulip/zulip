@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock, patch
 
+import orjson
+
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
 
@@ -127,6 +129,18 @@ class GogsHookTests(WebhookTestCase):
         expected_topic_name = "test / issue #3 New test issue"
         expected_message = """kostekIV [commented](https://try.gogs.io/kostekIV/test/issues/3#issuecomment-3635) on [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n``` quote\nTest comment\n```"""
         self.check_webhook("issue_comment__new", expected_topic_name, expected_message)
+
+    def test_issue_comment_in_pr(self) -> None:
+        expected_topic_name = "test / PR #3 New test issue"
+        expected_message = """kostekIV [commented](https://try.gogs.io/kostekIV/test/issues/3#issuecomment-3635) on [PR #3](https://try.gogs.io/kostekIV/test/pulls/3):\n\n``` quote\nTest comment\n```"""
+        payload = orjson.loads(self.get_body("issue_comment__new"))
+        payload["issue"]["pull_request"] = {"merged": False, "merged_at": None}
+        self.check_webhook(
+            "issue_comment__new",
+            expected_topic_name,
+            expected_message,
+            custom_payload=payload,
+        )
 
     def test_issue_comment_edited(self) -> None:
         expected_topic_name = "test / issue #3 New test issue"
