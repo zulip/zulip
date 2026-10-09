@@ -115,6 +115,84 @@ run_test("get_matching_default_date_suggestions", () => {
     assert.deepEqual(date_util.get_matching_default_date_suggestions("lkmvlckakj"), []);
 });
 
+run_test("match_date_pill_phrase", () => {
+    const today = parseISO("2026-03-31");
+    clock.setSystemTime(today.getTime());
+    const week_ago = format(subWeeks(today, 1), "yyyy-MM-dd");
+    const month_ago = format(subMonths(today, 1), "yyyy-MM-dd");
+    const today_str = format(today, "yyyy-MM-dd");
+    const yesterday_str = format(subDays(today, 1), "yyyy-MM-dd");
+
+    assert.deepEqual(date_util.match_date_pill_phrase("a week ago"), {
+        operands: [week_ago],
+        remainder: "",
+        label_consumed: true,
+    });
+    assert.deepEqual(date_util.match_date_pill_phrase("a week ago bugs"), {
+        operands: [week_ago],
+        remainder: "bugs",
+        label_consumed: true,
+    });
+    assert.deepEqual(date_util.match_date_pill_phrase("A Week Ago some search text"), {
+        operands: [week_ago],
+        remainder: "some search text",
+        label_consumed: true,
+    });
+    assert.deepEqual(date_util.match_date_pill_phrase("a week"), {
+        operands: [week_ago],
+        remainder: "",
+        label_consumed: false,
+    });
+    assert.deepEqual(date_util.match_date_pill_phrase("a w"), {
+        operands: [week_ago],
+        remainder: "",
+        label_consumed: false,
+    });
+    assert.deepEqual(date_util.match_date_pill_phrase("a"), {
+        operands: [week_ago, month_ago],
+        remainder: "",
+        label_consumed: false,
+    });
+    assert.deepEqual(date_util.match_date_pill_phrase("a m"), {
+        operands: [month_ago],
+        remainder: "",
+        label_consumed: false,
+    });
+    assert.deepEqual(date_util.match_date_pill_phrase("today extra"), {
+        operands: [today_str],
+        remainder: "extra",
+        label_consumed: true,
+    });
+    assert.deepEqual(date_util.match_date_pill_phrase("yesterday"), {
+        operands: [yesterday_str],
+        remainder: "",
+        label_consumed: true,
+    });
+    assert.deepEqual(date_util.match_date_pill_phrase("to"), {
+        operands: [today_str],
+        remainder: "",
+        label_consumed: false,
+    });
+    assert.deepEqual(date_util.match_date_pill_phrase("week ago"), {
+        operands: [week_ago],
+        remainder: "",
+        label_consumed: true,
+    });
+    assert.deepEqual(date_util.match_date_pill_phrase("month ago Bugs"), {
+        operands: [month_ago],
+        remainder: "Bugs",
+        label_consumed: true,
+    });
+    assert.equal(date_util.match_date_pill_phrase("ago"), undefined);
+    assert.equal(date_util.match_date_pill_phrase("some gibberish"), undefined);
+    assert.equal(date_util.match_date_pill_phrase("a hello"), undefined);
+    assert.equal(date_util.match_date_pill_phrase("2024-01-01 hello"), undefined);
+    assert.equal(date_util.match_date_pill_phrase(""), undefined);
+    assert.equal(date_util.match_date_pill_phrase(" ".repeat(3)), undefined);
+
+    clock.reset();
+});
+
 run_test("maybe_get_parsed_iso_8601_date", () => {
     const d1 = date_util.maybe_get_parsed_iso_8601_date("2026-03-28");
     assert.ok(isEqual(d1, parseISO("2026-03-28")));
