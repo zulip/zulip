@@ -28,6 +28,26 @@ export function initialize(): void {
         browser_history.go_to_location("settings/notifications");
     });
 
+    electron_bridge.on_event(
+        "show-download-success",
+        (title: string, description: string, download_id: string) => {
+            feedback_widget.show({
+                title_text: title,
+                populate($container) {
+                    $container.text(description);
+                    $("#feedback_container")
+                        .addClass("download-feedback-widget")
+                        .on("click", () => {
+                            electron_bridge?.send_event(
+                                "show-downloaded-file-in-folder",
+                                download_id,
+                            );
+                        });
+                },
+            });
+        },
+    );
+
     // The code below is for sending a message received from notification reply which
     // is often referred to as inline reply feature. This is done so desktop app doesn't
     // have to depend on channel.post for setting crsf_token and message_view.narrow_by_topic
