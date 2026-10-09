@@ -613,11 +613,17 @@ function should_show_topic_search_hint(search_term: string): boolean {
 }
 
 function initiate_topic_search(): void {
-    const $search_input = $<HTMLInputElement>("input.left-sidebar-search-input").expectOne();
-    const current_value = ($search_input.val() ?? "").trim();
+    const $search_input = $<HTMLDivElement>("div.left-sidebar-search-input").expectOne();
+    const current_value = ($search_input.text() ?? "").trim();
     const new_value = ui_util.TOPIC_SEARCH_PREFIX + " " + current_value;
     $search_input.val(new_value);
-    util.the($search_input).setSelectionRange(new_value.length, new_value.length);
+    const el = util.the($search_input);
+    if (el instanceof HTMLInputElement) {
+        el.setSelectionRange(new_value.length, new_value.length);
+    } else {
+        el.focus();
+    }
+    // util.the($search_input).setSelectionRange(new_value.length, new_value.length);
     $search_input.trigger("focus").trigger("input");
 }
 
@@ -901,7 +907,7 @@ export function set_event_handlers(): void {
         }
         // Clear search input so that there is no confusion
         // about which search input is active.
-        $search_input.val("");
+        $search_input.text("");
         const $nearest_link = $row.find("a").first();
         if ($nearest_link.length > 0) {
             // If the row has a link, we click it.

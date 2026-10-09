@@ -122,6 +122,7 @@ type StreamListSortResult = {
 export function sort_groups(
     all_subscribed_stream_ids: number[],
     search_term: string,
+    topics_state = "",
 ): StreamListSortResult {
     const pinned_section: StreamListSection = {
         id: "pinned-streams",
@@ -149,10 +150,14 @@ export function sort_groups(
     // channel in it, rather than filtering by name. User-defined
     // folder names get analogous treatment below.
     const show_all_channels =
-        !is_topic_search && util.prefix_match({value: normal_section.section_title, search_term});
+        !is_topic_search &&
+        !topics_state &&
+        util.prefix_match({value: normal_section.section_title, search_term});
     const include_all_pinned_channels =
         show_all_channels ||
-        (!is_topic_search && util.prefix_match({value: pinned_section.section_title, search_term}));
+        (!is_topic_search &&
+            !topics_state &&
+            util.prefix_match({value: pinned_section.section_title, search_term}));
     const search_term_prefix_matches_other_section_title =
         !is_topic_search &&
         search_term &&
@@ -165,6 +170,8 @@ export function sort_groups(
     // Use -, _, : and / as word separators apart from the default space character
     let matching_stream_ids: number[];
     if (is_topic_search) {
+        matching_stream_ids = [];
+    } else if (topics_state) {
         matching_stream_ids = [];
     } else if (show_all_channels) {
         matching_stream_ids = all_subscribed_stream_ids;
@@ -186,6 +193,10 @@ export function sort_groups(
     let channels_to_check_topic_matches: number[] = [];
     if (is_topic_search) {
         channels_to_check_topic_matches = all_subscribed_stream_ids;
+    } else if (topics_state) {
+        if (current_channel_id !== undefined && stream_data.is_subscribed(current_channel_id)) {
+            channels_to_check_topic_matches = [current_channel_id];
+        }
     } else if (current_channel_id !== undefined && stream_data.is_subscribed(current_channel_id)) {
         channels_to_check_topic_matches = [current_channel_id];
     }
@@ -198,7 +209,12 @@ export function sort_groups(
         // term, or a muted topic matches the current topic, we include
         // the channel in the list of matches.
         const topics = topic_list_data.get_filtered_topic_names(stream_id, (topic_names) =>
-            topic_list_data.filter_topics_by_search_term(stream_id, topic_names, search_term),
+            topic_list_data.filter_topics_by_search_term(
+                stream_id,
+                topic_names,
+                search_term,
+                topics_state,
+            ),
         );
         if (
             topics.some(
