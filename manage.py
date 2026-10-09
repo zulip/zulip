@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import configparser
 import os
 import sys
 from collections import defaultdict
@@ -14,7 +13,7 @@ from django.core.management import ManagementUtility, get_commands
 from django.core.management.color import color_style
 from typing_extensions import override
 
-from scripts.lib.zulip_tools import assert_not_running_as_root
+from scripts.lib.zulip_tools import assert_not_running_as_root, is_zulip_production_install
 
 
 def get_filtered_commands() -> dict[str, str]:
@@ -123,9 +122,7 @@ if __name__ == "__main__":
     else:
         assert_not_running_as_root()
 
-    config_file = configparser.RawConfigParser()
-    config_file.read("/etc/zulip/zulip.conf")
-    PRODUCTION = config_file.has_option("machine", "deploy_type")
+    PRODUCTION = is_zulip_production_install()
     HAS_SECRETS = os.access("/etc/zulip/zulip-secrets.conf", os.R_OK)
 
     if PRODUCTION and not HAS_SECRETS:
