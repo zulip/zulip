@@ -541,6 +541,24 @@ subsystem (`postfix`, `setup-certbot`, `nginx`, `S3`, the email
 gateway). Slightly more admin-facing detail than major-release
 entries.
 
+**Describe the effect, at the length the maintainers use.** A
+typical entry is one clause of about ten words: what a user or
+administrator would have seen. Leave out how the bug happened and
+how it was fixed. Leave out internal names (migration numbers,
+function, field, and Puppet resource names); keep a setting,
+command, or file name only when an administrator has to type or
+recognize it. Don't list every case an entry covers ("including
+A, B, and C"); say "several". Don't add a second sentence about
+what the code does now. Being brief never justifies a broader
+claim: when the short version would overstate what changed,
+narrow it rather than lengthen it. Write each entry other than a
+CVE entry as one clause saying what a user or administrator saw
+(e.g., "Fixed X." or "Improved Y."). Add a second clause only to
+say which installations are affected or what an administrator
+must do. Before you finish, put your entries next to the previous
+maintenance release's section in the changelog, and shorten any
+that are clearly longer than the entries there.
+
 Upgrade notes are rare in maintenance releases (backports usually
 preserve compatibility) but possible. Apply Step 6's commands; expect
 zero hits most of the time.
