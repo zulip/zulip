@@ -119,13 +119,24 @@ installation method described here. We require version 0.67.6+ of WSL 2.
    which includes installing an Ubuntu WSL distribution.
 
 1. **Create a new WSL instance for Zulip development**.
-   You can refer [this article](https://cloudbytes.dev/snippets/how-to-install-multiple-instances-of-ubuntu-in-wsl2)
-   for instructions on how to do so. Using an existing instance will
+   You can create a dedicated WSL instance with the following command:
+
+   ```console
+   wsl --install Ubuntu --name zulip
+   ```
+
+   To login to that instance, if using [Windows Terminal](https://learn.microsoft.com/en-us/windows/terminal/install), select it from the new tab dropdown, or run this Windows command:
+
+   ```console
+   wsl -d zulip
+   ```
+
+   Using an existing instance will
    probably work, but a fresh distribution is recommended if you
    previously installed other software like `node` in your WSL environment that
    might conflict with the Zulip environment.
 
-1. It is required to enable `systemd` for WSL 2 to manage the database, cache and other services.
+1. It is required to enable `systemd` for WSL 2 to manage the database, cache and other services. (This is the default setting since the [Ubuntu 23.04 release](https://canonical.com/blog/ubuntu-desktop-23-04-release-roundup#:~:text=Systemd%20becomes%20the%20default%20for%20Ubuntu%20on%20WSL))
    To configure it, please follow [these instructions](https://learn.microsoft.com/en-us/windows/wsl/wsl-config#systemd-support).
    Then, you will need to restart WSL 2 before continuing.
 
@@ -169,7 +180,7 @@ installation method described here. We require version 0.67.6+ of WSL 2.
 1. [Create a new SSH key][create-ssh-key] for the WSL 2 virtual
    machine and add it to your GitHub account. Note that SSH keys
    linked to your Windows computer will not work within the virtual
-   machine.
+   machine without additional configuration not covered in this guide.
 
 WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 
