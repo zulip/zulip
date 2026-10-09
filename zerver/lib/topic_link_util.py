@@ -4,7 +4,7 @@
 
 import re
 
-from zerver.lib.url_encoding import encode_channel, encode_hash_component
+from zerver.lib.url_encoding import encode_channel, encode_hash_component, stream_message_url
 from zerver.models.messages import Message
 
 invalid_stream_topic_regex = re.compile(r"[`>*&\[\]]|(\$\$)")
@@ -14,6 +14,9 @@ def will_produce_broken_stream_topic_link(word: str) -> bool:
     return bool(invalid_stream_topic_regex.search(word))
 
 
+# How a #**channel>topic** link syntax displays once rendered. The
+# Markdown processor doesn't turn this text into a link, so it can be
+# the text of a Markdown link to a different URL.
 TOPIC_LINK_SYNTAX_FOR_DISPLAY = "#{channel_name} > {topic_name}"
 
 escape_mapping = {
@@ -99,6 +102,29 @@ def get_stream_topic_link_syntax(stream_id: int, stream_name: str, topic_name: s
     ):
         return get_fallback_markdown_link(stream_id, stream_name, topic_name)
     return f"#**{stream_name}>{topic_name}**"
+
+
+def get_stream_topic_conversation_link(
+    stream_id: int, stream_name: str, topic_name: str, message_id: int
+) -> str:
+    # A #**stream>topic** syntax links to the latest message in the
+    # topic, so to link to the topic with a specific message, we use a
+    # Markdown link with that syntax's display text.
+    url = stream_message_url(
+        realm=None,
+        message={
+            "id": message_id,
+            "stream_id": stream_id,
+            "display_recipient": stream_name,
+            "topic": topic_name,
+        },
+        conversation_link=True,
+    )
+    escape = escape_invalid_stream_topic_characters
+    text = TOPIC_LINK_SYNTAX_FOR_DISPLAY.format(
+        channel_name=escape(stream_name), topic_name=escape(topic_name)
+    )
+    return f"[{text}]({url})"
 
 
 def get_stream_link_syntax(stream_id: int, stream_name: str) -> str:

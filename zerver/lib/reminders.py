@@ -16,12 +16,9 @@ from zerver.lib.markdown.fenced_code import get_unused_fence
 from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.lib.message import get_user_mentions_for_display, truncate_content
 from zerver.lib.message_cache import MessageDict
-from zerver.lib.topic_link_util import (
-    TOPIC_LINK_SYNTAX_FOR_DISPLAY,
-    escape_invalid_stream_topic_characters,
-)
+from zerver.lib.topic_link_util import get_stream_topic_conversation_link
 from zerver.lib.types import UserDisplayRecipient
-from zerver.lib.url_encoding import message_link_url, stream_message_url
+from zerver.lib.url_encoding import message_link_url
 from zerver.models import Message, Stream, UserProfile
 from zerver.models.scheduled_jobs import ScheduledMessage
 from zerver.tornado.django_api import send_event_on_commit
@@ -64,21 +61,6 @@ def get_reminder_formatted_content(
             id=message.recipient.type_id,
             realm=current_user.realm,
         )
-        url = stream_message_url(
-            realm=None,
-            message={
-                "id": message.id,
-                "stream_id": stream.id,
-                "display_recipient": stream.name,
-                "topic": message.topic_name(),
-            },
-            conversation_link=True,
-        )
-        escape = escape_invalid_stream_topic_characters
-        topic_pretty_link = TOPIC_LINK_SYNTAX_FOR_DISPLAY.format(
-            channel_name=escape(stream.name),
-            topic_name=escape(message.topic_name()),
-        )
         if note:
             content = _(
                 "You requested a reminder for the following message. Note:\n > {note}"
@@ -92,7 +74,9 @@ def get_reminder_formatted_content(
         context = dict(
             user_silent_mention=user_silent_mention,
             conversation_url=conversation_url,
-            topic_pretty_link=f"[{topic_pretty_link}]({url})",
+            topic_pretty_link=get_stream_topic_conversation_link(
+                stream.id, stream.name, message.topic_name(), message.id
+            ),
         )
     else:
         if note:
