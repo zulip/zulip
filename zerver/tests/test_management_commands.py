@@ -559,6 +559,7 @@ class TestExport(ZulipTestCase):
                 percent_callback=mock.ANY,
                 upload=False,
                 export_as_active=None,
+                remove_files_while_archiving=False,
             )
 
         self.assertEqual(

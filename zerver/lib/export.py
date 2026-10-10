@@ -2555,6 +2555,7 @@ def do_export_realm(
     export_type: int,
     exportable_user_ids: set[int] | None = None,
     export_as_active: bool | None = None,
+    remove_files_while_archiving: bool = False,
 ) -> tuple[str, dict[str, int | dict[str, int]]]:
     response: TableData = {}
     if exportable_user_ids is not None:
@@ -2658,14 +2659,18 @@ def do_export_realm(
 
     logging.info("Compressing tarball...")
     tarball_path = output_dir.rstrip("/") + ".tar.gz"
-    subprocess.check_call(
-        [
-            "tar",
-            f"-czf{tarball_path}",
-            f"-C{os.path.dirname(output_dir)}",
-            os.path.basename(output_dir),
-        ]
-    )
+    tar_args = [
+        "tar",
+        f"-czf{tarball_path}",
+        f"-C{os.path.dirname(output_dir)}",
+        os.path.basename(output_dir),
+    ]
+    if remove_files_while_archiving:
+        # Deletes each file, and finally output_dir itself, once it
+        # has been added to the tarball, so that we don't need disk
+        # space for two copies of the export.
+        tar_args.append("--remove-files")
+    subprocess.check_call(tar_args)
     return tarball_path, stats
 
 
@@ -3120,6 +3125,7 @@ def export_realm_wrapper(
     upload: bool,
     percent_callback: Callable[[Any], None] | None = None,
     export_as_active: bool | None = None,
+    remove_files_while_archiving: bool = False,
 ) -> str | None:
     try:
         export_row.status = RealmExport.STARTED
@@ -3137,6 +3143,7 @@ def export_realm_wrapper(
             export_type=export_row.type,
             export_as_active=export_as_active,
             exportable_user_ids=exportable_user_ids,
+            remove_files_while_archiving=remove_files_while_archiving,
         )
 
         RealmAuditLog.objects.create(
@@ -3147,7 +3154,8 @@ def export_realm_wrapper(
             extra_data={"realm_export_id": export_row.id},
         )
 
-        shutil.rmtree(output_dir)
+        if not remove_files_while_archiving:
+            shutil.rmtree(output_dir)
         print(f"Tarball written to {tarball_path}")
 
         print("Calculating SHA-256 checksum of tarball...")
