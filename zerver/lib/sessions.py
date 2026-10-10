@@ -51,7 +51,14 @@ def delete_user_sessions(user_profile: UserProfile) -> None:
     for session in Session.objects.all().iterator():
         if get_session_user_id(session) == user_profile.id:
             delete_session(session)
+            
 
+def delete_other_user_sessions(
+    user_profile: UserProfile, current_session_key: str
+) -> None:
+    for session in user_sessions(user_profile):
+        if session.session_key != current_session_key:
+            delete_session(session)
 
 def delete_realm_user_sessions(realm: Realm) -> None:
     realm_user_ids = set(UserProfile.objects.filter(realm=realm).values_list("id", flat=True))

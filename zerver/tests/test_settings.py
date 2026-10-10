@@ -7,6 +7,7 @@ import orjson
 from django.http import HttpRequest
 from django.test import override_settings
 
+from zerver.lib.sessions import user_sessions
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
@@ -792,6 +793,47 @@ class UserChangesTest(ZulipTestCase):
             get_user_profile_by_api_key(old_api_key)
 
         self.assertEqual(get_user_profile_by_api_key(user.api_key).email, email)
+    def test_logout_other_sessions(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+
+        current_session_key = self.client.session.session_key
+
+        other_client = self.client_class()
+        request = HttpRequest()
+        request.session = other_client.session
+
+        self.assertTrue(
+            other_client.login(
+                request=request,
+                username=user.delivery_email,
+                password=initial_password(user.delivery_email),
+                realm=user.realm,
+            )
+        )
+        other_session_key = other_client.session.session_key
+        self.assertNotEqual(current_session_key, other_session_key)
+
+        result = self.client_post("/json/users/me/sessions/logout_others")
+        self.assert_json_success(result)
+
+        self.assert_logged_in_user_id(user.id)
+        remaining_sessions = user_sessions(user)
+        self.assertEqual(
+            [session.session_key for session in remaining_sessions],
+            [current_session_key],
+        )
+        self.assertNotIn(
+            other_session_key,
+            [session.session_key for session in remaining_sessions],
+        )
+
+        result = other_client.get("/")
+        self.assertNotEqual(result.status_code, 200)
+
+        self.logout()
+        result = self.client_post("/json/users/me/sessions/logout_others")
+        self.assertEqual(result.status_code, 401)
 
 
 class UserDraftSettingsTests(ZulipTestCase):

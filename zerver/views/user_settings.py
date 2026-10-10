@@ -72,6 +72,8 @@ from zerver.lib.user_groups import (
     user_group_ids_to_user_groups,
 )
 from zerver.lib.users import user_ids_to_users
+from zerver.lib.sessions import delete_other_user_sessions
+
 from zerver.models import EmailChangeStatus, RealmAuditLog, UserBaseSettings, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import avatar_changes_disabled, name_changes_disabled
@@ -587,6 +589,18 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
     )
     return json_success(request, data=json_result)
 
+
+@human_users_only
+@require_post
+@typed_endpoint_without_parameters
+def logout_other_sessions(
+    request: HttpRequest, user_profile: UserProfile
+) -> HttpResponse:
+    current_session_key = request.session.session_key
+    assert current_session_key is not None
+
+    delete_other_user_sessions(user_profile, current_session_key)
+    return json_success(request)
 
 # We don't use @human_users_only here, because there are use cases for
 # a bot regenerating its own API key.
