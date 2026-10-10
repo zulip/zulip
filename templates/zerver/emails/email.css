@@ -226,7 +226,8 @@ p.digest_paragraph,
 
 /* CSS for digest email content. */
 .messages {
-    width: 600px;
+    max-width: 600px;
+    width: 100%;
     font-size: 12px;
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     overflow-y: auto;
@@ -250,8 +251,212 @@ p.digest_paragraph,
 }
 
 .hot_convo_message_content_block {
-    padding-left: 6px;
+    padding: 4px 6px;
     font-weight: normal;
+    line-height: 1.4;
+    overflow-wrap: break-word;
+}
+
+/* Markdown styling inside digest email message blocks. Adapted
+   from rendered_markdown.css using email-safe styles and hex colors. */
+.hot_convo_message_content_block p {
+    margin: 0 0 5px;
+}
+
+.hot_convo_message_content_block p + p {
+    margin-top: 10px;
+}
+
+.hot_convo_message_content_block p:last-child {
+    margin-bottom: 0;
+}
+
+.hot_convo_message_content_block h1,
+.hot_convo_message_content_block h2,
+.hot_convo_message_content_block h3,
+.hot_convo_message_content_block h4,
+.hot_convo_message_content_block h5,
+.hot_convo_message_content_block h6 {
+    font-weight: 600;
+    line-height: 1.4;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.hot_convo_message_content_block h1:first-child,
+.hot_convo_message_content_block h2:first-child,
+.hot_convo_message_content_block h3:first-child,
+.hot_convo_message_content_block h4:first-child,
+.hot_convo_message_content_block h5:first-child,
+.hot_convo_message_content_block h6:first-child {
+    margin-top: 0;
+}
+
+.hot_convo_message_content_block h1 {
+    font-size: 1.4em;
+}
+
+.hot_convo_message_content_block h2 {
+    font-size: 1.3em;
+}
+
+.hot_convo_message_content_block h3 {
+    font-size: 1.2em;
+}
+
+.hot_convo_message_content_block h4 {
+    font-size: 1.1em;
+}
+
+.hot_convo_message_content_block h5 {
+    font-size: 1.05em;
+}
+
+.hot_convo_message_content_block h6 {
+    font-size: 1em;
+}
+
+.hot_convo_message_content_block strong,
+.hot_convo_message_content_block b {
+    font-weight: 600;
+}
+
+.hot_convo_message_content_block em,
+.hot_convo_message_content_block i {
+    font-style: italic;
+}
+
+.hot_convo_message_content_block ul,
+.hot_convo_message_content_block ol {
+    margin: 0 0 5px;
+    padding-left: 20px;
+}
+
+.hot_convo_message_content_block ul ul,
+.hot_convo_message_content_block ul ol,
+.hot_convo_message_content_block ol ul,
+.hot_convo_message_content_block ol ol {
+    margin: 2px 0;
+    padding-left: 20px;
+}
+
+.hot_convo_message_content_block li {
+    margin-bottom: 2px;
+}
+
+.hot_convo_message_content_block li:last-child {
+    margin-bottom: 0;
+}
+
+.hot_convo_message_content_block blockquote {
+    margin: 0 0 5px;
+    padding: 0 0 0 8px;
+    border-left: 3px solid #ccc;
+    color: #555;
+}
+
+.hot_convo_message_content_block blockquote p {
+    margin: 0 0 5px;
+}
+
+.hot_convo_message_content_block blockquote p:last-child {
+    margin-bottom: 0;
+}
+
+.hot_convo_message_content_block code {
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    font-size: 11px;
+    white-space: pre-wrap;
+    padding: 1px 3px;
+    color: #222;
+    background-color: #f0f0f0;
+    border-radius: 3px;
+}
+
+.hot_convo_message_content_block pre {
+    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    font-size: 11px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    word-break: break-all;
+    margin: 0 0 5px;
+    padding: 5px 7px;
+    border-radius: 4px;
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    color: #222;
+}
+
+.hot_convo_message_content_block pre code {
+    font-size: inherit;
+    padding: 0;
+    white-space: inherit;
+    background-color: transparent;
+    color: inherit;
+    border: 0;
+    border-radius: 0;
+}
+
+.hot_convo_message_content_block .codehilite {
+    margin: 0 0 5px;
+    background: none;
+}
+
+.hot_convo_message_content_block .codehilite pre {
+    margin: 0;
+}
+
+.hot_convo_message_content_block a {
+    color: #08c;
+    text-decoration: underline;
+    overflow-wrap: break-word;
+}
+
+.hot_convo_message_content_block table {
+    border-collapse: collapse;
+    margin: 0 0 5px;
+    font-size: 11px;
+    max-width: 100%;
+}
+
+.hot_convo_message_content_block th,
+.hot_convo_message_content_block td {
+    border: 1px solid #ccc;
+    padding: 4px 6px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.hot_convo_message_content_block thead {
+    background-color: #ededed;
+}
+
+.hot_convo_message_content_block th {
+    font-weight: 600;
+}
+
+.hot_convo_message_content_block .user-mention,
+.hot_convo_message_content_block .user-group-mention,
+.hot_convo_message_content_block .topic-mention {
+    background-color: #e8e8e8;
+    padding: 0 3px;
+    border-radius: 3px;
+}
+
+.hot_convo_message_content_block .alert-word {
+    background-color: #ffe082;
+}
+
+.hot_convo_message_content_block .spoiler-title {
+    font-style: italic;
+    color: #666;
+}
+
+.hot_convo_message_content_block hr {
+    border: 0;
+    border-top: 1px solid #ddd;
+    margin: 8px 0;
 }
 
 /* Text and link colors for missed-message emails. */
@@ -310,6 +515,11 @@ p.digest_paragraph,
         border-left-width: 0 !important;
         border-radius: 0 !important;
         border-right-width: 0 !important;
+    }
+
+    .messages {
+        width: 100% !important;
+        max-width: 100% !important;
     }
 }
 
