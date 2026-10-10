@@ -589,12 +589,15 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
     return json_success(request, data=json_result)
 
 
-@human_users_only
 @require_post
 @typed_endpoint_without_parameters
 def logout_other_sessions(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     current_session_key = request.session.session_key
-    assert current_session_key is not None
+
+    # API-key authentication does not have a browser session to preserve.
+    # In that case, leave existing browser sessions untouched.
+    if current_session_key is None:
+        return json_success(request)
 
     delete_other_user_sessions(user_profile, current_session_key)
     return json_success(request)
