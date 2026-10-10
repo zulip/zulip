@@ -90,3 +90,14 @@ class AzuredevopsHookTests(WebhookTestCase):
         expected_topic_name = "test-zulip / PR #2 Raised 2nd PR!"
         expected_message = "Yuro Itaki updated [PR #2 Raised 2nd PR!](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/pullrequest/2)\n\n``` quote\nYuro Itaki updated the source branch of [pull request 2](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/pullrequest/2) (Raised 2nd PR!) in [test-zulip](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/)\r\nRaised 2nd PR!\r\n\n```"
         self.check_webhook("code_pull_request__updated", expected_topic_name, expected_message)
+
+    def test_event_filtering(self) -> None:
+        expected_topic_name = "test-zulip / PR #1 Add PR request"
+        expected_message = "Yuro Itaki created [PR #1 Add PR request](https://dev.azure.com/ttchong/test-zulip/_git/test-zulip/pullrequest/1) from `dev` to `main`:\n\n``` quote\nAdd PR request\n```"
+
+        self.url = f'{self.build_webhook_url()}&only_events=["git.pullrequest.created"]'
+        self.check_webhook("code_pull_request__opened", expected_topic_name, expected_message)
+        self.check_webhook("code_push", expect_noop=True)
+
+        self.url = f'{self.build_webhook_url()}&exclude_events=["git.pullrequest.*"]'
+        self.check_webhook("code_pull_request__opened", expect_noop=True)
