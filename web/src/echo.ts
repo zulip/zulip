@@ -36,6 +36,7 @@ import * as stream_list from "./stream_list.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import type * as transmit from "./transmit.ts";
 import type {TopicLink} from "./types.ts";
+import * as user_groups from "./user_groups.ts";
 import * as util from "./util.ts";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -338,6 +339,14 @@ export let try_deliver_locally = (
     }
 
     if (is_slash_command(message_request.content)) {
+        return undefined;
+    }
+
+    if (
+        markdown
+            .get_user_group_mentions(message_request.content)
+            .some((name) => user_groups.is_user_group_mention_disallowed(name))
+    ) {
         return undefined;
     }
 

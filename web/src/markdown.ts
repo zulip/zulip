@@ -53,6 +53,14 @@ export function contains_backend_only_syntax(content: string): boolean {
     return contains_preview_link(content) || contains_topic_wildcard_mention(content);
 }
 
+export function get_user_group_mentions(content: string): string[] {
+    // Match the boundaries in BEFORE_MENTION_ALLOWED_REGEX on the server.
+    // Look ahead so malformed syntax cannot consume a later mention.
+    // Code blocks and escaped text may also match; the server validates mentions.
+    const group_mentions = content.matchAll(/(?<![^\s'"({[/<])(?=@\*([^*]+)\*)/g);
+    return Array.from(group_mentions, (match) => match[1]!);
+}
+
 export let web_app_helpers: MarkdownHelpers | undefined;
 
 export type AbstractMap<K, V> = {

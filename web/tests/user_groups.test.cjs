@@ -2048,3 +2048,37 @@ run_test("get_associated_subgroups_bad_subgroup", () => {
     blueslip.expect("error", "Could not find subgroup");
     assert.deepEqual(user_groups.get_associated_subgroups(group_obj, 10), []);
 });
+
+run_test("is_user_group_mention_disallowed", () => {
+    user_groups.init();
+    set_current_user({user_id: 5});
+    const permission_group = user_groups.add(make_user_group({members: [5]}));
+    user_groups.add(
+        make_user_group({
+            name: "Allowed",
+            can_mention_group: {direct_members: [5], direct_subgroups: []},
+        }),
+    );
+    user_groups.add(
+        make_user_group({
+            name: "Restricted",
+            can_mention_group: {direct_members: [], direct_subgroups: []},
+        }),
+    );
+    user_groups.add(
+        make_user_group({name: "Named permission", can_mention_group: permission_group.id}),
+    );
+    user_groups.add(
+        make_user_group({
+            name: "Subgroup permission",
+            can_mention_group: {direct_members: [], direct_subgroups: [permission_group.id]},
+        }),
+    );
+    assert.equal(user_groups.is_user_group_mention_disallowed("Allowed"), false);
+    assert.equal(user_groups.is_user_group_mention_disallowed("Restricted"), true);
+    assert.equal(user_groups.is_user_group_mention_disallowed("RESTRICTED"), true);
+    assert.equal(user_groups.is_user_group_mention_disallowed("Unknown"), false);
+    assert.equal(user_groups.is_user_group_mention_disallowed("Named permission"), false);
+    assert.equal(user_groups.is_user_group_mention_disallowed("Subgroup permission"), false);
+    user_groups.init();
+});

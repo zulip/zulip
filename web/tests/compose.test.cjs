@@ -42,6 +42,8 @@ const compose_notifications = mock_esm("../src/compose_notifications");
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
 const loading = mock_esm("../src/loading");
 const markdown = mock_esm("../src/markdown");
+const local_message = mock_esm("../src/local_message");
+const message_events = mock_esm("../src/message_events");
 const narrow_state = mock_esm("../src/narrow_state");
 const rendered_markdown = mock_esm("../src/rendered_markdown");
 const resize = mock_esm("../src/resize");
@@ -65,6 +67,7 @@ const compose = zrequire("compose");
 const compose_setup = zrequire("compose_setup");
 const drafts = zrequire("drafts");
 const echo = zrequire("echo");
+
 const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
 const stream_data = zrequire("stream_data");
@@ -258,6 +261,7 @@ test_ui("send_message_success", ({override, override_rewire}) => {
 
 test_ui("send_message", ({override, override_rewire, mock_template}) => {
     mock_banners();
+    const original_try_deliver_locally = echo.try_deliver_locally;
     clock.setSystemTime(new Date(fake_now * 1000));
 
     const fake_compose_box = new FakeComposeBox();
@@ -415,6 +419,79 @@ test_ui("send_message", ({override, override_rewire, mock_template}) => {
         assert.ok(!echo_error_msg_checked);
         assert.ok(banner_rendered);
         assert.equal(fake_compose_box.textarea_val(), "default message");
+        assert.ok(fake_compose_box.is_textarea_focused());
+        assert.ok(!fake_compose_box.is_submit_button_spinner_visible());
+    })();
+
+    (function test_disallowed_group_mention_server_error() {
+        stub_state = initialize_state_stub_dict();
+        fake_compose_box.reset();
+        user_groups.add(
+            make_user_group({
+                name: "restricted",
+                can_mention_group: {direct_members: [], direct_subgroups: []},
+            }),
+        );
+        override(realm, "realm_direct_message_initiator_group", everyone.id);
+        override(markdown, "contains_backend_only_syntax", () => false);
+        override(markdown, "get_user_group_mentions", (content) => {
+            assert.ok(["Hello @*allowed*", "Hello @*restricted*"].includes(content));
+            return content === "Hello @*allowed*" ? ["allowed"] : ["restricted"];
+        });
+        override_rewire(echo, "try_deliver_locally", original_try_deliver_locally);
+
+        user_groups.add(
+            make_user_group({
+                name: "allowed",
+                can_mention_group: {direct_members: [new_user.user_id], direct_subgroups: []},
+            }),
+        );
+        let reserved_local_ids = 0;
+        override(local_message, "get_next_id_float", () => {
+            reserved_local_ids += 1;
+            return 123.04;
+        });
+        let inserted_messages = 0;
+        override(message_events, "insert_new_messages", ({raw_messages}) => {
+            inserted_messages += raw_messages.length;
+            return raw_messages;
+        });
+        fake_compose_box.set_textarea_val("Hello @*allowed*");
+        let allowed_message_sent = false;
+        override(transmit, "send_message", (payload, success) => {
+            assert.equal(payload.content, "Hello @*allowed*");
+            assert.equal(payload.locally_echoed, true);
+            allowed_message_sent = true;
+            success({...payload, id: 127});
+        });
+        compose.send_message();
+        assert.equal(allowed_message_sent, true);
+        assert.equal(reserved_local_ids, 1);
+        assert.equal(inserted_messages, 1);
+        assert.equal(fake_compose_box.textarea_val(), "");
+
+        fake_compose_box.reset();
+        fake_compose_box.set_textarea_val("Hello @*restricted*");
+        const server_error = "You are not allowed to mention user group 'restricted'.";
+        let banner_rendered = false;
+        mock_template("compose_banner/compose_banner.hbs", false, (data) => {
+            assert.equal(data.classname, "generic_compose_error");
+            assert.equal(data.banner_text, server_error);
+            banner_rendered = true;
+            return "<banner-stub>";
+        });
+        override(transmit, "send_message", (payload, _success, error) => {
+            assert.equal(payload.content, "Hello @*restricted*");
+            assert.equal(payload.locally_echoed, false);
+            error(server_error, "BAD_REQUEST");
+        });
+
+        compose.send_message();
+
+        assert.ok(banner_rendered);
+        assert.equal(reserved_local_ids, 1);
+        assert.equal(inserted_messages, 1);
+        assert.equal(fake_compose_box.textarea_val(), "Hello @*restricted*");
         assert.ok(fake_compose_box.is_textarea_focused());
         assert.ok(!fake_compose_box.is_submit_button_spinner_visible());
     })();
