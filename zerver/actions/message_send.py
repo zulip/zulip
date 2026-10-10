@@ -2145,6 +2145,7 @@ def internal_prep_stream_message(
     forged_timestamp: float | None = None,
     archived_channel_notice: bool = False,
     acting_user: UserProfile | None = None,
+    mention_backend: MentionBackend | None = None,
 ) -> SendMessageRequest | None:
     """
     See _internal_prep_message for details of how this works.
@@ -2164,6 +2165,7 @@ def internal_prep_stream_message(
         forged_timestamp=forged_timestamp,
         archived_channel_notice=archived_channel_notice,
         acting_user=acting_user,
+        mention_backend=mention_backend,
     )
 
 
@@ -2249,6 +2251,7 @@ def internal_send_stream_message(
     mark_as_read_for_acting_user: bool = False,
     archived_channel_notice: bool = False,
     acting_user: UserProfile | None = None,
+    mention_backend: MentionBackend | None = None,
 ) -> int | None:
     message_request = internal_prep_stream_message(
         sender,
@@ -2260,6 +2263,7 @@ def internal_send_stream_message(
         limit_unread_user_ids=limit_unread_user_ids,
         archived_channel_notice=archived_channel_notice,
         acting_user=acting_user,
+        mention_backend=mention_backend,
     )
 
     if message_request is None:

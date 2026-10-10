@@ -23,7 +23,7 @@ from zerver.lib.streams import (
 )
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.test_helpers import queries_captured
-from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, get_latest_message_for_user_in_topic
 from zerver.lib.types import UserGroupMembersData
 from zerver.lib.url_encoding import stream_message_url
 from zerver.lib.user_groups import UserGroupMembershipDetails
@@ -745,6 +745,55 @@ class MessageMoveStreamTest(ZulipTestCase):
         )
 
     def test_move_message_to_stream_change_one(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test"
+        )
+
+        with mock.patch(
+            "zerver.lib.mention.get_latest_message_for_user_in_topic",
+            wraps=get_latest_message_for_user_in_topic,
+        ) as get_latest_message:
+            result = self.client_patch(
+                "/json/messages/" + str(msg_id_later),
+                {
+                    "stream_id": new_stream.id,
+                    "propagate_mode": "change_one",
+                    "send_notification_to_old_thread": "true",
+                },
+            )
+
+        self.assert_json_success(result)
+
+        destination_topic_queries = [
+            call
+            for call in get_latest_message.call_args_list
+            if call.args[2] == new_stream.recipient_id and call.args[3] == "test"
+        ]
+        self.assertEqual(destination_topic_queries, [])
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assert_length(messages, 3)
+        self.assertEqual(messages[0].id, msg_id)
+        self.assertEqual(
+            messages[2].content,
+            f"A message was moved from this topic to #**new stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        message = {
+            "id": msg_id_later,
+            "stream_id": new_stream.id,
+            "display_recipient": new_stream.name,
+            "topic": "test",
+        }
+        moved_message_link = stream_message_url(messages[1].realm, message)
+        self.assert_length(messages, 2)
+        self.assertEqual(messages[0].id, msg_id_later)
+        self.assertEqual(
+            messages[1].content,
+            f"[A message]({moved_message_link}) was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**.",
+        )
+
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
         )
@@ -1622,7 +1671,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(59), self.assert_memcached_count(19):
+        with self.assert_database_query_count(57), self.assert_memcached_count(19):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
