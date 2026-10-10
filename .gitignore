@@ -90,3 +90,8 @@ core
 ## Miscellaneous
 # (Ideally this section is empty.)
 .transifexrc
+
+# Docker local environment
+/.env
+/.env.*
+!/.env.example

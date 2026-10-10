@@ -1,0 +1,123 @@
+services:
+  database:
+    image: zulip/zulip-postgresql:14
+    restart: unless-stopped
+    secrets:
+      - zulip__postgres_password
+    environment:
+      POSTGRES_DB: zulip
+      POSTGRES_USER: zulip
+      POSTGRES_PASSWORD_FILE: /run/secrets/zulip__postgres_password
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+
+  memcached:
+    image: memcached:alpine
+    restart: unless-stopped
+    command:
+      - sh
+      - -euc
+      - |
+        echo 'mech_list: plain' > "$$SASL_CONF_PATH"
+        echo "zulip@$$HOSTNAME:$$(cat $$MEMCACHED_PASSWORD_FILE)" > "$$MEMCACHED_SASL_PWDB"
+        echo "zulip@localhost:$$(cat $$MEMCACHED_PASSWORD_FILE)" >> "$$MEMCACHED_SASL_PWDB"
+        exec memcached -S
+    secrets:
+      - zulip__memcached_password
+    environment:
+      SASL_CONF_PATH: /home/memcache/memcached.conf
+      MEMCACHED_SASL_PWDB: /home/memcache/memcached-sasl-db
+      MEMCACHED_PASSWORD_FILE: /run/secrets/zulip__memcached_password
+
+  rabbitmq:
+    image: rabbitmq:4.2
+    restart: unless-stopped
+    command:
+      - sh
+      - -euc
+      - |
+        export RABBITMQ_DEFAULT_PASS="$$(cat $$RABBITMQ_PASSWORD_FILE)"
+        echo "default_user = $$RABBITMQ_DEFAULT_USER" >> /etc/rabbitmq/rabbitmq.conf
+        echo "default_pass = $$RABBITMQ_DEFAULT_PASS" >> /etc/rabbitmq/rabbitmq.conf
+        exec docker-entrypoint.sh rabbitmq-server
+    secrets:
+      - zulip__rabbitmq_password
+    environment:
+      RABBITMQ_DEFAULT_USER: zulip
+      RABBITMQ_PASSWORD_FILE: /run/secrets/zulip__rabbitmq_password
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    command:
+      - sh
+      - -euc
+      - |
+        exec redis-server --requirepass "$$(cat $$REDIS_PASSWORD_FILE)"
+    secrets:
+      - zulip__redis_password
+    environment:
+      REDIS_PASSWORD_FILE: /run/secrets/zulip__redis_password
+    volumes:
+      - redis-data:/data
+
+  zulip:
+    image: zulip-unal:12.3
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "443:443"
+    secrets:
+      - zulip__postgres_password
+      - zulip__memcached_password
+      - zulip__rabbitmq_password
+      - zulip__redis_password
+      - zulip__secret_key
+      - zulip__email_password
+    environment:
+      SETTING_REMOTE_POSTGRES_HOST: database
+      SETTING_MEMCACHED_LOCATION: memcached:11211
+      SETTING_RABBITMQ_HOST: rabbitmq
+      SETTING_REDIS_HOST: redis
+
+      SETTING_EXTERNAL_HOST: localhost.localdomain
+      SETTING_ZULIP_ADMINISTRATOR: admin@example.com
+
+      CERTIFICATES: "self-signed"
+
+      CONFIG_application_server__queue_workers_multiprocess: "false"
+    volumes:
+      - zulip-data:/data
+    ulimits:
+      nofile:
+        soft: 1000000
+        hard: 1048576
+    depends_on:
+      - database
+      - memcached
+      - rabbitmq
+      - redis
+
+secrets:
+  zulip__postgres_password:
+    environment: ZULIP__POSTGRES_PASSWORD
+  zulip__memcached_password:
+    environment: ZULIP__MEMCACHED_PASSWORD
+  zulip__rabbitmq_password:
+    environment: ZULIP__RABBITMQ_PASSWORD
+  zulip__redis_password:
+    environment: ZULIP__REDIS_PASSWORD
+  zulip__secret_key:
+    environment: ZULIP__SECRET_KEY
+  zulip__email_password:
+    environment: ZULIP__EMAIL_PASSWORD
+
+volumes:
+  zulip-data:
+  postgresql-data:
+  rabbitmq-data:
+  redis-data:
