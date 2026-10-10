@@ -244,6 +244,15 @@ test("update_property", ({override, override_rewire}) => {
         assert.equal($checkbox.prop("checked"), true);
     }
 
+    // Test demote resolved topics
+    {
+        override(stream_list, "update_streams_sidebar", noop);
+        stream_events.update_property(stream_id, "demote_resolved_topics", true);
+        assert.equal(sub.demote_resolved_topics, true);
+        $checkbox = checkbox_for("demote_resolved_topics");
+        assert.equal($checkbox.prop("checked"), true);
+    }
+
     // Test change in stream active status
     {
         let sidebar_updated_for_stream_active_status = false;

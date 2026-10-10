@@ -207,6 +207,7 @@ class RawSubscriptionDict(TypedDict):
     active: bool
     audible_notifications: bool | None
     color: str
+    demote_resolved_topics: bool
     desktop_notifications: bool | None
     email_notifications: bool | None
     is_muted: bool
@@ -239,6 +240,7 @@ class SubscriptionStreamDict(TypedDict):
     creator_id: int | None
     date_created: int
     default_push_notifications: bool
+    demote_resolved_topics: bool
     description: str
     desktop_notifications: bool | None
     email_notifications: bool | None

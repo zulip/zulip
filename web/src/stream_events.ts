@@ -59,11 +59,16 @@ function update_stream_setting(
         | "email_notifications"
         | "wildcard_mentions_notify"
         | "pin_to_top"
+        | "demote_resolved_topics"
         | "is_recently_active",
 ): void {
     const $setting_checkbox = $(`#${CSS.escape(setting)}_${CSS.escape(sub.stream_id.toString())}`);
     $setting_checkbox.prop("checked", value);
-    if (setting === "pin_to_top" || setting === "is_recently_active") {
+    if (
+        setting === "pin_to_top" ||
+        setting === "demote_resolved_topics" ||
+        setting === "is_recently_active"
+    ) {
         assert(value !== null);
         sub[setting] = value;
         return;
@@ -186,6 +191,10 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         pin_to_top(value) {
             update_stream_setting(sub, value, "pin_to_top");
             stream_list.refresh_pinned_or_unpinned_stream(sub);
+        },
+        demote_resolved_topics(value) {
+            update_stream_setting(sub, value, "demote_resolved_topics");
+            stream_list.update_streams_sidebar();
         },
         invite_only(value) {
             assert(other_values !== undefined);
