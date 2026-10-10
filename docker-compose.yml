@@ -95,14 +95,15 @@ services:
       retries: 5
       start_period: 5s
 
-  zulip:
+  zulip-init:
     image: zulip-unal:12.3
     build:
       context: ./docker
       dockerfile: Dockerfile
-    restart: unless-stopped
-    ports:
-      - "443:443"
+    restart: "no"
+
+    command: ["app:init"]
+
     secrets:
       - zulip__postgres_password
       - zulip__memcached_password
@@ -110,6 +111,7 @@ services:
       - zulip__redis_password
       - zulip__secret_key
       - zulip__email_password
+
     environment:
       SETTING_REMOTE_POSTGRES_HOST: database
       SETTING_MEMCACHED_LOCATION: memcached:11211
@@ -122,17 +124,67 @@ services:
       CERTIFICATES: "self-signed"
 
       CONFIG_application_server__queue_workers_multiprocess: "false"
+
     volumes:
       - zulip-data:/data
+
+    depends_on:
+      database:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      memcached:
+        condition: service_healthy
+
+  zulip:
+    image: zulip-unal:12.3
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+    restart: unless-stopped
+
+    ports:
+      - "443:443"
+
+    secrets:
+      - zulip__postgres_password
+      - zulip__memcached_password
+      - zulip__rabbitmq_password
+      - zulip__redis_password
+      - zulip__secret_key
+      - zulip__email_password
+
+    environment:
+      SETTING_REMOTE_POSTGRES_HOST: database
+      SETTING_MEMCACHED_LOCATION: memcached:11211
+      SETTING_RABBITMQ_HOST: rabbitmq
+      SETTING_REDIS_HOST: redis
+      SETTING_EXTERNAL_HOST: localhost.localdomain
+      SETTING_ZULIP_ADMINISTRATOR: admin@example.com
+      CERTIFICATES: "self-signed"
+      CONFIG_application_server__queue_workers_multiprocess: "false"
+
+    volumes:
+      - zulip-data:/data
+
     ulimits:
       nofile:
         soft: 1000000
         hard: 1048576
+        
     depends_on:
-      - database
-      - memcached
-      - rabbitmq
-      - redis
+      database:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      memcached:
+        condition: service_healthy
+      zulip-init:
+        condition: service_completed_successfully
 
 secrets:
   zulip__postgres_password:
