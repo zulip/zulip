@@ -17,14 +17,17 @@ from zerver.models.realm_playgrounds import PLAYGROUND_LANGUAGE_REGEX
 
 
 def check_pygments_language(var_name: str, val: object) -> str:
-    s = check_capped_string(RealmPlayground.MAX_PYGMENTS_LANGUAGE_LENGTH)(var_name, val)
+    # Validate the stripped value, since that is what gets stored. Checking
+    # the raw value let "math\n" through: `$` matches before a trailing
+    # newline, and the restricted-keyword check is an exact comparison.
+    s = check_capped_string(RealmPlayground.MAX_PYGMENTS_LANGUAGE_LENGTH)(var_name, val).strip()
     # We don't want to restrict the language here to be only from the list of valid
     # Pygments languages. Keeping it open would allow us to hook up a "playground"
     # for custom "languages" that aren't known to Pygments. We use a similar strategy
     # even in our fenced_code Markdown processor.
-    if not re.match(rf"^{PLAYGROUND_LANGUAGE_REGEX}$", s):
+    if not re.fullmatch(PLAYGROUND_LANGUAGE_REGEX, s):
         for char in s:
-            if not re.match(rf"^{PLAYGROUND_LANGUAGE_REGEX}$", char):
+            if not re.fullmatch(PLAYGROUND_LANGUAGE_REGEX, char):
                 raise JsonableError(
                     _("Invalid character in language: {character}").format(character=char)
                 )
@@ -57,7 +60,7 @@ def add_realm_playground(
         realm=user_profile.realm,
         acting_user=user_profile,
         name=name.strip(),
-        pygments_language=pygments_language.strip(),
+        pygments_language=pygments_language,
         url_template=url_template.strip(),
     )
     return json_success(request, data={"id": playground_id})
