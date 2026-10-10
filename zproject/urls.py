@@ -234,9 +234,9 @@ from zerver.views.user_settings import (
     confirm_email_change_get,
     delete_avatar_backend,
     json_change_settings,
+    logout_other_sessions,
     regenerate_api_key,
     set_avatar_backend,
-    logout_other_sessions,
 )
 from zerver.views.user_topics import update_muted_topic, update_user_topic
 from zerver.views.users import (
@@ -275,7 +275,6 @@ from zerver.views.video_calls import (
     register_webex_user,
     register_zoom_user,
 )
-
 from zerver.views.welcome_bot_custom_message import send_test_welcome_bot_custom_message
 from zproject import dev_urls
 
@@ -357,9 +356,7 @@ v1_api_and_json_patterns = [
         "users", GET=(get_members_backend, {"allow_anonymous_user_web"}), POST=create_user_backend
     ),
     rest_path("users/me", GET=get_profile_backend, DELETE=deactivate_user_own_backend),
-
     rest_path("users/me/sessions/logout_others", POST=logout_other_sessions),
-
     rest_path("users/<int:user_id>/reactivate", POST=reactivate_user_backend),
     rest_path(
         "users/<int:user_id>",

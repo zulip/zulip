@@ -7,9 +7,9 @@ import orjson
 from django.http import HttpRequest
 from django.test import override_settings
 
-from zerver.lib.sessions import user_sessions
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.initial_password import initial_password
+from zerver.lib.sessions import user_sessions
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file, ratelimit_rule
 from zerver.models import Draft, NamedUserGroup, ScheduledMessageNotificationEmail, UserProfile
@@ -793,6 +793,7 @@ class UserChangesTest(ZulipTestCase):
             get_user_profile_by_api_key(old_api_key)
 
         self.assertEqual(get_user_profile_by_api_key(user.api_key).email, email)
+
     def test_logout_other_sessions(self) -> None:
         user = self.example_user("hamlet")
         self.login_user(user)

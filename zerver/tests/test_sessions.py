@@ -1,11 +1,11 @@
+from collections.abc import Callable
 from datetime import timedelta
 from typing import Any
 
 import time_machine
+from django.contrib.auth import SESSION_KEY
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
-
-from django.contrib.auth import SESSION_KEY
 
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.actions.users import change_user_is_active
@@ -93,9 +93,7 @@ class TestSessions(ZulipTestCase):
         )
 
         lear_realm = get_realm("lear")
-        do_set_realm_property(
-            lear_realm, "enable_spectator_access", True, acting_user=None
-        )
+        do_set_realm_property(lear_realm, "enable_spectator_access", True, acting_user=None)
         self.make_stream(
             "web_public_stream",
             realm=lear_realm,
@@ -133,10 +131,7 @@ class TestSessions(ZulipTestCase):
             delete_all_deactivated_user_sessions()
         self.assertEqual(
             info_logs.output,
-            [
-                f"INFO:root:Deactivating session for deactivated user "
-                f"{user_profile_3.id}"
-            ],
+            [f"INFO:root:Deactivating session for deactivated user {user_profile_3.id}"],
         )
         result = self.client_get("/")
         self.assertEqual(result.status_code, 200)
@@ -166,9 +161,7 @@ class TestSessions(ZulipTestCase):
 
         delete_other_user_sessions(user, current_session_key)
 
-        remaining_user_session_keys = {
-            session.session_key for session in user_sessions(user)
-        }
+        remaining_user_session_keys = {session.session_key for session in user_sessions(user)}
         self.assertIn(current_session_key, remaining_user_session_keys)
         self.assertNotIn(other_session_key, remaining_user_session_keys)
 
@@ -176,6 +169,8 @@ class TestSessions(ZulipTestCase):
             session.session_key for session in user_sessions(other_user)
         }
         self.assertIn(other_user_session_key, remaining_other_user_session_keys)
+
+
 class TestExpirableSessionVars(ZulipTestCase):
     @override
     def setUp(self) -> None:
@@ -201,9 +196,7 @@ class TestExpirableSessionVars(ZulipTestCase):
             "some_value",
             expiry_seconds=10,
         )
-        value = get_expirable_session_var(
-            self.session, "test_set_and_get_with_delete", delete=True
-        )
+        value = get_expirable_session_var(self.session, "test_set_and_get_with_delete", delete=True)
         self.assertEqual(value, "some_value")
         self.assertEqual(
             get_expirable_session_var(self.session, "test_set_and_get_with_delete"),
