@@ -44,6 +44,15 @@ function set_pm_count(user_ids_string: string, count: number): void {
     const $pm_li = get_pm_list_item(user_ids_string);
     if ($pm_li !== undefined) {
         ui_util.update_unread_count_in_dom($pm_li, count);
+        const user_id = Number.parseInt(user_ids_string, 10);
+        if (!Number.isNaN(user_id) && presence.get_status(user_id) === "offline") {
+            redraw_user(user_id);
+        }
+    } else if (count > 0) {
+        const user_id = Number.parseInt(user_ids_string, 10);
+        if (!Number.isNaN(user_id)) {
+            redraw_user(user_id);
+        }
     }
 }
 

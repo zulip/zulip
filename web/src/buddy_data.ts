@@ -108,6 +108,24 @@ export function rewire_user_matches_narrow_using_loaded_data(
     user_matches_narrow_using_loaded_data = value;
 }
 
+export let get_num_unread = (user_id: number): number =>
+    unread.num_unread_for_user_ids_string(user_id.toString());
+
+export function rewire_get_num_unread(value: typeof get_num_unread): void {
+    get_num_unread = value;
+}
+
+export let get_unread_pm = (): {pm_dict: Map<string, unknown>} => {
+    if (typeof unread.get_unread_pm !== "function") {
+        return {pm_dict: new Map()};
+    }
+    return unread.get_unread_pm();
+};
+
+export function rewire_get_unread_pm(value: typeof get_unread_pm): void {
+    get_unread_pm = value;
+}
+
 export function compare_function(
     a: number,
     b: number,
@@ -140,6 +158,17 @@ export function compare_function(
         return diff;
     }
 
+    if (level_a === 3 && level_b === 3) {
+        const a_unread = get_num_unread(a);
+        const b_unread = get_num_unread(b);
+        if (a_unread > 0 && b_unread === 0) {
+            return -1;
+        }
+        if (a_unread === 0 && b_unread > 0) {
+            return 1;
+        }
+    }
+
     // Sort equivalent direct message names alphabetically
     const person_a = people.maybe_get_user_by_id(a);
     const person_b = people.maybe_get_user_by_id(b);
@@ -151,17 +180,12 @@ export function compare_function(
 }
 
 export function sort_users(user_ids: number[], conversation_participants: Set<number>): number[] {
-    // TODO sort by unread count first, once we support that
     const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
     const pm_ids_set = narrow_state.pm_ids_set();
     user_ids.sort((a, b) =>
         compare_function(a, b, stream_id, pm_ids_set, conversation_participants),
     );
     return user_ids;
-}
-
-function get_num_unread(user_id: number): number {
-    return unread.num_unread_for_user_ids_string(user_id.toString());
 }
 
 export function user_last_seen_time_status(
@@ -380,6 +404,7 @@ function maybe_shrink_list(
     user_ids = user_ids.filter(
         (user_id) =>
             user_is_recently_active(user_id) ||
+            get_num_unread(user_id) > 0 ||
             user_matches_narrow_using_loaded_data(
                 user_id,
                 pm_ids_set,
@@ -466,6 +491,20 @@ function get_filtered_user_id_list(
         const pm_ids_set = narrow_state.pm_ids_set();
         if (pm_ids_set.size > 0) {
             const base_user_id_set = new Set([...base_user_id_list, ...pm_ids_set]);
+            base_user_id_list = [...base_user_id_set];
+        }
+
+        // Always include users who have unread direct messages, even if inactive.
+        const unread_pms = get_unread_pm();
+        const unread_user_ids: number[] = [];
+        for (const user_ids_string of unread_pms.pm_dict.keys()) {
+            if (!user_ids_string.includes(",")) {
+                const user_id = Number.parseInt(user_ids_string, 10);
+                unread_user_ids.push(user_id);
+            }
+        }
+        if (unread_user_ids.length > 0) {
+            const base_user_id_set = new Set([...base_user_id_list, ...unread_user_ids]);
             base_user_id_list = [...base_user_id_set];
         }
 

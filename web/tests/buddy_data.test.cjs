@@ -410,6 +410,26 @@ test("always show pm users", () => {
     assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, selma.user_id]);
 });
 
+test("always show users with unread messages", ({override_rewire}) => {
+    people.add_active_user(selma, "server_events");
+    set_presence(selma.user_id, "offline");
+
+    // In a neutral view without PM narrow, an offline user without unreads is hidden if not in presence.
+    presence.presence_info.delete(selma.user_id);
+    message_lists.set_current(make_message_list([]));
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id]);
+
+    // When the user has unread direct messages, they are included even though they are inactive.
+    override_rewire(buddy_data, "get_unread_pm", () => ({
+        pm_dict: new Map([
+            [selma.user_id.toString(), {count: 1}],
+            ["1001,1002", {count: 1}],
+        ]),
+    }));
+
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(""), [me.user_id, selma.user_id]);
+});
+
 test("show offline channel subscribers for small channels", ({override_rewire}) => {
     // Add a bunch of users to hit max_size_before_shrinking, which will hide some
     // offline users.
@@ -514,7 +534,7 @@ test("level", ({override}) => {
     assert.equal(buddy_data.level(selma.user_id), 3);
 });
 
-test("compare_function", () => {
+test("compare_function", ({override_rewire}) => {
     const first_user_shown_higher = -1;
     const second_user_shown_higher = 1;
 
@@ -593,6 +613,48 @@ test("compare_function", () => {
             new Set([fred.user_id]),
             new Set(),
         ),
+    );
+
+    // Offline user with unread messages is higher than offline user without unreads.
+    set_presence(alice.user_id, "offline");
+    set_presence(fred.user_id, "offline");
+    override_rewire(buddy_data, "get_num_unread", (user_id) => {
+        if (user_id === fred.user_id) {
+            return 2;
+        }
+        return 0;
+    });
+
+    assert.equal(
+        first_user_shown_higher,
+        buddy_data.compare_function(fred.user_id, alice.user_id, undefined, new Set(), new Set()),
+    );
+    assert.equal(
+        second_user_shown_higher,
+        buddy_data.compare_function(alice.user_id, fred.user_id, undefined, new Set(), new Set()),
+    );
+
+    // Active user is still higher than offline user with unread messages.
+    set_presence(alice.user_id, "active");
+    assert.ok(
+        buddy_data.compare_function(alice.user_id, fred.user_id, undefined, new Set(), new Set()) <
+            0,
+    );
+    assert.ok(
+        buddy_data.compare_function(fred.user_id, alice.user_id, undefined, new Set(), new Set()) >
+            0,
+    );
+
+    // Two offline users with unread messages are sorted alphabetically.
+    set_presence(alice.user_id, "offline");
+    override_rewire(buddy_data, "get_num_unread", () => 1);
+    assert.equal(
+        first_user_shown_higher,
+        buddy_data.compare_function(alice.user_id, fred.user_id, undefined, new Set(), new Set()),
+    );
+    assert.equal(
+        second_user_shown_higher,
+        buddy_data.compare_function(fred.user_id, alice.user_id, undefined, new Set(), new Set()),
     );
 });
 
