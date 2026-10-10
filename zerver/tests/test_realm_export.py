@@ -136,9 +136,11 @@ class RealmExportTest(ZulipTestCase):
             export_type: int,
             exportable_user_ids: set[int] | None = None,
             export_as_active: bool | None = None,
+            remove_files_while_archiving: bool = False,
         ) -> tuple[str, dict[str, int | dict[str, int]]]:
             self.assertEqual(realm, admin.realm)
             self.assertEqual(export_type, RealmExport.EXPORT_PUBLIC)
+            self.assertFalse(remove_files_while_archiving)
             self.assertTrue(
                 os.path.basename(output_dir).startswith("zulip-export-zulip-2026-05-25-10-11-16-")
             )
