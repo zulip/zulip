@@ -142,9 +142,11 @@ export function get_next_topic(
 
     // Topics are visited in the order the left sidebar lists them.
     function get_topics_in_sidebar_order(stream_id: number): string[] {
-        return topic_list_data.list_resolved_topics_last(
-            stream_topic_history.get_recent_topic_names(stream_id),
-        );
+        const topics = stream_topic_history.get_recent_topic_names(stream_id);
+        if (stream_data.demotes_resolved_topics(stream_id)) {
+            return topic_list_data.list_resolved_topics_last(topics);
+        }
+        return topics;
     }
 
     function get_unmuted_topics(stream_id: number): string[] {

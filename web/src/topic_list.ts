@@ -387,7 +387,7 @@ export class TopicListWidget {
             this.my_stream_id,
             this.for_modal,
             this.filter_topics,
-            {demote_resolved_topics: true},
+            {demote_resolved_topics: stream_data.demotes_resolved_topics(this.my_stream_id)},
         );
 
         const num_possible_topics = list_info.num_possible_topics;
@@ -524,8 +524,13 @@ function get_resolved_topics_jump_target_row(): JQuery {
 // topic list while its target row is scrolled out of view.
 function update_resolved_topics_jump(): void {
     const $jump_button = $("#more-topics-modal .resolved-topics-jump");
+    const stream_id = zoomed_in_widget?.my_stream_id;
+    if (!zoomed || stream_id === undefined || !stream_data.demotes_resolved_topics(stream_id)) {
+        $jump_button.addClass("hide");
+        return;
+    }
     const $target_row = get_resolved_topics_jump_target_row();
-    if (!zoomed || $target_row.length === 0) {
+    if ($target_row.length === 0) {
         $jump_button.addClass("hide");
         return;
     }

@@ -567,6 +567,11 @@ export function is_muted(stream_id: number): boolean {
     return sub.is_muted;
 }
 
+export function demotes_resolved_topics(stream_id: number): boolean {
+    const sub = sub_store.get(stream_id);
+    return sub?.demote_resolved_topics ?? false;
+}
+
 export function is_new_stream_announcements_stream_muted(): boolean {
     return is_muted(realm.realm_new_stream_announcements_stream_id);
 }
@@ -1189,6 +1194,7 @@ export function create_sub_from_server_data(
         newly_subscribed: false,
         is_muted: false,
         pin_to_top: false,
+        demote_resolved_topics: false,
         desktop_notifications: null,
         audible_notifications: null,
         push_notifications: null,

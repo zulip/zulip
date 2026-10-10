@@ -1,0 +1,33 @@
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ChannelSettingsNavbarTip from "../include/_ChannelSettingsNavbarTip.mdx";
+import SelectChannelViewPersonal from "../include/_SelectChannelViewPersonal.mdx";
+
+By default, the [left sidebar](/help/left-sidebar) lists the topics in a
+channel by recency. For channels where you mostly want to see topics that
+are still open, you can instead have resolved topics listed after
+unresolved ones. When you [show all topics](/help/left-sidebar#show-all-topics-in-a-channel)
+in such a channel, you can click **Resolved topics** at the bottom of the
+left sidebar to jump to the resolved topics. You can also still find them
+by searching for a topic or
+[filtering](/help/left-sidebar#filter-by-whether-topics-are-resolved) the
+list to resolved topics.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="relative/gear/channel-settings" />
+
+      1. Select a channel.
+
+      <SelectChannelViewPersonal />
+
+      1. Under **Personal settings**, toggle **Show resolved topics last in
+         left sidebar**.
+    </FlattenedSteps>
+
+    <ChannelSettingsNavbarTip />
+  </TabItem>
+</Tabs>

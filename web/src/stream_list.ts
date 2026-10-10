@@ -1503,7 +1503,7 @@ export function on_sidebar_channel_click(
             stream_id,
             false,
             (topic_names: string[]) => topic_names,
-            {demote_resolved_topics: true},
+            {demote_resolved_topics: stream_data.demotes_resolved_topics(stream_id)},
         );
         // This initial value handles both the top_topic_in_channel
         // mode as well as the top_unread_topic_in_channel fallback

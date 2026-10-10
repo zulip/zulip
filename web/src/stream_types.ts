@@ -96,6 +96,7 @@ export const stream_properties_schema = z.object({
     color: z.string(),
     is_muted: z.boolean(),
     pin_to_top: z.boolean(),
+    demote_resolved_topics: z.boolean(),
 });
 
 // This is the raw data we get from the server for a subscription.
