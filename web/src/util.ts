@@ -225,10 +225,18 @@ export const move_array_elements_to_front = function util_move_array_elements_to
     return [...selected_elements, ...unselected_elements];
 };
 
-// check by the userAgent string if a user's client is likely mobile.
+// check by the userAgent string or touch capabilities if a user's client is likely mobile.
 export function is_mobile(): boolean {
-    return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
-        window.navigator.userAgent,
+    const is_ipad =
+        typeof navigator !== "undefined" &&
+        navigator.platform === "MacIntel" &&
+        navigator.maxTouchPoints !== undefined &&
+        navigator.maxTouchPoints > 1;
+    return (
+        is_ipad ||
+        /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
+            window.navigator.userAgent,
+        )
     );
 }
 
