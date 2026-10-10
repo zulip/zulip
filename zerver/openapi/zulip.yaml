@@ -12283,7 +12283,18 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccessBase"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+              examples:
+                success:
+                  value:
+                    result: success
+                    msg: ""
 
   /users/me/alert_words:
     get:
