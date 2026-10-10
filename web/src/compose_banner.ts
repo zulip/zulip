@@ -1,11 +1,13 @@
+import Handlebars from "handlebars/runtime.js";
 import {$} from "jquery";
 
+import render_banner from "../templates/components/banner.hbs";
 import render_cannot_send_direct_message_error from "../templates/compose_banner/cannot_send_direct_message_error.hbs";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_long_paste_options from "../templates/compose_banner/long_paste_options.hbs";
 import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
 import render_topics_required_error_banner from "../templates/compose_banner/topics_required_error_banner.hbs";
-import render_unknown_zoom_user_error from "../templates/compose_banner/unknown_zoom_user_error.hbs";
+import render_unknown_zoom_user_error_message from "../templates/unknown_zoom_user_error_message.hbs";
 
 import {$t} from "./i18n.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -306,11 +308,18 @@ export function show_unknown_zoom_user_error(email: string): void {
     // Remove any existing banners with this warning.
     $(`#compose_banners .${CSS.escape(CLASSNAMES.unknown_zoom_user)}`).remove();
 
-    const new_row_html = render_unknown_zoom_user_error({
-        banner_type: ERROR,
-        email,
-        classname: CLASSNAMES.unknown_zoom_user,
+    const new_row_html = render_banner({
+        intent: "danger",
+        label: new Handlebars.SafeString(
+            render_unknown_zoom_user_error_message({
+                email,
+            }),
+        ),
+        buttons: [],
+        close_button: true,
+        custom_classes: `${ERROR} ${CLASSNAMES.unknown_zoom_user}`,
     });
+
     append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
 }
 
