@@ -26,7 +26,6 @@
 # same system for routine deletions via the Zulip UI (deleting a
 # message or group of messages) as we use for message retention policy
 # deletions.
-import copy
 import logging
 import time
 from collections.abc import Iterable, Mapping
@@ -42,6 +41,7 @@ from django.utils.timezone import now as timezone_now
 from psycopg2.sql import SQL, Composable, Identifier, Literal
 
 from zerver.actions.message_flags import do_clear_mobile_push_notifications_for_ids
+from zerver.lib.internal_event_types import InternalDeleteMessageEvent
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.message import bulk_access_messages, event_recipient_ids_for_action_on_messages
 from zerver.lib.request import RequestVariableConversionError
@@ -344,36 +344,34 @@ def _process_grouped_messages_deletion(
     """
     Helper for delete_messages. Should not be called directly otherwise.
     """
-    from zerver.actions.message_delete import DeleteMessagesEvent, check_update_first_message_id
+    from zerver.actions.message_delete import check_update_first_message_id
 
     if not message_ids:
         return  # nocoverage
 
-    event: DeleteMessagesEvent = {
-        "type": "delete_message",
-        "message_ids": sorted(message_ids),
-    }
     if stream is None:
         assert topic is None
-        message_type = "private"
+        event = InternalDeleteMessageEvent(message_ids=sorted(message_ids), message_type="private")
     else:
         assert topic is not None
-        message_type = "stream"
-        event["stream_id"] = stream.id
-        event["topic"] = topic
-    event["message_type"] = message_type
+        event = InternalDeleteMessageEvent(
+            message_ids=sorted(message_ids),
+            message_type="stream",
+            stream_id=stream.id,
+            topic=topic,
+        )
 
     # We exclude long-term idle users, since they by definition have no active clients.
     users_to_notify = set()
     if not skip_notify:
         users_to_notify = event_recipient_ids_for_action_on_messages(
             message_ids,
-            is_channel_message=message_type == "stream",
-            channel=stream if message_type == "stream" else None,
+            is_channel_message=stream is not None,
+            channel=stream,
         )
 
-        acting_user_event: DeleteMessagesEvent | None = None
-        if acting_user is not None and message_type == "stream":
+        acting_user_event: InternalDeleteMessageEvent | None = None
+        if acting_user is not None and stream is not None:
             # Send event to the user who deleted the messages only if the
             # user has access to the messages, and the event should only
             # include message IDs which the user can access.
@@ -386,7 +384,6 @@ def _process_grouped_messages_deletion(
             # are deleted in bulk by an admin, like when deactivating
             # a spam user, when we do not check access to messages.
             messages = Message.objects.filter(id__in=message_ids)
-            assert stream is not None
             accessible_messages = bulk_access_messages(
                 acting_user, messages, stream=stream, is_modifying_message=False
             )
@@ -398,8 +395,9 @@ def _process_grouped_messages_deletion(
                 if acting_user.id in users_to_notify:
                     users_to_notify.remove(acting_user.id)
                 accessible_message_ids = [msg.id for msg in accessible_messages]
-                acting_user_event = copy.deepcopy(event)
-                acting_user_event["message_ids"] = sorted(accessible_message_ids)
+                acting_user_event = event.model_copy(
+                    update={"message_ids": sorted(accessible_message_ids)}
+                )
 
     # Uses index: zerver_message_pkey
     Message.objects.filter(id__in=message_ids).delete()
