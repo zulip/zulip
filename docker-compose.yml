@@ -11,6 +11,13 @@ services:
     volumes:
       - postgresql-data:/var/lib/postgresql/data
 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zulip -d zulip"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   memcached:
     image: memcached:alpine
     restart: unless-stopped
@@ -28,6 +35,13 @@ services:
       SASL_CONF_PATH: /home/memcache/memcached.conf
       MEMCACHED_SASL_PWDB: /home/memcache/memcached-sasl-db
       MEMCACHED_PASSWORD_FILE: /run/secrets/zulip__memcached_password
+
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 11211"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
   rabbitmq:
     image: rabbitmq:4.2
@@ -48,6 +62,13 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
 
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
   redis:
     image: redis:alpine
     restart: unless-stopped
@@ -62,6 +83,17 @@ services:
       REDIS_PASSWORD_FILE: /run/secrets/zulip__redis_password
     volumes:
       - redis-data:/data
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "REDISCLI_AUTH=\"$$(cat /run/secrets/zulip__redis_password)\" redis-cli ping | grep PONG",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
   zulip:
     image: zulip-unal:12.3
