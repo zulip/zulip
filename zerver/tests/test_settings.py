@@ -849,9 +849,7 @@ class UserChangesTest(ZulipTestCase):
         original_client = self.client
         self.client = api_client
         try:
-            result = self.api_post(
-                user, "/api/v1/users/me/sessions/logout_others"
-            )
+            result = self.api_post(user, "/api/v1/users/me/sessions/logout_others")
         finally:
             self.client = original_client
 
@@ -863,6 +861,7 @@ class UserChangesTest(ZulipTestCase):
             browser_session_key,
             [session.session_key for session in remaining_sessions],
         )
+
 
 class UserDraftSettingsTests(ZulipTestCase):
     def test_enable_drafts_syncing(self) -> None:
