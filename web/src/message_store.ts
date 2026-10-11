@@ -245,6 +245,7 @@ export function update_message_cache(message_data: ProcessedMessage): void {
     // You should only call this from message_helper (or in tests), for
     // messages that aren't in the store yet.
     stored_messages.set(message_data.message.id, message_data);
+    resolve_pending_links_to_message(message_data.message);
     save_topic_links(message_data.message);
 }
 
@@ -517,9 +518,138 @@ export function topic_links_incoming_for_testing(): Map<
     return topic_links_incoming;
 }
 
+// to_message_id -> from_message_id[], for message links whose target
+// isn't in the store yet. Such links are saved with the narrow data
+// in their URL until the target arrives, at which point we can ensure
+// up-to-date narrow data for the message.
+const pending_message_link_targets = new Map<number, Set<number>>();
+export function pending_message_link_targets_for_testing(): Map<number, Set<number>> {
+    return pending_message_link_targets;
+}
+
+// Looks up links to the potentially stale narrow, and removes any
+// links from from_message_id to to_message_id (since to_message_id
+// might have moved).
+function remove_incoming_record(
+    stale_narrow: {stream_id: number; topic: string},
+    to_message_id: number,
+    from_message_id: number,
+): void {
+    const links_to_narrow = get_link_map_for_narrow(
+        topic_links_incoming,
+        stale_narrow.stream_id,
+        stale_narrow.topic,
+    );
+    const links_to_message = links_to_narrow?.get(to_message_id);
+    if (links_to_message !== undefined) {
+        links_to_narrow!.set(
+            to_message_id,
+            links_to_message.filter((message_id) => message_id !== from_message_id),
+        );
+    }
+}
+
+// Adds from_message_id to the links to to_message_id filed under the
+// specified narrow (since the message might not yet be in the store,
+// which is where its narrow data is stored).
+function add_incoming_record(
+    to_narrow: {stream_id: number; topic: string},
+    to_message_id: number,
+    from_message_id: number,
+): void {
+    const links_to_narrow = get_or_create_link_map_for_narrow(
+        topic_links_incoming,
+        to_narrow.stream_id,
+        to_narrow.topic,
+    );
+    const links_to_message = links_to_narrow.get(to_message_id) ?? [];
+    util.unique_array_insert(links_to_message, from_message_id);
+    links_to_narrow.set(to_message_id, links_to_message);
+}
+
+// Links to a message that wasn't yet in the store are stored with
+// narrow data that might become stale. This function updates the
+// narrow data for link(s) to `to_message_id`, or drops the link(s)
+// if to_narrow is undefined.
+function refile_link_from_message(
+    from_message_id: number,
+    to_message_id: number,
+    to_narrow: {stream_id: number; topic: string} | undefined,
+): void {
+    const from_message = get(from_message_id);
+    if (from_message === undefined) {
+        // The message was removed from the store, which removed its
+        // links too. Nothing to do here.
+        return;
+    }
+
+    assert(from_message.type === "stream");
+    const links_from_narrow = get_link_map_for_narrow(
+        topic_links_outgoing,
+        from_message.stream_id,
+        from_message.topic,
+    );
+    const links_from_message = links_from_narrow?.get(from_message_id) ?? [];
+    const stale_links = links_from_message.filter((link) => link.message_id === to_message_id);
+    if (stale_links.length === 0) {
+        // The link was edited out of the message.
+        return;
+    }
+
+    // Remove the stale link(s) from topic_links_incoming.
+    for (const link of stale_links) {
+        remove_incoming_record(link, to_message_id, from_message_id);
+    }
+    // Remove the stale link(s) from topic_links_outgoing.
+    const updated_links = links_from_message.filter((link) => link.message_id !== to_message_id);
+    links_from_narrow!.set(from_message_id, updated_links);
+
+    // If there's a new narrow, add the link back to the two maps with the
+    // correct narrow. There might have been multiple stale links between
+    // these messages, if they had different outdated data, but now that
+    // we know the up-to-date narrow we only store one link.
+    if (to_narrow !== undefined) {
+        add_incoming_record(to_narrow, to_message_id, from_message_id);
+        updated_links.push({
+            stream_id: to_narrow.stream_id,
+            topic: to_narrow.topic,
+            message_id: to_message_id,
+        });
+        links_from_narrow!.set(from_message_id, updated_links);
+    }
+}
+
+// Moves the links to a message that isn't in the store to the given
+// narrow data, or removes them if to_narrow is undefined.
+function refile_links_to_message(
+    to_message_id: number,
+    to_narrow: {stream_id: number; topic: string} | undefined,
+): void {
+    const linking_message_ids = pending_message_link_targets.get(to_message_id);
+    if (linking_message_ids === undefined) {
+        return;
+    }
+    for (const linking_message_id of linking_message_ids) {
+        refile_link_from_message(linking_message_id, to_message_id, to_narrow);
+    }
+}
+
+// Files the links to a message that just arrived in the store under
+// its current narrow data, or drops them if it turns out to be from a
+// muted user or not a channel message.
+function resolve_pending_links_to_message(message: Message): void {
+    if (message.type === "stream" && !muted_users.is_user_muted(message.sender_id)) {
+        refile_links_to_message(message.id, {stream_id: message.stream_id, topic: message.topic});
+    } else {
+        refile_links_to_message(message.id, undefined);
+    }
+    pending_message_link_targets.delete(message.id);
+}
+
 export function clear_topic_links_for_testing(): void {
     topic_links_outgoing.clear();
     topic_links_incoming.clear();
+    pending_message_link_targets.clear();
 }
 
 // Returns the cross-conversation links found in this narrow, resolved to
@@ -550,16 +680,20 @@ export function topic_links_from_narrow(stream_id: number, topic: string): Topic
         for (const link of narrow_map.get(message_id)!) {
             // A message link points to the linked message's current
             // location, which may differ from where it was when the link
-            // was created (e.g. if its topic was resolved since).
+            // was created (e.g. if its topic was resolved since). Until
+            // the linked message is in the store, the channel/topic in
+            // the link's URL is the best we know.
             let target = link;
             if (link.message_id !== undefined) {
                 const message = get(link.message_id);
-                assert(message?.type === "stream");
-                target = {
-                    stream_id: message.stream_id,
-                    topic: message.topic,
-                    message_id: message.id,
-                };
+                if (message !== undefined) {
+                    assert(message.type === "stream");
+                    target = {
+                        stream_id: message.stream_id,
+                        topic: message.topic,
+                        message_id: message.id,
+                    };
+                }
             }
             // Hide links to channels the user has lost access to, e.g.
             // after being unsubscribed from a private channel, since the
@@ -751,6 +885,11 @@ function _remove_or_update_message_id_from_topic_links(
 
 function update_message_id_in_topic_links(old_message_id: number, new_message_id: number): void {
     _remove_or_update_message_id_from_topic_links(old_message_id, new_message_id);
+    for (const linking_message_ids of pending_message_link_targets.values()) {
+        if (linking_message_ids.delete(old_message_id)) {
+            linking_message_ids.add(new_message_id);
+        }
+    }
 }
 
 function remove_message_from_topic_links(message_id: number): void {
@@ -797,15 +936,11 @@ export function save_topic_links(message: Message): void {
             continue;
         }
 
-        // If we don't have access to this stream and/or message, or it's a buggy link,
-        // or it's a message from a muted user, just ignore it.
-        if (to_message_id !== undefined) {
-            const to_message = get(to_message_id);
-            if (
-                to_message === undefined ||
-                muted_users.is_user_muted(to_message.sender_id) ||
-                to_message.type !== "stream"
-            ) {
+        // Ignore links to messages from muted users, to channels we don't
+        // have access to, and buggy ones to a message id that isn't in a channel.
+        const to_message = to_message_id === undefined ? undefined : get(to_message_id);
+        if (to_message !== undefined) {
+            if (muted_users.is_user_muted(to_message.sender_id) || to_message.type !== "stream") {
                 continue;
             }
             to_stream_id = to_message.stream_id;
@@ -813,6 +948,18 @@ export function save_topic_links(message: Message): void {
         }
         if (!stream_data.get_sub_by_id(to_stream_id)) {
             continue;
+        }
+        if (to_message_id !== undefined && to_message === undefined) {
+            // Record that there's a link to an unstored message. Until
+            // the message is fetched, we'll assume it's still in the same
+            // location as its narrow link (i.e. unmoved). See
+            // resolve_pending_links_to_message.
+            let linking_message_ids = pending_message_link_targets.get(to_message_id);
+            if (linking_message_ids === undefined) {
+                linking_message_ids = new Set();
+                pending_message_link_targets.set(to_message_id, linking_message_ids);
+            }
+            linking_message_ids.add(message.id);
         }
 
         // (1) Save link in topic_links_outgoing
