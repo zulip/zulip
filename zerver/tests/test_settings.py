@@ -836,6 +836,33 @@ class UserChangesTest(ZulipTestCase):
         result = self.client_post("/json/users/me/sessions/logout_others")
         self.assertEqual(result.status_code, 401)
 
+    def test_logout_other_sessions_with_api_key(self) -> None:
+        user = self.example_user("hamlet")
+
+        # Create a browser session for the user.
+        self.login_user(user)
+        browser_session_key = self.client.session.session_key
+        self.assertIsNotNone(browser_session_key)
+
+        # Use a separate client so the API-key request has no browser session.
+        api_client = self.client_class()
+        original_client = self.client
+        self.client = api_client
+        try:
+            result = self.api_post(
+                user, "/api/v1/users/me/sessions/logout_others"
+            )
+        finally:
+            self.client = original_client
+
+        self.assert_json_success(result)
+
+        # The existing browser session must remain intact.
+        remaining_sessions = user_sessions(user)
+        self.assertIn(
+            browser_session_key,
+            [session.session_key for session in remaining_sessions],
+        )
 
 class UserDraftSettingsTests(ZulipTestCase):
     def test_enable_drafts_syncing(self) -> None:
