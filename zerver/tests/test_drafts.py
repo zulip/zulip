@@ -194,6 +194,40 @@ class DraftCreationTests(ZulipTestCase):
         ]
         self.create_and_check_drafts_for_error(draft_dicts, "Timestamp must not be negative.")
 
+    def test_out_of_range_timestamp(self) -> None:
+        for timestamp, expected_error in [
+            (int(time.time() * 1000), 'drafts[0]["timestamp"] is too large'),
+            (2**63, 'drafts[0]["timestamp"] is too large'),
+            (-(10**11), 'drafts[0]["timestamp"] is too small'),
+        ]:
+            draft_dicts = [
+                {
+                    "type": "stream",
+                    "to": [],
+                    "topic": "sync drafts",
+                    "content": "Let's add backend support for syncing drafts.",
+                    "timestamp": timestamp,
+                }
+            ]
+            self.create_and_check_drafts_for_error(draft_dicts, expected_error)
+
+    def test_non_finite_timestamp(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        # orjson would serialize these as null, so write the JSON by hand.
+        for timestamp, expected_error in [
+            ("NaN", 'drafts[0]["timestamp"] is not a finite number'),
+            ("Infinity", 'drafts[0]["timestamp"] is not a finite number'),
+            ("-Infinity", 'drafts[0]["timestamp"] is not a finite number'),
+        ]:
+            drafts = (
+                '[{"type": "", "to": [], "topic": "", "content": "Test", "timestamp": '
+                + timestamp
+                + "}]"
+            )
+            resp = self.api_post(hamlet, "/api/v1/drafts", {"drafts": drafts})
+            self.assert_json_error(resp, expected_error)
+
     def test_create_non_stream_draft_with_no_recipient(self) -> None:
         """When "to" is an empty list, the type should become "" as well."""
         draft_dicts = [
@@ -389,6 +423,28 @@ class DraftEditTests(ZulipTestCase):
         new_draft_dict = new_draft.to_dict()
         new_draft_dict.pop("id")
         self.assertEqual(new_draft_dict, draft_dict)
+
+    def test_edit_draft_with_out_of_range_timestamp(self) -> None:
+        hamlet = self.example_user("hamlet")
+        draft_dict = {
+            "type": "",
+            "to": [],
+            "topic": "",
+            "content": "The API should be good",
+            "timestamp": 1595505700,
+        }
+        resp = self.api_post(
+            hamlet, "/api/v1/drafts", {"drafts": orjson.dumps([draft_dict]).decode()}
+        )
+        self.assert_json_success(resp)
+        draft_id = orjson.loads(resp.content)["ids"][0]
+
+        draft_dict["timestamp"] = int(time.time() * 1000)
+        resp = self.api_patch(
+            hamlet, f"/api/v1/drafts/{draft_id}", {"draft": orjson.dumps(draft_dict).decode()}
+        )
+        self.assert_json_error(resp, 'draft["timestamp"] is too large')
+        self.assertEqual(Draft.objects.get(id=draft_id).to_dict()["timestamp"], 1595505700)
 
     def test_edit_draft_to_add_inaccessible_user(self) -> None:
         self.set_up_db_for_testing_user_access()

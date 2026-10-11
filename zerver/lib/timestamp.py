@@ -48,6 +48,13 @@ def ceiling_to_day(dt: datetime) -> datetime:
     return floor + timedelta(days=1)
 
 
+# The UNIX timestamps, in seconds, that timestamp_to_datetime can
+# convert: from 0001-01-01T00:00:00Z up to, but not including,
+# 10000-01-01T00:00:00Z.
+MIN_CONVERTIBLE_TIMESTAMP = -62135596800
+MAX_CONVERTIBLE_TIMESTAMP_EXCLUSIVE = 253402300800
+
+
 def timestamp_to_datetime(timestamp: float) -> datetime:
     return datetime.fromtimestamp(float(timestamp), tz=timezone.utc)
 

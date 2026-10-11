@@ -5,6 +5,8 @@ from django.utils.translation import override as override_language
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import (
+    MAX_CONVERTIBLE_TIMESTAMP_EXCLUSIVE,
+    MIN_CONVERTIBLE_TIMESTAMP,
     TimeZoneMissingError,
     TimeZoneNotUTCError,
     ceiling_to_hour,
@@ -33,6 +35,20 @@ class TestTimestamp(ZulipTestCase):
         ]:
             with self.assertRaises(TimeZoneNotUTCError):
                 datetime_to_timestamp(dt)
+
+    def test_convertible_timestamp_range(self) -> None:
+        self.assertEqual(
+            timestamp_to_datetime(MIN_CONVERTIBLE_TIMESTAMP),
+            datetime.min.replace(tzinfo=timezone.utc),
+        )
+        self.assertEqual(
+            timestamp_to_datetime(MAX_CONVERTIBLE_TIMESTAMP_EXCLUSIVE - 1),
+            datetime.max.replace(tzinfo=timezone.utc, microsecond=0),
+        )
+        with self.assertRaises(ValueError):
+            timestamp_to_datetime(MIN_CONVERTIBLE_TIMESTAMP - 1)
+        with self.assertRaises(ValueError):
+            timestamp_to_datetime(MAX_CONVERTIBLE_TIMESTAMP_EXCLUSIVE)
 
     def test_convert_to_UTC(self) -> None:
         utc_datetime = datetime.fromisoformat("2017-01-01 00:00:00.123+00:00")

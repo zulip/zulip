@@ -22,7 +22,7 @@ from zerver.lib.recipient_users import (
 )
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.typed_endpoint import RequiredStringConstraint
+from zerver.lib.typed_endpoint import RequiredStringConstraint, TimestampInDatetimeRange
 from zerver.models import Draft, UserProfile
 from zerver.tornado.django_api import send_event_on_commit
 
@@ -44,7 +44,7 @@ class DraftData(BaseModel):
     to: list[int]
     topic: str
     content: Annotated[str, RequiredStringConstraint()]
-    timestamp: int | float | None = None
+    timestamp: TimestampInDatetimeRange[int | float] | None = None
 
 
 def further_validated_draft_dict(
