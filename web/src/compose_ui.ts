@@ -865,14 +865,167 @@ export function reverse_linkify_text(text: string): string | null {
     return changed ? segments.join("") : null;
 }
 
+export const italic_syntax = "*";
+export const bold_syntax = "**";
+export const bold_and_italic_syntax = "***";
+export const strikethrough_syntax = "~~";
+export const inline_syntax_markers = new Set([italic_syntax, bold_syntax, strikethrough_syntax]);
+
+type ParsedLine =
+    | {type: "skipped"; raw: string}
+    | {type: "formattable"; prefix: string; content: string; trailing: string};
+
+export const split_inline_line = (
+    line: string,
+): {prefix: string; content: string; trailing: string} => {
+    const raw_prefix = bulleted_numbered_list_util.get_prefix(line);
+    const after_prefix = line.slice(raw_prefix.length);
+    const trimmed_content = after_prefix.trim();
+    if (trimmed_content === "") {
+        return {prefix: line, content: "", trailing: ""};
+    }
+    const leading_ws_len = after_prefix.indexOf(trimmed_content);
+    const prefix = raw_prefix + after_prefix.slice(0, leading_ws_len);
+    const trailing = after_prefix.slice(leading_ws_len + trimmed_content.length);
+    return {prefix, content: trimmed_content, trailing};
+};
+
+export const is_bold_only = (content: string): boolean => {
+    if (
+        content.length <= bold_syntax.length * 2 ||
+        !content.startsWith(bold_syntax) ||
+        !content.endsWith(bold_syntax) ||
+        content.startsWith(bold_and_italic_syntax)
+    ) {
+        return false;
+    }
+    const inner = content.slice(bold_syntax.length, -bold_syntax.length);
+    return !inner.includes(bold_syntax);
+};
+
+export const is_line_formatted = (content: string, syntax: string): boolean => {
+    if (syntax === italic_syntax) {
+        if (content.length <= 2 || !content.startsWith("*") || !content.endsWith("*")) {
+            return false;
+        }
+        if (content.startsWith(bold_syntax) && content.endsWith(bold_syntax)) {
+            if (
+                content.length <= 6 ||
+                !content.startsWith(bold_and_italic_syntax) ||
+                !content.endsWith(bold_and_italic_syntax)
+            ) {
+                return false;
+            }
+            const inner = content.slice(
+                bold_and_italic_syntax.length,
+                -bold_and_italic_syntax.length,
+            );
+            return !inner.includes("*");
+        }
+        const inner = content.slice(italic_syntax.length, -italic_syntax.length);
+        return !inner.includes("*");
+    }
+
+    if (
+        content.length <= syntax.length * 2 ||
+        !content.startsWith(syntax) ||
+        !content.endsWith(syntax)
+    ) {
+        return false;
+    }
+
+    if (
+        syntax === bold_syntax &&
+        content.startsWith(bold_and_italic_syntax) &&
+        content.endsWith(bold_and_italic_syntax)
+    ) {
+        const inner = content.slice(bold_and_italic_syntax.length, -bold_and_italic_syntax.length);
+        return !inner.includes(bold_syntax);
+    }
+
+    const inner = content.slice(syntax.length, -syntax.length);
+    return !inner.includes(syntax);
+};
+
+export const format_lines = (selected_text: string, syntax: string): string => {
+    let in_fence = false;
+    let fence_marker = "";
+
+    const parsed_lines: ParsedLine[] = selected_text.split("\n").map((line) => {
+        const trimmed = line.trimStart();
+
+        // Code fence handling: keep fence boundaries and inner code untouched.
+        const fence_match = /^([ \t]*)(```+|~~~+)/.exec(line);
+        if (fence_match !== null) {
+            const marker = fence_match[2]!.slice(0, 3);
+            if (!in_fence) {
+                in_fence = true;
+                fence_marker = marker;
+                return {type: "skipped", raw: line};
+            }
+            if (marker === fence_marker) {
+                in_fence = false;
+                fence_marker = "";
+                return {type: "skipped", raw: line};
+            }
+        }
+        if (in_fence) {
+            return {type: "skipped", raw: line};
+        }
+
+        // Skip blank lines and table rows.
+        if (line.trim() === "" || trimmed.startsWith("|")) {
+            return {type: "skipped", raw: line};
+        }
+
+        const parts = split_inline_line(line);
+        if (parts.content === "") {
+            return {type: "skipped", raw: line};
+        }
+
+        return {type: "formattable", ...parts};
+    });
+
+    const formattable = parsed_lines.filter(
+        (l): l is Extract<ParsedLine, {type: "formattable"}> => l.type === "formattable",
+    );
+    if (formattable.length === 0) {
+        return selected_text;
+    }
+
+    const should_format = formattable.some((l) => !is_line_formatted(l.content, syntax));
+
+    const formatted = parsed_lines.map((l) => {
+        if (l.type === "skipped") {
+            return l.raw;
+        }
+
+        if (should_format) {
+            // Promote bold to bold+italic when applying italic.
+            if (syntax === italic_syntax && is_bold_only(l.content)) {
+                const inner = l.content.slice(bold_syntax.length, -bold_syntax.length);
+                return (
+                    l.prefix + bold_and_italic_syntax + inner + bold_and_italic_syntax + l.trailing
+                );
+            }
+            if (is_line_formatted(l.content, syntax)) {
+                return l.prefix + l.content + l.trailing;
+            }
+            return l.prefix + syntax + l.content + syntax + l.trailing;
+        }
+
+        // Strip pass: remove syntax from both ends.
+        return l.prefix + l.content.slice(syntax.length, -syntax.length) + l.trailing;
+    });
+
+    return formatted.join("\n");
+};
+
 export let format_text = (
     $textarea: JQuery<HTMLTextAreaElement>,
     type: string,
     inserted_content = "",
 ): void => {
-    const italic_syntax = "*";
-    const bold_syntax = "**";
-    const bold_and_italic_syntax = "***";
     let is_selected_text_italic = false;
     let is_inner_text_italic = false;
     const field = $textarea.get(0)!;
@@ -1071,6 +1224,19 @@ export let format_text = (
             );
             return false;
         }
+
+        if (
+            selected_text.includes("\n") &&
+            syntax_start === syntax_end &&
+            inline_syntax_markers.has(syntax_start)
+        ) {
+            const new_selected = format_lines(selected_text, syntax_start);
+            text = text.slice(0, range.start) + new_selected + text.slice(range.end);
+            insert_and_scroll_into_view(text, $textarea, true);
+            field.setSelectionRange(range.start, range.start + new_selected.length);
+            return true;
+        }
+
         if (is_inner_text_formatted(syntax_start, syntax_end)) {
             // Remove syntax inside the selection, if present.
             text =
@@ -1363,6 +1529,13 @@ export let format_text = (
             format(bold_syntax);
             break;
         case "italic":
+            // For multiline selections, delegate to format(italic_syntax),
+            // which handles per-line italic toggling and bold promotion.
+            if (selected_text.includes("\n")) {
+                format(italic_syntax);
+                break;
+            }
+
             // Ctrl + I: Toggle italic syntax on selection. This is
             // much more complex than toggling bold syntax, because of
             // the following subtle detail: If our selection is
@@ -1453,11 +1626,9 @@ export let format_text = (
         case "numbered":
             format_list(type);
             break;
-        case "strikethrough": {
-            const strikethrough_syntax = "~~";
+        case "strikethrough":
             format(strikethrough_syntax);
             break;
-        }
         case "code": {
             // Ctrl + Shift + C: Toggle code syntax on selection.
             const inline_code_syntax = "`";

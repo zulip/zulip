@@ -821,6 +821,136 @@ run_test("format_text - bold and italic", ({override, override_rewire}) => {
     init_textarea_state("before <***abc***> after");
     compose_ui.format_text($textarea, "italic");
     assert.equal(get_textarea_state(), "before <**abc**> after");
+
+    // Multiline bold on numbered list
+    init_textarea_state("<1. abc\n2. def\n3. ghi>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<1. **abc**\n2. **def**\n3. **ghi**>");
+
+    // Undo multiline bold on numbered list
+    init_textarea_state("<1. **abc**\n2. **def**\n3. **ghi**>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<1. abc\n2. def\n3. ghi>");
+
+    // Multiline bold on bulleted lists (- style, * style, + style)
+    init_textarea_state("<- abc\n- def>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<- **abc**\n- **def**>");
+
+    init_textarea_state("<* abc\n* def>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<* **abc**\n* **def**>");
+
+    init_textarea_state("<+ abc\n+ def>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<+ **abc**\n+ **def**>");
+
+    // Italic plain multiline and undo
+    init_textarea_state("before <abc\ndef\nghi> after");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "before <*abc*\n*def*\n*ghi*> after");
+
+    init_textarea_state("before <*abc*\n*def*\n*ghi*> after");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "before <abc\ndef\nghi> after");
+
+    // Nested / space-indented list (leading space trimmed from selection start by format_text)
+    init_textarea_state("<  - abc\n  - def>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "  <- **abc**\n  - **def**>");
+
+    // Tab-indented list (leading tab trimmed from selection start by format_text)
+    init_textarea_state("<\t- abc\n\t- def>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "\t<- **abc**\n\t- **def**>");
+
+    // Nested list under root item
+    init_textarea_state("<- root\n  - abc\n\t- def>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<- **root**\n  - **abc**\n\t- **def**>");
+
+    // Extra spaces after marker
+    init_textarea_state("<-   abc\n-   def>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<-   **abc**\n-   **def**>");
+
+    // Heading lines preserved
+    init_textarea_state("<# Heading\n## Subheading>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<# **Heading**\n## **Subheading**>");
+
+    // Quote lines preserved (set directly on $textarea to avoid delimiter conflict in init_textarea_state)
+    $textarea.val("> quote\n> another");
+    $textarea.range(0, "> quote\n> another".length);
+    compose_ui.format_text($textarea, "bold");
+    assert.equal($textarea.val(), "> **quote**\n> **another**");
+    assert.equal($textarea.range().text, "> **quote**\n> **another**");
+
+    // Code fences and lines inside code block untouched
+    init_textarea_state("<abc\n```\ncode\n```\ndef>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<**abc**\n```\ncode\n```\n**def**>");
+
+    // Table row untouched (set directly on $textarea to avoid pipe cursor collision in init_textarea_state)
+    $textarea.val("abc\n| col1 | col2 |\ndef");
+    $textarea.range(0, "abc\n| col1 | col2 |\ndef".length);
+    compose_ui.format_text($textarea, "bold");
+    assert.equal($textarea.val(), "**abc**\n| col1 | col2 |\n**def**");
+    assert.equal($textarea.range().text, "**abc**\n| col1 | col2 |\n**def**");
+
+    // Blank lines and whitespace-only lines inside selection preserved
+    init_textarea_state("<abc\n\ndef>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<**abc**\n\n**def**>");
+
+    init_textarea_state("<abc\n   \ndef>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<**abc**\n   \n**def**>");
+
+    // Empty bullet items skipped
+    init_textarea_state("<- abc\n- \n- def>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<- **abc**\n- \n- **def**>");
+
+    // Trailing whitespace on a line stays outside wrapping markers
+    init_textarea_state("<abc   \ndef>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<**abc**   \n**def**>");
+
+    // Selection ending with a trailing newline (trimmed by format_text)
+    init_textarea_state("<abc\ndef\n>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<**abc**\n**def**>\n");
+
+    // Mixed-state multiline bold: any unmarked line means we mark all
+    init_textarea_state("<**abc**\ndef\n**ghi**>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<**abc**\n**def**\n**ghi**>");
+
+    // Italic on multiline bold lines promotes each to bold+italic
+    init_textarea_state("<**abc**\n**def**>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<***abc***\n***def***>");
+
+    // Italic on multiline bold+italic strips italic from each line
+    init_textarea_state("<***abc***\n***def***>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<**abc**\n**def**>");
+
+    // Mixed: "***abc***\nabc" then italic
+    init_textarea_state("<***abc***\nabc>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<***abc***\n*abc*>");
+
+    // Step 4 guard: multiple inline spans like "**a** and **b**" not treated as formatted
+    init_textarea_state("<**a** and **b**\ndef>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<****a** and **b****\n**def**>");
+
+    // Step 3 legacy wrapped multiline selection unwrapping
+    init_textarea_state("**<abc\ndef>**");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<abc\ndef>");
 });
 
 run_test("format_text - bulleted and numbered lists", ({override_rewire}) => {
@@ -974,10 +1104,23 @@ run_test("format_text - strikethrough", ({override, override_rewire}) => {
     compose_ui.format_text($textarea, "strikethrough");
     assert.equal(get_textarea_state(), "before <abc> after");
 
-    // // Undo strikethrough selected text, syntax selected
+    // Undo strikethrough selected text, syntax selected
     init_textarea_state("before <~~abc~~> after");
     compose_ui.format_text($textarea, "strikethrough");
     assert.equal(get_textarea_state(), "before <abc> after");
+
+    // Strikethrough multiline and undo
+    init_textarea_state("<- abc\n- def>");
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(get_textarea_state(), "<- ~~abc~~\n- ~~def~~>");
+
+    init_textarea_state("<- ~~abc~~\n- ~~def~~>");
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(get_textarea_state(), "<- abc\n- def>");
+
+    init_textarea_state("<1. abc\n2. def>");
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(get_textarea_state(), "<1. ~~abc~~\n2. ~~def~~>");
 });
 
 run_test("format_text - latex", ({override, override_rewire}) => {
