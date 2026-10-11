@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Run as a one-shot supervisord program when CERTIFICATES=certbot.
+# entrypoint.sh writes /etc/supervisor/conf.d/zulip-certbot-setup.conf,
+# which sets EXTERNAL_HOST and ZULIP_ADMINISTRATOR; supervisord then
+# starts this script alongside the rest of the Zulip services.
+
+set -eux
+set -o pipefail
+
+: "${EXTERNAL_HOST:?missing EXTERNAL_HOST}"
+: "${ZULIP_ADMINISTRATOR:?missing ZULIP_ADMINISTRATOR}"
+
+echo "Waiting for nginx to come online before generating certbot certificate ..."
+while ! curl -sk "$EXTERNAL_HOST" >/dev/null 2>&1; do
+    sleep 1
+done
+
+echo "Generating LetsEncrypt/certbot certificate ..."
+
+# Overwrite the nginx hook to use supervisorctl
+cat <<EOF >/etc/letsencrypt/renewal-hooks/deploy/050-nginx.sh
+#!/usr/bin/env bash
+supervisorctl signal HUP nginx
+EOF
+
+# Accept the terms of service automatically.
+/home/zulip/deployments/current/scripts/setup/setup-certbot \
+    --agree-tos \
+    --email="$ZULIP_ADMINISTRATOR" \
+    -- \
+    "$EXTERNAL_HOST"
+
+echo "LetsEncrypt cert generated."
