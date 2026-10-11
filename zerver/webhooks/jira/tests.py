@@ -57,7 +57,7 @@ class JiraHookTests(WebhookTestCase):
     def test_created_with_bracket_in_title(self) -> None:
         # Brackets in the Jira summary must not break Markdown link parsing.
         expected_topic_name = "BUG-15: Extra ]"
-        expected_message = "@_**Othello, the Moor of Venice|12** created [BUG-15: Extra ](http://lfranchi.com:8080/browse/BUG-15) with major priority."
+        expected_message = "@_**Othello, the Moor of Venice|12** created [BUG-15: Extra](http://lfranchi.com:8080/browse/BUG-15) with major priority."
         self.check_webhook(
             "issue_created_with_bracket_in_title", expected_topic_name, expected_message
         )
