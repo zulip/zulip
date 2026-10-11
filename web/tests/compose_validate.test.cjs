@@ -763,6 +763,16 @@ test_ui("warn_if_mentioning_unsubscribed_user", async ({override, mock_template}
     $banner_container.set_find_results(".recipient_not_subscribed", $warning_row);
     await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
     assert.ok(!new_banner_rendered);
+
+    // If the user clicked "Notify them", the banner was removed from DOM
+    // and the user_id is in notify_unsubscribed_mentioned_user_ids;
+    // mentioning them again should not re-render the banner.
+    $banner_container.set_find_results(".recipient_not_subscribed", []);
+    compose_validate.add_notify_unsubscribed_mentioned_user_id(34);
+    new_banner_rendered = false;
+    await compose_validate.warn_if_mentioning_unsubscribed_user(mentioned_details, $textarea);
+    assert.ok(!new_banner_rendered);
+    compose_validate.clear_notify_unsubscribed_mentioned_user_ids();
 });
 
 test_ui("maybe_clear_stale_recipient_not_subscribed_warnings", () => {
@@ -797,17 +807,22 @@ test_ui("maybe_clear_stale_recipient_not_subscribed_warnings", () => {
         const mention = people.get_mention_syntax(alice.full_name, alice.user_id, false);
         $banner_container.set_find_results(".recipient_not_subscribed", $banner);
         $textarea.val(`Hello ${mention} here.`);
+        compose_validate.add_notify_unsubscribed_mentioned_user_id(alice.user_id);
         compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
         assert.ok(!removed_banners.has("canonical"));
+        assert.deepEqual(compose_validate.get_notify_unsubscribed_mentioned_user_ids(), [
+            alice.user_id,
+        ]);
     }
 
-    // Banner removed when mention is deleted from compose text.
+    // Banner and notify_unsubscribed_mentioned_user_ids entry removed when mention is deleted from compose text.
     {
         const $banner = make_banner("deleted", String(alice.user_id));
         $banner_container.set_find_results(".recipient_not_subscribed", $banner);
         $textarea.val("Hello, how are you?");
         compose_validate.maybe_clear_stale_recipient_not_subscribed_warnings($textarea);
         assert.ok(removed_banners.has("deleted"));
+        assert.deepEqual(compose_validate.get_notify_unsubscribed_mentioned_user_ids(), []);
     }
 
     // Banner preserved for @**|user_id** form.

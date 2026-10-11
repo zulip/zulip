@@ -9,8 +9,11 @@
         {{else}}
         <div class="banner_content">{{> @partial-block .}}</div>
         {{/if}}
+        {{#if notify_button_text}}
+        <button class="main-view-banner-action-button notify-unsubscribed-user-button{{#if (and hide_close_button (not button_text))}} right_edge{{/if}}">{{notify_button_text}}</button>
+        {{/if}}
         {{#if button_text}}
-        <button class="main-view-banner-action-button{{#if hide_close_button}} right_edge{{/if}}" {{#if scheduling_message}}data-validation-trigger="schedule"{{/if}}>{{button_text}}</button>
+        <button class="main-view-banner-action-button{{#if notify_button_text}} secondary-button{{/if}}{{#if hide_close_button}} right_edge{{/if}}" {{#if scheduling_message}}data-validation-trigger="schedule"{{/if}}>{{button_text}}</button>
         {{/if}}
         {{#if is_onboarding_banner}}
         <button class="main-view-banner-action-button right_edge" data-action="mark-as-read">{{t "Got it"}}</button>

@@ -45,6 +45,13 @@ def send_message_backend(
     ] = None,
     local_id: str | None = None,
     message_content: Annotated[str, ApiParamConfig("content")],
+    notify_unsubscribed_mentioned_user_ids: Annotated[
+        Json[list[int]] | None,
+        ApiParamConfig(
+            "notify_unsubscribed_mentioned_user_ids",
+            documentation_status=DOCUMENTATION_PENDING,
+        ),
+    ] = None,
     queue_id: str | None = None,
     read_by_sender: Json[bool] | None = None,
     req_sender: Annotated[
@@ -144,6 +151,7 @@ def send_message_backend(
         sender_queue_id=queue_id,
         widget_content=widget_content,
         read_by_sender=read_by_sender,
+        notify_unsubscribed_mentioned_user_ids=notify_unsubscribed_mentioned_user_ids,
     )
     data["id"] = sent_message_result.message_id
     data["message_url"] = sent_message_result.message_url

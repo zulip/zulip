@@ -2670,3 +2670,48 @@ test("set_max_channel_width_css_variable", async ({override_rewire}) => {
 
     assert.equal($root[0].style.getPropertyValue("--longest-subscribed-channel-name-width"), "3px");
 });
+
+run_test("user_can_join_channel", () => {
+    people.init();
+    people.add_active_user(me);
+    people.add_active_user(test_user);
+    people.add_active_user(guest_user);
+
+    const social = {
+        subscribed: false,
+        color: "red",
+        name: "social",
+        stream_id: 2,
+        is_muted: false,
+        is_archived: false,
+        invite_only: false,
+        is_web_public: false,
+        history_public_to_subscribers: false,
+        can_add_subscribers_group: nobody_group.id,
+        can_administer_channel_group: nobody_group.id,
+        can_subscribe_group: nobody_group.id,
+    };
+
+    // Guest users cannot join an unsubscribed channel themselves.
+    assert.equal(stream_data.user_can_join_channel(social, guest_user), false);
+
+    // Non-guest users can join public and web-public channels.
+    assert.equal(stream_data.user_can_join_channel(social, me), true);
+    social.is_web_public = true;
+    assert.equal(stream_data.user_can_join_channel(social, me), true);
+    social.is_web_public = false;
+
+    // For private channels, users can join only if they have permission via
+    // can_subscribe_group or can_add_subscribers_group.
+    social.invite_only = true;
+    assert.equal(stream_data.user_can_join_channel(social, me), false);
+
+    social.can_add_subscribers_group = me_group.id;
+    assert.equal(stream_data.user_can_join_channel(social, me), true);
+    assert.equal(stream_data.user_can_join_channel(social, test_user), false);
+
+    social.can_add_subscribers_group = nobody_group.id;
+    social.can_subscribe_group = me_group.id;
+    assert.equal(stream_data.user_can_join_channel(social, me), true);
+    assert.equal(stream_data.user_can_join_channel(social, test_user), false);
+});

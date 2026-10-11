@@ -49,6 +49,7 @@ export type SendMessageData = {
           type: "stream";
           stream_id: number;
           topic: string;
+          notify_unsubscribed_mentioned_user_ids?: string;
       }
     | {
           type: "private";
@@ -113,6 +114,7 @@ export function clear_compose_box(): void {
     compose_ui.compose_textarea_typeahead?.hide();
     compose_validate.check_overflow_text($("#send_message_form"));
     compose_validate.clear_topic_resolved_warning();
+    compose_validate.clear_notify_unsubscribed_mentioned_user_ids();
     drafts.set_compose_draft_id(undefined);
     compose_ui.autosize_textarea($("textarea#compose-textarea"));
     compose_banner.clear_errors();
@@ -206,6 +208,8 @@ export let send_message = (): void => {
         const stream_id = compose_state.stream_id();
         assert(stream_id !== undefined);
         const topic = compose_state.topic();
+        const notify_unsubscribed_mentioned_user_ids =
+            compose_validate.get_notify_unsubscribed_mentioned_user_ids();
         message_data = {
             type: message_type,
             content: compose_state.message_content(),
@@ -215,6 +219,11 @@ export let send_message = (): void => {
             stream_id,
             to: JSON.stringify([stream_id]),
             draft_id,
+            ...(notify_unsubscribed_mentioned_user_ids.length > 0 && {
+                notify_unsubscribed_mentioned_user_ids: JSON.stringify(
+                    notify_unsubscribed_mentioned_user_ids,
+                ),
+            }),
         };
     }
 

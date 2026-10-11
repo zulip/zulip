@@ -345,6 +345,12 @@ export function initialize(): void {
             const user_id = Number($invite_row.attr("data-user-id"));
             const stream_id = Number($invite_row.attr("data-stream-id"));
 
+            if ($(event.target).hasClass("notify-unsubscribed-user-button")) {
+                compose_validate.add_notify_unsubscribed_mentioned_user_id(user_id);
+                $invite_row.remove();
+                return;
+            }
+
             function success(): void {
                 $invite_row.remove();
             }

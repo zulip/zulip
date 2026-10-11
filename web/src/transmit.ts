@@ -24,6 +24,7 @@ type SendMessageData = {
     | {
           type: "stream";
           topic: string;
+          notify_unsubscribed_mentioned_user_ids?: string;
       }
     | {
           type: "private";

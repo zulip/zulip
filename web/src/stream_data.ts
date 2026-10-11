@@ -642,6 +642,18 @@ export function has_content_access_via_group_permissions(
     return false;
 }
 
+export function user_can_join_channel(sub: StreamSubscription, user: User): boolean {
+    if (user.is_guest) {
+        return false;
+    }
+
+    if (!sub.invite_only) {
+        return true;
+    }
+
+    return has_content_access_via_group_permissions(sub, user);
+}
+
 export let has_content_access = (sub: StreamSubscription): boolean => {
     if (sub.is_web_public) {
         return true;

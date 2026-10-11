@@ -31,6 +31,7 @@ from zerver.lib.cache import (
     pending_preview_draft_cache_key,
     preview_draft_content_hash,
 )
+from zerver.lib.compose_reply import MESSAGE_QUOTE_BODY, truncate_quote_content
 from zerver.lib.exceptions import (
     DirectMessageInitiationError,
     DirectMessagePermissionError,
@@ -45,6 +46,7 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.markdown import MessageRenderingResult, render_message_markdown
 from zerver.lib.markdown import version as markdown_version
+from zerver.lib.markdown.fenced_code import close_unclosed_fences, get_unused_fence
 from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
 from zerver.lib.message import (
     SendMessageRequest,
@@ -82,13 +84,18 @@ from zerver.lib.streams import (
     get_stream_topics_policy,
     notify_stream_is_recently_active_update,
     subscribed_to_stream,
+    user_has_content_access,
     user_has_metadata_access,
 )
 from zerver.lib.string_validation import check_stream_name
 from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.topic import get_topic_display_name, participants_for_topic
-from zerver.lib.topic_link_util import get_message_link_label, get_stream_link_syntax
+from zerver.lib.topic_link_util import (
+    get_message_link_label,
+    get_stream_link_syntax,
+    get_stream_topic_link_syntax,
+)
 from zerver.lib.types import UserProfileChangeDict
 from zerver.lib.url_encoding import message_link_url, stream_message_url
 from zerver.lib.url_preview.preview import get_cached_link_embed_data, get_unavailable_preview_urls
@@ -1611,6 +1618,7 @@ def check_send_message(
     *,
     skip_stream_access_check: bool = False,
     read_by_sender: bool = False,
+    notify_unsubscribed_mentioned_user_ids: Sequence[int] | None = None,
 ) -> SentMessageResult:
     addressee = Addressee.legacy_build(sender, recipient_type_name, message_to, topic_name)
     message_request = check_message(
@@ -1627,10 +1635,98 @@ def check_send_message(
         widget_content,
         skip_stream_access_check=skip_stream_access_check,
     )
-    return do_send_messages(
+    sent_message_result = do_send_messages(
         [message_request],
         mark_as_read=[sender.id] if read_by_sender else [],
     )[0]
+    if notify_unsubscribed_mentioned_user_ids and message_request.message.is_channel_message:
+        send_unsubscribed_mention_notifications(
+            message_request=message_request,
+            notify_unsubscribed_mentioned_user_ids=notify_unsubscribed_mentioned_user_ids,
+        )
+    return sent_message_result
+
+
+def send_unsubscribed_mention_notifications(
+    message_request: SendMessageRequest,
+    notify_unsubscribed_mentioned_user_ids: Sequence[int],
+) -> None:
+    message = message_request.message
+    stream = message_request.stream
+    assert stream is not None
+    realm = message_request.realm
+
+    candidate_user_ids = (
+        set(notify_unsubscribed_mentioned_user_ids)
+        & message_request.rendering_result.mentions_user_ids
+    ) - (message_request.active_user_ids | message_request.all_bot_user_ids)
+    if not candidate_user_ids:
+        return
+
+    candidate_users = UserProfile.objects.filter(
+        id__in=candidate_user_ids,
+        realm=realm,
+        is_active=True,
+        is_bot=False,
+    )
+
+    notification_bot = get_system_bot(settings.NOTIFICATION_BOT, realm.id)
+    channel_topic_link = get_stream_topic_link_syntax(stream.id, stream.name, message.topic_name())
+    sender_mention = silent_mention_syntax_for_user(message.sender)
+    conversation_url = stream_message_url(
+        realm=realm,
+        message={
+            "id": message.id,
+            "stream_id": stream.id,
+            "display_recipient": stream.name,
+            "topic": message.topic_name(),
+        },
+    )
+    fence = get_unused_fence(message.content)
+    closed_quote_content = close_unclosed_fences(message.content)
+
+    notifications: list[SendMessageRequest] = []
+    for recipient_user in candidate_users:
+        if recipient_user.is_guest:
+            continue
+        user_group_membership_details = UserGroupMembershipDetails(user_recursive_group_ids=None)
+        if not user_has_content_access(
+            recipient_user,
+            stream,
+            user_group_membership_details,
+            is_subscribed=False,
+        ):
+            continue
+
+        with override_language(recipient_user.default_language):
+            intro = _(
+                "You have been mentioned in a channel you are not subscribed to: {channel_topic_link}"
+            ).format(channel_topic_link=channel_topic_link)
+            quote_context = _("{user_silent_mention} [said]({conversation_url}):").format(
+                user_silent_mention=sender_mention,
+                conversation_url=conversation_url,
+            )
+            template_without_content = (
+                f"{intro}\n\n{quote_context}\n{MESSAGE_QUOTE_BODY.format(fence=fence, content='')}"
+            )
+            max_quote_length = max(settings.MAX_MESSAGE_LENGTH - len(template_without_content), 0)
+            quoted_content = truncate_quote_content(closed_quote_content, max_quote_length)
+            quote_body = MESSAGE_QUOTE_BODY.format(
+                fence=fence,
+                content=quoted_content,
+            )
+            notification_content = f"{intro}\n\n{quote_context}\n{quote_body}"
+
+        notification_request = internal_prep_private_message(
+            notification_bot,
+            recipient_user,
+            notification_content,
+        )
+        if notification_request is not None:
+            notifications.append(notification_request)
+
+    if notifications:
+        do_send_messages(notifications)
 
 
 def send_rate_limited_pm_notification_to_bot_owner(

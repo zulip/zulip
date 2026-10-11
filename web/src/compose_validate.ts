@@ -307,6 +307,20 @@ export async function warn_if_private_stream_is_linked(
     }
 }
 
+const notify_unsubscribed_mentioned_user_ids = new Set<number>();
+
+export function add_notify_unsubscribed_mentioned_user_id(user_id: number): void {
+    notify_unsubscribed_mentioned_user_ids.add(user_id);
+}
+
+export function get_notify_unsubscribed_mentioned_user_ids(): number[] {
+    return [...notify_unsubscribed_mentioned_user_ids];
+}
+
+export function clear_notify_unsubscribed_mentioned_user_ids(): void {
+    notify_unsubscribed_mentioned_user_ids.clear();
+}
+
 export async function warn_if_mentioning_unsubscribed_user(
     mentioned: UserOrMention,
     $textarea: JQuery<HTMLTextAreaElement>,
@@ -336,17 +350,25 @@ export async function warn_if_mentioning_unsubscribed_user(
         const existing_invites = [...$existing_invites_area].map((user_row) =>
             Number($(user_row).attr("data-user-id")),
         );
+        const is_in_editing_area = $textarea.closest(".message_row").length > 0;
         const sub = stream_data.get_sub_by_id(stream_id)!;
         const can_subscribe_other_users = stream_data.can_subscribe_others(sub);
+        const can_join_channel =
+            !is_in_editing_area && stream_data.user_can_join_channel(sub, mentioned.user);
 
-        if (!existing_invites.includes(user_id)) {
+        if (
+            !existing_invites.includes(user_id) &&
+            (is_in_editing_area || !notify_unsubscribed_mentioned_user_ids.has(user_id))
+        ) {
             const context = {
                 user_id,
                 stream_id,
                 banner_type: compose_banner.WARNING,
+                notify_button_text: can_join_channel ? $t({defaultMessage: "Notify them"}) : null,
                 button_text: can_subscribe_other_users
                     ? $t({defaultMessage: "Subscribe them"})
                     : null,
+                can_join_channel,
                 can_subscribe_other_users,
                 name: mentioned.user.full_name,
                 classname: compose_banner.CLASSNAMES.recipient_not_subscribed,
@@ -358,6 +380,26 @@ export async function warn_if_mentioning_unsubscribed_user(
             compose_banner.append_compose_banner_to_banner_list($(new_row_html), $container);
         }
     }
+}
+
+function text_contains_user_mention(compose_text: string, user_id: number): boolean {
+    const user = people.maybe_get_user_by_id(user_id, true);
+    if (user === undefined) {
+        return false;
+    }
+
+    // get_mention_syntax produces the canonical @**Name** form (or
+    // @**Name|id** for duplicate names), matching what the typeahead
+    // inserts.
+    const mention_syntax = people.get_mention_syntax(user.full_name, user_id, false);
+    const name_and_id_syntax = `@**${user.full_name}|${user_id}**`;
+    const id_only_syntax = `@**|${user_id}**`;
+
+    return (
+        compose_text.includes(mention_syntax) ||
+        compose_text.includes(name_and_id_syntax) ||
+        compose_text.includes(id_only_syntax)
+    );
 }
 
 // Called on every compose input event to remove any "recipient not
@@ -372,37 +414,21 @@ export function maybe_clear_stale_recipient_not_subscribed_warnings(
     const $existing_banners = $banner_container.find(
         `.${CSS.escape(compose_banner.CLASSNAMES.recipient_not_subscribed)}`,
     );
-    if ($existing_banners.length === 0) {
+    if ($existing_banners.length === 0 && notify_unsubscribed_mentioned_user_ids.size === 0) {
         return;
     }
 
     const compose_text = $textarea.val() ?? "";
     for (const banner of $existing_banners) {
         const user_id = Number($(banner).attr("data-user-id"));
-        if (!user_id) {
+        if (!user_id || !text_contains_user_mention(compose_text, user_id)) {
             $(banner).remove();
-            continue;
         }
+    }
 
-        const user = people.maybe_get_user_by_id(user_id, true);
-        if (user === undefined) {
-            $(banner).remove();
-            continue;
-        }
-
-        // get_mention_syntax produces the canonical @**Name** form (or
-        // @**Name|id** for duplicate names), matching what the typeahead
-        // inserts.
-        const mention_syntax = people.get_mention_syntax(user.full_name, user_id, false);
-        const name_and_id_syntax = `@**${user.full_name}|${user_id}**`;
-        const id_only_syntax = `@**|${user_id}**`;
-
-        if (
-            !compose_text.includes(mention_syntax) &&
-            !compose_text.includes(name_and_id_syntax) &&
-            !compose_text.includes(id_only_syntax)
-        ) {
-            $(banner).remove();
+    for (const user_id of notify_unsubscribed_mentioned_user_ids) {
+        if (!text_contains_user_mention(compose_text, user_id)) {
+            notify_unsubscribed_mentioned_user_ids.delete(user_id);
         }
     }
 }

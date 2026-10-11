@@ -4093,6 +4093,102 @@ class CheckMessageTest(ZulipTestCase):
         ):
             check_message(sender, client, addressee_named_topic, message_content, realm)
 
+    def test_notify_unsubscribed_mentioned_user_ids(self) -> None:
+        sender = self.example_user("desdemona")
+        unsubscribed_user = self.example_user("ZOE")
+        subscribed_user = self.example_user("hamlet")
+        guest_user = self.example_user("polonius")
+        self.login_user(sender)
+
+        stream = self.make_stream("public_notify_test")
+        self.subscribe(sender, stream.name)
+        self.subscribe(subscribed_user, stream.name)
+
+        content = (
+            f"Hello @**{unsubscribed_user.full_name}** and "
+            f"@**{subscribed_user.full_name}** and @**{guest_user.full_name}**!"
+        )
+        old_zoe_count = message_stream_count(unsubscribed_user)
+        old_hamlet_count = message_stream_count(subscribed_user)
+        old_polonius_count = message_stream_count(guest_user)
+
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "stream",
+                "to": orjson.dumps(stream.name).decode(),
+                "content": content,
+                "topic": "notify topic",
+                "notify_unsubscribed_mentioned_user_ids": orjson.dumps(
+                    [
+                        unsubscribed_user.id,
+                        subscribed_user.id,
+                        guest_user.id,
+                        self.example_user("othello").id,
+                    ]
+                ).decode(),
+            },
+        )
+        sent_message_id = self.assert_json_success(result)["id"]
+
+        # Unsubscribed non-guest user who is mentioned and can join the channel
+        # receives a Notification Bot DM.
+        self.assertEqual(message_stream_count(unsubscribed_user), old_zoe_count + 1)
+        notification_msg = most_recent_message(unsubscribed_user)
+        self.assertEqual(notification_msg.sender.email, "notification-bot@zulip.com")
+        expected_content = (
+            f"You have been mentioned in a channel you are not subscribed to: "
+            f"#**{stream.name}>notify topic**\n\n"
+            f"@_**{sender.full_name}|{sender.id}** "
+            f"[said](http://zulip.testserver/#narrow/channel/{stream.id}-{stream.name}/topic/notify.20topic/near/{sent_message_id}):\n"
+            f"```quote\n{content}\n```"
+        )
+        self.assertEqual(notification_msg.content, expected_content)
+
+        # Already-subscribed user only receives the channel message itself, not a extra DM.
+        self.assertEqual(message_stream_count(subscribed_user), old_hamlet_count + 1)
+        self.assertEqual(most_recent_message(subscribed_user).id, sent_message_id)
+
+        # Guest user cannot join an unsubscribed channel and does not receive the DM.
+        self.assertEqual(message_stream_count(guest_user), old_polonius_count)
+
+        # Private channel that unsubscribed_user does not have content access to:
+        # no Notification Bot DM should be sent.
+        private_stream = self.make_stream("private_notify_test", invite_only=True)
+        self.subscribe(sender, private_stream.name)
+        old_zoe_count = message_stream_count(unsubscribed_user)
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "stream",
+                "to": orjson.dumps(private_stream.name).decode(),
+                "content": f"Secret @**{unsubscribed_user.full_name}**",
+                "topic": "secret topic",
+                "notify_unsubscribed_mentioned_user_ids": orjson.dumps(
+                    [unsubscribed_user.id]
+                ).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        self.assertEqual(message_stream_count(unsubscribed_user), old_zoe_count)
+
+        # When notify_unsubscribed_mentioned_user_ids only contains users who were
+        # not mentioned (or are already subscribed), no notification DM is sent.
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "stream",
+                "to": orjson.dumps(stream.name).decode(),
+                "content": "No unsubscribed mention here",
+                "topic": "notify topic",
+                "notify_unsubscribed_mentioned_user_ids": orjson.dumps(
+                    [unsubscribed_user.id, subscribed_user.id]
+                ).decode(),
+            },
+        )
+        self.assert_json_success(result)
+        self.assertEqual(message_stream_count(unsubscribed_user), old_zoe_count)
+
 
 class SendToStrTest(ZulipTestCase):
     """
