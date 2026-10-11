@@ -45,12 +45,18 @@ export function get_current_email(
     pill_container: input_pill.InputPillContainer<EmailPill>,
 ): string | null {
     const current_text = pill_container.getCurrentText();
-    if (current_text !== null) {
-        const parsed_address = parseOneAddress(current_text);
-        if (parsed_address?.type === "mailbox") {
-            return current_text;
-        }
+    if (current_text === null) {
+        return null;
     }
+
+    const parsed_addresses = parseAddressList(current_text);
+    if (
+        parsed_addresses?.length &&
+        parsed_addresses.every((address) => address.type === "mailbox")
+    ) {
+        return current_text;
+    }
+
     return null;
 }
 
