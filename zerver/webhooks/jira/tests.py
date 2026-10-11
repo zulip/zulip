@@ -54,6 +54,14 @@ class JiraHookTests(WebhookTestCase):
         expected_message = "@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with à hook](http://lfranchi.com:8080/browse/BUG-15) with major priority."
         self.check_webhook("issue_created_with_unicode", expected_topic_name, expected_message)
 
+    def test_created_with_bracket_in_title(self) -> None:
+        # Brackets in the Jira summary must not break Markdown link parsing.
+        expected_topic_name = "BUG-15: Extra ]"
+        expected_message = "@_**Othello, the Moor of Venice|12** created [BUG-15: Extra ](http://lfranchi.com:8080/browse/BUG-15) with major priority."
+        self.check_webhook(
+            "issue_created_with_bracket_in_title", expected_topic_name, expected_message
+        )
+
     def test_created_assignee(self) -> None:
         expected_topic_name = "TEST-4: Test Created Assignee"
         expected_message = "Bo Williams created [TEST-4: Test Created Assignee](https://zulipp.atlassian.net/browse/TEST-4) with major priority (assigned to Kevin Lin)."
