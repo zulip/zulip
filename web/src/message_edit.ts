@@ -141,7 +141,7 @@ export function is_topic_editable(message: Message, edit_limit_seconds_buffer = 
     return (
         realm.realm_move_messages_within_stream_limit_seconds +
             edit_limit_seconds_buffer +
-            (message.timestamp - Date.now() / 1000) >
+            (message.timestamp - timerender.get_server_time()) >
         0
     );
 }
@@ -210,7 +210,7 @@ export function is_content_editable(message: Message, edit_limit_seconds_buffer 
         realm.realm_message_content_edit_limit_seconds === null ||
         realm.realm_message_content_edit_limit_seconds +
             edit_limit_seconds_buffer +
-            (message.timestamp - Date.now() / 1000) >
+            (message.timestamp - timerender.get_server_time()) >
             0
     ) {
         return true;
@@ -223,7 +223,7 @@ export function remaining_content_edit_time(message: Message): number {
         return 0;
     }
     const limit_seconds = realm.realm_message_content_edit_limit_seconds ?? Infinity;
-    return limit_seconds + (message.timestamp - Date.now() / 1000);
+    return limit_seconds + (message.timestamp - timerender.get_server_time());
 }
 
 export function is_stream_editable(message: Message, edit_limit_seconds_buffer = 0): boolean {
@@ -256,7 +256,7 @@ export function is_stream_editable(message: Message, edit_limit_seconds_buffer =
     return (
         realm.realm_move_messages_between_streams_limit_seconds +
             edit_limit_seconds_buffer +
-            (message.timestamp - Date.now() / 1000) >
+            (message.timestamp - timerender.get_server_time()) >
         0
     );
 }
@@ -271,7 +271,7 @@ export function remaining_message_move_time(message: Message): number {
     }
 
     const limit_seconds = realm.realm_move_messages_within_stream_limit_seconds ?? Infinity;
-    return limit_seconds + (message.timestamp - Date.now() / 1000);
+    return limit_seconds + (message.timestamp - timerender.get_server_time());
 }
 
 export function stream_and_topic_exist_in_edit_history(
@@ -716,7 +716,8 @@ function edit_message($row: JQuery, raw_content: string): void {
         // zerver.actions.message_edit.check_update_message
         const min_seconds_to_edit = 10;
         let seconds_left =
-            realm_message_content_edit_limit_seconds + (message.timestamp - Date.now() / 1000);
+            realm_message_content_edit_limit_seconds +
+            (message.timestamp - timerender.get_server_time());
         seconds_left = Math.floor(Math.max(seconds_left, min_seconds_to_edit));
 
         // I believe this needs to be defined outside the countdown_timer, since

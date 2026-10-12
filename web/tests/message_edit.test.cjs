@@ -8,6 +8,7 @@ const {run_test} = require("./lib/test.cjs");
 const {$} = require("./lib/zjquery.cjs");
 
 const message_edit = zrequire("message_edit");
+const server_time = zrequire("server_time");
 const {set_current_user, set_realm} = zrequire("state_data");
 
 const is_content_editable = message_edit.is_content_editable;
@@ -329,4 +330,31 @@ run_test("update_preview_embeds", ({override}) => {
     assert.deepEqual(applied_to, ["message row being edited"]);
 
     message_edit.currently_editing_messages.clear();
+});
+
+run_test("is_content_editable with the client clock ahead of the server", ({override}) => {
+    override(realm, "realm_allow_message_editing", true);
+    override(realm, "realm_message_content_edit_limit_seconds", 600);
+
+    // This client's clock is an hour ahead of the server's.
+    const server_now = Date.now() / 1000 - 3600;
+    const message = {
+        sent_by_me: true,
+        submessages: [],
+        type: "private",
+        timestamp: server_now - 60,
+    };
+
+    // Measured against the unadjusted client clock, the message appears
+    // more than an hour old, so the 10-minute edit limit seems expired.
+    assert.equal(is_content_editable(message), false);
+
+    try {
+        server_time.update_server_time_offset(server_now);
+        // The server still allows editing 60 seconds after sending,
+        // and now the client agrees.
+        assert.equal(is_content_editable(message), true);
+    } finally {
+        server_time.clear_for_testing();
+    }
 });

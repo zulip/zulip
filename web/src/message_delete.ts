@@ -11,6 +11,7 @@ import * as people from "./people.ts";
 import * as settings_data from "./settings_data.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
+import * as timerender from "./timerender.ts";
 import * as ui_report from "./ui_report.ts";
 
 let currently_deleting_messages: number[] = [];
@@ -80,7 +81,8 @@ export function get_deletability(message: Message): boolean {
     }
 
     if (
-        realm.realm_message_content_delete_limit_seconds + (message.timestamp - Date.now() / 1000) >
+        realm.realm_message_content_delete_limit_seconds +
+            (message.timestamp - timerender.get_server_time()) >
         0
     ) {
         return true;
