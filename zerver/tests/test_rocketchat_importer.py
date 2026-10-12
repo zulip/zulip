@@ -334,6 +334,46 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(zerver_stream[5]["stream_post_policy"], 1)
         self.assertEqual(zerver_stream[5]["realm"], realm_id)
 
+        # Archived channels are imported as archived.
+        self.assertFalse(zerver_stream[0]["deactivated"])
+        self.assertTrue(zerver_stream[5]["deactivated"])
+
+    def test_convert_channel_data_with_archived_general_channel(self) -> None:
+        fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
+        rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
+
+        mock_realm_dict: ZerverFieldsT = dict(zerver_realm=[dict()])
+        room_id_to_room_map: dict[str, dict[str, Any]] = {}
+        team_id_to_team_map: dict[str, dict[str, Any]] = {}
+
+        with self.assertLogs(level="INFO"):
+            categorize_channels_and_map_with_id(
+                channel_data=rocketchat_data["room"],
+                room_id_to_room_map=room_id_to_room_map,
+                team_id_to_team_map=team_id_to_team_map,
+                dsc_id_to_dsc_map={},
+                direct_id_to_direct_map={},
+                direct_message_group_id_to_direct_message_group_map={},
+                livechat_id_to_livechat_map={},
+            )
+        general_room = next(
+            room for room in room_id_to_room_map.values() if room["name"] == "general"
+        )
+        general_room["archived"] = True
+
+        channels = convert_channel_data(
+            realm=mock_realm_dict,
+            room_id_to_room_map=room_id_to_room_map,
+            team_id_to_team_map=team_id_to_team_map,
+            stream_id_mapper=IdMapper[str](),
+            realm_id=3,
+        )
+
+        self.assertEqual(channels[0]["name"], "general")
+        self.assertTrue(channels[0]["deactivated"])
+        self.assertNotIn("new_stream_announcements_stream", mock_realm_dict["zerver_realm"][0])
+        self.assertNotIn("zulip_update_announcements_stream", mock_realm_dict["zerver_realm"][0])
+
     def test_convert_stream_subscription_data(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
@@ -1051,7 +1091,10 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(
             self.get_set(realm["zerver_stream"], "realm"), {realm["zerver_realm"][0]["id"]}
         )
-        self.assertEqual(self.get_set(realm["zerver_stream"], "deactivated"), {False})
+        self.assertEqual(
+            {stream["name"] for stream in realm["zerver_stream"] if stream["deactivated"]},
+            {"thp-channel-2"},
+        )
 
         self.assert_length(realm["zerver_defaultstream"], 0)
 
