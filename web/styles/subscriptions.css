@@ -587,7 +587,7 @@
                         margin-left: 3px;
                     }
 
-                    .icon-button {
+                    .icon-button .zulip-icon {
                         /* Equal to font sizes for other icon buttons
                         in the channel and group settings UI. */
                         font-size: calc(1.2 * var(--base-font-size-px));
@@ -1492,7 +1492,7 @@
         }
     }
 
-    .icon-button {
+    .icon-button .zulip-icon {
         font-size: 1.2em;
     }
 }
