@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - main
-  
+
 concurrency:
   group: "${{ github.workflow }}-${{ github.head_ref || github.run_id }}"
   cancel-in-progress: true
@@ -18,7 +18,7 @@ jobs:
   lint:
     name: Lint Dockerfile & Compose manifest
     runs-on: ubuntu-latest
-    permissions: 
+    permissions:
       contents: read
     steps:
       - name: Checkout repository
@@ -37,7 +37,7 @@ jobs:
     name: Build container image
     needs: lint
     runs-on: ubuntu-latest
-    permissions: 
+    permissions:
       contents: read
     outputs:
       image_tags: ${{ steps.meta.outputs.tags }}
@@ -51,7 +51,7 @@ jobs:
       - name: Compute image metadata
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302
-        with: 
+        with:
           images: ghcr.io/${{ github.repository }}
           tags: |
             type=sha
@@ -70,12 +70,12 @@ jobs:
           name: zulip-image
           path: /tmp/image.tar
           retention-days: 7
-          
+
   scan:
     name: Scan image for vulnerabilities (Trivy)
     needs: build
     runs-on: ubuntu-latest
-    permissions: 
+    permissions:
       security-events: write
     steps:
       - name: Download image artifact
@@ -95,8 +95,8 @@ jobs:
       - name: Upload Trivy results to Security tab
         uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd
         with:
-          sarif_file: trivy-results.sarif   
-        
+          sarif_file: trivy-results.sarif
+
   push:
     name: Publish image to GHCR
     needs: [build, scan]
