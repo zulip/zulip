@@ -2,7 +2,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import IntEnum
-from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeVar
 
 if TYPE_CHECKING:
     from zerver.models import Stream
@@ -411,6 +411,9 @@ class AnalyticsDataUploadLevel(IntEnum):
     ALL = 3
 
 
+PropagateMode = Literal["change_all", "change_later", "change_one"]
+
+
 @dataclass
 class StreamMessageEditRequest:
     is_content_edited: bool
@@ -426,7 +429,7 @@ class StreamMessageEditRequest:
     orig_content: str
     orig_topic_name: str
     orig_stream: "Stream"
-    propagate_mode: str
+    propagate_mode: PropagateMode
 
 
 @dataclass

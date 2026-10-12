@@ -1750,10 +1750,10 @@ class EditMessageTest(ZulipTestCase):
         called = False
         for call_args in mock_send_event.call_args_list:
             (_arg_realm, arg_event, arg_notified_users) = call_args[0]
-            if arg_event["type"] == "update_message":
-                self.assertEqual(arg_event["type"], "update_message")
+            if arg_event.type == "update_message":
+                self.assertEqual(arg_event.type, "update_message")
                 self.assertEqual(
-                    arg_event["topic_wildcard_mention_in_followed_topic_user_ids"], [hamlet.id]
+                    arg_event.topic_wildcard_mention_in_followed_topic_user_ids, [hamlet.id]
                 )
                 self.assertEqual(
                     sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified
@@ -1808,10 +1808,10 @@ class EditMessageTest(ZulipTestCase):
         called = False
         for call_args in mock_send_event.call_args_list:
             (_arg_realm, arg_event, arg_notified_users) = call_args[0]
-            if arg_event["type"] == "update_message":
-                self.assertEqual(arg_event["type"], "update_message")
+            if arg_event.type == "update_message":
+                self.assertEqual(arg_event.type, "update_message")
                 self.assertEqual(
-                    arg_event["stream_wildcard_mention_in_followed_topic_user_ids"], [hamlet.id]
+                    arg_event.stream_wildcard_mention_in_followed_topic_user_ids, [hamlet.id]
                 )
                 self.assertEqual(
                     sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified
@@ -1863,9 +1863,9 @@ class EditMessageTest(ZulipTestCase):
         called = False
         for call_args in mock_send_event.call_args_list:
             (_arg_realm, arg_event, arg_notified_users) = call_args[0]
-            if arg_event["type"] == "update_message":
-                self.assertEqual(arg_event["type"], "update_message")
-                self.assertEqual(arg_event["topic_wildcard_mention_user_ids"], [hamlet.id])
+            if arg_event.type == "update_message":
+                self.assertEqual(arg_event.type, "update_message")
+                self.assertEqual(arg_event.topic_wildcard_mention_user_ids, [hamlet.id])
                 self.assertEqual(
                     sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified
                 )
@@ -1924,9 +1924,9 @@ class EditMessageTest(ZulipTestCase):
         called = False
         for call_args in mock_send_event.call_args_list:
             (_arg_realm, arg_event, arg_notified_users) = call_args[0]
-            if arg_event["type"] == "update_message":
-                self.assertEqual(arg_event["type"], "update_message")
-                self.assertEqual(arg_event["stream_wildcard_mention_user_ids"], [])
+            if arg_event.type == "update_message":
+                self.assertEqual(arg_event.type, "update_message")
+                self.assertEqual(arg_event.stream_wildcard_mention_user_ids, [])
                 self.assertEqual(
                     sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified
                 )
@@ -2049,10 +2049,10 @@ class EditMessageTest(ZulipTestCase):
         called = False
         for call_args in mock_send_event.call_args_list:
             (_arg_realm, arg_event, arg_notified_users) = call_args[0]
-            if arg_event["type"] == "update_message":
-                self.assertEqual(arg_event["type"], "update_message")
+            if arg_event.type == "update_message":
+                self.assertEqual(arg_event.type, "update_message")
                 self.assertEqual(
-                    arg_event["stream_wildcard_mention_user_ids"], [cordelia.id, hamlet.id]
+                    arg_event.stream_wildcard_mention_user_ids, [cordelia.id, hamlet.id]
                 )
                 self.assertEqual(
                     sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified
@@ -2112,9 +2112,9 @@ class EditMessageTest(ZulipTestCase):
         called = False
         for call_args in mock_send_event.call_args_list:
             (_arg_realm, arg_event, arg_notified_users) = call_args[0]
-            if arg_event["type"] == "update_message":
-                self.assertEqual(arg_event["type"], "update_message")
-                self.assertEqual(arg_event["stream_wildcard_mention_user_ids"], [])
+            if arg_event.type == "update_message":
+                self.assertEqual(arg_event.type, "update_message")
+                self.assertEqual(arg_event.stream_wildcard_mention_user_ids, [])
                 self.assertEqual(
                     sorted(arg_notified_users, key=itemgetter("id")), users_to_be_notified
                 )

@@ -1,5 +1,4 @@
 from datetime import timedelta
-from typing import Literal
 
 import orjson
 from django.contrib.auth.models import AnonymousUser
@@ -27,7 +26,7 @@ from zerver.lib.streams import can_delete_any_message_in_channel, can_delete_own
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import maybe_rename_empty_topic_to_general_chat
 from zerver.lib.typed_endpoint import OptionalTopic, PathOnly, typed_endpoint
-from zerver.lib.types import EditHistoryEvent, FormattedEditHistoryEvent
+from zerver.lib.types import EditHistoryEvent, FormattedEditHistoryEvent, PropagateMode
 from zerver.models import Message, UserProfile
 from zerver.models.realms import MessageEditHistoryVisibilityPolicyEnum
 from zerver.models.streams import Stream, get_stream_by_id_in_realm
@@ -154,7 +153,7 @@ def update_message_backend(
     content: str | None = None,
     message_id: PathOnly[NonNegativeInt],
     prev_content_sha256: str | None = None,
-    propagate_mode: Literal["change_later", "change_one", "change_all"] = "change_one",
+    propagate_mode: PropagateMode = "change_one",
     send_notification_to_new_thread: Json[bool] = True,
     send_notification_to_old_thread: Json[bool] = False,
     stream_id: Json[NonNegativeInt] | None = None,

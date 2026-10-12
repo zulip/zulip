@@ -278,6 +278,7 @@ from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import (
     Invitee,
     ProfileDataElementUpdateDict,
+    PropagateMode,
     UserGroupMembersData,
     UserGroupMembersDict,
 )
@@ -1045,7 +1046,7 @@ class NormalActionsTest(BaseAction):
 
         # Verify stream message editing - topic only
         topic_name = "new_topic"
-        propagate_mode = "change_all"
+        propagate_mode: PropagateMode = "change_all"
 
         message_edit_request = build_message_edit_request(
             message=message,

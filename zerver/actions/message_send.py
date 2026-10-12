@@ -43,6 +43,7 @@ from zerver.lib.exceptions import (
     TopicsNotAllowedError,
     TopicWildcardMentionNotAllowedError,
 )
+from zerver.lib.internal_event_types import InternalMessageEvent
 from zerver.lib.markdown import MessageRenderingResult, render_message_markdown
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
@@ -1332,8 +1333,7 @@ def do_send_messages(
             ) in send_request.recipients_for_user_creation_events.items():
                 notify_created_user(new_accessible_user, list(notify_user_ids))
 
-        event = dict(
-            type="message",
+        event = InternalMessageEvent(
             message=send_request.message.id,
             message_dict=wide_message_dict,
             presence_idle_user_ids=presence_idle_user_ids,
@@ -1372,18 +1372,18 @@ def do_send_messages(
             assert send_request.stream is not None
             stream_update_fields = []
             if send_request.stream.is_public():
-                event["realm_id"] = send_request.stream.realm_id
-                event["stream_name"] = send_request.stream.name
+                event.realm_id = send_request.stream.realm_id
+                event.stream_name = send_request.stream.name
                 # Tornado uses these to exclude guest users' clients
                 # registered for all public channels from receiving the
                 # events for unsubscribed non web-public channel
                 # messages, since guests can only access such channels
                 # when subscribed.
-                event["realm_guest_user_ids"] = active_guest_user_ids(send_request.stream.realm_id)
+                event.realm_guest_user_ids = active_guest_user_ids(send_request.stream.realm_id)
             if send_request.stream.invite_only:
-                event["invite_only"] = True
+                event.invite_only = True
             if send_request.stream.is_web_public:
-                event["is_web_public"] = True
+                event.is_web_public = True
             if send_request.stream.first_message_id is None:
                 send_request.stream.first_message_id = send_request.message.id
                 stream_update_fields.append("first_message_id")
@@ -1415,12 +1415,12 @@ def do_send_messages(
                 user_ids_without_access_to_sender = user_ids_receiving_event - set(
                     user_ids_who_can_access_sender
                 )
-                event["user_ids_without_access_to_sender"] = list(user_ids_without_access_to_sender)
+                event.user_ids_without_access_to_sender = list(user_ids_without_access_to_sender)
 
         if send_request.local_id is not None:
-            event["local_id"] = send_request.local_id
+            event.local_id = send_request.local_id
         if send_request.sender_queue_id is not None:
-            event["sender_queue_id"] = send_request.sender_queue_id
+            event.sender_queue_id = send_request.sender_queue_id
         send_event_on_commit(send_request.realm, event, users)
 
         if send_request.links_for_embed:
@@ -1446,13 +1446,13 @@ def do_send_messages(
 
         assert send_request.message_triggered_bot_queue_events is not None
         for queue_name, events in send_request.message_triggered_bot_queue_events.items():
-            for event in events:
+            for bot_queue_event in events:
                 queue_event_on_commit(
                     queue_name,
                     {
                         "message": wide_message_dict,
-                        "trigger": event["trigger"],
-                        "user_profile_id": event["user_profile_id"],
+                        "trigger": bot_queue_event["trigger"],
+                        "user_profile_id": bot_queue_event["user_profile_id"],
                     },
                 )
 
