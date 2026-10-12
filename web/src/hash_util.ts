@@ -80,12 +80,12 @@ export function decode_operand(
         if (user_ids?.length !== 1) {
             // User mistyped the URL since we don't support
             // group operand for `sender` or `mentions` narrow.
-            // Returning -1 will lead to us showing a proper
+            // Returning UNKNOWN_USER_ID will lead to us showing a proper
             // user doesn't exist message in the UI.
             // Other options is to throw an error which will
             // lead to us showing a "Invalid URL" banner which
             // is not very nice looking.
-            return -1;
+            return filter_util.UNKNOWN_USER_ID;
         }
         return util.the(user_ids);
     }

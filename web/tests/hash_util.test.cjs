@@ -9,6 +9,7 @@ const {make_user} = require("./lib/example_user.cjs");
 const {zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
+const {UNKNOWN_USER_ID} = zrequire("filter_util");
 const hash_parser = zrequire("hash_parser");
 const hash_util = zrequire("hash_util");
 const stream_data = zrequire("stream_data");
@@ -45,6 +46,7 @@ run_test("hash_util", () => {
 
     encode_decode_operand(operator, operand, "15-Hamlet");
     encode_decode_operand(operator, 9999, "9999");
+    encode_decode_operand(operator, UNKNOWN_USER_ID, "-1");
 
     operator = "dm";
     operand = [hamlet.user_id];
