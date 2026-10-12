@@ -47,6 +47,14 @@ class zulip::app_frontend_base {
     source  => 'puppet:///modules/zulip/nginx/zulip-include-frontend/uploads.types',
     notify  => Service['nginx'],
   }
+  file { '/etc/nginx/zulip-include/api_5xx.json':
+    require => Package[$zulip::common::nginx],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    source  => 'puppet:///modules/zulip/nginx/zulip-include-frontend/api_5xx.json',
+    notify  => Service['nginx'],
+  }
   file { '/etc/nginx/zulip-include/app.d/':
     ensure => directory,
     owner  => 'root',
