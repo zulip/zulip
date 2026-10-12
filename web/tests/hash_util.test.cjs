@@ -267,6 +267,20 @@ run_test("parse_narrow_user_slug", () => {
             assert.deepEqual(parsed_operand(operator, `15,${id}`), [UNKNOWN_USER_ID, 15]);
         }
     }
+
+    for (const operator of ["sender", "mentions"]) {
+        assert.equal(parsed_operand(operator, "15-Smith,-John"), 15);
+        assert.equal(parsed_operand(operator, "15,15"), 15);
+        assert.equal(parsed_operand(operator, "hamlet@example.com"), UNKNOWN_USER_ID);
+        assert.equal(parsed_operand(operator, "42@example.com"), UNKNOWN_USER_ID);
+        for (const id of ids_above_max_safe_integer) {
+            assert.equal(parsed_operand(operator, id), UNKNOWN_USER_ID);
+        }
+        // These operators take one user.
+        assert.equal(parsed_operand(operator, "15,16-group"), UNKNOWN_USER_ID);
+        // The current user is dropped from a list, leaving the invalid member.
+        assert.equal(parsed_operand(operator, `${me.user_id},invalid`), UNKNOWN_USER_ID);
+    }
 });
 
 run_test("test_channels_settings_edit_url", () => {
