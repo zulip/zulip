@@ -7,6 +7,10 @@
     }
 
     .message_reaction_container {
+        /* Let a pill be narrower than its text, which then ends in an
+           ellipsis, rather than push out past the reactions box. */
+        min-width: 0;
+
         &.disabled {
             cursor: not-allowed;
         }
@@ -73,6 +77,48 @@
             /* Apply the same margins as on graphical emoji. */
             margin: 1px 3px;
             font-size: 0.8em;
+        }
+
+        /* When an emoji name shown as text and the names of those who
+           reacted are too long to share a line, split the space between
+           them equally, except that one shorter than its share is shown
+           in full and leaves the rest of the space to the others. */
+        .emoji_alt_code,
+        .message_reaction_vote {
+            flex: 1 1 0;
+            max-width: max-content;
+        }
+
+        .emoji_alt_code,
+        .message_reaction_vote_text {
+            min-width: 0;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            /* Both `hidden` and `clip` are shown for the sake
+                of older browsers that do not support `clip`. */
+            overflow-x: hidden;
+            overflow-x: clip;
+        }
+
+        /* Lay out each vote (a name or the count) as an item of the pill
+           itself, so that every name gets its own share of the space. */
+        .message_reaction_count {
+            display: contents;
+        }
+
+        .message_reaction_vote {
+            display: flex;
+            min-width: 0;
+
+            /* Match the margins of .message_reaction_count, which has
+               no box of its own here. */
+            &:first-child {
+                margin-left: 3px;
+            }
+
+            &:last-child {
+                margin-right: 3px;
+            }
         }
     }
 
