@@ -3477,6 +3477,76 @@ class StreamAdminTest(ZulipTestCase):
         json = self.assert_json_success(result)
         self.assert_length(json["not_removed"], 1)
 
+    def test_unsubscribe_other_user_sends_notification_dm(self) -> None:
+        admin = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        self.login_user(admin)
+
+        stream_name = "test_stream"
+        self.make_stream(stream_name)
+        self.subscribe(hamlet, stream_name)
+
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
+            {
+                "subscriptions": orjson.dumps([stream_name]).decode(),
+                "principals": orjson.dumps([hamlet.id]).decode(),
+            },
+        )
+        json = self.assert_json_success(result)
+        self.assert_length(json["removed"], 1)
+
+        # Hamlet should get a DM from the notification bot.
+        msg = self.get_last_message()
+        self.assertEqual(msg.sender_id, self.notification_bot(hamlet.realm).id)
+        self.assertIn("unsubscribed you from", msg.content)
+        self.assertIn(stream_name, msg.content)
+
+    def test_unsubscribe_other_user_from_multiple_channels_single_dm(self) -> None:
+        admin = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        self.login_user(admin)
+
+        stream_names = ["stream_one", "stream_two"]
+        for stream_name in stream_names:
+            self.make_stream(stream_name)
+            self.subscribe(hamlet, stream_name)
+
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
+            {
+                "subscriptions": orjson.dumps(stream_names).decode(),
+                "principals": orjson.dumps([hamlet.id]).decode(),
+            },
+        )
+        json = self.assert_json_success(result)
+        self.assert_length(json["removed"], 2)
+
+        # A single DM should list both channels.
+        msg = self.get_last_message()
+        self.assertEqual(msg.sender_id, self.notification_bot(hamlet.realm).id)
+        for stream_name in stream_names:
+            self.assertIn(stream_name, msg.content)
+
+    def test_unsubscribe_self_sends_no_notification_dm(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+
+        stream_name = "test_stream"
+        self.make_stream(stream_name)
+        self.subscribe(hamlet, stream_name)
+
+        message_count_before = Message.objects.count()
+        result = self.client_delete(
+            "/json/users/me/subscriptions",
+            {"subscriptions": orjson.dumps([stream_name]).decode()},
+        )
+        json = self.assert_json_success(result)
+        self.assert_length(json["removed"], 1)
+
+        # No notification DM should be sent for self-unsubscribe.
+        self.assertEqual(Message.objects.count(), message_count_before)
+
     def test_removing_last_user_from_private_stream(self) -> None:
         stream_name = "private_stream"
         stream = self.make_stream(stream_name, invite_only=True)

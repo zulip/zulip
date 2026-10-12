@@ -610,6 +610,11 @@ def remove_subscriptions_backend(
     for subscriber, not_subscribed_stream in not_subscribed:
         result["not_removed"].append(not_subscribed_stream.name)
 
+    send_user_unsubscribed_notifications(
+        acting_user=user_profile,
+        removed=removed,
+    )
+
     return json_success(request, data=result)
 
 
@@ -632,6 +637,73 @@ def you_were_just_subscribed_message(
     for channel_name in subscriptions:
         message += f"* #**{channel_name}**\n"
     return message
+
+
+def you_were_just_unsubscribed_message(
+    acting_user: UserProfile, recipient_user: UserProfile, stream_names: set[str]
+) -> str:
+    unsubscriptions = sorted(stream_names)
+    if len(unsubscriptions) == 1:
+        with override_language(recipient_user.default_language):
+            return _("{user_full_name} unsubscribed you from {channel_name}.").format(
+                user_full_name=silent_mention_syntax_for_user(acting_user),
+                channel_name=f"#**{unsubscriptions[0]}**",
+            )
+
+    with override_language(recipient_user.default_language):
+        message = _("{user_full_name} unsubscribed you from the following channels:").format(
+            user_full_name=silent_mention_syntax_for_user(acting_user),
+        )
+    message += "\n\n"
+    for channel_name in unsubscriptions:
+        message += f"* #**{channel_name}**\n"
+    return message
+
+
+def send_user_unsubscribed_notifications(
+    *,
+    acting_user: UserProfile,
+    removed: list[tuple[UserProfile, Stream]],
+) -> None:
+    # Group the removed channels by user, so each user gets a single DM
+    # listing all the channels they were removed from.
+    removed_by_user: dict[int, list[str]] = {}
+    user_by_id: dict[int, UserProfile] = {}
+    for subscriber, stream in removed:
+        if subscriber.id == acting_user.id:
+            # Don't send a notification DM if you unsubscribed yourself.
+            continue
+        if subscriber.is_bot:
+            # Don't send notification DMs to bots.
+            continue
+        removed_by_user.setdefault(subscriber.id, []).append(stream.name)
+        user_by_id[subscriber.id] = subscriber
+
+    if not removed_by_user:
+        return
+
+    realm = acting_user.realm
+    mention_backend = MentionBackend(realm.id)
+    notifications = []
+    for user_id, stream_names in removed_by_user.items():
+        recipient_user = user_by_id[user_id]
+        sender = get_system_bot(settings.NOTIFICATION_BOT, recipient_user.realm_id)
+        msg = you_were_just_unsubscribed_message(
+            acting_user=acting_user,
+            recipient_user=recipient_user,
+            stream_names=set(stream_names),
+        )
+        notifications.append(
+            internal_prep_private_message(
+                sender=sender,
+                recipient_user=recipient_user,
+                content=msg,
+                mention_backend=mention_backend,
+                acting_user=acting_user,
+            )
+        )
+
+    do_send_messages(notifications, mark_as_read=[acting_user.id])
 
 
 RETENTION_DEFAULT: str | int = "realm_default"
