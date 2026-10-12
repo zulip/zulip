@@ -334,6 +334,14 @@
             visibility: hidden;
             z-index: -1;
         }
+
+        &:focus-visible {
+            /* We don't have room in this area to show a focus ring
+               that sits outside the button, so here we set the
+               outline-offset to the negative value of whatever the
+               outline width is. */
+            outline-offset: calc(var(--outline-width-button-focus) * -1);
+        }
     }
 }
 
