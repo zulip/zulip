@@ -999,13 +999,20 @@ export function process_topic_edit(opts: {
     new_topic: string;
 }): void {
     const {message_ids, new_stream_id, new_topic} = opts;
+
+    // A move can affect messages we haven't fetched locally, whose
+    // only links are the ones saved to them while they aren't in the
+    // store. Those are found through the linking messages' entries,
+    // so they're re-filed before any of those entries move below.
+    for (const message_id of message_ids) {
+        if (get(message_id) === undefined) {
+            refile_links_to_message(message_id, {stream_id: new_stream_id, topic: new_topic});
+        }
+    }
+
     for (const message_id of message_ids) {
         const message = get(message_id);
         if (message?.type !== "stream") {
-            // A move can affect messages we haven't fetched locally.
-            // The link maps only track stored messages, so there are
-            // no links to move for those; update_messages refreshes
-            // the narrow, which rebuilds link data once they're fetched.
             continue;
         }
         const old_stream_id = message.stream_id;
