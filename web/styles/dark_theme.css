@@ -27,19 +27,6 @@
         }
     }
 
-    .dropdown-list-delete {
-        /* hsl(7deg 100% 74%) corresponds to var(--red-250) */
-        color: color-mix(
-            in oklch,
-            hsl(7deg 100% 74%) 70%,
-            transparent
-        ) !important;
-
-        &:hover {
-            color: hsl(7deg 100% 74%) !important;
-        }
-    }
-
     /* this one is because in the app we have blue and in dark-theme it should be white. */
     .popover a {
         color: inherit;
