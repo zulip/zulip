@@ -652,6 +652,10 @@ input.settings_text_input {
         }
     }
 
+    tbody > tr:nth-child(even) td {
+        background-color: var(--color-background-tbody-td-even);
+    }
+
     /* Force the actions column to use the minimum space necessary */
     .actions {
         width: 1%;

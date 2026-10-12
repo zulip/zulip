@@ -1810,6 +1810,10 @@
         transparent,
         hsl(0deg 0% 0% / 20%)
     );
+    --color-background-tbody-td-even: light-dark(
+        transparent,
+        color-mix(in srgb, hsl(0deg 0% 0%) 20%, var(--color-background-modal))
+    );
     --color-background-select-drafts-button-focus: light-dark(
         hsl(0deg 0% 93%),
         hsl(228deg 11% 17%)

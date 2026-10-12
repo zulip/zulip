@@ -78,15 +78,6 @@
         border-bottom-width: 1px;
     }
 
-    .table-striped tbody tr:nth-child(even) td {
-        border-color: hsl(0deg 0% 0% / 20%);
-        background-color: color-mix(
-            in srgb,
-            hsl(0deg 0% 0%) 20%,
-            var(--color-background-modal)
-        );
-    }
-
     .overlay-message-row
         .message_header_private_message
         .message_label_clickable {
