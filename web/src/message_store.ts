@@ -1087,6 +1087,11 @@ export function remove(message_ids: number[]): void {
         const message = get(message_id);
         if (message?.type === "stream") {
             remove_message_from_topic_links(message.id);
+        } else if (message === undefined) {
+            // A deleted message we haven't fetched can still have links
+            // saved to it.
+            refile_links_to_message(message_id, undefined);
+            pending_message_link_targets.delete(message_id);
         }
         stored_messages.delete(message_id);
     }

@@ -1942,6 +1942,47 @@ test("links to a message that isn't in the store yet follow its moves", () => {
     assert.deepEqual(message_store.topic_links_to_narrow(design.stream_id, "Logo"), []);
 });
 
+test("links to a message that isn't in the store yet are dropped when it is deleted", () => {
+    message_store.clear_topic_links_for_testing();
+    const design = {name: "design", subscribed: true, stream_id: 10};
+    stream_data.add_sub_for_tests(design);
+    const sales = {name: "sales", subscribed: true, stream_id: 12};
+    stream_data.add_sub_for_tests(sales);
+
+    const linked_message_id = 670;
+    const linking_message = {
+        id: 671,
+        sender_id: bob.user_id,
+        type: "stream",
+        stream_id: sales.stream_id,
+        topic: "Renewals",
+        content: `<a href="/#narrow/channel/10-design/topic/Logo/near/${linked_message_id}">link</a><a href="/#narrow/channel/10-design/topic/Logo">topic link</a>`,
+    };
+    message_store.update_message_cache({type: "server_message", message: linking_message});
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Renewals"), [
+        {stream_id: design.stream_id, topic: "Logo", message_id: linked_message_id},
+        {stream_id: design.stream_id, topic: "Logo", message_id: undefined},
+    ]);
+
+    // Deleting the linked message before it is fetched drops the link
+    // to it, while the message's other links stay.
+    message_store.remove([linked_message_id]);
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Renewals"), [
+        {stream_id: design.stream_id, topic: "Logo", message_id: undefined},
+    ]);
+    assert.deepEqual(message_store.topic_links_to_narrow(design.stream_id, "Logo"), [
+        {stream_id: sales.stream_id, topic: "Renewals", message_id: linking_message.id},
+    ]);
+    assert.deepEqual(message_store.pending_message_link_targets_for_testing(), new Map());
+    assert.deepEqual(
+        message_store.topic_links_incoming_for_testing().get(design.stream_id).get("logo"),
+        new Map([
+            [linked_message_id, []],
+            [0, [linking_message.id]],
+        ]),
+    );
+});
+
 test("reify_message_id handles a message that links to itself", () => {
     message_store.clear_topic_links_for_testing();
     const design = {name: "design", subscribed: true, stream_id: 10};
