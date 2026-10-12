@@ -1654,6 +1654,35 @@ test("message links follow the linked message's current location", () => {
     assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Pricing"), []);
 });
 
+test("links to a channel the user lost access to are hidden", () => {
+    message_store.clear_topic_links_for_testing();
+    const design = {name: "design", subscribed: true, stream_id: 10};
+    stream_data.add_sub_for_tests(design);
+    const sales = {name: "sales", subscribed: true, stream_id: 12};
+    stream_data.add_sub_for_tests(sales);
+
+    const linking_message = {
+        id: 651,
+        sender_id: bob.user_id,
+        type: "stream",
+        stream_id: sales.stream_id,
+        topic: "Pricing",
+        content: `<a href="/#narrow/channel/10-design/topic/Logo">link</a>`,
+    };
+    message_store.update_message_cache({type: "server_message", message: linking_message});
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Pricing"), [
+        {stream_id: design.stream_id, topic: "Logo", message_id: undefined},
+    ]);
+
+    // Losing access to a channel removes it from stream_data, but
+    // links to its topics from other channels' messages stay in the
+    // link maps.
+    stream_data.delete_sub(design.stream_id);
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Pricing"), []);
+
+    stream_data.add_sub_for_tests(design);
+});
+
 test("reify_message_id handles a message that links to itself", () => {
     message_store.clear_topic_links_for_testing();
     const design = {name: "design", subscribed: true, stream_id: 10};
