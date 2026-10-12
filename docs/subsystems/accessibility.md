@@ -19,8 +19,8 @@ here are some of the more important ones to keep in mind.
   effectively.
 
 There are many different standards for accessibility, but the most relevant
-one for Zulip is the W3C's [WCAG](https://www.w3.org/TR/WCAG20/) (Web Content
-Accessibility Guidelines), currently at version 2.0. Whenever practical, we
+one for Zulip is the W3C's [WCAG](https://www.w3.org/TR/WCAG22/) (Web Content
+Accessibility Guidelines), currently at version 2.2. Whenever practical, we
 should strive for compliance with the AA level of this specification.
 (The W3C itself
 [recommends not trying](https://www.w3.org/TR/UNDERSTANDING-WCAG20/conformance.html#uc-conf-req1-head)
