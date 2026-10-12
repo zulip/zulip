@@ -185,18 +185,17 @@ html:has(.portico-landing.integrations) {
     }
 
     #integration-search {
-        margin-bottom: 30px;
+        margin: 30px 0;
         padding: 0 30px 0 265px;
 
         @media (width <= 1000px) {
             padding: 0 30px;
-            margin-bottom: 10px;
+            margin: 15px 0;
         }
 
         .searchbar {
             display: flex;
             justify-content: center;
-            margin: 30px auto 0;
 
             /* At widths where the sidebar is visible, left-align the
                search box so its left edge matches the left edge of
@@ -325,7 +324,7 @@ html:has(.portico-landing.integrations) {
            + `.searchbar-reset { max-width: 500px }` structure. */
         @media (width <= 1000px) {
             display: block;
-            margin: 0;
+            margin: 30px 0 0;
             padding: 0 30px;
 
             & h3 {
