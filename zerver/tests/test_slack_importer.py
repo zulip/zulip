@@ -1056,12 +1056,7 @@ class SlackImporter(ZulipTestCase):
         realm: ZerverFieldsT = {"zerver_userpresence": [], "zerver_realm": [dict()]}
         zerver_realm = realm["zerver_realm"]
 
-        with (
-            self.assertLogs(level="INFO"),
-            mock.patch(
-                "zerver.data_import.slack.SLACK_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME", "random"
-            ),
-        ):
+        with self.assertLogs(level="INFO"):
             (
                 realm,
                 added_channels,
@@ -1144,13 +1139,47 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_stream[0]["realm"], realm_id)
         self.assertEqual(zerver_stream[2]["id"], test_added_channels[zerver_stream[2]["name"]][1])
 
-        self.assertEqual(
-            zerver_realm[0]["zulip_update_announcements_stream"], zerver_stream[0]["id"]
-        )
-        self.assertEqual(zerver_realm[0]["new_stream_announcements_stream"], zerver_stream[0]["id"])
+        general_channel_id = test_added_channels["general"][1]
+        self.assertEqual(zerver_realm[0]["zulip_update_announcements_stream"], general_channel_id)
+        self.assertEqual(zerver_realm[0]["new_stream_announcements_stream"], general_channel_id)
 
         self.assertEqual(self.get_set(realm["zerver_huddle"], "id"), {0, 1, 2, 3, 4, 5, 6})
         self.assertEqual(realm["zerver_userpresence"], [])
+
+    def test_channels_to_zerver_stream_archived_announcements_channel(self) -> None:
+        slack_user_id_to_zulip_user_id = {
+            "U061A1R2R": 1,
+            "U061A3E0G": 8,
+            "U061A5N1G": 7,
+            "U064KUGRJ": 5,
+        }
+        zerver_userprofile = [{"id": 1}, {"id": 8}, {"id": 7}, {"id": 5}]
+        realm: ZerverFieldsT = {"zerver_userpresence": [], "zerver_realm": [dict()]}
+
+        with (
+            self.assertLogs(level="INFO"),
+            mock.patch(
+                "zerver.data_import.slack.SLACK_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME", "random"
+            ),
+        ):
+            realm, added_channels, _, _, _ = channels_to_zerver_stream(
+                self.fixture_file_name("", "slack_fixtures"),
+                3,
+                realm,
+                slack_user_id_to_zulip_user_id,
+                zerver_userprofile,
+            )
+
+        # The "random" channel is archived in the fixture data, so it
+        # shouldn't be used as the announcements channel.
+        random_channel_id = added_channels["random"][1]
+        [random_channel] = [
+            channel for channel in realm["zerver_stream"] if channel["id"] == random_channel_id
+        ]
+        self.assertTrue(random_channel["deactivated"])
+        zerver_realm = realm["zerver_realm"]
+        self.assertNotIn("zulip_update_announcements_stream", zerver_realm[0])
+        self.assertNotIn("new_stream_announcements_stream", zerver_realm[0])
 
     @mock.patch(
         "zerver.data_import.slack.users_to_zerver_userprofile", return_value=[[], [], {}, [], []]
