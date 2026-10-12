@@ -1810,6 +1810,10 @@
         transparent,
         hsl(0deg 0% 0% / 20%)
     );
+    --color-background-select-drafts-button-focus: light-dark(
+        hsl(0deg 0% 93%),
+        hsl(228deg 11% 17%)
+    );
     --color-background-history-limited-box: light-dark(
         transparent,
         hsl(0deg 0% 0% / 20%)
