@@ -615,7 +615,7 @@ test("set_reaction_vote_text", ({mock_template}) => {
     // followed by a comma and a space.
     assert.equal(
         $reaction_count.html(),
-        '<span class="message_reaction_vote"><span class="message_reaction_vote_text">translated: You</span>, </span>' +
+        '<span class="message_reaction_vote"><span class="message_reaction_vote_text">translated: You</span>,&nbsp;</span>' +
             '<span class="message_reaction_vote"><span class="message_reaction_vote_text">Bob van Roberts</span></span>',
     );
 
