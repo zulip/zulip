@@ -4,7 +4,15 @@ from typing import Annotated, Any, Literal, TypeAlias, TypeVar, cast
 import orjson
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.http import HttpRequest, HttpResponse
-from pydantic import BaseModel, ConfigDict, Json, StringConstraints, ValidationInfo, WrapValidator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    Json,
+    StringConstraints,
+    ValidationInfo,
+    WrapValidator,
+)
 from pydantic.dataclasses import dataclass
 from pydantic.functional_validators import ModelWrapValidatorHandler
 from typing_extensions import override
@@ -617,6 +625,18 @@ class ValidationErrorHandlingTest(ZulipTestCase):
                 param_type=Json[DataModel],
                 input_data=orjson.dumps({"message": "asd", "test": ""}).decode(),
                 error_message='Argument "test" at input["test"] is unexpected',
+            ),
+            SubTest(
+                error_type="less_than_equal",
+                param_type=Json[Annotated[int, Field(le=100)]],
+                input_data=orjson.dumps(101).decode(),
+                error_message="input is too large",
+            ),
+            SubTest(
+                error_type="finite_number",
+                param_type=Json[Annotated[float, Field(allow_inf_nan=False)]],
+                input_data="NaN",
+                error_message="input is not a valid number",
             ),
         ]
 
