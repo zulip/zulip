@@ -2787,7 +2787,7 @@ test("navbar_helpers", ({override}) => {
             is_common_narrow: true,
             icon: undefined,
             title: "translated: Messages sent by unknown user",
-            redirect_url_with_search: "/#narrow/sender/undefined",
+            redirect_url_with_search: "/#narrow/sender/9999",
         },
         {
             terms: is_starred,
@@ -3005,7 +3005,7 @@ test("navbar_helpers", ({override}) => {
             is_common_narrow: true,
             zulip_icon: "user",
             title: "joe and translated: Unknown user (9999)",
-            redirect_url_with_search: "/#narrow/dm/undefined",
+            redirect_url_with_search: "/#narrow/dm/9999," + joe.user_id + "-group",
         },
         {
             terms: has_reaction_sender_me,

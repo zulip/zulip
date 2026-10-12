@@ -37,21 +37,18 @@ export function get_reload_hash(): string {
 }
 
 export function encode_operand(term: NarrowCanonicalTerm): string {
-    let slug: string | undefined;
     switch (term.operator) {
         case "dm-including":
         case "dm":
-            slug = people.user_ids_to_slug(term.operand);
-            break;
+            return people.user_ids_to_slug(term.operand);
         case "sender":
         case "mentions":
-            slug = people.user_ids_to_slug([term.operand]);
-            break;
+            return people.user_ids_to_slug([term.operand]);
         case "channel":
             return encode_stream_id(Number.parseInt(term.operand, 10));
     }
 
-    return slug ?? internal_url.encodeHashComponent(String(term.operand));
+    return internal_url.encodeHashComponent(term.operand);
 }
 
 export function encode_stream_id(stream_id: number): string {

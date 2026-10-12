@@ -37,13 +37,20 @@ run_test("hash_util", () => {
         assert.equal(encode_result, expected_val);
         const new_operand = encode_result;
         const decode_result = hash_util.decode_operand(operator, new_operand);
-        assert.equal(decode_result, operand);
+        assert.deepEqual(decode_result, operand);
     }
 
     let operator = "sender";
     let operand = hamlet.user_id;
 
     encode_decode_operand(operator, operand, "15-Hamlet");
+    encode_decode_operand(operator, 9999, "9999");
+
+    operator = "dm";
+    operand = [hamlet.user_id];
+
+    encode_decode_operand(operator, operand, "15-Hamlet");
+    encode_decode_operand(operator, [hamlet.user_id, 9999], "15,9999-group");
 
     operator = "channel";
     operand = frontend.stream_id.toString();
@@ -54,6 +61,11 @@ run_test("hash_util", () => {
     operand = "testing 123";
 
     encode_decode_operand(operator, operand, "testing.20123");
+});
+
+run_test("pm_with_url", () => {
+    assert.equal(hash_util.pm_with_url("15"), "#narrow/dm/15-Hamlet");
+    assert.equal(hash_util.pm_with_url("15,9999"), "#narrow/dm/15,9999-group");
 });
 
 run_test("test_get_hash_category", () => {
