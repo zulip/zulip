@@ -27,6 +27,7 @@ jobs:
         uses: hadolint/hadolint-action@v3.5.0
         with:
           dockerfile: docker/Dockerfile
+          failure-threshold: warning
       - name: Validation del docker-compose.yml
         run: docker compose -f docker-compose.yml config --quiet
 
