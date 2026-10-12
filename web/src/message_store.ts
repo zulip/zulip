@@ -565,6 +565,12 @@ export function topic_links_from_narrow(stream_id: number, topic: string): Topic
                     message_id: message.id,
                 };
             }
+            // Hide links to channels the user has lost access to, e.g.
+            // after being unsubscribed from a private channel, since the
+            // link maps aren't updated when that happens.
+            if (!stream_data.get_sub_by_id(target.stream_id)) {
+                continue;
+            }
             // Hide links from this topic to the same topic, since those feel
             // unnecessary to reference.
             if (target.stream_id === stream_id && util.lower_same(target.topic, topic)) {
