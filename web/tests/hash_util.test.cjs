@@ -22,7 +22,15 @@ const hamlet = make_user({
     full_name: "Hamlet",
 });
 
+const me = make_user({
+    user_id: 30,
+    email: "me@example.com",
+    full_name: "Me Myself",
+});
+
 people.add_active_user(hamlet, "server_events");
+people.add_active_user(me, "server_events");
+people.initialize_current_user(me.user_id);
 
 const frontend = make_stream({
     stream_id: 99,
@@ -53,6 +61,8 @@ run_test("hash_util", () => {
 
     encode_decode_operand(operator, operand, "15-Hamlet");
     encode_decode_operand(operator, [hamlet.user_id, 9999], "15,9999-group");
+    encode_decode_operand(operator, [UNKNOWN_USER_ID], "-1");
+    encode_decode_operand(operator, [UNKNOWN_USER_ID, hamlet.user_id], "-1,15-group");
 
     operator = "channel";
     operand = frontend.stream_id.toString();
@@ -226,6 +236,37 @@ run_test("test_parse_narrow", () => {
     assert.deepEqual(hash_util.parse_narrow(["narrow", "-mentions", "me"]), [
         {negated: true, operator: "is", operand: "mentioned"},
     ]);
+});
+
+run_test("parse_narrow_user_slug", () => {
+    // Each member of a user slug's list is a user ID. One that
+    // isn't, like a known user's email, is an unknown user. So is
+    // one whose ID is too large. An ID that the client has no user
+    // for is kept. The users are sorted, and each is listed once.
+    function parsed_operand(operator, slug) {
+        return hash_util.parse_narrow(["narrow", operator, slug])[0].operand;
+    }
+    // The second of these parses to Infinity.
+    const ids_above_max_safe_integer = ["99999999999999999", "9".repeat(400)];
+
+    for (const operator of ["dm", "dm-including"]) {
+        assert.deepEqual(parsed_operand(operator, "9999,15,15-group"), [15, 9999]);
+        // A name after the IDs can have commas, as in links from the server.
+        assert.deepEqual(parsed_operand(operator, "15-Smith,-John"), [15]);
+        // The current user is left out, unless nobody else is listed.
+        assert.deepEqual(parsed_operand(operator, `${me.user_id},15-group`), [15]);
+        assert.deepEqual(parsed_operand(operator, `${me.user_id},${me.user_id}`), [me.user_id]);
+        assert.deepEqual(parsed_operand(operator, "undefined"), [UNKNOWN_USER_ID]);
+        assert.deepEqual(parsed_operand(operator, "hamlet@example.com"), [UNKNOWN_USER_ID]);
+        assert.deepEqual(parsed_operand(operator, "hamlet.40example.2Ecom"), [UNKNOWN_USER_ID]);
+        // Digits before other text are not an ID.
+        assert.deepEqual(parsed_operand(operator, "42@example.com"), [UNKNOWN_USER_ID]);
+        assert.deepEqual(parsed_operand(operator, "15,invalid"), [UNKNOWN_USER_ID, 15]);
+        assert.deepEqual(parsed_operand(operator, ",15"), [UNKNOWN_USER_ID, 15]);
+        for (const id of ids_above_max_safe_integer) {
+            assert.deepEqual(parsed_operand(operator, `15,${id}`), [UNKNOWN_USER_ID, 15]);
+        }
+    }
 });
 
 run_test("test_channels_settings_edit_url", () => {
