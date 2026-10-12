@@ -14,6 +14,7 @@ import {$} from "jquery";
 import render_markdown_time_tooltip from "../templates/markdown_time_tooltip.hbs";
 
 import {$t} from "./i18n.ts";
+import * as server_time from "./server_time.ts";
 import {parse_html} from "./ui_util.ts";
 import {user_settings} from "./user_settings.ts";
 import * as util from "./util.ts";
@@ -29,8 +30,11 @@ export function browser_time_zone(): string {
     return new Intl.DateTimeFormat().resolvedOptions().timeZone;
 }
 
+export const get_server_time = server_time.get_server_time;
+
 export function clear_for_testing(): void {
     next_timerender_id = 0;
+    server_time.clear_for_testing();
 }
 
 // Exported for testing only; we do not support live-updating the time zone.
