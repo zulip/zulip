@@ -9,6 +9,7 @@ from django.test import override_settings
 
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.lib.initial_password import initial_password
+from zerver.lib.sessions import user_sessions
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file, ratelimit_rule
 from zerver.models import Draft, NamedUserGroup, ScheduledMessageNotificationEmail, UserProfile
@@ -792,6 +793,46 @@ class UserChangesTest(ZulipTestCase):
             get_user_profile_by_api_key(old_api_key)
 
         self.assertEqual(get_user_profile_by_api_key(user.api_key).email, email)
+
+    def test_log_out_other_sessions(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+
+        # Each login below creates a separate session, as if
+        # logging in from a different browser.
+        self.login_user(hamlet)
+        self.client.cookies.clear()
+        self.login_user(othello)
+        self.client.cookies.clear()
+        self.login_user(hamlet)
+        current_session_key = self.client.session.session_key
+        self.assert_length(user_sessions(hamlet), 2)
+        self.assert_length(user_sessions(othello), 1)
+
+        result = self.client_post("/json/users/me/sessions/log_out_others")
+        self.assert_json_success(result)
+
+        self.assertEqual(
+            [session.session_key for session in user_sessions(hamlet)], [current_session_key]
+        )
+        self.assert_length(user_sessions(othello), 1)
+
+        # The session that made the request is still logged in.
+        result = self.client_get("/json/users/me")
+        self.assert_json_success(result)
+
+    def test_log_out_other_sessions_access(self) -> None:
+        # This endpoint is not registered in the /api/v1/... path, since
+        # it only makes sense for a user with a session.
+        result = self.api_post(
+            self.example_user("hamlet"), "/api/v1/users/me/sessions/log_out_others"
+        )
+        self.assertEqual(result.status_code, 404)
+
+        result = self.client_post("/json/users/me/sessions/log_out_others")
+        self.assert_json_error(
+            result, "Not logged in: API authentication or user session required", 401
+        )
 
 
 class UserDraftSettingsTests(ZulipTestCase):

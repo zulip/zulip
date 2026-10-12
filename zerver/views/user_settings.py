@@ -58,6 +58,7 @@ from zerver.lib.rate_limiter import (
 )
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
+from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.sounds import get_available_notification_sounds
 from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_parameters
 from zerver.lib.typed_endpoint_validators import (
@@ -597,3 +598,10 @@ def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpR
         api_key=new_api_key,
     )
     return json_success(request, data=json_result)
+
+
+@human_users_only
+@typed_endpoint_without_parameters
+def log_out_other_sessions(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    delete_user_sessions(user_profile, except_session_key=request.session.session_key)
+    return json_success(request)
