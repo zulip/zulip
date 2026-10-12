@@ -86,7 +86,9 @@ export function show_generate_integration_url_modal(api_key: string): void {
         const $override_topic = $<HTMLInputElement>("input#integration-url-override-topic");
         const $topic_input = $<HTMLInputElement>("input#integration-url-topic-input");
         const $integration_url = $("#generate-integration-url-modal .integration-url");
-        const $copy_integration_url_button = $("#generate-integration-url-modal #copy-integration-url");
+        const $copy_integration_url_button = $(
+            "#generate-integration-url-modal #copy-integration-url",
+        );
         const $dialog_submit_button = $("#generate-integration-url-modal .dialog_submit_button");
         const $show_integration_events = $("#show-integration-events");
         const $config_container = $("#integration-url-config-options-container");
