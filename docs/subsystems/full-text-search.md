@@ -8,7 +8,7 @@ full-text search for all languages.
 
 The user interface and feature set for Zulip's full-text search is
 documented in the in-app "Search filters" reference which can be
-accessed from the Zulip app's gear menu.
+accessed from the Zulip app's help menu.
 
 ## The default full-text search implementation
 
