@@ -2525,6 +2525,40 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(realm_user_default.default_language, "en")
         self.assertEqual(realm_user_default.twenty_four_hour_time, False)
 
+    def test_import_realm_with_archived_announcements_channel(self) -> None:
+        original_realm = Realm.objects.get(string_id="zulip")
+        announcements_channel = get_stream("Verona", original_realm)
+        original_realm.moderation_request_channel = announcements_channel
+        original_realm.new_stream_announcements_stream = announcements_channel
+        original_realm.signup_announcements_stream = announcements_channel
+        original_realm.zulip_update_announcements_stream = announcements_channel
+        original_realm.save()
+
+        self.export_realm_and_create_auditlog(original_realm)
+
+        # Archive the announcements channel in the export without
+        # unsetting the realm settings that point at it.
+        realm_data = read_json("realm.json")
+        for channel in realm_data["zerver_stream"]:
+            if channel["id"] == announcements_channel.id:
+                channel["deactivated"] = True
+        output_dir = get_output_dir()
+        full_fn = os.path.join(output_dir, "realm.json")
+        with open(full_fn, "wb") as f:
+            f.write(orjson.dumps(realm_data))
+
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+        self.assertTrue(
+            Stream.objects.get(realm=imported_realm, name=announcements_channel.name).deactivated
+        )
+        self.assertIsNone(imported_realm.moderation_request_channel)
+        self.assertIsNone(imported_realm.new_stream_announcements_stream)
+        self.assertIsNone(imported_realm.signup_announcements_stream)
+        self.assertIsNone(imported_realm.zulip_update_announcements_stream)
+
     @activate_push_notification_service()
     def test_import_realm_notify_bouncer(self) -> None:
         original_realm = Realm.objects.get(string_id="zulip")

@@ -175,9 +175,10 @@ def convert_teams_to_channels(
             )
             realm["zerver_subscription"].append(sub)
 
-        # If the org uses the "All company" team, set it as the announcements channel.
+        # If the org has an active "All company" team, use it as the announcements channel.
         if (
             compiled_team_data["Name"] == MICROSOFT_TEAMS_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME
+            and not channel["deactivated"]
         ):  # nocoverage
             realm["zerver_realm"][0]["new_stream_announcements_stream"] = channel_id
             realm["zerver_realm"][0]["zulip_update_announcements_stream"] = channel_id

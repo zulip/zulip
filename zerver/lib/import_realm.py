@@ -345,6 +345,27 @@ def fix_datetime_fields(data: ImportedTableData, table: TableName) -> None:
                 item[field_name] = datetime.fromtimestamp(item[field_name], tz=timezone.utc)
 
 
+def clear_archived_moderation_or_announcement_channels(data: ImportedTableData) -> None:
+    """
+    Zulip can't send messages to an archived channel, so
+    do_deactivate_stream unsets these settings when archiving a
+    channel. Third-party converters don't go through that path, so we
+    unset them here in case one points them at an archived channel.
+    """
+    archived_channel_ids = {
+        channel["id"] for channel in data["zerver_stream"] if channel["deactivated"]
+    }
+    realm_dict = data["zerver_realm"][0]
+    for field in (
+        "moderation_request_channel",
+        "new_stream_announcements_stream",
+        "signup_announcements_stream",
+        "zulip_update_announcements_stream",
+    ):
+        if realm_dict.get(field) in archived_channel_ids:
+            realm_dict[field] = None
+
+
 def fix_upload_links(data: ImportedTableData, message_table: TableName) -> None:
     """
     Because the URLs for uploaded files encode the realm ID of the
@@ -1529,6 +1550,8 @@ def do_import_realm(
         new_user_id = get_system_bot(item["email"], internal_realm.id).id
         update_id_map(table="user_profile", old_id=item["id"], new_id=new_user_id)
         crossrealm_user_ids.add(new_user_id)
+
+    clear_archived_moderation_or_announcement_channels(data)
 
     # We first do a pass of updating model IDs for the cluster of
     # major models that have foreign keys into each other.
