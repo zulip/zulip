@@ -242,13 +242,9 @@ export type Message = (
     );
 
 export function update_message_cache(message_data: ProcessedMessage): void {
-    // You should only call this from message_helper (or in tests).
+    // You should only call this from message_helper (or in tests), for
+    // messages that aren't in the store yet.
     stored_messages.set(message_data.message.id, message_data);
-
-    // Recalculate the message's topic links data. Removing and re-adding them
-    // is as much work as calculating them and comparing them to existing links
-    // links, and is tidier.
-    remove_message_from_topic_links(message_data.message.id);
     save_topic_links(message_data.message);
 }
 
@@ -746,9 +742,7 @@ function _remove_or_update_message_id_from_topic_links(
     assert(old_message_id !== NO_MESSAGE_ID);
     assert(new_message_id !== NO_MESSAGE_ID);
     const updated_message = get(old_message_id);
-    if (updated_message?.type !== "stream") {
-        return;
-    }
+    assert(updated_message?.type === "stream");
 
     const {stream_id, topic} = updated_message;
     update_or_remove_links_to_message(stream_id, topic, old_message_id, new_message_id);
