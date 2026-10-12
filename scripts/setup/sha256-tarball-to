@@ -10,7 +10,7 @@ if [ "$#" -lt 4 ]; then
     exit 1
 fi
 
-set -e
+set -euo pipefail
 set -x
 
 SHA256="$1"

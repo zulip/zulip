@@ -9,7 +9,7 @@ if [ "$#" -ne 3 ]; then
     exit 1
 fi
 
-set -e
+set -eu
 set -x
 
 SHA256="$1"
