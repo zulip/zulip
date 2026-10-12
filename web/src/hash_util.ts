@@ -82,6 +82,7 @@ export function decode_operand(
             case "sender":
                 return people.my_current_user_id();
             case "dm":
+            case "dm-including":
                 return [people.my_current_user_id()];
         }
     } else if (operator === "dm-including" || operator === "dm") {

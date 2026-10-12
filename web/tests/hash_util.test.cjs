@@ -238,6 +238,17 @@ run_test("test_parse_narrow", () => {
     ]);
 });
 
+run_test("parse_narrow_me_operand", () => {
+    assert.deepEqual(hash_util.parse_narrow(["narrow", "sender", "me"]), [
+        {negated: false, operator: "sender", operand: me.user_id},
+    ]);
+    for (const operator of ["dm", "dm-including"]) {
+        assert.deepEqual(hash_util.parse_narrow(["narrow", operator, "me"]), [
+            {negated: false, operator, operand: [me.user_id]},
+        ]);
+    }
+});
+
 run_test("parse_narrow_user_slug", () => {
     // Each member of a user slug's list is a user ID. One that
     // isn't, like a known user's email, is an unknown user. So is
