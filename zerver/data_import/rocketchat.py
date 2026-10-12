@@ -314,12 +314,15 @@ def convert_channel_data(
             name=stream_name,
             description=stream_desc,
             stream_id=stream_id,
-            deactivated=False,
+            deactivated=channel_dict.get("archived", False),
             invite_only=invite_only,
             stream_post_policy=stream_post_policy,
         )
 
-        if stream_name == ROCKETCHAT_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME:
+        if (
+            stream_name == ROCKETCHAT_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME
+            and not stream["deactivated"]
+        ):
             zerver_realm[0]["new_stream_announcements_stream"] = stream["id"]
             zerver_realm[0]["zulip_update_announcements_stream"] = stream["id"]
 
