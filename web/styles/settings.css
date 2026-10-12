@@ -2454,6 +2454,20 @@ input.settings_text_input:disabled {
         overflow-wrap: break-word;
         word-break: break-all;
     }
+    .integration-url-container {
+        display: flex;
+        align-items: center;
+        gap: 0.25em;
+
+        .integration-url {
+            flex: 1;
+        }
+
+        .buttons-container {
+            display: flex;
+            align-items: center;
+        }
+    }
 
     .integration-url-name-wrapper .dropdown-widget-button {
         width: 50%;

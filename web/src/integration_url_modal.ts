@@ -86,6 +86,7 @@ export function show_generate_integration_url_modal(api_key: string): void {
         const $override_topic = $<HTMLInputElement>("input#integration-url-override-topic");
         const $topic_input = $<HTMLInputElement>("input#integration-url-topic-input");
         const $integration_url = $("#generate-integration-url-modal .integration-url");
+        const $copy_integration_url_button = $("#generate-integration-url-modal #copy-integration-url");
         const $dialog_submit_button = $("#generate-integration-url-modal .dialog_submit_button");
         const $show_integration_events = $("#show-integration-events");
         const $config_container = $("#integration-url-config-options-container");
@@ -111,6 +112,18 @@ export function show_generate_integration_url_modal(api_key: string): void {
             show_copied_confirmation(
                 util.the($("#generate-integration-url-modal .dialog_submit_button")),
             );
+        });
+
+        const url_copy_clipboard = new ClipboardJS(
+            "#generate-integration-url-modal #copy-integration-url",
+            {
+                text() {
+                    return $integration_url.text();
+                },
+            },
+        );
+        url_copy_clipboard.on("success", () => {
+            show_copied_confirmation(util.the($copy_integration_url_button));
         });
 
         function show_branch_filtering_ui(): void {
@@ -369,12 +382,14 @@ export function show_generate_integration_url_modal(api_key: string): void {
             const base_url = `${realm_url}/api/v1/external/`;
             $integration_url.text(`${base_url}${selected_integration}?${params.toString()}`);
             $dialog_submit_button.prop("disabled", false);
+            $copy_integration_url_button.prop("disabled", false);
 
             if (
                 ($show_integration_events.prop("checked") && !selected_events) ||
                 (!channel_allows_empty_topic && topic_name === "")
             ) {
                 $dialog_submit_button.prop("disabled", true);
+                $copy_integration_url_button.prop("disabled", true);
             }
         }
 

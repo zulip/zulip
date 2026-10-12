@@ -57,6 +57,20 @@
 </div>
 <hr />
 <p class="integration-url-header">{{t "URL for your integration"}}</p>
-<div class="integration-url">
-    {{default_url_message}}
+<div class="integration-url-container">
+    <div class="integration-url">
+        {{default_url_message}}
+    </div>
+    <div class="buttons-container">
+        <span>
+            {{> ../components/icon_button
+              icon="copy"
+              intent="success"
+              id="copy-integration-url"
+              custom_classes="copy-integration-url tippy-zulip-delayed-tooltip"
+              data-tippy-content=(t "Copy URL")
+              disabled=true
+              }}
+        </span>
+    </div>
 </div>
