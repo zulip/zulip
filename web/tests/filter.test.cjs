@@ -2749,6 +2749,10 @@ test("navbar_helpers", ({override}) => {
         {operator: "dm", operand: [joe.user_id, annie.user_id]},
     ];
     const dm_group_including_missing_person = [{operator: "dm", operand: [9999, joe.user_id]}];
+    const dm_with_unknown_user_id = [{operator: "dm", operand: [filter_util.UNKNOWN_USER_ID]}];
+    const dm_group_including_unknown_user_id = [
+        {operator: "dm", operand: [filter_util.UNKNOWN_USER_ID, joe.user_id]},
+    ];
     // not common narrows, but used for browser title updates
     const is_alerted = [{operator: "is", operand: "alerted"}];
     const is_unread = [{operator: "is", operand: "unread"}];
@@ -3006,6 +3010,20 @@ test("navbar_helpers", ({override}) => {
             zulip_icon: "user",
             title: "joe and translated: Unknown user (9999)",
             redirect_url_with_search: "/#narrow/dm/9999," + joe.user_id + "-group",
+        },
+        {
+            terms: dm_with_unknown_user_id,
+            is_common_narrow: true,
+            zulip_icon: "user",
+            title: "translated: Unknown user",
+            redirect_url_with_search: "/#narrow/dm/-1",
+        },
+        {
+            terms: dm_group_including_unknown_user_id,
+            is_common_narrow: true,
+            zulip_icon: "user",
+            title: "joe and translated: Unknown user",
+            redirect_url_with_search: "/#narrow/dm/-1," + joe.user_id + "-group",
         },
         {
             terms: has_reaction_sender_me,

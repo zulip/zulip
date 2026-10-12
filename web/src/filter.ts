@@ -1598,6 +1598,9 @@ export class Filter {
             const names = user_ids.map((user_id) => {
                 const person = people.maybe_get_user_by_id(user_id, ignore_missing);
                 if (!person) {
+                    if (user_id === filter_util.UNKNOWN_USER_ID) {
+                        return people.INACCESSIBLE_USER_NAME;
+                    }
                     return $t({defaultMessage: "Unknown user ({user_id})"}, {user_id});
                 }
                 if (muted_users.is_user_muted(person.user_id)) {
