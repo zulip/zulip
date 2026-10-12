@@ -604,24 +604,20 @@ export function user_ids_to_full_names_array(user_ids: number[]): string[] {
     return names;
 }
 
-export function user_ids_to_slug(user_ids: number[]): string | undefined {
-    if (user_ids.length === 0 || !is_valid_user_ids(user_ids)) {
-        return undefined;
+export function user_ids_to_slug(user_ids: number[]): string {
+    const ids = String(user_ids);
+    if (user_ids.length > 1) {
+        return ids + "-group";
     }
 
-    let slug = String(user_ids);
-    slug += "-";
-    if (user_ids.length === 1 && user_ids[0] !== undefined) {
-        const person = get_by_user_id(user_ids[0]);
-        assert(person !== undefined, "Unknown person in user_ids_string_to_slug");
-        slug += get_slug_from_full_name(person.full_name);
-    } else {
-        slug += "group";
+    const user_id = user_ids[0];
+    if (user_id === undefined || !is_valid_user_id(user_id)) {
+        return ids;
     }
-    return slug;
+    return ids + "-" + get_slug_from_full_name(get_by_user_id(user_id).full_name);
 }
 
-export function user_ids_string_to_slug(user_ids_string: string): string | undefined {
+export function user_ids_string_to_slug(user_ids_string: string): string {
     const user_ids = user_ids_string_to_ids_array(user_ids_string);
     return user_ids_to_slug(user_ids);
 }

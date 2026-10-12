@@ -987,7 +987,10 @@ run_test("multi_user_methods", () => {
     assert.equal(people.user_ids_string_to_slug("402"), "402-whatever-402");
     assert.equal(people.user_ids_to_slug([401, 402]), "401,402-group");
     assert.equal(people.user_ids_to_slug([402]), "402-whatever-402");
-    assert.equal(people.user_ids_to_slug([]), undefined);
+    // An empty list has no IDs to write.
+    assert.equal(people.user_ids_to_slug([]), "");
+    assert.equal(people.user_ids_to_slug([9999]), "9999");
+    assert.equal(people.user_ids_to_slug([401, 9999]), "401,9999-group");
 });
 
 run_test("user_ids_to_full_names_string", () => {
