@@ -366,6 +366,18 @@ def clear_archived_moderation_or_announcement_channels(data: ImportedTableData) 
             realm_dict[field] = None
 
 
+def fix_message_has_attachment(data: ImportedTableData) -> None:
+    """
+    A message can be flagged as having an attachment that isn't in the
+    export: third-party converters may flag one whose download failed,
+    and Zulip keeps the flag when a user deletes an uploaded file. Only
+    messages that some imported attachment belongs to have an
+    attachment.
+    """
+    for message in data["zerver_message"]:
+        message["has_attachment"] = message["id"] in message_id_to_attachments["zerver_message"]
+
+
 def fix_upload_links(data: ImportedTableData, message_table: TableName) -> None:
     """
     Because the URLs for uploaded files encode the realm ID of the
@@ -2475,6 +2487,7 @@ def _process_message_file(
     re_map_foreign_keys(data, "zerver_message", "recipient", related_table="recipient")
     re_map_foreign_keys(data, "zerver_message", "sending_client", related_table="client")
     fix_datetime_fields(data, "zerver_message")
+    fix_message_has_attachment(data)
     fix_upload_links(data, "zerver_message")
 
     # We already create mappings for zerver_message ids

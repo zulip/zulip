@@ -2676,6 +2676,35 @@ class RealmImportExportTest(ExportFile):
         self.assertTrue(os.path.isfile(os.path.join(full_upload_path, "night_logo.png")))
         self.assertEqual(imported_realm.night_logo_source, Realm.LOGO_UPLOADED)
 
+    def test_import_message_with_deleted_attachment(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        kept_url = upload_message_attachment("kept.txt", "text/plain", b"zulip!", hamlet)[0]
+        deleted_url = upload_message_attachment("deleted.txt", "text/plain", b"zulip!", hamlet)[0]
+        self.send_stream_message(hamlet, "Denmark", f"[kept.txt]({kept_url})", "kept upload")
+        deleted_message_id = self.send_stream_message(
+            hamlet, "Denmark", f"[deleted.txt]({deleted_url})", "deleted upload"
+        )
+        deleted_attachment = Attachment.objects.get(
+            path_id=deleted_url.removeprefix("/user_uploads/")
+        )
+        result = self.client_delete(f"/json/attachments/{deleted_attachment.id}")
+        self.assert_json_success(result)
+        self.assertTrue(Message.objects.get(id=deleted_message_id).has_attachment)
+
+        self.export_realm_and_create_auditlog(hamlet.realm)
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+
+        imported_messages = Message.objects.filter(
+            realm=imported_realm, **{f"{DB_TOPIC_NAME}__in": ["kept upload", "deleted upload"]}
+        )
+        self.assertEqual(
+            {message.topic_name(): message.has_attachment for message in imported_messages},
+            {"kept upload": True, "deleted upload": False},
+        )
+
     @use_s3_backend
     def test_import_files_from_s3(self) -> None:
         uploads_bucket, avatar_bucket = create_s3_buckets(

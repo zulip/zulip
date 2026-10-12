@@ -516,14 +516,14 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
                 )
                 message_ids_with_attachment.add(message_with_attachment.id)
 
-        # Make sure no weird message conversion with wrong has_attachment
-        # and has_image property.
+        # No message claims an attachment it doesn't have, e.g. because
+        # its file failed to download.
         self.assertSetEqual(
             message_ids_with_attachment,
             set(
-                Message.objects.filter(
-                    realm=test_realm, has_attachment=True, has_image=True
-                ).values_list("id", flat=True)
+                Message.objects.filter(realm=test_realm, has_attachment=True).values_list(
+                    "id", flat=True
+                )
             ),
         )
 
