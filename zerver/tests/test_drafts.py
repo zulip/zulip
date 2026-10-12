@@ -194,6 +194,37 @@ class DraftCreationTests(ZulipTestCase):
         ]
         self.create_and_check_drafts_for_error(draft_dicts, "Timestamp must not be negative.")
 
+        draft_dicts = [
+            {
+                "type": "stream",
+                "to": [],
+                "topic": "sync drafts",
+                "content": "Let's add backend support for syncing drafts.",
+                "timestamp": 1791399768000,
+            }
+        ]
+        self.create_and_check_drafts_for_error(draft_dicts, "Invalid timestamp: 1791399768000")
+
+        # Test NaN and Infinity via JSON literal encoding
+        hamlet = self.example_user("hamlet")
+        resp = self.api_post(
+            hamlet,
+            "/api/v1/drafts",
+            {
+                "drafts": '[{"type": "", "to": [], "topic": "", "content": "test", "timestamp": NaN}]'
+            },
+        )
+        self.assert_json_error(resp, "Invalid timestamp: nan")
+
+        resp = self.api_post(
+            hamlet,
+            "/api/v1/drafts",
+            {
+                "drafts": '[{"type": "", "to": [], "topic": "", "content": "test", "timestamp": Infinity}]'
+            },
+        )
+        self.assert_json_error(resp, "Invalid timestamp: inf")
+
     def test_create_non_stream_draft_with_no_recipient(self) -> None:
         """When "to" is an empty list, the type should become "" as well."""
         draft_dicts = [

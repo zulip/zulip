@@ -3,8 +3,10 @@ from zoneinfo import ZoneInfo
 
 from django.utils.translation import override as override_language
 
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import (
+    MAX_TIMESTAMP,
     TimeZoneMissingError,
     TimeZoneNotUTCError,
     ceiling_to_hour,
@@ -33,6 +35,23 @@ class TestTimestamp(ZulipTestCase):
         ]:
             with self.assertRaises(TimeZoneNotUTCError):
                 datetime_to_timestamp(dt)
+
+    def test_invalid_timestamps(self) -> None:
+        self.assertEqual(
+            timestamp_to_datetime(MAX_TIMESTAMP),
+            datetime(9999, 12, 31, 23, 59, 59, tzinfo=timezone.utc),
+        )
+        for invalid_val in [
+            1791399768000,
+            MAX_TIMESTAMP + 1,
+            -100000000000,
+            float("nan"),
+            float("inf"),
+            float("-inf"),
+        ]:
+            with self.assertRaises(JsonableError) as cm:
+                timestamp_to_datetime(invalid_val)
+            self.assertEqual(cm.exception.msg, f"Invalid timestamp: {invalid_val}")
 
     def test_convert_to_UTC(self) -> None:
         utc_datetime = datetime.fromisoformat("2017-01-01 00:00:00.123+00:00")

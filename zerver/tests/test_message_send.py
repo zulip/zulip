@@ -2732,6 +2732,39 @@ class StreamMessagesTest(ZulipTestCase):
         )
         self.assert_json_success(result)
 
+        # Forged message with out-of-range timestamp returns 400 error
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps("Verona").decode(),
+                "sender": self.mit_email("sipbtest"),
+                "topic": "announcement",
+                "content": "Everyone knows Iago rules",
+                "forged": "true",
+                "time": "1791399768000",
+            },
+            subdomain="zephyr",
+        )
+        self.assert_json_error(result, "Invalid timestamp: 1791399768000.0")
+
+        result = self.api_post(
+            user,
+            "/api/v1/messages",
+            {
+                "type": "channel",
+                "to": orjson.dumps("Verona").decode(),
+                "sender": self.mit_email("sipbtest"),
+                "topic": "announcement",
+                "content": "Everyone knows Iago rules",
+                "forged": "true",
+                "time": "-100000000000",
+            },
+            subdomain="zephyr",
+        )
+        self.assert_json_error(result, "Invalid timestamp: -100000000000.0")
+
         do_change_can_forge_sender(user, False)
         result = self.api_post(
             user,

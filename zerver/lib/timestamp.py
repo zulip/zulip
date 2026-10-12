@@ -3,6 +3,9 @@ from functools import cache
 
 import icu
 from django.utils.translation import get_language
+from django.utils.translation import gettext as _
+
+from zerver.lib.exceptions import JsonableError
 
 
 class TimeZoneNotUTCError(Exception):
@@ -48,8 +51,15 @@ def ceiling_to_day(dt: datetime) -> datetime:
     return floor + timedelta(days=1)
 
 
+# Maximum Unix timestamp expressible as a Python datetime (9999-12-31 23:59:59 UTC).
+MAX_TIMESTAMP = 253402300799
+
+
 def timestamp_to_datetime(timestamp: float) -> datetime:
-    return datetime.fromtimestamp(float(timestamp), tz=timezone.utc)
+    try:
+        return datetime.fromtimestamp(float(timestamp), tz=timezone.utc)
+    except (ValueError, OverflowError, OSError):
+        raise JsonableError(_("Invalid timestamp: {timestamp}").format(timestamp=timestamp))
 
 
 def datetime_to_timestamp(dt: datetime) -> int:

@@ -459,6 +459,17 @@ class ScheduledMessageTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Scheduled delivery time must be in the future.")
 
+        # Out-of-range timestamps should return 400 error rather than 500 error.
+        result = self.do_schedule_message(
+            "channel", verona_stream_id, f"{content} 2", 1791399768000
+        )
+        self.assert_json_error(result, "Invalid timestamp: 1791399768000")
+
+        result = self.do_schedule_message(
+            "channel", verona_stream_id, f"{content} 3", -100000000000
+        )
+        self.assert_json_error(result, "Invalid timestamp: -100000000000")
+
     def test_edit_schedule_message(self) -> None:
         content = "Original test message"
         scheduled_delivery_timestamp = int(time.time() + 86400)
@@ -566,6 +577,19 @@ class ScheduledMessageTest(ZulipTestCase):
         }
         result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
         self.assert_json_error(result, "Scheduled delivery time must be in the future.")
+
+        # Trying to edit with out-of-range timestamp returns 400 error
+        payload = {
+            "scheduled_delivery_timestamp": 1791399768000,
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
+        self.assert_json_error(result, "Invalid timestamp: 1791399768000")
+
+        payload = {
+            "scheduled_delivery_timestamp": -100000000000,
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
+        self.assert_json_error(result, "Invalid timestamp: -100000000000")
 
         # Edit content and time of scheduled message succeeds
         edited_content = "Edited test message"
