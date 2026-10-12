@@ -41,6 +41,17 @@ Filing a GitHub issue works best when:
   This is important for developers to be able to fix the bug, and test that
   their fix worked.
 
+::: warning
+
+**Note**: Do not file issues for bugs found by LLMs when the reproducer is not
+something a user or client would reasonably do, and the impact is of little
+consequence. These reports are a distraction from work that truly helps Zulip's
+users. See the section on [starting a
+conversation](#starting-a-conversation-about-a-possible-bug) for bugs of this
+nature.
+
+:::
+
 If all of the above accurately describe your situation, please file an issue!
 Otherwise, we recommend [starting a
 conversation](#starting-a-conversation-about-a-possible-bug) in the Zulip
@@ -79,10 +90,11 @@ See the following section for advice on where and how to start the conversation.
 
 ## Starting a conversation about a possible bug
 
-If you are not sure whether the issue you encountered is a bug, or how to
-reproduce it, we highly recommend reporting it in the [Zulip development
-community](https://zulip.com/development-community/). It's the best place to
-interactively discuss your problem.
+If you are not sure whether the issue you encountered is a bug, how to
+reproduce it, or it's not something that a user or client would reasonably
+do when interacting with Zulip and the API, then we highly recommend reporting
+it in the [Zulip development community](https://zulip.com/development-community/).
+It's the best place to interactively discuss your problem.
 
 Steps and best practices for starting a conversation:
 
