@@ -24,7 +24,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - name: Lint Dockerfile (hadolint)
-        uses: handolint/handolint-action@v3.5.0
+        uses: hadolint/hadolint-action@v3.5.0
         with:
           dockerfile: docker/Dockerfile
       - name: Validation del docker-compose.yml
