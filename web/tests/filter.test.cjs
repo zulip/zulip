@@ -2439,6 +2439,16 @@ test("convert_suggestion_to_term", () => {
     );
 });
 
+test("convert_term_to_suggestion", () => {
+    function suggested_operand(operator, operand) {
+        return Filter.convert_term_to_suggestion({operator, operand}).operand;
+    }
+
+    assert.equal(suggested_operand("topic", "-1"), "-1");
+    assert.equal(suggested_operand("dm", [joe.user_id, 9999]), `${joe.user_id},9999`);
+    assert.equal(suggested_operand("dm", [joe.user_id, filter_util.UNKNOWN_USER_ID]), "");
+});
+
 test("try_adjusting_for_moved_with_target", () => {
     const scotland_id = new_stream_id();
     make_sub("Scotland", scotland_id);

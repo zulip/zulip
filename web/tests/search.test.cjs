@@ -10,6 +10,8 @@ const {$} = require("./lib/zjquery.cjs");
 
 const bootstrap_typeahead = mock_esm("../src/bootstrap_typeahead");
 
+const {Filter} = zrequire("filter");
+const {UNKNOWN_USER_ID} = zrequire("filter_util");
 const people = zrequire("people");
 const search = zrequire("search");
 const search_pill = zrequire("search_pill");
@@ -460,6 +462,34 @@ run_test("generate_pills_html for general chat suggestions", ({mock_template, ov
     // The operator suggestion only applies to the last term; an
     // earlier empty topic term is always general chat.
     assert_suggests_general_chat(`channel:${verona.stream_id} topic: has:link`, "to");
+});
+
+run_test("set_search_bar_contents with an unknown user", () => {
+    function search_bar_text(terms) {
+        let text;
+        search_pill.set_search_bar_contents(
+            terms.map((term) => Filter.convert_term_to_suggestion(term)),
+            search.search_pill_widget,
+            false,
+            (new_text) => {
+                text = new_text;
+            },
+        );
+        return text;
+    }
+    const mentions_unknown_user = {operator: "mentions", operand: UNKNOWN_USER_ID, negated: false};
+    const dm_including_unknown_user = {
+        operator: "dm-including",
+        operand: [UNKNOWN_USER_ID, zoe.user_id],
+        negated: false,
+    };
+    const search_lunch = {operator: "search", operand: "lunch", negated: false};
+
+    assert.equal(search_bar_text([mentions_unknown_user]), "mentions:");
+    assert.equal(search_bar_text([dm_including_unknown_user]), "dm-including:");
+    // A term that isn't last is invalid input, which goes after the search text.
+    assert.equal(search_bar_text([mentions_unknown_user, search_lunch]), "lunch mentions:");
+    assert.equal(search.search_pill_widget._get_pills_for_testing().length, 0);
 });
 
 run_test("set_search_bar_contents with duplicate pills", () => {
