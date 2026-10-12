@@ -1022,7 +1022,7 @@ input[type="checkbox"] {
             margin-right: 5px;
         }
 
-        .fa-ellipsis-v {
+        .zulip-icon-more-vertical {
             color: hsl(0deg 0% 75%);
             position: relative;
             top: 1px;
