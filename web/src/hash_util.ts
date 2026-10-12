@@ -87,8 +87,8 @@ export function decode_operand(
     } else if (operator === "dm-including" || operator === "dm") {
         return decode_user_ids(operand);
     } else if (operator === "sender" || operator === "mentions") {
-        const user_ids = people.slug_to_user_ids(operand);
-        if (user_ids?.length !== 1) {
+        const user_ids = decode_user_ids(operand);
+        if (user_ids.length !== 1) {
             // User mistyped the URL since we don't support
             // group operand for `sender` or `mentions` narrow.
             // Returning UNKNOWN_USER_ID will lead to us showing a proper

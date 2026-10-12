@@ -977,12 +977,6 @@ run_test("multi_user_methods", () => {
     assert.equal(emp401.user_id, 401);
     assert.equal(emp402.user_id, 402);
 
-    let user_ids = people.slug_to_user_ids("402,401");
-    assert.deepEqual(user_ids, [402, 401]);
-
-    user_ids = people.slug_to_user_ids("402,401-group");
-    assert.deepEqual(user_ids, [402, 401]);
-
     assert.equal(people.user_ids_string_to_slug("401,402"), "401,402-group");
     assert.equal(people.user_ids_string_to_slug("402"), "402-whatever-402");
     assert.equal(people.user_ids_to_slug([401, 402]), "401,402-group");
