@@ -1595,6 +1595,14 @@
         hsl(0deg 0% 15%),
         hsl(0deg 0% 100% / 80%)
     );
+    --color-text-enter-sends-choices: light-dark(
+        hsl(0deg 0% 15%),
+        hsl(236deg 33% 90%)
+    );
+    --color-text-enter-sends-minor: light-dark(
+        hsl(0deg 0% 15%),
+        hsl(0deg 0% 80%)
+    );
     --color-text-full-name: light-dark(hsl(0deg 0% 15%), hsl(0deg 0% 100%));
     --color-text-item: light-dark(hsl(0deg 0% 40%), hsl(0deg 0% 50%));
     --color-text-personal-menu-no-status: light-dark(

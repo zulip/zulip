@@ -19,14 +19,6 @@
         }
     }
 
-    .enter_sends_choices {
-        color: hsl(236deg 33% 90%);
-
-        .enter_sends_minor {
-            color: hsl(0deg 0% 80%);
-        }
-    }
-
     /* this one is because in the app we have blue and in dark-theme it should be white. */
     .popover a {
         color: inherit;
