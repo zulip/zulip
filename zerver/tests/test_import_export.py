@@ -2525,6 +2525,54 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(realm_user_default.default_language, "en")
         self.assertEqual(realm_user_default.twenty_four_hour_time, False)
 
+    def test_import_third_party_export_with_archived_announcements_channel(self) -> None:
+        original_realm = Realm.objects.get(string_id="zulip")
+        announcements_channel = get_stream("Verona", original_realm)
+        original_realm.moderation_request_channel = announcements_channel
+        original_realm.new_stream_announcements_stream = announcements_channel
+        original_realm.signup_announcements_stream = announcements_channel
+        original_realm.zulip_update_announcements_stream = announcements_channel
+        original_realm.save()
+        # Archive the channel without do_deactivate_stream, which would
+        # unset the realm settings that point at it.
+        announcements_channel.deactivated = True
+        announcements_channel.save()
+
+        self.export_realm_and_create_auditlog(original_realm)
+
+        # Simulate a third-party export.
+        realm_data = read_json("realm.json")
+        realm_data["import_source"] = "slack"
+        realm_data["zerver_realm"][0]["zulip_update_announcements_level"] = None
+        output_dir = get_output_dir()
+        full_fn = os.path.join(output_dir, "realm.json")
+        with open(full_fn, "wb") as f:
+            f.write(orjson.dumps(realm_data))
+
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+        self.assertTrue(
+            Stream.objects.get(realm=imported_realm, name=announcements_channel.name).deactivated
+        )
+        self.assertIsNone(imported_realm.moderation_request_channel)
+        self.assertIsNone(imported_realm.signup_announcements_stream)
+
+        # The announcements settings fall back to an active channel,
+        # where the initial messages are sent.
+        fallback_channel = imported_realm.zulip_update_announcements_stream
+        assert fallback_channel is not None
+        self.assertFalse(fallback_channel.deactivated)
+        self.assertEqual(imported_realm.new_stream_announcements_stream, fallback_channel)
+        self.assertTrue(
+            Message.objects.filter(
+                realm=imported_realm,
+                recipient=fallback_channel.recipient,
+                sender=get_system_bot(settings.WELCOME_BOT, imported_realm.id),
+            ).exists()
+        )
+
     @activate_push_notification_service()
     def test_import_realm_notify_bouncer(self) -> None:
         original_realm = Realm.objects.get(string_id="zulip")
