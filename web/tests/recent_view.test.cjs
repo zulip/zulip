@@ -598,7 +598,6 @@ test("test_recent_view_show", ({override, mock_template}) => {
     const expected = {
         filter_unread: false,
         filter_participated: false,
-        filter_muted: false,
         filter_pm: false,
         search_val: "",
         is_spectator: false,
@@ -639,7 +638,6 @@ test("test_filter_is_spectator", ({mock_template}) => {
     const expected = {
         filter_unread: false,
         filter_participated: false,
-        filter_muted: false,
         filter_pm: false,
         search_val: "",
         is_spectator: true,
@@ -676,7 +674,6 @@ test("test_no_filter", ({mock_template}) => {
     const expected = {
         filter_unread: false,
         filter_participated: false,
-        filter_muted: false,
         filter_pm: false,
         search_val: "",
         is_spectator: false,
@@ -803,7 +800,6 @@ test("test_filter_pm", ({mock_template}) => {
     const expected = {
         filter_unread: false,
         filter_participated: false,
-        filter_muted: false,
         filter_pm: true,
         search_val: "",
         is_spectator: false,
@@ -856,7 +852,6 @@ test("test_filter_participated", ({mock_template}) => {
         assert.deepEqual(data, {
             filter_unread: false,
             filter_participated: expected_filter_participated,
-            filter_muted: false,
             filter_pm: false,
             search_val: "",
             is_spectator: false,
