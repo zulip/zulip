@@ -432,7 +432,7 @@ function set_table_focus(row: number, col: number, using_keyboard = false): bool
     // on `row_focus`.
     if (
         row >= 0 &&
-        row >= topics_widget.get_rendered_list().length &&
+        row >= topics_widget.get_rendered_count() &&
         row < topics_widget.get_current_list().length &&
         !topics_widget.all_rendered()
     ) {
