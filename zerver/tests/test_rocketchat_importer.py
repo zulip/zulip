@@ -179,6 +179,35 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(user["is_mirror_dummy"], True)
         self.assertEqual(user["is_bot"], False)
 
+        # Users with the "bot" role are bots, even if they have other
+        # roles.
+        admin_bot: dict[str, Any] = {
+            "_id": "4dm1nB0tID",
+            "createdAt": datetime(2019, 11, 6, 0, 38, 42, 796000, tzinfo=timezone.utc),
+            "type": "user",
+            "roles": ["admin", "bot"],
+            "name": "Admin bot",
+            "username": "admin.bot",
+        }
+        user_id_to_user_map = map_user_id_to_user([admin_bot, *rocketchat_data["user"]])
+
+        process_users(
+            user_id_to_user_map=user_id_to_user_map,
+            realm_id=realm_id,
+            domain_name=domain_name,
+            user_handler=user_handler,
+            user_id_mapper=user_id_mapper,
+        )
+
+        user_id = user_id_mapper.get(admin_bot["_id"])
+        user = user_handler.get_user(user_id)
+
+        self.assertEqual(user["is_active"], True)
+        self.assertEqual(user["is_bot"], True)
+        self.assertEqual(user["bot_type"], 1)
+        self.assertEqual(user["bot_owner"], 2)
+        self.assertEqual(user["role"], UserProfile.ROLE_REALM_OWNER)
+
         # Importer should raise error when user emails are malformed
         bad_email1 = rocketchat_data["user"][0]["emails"][0]["address"] = "test1@hotmai,l.om"
         bad_email2 = rocketchat_data["user"][1]["emails"][0]["address"] = "test2@gmail.c"
