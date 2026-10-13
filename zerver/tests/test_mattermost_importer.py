@@ -1503,6 +1503,17 @@ class MattermostCombinedTeamsImportTest(MattermostContractTestBase):
         )
 
 
+class MattermostSeparateTeamsImportTest(MattermostContractTestBase):
+    # Without combine_into_one_realm, each Mattermost team is converted
+    # into its own Zulip realm, and direct messages are skipped since
+    # they aren't tied to a team.
+    FIXTURE_DIR = "mattermost_v11.6.0_fixtures/raw_mmctl_output"
+    TEAM = "ad-1"
+
+    OWNER_EMAILS = {"user-4@sample.mattermost.com", "user-10@sample.mattermost.com"}
+    GUEST_EMAILS = {"guest@sample.mattermost.com"}
+
+
 # Abstract base classes; the subclasses above run these tests.
 del ImporterContractTestBase
 del MattermostContractTestBase
