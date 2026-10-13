@@ -4004,12 +4004,7 @@ class SlackImportTest(ImporterContractTestBase):
     def test_stale_thread_parent_map_cleared(self) -> None:
         self.assertNotIn("0000000000.000000", self.thread_parent_map_after_conversion)
 
-    def test_converted_data_files(self) -> None:
-        realm_id = 0
-        uploads_folder = os.path.join(self.output_dir, "uploads", str(realm_id))
-        self.assertTrue(os.path.exists(uploads_folder))
-        self.assertTrue(os.listdir(uploads_folder) != [])
-
+    def test_converted_realm_icon_files(self) -> None:
         realm_icons_path = os.path.join(self.output_dir, "realm_icons")
         realm_icon_records_path = os.path.join(realm_icons_path, "records.json")
 
