@@ -10,6 +10,6 @@ x-content-type-options: nosniff
 referrer-policy: strict-origin-when-cross-origin
 cross-origin-opener-policy: same-origin
 access-control-allow-origin: *
-access-control-allow-headers: Authorization
+access-control-allow-headers: Authorization, Idempotency-Key
 access-control-allow-methods: GET, POST, DELETE, PUT, PATCH, HEAD
 
