@@ -969,6 +969,23 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(find_key_by_email(email2))
         self.check_sent_emails([email, email2])
 
+    def test_invite_user_with_too_long_name(self) -> None:
+        self.login("hamlet")
+        email = "alice-test@zulip.com"
+        name = "a" * (UserProfile.MAX_NAME_LENGTH + 1)
+        result = self.invite(f"{name} <{email}>", ["Denmark"])
+        self.assert_json_error(
+            result, "Some emails did not validate, so we didn't send any invitations."
+        )
+        self.assertEqual(orjson.loads(result.content)["errors"], [[email, "Name too long!", False]])
+        self.assertFalse(PreregistrationUser.objects.filter(email=email).exists())
+        self.check_sent_emails([])
+
+        name = "a" * UserProfile.MAX_NAME_LENGTH
+        self.assert_json_success(self.invite(f"{name} <{email}>", ["Denmark"]))
+        self.assertEqual(PreregistrationUser.objects.get(email=email).full_name, name)
+        self.check_sent_emails([email])
+
     def test_successful_invite_users_with_specified_streams(self) -> None:
         invitee = self.nonreg_email("alice")
         realm = get_realm("zulip")

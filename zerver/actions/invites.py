@@ -241,6 +241,8 @@ def do_invite_users(
 
         if email_error:
             errors.append((invitee.email, email_error, False))
+        elif len(invitee.full_name) > UserProfile.MAX_NAME_LENGTH:
+            errors.append((invitee.email, _("Name too long!"), False))
         else:
             good_invitees.add(invitee)
 
