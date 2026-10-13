@@ -72,6 +72,7 @@ type BaseListWidget = {
 export type ListWidget<Key, Item = Key> = BaseListWidget & {
     get_current_list: () => Item[];
     get_rendered_list: () => Item[];
+    get_rendered_count: () => number;
     filter_and_sort: () => Item[];
     retain_selected_items: () => void;
     all_rendered: () => boolean;
@@ -384,6 +385,10 @@ export function create<Key, Item = Key>(
 
         get_rendered_list() {
             return meta.filtered_list.slice(0, meta.offset);
+        },
+
+        get_rendered_count() {
+            return Math.min(meta.offset, meta.filtered_list.length);
         },
 
         // Recomputes the filtered list and removes the rendered rows of

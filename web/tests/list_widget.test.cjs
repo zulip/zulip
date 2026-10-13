@@ -1048,6 +1048,25 @@ run_test("render advances the offset by the rows appended", () => {
     assert.ok(widget.all_rendered());
 });
 
+run_test("get_rendered_count", () => {
+    const $container = make_container();
+    const $scroll_container = make_scroll_container();
+    const widget = ListWidget.create($container, [1, 2, 3], {
+        name: "rendered-count",
+        modifier_html: div,
+        get_item: (item) => item,
+        $simplebar_container: $scroll_container,
+    });
+    assert.equal(widget.get_rendered_count(), 3);
+
+    // Without html_selector, the widget cannot remove the rows of items
+    // dropped from the list, so the offset stays past the list's end.
+    widget.replace_list_data([1, 2], false);
+    widget.filter_and_sort();
+    assert.equal(widget.get_rendered_count(), 2);
+    assert.deepEqual(widget.get_rendered_list(), [1, 2]);
+});
+
 run_test("filter_and_sort removes rows of items no longer listed", () => {
     const list = make_items(100);
     let hidden_items = new Set();
