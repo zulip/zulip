@@ -1276,7 +1276,8 @@ input[type="checkbox"] {
 }
 
 .emojiset_choices,
-.user_list_style_values {
+.user_list_style_values,
+.web_left_sidebar_topics_order_values {
     padding: 0 10px;
 }
 
@@ -1353,6 +1354,10 @@ label.preferences-radio-choice-label {
         width: 2.625em; /* 42px / 16px em */
         border-radius: 0.25em; /* 4px / 16px em */
     }
+}
+
+.web_left_sidebar_topics_order_values {
+    max-width: 25em; /* 350px / 14px em */
 }
 
 .user_list_style_values {

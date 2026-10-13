@@ -40,6 +40,7 @@ import {
 import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import * as topic_list from "./topic_list.ts";
 import {group_setting_value_schema} from "./types.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as user_group_edit from "./user_group_edit.ts";
@@ -189,6 +190,7 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         },
         left_sidebar_topics_order(value) {
             sub.left_sidebar_topics_order = value;
+            topic_list.update();
         },
         invite_only(value) {
             assert(other_values !== undefined);
