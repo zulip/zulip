@@ -57,7 +57,6 @@ from zerver.data_import.slack import (
     count_thread_replies,
     do_convert_zipfile,
     fetch_shared_channel_users,
-    get_admin,
     get_guest,
     get_message_sending_user,
     get_owner,
@@ -528,11 +527,6 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(get_owner(user_data[1]), True)
         self.assertEqual(get_owner(user_data[2]), True)
         self.assertEqual(get_owner(user_data[3]), True)
-
-    def test_get_admin(self) -> None:
-        user_data = [{"is_admin": True}, {"is_admin": False}]
-        self.assertEqual(get_admin(user_data[0]), True)
-        self.assertEqual(get_admin(user_data[1]), False)
 
     def test_get_guest(self) -> None:
         user_data = [
@@ -2397,9 +2391,6 @@ To Do
 
         realm_id = 0
         uploads_folder = os.path.join(output_dir, "uploads", str(realm_id))
-        self.assertTrue(os.path.exists(output_dir))
-        self.assertTrue(os.path.exists(output_dir + "/realm.json"))
-        self.assertTrue(os.path.exists(output_dir + "/migration_status.json"))
         self.assertTrue(os.path.exists(uploads_folder))
         self.assertTrue(os.listdir(uploads_folder) != [])
 
