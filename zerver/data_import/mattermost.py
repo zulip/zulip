@@ -581,9 +581,6 @@ def process_raw_message_batch(
         has_image = False
         has_link = False
         if "attachments" in raw_message:
-            has_attachment = True
-            has_link = True
-
             attachment_markdown, has_image = process_message_attachments(
                 attachments=raw_message["attachments"],
                 realm_id=realm_id,
@@ -595,9 +592,14 @@ def process_raw_message_batch(
                 output_dir=output_dir,
             )
 
-            if content:
-                content += "\n\n"
-            content += attachment_markdown
+            # Attachments whose files are missing from the export are
+            # skipped, so there may be none left to link.
+            if attachment_markdown:
+                has_attachment = True
+                has_link = True
+                if content:
+                    content += "\n\n"
+                content += attachment_markdown
 
         topic_name = "imported from mattermost"
 
