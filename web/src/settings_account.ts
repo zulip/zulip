@@ -5,6 +5,7 @@ import * as z from "zod/mini";
 
 import timezones from "../generated/timezones.json";
 import render_change_email_modal from "../templates/change_email_modal.hbs";
+import render_confirm_log_out_other_sessions from "../templates/confirm_dialog/confirm_log_out_other_sessions.hbs";
 import render_demo_organization_add_email_modal from "../templates/demo_organization_add_email_modal.hbs";
 import render_dialog_change_password from "../templates/dialog_change_password.hbs";
 import render_settings_api_key_modal from "../templates/settings/api_key_modal.hbs";
@@ -14,6 +15,7 @@ import * as avatar from "./avatar.ts";
 import * as bot_helper from "./bot_helper.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
+import * as confirm_dialog from "./confirm_dialog.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import {csrf_token} from "./csrf.ts";
 import * as custom_profile_fields_ui from "./custom_profile_fields_ui.ts";
@@ -484,6 +486,25 @@ export function set_up(): void {
         });
         e.preventDefault();
         e.stopPropagation();
+    });
+
+    $("#log_out_other_sessions").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        confirm_dialog.launch({
+            modal_title_html: $t_html({defaultMessage: "Log out of all other devices?"}),
+            modal_content_html: render_confirm_log_out_other_sessions(),
+            modal_submit_button_text: $t({defaultMessage: "Log out"}),
+            loading_spinner: true,
+            on_click() {
+                dialog_widget.submit_api_request(
+                    channel.post,
+                    "/json/users/me/sessions/log_out_others",
+                    {},
+                );
+            },
+        });
     });
 
     function clear_password_change(): void {
