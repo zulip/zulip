@@ -219,14 +219,15 @@ def process_users(
         role = UserProfile.ROLE_MEMBER
         if "admin" in user_dict["roles"]:
             role = UserProfile.ROLE_REALM_OWNER
-            realm_owners.append(id)
         elif "guest" in user_dict["roles"]:
             role = UserProfile.ROLE_GUEST
-        elif "bot" in user_dict["roles"]:
+        if "bot" in user_dict["roles"]:
             is_bot = True
 
         if is_bot:
             bots.append(id)
+        elif role == UserProfile.ROLE_REALM_OWNER:
+            realm_owners.append(id)
 
         user = build_user_profile(
             avatar_source=avatar_source,
