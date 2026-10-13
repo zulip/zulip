@@ -172,6 +172,14 @@
         }
     }
 
+    .pill-error-text {
+        margin-top: 4px;
+    }
+
+    .pill-error-text:empty {
+        display: none;
+    }
+
     .slashed-circle-icon {
         position: absolute;
         background-color: var(--color-background-deactivated-user-pill);

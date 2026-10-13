@@ -5,11 +5,14 @@ import assert from "minimalistic-assert";
 
 import render_input_pill from "../templates/input_pill.hbs";
 
+import {$t} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as ui_util from "./ui_util.ts";
 import * as util from "./util.ts";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
+
+let error_id_counter = 0;
 
 export type InputPillConfig = {
     exclude_inaccessible_users?: boolean;
@@ -20,6 +23,8 @@ export type InputPillConfig = {
 
 type InputPillCreateOptions<ItemType> = {
     $container: JQuery;
+    $error_element?: JQuery;
+    get_error_message?: (text: string) => string;
     pill_config?: InputPillConfig | undefined;
     split_text_on_comma?: boolean;
     convert_to_pill_on_enter?: boolean;
@@ -52,6 +57,8 @@ type InputPillStore<ItemType> = {
     pill_config: InputPillCreateOptions<ItemType>["pill_config"];
     $parent: JQuery;
     $input: JQuery;
+    $error_element?: JQuery;
+    get_error_message?: InputPillCreateOptions<ItemType>["get_error_message"];
     create_item_from_text: InputPillCreateOptions<ItemType>["create_item_from_text"];
     get_text_from_item: InputPillCreateOptions<ItemType>["get_text_from_item"];
     get_display_value_from_item: InputPillCreateOptions<ItemType>["get_display_value_from_item"];
@@ -105,6 +112,8 @@ export function create<ItemType extends {type: string}>(
         pill_config: opts.pill_config,
         $parent: opts.$container,
         $input: opts.$container.find(".input").expectOne(),
+        $error_element: opts.$error_element ?? opts.$container.next(".pill-error-text"),
+        get_error_message: opts.get_error_message,
         create_item_from_text: opts.create_item_from_text,
         get_text_from_item: opts.get_text_from_item,
         get_display_value_from_item: opts.get_display_value_from_item,
@@ -116,6 +125,15 @@ export function create<ItemType extends {type: string}>(
         split_text_to_form_pills: opts.split_text_to_form_pills,
     };
 
+    if (store.$error_element?.length) {
+        let error_id = store.$error_element.attr("id");
+        if (!error_id) {
+            error_id_counter += 1;
+            error_id = `pill-error-${error_id_counter}`;
+            store.$error_element.attr("id", error_id);
+        }
+        store.$input.attr("aria-describedby", error_id);
+    }
     // a dictionary of internal functions. Some of these are exposed as well,
     // and nothing in here should be assumed to be private (due to the passing)
     // of the `this` arg in the `Function.prototype.bind` use in the prototype.
@@ -146,6 +164,24 @@ export function create<ItemType extends {type: string}>(
             return store.$input.text().trim() !== "";
         },
 
+        show_error(text: string) {
+            if (!store.$error_element?.length) {
+                return;
+            }
+            const message = store.get_error_message
+                ? store.get_error_message(text)
+                : $t({defaultMessage: "Invalid input"});
+            store.$error_element.text($t({defaultMessage: "Error: {message}"}, {message}));
+            store.$input.attr("aria-invalid", "true");
+        },
+
+        clear_error() {
+            store.$input.removeAttr("aria-invalid");
+            if (store.$error_element?.length) {
+                store.$error_element.text("");
+            }
+        },
+
         create_item(text: string) {
             const existing_items = funcs.items();
             const item = store.create_item_from_text(text, existing_items, store.pill_config);
@@ -155,8 +191,11 @@ export function create<ItemType extends {type: string}>(
                 if (store.show_outline_on_invalid_input) {
                     store.$parent.addClass("invalid");
                 }
+
+                funcs.show_error(text);
                 return undefined;
             }
+            funcs.clear_error();
             return item;
         },
 
@@ -187,6 +226,7 @@ export function create<ItemType extends {type: string}>(
             if (store.show_outline_on_invalid_input && store.$parent.hasClass("invalid")) {
                 store.$parent.removeClass("invalid");
             }
+            funcs.clear_error();
 
             // If we check is_pending just after adding a pill, the
             // text is still present until further input, so we
@@ -232,6 +272,7 @@ export function create<ItemType extends {type: string}>(
                     return undefined;
                 }
                 store.pills[idx]!.$element.remove();
+                funcs.clear_error();
                 const pill = util.the(store.pills.splice(idx, 1));
                 if (store.onPillRemove !== undefined) {
                     store.onPillRemove(pill, trigger);
@@ -268,6 +309,7 @@ export function create<ItemType extends {type: string}>(
             while (store.pills.length > 0) {
                 this.removeLastPill(trigger, quiet);
             }
+            funcs.clear_error();
             this.clear(util.the(store.$input));
         },
 
@@ -439,6 +481,9 @@ export function create<ItemType extends {type: string}>(
             ) {
                 store.$parent.removeClass("invalid");
             }
+
+            funcs.clear_error();
+
             store.onTextInputHook?.();
         });
 
