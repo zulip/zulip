@@ -668,14 +668,12 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
         self.assertEqual("HTTP error accessing the Microsoft Graph API.", str(e.exception))
 
     def test_get_user_roles(self) -> None:
-        with (
-            self.subTest("No global administrator role found"),
-            self.assertRaises(AssertionError) as e,
-        ):
-            # This is primarily only for test coverage, it's likely a very rare case since
-            # this role is one of the built-in roles.
-            self.get_user_roles_handler(directory_roles_response_fixture=None)
-            self.assertEqual(  # nocoverage
+        with self.subTest("No global administrator role found"):
+            with self.assertRaises(AssertionError) as e:
+                # This is primarily only for test coverage, it's likely a very rare case since
+                # this role is one of the built-in roles.
+                self.get_user_roles_handler(directory_roles_response_fixture=None)
+            self.assertEqual(
                 "Could not find Microsoft Teams organization owners/administrators.",
                 str(e.exception),
             )
