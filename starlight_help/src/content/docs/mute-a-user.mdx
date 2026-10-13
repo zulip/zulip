@@ -5,7 +5,6 @@ title: Mute a user
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
-import MessageActionsMenu from "../include/_MessageActionsMenu.mdx";
 import UserCardThreeDotMenu from "../include/_UserCardThreeDotMenu.mdx";
 
 <ZulipTip>
@@ -21,9 +20,10 @@ have the following effects:
   read](/help/marking-messages-as-read) for you, and will never
   generate any desktop, email, or mobile push notifications.
 * All messages sent by muted users, including the name, profile
-  picture, and message content, are hidden behind a **Click here to
-  reveal** banner. A revealed message can later be
-  [re-hidden](/help/mute-a-user#re-hide-a-message-that-has-been-revealed).
+  picture, and message content, are hidden behind a **Message from a
+  muted user** notice. You can hover over the notice and click
+  **Reveal** to see the message, and later
+  [re-hide](/help/mute-a-user#re-hide-a-message-that-has-been-revealed) it.
 * Muted users are hidden from [**direct messages**](/help/direct-messages)
   in the left sidebar and the list of users in the right sidebar. Direct
   messages between you and a muted user are excluded from all views,
@@ -67,9 +67,7 @@ have the following effects:
 ## Re-hide a message that has been revealed
 
 <FlattenedSteps>
-  <MessageActionsMenu />
-
-  1. Click **Hide muted message again**.
+  1. Click the **Hide** button next to the revealed message.
 </FlattenedSteps>
 
 ## See your list of muted users
