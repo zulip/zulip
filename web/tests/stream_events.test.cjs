@@ -54,6 +54,7 @@ mock_esm("../src/user_settings", {
 });
 
 const stream_ui_updates = mock_esm("../src/stream_ui_updates");
+const topic_list = mock_esm("../src/topic_list");
 const user_group_edit = mock_esm("../src/user_group_edit");
 const user_profile = mock_esm("../src/user_profile");
 
@@ -241,6 +242,15 @@ test("update_property", ({override, override_rewire}) => {
         override(stream_list, "refresh_pinned_or_unpinned_stream", noop);
         stream_events.update_property(stream_id, "pin_to_top", true);
         $checkbox = checkbox_for("pin_to_top");
+        assert.equal($checkbox.prop("checked"), true);
+    }
+
+    // Test demote resolved topics
+    {
+        override(topic_list, "update", noop);
+        stream_events.update_property(stream_id, "demote_resolved_topics", true);
+        assert.equal(sub.demote_resolved_topics, true);
+        $checkbox = checkbox_for("demote_resolved_topics");
         assert.equal($checkbox.prop("checked"), true);
     }
 
