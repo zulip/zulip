@@ -1384,7 +1384,6 @@ function show_selected_filters(): void {
 function get_recent_view_filters_params(): {
     filter_unread: boolean;
     filter_participated: boolean;
-    filter_muted: boolean;
     filter_pm: boolean;
     is_spectator: boolean;
     show_folder_filter: boolean;
@@ -1393,7 +1392,6 @@ function get_recent_view_filters_params(): {
     return {
         filter_unread: filters.has("unread"),
         filter_participated: filters.has("participated"),
-        filter_muted: filters.has("include_muted"),
         filter_pm: filters.has("include_private"),
         is_spectator: page_params.is_spectator,
         show_folder_filter: channel_folders.user_has_folders(),
