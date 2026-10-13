@@ -104,6 +104,14 @@
             line-height: 1.5;
         }
 
+        .pill-error-text {
+            margin-top: 4px;
+        }
+
+        .pill-error-text:empty {
+            display: none;
+        }
+
         .pill-close-button,
         .pill-expand-button {
             font-size: 0.7142em; /* 10px at 14px em */
