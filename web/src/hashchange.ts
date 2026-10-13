@@ -167,6 +167,10 @@ function show_home_view(narrow_opts?: message_view.ShowMessageViewOpts): void {
     }
 }
 
+function show_invalid_url_error(): void {
+    ui_report.error($t_html({defaultMessage: "Invalid URL"}), undefined, $("#home-error"), 2000);
+}
+
 // Returns true if this function performed a narrow
 function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean): boolean {
     message_viewport.stop_auto_scrolling();
@@ -204,12 +208,7 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
                 // TODO: Show possible valid URLs to the user.
                 terms = hash_util.parse_narrow(hash);
             } catch {
-                ui_report.error(
-                    $t_html({defaultMessage: "Invalid URL"}),
-                    undefined,
-                    $("#home-error"),
-                    2000,
-                );
+                show_invalid_url_error();
             }
             if (terms === undefined) {
                 // If the narrow URL didn't parse,
@@ -222,12 +221,15 @@ function do_hashchange_normal(from_reload: boolean, restore_selected_id: boolean
             }
 
             // Show inbox style topics list for #topics narrow.
-            if (hash[0] === "#topics" && terms.length === 1) {
-                const channel_id_string = hash[2];
-                if (channel_id_string) {
-                    inbox_ui.show(new Filter(terms));
-                    return true;
+            if (hash[0] === "#topics") {
+                const filter = new Filter(terms);
+                if (!filter.is_channel_view()) {
+                    show_invalid_url_error();
+                    show_home_view();
+                    return false;
                 }
+                inbox_ui.show(filter);
+                return true;
             }
 
             message_view.show(terms, narrow_opts);
