@@ -1580,8 +1580,9 @@ class MattermostCombinedTeamsImportTest(MattermostImportTestBase):
                 mattermost_data=conversion_result.mattermost_data,
                 imported_realm=conversion_result.imported_realm,
                 expected_owner_emails=self.OWNER_EMAILS,
-                # The user "bobby.watson" is a team guest in ad-1, they will be converted into
-                # a normal Zulip user since they're a normal user in at least one other team.
+                # The user "bobby.watson" is a team guest in reiciendis-0, they will be
+                # converted into a normal Zulip user since they're a normal user in at
+                # least one other team.
                 expected_guest_emails=self.GUEST_EMAILS,
                 expected_bot_user_emails=self.BOT_EMAILS,
                 expected_number_of_imported_users=len(conversion_result.mattermost_data["user"]),
