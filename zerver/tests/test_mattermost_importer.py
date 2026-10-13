@@ -1,4 +1,5 @@
 import filecmp
+import glob
 import json
 import os
 import shutil
@@ -1421,6 +1422,37 @@ class MattermostV1110ImportTest(MattermostImportTestBase):
         self.assert_length(mattermost_data["role"], 23)
         exported_bot_users = [user for user in mattermost_data["user"] if user.get("is_bot")]
         self.assert_length(exported_bot_users, 3)
+
+    def test_converted_messages_only_flag_exported_attachments(self) -> None:
+        output_dir = make_export_output_dir()
+        with self.settings(EXTERNAL_HOST="zulip.example.com"), self.assertLogs(level="INFO"):
+            do_convert_data(
+                mattermost_data_dir=self.fixture_file_name("", self.FIXTURE_DIR),
+                output_dir=output_dir,
+                masking_content=False,
+            )
+        team_output_dir = self.team_output_dir(output_dir, self.TEAM)
+
+        attachment_records = self.read_file(team_output_dir, "attachment.json")
+        attachment_message_ids = {
+            message_id
+            for attachment in attachment_records["zerver_attachment"]
+            for message_id in attachment["messages"]
+        }
+        converted_messages = []
+        for messages_file in glob.glob(os.path.join(team_output_dir, "messages-*.json")):
+            message_records = self.read_file(team_output_dir, os.path.basename(messages_file))
+            converted_messages.extend(message_records["zerver_message"])
+        # The export has a post whose only attachment file is missing,
+        # which shouldn't be flagged.
+        self.assertSetEqual(
+            {message["id"] for message in converted_messages if message["has_attachment"]},
+            attachment_message_ids,
+        )
+        self.assertSetEqual(
+            {message["id"] for message in converted_messages if message["has_link"]},
+            attachment_message_ids,
+        )
 
     def test_e2e_export_data_v11_1_0(self) -> None:
         with self.settings(EXTERNAL_HOST="zulip.example.com"):
