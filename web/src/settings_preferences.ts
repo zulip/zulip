@@ -159,6 +159,11 @@ export function set_up(settings_panel: SettingsPanel): void {
     $container
         .find(`.setting_user_list_style_choice[value=${settings_object.user_list_style}]`)
         .prop("checked", true);
+    $container
+        .find(
+            `.setting_web_left_sidebar_resolved_topics_order_choice[value=${settings_object.web_left_sidebar_resolved_topics_order}]`,
+        )
+        .prop("checked", true);
 
     $container
         .find(".setting_web_animate_image_previews")
@@ -305,6 +310,19 @@ export function set_up(settings_panel: SettingsPanel): void {
         });
     });
 
+    $container
+        .find(".setting_web_left_sidebar_resolved_topics_order_choice")
+        .on("change", function () {
+            const value = Number($(this).val());
+            if (value === settings_object.web_left_sidebar_resolved_topics_order) {
+                return;
+            }
+            change_display_setting(
+                {web_left_sidebar_resolved_topics_order: value},
+                $container.find(".left-sidebar-settings-status").expectOne(),
+            );
+        });
+
     render_language_dropdown_widget();
 }
 
@@ -369,6 +387,12 @@ export function update_page(property: UserSettingsProperty): void {
     // button widgets like these.
     if (property === "emojiset" || property === "user_list_style") {
         $container.find(`input[value=${CSS.escape(value.toString())}]`).prop("checked", true);
+        return;
+    }
+    if (property === "web_left_sidebar_resolved_topics_order") {
+        $container
+            .find(`.setting_web_left_sidebar_resolved_topics_order_choice[value=${value}]`)
+            .prop("checked", true);
         return;
     }
 

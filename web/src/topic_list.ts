@@ -368,6 +368,7 @@ export class TopicListWidget {
             this.my_stream_id,
             this.for_modal,
             this.filter_topics,
+            {demote_resolved_topics: stream_data.demotes_resolved_topics(this.my_stream_id)},
         );
 
         const num_possible_topics = list_info.num_possible_topics;

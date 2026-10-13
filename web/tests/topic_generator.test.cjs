@@ -163,14 +163,15 @@ const sorted_channels_info = [
 const elsewhere = [undefined, undefined];
 
 // Mocks what choosing the next topic reads, and returns setters for
-// the unread topics per channel, the topic visibility policies, and
-// the current narrow.
+// the unread topics per channel, the topic visibility policies, the
+// channels that list resolved topics last, and the current narrow.
 function mock_channels_and_topics(override) {
     // Not every test reads all of these.
     const mock = (module, name, f) => override(module, name, f, {unused: false});
 
     let unread_topics = new Map();
     let topic_policies = new Map();
+    let demoted_channels = new Set();
     let curr_stream_id;
     let curr_topic;
 
@@ -182,6 +183,7 @@ function mock_channels_and_topics(override) {
     }
 
     mock(stream_data, "is_muted", (stream_id) => stream_id === muted_channel);
+    mock(stream_data, "demotes_resolved_topics", (stream_id) => demoted_channels.has(stream_id));
     mock(
         user_topics,
         "is_topic_muted",
@@ -216,6 +218,9 @@ function mock_channels_and_topics(override) {
         },
         set_topic_policies(policies) {
             topic_policies = new Map(policies);
+        },
+        set_demoted_channels(channel_ids) {
+            demoted_channels = new Set(channel_ids);
         },
         set_narrow(narrow) {
             [curr_stream_id, curr_topic] = narrow;
@@ -311,6 +316,26 @@ run_test("a topic left unread is skipped once by get_next_topic, but counts", ({
     assert.ok(tg.has_next_unread_topic(devel, "read topic", sorted_channels_info));
     assert.equal(get_next_topic([devel, "read topic"]), undefined);
     assert.deepEqual(get_next_topic([devel, "read topic"]), {stream_id: devel, topic: "lunch"});
+});
+
+run_test("get_next_topic visits topics in the left sidebar's order", ({override}) => {
+    const {set_unread_topics, set_demoted_channels, set_narrow} =
+        mock_channels_and_topics(override);
+    tg.reset_topics_kept_unread_by_user();
+    set_narrow(elsewhere);
+    const only_followed_topics = false;
+
+    set_unread_topics([[devel, ["✔ lunch", "dinner"]]]);
+    assert.deepEqual(tg.get_next_topic(...elsewhere, only_followed_topics, sorted_channels_info), {
+        stream_id: devel,
+        topic: "✔ lunch",
+    });
+
+    set_demoted_channels([devel]);
+    assert.deepEqual(tg.get_next_topic(...elsewhere, only_followed_topics, sorted_channels_info), {
+        stream_id: devel,
+        topic: "dinner",
+    });
 });
 
 run_test("has_next_unread_topic ignores the case of the current topic", ({override}) => {
