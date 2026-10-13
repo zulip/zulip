@@ -5,17 +5,14 @@ import re
 import shutil
 import tempfile
 from collections import defaultdict
-from collections.abc import Callable
 from dataclasses import dataclass
-from functools import wraps
-from typing import Any, Concatenate, TypeAlias
+from typing import Any, TypeAlias
 from urllib.parse import parse_qs, urlsplit
 
 import orjson
 import responses
 from django.utils.timezone import now as timezone_now
 from requests import PreparedRequest
-from typing_extensions import ParamSpec
 
 from zerver.data_import.import_util import AttachmentRecordData, get_data_file
 from zerver.data_import.microsoft_teams import (
@@ -54,8 +51,6 @@ from zerver.models.users import UserProfile, get_system_bot
 from zerver.tests.test_import_export import make_export_output_dir
 from zproject import settings
 
-ParamT = ParamSpec("ParamT")
-
 ResponseTuple: TypeAlias = tuple[int, dict[str, str], str]
 
 EXPORTED_MICROSOFT_TEAMS_USER_EMAIL = dict(
@@ -85,6 +80,8 @@ MICROSOFT_TEAMS_EXPORT_USER_ROLE_DATA = MicrosoftTeamsUserRoleData(
 DELETED_MICROSOFT_TEAMS_USERS = ["9bd4aca7-99cf-4b1b-a16d-e25717dc9414"]
 
 PRIVATE_MICROSOFT_TEAMS_CHANNELS = ["19:42c4944387224bf79bcad3cb6809a335@thread.tacv2"]
+
+FAILED_HOSTED_CONTENT_DOWNLOAD_URL = "https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755003422344/hostedContents/aWQ9eF8wLXd1cy1kMi1iNGM5NjhiYmNhMDU1OWViYWFkMzdiMGUzMzBmMzY5MSx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kMi1iNGM5NjhiYmNhMDU1OWViYWFkMzdiMGUzMzBmMzY5MS92aWV3cy9pbWdv/$value"
 
 EXPORTED_MICROSOFT_TEAMS_TEAM_ID: dict[str, str] = {
     "Core team": "7c050abd-3cbb-448b-a9de-405f54cc14b2",
@@ -200,52 +197,36 @@ def graph_api_users_callback(request: PreparedRequest) -> ResponseTuple:
     return 200, headers, body
 
 
-def mock_microsoft_graph_api_calls(
-    test_func: Callable[Concatenate["MicrosoftTeamsImporterIntegrationTest", ParamT], None],
-) -> Callable[Concatenate["MicrosoftTeamsImporterIntegrationTest", ParamT], None]:
-    @wraps(test_func)
-    @responses.activate
-    def _wrapped(
-        self: "MicrosoftTeamsImporterIntegrationTest",
-        /,
-        *args: ParamT.args,
-        **kwargs: ParamT.kwargs,
-    ) -> None:
-        responses.add_callback(
-            responses.GET,
-            "https://graph.microsoft.com/v1.0/users",
-            callback=graph_api_users_callback,
-            content_type="application/json",
-        )
-        responses.add(
-            responses.GET,
-            "https://graph.microsoft.com/v1.0/directoryRoles",
-            self.fixture_data("directory_roles.json", "microsoft_graph_api_response_fixtures"),
-        )
-        responses.add(
-            responses.GET,
-            "https://graph.microsoft.com/v1.0/directoryRoles/240d3723-f4d5-4e70-aa3b-2e574c4f6ea3/members",
-            self.fixture_data(
-                "directory_roles_global_administrator_members.json",
-                "microsoft_graph_api_response_fixtures",
-            ),
-        )
-        # Add one failed download to test scrub_uploads_records_after_download.
-        responses.add(
-            responses.GET,
-            "https://graph.microsoft.com/v1.0/teams/1d513e46-d8cd-41db-b84f-381fe5730794/channels/19:f0088fc2bb264dfe9a7a7924a23c7252@thread.tacv2/messages/1755003422344/hostedContents/aWQ9eF8wLXd1cy1kMi1iNGM5NjhiYmNhMDU1OWViYWFkMzdiMGUzMzBmMzY5MSx0eXBlPTEsdXJsPWh0dHBzOi8vdXMtYXBpLmFzbS5za3lwZS5jb20vdjEvb2JqZWN0cy8wLXd1cy1kMi1iNGM5NjhiYmNhMDU1OWViYWFkMzdiMGUzMzBmMzY5MS92aWV3cy9pbWdv/$value",
-            status=400,
-        )
-        responses.add(
-            responses.GET,
-            re.compile(HOSTED_CONTENT_GRAPH_API_URL_REGEX),
-            body=read_test_image_file("img.png"),
-            content_type="image/png",
-            status=200,
-        )
-        test_func(self, *args, **kwargs)
-
-    return _wrapped
+def add_microsoft_graph_api_responses(requests_mock: responses.RequestsMock) -> None:
+    test_class = ZulipTestCase()
+    requests_mock.add_callback(
+        responses.GET,
+        "https://graph.microsoft.com/v1.0/users",
+        callback=graph_api_users_callback,
+        content_type="application/json",
+    )
+    requests_mock.add(
+        responses.GET,
+        "https://graph.microsoft.com/v1.0/directoryRoles",
+        test_class.fixture_data("directory_roles.json", "microsoft_graph_api_response_fixtures"),
+    )
+    requests_mock.add(
+        responses.GET,
+        "https://graph.microsoft.com/v1.0/directoryRoles/240d3723-f4d5-4e70-aa3b-2e574c4f6ea3/members",
+        test_class.fixture_data(
+            "directory_roles_global_administrator_members.json",
+            "microsoft_graph_api_response_fixtures",
+        ),
+    )
+    # Add one failed download to test scrub_uploads_records_after_download.
+    requests_mock.add(responses.GET, FAILED_HOSTED_CONTENT_DOWNLOAD_URL, status=400)
+    requests_mock.add(
+        responses.GET,
+        re.compile(HOSTED_CONTENT_GRAPH_API_URL_REGEX),
+        body=read_test_image_file("img.png"),
+        content_type="image/png",
+        status=200,
+    )
 
 
 def get_channel_subscriber_emails(realm: Realm, channel: str | Stream) -> set[str]:
@@ -275,7 +256,12 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
         fixture_file_path = self.fixture_file_name(fixture_folder, "microsoft_teams_fixtures")
         if not os.path.isdir(fixture_file_path):
             raise AssertionError(f"Fixture file not found: {fixture_file_path}")
-        with self.assertLogs(level="INFO") as log, self.settings(EXTERNAL_HOST="zulip.example.com"):
+        with (
+            self.assertLogs(level="INFO") as log,
+            self.settings(EXTERNAL_HOST="zulip.example.com"),
+            responses.RequestsMock(assert_all_requests_are_fired=False) as requests_mock,
+        ):
+            add_microsoft_graph_api_responses(requests_mock)
             do_convert_directory(
                 fixture_file_path,
                 self.converted_file_output_dir,
@@ -311,7 +297,6 @@ class MicrosoftTeamsImporterIntegrationTest(MicrosoftTeamsImportTestCase):
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
             do_import_realm(self.converted_file_output_dir, self.test_realm_subdomain)
 
-    @mock_microsoft_graph_api_calls
     def do_import_realm_fixture(self, fixture: str = "TeamsData_ZulipChat/") -> None:
         self.converted_file_output_dir = make_export_output_dir()
         self.test_realm_subdomain = "test-import-teams-realm"
