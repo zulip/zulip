@@ -324,12 +324,11 @@ export class Typeahead<ItemType extends string | object> {
         if (e?.type === "click" && mouse_drag.is_drag(e)) {
             return this;
         }
-        const active_option = this.$menu.find(".active")[0];
-        const val = active_option ? this.values.get(active_option) : undefined;
         // It's possible that we got here from pressing enter with nothing highlighted.
-        if (!this.requireHighlight && val === undefined) {
+        if (!this.requireHighlight && !this.has_active_item()) {
             return this.hide();
         }
+        const val = this.values.get(the(this.$menu.find(".active")));
         assert(val !== undefined);
         if (this.input_element.type === "contenteditable") {
             if (this.updateElementContent) {
@@ -584,6 +583,11 @@ export class Typeahead<ItemType extends string | object> {
         }
 
         return this;
+    }
+
+    has_active_item(): boolean {
+        // The menu keeps its last rendered items after hide().
+        return this.shown && this.$menu.find(".active").length > 0;
     }
 
     defaultMatcher(item: ItemType, query: string): boolean {
