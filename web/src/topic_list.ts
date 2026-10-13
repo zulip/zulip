@@ -25,6 +25,7 @@ import type {TopicFilterPill, TopicFilterPillWidget} from "./topic_filter_pill.t
 import * as topic_list_data from "./topic_list_data.ts";
 import type {TopicInfo} from "./topic_list_data.ts";
 import * as ui_util from "./ui_util.ts";
+import * as util from "./util.ts";
 import * as vdom from "./vdom.ts";
 
 /* Track all active widgets with a Map by stream_id. We have at max
@@ -477,8 +478,13 @@ export class LeftSidebarTopicListWidget extends TopicListWidget {
 
     override build(spinner = false): void {
         const formatter = keyed_topic_li;
+        const active_topic_was_visible = this.for_modal && is_zoomed_in_active_topic_visible();
 
         super.build(spinner, formatter);
+
+        if (active_topic_was_visible) {
+            keep_zoomed_in_active_topic_visible();
+        }
     }
 }
 
@@ -566,14 +572,29 @@ export function rebuild_left_sidebar(
     active_widgets.set(stream_id, widget);
 }
 
+function get_zoomed_in_active_topic_row(): JQuery {
+    return $("#more-topics-modal .topic-list-scroll-container .topic-list-item.active-sub-filter");
+}
+
+function is_zoomed_in_active_topic_visible(): boolean {
+    const $selected_topic = get_zoomed_in_active_topic_row();
+    if ($selected_topic.length === 0) {
+        return false;
+    }
+    const $scroll_container = $("#more-topics-modal .topic-list-scroll-container");
+    const container_rect = util.the($scroll_container).getBoundingClientRect();
+    const row_rect = util.the($selected_topic).getBoundingClientRect();
+    return row_rect.top >= container_rect.top && row_rect.bottom <= container_rect.bottom;
+}
+
 // Does nothing when the active topic is not in the list, e.g.
 // because a topic filter excludes it.
 export function keep_zoomed_in_active_topic_visible(): void {
-    const $scroll_container = $("#more-topics-modal .topic-list-scroll-container");
-    const $selected_topic = $scroll_container.find(".topic-list-item.active-sub-filter");
+    const $selected_topic = get_zoomed_in_active_topic_row();
     if ($selected_topic.length === 0) {
         return;
     }
+    const $scroll_container = $("#more-topics-modal .topic-list-scroll-container");
     scroll_util.scroll_element_into_container($selected_topic, $scroll_container, 0);
 }
 
