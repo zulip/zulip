@@ -5426,11 +5426,12 @@ class SubscriptionAPITest(ZulipTestCase):
         # the bot should send DMs to all the newly subscribed users, but
         # no announcement message.
         now = timezone_now()
-        response = self.subscribe_via_post(
-            desdemona,
-            [test_channel.name],
-            principals_dict,
-        )
+        with self.assert_database_query_count(90):
+            response = self.subscribe_via_post(
+                desdemona,
+                [test_channel.name],
+                principals_dict,
+            )
         data = self.assert_json_success(response)
         self.assertEqual(data["new_subscription_messages_sent"], True)
 
@@ -5455,11 +5456,12 @@ class SubscriptionAPITest(ZulipTestCase):
         # we expect an announcement message and new channel message,
         # but no DM notifications.
         now = timezone_now()
-        response = self.subscribe_via_post(
-            desdemona,
-            ["test B"],
-            principals_dict,
-        )
+        with self.assert_database_query_count(57):
+            response = self.subscribe_via_post(
+                desdemona,
+                ["test B"],
+                principals_dict,
+            )
         data = self.assert_json_success(response)
         self.assertEqual(data["new_subscription_messages_sent"], True)
 
@@ -5507,7 +5509,10 @@ class SubscriptionAPITest(ZulipTestCase):
         # be sent.
         now = timezone_now()
         test_channel = self.make_stream("test C")
-        with self.settings(MAX_BULK_NEW_SUBSCRIPTION_MESSAGES=5):
+        with (
+            self.settings(MAX_BULK_NEW_SUBSCRIPTION_MESSAGES=5),
+            self.assert_database_query_count(19),
+        ):
             response = self.subscribe_via_post(
                 desdemona,
                 [test_channel.name],
@@ -5538,7 +5543,10 @@ class SubscriptionAPITest(ZulipTestCase):
         # still expect an announcement message and new channel
         # message (and no DM notifications).
         now = timezone_now()
-        with self.settings(MAX_BULK_NEW_SUBSCRIPTION_MESSAGES=5):
+        with (
+            self.settings(MAX_BULK_NEW_SUBSCRIPTION_MESSAGES=5),
+            self.assert_database_query_count(57),
+        ):
             response = self.subscribe_via_post(
                 desdemona,
                 ["test D"],
@@ -5589,14 +5597,15 @@ class SubscriptionAPITest(ZulipTestCase):
         # When send_new_subscription_messages is false, confirm that the
         # response doesn't include new_subscription_messages_sent boolean
         # field.
-        response = self.subscribe_via_post(
-            desdemona,
-            ["test E"],
-            dict(
-                principals=orjson.dumps(user_ids).decode(),
-                send_new_subscription_messages=orjson.dumps(False).decode(),
-            ),
-        )
+        with self.assert_database_query_count(45):
+            response = self.subscribe_via_post(
+                desdemona,
+                ["test E"],
+                dict(
+                    principals=orjson.dumps(user_ids).decode(),
+                    send_new_subscription_messages=orjson.dumps(False).decode(),
+                ),
+            )
         data = self.assert_json_success(response)
         self.assertNotIn("new_subscription_messages_sent", data)
 
