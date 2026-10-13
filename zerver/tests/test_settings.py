@@ -808,6 +808,8 @@ class UserChangesTest(ZulipTestCase):
         current_session_key = self.client.session.session_key
         self.assert_length(user_sessions(hamlet), 2)
         self.assert_length(user_sessions(othello), 1)
+        old_api_key = hamlet.api_key
+        othello_api_key = othello.api_key
 
         result = self.client_post("/json/users/me/sessions/log_out_others")
         self.assert_json_success(result)
@@ -816,6 +818,12 @@ class UserChangesTest(ZulipTestCase):
             [session.session_key for session in user_sessions(hamlet)], [current_session_key]
         )
         self.assert_length(user_sessions(othello), 1)
+
+        # The API key is rotated, so that API clients are logged out too.
+        self.assertNotEqual(self.example_user("hamlet").api_key, old_api_key)
+        with self.assertRaises(UserProfile.DoesNotExist):
+            get_user_profile_by_api_key(old_api_key)
+        self.assertEqual(self.example_user("othello").api_key, othello_api_key)
 
         # The session that made the request is still logged in.
         result = self.client_get("/json/users/me")

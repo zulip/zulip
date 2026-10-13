@@ -604,4 +604,5 @@ def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpR
 @typed_endpoint_without_parameters
 def log_out_other_sessions(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     delete_user_sessions(user_profile, except_session_key=request.session.session_key)
+    do_regenerate_api_key(user_profile, user_profile)
     return json_success(request)
