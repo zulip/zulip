@@ -1,0 +1,22 @@
+import {TabItem, Tabs} from "@astrojs/starlight/components";
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+
+By default, the [left sidebar](/help/left-sidebar) lists the topics in a
+channel by recency. For channels where you mostly want to see topics that
+are still open, you can instead have resolved topics listed after
+unresolved ones. You can still find them by searching for a topic or
+[filtering](/help/left-sidebar#filter-by-whether-topics-are-resolved) the
+list to resolved topics.
+
+<Tabs>
+  <TabItem label="Desktop/Web">
+    <FlattenedSteps>
+      <NavigationSteps target="settings/preferences" />
+
+      1. Under **Left sidebar**, select an option for **Show resolved topics
+         in the left sidebar**.
+    </FlattenedSteps>
+  </TabItem>
+</Tabs>

@@ -368,6 +368,11 @@ export class TopicListWidget {
             this.my_stream_id,
             this.for_modal,
             this.filter_topics,
+            {
+                resolved_topics_last: stream_data.should_list_resolved_topics_last(
+                    this.my_stream_id,
+                ),
+            },
         );
 
         const num_possible_topics = list_info.num_possible_topics;
