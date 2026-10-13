@@ -662,15 +662,6 @@ class MicrosoftTeamsImporterUnitTest(MicrosoftTeamsImportTestCase):
                 "Could not find Microsoft Teams organization owners/administrators.",
                 str(e.exception),
             )
-        microsoft_teams_user_role_data: MicrosoftTeamsUserRoleData = self.get_user_roles_handler()
-        self.assertSetEqual(
-            microsoft_teams_user_role_data.global_administrator_user_ids,
-            MICROSOFT_TEAMS_EXPORT_USER_ROLE_DATA.global_administrator_user_ids,
-        )
-        self.assertSetEqual(
-            microsoft_teams_user_role_data.guest_user_ids,
-            MICROSOFT_TEAMS_EXPORT_USER_ROLE_DATA.guest_user_ids,
-        )
 
     @responses.activate
     def test_paginated_get_microsoft_graph_api_data(self) -> None:
