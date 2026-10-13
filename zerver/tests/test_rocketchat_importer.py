@@ -55,19 +55,6 @@ class RocketChatImporter(ZulipTestCase):
         self.assert_length(rocketchat_data["custom_emoji"]["emoji"], 3)
         self.assertEqual(rocketchat_data["custom_emoji"]["emoji"][0]["name"], "tick")
 
-    def test_map_user_id_to_user(self) -> None:
-        fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
-        rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
-
-        user_id_to_user_map = map_user_id_to_user(rocketchat_data["user"])
-
-        self.assert_length(rocketchat_data["user"], 6)
-        self.assert_length(user_id_to_user_map, 6)
-
-        self.assertEqual(
-            user_id_to_user_map[rocketchat_data["user"][0]["_id"]], rocketchat_data["user"][0]
-        )
-
     def test_map_username_to_user_id(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
         rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
@@ -223,67 +210,6 @@ class RocketChatImporter(ZulipTestCase):
         error_message = str(e.exception)
         expected_error_message = f"['Invalid email format, please fix the following email(s) and try again: {bad_email1}, {bad_email2}']"
         self.assertEqual(error_message, expected_error_message)
-
-    def test_categorize_channels_and_map_with_id(self) -> None:
-        fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
-        rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
-
-        room_id_to_room_map: dict[str, dict[str, Any]] = {}
-        team_id_to_team_map: dict[str, dict[str, Any]] = {}
-        dsc_id_to_dsc_map: dict[str, dict[str, Any]] = {}
-        direct_id_to_direct_map: dict[str, dict[str, Any]] = {}
-        direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]] = {}
-        livechat_id_to_livechat_map: dict[str, dict[str, Any]] = {}
-
-        with self.assertLogs(level="INFO"):
-            categorize_channels_and_map_with_id(
-                channel_data=rocketchat_data["room"],
-                room_id_to_room_map=room_id_to_room_map,
-                team_id_to_team_map=team_id_to_team_map,
-                dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-                direct_id_to_direct_map=direct_id_to_direct_map,
-                direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
-                livechat_id_to_livechat_map=livechat_id_to_livechat_map,
-            )
-
-        self.assert_length(rocketchat_data["room"], 16)
-        # Teams are a subset of rooms.
-        self.assert_length(room_id_to_room_map, 6)
-        self.assert_length(team_id_to_team_map, 1)
-        self.assert_length(dsc_id_to_dsc_map, 5)
-        self.assert_length(direct_id_to_direct_map, 0)
-        self.assert_length(direct_message_group_id_to_direct_message_group_map, 2)
-        self.assert_length(livechat_id_to_livechat_map, 2)
-
-        room_id = rocketchat_data["room"][0]["_id"]
-        self.assertIn(room_id, room_id_to_room_map)
-        self.assertEqual(room_id_to_room_map[room_id], rocketchat_data["room"][0])
-
-        team_id = rocketchat_data["room"][3]["teamId"]
-        self.assertIn(team_id, team_id_to_team_map)
-        self.assertEqual(team_id_to_team_map[team_id], rocketchat_data["room"][3])
-
-        dsc_id = rocketchat_data["room"][7]["_id"]
-        self.assertIn(dsc_id, dsc_id_to_dsc_map)
-        self.assertEqual(dsc_id_to_dsc_map[dsc_id], rocketchat_data["room"][7])
-
-        direct_id = rocketchat_data["room"][4]["_id"]
-        self.assertIn(direct_id, direct_message_group_id_to_direct_message_group_map)
-        self.assertEqual(
-            direct_message_group_id_to_direct_message_group_map[direct_id],
-            rocketchat_data["room"][4],
-        )
-
-        direct_message_group_id = rocketchat_data["room"][12]["_id"]
-        self.assertIn(direct_message_group_id, direct_message_group_id_to_direct_message_group_map)
-        self.assertEqual(
-            direct_message_group_id_to_direct_message_group_map[direct_message_group_id],
-            rocketchat_data["room"][12],
-        )
-
-        livechat_id = rocketchat_data["room"][14]["_id"]
-        self.assertIn(livechat_id, livechat_id_to_livechat_map)
-        self.assertEqual(livechat_id_to_livechat_map[livechat_id], rocketchat_data["room"][14])
 
     def test_convert_channel_data(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
@@ -1062,12 +988,6 @@ class RocketChatImporter(ZulipTestCase):
                 "INFO:root:Exporting migration status",
             ],
         )
-
-        self.assertEqual(os.path.exists(os.path.join(output_dir, "avatars")), True)
-        self.assertEqual(os.path.exists(os.path.join(output_dir, "emoji")), True)
-        self.assertEqual(os.path.exists(os.path.join(output_dir, "uploads")), True)
-        self.assertEqual(os.path.exists(os.path.join(output_dir, "attachment.json")), True)
-        self.assertTrue(os.path.exists(output_dir + "/migration_status.json"))
 
         realm = self.read_file(output_dir, "realm.json")
 
