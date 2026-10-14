@@ -44,7 +44,13 @@ from zerver.lib.narrow import (
     ok_to_include_history,
     post_process_limited_query,
 )
-from zerver.lib.narrow_helpers import NeverNegatedNarrowTerm
+from zerver.lib.narrow_helpers import (
+    NeverNegatedNarrowTerm,
+    supported_channels_operands,
+    supported_has_operands,
+    supported_in_operands,
+    supported_is_operands,
+)
 from zerver.lib.narrow_predicate import build_narrow_predicate
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
 from zerver.lib.test_classes import ZulipTestCase
@@ -748,6 +754,20 @@ class NarrowBuilderTest(ZulipTestCase):
     def test_add_term_using_has_operator_non_supported_operand_should_raise_error(self) -> None:
         term = NarrowParameter(operator="has", operand="non_supported")
         self.assertRaises(BadNarrowOperatorError, self._build_query, term)
+
+    def test_add_term_using_supported_operands(self) -> None:
+        supported_operands = {
+            "channels": supported_channels_operands,
+            "has": supported_has_operands,
+            "in": supported_in_operands,
+            "is": supported_is_operands,
+        }
+        for operator, operands in supported_operands.items():
+            for operand in operands:
+                with self.subTest(operator=operator, operand=operand):
+                    term = NarrowParameter(operator=operator, operand=operand)
+                    builder = NarrowBuilder(self.user_profile, self.realm)
+                    builder.add_term(self.raw_query, term)
 
     def test_add_term_using_in_operator(self) -> None:
         mute_channel(self.realm, self.user_profile, "Verona")
