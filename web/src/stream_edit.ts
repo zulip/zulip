@@ -179,24 +179,41 @@ export function save_stream_info(): void {
 
     dialog_widget.submit_api_request(channel.patch, url, data, {
         error_continuation(xhr) {
-            const {code} = z.object({code: z.string()}).parse(xhr.responseJSON);
-
+            const parsed_error = z
+                .object({
+                    code: z.optional(z.string()),
+                    is_archived: z.optional(z.boolean()),
+                    stream_id: z.optional(z.number()),
+                })
+                .safeParse(xhr.responseJSON);
+            if (!parsed_error.success) {
+                return;
+            }
+            const {code, is_archived, stream_id} = parsed_error.data;
             if (code === "CHANNEL_ALREADY_EXISTS") {
                 $("#dialog_error").hide().empty();
-
                 assert(data.new_name !== undefined);
                 const existing_stream = stream_data.get_sub_by_name(data.new_name);
-
                 let rendered_error;
                 if (existing_stream) {
                     const can_rename =
                         existing_stream.is_archived &&
                         stream_settings_data.get_sub_for_settings(existing_stream)
                             .can_change_name_description;
-
                     rendered_error = render_channel_name_conflict_error({
                         stream_id: existing_stream.stream_id,
                         is_archived: existing_stream.is_archived,
+                        show_rename: can_rename,
+                        can_view_channel: true,
+                    });
+                } else if (is_archived && stream_id !== undefined) {
+                    const sub = stream_data.get_sub_by_id(stream_id);
+                    const can_rename = sub
+                        ? stream_settings_data.get_sub_for_settings(sub).can_change_name_description
+                        : current_user.is_admin;
+                    rendered_error = render_channel_name_conflict_error({
+                        stream_id,
+                        is_archived: true,
                         show_rename: can_rename,
                         can_view_channel: true,
                     });

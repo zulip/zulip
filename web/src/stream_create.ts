@@ -427,25 +427,36 @@ function create_stream(): void {
             // The rest of the work is done via the subscribe event we will get
         },
         error(xhr): void {
-            const error_message = z.object({msg: z.optional(z.string())}).parse(xhr.responseJSON);
-            if (error_message?.msg?.includes("access")) {
-                // If we can't access the stream, we can safely
-                // assume it's a duplicate stream that we are not invited to.
-                //
-                // BUG: This check should be using error codes, not
-                // parsing the error string, so it works correctly
-                // with i18n.  And likely we should be reporting the
-                // error text directly rather than turning it into
-                // "Error creating channel"?
+            const parsed_error = z
+                .object({
+                    code: z.optional(z.string()),
+                    msg: z.optional(z.string()),
+                    is_archived: z.optional(z.boolean()),
+                    stream_id: z.optional(z.number()),
+                })
+                .safeParse(xhr.responseJSON);
+            const is_collision =
+                parsed_error.success &&
+                (parsed_error.data.code === "CHANNEL_ALREADY_EXISTS" ||
+                    parsed_error.data.msg?.includes("access"));
+            if (is_collision) {
+                const is_archived = parsed_error.data.is_archived ?? false;
+                const stream_id = parsed_error.data.stream_id;
+                let can_rename = false;
+                if (stream_id !== undefined) {
+                    const sub = stream_data.get_sub_by_id(stream_id);
+                    can_rename = sub
+                        ? stream_settings_data.get_sub_for_settings(sub).can_change_name_description
+                        : current_user.is_admin;
+                }
                 const rendered_error = render_channel_name_conflict_error({
-                    stream_id: undefined,
-                    is_archived: false,
-                    show_rename: false,
-                    can_view_channel: false,
+                    stream_id,
+                    is_archived,
+                    show_rename: can_rename,
+                    can_view_channel: is_archived,
                 });
                 stream_name_error.report_already_exists(rendered_error);
                 stream_name_error.select();
-
                 stream_settings_components.show_subs_pane.create_stream(
                     "configure_channel_settings",
                 );
