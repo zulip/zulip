@@ -1134,7 +1134,10 @@ div.focused-message-list.is-conversation-view .recipient_row {
     }
 
     &:focus-visible {
-        outline: none;
+        outline: var(--focus-ring-outline);
+        /* Draw the ring inside the button, since header buttons span
+           the full height of the navbar. */
+        outline-offset: var(--focus-ring-outline-offset-in-views);
         background-color: var(--color-header-button-focus);
     }
 
@@ -2473,6 +2476,13 @@ body:not(.spectator-view) {
         filter: none;
         outline: 0;
     }
+
+    & .header-button:focus-visible {
+        outline: var(--focus-ring-outline);
+        /* Draw the ring inside the button, since header buttons span
+           the full height of the navbar. */
+        outline-offset: var(--focus-ring-outline-offset-in-views);
+    }
 }
 
 .header-button {
@@ -2497,7 +2507,6 @@ body:not(.spectator-view) {
     }
 
     &:focus-visible {
-        outline: none;
         background-color: var(--color-header-button-focus);
     }
 
