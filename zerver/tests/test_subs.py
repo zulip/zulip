@@ -5426,7 +5426,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # the bot should send DMs to all the newly subscribed users, but
         # no announcement message.
         now = timezone_now()
-        with self.assert_database_query_count(74):
+        with self.assert_database_query_count(70):
             response = self.subscribe_via_post(
                 desdemona,
                 [test_channel.name],
