@@ -684,7 +684,7 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
             ),
             WebhookUrlOption(
                 name="compact_edit_format",
-                label="Use concise edited issue and pull request descriptions",
+                label="Use concise edited issue, pull request, and discussion notifications",
                 input_type="checkbox_enabled",
             ),
         ],
