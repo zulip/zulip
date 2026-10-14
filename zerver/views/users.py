@@ -523,6 +523,9 @@ def patch_bot_backend(
         do_change_user_role(bot, role, acting_user=user_profile, notify=False)
 
     if bot_owner_id is not None and bot.bot_owner_id != bot_owner_id:
+        if not user_profile.is_realm_admin:
+            raise OrganizationAdministratorRequiredError
+
         try:
             owner = get_user_profile_by_id_in_realm(bot_owner_id, user_profile.realm)
         except UserProfile.DoesNotExist:
