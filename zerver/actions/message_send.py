@@ -958,7 +958,7 @@ def create_user_messages(
 
 
 def filter_presence_idle_user_ids(user_ids: set[int]) -> list[int]:
-    # Given a set of user IDs (the recipients of a message), accesses
+    # Given a set of user IDs (the recipients of messages), accesses
     # the UserPresence table to determine which of these users are
     # currently idle and should potentially get email notifications
     # (and push notifications with
@@ -999,6 +999,55 @@ def get_notifiable_if_idle_user_ids(
             user_ids.add(user_notifications_data.user_id)
 
     return user_ids
+
+
+def get_presence_idle_user_ids_by_message_id(
+    send_message_requests: list[SendMessageRequest],
+    user_message_flags: dict[int, dict[int, list[str]]],
+) -> dict[int, list[int]]:
+    notifiable_if_idle_user_ids_by_message_id: dict[int, set[int]] = {}
+    for send_request in send_message_requests:
+        user_flags = user_message_flags.get(send_request.message.id, {})
+        user_notifications_data_list = [
+            UserMessageNotificationsData.from_user_id_sets(
+                user_id=user_id,
+                flags=user_flags.get(user_id, []),
+                private_message=not send_request.message.is_channel_message,
+                disable_external_notifications=send_request.disable_external_notifications,
+                online_push_user_ids=send_request.online_push_user_ids,
+                dm_mention_push_disabled_user_ids=send_request.dm_mention_push_disabled_user_ids,
+                dm_mention_email_disabled_user_ids=send_request.dm_mention_email_disabled_user_ids,
+                stream_push_user_ids=send_request.stream_push_user_ids,
+                stream_email_user_ids=send_request.stream_email_user_ids,
+                topic_wildcard_mention_user_ids=send_request.topic_wildcard_mention_user_ids,
+                stream_wildcard_mention_user_ids=send_request.stream_wildcard_mention_user_ids,
+                followed_topic_push_user_ids=send_request.followed_topic_push_user_ids,
+                followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
+                topic_wildcard_mention_in_followed_topic_user_ids=send_request.topic_wildcard_mention_in_followed_topic_user_ids,
+                stream_wildcard_mention_in_followed_topic_user_ids=send_request.stream_wildcard_mention_in_followed_topic_user_ids,
+                muted_sender_user_ids=send_request.muted_sender_user_ids,
+                all_bot_user_ids=send_request.all_bot_user_ids,
+                push_device_registered_user_ids=send_request.push_device_registered_user_ids,
+            )
+            for user_id in send_request.active_user_ids
+        ]
+        notifiable_if_idle_user_ids_by_message_id[send_request.message.id] = (
+            get_notifiable_if_idle_user_ids(
+                realm=send_request.realm,
+                sender_id=send_request.message.sender_id,
+                user_notifications_data_list=user_notifications_data_list,
+            )
+        )
+
+    idle_user_ids = set(
+        filter_presence_idle_user_ids(
+            set().union(*notifiable_if_idle_user_ids_by_message_id.values())
+        )
+    )
+    return {
+        message_id: sorted(user_ids & idle_user_ids)
+        for message_id, user_ids in notifiable_if_idle_user_ids_by_message_id.items()
+    }
 
 
 def get_message_url_and_link(
@@ -1155,6 +1204,9 @@ def do_send_messages(
         do_widget_post_save_actions(send_request)
 
     wide_message_dicts = get_wide_message_dicts(send_message_requests)
+    presence_idle_user_ids_by_message_id = get_presence_idle_user_ids_by_message_id(
+        send_message_requests, user_message_flags
+    )
 
     # This next loop is responsible for notifying other parts of the
     # Zulip system about the messages we just committed to the database:
@@ -1305,40 +1357,6 @@ def do_send_messages(
 
             users.append(user_data)
 
-        sender = send_request.message.sender
-        recipient_type = wide_message_dict["type"]
-        user_notifications_data_list = [
-            UserMessageNotificationsData.from_user_id_sets(
-                user_id=user_id,
-                flags=user_flags.get(user_id, []),
-                private_message=recipient_type == "private",
-                disable_external_notifications=send_request.disable_external_notifications,
-                online_push_user_ids=send_request.online_push_user_ids,
-                dm_mention_push_disabled_user_ids=send_request.dm_mention_push_disabled_user_ids,
-                dm_mention_email_disabled_user_ids=send_request.dm_mention_email_disabled_user_ids,
-                stream_push_user_ids=send_request.stream_push_user_ids,
-                stream_email_user_ids=send_request.stream_email_user_ids,
-                topic_wildcard_mention_user_ids=send_request.topic_wildcard_mention_user_ids,
-                stream_wildcard_mention_user_ids=send_request.stream_wildcard_mention_user_ids,
-                followed_topic_push_user_ids=send_request.followed_topic_push_user_ids,
-                followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
-                topic_wildcard_mention_in_followed_topic_user_ids=send_request.topic_wildcard_mention_in_followed_topic_user_ids,
-                stream_wildcard_mention_in_followed_topic_user_ids=send_request.stream_wildcard_mention_in_followed_topic_user_ids,
-                muted_sender_user_ids=send_request.muted_sender_user_ids,
-                all_bot_user_ids=send_request.all_bot_user_ids,
-                push_device_registered_user_ids=send_request.push_device_registered_user_ids,
-            )
-            for user_id in send_request.active_user_ids
-        ]
-
-        presence_idle_user_ids = filter_presence_idle_user_ids(
-            get_notifiable_if_idle_user_ids(
-                realm=send_request.realm,
-                sender_id=sender.id,
-                user_notifications_data_list=user_notifications_data_list,
-            )
-        )
-
         if send_request.recipients_for_user_creation_events is not None:
             from zerver.actions.create_user import notify_created_user
 
@@ -1352,7 +1370,7 @@ def do_send_messages(
             type="message",
             message=send_request.message.id,
             message_dict=wide_message_dict,
-            presence_idle_user_ids=presence_idle_user_ids,
+            presence_idle_user_ids=presence_idle_user_ids_by_message_id[send_request.message.id],
             online_push_user_ids=list(send_request.online_push_user_ids),
             dm_mention_push_disabled_user_ids=list(send_request.dm_mention_push_disabled_user_ids),
             dm_mention_email_disabled_user_ids=list(
