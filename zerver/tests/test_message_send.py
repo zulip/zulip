@@ -19,6 +19,7 @@ from zerver.actions.message_send import (
     do_send_messages,
     extract_private_recipients,
     extract_stream_indicator,
+    filter_presence_idle_user_ids,
     internal_prep_private_message,
     internal_prep_stream_message,
     internal_prep_stream_message_by_name,
@@ -2861,7 +2862,9 @@ class DoSendMessagesTest(ZulipTestCase):
 
         Hamlet is active and Othello idle, so only the DMs to Othello
         and the message mentioning him list an idle user. Othello is
-        subscribed to Verona, but the poll doesn't notify him.
+        subscribed to Verona, but the poll doesn't notify him. Only
+        Hamlet and Othello would be notified if idle, so only their
+        presence is checked.
         """
         realm = get_realm("zulip")
         hamlet = self.example_user("hamlet")
@@ -2893,9 +2896,13 @@ class DoSendMessagesTest(ZulipTestCase):
             internal_prep_stream_message(notification_bot, lear_stream, "#1234", "Hello, Lear!"),
         ]
         with (
-            self.assert_database_query_count(24),
+            self.assert_database_query_count(21),
             self.assert_memcached_count(11),
             self.capture_send_event_calls(expected_num_events=6) as events,
+            mock.patch(
+                "zerver.actions.message_send.filter_presence_idle_user_ids",
+                wraps=filter_presence_idle_user_ids,
+            ) as filter_presence_mock,
         ):
             do_send_messages(send_requests)
 
@@ -2919,6 +2926,7 @@ class DoSendMessagesTest(ZulipTestCase):
             [event["event"]["presence_idle_user_ids"] for event in events],
             [[], [othello.id], [othello.id], [], [othello.id], []],
         )
+        filter_presence_mock.assert_called_once_with({hamlet.id, othello.id})
 
 
 class PersonalMessageSendTest(ZulipTestCase):
