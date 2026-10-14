@@ -1703,29 +1703,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     visibility: hidden;
 }
 
-.left-sidebar-toggle-button .zulip-icon-panel-left {
-    display: none;
-}
-
-.column-middle.expanded {
-    .left-sidebar-toggle-button .zulip-icon-panel-left {
-        display: none;
-    }
-
-    .left-sidebar-toggle-button .zulip-icon-panel-left-dashed {
-        display: block;
-    }
-}
-
 %hide-left-sidebar {
-    .left-sidebar-toggle-button .zulip-icon-panel-left {
-        display: block;
-    }
-
-    .left-sidebar-toggle-button .zulip-icon-panel-left-dashed {
-        display: none;
-    }
-
     .column-left {
         display: none;
 
@@ -2566,11 +2544,8 @@ body:not(.spectator-view) {
     }
 }
 
-.left-sidebar-toggle-button {
-    .zulip-icon-panel-left,
-    .zulip-icon-panel-left-dashed {
-        font-size: 1.25em; /* 20px at 16px em */
-    }
+.left-sidebar-toggle-button .zulip-icon-channel-list {
+    font-size: 1.25em; /* 20px at 16px em */
 }
 
 #personal-menu {
