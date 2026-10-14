@@ -24,6 +24,23 @@ from dataclasses import dataclass, field
 
 from django.conf import settings
 
+# Operands that NarrowBuilder supports for these operators. Keep these
+# in sync with the matching lists in the web app's `filter.ts`.
+supported_channels_operands: list[str] = ["archived", "public", "web-public"]
+supported_has_operands: list[str] = ["attachment", "image", "link", "reaction"]
+supported_in_operands: list[str] = ["all", "home"]
+supported_is_operands: list[str] = [
+    "alerted",
+    "dm",
+    "followed",
+    "mentioned",
+    "muted",
+    "private",
+    "resolved",
+    "starred",
+    "unread",
+]
+
 
 @dataclass
 class NarrowTerm:
