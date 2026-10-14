@@ -2538,6 +2538,10 @@ class WebhookTestCase(ZulipTestCase):
     * We enforce that all event types are declared in the @webhook_view
       decorator. This is important for ensuring we document all fully
       supported event types.
+
+    * For webhooks that declare event types, we enforce that every
+      message is sent with its event type, so that the only_events and
+      exclude_events parameters can filter it.
     """
 
     TEST_USER_EMAIL = "webhook-bot@zulip.com"
@@ -2573,6 +2577,15 @@ class WebhookTestCase(ZulipTestCase):
             return  # nocoverage
 
         def side_effect(*args: Any, **kwargs: Any) -> int | None:
+            if len(args) < 5 and "complete_event_type" not in kwargs:  # nocoverage
+                raise Exception(
+                    """
+Error: This test triggered a message without passing complete_event_type to
+check_send_webhook_message. Since this webhook registers its event types via
+@webhook_view(..., all_event_types=[...]), the event type must be specified. If this message
+should be sent regardless of the event filters, pass complete_event_type=None.
+""".strip()
+                )
             complete_event_type = (
                 kwargs.get("complete_event_type")
                 if len(args) < 5
@@ -2586,7 +2599,7 @@ class WebhookTestCase(ZulipTestCase):
                 raise Exception(
                     f"""
 Error: This test triggered a message using the event "{complete_event_type}", which was not properly
-registered via the @webhook_view(..., event_types=[...]). These registrations are important for Zulip
+registered via the @webhook_view(..., all_event_types=[...]). These registrations are important for Zulip
 self-documenting the supported event types for this integration.
 
 You can fix this by adding "{complete_event_type}" to ALL_EVENT_TYPES for this webhook.
