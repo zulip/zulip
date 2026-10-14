@@ -215,6 +215,10 @@ will validate the message and do the following:
 - Send a direct message to the owner of the webhook bot if the `stream`
   query parameter isn't specified.
 
+If the third-party service sends several types of events, also pass the
+event type of each message, so that users can [filter which events
+trigger notifications](incoming-webhooks-reference.md#event-filtering).
+
 Finally, a response is sent with a 200 HTTP status with a JSON format
 success message via `json_success(request)`.
 
