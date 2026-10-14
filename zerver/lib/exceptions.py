@@ -183,10 +183,18 @@ class UnauthorizedError(JsonableError):
 class ChannelExistsError(JsonableError):
     code = ErrorCode.CHANNEL_ALREADY_EXISTS
     http_status_code = 409
-    data_fields = ["channel_name"]
+    data_fields = ["channel_name", "is_archived", "stream_id"]
 
-    def __init__(self, channel_name: str) -> None:
+    def __init__(
+        self,
+        channel_name: str,
+        *,
+        is_archived: bool = False,
+        stream_id: int | None = None,
+    ) -> None:
         self.channel_name = channel_name
+        self.is_archived = is_archived
+        self.stream_id = stream_id
 
     @staticmethod
     @override

@@ -8,6 +8,7 @@ from zerver.actions.realm_settings import (
     do_change_realm_plan_type,
     do_set_realm_property,
 )
+from zerver.actions.streams import do_deactivate_stream
 from zerver.actions.user_groups import check_add_user_group
 from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.exceptions import JsonableError
@@ -1462,3 +1463,56 @@ class TestCreateStreams(ZulipTestCase):
         self.assert_json_success(result)
         stream = get_stream("push_create_via_channels_api", realm)
         self.assertTrue(stream.default_push_notifications)
+
+    def test_channel_collision_with_archived_channel(self) -> None:
+        realm = get_realm("zulip")
+        admin = self.example_user("iago")
+        user = self.example_user("hamlet")
+
+        # Create a public channel and archive it.
+        archived_stream = self.make_stream("archived_public", realm, invite_only=False)
+        do_deactivate_stream(archived_stream, acting_user=admin)
+
+        # When creating a channel with the same name, the user gets is_archived=True
+        # and the stream_id because it is a public (accessible) channel.
+        result = self.create_channel_via_post(user, name="archived_public")
+        self.assert_json_error(result, "Channel 'archived_public' already exists", status_code=409)
+        self.assertTrue(result.json()["is_archived"])
+        self.assertEqual(result.json()["stream_id"], archived_stream.id)
+
+    def test_channel_collision_with_private_channel_anti_leak(self) -> None:
+        realm = get_realm("zulip")
+        admin = self.example_user("iago")
+        user = self.example_user("hamlet")
+
+        # Create a private channel that hamlet is not in, and archive it.
+        archived_private_stream = self.make_stream("archived_private", realm, invite_only=True)
+        self.subscribe(admin, "archived_private")
+        do_deactivate_stream(archived_private_stream, acting_user=admin)
+
+        # Hamlet has no metadata access to this private channel.
+        # They get a collision error, but is_archived is False and stream_id is None
+        # so they cannot discover that a private/archived channel exists.
+        result = self.create_channel_via_post(user, name="archived_private")
+        self.assert_json_error(result, "Channel 'archived_private' already exists", status_code=409)
+        self.assertFalse(result.json()["is_archived"])
+        self.assertIsNone(result.json()["stream_id"])
+
+    def test_create_channel_permission_precedes_collision(self) -> None:
+        realm = get_realm("zulip")
+        admin = self.example_user("iago")
+        user = self.example_user("hamlet")
+
+        self.make_stream("private_channel", realm, invite_only=True)
+        self.subscribe(admin, "private_channel")
+
+        # If a user passes parameters they are not allowed to use (e.g. non-admin
+        # passing default_push_notifications=True), permission validation MUST fail first,
+        # regardless of whether the channel name exists or is completely new.
+        for name in ("private_channel", "brand_new_channel"):
+            result = self.create_channel_via_post(
+                user,
+                name=name,
+                extra_post_data={"default_push_notifications": orjson.dumps(True).decode()},
+            )
+            self.assert_json_error(result, "Insufficient permission")

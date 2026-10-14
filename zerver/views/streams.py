@@ -463,7 +463,7 @@ def update_stream_backend(
         if stream.name.lower() != new_name.lower():
             # Check that the stream name is available (unless we are
             # are only changing the casing of the stream name).
-            check_stream_name_available(user_profile.realm, new_name)
+            check_stream_name_available(user_profile, new_name)
         do_rename_stream(stream, new_name, user_profile)
 
     if not isinstance(folder_id, MissingType):
@@ -671,8 +671,6 @@ def create_channel(
     realm = user_profile.realm
     request_settings_dict = locals()
 
-    check_stream_name_available(realm, name)
-
     folder: ChannelFolder | None = None
     if folder_id is not None:
         folder = get_channel_folder_by_id(folder_id, realm)
@@ -712,6 +710,14 @@ def create_channel(
 
     if default_push_notifications and not user_profile.is_realm_admin:
         raise JsonableError(_("Insufficient permission"))
+
+    new_subscribers: set[UserProfile] = set()
+    if len(subscribers) > 0:
+        new_subscribers = bulk_principals_to_user_profiles(subscribers, user_profile)
+    # Checked last, just before creating the channel, so that a user who
+    # would fail any other permission or validation check cannot use the
+    # collision error to detect a channel they cannot access.
+    check_stream_name_available(user_profile, name)
 
     group_settings_map = stream_group_settings_map[name]
     new_channel, created = create_stream_if_needed(
@@ -763,7 +769,6 @@ def create_channel(
             data={"id": new_channel.id},
         )
 
-    new_subscribers = bulk_principals_to_user_profiles(subscribers, user_profile)
     bulk_add_subscriptions(
         realm,
         [new_channel],
