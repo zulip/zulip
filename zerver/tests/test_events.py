@@ -3650,10 +3650,11 @@ class NormalActionsTest(BaseAction):
         previous_owner = self.example_user("aaron")
         self.user_profile = self.example_user("hamlet")
         bot = self.create_test_bot("test2", previous_owner, full_name="Test2 Testerson")
-        with self.verify_action(num_events=2) as events:
+        with self.verify_action(num_events=3) as events:
             do_change_bot_owner(bot, self.user_profile, previous_owner)
         check_realm_user_update("events[0]", events[0], "bot_owner_id")
         check_realm_bot_add("events[1]", events[1], UserProfile.DEFAULT_BOT)
+        check_direct_message("events[2]", events[2])
 
     def test_do_update_outgoing_webhook_service(self) -> None:
         self.user_profile = self.example_user("iago")

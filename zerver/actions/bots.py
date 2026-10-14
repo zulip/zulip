@@ -1,7 +1,11 @@
+from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
 from zerver.actions.create_user import created_bot_event
+from zerver.actions.message_send import internal_send_private_message
 from zerver.lib.event_types import (
     BotTypeForDelete,
     BotTypeForUpdate,
@@ -10,9 +14,10 @@ from zerver.lib.event_types import (
     RealmBotUpdateEvent,
     RealmUserUpdateEvent,
 )
+from zerver.lib.mention import silent_mention_syntax_for_user
 from zerver.models import RealmAuditLog, Stream, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.users import active_user_ids, bot_owner_user_ids
+from zerver.models.users import active_user_ids, bot_owner_user_ids, get_system_bot
 from zerver.tornado.django_api import send_event_on_commit
 
 
@@ -42,6 +47,39 @@ def send_bot_owner_update_events(
         send_event_on_commit(user_profile.realm, add_event, {bot_owner.id})
 
 
+def send_bot_owner_change_notification(
+    bot: UserProfile,
+    bot_owner: UserProfile,
+    previous_owner: UserProfile | None,
+    acting_user: UserProfile | None,
+) -> None:
+    bot_mention = silent_mention_syntax_for_user(bot)
+    with override_language(bot_owner.default_language):
+        if acting_user is not None and acting_user.id != bot_owner.id:
+            message = _("{user} made you the owner of {bot}.").format(
+                user=silent_mention_syntax_for_user(acting_user), bot=bot_mention
+            )
+        elif previous_owner is not None:
+            # Users don't need to be told about a change they made
+            # themselves, unless the previous owner may still have the
+            # bot's API key.
+            message = _("You are now the owner of {bot}.").format(bot=bot_mention)
+        else:
+            return
+
+        if previous_owner is not None:
+            message += "\n\n"
+            message += _(
+                "The bot's previous owner, {previous_owner}, may still have a copy of its API key. You can [generate a new API key]({help_link}) to revoke their access, but any integrations using the current key will stop working until they're updated."
+            ).format(
+                previous_owner=silent_mention_syntax_for_user(previous_owner),
+                help_link="/help/manage-a-bot#get-a-bots-api-key",
+            )
+
+    notification_bot = get_system_bot(settings.NOTIFICATION_BOT, bot_owner.realm_id)
+    internal_send_private_message(notification_bot, bot_owner, message)
+
+
 @transaction.atomic(durable=True)
 def do_change_bot_owner(
     user_profile: UserProfile, bot_owner: UserProfile, acting_user: UserProfile | None
@@ -63,6 +101,7 @@ def do_change_bot_owner(
     )
 
     send_bot_owner_update_events(user_profile, bot_owner, previous_owner)
+    send_bot_owner_change_notification(user_profile, bot_owner, previous_owner, acting_user)
 
 
 @transaction.atomic(durable=True)
