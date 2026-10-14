@@ -27,6 +27,7 @@ from zerver.lib.message import (
     access_web_public_message,
     get_first_visible_message_id,
 )
+from zerver.lib.narrow_helpers import supported_has_operands
 from zerver.lib.narrow_predicate import channel_operators, channels_operators
 from zerver.lib.recipient_users import recipient_for_user_profiles
 from zerver.lib.streams import (
@@ -340,7 +341,7 @@ class NarrowBuilder:
     def by_has(
         self, query: QuerySet[Message], operand: str, maybe_negate: ConditionTransform
     ) -> QuerySet[Message]:
-        if operand not in ["attachment", "image", "link", "reaction"]:
+        if operand not in supported_has_operands:
             raise BadNarrowOperatorError("unknown 'has' operand " + operand)
 
         if operand == "reaction":
