@@ -21,6 +21,8 @@ Get Zulip notifications for your Netlify deployments!
 
 ![](/static/images/integrations/netlify/001.png)
 
+{!event-filtering-additional-feature.md!}
+
 ### Related documentation
 
 - [Netlify HTTP Post Request documentation](https://docs.netlify.com/site-deploys/notifications/#http-post-request)
