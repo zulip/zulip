@@ -977,32 +977,28 @@ def filter_presence_idle_user_ids(user_ids: set[int]) -> list[int]:
     return sorted(idle_user_ids)
 
 
-def get_active_presence_idle_user_ids(
+def get_notifiable_if_idle_user_ids(
     realm: Realm,
     sender_id: int,
     user_notifications_data_list: list[UserMessageNotificationsData],
-) -> list[int]:
+) -> set[int]:
     """
-    Given a list of active_user_ids, we build up a subset
-    of those users who fit these criteria:
-
-        * They are likely to receive push or email notifications.
-        * They are no longer "present" according to the
-          UserPresence table.
+    Returns the users who would get a push or email notification for
+    the message if they were idle.
     """
 
     if realm.presence_disabled:  # nocoverage
-        return []
+        return set()
 
     user_ids = set()
     for user_notifications_data in user_notifications_data_list:
         # We only need to know the presence idle state for a user if this message would be notifiable
-        # for them if they were indeed idle. Only including those users in the calculation below is a
+        # for them if they were indeed idle. Only including those users in the presence query is a
         # very important optimization for open communities with many inactive users.
         if user_notifications_data.is_notifiable(sender_id, idle=True):
             user_ids.add(user_notifications_data.user_id)
 
-    return filter_presence_idle_user_ids(user_ids)
+    return user_ids
 
 
 def get_message_url_and_link(
@@ -1335,10 +1331,12 @@ def do_send_messages(
             for user_id in send_request.active_user_ids
         ]
 
-        presence_idle_user_ids = get_active_presence_idle_user_ids(
-            realm=send_request.realm,
-            sender_id=sender.id,
-            user_notifications_data_list=user_notifications_data_list,
+        presence_idle_user_ids = filter_presence_idle_user_ids(
+            get_notifiable_if_idle_user_ids(
+                realm=send_request.realm,
+                sender_id=sender.id,
+                user_notifications_data_list=user_notifications_data_list,
+            )
         )
 
         if send_request.recipients_for_user_creation_events is not None:
