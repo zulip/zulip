@@ -12,6 +12,13 @@ const blueslip = require("./lib/zblueslip.cjs");
 const {$} = require("./lib/zjquery.cjs");
 const {page_params} = require("./lib/zpage_params.cjs");
 
+mock_esm("../src/favicon", {
+    update_favicon() {},
+});
+mock_esm("../src/electron_bridge", {
+    electron_bridge: undefined,
+});
+
 const hash_util = zrequire("hash_util");
 const compose_state = zrequire("compose_state");
 const narrow_banner = zrequire("narrow_banner");
@@ -32,12 +39,13 @@ const {initialize_user_settings} = zrequire("user_settings");
 const {MessageList} = zrequire("message_list");
 const {MessageListData} = zrequire("message_list_data");
 
-set_current_user({});
+const current_user = {};
+set_current_user(current_user);
 const realm = make_realm();
 set_realm(realm);
 initialize_user_settings({user_settings: {}});
 
-set_global("document", "document-stub");
+const document_stub = set_global("document", {title: ""});
 const message_lists = mock_esm("../src/message_lists", {
     update_current_message_list() {},
 });
@@ -1305,4 +1313,99 @@ run_test("narrow_compute_title", () => {
 
     filter = new Filter([{operator: "dm", operand: [9999]}]);
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Invalid user");
+});
+
+run_test("overlay_compute_title", ({override}) => {
+    const profile_user = make_user({
+        email: "profile-user@example.com",
+        user_id: 32,
+        full_name: "Profile User",
+    });
+    people.add_active_user(profile_user, "server_events");
+    const inaccessible_user = make_user({
+        email: "inaccessible-user@example.com",
+        user_id: 33,
+        full_name: "Inaccessible User",
+        is_inaccessible_user: true,
+    });
+    people.add_active_user(inaccessible_user, "server_events");
+
+    const expected_titles = new Map([
+        ["#drafts", "translated: Drafts"],
+        ["#groups", "translated: User groups"],
+        ["#settings/alert-words", "translated: Personal settings"],
+        ["#organization/users/active", "translated: Organization settings"],
+        ["#channels/subscribed", "translated: Channels"],
+        ["#streams/subscribed", "translated: Channels"],
+        ["#keyboard-shortcuts", "translated: Keyboard shortcuts"],
+        ["#message-formatting", "translated: Message formatting"],
+        ["#search-operators", "translated: Search filters"],
+        ["#about-zulip", "translated: About Zulip"],
+        ["#scheduled", "translated: Scheduled messages"],
+        ["#reminders", "translated: Scheduled reminders"],
+        ["#user/32", "Profile User"],
+        ["#user/33", "translated: No user found"],
+        ["#user/9999", "translated: No user found"],
+    ]);
+
+    for (const [hash, title] of expected_titles) {
+        assert.equal(narrow_title.compute_overlay_title(hash), title);
+    }
+
+    assert.equal(narrow_title.compute_overlay_title("#invite"), undefined);
+    assert.equal(narrow_title.compute_overlay_title("#narrow/is/starred"), undefined);
+
+    override(current_user, "is_guest", true);
+    assert.equal(narrow_title.compute_overlay_title("#groups"), undefined);
+});
+
+run_test("redraw_title omits unread count for overlay title", ({override}) => {
+    override(realm, "realm_name", "Test realm");
+
+    const filter = new Filter([{operator: "in", operand: "home"}]);
+    window.location.hash = "#narrow/in/home";
+    narrow_title.update_narrow_title(filter);
+    assert.equal(document_stub.title, "translated: Combined feed - Test realm - Zulip");
+
+    const unread_counts = {
+        direct_message_count: 0,
+        mentioned_message_count: 0,
+        direct_message_with_mention_count: 0,
+        stream_unread_messages: 4,
+        followed_topic_unread_messages_count: 0,
+        followed_topic_unread_messages_with_mention_count: 0,
+        unfollowed_topic_unread_messages_count: 4,
+        muted_topic_unread_messages_count: 0,
+        stream_count: new Map(),
+        streams_with_mentions: [],
+        streams_with_unmuted_mentions: [],
+        pm_count: new Map(),
+        home_unread_messages: 4,
+    };
+    narrow_title.update_unread_counts(unread_counts);
+    assert.equal(document_stub.title, "(4) translated: Combined feed - Test realm - Zulip");
+
+    window.location.hash = "#drafts";
+    narrow_title.redraw_title();
+    assert.equal(document_stub.title, "translated: Drafts - Test realm - Zulip");
+
+    narrow_title.update_unread_counts({
+        ...unread_counts,
+        stream_unread_messages: 5,
+        unfollowed_topic_unread_messages_count: 5,
+        home_unread_messages: 5,
+    });
+    assert.equal(document_stub.title, "translated: Drafts - Test realm - Zulip");
+
+    window.location.hash = "#narrow/in/home";
+    narrow_title.redraw_title();
+    assert.equal(document_stub.title, "(5) translated: Combined feed - Test realm - Zulip");
+
+    window.location.hash = "";
+    narrow_title.update_unread_counts({
+        ...unread_counts,
+        stream_unread_messages: 0,
+        unfollowed_topic_unread_messages_count: 0,
+        home_unread_messages: 0,
+    });
 });
