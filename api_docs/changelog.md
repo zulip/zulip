@@ -18,6 +18,14 @@ clients should check the `zulip_feature_level` field, present in the
 /register`](/api/register-queue) responses, to determine the API
 format used by the Zulip server that they are interacting with.
 
+## Changes in Zulip 12.4
+
+**Feature level 501**
+
+* `PATCH /bots/{bot_id}`: A bot's owner can no longer change the bot's
+  owner, unless they are an organization administrator. Backported change
+  from feature level 516.
+
 ## Changes in Zulip 12.1
 
 **Feature level 500**
