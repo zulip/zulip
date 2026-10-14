@@ -1196,7 +1196,7 @@ nav {
         text-align: left;
         display: flex;
         justify-content: left;
-        gap: 4px;
+        gap: 0.5em; /* 8px at 16px em */
 
         .brand {
             display: flex;
