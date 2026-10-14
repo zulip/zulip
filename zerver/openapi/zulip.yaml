@@ -25894,11 +25894,28 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/CodedError"
-                  - example:
+                  - properties:
+                      is_archived:
+                        type: boolean
+                        description: |
+                          Whether the existing channel is archived. Only included
+                          if the acting user has metadata access to the channel.
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-477542).
+                      stream_id:
+                        type: integer
+                        description: |
+                          The ID of the existing channel. Only included if the acting
+                          user has metadata access to the channel.
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-477542).
+                    example:
                       {
                         result: "error",
                         msg: "Channel 'discussions' already exists",
                         code: "CHANNEL_ALREADY_EXISTS",
+                        is_archived: true,
+                        stream_id: 42,
                       }
                     description: |
                       An example JSON error response for when a channel with the submitted
