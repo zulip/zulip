@@ -23,7 +23,7 @@ from zerver.actions.user_settings import do_change_avatar_fields, do_change_user
 from zerver.actions.users import do_deactivate_user
 from zerver.lib.avatar import avatar_url
 from zerver.lib.display_recipient import get_display_recipient
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import BadNarrowOperatorError, JsonableError
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.message import (
@@ -34,7 +34,6 @@ from zerver.lib.message import (
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.narrow import (
     LARGER_THAN_MAX_MESSAGE_ID,
-    BadNarrowOperatorError,
     NarrowBuilder,
     NarrowParameter,
     add_narrow_conditions,
