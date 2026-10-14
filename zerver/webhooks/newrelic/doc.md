@@ -64,6 +64,8 @@ Get Zulip notification for New Relic incidents.
   The values of the dictionary can be strings, integers, booleans, or
   lists of the those same data types.
 
+{!event-filtering-additional-feature.md!}
+
 ### Related documentation
 
 * [**New Relic webhook integration**][2]
