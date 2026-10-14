@@ -5,6 +5,7 @@ import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import render_dialog_default_language from "../templates/default_language_modal.hbs";
+import render_confirm_language_change from "../templates/settings/confirm_language_change.hbs";
 
 import * as channel from "./channel.ts";
 import * as dialog_widget from "./dialog_widget.ts";
@@ -395,20 +396,13 @@ function language_select_callback(
     const current_value = widget.current_value;
     assert(current_value !== undefined);
     const data = {default_language: current_value};
+    const language_select_message_html = render_confirm_language_change();
     change_display_setting(
         data,
         $("#user-preferences").find(".general-settings-status"),
         undefined,
         undefined,
-        $t_html(
-            {
-                defaultMessage:
-                    "Saved. Please <z-link>reload</z-link> for the change to take effect.",
-            },
-            {
-                "z-link": (content_html) => `<a class='reload_link'>${content_html.join("")}</a>`,
-            },
-        ),
+        language_select_message_html,
         true,
     );
 }
