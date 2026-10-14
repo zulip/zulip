@@ -22,7 +22,7 @@ from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, IncomingWebhookIntegration
 from zerver.lib.request import RequestNotes
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
-from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file
+from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file, most_recent_message
 from zerver.lib.utils import assert_is_not_none
 from zerver.lib.webhooks.common import WebhookConfigOption
 from zerver.models import RealmUserDefault, Service, Subscription, UserProfile
@@ -1449,6 +1449,60 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_error(result, "Failed to change owner, bots can't own other bots")
         profile = get_user(email, get_realm("zulip"))
         self.assertEqual(profile.bot_owner, self.example_user("iago"))
+
+    def test_patch_bot_owner_notification(self) -> None:
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        othello = self.example_user("othello")
+        self.login("hamlet")
+        self.create_bot()
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+        bot_mention = f"@_**{bot.full_name}|{bot.id}**"
+        new_api_key_text = (
+            "You can [generate a new API key](/help/manage-a-bot#get-a-bots-api-key) "
+            "to revoke their access, but any integrations using the current key will "
+            "stop working until they're updated."
+        )
+
+        self.login("iago")
+        result = self.client_patch(f"/json/bots/{bot.id}", {"bot_owner_id": othello.id})
+        self.assert_json_success(result)
+        bot.refresh_from_db()
+        self.assertEqual(bot.bot_owner, othello)
+        message = most_recent_message(othello)
+        self.assertEqual(message.sender.email, "notification-bot@zulip.com")
+        self.assertEqual(
+            message.content,
+            f"@_**{iago.full_name}|{iago.id}** made you the owner of {bot_mention}.\n\n"
+            f"The bot's previous owner, @_**{hamlet.full_name}|{hamlet.id}**, "
+            f"may still have a copy of its API key. {new_api_key_text}",
+        )
+
+        do_change_bot_owner(bot, iago, acting_user=iago)
+        message = most_recent_message(iago)
+        self.assertEqual(message.sender.email, "notification-bot@zulip.com")
+        self.assertEqual(
+            message.content,
+            f"You are now the owner of {bot_mention}.\n\n"
+            f"The bot's previous owner, @_**{othello.full_name}|{othello.id}**, "
+            f"may still have a copy of its API key. {new_api_key_text}",
+        )
+
+        # Legacy bots may not have a previous owner.
+        bot.bot_owner = None
+        bot.save()
+        do_change_bot_owner(bot, hamlet, acting_user=iago)
+        message = most_recent_message(hamlet)
+        self.assertEqual(
+            message.content,
+            f"@_**{iago.full_name}|{iago.id}** made you the owner of {bot_mention}.",
+        )
+
+        bot.bot_owner = None
+        bot.save()
+        last_message_id = most_recent_message(iago).id
+        do_change_bot_owner(bot, iago, acting_user=iago)
+        self.assertEqual(most_recent_message(iago).id, last_message_id)
 
     def test_patch_bot_owner_of_bot_with_can_create_users(self) -> None:
         """
