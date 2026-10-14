@@ -142,11 +142,18 @@ export let insert_and_scroll_into_view = (
     } else {
         insertTextIntoField(util.the($textarea), content);
     }
-    // Blurring and refocusing ensures the cursor / selection is in view
-    // in chromium browsers.
-    $textarea.trigger("blur");
-    $textarea.trigger("focus");
     autosize_textarea($textarea);
+    // Blurring and refocusing ensures the cursor / selection is in view
+    // in chromium browsers. Only a textarea capped at its max-height
+    // scrolls internally, so only there can the caret be out of view;
+    // on a textarea autosize just grew to fit, the caret is already in
+    // view, and scrolling the still-short box before autosizing is what
+    // made the content jump while holding Enter. (#39990)
+    const field = util.the($textarea);
+    if (field.scrollHeight > field.clientHeight) {
+        $textarea.trigger("blur");
+        $textarea.trigger("focus");
+    }
 };
 
 export function rewire_insert_and_scroll_into_view(

@@ -63,6 +63,14 @@ const bob = make_user({
 people.add_active_user(alice);
 people.add_active_user(bob);
 
+function set_compose_textarea_heights(scrollHeight, clientHeight) {
+    // insert_and_scroll_into_view reads these off the textarea to
+    // decide whether it can scroll internally.
+    const field = $("textarea#compose-textarea")[0];
+    field.scrollHeight = scrollHeight;
+    field.clientHeight = clientHeight;
+}
+
 function make_textbox(s) {
     // Simulate a jQuery textbox for testing purposes.
     const $widget = {s, length: 1, [0]: "textarea", focused: false};
@@ -119,6 +127,7 @@ run_test("autosize_textarea", ({override}) => {
 run_test("insert_syntax_and_focus", ({override}) => {
     $("textarea#compose-textarea").val("xyz ");
     $("textarea#compose-textarea").caret(4);
+    set_compose_textarea_heights(100, 100);
     // Since we are using a third party library, we just
     // need to ensure it is being called with the right params.
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
@@ -126,6 +135,53 @@ run_test("insert_syntax_and_focus", ({override}) => {
         assert.equal(syntax, ":octopus: ");
     });
     compose_ui.insert_syntax_and_focus(":octopus:");
+});
+
+run_test("insert_and_scroll_into_view - textarea still growing", ({override}) => {
+    // A textarea below its max-height cannot scroll, so the caret is
+    // always visible once autosize has resized it to fit; blurring and
+    // refocusing there moves scrollTop on a still-short box and makes
+    // the view jump.
+    const $textarea = $("textarea#compose-textarea");
+    const events = [];
+    $textarea.trigger = (event) => {
+        events.push(event);
+    };
+    const field = $textarea[0];
+    field.scrollHeight = 300;
+    field.clientHeight = 100;
+    override(autosize, "update", (textarea) => {
+        assert.equal(textarea, $textarea);
+        // Simulate autosize growing the textarea to fit its content.
+        field.clientHeight = 300;
+    });
+
+    compose_ui.insert_and_scroll_into_view("hello", $textarea, false, true);
+
+    assert.equal($textarea.val(), "hello");
+    assert.deepEqual(events, []);
+});
+
+run_test("insert_and_scroll_into_view - textarea at max height", ({override}) => {
+    // Once the textarea is capped at its max-height, it scrolls
+    // internally and the caret can be out of view, so inserting
+    // text needs to scroll it back into view.
+    const $textarea = $("textarea#compose-textarea");
+    const events = [];
+    $textarea.trigger = (event) => {
+        events.push(event);
+    };
+    const field = $textarea[0];
+    field.scrollHeight = 300;
+    field.clientHeight = 100;
+    override(autosize, "update", (textarea) => {
+        assert.equal(textarea, $textarea);
+    });
+
+    compose_ui.insert_and_scroll_into_view("hello", $textarea, false, true);
+
+    assert.equal($textarea.val(), "hello");
+    assert.deepEqual(events, ["blur", "focus"]);
 });
 
 run_test("smart_insert", ({override}) => {
@@ -520,6 +576,7 @@ run_test("quote_message", ({override, override_rewire}) => {
     }
 
     $("textarea#compose-textarea").attr("id", "compose-textarea");
+    set_compose_textarea_heights(100, 100);
     override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
         assert.equal(elt, $("textarea#compose-textarea")[0]);
         assert.equal(syntax, "\n\ntranslated: [Quoting…]\n\n");
