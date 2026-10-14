@@ -1147,6 +1147,30 @@ div.focused-message-list.is-conversation-view .recipient_row {
             border-color: var(--color-header-button-focus-no-alpha);
         }
     }
+
+    &[aria-expanded="true"] {
+        background-color: var(--color-background-header-button-pressed);
+
+        .left-sidebar-toggle-unreadcount {
+            border-color: var(
+                --color-background-header-button-pressed-no-alpha
+            );
+        }
+
+        &:hover,
+        &:active,
+        &:focus-visible {
+            background-color: var(
+                --color-background-header-button-pressed-hover
+            );
+
+            .left-sidebar-toggle-unreadcount {
+                border-color: var(
+                    --color-background-header-button-pressed-hover-no-alpha
+                );
+            }
+        }
+    }
 }
 
 .left-sidebar-toggle-unreadcount {
@@ -2497,8 +2521,7 @@ body:not(.spectator-view) {
         text-decoration: none;
     }
 
-    &:hover,
-    .navbar-item.active-navbar-menu & {
+    &:hover {
         background-color: var(--color-header-button-hover);
     }
 
@@ -2508,6 +2531,19 @@ body:not(.spectator-view) {
 
     &:focus-visible {
         background-color: var(--color-header-button-focus);
+    }
+
+    &[aria-expanded="true"],
+    .navbar-item.active-navbar-menu & {
+        background-color: var(--color-background-header-button-pressed);
+
+        &:hover,
+        &:active,
+        &:focus-visible {
+            background-color: var(
+                --color-background-header-button-pressed-hover
+            );
+        }
     }
 
     .zulip-icon {
