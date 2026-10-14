@@ -792,6 +792,12 @@ input[type="checkbox"] {
         vertical-align: top;
     }
 
+    .alert-notification-content {
+        /* Push back against inherited value, which
+           is not relevant in this DOM element. */
+        white-space: normal;
+    }
+
     & img {
         margin-right: 6px;
     }
