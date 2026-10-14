@@ -16,7 +16,12 @@ from pydantic import BaseModel, model_validator
 from typing_extensions import override
 
 from zerver.lib.addressee import get_user_profiles, get_user_profiles_by_ids
-from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError
+from zerver.lib.exceptions import (
+    BadNarrowOperatorError,
+    ErrorCode,
+    JsonableError,
+    MissingAuthenticationError,
+)
 from zerver.lib.message import (
     access_message,
     access_web_public_message,
@@ -180,19 +185,6 @@ class AnchorInfo(TypedDict):
 
 
 DEFAULT_ANCHOR_INFO: AnchorInfo = AnchorInfo(type="first_unread", value=None)
-
-
-class BadNarrowOperatorError(JsonableError):
-    code = ErrorCode.BAD_NARROW
-    data_fields = ["desc"]
-
-    def __init__(self, desc: str) -> None:
-        self.desc: str = desc
-
-    @staticmethod
-    @override
-    def msg_format() -> str:
-        return _("Invalid narrow operator: {desc}")
 
 
 class InvalidOperatorCombinationError(JsonableError):
