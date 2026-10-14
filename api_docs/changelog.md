@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 13.0
 
+**Feature level 516**
+
+* `PATCH /bots/{bot_id}`: A bot's owner can no longer change the bot's
+  owner, unless they are an organization administrator. This change was
+  also backported to the Zulip 12.x series, at feature level 501.
+
 **Feature level 515**
 
 * [`DELETE /users/me/subscriptions`](/api/unsubscribe): Added
