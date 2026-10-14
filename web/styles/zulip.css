@@ -1187,15 +1187,8 @@ div.focused-message-list.is-conversation-view .recipient_row {
     border-radius: 0.375em;
     padding: 0;
 
-    /* At 16px/1em, the toggle icon is 20px on a side, which is
-       half the width of its container (40px on a side). To
-       place the 10px-wide unread counter correctly, then, we
-       set it to 25% of the right of the container, or 10px,
-       and likewise 25% down from the top of the container,
-       also 10px. */
-
-    top: 25%;
-    right: 25%;
+    top: 0.25em; /* 4px at 16px/1em */
+    right: 0.125em; /* 2px at 16px/1em */
 }
 
 nav {
@@ -1222,21 +1215,6 @@ nav {
             @media (height < $short_navbar_cutoff_height) {
                 max-height: 0.9375em; /* 15px at 16px em */
             }
-        }
-
-        .left-sidebar-toggle-button .left-sidebar-toggle-unreadcount {
-            /* The toggle icon is half the width of its container
-            and is at the center of the container.
-            So, the left width starts from left 25% of the container
-            and ends till 75% of the container's width.
-            Similarly, vertically, the dot is starts at the top 25% of
-            the container's height and ends at 75% of the total height
-
-            So, the top right corner of the icon is at 25% from top and
-            75% from the right. This is the location where we place the
-            unread indicator dot. */
-            top: 25%;
-            right: 25%;
         }
     }
 
@@ -2083,20 +2061,6 @@ body:not(.spectator-view) {
 
     .left-sidebar-toggle-button {
         height: var(--header-height);
-    }
-
-    nav
-        .column-left
-        .left-sidebar-toggle-button
-        .left-sidebar-toggle-unreadcount {
-        top: 5px;
-        left: 16px;
-    }
-
-    .left-sidebar-toggle-unreadcount {
-        /* Adjust in response to shorter navbar. */
-        top: 5px;
-        right: 4px;
     }
 
     #top_navbar .column-right #personal-menu .header-button-avatar {
