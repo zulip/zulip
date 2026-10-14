@@ -45,6 +45,7 @@ from zerver.lib.markdown import (
     image_preview_enabled,
     markdown_convert,
     possible_linked_stream_names,
+    render_inline_markdown,
     render_message_markdown,
     topic_links,
     url_embed_preview_enabled,
@@ -4183,4 +4184,62 @@ class TestHtmlToMarkdown(ZulipTestCase):
         self.assertEqual(
             convert_html_to_markdown(html),
             "Outer layout\n\nInner layout\n\n| Name |\n| --- |\n| Alice |",
+        )
+
+
+class RenderInlineMarkdownTest(ZulipTestCase):
+    def test_render_inline_markdown(self) -> None:
+        realm = get_realm("zulip")
+
+        # Empty string
+        self.assertEqual(render_inline_markdown("", realm), "")
+
+        # Inline formatting
+        self.assertEqual(
+            render_inline_markdown("Hello *world* and **bold** and `code` and ~~strike~~", realm),
+            "Hello <em>world</em> and <strong>bold</strong> and <code>code</code> and <del>strike</del>",
+        )
+
+        # Links and autolinks
+        self.assertEqual(
+            render_inline_markdown("Check [our docs](https://example.com) for help", realm),
+            'Check <a href="https://example.com">our docs</a> for help',
+        )
+        self.assertEqual(
+            render_inline_markdown("Visit https://zulip.com", realm),
+            'Visit <a href="https://zulip.com">https://zulip.com</a>',
+        )
+
+        # Safety: raw HTML is escaped
+        self.assertEqual(
+            render_inline_markdown("<script>alert(1)</script>", realm),
+            "&lt;script&gt;alert(1)&lt;/script&gt;",
+        )
+
+        # Safety: dangerous links (javascript:) are not parsed as links
+        self.assertEqual(
+            render_inline_markdown("[click me](javascript:alert(1))", realm),
+            "[click me](javascript:alert(1))",
+        )
+
+        # Block elements are not rendered as blocks
+        self.assertEqual(
+            render_inline_markdown("# Heading 1", realm),
+            "# Heading 1",
+        )
+        self.assertEqual(
+            render_inline_markdown("- item 1\n- item 2", realm),
+            "- item 1<br>\n- item 2",
+        )
+        self.assertEqual(
+            render_inline_markdown("> blockquote", realm),
+            "&gt; blockquote",
+        )
+
+        # Entity mentions and math are not rendered as pills/TeX
+        self.assertEqual(
+            render_inline_markdown(
+                "@**iago** and #**general** and <time:2026-10-03T10:00:00Z>", realm
+            ),
+            "@<strong>iago</strong> and #<strong>general</strong> and &lt;time:2026-10-03T10:00:00Z&gt;",
         )
