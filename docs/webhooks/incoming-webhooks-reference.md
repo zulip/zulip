@@ -245,6 +245,32 @@ needs to be constructed in an unusual way.
 For more, see the definition for the base class, `WebhookTestCase`
 in `zerver/lib/test_classes.py`, or just grep for examples.
 
+## Event filtering
+
+Users can choose which events trigger notifications with the
+[`only_events` and `exclude_events` URL
+parameters](incoming-webhooks-overview.md#only_events-exclude_events).
+To support them in an integration:
+
+- Register its event types in `view.py`, with
+  `@webhook_view(..., all_event_types=ALL_EVENT_TYPES)`. The web app
+  offers these when [generating the integration
+  URL](https://zulip.com/help/generate-integration-url).
+- Pass the event type of each message to `check_send_webhook_message`,
+  as `complete_event_type`. For a message that should ignore filters,
+  such as a warning about a misconfigured payload, pass
+  `complete_event_type=None` explicitly.
+- List the event types in `doc.md`, with the
+  `{!event-filtering-additional-feature.md!}` macro.
+
+Event type names end up in users' webhook URLs, so renaming one breaks
+existing filters. Hierarchical names like `git.pullrequest.created` let
+users select related events with a wildcard, like `git.pullrequest.*`.
+
+`WebhookTestCase` fails a test if an integration that registers event
+types sends a message without `complete_event_type`, or with an
+unregistered event type.
+
 ## Negative tests
 
 A negative test is one that should result in an error, such as incorrect
