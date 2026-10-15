@@ -2893,8 +2893,8 @@ class DoSendMessagesTest(ZulipTestCase):
             internal_prep_stream_message(notification_bot, lear_stream, "#1234", "Hello, Lear!"),
         ]
         with (
-            self.assert_database_query_count(37),
-            self.assert_memcached_count(20),
+            self.assert_database_query_count(24),
+            self.assert_memcached_count(11),
             self.capture_send_event_calls(expected_num_events=6) as events,
         ):
             do_send_messages(send_requests)

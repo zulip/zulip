@@ -112,14 +112,15 @@ class MessageDict:
     """MessageDict is the core class responsible for marshalling Message
     objects obtained from the database into a format that can be sent
     to clients via the Zulip API, whether via `GET /messages`,
-    outgoing webhooks, or other code paths.  There are two core flows through
+    outgoing webhooks, or other code paths. There are two core flows through
     which this class is used:
 
-    * For just-sent messages, we construct a single `wide_dict` object
-      containing all the data for the message and the related
-      UserProfile models (sender_info and recipient_info); this object
-      can be stored in queues, caches, etc., and then later turned
-      into an API-format JSONable dictionary via finalize_payload.
+    * For just-sent messages, wide_dicts_for_new_messages constructs a
+      wide dict for each message, containing all the data for the
+      message and the related UserProfile models (sender_info and
+      recipient_info); these dicts can be stored in queues, caches,
+      etc., and then later turned into an API-format JSONable
+      dictionary via finalize_payload.
 
     * When fetching messages from the database, we fetch their data in
       bulk using messages_for_ids, which makes use of caching, bulk
@@ -145,12 +146,6 @@ class MessageDict:
         encoded_object_bytes = message_to_encoded_cache(message, realm_id)
         obj = extract_message_dict(encoded_object_bytes)
 
-        """
-        The steps below are similar to what we do in
-        post_process_dicts(), except we don't call finalize_payload(),
-        since that step happens later in the queue
-        processor.
-        """
         MessageDict.bulk_hydrate_sender_info([obj])
         MessageDict.bulk_hydrate_recipient_info(
             [obj],
@@ -158,6 +153,25 @@ class MessageDict:
         )
 
         return obj
+
+    @staticmethod
+    def wide_dicts_for_new_messages(
+        messages: list[Message],
+        realm_id: int,
+        recipient_dm_user_ids: Mapping[int, set[int]],
+    ) -> dict[int, dict[str, Any]]:
+        encoded_messages = update_message_cache(messages, realm_id)
+        objs = [
+            extract_message_dict(encoded_message) for encoded_message in encoded_messages.values()
+        ]
+
+        # The steps below are similar to what we do in
+        # post_process_dicts(), except we don't call finalize_payload(),
+        # since that step happens later in the queue processor.
+        MessageDict.bulk_hydrate_sender_info(objs)
+        MessageDict.bulk_hydrate_recipient_info(objs, recipient_dm_user_ids)
+
+        return {obj["id"]: obj for obj in objs}
 
     @staticmethod
     def post_process_dicts(
