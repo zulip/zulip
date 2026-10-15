@@ -718,7 +718,7 @@ def do_change_user_group_permission_setting(
 ) -> None:
     old_value = getattr(user_group, setting_name)
     setattr(user_group, setting_name, setting_value_group)
-    user_group.save()
+    user_group.save(update_fields=[setting_name])
 
     if old_setting_api_value is None:
         # Most production callers will have computed this as part of
