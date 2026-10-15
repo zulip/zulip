@@ -336,23 +336,34 @@ export function initialize(): void {
     );
 
     // Alert words popover
-    popover_menus.register_popover_menu(".alert-words-sidebar-menu-icon", {
-        ...popover_menus.left_sidebar_tippy_options,
-        onMount(instance) {
-            popover_menus.popover_instances.left_sidebar_alert_words_popover = instance;
-            assert(instance.reference instanceof HTMLElement);
-            ui_util.show_left_sidebar_menu_icon(instance.reference);
+    popover_menus.register_popover_menu(
+        ".alert-words-sidebar-menu-icon",
+        {
+            ...popover_menus.left_sidebar_tippy_options,
+            onMount(instance) {
+                popover_menus.popover_instances.left_sidebar_alert_words_popover = instance;
+                assert(instance.reference instanceof HTMLElement);
+                ui_util.show_left_sidebar_menu_icon(instance.reference);
+                popover_menus.focus_popover(instance);
+            },
+            onShow(instance) {
+                popovers.hide_all();
+                instance.setContent(
+                    ui_util.parse_html(render_left_sidebar_alert_words_popover({})),
+                );
+            },
+            onHidden(instance) {
+                instance.destroy();
+                popover_menus.popover_instances.left_sidebar_alert_words_popover = null;
+                ui_util.hide_left_sidebar_menu_icon();
+            },
         },
-        onShow(instance) {
-            popovers.hide_all();
-            instance.setContent(ui_util.parse_html(render_left_sidebar_alert_words_popover({})));
+        {
+            also_trigger_on_enter: true,
+            get_focus_return_element: (reference) =>
+                util.the($(reference).siblings(".left-sidebar-navigation-label-container")),
         },
-        onHidden(instance) {
-            instance.destroy();
-            popover_menus.popover_instances.left_sidebar_alert_words_popover = null;
-            ui_util.hide_left_sidebar_menu_icon();
-        },
-    });
+    );
 
     popover_menus.register_popover_menu(
         ".left-sidebar-navigation-menu-icon",

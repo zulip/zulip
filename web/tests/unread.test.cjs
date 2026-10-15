@@ -545,6 +545,7 @@ test("get_unread_message_conversation_key", () => {
             ],
             streams: [],
             mentions: [],
+            watched_phrases: [],
             old_unreads_missing: false,
         },
     });

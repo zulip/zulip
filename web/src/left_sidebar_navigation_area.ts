@@ -4,6 +4,7 @@ import _ from "lodash";
 import * as alert_words from "./alert_words.ts";
 import * as drafts from "./drafts.ts";
 import type {Filter} from "./filter.ts";
+import {$t} from "./i18n.ts";
 import {localstorage} from "./localstorage.ts";
 import * as message_reminder from "./message_reminder.ts";
 import * as navigation_views from "./navigation_views.ts";
@@ -15,6 +16,7 @@ import * as settings_config from "./settings_config.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as ui_util from "./ui_util.ts";
 import * as unread from "./unread.ts";
+import * as util from "./util.ts";
 
 let last_mention_count = 0;
 let last_alert_word_count = 0;
@@ -71,7 +73,27 @@ export function update_reminders_row(): void {
 export function update_alert_words_row(): void {
     const $alert_words_li = $(".top_left_alert_words");
     const has_alert_words = alert_words.has_alert_words_configured();
-    $alert_words_li.toggleClass("hidden-by-filters", !has_alert_words);
+    if (!has_alert_words) {
+        $alert_words_li.addClass("hidden-by-filters");
+        return;
+    }
+
+    const search_term = ui_util.get_left_sidebar_search_term();
+    if (search_term !== "") {
+        const matches_search =
+            util.prefix_match({
+                value: $t({defaultMessage: "VIEWS"}),
+                search_term,
+            }) ||
+            util.prefix_match({
+                value: $t({defaultMessage: "Alert words"}),
+                search_term,
+            });
+        $alert_words_li.toggleClass("hidden-by-filters", !matches_search);
+        return;
+    }
+
+    $alert_words_li.removeClass("hidden-by-filters");
 }
 
 export let update_dom_with_unread_counts = function (

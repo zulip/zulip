@@ -1322,7 +1322,7 @@ def format_unread_message_details(
         if message_id in raw_unread_data["mentions"]:
             message_details.mentioned = True
         if message_id in raw_unread_data["watched_phrases"]:
-            message_details["has_watched_phrase"] = True
+            message_details.has_watched_phrase = True
         unread_data[str(message_id)] = message_details
 
     for message_id, stream_message_details in raw_unread_data["stream_dict"].items():
@@ -1338,7 +1338,7 @@ def format_unread_message_details(
         if message_id in raw_unread_data["mentions"]:
             message_details.mentioned = True
         if message_id in raw_unread_data["watched_phrases"]:
-            message_details["has_watched_phrase"] = True
+            message_details.has_watched_phrase = True
         unread_data[str(message_id)] = message_details
 
     for message_id, huddle_message_details in raw_unread_data["huddle_dict"].items():
@@ -1356,7 +1356,7 @@ def format_unread_message_details(
         if message_id in raw_unread_data["mentions"]:
             message_details.mentioned = True
         if message_id in raw_unread_data["watched_phrases"]:
-            message_details["has_watched_phrase"] = True
+            message_details.has_watched_phrase = True
         unread_data[str(message_id)] = message_details
 
     return unread_data

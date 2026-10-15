@@ -1381,6 +1381,7 @@ export class Filter {
         if (
             _.isEqual(term_types, ["is-mentioned"]) ||
             _.isEqual(term_types, ["is-starred"]) ||
+            _.isEqual(term_types, ["is-alerted"]) ||
             _.isEqual(term_types, ["channels-public"]) ||
             _.isEqual(term_types, ["channels-web-public"]) ||
             _.isEqual(term_types, ["channels-archived"]) ||
@@ -2024,6 +2025,8 @@ export class Filter {
             !(this.has_operator("dm") || this.has_operand("is", "dm")) &&
             // not narrowed to starred messages
             !this.has_operand("is", "starred") &&
+            // not narrowed to alert words
+            !this.has_operand("is", "alerted") &&
             // not narrowed to negated home messages
             !this.has_negated_operand("in", "home") &&
             // not narrowed to muted topics messages

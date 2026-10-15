@@ -1,6 +1,7 @@
 from collections.abc import Collection
 from typing import Any, Protocol
 
+# pyrefly: ignore [missing-import]
 from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
@@ -63,7 +64,10 @@ def build_narrow_predicate(
             elif operator == "is" and operand == "unread":
                 if "read" in flags:
                     return False
-            elif operator == "is" and operand in ["alerted", "mentioned"]:
+            elif operator == "is" and operand == "alerted":
+                if "has_alert_word" not in flags:
+                    return False
+            elif operator == "is" and operand == "mentioned":
                 if "mentioned" not in flags:
                     return False
             elif operator == "is" and operand == "resolved":

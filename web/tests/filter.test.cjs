@@ -3290,6 +3290,9 @@ run_test("excludes_muted_topics", () => {
     let filter = new Filter([{operator: "is", operand: "starred"}]);
     assert.ok(!filter.excludes_muted_topics());
 
+    filter = new Filter([{operator: "is", operand: "alerted"}]);
+    assert.ok(!filter.excludes_muted_topics());
+
     filter = new Filter([{operator: "is", operand: "muted"}]);
     assert.ok(!filter.excludes_muted_topics());
 
