@@ -71,8 +71,8 @@ def stringify_message_dict(message_dict: dict[str, Any]) -> bytes:
 
 
 @cache_with_key(to_dict_cache_key, timeout=3600 * 24, pickled_tupled=False)
-def message_to_encoded_cache(message: Message, realm_id: int | None = None) -> bytes:
-    return MessageDict.messages_to_encoded_cache([message], realm_id)[message.id]
+def message_to_encoded_cache(message: Message) -> bytes:
+    return MessageDict.messages_to_encoded_cache([message])[message.id]
 
 
 def update_message_cache(
@@ -132,25 +132,17 @@ class MessageDict:
     """
 
     @staticmethod
-    def wide_dict(
-        message: Message,
-        realm_id: int | None = None,
-        *,
-        dm_involved_user_ids: set[int] | None = None,
-    ) -> dict[str, Any]:
+    def wide_dict(message: Message) -> dict[str, Any]:
         """
         The next two lines get the cacheable field related
         to our message object, with the side effect of
         populating the cache.
         """
-        encoded_object_bytes = message_to_encoded_cache(message, realm_id)
+        encoded_object_bytes = message_to_encoded_cache(message)
         obj = extract_message_dict(encoded_object_bytes)
 
         MessageDict.bulk_hydrate_sender_info([obj])
-        MessageDict.bulk_hydrate_recipient_info(
-            [obj],
-            {} if dm_involved_user_ids is None else {obj["recipient_id"]: dm_involved_user_ids},
-        )
+        MessageDict.bulk_hydrate_recipient_info([obj])
 
         return obj
 
