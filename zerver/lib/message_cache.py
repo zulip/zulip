@@ -77,7 +77,7 @@ def message_to_encoded_cache(message: Message, realm_id: int | None = None) -> b
 
 def update_message_cache(
     changed_messages: Iterable[Message], realm_id: int | None = None
-) -> list[int]:
+) -> dict[int, bytes]:
     """Updates the message as stored in the to_dict cache (for serving
     messages)."""
     items_for_remote_cache = {}
@@ -86,7 +86,7 @@ def update_message_cache(
         items_for_remote_cache[to_dict_cache_key_id(msg_id)] = msg
 
     cache_set_many(items_for_remote_cache)
-    return list(changed_messages_to_dict.keys())
+    return changed_messages_to_dict
 
 
 def save_message_rendered_content(message: Message, content: str) -> str:
