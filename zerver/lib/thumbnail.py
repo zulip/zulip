@@ -599,13 +599,21 @@ def process_inline_images_to_thumbnails(
 
     if to_delete and path_id in to_delete:
         # This was not a valid thumbnail target, for some reason.
-        # Trim out the whole "message_inline_image" div, or the "image"
-        # element, since it's not going be renderable by clients
-        # either.
+        # Trim out the whole "message_inline_image" div, since it's
+        # not going to be renderable by clients either. Replace a
+        # `![...](...)` image with the link that re-rendering produces
+        # once the ImageAttachment row is deleted.
         if inline_image_div is not None:
             inline_image_div.decompose()
         else:
-            placeholder_image_tag.decompose()
+            src = placeholder_image_tag["data-original-src"]
+            alt = placeholder_image_tag.get("alt", "")
+            assert isinstance(src, str) and isinstance(alt, str)
+            link = Tag(name="a", attrs={"href": src})
+            if (title := placeholder_image_tag.get("title")) is not None:
+                link["title"] = title
+            link.string = alt if alt.strip() else src
+            placeholder_image_tag.replace_with(link)
 
         return True, None
 
