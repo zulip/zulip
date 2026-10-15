@@ -2,7 +2,6 @@ import * as condense from "./condense.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import * as thumbnail from "./thumbnail.ts";
-import type {UserStatusEmojiInfo} from "./user_status.ts";
 
 export function rerender_messages_view(): void {
     for (const list of message_lists.all_rendered_message_lists()) {
@@ -119,11 +118,7 @@ export function update_avatar(user_id: number, avatar_url: string | null): void 
     rerender_messages_sent_by_user(user_id);
 }
 
-export function update_user_status_emoji(
-    user_id: number,
-    status_emoji_info: UserStatusEmojiInfo | undefined,
-): void {
-    message_store.update_status_emoji_info(user_id, status_emoji_info);
+export function update_user_status_emoji(user_id: number): void {
     rerender_messages_sent_by_user(user_id);
 }
 
