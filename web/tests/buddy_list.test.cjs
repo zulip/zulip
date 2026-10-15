@@ -68,6 +68,13 @@ const dave = make_user({
     full_name: "Dave Jones",
 });
 people.add_active_user(dave);
+const bot = make_user({
+    email: "bot@zulip.com",
+    user_id: 25,
+    full_name: "Test Bot",
+    is_bot: true,
+});
+people.add_active_user(bot);
 const $alice_li = $.create("alice-stub");
 const $bob_li = $.create("bob-stub");
 
@@ -400,5 +407,36 @@ run_test("other users count after a deactivation and reactivation", () => {
     people.add_active_user(dave);
     assert.equal(buddy_list.other_users_count(), active_human_count - 3);
 
+    message_lists.set_current(undefined);
+});
+
+run_test("direct message view counts with deactivated users", async () => {
+    set_current_user({user_id: chris.user_id});
+    people.add_valid_user_id(alice.user_id);
+    people.add_valid_user_id(bob.user_id);
+    people.add_valid_user_id(bot.user_id);
+    message_lists.set_current(
+        make_message_list([{operator: "dm", operand: [alice.user_id, bob.user_id, bot.user_id]}]),
+    );
+    const active_human_count = people.get_active_human_count();
+
+    // Bots aren't counted in the conversation.
+    const buddy_list = new BuddyList();
+    assert.equal(await buddy_list.non_participant_users_matching_view_count(), 3);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 3);
+
+    // A deactivated user is still part of the conversation, but is
+    // no longer an active user, so "others" doesn't subtract them.
+    people.deactivate(bob);
+    assert.equal(await buddy_list.non_participant_users_matching_view_count(), 3);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 1 - 2);
+
+    // A deactivated bot was never counted, so "others" doesn't change.
+    people.deactivate(bot);
+    assert.equal(await buddy_list.non_participant_users_matching_view_count(), 3);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 1 - 2);
+
+    people.add_active_user(bob);
+    people.add_active_user(bot);
     message_lists.set_current(undefined);
 });
