@@ -11,8 +11,8 @@ $(() => {
     // is only attached while the menu is open, so the steady-state
     // page pays nothing for it.
     const banner = document.querySelector<HTMLElement>("#navbar-custom-message");
-    const mobile_menu = document.querySelector<HTMLDetailsElement>(".top-menu-mobile");
-    if (banner && mobile_menu) {
+    const mobile_menu_toggle = document.querySelector<HTMLInputElement>("#top-menu-mobile-toggle");
+    if (banner && mobile_menu_toggle) {
         const update_banner_height = (): void => {
             document.documentElement.style.setProperty(
                 "--announcement-banner-height",
@@ -20,8 +20,8 @@ $(() => {
             );
         };
         const observer = new ResizeObserver(update_banner_height);
-        mobile_menu.addEventListener("toggle", () => {
-            if (mobile_menu.open) {
+        mobile_menu_toggle.addEventListener("change", () => {
+            if (mobile_menu_toggle.checked) {
                 update_banner_height();
                 observer.observe(banner);
             } else {

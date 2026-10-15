@@ -55,11 +55,6 @@ html {
     }
 }
 
-details summary::-webkit-details-marker {
-    /* Hide the default arrow on Safari. */
-    display: none;
-}
-
 .top-menu :focus-visible {
     /* Show white outline by default */
     /* This overrides outline-style: auto which
@@ -124,15 +119,6 @@ details summary::-webkit-details-marker {
 .top-menu-items-group-2 {
     justify-self: end;
     align-items: center;
-}
-
-.top-menu-mobile a {
-    &,
-    &:hover,
-    &:focus,
-    &:visited {
-        color: hsl(0deg 0% 100% / 80%);
-    }
 }
 
 .top-menu-item {
@@ -377,15 +363,6 @@ details summary::-webkit-details-marker {
     margin-right: 4px;
 }
 
-.top-menu-mobile-user-img {
-    width: 28px;
-    height: 28px;
-    display: inline;
-    vertical-align: text-top;
-    border-radius: 3px;
-    margin-right: 4px;
-}
-
 @media (width <= 1400px) {
     .top-menu-submenu.signup-column {
         justify-content: flex-end;
@@ -443,22 +420,6 @@ details summary::-webkit-details-marker {
                 color: hsl(0deg 0% 100% / 90%);
             }
         }
-    }
-}
-
-.top-menu-mobile .top-menu-mobile-item a {
-    padding: 10px 10px 10px 53px;
-    border-radius: 2px;
-    cursor: pointer;
-    text-decoration: none;
-    display: block;
-
-    &:hover {
-        background: hsl(0deg 0% 100% / 10%);
-    }
-
-    &:active {
-        background: hsl(0deg 0% 100% / 20%);
     }
 }
 
@@ -545,196 +506,6 @@ details summary::-webkit-details-marker {
     }
 }
 
-.top-menu-mobile {
-    display: none;
-    background: hsl(240deg 100% 10% / 40%);
-    backdrop-filter: blur(10px);
-    z-index: 20;
-
-    /* No `top` — defaults to auto, which resolves to the static
-       position (just below the sticky banner when one is present,
-       or at the viewport top otherwise). Same trick as .top-menu
-       above. The [open] state below pins to top: 0 so the expanded
-       panel covers the full viewport. */
-    position: fixed;
-    left: 0;
-    right: 0;
-    height: var(--navbar-height);
-
-    overflow: auto;
-    font-style: normal;
-    font-weight: 500;
-    font-size: 20px;
-    line-height: 28px;
-    letter-spacing: 0.02em;
-    font-feature-settings:
-        "pnum" on,
-        "lnum" on;
-    color: hsl(0deg 0% 100% / 80%);
-
-    overscroll-behavior: contain;
-}
-
-.top-menu-mobile[open] {
-    top: 0;
-    bottom: 0;
-    height: 100%;
-    background: hsl(240deg 100% 5.9% / 80%);
-    backdrop-filter: blur(20px);
-}
-
-/* When a banner is present, keep it visible above the open menu by
-   pushing the panel down by the banner's actual rendered height.
-   --announcement-banner-height is set by header.ts only while the menu is open
-   (via a ResizeObserver scoped to that interval), so the offset
-   stays accurate when the announcement wraps onto multiple lines on
-   narrow viewports without paying for an observer the rest of the
-   time. The 42px fallback covers the first frame before JS runs. */
-:has(#navbar-custom-message) .top-menu-mobile[open] {
-    top: var(--announcement-banner-height, 42px);
-    height: calc(100% - var(--announcement-banner-height, 42px));
-}
-
-.top-menu-mobile-items-group-1,
-.top-menu-mobile-items-group-2 {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 24px;
-}
-
-.top-menu-mobile-items-group-1 summary,
-.top-menu-mobile-items-group-1 a,
-.top-menu-mobile-items-group-2 summary,
-.top-menu-mobile-items-group-2 a {
-    cursor: pointer;
-    transition: background 0.4s ease-out;
-}
-
-.top-menu-mobile-items-group-1 summary,
-.top-menu-mobile-items-group-2 summary {
-    padding: 10px 10px 10px 23px;
-    user-select: none;
-}
-
-.top-menu-mobile-items-group-1 a,
-.top-menu-mobile-items-group-2 a {
-    padding-left: 53px;
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .top-menu-mobile-items-group-1 summary:hover,
-    .top-menu-mobile-items-group-2 summary:hover {
-        background: hsl(0deg 0% 100% / 10%);
-        transition: none;
-    }
-}
-
-.top-menu-mobile-items-group-1 summary:active,
-.top-menu-mobile-items-group-2 summary:active {
-    background: hsl(0deg 0% 100% / 10%);
-}
-
-/* We display: block here instead of the default
-   display: list-item largely for the sake of Safari,
-   which as of early 2026 still ignores the ::marker
-   line below. Because we're overriding the default
-   markers on all browsers, this display mode doesn't
-   impact other browsers, either. */
-.top-menu-mobile-item-summary {
-    display: block;
-}
-
-.top-menu-mobile-item-summary::marker {
-    content: "";
-}
-
-.top-menu-mobile-item-summary::before {
-    content: "";
-    display: inline-block;
-    vertical-align: middle;
-    margin-top: -4px;
-    margin-right: 4px;
-    width: 24px;
-    height: 24px;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(255%2c255%2c255%2c0.7)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' class='feather feather-chevron-down'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    transition: transform 0.12s ease-out;
-    transform: rotate(-90deg);
-}
-
-.top-menu-mobile details[open] > summary::before {
-    transform: rotate(0deg);
-}
-
-.top-menu-mobile-submenu {
-    display: flex;
-    flex-direction: column;
-    font-size: 18px;
-    margin-bottom: 18px;
-
-    .top-menu-submenu-list {
-        margin: 0;
-        list-style: none;
-
-        .top-menu-submenu-list-item {
-            font-size: 17px;
-            font-weight: 400;
-            line-height: 26px;
-            color: hsl(0deg 0% 100% / 90%);
-            border-radius: 2px;
-            cursor: pointer;
-
-            &:hover {
-                background: hsl(0deg 0% 100% / 10%);
-            }
-
-            &:active {
-                background: hsl(0deg 0% 100% / 20%);
-            }
-
-            & a {
-                text-decoration: none;
-                padding: 5px 0 5px 53px;
-                display: block;
-            }
-        }
-    }
-}
-
-.top-menu-mobile-submenu-section {
-    letter-spacing: 0.1em;
-    color: hsl(0deg 0% 100% / 40%);
-    text-transform: uppercase;
-    margin-top: 8px;
-    font-size: 17px;
-    padding-left: 53px;
-    user-select: none;
-    pointer-events: none;
-}
-
-.top-menu-mobile-summary {
-    cursor: pointer;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    transition: 0.3s;
-    transition-property: background, backdrop-filter;
-    height: var(--navbar-height);
-    overflow: hidden;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.top-menu-mobile-summary:active {
-    background: hsl(229deg 47% 17% / 80%);
-    backdrop-filter: blur(10px);
-}
-
-.top-menu-mobile[open] > .top-menu-mobile-summary {
-    background: hsl(229deg 47% 17% / 80%);
-    backdrop-filter: blur(10px);
-}
-
 /* For browsers which don't support blur */
 @supports not (
     (backdrop-filter: blur(10px)) or (-webkit-backdrop-filter: blur(10px))
@@ -742,75 +513,22 @@ details summary::-webkit-details-marker {
     .top-menu {
         background: hsl(240deg 100% 10% / 80%);
     }
-
-    .top-menu-mobile {
-        background: hsl(240deg 100% 10% / 80%);
-    }
-
-    .top-menu-mobile[open] {
-        background: hsl(240deg 100% 5.9% / 100%);
-    }
-
-    .top-menu-mobile-summary:active {
-        background: hsl(229deg 47% 17% / 95%);
-    }
-
-    .top-menu-mobile[open] > .top-menu-mobile-summary {
-        background: hsl(229deg 47% 17% / 95%);
-    }
 }
 
-.top-menu-mobile[open] > .top-menu-mobile-summary:active {
-    background: hsl(229deg 47% 20% / 100%);
-}
-
-.top-menu-mobile-summary::marker {
-    content: "";
+.top-menu-mobile-toggle,
+.top-menu-mobile-toggle-label,
+.top-menu-mobile-header-button.top-menu-item {
     display: none;
 }
 
-.top-menu-mobile-summary::after {
-    display: block;
-    height: 32px;
-    float: right;
-    content: "MENU";
-    line-height: 32px;
-    color: hsl(0deg 0% 100% / 80%);
-    padding-right: 38px;
-    font-size: 20px;
-    font-weight: 400;
-    letter-spacing: 2px;
-    margin-right: 16px;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.9)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cline x1='3' y1='12' x2='21' y2='12'%3e%3c/line%3e%3cline x1='3' y1='6' x2='21' y2='6'%3e%3c/line%3e%3cline x1='3' y1='18' x2='21' y2='18'%3e%3c/line%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-size: 32px;
-    background-position: right;
-    transition:
-        background,
-        letter-spacing 0.2s; /* stylelint-disable-line plugin/no-low-performance-animation-properties */
-}
-
-.top-menu-mobile-summary:active::after {
-    letter-spacing: 2px;
-}
-
-.top-menu-mobile[open] > summary::after {
-    content: "Close";
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.9)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cline x1='18' y1='6' x2='6' y2='18'%3e%3c/line%3e%3cline x1='6' y1='6' x2='18' y2='18'%3e%3c/line%3e%3c/svg%3e");
-}
-
-@media (hover: hover) and (pointer: fine) {
-    .top-menu-mobile-summary:hover {
-        background: hsl(229deg 47% 18% / 100%);
-    }
-
-    .top-menu-mobile[open] > .top-menu-mobile-summary:hover {
-        background: hsl(229deg 47% 18% / 100%);
-    }
-
-    .top-menu-mobile-summary:hover::after {
-        letter-spacing: 4px;
-    }
+/* The menu toggle shows an icon; its text is only for screen readers. */
+.top-menu-mobile-toggle-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
 }
 
 /* menu responsivity */
@@ -830,17 +548,308 @@ details summary::-webkit-details-marker {
     }
 }
 
+/* On narrow screens, the same menu collapses behind a toggle and
+   opens as a full-height sheet, with each dropdown as an accordion
+   section and the calls to action and account links at the bottom. */
 @media (width <= 1100px) {
-    .top-menu {
-        display: none;
+    .top-menu-container {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
     }
 
     .top-menu-logo {
-        margin-right: unset;
-        display: inline-block;
+        margin-right: auto;
     }
 
-    .top-menu-mobile {
+    .top-menu-mobile-header-button.top-menu-item {
+        display: flex;
+        margin: 0 4px 0 0;
+    }
+
+    .top-menu-mobile-toggle-label {
         display: block;
+        width: 44px;
+        height: 44px;
+        margin: 8px 12px 8px 4px;
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.9)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cline x1='3' y1='12' x2='21' y2='12'%3e%3c/line%3e%3cline x1='3' y1='6' x2='21' y2='6'%3e%3c/line%3e%3cline x1='3' y1='18' x2='21' y2='18'%3e%3c/line%3e%3c/svg%3e");
+        background-repeat: no-repeat;
+        background-size: 32px;
+        background-position: center;
+    }
+
+    .top-menu-items-group-1,
+    .top-menu-items-group-2,
+    .top-menu-submenu-backdrop {
+        display: none;
+    }
+
+    .top-menu .top-menu-tab-input-unselect ~ .top-menu-tab-label-unselect {
+        display: none;
+    }
+
+    .top-menu:has(.top-menu-mobile-toggle:checked) {
+        top: 0;
+        bottom: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        background: hsl(240deg 100% 5.9% / 80%);
+        backdrop-filter: blur(20px);
+    }
+
+    /* When a banner is present, keep it visible above the open menu.
+       --announcement-banner-height is set by header.ts while the menu
+       is open; the 42px fallback covers the first frame before JS
+       runs. */
+    :has(#navbar-custom-message)
+        .top-menu:has(.top-menu-mobile-toggle:checked) {
+        top: var(--announcement-banner-height, 42px);
+    }
+
+    /* The open sheet fills the screen, so that the account links
+       can sit at its bottom edge. The logo, close button and calls
+       to action form a header that stays at the top while the
+       sections below scroll. */
+    .top-menu-mobile-toggle:checked + .top-menu-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto 1fr;
+        min-height: 100%;
+
+        &::before {
+            content: "";
+            grid-row: 1 / 3;
+            grid-column: 1 / -1;
+            align-self: stretch;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: hsl(240deg 100% 5.9%);
+            border-bottom: 1px solid hsl(0deg 0% 100% / 10%);
+        }
+
+        /* Header items are placed explicitly, so that they share
+           their cells with the background above instead of being
+           pushed into new columns. */
+        .top-menu-logo {
+            grid-area: 1 / 1;
+            position: sticky;
+            top: calc((var(--navbar-height) - 28px) / 2); /* 28px logo */
+            z-index: 10;
+        }
+
+        .top-menu-items-group-2 .top-menu-item.top-menu-button {
+            grid-area: 2 / 1;
+            position: sticky;
+            top: calc(var(--navbar-height) + 16px);
+            z-index: 10;
+            margin-bottom: 16px;
+        }
+
+        .top-menu-items-group-2 .top-menu-item.top-menu-button-primary {
+            grid-column: 2;
+        }
+
+        .top-menu-mobile-header-button.top-menu-item {
+            display: none;
+        }
+
+        .top-menu-mobile-toggle-label {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.9)' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cline x1='18' y1='6' x2='6' y2='18'%3e%3c/line%3e%3cline x1='6' y1='6' x2='18' y2='18'%3e%3c/line%3e%3c/svg%3e");
+            justify-self: end;
+            grid-area: 1 / 2;
+            position: sticky;
+            top: calc((var(--navbar-height) - 44px) / 2); /* 44px button */
+            z-index: 10;
+        }
+
+        .top-menu-items-group-1 {
+            display: flex;
+            flex-direction: column;
+            grid-row: 3;
+            grid-column: 1 / -1;
+            align-self: start;
+            margin-left: 0;
+        }
+
+        /* Lay out the calls to action and account links directly in
+           the sheet's grid, so that the account links can stick to
+           the bottom of the whole sheet. */
+        .top-menu-items-group-2 {
+            display: contents;
+        }
+    }
+
+    .top-menu-items-group-1 > .top-menu-item {
+        font-size: 20px;
+
+        &:not(.top-menu-tab) {
+            padding: 10px 23px;
+        }
+    }
+
+    .top-menu-item.top-menu-tab {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .top-menu-tab label {
+        padding: 10px 23px;
+    }
+
+    /* Only the section header closes an open section, so that
+       the links below it stay clickable. */
+    .top-menu-tab-unselect {
+        bottom: auto;
+        height: 48px;
+    }
+
+    .top-menu-submenu,
+    .top-menu-submenu.top-menu-submenu-with-footer {
+        display: none;
+        position: static;
+        width: auto;
+        transform: none;
+        padding-bottom: 12px;
+    }
+
+    .top-menu-tab .top-menu-tab-input:checked ~ .top-menu-submenu {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .top-menu-submenu-column {
+        padding-top: 23px;
+        max-width: none;
+
+        &:first-child {
+            padding-top: 18px;
+        }
+    }
+
+    .top-menu-submenu-section,
+    .top-menu-submenu-column
+        .top-menu-submenu-list
+        .top-menu-submenu-list-item
+        a,
+    .top-menu-submenu-footer .top-menu-submenu-list-item a {
+        padding-left: 43px;
+    }
+
+    .top-menu-submenu-column
+        > .top-menu-submenu-section:first-child
+        + .top-menu-submenu-list,
+    .top-menu-submenu-footer {
+        --divider-inset-start: 43px;
+        --divider-inset-end: 23px;
+    }
+
+    .top-menu-submenu-footer {
+        flex-direction: column;
+        margin: 8px 0 0;
+        padding: 8px 0 0;
+    }
+
+    .top-menu-items-group-2 .top-menu-item.top-menu-button {
+        justify-content: center;
+        margin: 16px 6px 0 23px;
+    }
+
+    .top-menu-items-group-2 .top-menu-item.top-menu-button-primary {
+        margin: 16px 23px 0 6px;
+    }
+
+    /* Stays visible at the bottom of the screen when an expanded
+       section makes the sheet scroll. */
+    .top-menu-items-group-2 > .top-menu-account,
+    .top-menu-items-group-2 > .top-menu-login-link {
+        grid-row: 4;
+        grid-column: 1 / -1;
+        align-self: end;
+        position: sticky;
+        bottom: 0;
+        /* Above the section headers, which have z-index: 5. */
+        z-index: 10;
+        margin-top: 16px;
+        padding: 12px 23px max(16px, env(safe-area-inset-bottom));
+
+        border-top: 1px solid hsl(0deg 0% 100% / 10%);
+
+        &,
+        &:hover,
+        &:active {
+            background: hsl(240deg 100% 5.9% / 95%);
+            backdrop-filter: blur(20px);
+        }
+    }
+
+    .top-menu-login-link.top-menu-item {
+        justify-content: center;
+    }
+
+    .top-menu-account > .top-menu-tab-unselect,
+    .top-menu-account > label:not(.top-menu-tab-user-label) {
+        display: none;
+    }
+
+    /* When logged in, the organization's name sits on one line with
+       the Go to app and Log out buttons; it doesn't open anything,
+       so it has no chevron. */
+    .top-menu-items-group-2
+        > .top-menu-account:has(> .top-menu-tab-user-label) {
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+
+        .top-menu-submenu-list {
+            grid-template-columns: auto auto;
+        }
+
+        .top-menu-submenu-list .top-menu-submenu-list-item a {
+            padding: 10px 14px;
+            white-space: nowrap;
+        }
+    }
+
+    .top-menu-tab .top-menu-tab-user-label {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: none;
+        padding: 0;
+        pointer-events: none;
+
+        .top-menu-tab-user-name {
+            display: inline;
+        }
+    }
+
+    .top-menu-tab label.top-menu-tab-user-label::after {
+        display: none;
+    }
+
+    .top-menu-account .top-menu-submenu {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+        padding: 0;
+
+        .top-menu-submenu-column {
+            padding-top: 0;
+        }
+
+        .top-menu-submenu-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .top-menu-submenu-list .top-menu-submenu-list-item a {
+            padding: 10px;
+            text-align: center;
+            box-shadow: inset 0 0 0 1px hsl(0deg 0% 100% / 30%);
+            border-radius: 4px;
+        }
     }
 }
