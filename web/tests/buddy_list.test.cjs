@@ -12,6 +12,7 @@ const {
     stub_buddy_list_elements,
 } = require("./lib/buddy_list.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
+const {make_stream} = require("./lib/example_stream.cjs");
 const {make_user} = require("./lib/example_user.cjs");
 const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
@@ -27,8 +28,11 @@ mock_esm("../src/sidebar_header_sticky_shadow", {initialize() {}});
 const buddy_data = zrequire("buddy_data");
 const {BuddyList} = zrequire("buddy_list");
 const message_lists = zrequire("message_lists");
+const muted_users = zrequire("muted_users");
+const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const {set_current_user, set_realm} = zrequire("state_data");
+const stream_data = zrequire("stream_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
 set_realm(make_realm());
@@ -384,6 +388,86 @@ run_test("scrolling", ({override}) => {
     assert.ok(tried_to_fill);
 });
 
+run_test("channel view counts", async () => {
+    const rome_sub = make_stream({name: "Rome", stream_id: 1001});
+    stream_data.add_sub_for_tests(rome_sub);
+    peer_data.set_subscribers(rome_sub.stream_id, [alice.user_id, bob.user_id, bot.user_id]);
+    message_lists.set_current(
+        make_message_list(
+            [
+                {operator: "channel", operand: String(rome_sub.stream_id)},
+                {operator: "topic", operand: "lunch"},
+            ],
+            {visible_participants: [alice.user_id]},
+        ),
+    );
+    const buddy_list = new BuddyList();
+    const active_human_count = people.get_active_human_count();
+    assert.equal(await buddy_list.non_participant_users_matching_view_count(), 1);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 2);
+
+    // A muted participant is left out of the participants, and is
+    // subtracted from "this channel" only once.
+    muted_users.add_muted_user(alice.user_id);
+    assert.equal(buddy_list.render_data.get_all_participant_ids().size, 0);
+    assert.equal(await buddy_list.non_participant_users_matching_view_count(), 1);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 2);
+    muted_users.remove_muted_user(alice.user_id);
+
+    // Muted users are hidden from the buddy list, so they aren't
+    // counted in the section they would be in.
+    muted_users.add_muted_user(bob.user_id);
+    assert.equal(await buddy_list.non_participant_users_matching_view_count(), 0);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 2);
+
+    muted_users.add_muted_user(chris.user_id);
+    assert.equal(await buddy_list.non_participant_users_matching_view_count(), 0);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 3);
+
+    // Bots aren't counted in any section, so muting one changes nothing.
+    muted_users.add_muted_user(bot.user_id);
+    assert.equal(await buddy_list.non_participant_users_matching_view_count(), 0);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 3);
+
+    // Deactivated users aren't in "others", so a muted one isn't
+    // subtracted from it.
+    people.deactivate(chris);
+    assert.equal(await buddy_list.non_participant_users_matching_view_count(), 0);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 1 - 2);
+
+    people.add_active_user(chris);
+    muted_users.set_muted_users([]);
+    peer_data.clear_for_testing();
+    message_lists.set_current(undefined);
+});
+
+run_test("channel view counts with partial subscriber data", async () => {
+    const rome_sub = make_stream({name: "Rome", stream_id: 1001});
+    stream_data.add_sub_for_tests(rome_sub);
+    // Only Alice is loaded, but Bob is subscribed too.
+    peer_data.set_subscribers(rome_sub.stream_id, [alice.user_id], false);
+    peer_data.set_subscriber_count(rome_sub.stream_id, 2);
+    message_lists.set_current(
+        make_message_list([{operator: "channel", operand: String(rome_sub.stream_id)}]),
+    );
+    const buddy_list = new BuddyList();
+    const active_human_count = people.get_active_human_count();
+
+    // We don't fetch the full subscriber list for these counts, so we
+    // don't know which section Bob is in and leave him counted.
+    muted_users.add_muted_user(bob.user_id);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 2);
+    assert.equal(await buddy_list.non_participant_users_matching_view_count(), 2);
+
+    peer_data.set_subscribers(rome_sub.stream_id, [alice.user_id, bob.user_id]);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 2);
+    assert.equal(await buddy_list.non_participant_users_matching_view_count(), 1);
+
+    muted_users.set_muted_users([]);
+    peer_data.clear_for_testing();
+    message_lists.set_current(undefined);
+});
+
 run_test("direct message view counts with deactivated users", async () => {
     set_current_user({user_id: chris.user_id});
     people.add_valid_user_id(alice.user_id);
@@ -412,5 +496,39 @@ run_test("direct message view counts with deactivated users", async () => {
 
     people.add_active_user(bob);
     people.add_active_user(bot);
+    message_lists.set_current(undefined);
+});
+
+run_test("direct message view counts with muted users", async () => {
+    set_current_user({user_id: chris.user_id});
+    people.add_valid_user_id(alice.user_id);
+    people.add_valid_user_id(bob.user_id);
+    people.add_valid_user_id(bot.user_id);
+    message_lists.set_current(
+        make_message_list([{operator: "dm", operand: [alice.user_id, bob.user_id, bot.user_id]}]),
+    );
+    const active_human_count = people.get_active_human_count();
+
+    const buddy_list = new BuddyList();
+    // Muted users are hidden from the buddy list, so they aren't
+    // counted in the section they would be in.
+    muted_users.add_muted_user(bob.user_id);
+    assert.equal(await buddy_list.non_participant_users_matching_view_count(), 2);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 3);
+
+    // Bots aren't counted in the conversation, so muting one changes
+    // nothing.
+    muted_users.add_muted_user(bot.user_id);
+    assert.equal(await buddy_list.non_participant_users_matching_view_count(), 2);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 3);
+
+    // A deactivated user is still part of the conversation, so a
+    // muted one is still left out of its count.
+    people.deactivate(bob);
+    assert.equal(await buddy_list.non_participant_users_matching_view_count(), 2);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 1 - 2);
+
+    people.add_active_user(bob);
+    muted_users.set_muted_users([]);
     message_lists.set_current(undefined);
 });
