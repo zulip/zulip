@@ -1006,7 +1006,8 @@ def do_update_message(
             # This does message.save(update_fields=[...])
             save_message_for_edit_use_case(message=target_message)
 
-            event.message_ids = sorted(update_message_cache([target_message]))
+            update_message_cache([target_message])
+            event.message_ids = [target_message.id]
             users_to_be_notified = list(map(user_info, ums))
             send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 
