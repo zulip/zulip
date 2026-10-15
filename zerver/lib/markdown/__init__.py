@@ -2145,7 +2145,13 @@ class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
         # before rendering; Else, its header didn't parse as
         # a valid image type which libvips handles.
         if not db_data or path_id not in db_data.user_upload_previews.image_metadata:
-            return None
+            link = Element("a")
+            link.set("href", src)
+            if (title := img.get("title")) is not None:
+                link.set("title", title)
+            alt = img.get("alt", "")
+            link.text = markdown.util.AtomicString(alt if alt.strip() else src)
+            return link
         else:
             assert path_id in db_data.user_upload_previews.image_metadata
             metadata = db_data.user_upload_previews.image_metadata[path_id]
@@ -2179,11 +2185,11 @@ class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
     ) -> tuple[Element | str | None, int | None, int | None]:
         ret = super().handleMatch(m, data)
         if ret[0] is not None:
-            img, match_start, index = ret
-            assert isinstance(img, Element)
-            img = self.zulip_specific_image_changes(img)
-            if img is not None:
-                return img, match_start, index
+            el, match_start, index = ret
+            assert isinstance(el, Element)
+            el = self.zulip_specific_image_changes(el)
+            if el is not None:
+                return el, match_start, index
         return None, None, None
 
 

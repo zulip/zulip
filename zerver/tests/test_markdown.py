@@ -1159,7 +1159,7 @@ class MarkdownEmbedsTest(ZulipTestCase):
         with self.assertLogs(level="WARNING"):
             message_id = self.send_message_content(f"![Audio link](/user_uploads/{path_id})")
 
-        expected = f"<p>![Audio link]({url})</p>"
+        expected = f'<p><a href="{url}">Audio link</a></p>'
         self.assert_message_content_is(message_id, expected)
 
         # Test audio files are not previewed when the content type
@@ -1173,8 +1173,27 @@ class MarkdownEmbedsTest(ZulipTestCase):
         )[0]
         path_id = re.sub(r"/user_uploads/", "", url)
         message_id = self.send_message_content(f"![Audio link](/user_uploads/{path_id})")
-        expected = f"<p>![Audio link]({url})</p>"
+        expected = f'<p><a href="{url}">Audio link</a></p>'
         self.assert_message_content_is(message_id, expected)
+
+    def test_inline_image_syntax_for_video(self) -> None:
+        """A video upload has no ImageAttachment row, so `![...](...)`
+        renders like `[...](...)`, including the video preview."""
+        url = upload_message_attachment(
+            "clip.mp4",
+            "video/mp4",
+            b"",
+            self.example_user("othello"),
+        )[0]
+        expected = (
+            f'<p><a href="{url}">clip.mp4</a></p>\n'
+            '<div class="message_inline_image message_inline_video">'
+            f'<a href="{url}" title="clip.mp4"><video preload="metadata" src="{url}"></video></a>'
+            "</div>"
+        )
+        for content in [f"![clip.mp4]({url})", f"[clip.mp4]({url})"]:
+            message_id = self.send_message_content(content)
+            self.assert_message_content_is(message_id, expected)
 
     @override_settings(INLINE_IMAGE_PREVIEW=False)
     def test_image_preview_enabled(self) -> None:
