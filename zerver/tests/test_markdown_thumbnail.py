@@ -171,6 +171,35 @@ class MarkdownThumbnailTest(ZulipTestCase):
         )
         self.assert_message_content_is(message_id, expected)
 
+    def test_inline_image_not_thumbnailable(self) -> None:
+        """An image the server can't decode has no ImageAttachment
+        row, so `![...](...)` renders as a link to it, with the alt
+        text as plain text."""
+        path_id = self.upload_image("corrupt.png")
+        self.assertFalse(ImageAttachment.objects.filter(path_id=path_id).exists())
+
+        message_id = self.send_message_content(f"![corrupt.png](/user_uploads/{path_id})")
+        self.assert_message_content_is(
+            message_id, f'<p><a href="/user_uploads/{path_id}">corrupt.png</a></p>'
+        )
+        message = Message.objects.get(id=message_id)
+        self.assertTrue(message.has_link)
+        self.assertFalse(message.has_image)
+        self.assertTrue(message.has_attachment)
+
+        message_id = self.send_message_content(f'![ ](/user_uploads/{path_id} "Title")')
+        self.assert_message_content_is(
+            message_id,
+            f'<p><a href="/user_uploads/{path_id}" title="Title">/user_uploads/{path_id}</a></p>',
+        )
+
+        message_id = self.send_message_content(
+            f"![**a** [b](https://example.com) `c`](/user_uploads/{path_id})"
+        )
+        self.assert_message_content_is(
+            message_id, f'<p><a href="/user_uploads/{path_id}">**a** b c</a></p>'
+        )
+
     def test_thumbnail_escaping(self) -> None:
         self.login("othello")
         with self.captureOnCommitCallbacks(execute=True):

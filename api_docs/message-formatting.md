@@ -218,7 +218,12 @@ Zulip will generate an image element with the following format:
 ```
 
 Note that the Markdown image syntax is only supported/permitted for
-uploaded images, not third-party image URLs.
+uploaded images, not third-party image URLs. If the server can't
+preview an uploaded file as an image or audio player (e.g., because
+the image is too large to thumbnail), it instead renders a link to
+the file, as `[example image](/user_uploads/path/to/example.png)`
+would, with the alt text as plain text. Like that syntax, an uploaded
+video also gets a [video preview](#video-embeddings-and-previews).
 
 As with link-derived image previews, clients can recognize if an image
 was thumbnailed by its `src` attribute starting with
@@ -383,6 +388,11 @@ previews:
 - No other processing of the URLs is recommended.
 
 ### Changes to image formatting
+
+**In Zulip 13.0 (feature level ZF-7e1ae3)**, changed Markdown image
+syntax for an uploaded file that the server can't preview as an image
+or audio player to render as a link to the file (plus a video
+preview, for a video), rather than as literal Markdown text.
 
 **In Zulip 12.0** (feature level 467), limited the Markdown
 image syntax to only support uploaded images, not linking to
