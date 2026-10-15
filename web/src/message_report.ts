@@ -25,6 +25,7 @@ import * as stream_data from "./stream_data.ts";
 import {render_submessage} from "./submessage.ts";
 import * as ui_report from "./ui_report.ts";
 import {toggle_user_card_popover_for_message} from "./user_card_popover.ts";
+import * as user_status from "./user_status.ts";
 
 function register_message_preview_click_handlers(
     $message_preview_container: JQuery,
@@ -79,6 +80,7 @@ function get_message_container_for_preview(message: Message): MessageContainer {
             message.sender_id,
         ),
         small_avatar_url: people.small_avatar_url(message),
+        status_emoji_info: user_status.get_status_emoji(message.sender_id),
         status_message: "",
         timestr: get_timestr(message),
         want_date_divider: false,
