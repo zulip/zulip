@@ -13,6 +13,7 @@ const {
 } = require("./lib/buddy_list.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_user} = require("./lib/example_user.cjs");
+const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -25,8 +26,9 @@ mock_esm("../src/sidebar_header_sticky_shadow", {initialize() {}});
 
 const buddy_data = zrequire("buddy_data");
 const {BuddyList} = zrequire("buddy_list");
+const message_lists = zrequire("message_lists");
 const people = zrequire("people");
-const {set_realm} = zrequire("state_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
 set_realm(make_realm());
@@ -60,6 +62,12 @@ const chris = make_user({
     full_name: "Chris Smith",
 });
 people.add_active_user(chris);
+const dave = make_user({
+    email: "dave@zulip.com",
+    user_id: 30,
+    full_name: "Dave Jones",
+});
+people.add_active_user(dave);
 const $alice_li = $.create("alice-stub");
 const $bob_li = $.create("bob-stub");
 
@@ -373,4 +381,24 @@ run_test("scrolling", ({override}) => {
     $(buddy_list.scroll_container_selector).trigger("scroll");
 
     assert.ok(tried_to_fill);
+});
+
+run_test("other users count after a deactivation and reactivation", () => {
+    set_current_user({user_id: chris.user_id});
+    people.add_valid_user_id(alice.user_id);
+    people.add_valid_user_id(bob.user_id);
+    message_lists.set_current(
+        make_message_list([{operator: "dm", operand: [alice.user_id, bob.user_id]}]),
+    );
+    const buddy_list = new BuddyList();
+    const active_human_count = people.get_active_human_count();
+    assert.equal(buddy_list.other_users_count(), active_human_count - 3);
+
+    people.deactivate(dave);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 1 - 3);
+
+    people.add_active_user(dave);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 3);
+
+    message_lists.set_current(undefined);
 });
