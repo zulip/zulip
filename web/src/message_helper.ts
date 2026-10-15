@@ -14,7 +14,6 @@ import * as recent_senders from "./recent_senders.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_topic_history from "./stream_topic_history.ts";
 import * as submessage from "./submessage.ts";
-import * as user_status from "./user_status.ts";
 import * as util from "./util.ts";
 
 export type NewMessage =
@@ -86,12 +85,10 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
 
     const sent_by_me = people.is_my_user_id(message_with_booleans.message.sender_id);
 
-    let status_emoji_info;
     const sender = people.maybe_get_user_by_id(message_with_booleans.message.sender_id);
     if (sender) {
         message_with_booleans.message.sender_full_name = sender.full_name;
         message_with_booleans.message.sender_email = sender.email;
-        status_emoji_info = user_status.get_status_emoji(message_with_booleans.message.sender_id);
     }
 
     if (opts.raw_message.reactions) {
@@ -138,7 +135,6 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
             const message: Message = {
                 ...rest,
                 sent_by_me,
-                status_emoji_info,
                 is_private: false,
                 is_stream: true,
                 reply_to: message_with_booleans.message.sender_email,
@@ -162,7 +158,6 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
             const local_message: LocalMessage = {
                 ...rest,
                 sent_by_me,
-                status_emoji_info,
                 is_private: false,
                 is_stream: true,
                 reply_to: message_with_booleans.message.sender_email,
@@ -190,7 +185,6 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
             const message: Message = {
                 ..._.omit(message_with_booleans.message, "reactions"),
                 sent_by_me,
-                status_emoji_info,
                 is_private: true,
                 is_stream: false,
                 reply_to: util.normalize_recipients(
@@ -213,7 +207,6 @@ export function process_new_message(opts: NewMessage): ProcessedMessage {
             const local_message: LocalMessage = {
                 ...rest,
                 sent_by_me,
-                status_emoji_info,
                 is_private: true,
                 is_stream: false,
                 reply_to: util.normalize_recipients(
