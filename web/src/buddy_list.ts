@@ -352,8 +352,21 @@ export class BuddyList extends BuddyListConf {
     }
 
     other_users_count(): number {
+        const {current_sub, pm_ids_set, total_human_subscribers_count} = this.render_data;
+        // Deactivated users are shown in direct message views, so they
+        // are in total_human_subscribers_count but not in the active
+        // user count.
+        let deactivated_recipient_count = 0;
+        if (current_sub === undefined) {
+            for (const user_id of pm_ids_set) {
+                if (!people.is_active_user(user_id) && !people.is_valid_bot_user(user_id)) {
+                    deactivated_recipient_count += 1;
+                }
+            }
+        }
         return (
-            people.get_active_human_count() - this.render_data.total_human_subscribers_count
+            people.get_active_human_count() -
+            (total_human_subscribers_count - deactivated_recipient_count)
         );
     }
 

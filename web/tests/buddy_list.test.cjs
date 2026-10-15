@@ -13,6 +13,7 @@ const {
 } = require("./lib/buddy_list.cjs");
 const {make_realm} = require("./lib/example_realm.cjs");
 const {make_user} = require("./lib/example_user.cjs");
+const {make_message_list} = require("./lib/message_list.cjs");
 const {mock_esm, zrequire} = require("./lib/namespace.cjs");
 const {run_test, noop} = require("./lib/test.cjs");
 const blueslip = require("./lib/zblueslip.cjs");
@@ -25,8 +26,9 @@ mock_esm("../src/sidebar_header_sticky_shadow", {initialize() {}});
 
 const buddy_data = zrequire("buddy_data");
 const {BuddyList} = zrequire("buddy_list");
+const message_lists = zrequire("message_lists");
 const people = zrequire("people");
-const {set_realm} = zrequire("state_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 
 set_realm(make_realm());
@@ -373,4 +375,27 @@ run_test("scrolling", ({override}) => {
     $(buddy_list.scroll_container_selector).trigger("scroll");
 
     assert.ok(tried_to_fill);
+});
+
+run_test("direct message view counts with deactivated users", async () => {
+    set_current_user({user_id: chris.user_id});
+    people.add_valid_user_id(alice.user_id);
+    people.add_valid_user_id(bob.user_id);
+    message_lists.set_current(
+        make_message_list([{operator: "dm", operand: [alice.user_id, bob.user_id]}]),
+    );
+    const active_human_count = people.get_active_human_count();
+
+    const buddy_list = new BuddyList();
+    assert.equal(await buddy_list.non_participant_users_matching_view_count(), 3);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 3);
+
+    // A deactivated user is still part of the conversation, but is
+    // no longer an active user, so "others" doesn't subtract them.
+    people.deactivate(bob);
+    assert.equal(await buddy_list.non_participant_users_matching_view_count(), 3);
+    assert.equal(buddy_list.other_users_count(), active_human_count - 1 - 2);
+
+    people.add_active_user(bob);
+    message_lists.set_current(undefined);
 });
