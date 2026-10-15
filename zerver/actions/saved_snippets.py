@@ -53,13 +53,16 @@ def do_edit_saved_snippet(
     except SavedSnippet.DoesNotExist:
         raise ResourceNotFoundError(_("Saved snippet does not exist."))
 
+    update_fields = []
     if title is not None:
         saved_snippet.title = title
+        update_fields.append("title")
     if content is not None:
         saved_snippet.content = content
+        update_fields.append("content")
 
     with transaction.atomic(durable=True):
-        saved_snippet.save()
+        saved_snippet.save(update_fields=update_fields)
 
         event = {
             "type": "saved_snippets",
