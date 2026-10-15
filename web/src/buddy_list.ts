@@ -84,7 +84,6 @@ type BuddyListRenderData = {
     // some counting bugs in the headers. This shouldn't show up in
     // production.
     total_human_subscribers_count: number;
-    other_users_count: number;
     hide_headers: boolean;
     // Might include unsubscribed participants
     get_all_participant_ids: () => Set<number>;
@@ -95,7 +94,6 @@ function get_render_data(): BuddyListRenderData {
     const pm_ids_set = narrow_state.pm_ids_set();
 
     const total_human_subscribers_count = get_total_human_subscriber_count(current_sub, pm_ids_set);
-    const other_users_count = people.get_active_human_count() - total_human_subscribers_count;
     const hide_headers = should_hide_headers(current_sub, pm_ids_set);
     const get_all_participant_ids = buddy_data.get_conversation_participants_callback();
 
@@ -103,7 +101,6 @@ function get_render_data(): BuddyListRenderData {
         current_sub,
         pm_ids_set,
         total_human_subscribers_count,
-        other_users_count,
         hide_headers,
         get_all_participant_ids,
     };
@@ -191,6 +188,7 @@ export class BuddyList extends BuddyListConf {
             await this.non_participant_users_matching_view_count();
         const total_human_subscribers_count = (): number =>
             this.render_data.total_human_subscribers_count;
+        const other_users_count = (): number => this.other_users_count();
 
         async function set_tooltip_text(instance: tippy.Instance): Promise<void> {
             let tooltip_text;
@@ -285,14 +283,12 @@ export class BuddyList extends BuddyListConf {
                             // Set the tooltip without awaiting for the async function to return.
                             void set_tooltip_text(instance);
                         } else {
-                            const other_users_count =
-                                people.get_active_human_count() - total_human_subscribers_count();
                             const tooltip_text = $t(
                                 {
                                     defaultMessage:
                                         "{N, plural, one {# other user} other {# other users}}",
                                 },
-                                {N: other_users_count},
+                                {N: other_users_count()},
                             );
                             instance.setContent(tooltip_text);
                         }
@@ -352,6 +348,12 @@ export class BuddyList extends BuddyListConf {
         }
         return (
             this.render_data.total_human_subscribers_count - subscribed_human_participant_ids.length
+        );
+    }
+
+    other_users_count(): number {
+        return (
+            people.get_active_human_count() - this.render_data.total_human_subscribers_count
         );
     }
 
@@ -508,8 +510,9 @@ export class BuddyList extends BuddyListConf {
     }
 
     async update_section_header_counts(): Promise<void> {
-        const {other_users_count, current_sub} = this.render_data;
+        const {current_sub} = this.render_data;
         const all_participant_ids = this.render_data.get_all_participant_ids();
+        const other_users_count = this.other_users_count();
 
         // Hide the counts until we have the data
         if (current_sub && !peer_data.has_full_subscriber_data(current_sub.stream_id)) {
@@ -751,14 +754,14 @@ export class BuddyList extends BuddyListConf {
         // `hide_headers === true` means that we're only showing one section, like
         // for Inbox view. We hide all headers and show only users from the "others"
         // section and should hide the other two sections.
-        const {hide_headers, other_users_count, get_all_participant_ids} = this.render_data;
+        const {hide_headers, get_all_participant_ids} = this.render_data;
 
         const hide_participants = hide_headers || get_all_participant_ids().size === 0;
         // We always show the users matching view section, even if there's nobody in it,
         // since it can be confusing to see "others" out of context of the main population
         // of that narrow.
         const hide_users_matching_view = hide_headers;
-        const hide_other_users = other_users_count === 0;
+        const hide_other_users = this.other_users_count() === 0;
 
         $("#buddy-list-users-matching-view-container").toggleClass(
             "no-display",
@@ -777,7 +780,8 @@ export class BuddyList extends BuddyListConf {
             return;
         }
 
-        const {current_sub, other_users_count} = this.render_data;
+        const {current_sub} = this.render_data;
+        const other_users_count = this.other_users_count();
         const non_participant_users_matching_view_count =
             await this.non_participant_users_matching_view_count();
         // This means a request failed and we can't calculate the counts. We choose
