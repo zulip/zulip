@@ -7,10 +7,14 @@
 {% endif %}
 
 {% if not isolated_page %}
-<!-- We have separate copies of the navbar list for web and mobile. Please update both the versions when making changes. -->
 <nav class="top-menu">
+    <input type="checkbox" class="top-menu-mobile-toggle" id="top-menu-mobile-toggle" />
     <div class="top-menu-container">
         <a class="top-menu-logo nav-zulip-logo" href="https://zulip.com" tabindex="1"></a>
+        <a class='top-menu-item top-menu-button top-menu-button-secondary top-menu-mobile-header-button' href="{{ 'https://chat.zulip.org' if not development_environment}}/?show_try_zulip_modal">Try now</a>
+        <label for="top-menu-mobile-toggle" class="top-menu-mobile-toggle-label nav-menu-label" tabindex="0">
+            <span class="top-menu-mobile-toggle-text">{{ _('Menu') }}</span>
+        </label>
         <div class='top-menu-items-group-1'>
             <div class='top-menu-item top-menu-tab'>
                 <div class="top-menu-tab-unselect"></div>
@@ -127,7 +131,7 @@
             <a class='top-menu-item top-menu-button top-menu-button-secondary' href="{{ 'https://chat.zulip.org' if not development_environment}}/?show_try_zulip_modal">Try now</a>
             <a class='top-menu-item top-menu-button top-menu-button-primary' href="/new/">New organization</a>
             {% if user_is_authenticated %}
-            <div class='top-menu-item top-menu-tab'>
+            <div class='top-menu-item top-menu-tab top-menu-account'>
                 <div class="top-menu-tab-unselect"></div>
                 <input type="radio" name="top-menu-tabs" class="top-menu-tab-input" id="top-menu-tab-user" />
                 <label class="top-menu-tab-user-label nav-menu-label" for="top-menu-tab-user" tabindex="0">
@@ -154,9 +158,9 @@
                 </div>
             </div>
             {% elif register_link_disabled %}
-            <a class='top-menu-item' href="/login/">Log in</a>
+            <a class='top-menu-item top-menu-login-link' href="/login/">Log in</a>
             {% else %}
-            <div class='top-menu-item top-menu-tab'>
+            <div class='top-menu-item top-menu-tab top-menu-account'>
                 <div class="top-menu-tab-unselect"></div>
                 <input type="radio" name="top-menu-tabs" class="top-menu-tab-input" id="top-menu-tab-account" />
                 <label for="top-menu-tab-account" class="nav-menu-label" tabindex="0">Log in</label>
@@ -176,133 +180,4 @@
     <div id='top-menu-submenu-backdrop' class="top-menu-submenu-backdrop"></div>
     <label class="top-menu-tab-label-unselect nav-menu-label" for="top-menu-tab-close" tabindex="0"></label>
 </nav>
-<!-- We have separate copies of the navbar list for web and mobile. Please update both the versions when making changes. -->
-<details class="top-menu-mobile">
-    <summary class="top-menu-mobile-summary">
-        <a class="top-menu-logo nav-zulip-logo" href="https://zulip.com"></a>
-    </summary>
-    <div class="top-menu-mobile-items-group-1">
-        <details>
-            <summary class="top-menu-mobile-item-summary">Product</summary>
-            <div class="top-menu-mobile-submenu">
-                <span class="top-menu-mobile-submenu-section">WHY ZULIP</span>
-                <ul class="top-menu-submenu-list">
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/why-zulip/">Why Zulip</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="/choosing-a-team-chat-app/">Choosing a team chat app</a></li>
-                </ul>
-                <span class="top-menu-mobile-submenu-section">PRODUCT</span>
-                <ul class="top-menu-submenu-list">
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/features/">Features</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/integrations/">Integrations</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/apps/">Desktop and mobile apps</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/security/">Security</a></li>
-                </ul>
-                <span class="top-menu-mobile-submenu-section">HOSTING</span>
-                <ul class="top-menu-submenu-list">
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/zulip-cloud/">Zulip Cloud</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/self-hosting/">Self-hosting</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="/help/moving-to-zulip" target="_blank" rel="noopener noreferrer">Moving to Zulip ↗</a></li>
-                </ul>
-            </div>
-        </details>
-        <details>
-            <summary class="top-menu-mobile-item-summary">Who it's for</summary>
-            <div class="top-menu-mobile-submenu">
-                <span class="top-menu-mobile-submenu-section">BUSINESS</span>
-                <ul class="top-menu-submenu-list">
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/for/business/">Zulip for business</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/role/engineers/">Engineering teams</a></li>
-                </ul>
-                <span class="top-menu-mobile-submenu-section">CUSTOMER STORY</span>
-                <ul class="top-menu-submenu-list">
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/gut-contact/">Easy communication for 1000 agents at GUT contact</a></li>
-                </ul>
-                <span class="top-menu-mobile-submenu-section">EDUCATION AND RESEARCH</span>
-                <ul class="top-menu-submenu-list">
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/for/education/">Education</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/for/research/">Research</a></li>
-                </ul>
-                <span class="top-menu-mobile-submenu-section">CUSTOMER STORY</span>
-                <ul class="top-menu-submenu-list">
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/tum/">Organized chat for 1000s of students at TUM</a></li>
-                </ul>
-                <span class="top-menu-mobile-submenu-section">COMMUNITIES</span>
-                <ul class="top-menu-submenu-list">
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/for/open-source/">Open source projects</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/for/events/">Events and conferences</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/for/communities/">Other communities</a></li>
-                </ul>
-                <span class="top-menu-mobile-submenu-section">CUSTOMER STORIES</span>
-                <ul class="top-menu-submenu-list">
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/rust/">Faster decision-making in the Rust language community</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/recurse-center/">Platform for a worldwide community since 2013 at Recurse Center</a></li>
-                </ul>
-                <ul class="top-menu-submenu-list">
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/case-studies/">All case studies</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/communities/">Open communities directory</a></li>
-                </ul>
-            </div>
-        </details>
-        <div class='top-menu-mobile-item'><a href="https://zulip.com/plans/">Pricing</a></div>
-        <details>
-            <summary class="top-menu-mobile-item-summary">Resources</summary>
-            <div class="top-menu-mobile-submenu">
-                <span class="top-menu-mobile-submenu-section">DOWNLOADS</span>
-                <ul class="top-menu-submenu-list">
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/apps/mac">macOS</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/apps/windows">Windows</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/apps/linux">Linux</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/apps/android">Android</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/apps/ios">iOS</a></li>
-                </ul>
-                <span class="top-menu-mobile-submenu-section">FOR USERS</span>
-                <ul class="top-menu-submenu-list">
-                    <li class="top-menu-submenu-list-item"><a href="/help/getting-started-with-zulip" target="_blank" rel="noopener noreferrer">Getting started ↗</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="/help/" target="_blank" rel="noopener noreferrer">Help center ↗</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/help/contact-support" target="_blank" rel="noopener noreferrer">Contact support ↗</a></li>
-                    <li class="top-menu-submenu-list-item"><a href="https://zulip.com/development-community/">Community chat</a></li>
-                </ul>
-                <span class="top-menu-mobile-submenu-section">FOR DEVELOPERS</span>
-                <ul class="top-menu-submenu-list">
-                    <li class="top-menu-submenu-list-item"><a href="/api/" target="_blank" rel="noopener noreferrer">API ↗</a></li>
-                </ul>
-            </div>
-        </details>
-    </div>
-    <div class="top-menu-mobile-items-group-2">
-        <div class='top-menu-mobile-item'><a href="{{ 'https://chat.zulip.org' if not development_environment}}/?show_try_zulip_modal">Try now</a></div>
-        <div class='top-menu-mobile-item'><a href="/new/">New organization</a></div>
-        {% if user_is_authenticated %}
-        <details>
-            <summary class="top-menu-mobile-item-summary">
-                <img class="top-menu-mobile-user-img"
-                  src="{{ realm_icon }}" />
-                {{ realm_name }}
-            </summary>
-            <div class="top-menu-mobile-submenu">
-                <ul class="top-menu-submenu-list">
-                    <li class="top-menu-submenu-list-item">
-                        <a href="/">Go to app</a>
-                    </li>
-                    <li class="top-menu-submenu-list-item">
-                        <a class="logout_button">
-                        Log out
-                        </a>
-                    </li>
-                </ul>
-                <div class="hidden">
-                    <form id="logout_form" action="/accounts/logout/" method="POST">{{ csrf_input }}
-                    </form>
-                </div>
-            </div>
-        </details>
-        {% else %}
-        <div class='top-menu-mobile-item'><a href="/login/">Log in</a></div>
-        {% if register_link_disabled %}
-        {% else %}
-        <div class='top-menu-mobile-item'><a href="/register/">Sign up</a></div>
-        {% endif %}
-        {% endif %}
-    </div>
-</details>
 {% endif %}
