@@ -1041,6 +1041,26 @@ def get_message_url_and_link(
     return url, link
 
 
+def get_wide_message_dicts(
+    send_message_requests: list[SendMessageRequest],
+) -> dict[int, dict[str, Any]]:
+    messages_by_realm_id: dict[int, list[Message]] = defaultdict(list)
+    for send_request in send_message_requests:
+        messages_by_realm_id[send_request.message.realm_id].append(send_request.message)
+
+    recipient_dm_user_ids = {
+        send_request.message.recipient_id: send_request.dm_involved_user_ids
+        for send_request in send_message_requests
+        if send_request.dm_involved_user_ids is not None
+    }
+    wide_message_dicts: dict[int, dict[str, Any]] = {}
+    for realm_id, messages in messages_by_realm_id.items():
+        wide_message_dicts.update(
+            MessageDict.wide_dicts_for_new_messages(messages, realm_id, recipient_dm_user_ids)
+        )
+    return wide_message_dicts
+
+
 @transaction.atomic(savepoint=False)
 def do_send_messages(
     send_message_requests_maybe_none: Sequence[SendMessageRequest | None],
@@ -1138,6 +1158,8 @@ def do_send_messages(
     for send_request in send_message_requests:
         do_widget_post_save_actions(send_request)
 
+    wide_message_dicts = get_wide_message_dicts(send_message_requests)
+
     # This next loop is responsible for notifying other parts of the
     # Zulip system about the messages we just committed to the database:
     # * Sender automatically follows or unmutes the topic depending on 'automatically_follow_topics_policy'
@@ -1232,11 +1254,7 @@ def do_send_messages(
 
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
-        wide_message_dict = MessageDict.wide_dict(
-            send_request.message,
-            realm_id,
-            dm_involved_user_ids=send_request.dm_involved_user_ids,
-        )
+        wide_message_dict = wide_message_dicts[send_request.message.id]
 
         send_request.message_url, send_request.message_link = get_message_url_and_link(
             send_request, wide_message_dict
