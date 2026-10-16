@@ -213,6 +213,11 @@ def validate_attachment_request(
         if channel.id in subscribed_channel_ids and channel.is_history_public_to_subscribers():
             return True, attachment
 
+    if user_profile.is_guest:
+        # All existing groups granting content access have
+        # allow_everyone_group=False, so they never grant guests access.
+        return False, attachment
+
     user_recursive_group_ids = set(
         get_recursive_membership_groups(user_profile).values_list("id", flat=True)
     )
