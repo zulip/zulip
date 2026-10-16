@@ -277,6 +277,35 @@ run_test("redraw_left_panel", ({override, mock_template}) => {
         );
     }
 
+    // Avoid reordering the DOM when the channels are already in the requested order.
+    const streams_by_name = [abcd, cpp, denmark, jerry, poland, pomona, utopia, zzyzx];
+    const rows_by_name = streams_by_name.map((stream) => `.stream-row-${CSS.escape(stream.elem)}`);
+
+    $.reset_selector("#channels_overlay_container .stream-row");
+    $.set_results("#channels_overlay_container .stream-row", rows_by_name);
+
+    for (const row of rows_by_name) {
+        $(row)[0].remove = assert.fail;
+    }
+
+    test_filter(
+        {
+            input: "",
+            show_subscribed: false,
+            show_available: false,
+            sort_order: "by-stream-name",
+        },
+        streams_by_name,
+    );
+
+    // Restore the original mocked row order and remove behavior for the remaining tests.
+    for (const row of rows_by_name) {
+        $(row)[0].remove = () => {};
+    }
+
+    $.reset_selector("#channels_overlay_container .stream-row");
+    $.set_results("#channels_overlay_container .stream-row", sub_stubs);
+
     // Search with single keyword
     test_filter({input: "Po", show_subscribed: false, show_available: false}, [poland, pomona]);
     assert.ok(ui_called);
