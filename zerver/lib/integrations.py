@@ -145,6 +145,7 @@ def get_screenshot_configs(
 class Integration:
     DEFAULT_LOGO_STATIC_PATH_PNG = "images/integrations/logos/{name}.png"
     DEFAULT_LOGO_STATIC_PATH_SVG = "images/integrations/logos/{name}.svg"
+    ZULIP_LOGO_STATIC_PATH_PNG = "images/logo/zulip-icon-128x128.png"
     DEFAULT_BOT_AVATAR_PATH = "images/integrations/bot_avatars/{name}.png"
     DEFAULT_DOC_PATH = "zerver/integrations/{name}.md"
 
@@ -157,7 +158,6 @@ class Integration:
         webhook_screenshot_configs: list[WebhookScreenshotConfig] | None = None,
         client_name: str | None = None,
         logo: str | None = None,
-        fallback_logo_path: str | None = None,
         secondary_line_text: str | None = None,
         display_name: str | None = None,
         doc: str | None = None,
@@ -199,7 +199,7 @@ class Integration:
                 )
         self.categories = [CATEGORIES[c] for c in categories]
 
-        self.logo_path = logo if logo is not None else self.get_logo_path(fallback_logo_path)
+        self.logo_path = logo if logo is not None else self.get_logo_path()
         self.logo_url = staticfiles_storage.url(self.logo_path)
 
         if display_name is None:
@@ -211,29 +211,26 @@ class Integration:
         self.doc = doc
 
     def is_enabled_in_catalog(self) -> bool:
-        return self.name not in (
-            # Integrations being incrementally added
-            "intercom",
-            "notion",
-            # Broken integrations awaiting fixes
-            "hubot",
-        )
+        if self.name in INTEGRATIONS_DISABLED_IN_CATALOG:
+            return False
 
-    def get_logo_path(self, fallback_logo_path: str | None = None) -> str:
+        # Exclude custom integrations in self-hosted servers lacking docs.
+        return self.has_doc()
+
+    def has_doc(self) -> bool:
+        from zerver.lib.templates import markdown_path_exists
+
+        return markdown_path_exists(self.doc)
+
+    def get_logo_path(self) -> str:
         paths_to_check = [
             self.DEFAULT_LOGO_STATIC_PATH_SVG.format(name=self.name),
             self.DEFAULT_LOGO_STATIC_PATH_PNG.format(name=self.name),
         ]
-        if fallback_logo_path is not None:
-            paths_to_check.append(fallback_logo_path)
-
         for potential_path in paths_to_check:
             if os.path.isfile(static_path(potential_path)):
                 return potential_path
-
-        raise AssertionError(
-            f"Could not find a logo for integration {self.name}. Paths checked: {', '.join(paths_to_check)}"
-        )
+        return self.ZULIP_LOGO_STATIC_PATH_PNG
 
     def get_bot_avatar_path(self) -> str:
         name = os.path.splitext(os.path.basename(self.logo_path))[0]
@@ -243,7 +240,6 @@ class Integration:
 class BotIntegration(Integration):
     DEFAULT_LOGO_STATIC_PATH_PNG = "generated/bots/{name}/logo.png"
     DEFAULT_LOGO_STATIC_PATH_SVG = "generated/bots/{name}/logo.svg"
-    ZULIP_LOGO_STATIC_PATH_PNG = "images/logo/zulip-icon-128x128.png"
     DEFAULT_DOC_PATH = "{name}/doc.md"
 
     def __init__(
@@ -264,7 +260,6 @@ class BotIntegration(Integration):
             fixtureless_screenshot_config_options=fixtureless_screenshot_config_options,
             secondary_line_text=secondary_line_text,
             logo=logo,
-            fallback_logo_path=self.ZULIP_LOGO_STATIC_PATH_PNG,
         )
 
         if display_name is None:
@@ -460,12 +455,10 @@ class EmbeddedBotIntegration(Integration):
     """
 
     DEFAULT_CLIENT_NAME = "Zulip{name}EmbeddedBot"
-    ZULIP_LOGO_STATIC_PATH_PNG = "images/logo/zulip-icon-128x128.png"
 
     def __init__(self, name: str, *args: Any, **kwargs: Any) -> None:
         assert kwargs.get("client_name") is None
         kwargs["client_name"] = self.DEFAULT_CLIENT_NAME.format(name=name.title())
-        kwargs["fallback_logo_path"] = self.ZULIP_LOGO_STATIC_PATH_PNG
         super().__init__(name, *args, **kwargs)
 
     @override
@@ -1198,6 +1191,15 @@ INTEGRATIONS: dict[str, Integration] = {
 }
 
 hubot_integration_names = {integration.name for integration in HUBOT_INTEGRATIONS}
+
+# Add integrations that are deliberately kept out of the catalog here.
+INTEGRATIONS_DISABLED_IN_CATALOG: set[str] = {
+    # Integrations being incrementally added
+    "intercom",
+    "notion",
+    # Broken integrations awaiting fixes
+    "hubot",
+}
 
 # Add integrations whose example screenshots are not yet automated here
 INTEGRATIONS_MISSING_SCREENSHOT_CONFIG = (
