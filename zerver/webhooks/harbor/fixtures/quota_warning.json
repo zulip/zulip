@@ -1,0 +1,22 @@
+{
+    "type": "QUOTA_WARNING",
+    "occur_at": 1571334981,
+    "event_data": {
+        "resources": [
+            {
+                "digest": "sha256:e82f37f783ed6a8d58ac70b4db052707d1ec9d4ea010ef5ccd84652faf9ed844"
+            }
+        ],
+        "repository": {
+            "date_created": 1571334632,
+            "name": "web_app",
+            "namespace": "production",
+            "repo_full_name": "production/web_app",
+            "repo_type": "private"
+        },
+        "custom_attributes": {
+            "Details": "current usage is 85.0 MiB of the 100.0 MiB quota limit"
+        }
+    },
+    "operator": "admin"
+}
