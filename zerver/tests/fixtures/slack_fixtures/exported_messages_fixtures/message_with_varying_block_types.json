@@ -1,0 +1,157 @@
+{
+    "user": "U06NU4E26M9",
+    "type": "message",
+    "ts": "1776874317.427959",
+    "text": "Hello there, I am a basic rich text block! Hello there, *I am a bold rich text block!* This is a mrkdwn section block :ghost: *this is bold*, and ~this is crossed out~, and <https:\/\/google.com|this is a link> This is a header block, with interactive elements",
+    "team": "T06NRA6HM3P",
+    "user_team": "T06NRA6HM3P",
+    "source_team": "T06NRA6HM3P",
+    "user_profile": {
+        "avatar_hash": "112be04f818e",
+        "image_72": "https:\/\/avatars.slack-edge.com\/2024-03-10\/6773346635957_112be04f818e7bd093d5_72.png",
+        "first_name": "Peter",
+        "real_name": "Peter",
+        "display_name": "",
+        "team": "T06NRA6HM3P",
+        "name": "pieterceka123",
+        "is_restricted": false,
+        "is_ultra_restricted": false
+    },
+    "blocks": [
+        {
+            "type": "rich_text",
+            "block_id": "vlcln",
+            "elements": [
+                {
+                    "type": "rich_text_section",
+                    "elements": [
+                        {
+                            "type": "text",
+                            "text": "Hello there, I am a basic rich text block!"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "rich_text",
+            "block_id": "3bUuq",
+            "elements": [
+                {
+                    "type": "rich_text_section",
+                    "elements": [
+                        {
+                            "type": "text",
+                            "text": "Hello there, "
+                        },
+                        {
+                            "type": "text",
+                            "text": "I am a bold rich text block!",
+                            "style": {
+                                "bold": true
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "divider",
+            "block_id": "6CDU1"
+        },
+        {
+            "type": "section",
+            "block_id": "9SUkm",
+            "text": {
+                "type": "mrkdwn",
+                "text": "This is a mrkdwn section block :ghost: *this is bold*, and ~this is crossed out~, and <https:\/\/google.com|this is a link>",
+                "verbatim": false
+            }
+        },
+        {
+            "type": "header",
+            "block_id": "IXIr+",
+            "text": {
+                "type": "plain_text",
+                "text": "This is a header block",
+                "emoji": true
+            }
+        },
+        {
+            "type": "table",
+            "block_id": "nsnOP",
+            "rows": [
+                [
+                    {
+                        "type": "rich_text",
+                        "elements": [
+                            {
+                                "type": "rich_text_section",
+                                "elements": [
+                                    {
+                                        "type": "text",
+                                        "text": "Header 1",
+                                        "style": {
+                                            "bold": true
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "block_id": "kEn4y"
+                    },
+                    {
+                        "type": "rich_text",
+                        "elements": [
+                            {
+                                "type": "rich_text_section",
+                                "elements": [
+                                    {
+                                        "type": "text",
+                                        "text": "Header 2",
+                                        "style": {
+                                            "bold": true
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "block_id": "xMooE"
+                    }
+                ],
+                [
+                    {
+                        "type": "rich_text",
+                        "elements": [
+                            {
+                                "type": "rich_text_section",
+                                "elements": [
+                                    {
+                                        "type": "text",
+                                        "text": "Datum 1"
+                                    }
+                                ]
+                            }
+                        ],
+                        "block_id": "F\/cwk"
+                    },
+                    {
+                        "type": "rich_text",
+                        "elements": [
+                            {
+                                "type": "rich_text_section",
+                                "elements": [
+                                    {
+                                        "type": "text",
+                                        "text": "Datum 2"
+                                    }
+                                ]
+                            }
+                        ],
+                        "block_id": "Zlx8J"
+                    }
+                ]
+            ]
+        }
+    ]
+}
