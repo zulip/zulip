@@ -49,3 +49,8 @@ If you also set `ZULIP_TRIAGE_BOT_EMAIL`, `ZULIP_TRIAGE_BOT_API_KEY`
 and `ZULIP_TRIAGE_CHANNEL` (a chat.zulip.org bot's email and API key,
 and the cards' channel), the dry run checks whether the item already
 has a card. If it does, the bot stops and prints no card.
+
+## Evals
+
+The evals for the bot's prompt and model are in `evals/`. Read
+`evals/README.md` before changing `prompt.md` or `assemble.py`.
