@@ -59,6 +59,100 @@ class JiraHookTests(WebhookTestCase):
         expected_message = "Bo Williams created [TEST-4: Test Created Assignee](https://zulipp.atlassian.net/browse/TEST-4) with major priority (assigned to Kevin Lin)."
         self.check_webhook("issue_created_with_assignee", expected_topic_name, expected_message)
 
+    def test_created_with_priority_disabled(self) -> None:
+        self.url = self.build_webhook_url(include_priority="false")
+        expected_topic_name = "BUG-15: New bug with hook"
+        expected_message = "@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15)."
+        self.check_webhook("issue_created", expected_topic_name, expected_message)
+
+    def test_created_with_assignee_disabled(self) -> None:
+        self.url = self.build_webhook_url(include_assignee="false")
+        expected_topic_name = "TEST-4: Test Created Assignee"
+        expected_message = "Bo Williams created [TEST-4: Test Created Assignee](https://zulipp.atlassian.net/browse/TEST-4) with major priority."
+        self.check_webhook("issue_created_with_assignee", expected_topic_name, expected_message)
+
+    def test_created_with_priority_and_assignee_disabled(self) -> None:
+        self.url = self.build_webhook_url(include_priority="false", include_assignee="false")
+        expected_topic_name = "TEST-4: Test Created Assignee"
+        expected_message = "Bo Williams created [TEST-4: Test Created Assignee](https://zulipp.atlassian.net/browse/TEST-4)."
+        self.check_webhook("issue_created_with_assignee", expected_topic_name, expected_message)
+
+    def test_reassigned_with_assignee_disabled(self) -> None:
+        # The assignee blurb is dropped from the header, but the changelog
+        # still reports the assignee change itself.
+        self.url = self.build_webhook_url(include_assignee="false")
+        expected_topic_name = "BUG-15: New bug with hook"
+        expected_message = """@_**Othello, the Moor of Venice|12** updated [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15):
+
+* Changed assignee to @_**Othello, the Moor of Venice|12**"""
+        self.check_webhook("issue_updated__reassigned", expected_topic_name, expected_message)
+
+    def test_created_with_additional_fields(self) -> None:
+        # The components in this fixture include one carrying no name,
+        # which is skipped rather than raising a validation error.
+        self.url = self.build_webhook_url(
+            include_issue_type="true",
+            include_status="true",
+            include_components="true",
+            include_versions="true",
+            include_labels="true",
+        )
+        expected_topic_name = "BUG-15: New bug with hook"
+        expected_message = """@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) with major priority.
+* Type: Bug
+* Status: Open
+* Components: Backend, API
+* Versions: R4
+* Labels: regression, customer-reported"""
+        self.check_webhook(
+            "issue_created_with_additional_fields", expected_topic_name, expected_message
+        )
+
+    def test_created_with_additional_fields_absent_from_payload(self) -> None:
+        # The stock issue_created payload has empty components, versions
+        # and labels, so those bullets should be omitted entirely rather
+        # than rendered as empty.
+        self.url = self.build_webhook_url(
+            include_issue_type="true",
+            include_status="true",
+            include_components="true",
+            include_versions="true",
+            include_labels="true",
+        )
+        expected_topic_name = "BUG-15: New bug with hook"
+        expected_message = """@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) with major priority.
+* Type: Bug
+* Status: Open"""
+        self.check_webhook("issue_created", expected_topic_name, expected_message)
+
+    def test_created_with_list_fields_missing_from_payload(self) -> None:
+        # Not every Jira deployment sends these keys at all, as opposed to
+        # sending them empty; the bullets should be omitted either way.
+        self.url = self.build_webhook_url(
+            include_components="true",
+            include_versions="true",
+            include_labels="true",
+        )
+        expected_topic_name = "BUG-15: New bug with hook"
+        expected_message = "@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15) with major priority."
+        self.check_webhook(
+            "issue_created_without_list_fields", expected_topic_name, expected_message
+        )
+
+    def test_created_with_only_requested_additional_fields(self) -> None:
+        self.url = self.build_webhook_url(
+            include_priority="false",
+            include_components="true",
+            include_versions="true",
+        )
+        expected_topic_name = "BUG-15: New bug with hook"
+        expected_message = """@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15).
+* Components: Backend, API
+* Versions: R4"""
+        self.check_webhook(
+            "issue_created_with_additional_fields", expected_topic_name, expected_message
+        )
+
     def test_deleted(self) -> None:
         expected_topic_name = "BUG-15: New bug with hook"
         expected_message = "@_**Othello, the Moor of Venice|12** deleted [BUG-15: New bug with hook](http://lfranchi.com:8080/browse/BUG-15)."
