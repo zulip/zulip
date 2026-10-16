@@ -37,6 +37,7 @@ from zerver.lib.webhooks.git import (
     get_release_event_message,
     get_short_sha,
     is_branch_name_notifiable,
+    is_pull_request_comment_event,
 )
 from zerver.models import UserProfile
 
@@ -1014,15 +1015,6 @@ def is_commit_push_event(payload: WildValue) -> bool:
 
 def is_merge_queue_push_event(payload: WildValue) -> bool:
     return payload["ref"].tame(check_string).startswith("refs/heads/gh-readonly-queue/")
-
-
-def is_pull_request_comment_event(payload: WildValue) -> bool:
-    # When a comment is made on a PR, the event still has the header
-    # "issue_comment", but the payload has a "pull_request" key.
-    # This is just a workaround to get the correct topic.
-    if "pull_request" in payload["issue"]:
-        return True
-    return False
 
 
 def get_topic_based_on_type(payload: WildValue, event: str) -> str:
