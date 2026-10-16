@@ -3516,7 +3516,7 @@ class NormalActionsTest(BaseAction):
                 self.user_profile.realm,
                 acting_user=None,
                 name="Python playground",
-                pygments_language="Python",
+                pygments_language="python",
                 url_template="https://python.example.com{code}",
             )
         check_realm_playgrounds("events[0]", events[0])
