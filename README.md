@@ -48,7 +48,7 @@ Come find us on the [development community chat](https://zulip.com/development-c
   trying it out for the first time.
 
 - **Checking Zulip out**. The best way to see Zulip in action is to [drop
-  by](https://chat.zulip.org/?show_try_zulip_modal) the Zulip development
+  by](https://zulip.com/try-zulip/) the Zulip development
   community (no account required). We also recommend reading about Zulip's
   [unique approach](https://zulip.com/why-zulip/) to organizing conversations.
 
