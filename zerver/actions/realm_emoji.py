@@ -20,7 +20,12 @@ from zerver.tornado.django_api import send_event_on_commit
 
 @transaction.atomic(durable=True)
 def check_add_realm_emoji(
-    realm: Realm, name: str, author: UserProfile, image_file: IO[bytes], content_type: str
+    realm: Realm,
+    name: str,
+    author: UserProfile,
+    image_file: IO[bytes],
+    content_type: str,
+    resize_method: str = "crop",
 ) -> RealmEmoji:
     content_type = bare_content_type(content_type)
     try:
@@ -41,7 +46,9 @@ def check_add_realm_emoji(
         raise BadImageError(_("Invalid image format"))
 
     emoji_file_name = get_emoji_file_name(content_type, realm_emoji.id)
-    is_animated = upload_emoji_image(image_file, emoji_file_name, author, content_type)
+    is_animated = upload_emoji_image(
+        image_file, emoji_file_name, author, content_type, resize_method=resize_method
+    )
 
     realm_emoji.file_name = emoji_file_name
     realm_emoji.is_animated = is_animated
