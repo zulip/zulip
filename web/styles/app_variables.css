@@ -1599,6 +1599,14 @@
         hsl(0deg 0% 15%),
         hsl(0deg 0% 100% / 80%)
     );
+    --color-text-enter-sends-choices: light-dark(
+        hsl(0deg 0% 15%),
+        hsl(236deg 33% 90%)
+    );
+    --color-text-enter-sends-minor: light-dark(
+        hsl(0deg 0% 15%),
+        hsl(0deg 0% 80%)
+    );
     --color-text-full-name: light-dark(hsl(0deg 0% 15%), hsl(0deg 0% 100%));
     --color-text-item: light-dark(hsl(0deg 0% 40%), hsl(0deg 0% 50%));
     --color-text-personal-menu-no-status: light-dark(
@@ -1805,6 +1813,14 @@
     --color-background-tbody-th-odd: light-dark(
         transparent,
         hsl(0deg 0% 0% / 20%)
+    );
+    --color-background-tbody-td-even: light-dark(
+        transparent,
+        color-mix(in srgb, hsl(0deg 0% 0%) 20%, var(--color-background-modal))
+    );
+    --color-background-select-drafts-button-focus: light-dark(
+        hsl(0deg 0% 93%),
+        hsl(228deg 11% 17%)
     );
     --color-background-history-limited-box: light-dark(
         transparent,
