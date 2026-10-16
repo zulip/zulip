@@ -85,7 +85,7 @@ Form is validated both client-side using jquery-validation (see signup.js) and s
                 <div class="input-box">
                     <input type='hidden' name='key' value='{{ key }}' />
                     <input type='hidden' name='timezone' id='timezone'/>
-                    <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
+                    <label for="id_email" class="inline-block label-title">{{ _('Email address') }}</label>
                     <div id="id_email">{{ email }}</div>
                     {% if not creating_new_realm %}
                     {% include 'zerver/create_user/new_user_email_address_visibility.html' %}
