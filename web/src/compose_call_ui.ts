@@ -257,6 +257,58 @@ export function generate_and_insert_audio_or_video_call_link(
                 });
                 break;
             }
+            case available_providers.galene?.id: {
+                const meeting_label = get_recipient_label_for_call(edit_message_id);
+
+                const data: {group_name: string; subgroup_name: string; is_dm: boolean} =
+                    meeting_label?.user_ids
+                        ? {
+                              // For a DM, use a sorted comma-joined user-id list
+                              // (including our own id) as the Galène room name.
+                              group_name: "dm",
+                              subgroup_name: people.concat_direct_message_group(
+                                  meeting_label.user_ids,
+                                  current_user.user_id,
+                              ),
+                              is_dm: true,
+                          }
+                        : {
+                              group_name: meeting_label?.stream?.name ?? "general_calls",
+                              subgroup_name: meeting_label?.topic_display_name ?? "",
+                              is_dm: false,
+                          };
+
+                const handle_success = (response: unknown): void => {
+                    const callback = (): void => {
+                        const data = call_response_schema.parse(response);
+                        insert_video_call_url(data.url, $target_textarea);
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                const handle_error = (
+                    _xhr: JQuery.jqXHR<unknown>,
+                    status: JQuery.Ajax.ErrorTextStatus,
+                ): void => {
+                    const callback = (): void => {
+                        if (status !== "abort") {
+                            ui_report.generic_embed_error(
+                                $t_html({defaultMessage: "Failed to create video call."}),
+                                2000,
+                            );
+                        }
+                    };
+                    compose_call_session.maybe_run_xhr_callback(xhr, callback);
+                };
+
+                xhr = channel.post({
+                    url: "/json/calls/galene/create",
+                    data,
+                    success: handle_success,
+                    error: handle_error,
+                });
+                break;
+            }
             case available_providers.nextcloud_talk?.id: {
                 const room_name =
                     `${get_recipient_label_for_call(edit_message_id)?.label_text ?? ""} conversation`.trimStart();
