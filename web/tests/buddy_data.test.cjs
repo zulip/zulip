@@ -486,6 +486,11 @@ test("get_conversation_participants", () => {
         buddy_data.get_conversation_participants_callback()(),
         new Set([selma.user_id]),
     );
+
+    // Muted users are hidden from the buddy list, so they shouldn't
+    // count as participants either.
+    muted_users.add_muted_user(selma.user_id);
+    assert.deepEqual(buddy_data.get_conversation_participants_callback()(), new Set());
 });
 
 test("level", ({override}) => {
