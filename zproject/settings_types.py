@@ -8,6 +8,14 @@ class JwtAuthKey(TypedDict):
     algorithms: list[str]
 
 
+class _JwksAuthKeyMandatory(TypedDict):
+    jwks_url: str
+
+
+class JwksAuthKey(_JwksAuthKeyMandatory, total=False):
+    aud: str
+
+
 class SAMLIdPConfigDict(TypedDict, total=False):
     entity_id: str
     url: str
