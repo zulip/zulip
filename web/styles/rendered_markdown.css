@@ -997,6 +997,32 @@
     }
 }
 
+/* Render native Unicode emoji as a text glyph: undo the sprite-sheet
+   technique (background image + hidden text) so the glyph shows and
+   sizes to its font. These selectors out-specify the sprite rules
+   without !important, in messages, reactions, and status emoji.
+   Per-context margins are intentionally left untouched. */
+span.emoji.emoji-native,
+div.emoji.emoji-native {
+    /* Reveal the glyph instead of the hidden sprite text. */
+    background: none;
+    text-indent: 0;
+    overflow: visible;
+    white-space: normal;
+    /* Size to the glyph, not the fixed sprite box. */
+    width: auto;
+    height: auto;
+    font-family: var(--font-family-native-emoji);
+}
+
+/* The message .emoji box is oversized with a compensating negative
+   margin tuned for a background image; a native glyph sizes to its font,
+   so drop that margin here. Scoped to .rendered_markdown so reaction and
+   status-emoji margins are preserved. */
+.rendered_markdown .emoji.emoji-native {
+    margin: 0;
+}
+
 .group_mention,
 .direct_mention {
     & .rendered_markdown pre {
