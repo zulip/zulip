@@ -40,16 +40,18 @@ from zerver.lib.remote_server import (
     send_server_data_to_push_bouncer,
     send_to_push_bouncer,
 )
+from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import BouncerTestCase
 from zerver.lib.test_helpers import activate_push_notification_service
 from zerver.lib.types import AnalyticsDataUploadLevel
 from zerver.lib.user_counts import realm_user_count_by_role
-from zerver.models import Realm, RealmAuditLog
+from zerver.models import Message, Realm, RealmAuditLog
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zilencer.lib.remote_counts import MissingDataError
 
 if settings.ZILENCER_ENABLED:
+    from zilencer.lib.communities_directory import MODERATION_CHANNEL_NAME
     from zilencer.models import (
         RemoteInstallationCount,
         RemoteRealm,
@@ -1534,4 +1536,139 @@ class AdvertiseRealmDataTest(BouncerTestCase):
         )
         self.assert_json_success(result)
 
-        # TODO: Extend it when implementing bouncer side of this feature.
+    @activate_push_notification_service()
+    @responses.activate
+    @override_settings(ZULIP_SERVICE_ADVERTISE_REALMS=True)
+    def test_directory_fields_synced_to_remote_realm(self) -> None:
+        self.add_mock_response()
+        realm = get_realm("zulip")
+
+        # Nothing is synced while the realm is not asking to be advertised.
+        self.assertFalse(realm.want_advertise_in_communities_directory)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        remote_realm = RemoteRealm.objects.get(uuid=realm.uuid)
+        self.assertFalse(remote_realm.asks_to_advertise_in_communities_directory)
+        self.assertEqual(remote_realm.description, "")
+        self.assertEqual(remote_realm.icon_url, "")
+
+        # Now the realm is asking to be advertised.
+        do_set_realm_property(
+            realm, "want_advertise_in_communities_directory", True, acting_user=None
+        )
+        do_set_realm_property(realm, "description", "A place to talk about Zulip", acting_user=None)
+        do_set_realm_property(realm, "invite_required", False, acting_user=None)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        remote_realm.refresh_from_db()
+        self.assertTrue(remote_realm.asks_to_advertise_in_communities_directory)
+        self.assertEqual(remote_realm.description, "A place to talk about Zulip")
+        # The bouncer fetches this URL, so it always has to be absolute.
+        self.assertTrue(remote_realm.icon_url.startswith(("http://", "https://")))
+        self.assertFalse(remote_realm.invite_required)
+        self.assertFalse(remote_realm.emails_restricted_to_domains)
+        self.assertTrue(remote_realm.has_web_public_streams)
+        self.assertFalse(remote_realm.is_demo_organization)
+
+        # Later edits are synced too.
+        do_set_realm_property(realm, "description", "An edited description", acting_user=None)
+        do_set_realm_property(realm, "invite_required", True, acting_user=None)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        remote_realm.refresh_from_db()
+        self.assertEqual(remote_realm.description, "An edited description")
+        self.assertTrue(remote_realm.invite_required)
+        self.assertEqual(
+            [
+                audit_log.extra_data
+                for audit_log in RemoteRealmAuditLog.objects.filter(
+                    remote_realm=remote_realm,
+                    event_type=AuditLogEventType.REMOTE_REALM_VALUE_UPDATED,
+                ).order_by("id")
+                if audit_log.extra_data["attr_name"] in ("description", "invite_required")
+            ],
+            [
+                {
+                    "attr_name": "description",
+                    "old_value": "",
+                    "new_value": "A place to talk about Zulip",
+                },
+                {"attr_name": "invite_required", "old_value": True, "new_value": False},
+                {
+                    "attr_name": "description",
+                    "old_value": "A place to talk about Zulip",
+                    "new_value": "An edited description",
+                },
+                {"attr_name": "invite_required", "old_value": False, "new_value": True},
+            ],
+        )
+
+        # Opting out stops syncing. The values bouncer last saw are kept.
+        do_set_realm_property(
+            realm, "want_advertise_in_communities_directory", False, acting_user=None
+        )
+        do_set_realm_property(realm, "description", "Final edit", acting_user=None)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        remote_realm.refresh_from_db()
+        self.assertFalse(remote_realm.asks_to_advertise_in_communities_directory)
+        self.assertEqual(remote_realm.description, "An edited description")
+
+    @activate_push_notification_service()
+    @responses.activate
+    @override_settings(ZULIP_SERVICE_ADVERTISE_REALMS=True)
+    def test_posts_to_the_channel_when_an_advertised_realm_changes(self) -> None:
+        self.add_mock_response()
+        create_stream_if_needed(get_realm(settings.SYSTEM_BOT_REALM), MODERATION_CHANNEL_NAME)
+        realm = get_realm("zulip")
+        do_set_realm_property(
+            realm, "want_advertise_in_communities_directory", True, acting_user=None
+        )
+        do_set_realm_property(realm, "description", "A place to talk", acting_user=None)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        remote_realm = RemoteRealm.objects.get(uuid=realm.uuid)
+        # Announced by an earlier probe, which reached it and copied its icon.
+        remote_realm.last_reachable_datetime = now()
+        remote_realm.last_mirrored_icon_url = remote_realm.icon_url
+        remote_realm.mirrored_icon_version = 1
+        remote_realm.first_advertised_datetime = now()
+        remote_realm.save(
+            update_fields=[
+                "last_reachable_datetime",
+                "last_mirrored_icon_url",
+                "mirrored_icon_version",
+                "first_advertised_datetime",
+            ]
+        )
+        message_count = Message.objects.count()
+
+        do_set_realm_property(realm, "description", "An edited description", acting_user=None)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        self.assertEqual(Message.objects.count(), message_count + 1)
+        message = Message.objects.latest("id")
+        self.assertEqual(message.topic_name(), "listing changes")
+        self.assertEqual(
+            message.content,
+            f"[{realm.name}](https://{realm.host}) changed what the directory shows.\n\n"
+            "**description**: ~~A place to talk~~ An edited description",
+        )
+
+    @activate_push_notification_service()
+    @responses.activate
+    @override_settings(ZULIP_SERVICE_ADVERTISE_REALMS=True)
+    def test_no_post_for_a_realm_that_was_never_advertised(self) -> None:
+        self.add_mock_response()
+        create_stream_if_needed(get_realm(settings.SYSTEM_BOT_REALM), MODERATION_CHANNEL_NAME)
+        realm = get_realm("zulip")
+        do_set_realm_property(
+            realm, "want_advertise_in_communities_directory", True, acting_user=None
+        )
+        do_set_realm_property(realm, "description", "A place to talk", acting_user=None)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+        message_count = Message.objects.count()
+
+        do_set_realm_property(realm, "description", "An edited description", acting_user=None)
+        send_server_data_to_push_bouncer(consider_usage_statistics=False)
+
+        self.assertEqual(Message.objects.count(), message_count)
