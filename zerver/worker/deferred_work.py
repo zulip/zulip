@@ -32,6 +32,11 @@ class DeferredWorker(QueueProcessingWorker):
     thread from the Django worker that initiated it (E.g. so we that
     can provide a low-latency HTTP response or avoid risk of request
     timeouts for an operation that could in rare cases take minutes).
+
+    A server can route some of these event types to a dedicated queue via
+    a dedicated_*_queue setting in zulip.conf. Their handlers here are
+    still needed, as the default path, and to process any events queued
+    here before the server opted in.
     """
 
     # Because these operations have no SLO, and can take minutes,
@@ -83,13 +88,6 @@ class DeferredWorker(QueueProcessingWorker):
             logger.info("Processing reupload_realm_emoji event for realm %s", realm.id)
             handle_reupload_emojis_event(realm, logger)
         elif event["type"] == "soft_reactivate":
-            # Soft reactivations are normally enqueued here. A server can
-            # opt into a dedicated soft_reactivation queue via the
-            # dedicated_soft_reactivation_queue setting; even then, do not
-            # remove this handler. It remains the default path, and it
-            # drains any soft_reactivate events already in this queue when
-            # that option is enabled -- stale deferred_work events can
-            # linger across upgrades for a long time.
             logger.info(
                 "Starting soft reactivation for user_profile_id %s",
                 event["user_profile_id"],
