@@ -1992,14 +1992,19 @@ textarea.new_message_textarea {
 }
 
 .saved_snippets-dropdown-list-container {
-    width: 17.8571em; /* 250px at 14px/em */
+    .simplebar-content {
+        width: max-content;
+        min-width: 100%;
+        max-width: 17.8571em;
+    }
+
     .sticky-bottom-option-button {
         width: calc(100% - 6px);
         margin: 3px;
     }
 
     .dropdown-list .dropdown-list-item-common-styles {
-        padding: 0.3571em 0.7143em; /* 5px 10px at 14px/em */
+        padding: 5px 6px;
         /* Make content appear more distinct from
            the snippet name. */
         border-bottom: solid 1px var(--color-border-popover-menu-separator);
@@ -2016,6 +2021,8 @@ textarea.new_message_textarea {
             font-size: 0.9283em; /* 13px at 14px/em */
             opacity: 0.8;
             padding: 0;
+            padding-left: 0.4em;
+            padding-right: 1em;
             text-overflow: ellipsis;
             overflow: hidden;
         }
@@ -2023,6 +2030,8 @@ textarea.new_message_textarea {
         .dropdown-list-text-selected {
             font-weight: 500;
             max-width: 210px;
+            padding-right: 1em;
+            padding-left: 0.4em;
             display: inline-block;
             text-overflow: ellipsis;
             overflow: hidden;
