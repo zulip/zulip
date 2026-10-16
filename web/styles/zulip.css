@@ -1557,7 +1557,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
         position: absolute;
         right: 8px;
         z-index: 1;
-        color: hsl(0deg 0% 67%);
+        color: var(--color-text-overlay-header-control);
     }
 
     .overlay-content {

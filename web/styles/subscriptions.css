@@ -371,7 +371,7 @@
     position: relative;
     transform: translate(-50px, 0);
     opacity: 0;
-    color: hsl(0deg 0% 67%);
+    color: var(--color-text-overlay-header-control);
 
     float: left;
     padding: 2px 10px;
@@ -668,7 +668,7 @@
 
         .exit {
             font-weight: 600;
-            color: hsl(0deg 0% 67%);
+            color: var(--color-text-overlay-header-control);
             cursor: pointer;
         }
     }
