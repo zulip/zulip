@@ -24,6 +24,10 @@ export type ElectronBridge = {
         ((
             eventName: "send_notification_reply_message",
             listener: (message_id: number, reply: string) => void,
+        ) => void) &
+        ((
+            eventName: "show-download-success",
+            listener: (title: string, description: string, download_id: string) => void,
         ) => void);
     new_notification?: (
         title: string,
