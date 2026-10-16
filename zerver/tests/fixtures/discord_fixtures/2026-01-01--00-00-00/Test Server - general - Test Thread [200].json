@@ -1,0 +1,70 @@
+{
+  "guild": {
+    "id": "guild001",
+    "name": "Test Server",
+    "iconUrl": "_media/server-icon.png"
+  },
+  "channel": {
+    "id": "200",
+    "type": "GuildPublicThread",
+    "categoryId": "100",
+    "category": "general",
+    "name": "Test Thread",
+    "topic": null
+  },
+  "dateRange": {
+    "after": null,
+    "before": null
+  },
+  "messages": [
+    {
+      "id": "msg201",
+      "type": "Default",
+      "timestamp": "2026-01-01T12:00:00+00:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "This is a thread message",
+      "author": {
+        "id": "user001",
+        "name": "alice",
+        "discriminator": "0",
+        "nickname": "Alice Smith",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "_media/avatar-user1.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": []
+    },
+    {
+      "id": "msg202",
+      "type": "Default",
+      "timestamp": "2026-01-01T12:05:00+00:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "Thread reply",
+      "author": {
+        "id": "user002",
+        "name": "bob",
+        "discriminator": "0",
+        "nickname": "Bob Jones",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "_media/avatar-user2.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": []
+    }
+  ],
+  "messageCount": 2
+}
