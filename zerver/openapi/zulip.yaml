@@ -23135,6 +23135,8 @@ paths:
           [zulip-terminal](https://github.com/zulip/zulip-terminal/)) needs to
           know in order to display a login prompt for the server (e.g. what
           authentication methods are available).
+        - Whether the organization has been deactivated or has moved to a new
+          URL or server, in which case this endpoint returns an error.
       responses:
         "200":
           description: Success.
@@ -23413,6 +23415,57 @@ paths:
                             },
                           ],
                       }
+        "404":
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedError"
+                      - example:
+                          {
+                            "code": "REALM_DEACTIVATED",
+                            "msg": "This organization has been deactivated",
+                            "result": "error",
+                          }
+                        description: |
+                          An example JSON error response for when the organization
+                          has been deactivated.
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-18f8fc).
+                          Previously, this endpoint returned the organization's
+                          settings even if it was deactivated.
+                  - allOf:
+                      - $ref: "#/components/schemas/CodedErrorBase"
+                      - additionalProperties: false
+                        properties:
+                          result: {}
+                          msg: {}
+                          code: {}
+                          moved_to_url:
+                            type: string
+                            description: |
+                              The URL of the organization's new location.
+
+                              Clients can use this to offer to update the server
+                              URL they have saved for this organization.
+                        required:
+                          - moved_to_url
+                        example:
+                          {
+                            "code": "REALM_MOVED",
+                            "msg": "This organization has moved to https://chat.example.com",
+                            "result": "error",
+                            "moved_to_url": "https://chat.example.com",
+                          }
+                        description: |
+                          An example JSON error response for when the organization
+                          has been deactivated after moving to a new URL or server.
+
+                          **Changes**: New in Zulip 13.0 (feature level ZF-18f8fc).
+                          Previously, this endpoint returned the organization's
+                          settings even if it had moved.
   /settings:
     patch:
       operationId: update-settings

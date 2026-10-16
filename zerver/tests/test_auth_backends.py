@@ -51,6 +51,7 @@ from zerver.actions.create_realm import do_create_realm
 from zerver.actions.create_user import do_create_user, do_reactivate_user
 from zerver.actions.invites import do_invite_users, do_revoke_user_invite
 from zerver.actions.realm_settings import (
+    do_add_deactivated_redirect,
     do_deactivate_realm,
     do_reactivate_realm,
     do_set_realm_authentication_methods,
@@ -7039,6 +7040,36 @@ class FetchAuthBackends(ZulipTestCase):
             # With ROOT_DOMAIN_LANDING_PAGE, homepage fails
             result = self.client_get("/api/v1/server_settings", subdomain="")
             self.assert_json_error_contains(result, "Subdomain required", 400)
+
+    def test_get_server_settings_deactivated_realm(self) -> None:
+        realm = get_realm("zulip")
+        do_deactivate_realm(
+            realm,
+            acting_user=None,
+            deactivation_reason="owner_request",
+            email_owners=False,
+        )
+        result = self.client_get("/api/v1/server_settings", subdomain="zulip")
+        self.assert_json_error(result, "This organization has been deactivated", status_code=404)
+        self.assertEqual(orjson.loads(result.content)["code"], "REALM_DEACTIVATED")
+
+        moved_to_url = "https://chat.example.com"
+        do_add_deactivated_redirect(realm, moved_to_url)
+        result = self.client_get("/api/v1/server_settings", subdomain="zulip")
+        self.assert_json_error(
+            result, f"This organization has moved to {moved_to_url}", status_code=404
+        )
+        response_dict = orjson.loads(result.content)
+        self.assertEqual(response_dict["code"], "REALM_MOVED")
+        self.assertEqual(response_dict["moved_to_url"], moved_to_url)
+
+        # Reactivating an organization doesn't clear its redirect URL,
+        # but it should no longer send clients elsewhere.
+        do_reactivate_realm(realm)
+        realm.refresh_from_db()
+        self.assertEqual(realm.deactivated_redirect, moved_to_url)
+        result = self.client_get("/api/v1/server_settings", subdomain="zulip")
+        self.assert_json_success(result)
 
 
 class TestTwoFactor(ZulipTestCase):
