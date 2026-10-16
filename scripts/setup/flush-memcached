@@ -15,7 +15,11 @@ from django.conf import settings
 
 cache = settings.CACHES["default"]
 match cache["BACKEND"]:
-    case "django.core.cache.backends.locmem.LocMemCache":
+    case (
+        "django.core.cache.backends.locmem.LocMemCache"
+        | "zerver.lib.test_cache_backends.CASCapableLocMemCache"
+    ):
+        # In-process; nothing to flush across runs.
         pass
     case "zerver.lib.singleton_bmemcached.SingletonBMemcached":
         assert isinstance(cache["OPTIONS"], dict)
