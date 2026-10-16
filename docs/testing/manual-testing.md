@@ -104,9 +104,9 @@ the hotkeys too:
   - click on the reactions button to open menu
   - use ':' to open the reactions menu
   - react to a message
-- Chevron
-  - click on chevron to open menu
-  - use 'i' to open chevron menu
+- Message actions menu
+  - click on the ellipsis to open the menu
+  - use 'i' to open the message actions menu
 - Message edit
   - click on message edit/view source button
   - use 'i' + Return to edit/view source message
@@ -300,7 +300,7 @@ Here are the things to test:
   - Narrow to direct messages with
   - Narrow to direct messages sent by
 
-- Right-pane-pane menus (click on chevron when hovering)
+- Right-pane-pane menus (click on the ellipsis when hovering)
 
   - use "i" hotkey to open the menu
   - Edit a message you sent (using the down-arrow key to navigate the popup)
