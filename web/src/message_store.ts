@@ -11,7 +11,6 @@ import * as muted_users from "./muted_users.ts";
 import * as people from "./people.ts";
 import * as stream_data from "./stream_data.ts";
 import {topic_link_schema} from "./types.ts";
-import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as util from "./util.ts";
 
 const stored_messages = new Map<number, ProcessedMessage>();
@@ -204,10 +203,6 @@ export type Message = (
     // Used in `message_avatar.hbs` to render sender avatar in
     // message list.
     small_avatar_url?: string | null;
-
-    // Used in `message_body.hbs` to show sender status emoji alongside
-    // their name in message list.
-    status_emoji_info?: UserStatusEmojiInfo | undefined;
 
     // Used for edited messages to show their last edit time.
     local_edit_timestamp?: number;
@@ -414,18 +409,6 @@ export function update_stream_name(stream_id: number, new_name: string): void {
         const message = message_data.message;
         if (message.type === "stream" && message.stream_id === stream_id) {
             message.display_recipient = new_name;
-        }
-    }
-}
-
-export function update_status_emoji_info(
-    user_id: number,
-    new_info: UserStatusEmojiInfo | undefined,
-): void {
-    for (const message_data of stored_messages.values()) {
-        const message = message_data.message;
-        if (message.sender_id && message.sender_id === user_id) {
-            message.status_emoji_info = new_info;
         }
     }
 }

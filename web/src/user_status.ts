@@ -9,7 +9,7 @@ import {user_status_schema} from "./user_status_types.ts";
 
 export type UserStatus = z.infer<typeof user_status_schema>;
 export type UserStatusEmojiInfo = EmojiRenderingDetails & {
-    emoji_alt_code?: boolean;
+    emoji_alt_code: boolean;
 };
 
 const user_status_event_schema = z.intersection(
@@ -24,7 +24,7 @@ const user_status_event_schema = z.intersection(
 export type UserStatusEvent = z.infer<typeof user_status_event_schema>;
 
 const user_info = new Map<number, string>();
-const user_status_emoji_info = new Map<number, UserStatusEmojiInfo>();
+const user_status_emoji_info = new Map<number, EmojiRenderingDetails>();
 
 export function server_update_status(opts: {
     status_text: string;
@@ -81,7 +81,14 @@ export function set_status_text(opts: {user_id: number; status_text: string}): v
 }
 
 export function get_status_emoji(user_id: number): UserStatusEmojiInfo | undefined {
-    return user_status_emoji_info.get(user_id);
+    const emoji_info = user_status_emoji_info.get(user_id);
+    if (emoji_info === undefined) {
+        return undefined;
+    }
+    return {
+        ...emoji_info,
+        emoji_alt_code: user_settings.emojiset === "text",
+    };
 }
 
 export function set_status_emoji(event: UserStatusEvent): void {
@@ -94,14 +101,14 @@ export function set_status_emoji(event: UserStatusEvent): void {
         return;
     }
 
-    user_status_emoji_info.set(opts.user_id, {
-        emoji_alt_code: user_settings.emojiset === "text",
-        ...emoji.get_emoji_details_for_rendering({
+    user_status_emoji_info.set(
+        opts.user_id,
+        emoji.get_emoji_details_for_rendering({
             emoji_name: opts.emoji_name,
             emoji_code: opts.emoji_code,
             reaction_type: opts.reaction_type,
         }),
-    });
+    );
 }
 
 export function initialize(params: StateData["user_status"]): void {
@@ -117,9 +124,7 @@ export function initialize(params: StateData["user_status"]): void {
         }
 
         if (dct.emoji_name) {
-            user_status_emoji_info.set(user_id, {
-                ...emoji.get_emoji_details_for_rendering(dct),
-            });
+            user_status_emoji_info.set(user_id, emoji.get_emoji_details_for_rendering(dct));
         }
     }
 }
