@@ -6,6 +6,12 @@ The bot is read-only on GitHub.  For each item it posts one message
 Maintainers' items get a one-line card.  Other items get a card
 written by Claude from the input that assemble.py builds.
 
+In GitHub Actions (see .github/workflows/triage-bot.yml):
+
+  triage_bot.py --scan     post cards for recently updated items that
+                           don't have one yet
+  triage_bot.py --item N
+
 Locally:
 
   triage_bot.py --item N --dry-run   print the card and its topic
@@ -39,6 +45,13 @@ MODEL = "claude-opus-5-5"
 PROMPT_FILE = Path(__file__).resolve().parent / "prompt.md"
 # Zulip allows up to 5000, but cards are long, so pages stay smaller.
 MESSAGES_PER_FETCH = 1000
+WORKFLOW_PATH = ".github/workflows/triage-bot.yml"
+# Twice the time between scheduled runs, so the next run covers the
+# items of a run that failed, and PRs whose CI was still running.
+SCAN_WINDOW = timedelta(days=2)
+# The most results GitHub's search returns.
+MAX_SEARCH_RESULTS = 1000
+POST_ERRORS = (requests.RequestException, GithubException, anthropic.APIError, RuntimeError)
 
 
 def notice(message: str, level: str = "notice") -> None:
@@ -178,10 +191,11 @@ def call_claude(system_prompt: str, user_message: str) -> str:
     return text
 
 
-def process(zulip: Zulip | None, number: int, dry_run: bool) -> None:
+def process(zulip: Zulip | None, number: int, dry_run: bool, wait_for_ci: bool = False) -> None:
     if zulip is None:
         log("No Zulip credentials; skipping the check for an existing card.")
     else:
+        # Checked first: most items a scan finds already have a card.
         topic = zulip.posted.card_topics.get(number)
         if topic is not None:
             log(f"Skipping #{number}: it already has a card in {topic!r}.")
@@ -193,6 +207,14 @@ def process(zulip: Zulip | None, number: int, dry_run: bool) -> None:
     if item.draft:
         log(f"Skipping #{number}: draft PR.")
         return
+    # PR cards wait for the PR's Zulip CI run, so the card can say
+    # whether CI passed.
+    if wait_for_ci and item.head_sha is not None:
+        runs = gather.fetch_ci_workflow_runs(item.head_sha)
+        if not runs or any(run.status != "completed" for run in runs):
+            state = "none yet" if not runs else "queued or running"
+            log(f"Skipping #{number} for now: its Zulip CI run hasn't finished ({state}).")
+            return
 
     if item.author_is_maintainer:
         log(f"#{number} is by a maintainer; using the maintainer card.")
@@ -221,25 +243,67 @@ def post(zulip: Zulip | None, message_heading: str, body: str, dry_run: bool) ->
         zulip.posted.add(content, topic)
 
 
+def launch_time() -> datetime:
+    """When the bot started: the date of the oldest commit on main that
+    touched the workflow file.  That file didn't exist before the bot."""
+    commits = gather.repository().get_commits(sha="main", path=WORKFLOW_PATH)
+    return commits.reversed[0].commit.committer.date
+
+
+def scan(zulip: Zulip, dry_run: bool) -> list[int]:
+    """Post cards for the open items updated in the last SCAN_WINDOW that
+    don't have one yet.  Returns the items whose card failed."""
+    since = datetime.now(timezone.utc) - SCAN_WINDOW
+    # Items opened before the bot started get no card, so that old open
+    # PRs don't each get one on their next update.
+    query = (
+        f"repo:{gather.REPO} is:open updated:>={since:%Y-%m-%dT%H:%M:%SZ}"
+        f" created:>={launch_time():%Y-%m-%dT%H:%M:%SZ}"
+    )
+    # Oldest first, so the cards are in the order the items were opened.
+    numbers = sorted(issue.number for issue in gather.search_issues(query, MAX_SEARCH_RESULTS))
+    log(f"Found {len(numbers)} items updated since {since:%Y-%m-%d %H:%M} UTC.")
+    failed = []
+    for number in numbers:
+        try:
+            process(zulip, number, dry_run, wait_for_ci=True)
+        except POST_ERRORS as e:
+            notice(f"No card posted for #{number}: {e}.", level="error")
+            failed.append(number)
+    return failed
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument("--item", type=int, required=True, help="process this issue or PR")
+    target = parser.add_mutually_exclusive_group(required=True)
+    target.add_argument("--item", type=int, help="process this issue or PR")
+    target.add_argument(
+        "--scan", action="store_true", help="process the recently updated issues and PRs"
+    )
     parser.add_argument(
         "--dry-run", action="store_true", help="print the card and its topic instead of posting"
     )
     args = parser.parse_args()
 
     zulip = Zulip.from_env()
-    if zulip is None and not args.dry_run:
+    if zulip is None and (args.scan or not args.dry_run):
         notice("Zulip bot credentials or channel aren't configured; not posting.")
         return
     try:
         if zulip is not None:
             zulip.load_posted()
-        process(zulip, args.item, args.dry_run)
-    except (requests.RequestException, GithubException, anthropic.APIError, RuntimeError) as e:
+        if args.scan:
+            assert zulip is not None
+            failed = scan(zulip, args.dry_run)
+            if failed:
+                numbers = ", ".join(f"#{number}" for number in failed)
+                notice(f"No card posted for {numbers}. Run the bot again to retry.", level="error")
+                sys.exit(1)
+        else:
+            process(zulip, args.item, args.dry_run)
+    except POST_ERRORS as e:
         notice(f"No card posted: {e}. Run the bot again to retry.", level="error")
         sys.exit(1)
 

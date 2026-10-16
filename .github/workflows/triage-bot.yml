@@ -1,0 +1,77 @@
+name: Triage bot
+
+# Posts a triage card for each new issue and PR to a private
+# chat.zulip.org channel.  The bot is read-only on GitHub, and never
+# checks out or runs PR code.  See tools/triage_bot/triage_bot.py.
+
+on:
+  # SCAN_WINDOW in triage_bot.py is twice the time between these runs.
+  # Update it if changing the schedule.
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+    inputs:
+      item:
+        description: Issue or PR number (optional)
+        required: false
+        type: string
+
+permissions:
+  actions: read
+  checks: read
+  contents: read
+  issues: read
+  pull-requests: read
+
+defaults:
+  run:
+    shell: bash
+
+# Runs wait for each other, so the check for an existing card and the
+# post can't race.
+concurrency:
+  group: triage-bot
+  cancel-in-progress: false
+
+jobs:
+  post:
+    name: Post cards
+    if: github.repository == 'zulip/zulip'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the triage bot
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # The bot input for a PR lists who changed its files, from two
+          # years of git log.  A blobless clone has the full history
+          # without old file contents, which is much smaller than a full
+          # clone.
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: |
+            scripts/lib
+            tools/triage_bot
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.x"
+
+      - name: Install uv
+        run: ./scripts/lib/install-uv
+
+      - name: Post cards
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          ITEM_NUMBER: ${{ inputs.item }}
+          ZULIP_TRIAGE_BOT_EMAIL: ${{ vars.ZULIP_TRIAGE_BOT_EMAIL }}
+          ZULIP_TRIAGE_BOT_API_KEY: ${{ secrets.ZULIP_TRIAGE_BOT_API_KEY }}
+          ZULIP_TRIAGE_CHANNEL: ${{ vars.ZULIP_TRIAGE_CHANNEL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -n "$ITEM_NUMBER" ]; then
+              ./tools/triage_bot/triage_bot.py --item "$ITEM_NUMBER"
+          else
+              ./tools/triage_bot/triage_bot.py --scan
+          fi
