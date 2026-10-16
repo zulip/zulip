@@ -16,6 +16,7 @@ import * as activity from "./activity.ts";
 import * as blueslip from "./blueslip.ts";
 import * as compose_fade from "./compose_fade.ts";
 import * as condense from "./condense.ts";
+import type {Filter} from "./filter.ts";
 import * as hash_util from "./hash_util.ts";
 import {$t} from "./i18n.ts";
 import * as internal_url from "./internal_url.ts";
@@ -112,6 +113,7 @@ export type MessageGroup = {
           topic_display_name: string;
           is_empty_string_topic: boolean;
           topic_is_resolved: boolean;
+          suppress_topic_tooltip: boolean;
           topic_links: TopicLink[] | undefined;
           topic_url: string | undefined;
           user_can_resolve_topic: boolean;
@@ -124,6 +126,7 @@ export type MessageGroup = {
           display_reply_to_for_tooltip: string;
           is_private: true;
           pm_with_url: string;
+          suppress_dm_tooltip: boolean;
           recipient_users: RecipientRowUser[];
           always_display_date: boolean;
           is_dm_with_self: boolean;
@@ -401,6 +404,7 @@ export function populate_group_from_message(
     message: Message,
     date_unchanged: boolean,
     year_changed: boolean,
+    current_filter?: Filter,
 ): MessageGroup {
     const is_stream = message.is_stream;
     const is_private = message.is_private;
@@ -448,6 +452,9 @@ export function populate_group_from_message(
             stream_id,
             is_subscribed: sub.subscribed,
             topic_is_resolved: resolved_topic.is_resolved(topic),
+            suppress_topic_tooltip:
+                current_filter !== undefined &&
+                narrow_state.narrowed_by_topic_reply(current_filter),
             visibility_policy: user_topics.get_topic_visibility_policy(stream_id, topic),
             // The following field is not specific to this group, but this is the
             // easiest way we've figured out for passing the data to the template rendering.
@@ -472,6 +479,8 @@ export function populate_group_from_message(
         pm_with_url: message.pm_with_url,
         recipient_users: get_users_for_recipient_row(message),
         is_dm_with_self: people.is_direct_message_conversation_with_self(user_ids),
+        suppress_dm_tooltip:
+            current_filter !== undefined && narrow_state.narrowed_by_pm_reply(current_filter),
         display_reply_to_for_tooltip: message_store.get_pm_full_names(user_ids),
         always_display_date,
     };
@@ -975,6 +984,7 @@ export class MessageListView {
                 message_for_next_group,
                 same_day(message_for_next_group, prev_message),
                 !same_year(message_for_next_group, prev_message),
+                this.list.data.filter,
             );
         };
 
@@ -1829,6 +1839,7 @@ export class MessageListView {
                 group.message_containers[0]!.msg,
                 group.date_unchanged,
                 group.message_containers[0]!.year_changed,
+                this.list.data.filter,
             ),
             // We don't want `populate_group_from_message` to generate a
             // new id. We also preserve the message containers, since this
