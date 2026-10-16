@@ -517,16 +517,18 @@ function get_group_suggestions(
     };
 }
 
-function make_people_getter(last: NarrowCanonicalTermSuggestion): () => User[] {
-    let persons: User[];
+function make_people_getter(
+    last: NarrowCanonicalTermSuggestion,
+): (status: "active" | "deactivated") => User[] {
+    let persons_by_status: {active: User[]; deactivated: User[]} | undefined;
 
-    /* The next function will be called between 0 and 4
+    /* The next function will be called between 0 and 8
        times for each keystroke in a search, but we will
        only do real work one time.
     */
-    return function (): User[] {
-        if (persons !== undefined) {
-            return persons;
+    return function (status: "active" | "deactivated"): User[] {
+        if (persons_by_status !== undefined) {
+            return persons_by_status[status];
         }
 
         let query: string;
@@ -543,9 +545,20 @@ function make_people_getter(last: NarrowCanonicalTermSuggestion): () => User[] {
             query = last.raw_operand;
         }
 
-        persons = people.get_people_for_search_bar(query);
+        const persons = people.get_people_for_search_bar(query);
         persons.sort(typeahead_helper.compare_users_for_dms);
-        return persons;
+
+        // Keep the existing ordering within each status, but separate
+        // deactivated users so they can be ranked below all active users.
+        persons_by_status = {active: [], deactivated: []};
+        for (const person of persons) {
+            if (people.is_person_active(person.user_id)) {
+                persons_by_status.active.push(person);
+            } else {
+                persons_by_status.deactivated.push(person);
+            }
+        }
+        return persons_by_status[status];
     };
 }
 
@@ -1295,12 +1308,13 @@ function build_filterer_list(
 
     function get_people(
         flavor: "dm" | "sender" | "dm-including" | "mentions",
+        status: "active" | "deactivated",
     ): (last: NarrowCanonicalTermSuggestion, base_terms: NarrowCanonicalTerm[]) => Suggestion[] {
         return function (
             last: NarrowCanonicalTermSuggestion,
             base_terms: NarrowCanonicalTerm[],
         ): Suggestion[] {
-            return get_person_suggestions(people_getter, last, base_terms, flavor);
+            return get_person_suggestions(() => people_getter(status), last, base_terms, flavor);
         };
     }
 
@@ -1317,10 +1331,14 @@ function build_filterer_list(
         get_is_filter_suggestions,
         get_sent_by_me_suggestions,
         get_channel_suggestions,
-        get_people("dm"),
-        get_people("sender"),
-        get_people("dm-including"),
-        get_people("mentions"),
+        get_people("dm", "active"),
+        get_people("sender", "active"),
+        get_people("dm-including", "active"),
+        get_people("mentions", "active"),
+        get_people("dm", "deactivated"),
+        get_people("sender", "deactivated"),
+        get_people("dm-including", "deactivated"),
+        get_people("mentions", "deactivated"),
         get_topic_suggestions,
         get_has_filter_suggestions,
         get_date_suggestions,
@@ -1332,7 +1350,8 @@ function build_filterer_list(
             get_operator_suggestions,
             get_is_filter_suggestions,
             get_channel_suggestions,
-            get_people("sender"),
+            get_people("sender", "active"),
+            get_people("sender", "deactivated"),
             get_topic_suggestions,
             get_has_filter_suggestions,
             get_date_suggestions,
