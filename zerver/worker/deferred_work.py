@@ -131,7 +131,7 @@ class DeferredWorker(QueueProcessingWorker):
                     upload=True,
                 )
             except Exception:
-                logging.exception(
+                logger.exception(
                     "Data export for %s failed after %s",
                     realm.string_id,
                     time.time() - start,
@@ -160,7 +160,7 @@ class DeferredWorker(QueueProcessingWorker):
             # For future frontend use, also notify administrator
             # clients that the export happened.
             notify_realm_export(realm)
-            logging.info(
+            logger.info(
                 "Completed data export for %s in %s",
                 realm.string_id,
                 time.time() - start,
