@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 
-from zerver.lib.types import UserGroupMembersDict
+from zerver.lib.types import PropagateMode, UserGroupMembersDict
 from zerver.models.realms import RealmExportSlug
 
 
@@ -1098,7 +1098,7 @@ class UpdateMessageCoreEvent(BaseEvent):
     rendering_only: bool
 
 
-class UpdateMessageEvent(UpdateMessageCoreEvent):
+class UpdateMessageOptionalFields(BaseEventModel):
     # TODO: fix types to avoid optional fields
     stream_id: int | None = None
     stream_name: str | None = None
@@ -1110,8 +1110,12 @@ class UpdateMessageEvent(UpdateMessageCoreEvent):
     topic_links: list[TopicLink] | None = None
     subject: str | None = None
     new_stream_id: int | None = None
-    propagate_mode: Literal["change_all", "change_later", "change_one"] | None = None
+    propagate_mode: PropagateMode | None = None
     orig_subject: str | None = None
+
+
+class UpdateMessageEvent(UpdateMessageCoreEvent, UpdateMessageOptionalFields):
+    pass
 
 
 class UpdateMessageFlagsAddEvent(BaseEvent):

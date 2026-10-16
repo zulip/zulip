@@ -27,6 +27,7 @@ from zerver.actions.uploads import AttachmentChangeResult, check_attachment_refe
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
 from zerver.lib import utils
 from zerver.lib.cache import cache_delete_many, to_dict_cache_key_id
+from zerver.lib.event_types import TopicLink
 from zerver.lib.exceptions import (
     JsonableError,
     MessageMoveError,
@@ -36,6 +37,7 @@ from zerver.lib.exceptions import (
     TopicsNotAllowedError,
     TopicWildcardMentionNotAllowedError,
 )
+from zerver.lib.internal_event_types import InternalUpdateMessageEvent
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
@@ -70,10 +72,7 @@ from zerver.lib.string_validation import check_stream_topic
 from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import (
-    ORIG_TOPIC,
     RESOLVED_TOPIC_PREFIX,
-    TOPIC_LINKS,
-    TOPIC_NAME,
     get_topic_display_name,
     maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
@@ -83,7 +82,12 @@ from zerver.lib.topic import (
     update_messages_for_topic_edit,
 )
 from zerver.lib.topic_link_util import get_stream_topic_link_syntax
-from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamMessageEditRequest
+from zerver.lib.types import (
+    DirectMessageEditRequest,
+    EditHistoryEvent,
+    PropagateMode,
+    StreamMessageEditRequest,
+)
 from zerver.lib.url_encoding import stream_message_url
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
@@ -132,7 +136,7 @@ def validate_message_edit_payload(
     message: Message,
     stream_id: int | None,
     topic_name: str | None,
-    propagate_mode: str | None,
+    propagate_mode: PropagateMode | None,
     content: str | None,
     prev_content_sha256: str | None,
 ) -> None:
@@ -484,16 +488,15 @@ def do_update_embedded_data(
     message.save(update_fields=update_fields)
 
     update_message_cache([message])
-    event: dict[str, Any] = {
-        "type": "update_message",
-        "user_id": None,
-        "edit_timestamp": datetime_to_timestamp(timezone_now()),
-        "message_id": message.id,
-        "message_ids": [message.id],
-        "content": message.content,
-        "rendered_content": message.rendered_content,
-        "rendering_only": True,
-    }
+    event = InternalUpdateMessageEvent(
+        user_id=None,
+        edit_timestamp=datetime_to_timestamp(timezone_now()),
+        message_id=message.id,
+        message_ids=[message.id],
+        content=message.content,
+        rendered_content=message.rendered_content,
+        rendering_only=True,
+    )
 
     users_to_notify = event_recipient_ids_for_action_on_messages(
         [message.id], message.is_channel_message
@@ -541,7 +544,7 @@ def update_message_content(
     rendering_result: MessageRenderingResult,
     prior_mention_user_ids: set[int],
     mention_data: MentionData,
-    event: dict[str, Any],
+    event: InternalUpdateMessageEvent,
     edit_history_event: EditHistoryEvent,
     stream_topic: StreamTopicTarget | None,
 ) -> None:
@@ -566,11 +569,11 @@ def update_message_content(
     edit_history_event["prev_rendered_content"] = target_message.rendered_content
     edit_history_event["prev_rendered_content_version"] = target_message.rendered_content_version
 
-    event["orig_content"] = target_message.content
-    event["orig_rendered_content"] = target_message.rendered_content
-    event["content"] = content
-    event["rendered_content"] = rendering_result.rendered_content
-    event["is_me_message"] = Message.is_status_message(content, rendering_result.rendered_content)
+    event.orig_content = target_message.content
+    event.orig_rendered_content = target_message.rendered_content
+    event.content = content
+    event.rendered_content = rendering_result.rendered_content
+    event.is_me_message = Message.is_status_message(content, rendering_result.rendered_content)
 
     target_message.content = content
     target_message.rendered_content = rendering_result.rendered_content
@@ -585,36 +588,36 @@ def update_message_content(
         possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
     )
 
-    event["online_push_user_ids"] = list(info.online_push_user_ids)
-    event["dm_mention_push_disabled_user_ids"] = list(info.dm_mention_push_disabled_user_ids)
-    event["dm_mention_email_disabled_user_ids"] = list(info.dm_mention_email_disabled_user_ids)
-    event["stream_push_user_ids"] = list(info.stream_push_user_ids)
-    event["stream_email_user_ids"] = list(info.stream_email_user_ids)
-    event["followed_topic_push_user_ids"] = list(info.followed_topic_push_user_ids)
-    event["followed_topic_email_user_ids"] = list(info.followed_topic_email_user_ids)
-    event["muted_sender_user_ids"] = list(info.muted_sender_user_ids)
-    event["prior_mention_user_ids"] = list(prior_mention_user_ids)
-    event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info.active_user_ids)
-    event["all_bot_user_ids"] = list(info.all_bot_user_ids)
-    event["push_device_registered_user_ids"] = list(info.push_device_registered_user_ids)
+    event.online_push_user_ids = list(info.online_push_user_ids)
+    event.dm_mention_push_disabled_user_ids = list(info.dm_mention_push_disabled_user_ids)
+    event.dm_mention_email_disabled_user_ids = list(info.dm_mention_email_disabled_user_ids)
+    event.stream_push_user_ids = list(info.stream_push_user_ids)
+    event.stream_email_user_ids = list(info.stream_email_user_ids)
+    event.followed_topic_push_user_ids = list(info.followed_topic_push_user_ids)
+    event.followed_topic_email_user_ids = list(info.followed_topic_email_user_ids)
+    event.muted_sender_user_ids = list(info.muted_sender_user_ids)
+    event.prior_mention_user_ids = list(prior_mention_user_ids)
+    event.presence_idle_user_ids = filter_presence_idle_user_ids(info.active_user_ids)
+    event.all_bot_user_ids = list(info.all_bot_user_ids)
+    event.push_device_registered_user_ids = list(info.push_device_registered_user_ids)
     if rendering_result.mentions_stream_wildcard:
-        event["stream_wildcard_mention_user_ids"] = list(info.stream_wildcard_mention_user_ids)
-        event["stream_wildcard_mention_in_followed_topic_user_ids"] = list(
+        event.stream_wildcard_mention_user_ids = list(info.stream_wildcard_mention_user_ids)
+        event.stream_wildcard_mention_in_followed_topic_user_ids = list(
             info.stream_wildcard_mention_in_followed_topic_user_ids
         )
     else:
-        event["stream_wildcard_mention_user_ids"] = []
-        event["stream_wildcard_mention_in_followed_topic_user_ids"] = []
+        event.stream_wildcard_mention_user_ids = []
+        event.stream_wildcard_mention_in_followed_topic_user_ids = []
 
     if rendering_result.mentions_topic_wildcard:
-        event["topic_wildcard_mention_user_ids"] = list(info.topic_wildcard_mention_user_ids)
-        event["topic_wildcard_mention_in_followed_topic_user_ids"] = list(
+        event.topic_wildcard_mention_user_ids = list(info.topic_wildcard_mention_user_ids)
+        event.topic_wildcard_mention_in_followed_topic_user_ids = list(
             info.topic_wildcard_mention_in_followed_topic_user_ids
         )
         topic_participant_user_ids = info.topic_participant_user_ids
     else:
-        event["topic_wildcard_mention_user_ids"] = []
-        event["topic_wildcard_mention_in_followed_topic_user_ids"] = []
+        event.topic_wildcard_mention_user_ids = []
+        event.topic_wildcard_mention_in_followed_topic_user_ids = []
         topic_participant_user_ids = set()
 
     update_user_message_flags(rendering_result, ums, topic_participant_user_ids)
@@ -939,17 +942,16 @@ def do_update_message(
     timestamp = timezone_now()
     target_message.last_edit_time = timestamp
 
-    event: dict[str, Any] = {
-        "type": "update_message",
-        "user_id": user_profile.id,
-        "edit_timestamp": datetime_to_timestamp(timestamp),
-        "message_id": target_message.id,
-        "rendering_only": False,
-    }
+    event = InternalUpdateMessageEvent(
+        user_id=user_profile.id,
+        edit_timestamp=datetime_to_timestamp(timestamp),
+        message_id=target_message.id,
+        rendering_only=False,
+    )
 
     edit_history_event: EditHistoryEvent = {
         "user_id": user_profile.id,
-        "timestamp": event["edit_timestamp"],
+        "timestamp": event.edit_timestamp,
     }
 
     realm = user_profile.realm
@@ -1004,7 +1006,7 @@ def do_update_message(
             # This does message.save(update_fields=[...])
             save_message_for_edit_use_case(message=target_message)
 
-            event["message_ids"] = sorted(update_message_cache([target_message]))
+            event.message_ids = sorted(update_message_cache([target_message]))
             users_to_be_notified = list(map(user_info, ums))
             send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 
@@ -1018,11 +1020,11 @@ def do_update_message(
     stream_being_edited = message_edit_request.orig_stream
     orig_topic_name = message_edit_request.orig_topic_name
 
-    event["stream_name"] = stream_being_edited.name
-    event["stream_id"] = stream_being_edited.id
+    event.stream_name = stream_being_edited.name
+    event.stream_id = stream_being_edited.id
 
     if message_edit_request.is_message_moved:
-        event["propagate_mode"] = message_edit_request.propagate_mode
+        event.propagate_mode = message_edit_request.propagate_mode
 
     users_losing_access = UserProfile.objects.none()
     user_ids_gaining_usermessages: list[int] = []
@@ -1031,12 +1033,12 @@ def do_update_message(
 
         edit_history_event["prev_stream"] = stream_being_edited.id
         edit_history_event["stream"] = new_stream.id
-        event[ORIG_TOPIC] = orig_topic_name
+        event.orig_subject = orig_topic_name
         assert new_stream.recipient_id is not None
         target_message.recipient_id = new_stream.recipient_id
 
-        event["new_stream_id"] = new_stream.id
-        event["propagate_mode"] = message_edit_request.propagate_mode
+        event.new_stream_id = new_stream.id
+        event.propagate_mode = message_edit_request.propagate_mode
 
         # When messages are moved from one stream to another, some
         # users may lose access to those messages, including guest
@@ -1100,9 +1102,11 @@ def do_update_message(
         target_message.set_topic_name(topic_name)
 
         # These fields have legacy field names.
-        event[ORIG_TOPIC] = orig_topic_name
-        event[TOPIC_NAME] = topic_name
-        event[TOPIC_LINKS] = topic_links(target_message.realm_id, topic_name)
+        event.orig_subject = orig_topic_name
+        event.subject = topic_name
+        event.topic_links = [
+            TopicLink(**link) for link in topic_links(target_message.realm_id, topic_name)
+        ]
         edit_history_event["prev_topic"] = orig_topic_name
         edit_history_event["topic"] = topic_name
 
@@ -1222,7 +1226,7 @@ def do_update_message(
     transaction.on_commit(
         lambda: cache_delete_many(to_dict_cache_key_id(msg_id) for msg_id in changed_message_ids)
     )
-    event["message_ids"] = sorted(changed_message_ids)
+    event.message_ids = sorted(changed_message_ids)
 
     # The following blocks arranges that users who are subscribed to a
     # stream and can see history from before they subscribed get
@@ -1634,7 +1638,7 @@ def build_message_edit_request(
     *,
     message: Message,
     user_profile: UserProfile,
-    propagate_mode: str,
+    propagate_mode: PropagateMode,
     stream_id: int | None = None,
     topic_name: str | None = None,
     content: str | None = None,
@@ -1765,7 +1769,7 @@ def check_update_message(
     message_id: int,
     stream_id: int | None = None,
     topic_name: str | None = None,
-    propagate_mode: str = "change_one",
+    propagate_mode: PropagateMode = "change_one",
     send_notification_to_old_thread: bool = True,
     send_notification_to_new_thread: bool = True,
     content: str | None = None,
