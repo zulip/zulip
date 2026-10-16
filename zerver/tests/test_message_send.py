@@ -19,7 +19,9 @@ from zerver.actions.message_send import (
     do_send_messages,
     extract_private_recipients,
     extract_stream_indicator,
+    filter_presence_idle_user_ids,
     internal_prep_private_message,
+    internal_prep_stream_message,
     internal_prep_stream_message_by_name,
     internal_send_group_direct_message,
     internal_send_private_message,
@@ -27,6 +29,7 @@ from zerver.actions.message_send import (
     internal_send_stream_message_by_name,
     send_rate_limited_pm_notification_to_bot_owner,
 )
+from zerver.actions.realm_linkifiers import do_add_linkifier
 from zerver.actions.realm_settings import (
     do_change_realm_permission_group_setting,
     do_set_realm_property,
@@ -41,6 +44,7 @@ from zerver.actions.user_groups import add_subgroups_to_user_group, check_add_us
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.users import do_change_can_forge_sender, do_deactivate_user
 from zerver.lib.addressee import Addressee
+from zerver.lib.cache import cache_get, to_dict_cache_key_id
 from zerver.lib.exceptions import (
     DirectMessageInitiationError,
     DirectMessagePermissionError,
@@ -73,6 +77,7 @@ from zerver.models import (
     Stream,
     Subscription,
     UserMessage,
+    UserPresence,
     UserProfile,
 )
 from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
@@ -2842,6 +2847,86 @@ class StreamMessagesTest(ZulipTestCase):
         # The stream should now be active
         stream.refresh_from_db()
         self.assertEqual(stream.is_recently_active, True)
+
+
+class DoSendMessagesTest(ZulipTestCase):
+    def test_events_for_several_messages(self) -> None:
+        """
+        Each event and cached message dict should have its own
+        message's data, including the poll's widget submessage.
+
+        Notification Bot is a cross-realm bot, so its channel messages
+        are rendered with the channel's realm. Only the zulip realm has
+        a linkifier matching "#1234", so topic links show which realm
+        rendered each message.
+
+        Hamlet is active and Othello idle, so only the DMs to Othello
+        and the message mentioning him list an idle user. Othello is
+        subscribed to Verona, but the poll doesn't notify him. Only
+        Hamlet and Othello would be notified if idle, so only their
+        presence is checked.
+        """
+        realm = get_realm("zulip")
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        notification_bot = self.notification_bot(realm)
+        verona = get_stream("Verona", realm)
+        lear_stream = self.make_stream("Lear stream", realm=get_realm("lear"))
+        do_add_linkifier(
+            realm, "#(?P<id>[0-9]+)", "https://trac.example.com/ticket/{id}", acting_user=None
+        )
+
+        UserPresence.objects.all().delete()
+        now = timezone_now()
+        UserPresence.objects.create(
+            user_profile=hamlet, realm=realm, last_active_time=now, last_connected_time=now
+        )
+
+        send_requests = [
+            internal_prep_private_message(iago, hamlet, "Hello, Hamlet!"),
+            internal_prep_private_message(notification_bot, othello, "Hello, Othello!"),
+            internal_prep_private_message(notification_bot, othello, "Hello again, Othello!"),
+            internal_prep_stream_message(
+                notification_bot, verona, "#1234", "/poll Lunch?\nPizza\nTacos"
+            ),
+            internal_prep_stream_message(
+                notification_bot, verona, "lunch", "@**Othello, the Moor of Venice**, lunch?"
+            ),
+            internal_prep_stream_message(notification_bot, lear_stream, "#1234", "Hello, Lear!"),
+        ]
+        with (
+            self.assert_database_query_count(21),
+            self.assert_memcached_count(11),
+            self.capture_send_event_calls(expected_num_events=6) as events,
+            mock.patch(
+                "zerver.actions.message_send.filter_presence_idle_user_ids",
+                wraps=filter_presence_idle_user_ids,
+            ) as filter_presence_mock,
+        ):
+            do_send_messages(send_requests)
+
+        topic_link = {"text": "#1234", "url": "https://trac.example.com/ticket/1234"}
+        self.assertEqual(
+            [event["event"]["message_dict"]["topic_links"] for event in events],
+            [[], [], [], [topic_link], [], []],
+        )
+        self.assert_length(events[3]["event"]["message_dict"]["submessages"], 1)
+
+        messages = [Message.objects.get(id=event["event"]["message"]) for event in events]
+        for message in messages:
+            self.assertEqual(
+                cache_get(to_dict_cache_key_id(message.id)),
+                MessageDict.messages_to_encoded_cache([message])[message.id],
+            )
+        for event, message in zip(events, messages, strict=True):
+            self.assertEqual(event["event"]["message_dict"], MessageDict.wide_dict(message))
+
+        self.assertEqual(
+            [event["event"]["presence_idle_user_ids"] for event in events],
+            [[], [othello.id], [othello.id], [], [othello.id], []],
+        )
+        filter_presence_mock.assert_called_once_with({hamlet.id, othello.id})
 
 
 class PersonalMessageSendTest(ZulipTestCase):
