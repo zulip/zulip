@@ -7,6 +7,7 @@ from typing_extensions import override
 
 from zerver.actions.data_import import import_slack_data
 from zerver.actions.realm_export import handle_realm_export_event
+from zerver.actions.realm_settings import clean_deactivated_realm_data
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,8 @@ class DeferredWorkHighLatencyWorker(QueueProcessingWorker):
             handle_realm_export_event(event, threaded=self.threaded, logger=logger)
         elif event["type"] == "import_slack_data":
             import_slack_data(event)
+        elif event["type"] == "scrub_deactivated_realm":
+            clean_deactivated_realm_data()
         else:
             raise AssertionError(f"Unexpected event type {event['type']}")
 

@@ -187,11 +187,12 @@ useful on large servers; smaller servers should leave it disabled.
 
 #### `dedicated_deferred_work_high_latency_queue`
 
-Data exports and Slack imports can each take many minutes. By default,
-they run in the shared `deferred_work` queue, where they delay faster
-jobs, such as marking messages as read when a user unsubscribes from a
-channel. Set this to true to process them in a dedicated queue (and, in
-multiprocess mode, a dedicated worker process). Like
+Data exports, Slack imports, and deleting the data of deactivated
+organizations can each take many minutes. By default, they run in the
+shared `deferred_work` queue, where they delay faster jobs, such as
+marking messages as read when a user unsubscribes from a channel. Set
+this to true to process them in a dedicated queue (and, in multiprocess
+mode, a dedicated worker process). Like
 `dedicated_soft_reactivation_queue`, this is most useful on large
 servers. The change takes effect only after you run `zulip-puppet-apply`
 and then restart the server with
