@@ -293,6 +293,17 @@ class UserBaseSettings(models.Model):
     send_read_receipts = models.BooleanField(default=True)
     allow_private_data_export = models.BooleanField(default=False)
 
+    # UI settings to control showing always expanded DMs section.
+    WEB_LEFT_SIDEBAR_DM_COLLAPSE_POLICY_ON_SCROLL = 1
+    WEB_LEFT_SIDEBAR_DM_COLLAPSE_POLICY_NEVER = 2
+    WEB_LEFT_SIDEBAR_DM_COLLAPSE_POLICY_CHOICES = [
+        WEB_LEFT_SIDEBAR_DM_COLLAPSE_POLICY_ON_SCROLL,
+        WEB_LEFT_SIDEBAR_DM_COLLAPSE_POLICY_NEVER,
+    ]
+    web_left_sidebar_dm_collapse_policy = models.PositiveSmallIntegerField(
+        default=WEB_LEFT_SIDEBAR_DM_COLLAPSE_POLICY_ON_SCROLL
+    )
+
     # Whether the user wants to see typing notifications.
     receives_typing_notifications = models.BooleanField(default=True)
 
@@ -371,6 +382,7 @@ class UserBaseSettings(models.Model):
         hide_ai_features=bool,
         high_contrast_mode=bool,
         left_side_userlist=bool,
+        web_left_sidebar_dm_collapse_policy=int,
         receives_typing_notifications=bool,
         resolved_topic_notice_auto_read_policy=ResolvedTopicNoticeAutoReadPolicyEnum,
         send_private_typing_notifications=bool,
