@@ -16,12 +16,14 @@ type ScheduledMessageComposeArgs =
           stream_id: number;
           topic: string;
           content: string;
+          split_messages_enabled: boolean;
       }
     | {
           message_type: "private";
           private_message_recipient_ids: number[];
           content: string;
           keep_composebox_empty: boolean;
+          split_messages_enabled: boolean;
       };
 
 export function hide_scheduled_message_success_compose_banner(scheduled_message_id: number): void {
@@ -62,6 +64,7 @@ export function open_scheduled_message_in_compose(
             stream_id: scheduled_message.to,
             topic: scheduled_message.topic,
             content: scheduled_message.content,
+            split_messages_enabled: scheduled_message.split_message_on_send,
         };
     } else {
         const recipient_ids = scheduled_message.to.filter(
@@ -72,6 +75,7 @@ export function open_scheduled_message_in_compose(
             private_message_recipient_ids: recipient_ids,
             content: scheduled_message.content,
             keep_composebox_empty: true,
+            split_messages_enabled: scheduled_message.split_message_on_send,
         };
     }
 

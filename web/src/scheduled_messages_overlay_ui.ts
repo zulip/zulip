@@ -5,6 +5,7 @@ import render_scheduled_message from "../templates/scheduled_message.hbs";
 import render_scheduled_messages_overlay from "../templates/scheduled_messages_overlay.hbs";
 
 import * as browser_history from "./browser_history.ts";
+import * as compose_split_messages from "./compose_split_messages.ts";
 import * as messages_overlay_ui from "./messages_overlay_ui.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as overlays from "./overlays.ts";
@@ -18,8 +19,9 @@ import * as sub_store from "./sub_store.ts";
 import * as timerender from "./timerender.ts";
 import * as util from "./util.ts";
 
-type ScheduledMessageRenderContext = ScheduledMessage &
-    (
+type ScheduledMessageRenderContext = ScheduledMessage & {
+    split_message_count: number | undefined;
+} & (
         | {
               is_stream: true;
               formatted_send_at_time: string;
@@ -93,6 +95,13 @@ function format(scheduled_messages: ScheduledMessage[]): ScheduledMessageRenderC
         let scheduled_msg_render_context;
         const time = new Date(scheduled_msg.scheduled_delivery_timestamp * 1000);
         const formatted_send_at_time = timerender.get_full_datetime(time, "time");
+        let split_message_count;
+        if (scheduled_msg.split_message_on_send) {
+            const part_count = compose_split_messages.split_content(scheduled_msg.content).length;
+            if (part_count > 1) {
+                split_message_count = part_count;
+            }
+        }
         if (scheduled_msg.type === "stream") {
             const stream_id = scheduled_msg.to;
             let stream_name;
@@ -106,6 +115,7 @@ function format(scheduled_messages: ScheduledMessage[]): ScheduledMessageRenderC
 
             scheduled_msg_render_context = {
                 ...scheduled_msg,
+                split_message_count,
                 is_stream: true as const,
                 stream_id,
                 stream_name,
@@ -120,6 +130,7 @@ function format(scheduled_messages: ScheduledMessage[]): ScheduledMessageRenderC
             const recipients = people.format_recipients(user_ids_string, "long");
             scheduled_msg_render_context = {
                 ...scheduled_msg,
+                split_message_count,
                 is_stream: false as const,
                 is_dm_with_self: people.is_direct_message_conversation_with_self(scheduled_msg.to),
                 recipients,
