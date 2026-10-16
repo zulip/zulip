@@ -3,7 +3,7 @@
 import * as fs from "node:fs";
 
 import starlight from "@astrojs/starlight";
-import {defineConfig, envField} from "astro/config";
+import {defineConfig, envField, passthroughImageService} from "astro/config";
 import compressor from "astro-compressor";
 import Icons from "unplugin-icons/vite";
 
@@ -79,9 +79,22 @@ function createRedirectPlugin() {
     };
 }
 
+let sharpAvailable = true;
+try {
+    await import("sharp");
+} catch (error) {
+    // Prebuilt sharp binaries require an x86-64-v2 CPU, which older
+    // hardware and some virtual machine CPU models lack.
+    console.warn(
+        `Could not load sharp; help center images will not be optimized.\n${String(error)}`,
+    );
+    sharpAvailable = false;
+}
+
 // https://astro.build/config
 export default defineConfig({
     base: "help",
+    image: sharpAvailable ? {} : {service: passthroughImageService()},
     compressHTML: "jsx",
     trailingSlash: "never",
     vite: {
