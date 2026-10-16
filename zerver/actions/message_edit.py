@@ -38,7 +38,12 @@ from zerver.lib.exceptions import (
 )
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
-from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
+from zerver.lib.mention import (
+    ChannelTopicInfo,
+    MentionBackend,
+    MentionData,
+    silent_mention_syntax_for_user,
+)
 from zerver.lib.message import (
     access_message,
     bulk_access_stream_messages_query,
@@ -358,6 +363,11 @@ def send_message_moved_breadcrumbs(
     }
     moved_message_link = stream_message_url(target_message.realm, message)
 
+    mention_backend = MentionBackend(target_message.realm_id)
+    mention_backend.topic_cache[ChannelTopicInfo(new_stream.name, new_topic_name)] = (
+        target_message.id
+    )
+
     if new_thread_notification_string is not None:
         with override_language(new_stream.realm.default_language):
             internal_send_stream_message(
@@ -372,6 +382,7 @@ def send_message_moved_breadcrumbs(
                 ),
                 mark_as_read_for_acting_user=True,
                 acting_user=user_profile,
+                mention_backend=mention_backend,
             )
 
     if old_thread_notification_string is not None:
@@ -388,6 +399,7 @@ def send_message_moved_breadcrumbs(
                 ),
                 mark_as_read_for_acting_user=True,
                 acting_user=user_profile,
+                mention_backend=mention_backend,
             )
 
 
