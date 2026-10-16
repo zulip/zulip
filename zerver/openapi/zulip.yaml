@@ -12268,6 +12268,34 @@ paths:
                         "msg": "",
                         "api_key": "a1b2c3d4e5f6g7h8i9j0",
                       }
+
+  /users/me/sessions/logout_others:
+    post:
+      operationId: logout-other-sessions
+      summary: Log out from all other sessions
+      tags: ["users"]
+      description: |
+        Log out the current user from all other active sessions while
+        preserving the session used to make this request.
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+              examples:
+                success:
+                  value:
+                    result: success
+                    msg: ""
+
   /users/me/alert_words:
     get:
       operationId: get-alert-words
