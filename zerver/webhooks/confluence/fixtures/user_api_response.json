@@ -1,0 +1,21 @@
+{
+  "email": "johnsmith@example.com",
+  "type": "known",
+  "username": "admin",
+  "userKey": "abc",
+  "profilePicture": {
+    "path": "/images/icons/profilepics/default.svg",
+    "width": 48,
+    "height": 48,
+    "isDefault": true
+  },
+  "displayName": "John Smith",
+  "_links": {
+    "base": "https://wiki.example.com",
+    "context": "",
+    "self": "https://wiki.example.com/rest/api/user?key=2c9280839e460b0f019e460ba6440000"
+  },
+  "_expandable": {
+    "status": ""
+  }
+}
