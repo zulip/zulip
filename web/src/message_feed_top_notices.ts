@@ -39,9 +39,9 @@ function show_end_of_results_notice(): void {
         return;
     }
     const terms = narrow_filter.terms();
-    // Set the link to point to this search with streams:public added.
+    // Set the link to point to this search with channels:all added.
     // Note that element we adjust is not visible to spectators.
-    const update_hash = hash_util.search_public_streams_notice_url(terms);
+    const update_hash = hash_util.search_all_channels_notice_url(terms);
     $(".all-messages-search-caution").show();
     $(".all-messages-search-caution .search-shared-history").attr("data-url", update_hash);
 }
