@@ -3544,3 +3544,220 @@ button {
 #engineers-love-zulip-page .intro_quote blockquote {
     max-width: 750px;
 }
+
+.portico-landing.try-zulip-page {
+    /* The screenshot, the guide box, and the cards section share the
+       outer gutter; the hero text and the guide box's text share the
+       deeper inset, so that text lines up down the page. */
+    --try-zulip-gutter: 50px;
+    --try-zulip-text-inset: 50px;
+
+    @media (width < 900px) {
+        --try-zulip-gutter: 20px;
+        --try-zulip-text-inset: 60px;
+    }
+
+    @media (width < 600px) {
+        --try-zulip-text-inset: 40px;
+    }
+
+    & p {
+        line-height: 1.5;
+    }
+
+    .try-zulip-hero,
+    .try-zulip-guide,
+    .try-zulip-cards {
+        max-width: 1300px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero.why-zulip {
+        padding: 120px var(--try-zulip-text-inset) 160px;
+        /* Override the narrow-screen font-size scaling that other heroes
+           rely on; this hero sizes its heading and paragraph explicitly. */
+        font-size: 1em;
+    }
+
+    .try-zulip-hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 40px;
+        text-align: center;
+
+        @media (width >= 900px) {
+            grid-template-columns: 3fr 2fr;
+            align-items: center;
+            gap: 60px;
+            text-align: left;
+        }
+    }
+
+    .try-zulip-screenshot {
+        /* Let the screenshot span to the outer gutter, past the text inset. */
+        margin: 0 calc(var(--try-zulip-gutter) - var(--try-zulip-text-inset));
+
+        & img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px hsl(0deg 0% 0% / 40%);
+        }
+    }
+
+    .hero h1 {
+        margin-bottom: 15px;
+        font-size: 1.8em;
+        font-weight: 600;
+    }
+
+    .hero p {
+        width: auto;
+        margin: 0 0 25px;
+        font-size: 1.2em;
+        text-align: inherit;
+    }
+
+    .hero-buttons {
+        .button {
+            margin: 0;
+        }
+
+        @media (width >= 900px) {
+            justify-content: flex-start;
+        }
+    }
+
+    .try-zulip-guide {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 30px;
+        box-sizing: border-box;
+        width: calc(100% - 2 * var(--try-zulip-gutter));
+        margin-top: -110px;
+        padding: 40px;
+        border-radius: 12px;
+        background-color: var(--color-background-box);
+        z-index: 1;
+
+        @media (width >= 900px) {
+            grid-template-columns: 2fr 3fr;
+            gap: 50px;
+        }
+
+        @media (width < 600px) {
+            padding: 25px 20px;
+        }
+
+        & h2,
+        & h3 {
+            margin: 0 0 10px;
+            font-weight: 600;
+            color: var(--color-link);
+        }
+
+        & h2 {
+            font-size: 1.4em;
+        }
+
+        & h3 {
+            font-size: 1.2em;
+        }
+
+        & p {
+            margin: 0 0 15px;
+        }
+    }
+
+    .try-zulip-participate {
+        align-self: center;
+    }
+
+    .try-zulip-tips {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .try-zulip-tip,
+    .try-zulip-card {
+        border-radius: 8px;
+        background-color: var(--color-background-marketing-page);
+        box-shadow: 0 2px 8px hsl(0deg 0% 0% / 10%);
+    }
+
+    .try-zulip-tip {
+        padding: 20px 25px;
+
+        & p:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    .try-zulip-more {
+        margin-top: 80px;
+        padding: 50px var(--try-zulip-gutter) 70px;
+        background-color: var(--color-background-box);
+
+        & h2 {
+            margin: 0 0 30px;
+            font-size: 1.6em;
+            font-weight: 600;
+            text-align: center;
+        }
+    }
+
+    .try-zulip-cards {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 25px;
+
+        @media (width >= 768px) {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    .try-zulip-card {
+        display: flex;
+        flex-direction: column;
+        padding: 25px;
+
+        & h3 {
+            margin: 0 0 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        & p {
+            flex-grow: 1;
+            margin: 0 0 20px;
+        }
+
+        .button {
+            align-self: flex-start;
+            margin: 0;
+            font-size: 16px;
+            color: var(--color-text-marketing-page);
+            background-color: var(--color-background-box-muted);
+            border: 1px solid hsl(0deg 0% 0% / 15%);
+
+            &:hover {
+                text-decoration: none;
+                background-color: var(--color-background-box-muted-hover);
+            }
+
+            &.primary {
+                color: hsl(0deg 0% 100%);
+                background-color: hsl(219deg 62% 54%);
+                border-color: transparent;
+
+                &:hover {
+                    background-color: hsl(219deg 62% 50%);
+                }
+            }
+        }
+    }
+}
