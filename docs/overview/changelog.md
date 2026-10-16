@@ -13,15 +13,187 @@ log][commit-log] for an up-to-date list of all changes.
 
 _Unreleased_
 
+#### Highlights
+
+- You can now see how a topic is connected to other conversations. The
+  new **View links** option in the topic actions menu lists the topics
+  it links to, and the topics that link to it.
+- You can now hide link previews one message at a time. Use Hide link
+  previews in the message actions menu, or press Shift+L.
+- After reaching the end of a conversation, you can now click a button
+  to go to the next unread topic or direct message conversation,
+  without returning to the left sidebar or Inbox.
+- Added a `date:` search operator for viewing messages around a given
+  date.
+- It's now easier to search a channel's topics, using a new **Search
+  topics** button next to the channel you're viewing. You can also now
+  search recent topics across all your channels from the left sidebar
+  filter, by starting your search with `topic:` or choosing **Search
+  all topics for '…'** just below the filter.
+- Organization administrators can now configure a channel so that
+  mobile notifications are enabled by default for new subscribers.
+
+#### Full feature changelog
+
+- The compose box now saves drafts automatically while you type.
+- The `<time:…>` global time syntax now only accepts ISO 8601
+  timestamps; UNIX timestamps and human-readable dates (e.g.,
+  `<time:August 06 2024, 5:00 PM BST>`) are no longer converted.
+- Added `Ctrl+]` and `Ctrl+[` (`Cmd` on Mac) keyboard shortcuts for
+  indenting and unindenting list items when composing or editing a
+  message. Continuing a list now preserves its indentation.
+- The keyboard shortcuts, message formatting, and search filters help
+  overlays can now be printed using `Ctrl+P` (`Cmd+P` on Mac).
+- Empty search results now offer a **Search all public channels**
+  button when message history may be incomplete.
+- The Combined feed now offers to view all messages in public channels
+  once you reach its oldest messages.
+- Reporting a message now sends the reporter a confirmation message.
+- The OpenID Connect integration can now synchronize users' names,
+  roles, custom profile fields, and group memberships when they log in.
+- Redesigned the buttons in modals across the app, and the compose
+  box's **Send** button to match. Irreversible deletions (e.g., deleting
+  a topic) now use a red button labeled with the action.
+- Renamed the "Subscription permissions" section of channel settings
+  and the channel creation form to "Subscription management".
+- Message previews in the compose box and message edit box now include
+  link previews, which appear as they load.
+- The **Quote message** and **Forward message** options in the message
+  actions menu now act on the selected text or messages, when that
+  message is part of the selection.
+- Copying a selection spanning several messages now copies only what
+  you selected, and formats it more clearly.
+- Copied global times now paste into the compose box as global times.
+- Improved search suggestions for multi-word channel and topic names.
+- Improved how users and channels are ranked in typeahead suggestions,
+  including sorting users by the recency of your direct messages with
+  them.
+- The web app now renders linkifiers using RE2JS, a JavaScript port of
+  the RE2 engine that the server uses, so linkifiers in newly sent
+  messages match the server's rendering more closely.
+- Fixed organization logos wider than 10:1 being distorted, and the
+  logo upload crop box now opens in the shape in which the logo is
+  displayed.
+- Marking messages as read or unread, and adding or removing emoji
+  reactions, now retry automatically after temporary server or network
+  failures.
+- Further improved the reliability of loading the web app on poor
+  network connections.
+- Improved accessibility and keyboard navigation, including labels for
+  icon-only buttons, keeping keyboard focus inside overlays, focus
+  styling in Inbox and Recent conversations, and arrow-key navigation
+  in the **Set status** dialog.
+- Alert words are now highlighted in topic links. Search highlights
+  and alert words also have better contrast in the dark theme.
+- Added a new webhook integration for Gong.
+- The Heroku integration now uses Heroku's app webhooks, with support
+  for build and release events; Heroku's legacy deploy hooks are no
+  longer supported.
+- Improved several webhook integrations, including GitHub (clearer
+  review request removal messages), Linear (ignoring comments on
+  documents), Jira (simpler issue creation messages), and Redmine
+  (crediting the editor of an issue). Fixed
+  Buildbot and TeamCity integrations failing on unrecognized events or
+  build results.
+- Improved the Slack data import tool: each thread's first message now
+  stays in the channel's main topic, with a link to the thread's own
+  topic, and thread topic names are cleaner.
+- Fixed several bugs in the beta Microsoft Teams data import tool,
+  including mangled bulleted lists, broken image syntax, and
+  attachments being lost when importing with multiple processes.
+- Importing an organization is now faster on servers that store
+  uploaded files in S3, since files are uploaded in parallel.
+- Data export file names now include the organization's subdomain and
+  the export time. Exporting large organizations is faster, and the new
+  `--remove-files-while-archiving` option for `manage.py export`
+  reduces the disk space it needs.
+- Fixed **Mark as read** at the top of a view leaving some older unread
+  messages in that view unread.
+- Fixed searches with the `sender:`, `mentions:`, `dm:`, and
+  `dm-including:` operators being rejected when given a single-word or
+  quoted user name.
+- Fixed topic follow and mute settings being reset when a topic is
+  renamed with only a change in capitalization.
+- When some of a topic's messages are moved to a new topic, follow and
+  mute settings now carry over for users who took part in those
+  messages.
+- Fixed digest emails featuring topics that the recipient had muted.
+- Fixed images embedded with `![alt](url)` syntax appearing broken in
+  message notification emails; they are now shown as links.
+- Fixed channel email addresses continuing to post messages after the
+  user or bot set as their sender was deactivated.
+- Fixed email replies to group direct message notifications being lost
+  if a participant had been deactivated.
+- Fixed a scheduled message that was edited while being sent possibly
+  being sent twice.
+- Fixed messages with several Dropbox folder or file links failing to
+  send; previews for those links are now fetched after the message is
+  sent.
+- Fixed the web app getting stuck on its loading screen for guests who
+  can't see most of a large organization's users.
+- Fixed several live-update issues, including renamed users in direct
+  message recipient bars, the navbar, and Recent conversations, unread
+  counts in Recent conversations, collapsing or expanding a message in
+  another tab or device, deactivated users staying in the user list,
+  and direct message conversations staying in the left sidebar after
+  their last message was deleted.
+- Fixed incorrect "You subscribed" and "You unsubscribed" dividers in
+  channels containing messages moved from another channel.
+- Fixed several bugs with loading channel subscriber data in large
+  organizations, including new channels and groups missing some
+  members if the form was submitted while subscribers were still
+  loading, and loading indicators that never went away.
+- Fixed links with parentheses or spaces in their URLs briefly
+  rendering incorrectly in message previews and newly sent messages.
+- Fixed several bugs with links to direct message conversations and to
+  `sender:`, `mentions:`, and `dm-including:` views, and a malformed
+  `#topics` link that could leave the web app stuck on its loading
+  screen.
+- Fixed explicit Markdown links with the `file://` scheme being
+  rendered even when `ENABLE_FILE_LINKS` is disabled.
+- Added an `nginx_server_name` option to the `[application_server]`
+  section of `/etc/zulip/zulip.conf`, for setting the hostnames that
+  Zulip's nginx configuration matches.
+- The incoming email gateway's local delivery mode now accepts mail
+  over IPv6 as well as IPv4 by default, and its listen address is now
+  configurable.
+- Added a `dedicated_soft_reactivation_queue` option to the
+  `[application_server]` section of `/etc/zulip/zulip.conf`, for large
+  servers to process soft reactivations of returning inactive users in
+  their own queue.
+- The installer now rejects a non-ASCII hostname before installing
+  anything.
+- Fixed background jobs that take longer than 30 minutes (e.g., large
+  Slack imports) being run a second time.
+- Improved the reliability of connections to memcached and Apple's
+  push notification service.
+- Reduced the memory usage of the thumbnailing worker on larger
+  servers, especially those with many CPU cores.
+- Implemented several performance optimizations, including for
+  fetching recent messages in large topics, fetching messages for
+  users with many muted topics, and muting users.
+- Updated all dependencies.
+
 ### Upgrade notes for 13.0
 
+- This release rebuilds four indexes on the `zerver_message` table
+  (migrations `0808_message_topic_indexes_nulls_first` and
+  `0809_remove_message_nulls_last_topic_indexes`). On installations
+  with many messages, expect these migrations to take a while, and
+  make sure the database server has enough free disk space
+  for a second copy of these indexes, since the old ones are only
+  dropped after the new ones are built.
 - Migrations that add or remove database indexes no longer use
   PostgreSQL's `CONCURRENTLY` option by default, so they lock the
   table while they run. This does not affect the standard upgrade
   process, which stops the server before running migrations. If you
-  run migrations while your server is running, set
-  `MIGRATIONS_ADD_REMOVE_INDEXES_CONCURRENTLY = True` in
+  run migrations while your server is running (e.g., using
+  [`--skip-migrations`](../production/system-configuration.md#deploy_options)),
+  set `MIGRATIONS_ADD_REMOVE_INDEXES_CONCURRENTLY = True` in
   `/etc/zulip/settings.py` before upgrading.
+- The Heroku integration now only accepts Heroku app webhooks. If you
+  had configured a Heroku deploy hook for Zulip, you will need to set
+  up the integration again following the updated instructions.
 
 ## Zulip Server 12.x series
 
