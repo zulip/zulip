@@ -106,6 +106,23 @@ class TestBuildEmail(ZulipTestCase):
         self.assertNotIn("\n", email.subject)
         self.assertEqual(email.subject, "SubjectBcc: attacker@example.com")
 
+    def test_media_queries_survive_css_inlining(self) -> None:
+        hamlet = self.example_user("hamlet")
+        email = build_email(
+            "zerver/emails/password_reset",
+            to_user_ids=[hamlet.id],
+            from_name="Noreply",
+            from_address=FromAddress.NOREPLY,
+            language="en",
+        )
+        html_message = str(email.alternatives[0][0])
+        # Rules that can be inlined still are.
+        self.assertIn("style=", html_message)
+        # @media rules cannot be expressed as inline styles, so they reach
+        # the recipient only if the <style> element survives inlining.
+        self.assertIn("@media only screen and (max-width: 620px)", html_message)
+        self.assertIn("@media (prefers-color-scheme: dark)", html_message)
+
 
 class TestSendEmail(ZulipTestCase):
     @override_settings(
