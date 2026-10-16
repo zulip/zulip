@@ -298,3 +298,22 @@ run_test("update_user_pill_full_name", ({override_rewire}) => {
     compose_pm_pill.update_user_pill_full_name(1, "Othello the Moor");
     assert.ok(user_pill_function_called);
 });
+
+run_test("finalize_pending_edit", ({override_rewire}) => {
+    // The wrapper just delegates to the widget, returning its result so a
+    // submit path can block on an unresolved edit.
+    let called = false;
+    override_rewire(compose_pm_pill, "widget", {
+        finalize_pending_edit() {
+            called = true;
+            return true;
+        },
+    });
+    assert.equal(compose_pm_pill.finalize_pending_edit(), true);
+    assert.ok(called);
+
+    override_rewire(compose_pm_pill, "widget", {
+        finalize_pending_edit: () => false,
+    });
+    assert.equal(compose_pm_pill.finalize_pending_edit(), false);
+});

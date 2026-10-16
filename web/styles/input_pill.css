@@ -219,6 +219,36 @@
         outline: none;
     }
 
+    .pill-edit-input {
+        display: none;
+    }
+
+    .pill.editing {
+        /* Match .pill:focus */
+        box-shadow: 0 0 0 1px var(--color-focus-outline-input-pill) inset;
+        cursor: text;
+        /* Wrapped text must grow the pill, not paint outside it. */
+        height: auto;
+        min-height: var(--height-input-pill);
+
+        .pill-image,
+        .pill-image-border,
+        .pill-label,
+        .expand,
+        .exit {
+            display: none;
+        }
+
+        .pill-edit-input {
+            display: inline-block;
+            min-width: 2em;
+            padding: 0 var(--input-pill-side-padding);
+            overflow-wrap: anywhere;
+            line-height: var(--height-input-pill);
+            outline: none;
+        }
+    }
+
     &.not-editable-by-user {
         cursor: not-allowed;
         background-color: var(--color-background-pill-container-input-disabled);
