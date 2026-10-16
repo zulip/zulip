@@ -27,7 +27,7 @@ from zerver.lib.event_types import (
 )
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import parse_message_time_limit_setting, update_first_visible_message_id
-from zerver.lib.queue import queue_json_publish_rollback_unsafe
+from zerver.lib.queue import high_latency_queue_name, queue_json_publish_rollback_unsafe
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import FromAddress, send_email, send_email_to_admins
 from zerver.lib.sessions import delete_realm_user_sessions
@@ -633,11 +633,11 @@ def do_deactivate_realm(
         send_event_on_commit(realm, event, active_user_ids(realm.id))
 
         if deletion_delay_days == 0:
-            deferred_work_event = {
+            scrub_event = {
                 "type": "scrub_deactivated_realm",
                 "realm_id": realm.id,
             }
-            queue_json_publish_rollback_unsafe("deferred_work", deferred_work_event)
+            queue_json_publish_rollback_unsafe(high_latency_queue_name(), scrub_event)
 
     # Don't deactivate the users, as that would lose a lot of state if
     # the realm needs to be reactivated, but do delete their sessions
@@ -665,9 +665,8 @@ def delete_expired_demo_organizations() -> None:
         email_owners = False
         if demo_organization_owner_email_exists(demo_organization):
             email_owners = True
-        # By setting deletion_delay_days to zero, we send an event to
-        # the deferred work queue to scrub the realm data when
-        # deactivating the realm.
+        # By setting deletion_delay_days to zero, we queue a job to
+        # scrub the realm data when deactivating the realm.
         do_deactivate_realm(
             realm=demo_organization,
             acting_user=None,
