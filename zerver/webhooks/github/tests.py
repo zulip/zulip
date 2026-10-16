@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import orjson
 
+from zerver.lib.bot_config import set_bot_config
 from zerver.lib.message import truncate_topic
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.lib.webhooks.git import COMMITS_LIMIT
@@ -19,9 +20,13 @@ TOPIC_DISCUSSION = "webhook-tester discussion #3: Tips for Writing Clear and ...
 TOPIC_DISCUSSION_ANSWERS = "webhook-tester discussion #5: Understanding Project Direc..."
 TOPIC_DISCUSSION_COMMENT = "testing-gh discussion #20: Lets discuss"
 TOPIC_SPONSORS = "sponsors"
+WEBHOOK_SECRET = "testingthis"
 
 
 class GitHubWebhookTest(WebhookTestCase):
+    WEBHOOK_TEST_SECRET: str | None = WEBHOOK_SECRET
+    VERIFY_WEBHOOK_SIGNATURES: bool = True
+
     def test_ping_event(self) -> None:
         expected_message = "GitHub webhook has been successfully configured by TomaszKolek."
         self.check_webhook("ping", TOPIC_REPO, expected_message)
@@ -885,6 +890,44 @@ A temporary team so that I can get some webhook fixtures!
         )
         expected_message = "baxterthehacker [commented](https://github.com/baxterthehacker/public-repo/issues/2#issuecomment-99262140) on [issue #2](https://github.com/baxterthehacker/public-repo/issues/2):\n\n``` quote\nYou are totally right! I'll get this fixed right away.\n```"
         self.check_webhook("issue_comment", TOPIC_ISSUE, expected_message)
+
+    def test_github_webhook_bad_signature(self) -> None:
+        with self.settings(VERIFY_WEBHOOK_SIGNATURES=self.VERIFY_WEBHOOK_SIGNATURES):
+            result = self.client_post(
+                self.url,
+                info=self.get_payload("ping"),
+                content_type="application/json",
+                HTTP_X_GITHUB_EVENT="ping",
+                HTTP_X_HUB_SIGNATURE_256="sha256=completely_invalid_hash_value",
+            )
+            self.assert_json_error(result, "Webhook signature verification failed.")
+
+    def test_github_webhook_signature_disabled_skips_validation(self) -> None:
+        """Verifies that when VERIFY_WEBHOOK_SIGNATURES is explicitly disabled,
+        requests pass through even if the signature value is completely bogus.
+        """
+        self.VERIFY_WEBHOOK_SIGNATURES = False
+        expected_message = "GitHub webhook has been successfully configured by TomaszKolek."
+        self.check_webhook(
+            "ping",
+            TOPIC_REPO,
+            expected_message,
+            HTTP_X_HUB_SIGNATURE_256="sha256=invalid_hash",
+        )
+
+    def test_github_webhook_missing_secret(self) -> None:
+        """Verifies that if no webhook secret is configured for the bot,
+        the request fails with a JsonableError."""
+        set_bot_config(self.test_user, "github:webhook_secret_token", "")
+        with self.settings(VERIFY_WEBHOOK_SIGNATURES=self.VERIFY_WEBHOOK_SIGNATURES):
+            result = self.client_post(
+                self.url,
+                info=self.get_payload("ping"),
+                content_type="application/json",
+                HTTP_X_GITHUB_EVENT="ping",
+                HTTP_X_HUB_SIGNATURE_256="sha256=placeholder_hash_value",
+            )
+            self.assert_json_error(result, "Webhook secret is not configured for this bot.")
 
 
 class GitHubSponsorsHookTests(WebhookTestCase):
