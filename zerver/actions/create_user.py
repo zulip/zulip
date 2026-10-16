@@ -16,7 +16,11 @@ from zerver.actions.message_send import (
     internal_send_private_message,
     internal_send_stream_message,
 )
-from zerver.actions.streams import bulk_add_subscriptions, send_peer_subscriber_events
+from zerver.actions.streams import (
+    bulk_add_subscriptions,
+    send_peer_subscriber_events,
+    send_subscription_change_notices,
+)
 from zerver.actions.user_groups import (
     bulk_add_members_to_user_groups,
     do_send_user_group_members_update_event,
@@ -143,15 +147,26 @@ def set_up_streams_and_groups_for_new_human_user(
 
     if prereg_user is not None:
         streams: list[Stream] = list(prereg_user.streams.all())
+        # The join notices sent below cover only the channels the referrer
+        # chose for the invitation, not the realm default channels or default
+        # channel groups added to streams next.
+        invite_stream_ids: set[int] = {stream.id for stream in streams}
         user_groups: list[NamedUserGroup] = list(prereg_user.groups.all())
         acting_user: UserProfile | None = prereg_user.referred_by
+        # Signups via a multiuse invitation have no referred_by, so the
+        # notices credit the user who created the invitation link.
+        referrer: UserProfile | None = acting_user
+        if referrer is None and prereg_user.multiuse_invite is not None:
+            referrer = prereg_user.multiuse_invite.referred_by
 
         # A PregistrationUser should not be used for another UserProfile
         assert prereg_user.created_user is None, "PregistrationUser should not be reused"
     else:
         streams = []
+        invite_stream_ids = set()
         user_groups = []
         acting_user = None
+        referrer = None
 
     if add_initial_stream_subscriptions:
         # If prereg_user.include_realm_default_subscriptions is true, we
@@ -171,13 +186,27 @@ def set_up_streams_and_groups_for_new_human_user(
     else:
         streams = []
 
-    bulk_add_subscriptions(
+    subscribed, _already_subscribed = bulk_add_subscriptions(
         realm,
         streams,
         [user_profile],
         from_user_creation=True,
         acting_user=acting_user,
     )
+    # Announce the new member in each private channel the invitation granted,
+    # marked read for them so it isn't unread on their first login.
+    if referrer is not None:
+        send_subscription_change_notices(
+            realm,
+            acting_user=referrer,
+            changed_subs=[
+                (sub_info.user, sub_info.stream)
+                for sub_info in subscribed
+                if sub_info.stream.id in invite_stream_ids
+            ],
+            subscribed=True,
+            mark_as_read_user_ids={user_profile.id},
+        )
 
     bulk_add_members_to_user_groups(
         user_groups,
