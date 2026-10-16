@@ -6,6 +6,12 @@ The bot is read-only on GitHub.  For each item it posts one message
 Maintainers' items get a short status card; other items get a card
 written by Claude from the input that assemble.py builds.
 
+In GitHub Actions (see .github/workflows/triage-bot.yml):
+
+  triage_bot.py --resolve-event   decide whether the event needs a card,
+                                  and write the item number to GITHUB_OUTPUT
+  triage_bot.py --item N
+
 Locally:
 
   triage_bot.py --item N --dry-run   print the card and its topic
@@ -38,6 +44,9 @@ MODEL = "claude-opus-5-5"
 PROMPT_FILE = Path(__file__).resolve().parent / "prompt.md"
 MAX_TOPIC_NAME_LENGTH = 60
 MAX_MESSAGE_LENGTH = 10000
+# Items opened before the bot started get no card, so that old open PRs
+# don't each get one on their next push.
+LAUNCH_DATE = "2026-11-01"
 
 
 def log(message: str) -> None:
@@ -223,6 +232,8 @@ def process(number: int, dry_run: bool) -> None:
             return
         log("No Zulip credentials; skipping the check for an existing card.")
     else:
+        # Checked first: this runs on every Zulip CI completion, and most
+        # of those are for PRs that already have a card.
         topic = existing_card_topic(zulip, number)
         if topic is not None:
             log(f"Skipping #{number}: it already has a card in {topic!r}.")
@@ -260,18 +271,130 @@ def process(number: int, dry_run: bool) -> None:
     log(f"Posted the card for #{number} to {topic!r}.")
 
 
+# --- GitHub Actions events ---
+
+
+def ci_runs(head_sha: str) -> list[JSONDict]:
+    """The Zulip CI runs for a PR head commit."""
+    return gather.ci_workflow_runs(head_sha) or []
+
+
+def unfinished(runs: list[JSONDict]) -> list[JSONDict]:
+    return [r for r in runs if r["status"] != "completed"]
+
+
+def opened_before_launch(number: int, created_at: str) -> bool:
+    if created_at < LAUNCH_DATE:
+        log(f"Skipping #{number}: opened before {LAUNCH_DATE}.")
+        return True
+    return False
+
+
+def resolve_event() -> int | None:
+    """The item to process, or None when there's nothing to post.
+
+    PR cards wait for the PR's first Zulip CI run, so the CI result can
+    be in the card.  The workflow_run event posts when that run finishes;
+    a PR marked ready after CI finished posts right away.
+    The workflow skips cancelled runs.
+    """
+    name = os.environ["GITHUB_EVENT_NAME"]
+    payload = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
+    zulip = Zulip.from_env()
+    if zulip is None:
+        notice("Zulip bot credentials or channel aren't configured; skipping.")
+        return None
+
+    if name == "issues":
+        issue = payload["issue"]
+        if opened_before_launch(issue["number"], issue["created_at"]):
+            return None
+        return issue["number"]
+
+    if name == "workflow_dispatch":
+        return int(payload["inputs"]["item"])
+
+    if name == "pull_request_target":
+        pr = payload["pull_request"]
+        number = pr["number"]
+        if opened_before_launch(number, pr["created_at"]):
+            return None
+        if pr["draft"]:
+            log(f"Skipping #{number}: draft PR.")
+            return None
+        if existing_card_topic(zulip, number) is not None:
+            log(f"Skipping #{number}: it already has a card.")
+            return None
+        runs = ci_runs(pr["head"]["sha"])
+        if not runs or unfinished(runs):
+            state = "none yet" if not runs else "queued or running"
+            log(
+                f"Skipping #{number} for now: its Zulip CI run hasn't finished ({state}); "
+                "the workflow_run event will post the card."
+            )
+            return None
+        return number
+
+    if name == "workflow_run":
+        wr = payload["workflow_run"]
+        if wr["event"] != "pull_request":
+            log(f"Skipping: Zulip CI run for a {wr['event']} event.")
+            return None
+        if wr["head_repository"] is None:
+            log("Skipping: the PR's fork was deleted.")
+            return None
+        # workflow_run.pull_requests is empty for PRs from forks, so find
+        # the PR from its head branch.
+        head = urllib.parse.quote(f"{wr['head_repository']['owner']['login']}:{wr['head_branch']}")
+        open_prs = gather.api(f"repos/{gather.REPO}/pulls?head={head}&state=open&per_page=10")
+        prs = (
+            [p for p in open_prs if p["head"]["sha"] == wr["head_sha"]]
+            if isinstance(open_prs, list)
+            else []
+        )
+        if not prs:
+            log(f"Skipping: no open PR has {wr['head_sha']} as its head.")
+            return None
+        # Two open PRs with the same head commit share one CI run; only the first gets a card.
+        pr = prs[0]
+        if opened_before_launch(pr["number"], pr["created_at"]):
+            return None
+        if existing_card_topic(zulip, pr["number"]) is not None:
+            log(f"Skipping #{pr['number']}: it already has a card.")
+            return None
+        if pr["draft"]:
+            log(f"Skipping #{pr['number']}: draft PR.")
+            return None
+        return pr["number"]
+
+    log(f"Skipping: unexpected event {name}.")
+    return None
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument("--item", type=int, required=True, help="process this issue or PR")
+    parser.add_argument("--item", type=int, help="process this issue or PR")
+    parser.add_argument(
+        "--resolve-event", action="store_true", help="read the GitHub Actions event"
+    )
     parser.add_argument(
         "--dry-run", action="store_true", help="print the card and its topic instead of posting"
     )
     args = parser.parse_args()
 
+    if not args.resolve_event and args.item is None:
+        parser.error("--item or --resolve-event is required")
     try:
-        process(args.item, args.dry_run)
+        if args.resolve_event:
+            number = resolve_event()
+            if number is not None:
+                log(f"Processing #{number}.")
+                with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+                    f.write(f"number={number}\n")
+        else:
+            process(args.item, args.dry_run)
     except (RequestFailedError, RuntimeError) as e:
         notice(f"No card posted: {e}. Re-run the workflow to try again.", level="error")
         sys.exit(1)
