@@ -372,6 +372,7 @@ def json_change_settings(
     ]
     | None = None,
     web_navigate_to_sent_message: Json[bool] | None = None,
+    web_right_click_opens_message_actions_menu: Json[bool] | None = None,
     web_stream_unreads_count_display_policy: Annotated[
         Json[int],
         check_int_in_validator(UserProfile.WEB_STREAM_UNREADS_COUNT_DISPLAY_POLICY_CHOICES),

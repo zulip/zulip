@@ -1399,6 +1399,13 @@ exports.fixtures = {
         value: false,
     },
 
+    user_settings__web_right_click_opens_message_actions_menu: {
+        type: "user_settings",
+        op: "update",
+        property: "web_right_click_opens_message_actions_menu",
+        value: true,
+    },
+
     user_settings__web_stream_unreads_count_display_policy: {
         type: "user_settings",
         op: "update",
