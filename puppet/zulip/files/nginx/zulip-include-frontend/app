@@ -60,6 +60,7 @@ location /help {
 
 # Send longpoll requests to Tornado
 location = /json/events {
+    error_page 502 503 504 /api_5xx.json;
     if ($request_method = 'OPTIONS') {
         # add_header does not propagate into/out of blocks, so this
         # include cannot be factored out
@@ -82,6 +83,7 @@ location = /json/events {
 
 # Send longpoll requests to Tornado
 location = /api/v1/events {
+    error_page 502 503 504 /api_5xx.json;
 
     if ($request_method = 'OPTIONS') {
         include /etc/nginx/zulip-include/tornado_cors_headers;
@@ -108,6 +110,7 @@ location ~ ^/internal/tornado/(\d+)(/.*)$ {
 }
 
 location /api/v1/tus {
+    error_page 502 503 504 /api_5xx.json;
     include /etc/nginx/zulip-include/api_headers;
     include /etc/nginx/zulip-include/proxy;
     # https://github.com/tus/tusd/blob/main/examples/nginx.conf
@@ -122,6 +125,19 @@ location /api/v1/tus {
 # Send everything else to Django via uWSGI
 location / {
     include uwsgi_params;
+}
+
+# JSON routes used by the web app
+location /json/ {
+    error_page 502 503 504 /api_5xx.json;
+    include uwsgi_params;
+}
+
+location = /api_5xx.json {
+    internal;
+    include /etc/nginx/zulip-include/api_headers;
+    default_type application/json;
+    alias /etc/nginx/zulip-include/api_5xx.json;
 }
 
 # These Django routes not under /api are shared between mobile and
@@ -157,6 +173,7 @@ location /api/internal/ {
 
 # Send all API routes not covered above to Django via uWSGI
 location /api/ {
+    error_page 502 503 504 /api_5xx.json;
     include /etc/nginx/zulip-include/api_headers;
 
     include uwsgi_params;
