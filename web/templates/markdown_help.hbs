@@ -14,7 +14,7 @@
                     {{#each markdown_help_rows}}
                         <tr>
                             {{#if note_html}}
-                            <td colspan="2">{{{note_html}}}</td>
+                            <td colspan="2" class="rendered_markdown">{{{note_html}}}</td>
                             {{else}}
                             <td><div class="preserve_spaces">{{markdown}}</div> {{#if usage_html}}{{{usage_html}}}{{/if}}</td>
                             <td class="rendered_markdown">{{{output_html}}} {{#if effect_html}}{{{effect_html}}}{{/if}}</td>
@@ -25,6 +25,8 @@
             </table>
         </div>
         <hr />
-        <a href="/help/format-your-message-using-markdown" target="_blank" rel="noopener noreferrer">{{t "Detailed message formatting documentation" }}</a>
+        <div class="rendered_markdown">
+            <a href="/help/format-your-message-using-markdown" target="_blank" rel="noopener noreferrer">{{t "Detailed message formatting documentation" }}</a>
+        </div>
     </div>
 </div>

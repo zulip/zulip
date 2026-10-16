@@ -125,6 +125,9 @@
             color: var(--color-dropdown-item);
             text-decoration: underline 1px;
             text-decoration-color: var(--color-dropdown-item-link-underline);
+            /* This clips its overflow, and has no room below the
+               baseline for the offset message links take. */
+            text-underline-offset: auto;
             opacity: 0.6;
         }
     }

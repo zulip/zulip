@@ -87,6 +87,9 @@
            search box--with a pleasing equidistant space in both
            places. */
         padding: 0 10px;
+        /* Room for the link underline, which would otherwise be
+           clipped. 3px at 14px em */
+        padding-bottom: 0.2143em;
         overflow: hidden;
         text-overflow: ellipsis;
         /* The very last element in the navbar is the search icon, the second
