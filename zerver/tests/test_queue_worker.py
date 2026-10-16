@@ -889,3 +889,11 @@ class WorkerTest(ZulipTestCase):
         self.assertNotIn("soft_reactivation", get_active_worker_queues())
         with override_settings(DEDICATED_SOFT_REACTIVATION_QUEUE=True):
             self.assertIn("soft_reactivation", get_active_worker_queues())
+
+    def test_high_latency_queue_is_opt_in(self) -> None:
+        """Puppet runs this worker only when the setting is enabled, and
+        tools/ci/production-verify checks that the active queues match
+        the running workers."""
+        self.assertNotIn("deferred_work_high_latency", get_active_worker_queues())
+        with override_settings(DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE=True):
+            self.assertIn("deferred_work_high_latency", get_active_worker_queues())

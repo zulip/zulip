@@ -171,7 +171,11 @@ class zulip::app_frontend_base {
     true    => ['soft_reactivation'],
     default => [],
   }
-  $queues = $base_queues + $soft_reactivation_queue
+  $high_latency_queue = zulipconf('application_server', 'dedicated_deferred_work_high_latency_queue', false) ? {
+    true    => ['deferred_work_high_latency'],
+    default => [],
+  }
+  $queues = $base_queues + $soft_reactivation_queue + $high_latency_queue
 
   if $zulip::common::total_memory_mb > 24000 {
     $uwsgi_default_processes = 16

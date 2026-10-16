@@ -185,6 +185,24 @@ multiprocess mode, a dedicated worker process), so they aren't delayed
 behind such jobs. This costs an additional worker process, so it is most
 useful on large servers; smaller servers should leave it disabled.
 
+#### `dedicated_deferred_work_high_latency_queue`
+
+Data exports and Slack imports can each take many minutes. By default,
+they run in the shared `deferred_work` queue, where they delay faster
+jobs, such as marking messages as read when a user unsubscribes from a
+channel. Set this to true to process them in a dedicated queue (and, in
+multiprocess mode, a dedicated worker process). Like
+`dedicated_soft_reactivation_queue`, this is most useful on large
+servers. The change takes effect only after you run `zulip-puppet-apply`
+and then restart the server with
+`/home/zulip/deployments/current/scripts/restart-server`.
+
+To turn it back off, set it to false and restart the server, then wait
+until `rabbitmqctl list_queues` (run as root) shows the
+`deferred_work_high_latency` queue is empty before running
+`zulip-puppet-apply`. Otherwise, any exports or imports still in that
+queue will never be processed.
+
 #### `rolling_restart`
 
 If set to true, when using `./scripts/restart-server` to restart

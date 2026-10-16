@@ -7,6 +7,7 @@ import botocore.exceptions
 import orjson
 import time_machine
 from django.conf import settings
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from analytics.models import RealmCount
@@ -228,6 +229,25 @@ class RealmExportTest(ZulipTestCase):
         # Now try to delete a non-existent export.
         result = self.client_delete("/json/export/realm/0")
         self.assert_json_error(result, "Invalid data export ID")
+
+    @override_settings(DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE=True)
+    def test_export_uses_dedicated_queue_when_enabled(self) -> None:
+        self.login("iago")
+        tarball_path = create_dummy_file("test-export.tar.gz")
+        with (
+            patch("zerver.lib.export.do_export_realm", return_value=(tarball_path, dict())),
+            stdout_suppressed(),
+            self.assertLogs("zerver.worker.deferred_work_high_latency", level="INFO") as info_logs,
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            result = self.client_post("/json/export/realm")
+        export_id = self.assert_json_success(result)["id"]
+        self.assertTrue(
+            info_logs.output[1].startswith(
+                "INFO:zerver.worker.deferred_work_high_latency:Completed data export for zulip in "
+            )
+        )
+        self.assertEqual(RealmExport.objects.get(id=export_id).status, RealmExport.SUCCEEDED)
 
     def test_export_tarball_prefix(self) -> None:
         realm = self.example_user("iago").realm

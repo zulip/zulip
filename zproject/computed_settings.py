@@ -1298,6 +1298,12 @@ DEDICATED_SOFT_REACTIVATION_QUEUE = get_config(
     "application_server", "dedicated_soft_reactivation_queue", False
 )
 
+# For the deferred_work jobs that can take many minutes, such as realm
+# exports and Slack imports.
+DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE = get_config(
+    "application_server", "dedicated_deferred_work_high_latency_queue", False
+)
+
 TWO_FACTOR_PATCH_ADMIN = False
 
 # Allow the environment to override the default DSN
