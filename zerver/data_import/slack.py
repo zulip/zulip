@@ -16,6 +16,7 @@ from urllib.parse import urlsplit
 
 import orjson
 import requests
+from django.conf import settings
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 
@@ -55,18 +56,30 @@ from zerver.data_import.sequencer import NEXT_ID
 from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
     get_user_full_name,
+    get_zulip_mention_for_slack_user,
     process_slack_block_and_attachment,
+)
+from zerver.lib.compose_reply import (
+    MESSAGE_QUOTE_BODY,
+    compose_quote_and_reply_for_channel_message,
+    truncate_quote_content,
 )
 from zerver.lib.emoji import codepoint_to_name
 from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE, do_common_export_processes
+from zerver.lib.markdown.fenced_code import close_unclosed_fences, get_unused_fence
 from zerver.lib.message import truncate_content
 from zerver.lib.mime_types import guess_type
 from zerver.lib.parallel import run_parallel_queue
 from zerver.lib.partial import partial
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, resize_realm_icon
-from zerver.lib.topic_link_util import get_stream_topic_link_syntax
+from zerver.lib.topic_link_util import (
+    get_message_link_syntax,
+    get_stream_topic_conversation_link,
+    get_stream_topic_link_syntax,
+)
+from zerver.lib.url_encoding import message_link_url
 from zerver.lib.validator import to_wild_value
 from zerver.models import (
     CustomProfileField,
@@ -85,6 +98,8 @@ AddedMPIMsT: TypeAlias = dict[str, tuple[str, int]]
 AddedDMsT: TypeAlias = dict[str, int]
 SlackToZulipRecipientT: TypeAlias = dict[str, int]
 
+
+BROADCASTED_THREAD_REPLY_NOTICE = "*replied to a Slack thread: {thread_message_link_syntax}*"
 
 # We can look up unicode codepoints for Slack emoji using iamcal emoji
 # data. https://emojipedia.org/slack/, documents Slack's emoji names
@@ -933,7 +948,9 @@ def reset_import_state() -> None:
     thread_parent_map.clear()
 
 
-def get_parent_user_id_from_thread_message(thread_message: ZerverFieldsT, subtype: str) -> str:
+def get_parent_user_id_from_thread_message(
+    thread_message: ZerverFieldsT, subtype: str | None
+) -> str:
     """
     This retrieves the user id of the sender of the original thread
     message.
@@ -1015,9 +1032,19 @@ class MessageConversionResult:
 
 
 @dataclass
+class ThreadMessageData:
+    content: str
+    attachments: list[AttachmentRecordData]
+    url: str
+    topic_pretty_link: str
+
+
+@dataclass
 class ThreadMetadata:
+    first_thread_message: ThreadMessageData
     topic_link_syntax: str
     topic_name: str
+    thread_length: int
 
 
 MAIN_SLACK_IMPORT_TOPIC = "imported from Slack"
@@ -1048,13 +1075,72 @@ def is_thread_parent_message(message: ZerverFieldsT) -> bool:
 
 
 def get_thread_key(message: ZerverFieldsT) -> str:
-    subtype = message.get("subtype", False)
+    subtype: str | None = message.get("subtype")
     parent_user_id = get_parent_user_id_from_thread_message(message, subtype)
     return f"{message['thread_ts']}-{parent_user_id}"
 
 
 def is_slack_thread_message(convert_slack_threads: bool, message: ZerverFieldsT) -> bool:
     return convert_slack_threads and "thread_ts" in message
+
+
+def get_thread_key_for_conversion(
+    convert_slack_threads: bool, is_direct_message_type: bool, message: ZerverFieldsT
+) -> str | None:
+    """Returns the key of the thread the message is converted as part
+    of, or None for messages that aren't converted as thread messages,
+    such as unthreaded messages and thread messages in DMs."""
+    if is_direct_message_type or not is_slack_thread_message(convert_slack_threads, message):
+        return None
+    return get_thread_key(message)
+
+
+def build_thread_metadata(
+    added_channels: AddedChannelsT,
+    channel_name: str,
+    topic_name_content: str,
+    content: str,
+    attachments: list[AttachmentRecordData],
+    message: ZerverFieldsT,
+    message_id: int,
+    thread_counter: dict[str, int],
+) -> ThreadMetadata:
+    thread_ts_datetime = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
+    thread_topic_name = get_zulip_thread_topic_name(
+        topic_name_content, thread_ts_datetime, thread_counter
+    )
+
+    channel_id = added_channels[channel_name][1]
+    first_thread_message = ThreadMessageData(
+        content=content,
+        attachments=attachments,
+        url=message_link_url(
+            realm=None,
+            message=dict(
+                type="stream",
+                id=message_id,
+                stream_id=channel_id,
+                display_recipient=channel_name,
+                topic=MAIN_SLACK_IMPORT_TOPIC,
+            ),
+        ),
+        topic_pretty_link=get_stream_topic_conversation_link(
+            stream_id=channel_id,
+            stream_name=channel_name,
+            topic_name=MAIN_SLACK_IMPORT_TOPIC,
+            message_id=message_id,
+        ),
+    )
+    return ThreadMetadata(
+        first_thread_message=first_thread_message,
+        topic_link_syntax=get_stream_topic_link_syntax(
+            stream_id=channel_id,
+            stream_name=channel_name,
+            topic_name=thread_topic_name,
+        ),
+        topic_name=thread_topic_name,
+        thread_length=1,
+    )
 
 
 def count_thread_replies(
@@ -1090,30 +1176,12 @@ def count_thread_replies(
     return thread_reply_counts
 
 
-def get_thread_reply_notification(
-    convert_slack_threads: bool,
-    message: ZerverFieldsT,
-    thread_map: dict[str, ThreadMetadata],
-    thread_reply_counts: dict[str, int],
-) -> str:
+def get_thread_reply_notification(thread_metadata: ThreadMetadata, number_of_replies: int) -> str:
     """This creates a notification that contains a link to
-    the given message's thread topic.
+    the given thread parent message's thread topic.
 
     e.g "*3 replies in #**channel>2023-05-23 foobar***"
     """
-    if not is_slack_thread_message(convert_slack_threads, message):
-        return ""
-
-    if not is_thread_parent_message(message):
-        # Only the parent message carries the cross-linking notice.
-        return ""
-
-    thread_key = get_thread_key(message)
-    if thread_key not in thread_map:
-        # This could be a DM or a thread whose parent message wasn't imported.
-        return ""
-
-    number_of_replies = thread_reply_counts.get(thread_key, 0)
     if number_of_replies < 1:
         # This could happen if only part of the Slack workspace history was
         # exported, or if the thread's replies were deleted.
@@ -1121,59 +1189,36 @@ def get_thread_reply_notification(
 
     reply_string = "replies" if number_of_replies > 1 else "reply"
     # e.g "\n\n*3 replies in #**channel>2023-05-23 foobar***"
-    return f"\n\n*{number_of_replies} {reply_string} in {thread_map[thread_key].topic_link_syntax}*"
+    return f"\n\n*{number_of_replies} {reply_string} in {thread_metadata.topic_link_syntax}*"
 
 
-def create_topic_name_for_message(
-    added_channels: AddedChannelsT,
-    channel_name: str | None,
-    topic_name_content: str,
-    convert_slack_threads: bool,
+def get_topic_name_for_message(
     is_direct_message_type: bool,
     message: ZerverFieldsT,
-    thread_counter: dict[str, int],
-    thread_map: dict[str, ThreadMetadata],
+    thread_key: str | None,
+    thread_metadata: ThreadMetadata | None,
 ) -> str:
     if is_direct_message_type:
         return ""
 
-    assert channel_name is not None
-
     # Slack's unthreaded messages go into a single topic, while
     # threaded messages are put into separate thread topics.
-    if not is_slack_thread_message(convert_slack_threads, message):
+    if thread_key is None:
         return MAIN_SLACK_IMPORT_TOPIC
-
-    thread_ts = message["thread_ts"]
-    thread_ts_datetime = datetime.fromtimestamp(float(thread_ts), tz=timezone.utc)
-    thread_ts_str = thread_ts_datetime.strftime(r"%Y/%m/%d %H:%M:%S")
-    thread_key = get_thread_key(message)
 
     if is_thread_parent_message(message):
         # Send the thread parent message to the main import topic; the
         # cross-linking notice to the thread topic is appended by
         # get_thread_reply_notification.
-        thread_topic_name = get_zulip_thread_topic_name(
-            topic_name_content, thread_ts_datetime, thread_counter
-        )
-
-        thread_map[thread_key] = ThreadMetadata(
-            topic_link_syntax=get_stream_topic_link_syntax(
-                stream_id=added_channels[channel_name][1],
-                stream_name=channel_name,
-                topic_name=thread_topic_name,
-            ),
-            topic_name=thread_topic_name,
-        )
         return MAIN_SLACK_IMPORT_TOPIC
-    elif thread_key in thread_map:
-        # For thread replies, send them to the thread topic.
-        # TODO: Make the first reply in the thread quote the thread message
-        # in the main topic.
-        return thread_map[thread_key].topic_name
+    elif thread_metadata is not None:
+        # For thread replies, send them to the thread's topic.
+        return thread_metadata.topic_name
     else:
         # This can occur when the original thread message isn't imported,
         # such as when only a slice of the chat history is imported.
+        thread_ts_datetime = datetime.fromtimestamp(float(message["thread_ts"]), tz=timezone.utc)
+        thread_ts_str = thread_ts_datetime.strftime(r"%Y/%m/%d %H:%M:%S")
         return f"{thread_ts_str} No channel message"
 
 
@@ -1208,7 +1253,7 @@ def channel_message_to_zerver_message(
 
         slack_user_id = get_message_sending_user(message)
         assert slack_user_id
-        subtype = message.get("subtype", False)
+        subtype: str | None = message.get("subtype")
 
         raw_content = process_slack_block_and_attachment(
             (to_wild_value("message", json.dumps(message))),
@@ -1238,6 +1283,18 @@ def channel_message_to_zerver_message(
 
         message_id = NEXT_ID("message")
 
+        # A thread reply that Slack also sent to the channel is echoed to the
+        # channel's main import topic below. Its ID is allocated here so that
+        # files attached to the reply are recorded against the echo too.
+        broadcasted_echo_message_id: int | None = None
+        if (
+            subtype == "thread_broadcast"
+            and not is_direct_message_type
+            and is_slack_thread_message(convert_slack_threads, message)
+            and get_thread_key(message) in thread_map
+        ):
+            broadcasted_echo_message_id = NEXT_ID("message")
+
         if "reactions" in message:
             build_reactions(
                 reaction_list,
@@ -1260,11 +1317,17 @@ def channel_message_to_zerver_message(
             # responsible user in a subfield.
             message["user"] = message["comment"]["user"]
 
+        message_ids_with_files = (
+            {message_id}
+            if broadcasted_echo_message_id is None
+            else {message_id, broadcasted_echo_message_id}
+        )
+
         file_info = process_message_files(
             message=message,
             domain_name=domain_name,
             realm_id=realm_id,
-            message_id=message_id,
+            message_ids=message_ids_with_files,
             slack_user_id=slack_user_id,
             users=users,
             slack_user_id_to_zulip_user_id=slack_user_id_to_zulip_user_id,
@@ -1284,20 +1347,156 @@ def channel_message_to_zerver_message(
         unannotated_content = content
         content = "\n".join([part for part in [content, file_info["content"]] if part != ""])
 
-        topic_name = create_topic_name_for_message(
-            added_channels=added_channels,
-            channel_name=channel_name,
-            topic_name_content=unannotated_content,
-            convert_slack_threads=convert_slack_threads,
+        thread_key = get_thread_key_for_conversion(
+            convert_slack_threads, is_direct_message_type, message
+        )
+        thread_metadata: ThreadMetadata | None = None
+        if thread_key is not None:
+            if is_thread_parent_message(message):
+                assert channel_name is not None
+                thread_map[thread_key] = build_thread_metadata(
+                    added_channels=added_channels,
+                    channel_name=channel_name,
+                    topic_name_content=unannotated_content,
+                    content=content,
+                    attachments=file_info["attachments"],
+                    message=message,
+                    message_id=message_id,
+                    thread_counter=thread_counter,
+                )
+                content += get_thread_reply_notification(
+                    thread_map[thread_key], thread_reply_counts.get(thread_key, 0)
+                )
+            elif thread_key in thread_map:
+                thread_map[thread_key].thread_length += 1
+            thread_metadata = thread_map.get(thread_key)
+
+        topic_name = get_topic_name_for_message(
             is_direct_message_type=is_direct_message_type,
             message=message,
-            thread_counter=thread_counter,
-            thread_map=thread_map,
+            thread_key=thread_key,
+            thread_metadata=thread_metadata,
         )
 
-        content += get_thread_reply_notification(
-            convert_slack_threads, message, thread_map, thread_reply_counts
-        )
+        broadcasted_echo: ZerverFieldsT | None = None
+        broadcasted_message_link_syntax: str | None = None
+        if broadcasted_echo_message_id is not None:
+            # The thread_broadcast message subtype is sent when a user or bot
+            # user has indicated their reply should be broadcast to the whole
+            # channel.
+            # https://api.slack.com/events/message/thread_broadcast
+            #
+            # In Zulip, this means echoing the thread reply to the channel's
+            # main import topic, linking back to the reply in its thread.
+            assert thread_metadata is not None
+            assert channel_name is not None
+
+            broadcasted_echo_notice = BROADCASTED_THREAD_REPLY_NOTICE.format(
+                thread_message_link_syntax=get_message_link_syntax(
+                    stream_id=added_channels[channel_name][1],
+                    stream_name=channel_name,
+                    topic_name=thread_metadata.topic_name,
+                    message_id=message_id,
+                )
+            )
+            broadcasted_echo_fence = get_unused_fence(content)
+            broadcasted_echo_syntax_length = len(
+                broadcasted_echo_notice
+                + "\n"
+                + MESSAGE_QUOTE_BODY.format(fence=broadcasted_echo_fence, content="")
+            )
+            broadcasted_echo_quote_content = truncate_quote_content(
+                content,
+                settings.MAX_MESSAGE_LENGTH - broadcasted_echo_syntax_length,
+            )
+            broadcasted_echo_content = (
+                broadcasted_echo_notice
+                + "\n"
+                + MESSAGE_QUOTE_BODY.format(
+                    fence=broadcasted_echo_fence, content=broadcasted_echo_quote_content
+                )
+            )
+            broadcasted_echo = build_message(
+                topic_name=MAIN_SLACK_IMPORT_TOPIC,
+                date_sent=get_timestamp_from_message(message),
+                message_id=broadcasted_echo_message_id,
+                content=broadcasted_echo_content,
+                rendered_content=None,
+                user_id=slack_user_id_to_zulip_user_id[slack_user_id],
+                recipient_id=recipient_id,
+                realm_id=realm_id,
+                is_channel_message=True,
+                # Import will correct the message's has_image and
+                # has_link attributes.
+                has_image=False,
+                has_link=False,
+                has_attachment=has_attachment,
+                is_direct_message_type=False,
+            )
+            (num_created, num_skipped) = build_usermessages(
+                zerver_usermessage=zerver_usermessage,
+                subscriber_map=subscriber_map,
+                recipient_id=recipient_id,
+                mentioned_user_ids=[],
+                message_id=broadcasted_echo_message_id,
+                is_private=False,
+                long_term_idle=long_term_idle,
+            )
+            total_user_messages += num_created
+            total_skipped_user_messages += num_skipped
+
+            broadcasted_message_link_syntax = get_message_link_syntax(
+                stream_id=added_channels[channel_name][1],
+                stream_name=channel_name,
+                topic_name=MAIN_SLACK_IMPORT_TOPIC,
+                message_id=broadcasted_echo_message_id,
+            )
+
+        # If this is the first thread reply, make it quote the thread parent
+        # message.
+        if (
+            thread_metadata is not None
+            and thread_metadata.thread_length == 2
+            # A status message has to start with "/me ", so it
+            # can't open with a quote.
+            and not content.startswith("/me ")
+        ):
+            parent_user_id = get_parent_user_id_from_thread_message(message, subtype)
+            first_thread_message = thread_metadata.first_thread_message
+            first_thread_sender_mention = get_zulip_mention_for_slack_user(
+                slack_user_id=parent_user_id,
+                slack_user_shortname=None,
+                users=users,
+                silent=True,
+            )
+
+            # Senders missing from the export are added as mirror dummies or bot
+            # users, so this is likely never None in practice. If it is None, skip
+            # the quote.
+            if first_thread_sender_mention is not None:
+                content = compose_quote_and_reply_for_channel_message(
+                    reply_content=content,
+                    quote_content=first_thread_message.content,
+                    quote_message_sender_silent_mention=first_thread_sender_mention,
+                    quote_message_url=first_thread_message.url,
+                    quote_message_topic_pretty_link=first_thread_message.topic_pretty_link,
+                )
+
+            # Include the first reply's message ID in the parent message's attachment
+            # records so import rewrites the quoted links in the reply too.
+            for attachment in first_thread_message.attachments:
+                attachment.messages.append(message_id)
+                has_attachment = True
+
+        if broadcasted_message_link_syntax is not None:
+            # Only add the broadcast notification if there's still room left. Don't
+            # truncate message content for the sake of fitting in the notification.
+            broadcasted_thread_message = (
+                close_unclosed_fences(content)
+                + f"\n\n*Also sent to {broadcasted_message_link_syntax}*"
+            )
+            if len(broadcasted_thread_message) <= settings.MAX_MESSAGE_LENGTH:
+                content = broadcasted_thread_message
 
         zulip_message = build_message(
             topic_name=topic_name,
@@ -1315,6 +1514,11 @@ def channel_message_to_zerver_message(
             is_direct_message_type=is_direct_message_type,
         )
         zerver_message.append(zulip_message)
+
+        if broadcasted_echo is not None:
+            # The echo follows the message it echoes, because the import
+            # process reassigns message IDs in the order the rows appear.
+            zerver_message.append(broadcasted_echo)
 
         (num_created, num_skipped) = build_usermessages(
             zerver_usermessage=zerver_usermessage,
@@ -1346,7 +1550,7 @@ def process_message_files(
     message: ZerverFieldsT,
     domain_name: str,
     realm_id: int,
-    message_id: int,
+    message_ids: set[int],
     slack_user_id: str,
     users: list[ZerverFieldsT],
     slack_user_id_to_zulip_user_id: SlackToZulipUserIDT,
@@ -1368,6 +1572,7 @@ def process_message_files(
         files = [message["file"]]
 
     markdown_links = []
+    attachments = []
 
     for fileinfo in files:
         if fileinfo.get("mode", "") in ["tombstone", "hidden_by_limit"]:
@@ -1418,14 +1623,15 @@ def process_message_files(
                 ),
             )
 
-            build_attachment(
+            attachment = build_attachment(
                 realm_id,
-                {message_id},
+                message_ids,
                 slack_user_id_to_zulip_user_id[slack_user_id],
                 fileinfo,
                 attachment_data.path_id,
                 zerver_attachment,
             )
+            attachments.append(attachment)
         else:
             # For attachments with link not from Slack
             # Example: Google drive integration
@@ -1440,6 +1646,7 @@ def process_message_files(
 
     return dict(
         content=content,
+        attachments=attachments,
         has_attachment=has_attachment,
         has_image=has_image,
         has_link=has_link,
