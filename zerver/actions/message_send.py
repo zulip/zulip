@@ -31,6 +31,7 @@ from zerver.lib.cache import (
     pending_preview_draft_cache_key,
     preview_draft_content_hash,
 )
+from zerver.lib.event_types import UrlEmbedDataEvent
 from zerver.lib.exceptions import (
     DirectMessageInitiationError,
     DirectMessagePermissionError,
@@ -228,11 +229,7 @@ def is_latest_preview_draft(user_profile_id: int, content_hash: str) -> bool:
 
 
 def do_send_url_embed_data_event(sender: UserProfile, content: str, rendered_content: str) -> None:
-    event = {
-        "type": "url_embed_data",
-        "content": content,
-        "rendered_content": rendered_content,
-    }
+    event = UrlEmbedDataEvent(content=content, rendered_content=rendered_content)
     send_event_on_commit(sender.realm, event, [sender.id])
 
 

@@ -149,7 +149,7 @@ class DefaultStreamsEvent(BaseEvent):
 
 
 class DeleteMessageCoreEvent(BaseEvent):
-    type: Literal["delete_message"]
+    type: Literal["delete_message"] = "delete_message"
     message_type: Literal["private", "stream"]
 
 
@@ -1169,7 +1169,7 @@ class Group(BaseEventModel):
 
 
 class UrlEmbedDataEvent(BaseEvent):
-    type: Literal["url_embed_data"]
+    type: Literal["url_embed_data"] = "url_embed_data"
     content: str
     rendered_content: str
 
