@@ -18,8 +18,8 @@
     <td class="display_in_profile_summary_cell">
         {{#if valid_to_display_in_summary}}
         <span class="profile_field_display_in_profile_summary">
-            <label class="checkbox display_in_profile_summary_{{#if display_in_profile_summary}}true{{else}}false{{/if}}" for="profile_field_display_in_profile_summary_{{id}}">
-                <input class="display_in_profile_summary display_in_profile_summary_checkbox_{{#if display_in_profile_summary}}true{{else}}false{{/if}}" type="checkbox" id="profile_field_display_in_profile_summary_{{id}}" {{#if display_in_profile_summary}} checked="checked" {{/if}} data-profile-field-id="{{id}}"/>
+            <label class="checkbox display_in_profile_summary_{{#if display_in_profile_summary}}true{{else}}false{{/if}}{{#if is_first_pronoun_field}} first_pronoun_field_tooltip{{/if}}" for="profile_field_display_in_profile_summary_{{id}}">
+                <input class="display_in_profile_summary display_in_profile_summary_checkbox_{{#if display_in_profile_summary}}true{{else}}false{{/if}}" type="checkbox" id="profile_field_display_in_profile_summary_{{id}}" {{#if display_in_profile_summary}} checked="checked" {{/if}}{{#if is_first_pronoun_field}} disabled="disabled"{{/if}} data-profile-field-id="{{id}}"/>
                 <span class="rendered-checkbox"></span>
             </label>
         </span>
