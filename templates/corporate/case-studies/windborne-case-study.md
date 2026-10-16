@@ -40,7 +40,7 @@ entire team's work would be disrupted for hours.
 
 When John discovered Zulip, its topic-based threading felt like the right
 solution to Slack's messiness. After giving the app a try [in the Zulip
-development community](https://chat.zulip.org/?show_try_zulip_modal), WindBorne
+development community](/try-zulip/), WindBorne
 opted to host their own Zulip instance. (Never again will they have to rely on
 an external vendor to manage their critical communication infrastructure.)
 
