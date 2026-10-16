@@ -1,11 +1,13 @@
+import Handlebars from "handlebars/runtime.js";
 import {$} from "jquery";
 
+import render_banner from "../templates/components/banner.hbs";
 import render_cannot_send_direct_message_error from "../templates/compose_banner/cannot_send_direct_message_error.hbs";
 import render_compose_banner from "../templates/compose_banner/compose_banner.hbs";
 import render_long_paste_options from "../templates/compose_banner/long_paste_options.hbs";
-import render_stream_does_not_exist_error from "../templates/compose_banner/stream_does_not_exist_error.hbs";
 import render_topics_required_error_banner from "../templates/compose_banner/topics_required_error_banner.hbs";
 import render_unknown_zoom_user_error from "../templates/compose_banner/unknown_zoom_user_error.hbs";
+import render_stream_does_not_exist_error_message from "../templates/stream_does_not_exist_error_message.hbs";
 
 import {$t} from "./i18n.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -272,10 +274,16 @@ export function topic_missing_error(empty_string_topic_display_name: string): vo
 }
 
 export function show_stream_does_not_exist_error(stream_name: string): void {
-    const new_row_html = render_stream_does_not_exist_error({
-        banner_type: ERROR,
-        channel_name: stream_name,
-        classname: CLASSNAMES.stream_does_not_exist,
+    const new_row_html = render_banner({
+        intent: "danger",
+        label: new Handlebars.SafeString(
+            render_stream_does_not_exist_error_message({
+                channel_name: stream_name,
+            }),
+        ),
+        buttons: [],
+        close_button: true,
+        custom_classes: `${ERROR} ${CLASSNAMES.stream_does_not_exist}`,
     });
     append_compose_banner_to_banner_list($(new_row_html), $("#compose_banners"));
     hide_compose_spinner();
