@@ -359,8 +359,29 @@ def generate_curl_example(
         content := operation_entry["requestBody"]["content"]
     ):
         properties = content["multipart/form-data"]["schema"]["properties"]
-        for key, property in properties.items():
-            lines.append("    -F " + shlex.quote("{}=@{}".format(key, property["example"])))
+        for key, property_schema in properties.items():
+            if include is not None and key not in include:
+                continue
+            if exclude is not None and key in exclude:
+                continue
+            if property_schema.get("format") == "binary":
+                value = "{}=@{}".format(key, property_schema["example"])
+            else:
+                parameter = Parameter(
+                    kind="formData",
+                    name=key,
+                    description=property_schema.get("description", ""),
+                    json_encoded=property_schema.get("type") in ("object", "array"),
+                    value_schema=property_schema,
+                    example=property_schema["example"],
+                    required=False,
+                    deprecated=False,
+                )
+                formatted_value = get_openapi_param_example_value_as_string(
+                    endpoint, method, parameter
+                )
+                value = f"{key}={formatted_value}"
+            lines.append("    -F " + shlex.quote(value))
 
     for i in range(1, len(lines) - 1):
         lines[i] += " \\"
