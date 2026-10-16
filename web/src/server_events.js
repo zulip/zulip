@@ -291,7 +291,7 @@ export function initialize(params) {
 
 function cleanup_event_queue() {
     // Submit a request to the server to clean up our event queue
-    if (event_queue_expired || page_params.no_event_queue) {
+    if (event_queue_expired || queue_id === null) {
         return;
     }
     blueslip.log("Cleaning up our event queue");
