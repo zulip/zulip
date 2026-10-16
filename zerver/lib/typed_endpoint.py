@@ -17,9 +17,10 @@ from typing import (
     get_type_hints,
 )
 
+from annotated_types import Ge, Lt
 from django.http import HttpRequest
 from django.utils.translation import gettext as _
-from pydantic import Json, StringConstraints, TypeAdapter, ValidationError
+from pydantic import AllowInfNan, Json, StringConstraints, TypeAdapter, ValidationError
 from typing_extensions import ParamSpec
 
 from zerver.lib.exceptions import ApiParamValidationError, JsonableError
@@ -30,6 +31,7 @@ from zerver.lib.request import (
     arguments_map,
 )
 from zerver.lib.response import MutableJsonResponse
+from zerver.lib.timestamp import MAX_CONVERTIBLE_TIMESTAMP_EXCLUSIVE, MIN_CONVERTIBLE_TIMESTAMP
 
 T = TypeVar("T")
 ParamT = ParamSpec("ParamT")
@@ -112,6 +114,13 @@ OptionalTopic: TypeAlias = Annotated[
     ApiParamConfig(whence="topic", aliases=("subject",)),
 ]
 ApnsAppId: TypeAlias = Annotated[str, StringConstraints(pattern="^[.a-zA-Z0-9-]+$")]
+# A UNIX timestamp in seconds that timestamp_to_datetime can convert.
+TimestampInDatetimeRange: TypeAlias = Annotated[
+    T,
+    AllowInfNan(False),
+    Ge(MIN_CONVERTIBLE_TIMESTAMP),
+    Lt(MAX_CONVERTIBLE_TIMESTAMP_EXCLUSIVE),
+]
 
 # Reusable annotation metadata for Annotated types
 
@@ -322,6 +331,7 @@ ERROR_TEMPLATES = {
     "dict_type": _("{var_name} is not a dict"),
     "enum": _("Invalid {var_name}"),
     "extra_forbidden": _('Argument "{argument}" at {var_name} is unexpected'),
+    "finite_number": _("{var_name} is not a finite number"),
     "float_parsing": _("{var_name} is not a float"),
     "float_type": _("{var_name} is not a float"),
     "greater_than": _("{var_name} is too small"),

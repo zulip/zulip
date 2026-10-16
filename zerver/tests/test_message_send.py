@@ -1598,6 +1598,34 @@ class MessagePOSTTest(ZulipTestCase):
             self.assertEqual(message.sender_id, hamlet.id)
             self.assertEqual(int(datetime_to_timestamp(message.date_sent)), int(fake_timestamp))
 
+    def test_forged_message_with_out_of_range_time(self) -> None:
+        hamlet = self.example_user("hamlet")
+        bot = self.create_test_bot(short_name="forger", user_profile=self.example_user("cordelia"))
+        do_change_can_forge_sender(bot, True)
+        self.subscribe(bot, "Verona")
+        last_message_id = self.get_last_message().id
+
+        for forged_time, expected_error in [
+            (int(timezone_now().timestamp() * 1000), "time is too large"),
+            (-(10**11), "time is too small"),
+            ("NaN", "time is not a finite number"),
+        ]:
+            result = self.api_post(
+                bot,
+                "/api/v1/messages",
+                {
+                    "type": "channel",
+                    "forged": "true",
+                    "time": forged_time,
+                    "sender": hamlet.email,
+                    "content": "Test message",
+                    "topic": "forged",
+                    "to": orjson.dumps("Verona").decode(),
+                },
+            )
+            self.assert_json_error(result, expected_error)
+        self.assertEqual(self.get_last_message().id, last_message_id)
+
     def test_send_message_in_archived_stream(self) -> None:
         self.login("hamlet")
         stream_name = "archived stream"
