@@ -426,12 +426,10 @@ Miscellaneous:
 
 Test various UI entry points into channel settings:
 
-- Use small gear menu in left sidebar, then filter to "devel".
+- Use the "+" button next to the left sidebar filter, choose "Browse
+  channels," then filter to "devel".
 - Use popover menu in left sidebar next to "devel".
-- Use gear menu above buddy list and filter to "devel".
-- Use gear menu and click on "devel."
-- Use gear menu and then click on chevron menu next to "devel."
-  (I'm not sure why we still have the chevron at this writing.)
+- Use "Channel settings" in the gear menu and click on "devel."
 
 Create new public channel "public1" and add Hamlet:
 
@@ -476,7 +474,7 @@ Test per-channel options:
 
 ### User settings
 
-You can modify per-user settings by choosing "Settings" in the gear menu.
+You can modify per-user settings by choosing "Personal settings" in the gear menu.
 Do these tasks as Cordelia.
 
 - Your account
@@ -521,7 +519,7 @@ Here are the tasks for this section:
 - Use the "?" hotkey to open the keyboard help
 - Proofread the dialog for typos.
 - Close the dialog.
-- Re-open the keyboard help using the gear menu.
+- Re-open the keyboard help using "Keyboard shortcuts" in the help menu.
 - Find a hotkey that you don't frequently use and experiment with its
   usage.
 
@@ -547,7 +545,7 @@ Here are the tasks:
 - Go to the development console to get the login link for foo@zulip.com.
 - Go through the signup flow.
 - Follow the tutorial.
-- Use the gear menu to log out.
+- Use the personal menu (your avatar in the top right) to log out.
 - Log back in as Cordelia (admittedly, this step doesn't really QA
   much of our production code, since the login flow is customized for
   the development environment).
