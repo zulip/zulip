@@ -149,6 +149,7 @@ from zproject.backends import (
     ZulipLDAPAuthBackend,
     ZulipLDAPConfigurationError,
     ZulipLDAPError,
+    ZulipLDAPSearch,
     ZulipLDAPUser,
     ZulipLDAPUserPopulator,
     ZulipRemoteUserBackend,
@@ -7875,6 +7876,16 @@ class DjangoToLDAPUsernameTests(ZulipTestCase):
             self.assertTrue(user_profile.is_active)
 
 
+# A realistic Active Directory objectSid value. Values of such binary attributes
+# generally aren't valid utf-8, so django-auth-ldap hands them to us as bytes.
+EXAMPLE_OBJECT_SID = bytes.fromhex("010500000000000515000000a065cf7e784b9b5fe77c8770091f0200")
+# An objectSid value that happens to be valid utf-8, and thus gets decoded to a str
+# by django-auth-ldap before it reaches us. This is a rare, but possible, edge case.
+EXAMPLE_UTF8_DECODABLE_OBJECT_SID = bytes.fromhex(
+    "0105000000000005150000000102030405060708090a0b0c51040000"
+)
+
+
 class ZulipLDAPTestCase(ZulipTestCase):
     @override
     def setUp(self) -> None:
@@ -8124,6 +8135,31 @@ class TestLDAP(ZulipLDAPTestCase):
         self.assertEqual(new_external_auth_id.realm_id, realm.id)
         self.assertEqual(new_external_auth_id.external_auth_method_name, "ldap")
         self.assertEqual(new_external_auth_id.external_auth_id, "123456789")
+
+    @override_settings(
+        AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
+        LDAP_EMAIL_ATTR="mail",
+        AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "unique_account_id": "objectSid"},
+        LDAP_UNIQUE_ACCOUNT_ID_IS_BINARY=True,
+    )
+    def test_external_auth_id_login_with_binary_unique_account_id_attribute(self) -> None:
+        """
+        Attributes that are the natural choice for unique_account_id in Active Directory,
+        such as objectSid, have binary values - which we store hex-encoded.
+        """
+        hamlet = self.example_user("hamlet")
+        self.change_ldap_user_attr("hamlet", "objectSid", EXAMPLE_OBJECT_SID)
+
+        user_profile = self.backend.authenticate(
+            request=mock.MagicMock(),
+            username=self.ldap_username("hamlet"),
+            password=self.ldap_password("hamlet"),
+            realm=get_realm("zulip"),
+        )
+        self.assertEqual(hamlet.id, user_profile.id)
+
+        external_auth_id = ExternalAuthID.objects.get(user=hamlet)
+        self.assertEqual(external_auth_id.external_auth_id, EXAMPLE_OBJECT_SID.hex())
 
     @override_settings(
         AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
@@ -9046,6 +9082,146 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
 
     @override_settings(
         LDAP_EMAIL_ATTR="mail",
+        AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "unique_account_id": "objectSid"},
+        LDAP_UNIQUE_ACCOUNT_ID_IS_BINARY=True,
+    )
+    def test_sync_creates_external_auth_id_record_for_binary_attribute(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        self.change_ldap_user_attr("hamlet", "objectSid", EXAMPLE_OBJECT_SID)
+        sync_user_from_ldap(hamlet, mock.Mock())
+        self.assertEqual(
+            ExternalAuthID.objects.get(user=hamlet).external_auth_id, EXAMPLE_OBJECT_SID.hex()
+        )
+
+        # A binary value that django-auth-ldap managed to decode to a str has to end up
+        # stored in the same way as one that reaches us as bytes.
+        ExternalAuthID.objects.filter(user=hamlet).delete()
+        self.change_ldap_user_attr("hamlet", "objectSid", EXAMPLE_UTF8_DECODABLE_OBJECT_SID)
+        sync_user_from_ldap(hamlet, mock.Mock())
+        self.assertEqual(
+            ExternalAuthID.objects.get(user=hamlet).external_auth_id,
+            EXAMPLE_UTF8_DECODABLE_OBJECT_SID.hex(),
+        )
+
+    @override_settings(
+        LDAP_EMAIL_ATTR="mail",
+        AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "unique_account_id": "objectSid"},
+    )
+    def test_sync_with_binary_unique_account_id_attribute_misconfigured(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.change_ldap_user_attr("hamlet", "objectSid", EXAMPLE_OBJECT_SID)
+
+        with (
+            self.assertRaises(AssertionError) as e,
+            self.assertLogs("django_auth_ldap", level="WARNING"),
+        ):
+            sync_user_from_ldap(hamlet, mock.Mock())
+
+        self.assertEqual(
+            str(e.exception),
+            "Attribute objectSid configured as unique_account_id has non-string values. "
+            "You might need to set LDAP_UNIQUE_ACCOUNT_ID_IS_BINARY to True.",
+        )
+
+    @override_settings(
+        LDAP_EMAIL_ATTR="mail",
+        AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "unique_account_id": "objectSid"},
+        LDAP_UNIQUE_ACCOUNT_ID_IS_BINARY=True,
+    )
+    def test_sync_via_external_auth_id_binary_attribute(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet_dn = "uid=hamlet,ou=users,dc=zulip,dc=com"
+        self.change_ldap_user_attr("hamlet", "objectSid", EXAMPLE_OBJECT_SID)
+        ExternalAuthID.objects.create(
+            user=hamlet,
+            realm=hamlet.realm,
+            external_auth_method_name="ldap",
+            external_auth_id=EXAMPLE_OBJECT_SID.hex(),
+        )
+        self.change_ldap_user_attr("hamlet", "mail", "new-hamlet@zulip.com")
+
+        # Our fake LDAP directory can't match binary values in a search filter, so we
+        # substitute the result of the search - and verify that the filter we send is
+        # the escaped octet form that an LDAP server expects for a binary value.
+        logger = logging.getLogger("zulip.sync_ldap_user_data")
+        with (
+            mock.patch.object(
+                ZulipLDAPSearch,
+                "do_search",
+                return_value=[(hamlet_dn, self.mock_ldap.directory[hamlet_dn])],
+            ) as mock_do_search,
+            self.assertLogs(logger, level="INFO") as log_output,
+        ):
+            sync_user_from_ldap(hamlet, logger)
+
+        ldap_search, search_kwargs = mock_do_search.call_args.args
+        self.assertEqual(ldap_search.filterstr, "(objectSid=%(external_auth_id)s)")
+        self.assertEqual(
+            search_kwargs,
+            {
+                "external_auth_id": r"\01\05\00\00\00\00\00\05\15\00\00\00\a0\65\cf\7e"
+                r"\78\4b\9b\5f\e7\7c\87\70\09\1f\02\00"
+            },
+        )
+        self.assertFalse(mock_do_search.call_args.kwargs["escape"])
+
+        hamlet.refresh_from_db()
+        self.assertEqual(hamlet.delivery_email, "new-hamlet@zulip.com")
+
+        self.assertIn(
+            f"INFO:zulip.sync_ldap_user_data:Syncing user new-hamlet@zulip.com (id={hamlet.id})"
+            f" via external auth id. Result DN: {hamlet_dn}",
+            log_output.output,
+        )
+        self.assertIn(
+            f"INFO:zulip.sync_ldap_user_data:User {hamlet.id},"
+            f" being synced via ExternalAuthId {EXAMPLE_OBJECT_SID.hex()},"
+            " has mismatched email. Syncing: hamlet@zulip.com => new-hamlet@zulip.com",
+            log_output.output,
+        )
+
+    @override_settings(
+        LDAP_EMAIL_ATTR="mail",
+        AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "unique_account_id": "objectSid"},
+        LDAP_UNIQUE_ACCOUNT_ID_IS_BINARY=True,
+    )
+    def test_sync_via_external_auth_id_binary_attribute_with_non_hex_value(self) -> None:
+        # An ExternalAuthID record can predate unique_account_id being switched to
+        # a binary attribute, in which case its value isn't hex.
+        hamlet = self.example_user("hamlet")
+        self.change_ldap_user_attr("hamlet", "objectSid", EXAMPLE_OBJECT_SID)
+        external_auth_id_obj = ExternalAuthID.objects.create(
+            user=hamlet,
+            realm=hamlet.realm,
+            external_auth_method_name="ldap",
+            external_auth_id="uid=hamlet,ou=users,dc=zulip,dc=com",
+        )
+
+        logger = logging.getLogger("zulip.sync_ldap_user_data")
+        with (
+            self.assertLogs(logger, level="WARNING") as log_output,
+            self.assertLogs("zulip.auth.ldap", level="WARNING") as ldap_log_output,
+        ):
+            sync_user_from_ldap(hamlet, logger)
+
+        self.assertIn(
+            f"WARNING:zulip.sync_ldap_user_data:ExternalAuthID {external_auth_id_obj.id}"
+            f" for user {hamlet.id} is not a valid value of the binary attribute objectSid",
+            log_output.output,
+        )
+
+        # The user gets synced via their email address instead, which fixes up the record.
+        self.assertIn(
+            f"WARNING:zulip.auth.ldap:User {hamlet.id} had mismatched ExternalAuthID record. "
+            f"Updating uid=hamlet,ou=users,dc=zulip,dc=com => {EXAMPLE_OBJECT_SID.hex()}",
+            ldap_log_output.output,
+        )
+        external_auth_id_obj.refresh_from_db()
+        self.assertEqual(external_auth_id_obj.external_auth_id, EXAMPLE_OBJECT_SID.hex())
+
+    @override_settings(
+        LDAP_EMAIL_ATTR="mail",
         AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "unique_account_id": "dn"},
     )
     def test_sync_via_external_auth_id_end_to_end(self) -> None:
@@ -9228,6 +9404,24 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
 
 
 class TestQueryLDAP(ZulipLDAPTestCase):
+    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
+    def test_query_with_binary_unique_account_id(self) -> None:
+        self.change_ldap_user_attr("hamlet", "objectSid", EXAMPLE_OBJECT_SID)
+        with self.settings(
+            AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "unique_account_id": "objectSid"},
+            LDAP_UNIQUE_ACCOUNT_ID_IS_BINARY=True,
+        ):
+            values = query_ldap(self.example_email("hamlet"))
+
+        # The unique_account_id is displayed the way it gets stored.
+        self.assertEqual(
+            values,
+            [
+                "full_name: King Hamlet",
+                f"unique_account_id: {EXAMPLE_OBJECT_SID.hex()}",
+            ],
+        )
+
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.EmailAuthBackend",))
     def test_ldap_not_configured(self) -> None:
         values = query_ldap(self.example_email("hamlet"))
