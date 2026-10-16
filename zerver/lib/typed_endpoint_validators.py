@@ -62,7 +62,7 @@ def to_timezone_or_empty(s: str) -> str:
     try:
         s = canonicalize_timezone(s)
         zoneinfo.ZoneInfo(s)
-    except (ValueError, zoneinfo.ZoneInfoNotFoundError):
+    except (OSError, ValueError, zoneinfo.ZoneInfoNotFoundError):
         return ""
     else:
         return s
@@ -75,7 +75,7 @@ def timezone_or_empty_validator() -> AfterValidator:
 def check_timezone(s: str) -> str:
     try:
         zoneinfo.ZoneInfo(canonicalize_timezone(s))
-    except (ValueError, zoneinfo.ZoneInfoNotFoundError):
+    except (OSError, ValueError, zoneinfo.ZoneInfoNotFoundError):
         raise ValueError(_("Not a recognized time zone"))
     return s
 
