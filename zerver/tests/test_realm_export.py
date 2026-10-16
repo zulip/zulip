@@ -58,12 +58,16 @@ class RealmExportTest(ZulipTestCase):
             with (
                 self.settings(LOCAL_UPLOADS_DIR=None),
                 stdout_suppressed(),
-                self.assertLogs(level="INFO") as info_logs,
+                self.assertLogs("zerver.worker.deferred_work", level="INFO") as info_logs,
                 time_machine.travel(export_time, tick=False),
                 self.captureOnCommitCallbacks(execute=True),
             ):
                 result = self.client_post("/json/export/realm")
-            self.assertTrue("INFO:root:Completed data export for zulip in " in info_logs.output[0])
+            self.assertTrue(
+                info_logs.output[1].startswith(
+                    "INFO:zerver.worker.deferred_work:Completed data export for zulip in "
+                )
+            )
         self.assert_json_success(result)
         self.assertFalse(os.path.exists(tarball_path))
         args = mock_export.call_args_list[0][1]
@@ -170,12 +174,16 @@ class RealmExportTest(ZulipTestCase):
         ) as mock_export:
             with (
                 stdout_suppressed(),
-                self.assertLogs(level="INFO") as info_logs,
+                self.assertLogs("zerver.worker.deferred_work", level="INFO") as info_logs,
                 time_machine.travel(export_time, tick=False),
                 self.captureOnCommitCallbacks(execute=True),
             ):
                 result = self.client_post("/json/export/realm")
-            self.assertTrue("INFO:root:Completed data export for zulip in " in info_logs.output[0])
+            self.assertTrue(
+                info_logs.output[1].startswith(
+                    "INFO:zerver.worker.deferred_work:Completed data export for zulip in "
+                )
+            )
         mock_export.assert_called_once()
         data = self.assert_json_success(result)
         self.assertFalse(os.path.exists(tarball_path))
@@ -246,7 +254,9 @@ class RealmExportTest(ZulipTestCase):
         ):
             result = self.client_post("/json/export/realm")
         self.assertTrue(
-            info_logs.output[0].startswith("ERROR:root:Data export for zulip failed after ")
+            info_logs.output[0].startswith(
+                "ERROR:zerver.worker.deferred_work:Data export for zulip failed after "
+            )
         )
         mock_export.assert_called_once()
         # This is a success because the failure is swallowed in the queue worker
