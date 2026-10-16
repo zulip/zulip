@@ -1010,7 +1010,7 @@
         margin-right: 0.75em; /* 12px at 16px font size */
         background-color: hsl(300deg 100% 25%);
         border-radius: 4px;
-        color: hsl(0deg 0% 100%);
+        color: var(--color-text-on-solid);
 
         .symbol {
             font-weight: 600;
