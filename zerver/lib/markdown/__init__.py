@@ -1541,7 +1541,7 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     directly after a line of text, and inserts a newline between
     to satisfy Markdown"""
 
-    LI_RE = re.compile(r"^[ ]*([*+-]|\d\.)[ ]+(.*)", re.MULTILINE)
+    LI_RE = re.compile(r"^[ ]*([*+-]|\d+\.)[ ]+(.*)", re.MULTILINE)
 
     @override
     def run(self, lines: list[str]) -> list[str]:
@@ -1580,12 +1580,25 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
                 and lines[i]
                 and (
                     (li2 and not li1)
-                    or (li1 and li2 and (len(li1.group(1)) == 1) != (len(li2.group(1)) == 1))
+                    or (
+                        li1
+                        and li2
+                        and (len(li1.group(1)) == 1) != (len(li2.group(1)) == 1)
+                        # A differently-typed item indented deeper than the
+                        # current one starts a nested sub-list, which Markdown
+                        # handles on its own; inserting a blank line there
+                        # would wrap the parent item in a <p> tag.
+                        and self.indentation(lines[i + 1]) <= self.indentation(lines[i])
+                    )
                 )
             ):
                 copy.insert(i + inserts + 1, "")
                 inserts += 1
         return copy
+
+    @staticmethod
+    def indentation(line: str) -> int:
+        return len(line) - len(line.lstrip(" "))
 
 
 # Name for the outer capture group we use to separate whitespace and
