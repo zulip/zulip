@@ -1530,7 +1530,7 @@ label.preferences-radio-choice-label {
                     0,
                     1fr
                 )
-                minmax(34px, auto);
+                2.8571em;
             align-items: center;
             outline: none;
             cursor: pointer;
