@@ -5,9 +5,13 @@ import re
 import shutil
 import subprocess
 import tempfile
+import unittest
+from abc import ABC, abstractmethod
+from collections import defaultdict
 from collections.abc import Callable, Collection, Iterable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
-from datetime import timedelta
+from dataclasses import dataclass
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any, Union
 from unittest import TestResult, mock, skipUnless
 from urllib.parse import parse_qs, quote, urlencode
@@ -30,7 +34,7 @@ from django.db.utils import IntegrityError
 from django.http import HttpRequest, HttpResponse, HttpResponseBase
 from django.http.response import ResponseHeaders
 from django.test import Client as TestClient
-from django.test import SimpleTestCase, TestCase, TransactionTestCase
+from django.test import SimpleTestCase, TestCase, TransactionTestCase, override_settings
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, ClientHandler, encode_multipart
 from django.test.testcases import SerializeMixin
 from django.urls import resolve
@@ -56,6 +60,7 @@ from zerver.actions.users import do_change_user_role
 from zerver.decorator import do_two_factor_login
 from zerver.lib.cache import bounce_key_prefix_for_testing
 from zerver.lib.email_notifications import MissedMessageData, handle_missedmessage_emails
+from zerver.lib.import_realm import do_import_realm
 from zerver.lib.initial_password import initial_password
 from zerver.lib.mdiff import diff_strings
 from zerver.lib.message import access_message
@@ -86,10 +91,10 @@ from zerver.lib.test_helpers import (
     instrument_url,
     queries_captured,
 )
-from zerver.lib.thumbnail import ThumbnailFormat
+from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, ThumbnailFormat
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX, filter_by_topic_name_via_message
 from zerver.lib.types import ProfileDataElementUpdateDict
-from zerver.lib.upload import upload_message_attachment_from_request
+from zerver.lib.upload import sanitize_name, upload_message_attachment_from_request
 from zerver.lib.user_groups import get_system_user_group_for_user
 from zerver.lib.webhooks.common import (
     call_fixture_to_headers,
@@ -97,6 +102,7 @@ from zerver.lib.webhooks.common import (
     standardize_headers,
 )
 from zerver.models import (
+    Attachment,
     Client,
     Device,
     Message,
@@ -104,6 +110,7 @@ from zerver.models import (
     PushDeviceToken,
     Reaction,
     Realm,
+    RealmAuditLog,
     RealmEmoji,
     Recipient,
     Stream,
@@ -115,6 +122,7 @@ from zerver.models import (
     UserStatus,
 )
 from zerver.models.clients import get_client
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
 from zerver.models.recipients import get_or_create_direct_message_group
 from zerver.models.streams import StreamTopicsPolicyEnum, get_realm_stream, get_stream
@@ -3144,3 +3152,290 @@ class E2EEPushNotificationTestCase(BouncerTestCase):
     ) -> firebase_messaging.BatchResponse:
         error_response = firebase_messaging.SendResponse(exception=exception, resp=None)
         return firebase_messaging.BatchResponse([error_response])
+
+
+@dataclass(frozen=True)
+class ExpectedUser:
+    email: str
+    full_name: str
+    role: int
+    is_bot: bool
+    bot_type: int | None
+    is_active: bool
+    is_mirror_dummy: bool
+
+
+@dataclass(frozen=True)
+class ExpectedChannel:
+    name: str
+    description: str
+    invite_only: bool
+    deactivated: bool
+    subscriber_emails: frozenset[str]
+
+
+@dataclass(frozen=True)
+class ExpectedMessage:
+    sender_email: str
+    date_sent: float
+    # Both None for direct messages.
+    channel_name: str | None
+    topic_name: str | None
+    # None for channel messages. Includes the sender.
+    direct_message_participant_emails: frozenset[str] | None
+
+
+class ImporterContractTestBase(ZulipTestCase, ABC):
+    """Base class for end-to-end tests of third-party data importers.
+
+    Subclasses convert an export fixture, and translate that same raw
+    export into the importer-agnostic Expected* objects above. The
+    tests here then check that the realm produced by do_import_realm
+    matches those expectations.
+
+    The conversion and import run once per class, in setUpTestData, so
+    importer-specific tests in subclasses can inspect
+    `self.imported_realm` without repeating them.
+
+    Test modules that import this class must `del` it at the end, so
+    that the test runner doesn't try to run it directly.
+    """
+
+    SUBDOMAIN = "test-realm"
+    IMPORT_SOURCE: str
+
+    imported_realm: Realm
+    conversion_log_output: list[str]
+    imported_uploads_dir: str
+
+    @classmethod
+    @abstractmethod
+    def convert_export(cls) -> str:
+        """Convert the export fixture, and return the directory containing
+        the converted data for do_import_realm."""
+
+    @abstractmethod
+    def get_expected_users(self) -> list[ExpectedUser]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_expected_channels(self) -> list[ExpectedChannel]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_expected_messages(self) -> list[ExpectedMessage]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_expected_attachment_file_names(self) -> list[str]:
+        """File names as they appear in the export; do_import_realm
+        sanitizes them, so the test does too."""
+        raise NotImplementedError
+
+    @classmethod
+    @override
+    def setUpTestData(cls) -> None:
+        super().setUpTestData()
+        # setUpTestData is a classmethod, so we borrow assertLogs from a
+        # throwaway TestCase instance to keep logs out of the test output.
+        with unittest.TestCase().assertLogs(level="INFO") as mock_log:
+            import_dir = cls.convert_export()
+        cls.conversion_log_output = mock_log.output
+
+        with (
+            override_settings(BILLING_ENABLED=False),
+            unittest.TestCase().assertLogs(level="INFO"),
+        ):
+            do_import_realm(import_dir=import_dir, subdomain=cls.SUBDOMAIN)
+        cls.imported_realm = get_realm(cls.SUBDOMAIN)
+
+        # tearDown deletes LOCAL_UPLOADS_DIR after every test, so keep
+        # a copy of the imported files for setUp to restore.
+        assert settings.LOCAL_UPLOADS_DIR is not None
+        cls.imported_uploads_dir = tempfile.mkdtemp(
+            dir=settings.TEST_WORKER_DIR, prefix="test-imported-uploads-"
+        )
+        shutil.copytree(settings.LOCAL_UPLOADS_DIR, cls.imported_uploads_dir, dirs_exist_ok=True)
+
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        assert settings.LOCAL_UPLOADS_DIR is not None
+        shutil.copytree(self.imported_uploads_dir, settings.LOCAL_UPLOADS_DIR, dirs_exist_ok=True)
+
+    @classmethod
+    def make_converted_output_dir(cls) -> str:
+        # Unlike make_export_output_dir, other tests can't wipe this
+        # directory while the class still needs it.
+        return tempfile.mkdtemp(dir=settings.TEST_WORKER_DIR, prefix="test-converted-")
+
+    def test_imported_realm(self) -> None:
+        realm = self.imported_realm
+        self.assertEqual(realm.name, self.SUBDOMAIN)
+        self.assertFalse(realm.deactivated)
+        # All auth backends are enabled initially.
+        self.assertTrue(all(realm.authentication_methods_dict().values()))
+
+        self.assertTrue(
+            RealmAuditLog.objects.filter(
+                realm=realm, event_type=AuditLogEventType.REALM_CREATED
+            ).exists()
+        )
+        realm_imported_log = RealmAuditLog.objects.get(
+            realm=realm, event_type=AuditLogEventType.REALM_IMPORTED
+        )
+        self.assertEqual(realm_imported_log.extra_data["import_source"], self.IMPORT_SOURCE)
+
+        for announcements_channel in [
+            realm.new_stream_announcements_stream,
+            realm.zulip_update_announcements_stream,
+        ]:
+            assert announcements_channel is not None
+            self.assertFalse(announcements_channel.deactivated)
+
+    def test_imported_users(self) -> None:
+        imported_users = UserProfile.objects.filter(realm=self.imported_realm)
+        self.assertCountEqual(
+            [
+                ExpectedUser(
+                    email=user.email,
+                    full_name=user.full_name,
+                    role=user.role,
+                    is_bot=user.is_bot,
+                    bot_type=user.bot_type,
+                    is_active=user.is_active,
+                    is_mirror_dummy=user.is_mirror_dummy,
+                )
+                for user in imported_users
+            ],
+            self.get_expected_users(),
+        )
+
+    def test_imported_channels(self) -> None:
+        imported_channels = Stream.objects.filter(realm=self.imported_realm)
+        subscriber_emails: dict[int, set[str]] = defaultdict(set)
+        for channel_id, email in Subscription.objects.filter(
+            active=True,
+            recipient__type=Recipient.STREAM,
+            recipient__type_id__in=[channel.id for channel in imported_channels],
+        ).values_list("recipient__type_id", "user_profile__email"):
+            subscriber_emails[channel_id].add(email)
+
+        self.assertCountEqual(
+            [
+                ExpectedChannel(
+                    name=channel.name,
+                    description=channel.description,
+                    invite_only=channel.invite_only,
+                    deactivated=channel.deactivated,
+                    subscriber_emails=frozenset(subscriber_emails[channel.id]),
+                )
+                for channel in imported_channels
+            ],
+            self.get_expected_channels(),
+        )
+
+    def test_imported_messages(self) -> None:
+        channel_names = dict(
+            Stream.objects.filter(realm=self.imported_realm).values_list("recipient_id", "name")
+        )
+        direct_message_group_emails: dict[int, set[str]] = defaultdict(set)
+        for recipient_id, email in Subscription.objects.filter(
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP,
+            user_profile__realm=self.imported_realm,
+        ).values_list("recipient_id", "user_profile__email"):
+            direct_message_group_emails[recipient_id].add(email)
+
+        imported_messages = (
+            Message.objects.filter(realm=self.imported_realm, sender__realm=self.imported_realm)
+            .select_related("sender", "recipient")
+            .order_by("id")
+        )
+
+        actual_messages: list[ExpectedMessage] = []
+        last_date_sent_by_recipient: dict[int, datetime] = {}
+        for message in imported_messages:
+            # Imported messages are sorted chronologically within each
+            # conversation.
+            if message.recipient_id in last_date_sent_by_recipient:
+                self.assertLessEqual(
+                    last_date_sent_by_recipient[message.recipient_id], message.date_sent
+                )
+            last_date_sent_by_recipient[message.recipient_id] = message.date_sent
+
+            # Content conversion is importer-specific, so it's tested in
+            # each importer's own tests.
+            self.assertIsNotNone(message.content)
+            self.assertIsNotNone(message.rendered_content)
+
+            self.assertEqual(message.is_channel_message, message.recipient.type == Recipient.STREAM)
+
+            direct_message_participant_emails: frozenset[str] | None = None
+            if message.recipient.type == Recipient.DIRECT_MESSAGE_GROUP:
+                direct_message_participant_emails = frozenset(
+                    direct_message_group_emails[message.recipient_id]
+                )
+
+            channel_name = channel_names.get(message.recipient_id)
+            actual_messages.append(
+                ExpectedMessage(
+                    sender_email=message.sender.email,
+                    date_sent=message.date_sent.timestamp(),
+                    channel_name=channel_name,
+                    topic_name=None if channel_name is None else message.topic_name(),
+                    direct_message_participant_emails=direct_message_participant_emails,
+                )
+            )
+
+        expected_messages = self.get_expected_messages()
+        self.assertNotEqual(expected_messages, [])
+        self.assertCountEqual(actual_messages, expected_messages)
+
+    def test_imported_attachments(self) -> None:
+        imported_attachments = Attachment.objects.filter(realm=self.imported_realm)
+        expected_attachment_file_names = [
+            sanitize_name(file_name) for file_name in self.get_expected_attachment_file_names()
+        ]
+        self.assertNotEqual(expected_attachment_file_names, [])
+        self.assertCountEqual(
+            [attachment.file_name for attachment in imported_attachments],
+            expected_attachment_file_names,
+        )
+
+        message_attachments: dict[int, list[Attachment]] = defaultdict(list)
+        messages: dict[int, Message] = {}
+        for attachment in imported_attachments.prefetch_related("messages"):
+            for message in attachment.messages.all():
+                message_attachments[message.id].append(attachment)
+                messages[message.id] = message
+
+        for message_id, attachments in message_attachments.items():
+            message = messages[message_id]
+            self.assertTrue(message.has_attachment)
+            self.assertEqual(
+                message.has_image,
+                any(
+                    attachment.content_type in THUMBNAIL_ACCEPT_IMAGE_TYPES
+                    for attachment in attachments
+                ),
+            )
+            assert isinstance(message.rendered_content, str)
+            for attachment in attachments:
+                self.assertIn(f"/user_uploads/{attachment.path_id}", message.rendered_content)
+
+        assert settings.LOCAL_FILES_DIR is not None
+        for attachment in imported_attachments:
+            self.assertTrue(
+                os.path.isfile(os.path.join(settings.LOCAL_FILES_DIR, attachment.path_id))
+            )
+
+        # No message claims an attachment it doesn't have, e.g. because
+        # its file was missing from the export or failed to download.
+        self.assertSetEqual(
+            set(message_attachments),
+            set(
+                Message.objects.filter(realm=self.imported_realm, has_attachment=True).values_list(
+                    "id", flat=True
+                )
+            ),
+        )

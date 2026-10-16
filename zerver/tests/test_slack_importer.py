@@ -1,3 +1,4 @@
+import copy
 import os
 import re
 import shutil
@@ -18,8 +19,10 @@ from attr import dataclass
 from django.conf import settings
 from django.db import IntegrityError
 from django.http import HttpResponse
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from requests.models import PreparedRequest
+from typing_extensions import override
 
 from confirmation import settings as confirmation_settings
 from confirmation.models import Confirmation, create_confirmation_link, get_object_from_key
@@ -57,7 +60,6 @@ from zerver.data_import.slack import (
     count_thread_replies,
     do_convert_zipfile,
     fetch_shared_channel_users,
-    get_admin,
     get_guest,
     get_message_sending_user,
     get_owner,
@@ -71,24 +73,23 @@ from zerver.data_import.slack import (
     users_to_zerver_userprofile,
 )
 from zerver.lib.exceptions import SlackImportInvalidFileError
-from zerver.lib.import_realm import do_import_realm
 from zerver.lib.mime_types import INLINE_MIME_TYPES
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_classes import (
+    ExpectedChannel,
+    ExpectedMessage,
+    ExpectedUser,
+    ImporterContractTestBase,
+    ZulipTestCase,
+)
 from zerver.lib.test_helpers import find_key_by_email, read_test_image_file
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
 from zerver.lib.topic import EXPORT_TOPIC_NAME
 from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.models import Message, PreregistrationRealm, Realm, RealmAuditLog, UserProfile
 from zerver.models.realm_audit_logs import AuditLogEventType
-from zerver.models.realms import get_realm
 
 if TYPE_CHECKING:
     from django.test.client import _MonkeyPatchedWSGIResponse as TestHttpResponse
-
-
-def remove_folder(path: str) -> None:
-    if os.path.exists(path):
-        shutil.rmtree(path)
 
 
 def request_callback(request: PreparedRequest) -> tuple[int, dict[str, str], bytes]:
@@ -528,11 +529,6 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(get_owner(user_data[1]), True)
         self.assertEqual(get_owner(user_data[2]), True)
         self.assertEqual(get_owner(user_data[3]), True)
-
-    def test_get_admin(self) -> None:
-        user_data = [{"is_admin": True}, {"is_admin": False}]
-        self.assertEqual(get_admin(user_data[0]), True)
-        self.assertEqual(get_admin(user_data[1]), False)
 
     def test_get_guest(self) -> None:
         user_data = [
@@ -1054,12 +1050,7 @@ class SlackImporter(ZulipTestCase):
         realm: ZerverFieldsT = {"zerver_userpresence": [], "zerver_realm": [dict()]}
         zerver_realm = realm["zerver_realm"]
 
-        with (
-            self.assertLogs(level="INFO"),
-            mock.patch(
-                "zerver.data_import.slack.SLACK_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME", "random"
-            ),
-        ):
+        with self.assertLogs(level="INFO"):
             (
                 realm,
                 added_channels,
@@ -1142,10 +1133,9 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_stream[0]["realm"], realm_id)
         self.assertEqual(zerver_stream[2]["id"], test_added_channels[zerver_stream[2]["name"]][1])
 
-        self.assertEqual(
-            zerver_realm[0]["zulip_update_announcements_stream"], zerver_stream[0]["id"]
-        )
-        self.assertEqual(zerver_realm[0]["new_stream_announcements_stream"], zerver_stream[0]["id"])
+        general_channel_id = test_added_channels["general"][1]
+        self.assertEqual(zerver_realm[0]["zulip_update_announcements_stream"], general_channel_id)
+        self.assertEqual(zerver_realm[0]["new_stream_announcements_stream"], general_channel_id)
 
         self.assertEqual(self.get_set(realm["zerver_huddle"], "id"), {0, 1, 2, 3, 4, 5, 6})
         self.assertEqual(realm["zerver_userpresence"], [])
@@ -2322,143 +2312,6 @@ To Do
 
         self.assertEqual(test_reactions, reactions)
 
-    @responses.activate
-    @mock.patch("zerver.data_import.slack.build_attachment", return_value=[])
-    @mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", ""))
-    @mock.patch("zerver.data_import.slack.build_avatar")
-    @mock.patch("zerver.data_import.slack.get_slack_api_data")
-    @mock.patch("zerver.data_import.slack.check_slack_token_access")
-    def test_slack_import_to_existing_database(
-        self,
-        mock_check_slack_token_access: mock.Mock,
-        mock_get_slack_api_data: mock.Mock,
-        mock_build_avatar_url: mock.Mock,
-        mock_build_avatar: mock.Mock,
-        mock_attachment: mock.Mock,
-    ) -> None:
-        test_slack_dir = os.path.join(
-            settings.DEPLOY_ROOT, "zerver", "tests", "fixtures", "slack_fixtures"
-        )
-        test_slack_zip_file = os.path.join(test_slack_dir, "test_slack_importer.zip")
-        test_slack_unzipped_file = os.path.join(test_slack_dir, "test_slack_importer")
-
-        test_realm_subdomain = "test-slack-import"
-        output_dir = os.path.join(settings.DEPLOY_ROOT, "var", "test-slack-importer-data")
-        token = "xoxb-valid-token"
-
-        # If the test fails, the 'output_dir' would not be deleted and hence it would give an
-        # error when we run the tests next time, as 'do_convert_data' expects an empty 'output_dir'
-        # hence we remove it before running 'do_convert_data'
-        self.rm_tree(output_dir)
-        # Also the unzipped data file should be removed if the test fails at 'do_convert_data'
-        self.rm_tree(test_slack_unzipped_file)
-
-        user_data_fixture = orjson.loads(self.fixture_data("user_data.json", type="slack_fixtures"))
-        # Mark a non-primary-owner, non-slackbot member as deleted in our copy
-        # of the fixture so that the import produces an inactive UserProfile.
-        deleted_slack_user_id = "U8VAHEVUY"
-        for member in user_data_fixture["members"]:
-            if member["id"] == deleted_slack_user_id:
-                self.assertFalse(member["is_primary_owner"])
-                self.assertFalse(member["is_bot"])
-                self.assertFalse(member["deleted"])
-                member["deleted"] = True
-                break
-        else:
-            raise AssertionError(f"Slack user {deleted_slack_user_id} not found in fixture")
-
-        team_info_fixture = orjson.loads(self.fixture_data("team_info.json", type="slack_fixtures"))
-        mock_get_slack_api_data.side_effect = [
-            user_data_fixture["members"],
-            {},
-            team_info_fixture["team"],
-        ]
-
-        responses.add(
-            responses.GET,
-            re.compile(r"https://.*\.slack-edge\.com/.*"),
-            body=read_test_image_file("img.png"),
-            content_type="image/png",
-            status=200,
-        )
-
-        responses.add(
-            responses.GET,
-            re.compile(r"https://files\.slack\.com/.*"),
-            body=read_test_image_file("img.png"),
-            content_type="image/png",
-            status=200,
-        )
-
-        # A conversion must not read thread state cached by an earlier
-        # import in the same process; see reset_import_state.
-        thread_parent_map["0000000000.000000"] = "USTALEPARENT"
-
-        with self.assertLogs(level="INFO"), self.settings(EXTERNAL_HOST="zulip.example.com"):
-            # We need to mock EXTERNAL_HOST to be a valid domain because Slack's importer
-            # uses it to generate email addresses for users without an email specified.
-            do_convert_zipfile(test_slack_zip_file, output_dir, token, processes=1)
-
-        self.assertNotIn("0000000000.000000", thread_parent_map)
-
-        realm_id = 0
-        uploads_folder = os.path.join(output_dir, "uploads", str(realm_id))
-        self.assertTrue(os.path.exists(output_dir))
-        self.assertTrue(os.path.exists(output_dir + "/realm.json"))
-        self.assertTrue(os.path.exists(output_dir + "/migration_status.json"))
-        self.assertTrue(os.path.exists(uploads_folder))
-        self.assertTrue(os.listdir(uploads_folder) != [])
-
-        realm_icons_path = os.path.join(output_dir, "realm_icons")
-        realm_icon_records_path = os.path.join(realm_icons_path, "records.json")
-
-        self.assertTrue(os.path.exists(realm_icon_records_path))
-        with open(realm_icon_records_path, "rb") as f:
-            records = orjson.loads(f.read())
-            self.assert_length(records, 2)
-            self.assertEqual(records[0]["path"], "0/icon.original")
-            self.assertTrue(os.path.exists(os.path.join(realm_icons_path, records[0]["path"])))
-
-            self.assertEqual(records[1]["path"], "0/icon.png")
-            self.assertTrue(os.path.exists(os.path.join(realm_icons_path, records[1]["path"])))
-
-        # test import of the converted slack data into an existing database
-        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
-            do_import_realm(output_dir, test_realm_subdomain)
-        realm = get_realm(test_realm_subdomain)
-        self.assertTrue(realm.name, test_realm_subdomain)
-        self.assertEqual(realm.icon_source, Realm.ICON_UPLOADED)
-
-        # test RealmAuditLog
-        realmauditlog = RealmAuditLog.objects.filter(realm=realm)
-        realmauditlog_event_type = {log.event_type for log in realmauditlog}
-        self.assertEqual(
-            realmauditlog_event_type,
-            {
-                AuditLogEventType.SUBSCRIPTION_CREATED,
-                AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
-                AuditLogEventType.REALM_PROPERTY_CHANGED,
-                AuditLogEventType.REALM_CREATED,
-                AuditLogEventType.REALM_IMPORTED,
-                AuditLogEventType.USER_CREATED,
-                AuditLogEventType.USER_DEACTIVATED,
-                AuditLogEventType.USER_GROUP_CREATED,
-                AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
-                AuditLogEventType.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
-                AuditLogEventType.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
-            },
-        )
-
-        self.assertEqual(Message.objects.filter(realm=realm).count(), 95)
-
-        # All auth backends are enabled initially.
-        self.assertTrue(all(realm.authentication_methods_dict().values()))
-
-        Realm.objects.filter(name=test_realm_subdomain).delete()
-
-        remove_folder(output_dir)
-        self.assertFalse(os.path.exists(output_dir))
-
     def test_message_files(self) -> None:
         alice_id = 7
         alice = dict(
@@ -2583,7 +2436,7 @@ To Do
 
     def test_slack_zip_path_traversal_rejected(self) -> None:
         output_dir = os.path.join(settings.DEPLOY_ROOT, "var", "test-slack-path-traversal")
-        remove_folder(output_dir)
+        self.rm_tree(output_dir)
 
         with tempfile.NamedTemporaryFile(suffix=".zip", delete=False) as f:
             zip_path = f.name
@@ -2596,8 +2449,8 @@ To Do
                 do_convert_zipfile(zip_path, output_dir, "xoxb-fake-token", processes=1)
         finally:
             os.unlink(zip_path)
-            remove_folder(output_dir)
-            remove_folder(unzipped_path)
+            self.rm_tree(output_dir)
+            self.rm_tree(unzipped_path)
 
     @mock.patch("zerver.data_import.slack.requests.get")
     @mock.patch("zerver.data_import.slack.build_attachment", return_value=[])
@@ -3950,3 +3803,246 @@ To Do
         )
         emoji_dir = os.path.join(output_dir, str(realm_id), "emoji", "images")
         self.assertFalse(os.path.exists(emoji_dir))
+
+
+@dataclass(frozen=True)
+class SlackExportedMessage:
+    message: dict[str, Any]
+    channel_name: str
+
+
+class SlackImportTest(ImporterContractTestBase):
+    """Translates the Slack export fixture into the importer-agnostic
+    expectations checked by ImporterContractTestBase."""
+
+    IMPORT_SOURCE = "slack"
+
+    # Marked as deleted in our copy of the users.list API response, so
+    # that the import produces an inactive user.
+    DELETED_SLACK_USER_ID = "U8VAHEVUY"
+
+    slack_users: list[dict[str, Any]]
+    output_dir: str
+    thread_parent_map_after_conversion: dict[str, str]
+
+    @classmethod
+    def get_zip_file_path(cls) -> str:
+        return os.path.join(
+            settings.DEPLOY_ROOT,
+            "zerver",
+            "tests",
+            "fixtures",
+            "slack_fixtures",
+            "test_slack_importer.zip",
+        )
+
+    @classmethod
+    @override
+    def convert_export(cls) -> str:
+        with open(
+            os.path.join(os.path.dirname(cls.get_zip_file_path()), "user_data.json"), "rb"
+        ) as f:
+            cls.slack_users = orjson.loads(f.read())["members"]
+        for member in cls.slack_users:
+            if member["id"] == cls.DELETED_SLACK_USER_ID:
+                assert not member["is_primary_owner"]
+                assert not member["is_bot"]
+                assert not member["deleted"]
+                member["deleted"] = True
+                break
+        else:
+            raise AssertionError(f"Slack user {cls.DELETED_SLACK_USER_ID} not found in fixture")
+
+        with open(
+            os.path.join(os.path.dirname(cls.get_zip_file_path()), "team_info.json"), "rb"
+        ) as f:
+            team_info = orjson.loads(f.read())["team"]
+
+        # A conversion must not read thread state cached by an earlier
+        # import in the same process; see reset_import_state.
+        thread_parent_map["0000000000.000000"] = "USTALEPARENT"
+
+        cls.output_dir = cls.make_converted_output_dir()
+        # do_convert_zipfile extracts the export next to the zip file; if
+        # an earlier run failed, it may have left the extracted files behind.
+        shutil.rmtree(cls.get_zip_file_path().removesuffix(".zip"), ignore_errors=True)
+        with (
+            responses.RequestsMock(assert_all_requests_are_fired=False) as requests_mock,
+            mock.patch("zerver.data_import.slack.check_slack_token_access"),
+            mock.patch(
+                "zerver.data_import.slack.get_slack_api_data",
+                # users.list, emoji.list and team.info, in order.
+                side_effect=[copy.deepcopy(cls.slack_users), {}, team_info],
+            ),
+            mock.patch("zerver.data_import.slack.build_avatar_url", return_value=("", "")),
+            mock.patch("zerver.data_import.slack.build_avatar"),
+            # Slack's importer uses EXTERNAL_HOST to generate email
+            # addresses for users without an email specified.
+            override_settings(EXTERNAL_HOST="zulip.example.com"),
+        ):
+            for url_regex in [r"https://.*\.slack-edge\.com/.*", r"https://files\.slack\.com/.*"]:
+                requests_mock.add(
+                    responses.GET,
+                    re.compile(url_regex),
+                    body=read_test_image_file("img.png"),
+                    content_type="image/png",
+                    status=200,
+                )
+            do_convert_zipfile(
+                cls.get_zip_file_path(), cls.output_dir, "xoxb-valid-token", processes=1
+            )
+        cls.thread_parent_map_after_conversion = dict(thread_parent_map)
+        return cls.output_dir
+
+    def read_export_file(self, file_name: str) -> Any:
+        with zipfile.ZipFile(self.get_zip_file_path()) as zip_file:
+            return orjson.loads(zip_file.read(file_name))
+
+    def get_exported_channels(self) -> list[dict[str, Any]]:
+        return self.read_export_file("channels.json")
+
+    def get_exported_channel_messages(self) -> list[SlackExportedMessage]:
+        """Returns every exported message, with the name of the Slack
+        channel it was posted to."""
+        channel_names = {channel["name"] for channel in self.get_exported_channels()}
+        exported_messages: list[SlackExportedMessage] = []
+        with zipfile.ZipFile(self.get_zip_file_path()) as zip_file:
+            for file_name in zip_file.namelist():
+                # Each channel's messages are in daily files under a
+                # directory named after the channel.
+                channel_name = os.path.dirname(file_name)
+                if channel_name not in channel_names or not file_name.endswith(".json"):
+                    continue
+                exported_messages.extend(
+                    SlackExportedMessage(message=message, channel_name=channel_name)
+                    for message in orjson.loads(zip_file.read(file_name))
+                )
+        return exported_messages
+
+    def get_expected_email(self, user: dict[str, Any]) -> str:
+        if "email" in user["profile"]:
+            return user["profile"]["email"]
+        assert user["name"] == "slackbot"
+        return "imported-slackbot-bot@zulip.example.com"
+
+    @override
+    def get_expected_users(self) -> list[ExpectedUser]:
+        expected_users = []
+        for user in self.slack_users:
+            if user.get("is_owner") or user.get("is_primary_owner"):
+                role = UserProfile.ROLE_REALM_OWNER
+            elif user.get("is_admin"):
+                role = UserProfile.ROLE_REALM_ADMINISTRATOR
+            else:
+                role = UserProfile.ROLE_MEMBER
+            is_bot = user["is_bot"] or user["name"] == "slackbot"
+            expected_users.append(
+                ExpectedUser(
+                    email=self.get_expected_email(user),
+                    # Deleted users are imported with their username as
+                    # their name.
+                    full_name=user["name"] if user["deleted"] else user["real_name"],
+                    role=role,
+                    is_bot=is_bot,
+                    bot_type=UserProfile.DEFAULT_BOT if is_bot else None,
+                    is_active=not user["deleted"],
+                    is_mirror_dummy=False,
+                )
+            )
+        return expected_users
+
+    @override
+    def get_expected_channels(self) -> list[ExpectedChannel]:
+        user_emails = {user["id"]: self.get_expected_email(user) for user in self.slack_users}
+        return [
+            ExpectedChannel(
+                name=channel["name"],
+                description=channel["purpose"]["value"],
+                # The fixture only has public channels (channels.json),
+                # not private ones (groups.json).
+                invite_only=False,
+                deactivated=channel["is_archived"],
+                subscriber_emails=frozenset(user_emails[user_id] for user_id in channel["members"]),
+            )
+            for channel in self.get_exported_channels()
+        ]
+
+    def get_imported_slack_messages(self) -> list[SlackExportedMessage]:
+        return [
+            exported_message
+            for exported_message in self.get_exported_channel_messages()
+            # Slack's pins and channel membership and rename notices
+            # have no Zulip equivalent.
+            if exported_message.message.get("subtype")
+            not in ["pinned_item", "unpinned_item", "channel_join", "channel_leave", "channel_name"]
+        ]
+
+    @override
+    def get_expected_messages(self) -> list[ExpectedMessage]:
+        user_emails = {user["id"]: self.get_expected_email(user) for user in self.slack_users}
+        return [
+            ExpectedMessage(
+                sender_email=user_emails[exported_message.message["user"]],
+                date_sent=float(exported_message.message["ts"]),
+                channel_name=exported_message.channel_name,
+                # Slack threads are only converted into topics when
+                # requested, which this test doesn't.
+                topic_name="imported from Slack",
+                direct_message_participant_emails=None,
+            )
+            for exported_message in self.get_imported_slack_messages()
+        ]
+
+    @override
+    def get_expected_attachment_file_names(self) -> list[str]:
+        return [
+            exported_message.message["file"]["name"]
+            for exported_message in self.get_imported_slack_messages()
+            if exported_message.message.get("subtype") == "file_share"
+        ]
+
+    def test_stale_thread_parent_map_cleared(self) -> None:
+        self.assertNotIn("0000000000.000000", self.thread_parent_map_after_conversion)
+
+    def test_converted_realm_icon_files(self) -> None:
+        realm_icons_path = os.path.join(self.output_dir, "realm_icons")
+        realm_icon_records_path = os.path.join(realm_icons_path, "records.json")
+
+        self.assertTrue(os.path.exists(realm_icon_records_path))
+        with open(realm_icon_records_path, "rb") as f:
+            records = orjson.loads(f.read())
+            self.assert_length(records, 2)
+            self.assertEqual(records[0]["path"], "0/icon.original")
+            self.assertTrue(os.path.exists(os.path.join(realm_icons_path, records[0]["path"])))
+
+            self.assertEqual(records[1]["path"], "0/icon.png")
+            self.assertTrue(os.path.exists(os.path.join(realm_icons_path, records[1]["path"])))
+
+    @override
+    def test_imported_realm(self) -> None:
+        super().test_imported_realm()
+        realm = self.imported_realm
+        self.assertEqual(realm.icon_source, Realm.ICON_UPLOADED)
+
+        realmauditlog = RealmAuditLog.objects.filter(realm=realm)
+        realmauditlog_event_type = {log.event_type for log in realmauditlog}
+        self.assertEqual(
+            realmauditlog_event_type,
+            {
+                AuditLogEventType.SUBSCRIPTION_CREATED,
+                AuditLogEventType.REALM_PLAN_TYPE_CHANGED,
+                AuditLogEventType.REALM_PROPERTY_CHANGED,
+                AuditLogEventType.REALM_CREATED,
+                AuditLogEventType.REALM_IMPORTED,
+                AuditLogEventType.USER_CREATED,
+                AuditLogEventType.USER_DEACTIVATED,
+                AuditLogEventType.USER_GROUP_CREATED,
+                AuditLogEventType.USER_GROUP_DIRECT_USER_MEMBERSHIP_ADDED,
+                AuditLogEventType.USER_GROUP_DIRECT_SUBGROUP_MEMBERSHIP_ADDED,
+                AuditLogEventType.USER_GROUP_DIRECT_SUPERGROUP_MEMBERSHIP_ADDED,
+            },
+        )
+
+
+# Abstract base class; the subclass above runs these tests.
+del ImporterContractTestBase

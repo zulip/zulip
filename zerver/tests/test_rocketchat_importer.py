@@ -1,9 +1,13 @@
 import os
+from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any
 from unittest import mock
 
+import bson
 import orjson
+from django.test import override_settings
+from typing_extensions import override
 
 from zerver.data_import.import_util import (
     AttachmentRecordData,
@@ -13,6 +17,7 @@ from zerver.data_import.import_util import (
     build_recipients,
 )
 from zerver.data_import.rocketchat import (
+    bson_codec_options,
     build_custom_emoji,
     build_reactions,
     categorize_channels_and_map_with_id,
@@ -31,11 +36,298 @@ from zerver.data_import.rocketchat import (
 from zerver.data_import.sequencer import IdMapper
 from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
-from zerver.lib.import_realm import do_import_realm
-from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_classes import (
+    ExpectedChannel,
+    ExpectedMessage,
+    ExpectedUser,
+    ImporterContractTestBase,
+    ZulipTestCase,
+)
 from zerver.models import Message, Reaction, Recipient, UserProfile
-from zerver.models.realms import get_realm
-from zerver.models.users import get_user
+
+
+class RocketChatImportTest(ImporterContractTestBase):
+    """Translates the Rocket.Chat export fixture into the importer-agnostic
+    expectations checked by ImporterContractTestBase."""
+
+    IMPORT_SOURCE = "rocketchat"
+    rocketchat_data: dict[str, Any]
+    rocketchat_messages: list[dict[str, Any]]
+    output_dir: str
+
+    @classmethod
+    def get_fixture_dir_path(cls) -> str:
+        return os.path.join(os.path.dirname(__file__), "fixtures", "rocketchat_fixtures")
+
+    @classmethod
+    @override
+    def setUpTestData(cls) -> None:
+        super().setUpTestData()
+        cls.rocketchat_data = rocketchat_data_to_dict(cls.get_fixture_dir_path())
+        with open(os.path.join(cls.get_fixture_dir_path(), "rocketchat_message.bson"), "rb") as f:
+            cls.rocketchat_messages = bson.decode_all(f.read(), bson_codec_options)
+
+    @classmethod
+    @override
+    def convert_export(cls) -> str:
+        cls.output_dir = cls.make_converted_output_dir()
+        with (
+            # Rocket.Chat's importer uses EXTERNAL_HOST to generate email
+            # addresses for users without an email specified.
+            override_settings(EXTERNAL_HOST="zulip.example.com"),
+            # Spread the messages over several message files.
+            mock.patch("zerver.data_import.rocketchat.MESSAGE_BATCH_SIZE", 5),
+        ):
+            do_convert_data(
+                rocketchat_data_dir=cls.get_fixture_dir_path(),
+                output_dir=cls.output_dir,
+            )
+        return cls.output_dir
+
+    def read_file(self, output_file: str) -> Any:
+        with open(os.path.join(self.output_dir, output_file), "rb") as f:
+            return orjson.loads(f.read())
+
+    def read_message_files(self) -> dict[str, list[Any]]:
+        """Read all messages-NNNNNN.json files and combine them."""
+        all_messages: list[Any] = []
+        all_usermessages: list[Any] = []
+        dump_file_id = 1
+        while os.path.exists(os.path.join(self.output_dir, f"messages-{dump_file_id:06}.json")):
+            data = self.read_file(f"messages-{dump_file_id:06}.json")
+            all_messages.extend(data["zerver_message"])
+            all_usermessages.extend(data["zerver_usermessage"])
+            dump_file_id += 1
+        return {"zerver_message": all_messages, "zerver_usermessage": all_usermessages}
+
+    def get_expected_email(self, user: dict[str, Any]) -> str:
+        if user.get("emails"):
+            return user["emails"][0]["address"]
+        return "{}-{}@zulip.example.com".format(user["username"], user["type"])
+
+    def get_channel_rooms(self) -> dict[str, dict[str, Any]]:
+        """Rooms that are converted to Zulip channels. Discussions are
+        converted to topics, and livechat rooms aren't converted."""
+        return {
+            room["_id"]: room
+            for room in self.rocketchat_data["room"]
+            if not room.get("prid") and room["t"] in ["c", "p"]
+        }
+
+    def get_expected_channel_name(self, room: dict[str, Any]) -> str:
+        if room.get("teamMain"):
+            return "[TEAM] {}".format(room["name"])
+        return room["name"]
+
+    @override
+    def get_expected_users(self) -> list[ExpectedUser]:
+        expected_users = []
+        for user in self.rocketchat_data["user"]:
+            if "admin" in user["roles"]:
+                role = UserProfile.ROLE_REALM_OWNER
+            elif "guest" in user["roles"]:
+                role = UserProfile.ROLE_GUEST
+            else:
+                role = UserProfile.ROLE_MEMBER
+            is_bot = user["type"] == "bot" or "bot" in user["roles"]
+            expected_users.append(
+                ExpectedUser(
+                    email=self.get_expected_email(user),
+                    full_name=user["name"],
+                    role=role,
+                    is_bot=is_bot,
+                    bot_type=UserProfile.DEFAULT_BOT if is_bot else None,
+                    # Bots and livechat guests are imported as inactive.
+                    is_active=user["type"] == "user",
+                    is_mirror_dummy=user["type"] not in ["user", "bot"],
+                )
+            )
+        return expected_users
+
+    @override
+    def get_expected_channels(self) -> list[ExpectedChannel]:
+        channel_subscriber_emails: dict[str, set[str]] = defaultdict(set)
+        for user in self.rocketchat_data["user"]:
+            for room_id in user.get("__rooms") or []:
+                channel_subscriber_emails[room_id].add(self.get_expected_email(user))
+
+        channel_rooms = self.get_channel_rooms()
+        team_names = {
+            room["teamId"]: room["name"] for room in channel_rooms.values() if room.get("teamMain")
+        }
+        expected_channels = []
+        for room_id, room in channel_rooms.items():
+            description = room.get("description", "")
+            if room.get("teamId") and not room.get("teamMain"):
+                description = "[Team {} channel]. {}".format(
+                    team_names[room["teamId"]], description
+                )
+            expected_channels.append(
+                ExpectedChannel(
+                    name=self.get_expected_channel_name(room),
+                    description=description,
+                    invite_only=room["t"] == "p",
+                    deactivated=bool(room.get("archived")),
+                    subscriber_emails=frozenset(channel_subscriber_emails[room_id]),
+                )
+            )
+        return expected_channels
+
+    def get_imported_rocketchat_messages(self) -> list[dict[str, Any]]:
+        livechat_room_ids = {
+            room["_id"] for room in self.rocketchat_data["room"] if room["t"] == "l"
+        }
+        return [
+            message
+            for message in self.rocketchat_messages
+            # Messages with a type are system notifications, like
+            # user_joined, which aren't imported.
+            if message.get("t") is None and message["rid"] not in livechat_room_ids
+        ]
+
+    @override
+    def get_expected_messages(self) -> list[ExpectedMessage]:
+        user_emails = {
+            user["_id"]: self.get_expected_email(user) for user in self.rocketchat_data["user"]
+        }
+        channel_rooms = self.get_channel_rooms()
+        discussion_rooms = {
+            room["_id"]: room for room in self.rocketchat_data["room"] if room.get("prid")
+        }
+        direct_message_rooms = {
+            room["_id"]: room for room in self.rocketchat_data["room"] if room["t"] == "d"
+        }
+        # Threads are numbered in the order they're first seen.
+        thread_numbers: dict[str, int] = {}
+
+        def get_thread_topic_name(thread_message_id: str) -> str:
+            thread_number = thread_numbers.setdefault(thread_message_id, len(thread_numbers) + 1)
+            return f"Thread {thread_number} (Imported from Rocket.Chat)"
+
+        expected_messages = []
+        for message in self.get_imported_rocketchat_messages():
+            room_id = message["rid"]
+            discussion_room = discussion_rooms.get(room_id)
+            if discussion_room is not None:
+                room_id = discussion_room["prid"]
+
+            channel_name: str | None = None
+            topic_name: str | None = None
+            direct_message_participant_emails: frozenset[str] | None = None
+            if room_id in channel_rooms:
+                channel_name = self.get_expected_channel_name(channel_rooms[room_id])
+                if discussion_room is not None:
+                    topic_name = "{} (Imported from Rocket.Chat)".format(discussion_room["fname"])
+                elif message.get("replies"):
+                    topic_name = get_thread_topic_name(message["_id"])
+                elif message.get("tmid"):
+                    topic_name = get_thread_topic_name(message["tmid"])
+                else:
+                    topic_name = "Imported from Rocket.Chat"
+            elif room_id in direct_message_rooms:
+                # Discussions and threads started in direct message
+                # conversations aren't topics; their messages are
+                # direct messages.
+                direct_message_participant_emails = frozenset(
+                    user_emails[user_id] for user_id in direct_message_rooms[room_id]["uids"]
+                )
+            expected_messages.append(
+                ExpectedMessage(
+                    sender_email=user_emails[message["u"]["_id"]],
+                    date_sent=int(message["ts"].timestamp()),
+                    channel_name=channel_name,
+                    topic_name=topic_name,
+                    direct_message_participant_emails=direct_message_participant_emails,
+                )
+            )
+        return expected_messages
+
+    @override
+    def get_expected_attachment_file_names(self) -> list[str]:
+        return [
+            message["file"]["name"]
+            for message in self.get_imported_rocketchat_messages()
+            if message.get("file")
+        ]
+
+    def test_conversion_logs(self) -> None:
+        self.assertEqual(
+            self.conversion_log_output,
+            [
+                "INFO:root:Starting to process custom emoji",
+                "INFO:root:Done processing emoji",
+                "INFO:root:Direct message group channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'M2sXGqoQRJQwQoXY2']",
+                "INFO:root:Direct message group channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'NTzobKvioAAdsAJHv']",
+                "INFO:root:Direct message group channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'M2sXGqoQRJQwQoXY2', 'os6N2Xg2JkNMCSW9Z']",
+                "INFO:root:skipping direct messages discussion mention: Discussion with Hermione",
+                "INFO:root:Exporting migration status",
+            ],
+        )
+
+    def test_converted_data_files(self) -> None:
+        realm = self.read_file("realm.json")
+        self.assertEqual(
+            "Organization imported from Rocket.Chat!", realm["zerver_realm"][0]["description"]
+        )
+        self.assertEqual(
+            self.get_set(realm["zerver_stream"], "realm"), {realm["zerver_realm"][0]["id"]}
+        )
+        self.assert_length(realm["zerver_defaultstream"], 0)
+
+        exported_recipient_ids = self.get_set(realm["zerver_recipient"], "id")
+        # 6 streams + 2 DM groups (no personal recipients after import).
+        self.assert_length(exported_recipient_ids, 8)
+        self.assertEqual(
+            self.get_set(realm["zerver_recipient"], "type"),
+            {Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP},
+        )
+
+        messages = self.read_message_files()
+        self.assertIn(
+            messages["zerver_message"][0]["sender"], self.get_set(realm["zerver_userprofile"], "id")
+        )
+        self.assertIn(messages["zerver_message"][0]["recipient"], exported_recipient_ids)
+        self.assertIn(
+            messages["zerver_message"][0]["content"], "Hey everyone, how's it going??\n\n"
+        )
+
+        exported_usermessage_userprofiles = self.get_set(
+            messages["zerver_usermessage"], "user_profile"
+        )
+        # Rocket.Cat is not subscribed to any recipient (stream/direct messages) with messages.
+        self.assert_length(exported_usermessage_userprofiles, 5)
+        self.assertEqual(
+            self.get_set(messages["zerver_usermessage"], "message"),
+            self.get_set(messages["zerver_message"], "id"),
+        )
+
+    def test_imported_message_contents(self) -> None:
+        imported_messages = Message.objects.filter(realm=self.imported_realm)
+
+        stream_messages = imported_messages.filter(recipient__type=Recipient.STREAM).order_by(
+            "date_sent"
+        )
+        self.assertEqual(stream_messages[0].sender.email, "priyansh3133@email.com")
+        self.assertEqual(stream_messages[0].content, "Hey everyone, how's it going??")
+
+        self.assertEqual(stream_messages[23].sender.email, "harrypotter@email.com")
+        self.assertRegex(
+            stream_messages[23].content,
+            "Just a random pic!\n\n\\[harry-ron.jpg\\]\\(.*\\)",
+        )
+        self.assertTrue(stream_messages[23].has_attachment)
+        self.assertTrue(stream_messages[23].has_image)
+        self.assertTrue(stream_messages[23].has_link)
+
+        group_direct_messages = imported_messages.filter(
+            recipient__type=Recipient.DIRECT_MESSAGE_GROUP
+        ).order_by("date_sent")
+        direct_message_group_recipients = group_direct_messages.values_list("recipient", flat=True)
+        self.assert_length(group_direct_messages, 14)
+        self.assert_length(set(direct_message_group_recipients), 8)
+        self.assertEqual(group_direct_messages[0].sender.email, "harrypotter@email.com")
+
+        self.verify_emoji_code_foreign_keys()
 
 
 class RocketChatImporter(ZulipTestCase):
@@ -54,19 +346,6 @@ class RocketChatImporter(ZulipTestCase):
 
         self.assert_length(rocketchat_data["custom_emoji"]["emoji"], 3)
         self.assertEqual(rocketchat_data["custom_emoji"]["emoji"][0]["name"], "tick")
-
-    def test_map_user_id_to_user(self) -> None:
-        fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
-        rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
-
-        user_id_to_user_map = map_user_id_to_user(rocketchat_data["user"])
-
-        self.assert_length(rocketchat_data["user"], 6)
-        self.assert_length(user_id_to_user_map, 6)
-
-        self.assertEqual(
-            user_id_to_user_map[rocketchat_data["user"][0]["_id"]], rocketchat_data["user"][0]
-        )
 
     def test_map_username_to_user_id(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
@@ -179,6 +458,35 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(user["is_mirror_dummy"], True)
         self.assertEqual(user["is_bot"], False)
 
+        # Users with the "bot" role are bots, even if they have other
+        # roles.
+        admin_bot: dict[str, Any] = {
+            "_id": "4dm1nB0tID",
+            "createdAt": datetime(2019, 11, 6, 0, 38, 42, 796000, tzinfo=timezone.utc),
+            "type": "user",
+            "roles": ["admin", "bot"],
+            "name": "Admin bot",
+            "username": "admin.bot",
+        }
+        user_id_to_user_map = map_user_id_to_user([admin_bot, *rocketchat_data["user"]])
+
+        process_users(
+            user_id_to_user_map=user_id_to_user_map,
+            realm_id=realm_id,
+            domain_name=domain_name,
+            user_handler=user_handler,
+            user_id_mapper=user_id_mapper,
+        )
+
+        user_id = user_id_mapper.get(admin_bot["_id"])
+        user = user_handler.get_user(user_id)
+
+        self.assertEqual(user["is_active"], True)
+        self.assertEqual(user["is_bot"], True)
+        self.assertEqual(user["bot_type"], 1)
+        self.assertEqual(user["bot_owner"], 2)
+        self.assertEqual(user["role"], UserProfile.ROLE_REALM_OWNER)
+
         # Importer should raise error when user emails are malformed
         bad_email1 = rocketchat_data["user"][0]["emails"][0]["address"] = "test1@hotmai,l.om"
         bad_email2 = rocketchat_data["user"][1]["emails"][0]["address"] = "test2@gmail.c"
@@ -194,67 +502,6 @@ class RocketChatImporter(ZulipTestCase):
         error_message = str(e.exception)
         expected_error_message = f"['Invalid email format, please fix the following email(s) and try again: {bad_email1}, {bad_email2}']"
         self.assertEqual(error_message, expected_error_message)
-
-    def test_categorize_channels_and_map_with_id(self) -> None:
-        fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
-        rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
-
-        room_id_to_room_map: dict[str, dict[str, Any]] = {}
-        team_id_to_team_map: dict[str, dict[str, Any]] = {}
-        dsc_id_to_dsc_map: dict[str, dict[str, Any]] = {}
-        direct_id_to_direct_map: dict[str, dict[str, Any]] = {}
-        direct_message_group_id_to_direct_message_group_map: dict[str, dict[str, Any]] = {}
-        livechat_id_to_livechat_map: dict[str, dict[str, Any]] = {}
-
-        with self.assertLogs(level="INFO"):
-            categorize_channels_and_map_with_id(
-                channel_data=rocketchat_data["room"],
-                room_id_to_room_map=room_id_to_room_map,
-                team_id_to_team_map=team_id_to_team_map,
-                dsc_id_to_dsc_map=dsc_id_to_dsc_map,
-                direct_id_to_direct_map=direct_id_to_direct_map,
-                direct_message_group_id_to_direct_message_group_map=direct_message_group_id_to_direct_message_group_map,
-                livechat_id_to_livechat_map=livechat_id_to_livechat_map,
-            )
-
-        self.assert_length(rocketchat_data["room"], 16)
-        # Teams are a subset of rooms.
-        self.assert_length(room_id_to_room_map, 6)
-        self.assert_length(team_id_to_team_map, 1)
-        self.assert_length(dsc_id_to_dsc_map, 5)
-        self.assert_length(direct_id_to_direct_map, 0)
-        self.assert_length(direct_message_group_id_to_direct_message_group_map, 2)
-        self.assert_length(livechat_id_to_livechat_map, 2)
-
-        room_id = rocketchat_data["room"][0]["_id"]
-        self.assertIn(room_id, room_id_to_room_map)
-        self.assertEqual(room_id_to_room_map[room_id], rocketchat_data["room"][0])
-
-        team_id = rocketchat_data["room"][3]["teamId"]
-        self.assertIn(team_id, team_id_to_team_map)
-        self.assertEqual(team_id_to_team_map[team_id], rocketchat_data["room"][3])
-
-        dsc_id = rocketchat_data["room"][7]["_id"]
-        self.assertIn(dsc_id, dsc_id_to_dsc_map)
-        self.assertEqual(dsc_id_to_dsc_map[dsc_id], rocketchat_data["room"][7])
-
-        direct_id = rocketchat_data["room"][4]["_id"]
-        self.assertIn(direct_id, direct_message_group_id_to_direct_message_group_map)
-        self.assertEqual(
-            direct_message_group_id_to_direct_message_group_map[direct_id],
-            rocketchat_data["room"][4],
-        )
-
-        direct_message_group_id = rocketchat_data["room"][12]["_id"]
-        self.assertIn(direct_message_group_id, direct_message_group_id_to_direct_message_group_map)
-        self.assertEqual(
-            direct_message_group_id_to_direct_message_group_map[direct_message_group_id],
-            rocketchat_data["room"][12],
-        )
-
-        livechat_id = rocketchat_data["room"][14]["_id"]
-        self.assertIn(livechat_id, livechat_id_to_livechat_map)
-        self.assertEqual(livechat_id_to_livechat_map[livechat_id], rocketchat_data["room"][14])
 
     def test_convert_channel_data(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
@@ -333,6 +580,46 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(zerver_stream[5]["rendered_description"], "")
         self.assertEqual(zerver_stream[5]["stream_post_policy"], 1)
         self.assertEqual(zerver_stream[5]["realm"], realm_id)
+
+        # Archived channels are imported as archived.
+        self.assertFalse(zerver_stream[0]["deactivated"])
+        self.assertTrue(zerver_stream[5]["deactivated"])
+
+    def test_convert_channel_data_with_archived_general_channel(self) -> None:
+        fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
+        rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
+
+        mock_realm_dict: ZerverFieldsT = dict(zerver_realm=[dict()])
+        room_id_to_room_map: dict[str, dict[str, Any]] = {}
+        team_id_to_team_map: dict[str, dict[str, Any]] = {}
+
+        with self.assertLogs(level="INFO"):
+            categorize_channels_and_map_with_id(
+                channel_data=rocketchat_data["room"],
+                room_id_to_room_map=room_id_to_room_map,
+                team_id_to_team_map=team_id_to_team_map,
+                dsc_id_to_dsc_map={},
+                direct_id_to_direct_map={},
+                direct_message_group_id_to_direct_message_group_map={},
+                livechat_id_to_livechat_map={},
+            )
+        general_room = next(
+            room for room in room_id_to_room_map.values() if room["name"] == "general"
+        )
+        general_room["archived"] = True
+
+        channels = convert_channel_data(
+            realm=mock_realm_dict,
+            room_id_to_room_map=room_id_to_room_map,
+            team_id_to_team_map=team_id_to_team_map,
+            stream_id_mapper=IdMapper[str](),
+            realm_id=3,
+        )
+
+        self.assertEqual(channels[0]["name"], "general")
+        self.assertTrue(channels[0]["deactivated"])
+        self.assertNotIn("new_stream_announcements_stream", mock_realm_dict["zerver_realm"][0])
+        self.assertNotIn("zulip_update_announcements_stream", mock_realm_dict["zerver_realm"][0])
 
     def test_convert_stream_subscription_data(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
@@ -946,194 +1233,11 @@ class RocketChatImporter(ZulipTestCase):
             info_log.output,
         )
 
-    def read_file(self, team_output_dir: str, output_file: str) -> Any:
-        full_path = os.path.join(team_output_dir, output_file)
-        with open(full_path, "rb") as f:
-            return orjson.loads(f.read())
-
-    def read_message_files(self, output_dir: str) -> dict[str, list[Any]]:
-        """Read all messages-NNNNNN.json files and combine them."""
-        all_messages: list[Any] = []
-        all_usermessages: list[Any] = []
-        dump_file_id = 1
-        while True:
-            message_file = os.path.join(output_dir, f"messages-{dump_file_id:06}.json")
-            if not os.path.exists(message_file):
-                break
-            data = self.read_file(output_dir, f"messages-{dump_file_id:06}.json")
-            all_messages.extend(data["zerver_message"])
-            all_usermessages.extend(data["zerver_usermessage"])
-            dump_file_id += 1
-        return {"zerver_message": all_messages, "zerver_usermessage": all_usermessages}
-
-    def test_do_convert_data(self) -> None:
-        rocketchat_data_dir = self.fixture_file_name("", "rocketchat_fixtures")
-        output_dir = self.make_import_output_dir("rocketchat")
-
-        with (
-            self.assertLogs(level="INFO") as info_log,
-            self.settings(EXTERNAL_HOST="zulip.example.com"),
-            mock.patch("zerver.data_import.rocketchat.MESSAGE_BATCH_SIZE", 5),
-        ):
-            # We need to mock EXTERNAL_HOST to be a valid domain because rocketchat's importer
-            # uses it to generate email addresses for users without an email specified.
-            do_convert_data(
-                rocketchat_data_dir=rocketchat_data_dir,
-                output_dir=output_dir,
-            )
-        self.assertEqual(
-            info_log.output,
-            [
-                "INFO:root:Starting to process custom emoji",
-                "INFO:root:Done processing emoji",
-                "INFO:root:Direct message group channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'M2sXGqoQRJQwQoXY2']",
-                "INFO:root:Direct message group channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'NTzobKvioAAdsAJHv']",
-                "INFO:root:Direct message group channel found. UIDs: ['LdBZ7kPxtKESyHPEe', 'M2sXGqoQRJQwQoXY2', 'os6N2Xg2JkNMCSW9Z']",
-                "INFO:root:skipping direct messages discussion mention: Discussion with Hermione",
-                "INFO:root:Exporting migration status",
-            ],
-        )
-
-        self.assertEqual(os.path.exists(os.path.join(output_dir, "avatars")), True)
-        self.assertEqual(os.path.exists(os.path.join(output_dir, "emoji")), True)
-        self.assertEqual(os.path.exists(os.path.join(output_dir, "uploads")), True)
-        self.assertEqual(os.path.exists(os.path.join(output_dir, "attachment.json")), True)
-        self.assertTrue(os.path.exists(output_dir + "/migration_status.json"))
-
-        realm = self.read_file(output_dir, "realm.json")
-
-        self.assertEqual(
-            "Organization imported from Rocket.Chat!", realm["zerver_realm"][0]["description"]
-        )
-
-        exported_user_ids = self.get_set(realm["zerver_userprofile"], "id")
-        self.assert_length(exported_user_ids, 6)
-
-        exported_user_full_names = self.get_set(realm["zerver_userprofile"], "full_name")
-        self.assertEqual(
-            exported_user_full_names,
-            {
-                "Rocket.Cat",
-                "Priyansh Garg",
-                "Harry Potter",
-                "Hermione Granger",
-                "Ron Weasley",
-                "Lord Voldemort",
-            },
-        )
-
-        exported_user_emails = self.get_set(realm["zerver_userprofile"], "email")
-        self.assertEqual(
-            exported_user_emails,
-            {
-                "rocket.cat-bot@zulip.example.com",
-                "priyansh3133@email.com",
-                "harrypotter@email.com",
-                "hermionegranger@email.com",
-                "ronweasley@email.com",
-                "lordvoldemort@email.com",
-            },
-        )
-
-        self.assert_length(realm["zerver_stream"], 6)
-        exported_stream_names = self.get_set(realm["zerver_stream"], "name")
-        self.assertEqual(
-            exported_stream_names,
-            {
-                "general",
-                "random",
-                "gryffindor-common-room",
-                "[TEAM] team-harry-potter",
-                "heya",
-                "thp-channel-2",
-            },
-        )
-        self.assertEqual(
-            self.get_set(realm["zerver_stream"], "realm"), {realm["zerver_realm"][0]["id"]}
-        )
-        self.assertEqual(self.get_set(realm["zerver_stream"], "deactivated"), {False})
-
-        self.assert_length(realm["zerver_defaultstream"], 0)
-
-        exported_recipient_ids = self.get_set(realm["zerver_recipient"], "id")
-        # 6 streams + 2 DM groups (no personal recipients after import).
-        self.assert_length(exported_recipient_ids, 8)
-        exported_recipient_types = self.get_set(realm["zerver_recipient"], "type")
-        self.assertEqual(
-            exported_recipient_types,
-            {Recipient.STREAM, Recipient.DIRECT_MESSAGE_GROUP},
-        )
-
-        messages = self.read_message_files(output_dir)
-
-        exported_messages_id = self.get_set(messages["zerver_message"], "id")
-        self.assertIn(messages["zerver_message"][0]["sender"], exported_user_ids)
-        self.assertIn(messages["zerver_message"][0]["recipient"], exported_recipient_ids)
-        self.assertIn(
-            messages["zerver_message"][0]["content"], "Hey everyone, how's it going??\n\n"
-        )
-
-        exported_usermessage_userprofiles = self.get_set(
-            messages["zerver_usermessage"], "user_profile"
-        )
-        # Rocket.Cat is not subscribed to any recipient (stream/direct messages) with messages.
-        self.assert_length(exported_usermessage_userprofiles, 5)
-        exported_usermessage_messages = self.get_set(messages["zerver_usermessage"], "message")
-        self.assertEqual(exported_usermessage_messages, exported_messages_id)
-
-        with self.assertLogs(level="INFO"):
-            do_import_realm(
-                import_dir=output_dir,
-                subdomain="hogwarts",
-            )
-
-        realm = get_realm("hogwarts")
-
-        self.assertFalse(get_user("rocket.cat-bot@zulip.example.com", realm).is_mirror_dummy)
-        self.assertTrue(get_user("rocket.cat-bot@zulip.example.com", realm).is_bot)
-        self.assertFalse(get_user("harrypotter@email.com", realm).is_mirror_dummy)
-        self.assertFalse(get_user("harrypotter@email.com", realm).is_bot)
-        self.assertFalse(get_user("ronweasley@email.com", realm).is_mirror_dummy)
-        self.assertFalse(get_user("ronweasley@email.com", realm).is_bot)
-        self.assertFalse(get_user("hermionegranger@email.com", realm).is_mirror_dummy)
-        self.assertFalse(get_user("hermionegranger@email.com", realm).is_bot)
-
-        imported_messages = Message.objects.filter(realm_id=realm.id)
-        for message in imported_messages:
-            self.assertIsNotNone(message.rendered_content)
-        # After removing user_joined, added_user, discussion_created, etc.
-        # messages. (Total messages were 66.)
-        self.assert_length(imported_messages, 58)
-
-        stream_messages = imported_messages.filter(recipient__type=Recipient.STREAM).order_by(
-            "date_sent"
-        )
-        stream_recipients = stream_messages.values_list("recipient", flat=True)
-        self.assert_length(stream_messages, 44)
-        self.assert_length(set(stream_recipients), 5)
-        self.assertEqual(stream_messages[0].sender.email, "priyansh3133@email.com")
-        self.assertEqual(stream_messages[0].content, "Hey everyone, how's it going??")
-
-        self.assertEqual(stream_messages[23].sender.email, "harrypotter@email.com")
-        self.assertRegex(
-            stream_messages[23].content,
-            "Just a random pic!\n\n\\[harry-ron.jpg\\]\\(.*\\)",
-        )
-        self.assertTrue(stream_messages[23].has_attachment)
-        self.assertTrue(stream_messages[23].has_image)
-        self.assertTrue(stream_messages[23].has_link)
-
-        group_direct_messages = imported_messages.filter(
-            recipient__type=Recipient.DIRECT_MESSAGE_GROUP
-        ).order_by("date_sent")
-        direct_message_group_recipients = group_direct_messages.values_list("recipient", flat=True)
-        self.assert_length(group_direct_messages, 14)
-        self.assert_length(set(direct_message_group_recipients), 8)
-        self.assertEqual(group_direct_messages[0].sender.email, "harrypotter@email.com")
-
-        self.verify_emoji_code_foreign_keys()
-
     def test_truncate_name(self) -> None:
         self.assertEqual("foobar", truncate_name("foobar", 42, 60))
 
         self.assertEqual("1234567890 [42]", truncate_name("12345678901234567890", 42, 15))
+
+
+# Abstract base class; the subclass above runs these tests.
+del ImporterContractTestBase
