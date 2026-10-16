@@ -44,11 +44,27 @@ import MoreVerticalIcon from "~icons/zulip-icon/more-vertical";
 
 ## Log out of a Zulip account on all devices
 
+You can log out of your Zulip account on all devices other than the one you are
+using. This ends your other browser and desktop app sessions, and resets your
+[API key](/api/api-keys), which logs you out of all mobile apps.
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/account-and-privacy" />
+
+  1. Under **Account**, click **Log out of all other devices**.
+  1. Click **Log out**.
+</FlattenedSteps>
+
+<ZulipTip>
+  Scripts and integrations that use your API key will stop working until you
+  update them with your new API key, which you can find under **API key**.
+</ZulipTip>
+
+### Change your password and API key
+
 Resetting the [API key](/api/api-keys) for a Zulip account will immediately log
 you out of that account on all mobile devices. Resetting your password will log
 you out of all browsers and desktop apps.
-
-### Change your password and API key
 
 <ChangePasswordAndAPIKey />
 

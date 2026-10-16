@@ -234,6 +234,7 @@ from zerver.views.user_settings import (
     confirm_email_change_get,
     delete_avatar_backend,
     json_change_settings,
+    log_out_other_sessions,
     regenerate_api_key,
     set_avatar_backend,
 )
@@ -859,6 +860,12 @@ urls.extend(
         for url_object in incoming_webhook.url_objects
     ]
 )
+
+# Web app views that act on the current session, so they are only
+# available with a /json prefix.
+urls += [
+    rest_path("json/users/me/sessions/log_out_others", POST=log_out_other_sessions),
+]
 
 # Desktop-specific authentication URLs
 urls += [
