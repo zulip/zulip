@@ -15,6 +15,7 @@ from zerver.actions.message_flags import do_mark_stream_messages_as_read
 from zerver.actions.message_send import internal_send_private_message
 from zerver.actions.realm_export import notify_realm_export
 from zerver.actions.realm_settings import scrub_deactivated_realm
+from zerver.actions.user_settings import reupload_realm_jdenticon_avatars
 from zerver.lib.export import export_realm_wrapper, export_tarball_prefix
 from zerver.lib.push_notifications import clear_push_device_tokens
 from zerver.lib.queue import retry_event
@@ -172,6 +173,14 @@ class DeferredWorker(QueueProcessingWorker):
             realm = Realm.objects.get(id=event["realm_id"])
             logger.info("Processing reupload_realm_emoji event for realm %s", realm.id)
             handle_reupload_emojis_event(realm, logger)
+        elif event["type"] == "reupload_jdenticon_avatars":
+            # This is a special event queued by the migration to repair Jdenticon avatars
+            # that an import_realm bug (#39468) re-generated using the imported realm's
+            # UUID for users in *other* realms. As with reupload_realm_emoji above, the
+            # migration only queues the event and the work is done here.
+            realm = Realm.objects.get(id=event["realm_id"])
+            logger.info("Processing reupload_jdenticon_avatars event for realm %s", realm.id)
+            reupload_realm_jdenticon_avatars(realm)
         elif event["type"] == "soft_reactivate":
             # Soft reactivations are normally enqueued here. A server can
             # opt into a dedicated soft_reactivation queue via the
