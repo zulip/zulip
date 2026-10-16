@@ -1,0 +1,6 @@
+cache/
+*.html
+__pycache__/
+local_overrides.py
+areas/year_prs.json
+areas/raw_prefixes.json
