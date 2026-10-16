@@ -991,6 +991,10 @@ export const general_notifications_table_labels = {
         ["email_notifications", $t({defaultMessage: "Email notifications"})],
         ["pin_to_top", $t({defaultMessage: "Pin channel to top of left sidebar"})],
         [
+            "demote_resolved_topics",
+            $t({defaultMessage: "Show resolved topics last in left sidebar"}),
+        ],
+        [
             "wildcard_mentions_notify",
             $t({defaultMessage: "Notifications for @all/@everyone mentions"}),
         ],

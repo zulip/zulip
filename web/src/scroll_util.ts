@@ -72,11 +72,16 @@ export function scroll_element_into_container(
     $elem: JQuery,
     $container: JQuery,
     sticky_header_height = 0,
+    bottom_overlay_height = 0,
 ): void {
     // This does the minimum amount of scrolling that is needed to make
     // the element visible.  It doesn't try to center the element, so
     // this will be non-intrusive to users when they already have
     // the element visible.
+    //
+    // sticky_header_height and bottom_overlay_height are the parts of
+    // the container covered by elements floating over its top and
+    // bottom, which the element should clear.
     $container = get_scroll_element($container);
 
     // To correctly compute the offset of the element's scroll
@@ -87,7 +92,8 @@ export function scroll_element_into_container(
 
     const elem_top = elem_offset - container_offset - sticky_header_height;
     const elem_bottom = elem_top + ($elem.innerHeight() ?? 0);
-    const container_height = ($container.height() ?? 0) - sticky_header_height;
+    const container_height =
+        ($container.height() ?? 0) - sticky_header_height - bottom_overlay_height;
 
     const opts = {
         elem_top,

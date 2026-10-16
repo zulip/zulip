@@ -771,6 +771,7 @@ class TestRealmAuditLog(ZulipTestCase):
             "push_notifications": True,
             "email_notifications": True,
             "pin_to_top": True,
+            "demote_resolved_topics": True,
             "wildcard_mentions_notify": False,
         }
 
