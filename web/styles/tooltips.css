@@ -46,6 +46,21 @@
             line-height: 1.2143em;
         }
 
+        .emoji-tooltip-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* 4px at 16px/1em */
+            gap: 0.25em;
+            text-align: center;
+        }
+
+        .emoji-tooltip-enlarged {
+            /* Match the size of emoji in emoji-only messages. */
+            width: calc(var(--length-line-oversize-block) * 2);
+            height: calc(var(--length-line-oversize-block) * 2);
+        }
+
         &[data-placement^="top"] > .tippy-arrow::before {
             border-top-color: var(--color-background-tippy-box);
         }
