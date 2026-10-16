@@ -47,3 +47,8 @@ you only get cards for maintainer items.
 If you also set the three `ZULIP_TRIAGE_*` settings, the dry run
 checks whether the item already has a card. If it does, the bot
 stops and prints no card.
+
+## Evals
+
+The evals for the bot's prompt and model are in `evals/`. Read
+`evals/README.md` before changing `prompt.md` or `assemble.py`.
