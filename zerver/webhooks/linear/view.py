@@ -126,7 +126,7 @@ def api_linear_webhook(
     body_function = EVENT_FUNCTION_MAPPER[event_type]
     body = body_function(payload, event_type)
 
-    check_send_webhook_message(request, user_profile, topic_name, body)
+    check_send_webhook_message(request, user_profile, topic_name, body, event_type)
 
     return json_success(request)
 

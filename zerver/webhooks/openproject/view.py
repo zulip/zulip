@@ -119,5 +119,5 @@ def api_openproject_webhook(
     else:
         raise UnsupportedWebhookEventTypeError(event_type)
 
-    check_send_webhook_message(request, user_profile, topic, message)
+    check_send_webhook_message(request, user_profile, topic, message, event_type)
     return json_success(request)

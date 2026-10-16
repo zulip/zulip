@@ -26,6 +26,8 @@ Get Zulip notifications for your OpenProject work packages and projects!
 
 ![](/static/images/integrations/openproject/001.png)
 
+{!event-filtering-additional-feature.md!}
+
 ### Related documentation
 
 * [**OpenProject webhook guide**][1]
