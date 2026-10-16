@@ -34,6 +34,7 @@ def get_active_worker_queues(only_test_queues: bool = False) -> list[str]:
 
     opt_in_queue_enabled = {
         "soft_reactivation": settings.DEDICATED_SOFT_REACTIVATION_QUEUE,
+        "deferred_work_high_latency": settings.DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE,
     }
     return [
         queue_name

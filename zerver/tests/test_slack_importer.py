@@ -18,6 +18,7 @@ from attr import dataclass
 from django.conf import settings
 from django.db import IntegrityError
 from django.http import HttpResponse
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from requests.models import PreparedRequest
 
@@ -73,6 +74,7 @@ from zerver.data_import.slack import (
 from zerver.lib.exceptions import SlackImportInvalidFileError
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.mime_types import INLINE_MIME_TYPES
+from zerver.lib.queue import high_latency_queue_name
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import find_key_by_email, read_test_image_file
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
@@ -2727,7 +2729,7 @@ To Do
 
         # Set by the user performing the import.
         importer_set_email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
-        # Check that deferred_work for import is queued.
+        # Check that the import is queued.
         with mock.patch("zerver.views.registration.queue_json_publish_rollback_unsafe") as m:
             result = self.client_post(
                 "/new/import/slack/",
@@ -2746,7 +2748,7 @@ To Do
             )
 
         m.assert_called_once_with(
-            "deferred_work",
+            high_latency_queue_name(),
             {
                 "type": "import_slack_data",
                 "preregistration_realm_id": prereg_realm.id,
@@ -2805,7 +2807,7 @@ To Do
             from zerver.lib.queue import queue_json_publish_rollback_unsafe
 
             queue_json_publish_rollback_unsafe(
-                "deferred_work",
+                high_latency_queue_name(),
                 {
                     "type": "import_slack_data",
                     "preregistration_realm_id": prereg_realm.id,
@@ -2912,6 +2914,13 @@ To Do
         self.assertEqual(result["Location"], f"/realm/import/post_process/{confirmation_key}")
         result = self.client_get(f"/realm/import/post_process/{confirmation_key}")
         self.assert_in_success_response(["Select your account"], result)
+
+    @override_settings(DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE=True)
+    def test_end_to_end_slack_import_with_dedicated_queue(self) -> None:
+        """test_end_to_end_slack_import checks that the import is queued on
+        high_latency_queue_name(), and processes it from that queue."""
+        self.assertEqual(high_latency_queue_name(), "deferred_work_high_latency")
+        self.test_end_to_end_slack_import()
 
     @mock.patch("zerver.actions.data_import.do_import_realm")
     @mock.patch("zerver.actions.data_import.do_convert_zipfile")
