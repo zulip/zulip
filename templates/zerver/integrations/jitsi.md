@@ -27,9 +27,15 @@ instance of Jitsi Meet.
 
 {end_tabs}
 
+## Configure a self-hosted instance of Jitsi Meet with JWT authentication
+
+If you are self-hosting Zulip, you can [configure JWT authentication
+for Jitsi Meet](https://zulip.readthedocs.io/en/stable/production/video-calls.html#jwt-authentication).
+
 ## Related documentation
 
 - [How to start a call](/help/start-a-call)
+- [Server-side video call configuration](https://zulip.readthedocs.io/en/stable/production/video-calls.html)
 - [Zoom integration](/integrations/zoom)
 - [BigBlueButton integration](/integrations/big-blue-button)
 - [Constructor Groups integration](/integrations/constructor-groups)
