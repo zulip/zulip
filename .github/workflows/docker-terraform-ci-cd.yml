@@ -1,4 +1,4 @@
-name: Docker Imagen CI/CD
+name: Docker & Terraform CI/CD
 
 on:
   push:
