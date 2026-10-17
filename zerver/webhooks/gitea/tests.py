@@ -108,6 +108,17 @@ class GiteaHookTests(WebhookTestCase):
 
         self.check_webhook("issue_comment__edited", expected_topic_name, expected_message)
 
+    def test_unknown_event_type(self) -> None:
+        payload = self.get_body("push__5_commits")
+        result = self.client_post(
+            self.url, payload, HTTP_X_GITEA_EVENT="unknown_event", content_type="application/json"
+        )
+        self.assert_json_success(result)
+        self.assert_in_response(
+            "The 'unknown_event' event isn't currently supported by the Gitea webhook; ignoring",
+            result,
+        )
+
     @patch("zerver.webhooks.gogs.view.check_send_webhook_message")
     def test_push_filtered_by_branches_ignore(
         self, check_send_webhook_message_mock: MagicMock
