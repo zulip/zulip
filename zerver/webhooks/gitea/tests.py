@@ -20,6 +20,16 @@ class GiteaHookTests(WebhookTestCase):
         expected_message = "kostekIV created [test-branch](https://try.gitea.io/kostekIV/test/src/test-branch) branch."
         self.check_webhook("create__branch", expected_topic_name, expected_message)
 
+    def test_delete_branch(self) -> None:
+        expected_topic_name = "test / test-branch"
+        expected_message = "kostekIV deleted branch test-branch."
+        self.check_webhook("delete__branch", expected_topic_name, expected_message)
+
+    def test_delete_tag(self) -> None:
+        expected_topic_name = "test / v1.0"
+        expected_message = "kostekIV deleted tag v1.0."
+        self.check_webhook("delete__tag", expected_topic_name, expected_message)
+
     def test_pull_request_opened(self) -> None:
         expected_topic_name = "test / PR #1905 New pr"
         expected_message = """kostekIV opened [PR #4](https://try.gitea.io/kostekIV/test/pulls/4) from `test-branch` to `master`."""
