@@ -48,7 +48,7 @@ The test function presses the `x` key, waits for the
 `#private_message_recipient` input element to appear, verifies its
 content is empty, and then closes the compose box. The
 `waitForSelector` step here (and in most tests) is critical; tests
-that don't wait properly often fail nonderministically, because the
+that don't wait properly often fail nondeterministically, because the
 test will work or not depending on whether the browser updates the UI
 before or after executing the next step in the test.
 
