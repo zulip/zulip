@@ -125,3 +125,65 @@ jobs:
           while IFS= read -r tag; do
             [ -n "$tag" ] && docker push "$tag"
           done <<< "$IMAGE_TAGS"
+
+  terraform-validate:
+    name: Validate Terraform sintax & Best practices
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps: 
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e
+        with:
+          terraform_wrapper: false
+      - name: Terraform fmt check
+        working-directory: terraform
+        run: terraform fmt -check -recursive
+      - name: Terraform init (without backend)
+        working-directory: terraform
+        run: terraform init -backend=false
+      - name: Terraform validate
+        working-directory: terraform
+        run: terraform validate
+      - name: Set up TFLint
+        uses: terraform-linters/setup-tflint@6ffdbaa3be476b3431f7275c26966ef32ff60337
+      - name: TFLint init (download plugins)
+        working-directory: terraform
+        run: tflint --init
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run TFLint
+        working-directory: terraform
+        run: tflint --recursive
+
+  terraform-scan:
+    name: Scan Terraform for security misconfigurations (Trivy)
+    needs: terraform-validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Scan with Trivy
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
+        with:
+          scan-type: fs
+          scan-ref: terraform
+          scanners: misconfig, secret
+          format: sarif
+          output: trivy-terraform-results.sarif
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+      - name: Upload Trivy results to Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd
+        with:
+          sarif_file: trivy-terraform-results.sarif
