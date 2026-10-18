@@ -64,12 +64,12 @@ def send_message_backend(
     if recipient_type_name == "direct":
         # For now, use "private" from Message.API_RECIPIENT_TYPES.
         # TODO: Use "direct" here, as well as in events and
-        # message (created, schdeduled, drafts) objects/dicts.
+        # message (created, scheduled, drafts) objects/dicts.
         recipient_type_name = "private"
     elif recipient_type_name == "channel":
         # For now, use "stream" from Message.API_RECIPIENT_TYPES.
         # TODO: Use "channel" here, as well as in events and
-        # message (created, schdeduled, drafts) objects/dicts.
+        # message (created, scheduled, drafts) objects/dicts.
         recipient_type_name = "stream"
 
     # If to is None, then we default to an
