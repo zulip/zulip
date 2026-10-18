@@ -27,6 +27,15 @@ PAGER_DUTY_EVENT_NAMES_V3 = {
     "incident.reassigned": "reassigned",
 }
 
+EVENT_EMOJI_MAP = {
+    "triggered": ":rotating_light:",
+    "acknowledged": ":eyes:",
+    "unacknowledged": ":alarm_clock:",
+    "resolved": ":check:",
+    "assigned": ":handshake:",
+    "reassigned": ":counterclockwise:",
+}
+
 ALL_EVENT_TYPES = [
     "resolved",
     "assigned",
@@ -39,32 +48,34 @@ ALL_EVENT_TYPES = [
 AGENT_TEMPLATE = "[{username}]({url})"
 
 INCIDENT_WITH_SERVICE_AND_ASSIGNEE = (
-    "Incident [{incident_num_title}]({incident_url}) {action} by [{service_name}]"
+    "{emoji} Incident [{incident_num_title}]({incident_url}) {action} by [{service_name}]"
     "({service_url}) (assigned to {assignee_info})."
 )
 
 NUM_TITLE = "{incident_title} (#{incident_num})"
 
 INCIDENT_WITH_ASSIGNEE = """
-Incident [{incident_num_title}]({incident_url}) {action} by {assignee_info}.
+{emoji} Incident [{incident_num_title}]({incident_url}) {action} by {assignee_info}.
 """.strip()
 
 INCIDENT_ASSIGNED = """
-Incident [{incident_num_title}]({incident_url}) {action} to {assignee_info}.
+{emoji} Incident [{incident_num_title}]({incident_url}) {action} to {assignee_info}.
 """.strip()
 
 INCIDENT_RESOLVED_WITH_AGENT = """
-Incident [{incident_num_title}]({incident_url}) resolved by {agent_info}.
+{emoji} Incident [{incident_num_title}]({incident_url}) resolved by {agent_info}.
 """.strip()
 
 INCIDENT_RESOLVED = """
-Incident [{incident_num_title}]({incident_url}) resolved.
+{emoji} Incident [{incident_num_title}]({incident_url}) resolved.
 """.strip()
 
 
 def build_pagerduty_formatdict_v2(message: WildValue) -> FormatDictType:
     format_dict: FormatDictType = {}
-    format_dict["action"] = PAGER_DUTY_EVENT_NAMES_V2[message["event"].tame(check_string)]
+    action = PAGER_DUTY_EVENT_NAMES_V2[message["event"].tame(check_string)]
+    format_dict["action"] = action
+    format_dict["emoji"] = EVENT_EMOJI_MAP[action] if action in EVENT_EMOJI_MAP else ""
 
     format_dict["incident_id"] = message["incident"]["id"].tame(check_string)
     format_dict["incident_num_title"] = NUM_TITLE.format(
@@ -97,7 +108,9 @@ def build_pagerduty_formatdict_v2(message: WildValue) -> FormatDictType:
 
 def build_pagerduty_formatdict_v3(event: WildValue) -> FormatDictType:
     format_dict: FormatDictType = {}
-    format_dict["action"] = PAGER_DUTY_EVENT_NAMES_V3[event["event_type"].tame(check_string)]
+    action = PAGER_DUTY_EVENT_NAMES_V3[event["event_type"].tame(check_string)]
+    format_dict["action"] = action
+    format_dict["emoji"] = EVENT_EMOJI_MAP[action] if action in EVENT_EMOJI_MAP else ""
 
     format_dict["incident_id"] = event["data"]["id"].tame(check_string)
     format_dict["incident_url"] = event["data"]["html_url"].tame(check_string)
