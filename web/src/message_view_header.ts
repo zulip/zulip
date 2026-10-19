@@ -204,31 +204,6 @@ export function render_title_area(): void {
 export function initialize(): void {
     render_title_area();
 
-    // Wire clicks on DM header avatars to open the user card popover
-    $("body").on("click", "#message_view_header .dm-header-avatar-button", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const target: unknown = e.currentTarget;
-        if (!(target instanceof HTMLElement)) {
-            return;
-        }
-        const user_id_string = target.getAttribute("data-user-id");
-        if (user_id_string === null) {
-            return;
-        }
-        const user_id = Number(user_id_string);
-        const person = people.maybe_get_user_by_id(user_id);
-        if (person === undefined) {
-            return;
-        }
-
-        void (async () => {
-            // eslint-disable-next-line import-x/no-cycle
-            const user_card_popover = await import("./user_card_popover.ts");
-            user_card_popover.toggle_user_card_popover(target, person);
-        })();
-    });
-
     const hide_stream_settings_button_width_threshold = 620;
     $("body").on("mouseenter mouseleave", ".narrow_description", function (event) {
         const $view_description_elt = $(this);
@@ -238,7 +213,6 @@ export function initialize(): void {
         if (event.type === "mouseenter") {
             if (!$view_description_elt.hasClass("view-description-extended")) {
                 const current_width = $view_description_elt.outerWidth();
-                // Set fixed width for word-wrap to work
                 $view_description_elt.css("width", current_width + "px");
             }
             hover_timeout = setTimeout(() => {
@@ -249,7 +223,6 @@ export function initialize(): void {
 
                 if (window_width <= hide_stream_settings_button_width_threshold) {
                     $(".message-header-stream-settings-button").hide();
-                    // Let it expand naturally on smaller screens
                     $view_description_elt.css("width", "");
                 }
             }, 250);
@@ -258,12 +231,10 @@ export function initialize(): void {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             hover_timeout = $view_description_elt.data("hover_timeout");
             if (typeof hover_timeout === "number") {
-                // Clear any pending hover_timeout to prevent unexpected behavior
                 clearTimeout(hover_timeout);
             }
             $view_description_elt.addClass("leaving-extended-view-description");
 
-            // Wait for the reverse animation duration before cleaning up
             setTimeout(() => {
                 $view_description_elt.removeClass("view-description-extended");
                 $view_description_elt.removeClass("leaving-extended-view-description");
@@ -271,7 +242,6 @@ export function initialize(): void {
                     $(".message-header-stream-settings-button").show();
                     $view_description_elt.css("width", "");
                 } else {
-                    // Reset to flexbox-determined width
                     $view_description_elt.css("width", "");
                 }
             }, 100);

@@ -23,7 +23,7 @@ import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {is_overlay_hash} from "./hash_parser.ts";
 import * as hash_util from "./hash_util.ts";
-import {$t, $t_html} from "./i18n.ts";
+import {$t,$t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as message_lists from "./message_lists.ts";
 import {user_can_send_direct_message} from "./message_util.ts";
@@ -97,7 +97,7 @@ class PopoverMenu {
             return;
         }
 
-        const $popover = $(this.instance.popper);
+        const $popover =$(this.instance.popper);
 
         const $items = $("[tabindex='0']", $popover);
 
@@ -110,19 +110,14 @@ export const message_user_card = new PopoverMenu();
 export const user_card = new PopoverMenu();
 
 function popover_items_handle_keyboard_with_overrides(key: string, $items: JQuery): void {
-    /* Variant of popover_items_handle_keyboard for focusing on the
-       user card popover menu options first, instead of other tabbable
-       buttons and links which can be distracting. */
-
     const index = $items.index($items.filter(":focus"));
 
     if (index === -1) {
-        const $menu_options = $items.filter(".link-item .popover-menu-link");
+        const $menu_options =$items.filter(".link-item .popover-menu-link");
         [...$menu_options].find((option) => option.getClientRects().length)?.focus();
         return;
     }
 
-    /* Otherwise, use the base implementation */
     popover_menus.popover_items_handle_keyboard(key, $items);
 }
 
@@ -174,8 +169,6 @@ function elem_to_user_id($elem: JQuery): number {
 }
 
 function clipboard_enable(arg: HTMLElement | string): ClipboardJS {
-    // arg is a selector or element
-    // We extract this function for testing purpose.
     return new ClipboardJS(arg);
 }
 
@@ -281,21 +274,10 @@ export function fetch_presence_for_popover(user_id: number): void {
                 const user = people.get_by_user_id(user_id);
                 presence.presence_info.set(user_id, presence.status_from_raw(raw, user));
 
-                // Update the user's last seen time in the user card
-                // popover once we have their presence information, if
-                // we still have that user card still open.
                 $(selector_to_update).text(buddy_data.user_last_seen_time_status(user_id));
             }
         },
         error() {
-            // Fallback logic for users who haven't generated any presence data.
-            // A non-bot active user account might have no presence data either
-            // because they have always been in "invisible mode" or because the
-            // account was imported from another chat system.
-            //
-            // Store the fact that this user hasn't been online since
-            // account creation, to avoid uselessly asking the server
-            // again in this session.
             const user = people.get_by_user_id(user_id);
             presence.presence_info.set(user_id, {
                 status: "offline",
@@ -334,15 +316,13 @@ function get_user_card_popover_data(
 
     let date_joined;
 
-    // Some users might not have `date_joined` field because of the missing server data.
-    // These users are added late in `people.js` via `extract_people_from_message`.
     if (spectator_view && !user.is_missing_server_data) {
         date_joined = timerender.get_localized_date_or_time_for_format(
             parseISO(user.date_joined),
             "dayofyear_year",
         );
     }
-    // Filtering out only those profile fields that can be display in the popover and are not empty.
+
     const field_types = realm.custom_profile_field_types;
     const display_profile_fields = realm.custom_profile_fields
         .flatMap((f) => user_profile.get_custom_profile_field_data(user, f, field_types) ?? [])
@@ -446,10 +426,7 @@ function show_user_card_popover(
     }
 
     if ($popover_element.hasClass("inline-profile-picture-wrapper")) {
-        // The .inline-profile-picture-wrapper element has additional
-        // space around it, but we want to place the user card immediately
-        // adjacent the avatar. So we update the element here accordingly.
-        $popover_element = $popover_element.find(".inline_profile_picture");
+        $popover_element =$popover_element.find(".inline_profile_picture");
     }
 
     popover_menus.toggle_popover_menu(
@@ -461,7 +438,7 @@ function show_user_card_popover(
                 instance.setContent(ui_util.parse_html(popover_html));
                 user_card_popovers[template_class].instance = instance;
 
-                const $popover = $(instance.popper);
+                const $popover =$(instance.popper);
 
                 $popover.addClass(get_popover_classname(template_class));
             },
@@ -472,18 +449,10 @@ function show_user_card_popover(
                 if (on_mount) {
                     on_mount(instance);
                 }
-                const $popover = $(instance.popper);
-                // Note: We pass the normal-size avatar in initial rendering, and
-                // then query the server to replace it with the medium-size
-                // avatar.  The purpose of this double-fetch approach is to take
-                // advantage of the fact that the browser should already have the
-                // low-resolution image cached and thus display a low-resolution
-                // avatar rather than a blank area during the network delay for
-                // fetching the medium-size one.
+                const $popover =$(instance.popper);
                 load_medium_avatar(user, $popover.find(".popover-menu-user-avatar"));
                 init_email_clipboard();
                 init_email_tooltip(user);
-                // Focus the first menu action, skipping avatar/status links above it.
                 $popover.find(".link-item .popover-menu-link").first().trigger("focus");
             },
         },
@@ -491,7 +460,7 @@ function show_user_card_popover(
             show_as_overlay_on_mobile: true,
             show_as_overlay_always: show_as_overlay,
             get_focus_return_element(reference) {
-                const $entry = $(reference).closest(".user_sidebar_entry");
+                const $entry =$(reference).closest(".user_sidebar_entry");
                 if ($entry.length === 0) {
                     return undefined;
                 }
@@ -502,24 +471,12 @@ function show_user_card_popover(
 }
 
 function init_email_clipboard(): void {
-    /*
-        This shows (and enables) the copy-text icon for folks
-        who have names that would overflow past the right
-        edge of our user mention popup.
-    */
     $(".user_popover_email").each(function () {
         if (this.clientWidth < this.scrollWidth) {
-            const $email_el = $(this).parent();
-            const $copy_email_icon = $email_el.find("#popover-menu-copy-email");
+            const $email_el =$(this).parent();
+            const $copy_email_icon =$email_el.find("#popover-menu-copy-email");
 
-            /*
-                For deactivated users, the copy-email icon will
-                not even be present in the HTML, so we don't do
-                anything.  We don't reveal emails for deactivated
-                users.
-            */
-            if ($copy_email_icon[0]) {
-                $copy_email_icon.removeClass("hide_copy_icon");
+            if ($copy_email_icon[0]) {$copy_email_icon.removeClass("hide_copy_icon");
                 const copy_email_clipboard = clipboard_enable($copy_email_icon[0]);
                 copy_email_clipboard.on("success", (e) => {
                     show_copied_confirmation(e.trigger, {
@@ -532,12 +489,6 @@ function init_email_clipboard(): void {
 }
 
 function init_email_tooltip(user: User): void {
-    /*
-        This displays the email tooltip for folks
-        who have names that would overflow past the right
-        edge of our user mention popup.
-    */
-
     $(".user_popover_email").each(function () {
         if (this.clientWidth < this.scrollWidth) {
             tippy.default(this, {
@@ -558,12 +509,6 @@ function load_medium_avatar(user: User, $elt: JQuery): void {
     });
 }
 
-// Functions related to message user card popover.
-
-// element is the target element to pop off of.
-// user_id is the user whose profile to show.
-// sender_id is the user id of the sender for the message we are
-// showing the popover from.
 export function toggle_user_card_popover_for_message(
     element: HTMLElement,
     user_id: number,
@@ -571,7 +516,7 @@ export function toggle_user_card_popover_for_message(
     has_message_context: boolean,
     on_mount?: (instance: tippy.Instance) => void,
 ): void {
-    const $elt = $(element);
+    const $elt =$(element);
     const user = people.get_by_user_id(user_id);
 
     const is_sender_popover = sender_id === user_id;
@@ -592,17 +537,12 @@ export function unsaved_message_user_mention_event_handler(
     this: HTMLElement,
     e: JQuery.ClickEvent,
 ): void {
-    // We stop propagation because, if this event was fired from drafts,
-    // it would otherwise trigger this handler twice: once from the
-    // `.user-mention` listener for drafts and again from the
-    // `.messagebox .user-mention` listener.
     e.stopPropagation();
     if (mouse_drag.is_drag(e)) {
         return;
     }
 
     const id_string = $(this).attr("data-user-id")!;
-    // Do not open popover for @all mention
     if (id_string === "*") {
         return;
     }
@@ -612,31 +552,18 @@ export function unsaved_message_user_mention_event_handler(
     toggle_user_card_popover_for_message(this, user_id, current_user.user_id, false);
 }
 
-// This function serves as the entry point for toggling
-// the user card popover via keyboard shortcut.
 export function toggle_sender_info(): void {
     if (message_user_card.is_open()) {
-        // We need to call the hide method here because
-        // the event wasn't triggered by the mouse.
-        // The Tippy unTrigger event wasn't called,
-        // so we have to manually hide the popover.
         message_user_card.hide();
         return;
     }
 
-    // The "View user card" tooltip shown when hovering the avatar can
-    // block this from opening properly, so close it first.
-    //
-    // This isn't necessary for the click handler, because the click
-    // naturally closes the Tippy tooltip.
     popovers.hide_all();
 
-    const $message = $(".selected_message");
-    let $sender = $message.find(".message-avatar .inline-profile-picture-wrapper");
+    const $message =$(".selected_message");
+    let $sender =$message.find(".message-avatar .inline-profile-picture-wrapper");
     if ($sender.length === 0) {
-        // Messages without an avatar have an invisible message_sender
-        // element that's roughly in the right place.
-        $sender = $message.find(".message_sender");
+        $sender =$message.find(".message_sender");
     }
 
     assert(message_lists.current !== undefined);
@@ -656,8 +583,6 @@ export function toggle_sender_info(): void {
 }
 
 function focus_user_card_popover_item(): void {
-    // For now I recommend only calling this when the user opens the menu with a hotkey.
-    // Our popup menus act kind of funny when you mix keyboard and mouse.
     const $items = get_user_card_popover_for_message_items();
     [...($items ?? [])].find((item) => item.getClientRects().length)?.focus();
 }
@@ -672,27 +597,20 @@ function get_user_card_popover_for_message_items(): JQuery | undefined {
         blueslip.error("Cannot find popover data for message user card menu.");
         return undefined;
     }
-    const $popover = $(message_user_card.instance.popper);
+    const $popover =$(message_user_card.instance.popper);
 
-    // Return only the popover menu options that are visible, and not the
-    // copy buttons or the link items in the custom profile fields.
     return $(".link-item .popover-menu-link", $popover);
 }
-
-// Functions related to the user card popover in the user sidebar.
 
 function toggle_sidebar_user_card_popover($target: JQuery): void {
     const user_id = elem_to_user_id($target);
     const user = people.get_by_user_id(user_id);
 
-    // Hiding popovers may mutate current_user_sidebar_user_id.
     const previous_user_sidebar_id = current_user_sidebar_user_id;
 
-    // Hide popovers
     hide_all();
 
     if (previous_user_sidebar_id === user_id) {
-        // If the popover is already shown, clicking again should toggle it.
         return;
     }
 
@@ -719,7 +637,7 @@ function register_click_handlers(): void {
             if (mouse_drag.is_drag(e)) {
                 return;
             }
-            const $row = $(this).closest(".message_row");
+            const $row =$(this).closest(".message_row");
             assert(message_lists.current !== undefined);
             const message = message_lists.current.get(rows.id($row));
             assert(message !== undefined);
@@ -733,13 +651,11 @@ function register_click_handlers(): void {
             return;
         }
         const id_string = $(this).attr("data-user-id");
-        // We fallback to email to handle legacy Markdown that was rendered
-        // before we cut over to using data-user-id
         const email = $(this).attr("data-user-email");
         if (id_string === "*" || email === "*") {
             return;
         }
-        const $row = $(this).closest(".message_row");
+        const $row =$(this).closest(".message_row");
         assert(message_lists.current !== undefined);
         const message = message_lists.current.get(rows.id($row));
         assert(message !== undefined);
@@ -749,20 +665,12 @@ function register_click_handlers(): void {
         } else {
             user_id = email === undefined ? undefined : people.maybe_get_user_id_by_email(email);
             if (user_id === undefined) {
-                // There can be a case when user_id is undefined if
-                // the user is an inaccessible user as we do not
-                // create the fake user objects for it because
-                // we do not have user ID. It is fine to not
-                // open popover for this case as such cases
-                // without user ID are rare and old.
                 return;
             }
         }
         toggle_user_card_popover_for_message(this, user_id, message.sender_id, true);
     });
 
-    // Note: Message feeds and drafts have their own direct event listeners
-    // that run before this one and call stopPropagation.
     $("body").on("click", ".messagebox .user-mention", unsaved_message_user_mention_event_handler);
 
     $("body").on("click", ".user-card-popover-actions .narrow_to_private_messages", function (e) {
@@ -839,8 +747,6 @@ function register_click_handlers(): void {
     $("body").on("click", ".user-card-popover-actions .view_full_user_profile", function (e) {
         const user_id = elem_to_user_id($(this).parents("ul"));
         const current_hash = window.location.hash;
-        // If any overlay is already open, we want the user profile to behave
-        // as a modal rather than an overlay.
         if (is_overlay_hash(current_hash)) {
             user_profile.show_user_profile(user_id);
         } else {
@@ -901,10 +807,6 @@ function register_click_handlers(): void {
         },
     );
 
-    /* These click handlers are implemented as just deep links to the
-     * relevant part of the Zulip UI, so we don't want preventDefault,
-     * but we do want to close the modal when you click them. */
-
     $("body").on("click", ".invisible_mode_turn_on", (e) => {
         hide_all();
         user_status.server_invisible_mode_on();
@@ -930,7 +832,6 @@ function register_click_handlers(): void {
 
     $("body").on("click", ".update_status_text", open_user_status_modal);
 
-    // Clicking on one's own status emoji should open the user status modal.
     $(".buddy-list-section").on(
         "click",
         ".user_sidebar_entry_me .status-emoji",
@@ -939,7 +840,7 @@ function register_click_handlers(): void {
 
     $(".buddy-list-section").on("click", ".user-list-sidebar-menu-icon", (e) => {
         e.stopPropagation();
-        const $target = $(e.currentTarget).closest("li");
+        const $target =$(e.currentTarget).closest("li");
 
         toggle_sidebar_user_card_popover($target);
     });
@@ -947,7 +848,7 @@ function register_click_handlers(): void {
     $(".buddy-list-section").on("keydown", ".user-list-sidebar-menu-icon", (e) => {
         if (keydown_util.is_enter_event(e)) {
             e.stopPropagation();
-            const $target = $(e.currentTarget).closest(".user_sidebar_entry");
+            const $target =$(e.currentTarget).closest(".user_sidebar_entry");
 
             toggle_sidebar_user_card_popover($target);
         }
@@ -955,7 +856,7 @@ function register_click_handlers(): void {
 
     $(".buddy-list-section").on("click", ".user-profile-picture", (e) => {
         e.stopPropagation();
-        const $target = $(e.currentTarget).closest("li");
+        const $target =$(e.currentTarget).closest("li");
 
         toggle_sidebar_user_card_popover($target);
     });
@@ -1028,6 +929,26 @@ function register_click_handlers(): void {
         show_copied_confirmation(e.trigger, {
             show_check_icon: true,
         });
+    });
+
+    // Wire clicks on DM header avatars to open the user card popover
+    $("body").on("click", "#message_view_header .dm-header-avatar-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const target: unknown = e.currentTarget;
+        if (!(target instanceof HTMLElement)) {
+            return;
+        }
+        const user_id_string = target.getAttribute("data-user-id");
+        if (user_id_string === null) {
+            return;
+        }
+        const user_id = Number(user_id_string);
+        const person = people.maybe_get_user_by_id(user_id);
+        if (person === undefined) {
+            return;
+        }
+        toggle_user_card_popover(target, person);
     });
 }
 
