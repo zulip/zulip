@@ -183,7 +183,7 @@ export function process_fenced_code(content: string): string {
                 if (line === fence) {
                     this.done();
                 } else {
-                    lines.push(line.trimEnd());
+                    lines.push(line);
                 }
             },
 

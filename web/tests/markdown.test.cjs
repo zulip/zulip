@@ -365,7 +365,7 @@ test("marked", ({override}) => {
         {
             input: "\n```\n    fenced code trailing whitespace            \n```\n\nand then after\n",
             expected:
-                '<div class="codehilite"><pre><span></span><code>    fenced code trailing whitespace\n</code></pre></div>\n<p>and then after</p>',
+                '<div class="codehilite"><pre><span></span><code>    fenced code trailing whitespace            \n</code></pre></div>\n<p>and then after</p>',
         },
         {
             input: "* a\n* list \n* here",

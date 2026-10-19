@@ -37,7 +37,7 @@ Include tilde's in a code block and wrap with blank lines:
     ~~~~
     </code></pre>
 
-Removes trailing whitespace from code blocks that cause horizontal scrolling
+Preserves trailing whitespace in code blocks per CommonMark spec:
     >>> import markdown
     >>> text = '''
     ... A paragraph before a fenced code block:
@@ -49,7 +49,7 @@ Removes trailing whitespace from code blocks that cause horizontal scrolling
     >>> html = markdown.markdown(text, extensions=['fenced_code'])
     >>> print html
     <p>A paragraph before a fenced code block:</p>
-    <pre><code>Fenced code block
+    <pre><code>Fenced code block    \t\t\t\t\t\t\t
     </code></pre>
 
 Language tags:
@@ -207,7 +207,7 @@ class ZulipBaseHandler:
         if line.rstrip() == self.fence:
             self.done()
         else:
-            self.lines.append(line.rstrip())
+            self.lines.append(line)
 
     def done(self) -> None:
         if self.lines:
