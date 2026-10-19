@@ -10,12 +10,22 @@ import * as inbox_util from "./inbox_util.ts";
 import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as peer_data from "./peer_data.ts";
+import * as people from "./people.ts";
+import * as presence from "./presence.ts";
 import * as recent_view_util from "./recent_view_util.ts";
 import * as rendered_markdown from "./rendered_markdown.ts";
 import * as search from "./search.ts";
 import {current_user} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+
+export type DmRecipient = {
+    user_id: number;
+    full_name: string;
+    avatar_url: string;
+    status_color_class: string;
+    status_text: string;
+};
 
 type MessageViewHeaderContext = {
     title?: string | undefined;
@@ -29,6 +39,9 @@ type MessageViewHeaderContext = {
     is_admin?: boolean;
     stream?: StreamSubscription;
     stream_settings_link?: string;
+    is_direct_message?: boolean;
+    is_1_to_1?: boolean;
+    dm_recipients?: DmRecipient[];
 } & (
     | {
           zulip_icon: string;
@@ -59,17 +72,6 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
         };
     }
 
-    // TODO: If we're not in the recent or inbox view, there should be
-    // a message feed with a declared filter in the center pane. But
-    // because of an initialization order bug, this function gets
-    // called with a filter of `undefined` when loading the web app
-    // with, say, inbox as the home view.
-    //
-    // TODO: Refactor this function to move the inbox/recent cases
-    // into the caller, and this function can always get a Filter object.
-    //
-    // TODO: This ideally doesn't need a special case, we can just use
-    // `filter.get_description` for it.
     if (filter === undefined || filter.is_in_home()) {
         let description;
         if (page_params.is_spectator) {
@@ -115,9 +117,6 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
             };
         }
 
-        // We can now be certain that the narrow
-        // involves a stream which exists and
-        // the current user can access.
         const sub_count = peer_data.get_subscriber_count(current_stream.stream_id);
         return {
             ...context,
@@ -126,6 +125,40 @@ function get_message_view_header_context(filter: Filter | undefined): MessageVie
             sub_count,
             stream: current_stream,
             stream_settings_link: hash_util.channels_settings_edit_url(current_stream, "general"),
+        };
+    }
+
+    if (filter.has_operator("dm")) {
+        const pm_user_ids = [...narrow_state.pm_ids_set(filter)];
+        const is_1_to_1 = pm_user_ids.length === 1;
+
+        const dm_recipients: DmRecipient[] = pm_user_ids
+            .filter((user_id) => people.is_valid_user_id(user_id))
+            .map((user_id) => {
+                const person = people.get_by_user_id(user_id);
+                const user_status = presence.get_status(user_id);
+                const status_color_class = `user-presence-${user_status}`;
+                const status_text =
+                    user_status === "active"
+                        ? $t({defaultMessage: "Active"})
+                        : user_status === "idle"
+                          ? $t({defaultMessage: "Idle"})
+                          : $t({defaultMessage: "Offline"});
+
+                return {
+                    user_id,
+                    full_name: person.full_name,
+                    avatar_url: people.small_avatar_url_for_person(person),
+                    status_color_class,
+                    status_text,
+                };
+            });
+
+        return {
+            ...context,
+            is_direct_message: true,
+            is_1_to_1,
+            dm_recipients,
         };
     }
 
@@ -148,15 +181,12 @@ function append_and_display_title_area(context: MessageViewHeaderContext): void 
     }
     $message_view_header_elem.removeClass("notdisplayed");
     const $content = $message_view_header_elem.find("span.rendered_markdown");
-    if ($content) {
-        // Update syntax like stream names, emojis, mentions, timestamps.
+    if ($content.length > 0) {
         rendered_markdown.update_elements($content);
     }
 }
 
 function build_message_view_header(filter: Filter | undefined): void {
-    // This makes sure we don't waste time appending
-    // message_view_header on a template where it's never used
     if (filter && !filter.is_common_narrow()) {
         search.open_search_bar_and_close_narrow_description();
     } else {
@@ -166,14 +196,44 @@ function build_message_view_header(filter: Filter | undefined): void {
     }
 }
 
+export function render_title_area(): void {
+    const filter = narrow_state.filter();
+    build_message_view_header(filter);
+}
+
 export function initialize(): void {
     render_title_area();
+
+    // Wire clicks on DM header avatars to open the user card popover
+    $("body").on("click", "#message_view_header .dm-header-avatar-button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const target: unknown = e.currentTarget;
+        if (!(target instanceof HTMLElement)) {
+            return;
+        }
+        const user_id_string = target.getAttribute("data-user-id");
+        if (user_id_string === null) {
+            return;
+        }
+        const user_id = Number(user_id_string);
+        const person = people.maybe_get_user_by_id(user_id);
+        if (person === undefined) {
+            return;
+        }
+
+        void (async () => {
+            // eslint-disable-next-line import-x/no-cycle
+            const user_card_popover = await import("./user_card_popover.ts");
+            user_card_popover.toggle_user_card_popover(target, person);
+        })();
+    });
 
     const hide_stream_settings_button_width_threshold = 620;
     $("body").on("mouseenter mouseleave", ".narrow_description", function (event) {
         const $view_description_elt = $(this);
         const window_width = $(window).width()!;
-        let hover_timeout;
+        let hover_timeout: ReturnType<typeof setTimeout> | undefined;
 
         if (event.type === "mouseenter") {
             if (!$view_description_elt.hasClass("view-description-extended")) {
@@ -218,15 +278,6 @@ export function initialize(): void {
         }
     });
 }
-
-export function render_title_area(): void {
-    const filter = narrow_state.filter();
-    build_message_view_header(filter);
-}
-
-// This function checks if "modified_sub" which is the stream whose values
-// have been updated is the same as the stream which is currently
-// narrowed and rerenders if necessary
 export function maybe_rerender_title_area_for_stream(modified_stream_id: number): void {
     const current_stream_id = narrow_state.stream_id();
 
@@ -235,31 +286,30 @@ export function maybe_rerender_title_area_for_stream(modified_stream_id: number)
     }
 }
 
-// The navbar title shows a user's name when narrowed to a DM that
-// includes them or to messages sent by them, so we refresh it for a
-// rename of such a user.
 export function maybe_update_navbar_title_for_user(modified_user_id: number): void {
     const filter = narrow_state.filter();
-    if (filter === undefined) {
+    if (filter === undefined || !filter.is_common_narrow()) {
         return;
     }
-    // Only common narrows show a name in the title; others show a search
-    // bar and have no title to update.
-    if (!filter.is_common_narrow()) {
-        return;
-    }
+
     const narrowed_to_dm_with_user = narrow_state.pm_ids_set(filter).has(modified_user_id);
     const sender_id = filter.terms_with_operator("sender")[0]?.operand;
     const narrowed_to_messages_sent_by_user = sender_id === modified_user_id;
 
     if (narrowed_to_dm_with_user || narrowed_to_messages_sent_by_user) {
-        // Update just the title text rather than rebuilding the whole
-        // header with render_title_area(), which would close or reset a
-        // search bar the user has open to refine the narrow. For these
-        // narrows the title is plain text and the icon doesn't depend on
-        // the renamed user.
         const title = filter.get_title();
         assert(title !== undefined);
         $("#message_view_header .message-header-navbar-title").text(title);
+        $("#message_view_header .dm-header-recipient-name").text(title);
+    }
+}
+
+export function maybe_rerender_title_area_for_presence(user_id: number): void {
+    const filter = narrow_state.filter();
+    if (filter === undefined || !filter.is_common_narrow()) {
+        return;
+    }
+    if (narrow_state.pm_ids_set(filter).has(user_id)) {
+        render_title_area();
     }
 }
