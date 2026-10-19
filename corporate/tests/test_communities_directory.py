@@ -402,3 +402,65 @@ class ProbeRemoteRealmsForCommunitiesDirectoryTest(ZulipTestCase):
         self.remote_realm.communities_directory_listing_requested = False
         self.remote_realm.save(update_fields=["communities_directory_listing_requested"])
         self.assertEqual(list(get_remote_realms_asking_to_be_advertised()), [])
+
+
+class CommunitiesDirectoryListingTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.server = RemoteZulipServer.objects.create(
+            uuid=uuid4(),
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            last_updated=timezone_now(),
+        )
+        icon_url = "https://community.example.com/user_avatars/2/realm/icon.png?version=3"
+        self.remote_realm = RemoteRealm.objects.create(
+            server=self.server,
+            uuid=uuid4(),
+            uuid_owner_secret="dummy-secret",
+            host="community.example.com",
+            name="Icecream Collective",
+            realm_date_created=timezone_now(),
+            communities_directory_listing_requested=True,
+            description="A place to talk about icecreams",
+            invite_required=False,
+            icon_url=icon_url,
+            last_reachable_datetime=timezone_now(),
+            last_mirrored_icon_url=icon_url,
+            mirrored_icon_version=1,
+            first_advertised_datetime=timezone_now(),
+        )
+
+    def test_listed_remote_realm_metadata(self) -> None:
+        result = self.client_get("/communities/")
+        self.assert_in_success_response(
+            [
+                "Icecream Collective",
+                "A place to talk about icecreams",
+                "https://community.example.com",
+                # The directory shows our own copy of the icon.
+                f"/user_avatars/remote_realms/{self.remote_realm.uuid}/icon.png?version=1",
+            ],
+            result,
+        )
+
+    def test_remote_realm_not_reached_recently_is_not_listed(self) -> None:
+        result = self.client_get("/communities/")
+        self.assert_in_success_response(["Icecream Collective"], result)
+
+        self.remote_realm.last_reachable_datetime = timezone_now() - REACHABILITY_WINDOW
+        self.remote_realm.save(update_fields=["last_reachable_datetime"])
+
+        result = self.client_get("/communities/")
+        self.assert_not_in_success_response(["Icecream Collective"], result)
+
+    def test_remote_realm_not_meeting_base_criteria_is_not_listed(self) -> None:
+        result = self.client_get("/communities/")
+        self.assert_in_success_response(["Icecream Collective"], result)
+
+        self.remote_realm.description = ""
+        self.remote_realm.save(update_fields=["description"])
+
+        result = self.client_get("/communities/")
+        self.assert_not_in_success_response(["Icecream Collective"], result)

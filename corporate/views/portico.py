@@ -26,7 +26,12 @@ from zerver.lib.realm_description import get_realm_text_description
 from zerver.lib.realm_icon import get_realm_icon_url
 from zerver.lib.subdomains import is_subdomain_root_or_alias
 from zerver.lib.typed_endpoint import typed_endpoint
+from zerver.lib.upload import get_upload_backend
 from zerver.models import Realm
+from zilencer.lib.communities_directory import (
+    get_remote_realms_asking_to_be_advertised,
+    should_advertise_remote_realm,
+)
 
 if TYPE_CHECKING:
     from corporate.lib.stripe import RemoteRealmBillingSession, RemoteServerBillingSession
@@ -339,15 +344,11 @@ def get_org_type_key(org_type: int) -> str:
 def communities_view(request: HttpRequest) -> HttpResponse:
     eligible_realms = []
     unique_org_type_ids = set()
-    want_to_be_advertised_realms = (
-        Realm.objects.filter(
-            want_advertise_in_communities_directory=True,
-        )
-        .exclude(
-            # Filter out deactivated organizations.
-            deactivated=True,
-        )
-        .order_by("name")
+    want_to_be_advertised_realms = Realm.objects.filter(
+        want_advertise_in_communities_directory=True,
+    ).exclude(
+        # Filter out deactivated organizations.
+        deactivated=True,
     )
     for realm in want_to_be_advertised_realms:
         if meets_communities_directory_base_criteria(
@@ -367,6 +368,26 @@ def communities_view(request: HttpRequest) -> HttpResponse:
                 }
             )
             unique_org_type_ids.add(realm.org_type)
+
+    for remote_realm in get_remote_realms_asking_to_be_advertised():
+        if not should_advertise_remote_realm(remote_realm):
+            continue
+
+        eligible_realms.append(
+            {
+                "name": remote_realm.name,
+                "realm_url": f"https://{remote_realm.host}",
+                # Our own copy of the icon.
+                "logo_url": get_upload_backend().get_remote_realm_icon_url(
+                    str(remote_realm.uuid), remote_realm.mirrored_icon_version
+                ),
+                "description": remote_realm.description,
+                "org_type_key": get_org_type_key(remote_realm.org_type),
+            }
+        )
+        unique_org_type_ids.add(remote_realm.org_type)
+
+    eligible_realms.sort(key=lambda realm: realm["name"])
 
     # Custom list of org filters to show.
     CATEGORIES_TO_OFFER = [
