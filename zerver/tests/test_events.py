@@ -260,6 +260,7 @@ from zerver.lib.event_schema import (
     check_user_status,
     check_user_topic,
 )
+from zerver.lib.event_types import HeartbeatEvent
 from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
@@ -1337,7 +1338,7 @@ class NormalActionsTest(BaseAction):
         with self.verify_action(state_change_expected=False) as events:
             send_event_rollback_unsafe(
                 self.user_profile.realm,
-                create_heartbeat_event(),
+                HeartbeatEvent.model_validate(create_heartbeat_event()),
                 [self.user_profile.id],
             )
         check_heartbeat("events[0]", events[0])
