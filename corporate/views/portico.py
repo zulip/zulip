@@ -326,6 +326,15 @@ def hello_view(request: HttpRequest) -> HttpResponse:
     return TemplateResponse(request, "corporate/hello.html", context)
 
 
+def get_org_type_key(org_type: int) -> str:
+    [org_type_key] = (
+        org_type_key
+        for org_type_key in Realm.ORG_TYPES
+        if Realm.ORG_TYPES[org_type_key]["id"] == org_type
+    )
+    return org_type_key
+
+
 @add_google_analytics
 def communities_view(request: HttpRequest) -> HttpResponse:
     eligible_realms = []
@@ -348,18 +357,13 @@ def communities_view(request: HttpRequest) -> HttpResponse:
             has_web_public_streams=realm.allow_web_public_streams_access(),
             is_demo_organization=realm.demo_organization_scheduled_deletion_date is not None,
         ):
-            [org_type] = (
-                org_type
-                for org_type in Realm.ORG_TYPES
-                if Realm.ORG_TYPES[org_type]["id"] == realm.org_type
-            )
             eligible_realms.append(
                 {
                     "name": realm.name,
                     "realm_url": realm.url,
                     "logo_url": get_realm_icon_url(realm),
                     "description": get_realm_text_description(realm),
-                    "org_type_key": org_type,
+                    "org_type_key": get_org_type_key(realm.org_type),
                 }
             )
             unique_org_type_ids.add(realm.org_type)
