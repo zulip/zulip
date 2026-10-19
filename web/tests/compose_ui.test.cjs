@@ -1234,6 +1234,65 @@ run_test("format_text - spoiler", ({override, override_rewire}) => {
     assert.equal(get_textarea_state(), "before\n<abc>\nafter");
 });
 
+run_test("format_text - table", ({override_rewire}) => {
+    override_rewire(
+        compose_ui,
+        "insert_and_scroll_into_view",
+        (content, _textarea, replace_all) => {
+            assert.ok(replace_all);
+            $textarea.val(content);
+        },
+    );
+
+    // Table, no selection
+    init_textarea_state("|");
+    compose_ui.format_text($textarea, "table");
+    assert.equal(
+        get_textarea_state(),
+        "| <Header 1> | Header 2 | Header 3 |\n" +
+            "| :--- | :--- | :--- |\n" +
+            "| Cell 1 | Cell 2 | Cell 3 |\n" +
+            "| Cell 4 | Cell 5 | Cell 6 |",
+    );
+
+    // Table with preceding text without newline
+    init_textarea_state("before|");
+    compose_ui.format_text($textarea, "table");
+    assert.equal(
+        get_textarea_state(),
+        "before\n" +
+            "| <Header 1> | Header 2 | Header 3 |\n" +
+            "| :--- | :--- | :--- |\n" +
+            "| Cell 1 | Cell 2 | Cell 3 |\n" +
+            "| Cell 4 | Cell 5 | Cell 6 |",
+    );
+
+    // Table with succeeding text without newline
+    init_textarea_state("|after");
+    compose_ui.format_text($textarea, "table");
+    assert.equal(
+        get_textarea_state(),
+        "| <Header 1> | Header 2 | Header 3 |\n" +
+            "| :--- | :--- | :--- |\n" +
+            "| Cell 1 | Cell 2 | Cell 3 |\n" +
+            "| Cell 4 | Cell 5 | Cell 6 |\n" +
+            "after",
+    );
+
+    // Table with single-line selected text used as header
+    init_textarea_state("before <Topic> after");
+    compose_ui.format_text($textarea, "table");
+    assert.equal(
+        get_textarea_state(),
+        "before \n" +
+            "| <Topic> | Header 2 | Header 3 |\n" +
+            "| :--- | :--- | :--- |\n" +
+            "| Cell 1 | Cell 2 | Cell 3 |\n" +
+            "| Cell 4 | Cell 5 | Cell 6 |\n" +
+            " after",
+    );
+});
+
 run_test("format_text - link", ({override, override_rewire}) => {
     override_rewire(
         compose_ui,

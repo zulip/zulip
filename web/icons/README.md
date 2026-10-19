@@ -46,6 +46,7 @@ send.svg
 sort-arrow-down.svg
 spoiler.svg
 strikethrough.svg
+table.svg
 topic-list.svg
 topic.svg
 type-big.svg

@@ -1544,6 +1544,29 @@ export let format_text = (
             }
             break;
         }
+        case "table": {
+            let table_prefix = "";
+            let table_suffix = "";
+            if (range.start > 0 && text[range.start - 1] !== "\n") {
+                table_prefix = "\n";
+            }
+            if (range.end < text.length && text[range.end] !== "\n") {
+                table_suffix = "\n";
+            }
+            const header1 =
+                selected_text !== "" && !selected_text.includes("\n") ? selected_text : "Header 1";
+            const table_markdown =
+                `${table_prefix}| ${header1} | Header 2 | Header 3 |\n` +
+                "| :--- | :--- | :--- |\n" +
+                "| Cell 1 | Cell 2 | Cell 3 |\n" +
+                `| Cell 4 | Cell 5 | Cell 6 |${table_suffix}`;
+            text = text.slice(0, range.start) + table_markdown + text.slice(range.end);
+            insert_and_scroll_into_view(text, $textarea, true);
+            const selection_start = range.start + table_prefix.length + "| ".length;
+            const selection_end = selection_start + header1.length;
+            field.setSelectionRange(selection_start, selection_end);
+            break;
+        }
     }
 };
 
