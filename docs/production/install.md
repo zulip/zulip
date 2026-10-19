@@ -135,10 +135,10 @@ of the failure, you can just rerun the script. For more information, see
   This skips the Terms of Service prompt, allowing for running the installer
   with `--push-notifications` in scripts without requiring user input.
 
-- `--self-signed-cert`: With this option, the Zulip installer
-  generates a self-signed SSL certificate for the server. This isn't
-  suitable for production use (unless your server is [behind a reverse
-  proxy][reverse-proxy]), but may be convenient for testing.
+- `--self-signed-cert`: With this option, the Zulip installer generates
+  a [self-signed SSL certificate](ssl-certificates.md#self-signed-certificate)
+  for the server. This isn't suitable for production use (unless your server is
+  [behind a reverse proxy][reverse-proxy]), but may be convenient for testing.
 
 For advanced installer options, see our [deployment options][doc-deployment-options]
 documentation.
