@@ -23,7 +23,7 @@ import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {is_overlay_hash} from "./hash_parser.ts";
 import * as hash_util from "./hash_util.ts";
-import {$t,$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as keydown_util from "./keydown_util.ts";
 import * as message_lists from "./message_lists.ts";
 import {user_can_send_direct_message} from "./message_util.ts";
@@ -97,7 +97,7 @@ class PopoverMenu {
             return;
         }
 
-        const $popover =$(this.instance.popper);
+        const $popover = $(this.instance.popper);
 
         const $items = $("[tabindex='0']", $popover);
 
@@ -113,7 +113,7 @@ function popover_items_handle_keyboard_with_overrides(key: string, $items: JQuer
     const index = $items.index($items.filter(":focus"));
 
     if (index === -1) {
-        const $menu_options =$items.filter(".link-item .popover-menu-link");
+        const $menu_options = $items.filter(".link-item .popover-menu-link");
         [...$menu_options].find((option) => option.getClientRects().length)?.focus();
         return;
     }
@@ -426,7 +426,7 @@ function show_user_card_popover(
     }
 
     if ($popover_element.hasClass("inline-profile-picture-wrapper")) {
-        $popover_element =$popover_element.find(".inline_profile_picture");
+        $popover_element = $popover_element.find(".inline_profile_picture");
     }
 
     popover_menus.toggle_popover_menu(
@@ -438,7 +438,7 @@ function show_user_card_popover(
                 instance.setContent(ui_util.parse_html(popover_html));
                 user_card_popovers[template_class].instance = instance;
 
-                const $popover =$(instance.popper);
+                const $popover = $(instance.popper);
 
                 $popover.addClass(get_popover_classname(template_class));
             },
@@ -449,7 +449,7 @@ function show_user_card_popover(
                 if (on_mount) {
                     on_mount(instance);
                 }
-                const $popover =$(instance.popper);
+                const $popover = $(instance.popper);
                 load_medium_avatar(user, $popover.find(".popover-menu-user-avatar"));
                 init_email_clipboard();
                 init_email_tooltip(user);
@@ -460,7 +460,7 @@ function show_user_card_popover(
             show_as_overlay_on_mobile: true,
             show_as_overlay_always: show_as_overlay,
             get_focus_return_element(reference) {
-                const $entry =$(reference).closest(".user_sidebar_entry");
+                const $entry = $(reference).closest(".user_sidebar_entry");
                 if ($entry.length === 0) {
                     return undefined;
                 }
@@ -473,10 +473,11 @@ function show_user_card_popover(
 function init_email_clipboard(): void {
     $(".user_popover_email").each(function () {
         if (this.clientWidth < this.scrollWidth) {
-            const $email_el =$(this).parent();
-            const $copy_email_icon =$email_el.find("#popover-menu-copy-email");
+            const $email_el = $(this).parent();
+            const $copy_email_icon = $email_el.find("#popover-menu-copy-email");
 
-            if ($copy_email_icon[0]) {$copy_email_icon.removeClass("hide_copy_icon");
+            if ($copy_email_icon[0]) {
+                $copy_email_icon.removeClass("hide_copy_icon");
                 const copy_email_clipboard = clipboard_enable($copy_email_icon[0]);
                 copy_email_clipboard.on("success", (e) => {
                     show_copied_confirmation(e.trigger, {
@@ -516,7 +517,7 @@ export function toggle_user_card_popover_for_message(
     has_message_context: boolean,
     on_mount?: (instance: tippy.Instance) => void,
 ): void {
-    const $elt =$(element);
+    const $elt = $(element);
     const user = people.get_by_user_id(user_id);
 
     const is_sender_popover = sender_id === user_id;
@@ -560,10 +561,10 @@ export function toggle_sender_info(): void {
 
     popovers.hide_all();
 
-    const $message =$(".selected_message");
-    let $sender =$message.find(".message-avatar .inline-profile-picture-wrapper");
+    const $message = $(".selected_message");
+    let $sender = $message.find(".message-avatar .inline-profile-picture-wrapper");
     if ($sender.length === 0) {
-        $sender =$message.find(".message_sender");
+        $sender = $message.find(".message_sender");
     }
 
     assert(message_lists.current !== undefined);
@@ -597,7 +598,7 @@ function get_user_card_popover_for_message_items(): JQuery | undefined {
         blueslip.error("Cannot find popover data for message user card menu.");
         return undefined;
     }
-    const $popover =$(message_user_card.instance.popper);
+    const $popover = $(message_user_card.instance.popper);
 
     return $(".link-item .popover-menu-link", $popover);
 }
@@ -637,7 +638,7 @@ function register_click_handlers(): void {
             if (mouse_drag.is_drag(e)) {
                 return;
             }
-            const $row =$(this).closest(".message_row");
+            const $row = $(this).closest(".message_row");
             assert(message_lists.current !== undefined);
             const message = message_lists.current.get(rows.id($row));
             assert(message !== undefined);
@@ -655,7 +656,7 @@ function register_click_handlers(): void {
         if (id_string === "*" || email === "*") {
             return;
         }
-        const $row =$(this).closest(".message_row");
+        const $row = $(this).closest(".message_row");
         assert(message_lists.current !== undefined);
         const message = message_lists.current.get(rows.id($row));
         assert(message !== undefined);
@@ -840,7 +841,7 @@ function register_click_handlers(): void {
 
     $(".buddy-list-section").on("click", ".user-list-sidebar-menu-icon", (e) => {
         e.stopPropagation();
-        const $target =$(e.currentTarget).closest("li");
+        const $target = $(e.currentTarget).closest("li");
 
         toggle_sidebar_user_card_popover($target);
     });
@@ -848,7 +849,7 @@ function register_click_handlers(): void {
     $(".buddy-list-section").on("keydown", ".user-list-sidebar-menu-icon", (e) => {
         if (keydown_util.is_enter_event(e)) {
             e.stopPropagation();
-            const $target =$(e.currentTarget).closest(".user_sidebar_entry");
+            const $target = $(e.currentTarget).closest(".user_sidebar_entry");
 
             toggle_sidebar_user_card_popover($target);
         }
@@ -856,7 +857,7 @@ function register_click_handlers(): void {
 
     $(".buddy-list-section").on("click", ".user-profile-picture", (e) => {
         e.stopPropagation();
-        const $target =$(e.currentTarget).closest("li");
+        const $target = $(e.currentTarget).closest("li");
 
         toggle_sidebar_user_card_popover($target);
     });
