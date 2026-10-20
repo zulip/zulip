@@ -96,6 +96,33 @@ Congratulations! You've successfully set up the service. You can now test mobile
 push notifications by following [these
 instructions](https://zulip.com/help/mobile-notifications#testing-mobile-notifications).
 
+## Zulip communities directory
+
+Organizations hosted by your server can ask to be listed in the [Zulip
+communities directory](https://zulip.com/communities/), alongside Zulip
+Cloud organizations. Listing an organization requires both the server
+and the organization to opt in:
+
+1. Add `ZULIP_SERVICE_ADVERTISE_REALMS = True` to
+   `/etc/zulip/settings.py` (uncomment the appropriate line).
+
+1. [Restart your Zulip server](settings.md#changing-server-settings) so
+   that your configuration changes take effect.
+
+1. Register your server, if you have not already, by following the
+   steps under [signing up](#signing-up). The same registration is used
+   by every Zulip service, so a server already registered for the
+   Mobile Push Notification Service needs no further action here.
+
+1. Each organization that wants to be listed must give permission, as
+   described in the [help center
+   documentation](https://zulip.com/help/communities-directory).
+
+Only organizations that meet the [eligibility
+criteria](https://zulip.com/help/communities-directory#eligibility) are
+listed, and only while Zulip can reach them. There is no charge for
+this service, and it does not require a paid plan.
+
 ## Plan management
 
 To access the Mobile Push Notification Service, organizations with more than 10
