@@ -22,6 +22,8 @@
                         {{#if status_emoji_info}}
                             {{#if status_emoji_info.emoji_alt_code}}
                             <span class="emoji_alt_code">&nbsp;:{{status_emoji_info.emoji_name}}:</span>
+                            {{else if status_emoji_info.unicode_emoji}}
+                            <span class="emoji status_emoji emoji-native">{{status_emoji_info.unicode_emoji}}</span>
                             {{else if status_emoji_info.url}}
                             <img src="{{status_emoji_info.url}}" class="emoji status_emoji" />
                             {{else}}

@@ -7,12 +7,18 @@ const {run_test} = require("./lib/test.cjs");
 
 const channel = mock_esm("../src/channel");
 
+let is_emoji_supported_result = true;
+mock_esm("is-emoji-supported", {
+    isEmojiSupported: () => is_emoji_supported_result,
+});
+
 const user_status = zrequire("user_status");
 const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const emoji = zrequire("emoji");
 const {initialize_user_settings} = zrequire("user_settings");
 
-initialize_user_settings({user_settings: {}});
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 const emoji_params = {
     realm_emoji: {
@@ -153,6 +159,36 @@ run_test("server", () => {
 
     success();
     assert.ok(called);
+});
+
+run_test("rerender status emoji on emojiset change", ({override}) => {
+    initialize();
+
+    assert.equal(user_status.get_status_emoji(4).unicode_emoji, undefined);
+
+    override(user_settings, "emojiset", "native");
+    is_emoji_supported_result = true;
+    user_status.rerender_emoji_info();
+    assert.equal(user_status.get_status_emoji(4).unicode_emoji, "\u{1F603}");
+    assert.equal(user_status.get_status_emoji(5).unicode_emoji, undefined);
+    assert.equal(user_status.get_status_emoji(5).url, "/url/for/992");
+
+    is_emoji_supported_result = false;
+    user_status.rerender_emoji_info();
+    assert.equal(user_status.get_status_emoji(4).unicode_emoji, undefined);
+
+    override(user_settings, "emojiset", "text");
+    user_status.rerender_emoji_info();
+    assert.equal(user_status.get_status_emoji(4).unicode_emoji, undefined);
+    assert.equal(user_status.get_status_emoji(4).emoji_alt_code, true);
+
+    override(user_settings, "emojiset", "native");
+    is_emoji_supported_result = true;
+    user_status.rerender_emoji_info();
+    assert.equal(user_status.get_status_emoji(4).unicode_emoji, "\u{1F603}");
+    override(user_settings, "emojiset", "google");
+    user_status.rerender_emoji_info();
+    assert.equal(user_status.get_status_emoji(4).unicode_emoji, undefined);
 });
 
 run_test("defensive checks", () => {
