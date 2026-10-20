@@ -26,21 +26,22 @@ directory does not guarantee that it will be listed.
 
 ### Self-hosted Zulip communities
 
-Zulip plans to develop support for self-hosted Zulip communities that
-have registered their servers with the [Zulip mobile push
-notification service][push-notifications] to sign-up for the Zulip
-communities directory.
+To list a self-hosted organization in the communities directory:
 
-Until that feature is developed, if you administer a self-hosted Zulip
-community and would like to be listed in the directory, please contact
-[Zulip support](mailto:support@zulip.com). Changing the setting in your
-Zulip organization will not send any information to the Zulip project
-at this time, even if you use the Zulip mobile push notifications
-service.
+1. The server administrator must register the server for the Zulip
+   communities directory, as described in the [server
+   documentation][communities-directory-server].
+1. An organization administrator must give permission for the
+   organization to be listed, as described [below](#change-whether-your-organization-may-be-listed-in-the-zulip-communities-directory).
+
+Your organization's name, description, icon and URL are then uploaded
+to Zulip so that the directory can display them. Zulip regularly checks
+that your organization is reachable, and stops listing organizations
+it cannot reach until they are reachable again.
 
 [join-without-invite]: /help/restrict-account-creation#set-whether-invitations-are-required-to-join
 
-[push-notifications]: https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html
+[communities-directory-server]: https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#zulip-communities-directory
 
 ## Change whether your organization may be listed in the Zulip communities directory
 
