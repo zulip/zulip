@@ -140,6 +140,18 @@ export function compare_function(
         return diff;
     }
 
+    // Place offline users with unread direct messages above other offline users
+    if (!user_is_recently_active(a)) {
+        const a_has_unread = get_num_unread(a) > 0;
+        const b_has_unread = get_num_unread(b) > 0;
+        if (a_has_unread && !b_has_unread) {
+            return -1;
+        }
+        if (!a_has_unread && b_has_unread) {
+            return 1;
+        }
+    }
+
     // Sort equivalent direct message names alphabetically
     const person_a = people.maybe_get_user_by_id(a);
     const person_b = people.maybe_get_user_by_id(b);
@@ -151,7 +163,6 @@ export function compare_function(
 }
 
 export function sort_users(user_ids: number[], conversation_participants: Set<number>): number[] {
-    // TODO sort by unread count first, once we support that
     const stream_id = narrow_state.stream_id(narrow_state.filter(), true);
     const pm_ids_set = narrow_state.pm_ids_set();
     user_ids.sort((a, b) =>

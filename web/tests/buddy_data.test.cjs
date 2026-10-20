@@ -30,6 +30,7 @@ const people = zrequire("people");
 const presence = zrequire("presence");
 const stream_data = zrequire("stream_data");
 const user_status = zrequire("user_status");
+const unread = zrequire("unread");
 const buddy_data = zrequire("buddy_data");
 const message_lists = zrequire("message_lists");
 const {set_current_user, set_realm} = zrequire("state_data");
@@ -134,6 +135,7 @@ function test(label, f) {
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
         muted_users.set_muted_users([]);
+        unread.declare_bankruptcy();
         message_lists.set_current(undefined);
 
         f(helpers);
@@ -592,6 +594,57 @@ test("compare_function", () => {
             new Set([fred.user_id]),
             new Set(),
         ),
+    );
+});
+
+test("compare_function with unread direct messages", () => {
+    const first_user_shown_higher = -1;
+    const second_user_shown_higher = 1;
+
+    people.add_active_user(alice);
+    people.add_active_user(fred);
+    people.add_active_user(jill);
+
+    function add_unread_dm(message_id, user) {
+        unread.process_unread_message({
+            id: message_id,
+            type: "private",
+            user_ids_string: user.user_id.toString(),
+            unread: true,
+            mentioned: false,
+            mentioned_me_directly: false,
+        });
+    }
+
+    // Both offline, no unreads: Alice is higher alphabetically.
+    assert.equal(
+        second_user_shown_higher,
+        buddy_data.compare_function(fred.user_id, alice.user_id, undefined, new Set(), new Set()),
+    );
+
+    // Fred is higher because he has an unread DM and Alice doesn't.
+    add_unread_dm(1, fred);
+    assert.equal(
+        first_user_shown_higher,
+        buddy_data.compare_function(fred.user_id, alice.user_id, undefined, new Set(), new Set()),
+    );
+    assert.equal(
+        second_user_shown_higher,
+        buddy_data.compare_function(alice.user_id, fred.user_id, undefined, new Set(), new Set()),
+    );
+
+    // Both have unread DMs, so back to alphabetical: Alice is higher.
+    add_unread_dm(2, alice);
+    assert.equal(
+        second_user_shown_higher,
+        buddy_data.compare_function(fred.user_id, alice.user_id, undefined, new Set(), new Set()),
+    );
+
+    // An active user is still higher than an offline user with unreads.
+    set_presence(jill.user_id, "active");
+    assert.ok(
+        buddy_data.compare_function(jill.user_id, fred.user_id, undefined, new Set(), new Set()) <
+            0,
     );
 });
 
