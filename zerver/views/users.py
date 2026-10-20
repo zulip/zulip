@@ -694,6 +694,9 @@ def add_bot_backend(
     check_valid_bot_type(user_profile, bot_type)
     check_valid_interface_type(interface_type)
 
+    if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT and not payload_url:
+        raise JsonableError(_("Missing payload_url"))
+
     avatar_source = None
     if len(request.FILES) == 1:
         avatar_source = UserProfile.AVATAR_FROM_USER

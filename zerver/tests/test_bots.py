@@ -2098,6 +2098,18 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Invalid payload_url: Value error, Not a URL")
 
+        # missing URL test case.
+        bot_info["full_name"] = "Outgoing Webhook test bot missing url"
+        bot_info["short_name"] = "outgoingservicebot-missing-url"
+        del bot_info["payload_url"]
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_error(result, "Missing payload_url")
+        self.assertFalse(
+            UserProfile.objects.filter(
+                email="outgoingservicebot-missing-url-bot@zulip.testserver"
+            ).exists()
+        )
+
     def test_get_bot_handler(self) -> None:
         # Test for valid service.
         test_service_name = "converter"
