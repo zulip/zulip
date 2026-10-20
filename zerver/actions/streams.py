@@ -103,15 +103,10 @@ from zerver.tornado.django_api import send_event_on_commit
 
 def maybe_set_moderation_or_announcement_channels_none(stream: Stream) -> None:
     realm = get_realm_by_id(realm_id=stream.realm_id)
-    realm_moderation_or_announcement_channels = (
-        "moderation_request_channel_id",
-        "new_stream_announcements_stream_id",
-        "signup_announcements_stream_id",
-        "zulip_update_announcements_stream_id",
-    )
     update_realm_moderation_or_announcement_channels = []
 
-    for field in realm_moderation_or_announcement_channels:
+    for setting_name in Realm.MODERATION_OR_ANNOUNCEMENT_CHANNEL_SETTINGS:
+        field = f"{setting_name}_id"
         if getattr(realm, field) == stream.id:
             setattr(realm, field, None)
             update_realm_moderation_or_announcement_channels.append(field)
