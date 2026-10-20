@@ -28,6 +28,7 @@ import * as stream_ui_updates from "./stream_ui_updates.ts";
 import type {GroupSettingPillContainer} from "./typeahead_helper.ts";
 import type {HTMLSelectOneElement} from "./types.ts";
 import * as ui_report from "./ui_report.ts";
+import * as ui_util from "./ui_util.ts";
 import * as util from "./util.ts";
 
 let created_stream: string | undefined;
@@ -708,27 +709,14 @@ export function set_up_handlers(): void {
         })();
     });
 
-    function handle_channel_name_length_limit(): void {
-        const $channel_input = $<HTMLInputElement>("input#create_stream_name");
-        let channel_name = $channel_input.val()!.trim();
-        if (channel_name.length > realm.max_stream_name_length) {
-            channel_name = channel_name.slice(0, realm.max_stream_name_length);
-            $channel_input.val(channel_name);
-            $channel_input.addClass("input-validation-shake");
-        }
-        stream_name_error.pre_validate(channel_name);
-    }
-    $("input#create_stream_name").on("animationend", function () {
-        $(this).removeClass("input-validation-shake");
-    });
+    ui_util.set_up_shake_on_length_limit(
+        $<HTMLInputElement>("input#create_stream_name"),
+        realm.max_stream_name_length,
+    );
     $container.on("input", "#create_stream_name", () => {
-        handle_channel_name_length_limit();
-    });
-    $container.on("paste", "#create_stream_name", () => {
-        /* setTimeout is needed to allow the pasted content to be
-           added to the input before checking the channel name length limit,
-           since the paste event fires before the input value is updated. */
-        setTimeout(handle_channel_name_length_limit, 0);
+        stream_name_error.pre_validate(
+            $<HTMLInputElement>("input#create_stream_name").val()!.trim(),
+        );
     });
 
     // Do not allow the user to enter newline characters while typing out the
