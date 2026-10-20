@@ -13,7 +13,7 @@ import * as channel from "./channel.ts";
 import * as clipboard_handler from "./clipboard_handler.ts";
 import {show_copied_confirmation} from "./copied_tooltip.ts";
 import * as dialog_widget from "./dialog_widget.ts";
-import {$t_html} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import {realm} from "./state_data.ts";
 
 export function validate_bot_short_name(value: string): boolean {
@@ -87,7 +87,7 @@ export async function fetch_bot_api_key(
             url: `/json/bots/${bot_id}/api_key`,
             error(xhr) {
                 const error_message = channel.xhr_error_message(
-                    $t_html({defaultMessage: "Failed"}),
+                    $t({defaultMessage: "Failed"}),
                     xhr,
                 );
                 banners.open(

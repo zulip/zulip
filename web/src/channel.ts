@@ -196,7 +196,7 @@ export function patch(options: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown>
     return call(args);
 }
 
-export function xhr_error_message(message: string, xhr: JQuery.jqXHR<unknown>): string {
+function xhr_error_response_msg(xhr: JQuery.jqXHR<unknown>): string | undefined {
     let parsed;
     if (
         xhr.status >= 400 &&
@@ -205,13 +205,24 @@ export function xhr_error_message(message: string, xhr: JQuery.jqXHR<unknown>): 
     ) {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
-        const server_response_html = _.escape(parsed.data.msg);
-        if (message) {
-            message += ": " + server_response_html;
-        } else {
-            message = server_response_html;
-        }
+        return parsed.data.msg;
     }
+    return undefined;
+}
 
-    return message;
+export function xhr_error_message(message: string, xhr: JQuery.jqXHR<unknown>): string {
+    const server_response = xhr_error_response_msg(xhr);
+    if (server_response === undefined) {
+        return message;
+    }
+    return message ? `${message}: ${server_response}` : server_response;
+}
+
+export function xhr_error_message_html(message_html: string, xhr: JQuery.jqXHR<unknown>): string {
+    const server_response = xhr_error_response_msg(xhr);
+    if (server_response === undefined) {
+        return message_html;
+    }
+    const server_response_html = _.escape(server_response);
+    return message_html ? `${message_html}: ${server_response_html}` : server_response_html;
 }
