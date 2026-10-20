@@ -340,6 +340,16 @@ def generate_curl_example(
         auth_api_key = "ZULIP_ORG_KEY" if is_zilencer_endpoint else DEFAULT_AUTH_API_KEY
         lines.append("    -u " + shlex.quote(f"{auth_email}:{auth_api_key}"))
 
+    multipart_body_properties: Mapping[str, Mapping[str, object]] | None = None
+    if operation_request_body is not None and "multipart/form-data" in (
+        content := operation_request_body["content"]
+    ):
+        multipart_body_properties = {
+            key: schema
+            for key, schema in content["multipart/form-data"]["schema"]["properties"].items()
+            if (include is None or key in include) and (exclude is None or key not in exclude)
+        }
+
     for parameter in parameters:
         if parameter.kind == "path":
             continue
@@ -350,17 +360,21 @@ def generate_curl_example(
         if exclude is not None and parameter.name in exclude:
             continue
 
-        example_value = get_openapi_param_example_value_as_string(
-            endpoint, method, parameter, curl_argument=True
-        )
-        lines.append(example_value)
+        if multipart_body_properties:
+            # curl rejects mixing --data-urlencode with -F in one call,
+            # so render every form parameter as -F when the body is multipart.
+            value = get_openapi_param_example_value_as_string(endpoint, method, parameter)
+            lines.append("    -F " + shlex.quote(f"{parameter.name}={value}"))
+        else:
+            lines.append(
+                get_openapi_param_example_value_as_string(
+                    endpoint, method, parameter, curl_argument=True
+                )
+            )
 
-    if "requestBody" in operation_entry and "multipart/form-data" in (
-        content := operation_entry["requestBody"]["content"]
-    ):
-        properties = content["multipart/form-data"]["schema"]["properties"]
-        for key, property in properties.items():
-            lines.append("    -F " + shlex.quote("{}=@{}".format(key, property["example"])))
+    if multipart_body_properties:
+        for key, property in multipart_body_properties.items():
+            lines.append("    -F " + shlex.quote(f"{key}=@{property['example']}"))
 
     for i in range(1, len(lines) - 1):
         lines[i] += " \\"
