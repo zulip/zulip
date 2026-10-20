@@ -104,7 +104,7 @@
                             <span id="slack-import-uploaded-file-name">{{ uploaded_import_file_name }}</span>
                             &nbsp;<a href="#" type="button" class="slack-import-upload-file">Upload a different file</a>
                         </div>
-                        <p id="slack-import-file-upload-error" class="help-inline text-error">{{ invalid_file_error_message }}</p>
+                        <p id="slack-import-file-upload-error" class="help-inline text-error">{{ import_data_error_message }}</p>
                     </div>
                     <div class="input-group input-box" id="email-address-visibility-select-wrapper">
                         <label for="email-address-visibility-select">
@@ -123,7 +123,7 @@
                         </select>
                     </div>
                     <div class="input-box">
-                        <button type="submit" class="register-button"{% if invalid_file_error_message %} disabled{% endif %}>
+                        <button type="submit" class="register-button"{% if needs_new_upload %} disabled{% endif %}>
                             {{ _("Start import") }}
                         </button>
                     </div>
