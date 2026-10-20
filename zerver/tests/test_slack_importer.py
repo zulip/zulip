@@ -2752,8 +2752,11 @@ To Do
         self.assertEqual(prereg_realm.data_import_metadata["import_from"], "slack")
         self.assertEqual(prereg_realm.data_import_metadata["slack_access_token"], access_token)
 
-        # Assume user uploaded a file.
+        # Assume user uploaded a file, after an earlier import attempt failed.
         prereg_realm.data_import_metadata["uploaded_import_file_name"] = "test_slack_importer.zip"
+        prereg_realm.data_import_metadata["invalid_file_error_message"] = (
+            "Uploaded zip file is not a valid Slack export."
+        )
         prereg_realm.save()
 
         # Set by the user performing the import.
@@ -2771,6 +2774,7 @@ To Do
             self.assert_in_success_response(["Import progress"], result)
             prereg_realm.refresh_from_db()
             self.assertTrue(prereg_realm.data_import_metadata["is_import_work_queued"])
+            self.assertNotIn("invalid_file_error_message", prereg_realm.data_import_metadata)
             self.assertTrue(
                 prereg_realm.data_import_metadata["email_address_visibility"],
                 importer_set_email_address_visibility,
