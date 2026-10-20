@@ -441,6 +441,7 @@ def registration_helper(
                 return render_slack_import_page(request, prereg_realm, key)
 
             prereg_realm.data_import_metadata["email_address_visibility"] = email_address_visibility
+            prereg_realm.data_import_metadata.pop("invalid_file_error_message", None)
             prereg_realm.save(update_fields=["data_import_metadata"])
 
             logger.info("(%s) Enqueueing Slack import", prereg_realm.string_id)
