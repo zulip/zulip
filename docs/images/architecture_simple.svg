@@ -624,19 +624,14 @@
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35px;font-family:Roboto;-inkscape-font-specification:Roboto;text-align:start;text-anchor:start;fill:#999999"
          id="tspan6674">Desktop <tspan
    style="fill:#cccccc"
-   id="tspan6680">(Electron/Qt)</tspan></tspan><tspan
+   id="tspan6680">(Electron)</tspan></tspan><tspan
          sodipodi:role="line"
          x="1872.1224"
          y="-1565.3113"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35px;font-family:Roboto;-inkscape-font-specification:Roboto;text-align:start;text-anchor:start;fill:#999999"
-         id="tspan6676">iOS <tspan
+         id="tspan6676">iOS/Android <tspan
    style="fill:#cccccc"
-   id="tspan6682">(React native)</tspan></tspan><tspan
-         sodipodi:role="line"
-         x="1872.1224"
-         y="-1521.5613"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35px;font-family:Roboto;-inkscape-font-specification:Roboto;text-align:start;text-anchor:start;fill:#999999"
-         id="tspan6678">Android</tspan></text>
+   id="tspan6682">(Flutter)</tspan></tspan></text>
     <text
        sodipodi:linespacing="125%"
        id="text18857"
