@@ -2119,7 +2119,7 @@ class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
         super().__init__(pattern, zmd)
         self.zmd = zmd
 
-    def zulip_specific_src_changes(self, img: Element) -> Element | None:
+    def zulip_specific_image_changes(self, img: Element) -> Element | None:
         # function partially copied from LinkInlineProcessor.zulip_specific_link_changes
         src = img.get("src")
         assert src is not None
@@ -2181,7 +2181,7 @@ class ImageInlineProcessor(markdown.inlinepatterns.ImageInlineProcessor):
         if ret[0] is not None:
             img, match_start, index = ret
             assert isinstance(img, Element)
-            img = self.zulip_specific_src_changes(img)
+            img = self.zulip_specific_image_changes(img)
             if img is not None:
                 return img, match_start, index
         return None, None, None
