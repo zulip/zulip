@@ -371,6 +371,7 @@ class TusdPreCreateTest(ZulipTestCase):
         prereg_realm.data_import_metadata["invalid_file_error_message"] = (
             "Uploaded zip file is not a valid Slack export."
         )
+        prereg_realm.data_import_metadata["invalid_user_emails"] = ["alexmv@zulip.c"]
         prereg_realm.save()
 
         # Post the hook saying the file is in place
@@ -386,6 +387,7 @@ class TusdPreCreateTest(ZulipTestCase):
             prereg_realm.data_import_metadata["uploaded_import_file_name"].endswith(filename)
         )
         self.assertNotIn("invalid_file_error_message", prereg_realm.data_import_metadata)
+        self.assertNotIn("invalid_user_emails", prereg_realm.data_import_metadata)
 
     def test_realm_import_data_upload_size_is_deferred(self) -> None:
         # Choose import from slack

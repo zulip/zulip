@@ -17,7 +17,7 @@ from zerver.actions.realm_settings import do_delete_realm
 from zerver.actions.users import do_change_user_role
 from zerver.context_processors import is_realm_import_enabled
 from zerver.data_import.slack import do_convert_zipfile
-from zerver.lib.exceptions import SlackImportInvalidFileError
+from zerver.lib.exceptions import InvalidEmailsInImportError, SlackImportInvalidFileError
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.upload import save_attachment_contents
 from zerver.models.prereg_users import PreregistrationRealm
@@ -108,12 +108,25 @@ def import_slack_data(event: dict[str, Any]) -> None:
             logger.info(
                 "(%s) Wrote %d bytes of %s to %s", string_id, fh.tell(), event["filename"], fh.name
             )
-            do_convert_zipfile(
-                fh.name,
-                output_dir,
-                event["slack_access_token"],
-                convert_slack_threads=True,
-            )
+            try:
+                do_convert_zipfile(
+                    fh.name,
+                    output_dir,
+                    event["slack_access_token"],
+                    convert_slack_threads=True,
+                )
+            except InvalidEmailsInImportError as e:
+                # The user can correct these addresses in Slack and try
+                # again, so this is not a server error.
+                logger.info(
+                    "(%s) Slack import has invalid user emails: %s",
+                    string_id,
+                    ", ".join(e.invalid_emails),
+                )
+                preregistration_realm.data_import_metadata["invalid_user_emails"] = e.invalid_emails
+                preregistration_realm.data_import_metadata["is_import_work_queued"] = False
+                preregistration_realm.save(update_fields=["data_import_metadata"])
+                return
             attachment_size = sum(
                 os.path.getsize(os.path.join(dirpath, filename))
                 for dirpath, dirnames, filenames in os.walk(f"{output_dir}/uploads/")
