@@ -71,7 +71,7 @@ from zerver.data_import.slack import (
     thread_parent_map,
     users_to_zerver_userprofile,
 )
-from zerver.lib.exceptions import SlackImportInvalidFileError
+from zerver.lib.exceptions import InvalidEmailsInImportError, SlackImportInvalidFileError
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.mime_types import INLINE_MIME_TYPES
 from zerver.lib.queue import high_latency_queue_name
@@ -969,10 +969,11 @@ class SlackImporter(ZulipTestCase):
         # Importer should raise error when user emails are malformed
         bad_email1 = user_data[0]["profile"]["email"] = "jon@gmail,com"
         bad_email2 = user_data[1]["profile"]["email"] = "jane@gmail.m"
-        with self.assertRaises(Exception) as e, self.assertLogs(level="INFO"):
+        with self.assertLogs(level="INFO"), self.assertRaises(InvalidEmailsInImportError) as e:
             users_to_zerver_userprofile(slack_data_dir, user_data, 1, timestamp, "test_domain")
+        self.assertEqual(e.exception.invalid_emails, [bad_email1, bad_email2])
         error_message = str(e.exception)
-        expected_error_message = f"['Invalid email format, please fix the following email(s) and try again: {bad_email1}, {bad_email2}']"
+        expected_error_message = f"Invalid email format, please fix the following email(s) and try again: {bad_email1}, {bad_email2}"
         self.assertEqual(error_message, expected_error_message)
 
         # Test converting unknown user data format that doesn't have

@@ -15,7 +15,6 @@ from urllib.parse import SplitResult
 import orjson
 import requests
 from django.conf import settings
-from django.core.exceptions import ValidationError
 from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 from urllib3.util import Retry
@@ -24,6 +23,7 @@ from zerver.data_import.sequencer import NEXT_ID
 from zerver.lib.avatar_hash import user_avatar_base_path_from_ids
 from zerver.lib.email_validation import validate_email_is_valid
 from zerver.lib.emoji import get_emoji_file_name
+from zerver.lib.exceptions import InvalidEmailsInImportError
 from zerver.lib.markdown import get_markdown_link_for_url
 from zerver.lib.message import normalize_body_for_import
 from zerver.lib.mime_types import INLINE_MIME_TYPES, bare_content_type, guess_type
@@ -920,11 +920,7 @@ def validate_user_emails_for_import(user_emails: list[str]) -> None:
     ]
 
     if invalid_emails:
-        details = ", ".join(invalid_emails)
-        error_log = (
-            f"Invalid email format, please fix the following email(s) and try again: {details}"
-        )
-        raise ValidationError(error_log)
+        raise InvalidEmailsInImportError(invalid_emails)
 
 
 def get_data_file(path: str) -> Any:
