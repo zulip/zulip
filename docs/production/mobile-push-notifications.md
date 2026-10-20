@@ -387,7 +387,7 @@ email address (from `EXTERNAL_HOST` and `ZULIP_ADMINISTRATOR` in
 in the installer). You can update your server's registration data by
 running `manage.py register_server` again.
 
-If you'd like to rotate your server's API key for this service
+If you'd like to rotate your server's API key for this registration
 (`zulip_org_key`), you need to use
 `manage.py register_server --rotate-key` option; it will automatically
 generate a new `zulip_org_key` and store that new key in
@@ -398,7 +398,8 @@ generate a new `zulip_org_key` and store that new key in
 When migrating your Zulip deployment to a new machine, you will likely want to
 retain your original registration and successfully transfer it. This is
 especially important if you have an active plan for the Mobile Push
-Notification Service.
+Notification Service, or organizations listed in the [Zulip communities
+directory](https://zulip.com/communities/).
 
 The best way to preserve your registration when moving to a new server is to
 copy over the credentials from the old server. These credentials are stored in
@@ -460,8 +461,10 @@ registration to a new server by following these steps:
 ## Deactivating your server's registration
 
 If you are deleting your Zulip server or otherwise no longer want to
-use the Mobile Push Notification Service, you can deactivate your server's
-registration.
+use the Mobile Push Notification Service or the Zulip communities
+directory, you can deactivate your server's registration. One
+registration is shared by every Zulip service, so this stops all of
+them.
 
 1. [Cancel any paid
    plans](https://zulip.com/help/self-hosted-billing#cancel-paid-plan)
@@ -481,22 +484,32 @@ registration.
    ./manage.py register_server --deactivate
    ```
 
-1. Comment out the
-   `ZULIP_SERVICE_PUSH_NOTIFICATIONS = True` line
-   in your `/etc/zulip/settings.py` file (i.e., add `# ` at the
+1. Comment out the `ZULIP_SERVICE_PUSH_NOTIFICATIONS = True` and
+   `ZULIP_SERVICE_ADVERTISE_REALMS = True` lines in your
+   `/etc/zulip/settings.py` file (i.e., add `# ` at the
    start of the line), and [restart your Zulip
    server](settings.md#changing-server-settings).
 
 If you ever need to reactivate your server's registration, [contact Zulip
 support](https://zulip.com/help/contact-support).
 
-### Pausing use of the Mobile Push Notification Service
+### Turning off a single service
 
-You can temporarily stop using the Mobile Push Notification Service. Comment out
+To stop using one service while continuing to use another, leave your
+server's registration in place. Comment out that service's setting
+(`ZULIP_SERVICE_PUSH_NOTIFICATIONS` or
+`ZULIP_SERVICE_ADVERTISE_REALMS`) in your `/etc/zulip/settings.py`
+file, and [restart your Zulip
+server](settings.md#changing-server-settings).
+
+### Pausing use of Zulip services
+
+You can temporarily stop using Zulip services. Comment out
 the `PUSH_NOTIFICATION_BOUNCER_URL = 'https://push.zulipchat.com'` line in your
 `/etc/zulip/settings.py` file (i.e., add `# ` at the start of the line), and
 [restart your Zulip server](settings.md#changing-server-settings). This approach makes it
-easy to start using the service again by uncommenting the same line.
+easy to start using them again by uncommenting the same line. This URL is
+shared by every Zulip service, so pausing it stops all of them.
 
 ### Legacy protocol
 
