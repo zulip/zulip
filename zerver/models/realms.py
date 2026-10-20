@@ -502,6 +502,13 @@ class Realm(models.Model):
         on_delete=models.SET_NULL,
     )
 
+    MODERATION_OR_ANNOUNCEMENT_CHANNEL_SETTINGS = (
+        "moderation_request_channel",
+        "new_stream_announcements_stream",
+        "signup_announcements_stream",
+        "zulip_update_announcements_stream",
+    )
+
     zulip_update_announcements_level = models.PositiveIntegerField(null=True)
 
     MESSAGE_RETENTION_SPECIAL_VALUES_MAP = {
