@@ -571,7 +571,7 @@ class MatterMostImporter(MattermostImportTestBase):
                 user_handler, user_id_mapper, username_to_user, realm, realm_id, team_name
             )
         error_message = str(e.exception)
-        expected_error_message = f"['Invalid email format, please fix the following email(s) and try again: {bad_email2}, {bad_email1}']"
+        expected_error_message = f"Invalid email format, please fix the following email(s) and try again: {bad_email2}, {bad_email1}"
         self.assertEqual(error_message, expected_error_message)
 
     def test_convert_channel_data(self) -> None:

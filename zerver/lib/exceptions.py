@@ -862,6 +862,22 @@ class SlackImportInvalidFileError(Exception):
         self.message = message
 
 
+class InvalidEmailsInImportError(Exception):
+    """
+    An error that is raised by the third-party data converters when
+    some user email addresses are invalid.
+    """
+
+    def __init__(self, invalid_emails: list[str]) -> None:
+        super().__init__(invalid_emails)
+        self.invalid_emails = invalid_emails
+
+    @override
+    def __str__(self) -> str:
+        details = ", ".join(self.invalid_emails)
+        return f"Invalid email format, please fix the following email(s) and try again: {details}"
+
+
 class InvalidBouncerPublicKeyError(JsonableError):
     code = ErrorCode.INVALID_BOUNCER_PUBLIC_KEY
 
