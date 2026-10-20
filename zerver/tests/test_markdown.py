@@ -221,6 +221,16 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
             ("longer code block fence", "````\n```\ncode", "\n````"),
             ("math blocks don't nest", "```math\n```quote\nx^2\n```", ""),
             ("unclosed spoiler", "```spoiler Header\nsecret", "\n```"),
+            (
+                "unclosed spoiler with inline code in the header",
+                "~~~spoiler Header with `code`\nsecret",
+                "\n~~~",
+            ),
+            (
+                "backtick fence with inline code in the header is not a fence",
+                "```spoiler Header with `code`\nsecret",
+                "",
+            ),
             ("unclosed quote in quote", "````quote\n```quote\nhi", "\n```\n````"),
             ("closed code block in closed quote", "````quote\n```\ncode\n```\n````", ""),
             ("unclosed code block in quote", "````quote\n```\ncode\n````", "\n```\n````"),

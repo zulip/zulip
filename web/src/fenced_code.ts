@@ -22,7 +22,7 @@ type Handler = {
 // This supports arbitrarily nested code blocks as well as
 // auto-completing code blocks missing a trailing close.
 
-// See backend fenced_code.py:71 for associated regexp
+// See backend fenced_code.py for the associated regexp
 const fencestr =
     "^(~{3,}|`{3,})" + // Opening fence
     "[ ]*" + // Spaces
@@ -34,7 +34,7 @@ const fencestr =
     "[ ]*" + // Spaces
     "(" +
     "\\{?\\.?" +
-    "([^~`]*)" + // Header (see fenced_code.py)
+    "([^~]*)" + // Header (see fenced_code.py)
     "\\}?" +
     ")" +
     "$";
@@ -214,6 +214,12 @@ export function process_fenced_code(content: string): string {
             const fence = match[1]!;
             const lang = match[3]!;
             const header = match[5]!;
+            // A backtick fence's info string may not contain any backtick
+            // characters, as specified by CommonMark; a tilde fence's may.
+            if (fence.startsWith("`") && header.includes("`")) {
+                output_lines.push(line);
+                return;
+            }
             const handler = handler_for_fence(output_lines, fence, lang, header);
             handler_stack.push(handler);
         } else {

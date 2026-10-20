@@ -119,7 +119,7 @@ FENCE_RE = re.compile(
 
         # header for features that use fenced block header syntax (like spoilers)
         (?P<header>
-            [^ ~`][^~`]*
+            [^ ~][^~]*
         )?
         \}?
     )?
@@ -127,6 +127,23 @@ FENCE_RE = re.compile(
     """,
     re.VERBOSE,
 )
+
+
+def match_fence(line: str) -> re.Match[str] | None:
+    """Return the match if the line opens a fenced code block.
+
+    A backtick fence's info string may not contain any backtick
+    characters, as specified by CommonMark; a tilde fence's may.  The
+    spoiler header is part of the info string, so a spoiler header can
+    contain an inline code span only when the spoiler uses a tilde
+    fence.
+    """
+    m = FENCE_RE.match(line)
+    if m is None:
+        return None
+    if m.group("fence").startswith("`") and "`" in (m.group("header") or ""):
+        return None
+    return m
 
 
 CODE_WRAP = "<pre><code{}>{}\n</code></pre>"
@@ -263,7 +280,7 @@ def check_for_new_fence(
     run_content_validators: bool = False,
     default_language: str | None = None,
 ) -> None:
-    m = FENCE_RE.match(line)
+    m = match_fence(line)
     if m:
         fence = m.group("fence")
         lang: str | None = m.group("lang")

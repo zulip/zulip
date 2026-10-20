@@ -26,7 +26,7 @@ from markupsafe import Markup
 
 from confirmation.models import one_click_unsubscribe_link
 from zerver.lib.display_recipient import get_display_recipient
-from zerver.lib.markdown.fenced_code import FENCE_RE
+from zerver.lib.markdown.fenced_code import match_fence
 from zerver.lib.message import bulk_access_messages
 from zerver.lib.message_cache import MessageDict
 from zerver.lib.notification_data import get_mentioned_user_group
@@ -206,7 +206,7 @@ def fix_spoilers_in_text(content: str, language: str) -> str:
     output = []
     open_fence = None
     for line in lines:
-        m = FENCE_RE.match(line)
+        m = match_fence(line)
         if m:
             fence = m.group("fence")
             lang: str | None = m.group("lang")

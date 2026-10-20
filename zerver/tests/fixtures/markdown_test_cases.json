@@ -1087,6 +1087,18 @@
       "text_content": "Header 🙂 (…)\n"
     },
     {
+      "name": "spoilers_with_header_inline_code",
+      "input": "~~~spoiler Title that includes an `inline code span`\ncontent\n~~~\n",
+      "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>Title that includes an <code>inline code span</code></p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>content</p>\n</div></div>",
+      "text_content": "Title that includes an inline code span (…)\n"
+    },
+    {
+      "name": "spoilers_with_header_inline_code_backtick_fence",
+      "input": "```spoiler Title with `code`\ncontents\n```",
+      "expected_output": "<p><code>``spoiler Title with </code>code`<br>\ncontents</p>\n<div class=\"codehilite\"><pre><span></span><code>\n</code></pre></div>",
+      "text_content": "``spoiler Title with code`\ncontents\n\n"
+    },
+    {
       "name": "spoiler_with_inline_image",
       "input": "```spoiler header\nContent http://example.com/image.png\n```",
         "expected_output": "<div class=\"spoiler-block\"><div class=\"spoiler-header\">\n<p>header</p>\n</div><div class=\"spoiler-content\" aria-hidden=\"true\">\n<p>Content <a href=\"http://example.com/image.png\">http://example.com/image.png</a></p>\n<div class=\"message_inline_image\"><a href=\"http://example.com/image.png\"><img src=\"https://external-content.zulipcdn.net/external_content/25fef3bfd3a93e0266153205ea66a83c53d310b4/687474703a2f2f6578616d706c652e636f6d2f696d6167652e706e67\"></a></div></div></div>",

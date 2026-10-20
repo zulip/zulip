@@ -1763,7 +1763,12 @@ class TestMessageNotificationEmails(ZulipTestCase):
             if "spoiler" in test["name"]:
                 test_fixtures[test["name"]] = test
         for test_name in test_fixtures:
-            fragment = lxml.html.fromstring(test_fixtures[test_name]["expected_output"])
+            expected_output = test_fixtures[test_name]["expected_output"]
+            if "spoiler-block" not in expected_output:
+                # This test case doesn't render a spoiler, so there's
+                # nothing for fix_spoilers_in_html to do.
+                continue
+            fragment = lxml.html.fromstring(expected_output)
             fix_spoilers_in_html(fragment, "en")
             output_data = lxml.html.tostring(fragment, encoding="unicode")
             assert "spoiler-header" not in output_data
