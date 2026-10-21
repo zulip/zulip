@@ -130,8 +130,16 @@ function get_message_for_message_content($content: JQuery): Message | undefined 
 // the outer element's font-size for better appearance on
 // lines of message text.
 function wrap_mention_content_in_dom_element(element: HTMLElement, is_bot = false): HTMLElement {
-    const mention_text = $(element).text();
-    $(element).html(render_mention_content_wrapper({mention_text, is_bot}));
+    let mention_text = $(element).text();
+    let at_sign = "";
+    if (!$(element).hasClass("silent") && mention_text.startsWith("@")) {
+        // Show the at-sign icon in place of the literal "@", but keep
+        // the character (hidden) for screen readers and copy-paste.
+        // Silent mentions have no "@" to replace.
+        at_sign = "@";
+        mention_text = mention_text.slice(1);
+    }
+    $(element).html(render_mention_content_wrapper({mention_text, at_sign, is_bot}));
     return element;
 }
 

@@ -294,6 +294,28 @@
         font-size: 1.0526em;
     }
 
+    .mention-at-sign {
+        /* Match the "@" character this icon replaces: Source Sans 3's
+           "@" runs from ~0.66em (cap height) down to a ~0.16em
+           descender, but the icon fills its whole em, so scale it to
+           that ink height and drop it onto the same box. */
+        font-size: 0.81em;
+        vertical-align: -0.19em;
+        /* A small gap between the icon and the name. */
+        margin-right: 0.15em;
+    }
+
+    .mention-at-sign-character {
+        /* Keep the literal "@" in the DOM (hidden) so screen readers
+           and copy-paste still include it. We collapse it to zero width
+           rather than positioning it absolutely: an absolutely positioned
+           box is blockified, which makes innerText (and the plain text a
+           browser copies) render it on its own line as "@\nName". */
+        display: inline-block;
+        width: 0;
+        overflow: hidden;
+    }
+
     .user-mention {
         color: var(--color-text-other-mention);
         background-color: var(--color-background-text-direct-mention);
