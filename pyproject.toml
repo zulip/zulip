@@ -16,7 +16,7 @@ prod = [
   "jinja2",
 
   # Needed for Markdown processing
-  "markdown",
+  "markdown<3.11.0",  # 3.11.0 requires Python ≥ 3.11
   "pygments",
   "jsx-lexer",
   "uri-template",
@@ -48,11 +48,12 @@ prod = [
   "django-bitfield",
 
   # Needed for Android push notifications
-  "firebase-admin",
+  "firebase-admin<7.7.0",  # 7.7.0 requires Python ≥ 3.11
 
   # Needed for the email mirror
   "markdownify",
   "talon",
+  "cssselect<1.6.0",  # 1.6.0 requires Python ≥ 3.11
 
   # Needed for inlining the CSS in emails
   "css-inline",
@@ -92,6 +93,7 @@ prod = [
 
   # Needed for link preview
   "beautifulsoup4",
+  "soupsieve<3.0.0",  # 3.0.0 requires Python ≥ 3.11
   "pyoembed",
   "python-magic",
 
@@ -100,7 +102,7 @@ prod = [
   "zulip-bots",
 
   # Used for Hesiod lookups, etc.
-  "dnspython",
+  "dnspython<2.9.0",  # 2.9.0 requires Python ≥ 3.11
 
   # Install Python Social Auth
   "social-auth-app-django<6.0.0", # https://github.com/python-social-auth/social-app-django/issues/1020
@@ -144,6 +146,8 @@ prod = [
 
   # For OpenAPI schema validation.
   "openapi-core>=0.23.1",
+  "lazy-object-proxy<1.13.0",  # 1.13.0 requires Python ≥ 3.11
+  "more-itertools<11.2.0",  # 11.2.0 requires Python ≥ 3.11
 
   # For reporting errors to sentry.io
   "sentry-sdk",
@@ -158,7 +162,7 @@ prod = [
   "tenacity",
 
   # Needed for reading bson files in rocketchat import tool
-  "pymongo",
+  "pymongo<4.19.0",  # 4.19.0 requires Python ≥ 3.11
   "python-bsonstream>=0.1.4",
 
   # Non-backtracking regular expressions
@@ -178,10 +182,12 @@ prod = [
 
   # Structured data representation with parsing.
   "pydantic",
+  "pydantic-settings<2.16.0",  # 2.16.0 requires Python ≥ 3.11
   "annotated-types",
 
   # For requesting LLM API endpoints.
   "openai",
+  "httpx2<2.15.0",  # 2.15.0 requires Python ≥ 3.11
 
   # Used for running the Zulip production Django server
   "uwsgi",
@@ -194,6 +200,7 @@ prod = [
 
   # SMTP server for accepting incoming email
   "aiosmtpd>=1.4.6",
+  "atpublic<9.0.0",  # 9.0.0 requires Python ≥ 3.11
 
   # For using Missing sentinel
   "pydantic-partials",
@@ -244,13 +251,16 @@ dev = [
   { include-group = "release-tools" },
 
   # moto s3 mock
-  "moto[s3]",
+  "moto[s3]!=5.2.4", # https://github.com/getmoto/moto/issues/10365
 
   # For tools/run-dev
   "aiohttp",
 
   # Needed for documentation links test
   "scrapy",
+  "filelock<4.1.1",  # 4.1.1 requires Python ≥ 3.11
+  "platformdirs<4.13.0",  # 4.13.0 requires Python ≥ 3.11
+  "zope-interface<8.7",  # 8.7 requires Python ≥ 3.11
 
   # Needed to compute test coverage
   "coverage",
@@ -439,7 +449,6 @@ module = [
     "pyuca.*",
     "pyvips.*",
     "scim2_filter_parser.attr_paths",
-    "talon.*", # https://github.com/mailgun/talon/pull/264
     "tlds.*",
     "two_factor.*",
 ]
