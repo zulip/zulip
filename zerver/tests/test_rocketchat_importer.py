@@ -179,6 +179,35 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(user["is_mirror_dummy"], True)
         self.assertEqual(user["is_bot"], False)
 
+        # Users with the "bot" role are bots, even if they have other
+        # roles.
+        admin_bot: dict[str, Any] = {
+            "_id": "4dm1nB0tID",
+            "createdAt": datetime(2019, 11, 6, 0, 38, 42, 796000, tzinfo=timezone.utc),
+            "type": "user",
+            "roles": ["admin", "bot"],
+            "name": "Admin bot",
+            "username": "admin.bot",
+        }
+        user_id_to_user_map = map_user_id_to_user([admin_bot, *rocketchat_data["user"]])
+
+        process_users(
+            user_id_to_user_map=user_id_to_user_map,
+            realm_id=realm_id,
+            domain_name=domain_name,
+            user_handler=user_handler,
+            user_id_mapper=user_id_mapper,
+        )
+
+        user_id = user_id_mapper.get(admin_bot["_id"])
+        user = user_handler.get_user(user_id)
+
+        self.assertEqual(user["is_active"], True)
+        self.assertEqual(user["is_bot"], True)
+        self.assertEqual(user["bot_type"], 1)
+        self.assertEqual(user["bot_owner"], 2)
+        self.assertEqual(user["role"], UserProfile.ROLE_REALM_OWNER)
+
         # Importer should raise error when user emails are malformed
         bad_email1 = rocketchat_data["user"][0]["emails"][0]["address"] = "test1@hotmai,l.om"
         bad_email2 = rocketchat_data["user"][1]["emails"][0]["address"] = "test2@gmail.c"
@@ -333,6 +362,46 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(zerver_stream[5]["rendered_description"], "")
         self.assertEqual(zerver_stream[5]["stream_post_policy"], 1)
         self.assertEqual(zerver_stream[5]["realm"], realm_id)
+
+        # Archived channels are imported as archived.
+        self.assertFalse(zerver_stream[0]["deactivated"])
+        self.assertTrue(zerver_stream[5]["deactivated"])
+
+    def test_convert_channel_data_with_archived_general_channel(self) -> None:
+        fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
+        rocketchat_data = rocketchat_data_to_dict(fixture_dir_name)
+
+        mock_realm_dict: ZerverFieldsT = dict(zerver_realm=[dict()])
+        room_id_to_room_map: dict[str, dict[str, Any]] = {}
+        team_id_to_team_map: dict[str, dict[str, Any]] = {}
+
+        with self.assertLogs(level="INFO"):
+            categorize_channels_and_map_with_id(
+                channel_data=rocketchat_data["room"],
+                room_id_to_room_map=room_id_to_room_map,
+                team_id_to_team_map=team_id_to_team_map,
+                dsc_id_to_dsc_map={},
+                direct_id_to_direct_map={},
+                direct_message_group_id_to_direct_message_group_map={},
+                livechat_id_to_livechat_map={},
+            )
+        general_room = next(
+            room for room in room_id_to_room_map.values() if room["name"] == "general"
+        )
+        general_room["archived"] = True
+
+        channels = convert_channel_data(
+            realm=mock_realm_dict,
+            room_id_to_room_map=room_id_to_room_map,
+            team_id_to_team_map=team_id_to_team_map,
+            stream_id_mapper=IdMapper[str](),
+            realm_id=3,
+        )
+
+        self.assertEqual(channels[0]["name"], "general")
+        self.assertTrue(channels[0]["deactivated"])
+        self.assertNotIn("new_stream_announcements_stream", mock_realm_dict["zerver_realm"][0])
+        self.assertNotIn("zulip_update_announcements_stream", mock_realm_dict["zerver_realm"][0])
 
     def test_convert_stream_subscription_data(self) -> None:
         fixture_dir_name = self.fixture_file_name("", "rocketchat_fixtures")
@@ -1051,7 +1120,10 @@ class RocketChatImporter(ZulipTestCase):
         self.assertEqual(
             self.get_set(realm["zerver_stream"], "realm"), {realm["zerver_realm"][0]["id"]}
         )
-        self.assertEqual(self.get_set(realm["zerver_stream"], "deactivated"), {False})
+        self.assertEqual(
+            {stream["name"] for stream in realm["zerver_stream"] if stream["deactivated"]},
+            {"thp-channel-2"},
+        )
 
         self.assert_length(realm["zerver_defaultstream"], 0)
 

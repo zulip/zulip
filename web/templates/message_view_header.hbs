@@ -23,6 +23,27 @@
     {{/if}}
     {{/if}}
 </span>
+{{else if is_direct_message}}
+<div class="navbar_title message-header-dm-container">
+    {{#if icon}}
+    <i class="zulip-icon zulip-icon-{{icon}} navbar-icon" aria-hidden="true"></i>
+    {{else if zulip_icon}}
+    <i class="zulip-icon zulip-icon-{{zulip_icon}} navbar-icon" aria-hidden="true"></i>
+    {{/if}}
+    <div class="dm-header-recipients">
+        {{#each dm_recipients}}
+            <button type="button" class="dm-header-avatar-button tippy-zulip-tooltip" data-user-id="{{this.user_id}}" aria-label="{{this.full_name}}" data-tippy-content="{{this.full_name}}">
+                <span class="dm-header-avatar-wrapper">
+                    <img src="{{this.avatar_url}}" class="dm-header-avatar" alt="" />
+                    <span class="dm-header-presence-dot {{this.status_color_class}}" title="{{this.status_text}}"></span>
+                </span>
+                {{#if ../is_1_to_1}}
+                <span class="dm-header-recipient-name">{{this.full_name}}</span>
+                {{/if}}
+            </button>
+        {{/each}}
+    </div>
+</div>
 {{else}}
 <span class="navbar_title">
     {{> navbar_icon_and_title . }}
@@ -37,3 +58,4 @@
     </span>
 {{/if}}
 {{/if}}
+

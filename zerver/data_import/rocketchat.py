@@ -219,14 +219,15 @@ def process_users(
         role = UserProfile.ROLE_MEMBER
         if "admin" in user_dict["roles"]:
             role = UserProfile.ROLE_REALM_OWNER
-            realm_owners.append(id)
         elif "guest" in user_dict["roles"]:
             role = UserProfile.ROLE_GUEST
-        elif "bot" in user_dict["roles"]:
+        if "bot" in user_dict["roles"]:
             is_bot = True
 
         if is_bot:
             bots.append(id)
+        elif role == UserProfile.ROLE_REALM_OWNER:
+            realm_owners.append(id)
 
         user = build_user_profile(
             avatar_source=avatar_source,
@@ -314,12 +315,15 @@ def convert_channel_data(
             name=stream_name,
             description=stream_desc,
             stream_id=stream_id,
-            deactivated=False,
+            deactivated=channel_dict.get("archived", False),
             invite_only=invite_only,
             stream_post_policy=stream_post_policy,
         )
 
-        if stream_name == ROCKETCHAT_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME:
+        if (
+            stream_name == ROCKETCHAT_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME
+            and not stream["deactivated"]
+        ):
             zerver_realm[0]["new_stream_announcements_stream"] = stream["id"]
             zerver_realm[0]["zulip_update_announcements_stream"] = stream["id"]
 
