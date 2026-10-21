@@ -21,6 +21,7 @@ from zerver.actions.user_groups import (
     bulk_add_members_to_user_groups,
     do_send_user_group_members_update_event,
 )
+from zerver.actions.user_settings import do_regenerate_api_key
 from zerver.actions.users import (
     change_user_is_active,
     get_service_dicts_for_bot,
@@ -755,6 +756,9 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: UserProfile | 
                 RealmAuditLog.NEW_VALUE: acting_user.id,
             },
         )
+        # The previous owner had access to the bot's API key, so
+        # replace it to ensure only the new owner can use the bot.
+        do_regenerate_api_key(user_profile, acting_user)
         bot_owner_changed = True
 
     if settings.BILLING_ENABLED:
