@@ -1107,14 +1107,19 @@ export function maybe_remove_diacritics_from_name(
 export function build_termlet_matcher(termlet: string): (user: User) => boolean {
     // Note: termlets are required to be lower case.
     termlet = termlet.trim();
+    const normalized_termlet = termlet.replaceAll(/^[()]+|[()]+$/gu, "");
     const should_remove_diacritics = !typeahead.contains_diacritics(termlet);
 
     return function (user: User): boolean {
         const full_name = maybe_remove_diacritics_from_name(user, should_remove_diacritics);
-
         const names = full_name.toLowerCase().split(" ");
 
-        return names.some((name) => name.startsWith(termlet));
+        return names.some(
+            (name) =>
+                name.startsWith(termlet) ||
+                (normalized_termlet !== "" &&
+                    name.split(/\p{P}+/u).some((part) => part.startsWith(normalized_termlet))),
+        );
     };
 }
 
