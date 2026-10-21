@@ -893,7 +893,9 @@ def get_user_id_annotated_recursive_membership_groups_for_users(
     user_ids: list[int],
 ) -> QuerySet[UserGroup]:
     if len(user_ids) == 0:
-        return UserGroup.objects.none()
+        # Annotate user_id so that callers can reference user_id
+        # in values() and values_list(), as with the non-empty case.
+        return UserGroup.objects.none().annotate(user_id=Value(0))
 
     # Same as get_recursive_membership_groups but for many users at once:
     # annotates each group a user belongs to (directly or transitively)

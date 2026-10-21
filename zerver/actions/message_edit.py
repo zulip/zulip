@@ -676,10 +676,10 @@ def update_user_topic_visibility_policies_on_move(
     if is_stream_edited and not target_stream.is_public():
         # Do not compute group memberships for public streams as it
         # is required only to check content access to private streams.
-        for group in get_user_id_annotated_recursive_membership_groups_for_users(
+        for group_id, user_id in get_user_id_annotated_recursive_membership_groups_for_users(
             [user_topic.user_profile_id for user_topic in orig_topic_user_topics]
-        ):
-            recursive_group_ids_by_user.setdefault(group.user_id, set()).add(group.id)  # type: ignore[attr-defined]  # user_id is an annotated field.
+        ).values_list("id", "user_id"):  # type: ignore[misc]  # user_id is an annotated field.
+            recursive_group_ids_by_user.setdefault(user_id, set()).add(group_id)
 
     for orig_user_topic in orig_topic_user_topics:
         user_profile = orig_user_topic.user_profile
@@ -956,12 +956,13 @@ def do_update_message(
     realm = user_profile.realm
     attachment_reference_change = AttachmentChangeResult(False, [])
 
-    ums = UserMessage.objects.filter(message=target_message.id)
+    ums_queryset = UserMessage.objects.filter(message=target_message.id)
 
-    def user_info(um: UserMessage) -> dict[str, Any]:
+    def user_info(um_row: tuple[int, int]) -> dict[str, Any]:
+        # um_row is a UserMessage row with 2 fields: user_profile_id and flags.
         return {
-            "id": um.user_profile_id,
-            "flags": um.flags_list(),
+            "id": um_row[0],
+            "flags": UserMessage.flags_list_for_flags(um_row[1]),
         }
 
     if message_edit_request.is_content_edited:
@@ -1006,7 +1007,9 @@ def do_update_message(
             save_message_for_edit_use_case(message=target_message)
 
             event["message_ids"] = sorted(update_message_cache([target_message]))
-            users_to_be_notified = list(map(user_info, ums))
+            users_to_be_notified = list(
+                map(user_info, ums_queryset.values_list("user_profile_id", "flags"))
+            )
             send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 
             changed_messages_count = 1
@@ -1073,7 +1076,9 @@ def do_update_message(
             # If it's moving to a private stream, all non-subscribed users are losing access
             users_losing_access = users_losing_usermessages
 
-        unmodified_user_messages = ums.exclude(user_profile__in=users_losing_usermessages)
+        unmodified_user_messages = ums_queryset.exclude(
+            user_profile__in=users_losing_usermessages
+        ).values_list("user_profile_id", "flags")
 
         if not new_stream.is_history_public_to_subscribers():
             # We need to guarantee that every currently-subscribed
@@ -1093,8 +1098,8 @@ def do_update_message(
             )
     else:
         # If we're not moving the topic to another stream, we don't
-        # modify the original set of UserMessage objects queried.
-        unmodified_user_messages = ums
+        # modify the original set of UserMessage rows queried.
+        unmodified_user_messages = ums_queryset.values_list("user_profile_id", "flags")
 
     if message_edit_request.is_topic_edited:
         topic_name = message_edit_request.target_topic_name
@@ -1253,9 +1258,7 @@ def do_update_message(
         exclude_long_term_idle_users=False,
     )
     users_to_be_notified = [
-        user_info(um)
-        for um in unmodified_user_messages
-        if um.user_profile_id in message_access_user_ids
+        user_info(um) for um in unmodified_user_messages if um[0] in message_access_user_ids
     ]
     if stream_being_edited.is_history_public_to_subscribers():
         subscriptions = get_active_subscriptions_for_stream_id(
