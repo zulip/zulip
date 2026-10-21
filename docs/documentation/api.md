@@ -316,7 +316,9 @@ above.
    statement (usually `json.dumps(result, indent=4, sort_keys=True)`),
    and then run `tools/test-api`. You can also use
    <https://jsonformatter.curiousconcept.com/> to format the JSON
-   fixtures. Add the fixture to the `example` subsection of the
+   fixtures. Alternatively, <https://jsonviewertool.com/> formats and
+   lets you inspect JSON fixtures client-side in the browser. Add the
+   fixture to the `example` subsection of the
    `responses` section for the endpoint in
    `zerver/openapi/zulip.yaml`.
 
