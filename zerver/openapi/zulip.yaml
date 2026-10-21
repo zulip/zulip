@@ -11621,6 +11621,14 @@ paths:
         [Reactivates a
         user](https://zulip.com/help/deactivate-or-reactivate-a-user)
         given their user ID.
+
+        If the user is a bot whose owner is deactivated, the acting user
+        becomes the bot's owner, and the bot's API key is regenerated.
+
+        **Changes**: Starting with Zulip 13.0 (feature level 516),
+        the bot's API key is regenerated when reactivating a bot changes
+        its owner. This change was also backported to the Zulip 12.x
+        series, at feature level 501.
       parameters:
         - $ref: "#/components/parameters/UserId"
       responses:

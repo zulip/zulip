@@ -1090,6 +1090,14 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.subscribe(self.example_user("iago"), "private_stream_test")
         self.subscribe(test_bot, "private_stream_test")
 
+        api_key = test_bot.api_key
+        do_deactivate_user(test_bot, acting_user=None)
+
+        # Reactivating a bot whose owner is active keeps its API key.
+        result = self.client_post(f"/json/users/{bot_id}/reactivate")
+        self.assert_json_success(result)
+        test_bot.refresh_from_db()
+        self.assertEqual(test_bot.api_key, api_key)
         do_deactivate_user(test_bot, acting_user=None)
 
         # Deactivate the bot owner
@@ -1102,6 +1110,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         test_bot = UserProfile.objects.get(id=bot_id, is_bot=True)
         assert test_bot.bot_owner is not None
         self.assertEqual(test_bot.bot_owner.id, self.example_user("iago").id)
+        self.assertNotEqual(test_bot.api_key, api_key)
 
         # There is no realm_bot delete event, since the previous
         # owner is deactivated.

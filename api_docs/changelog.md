@@ -26,6 +26,11 @@ format used by the Zulip server that they are interacting with.
   owner, unless they are an organization administrator. This change was
   also backported to the Zulip 12.x series, at feature level 501.
 
+* [`POST /users/{user_id}/reactivate`](/api/reactivate-user): Reactivating
+  a bot whose owner is deactivated, which makes the acting user the bot's
+  owner, now also regenerates the bot's API key. This change was also
+  backported to the Zulip 12.x series, at feature level 501.
+
 **Feature level 515**
 
 * [`DELETE /users/me/subscriptions`](/api/unsubscribe): Added
