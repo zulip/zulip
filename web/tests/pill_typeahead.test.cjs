@@ -187,6 +187,9 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
         assert.equal(typeof config.matcher, "function");
         assert.equal(typeof config.sorter, "function");
         assert.equal(typeof config.updater, "function");
+        assert.equal(typeof config.trigger_selection, "function");
+        assert.ok(config.trigger_selection({key: "Enter"}));
+        assert.ok(!config.trigger_selection({key: "a"}));
 
         // test queries
         const person_query = "me";
@@ -271,6 +274,9 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
         assert.equal(typeof config.matcher, "function");
         assert.equal(typeof config.sorter, "function");
         assert.equal(typeof config.updater, "function");
+        assert.equal(typeof config.trigger_selection, "function");
+        assert.ok(config.trigger_selection({key: "Enter"}));
+        assert.ok(!config.trigger_selection({key: "a"}));
         assert.equal(config.helpOnEmptyStrings(), false);
 
         // test queries
@@ -363,6 +369,9 @@ run_test("set_up_user_group", ({mock_template, override, override_rewire}) => {
         assert.equal(typeof config.matcher, "function");
         assert.equal(typeof config.sorter, "function");
         assert.equal(typeof config.updater, "function");
+        assert.equal(typeof config.trigger_selection, "function");
+        assert.ok(config.trigger_selection({key: "Enter"}));
+        assert.ok(!config.trigger_selection({key: "a"}));
         assert.equal(config.helpOnEmptyStrings(), true);
 
         const group_query = "testers";
@@ -459,6 +468,9 @@ run_test("set_up_combined", ({mock_template, override, override_rewire}) => {
         assert.equal(typeof config.matcher, "function");
         assert.equal(typeof config.sorter, "function");
         assert.equal(typeof config.updater, "function");
+        assert.equal(typeof config.trigger_selection, "function");
+        assert.ok(config.trigger_selection({key: "Enter"}));
+        assert.ok(!config.trigger_selection({key: "a"}));
         assert.equal(config.helpOnEmptyStrings(), true);
 
         // test queries
@@ -767,6 +779,9 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
         assert.equal(typeof config.matcher, "function");
         assert.equal(typeof config.sorter, "function");
         assert.equal(typeof config.updater, "function");
+        assert.equal(typeof config.trigger_selection, "function");
+        assert.ok(config.trigger_selection({key: "Enter"}));
+        assert.ok(!config.trigger_selection({key: "a"}));
         assert.equal(config.helpOnEmptyStrings(), true);
 
         // test queries
@@ -854,4 +869,39 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
     };
     pill_typeahead.set_up_group_setting_typeahead($fake_input, $pill_widget, opts);
     assert.ok(input_pill_typeahead_called);
+});
+
+run_test("trigger_selection on enter keydown", ({override}) => {
+    const $fake_input = $.create(".input");
+    $fake_input[0].before = noop;
+
+    const $container = $.create(".pill-container");
+    $container.set_find_results(".input", $fake_input);
+
+    const $pill_widget = input_pill.create({
+        $container,
+        create_item_from_text: noop,
+        get_text_from_item: noop,
+        get_display_value_from_item: noop,
+    });
+
+    let typeahead_config;
+    override(bootstrap_typeahead, "Typeahead", (_input_element, config) => {
+        typeahead_config = config;
+    });
+
+    pill_typeahead.set_up_combined($fake_input, $pill_widget, {
+        user: true,
+        for_stream_subscribers: true,
+    });
+
+    assert.ok(typeahead_config);
+    assert.equal(typeof typeahead_config.trigger_selection, "function");
+
+    // Enter key triggers selection on keydown
+    assert.ok(typeahead_config.trigger_selection({key: "Enter"}));
+    // Other keys do not trigger selection
+    assert.ok(!typeahead_config.trigger_selection({key: "a"}));
+    assert.ok(!typeahead_config.trigger_selection({key: "Tab"}));
+    assert.ok(!typeahead_config.trigger_selection({key: "Escape"}));
 });

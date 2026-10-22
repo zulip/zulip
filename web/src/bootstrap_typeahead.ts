@@ -772,6 +772,8 @@ export class Typeahead<ItemType extends string | object> {
             }
             e.preventDefault();
             this.select(e);
+            this.maybeStopAdvance(e);
+            return;
         }
         this.suppressKeyPressRepeat = !["ArrowDown", "ArrowUp", "Tab", "Enter", "Escape"].includes(
             e.key,

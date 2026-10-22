@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import * as blueslip from "./blueslip.ts";
 import {Typeahead} from "./bootstrap_typeahead.ts";
 import type {TypeaheadInputElement} from "./bootstrap_typeahead.ts";
+import * as keydown_util from "./keydown_util.ts";
 import * as people from "./people.ts";
 import type {User} from "./people.ts";
 import * as stream_pill from "./stream_pill.ts";
@@ -44,6 +45,7 @@ export function set_up_user(
     };
     new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
+        trigger_selection: (e: JQuery.KeyDownEvent) => keydown_util.is_enter_event(e),
         source(_query: string): UserPillData[] {
             return user_pill.typeahead_source(pills, exclude_bots);
         },
@@ -87,6 +89,7 @@ export function set_up_stream(
     opts.hide_on_empty_after_backspace ??= false;
     new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
+        trigger_selection: (e: JQuery.KeyDownEvent) => keydown_util.is_enter_event(e),
         helpOnEmptyStrings: () => opts.help_on_empty_strings ?? false,
         hideOnEmptyAfterBackspace: opts.hide_on_empty_after_backspace,
         source(_query: string): StreamPillData[] {
@@ -137,6 +140,7 @@ export function set_up_user_group(
     };
     new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
+        trigger_selection: (e: JQuery.KeyDownEvent) => keydown_util.is_enter_event(e),
         source(_query: string): UserGroupPillData[] {
             return opts
                 .user_group_source()
@@ -177,6 +181,7 @@ export function set_up_group_setting_typeahead(
     };
     new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
+        trigger_selection: (e: JQuery.KeyDownEvent) => keydown_util.is_enter_event(e),
         source(_query: string): GroupSettingTypeaheadItem[] {
             return [
                 ...user_group_pill.typeahead_source(pills, opts.setting_name, opts.setting_type),
@@ -272,6 +277,7 @@ export function set_up_combined(
     };
     new Typeahead(bootstrap_typeahead_input, {
         dropup: true,
+        trigger_selection: (e: JQuery.KeyDownEvent) => keydown_util.is_enter_event(e),
         helpOnEmptyStrings: () => true,
         hideOnEmptyAfterBackspace: true,
         source(query: string): TypeaheadItem[] {
