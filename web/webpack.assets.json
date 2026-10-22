@@ -59,6 +59,7 @@
         "./src/portico/legacy_landing_page.ts",
         "./src/portico/header.ts",
         "./styles/portico/svg_icons.css",
+        "./styles/portico/portico_variables.css",
         "./styles/portico/hello.css",
         "./styles/portico/navbar.css",
         "./styles/portico/footer.css"
