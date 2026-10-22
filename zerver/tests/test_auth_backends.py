@@ -5644,6 +5644,57 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
             m.output[1],
         )
 
+    def test_external_auth_id_oidc_account_linked_to_different_sub(self) -> None:
+        """
+        Test that login is refused when the account with the matching email is
+        already linked to a different sub, rather than relinking the account.
+        """
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        idps_config_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
+        idps_config_dict["testoidc"]["enable_external_auth_id_auth"] = True
+
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+        account_data_dict["sub"] = "original_sub"
+        with (
+            self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=idps_config_dict),
+            self.assertLogs(self.logger_string, level="INFO"),
+        ):
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], hamlet.delivery_email)
+
+        account_data_dict["sub"] = "new_sub"
+        with (
+            self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=idps_config_dict),
+            self.assertLogs(self.logger_string, level="WARNING") as m,
+        ):
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+            )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], realm.url + "/login/")
+        self.assertEqual(
+            m.output,
+            [
+                self.logger_output(
+                    f"Can't log in user {hamlet.id} via ExternalAuthID new_sub: "
+                    "account is already linked to ExternalAuthID original_sub",
+                    "warning",
+                )
+            ],
+        )
+
+        external_auth_ids = list(ExternalAuthID.objects.filter(realm=realm))
+        self.assert_length(external_auth_ids, 1)
+        self.assertEqual(external_auth_ids[0].user, hamlet)
+        self.assertEqual(external_auth_ids[0].external_auth_id, "original_sub")
+
     @override_settings(TERMS_OF_SERVICE_VERSION=None)
     def test_external_auth_id_oidc_registration(self) -> None:
         email = "newuser@zulip.com"
@@ -8311,6 +8362,28 @@ class TestLDAP(ZulipLDAPTestCase):
         self.assertEqual(new_external_auth_id.realm_id, realm.id)
         self.assertEqual(new_external_auth_id.external_auth_method_name, "ldap")
         self.assertEqual(new_external_auth_id.external_auth_id, "123456789")
+
+        # The account is recreated in LDAP with the same email but a new
+        # unique_account_id. The login is refused rather than relinking
+        # the Zulip account to the new LDAP account.
+        self.change_ldap_user_attr(username, "homePhone", "987654321")
+        with self.assertLogs("zulip.auth.ldap", level="WARNING") as mock_log:
+            user_profile = self.backend.authenticate(
+                request=mock.MagicMock(),
+                username=username,
+                password=self.ldap_password("hamlet"),
+                realm=get_realm("zulip"),
+            )
+        self.assertIsNone(user_profile)
+        self.assertEqual(
+            mock_log.output,
+            [
+                f"WARNING:zulip.auth.ldap:Can't log in user {hamlet.id} via ExternalAuthID 987654321: account is already linked to ExternalAuthID 123456789"
+            ],
+        )
+        external_auth_ids = list(ExternalAuthID.objects.filter(user=hamlet))
+        self.assert_length(external_auth_ids, 1)
+        self.assertEqual(external_auth_ids[0].external_auth_id, "123456789")
 
     @override_settings(
         AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),

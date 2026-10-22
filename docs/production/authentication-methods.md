@@ -838,6 +838,13 @@ user logs in. If another Zulip user already has the new email address,
 the email will not be updated, a warning will be logged and the
 administrator should resolve the conflict manually.
 
+If a Zulip account is already linked to a different permanent ID
+than the one the IdP sends for the same email address (for example,
+because the user's account at the IdP was deleted and recreated),
+Zulip will refuse the login and log a warning, since the email
+address may have been reassigned to a different person. The
+administrator should resolve the conflict manually.
+
 :::
 
 ### SCIM
@@ -1194,6 +1201,16 @@ Zulip will update the linked account's email address the next time the
 user logs in. If another Zulip user already has the new email address,
 the email will not be updated, a warning will be logged and the
 administrator should resolve the conflict manually.
+
+If a Zulip account is already linked to a different `sub` than the
+one the IdP sends for the same email address, Zulip will refuse the
+login and log a warning, since the email address may have been
+reassigned to a different person. The administrator should resolve
+the conflict manually. This can happen when the user's account at the
+IdP was deleted and recreated. With Microsoft Entra ID, it can also
+happen for all users if the Zulip application is registered again with
+a new client ID, since Entra ID issues a different `sub` for each
+application.
 
 :::
 

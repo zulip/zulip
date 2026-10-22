@@ -797,15 +797,34 @@ def get_and_sync_user_profile_by_external_auth_id(
         ).user
     except ExternalAuthID.DoesNotExist:
         user_profile = common_get_active_user(email, realm, return_data)
-        if user_profile is not None:
-            # If we found an account with the matching email, but no ExternalAuthID, then this account hasn't
-            # yet had its external_auth_id stored - we need to do this now.
-            ExternalAuthID.objects.create(
-                external_auth_method_name=external_auth_method_name,
-                external_auth_id=external_auth_id,
-                realm=realm,
-                user=user_profile,
+        if user_profile is None:
+            return None
+
+        existing_external_auth_id = ExternalAuthID.objects.filter(
+            user=user_profile, external_auth_method_name=external_auth_method_name
+        ).first()
+        if existing_external_auth_id is not None:
+            # The account with the matching email is already linked to a different
+            # external_auth_id. This can mean the account was recreated in the external
+            # auth directory, but it can also mean the email address was reassigned
+            # to a different person there, so we can't safely relink the account.
+            logger.warning(
+                "Can't log in user %s via ExternalAuthID %s: account is already linked to ExternalAuthID %s",
+                user_profile.id,
+                external_auth_id,
+                existing_external_auth_id.external_auth_id,
             )
+            return_data["external_auth_id_conflict"] = True
+            return None
+
+        # If we found an account with the matching email, but no ExternalAuthID, then this account hasn't
+        # yet had its external_auth_id stored - we need to do this now.
+        ExternalAuthID.objects.create(
+            external_auth_method_name=external_auth_method_name,
+            external_auth_id=external_auth_id,
+            realm=realm,
+            user=user_profile,
+        )
         return user_profile
 
     assert user_profile is not None
@@ -1265,6 +1284,8 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             raise ZulipLDAPError("Realm has been deactivated")
         if return_data.get("inactive_user"):
             raise ZulipLDAPError("User has been deactivated")
+        if return_data.get("external_auth_id_conflict"):
+            raise ZulipLDAPError("User is already linked to a different ExternalAuthID")
         # An invalid_subdomain `return_data` value here is ignored,
         # since that just means we're trying to create an account in a
         # second realm on the server (`ldap_auth_enabled(realm)` would
@@ -2693,6 +2714,7 @@ def social_auth_finish(
     invalid_email = return_data.get("invalid_email")
     auth_failed_reason = return_data.get("social_auth_failed_reason")
     email_not_associated = return_data.get("email_not_associated")
+    external_auth_id_conflict = return_data.get("external_auth_id_conflict")
 
     if invalid_realm:
         # User has passed an invalid subdomain param - this shouldn't happen in the normal flow,
@@ -2702,7 +2724,13 @@ def social_auth_finish(
         return HttpResponseRedirect(reverse("find_account"))
 
     realm = Realm.objects.get(id=return_data["realm_id"])
-    if auth_backend_disabled or inactive_realm or no_verified_email or email_not_associated:
+    if (
+        auth_backend_disabled
+        or inactive_realm
+        or no_verified_email
+        or email_not_associated
+        or external_auth_id_conflict
+    ):
         # Redirect to login page. We can't send to registration
         # workflow with these errors. We will redirect to login page.
         return redirect_to_login(realm)
