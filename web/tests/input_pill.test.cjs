@@ -738,3 +738,42 @@ run_test("updatePill", ({mock_template}) => {
     assert.equal(blue_pill.item.color_name, "DARK BLUE");
     assert.equal(blue_pill.item.description, "color of the deep ocean");
 });
+
+run_test("show_outline_on_invalid_input", ({mock_template}) => {
+    mock_template("input_pill.hbs", true, (data, html) => {
+        assert.equal(typeof data.display_value, "string");
+        return html;
+    });
+
+    const info = set_up();
+    const config = {
+        ...info.config,
+        show_outline_on_invalid_input: true,
+    };
+    const $container = info.$container;
+    const $pill_input = info.$pill_input;
+    const items = info.items;
+
+    const widget = input_pill.create(config);
+
+    const key_handler = $container.get_on_handler("keydown", ".input");
+
+    // Invalid item rejected on Enter: adds invalid class to container and shake to input
+    key_handler.call(
+        {
+            textContent: "invalid_color",
+        },
+        {
+            key: "Enter",
+            preventDefault: noop,
+            stopPropagation: noop,
+        },
+    );
+
+    assert.ok($container.hasClass("invalid"));
+    assert.ok($pill_input.hasClass("input-validation-shake"));
+
+    // Valid data appended clears invalid outline
+    widget.appendValidatedData(items.blue);
+    assert.ok(!$container.hasClass("invalid"));
+});
