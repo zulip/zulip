@@ -14,6 +14,7 @@ from zerver.checks import (
     check_auth_settings,
     check_external_host_setting,
     check_jitsi_server_url,
+    check_renamed_settings,
     check_required_settings,
     check_uploads_settings,
 )
@@ -62,6 +63,7 @@ class ZerverConfig(AppConfig):
         register(check_auth_settings)
         register(check_uploads_settings)
         register(check_jitsi_server_url)
+        register(check_renamed_settings)
 
         if settings.SENTRY_DSN:  # nocoverage
             from zproject.config import get_config
