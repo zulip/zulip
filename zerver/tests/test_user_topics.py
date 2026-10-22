@@ -12,6 +12,7 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_subscription
+from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
 from zerver.lib.user_topics import (
     build_get_topic_visibility_policy,
     get_topic_mutes,
@@ -490,6 +491,36 @@ class MutedTopicsTests(ZulipTestCase):
         result = self.api_post(user, url, data)
         self.assert_json_error(
             result, f"topic is too long (limit: {MAX_TOPIC_NAME_LENGTH} characters)"
+        )
+
+    def test_resolved_topic_prefix_not_counted_toward_length_limit(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        stream = get_stream("Verona", user.realm)
+        topic = RESOLVED_TOPIC_PREFIX + "a" * MAX_TOPIC_NAME_LENGTH
+
+        result = self.api_patch(
+            user,
+            "/api/v1/users/me/subscriptions/muted_topics",
+            {"stream_id": stream.id, "topic": topic, "op": "add"},
+        )
+        self.assert_json_success(result)
+        self.assertTrue(
+            topic_has_visibility_policy(user, stream.id, topic, UserTopic.VisibilityPolicy.MUTED)
+        )
+
+        result = self.api_post(
+            user,
+            "/api/v1/user_topics",
+            {
+                "stream_id": stream.id,
+                "topic": topic,
+                "visibility_policy": UserTopic.VisibilityPolicy.UNMUTED,
+            },
+        )
+        self.assert_json_success(result)
+        self.assertTrue(
+            topic_has_visibility_policy(user, stream.id, topic, UserTopic.VisibilityPolicy.UNMUTED)
         )
 
 

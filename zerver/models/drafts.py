@@ -4,7 +4,7 @@ from django.db import models
 from typing_extensions import override
 
 from zerver.lib.display_recipient import get_recipient_ids
-from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.constants import MAX_STORED_TOPIC_NAME_LENGTH
 from zerver.models.recipients import Recipient
 from zerver.models.users import UserProfile
 
@@ -16,7 +16,7 @@ class Draft(models.Model):
 
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
-    topic = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH, db_index=True)
+    topic = models.CharField(max_length=MAX_STORED_TOPIC_NAME_LENGTH, db_index=True)
     content = models.TextField()  # Length should not exceed MAX_MESSAGE_LENGTH
     last_edit_time = models.DateTimeField(db_index=True)
 

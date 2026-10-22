@@ -32,6 +32,7 @@ import * as peer_data from "./peer_data.ts";
 import * as people from "./people.ts";
 import * as popover_menus from "./popover_menus.ts";
 import {left_sidebar_tippy_options} from "./popover_menus.ts";
+import * as resolved_topic from "./resolved_topic.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import {realm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -409,7 +410,10 @@ export async function build_move_topic_to_stream_popover(
         notify_old_thread: message_edit.notify_old_thread_default,
         from_message_actions_popover: message !== undefined,
         only_topic_edit,
-        max_topic_length: realm.max_topic_length,
+        max_topic_length: resolved_topic.get_max_topic_name_length(
+            realm.max_topic_length,
+            topic_name,
+        ),
     };
 
     // When the modal is opened for moving the whole topic from left sidebar,

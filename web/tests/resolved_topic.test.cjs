@@ -35,6 +35,17 @@ run_test("unresolve_name", () => {
     assert.equal(resolved_topic.unresolve_name(pseudoresolved_name), pseudoresolved_name);
 });
 
+run_test("get_max_topic_name_length", () => {
+    const max_topic_length = 60;
+    assert.equal(resolved_topic.get_max_topic_name_length(max_topic_length, topic_name), 60);
+    assert.equal(resolved_topic.get_max_topic_name_length(max_topic_length, resolved_name), 62);
+    assert.equal(resolved_topic.get_max_topic_name_length(max_topic_length, overresolved_name), 62);
+    assert.equal(
+        resolved_topic.get_max_topic_name_length(max_topic_length, pseudoresolved_name),
+        60,
+    );
+});
+
 run_test("display_parts", () => {
     const results = [];
     for (const name of names) {

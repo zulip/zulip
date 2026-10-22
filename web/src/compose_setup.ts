@@ -33,7 +33,7 @@ import * as onboarding_steps from "./onboarding_steps.ts";
 import {page_params} from "./page_params.ts";
 import * as popovers from "./popovers.ts";
 import * as resize from "./resize.ts";
-import {unresolve_name} from "./resolved_topic.ts";
+import {get_max_topic_name_length, unresolve_name} from "./resolved_topic.ts";
 import * as rows from "./rows.ts";
 import * as scheduled_messages from "./scheduled_messages.ts";
 import * as scroll_to_bottom_button from "./scroll_to_bottom_button.ts";
@@ -751,8 +751,9 @@ export function initialize(): void {
 
     function handle_topic_length_limit(): void {
         let topic = compose_state.topic();
-        if (topic.length > realm.max_topic_length) {
-            topic = topic.slice(0, realm.max_topic_length);
+        const max_topic_length = get_max_topic_name_length(realm.max_topic_length, topic);
+        if (topic.length > max_topic_length) {
+            topic = topic.slice(0, max_topic_length);
             compose_state.topic(topic);
             $("input#stream_message_recipient_topic").addClass("input-validation-shake");
         }

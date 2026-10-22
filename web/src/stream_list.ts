@@ -28,6 +28,7 @@ import * as narrow_state from "./narrow_state.ts";
 import {page_params} from "./page_params.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
+import * as resolved_topic from "./resolved_topic.ts";
 import * as scroll_util from "./scroll_util.ts";
 import {web_channel_default_view_values} from "./settings_config.ts";
 import * as settings_data from "./settings_data.ts";
@@ -1574,7 +1575,11 @@ export function set_event_handlers({
 
         if ($(e.target).closest(".zoomed-new-topic").length > 0) {
             trigger = "zoomed new topic";
-            topic = $("#topic_filter_query").text().trim().slice(0, realm.max_topic_length);
+            const filter_topic = $("#topic_filter_query").text().trim();
+            topic = filter_topic.slice(
+                0,
+                resolved_topic.get_max_topic_name_length(realm.max_topic_length, filter_topic),
+            );
         }
 
         compose_actions.start({

@@ -16,7 +16,7 @@ from typing_extensions import override
 
 from zerver.lib.cache import flush_message, flush_submessage, flush_used_upload_space_cache
 from zerver.models.clients import Client
-from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.constants import MAX_STORED_TOPIC_NAME_LENGTH
 from zerver.models.realms import Realm
 from zerver.models.recipients import Recipient
 from zerver.models.users import UserProfile
@@ -81,7 +81,7 @@ class AbstractMessage(models.Model):
     # new code should generally also say "topic".
     #
     # See also the `topic_name` method on `Message`.
-    subject = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH, db_index=True)
+    subject = models.CharField(max_length=MAX_STORED_TOPIC_NAME_LENGTH, db_index=True)
 
     # The raw Markdown-format text (E.g., what the user typed into the compose box).
     content = models.TextField()

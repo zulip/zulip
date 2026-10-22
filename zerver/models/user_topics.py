@@ -5,7 +5,7 @@ from django.db.models import CASCADE
 from django.db.models.functions import Lower, Upper
 from typing_extensions import override
 
-from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.constants import MAX_STORED_TOPIC_NAME_LENGTH
 from zerver.models.recipients import Recipient
 from zerver.models.streams import Stream
 from zerver.models.users import UserProfile
@@ -15,7 +15,7 @@ class UserTopic(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     stream = models.ForeignKey(Stream, on_delete=CASCADE)
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
-    topic_name = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
+    topic_name = models.CharField(max_length=MAX_STORED_TOPIC_NAME_LENGTH)
     # The default value for last_updated is a few weeks before tracking
     # of when topics were muted was first introduced.  It's designed
     # to be obviously incorrect so that one can tell it's backfilled data.

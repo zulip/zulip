@@ -10735,8 +10735,13 @@ paths:
                     You can [resolve topics](/help/resolve-a-topic) by editing the topic to
                     `✔ {original_topic}` with the `propagate_mode` parameter set to
                     `"change_all"`. The empty string topic cannot be marked as resolved.
+                    The resolved-topic prefix does not count toward `max_topic_length`.
 
-                    **Changes**: Before Zulip 10.0 (feature level 334), empty string
+                    **Changes**: Before Zulip 13.0 (feature level ZF-d3c348), the
+                    resolved-topic prefix counted toward `max_topic_length`, which
+                    could truncate a topic resolved near that limit.
+
+                    Before Zulip 10.0 (feature level 334), empty string
                     was not a valid topic name for channel messages.
 
                     New in Zulip 2.0.0. Previous Zulip releases encoded this as `subject`,
@@ -19030,10 +19035,15 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The maximum allowed length for a topic, in Unicode code points.
-                          Clients should use this property rather than hardcoding field
-                          sizes.
+                          The resolved-topic prefix (`✔ `) does not count toward this
+                          limit, so a resolved topic may be longer than this value by the
+                          length of that prefix. Clients should use this property rather
+                          than hardcoding field sizes.
 
-                          **Changes**: New in Zulip 4.0 (feature level 53). Previously,
+                          **Changes**: Before Zulip 13.0 (feature level ZF-d3c348), the
+                          resolved-topic prefix counted toward this limit.
+
+                          New in Zulip 4.0 (feature level 53). Previously,
                           this property always had a value of 60.
                       max_message_length:
                         type: integer

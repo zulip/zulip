@@ -43,3 +43,14 @@ export function display_parts(topic_name: string): [string, string] {
         ? [RESOLVED_TOPIC_PREFIX, topic_name.slice(RESOLVED_TOPIC_PREFIX.length)]
         : ["", topic_name];
 }
+
+/**
+ * Maximum length of `topic_name` given the realm's `max_topic_length`.
+ *
+ * The resolved prefix does not count toward the limit.
+ */
+export function get_max_topic_name_length(max_topic_length: number, topic_name: string): number {
+    return is_resolved(topic_name)
+        ? max_topic_length + RESOLVED_TOPIC_PREFIX.length
+        : max_topic_length;
+}

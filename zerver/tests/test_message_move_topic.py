@@ -25,7 +25,7 @@ from zerver.actions.submessage import do_add_submessage
 from zerver.actions.user_groups import check_add_user_group
 from zerver.actions.user_settings import do_change_user_setting
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
-from zerver.lib.message import truncate_topic
+from zerver.lib.message import TOPIC_TRUNCATION_MESSAGE, topic_resolve_toggled, truncate_topic
 from zerver.lib.test_classes import ZulipTestCase, get_topic_messages
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import RESOLVED_TOPIC_PREFIX
@@ -1965,15 +1965,16 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.login("hamlet")
         stream = self.make_stream("public stream")
         self.subscribe(user_profile, stream.name)
-        # Marking topics with a long name as resolved causes the new topic name to be truncated.
-        # We want to avoid having code paths believing that the topic is "moved" instead of
-        # "resolved" in this edge case.
+        # Resolving a topic at the length limit must preserve the name.
+        # The resolved prefix does not count toward the limit, and the
+        # edit is still a resolve rather than a move.
         topic_name = "a" * MAX_TOPIC_NAME_LENGTH
         msg_id = self.send_stream_message(
             user_profile, stream.name, topic_name=topic_name, content="First"
         )
 
         resolved_topic = RESOLVED_TOPIC_PREFIX + topic_name
+        self.assertEqual(truncate_topic(resolved_topic), resolved_topic)
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
@@ -1983,9 +1984,9 @@ class MessageMoveTopicTest(ZulipTestCase):
         )
         self.assert_json_success(result)
 
-        new_topic_name = truncate_topic(resolved_topic)
-        messages = get_topic_messages(user_profile, stream, new_topic_name)
+        messages = get_topic_messages(user_profile, stream, resolved_topic)
         self.assert_length(messages, 2)
+        self.assertEqual(messages[0].topic_name(), resolved_topic)
         self.assertEqual(messages[0].content, "First")
         self.assertEqual(
             messages[1].content,
@@ -2000,20 +2001,18 @@ class MessageMoveTopicTest(ZulipTestCase):
         self.assert_json_success(result)
         self.assertNotIn("last_moved_timestamp", message_dict)
 
-        # Note that we are removing the prefix from the already truncated topic,
-        # so unresolved_topic_name will not be the same as the original topic_name
-        unresolved_topic_name = new_topic_name.replace(RESOLVED_TOPIC_PREFIX, "")
         result = self.client_patch(
             "/json/messages/" + str(msg_id),
             {
-                "topic": unresolved_topic_name,
+                "topic": topic_name,
                 "propagate_mode": "change_all",
             },
         )
         self.assert_json_success(result)
 
-        messages = get_topic_messages(user_profile, stream, unresolved_topic_name)
+        messages = get_topic_messages(user_profile, stream, topic_name)
         self.assert_length(messages, 3)
+        self.assertEqual(messages[0].topic_name(), topic_name)
         self.assertEqual(
             messages[2].content,
             f"@_**{user_profile.full_name}|{user_profile.id}** has marked this topic as unresolved.",
@@ -2026,6 +2025,37 @@ class MessageMoveTopicTest(ZulipTestCase):
         message_dict = orjson.loads(message_fetch_result.content)["message"]
         self.assert_json_success(result)
         self.assertNotIn("last_moved_timestamp", message_dict)
+
+    def test_topic_resolve_toggled_long_names(self) -> None:
+        topic_name = "a" * MAX_TOPIC_NAME_LENGTH
+        resolved_topic = RESOLVED_TOPIC_PREFIX + topic_name
+        self.assertTrue(topic_resolve_toggled(resolved_topic, topic_name))
+        self.assertTrue(topic_resolve_toggled(topic_name, resolved_topic))
+
+        # Historical resolves truncated the prefixed name to the limit.
+        legacy_resolved_topic = (RESOLVED_TOPIC_PREFIX + topic_name)[
+            : MAX_TOPIC_NAME_LENGTH - len(TOPIC_TRUNCATION_MESSAGE)
+        ] + TOPIC_TRUNCATION_MESSAGE
+        self.assert_length(legacy_resolved_topic, MAX_TOPIC_NAME_LENGTH)
+        self.assertTrue(topic_resolve_toggled(legacy_resolved_topic, topic_name))
+        self.assertTrue(
+            topic_resolve_toggled(
+                legacy_resolved_topic.removeprefix(RESOLVED_TOPIC_PREFIX),
+                legacy_resolved_topic,
+            )
+        )
+
+        # A short name that happens to end with the truncation message
+        # is not a historical truncated resolve.
+        self.assertFalse(
+            topic_resolve_toggled(
+                RESOLVED_TOPIC_PREFIX + "he" + TOPIC_TRUNCATION_MESSAGE,
+                "hello",
+            )
+        )
+        self.assertFalse(
+            topic_resolve_toggled(RESOLVED_TOPIC_PREFIX + "b" * MAX_TOPIC_NAME_LENGTH, topic_name)
+        )
 
     def test_notify_resolve_and_move_topic(self) -> None:
         user_profile = self.example_user("hamlet")

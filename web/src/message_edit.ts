@@ -1059,7 +1059,10 @@ export function start_inline_topic_edit($recipient_row: JQuery): void {
     assert(message?.type === "stream");
     const $form = $(
         render_topic_edit_form({
-            max_topic_length: realm.max_topic_length,
+            max_topic_length: resolved_topic.get_max_topic_name_length(
+                realm.max_topic_length,
+                message.topic,
+            ),
             is_mandatory_topics: !stream_data.can_use_empty_topic(message.stream_id),
             empty_string_topic_display_name: util.get_final_topic_display_name(""),
         }),

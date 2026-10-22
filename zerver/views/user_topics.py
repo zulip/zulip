@@ -7,6 +7,7 @@ from django.utils.translation import gettext as _
 from pydantic import Json, StringConstraints
 
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
+from zerver.lib.message import check_topic_name_length
 from zerver.lib.response import json_success
 from zerver.lib.streams import (
     access_stream_by_id,
@@ -18,7 +19,7 @@ from zerver.lib.streams import (
 from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.typed_endpoint_validators import check_int_in_validator
 from zerver.models import UserProfile, UserTopic
-from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.constants import MAX_STORED_TOPIC_NAME_LENGTH
 
 
 def mute_topic(
@@ -68,10 +69,11 @@ def update_muted_topic(
     user_profile: UserProfile,
     *,
     op: Literal["add", "remove"],
-    topic: Annotated[str, StringConstraints(max_length=MAX_TOPIC_NAME_LENGTH)],
+    topic: Annotated[str, StringConstraints(max_length=MAX_STORED_TOPIC_NAME_LENGTH)],
     stream: str | None = None,
     stream_id: Json[int] | None = None,
 ) -> HttpResponse:
+    check_topic_name_length(topic)
     check_for_exactly_one_stream_arg(stream_id=stream_id, stream=stream)
 
     if op == "add":
@@ -98,11 +100,12 @@ def update_user_topic(
     user_profile: UserProfile,
     *,
     stream_id: Json[int],
-    topic: Annotated[str, StringConstraints(max_length=MAX_TOPIC_NAME_LENGTH)],
+    topic: Annotated[str, StringConstraints(max_length=MAX_STORED_TOPIC_NAME_LENGTH)],
     visibility_policy: Json[
         Annotated[int, check_int_in_validator(UserTopic.VisibilityPolicy.values)]
     ],
 ) -> HttpResponse:
+    check_topic_name_length(topic)
     if visibility_policy == UserTopic.VisibilityPolicy.INHERIT:
         error = _("Invalid channel ID")
         stream = access_stream_to_remove_visibility_policy_by_id(user_profile, stream_id, error)

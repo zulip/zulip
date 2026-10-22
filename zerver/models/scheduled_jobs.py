@@ -9,7 +9,7 @@ from typing_extensions import override
 from zerver.lib.display_recipient import get_recipient_ids
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models.clients import Client
-from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.constants import MAX_STORED_TOPIC_NAME_LENGTH
 from zerver.models.groups import NamedUserGroup
 from zerver.models.messages import Message
 from zerver.models.realms import Realm
@@ -152,7 +152,7 @@ class APIReminderDirectMessageDict(TypedDict):
 class ScheduledMessage(models.Model):
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)
-    subject = models.CharField(max_length=MAX_TOPIC_NAME_LENGTH)
+    subject = models.CharField(max_length=MAX_STORED_TOPIC_NAME_LENGTH)
     content = models.TextField()
     rendered_content = models.TextField()
     sending_client = models.ForeignKey(Client, on_delete=CASCADE)

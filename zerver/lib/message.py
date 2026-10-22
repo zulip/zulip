@@ -235,7 +235,28 @@ TOPIC_TRUNCATION_MESSAGE = "..."
 
 
 def truncate_topic(topic_name: str) -> str:
+    # The resolved prefix does not count toward the topic length limit,
+    # so resolving a topic at the limit does not drop the end of the name.
+    if topic_name.startswith(RESOLVED_TOPIC_PREFIX):
+        return RESOLVED_TOPIC_PREFIX + truncate_content(
+            topic_name.removeprefix(RESOLVED_TOPIC_PREFIX),
+            MAX_TOPIC_NAME_LENGTH,
+            TOPIC_TRUNCATION_MESSAGE,
+        )
     return truncate_content(topic_name, MAX_TOPIC_NAME_LENGTH, TOPIC_TRUNCATION_MESSAGE)
+
+
+def check_topic_name_length(topic_name: str) -> None:
+    # Same rule as truncate_topic: one resolved prefix is free.
+    if topic_name.startswith(RESOLVED_TOPIC_PREFIX):
+        topic_name = topic_name.removeprefix(RESOLVED_TOPIC_PREFIX)
+    if len(topic_name) > MAX_TOPIC_NAME_LENGTH:
+        raise JsonableError(
+            _("{var_name} is too long (limit: {max_length} characters)").format(
+                var_name="topic",
+                max_length=MAX_TOPIC_NAME_LENGTH,
+            )
+        )
 
 
 # Allowlist of edit-history fields exposed when a realm restricts
@@ -283,20 +304,23 @@ def visible_edit_history_for_message(
 def topic_resolve_toggled(topic: str, prev_topic: str) -> bool:
     resolved_prefix_len = len(RESOLVED_TOPIC_PREFIX)
     truncation_len = len(TOPIC_TRUNCATION_MESSAGE)
-    # Topic unresolved
+    # Topic unresolved. A resolved topic can be longer than
+    # MAX_TOPIC_NAME_LENGTH by the length of the prefix.
     if prev_topic.startswith(RESOLVED_TOPIC_PREFIX) and not topic.startswith(RESOLVED_TOPIC_PREFIX):
         return prev_topic[resolved_prefix_len:] == topic
 
-    # Topic resolved
+    # Topic resolved. The prefix does not count toward the length
+    # limit, so an untruncated resolve matches exactly after removing it.
     if topic.startswith(RESOLVED_TOPIC_PREFIX) and not prev_topic.startswith(RESOLVED_TOPIC_PREFIX):
-        if len(prev_topic) <= MAX_TOPIC_NAME_LENGTH - resolved_prefix_len:
-            # When the topic was resolved, it was not truncated,
-            # so we remove the resolved prefix and compare.
-            return topic[resolved_prefix_len:] == prev_topic
-        if topic.endswith(TOPIC_TRUNCATION_MESSAGE):
-            # When the topic was resolved, it was likely truncated,
-            # so we confirm the previous topic starts with the topic
-            # without the resolved prefix and truncation message.
+        if topic[resolved_prefix_len:] == prev_topic:
+            return True
+        # Older servers counted the prefix toward the limit and stored a
+        # truncated name of at most MAX_TOPIC_NAME_LENGTH characters.
+        if (
+            len(prev_topic) > MAX_TOPIC_NAME_LENGTH - resolved_prefix_len
+            and len(topic) <= MAX_TOPIC_NAME_LENGTH
+            and topic.endswith(TOPIC_TRUNCATION_MESSAGE)
+        ):
             topic_without_resolved_prefix_and_truncation_message = topic[
                 resolved_prefix_len:-truncation_len
             ]
