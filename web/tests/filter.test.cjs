@@ -1555,7 +1555,7 @@ test("predicate_basics", ({override}) => {
                     local_id: "unicode_emoji,1f3b1",
                     reaction_type: "unicode_emoji",
                     user_ids: [alice.user_id],
-                    vote_text: "translated: You, Bob van Roberts",
+                    vote_text: ["translated: You, Bob van Roberts"],
                 },
             }),
         ),
