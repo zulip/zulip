@@ -30,6 +30,14 @@
       prefix=prefix
       show_reset_button=for_realm_settings}}
 
+    {{> settings_checkbox
+      setting_name="web_right_click_opens_message_actions_menu"
+      is_checked=settings_object.web_right_click_opens_message_actions_menu
+      label=settings_label.web_right_click_opens_message_actions_menu
+      help_link="/help/message-actions#open-the-message-actions-menu-by-right-clicking"
+      prefix=prefix
+      show_reset_button=for_realm_settings}}
+
     <div class="input-group">
         <label for="{{prefix}}web_mark_read_on_scroll_policy" class="settings-field-label">{{t "Automatically mark messages as read" }}
             {{> ../help_link_widget link="/help/marking-messages-as-read" }}
