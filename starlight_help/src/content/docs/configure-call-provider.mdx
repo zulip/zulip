@@ -4,6 +4,7 @@ title: Configure call provider
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
 import AdminOnly from "../include/_AdminOnly.mdx";
 import SaveChanges from "../include/_SaveChanges.mdx";
@@ -42,8 +43,9 @@ supported by Zulip are:
 ## Use a self-hosted instance of Jitsi Meet
 
 Zulip uses the [cloud version of Jitsi Meet](https://meet.jit.si/)
-as its default call provider. You can also use a self-hosted
-instance of Jitsi Meet.
+as its default call provider. Administrators can also use
+their own self-hosted instance of Jitsi Meet for their organization,
+as described below.
 
 <FlattenedSteps>
   <NavigationSteps target="settings/organization-settings" />
@@ -54,6 +56,15 @@ instance of Jitsi Meet.
 
   <SaveChanges />
 </FlattenedSteps>
+
+<ZulipNote>
+  **Warning: This applies only to self-hosted Zulip servers, not to
+  Zulip Cloud**:
+  Self-hosted instances of Zulip could be configured to use
+  [Jitsi with JWT Token Authentication](https://zulip.readthedocs.io/en/stable/production/video-calls.html#jwt-authentication).
+  Choosing **Custom URL** falls back to unauthenticated calls against
+  your custom server.
+</ZulipNote>
 
 ## Related articles
 
