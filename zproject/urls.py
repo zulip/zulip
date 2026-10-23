@@ -247,6 +247,7 @@ from zerver.views.users import (
     deactivate_bot_backend,
     deactivate_user_backend,
     deactivate_user_own_backend,
+    delete_avatar_backend_for_user_by_id,
     get_bot_api_key,
     get_bots_backend,
     get_member_backend,
@@ -258,6 +259,7 @@ from zerver.views.users import (
     patch_bot_backend,
     reactivate_user_backend,
     regenerate_bot_api_key,
+    set_avatar_backend_for_user_by_id,
     update_user_by_email_api,
     update_user_by_id_api,
 )
@@ -356,6 +358,11 @@ v1_api_and_json_patterns = [
     ),
     rest_path("users/me", GET=get_profile_backend, DELETE=deactivate_user_own_backend),
     rest_path("users/<int:user_id>/reactivate", POST=reactivate_user_backend),
+    rest_path(
+        "users/<int:user_id>/avatar",
+        POST=set_avatar_backend_for_user_by_id,
+        DELETE=delete_avatar_backend_for_user_by_id,
+    ),
     rest_path(
         "users/<int:user_id>",
         GET=get_member_backend,
