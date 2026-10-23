@@ -143,11 +143,15 @@ export let insert_and_scroll_into_view = (
     } else {
         insertTextIntoField(util.the($textarea), content);
     }
+    // The textarea is resized before scrolling the cursor into view,
+    // so that the scroll position is computed for the final size of
+    // the textarea; resizing after the blur/focus would let the
+    // textbox jump when it grows.
+    autosize_textarea($textarea);
     // Blurring and refocusing ensures the cursor / selection is in view
     // in chromium browsers.
     $textarea.trigger("blur");
     $textarea.trigger("focus");
-    autosize_textarea($textarea);
 };
 
 export function rewire_insert_and_scroll_into_view(

@@ -116,6 +116,38 @@ run_test("autosize_textarea", ({override}) => {
     assert.ok(textarea_autosized.autosized);
 });
 
+run_test("insert_and_scroll_into_view", ({override, override_rewire}) => {
+    const $textbox = make_textbox("abc");
+    $textbox.caret(3);
+
+    // The textarea is resized before scrolling the cursor into
+    // view, so that the scroll position is computed for the
+    // final size of the textarea.
+    const events = [];
+    $textbox.trigger = (event_name) => {
+        events.push(event_name);
+    };
+    override_rewire(compose_ui, "autosize_textarea", (textarea) => {
+        assert.equal(textarea, $textbox);
+        events.push("autosize");
+    });
+
+    override(text_field_edit, "insertTextIntoField", (elt, syntax) => {
+        assert.equal(elt, "textarea");
+        assert.equal(syntax, "\n");
+    });
+    compose_ui.insert_and_scroll_into_view("\n", $textbox);
+    assert.deepEqual(events, ["autosize", "blur", "focus"]);
+
+    events.length = 0;
+    override(text_field_edit, "setFieldText", (elt, syntax) => {
+        assert.equal(elt, "textarea");
+        assert.equal(syntax, "xyz");
+    });
+    compose_ui.insert_and_scroll_into_view("xyz", $textbox, true);
+    assert.deepEqual(events, ["autosize", "blur", "focus"]);
+});
+
 run_test("insert_syntax_and_focus", ({override}) => {
     $("textarea#compose-textarea").val("xyz ");
     $("textarea#compose-textarea").caret(4);
