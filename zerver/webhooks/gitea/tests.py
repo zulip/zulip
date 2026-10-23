@@ -98,6 +98,40 @@ class GiteaHookTests(WebhookTestCase):
 
         self.check_webhook("issue_comment__edited", expected_topic_name, expected_message)
 
+    def test_delete_branch(self) -> None:
+        expected_topic_name = "test-repo / Deleted branch test-branch-to-delete"
+        expected_message = "Aneesh-Hegde deleted branch `test-branch-to-delete`."
+        self.check_webhook("delete__branch", expected_topic_name, expected_message)
+
+    def test_delete_tag(self) -> None:
+        expected_topic_name = "test-repo / Deleted tag v1.0.0-test"
+        expected_message = "Aneesh-Hegde deleted tag `v1.0.0-test`."
+        self.check_webhook("delete__tag", expected_topic_name, expected_message)
+
+    def test_pull_request_comment_created(self) -> None:
+        expected_topic_name = "test-repo / PR comment #3"
+        expected_message = """Aneesh-Hegde [commented](https://gitea.com/Aneesh-Hegde/gitea-webhook/pulls/3#issuecomment-1043451) on [PR #3"main"](https://gitea.com/Aneesh-Hegde/gitea-webhook/pulls/3)
+~~~ quote
+Thanks for the fix! Could you also consider this edge case?
+~~~"""
+        self.check_webhook("pull_request_comment__created", expected_topic_name, expected_message)
+
+    def test_pull_request_comment_deleted(self) -> None:
+        expected_topic_name = "test-repo / PR comment #3"
+        expected_message = """Aneesh-Hegde [deleted a comment](https://gitea.com/Aneesh-Hegde/gitea-webhook/pulls/3#issuecomment-1043429) on [PR #3"main"](https://gitea.com/Aneesh-Hegde/gitea-webhook/pulls/3)
+~~~ quote
+Deleted message
+~~~"""
+        self.check_webhook("pull_request_comment__deleted", expected_topic_name, expected_message)
+
+    def test_pull_request_comment_edited(self) -> None:
+        expected_topic_name = "test-repo / PR comment #3"
+        expected_message = """Aneesh-Hegde [edited a comment](https://gitea.com/Aneesh-Hegde/gitea-webhook/pulls/3#issuecomment-1043429) on [PR #3"main"](https://gitea.com/Aneesh-Hegde/gitea-webhook/pulls/3)
+~~~ quote
+from "Can I use existing logic" to "Can I create a new logic"
+~~~"""
+        self.check_webhook("pull_request_comment__edited", expected_topic_name, expected_message)
+
     @patch("zerver.webhooks.gogs.view.check_send_webhook_message")
     def test_push_filtered_by_branches_ignore(
         self, check_send_webhook_message_mock: MagicMock
@@ -105,7 +139,11 @@ class GiteaHookTests(WebhookTestCase):
         self.url = self.build_webhook_url(branches="changes,development")
         payload = self.get_body("push__5_commits")
         result = self.client_post(
-            self.url, payload, HTTP_X_GITEA_EVENT="push", content_type="application/json"
+            self.url,
+            payload,
+            HTTP_X_GITEA_EVENT="push",
+            HTTP_X_GITEA_EVENT_TYPE="push",
+            content_type="application/json",
         )
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
