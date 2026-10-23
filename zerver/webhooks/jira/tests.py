@@ -1,5 +1,7 @@
 from unittest.mock import patch
 
+import orjson
+
 from zerver.actions.custom_profile_fields import try_add_realm_default_custom_profile_field
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.models.realms import get_realm
@@ -53,6 +55,19 @@ class JiraHookTests(WebhookTestCase):
         expected_topic_name = "BUG-15: New bug with à hook"
         expected_message = "@_**Othello, the Moor of Venice|12** created [BUG-15: New bug with à hook](http://lfranchi.com:8080/browse/BUG-15) with major priority."
         self.check_webhook("issue_created_with_unicode", expected_topic_name, expected_message)
+
+    def test_created_with_bracket_in_title(self) -> None:
+        # Brackets in the Jira summary must not break Markdown link parsing.
+        payload = orjson.loads(self.get_body("issue_created"))
+        payload["issue"]["fields"]["summary"] = "Extra ]"
+        expected_topic_name = "BUG-15: Extra ]"
+        expected_message = "@_**Othello, the Moor of Venice|12** created [BUG-15: Extra](http://lfranchi.com:8080/browse/BUG-15) with major priority."
+        self.check_webhook(
+            "issue_created",
+            expected_topic_name,
+            expected_message,
+            custom_payload=payload,
+        )
 
     def test_created_assignee(self) -> None:
         expected_topic_name = "TEST-4: Test Created Assignee"
