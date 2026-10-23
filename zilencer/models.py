@@ -196,6 +196,10 @@ class RemoteRealm(models.Model):
     has_web_public_streams = models.BooleanField(default=False)
     is_demo_organization = models.BooleanField(default=False)
 
+    # The value of icon_url we last fetched a copy from.
+    last_mirrored_icon_url = models.TextField(default="")
+    mirrored_icon_version = models.PositiveSmallIntegerField(default=0)
+
     # When we last received a 200 response from the realm's URL,
     # which is the link that is shown in the communities directory.
     last_reachable_datetime = models.DateTimeField(null=True)
