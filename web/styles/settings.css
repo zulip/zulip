@@ -140,6 +140,21 @@ a.help_link_widget {
 .change-email {
     display: flex;
     gap: 0.5rem;
+    /* Allow the flex container to shrink on narrow/mobile screens
+       so the email input and edit button don't overflow the settings panel. */
+    min-width: 0;
+
+    #email_field_container {
+        /* Allow this flex child to shrink below its natural width,
+           preventing overflow of the email input on small screens. */
+        min-width: 0;
+
+        .settings_text_input {
+            /* Shrink to available space on narrow/mobile viewports
+               while preserving preferred base width on desktop. */
+            max-width: 100%;
+        }
+    }
 }
 
 .admin-realm-description,
