@@ -3732,6 +3732,21 @@ class TestAddressee(ZulipTestCase):
         stream_id = result.stream_id()
         self.assertEqual(stream.id, stream_id)
 
+    def test_addressee_for_private_delivery_email_with_restricted_visibility(self) -> None:
+        realm = get_realm("zulip")
+        othello = self.example_user("othello")
+        do_change_user_setting(
+            othello,
+            "email_address_visibility",
+            UserProfile.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=othello,
+        )
+        othello.refresh_from_db()
+        self.assertNotEqual(othello.email, othello.delivery_email)
+
+        result = Addressee.for_private(emails=[othello.delivery_email], realm=realm)
+        self.assertEqual(result.user_profiles(), [othello])
+
 
 class CheckMessageTest(ZulipTestCase):
     def test_basic_check_message_call(self) -> None:
