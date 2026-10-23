@@ -3,6 +3,7 @@ from collections import defaultdict
 from typing import Any
 
 from zerver.lib.markdown.fenced_code import get_unused_fence
+from zerver.lib.validator import WildValue
 
 TOPIC_WITH_BRANCH_TEMPLATE = "{repo} / {branch}"
 TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE = "{repo} / {type} #{id} {title}"
@@ -479,3 +480,11 @@ def is_branch_name_notifiable(branch: str, branches: str | None) -> bool:
     return branches is None or branch in {
         branch_name.strip() for branch_name in branches.split(",")
     }
+
+
+def is_pull_request_comment_event(payload: WildValue) -> bool:
+    # The "issue_comment" event is delivered for comments on both
+    # issues and pull requests. GitHub omits payload.issue.pull_request
+    # for comments on issues, while gogs and gitea include the key and
+    # set it to null.
+    return payload["issue"].get("pull_request").value is not None
