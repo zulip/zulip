@@ -1120,6 +1120,11 @@ export function dispatch_normal_event(event) {
                     }
                     // Rerender buddy list status emoji
                     activity_ui.build_user_sidebar();
+                    // Rerender status emoji in DM conversations in the
+                    // left sidebar, Inbox, and Recent conversations.
+                    pm_list.update_private_messages();
+                    inbox_ui.complete_rerender();
+                    recent_view_ui.complete_rerender();
                     break;
                 case "display_emoji_reaction_users":
                     message_live_update.rerender_messages_view();
@@ -1289,10 +1294,7 @@ export function dispatch_normal_event(event) {
                 user_status.set_status_emoji(event);
                 activity_ui.redraw_user(event.user_id);
                 pm_list.update_private_messages();
-                message_live_update.update_user_status_emoji(
-                    event.user_id,
-                    user_status.get_status_emoji(event.user_id),
-                );
+                message_live_update.rerender_messages_sent_by_user(event.user_id);
             }
             break;
 
