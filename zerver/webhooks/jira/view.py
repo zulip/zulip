@@ -29,8 +29,6 @@ IGNORED_EVENTS = [
     "jira:worklog_updated",
     "sprint_closed",
     "sprint_started",
-    "worklog_created",
-    "worklog_updated",
 ]
 
 
@@ -194,7 +192,16 @@ def get_issue_title(payload: WildValue) -> str:
     return get_in(payload, ["issue", "fields", "summary"]).tame(check_string)
 
 
+def get_worklog_issue_id(payload: WildValue) -> str:
+    # Worklog events identify the issue only by its internal ID; they
+    # include neither the issue key nor its summary.
+    return payload["worklog"]["issueId"].tame(check_string)
+
+
 def get_issue_topic(payload: WildValue) -> str:
+    if "worklog" in payload:
+        return f"Issue {get_worklog_issue_id(payload)}"
+
     return f"{get_issue_id(payload)}: {get_issue_title(payload)}"
 
 
@@ -331,10 +338,46 @@ def handle_comment_deleted_event(payload: WildValue, user_profile: UserProfile) 
     )
 
 
+def get_worklog_issue_string(payload: WildValue) -> str:
+    # Cloud worklog payloads only expose the internal issue ID, and Jira has
+    # no direct issue URL for a numeric ID (``/browse/<id>`` doesn't resolve).
+    # A JQL search on the ID does resolve to the issue, so link to that.
+    worklog = payload["worklog"]
+    issue_id = worklog["issueId"].tame(check_string)
+    base_url = worklog["self"].tame(check_string).split("/rest/api/")[0]
+    return f"[{issue_id}]({base_url}/issues/?jql=id={issue_id})"
+
+
+def handle_worklog_created_event(payload: WildValue, user_profile: UserProfile) -> str:
+    worklog = payload["worklog"]
+    author = get_user_mention(user_profile.realm, worklog["author"])
+    time_spent = worklog["timeSpent"].tame(check_string)
+    issue_string = get_worklog_issue_string(payload)
+    return f"{author} created a work log entry of {time_spent} on issue {issue_string}."
+
+
+def handle_worklog_updated_event(payload: WildValue, user_profile: UserProfile) -> str:
+    worklog = payload["worklog"]
+    author = get_user_mention(user_profile.realm, worklog["updateAuthor"])
+    time_spent = worklog["timeSpent"].tame(check_string)
+    issue_string = get_worklog_issue_string(payload)
+    return f"{author} updated a work log entry on issue {issue_string}; time spent is {time_spent}."
+
+
+def handle_worklog_deleted_event(payload: WildValue, user_profile: UserProfile) -> str:
+    worklog = payload["worklog"]
+    author = get_user_mention(user_profile.realm, worklog["updateAuthor"])
+    issue_string = get_worklog_issue_string(payload)
+    return f"{author} deleted a work log entry from issue {issue_string}."
+
+
 JIRA_CONTENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue, UserProfile], str] | None] = {
     "jira:issue_created": handle_created_issue_event,
     "jira:issue_deleted": handle_deleted_issue_event,
     "jira:issue_updated": handle_updated_issue_event,
+    "worklog_created": handle_worklog_created_event,
+    "worklog_updated": handle_worklog_updated_event,
+    "worklog_deleted": handle_worklog_deleted_event,
     "comment_created": handle_comment_created_event,
     "comment_updated": handle_comment_updated_event,
     "comment_deleted": handle_comment_deleted_event,
