@@ -786,6 +786,9 @@ function register_popover_events($popover: JQuery): void {
         emoji_select_tab(scroll_util.get_scroll_element($emoji_map));
     });
 
+    $("#emoji-popover-filter").on("focus", () => {
+        $popover.find(".tippy-box").addClass("show-when-reference-hidden");
+    });
     $("#emoji-popover-filter").on("input", filter_emojis);
     $("#emoji-popover-filter").on("keydown", process_enter_while_filtering);
     $(".emoji-popover").on("keydown", process_keydown);
@@ -828,6 +831,9 @@ function get_default_emoji_popover_options(
             const $reference = $(instance.reference);
             $reference.addClass("active-emoji-picker-reference");
             $reference.parent().addClass("active-emoji-picker-reference");
+            if (util.is_mobile()) {
+                $(instance.popper).find(".tippy-box").addClass("show-when-reference-hidden");
+            }
         },
         onMount(instance: tippy.Instance) {
             const $popover = $(instance.popper);
