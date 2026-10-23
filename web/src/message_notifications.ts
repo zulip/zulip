@@ -162,11 +162,7 @@ function get_notification_title(
     return title_prefix + title_suffix;
 }
 
-export function process_notification(notification: {
-    message: Message | TestNotificationMessage;
-    desktop_notify: boolean;
-}): void {
-    const message = notification.message;
+export function process_notification(message: Message | TestNotificationMessage): void {
     const content = get_notification_content(message);
     const key = get_notification_key(message);
     let msg_count = 1;
@@ -205,7 +201,6 @@ export function process_notification(notification: {
         key,
         title,
         data: {type: "message", message_id: message.id, msg_count},
-        desktop_notify: notification.desktop_notify,
         on_click,
     });
 }
@@ -417,10 +412,7 @@ export function received_messages(messages: (Message | TestNotificationMessage)[
         message.notification_sent = true;
 
         if (should_send_desktop_notification(message)) {
-            process_notification({
-                message,
-                desktop_notify: desktop_notifications.granted_desktop_notifications_permission(),
-            });
+            process_notification(message);
         }
         if (should_send_audible_notification(message)) {
             void ui_util.play_audio(util.the($("#user-notification-sound-audio")));
