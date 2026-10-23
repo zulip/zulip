@@ -947,7 +947,7 @@ export let format_text = (
     const bold_and_italic_syntax = "***";
     const strikethrough_syntax = "~~";
     // Syntaxes that are applied to each line of a multiline selection.
-    const per_line_syntaxes = new Set([bold_syntax, strikethrough_syntax]);
+    const per_line_syntaxes = new Set([italic_syntax, bold_syntax, strikethrough_syntax]);
     let is_selected_text_italic = false;
     let is_inner_text_italic = false;
     const field = $textarea.get(0)!;
@@ -1453,6 +1453,11 @@ export let format_text = (
             format(bold_syntax);
             break;
         case "italic":
+            if (selected_text.includes("\n")) {
+                // Each line of a multiline selection is formatted separately.
+                format(italic_syntax);
+                break;
+            }
             // Ctrl + I: Toggle italic syntax on selection. This is
             // much more complex than toggling bold syntax, because of
             // the following subtle detail: If our selection is

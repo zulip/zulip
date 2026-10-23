@@ -913,6 +913,68 @@ run_test("format_text - bold and italic", ({override, override_rewire}) => {
     init_textarea_state("x <- a\n- b>");
     compose_ui.format_text($textarea, "bold");
     assert.equal(get_textarea_state(), "x <**- a**\n- **b**>");
+
+    // Italic multiple lines
+    init_textarea_state("<a\nb>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<*a*\n*b*>");
+
+    // Undo italic multiple lines
+    init_textarea_state("<*a*\n*b*>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<a\nb>");
+
+    // Undo italic multiple lines, syntax not selected
+    init_textarea_state("*<a\nb>*");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<a\nb>");
+
+    // Italic multiple lines, blank line in between is left alone
+    init_textarea_state("<a\n\nb>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<*a*\n\n*b*>");
+
+    // Italic multiple lines, some already italic
+    init_textarea_state("<*a*\nb>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<*a*\n*b*>");
+
+    // Italic multiple lines, text is bold
+    init_textarea_state("<**a**\n**b**>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<***a***\n***b***>");
+
+    // Italic multiple lines, some lines bold and some italic
+    init_textarea_state("<**a**\n*b*>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<***a***\n*b*>");
+
+    // Undo italic multiple lines, text is both italic and bold
+    init_textarea_state("<***a***\n***b***>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<**a**\n**b**>");
+
+    // Italic a numbered list
+    init_textarea_state("<1. a\n2. b>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<1. *a*\n2. *b*>");
+
+    // Italic a bulleted list
+    for (const marker of ["-", "*", "+"]) {
+        init_textarea_state(`<${marker} a\n${marker} b>`);
+        compose_ui.format_text($textarea, "italic");
+        assert.equal(get_textarea_state(), `<${marker} *a*\n${marker} *b*>`);
+    }
+
+    // Undo italic a bulleted list
+    init_textarea_state("<* *a*\n* *b*>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<* a\n* b>");
+
+    // Italic a nested list
+    init_textarea_state("<- a\n  - b>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<- *a*\n  - *b*>");
 });
 
 run_test("format_text - bulleted and numbered lists", ({override_rewire}) => {
