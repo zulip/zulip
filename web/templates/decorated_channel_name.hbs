@@ -4,7 +4,7 @@
         {{~> stream_privacy stream ~}}
     </span>
     {{~!-- squash whitespace --~}}
-    <span class="decorated-channel-name">{{stream.name}}</span>
+    <span class="decorated-channel-name">{{#if channel_name_html}}{{{channel_name_html}}}{{else}}{{stream.name}}{{/if}}</span>
     {{~!-- squash whitespace --~}}
 </span>
 {{~!-- squash whitespace --~}}
