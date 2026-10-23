@@ -2226,6 +2226,31 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     });
     $("form#send_message_form").trigger(event);
 
+    // Inside a code block, we insert a plain newline without
+    // automatic bulleting, rather than relying on the browser's
+    // default behavior, which doesn't add a newline for Cmd+Enter on
+    // macOS.
+    $("textarea#compose-textarea").val("```\n- List item 1");
+    $("textarea#compose-textarea")[0].selectionStart = 17;
+    $("textarea#compose-textarea")[0].selectionEnd = 17;
+    override(compose_ui, "cursor_inside_code_block", () => true);
+    let inserted_content;
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        inserted_content = content;
+    });
+    let default_prevented = false;
+    $("form#send_message_form").trigger({
+        ...event,
+        altKey: false,
+        metaKey: true,
+        preventDefault() {
+            default_prevented = true;
+        },
+    });
+    assert.equal(inserted_content, "\n");
+    assert.ok(default_prevented);
+    override(compose_ui, "cursor_inside_code_block", () => false);
+
     $("textarea#compose-textarea").val("A");
     $("textarea#compose-textarea")[0].selectionStart = 4;
     $("textarea#compose-textarea")[0].selectionEnd = 4;
