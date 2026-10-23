@@ -1008,6 +1008,15 @@ def do_change_realm_plan_type(
         },
     )
 
+    if settings.BILLING_ENABLED:
+        from zerver.lib.workplace_users import (
+            update_realm_has_discount_configured,
+            update_realm_non_workplace_pricing_eligibility,
+        )
+
+        update_realm_non_workplace_pricing_eligibility(realm, acting_user=acting_user)
+        update_realm_has_discount_configured(realm, acting_user=acting_user)
+
     realm.max_invites = get_default_max_invites_for_realm_plan_type(plan_type)
     if plan_type == Realm.PLAN_TYPE_LIMITED:
         realm.message_visibility_limit = Realm.MESSAGE_VISIBILITY_LIMITED

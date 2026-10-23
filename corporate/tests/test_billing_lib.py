@@ -53,7 +53,10 @@ from zerver.actions.create_user import (
     do_create_user,
     do_reactivate_user,
 )
-from zerver.actions.realm_settings import do_change_realm_permission_group_setting
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_change_realm_plan_type,
+)
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
     bulk_add_members_to_user_groups,
@@ -1838,6 +1841,54 @@ class TestSupportBillingHelpers(StripeTestCase):
             "Customer on plan Zulip Cloud Standard. Please end current plan before approving sponsorship!",
         ):
             billing_session.approve_sponsorship()
+
+    def test_realm_billing_state_updated_by_billing_actions(self) -> None:
+        support_admin = self.example_user("iago")
+        realm = get_realm("zulip")
+        # A realm created on this server starts on the free plan, where it
+        # can configure the pricing before it upgrades.
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_LIMITED, acting_user=None)
+        realm.refresh_from_db()
+        self.assertTrue(realm.non_workplace_pricing_eligible)
+        self.assertFalse(realm.has_discount_configured)
+
+        # An organization upgrades itself, so the plan type is changed by one
+        # of its own users.
+        RealmBillingSession(self.example_user("desdemona")).do_change_plan_type(
+            tier=CustomerPlan.TIER_CLOUD_STANDARD
+        )
+        realm.refresh_from_db()
+        self.assertTrue(realm.non_workplace_pricing_eligible)
+        self.assertFalse(realm.has_discount_configured)
+
+        billing_session = RealmBillingSession(support_admin, realm=realm, support_session=True)
+        billing_session.update_or_create_customer()
+        billing_session.set_required_plan_tier(CustomerPlan.TIER_CLOUD_STANDARD)
+        billing_session.attach_discount_to_customer(
+            monthly_discounted_price=600,
+            annual_discounted_price=6000,
+        )
+        realm.refresh_from_db()
+        self.assertTrue(realm.has_discount_configured)
+
+        billing_session.attach_discount_to_customer(
+            monthly_discounted_price=0,
+            annual_discounted_price=0,
+        )
+        realm.refresh_from_db()
+        self.assertFalse(realm.has_discount_configured)
+
+        billing_session.attach_discount_to_customer(
+            monthly_discounted_price=600,
+            annual_discounted_price=6000,
+        )
+
+        # A fully sponsored realm pays nothing, so it has neither a
+        # negotiated discount nor a reason to configure its pricing.
+        billing_session.do_change_plan_type(tier=None, is_sponsored=True)
+        realm.refresh_from_db()
+        self.assertFalse(realm.non_workplace_pricing_eligible)
+        self.assertFalse(realm.has_discount_configured)
 
     @mock_stripe()
     def test_add_minimum_licenses(self, *mocks: Mock) -> None:

@@ -1608,6 +1608,11 @@ def do_import_realm(
     # Initialize whether we expect push notifications to work.
     realm_properties["push_notifications_enabled"] = sends_notifications_directly()
 
+    # The billing state of a realm's plan belongs to the installation it was
+    # exported from, so start where a realm with no plan starts.
+    realm_properties["non_workplace_pricing_eligible"] = False
+    realm_properties["has_discount_configured"] = False
+
     with transaction.atomic(durable=True):
         realm = Realm(**realm_properties)
         if "zerver_usergroup" not in data:

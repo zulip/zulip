@@ -2544,6 +2544,25 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(realm_user_default.default_language, "en")
         self.assertEqual(realm_user_default.twenty_four_hour_time, False)
 
+    def test_import_realm_does_not_carry_billing_state(self) -> None:
+        original_realm = Realm.objects.get(string_id="zulip")
+        original_realm.non_workplace_pricing_eligible = True
+        original_realm.has_discount_configured = True
+        original_realm.save(
+            update_fields=["non_workplace_pricing_eligible", "has_discount_configured"]
+        )
+
+        self.export_realm_and_create_auditlog(original_realm)
+
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+
+        # The exporting installation's answers say nothing about how this one
+        # bills the realm, and nothing has told it the answers yet.
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+        self.assertFalse(imported_realm.non_workplace_pricing_eligible)
+        self.assertFalse(imported_realm.has_discount_configured)
+
     def test_import_third_party_export_with_archived_announcements_channel(self) -> None:
         original_realm = Realm.objects.get(string_id="zulip")
         announcements_channel = get_stream("Verona", original_realm)
