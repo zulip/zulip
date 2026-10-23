@@ -527,9 +527,20 @@ export class Filter {
                     // terms list. This is done so that the last active filter is correctly
                     // detected by the `get_search_result` function (in search_suggestions.ts).
                     maybe_add_search_terms();
+                    const canonical_operator = filter_util.canonicalize_operator(
+                        parsed_operator.data,
+                    );
+                    // "is:unresolved" is an alias for "-is:resolved". We
+                    // rewrite it here so that the alias works only in
+                    // typed search input; narrow URLs are parsed in
+                    // `hash_util.parse_narrow` and don't accept it.
+                    if (canonical_operator === "is" && operand === "unresolved") {
+                        operand = "resolved";
+                        negated = !negated;
+                    }
                     term = {
                         negated,
-                        operator: filter_util.canonicalize_operator(parsed_operator.data),
+                        operator: canonical_operator,
                         operand,
                     };
                     terms.push(term);
