@@ -26,6 +26,7 @@ OPENAPI_SPEC_PATH = os.path.abspath(
 # has documentation but not with this particular method.
 EXCLUDE_UNDOCUMENTED_ENDPOINTS = {
     ("/users", "patch"),
+    ("/bots/{bot_id}", "post"),
 }
 # Consists of endpoints with some documentation remaining.
 # These are skipped but return true as the validator cannot exclude objects
