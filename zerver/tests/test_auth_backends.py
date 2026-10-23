@@ -5704,9 +5704,14 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
         idps_config_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
         idps_config_dict["testoidc"]["enable_external_auth_id_auth"] = True
         sub_value = "newuser_sub"
+        # The method name includes the issuer URL, which can be long.
+        issuer = (
+            "https://sso.engineering.example-university.edu/realms/department-of-computer-science"
+        )
 
         account_data_dict = self.get_account_data_dict(email=email, name=name)
         account_data_dict["sub"] = sub_value
+        account_data_dict["iss"] = issuer
         with self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=idps_config_dict):
             result = self.social_auth_test(
                 account_data_dict,
@@ -5728,7 +5733,7 @@ class GenericOpenIdConnectTest(SocialAuthBaseWithSyncAttrTest):
         self.assert_length(external_auth_ids, 1)
         self.assertEqual(
             external_auth_ids[0].external_auth_method_name,
-            f"oidc:<testoidc>:<{self.BASE_OIDC_URL}>",
+            f"oidc:<testoidc>:<{issuer}>",
         )
         self.assertEqual(external_auth_ids[0].external_auth_id, sub_value)
 
