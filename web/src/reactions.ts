@@ -3,6 +3,7 @@ import assert from "minimalistic-assert";
 import * as z from "zod/mini";
 
 import render_message_reaction from "../templates/message_reaction.hbs";
+import render_message_reaction_vote_list from "../templates/message_reaction_vote_list.hbs";
 import render_message_reactions from "../templates/message_reactions.hbs";
 
 import * as blueslip from "./blueslip.ts";
@@ -337,9 +338,9 @@ export function get_add_reaction_button(message_id: number): JQuery {
     return $add_button;
 }
 
-export let set_reaction_vote_text = ($reaction: JQuery, vote_text: string): void => {
+export let set_reaction_vote_text = ($reaction: JQuery, vote_list: string[]): void => {
     const $count_element = $reaction.find(".message_reaction_count");
-    $count_element.text(vote_text);
+    $count_element.html(render_message_reaction_vote_list({vote_list}));
 };
 
 export function rewire_set_reaction_vote_text(value: typeof set_reaction_vote_text): void {
@@ -454,7 +455,7 @@ export let insert_new_reaction = (
         local_id: get_local_reaction_id(clean_reaction_object),
         emoji_alt_code: user_settings.emojiset === "text",
         is_realm_emoji,
-        vote_text: "", // Updated below
+        vote_list: [], // Updated below
         class: reaction_class,
     };
 
@@ -711,7 +712,7 @@ function build_reaction_data(
     count: number;
     label: string;
     class: string;
-    vote_text: string;
+    vote_list: string[];
 } {
     return {
         count: user_ids.length,
@@ -719,9 +720,9 @@ function build_reaction_data(
         class: user_ids.includes(current_user.user_id)
             ? "message_reaction reacted"
             : "message_reaction",
-        // The vote_text field set here is used directly in the Handlebars
+        // The vote_list field set here is used directly in the Handlebars
         // template for rendering (or rerendering!) a message.
-        vote_text: get_vote_text(user_ids, should_display_reactors),
+        vote_list: get_vote_list(user_ids, should_display_reactors),
     };
 }
 
@@ -758,11 +759,11 @@ function get_reaction_counts_and_user_ids(message: Message): ReactionUserIdAndCo
         .toArray();
 }
 
-export function get_vote_text(user_ids: number[], should_display_reactors: boolean): string {
+export function get_vote_list(user_ids: number[], should_display_reactors: boolean): string[] {
     if (should_display_reactors) {
-        return comma_separated_usernames(user_ids);
+        return get_reactor_names(user_ids);
     }
-    return `${user_ids.length}`;
+    return [`${user_ids.length}`];
 }
 
 function check_should_display_reactors(
@@ -779,18 +780,17 @@ function check_should_display_reactors(
     return total_reactions <= 3;
 }
 
-function comma_separated_usernames(user_list: number[]): string {
-    const usernames = people.get_display_full_names(user_list);
-    const current_user_has_reacted = user_list.includes(current_user.user_id);
+function get_reactor_names(user_ids: number[]): string[] {
+    const usernames = people.get_display_full_names(user_ids);
+    const current_user_has_reacted = user_ids.includes(current_user.user_id);
 
     if (current_user_has_reacted) {
-        const current_user_index = user_list.indexOf(current_user.user_id);
+        const current_user_index = user_ids.indexOf(current_user.user_id);
         usernames[current_user_index] = $t({
             defaultMessage: "You",
         });
     }
-    const comma_separated_usernames = usernames.join(", ");
-    return comma_separated_usernames;
+    return usernames;
 }
 
 export let update_vote_text_on_message = (message: Message): void => {
@@ -803,11 +803,11 @@ export let update_vote_text_on_message = (message: Message): void => {
     const should_display_reactors = check_should_display_reactors(reaction_counts_and_user_ids);
     for (const [reaction, clean_reaction] of message.clean_reactions) {
         const reaction_elem = find_reaction(message.id, clean_reaction.local_id);
-        const vote_text = get_vote_text(clean_reaction.user_ids, should_display_reactors);
+        const vote_list = get_vote_list(clean_reaction.user_ids, should_display_reactors);
         const message_clean_reaction = message.clean_reactions.get(reaction);
         assert(message_clean_reaction !== undefined);
-        message_clean_reaction.vote_text = vote_text;
-        set_reaction_vote_text(reaction_elem, vote_text);
+        message_clean_reaction.vote_list = vote_list;
+        set_reaction_vote_text(reaction_elem, vote_list);
     }
 };
 
