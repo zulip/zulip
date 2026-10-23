@@ -8,9 +8,8 @@ import type {Message} from "./message_store.ts";
 import * as narrow_state from "./narrow_state.ts";
 
 // NOTE: Keep this and is_history_enabling_term up to date with
-// all the future terms that do include historical messages, like the upcoming
-// `channels:all` from #33534 and the eventually possible `channels:subscribed`
-// #13052.
+// all the future terms that do include historical messages, like the
+// eventually possible `channels:subscribed` #13052.
 const history_enabling_narrow_term_schema = z.object({
     operator: z.string(),
     operand: z.union([z.number(), z.string(), z.array(z.number())]),
@@ -27,12 +26,13 @@ function is_history_enabling_term(
         return true;
     }
     return (
-        term.operator === "channels" && (term.operand === "public" || term.operand === "web-public")
+        term.operator === "channels" &&
+        (term.operand === "public" || term.operand === "web-public" || term.operand === "all")
     );
 }
 
 // Returns a JSON narrow for GET /messages that enables shared history
-// (channel/stream, or channels:public|web-public). Returns undefined
+// (channel/stream, or channels:public|web-public|all). Returns undefined
 // when no such terms are present so the caller can omit the parameter.
 function get_history_enabling_narrow_for_raw_content_fetch(): string | undefined {
     const filter = narrow_state.filter();
