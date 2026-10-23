@@ -8863,6 +8863,11 @@ paths:
             subscribed to appropriate channels or use a shared history
             search narrow with this endpoint.
 
+            Negated `with` terms are invalid and return an error.
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-f1840d).
+            Previously, negation on `with` terms was ignored.
+
             **Changes**: See [changes section](/api/construct-narrow#changes)
             of search/narrow filter documentation.
           content:
@@ -9881,6 +9886,11 @@ paths:
                     optimization. Including that filter takes advantage of the fact that
                     the server has a database index for unread messages.
 
+                    Negated `with` terms are invalid and return an error.
+
+                    **Changes**: New in Zulip 13.0 (feature level ZF-f1840d).
+                    Previously, negation on `with` terms was ignored.
+
                     **Changes**: See [changes section](/api/construct-narrow#changes)
                     of search/narrow filter documentation.
                   type: array
@@ -10340,6 +10350,11 @@ paths:
           description: |
             A structure defining the narrow to check against. See how to
             [construct a narrow](/api/construct-narrow).
+
+            Negated `with` terms are invalid and return an error.
+
+            **Changes**: New in Zulip 13.0 (feature level ZF-f1840d).
+            Previously, negation on `with` terms was ignored.
 
             **Changes**: See [changes section](/api/construct-narrow#changes)
             of search/narrow filter documentation.
