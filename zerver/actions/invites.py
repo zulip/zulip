@@ -3,7 +3,7 @@ from collections.abc import Collection, Sequence
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from email.utils import format_datetime as email_format_datetime
-from typing import Any
+from typing import Any, TypedDict
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -23,6 +23,7 @@ from confirmation.models import (
     create_confirmation_object,
 )
 from zerver.context_processors import common_context
+from zerver.lib.default_streams import get_default_stream_ids_for_realm
 from zerver.lib.email_validation import (
     get_existing_user_errors,
     get_realm_email_validator,
@@ -32,8 +33,10 @@ from zerver.lib.exceptions import InvitationError
 from zerver.lib.invites import notify_invites_changed
 from zerver.lib.queue import queue_event_on_commit
 from zerver.lib.send_email import FromAddress, clear_scheduled_invitation_emails, send_future_email
+from zerver.lib.streams import get_metadata_access_streams
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.types import Invitee
+from zerver.lib.user_groups import UserGroupMembershipDetails
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
     Message,
@@ -47,6 +50,33 @@ from zerver.models import (
 )
 from zerver.models.prereg_users import filter_to_valid_prereg_users
 from zerver.models.realm_audit_logs import AuditLogEventType
+
+
+class EmailInviteDetailsDict(TypedDict):
+    email: str
+    invited_by_user_id: int
+    invited: int
+    expiry_date: int | None
+    id: int
+    invited_as: int
+    is_multiuse: bool
+    notify_referrer_on_join: bool
+    welcome_message_custom_text: str | None
+    stream_ids: list[int]
+    group_ids: list[int]
+
+
+class MultiuseInviteDetailsDict(TypedDict):
+    link_url: str
+    invited_by_user_id: int
+    invited: int
+    expiry_date: int | None
+    id: int
+    invited_as: int
+    is_multiuse: bool
+    welcome_message_custom_text: str | None
+    stream_ids: list[int]
+    group_ids: list[int]
 
 
 def estimate_recent_invites(realms: Collection[Realm] | QuerySet[Realm], *, days: int) -> int:
@@ -340,6 +370,34 @@ class MultiuseInviteData:
     is_multiuse: bool
 
 
+def _build_prereg_invite_data(invitee: PreregistrationUser) -> PreregistrationInviteData:
+    assert invitee.referred_by is not None
+    return PreregistrationInviteData(
+        email=invitee.email,
+        invited_by_user_id=invitee.referred_by.id,
+        invited=datetime_to_timestamp(invitee.invited_at),
+        expiry_date=get_invitation_expiry_date(invitee.confirmation.get()),
+        id=invitee.id,
+        invited_as=invitee.invited_as,
+        is_multiuse=False,
+        notify_referrer_on_join=invitee.notify_referrer_on_join,
+    )
+
+
+def _build_multiuse_invite_data(
+    invite: MultiuseInvite, confirmation_obj: Confirmation
+) -> MultiuseInviteData:
+    return MultiuseInviteData(
+        invited_by_user_id=invite.referred_by.id,
+        invited=datetime_to_timestamp(confirmation_obj.date_sent),
+        expiry_date=get_invitation_expiry_date(confirmation_obj),
+        id=invite.id,
+        link_url=confirmation_url_for(confirmation_obj),
+        invited_as=invite.invited_as,
+        is_multiuse=True,
+    )
+
+
 def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[str, Any]]:
     """
     Returns a list of dicts representing invitations that can be controlled by user_profile.
@@ -355,22 +413,9 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
             PreregistrationUser.objects.filter(referred_by=user_profile)
         )
 
-    invites: list[PreregistrationInviteData | MultiuseInviteData] = []
-
-    for invitee in prereg_users:
-        assert invitee.referred_by is not None
-        invites.append(
-            PreregistrationInviteData(
-                email=invitee.email,
-                invited_by_user_id=invitee.referred_by.id,
-                invited=datetime_to_timestamp(invitee.invited_at),
-                expiry_date=get_invitation_expiry_date(invitee.confirmation.get()),
-                id=invitee.id,
-                invited_as=invitee.invited_as,
-                is_multiuse=False,
-                notify_referrer_on_join=invitee.notify_referrer_on_join,
-            )
-        )
+    invites: list[PreregistrationInviteData | MultiuseInviteData] = [
+        _build_prereg_invite_data(invitee) for invitee in prereg_users
+    ]
 
     if user_profile.is_realm_admin:
         multiuse_invite_ids = (
@@ -401,18 +446,81 @@ def do_get_invites_controlled_by_user(user_profile: UserProfile) -> list[dict[st
         assert invite is not None
 
         assert invite.status != confirmation_settings.STATUS_REVOKED
-        invites.append(
-            MultiuseInviteData(
-                invited_by_user_id=invite.referred_by.id,
-                invited=datetime_to_timestamp(confirmation_obj.date_sent),
-                expiry_date=get_invitation_expiry_date(confirmation_obj),
-                id=invite.id,
-                link_url=confirmation_url_for(confirmation_obj),
-                invited_as=invite.invited_as,
-                is_multiuse=True,
-            )
-        )
+        invites.append(_build_multiuse_invite_data(invite, confirmation_obj))
     return [asdict(invite) for invite in invites]
+
+
+def get_accessible_stream_ids_for_invite(
+    stream_ids: Collection[int], user_profile: UserProfile
+) -> list[int]:
+    """Filter stream_ids down to those user_profile currently has metadata
+    access to, so the invite details endpoints don't leak the existence of
+    private channels to viewers who can't otherwise see them."""
+    streams = Stream.objects.filter(id__in=stream_ids)
+    accessible_streams = get_metadata_access_streams(
+        user_profile, streams, UserGroupMembershipDetails(user_recursive_group_ids=None)
+    )
+    return sorted(stream.id for stream in accessible_streams)
+
+
+def get_invite_details_dict(
+    prereg_user: PreregistrationUser, user_profile: UserProfile
+) -> EmailInviteDetailsDict:
+    """Return email invite details including stream IDs and group IDs."""
+    base = _build_prereg_invite_data(prereg_user)
+    explicit_stream_ids = set(prereg_user.streams.values_list("id", flat=True))
+    if prereg_user.include_realm_default_subscriptions:
+        all_stream_ids = explicit_stream_ids | get_default_stream_ids_for_realm(
+            user_profile.realm.id
+        )
+    else:
+        all_stream_ids = explicit_stream_ids
+    stream_ids = get_accessible_stream_ids_for_invite(all_stream_ids, user_profile)
+    group_ids = list(prereg_user.groups.values_list("id", flat=True))
+    return {
+        "email": base.email,
+        "invited_by_user_id": base.invited_by_user_id,
+        "invited": base.invited,
+        "expiry_date": base.expiry_date,
+        "id": base.id,
+        "invited_as": base.invited_as,
+        "is_multiuse": base.is_multiuse,
+        "notify_referrer_on_join": base.notify_referrer_on_join,
+        "welcome_message_custom_text": prereg_user.welcome_message_custom_text,
+        "stream_ids": stream_ids,
+        "group_ids": group_ids,
+    }
+
+
+def get_multiuse_invite_details_dict(
+    invite: MultiuseInvite, user_profile: UserProfile
+) -> MultiuseInviteDetailsDict:
+    """Return multiuse invite details including stream IDs and group IDs."""
+    confirmation_obj = Confirmation.objects.get(
+        type=Confirmation.MULTIUSE_INVITE,
+        content_type=ContentType.objects.get_for_model(MultiuseInvite),
+        object_id=invite.id,
+    )
+    base = _build_multiuse_invite_data(invite, confirmation_obj)
+    explicit_stream_ids = set(invite.streams.values_list("id", flat=True))
+    if invite.include_realm_default_subscriptions:
+        all_stream_ids = explicit_stream_ids | get_default_stream_ids_for_realm(invite.realm_id)
+    else:
+        all_stream_ids = explicit_stream_ids
+    stream_ids = get_accessible_stream_ids_for_invite(all_stream_ids, user_profile)
+    group_ids = list(invite.groups.values_list("id", flat=True))
+    return {
+        "link_url": base.link_url,
+        "invited_by_user_id": base.invited_by_user_id,
+        "invited": base.invited,
+        "expiry_date": base.expiry_date,
+        "id": base.id,
+        "invited_as": base.invited_as,
+        "is_multiuse": base.is_multiuse,
+        "welcome_message_custom_text": invite.welcome_message_custom_text,
+        "stream_ids": stream_ids,
+        "group_ids": group_ids,
+    }
 
 
 @transaction.atomic(durable=True)
