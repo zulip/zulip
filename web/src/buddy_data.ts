@@ -140,6 +140,18 @@ export function compare_function(
         return diff;
     }
 
+    // Place offline users with unread direct messages above other offline users
+    if (level_a === 3) {
+        const a_has_unread = get_num_unread(a) > 0;
+        const b_has_unread = get_num_unread(b) > 0;
+        if (a_has_unread && !b_has_unread) {
+            return -1;
+        }
+        if (!a_has_unread && b_has_unread) {
+            return 1;
+        }
+    }
+
     // Sort equivalent direct message names alphabetically
     const person_a = people.maybe_get_user_by_id(a);
     const person_b = people.maybe_get_user_by_id(b);
