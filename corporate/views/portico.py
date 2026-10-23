@@ -359,7 +359,7 @@ def communities_view(request: HttpRequest) -> HttpResponse:
                 {
                     "name": realm.name,
                     "realm_url": realm.url,
-                    "logo_url": get_realm_icon_url(realm),
+                    "icon_url": get_realm_icon_url(realm),
                     "description": get_realm_text_description(realm),
                     "org_type_key": org_type,
                 }
