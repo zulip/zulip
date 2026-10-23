@@ -1,0 +1,105 @@
+---
+title: Connect an AI agent
+---
+
+import FlattenedSteps from "../../components/FlattenedSteps.astro";
+import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
+import ZulipTip from "../../components/ZulipTip.astro";
+import AdminOnly from "../include/_AdminOnly.mdx";
+import SaveChanges from "../include/_SaveChanges.mdx";
+
+Zulip servers can offer an endpoint that speaks the [Model Context
+Protocol](https://modelcontextprotocol.io/) (MCP), a standard way for AI
+agents to work with an application's data. Connecting an agent lets you ask
+it questions about your Zulip organization, such as summarizing what happened
+in a channel while you were away, or finding the conversation where a decision
+was made.
+
+An agent connected this way acts as you, and can see exactly what you can
+see, which is no more than any program using your [API key](/api/api-keys)
+could already read: your organization's public channels, plus the private
+channels and direct messages you are part of. It can only read: it can
+search and read messages, and list channels, topics, users and
+[linkifiers](/help/add-a-custom-linkifier). It cannot send messages, or
+change anything in your organization.
+
+Zulip does not send anything to an AI service on its own. Your agent asks
+Zulip for the messages it needs, and whatever it reads goes to whichever AI
+service that agent uses, under that service's terms.
+
+To automate sending messages into Zulip, use a [bot or
+integration](/help/bots-overview) instead.
+
+<ZulipNote>
+  This feature is experimental. The information an agent can request may
+  change, and organization administrators choose whether to offer it.
+</ZulipNote>
+
+## Connect an agent to your Zulip organization
+
+You will need an AI tool that can connect to an MCP server over HTTP, such as
+Claude Code. Configure it with the URL of your organization followed by
+`/mcp` (for example, `https://example.zulipchat.com/mcp`), and your [API
+key](/api/api-keys) as a bearer token.
+
+For Claude Code, that looks like:
+
+```bash
+claude mcp add --transport http zulip https://example.zulipchat.com/mcp \
+  --header "Authorization: Bearer YOUR_API_KEY"
+```
+
+<ZulipNote>
+  Your API key gives complete access to your account, including the ability to
+  send messages as you. Share it only with tools you trust, and
+  [reset it](/help/protect-your-account) if it may have been exposed.
+</ZulipNote>
+
+<ZulipTip>
+  To let an agent see only part of your organization, create a
+  [bot](/help/add-a-bot-or-integration), subscribe it to the channels the
+  agent should have access to, and use the bot's API key.
+</ZulipTip>
+
+## What an agent reads is written by other people
+
+An agent cannot reliably tell an instruction you gave it from text that
+looks like an instruction in a message it read. Someone could post a
+message meant to steer your agent, such as asking it to go looking through
+your private conversations. An agent can only read from Zulip, so it has
+no way to post or change anything here, but do consider what else an agent
+can do when you connect it to conversations that anyone can write to.
+
+## Configure whether users can connect AI agents
+
+<AdminOnly />
+
+<FlattenedSteps>
+  <NavigationSteps target="settings/organization-permissions" />
+
+  1. Under **Other permissions**, toggle **Allow users to connect AI agents
+     via MCP**.
+
+  <SaveChanges />
+</FlattenedSteps>
+
+This permission covers reading only. If agents are ever able to act in
+Zulip, such as sending messages, that will be a separate permission for
+you to grant or not.
+
+The permission decides whether Zulip offers agents a supported way in. It
+is not a control over AI access to your organization: everyone who can log
+in has an [API key](/api/api-keys), and can point an AI tool at Zulip with
+it whichever way this is set.
+
+Self-hosted servers can also turn the endpoint off entirely, for all
+organizations.
+
+## Related articles
+
+* [Bots overview](/help/bots-overview)
+* [Integrations overview](/help/integrations-overview)
+* [Add a bot or integration](/help/add-a-bot-or-integration)
+* [API keys](/api/api-keys)
+* [Keep your account secure](/help/protect-your-account)
