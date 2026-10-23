@@ -218,7 +218,12 @@ Zulip will generate an image element with the following format:
 ```
 
 Note that the Markdown image syntax is only supported/permitted for
-uploaded images, not third-party image URLs.
+uploaded images, not third-party image URLs. If the server can't
+preview an uploaded file as an image or audio player (e.g., because
+the image is too large to thumbnail), it instead renders a link to
+the file, as `[example image](/user_uploads/path/to/example.png)`
+would, with the alt text as plain text. Like that syntax, an uploaded
+video also gets a [video preview](#video-embeddings-and-previews).
 
 As with link-derived image previews, clients can recognize if an image
 was thumbnailed by its `src` attribute starting with
@@ -285,8 +290,9 @@ via an `update_message` event, with the `rendering_only: true` flag
 adjusted `rendered_content`. A client should process those events by
 just using the updated rendering. If thumbnailing failed, the same
 type of event will edit the message's rendered form to remove the
-image preview element, so no special client-side logic should be
-required to process such errors.
+image preview element (or, for Markdown image syntax, to replace the
+image with a link to the uploaded file), so no special client-side
+logic should be required to process such errors.
 
 Note that in the uncommon situation that the thumbnailing system is
 backlogged, an individual message containing multiple image previews
@@ -383,6 +389,14 @@ previews:
 - No other processing of the URLs is recommended.
 
 ### Changes to image formatting
+
+**In Zulip 13.0 (feature level ZF-7e1ae3)**, changed Markdown image
+syntax for an uploaded file that the server can't preview as an image
+or audio player to render as a link to the file (plus a video
+preview, for a video), rather than as literal Markdown text. If
+thumbnailing an image in Markdown image syntax fails after the
+message is sent, the image is replaced with that link, rather than
+removed.
 
 **In Zulip 12.0** (feature level 467), limited the Markdown
 image syntax to only support uploaded images, not linking to
