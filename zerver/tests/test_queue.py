@@ -7,6 +7,7 @@ from pika.exceptions import (
     AMQPConnectionError,
     ChannelClosedByBroker,
     ChannelClosedByClient,
+    ChannelWrongStateError,
     ConnectionClosed,
     StreamLostError,
 )
@@ -148,6 +149,16 @@ class TestTornadoQueueClient(ZulipTestCase):
                 ],
             )
 
+            # Publishes between losing the connection and reconnecting
+            # wait for the new channel, rather than using the closed one.
+            channel.basic_publish.side_effect = ChannelWrongStateError("Channel is closed.")
+            connection._on_connection_closed(mock.MagicMock(), ConnectionClosed(320, "test"))
+            connection.json_publish("test_suite", {"event": "fourth"})
+            connection._reconnect()
+            channel = open_channel(connection)
+            declare_ok(channel, "test_suite")
+            self.assertEqual(published(channel), [("test_suite", {"event": "fourth"})])
+
             channel = reconnect(connection)
             channel.queue_declare.assert_not_called()
             channel.basic_publish.assert_not_called()
@@ -157,7 +168,7 @@ class TestTornadoQueueClient(ZulipTestCase):
                 "WARNING:zulip.queue:TornadoQueueClient lost connection to RabbitMQ, reconnecting in 2 secs...",
                 "WARNING:zulip.queue:TornadoQueueClient attempting to reconnect to RabbitMQ",
             ]
-            * 2,
+            * 3,
         )
 
 

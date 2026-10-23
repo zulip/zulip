@@ -330,6 +330,8 @@ class TornadoQueueClient(QueueClient[Channel]):
     ) -> None:
         if self.connection is None:
             return
+        self.channel = None
+        self.queues = set()
         self._connection_failure_count = 1
         retry_secs = self.CONNECTION_RETRY_SECS
         self.log.warning(
