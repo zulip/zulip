@@ -404,6 +404,10 @@ class RawUserDict(TypedDict):
 class RemoteRealmDictValue(TypedDict):
     can_push: bool
     expected_end_timestamp: int | None
+    # Only reported with the response to an analytics upload, which is where
+    # the server records it.
+    non_workplace_pricing_eligible: NotRequired[bool]
+    has_discount_configured: NotRequired[bool]
 
 
 class AnalyticsDataUploadLevel(IntEnum):

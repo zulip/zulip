@@ -11,7 +11,11 @@ from typing_extensions import override
 
 from analytics.lib.counts import ALL_COUNT_STATS, logger, process_count_stat
 from zerver.lib.management import ZulipBaseCommand, abort_cron_during_deploy, abort_unless_locked
-from zerver.lib.remote_server import send_server_data_to_push_bouncer, should_send_analytics_data
+from zerver.lib.remote_server import (
+    clear_realm_billing_state,
+    send_server_data_to_push_bouncer,
+    should_send_analytics_data,
+)
 from zerver.lib.timestamp import floor_to_hour
 from zerver.models import Realm
 
@@ -97,3 +101,7 @@ class Command(ZulipBaseCommand):
             time.sleep(delay)
 
             send_server_data_to_push_bouncer(consider_usage_statistics=True, raise_on_error=True)
+        else:
+            # Nothing reports the billing state of realms' plans to this
+            # server any more, so it stops claiming to know it.
+            clear_realm_billing_state()

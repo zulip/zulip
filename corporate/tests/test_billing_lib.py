@@ -36,6 +36,8 @@ from corporate.lib.stripe import (
     invoice_plans_as_needed,
     is_realm_on_free_trial,
     next_month,
+    remote_realm_eligible_for_non_workplace_pricing,
+    remote_realm_has_discount_configured,
 )
 from corporate.lib.test_stripe_class import StripeTestCase, mock_stripe
 from corporate.models.customers import Customer, get_customer_by_realm
@@ -282,6 +284,121 @@ class BillingHelpersTest(ZulipTestCase):
             get_price_per_license(
                 CustomerPlan.TIER_CLOUD_ENTERPRISE, CustomerPlan.BILLING_SCHEDULE_ANNUAL
             )
+
+    def test_remote_realm_eligible_for_non_workplace_pricing(self) -> None:
+        remote_server = RemoteZulipServer.objects.create(
+            uuid=str(uuid.uuid4()),
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            contact_email="email@example.com",
+        )
+        remote_realm = RemoteRealm.objects.create(
+            server=remote_server,
+            uuid=str(uuid.uuid4()),
+            uuid_owner_secret="dummy-owner-secret",
+            host="dummy-hostname",
+            realm_date_created=timezone_now(),
+        )
+
+        # A realm on no plan at all can configure the pricing before it
+        # upgrades, like a realm on the free plan in the cloud.
+        self.assertTrue(
+            remote_realm_eligible_for_non_workplace_pricing(remote_realm, remote_server, None)
+        )
+
+        # The pricing is configured per realm, so a realm billed under a plan
+        # for the whole server cannot use it.
+        remote_server.plan_type = RemoteZulipServer.PLAN_TYPE_BUSINESS
+        remote_server.save(update_fields=["plan_type"])
+        self.assertFalse(
+            remote_realm_eligible_for_non_workplace_pricing(remote_realm, remote_server, None)
+        )
+
+        # Requesting sponsorship creates a customer for the realm, which is
+        # still billed under the plan for the whole server.
+        customer = Customer.objects.create(remote_realm=remote_realm)
+        self.assertFalse(
+            remote_realm_eligible_for_non_workplace_pricing(remote_realm, remote_server, customer)
+        )
+
+        # Plan is for the realm instead of for the whole server.
+        remote_server.plan_type = RemoteZulipServer.PLAN_TYPE_SELF_MANAGED
+        remote_server.save(update_fields=["plan_type"])
+        remote_realm.plan_type = RemoteRealm.PLAN_TYPE_BUSINESS
+        remote_realm.save(update_fields=["plan_type"])
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            tier=CustomerPlan.TIER_SELF_HOSTED_BUSINESS,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            billing_cycle_anchor=timezone_now(),
+            price_per_license=4200,
+        )
+        self.assertTrue(
+            remote_realm_eligible_for_non_workplace_pricing(remote_realm, remote_server, customer)
+        )
+
+        # Plans that are free of charge are decided by the plan type.
+        for free_plan_type in [
+            RemoteRealm.PLAN_TYPE_COMMUNITY,
+            RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY,
+        ]:
+            remote_realm.plan_type = free_plan_type
+            remote_realm.save(update_fields=["plan_type"])
+            self.assertFalse(
+                remote_realm_eligible_for_non_workplace_pricing(
+                    remote_realm, remote_server, customer
+                )
+            )
+
+        # A fixed-price plan leaves nothing to discount.
+        remote_realm.plan_type = RemoteRealm.PLAN_TYPE_BUSINESS
+        remote_realm.save(update_fields=["plan_type"])
+        plan.price_per_license = None
+        plan.fixed_price = 100000
+        plan.save(update_fields=["price_per_license", "fixed_price"])
+        self.assertFalse(
+            remote_realm_eligible_for_non_workplace_pricing(remote_realm, remote_server, customer)
+        )
+
+    def test_remote_realm_has_discount_configured(self) -> None:
+        remote_server = RemoteZulipServer.objects.create(
+            uuid=str(uuid.uuid4()),
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            contact_email="email@example.com",
+        )
+        remote_realm = RemoteRealm.objects.create(
+            server=remote_server,
+            uuid=str(uuid.uuid4()),
+            uuid_owner_secret="dummy-owner-secret",
+            host="dummy-hostname",
+            realm_date_created=timezone_now(),
+            plan_type=RemoteRealm.PLAN_TYPE_BUSINESS,
+        )
+
+        # Nothing is discounted until prices are configured on the customer.
+        customer = Customer.objects.create(remote_realm=remote_realm)
+        self.assertFalse(remote_realm_has_discount_configured(remote_realm, customer))
+
+        customer.monthly_discounted_price = 350
+        customer.save(update_fields=["monthly_discounted_price"])
+        self.assertTrue(remote_realm_has_discount_configured(remote_realm, customer))
+
+        customer.monthly_discounted_price = 0
+        customer.annual_discounted_price = 4200
+        customer.save(update_fields=["monthly_discounted_price", "annual_discounted_price"])
+        self.assertTrue(remote_realm_has_discount_configured(remote_realm, customer))
+
+        # A realm that pays nothing has no discount, even though the prices
+        # of the plan it used to be on are still on its customer.
+        for free_plan_type in [
+            RemoteRealm.PLAN_TYPE_SELF_MANAGED,
+            RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY,
+            RemoteRealm.PLAN_TYPE_COMMUNITY,
+        ]:
+            remote_realm.plan_type = free_plan_type
+            remote_realm.save(update_fields=["plan_type"])
+            self.assertFalse(remote_realm_has_discount_configured(remote_realm, customer))
 
     def test_get_plan_renewal_or_end_date(self) -> None:
         realm = get_realm("zulip")

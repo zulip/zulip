@@ -17,6 +17,7 @@ from analytics.models import InstallationCount, RealmCount
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.realm_settings import (
     do_set_push_notifications_enabled_end_timestamp,
+    do_set_realm_billing_state,
     do_set_realm_property,
 )
 from zerver.lib import redis_utils
@@ -325,6 +326,24 @@ def maybe_mark_pushes_disabled(
         do_set_realm_property(realm, "push_notifications_enabled", False, acting_user=None)
         do_set_push_notifications_enabled_end_timestamp(realm, None, acting_user=None)
 
+    for realm in Realm.objects.filter(non_workplace_pricing_eligible=True):
+        do_set_realm_billing_state(realm, "non_workplace_pricing_eligible", False, acting_user=None)
+
+    for realm in Realm.objects.filter(has_discount_configured=True):
+        do_set_realm_billing_state(realm, "has_discount_configured", False, acting_user=None)
+
+
+def clear_realm_billing_state() -> None:
+    # Called when this server no longer reports to the push notification
+    # service, which is what tells a realm the billing state of its plan.
+    # Unlike a server that merely cannot reach the service, this one has
+    # nothing left that would ever correct these fields.
+    for realm in Realm.objects.filter(non_workplace_pricing_eligible=True):
+        do_set_realm_billing_state(realm, "non_workplace_pricing_eligible", False, acting_user=None)
+
+    for realm in Realm.objects.filter(has_discount_configured=True):
+        do_set_realm_billing_state(realm, "has_discount_configured", False, acting_user=None)
+
 
 def build_analytics_data(
     realm_count_query: QuerySet[RealmCount],
@@ -523,6 +542,15 @@ def send_server_data_to_push_bouncer(
         )
         do_set_push_notifications_enabled_end_timestamp(
             realm, data["expected_end_timestamp"], acting_user=None
+        )
+        do_set_realm_billing_state(
+            realm,
+            "non_workplace_pricing_eligible",
+            data["non_workplace_pricing_eligible"],
+            acting_user=None,
+        )
+        do_set_realm_billing_state(
+            realm, "has_discount_configured", data["has_discount_configured"], acting_user=None
         )
 
     logger.info("Reported %d records", record_count)

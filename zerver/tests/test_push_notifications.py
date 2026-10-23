@@ -1023,7 +1023,14 @@ class PushBouncerNotificationTest(BouncerTestCase):
             mock.patch("zerver.lib.remote_server.send_to_push_bouncer") as m,
         ):
             post_response = {
-                "realms": {realm.uuid: {"can_push": True, "expected_end_timestamp": None}}
+                "realms": {
+                    realm.uuid: {
+                        "can_push": True,
+                        "expected_end_timestamp": None,
+                        "non_workplace_pricing_eligible": False,
+                        "has_discount_configured": False,
+                    }
+                }
             }
             get_response = {
                 "last_realm_count_id": 0,
