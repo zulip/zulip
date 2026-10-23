@@ -107,7 +107,9 @@ export function reaction_is_notifiable(message: Message): boolean {
         return false;
     }
 
-    // Not a reaction the user is watching arrive.
+    // Not a reaction the user is watching arrive. Checked when we act on
+    // it, since the user may have narrowed to or away from the message
+    // while it was being fetched.
     return !message_viewport.is_message_on_screen(message);
 }
 
@@ -179,7 +181,8 @@ function reaction_audible_notifications_enabled(): boolean {
 
 export function reaction_notifications_enabled(): boolean {
     // A desktop notification needs the browser's permission. Without it,
-    // and with sounds off, nothing can result.
+    // and with sounds off, nothing can result, so reaction_events does not
+    // fetch messages for it.
     const desktop_notifications_will_fire =
         user_settings.enable_reaction_desktop_notifications &&
         desktop_notifications.granted_desktop_notifications_permission();

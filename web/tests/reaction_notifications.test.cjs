@@ -11,6 +11,7 @@ const {$} = require("./lib/zjquery.cjs");
 
 mock_esm("../src/electron_bridge");
 mock_esm("../src/spoilers", {hide_spoilers_in_notification() {}});
+const channel = mock_esm("../src/channel");
 const settings_data = mock_esm("../src/settings_data", {
     user_can_access_all_other_users: () => true,
 });
@@ -27,12 +28,13 @@ const message_viewport = mock_esm("../src/message_viewport", {
         message_viewport.is_message_visible(message.id, false),
 });
 // Applying a reaction to its message belongs to reaction_events' own
-// tests; these are about what happens once it is applied.
-mock_esm("../src/emoji_frequency", {
+// tests; these are about when a reaction held for its message's fetch is
+// applied, and what happens once it is.
+const emoji_frequency = mock_esm("../src/emoji_frequency", {
     update_emoji_frequency_on_add_reaction_event() {},
     update_emoji_frequency_on_remove_reaction_event() {},
 });
-mock_esm("../src/message_events", {
+const message_events = mock_esm("../src/message_events", {
     update_views_filtered_on_message_property() {},
 });
 
@@ -91,11 +93,12 @@ let notices;
 
 function test(label, f) {
     run_test(label, (helpers) => {
-        // The cached messages and live notifications a test makes are its
-        // own; the next test starts with none of them.
+        // The cached messages, fetches, and live notifications a test
+        // makes are its own; the next test starts with none of them.
         notices = stub_notification_api();
         stub_message_content_parsing();
         message_store.clear_for_testing();
+        reaction_events.clear_for_testing();
         desktop_notifications.notice_memory.clear();
         muted_users.set_muted_users([]);
         helpers.override_rewire(reactions, "add_reaction", noop, {unused: false});
@@ -150,6 +153,8 @@ function removed_reaction(event) {
 }
 
 function stub_notification_api(permission = "granted") {
+    // `permission` may be a function, called each time the permission is
+    // read.
     const notices = {
         last_title: undefined,
         last_body: undefined,
@@ -165,8 +170,6 @@ function stub_notification_api(permission = "granted") {
     };
 
     class StubNotification {
-        static permission = permission;
-
         constructor(title, {icon, body, tag}) {
             this.tag = tag;
             notices.last_title = title;
@@ -175,6 +178,10 @@ function stub_notification_api(permission = "granted") {
             notices.last_tag = tag;
             notices.title_by_tag.set(tag, title);
             notices.shown_count += 1;
+        }
+
+        static get permission() {
+            return typeof permission === "function" ? permission() : permission;
         }
 
         addEventListener(type, handler) {
@@ -253,6 +260,30 @@ function cache_message(id) {
     message_helper.process_new_server_message(raw_message(id));
 }
 
+function capture_fetches(override) {
+    const fetches = [];
+    override(channel, "get", (opts) => {
+        fetches.push(opts);
+    });
+    return fetches;
+}
+
+function record_applied_reactions(override_rewire) {
+    // Only a cached message has anything to apply a reaction to.
+    const applied = [];
+    for (const [op, func_name] of [
+        ["add", "add_reaction"],
+        ["remove", "remove_reaction"],
+    ]) {
+        override_rewire(reactions, func_name, (event) => {
+            if (message_store.get(event.message_id) !== undefined) {
+                applied.push([op, event.user_id]);
+            }
+        });
+    }
+    return applied;
+}
+
 function count_sounds(override) {
     override(user_settings, "enable_reaction_audible_notifications", true);
     const sounds = {played: 0};
@@ -319,6 +350,47 @@ test("reactions that cannot notify are dropped", () => {
     // Nor does a reaction from a muted user.
     muted_users.add_muted_user(muted_reactor.user_id);
     assert.ok(!notifies({...event, user_id: muted_reactor.user_id}));
+});
+
+test("reactions that cannot notify are dropped without a fetch", ({override}) => {
+    // Reaction events reach everyone who can see the message, so the checks
+    // that need only the event run before an uncached message is fetched.
+    let fetched;
+    override(channel, "get", (opts) => {
+        fetched = true;
+        // Settle the request, so that the next reaction does not wait for it.
+        opts.error();
+    });
+    const event = reaction_event(987654, alice.user_id);
+    function fetches(event) {
+        fetched = false;
+        received_reaction(event);
+        // Nothing is notified about, whether or not the message was fetched.
+        assert.equal(notices.shown_count, 0);
+        return fetched;
+    }
+
+    assert.ok(fetches(event));
+    // A reaction to someone else's message, which is most reactions in a busy
+    // organization, costs no request.
+    assert.ok(!fetches({...event, message_sender_id: alice.user_id}));
+
+    // Nor is anything fetched unless a notification could result. A sound
+    // needs no browser permission, but a desktop notification does.
+    for (const [desktop, audible, notification_sound, permission, expected] of [
+        [false, false, "ding", "granted", false],
+        [false, true, "ding", "denied", true],
+        [false, true, "none", "denied", false],
+        [true, false, "ding", "denied", false],
+        [true, false, "ding", "granted", true],
+    ]) {
+        override(user_settings, "enable_reaction_desktop_notifications", desktop);
+        override(user_settings, "enable_reaction_audible_notifications", audible);
+        override(user_settings, "notification_sound", notification_sound);
+        notices = stub_notification_api(permission);
+        const label = `desktop ${desktop}, audible ${audible}, ${notification_sound}, ${permission}`;
+        assert.equal(fetches(event), expected, label);
+    }
 });
 
 test("reaction notification titles", ({override}) => {
@@ -528,6 +600,8 @@ test("reaction notification from an inaccessible user", ({override}) => {
     override(settings_data, "user_can_access_all_other_users", () => false);
     assert.ok(!people.is_known_user_id(inaccessible_user_id));
 
+    // Cache the message, so that we take the path that has no message fetch to
+    // add the reacting user for us.
     const message_id = 1900;
     cache_message(message_id);
     received_reaction(reaction_event(message_id, inaccessible_user_id));
@@ -537,9 +611,60 @@ test("reaction notification from an inaccessible user", ({override}) => {
     assert.equal(notices.last_icon, `/avatar/${inaccessible_user_id}`);
 });
 
-test("a reaction retracted in the same batch does not notify", () => {
+test("received_reactions fetches the messages it needs in one request", ({override}) => {
+    // A client returning from idle gets many reactions in one batch.
+    const fetches = capture_fetches(override);
+
+    const cached_message_id = 1830;
+    cache_message(cached_message_id);
+    reaction_events.received_reactions([
+        added(reaction_event(1810, alice.user_id)),
+        added(reaction_event(1820, bob.user_id)),
+        added(reaction_event(1810, bob.user_id)),
+        // A reaction to someone else's message needs no message at all.
+        added({...reaction_event(1840, alice.user_id), message_sender_id: alice.user_id}),
+        added(reaction_event(cached_message_id, alice.user_id)),
+    ]);
+    assert.equal(fetches.length, 1);
+    const fetch_1810_and_1820 = fetches.at(-1);
+    assert.deepEqual(JSON.parse(fetch_1810_and_1820.data.message_ids), [1810, 1820]);
+
+    // The cached message notified without waiting for the request.
+    assert.ok(desktop_notifications.get_notifications().has(cached_message_id.toString()));
+
+    fetch_1810_and_1820.success({messages: [raw_message(1810), raw_message(1820)]});
+    const notifications = desktop_notifications.get_notifications();
+    assert.ok(notifications.has("1810"));
+    assert.ok(notifications.has("1820"));
+    assert.ok(!notifications.has("1840"));
+    // Both of the batch's reactions to 1810 are credited in its notification.
+    assert.equal(notices.title_by_tag.get("1810"), "translated: Bob and Alice reacted with 🎉");
+
+    // The response cached those messages, so a later reaction to one of them
+    // takes the cached path and notifies without another request.
+    received_reaction(reaction_event(1810, cindy.user_id));
+    assert.equal(fetches.length, 1);
+    assert.equal(notices.last_title, "translated: Cindy and 2 others reacted with 🎉");
+
+    // A message absent from the response, deleted say, is not notified
+    // about, and a later reaction to it is fetched afresh.
+    received_reaction(reaction_event(1850, alice.user_id));
+    assert.equal(fetches.length, 2);
+    const first_fetch_1850 = fetches.at(-1);
+    first_fetch_1850.success({messages: []});
+    assert.ok(!desktop_notifications.get_notifications().has("1850"));
+
+    received_reaction(reaction_event(1850, alice.user_id));
+    assert.equal(fetches.length, 3);
+    const second_fetch_1850 = fetches.at(-1);
+    second_fetch_1850.success({messages: [raw_message(1850)]});
+    assert.ok(desktop_notifications.get_notifications().has("1850"));
+});
+
+test("a reaction retracted in the same batch does not notify", ({disallow}) => {
     // Reacting and then unreacting while the user is away is not worth a
     // notification.
+    disallow(channel, "get");
     const message_id = 3600;
     cache_message(message_id);
 
@@ -571,10 +696,11 @@ test("a reaction retracted in the same batch does not notify", () => {
     assert.equal(notices.last_title, "translated: Alice reacted with 👍");
 });
 
-test("a reaction re-added within one batch is credited as the newest", () => {
+test("a reaction re-added within one batch is credited as the newest", ({disallow, override}) => {
     // Setting a key a Map already has leaves it in its original position, so
     // a re-added reaction has to be deleted first to sort as the newest.
-    const message_id = 3800;
+    disallow(channel, "get");
+    let message_id = 3800;
     cache_message(message_id);
 
     reaction_events.received_reactions([
@@ -597,6 +723,133 @@ test("a reaction re-added within one batch is credited as the newest", () => {
 
     assert.equal(notices.last_title, "translated: Bob and Alice reacted with 🎉");
     assert.equal(notices.last_icon, `/avatar/${bob.user_id}`);
+
+    // A batch against a message we have to fetch must reach the same result
+    // as one against a message we have cached.
+    const fetches = capture_fetches(override);
+    message_id = 3900;
+    notices.shown_count = 0;
+
+    reaction_events.received_reactions([
+        added(reaction_event(message_id, alice.user_id)),
+        added(reaction_event(message_id, bob.user_id)),
+        retracted(reaction_event(message_id, alice.user_id)),
+        added(reaction_event(message_id, alice.user_id)),
+    ]);
+    assert.equal(fetches.length, 1);
+    const message_fetch = fetches.at(-1);
+
+    message_fetch.success({messages: [raw_message(message_id)]});
+    assert.equal(notices.shown_count, 1);
+    assert.equal(notices.last_title, "translated: Alice and Bob reacted with 🎉");
+    assert.equal(notices.last_icon, `/avatar/${alice.user_id}`);
+});
+
+test("a message being fetched is requested once for all its reactions", ({override}) => {
+    // Reactions to a message being fetched wait for that request, and are
+    // acted on together with the reactions already waiting for it.
+    const sounds = count_sounds(override);
+    const fetches = capture_fetches(override);
+
+    // A reaction retracted by a later event in the same batch leaves nothing
+    // to notify about, so its message is not requested at all.
+    reaction_events.received_reactions([
+        added(reaction_event(1860, alice.user_id)),
+        retracted(reaction_event(1860, alice.user_id)),
+    ]);
+    assert.equal(fetches.length, 0);
+
+    // The rest of such a batch is still fetched, and only the surviving
+    // reaction notifies.
+    reaction_events.received_reactions([
+        added(reaction_event(1870, alice.user_id)),
+        added(reaction_event(1870, bob.user_id)),
+        retracted(reaction_event(1870, bob.user_id)),
+    ]);
+    assert.equal(fetches.length, 1);
+    const fetch_1870 = fetches.at(-1);
+    assert.deepEqual(JSON.parse(fetch_1870.data.message_ids), [1870]);
+    fetch_1870.success({messages: [raw_message(1870)]});
+    assert.equal(notices.last_title, "translated: Alice reacted with 🎉");
+
+    // A reaction retracted while its message is being fetched does not
+    // notify once the fetch lands.
+    received_reaction(reaction_event(1880, alice.user_id));
+    removed_reaction(reaction_event(1880, alice.user_id));
+    assert.equal(fetches.length, 2);
+    const fetch_1880 = fetches.at(-1);
+    notices.last_title = undefined;
+    fetch_1880.success({messages: [raw_message(1880)]});
+    assert.ok(!desktop_notifications.get_notifications().has("1880"));
+    assert.equal(notices.last_title, undefined);
+
+    // That fetch still cached the message, so a fresh reaction to it notifies
+    // without another fetch.
+    received_reaction(reaction_event(1880, alice.user_id));
+    assert.equal(fetches.length, 2);
+    assert.equal(notices.last_title, "translated: Alice reacted with 🎉");
+
+    // Reactions from separate batches share the one request, and the
+    // message gets one notification and one sound for all of them.
+    notices.shown_count = 0;
+    sounds.played = 0;
+    received_reaction(reaction_event(1890, alice.user_id));
+    received_reaction(reaction_event(1890, bob.user_id));
+    assert.equal(fetches.length, 3);
+    const fetch_1890 = fetches.at(-1);
+    fetch_1890.success({messages: [raw_message(1890)]});
+    assert.equal(notices.shown_count, 1);
+    assert.equal(sounds.played, 1);
+    assert.equal(notices.last_title, "translated: Bob and Alice reacted with 🎉");
+
+    // A reaction retracted mid-fetch only cancels itself; a different
+    // reactor's reaction to the same message still notifies.
+    received_reaction(reaction_event(1900, alice.user_id));
+    received_reaction(reaction_event(1900, bob.user_id));
+    removed_reaction(reaction_event(1900, alice.user_id));
+    assert.equal(fetches.length, 4);
+    const fetch_1900 = fetches.at(-1);
+    fetch_1900.success({messages: [raw_message(1900)]});
+    assert.equal(notices.last_title, "translated: Bob reacted with 🎉");
+
+    // The same reaction added, retracted, and added again while its
+    // message is being fetched waits for that request too.
+    received_reaction(reaction_event(1910, alice.user_id));
+    removed_reaction(reaction_event(1910, alice.user_id));
+    received_reaction(reaction_event(1910, alice.user_id));
+    assert.equal(fetches.length, 5);
+    const fetch_1910 = fetches.at(-1);
+    notices.last_title = undefined;
+    fetch_1910.success({messages: [raw_message(1910)]});
+    assert.equal(notices.last_title, "translated: Alice reacted with 🎉");
+
+    // A batch whose reaction is retracted within the batch leaves the
+    // reactions already waiting for the message alone.
+    received_reaction(reaction_event(1920, alice.user_id));
+    reaction_events.received_reactions([
+        added(reaction_event(1920, bob.user_id)),
+        retracted(reaction_event(1920, bob.user_id)),
+    ]);
+    assert.equal(fetches.length, 6);
+    const fetch_1920 = fetches.at(-1);
+    notices.last_title = undefined;
+    fetch_1920.success({messages: [raw_message(1920)]});
+    assert.equal(notices.last_title, "translated: Alice reacted with 🎉");
+
+    // A failed request drops every reaction waiting for it, and a later
+    // reaction requests the message again.
+    received_reaction(reaction_event(1930, alice.user_id));
+    received_reaction(reaction_event(1930, bob.user_id));
+    assert.equal(fetches.length, 7);
+    const first_fetch_1930 = fetches.at(-1);
+    notices.last_title = undefined;
+    first_fetch_1930.error();
+    assert.equal(notices.last_title, undefined);
+    received_reaction(reaction_event(1930, cindy.user_id));
+    assert.equal(fetches.length, 8);
+    const second_fetch_1930 = fetches.at(-1);
+    second_fetch_1930.success({messages: [raw_message(1930)]});
+    assert.equal(notices.last_title, "translated: Cindy reacted with 🎉");
 });
 
 test("reactions to a message in one batch share one notification and sound", ({override}) => {
@@ -651,4 +904,247 @@ test("one message's reactions failing does not stop the rest of the batch", () =
         added(reaction_event(4310, alice.user_id)),
     ]);
     assert.equal(notices.title_by_tag.get("4310"), "translated: Alice reacted with 🎉");
+});
+
+test("reactions that arrive while their message is fetched are applied to it", ({
+    override,
+    override_rewire,
+}) => {
+    const fetches = capture_fetches(override);
+    const applied = record_applied_reactions(override_rewire);
+    const message_id = 4400;
+
+    // The first reaction starts a fetch. The server may build its response
+    // before the reactions that follow exist.
+    received_reaction(reaction_event(message_id, alice.user_id));
+    received_reaction(reaction_event(message_id, bob.user_id));
+    removed_reaction(reaction_event(message_id, alice.user_id));
+    assert.equal(fetches.length, 1);
+    const message_fetch = fetches.at(-1);
+    assert.deepEqual(applied, []);
+
+    // Every event since the request went out is replayed in order, starting
+    // with the reaction that prompted it, which the response already has.
+    message_fetch.success({messages: [raw_message(message_id)]});
+    assert.deepEqual(applied, [
+        ["add", alice.user_id],
+        ["add", bob.user_id],
+        ["remove", alice.user_id],
+    ]);
+});
+
+test("a reaction that fails to apply on arrival is still held for its fetch", ({
+    override,
+    override_rewire,
+}) => {
+    const fetches = capture_fetches(override);
+
+    // Something else caches the message while it is being fetched, and Bob's
+    // reaction then fails to apply to it, but is still notified about.
+    received_reaction(reaction_event(4420, alice.user_id));
+    message_helper.process_new_server_message(raw_message(4420));
+    override_rewire(reactions, "add_reaction", (event) => {
+        if (event.user_id === bob.user_id) {
+            throw new Error("Cannot find realm emoji");
+        }
+    });
+    // It is applied, and fails, once: when the fetch settles.
+    blueslip.expect("error", "Failed to apply a reaction event");
+    received_reaction(reaction_event(4420, bob.user_id));
+    assert.equal(notices.last_title, "translated: Bob and Alice reacted with 🎉");
+    assert.equal(fetches.length, 1);
+});
+
+test("whether a held reaction is acted on is decided when its fetch settles", ({override}) => {
+    const fetches = capture_fetches(override);
+
+    // Muting a reactor while their reaction's message is being fetched keeps
+    // their reaction out.
+    received_reaction(reaction_event(4430, alice.user_id));
+    received_reaction(reaction_event(4430, bob.user_id));
+    assert.equal(fetches.length, 1);
+    const fetch_4430 = fetches.at(-1);
+    muted_users.add_muted_user(alice.user_id);
+    fetch_4430.success({messages: [raw_message(4430)]});
+    assert.equal(notices.last_title, "translated: Bob reacted with 🎉");
+
+    // So does turning reaction notifications off.
+    received_reaction(reaction_event(4440, bob.user_id));
+    assert.equal(fetches.length, 2);
+    const fetch_4440 = fetches.at(-1);
+    override(user_settings, "enable_reaction_desktop_notifications", false);
+    notices.last_title = undefined;
+    fetch_4440.success({messages: [raw_message(4440)]});
+    assert.equal(notices.last_title, undefined);
+});
+
+test("a fetch settles as soon as something else caches its message", ({
+    override,
+    override_rewire,
+}) => {
+    const fetches = capture_fetches(override);
+    const applied = record_applied_reactions(override_rewire);
+
+    // Something else caches the message before our request returns. The
+    // next event settles the fetch, replaying everything held for it.
+    received_reaction(reaction_event(4450, alice.user_id));
+    received_reaction(reaction_event(4450, bob.user_id));
+    assert.equal(fetches.length, 1);
+    const fetch_4450 = fetches.at(-1);
+    message_helper.process_new_server_message(raw_message(4450));
+    notices.shown_count = 0;
+    removed_reaction(reaction_event(4450, bob.user_id));
+    // Each event is applied once, in order, when the fetch settles.
+    assert.deepEqual(applied, [
+        ["add", alice.user_id],
+        ["add", bob.user_id],
+        ["remove", bob.user_id],
+    ]);
+    assert.equal(notices.shown_count, 1);
+    assert.equal(notices.last_title, "translated: Alice reacted with 🎉");
+
+    // Our response then has nothing left to apply or notify about.
+    applied.length = 0;
+    fetch_4450.success({messages: [raw_message(4450)]});
+    assert.deepEqual(applied, []);
+    assert.equal(notices.shown_count, 1);
+
+    // A reaction that settles the fetch is notified about once, together
+    // with the reactions held for it.
+    received_reaction(reaction_event(4460, alice.user_id));
+    assert.equal(fetches.length, 2);
+    const fetch_4460 = fetches.at(-1);
+    message_helper.process_new_server_message(raw_message(4460));
+    notices.shown_count = 0;
+    received_reaction(reaction_event(4460, cindy.user_id));
+    assert.equal(notices.shown_count, 1);
+    assert.equal(notices.last_title, "translated: Cindy and Alice reacted with 🎉");
+    fetch_4460.success({messages: [raw_message(4460)]});
+    assert.equal(notices.shown_count, 1);
+
+    // If no event settles it first, the request does, even when it fails:
+    // the message is cached, so its reactions can still be acted on.
+    received_reaction(reaction_event(4470, alice.user_id));
+    assert.equal(fetches.length, 3);
+    const fetch_4470 = fetches.at(-1);
+    message_helper.process_new_server_message(raw_message(4470));
+    notices.last_title = undefined;
+    fetch_4470.error();
+    assert.equal(notices.last_title, "translated: Alice reacted with 🎉");
+});
+
+test("a held reaction updates emoji frequency and views once it is applied", ({
+    override,
+    override_rewire,
+}) => {
+    // Emoji frequency and the views filtered on has:reaction read the
+    // message's reactions, so updating them before a held reaction is
+    // applied would find it missing.
+    const fetches = capture_fetches(override);
+    const calls = [];
+    override_rewire(reactions, "add_reaction", (event) => {
+        calls.push(["add_reaction", event.user_id]);
+    });
+    override_rewire(reactions, "remove_reaction", (event) => {
+        calls.push(["remove_reaction", event.user_id]);
+    });
+    override(emoji_frequency, "update_emoji_frequency_on_add_reaction_event", (event) => {
+        calls.push(["add_frequency", event.user_id]);
+    });
+    override(emoji_frequency, "update_emoji_frequency_on_remove_reaction_event", (event) => {
+        calls.push(["remove_frequency", event.user_id]);
+    });
+    override(message_events, "update_views_filtered_on_message_property", (ids, prop, value) => {
+        calls.push(["views", ids, prop, value]);
+    });
+
+    const message_id = 4480;
+    received_reaction(reaction_event(message_id, alice.user_id));
+    assert.equal(fetches.length, 1);
+    const message_fetch = fetches.at(-1);
+    calls.length = 0;
+
+    // Something else caches the message before our request returns, so
+    // that it is in message_store without the reactions held for it.
+    message_helper.process_new_server_message(raw_message(message_id));
+    reaction_events.received_reactions([
+        added(reaction_event(message_id, bob.user_id)),
+        retracted(reaction_event(message_id, bob.user_id)),
+    ]);
+    assert.deepEqual(calls, [
+        ["add_reaction", alice.user_id],
+        ["add_frequency", alice.user_id],
+        ["views", [message_id], "has-reaction", true],
+        ["add_reaction", bob.user_id],
+        ["add_frequency", bob.user_id],
+        ["views", [message_id], "has-reaction", true],
+        ["remove_reaction", bob.user_id],
+        ["remove_frequency", bob.user_id],
+        ["views", [message_id], "has-reaction", false],
+    ]);
+
+    // Our response then has nothing left to apply.
+    calls.length = 0;
+    message_fetch.success({messages: [raw_message(message_id)]});
+    assert.deepEqual(calls, []);
+});
+
+test("a message failing to settle does not stop the rest of its request", ({override}) => {
+    // Reading the notification permission fails once, while working out
+    // which of the first message's reactions still stand.
+    let permission_reads = 0;
+    notices = stub_notification_api(() => {
+        permission_reads += 1;
+        if (permission_reads === 2) {
+            throw new Error("Cannot read notification permission");
+        }
+        return "granted";
+    });
+    const fetches = capture_fetches(override);
+
+    reaction_events.received_reactions([
+        added(reaction_event(4520, alice.user_id)),
+        added(reaction_event(4530, alice.user_id)),
+    ]);
+    assert.equal(permission_reads, 1);
+    assert.equal(fetches.length, 1);
+    const fetch_4520_and_4530 = fetches.at(-1);
+
+    blueslip.expect("error", "Failed to process reactions to a message");
+    fetch_4520_and_4530.success({messages: [raw_message(4520), raw_message(4530)]});
+    assert.ok(!notices.title_by_tag.has("4520"));
+    assert.equal(notices.title_by_tag.get("4530"), "translated: Alice reacted with 🎉");
+});
+
+test("a reaction or message failing during a fetch does not stop the rest", ({
+    override,
+    override_rewire,
+}) => {
+    const fetches = capture_fetches(override);
+
+    reaction_events.received_reactions([
+        added(reaction_event(4500, alice.user_id)),
+        added(reaction_event(4510, alice.user_id)),
+    ]);
+    assert.equal(fetches.length, 1);
+    const fetch_4500_and_4510 = fetches.at(-1);
+
+    // Bob's reaction arrives while 4510 is being fetched, and fails to
+    // apply once the message is cached.
+    override_rewire(reactions, "add_reaction", (event) => {
+        if (event.user_id === bob.user_id && message_store.get(event.message_id) !== undefined) {
+            throw new Error("Cannot find realm emoji");
+        }
+    });
+    received_reaction(reaction_event(4510, bob.user_id));
+    assert.equal(fetches.length, 1);
+
+    // 4500 comes back malformed, and cannot be processed.
+    blueslip.expect("error", "Failed to process a message fetched for reactions");
+    blueslip.expect("error", "Failed to apply a reaction event");
+    fetch_4500_and_4510.success({
+        messages: [{...raw_message(4500), topic: undefined}, raw_message(4510)],
+    });
+    assert.ok(!notices.title_by_tag.has("4500"));
+    assert.equal(notices.title_by_tag.get("4510"), "translated: Bob and Alice reacted with 🎉");
 });

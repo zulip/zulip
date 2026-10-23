@@ -1,7 +1,12 @@
+import * as z from "zod/mini";
+
 import * as blueslip from "./blueslip.ts";
+import * as channel from "./channel.ts";
 import * as emoji_frequency from "./emoji_frequency.ts";
 import * as message_events from "./message_events.ts";
+import * as message_helper from "./message_helper.ts";
 import * as message_store from "./message_store.ts";
+import {raw_message_schema} from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import * as muted_users from "./muted_users.ts";
 import * as reaction_notifications from "./reaction_notifications.ts";
@@ -9,23 +14,51 @@ import * as reactions from "./reactions.ts";
 import type {ReactionEvent} from "./reactions.ts";
 import {current_user} from "./state_data.ts";
 
+const fetch_messages_response_schema = z.object({
+    messages: z.array(raw_message_schema),
+});
+
 // Server events are not validated before they reach us, so op may be
 // something other than "add" or "remove".
 export type ServerReactionEvent = ReactionEvent & {op: string};
 
+// Messages being fetched to act on reactions to them, each by one
+// request, mapped to the reaction events for the message since then, in
+// arrival order: first the reactions that prompted the request, then
+// every event that arrives. Once the message is cached, replaying them
+// brings it up to date however old our copy is, and they say which
+// reactions still stand; see settle_message_fetch.
+const message_fetches = new Map<number, ServerReactionEvent[]>();
+
+export function clear_for_testing(): void {
+    message_fetches.clear();
+}
+
 function apply_reaction_event(event: ServerReactionEvent): void {
-    switch (event.op) {
-        case "add":
-            reactions.add_reaction(event);
-            emoji_frequency.update_emoji_frequency_on_add_reaction_event(event);
-            break;
-        case "remove":
-            reactions.remove_reaction(event);
-            emoji_frequency.update_emoji_frequency_on_remove_reaction_event(event);
-            break;
-        default:
-            blueslip.error("Unexpected event type reaction/" + event.op);
-            return;
+    if (event.op !== "add" && event.op !== "remove") {
+        blueslip.error("Unexpected event type reaction/" + event.op);
+        return;
+    }
+    const held_events = message_fetches.get(event.message_id);
+    if (held_events === undefined) {
+        apply_reaction_to_message(event);
+    } else {
+        // Applied when the fetch settles, after the events held before
+        // it, so that each event is applied once and in order.
+        held_events.push(event);
+    }
+}
+
+function apply_reaction_to_message(event: ServerReactionEvent): void {
+    // Emoji frequency and the views filtered on has:reaction read the
+    // message's reactions, so they are updated after the reaction is
+    // applied to the message.
+    if (event.op === "add") {
+        reactions.add_reaction(event);
+        emoji_frequency.update_emoji_frequency_on_add_reaction_event(event);
+    } else {
+        reactions.remove_reaction(event);
+        emoji_frequency.update_emoji_frequency_on_remove_reaction_event(event);
     }
     message_events.update_views_filtered_on_message_property(
         [event.message_id],
@@ -36,7 +69,8 @@ function apply_reaction_event(event: ServerReactionEvent): void {
 
 function is_reaction_event_meaningful(event: ReactionEvent): boolean {
     // Whether a reaction event is activity to point the current user at,
-    // decided from the event alone.
+    // decided from the event alone so that a reaction we would ignore
+    // costs nothing for a message this client does not have cached.
 
     // A reaction by the current user is never meaningful.
     if (event.user_id === current_user.user_id) {
@@ -67,6 +101,8 @@ function get_pending_reactions(events: ServerReactionEvent[]): ServerReactionEve
     // with a re-added one last, as the notification title credits the
     // newest reactor first. One retracted later is dropped, since reacting
     // and unreacting while the user is away is not worth a notification.
+    // Checked when called, so that muting a held reaction's reactor
+    // meanwhile keeps it out.
     if (!reaction_notifications.reaction_notifications_enabled()) {
         return [];
     }
@@ -91,9 +127,105 @@ function get_pending_reactions(events: ServerReactionEvent[]): ServerReactionEve
     return pending_reactions.values().toArray();
 }
 
+function settle_message_fetch(message: Message): void {
+    // Called once the message is cached, by our request or anything else.
+    const message_events = message_fetches.get(message.id)!;
+    message_fetches.delete(message.id);
+    // Applying a reaction ignores an event the message already reflects,
+    // such as the reactions that prompted the fetch.
+    for (const event of message_events) {
+        // A failure to apply one should not stop the rest.
+        try {
+            apply_reaction_to_message(event);
+        } catch (error) {
+            blueslip.error(
+                "Failed to apply a reaction event",
+                {message_id: event.message_id, op: event.op},
+                error,
+            );
+        }
+    }
+    // A failure here should not keep the other messages of the batch or
+    // the request from settling.
+    let pending_reactions: ReactionEvent[];
+    try {
+        pending_reactions = get_pending_reactions(message_events);
+    } catch (error) {
+        blueslip.error("Failed to process reactions to a message", {message_id: message.id}, error);
+        return;
+    }
+    if (pending_reactions.length > 0) {
+        process_reactions_to_message(message, pending_reactions);
+    }
+}
+
+function settle_message_fetches(message_ids: number[]): void {
+    // Called once a request finishes, whether or not it succeeded. A
+    // message still not cached, because the request failed or the user
+    // can no longer access it, has nothing to apply its reactions to.
+    for (const message_id of message_ids) {
+        if (!message_fetches.has(message_id)) {
+            // Settled earlier, when something else cached it.
+            continue;
+        }
+        const message = message_store.get(message_id);
+        if (message === undefined) {
+            message_fetches.delete(message_id);
+        } else {
+            settle_message_fetch(message);
+        }
+    }
+}
+
+function fetch_messages_for_reactions(
+    reactions_by_message_id: Map<number, ServerReactionEvent[]>,
+): void {
+    // One request for all of a batch's uncached messages, of which a user
+    // returning to an idle Zulip can have many.
+    const message_ids = reactions_by_message_id.keys().toArray();
+    for (const [message_id, message_reactions] of reactions_by_message_id) {
+        message_fetches.set(message_id, [...message_reactions]);
+    }
+    void channel.get({
+        url: "/json/messages",
+        data: {
+            message_ids: JSON.stringify(message_ids),
+            allow_empty_topic_name: true,
+        },
+        success(raw_data) {
+            try {
+                const data = fetch_messages_response_schema.parse(raw_data);
+                // Cache every message, even one with no reactions left to
+                // act on, so that later reactions to it need no fetch.
+                for (const raw_message of data.messages) {
+                    // A message we fail to process only loses its own
+                    // reactions, not those of the rest of the response.
+                    try {
+                        message_helper.process_new_server_message(raw_message);
+                    } catch (error) {
+                        blueslip.error(
+                            "Failed to process a message fetched for reactions",
+                            {message_id: raw_message.id},
+                            error,
+                        );
+                    }
+                }
+            } finally {
+                settle_message_fetches(message_ids);
+            }
+        },
+        error() {
+            blueslip.info("Failed to fetch messages for reaction events");
+            // A message something else cached meanwhile can still settle.
+            settle_message_fetches(message_ids);
+        },
+    });
+}
+
 export function received_reactions(events: ServerReactionEvent[]): void {
     // Apply every reaction to its message first, so that the rest of this
-    // batch sees the message as it now is.
+    // batch sees the message as it now is. Reactions to a message being
+    // fetched are held instead, and applied when the fetch settles.
     for (const event of events) {
         // A failure to apply one reaction should not keep the rest of
         // the batch from being applied.
@@ -113,7 +245,8 @@ export function received_reactions(events: ServerReactionEvent[]): void {
             continue;
         }
         // Handled even when we would not notify, since a removal dismisses
-        // an earlier notification.
+        // an earlier notification. A fetch of the message holds the
+        // removal too, and drops the reaction when it settles.
         try {
             reaction_notifications.remove_reaction_notification(event);
         } catch (error) {
@@ -125,22 +258,40 @@ export function received_reactions(events: ServerReactionEvent[]): void {
         }
     }
 
-    // Reaction events are delivered to everyone who can see the message,
-    // so filter out events that cannot notify using the event alone. The
-    // checks that need the message, such as whether the user is viewing
-    // it, come later. Grouped by message, in arrival order, so that each
-    // message gets one notification for the batch.
+    // Reaction events reach everyone who can see the message, so drop what
+    // cannot notify before fetching anything. Checks that need the message
+    // come later. Grouped by message, in arrival order, so that each
+    // message gets one notification for the batch, and the messages we
+    // need to fetch share one request.
     const reactions_by_message_id = Map.groupBy(
         get_pending_reactions(events),
         (event) => event.message_id,
     );
 
-    for (const [message_id, message_reactions] of reactions_by_message_id) {
-        // A message this client has not cached leaves nothing to build a
-        // notification from.
+    // Every message the batch touched, since any event for a message can
+    // settle its fetch.
+    const message_ids = new Set(events.map((event) => event.message_id));
+    const uncached_reactions_by_message_id = new Map<number, ServerReactionEvent[]>();
+    for (const message_id of message_ids) {
         const message = message_store.get(message_id);
-        if (message !== undefined) {
-            process_reactions_to_message(message, message_reactions);
+        const message_reactions = reactions_by_message_id.get(message_id) ?? [];
+        if (message_fetches.has(message_id)) {
+            // This batch's events are held with the fetch's. Once
+            // something else has cached the message, there is no need to
+            // wait for our request.
+            if (message !== undefined) {
+                settle_message_fetch(message);
+            }
+        } else if (message_reactions.length > 0) {
+            if (message === undefined) {
+                uncached_reactions_by_message_id.set(message_id, message_reactions);
+            } else {
+                process_reactions_to_message(message, message_reactions);
+            }
         }
+    }
+
+    if (uncached_reactions_by_message_id.size > 0) {
+        fetch_messages_for_reactions(uncached_reactions_by_message_id);
     }
 }
