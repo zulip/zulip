@@ -40,6 +40,7 @@ import {
 import * as stream_ui_updates from "./stream_ui_updates.ts";
 import * as sub_store from "./sub_store.ts";
 import type {StreamSubscription} from "./sub_store.ts";
+import * as topic_list from "./topic_list.ts";
 import {group_setting_value_schema} from "./types.ts";
 import * as unread_ui from "./unread_ui.ts";
 import * as user_group_edit from "./user_group_edit.ts";
@@ -59,11 +60,16 @@ function update_stream_setting(
         | "email_notifications"
         | "wildcard_mentions_notify"
         | "pin_to_top"
+        | "demote_resolved_topics"
         | "is_recently_active",
 ): void {
     const $setting_checkbox = $(`#${CSS.escape(setting)}_${CSS.escape(sub.stream_id.toString())}`);
     $setting_checkbox.prop("checked", value);
-    if (setting === "pin_to_top" || setting === "is_recently_active") {
+    if (
+        setting === "pin_to_top" ||
+        setting === "demote_resolved_topics" ||
+        setting === "is_recently_active"
+    ) {
         assert(value !== null);
         sub[setting] = value;
         return;
@@ -186,6 +192,10 @@ export function update_property<P extends keyof UpdatableStreamProperties>(
         pin_to_top(value) {
             update_stream_setting(sub, value, "pin_to_top");
             stream_list.refresh_pinned_or_unpinned_stream(sub);
+        },
+        demote_resolved_topics(value) {
+            update_stream_setting(sub, value, "demote_resolved_topics");
+            topic_list.update();
         },
         invite_only(value) {
             assert(other_values !== undefined);

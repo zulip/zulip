@@ -157,6 +157,7 @@ test("basics", () => {
         name: "Denmark",
         stream_id: 1,
         is_muted: true,
+        demote_resolved_topics: true,
         invite_only: true,
         history_public_to_subscribers: true,
         can_add_subscribers_group: admins_group.id,
@@ -237,6 +238,10 @@ test("basics", () => {
 
     assert.ok(!stream_data.is_muted(social.stream_id));
     assert.ok(stream_data.is_muted(denmark.stream_id));
+
+    assert.ok(!stream_data.demotes_resolved_topics(social.stream_id));
+    assert.ok(stream_data.demotes_resolved_topics(denmark.stream_id));
+    assert.ok(!stream_data.demotes_resolved_topics(unknown_stream_id));
 
     assert.equal(sub_store.maybe_get_stream_name(), undefined);
     assert.equal(sub_store.maybe_get_stream_name(social.stream_id), "social");
