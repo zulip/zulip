@@ -4,10 +4,6 @@
 {% set deletion_date = scheduled_deletion_date|localize %}
 {% endif %}
 
-{% block illustration %}
-<img src="{{ email_images_base_url }}/email_logo.png" alt=""/>
-{% endblock %}
-
 {% block content %}
 <p>
     {% if is_demo_organization %}
