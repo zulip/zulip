@@ -9,6 +9,7 @@ import * as feedback_widget from "./feedback_widget.ts";
 import {FoldDict} from "./fold_dict.ts";
 import {$t} from "./i18n.ts";
 import * as loading from "./loading.ts";
+import type {Message} from "./message_store.ts";
 import * as settings_ui from "./settings_ui.ts";
 import type {StateData, user_topic_schema} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
@@ -253,6 +254,10 @@ export function is_topic_visible_in_home(stream_id: number, topic: string): bool
         // If channel is muted, we show the message if topic is unmuted or followed.
         !stream_data.is_muted(stream_id) || is_topic_unmuted_or_followed(stream_id, topic)
     );
+}
+
+export function is_message_visible_in_home(message: Message): boolean {
+    return message.type !== "stream" || is_topic_visible_in_home(message.stream_id, message.topic);
 }
 
 export function initialize(params: StateData["user_topics"]): void {

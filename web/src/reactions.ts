@@ -42,6 +42,12 @@ export function get_local_reaction_id(rendering_details: EmojiRenderingDetails):
     return [rendering_details.reaction_type, rendering_details.emoji_code].join(",");
 }
 
+export function get_reaction_event_key(event: ReactionEvent): string {
+    // Identifies one reaction (message, reactor, and emoji), so that state
+    // kept for it can be found again when it is retracted.
+    return `${event.message_id}:${event.user_id}:${get_local_reaction_id(event)}`;
+}
+
 export function current_user_has_reacted_to_emoji(message: Message, local_id: string): boolean {
     update_clean_reactions(message);
 

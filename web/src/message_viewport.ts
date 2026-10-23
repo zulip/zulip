@@ -392,6 +392,30 @@ export function visible_messages(require_fully_visible: boolean): Message[] {
     );
 }
 
+export function is_message_visible(message_id: number, require_fully_visible: boolean): boolean {
+    // Whether the current feed shows this message within the visible part
+    // of the scroll container.
+    if (message_lists.current === undefined) {
+        return false;
+    }
+
+    const $row = message_lists.current.get_row(message_id);
+    if ($row.length === 0) {
+        return false;
+    }
+
+    return in_viewport_or_tall(
+        util.the($row).getBoundingClientRect(),
+        top_of_feed.get(),
+        bottom_of_feed.get(),
+        require_fully_visible,
+    );
+}
+
+export function is_message_on_screen(message: Message): boolean {
+    return viewport_is_visible_and_focused() && is_message_visible(message.id, false);
+}
+
 export function scrollTop(): number;
 export function scrollTop(target_scrollTop: number): JQuery;
 export function scrollTop(target_scrollTop?: number): JQuery | number {
