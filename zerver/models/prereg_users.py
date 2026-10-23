@@ -124,11 +124,11 @@ class PreregistrationUser(models.Model):
     # email was not found.
     is_realm_importer = models.BooleanField(default=False)
 
-    # Used in the SAML authentication flow to pass the external auth ID
+    # Used in certain authentication flows to pass the external auth ID
     # from the authentication step to user creation, so that an ExternalAuthID
     # record can be created for the new user.
-    external_auth_method_name = models.CharField(max_length=100, null=True, default=None)
-    external_auth_id = models.CharField(max_length=255, null=True, default=None)
+    external_auth_method_name = models.TextField(db_index=False, null=True, default=None)
+    external_auth_id = models.TextField(db_index=False, null=True, default=None)
 
     class Meta:
         indexes = [
