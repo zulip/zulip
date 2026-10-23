@@ -2427,6 +2427,27 @@
         color-mix(in srgb, hsl(0deg 0% 0%) 8%, hsl(0deg 0% 97%)),
         color-mix(in srgb, hsl(0deg 0% 100%) 7%, hsl(0deg 0% 13%))
     );
+    /* Navbar buttons whose menu or sidebar is open. */
+    --color-background-header-button-pressed: light-dark(
+        hsl(0deg 0% 0% / 8%),
+        hsl(0deg 0% 0% / 25%)
+    );
+    /* The second color value aligns with
+       --color-background-navbar */
+    --color-background-header-button-pressed-no-alpha: light-dark(
+        color-mix(in srgb, hsl(0deg 0% 0%) 8%, hsl(0deg 0% 97%)),
+        color-mix(in srgb, hsl(0deg 0% 0%) 25%, hsl(0deg 0% 13%))
+    );
+    --color-background-header-button-pressed-hover: light-dark(
+        hsl(0deg 0% 0% / 16%),
+        hsl(0deg 0% 0% / 50%)
+    );
+    /* The second color value aligns with
+       --color-background-navbar */
+    --color-background-header-button-pressed-hover-no-alpha: light-dark(
+        color-mix(in srgb, hsl(0deg 0% 0%) 16%, hsl(0deg 0% 97%)),
+        color-mix(in srgb, hsl(0deg 0% 0%) 50%, hsl(0deg 0% 13%))
+    );
     --color-fill-hover-copy-icon: hsl(200deg 100% 40%);
     --color-fill-user-invite-copy-icon: light-dark(
         hsl(0deg 0% 46.7%),
