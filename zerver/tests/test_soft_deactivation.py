@@ -685,6 +685,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             expected_count: int,
             *,
             possible_stream_wildcard_mention: bool = False,
+            mandatory_email_notifications: bool = False,
             topic_participant_user_ids: AbstractSet[int] = set(),
             possibly_mentioned_user_ids: AbstractSet[int] = set(),
         ) -> None:
@@ -695,6 +696,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
                         stream_id=stream_id,
                         topic_name=topic_name,
                         possible_stream_wildcard_mention=possible_stream_wildcard_mention,
+                        mandatory_email_notifications=mandatory_email_notifications,
                         topic_participant_user_ids=topic_participant_user_ids,
                         possibly_mentioned_user_ids=possibly_mentioned_user_ids,
                     )
@@ -706,12 +708,14 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             content: str,
             *,
             possible_stream_wildcard_mention: bool = False,
+            mandatory_email_notifications: bool = False,
             topic_participant_user_ids: AbstractSet[int] = set(),
             possibly_mentioned_user_ids: AbstractSet[int] = set(),
         ) -> None:
             assert_num_possible_users(
                 expected_count=3,
                 possible_stream_wildcard_mention=possible_stream_wildcard_mention,
+                mandatory_email_notifications=mandatory_email_notifications,
                 topic_participant_user_ids=topic_participant_user_ids,
                 possibly_mentioned_user_ids=possibly_mentioned_user_ids,
             )
@@ -854,3 +858,15 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         # Sanity check after removing the alert word for Hamlet.
         AlertWord.objects.filter(user_profile=long_term_idle_user).delete()
         assert_stream_message_not_sent_to_idle_user("no alert words")
+
+        stream = get_stream(stream_name, cordelia.realm)
+        stream.mandatory_email_notifications = True
+        stream.save()
+        sub.email_notifications = False
+        sub.save()
+        long_term_idle_user.enable_stream_email_notifications = False
+        long_term_idle_user.save()
+        assert_stream_message_sent_to_idle_user(
+            "Mandatory email channel message",
+            mandatory_email_notifications=True,
+        )
