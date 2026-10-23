@@ -338,6 +338,15 @@ class TornadoQueueClient(QueueClient[Channel]):
         )
         ioloop.IOLoop.current().call_later(retry_secs, self._reconnect)
 
+    def _on_channel_closed(self, channel: Channel, reason: Exception) -> None:
+        # The channel is also closed when we close the connection or
+        # lose it; _on_connection_closed handles those.
+        if not isinstance(reason, pika.exceptions.ChannelClosedByBroker):
+            return
+        self.log.error("TornadoQueueClient's channel was closed by RabbitMQ: %s", reason)
+        assert self.connection is not None
+        self.connection.close()
+
     def _on_open(self, connection: pika.connection.Connection) -> None:
         assert self.connection is not None
         self._connection_failure_count = 0
@@ -350,6 +359,7 @@ class TornadoQueueClient(QueueClient[Channel]):
 
     def _on_channel_open(self, channel: Channel) -> None:
         self.channel = channel
+        self.channel.add_on_close_callback(self._on_channel_closed)
         self.channel.basic_qos(prefetch_count=self.prefetch)
         for callback in self._on_open_cbs:
             callback(channel)
