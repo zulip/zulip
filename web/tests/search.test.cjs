@@ -342,6 +342,20 @@ run_test("initiate_search", ({override_rewire}) => {
     assert.equal($("#search_query").text(), "");
 });
 
+run_test("search bar focusability", () => {
+    const $searchbox_input_container = $("#searchbox-input-container");
+    const $search_query_box = $("#search_query");
+
+    $searchbox_input_container.attr("tabindex", "0");
+    search.open_search_bar_and_close_narrow_description();
+    assert.equal($searchbox_input_container.attr("tabindex"), "-1");
+    assert.equal($search_query_box.attr("contenteditable"), "true");
+
+    search.close_search_bar_and_open_narrow_description();
+    assert.equal($searchbox_input_container.attr("tabindex"), "0");
+    assert.equal($search_query_box.attr("contenteditable"), "false");
+});
+
 run_test("close_search", () => {
     search_typeahead.shown = true;
     $(".navbar-search").addClass("expanded");
