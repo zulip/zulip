@@ -1,0 +1,55 @@
+{
+    "action": "create",
+    "actor": {
+        "id": "e825c109-f691-4716-a85f-b68a2626531c",
+        "name": "Dhruv Shetty",
+        "email": "dhruvshetty2203@gmail.com",
+        "url": "https://linear.app/zulipdhruv/profiles/dhruvshetty2203",
+        "type": "user"
+    },
+    "createdAt": "2026-06-01T18:02:04.554Z",
+    "data": {
+        "id": "a2ad5ab3-4d3a-4381-b587-99f83b886b8e",
+        "createdAt": "2026-06-01T18:02:04.554Z",
+        "updatedAt": "2026-06-01T18:02:04.554Z",
+        "frequencyResolution": "weekly",
+        "name": "Zulip-terminal",
+        "description": "",
+        "slugId": "5bfd1327f54b",
+        "color": "#bec2c8",
+        "statusId": "3f1ad536-fcf2-4c64-af47-ee92e9272900",
+        "creatorId": "e825c109-f691-4716-a85f-b68a2626531c",
+        "startDate": "2026-06-01",
+        "startDateResolution": null,
+        "targetDate": "2026-06-03",
+        "targetDateResolution": null,
+        "sortOrder": 2906.87,
+        "prioritySortOrder": -138.43,
+        "priority": 0,
+        "issueCountHistory": [],
+        "completedIssueCountHistory": [],
+        "scopeHistory": [],
+        "completedScopeHistory": [],
+        "inProgressScopeHistory": [],
+        "labelIds": [],
+        "url": "https://linear.app/zulipdhruv/project/zulip-terminal-5bfd1327f54b",
+        "teamIds": [
+            "b36906f3-70ef-40a7-8c0e-12d97e4d5ab4"
+        ],
+        "memberIds": [],
+        "milestones": [],
+        "initiatives": [],
+        "status": {
+            "id": "3f1ad536-fcf2-4c64-af47-ee92e9272900",
+            "color": "#F2994A",
+            "name": "Backlog",
+            "type": "backlog"
+        },
+        "content": null
+    },
+    "url": "https://linear.app/zulipdhruv/project/zulip-terminal-5bfd1327f54b",
+    "type": "Project",
+    "organizationId": "498d97b2-c819-42cc-8d65-7bffd494ed23",
+    "webhookTimestamp": 1780336925169,
+    "webhookId": "a9d5653b-3026-4030-9c0e-ac964e3bb507"
+}

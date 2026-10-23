@@ -6,7 +6,7 @@ from zerver.decorator import webhook_view
 from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
-from zerver.lib.validator import WildValue, check_int, check_string
+from zerver.lib.validator import WildValue, check_int, check_none_or, check_string
 from zerver.lib.webhooks.common import OptionalUserSpecifiedTopicStr, check_send_webhook_message
 from zerver.models import UserProfile
 
@@ -17,6 +17,26 @@ ISSUE_CREATE_OR_UPDATE_TEMPLATE = "[{type}]({url}) was {action} in team {team_na
 ISSUE_REMOVE_TEMPLATE = "This issue has been removed from team {team_name}."
 COMMENT_CREATE_OR_UPDATE_TEMPLATE = "{user} [{action}]({url}) on issue **{issue_title}**:"
 COMMENT_REMOVE_TEMPLATE = "{user} has removed a comment."
+PROJECT_CREATE_TEMPLATE = "{actor} created project [{name}]({url})"
+PROJECT_UPDATE_TEMPLATE = "{actor} updated project [{name}]({url})"
+PROJECT_REMOVE_TEMPLATE = "{actor} removed project **{name}**."
+PROJECT_UPDATE_CREATE_OR_EDIT_TEMPLATE = (
+    "{user} [{action}]({url}) a status update on **{project_name}** (health: {health}):"
+)
+PROJECT_UPDATE_REMOVE_TEMPLATE = "{user} removed a status update on **{project_name}**."
+
+PROJECT_HEALTH_LABELS = {
+    "onTrack": "On Track",
+    "atRisk": "At Risk",
+    "offTrack": "Off Track",
+}
+
+PROJECT_PRIORITY_LABELS = {
+    1: "Urgent",
+    2: "High",
+    3: "Medium",
+    4: "Low",
+}
 
 
 def get_issue_created_or_updated_message(event: str, payload: WildValue, action: str) -> str:
@@ -97,13 +117,170 @@ def get_comment_message(payload: WildValue, event: str) -> str:
     )
 
 
+def get_actor_name(payload: WildValue) -> str:
+    return payload["actor"]["name"].tame(check_string)
+
+
+# Linear's API name "content" is what users edit as the project description;
+# the separate "description" field is a short summary that rarely changes.
+PROJECT_UPDATE_CHANGE_FIELDS = (
+    "name",
+    "statusId",
+    "leadId",
+    "priority",
+    "startDate",
+    "targetDate",
+    "content",
+)
+
+
+def get_project_update_changes(payload: WildValue) -> list[str]:
+    changes = []
+    data = payload["data"]
+    updated_from = payload["updatedFrom"]
+
+    for key in PROJECT_UPDATE_CHANGE_FIELDS:
+        if key not in updated_from:
+            continue
+
+        if key == "name":
+            changes.append(f"renamed to {data['name'].tame(check_string)}")
+        elif key == "statusId":
+            status = data.get("status")
+            if status:
+                changes.append(f"project status is now {status['name'].tame(check_string)}")
+        elif key == "leadId":
+            lead = data.get("lead")
+            if lead:
+                changes.append(f"{lead['name'].tame(check_string)} is now the project lead")
+        elif key == "priority":
+            new_priority = data["priority"].tame(check_int)
+            if new_priority in PROJECT_PRIORITY_LABELS:
+                changes.append(f"priority is now set to {PROJECT_PRIORITY_LABELS[new_priority]}")
+        elif key in ("startDate", "targetDate"):
+            label = "target date" if key == "targetDate" else "start date"
+            new_value = data[key].tame(check_none_or(check_string))
+            if new_value is not None:
+                old_value = updated_from[key].tame(check_none_or(check_string))
+                if old_value is None:
+                    changes.append(f"{label} is set to {new_value}")
+                elif new_value < old_value:
+                    changes.append(f"{label} is preponed to {new_value}")
+                else:
+                    changes.append(f"{label} is postponed to {new_value}")
+        elif key == "content":
+            changes.append("description is updated")
+
+    return changes
+
+
+def get_project_create_or_update_body(payload: WildValue, action: str) -> str:
+    actor = get_actor_name(payload)
+    name = payload["data"]["name"].tame(check_string)
+    url = payload["url"].tame(check_string)
+
+    if action != "create":
+        # changes is non-empty: content-free updates were filtered in get_event_type.
+        message = PROJECT_UPDATE_TEMPLATE.format(actor=actor, name=name, url=url)
+        sentence = ", ".join(get_project_update_changes(payload))
+        sentence = sentence[0].upper() + sentence[1:]
+        return f"{message}.\n{sentence}."
+
+    message = PROJECT_CREATE_TEMPLATE.format(actor=actor, name=name, url=url)
+
+    to_add = []
+    data = payload["data"]
+
+    status = data.get("status")
+    if status:
+        to_add.append(f"Status: {status['name'].tame(check_string)}")
+
+    lead = data.get("lead")
+    if lead:
+        to_add.append(f"Lead: {lead['name'].tame(check_string)}")
+
+    if "priority" in data:
+        priority = data["priority"].tame(check_int)
+        if priority in PROJECT_PRIORITY_LABELS:
+            to_add.append(f"Priority: {PROJECT_PRIORITY_LABELS[priority]}")
+
+    for date_field, label in (("startDate", "Start date"), ("targetDate", "Target date")):
+        if date_field in data:
+            value = data[date_field].tame(check_none_or(check_string))
+            if value:
+                to_add.append(f"{label}: {value}")
+
+    if "milestones" in data:
+        milestone_names = [m["name"].tame(check_string) for m in data["milestones"]]
+        if milestone_names:
+            label = "Milestone" if len(milestone_names) == 1 else "Milestones"
+            to_add.append(f"{label}: {', '.join(milestone_names)}")
+
+    if to_add:
+        message += f"\n{', '.join(to_add)}."
+    else:  # nocoverage
+        # A project always carries at least a status, so this is defensive.
+        message += "."
+
+    description = data.get("description")
+    if description:
+        description_str = description.tame(check_string)
+        if description_str:
+            message += CONTENT_MESSAGE_TEMPLATE.format(message=description_str)
+
+    return message
+
+
+def get_project_remove_body(payload: WildValue) -> str:
+    return PROJECT_REMOVE_TEMPLATE.format(
+        actor=get_actor_name(payload),
+        name=payload["data"]["name"].tame(check_string),
+    )
+
+
+def get_project_message(payload: WildValue, event: str) -> str:
+    action = payload["action"].tame(check_string)
+    if action == "remove":
+        return get_project_remove_body(payload)
+
+    return get_project_create_or_update_body(payload, "create" if action == "create" else "update")
+
+
+def get_project_update_message(payload: WildValue, event: str) -> str:
+    action = payload["action"].tame(check_string)
+    user = payload["data"]["user"]["name"].tame(check_string)
+    project_name = payload["data"]["project"]["name"].tame(check_string)
+
+    if action == "remove":
+        return PROJECT_UPDATE_REMOVE_TEMPLATE.format(user=user, project_name=project_name)
+
+    health = payload["data"]["health"].tame(check_string)
+    message = PROJECT_UPDATE_CREATE_OR_EDIT_TEMPLATE.format(
+        user=user,
+        action="posted" if action == "create" else "edited",
+        url=payload["url"].tame(check_string),
+        project_name=project_name,
+        health=PROJECT_HEALTH_LABELS.get(health, health),
+    )
+    message += CONTENT_MESSAGE_TEMPLATE.format(message=payload["data"]["body"].tame(check_string))
+
+    if "diffMarkdown" in payload["data"]:
+        diff_markdown = payload["data"]["diffMarkdown"].tame(check_none_or(check_string))
+        if diff_markdown:
+            message += f"\n{diff_markdown}"
+
+    return message
+
+
 EVENT_FUNCTION_MAPPER: dict[str, Callable[[WildValue, str], str]] = {
     "issue": get_issue_or_sub_issue_message,
     "sub_issue": get_issue_or_sub_issue_message,
     "comment": get_comment_message,
+    "project": get_project_message,
+    "project_update": get_project_update_message,
 }
 
-IGNORED_EVENTS = ["IssueLabel", "Project", "ProjectUpdate", "Cycle", "Reaction"]
+IGNORED_EVENTS = ["IssueLabel", "Cycle", "Reaction"]
 
 ALL_EVENT_TYPES = list(EVENT_FUNCTION_MAPPER.keys())
 
@@ -143,6 +320,12 @@ def get_topic(user_specified_topic: str | None, event: str, payload: WildValue) 
     elif event == "issue":
         title = payload["data"]["title"].tame(check_string)
         return f"Issue: {title}"
+    elif event == "project":
+        name = payload["data"]["name"].tame(check_string)
+        return f"Project: {name}"
+    elif event == "project_update":
+        name = payload["data"]["project"]["name"].tame(check_string)
+        return f"Project: {name}"
 
     raise UnsupportedWebhookEventTypeError(event)
 
@@ -157,6 +340,19 @@ def get_event_type(payload: WildValue) -> str | None:
         # Document comments also arrive as Comment events but carry
         # no nested issue object to route a topic to.
         return "comment" if "issue" in payload["data"] else None
+    elif event_type == "Project":
+        # Suppress Project.update events that wouldn't produce a renderable
+        # message: Linear's auto-fire after a ProjectUpdate post (lastUpdateId
+        # in updatedFrom), and any update whose changes are all clears/noise
+        # (we only notify on adds/replaces, not removes).
+        if "updatedFrom" in payload:
+            if "lastUpdateId" in payload["updatedFrom"]:
+                return None
+            if not get_project_update_changes(payload):
+                return None
+        return "project"
+    elif event_type == "ProjectUpdate":
+        return "project_update"
     elif event_type in IGNORED_EVENTS:
         return None
 

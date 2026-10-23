@@ -1,35 +1,55 @@
 {
     "action": "create",
-    "createdAt": "2023-04-11T19:26:16.461Z",
+    "actor": {
+        "id": "e825c109-f691-4716-a85f-b68a2626531c",
+        "name": "Dhruv Shetty",
+        "email": "dhruvshetty2203@gmail.com",
+        "url": "https://linear.app/zulipdhruv/profiles/dhruvshetty2203",
+        "type": "user"
+    },
+    "createdAt": "2026-05-26T07:50:10.584Z",
     "data": {
-        "id": "521660ac-782f-4dd9-8928-95dbc9cb4c9b",
-        "createdAt": "2023-04-11T19:26:16.461Z",
-        "updatedAt": "2023-04-11T19:26:16.461Z",
-        "name": "This is just a sample project to test the working.",
-        "description": "",
-        "slugId": "3d89ec1c20d3",
+        "id": "af46c665-4220-4be6-9fcc-9460717f8134",
+        "createdAt": "2026-05-26T07:50:10.584Z",
+        "updatedAt": "2026-05-26T07:50:10.584Z",
+        "frequencyResolution": "weekly",
+        "name": "Project-Zulip",
+        "description": "This is a project for zulip",
+        "slugId": "a98782de01a9",
         "color": "#bec2c8",
-        "state": "backlog",
-        "creatorId": "674c90c8-35ea-454d-8ca4-5548258fd795",
-        "leadId": "674c90c8-35ea-454d-8ca4-5548258fd795",
-        "sortOrder": 2014.64,
+        "statusId": "3f1ad536-fcf2-4c64-af47-ee92e9272900",
+        "creatorId": "e825c109-f691-4716-a85f-b68a2626531c",
+        "startDate": null,
+        "startDateResolution": null,
+        "targetDate": null,
+        "targetDateResolution": null,
+        "sortOrder": -82.95,
+        "prioritySortOrder": 0,
+        "priority": 0,
         "issueCountHistory": [],
         "completedIssueCountHistory": [],
         "scopeHistory": [],
         "completedScopeHistory": [],
         "inProgressScopeHistory": [],
-        "slackNewIssue": true,
-        "slackIssueComments": true,
-        "slackIssueStatuses": true,
+        "labelIds": [],
+        "url": "https://linear.app/zulipdhruv/project/project-zulip-a98782de01a9",
         "teamIds": [
-            "9e383f51-2629-4f19-97ff-451cc2f0a0ad"
+            "3f2043ea-4f81-4feb-a970-743c92028a07"
         ],
-        "memberIds": [
-            "674c90c8-35ea-454d-8ca4-5548258fd795"
-        ]
+        "memberIds": [],
+        "milestones": [],
+        "initiatives": [],
+        "status": {
+            "id": "3f1ad536-fcf2-4c64-af47-ee92e9272900",
+            "color": "#F2994A",
+            "name": "Backlog",
+            "type": "backlog"
+        },
+        "content": "Description for the project."
     },
-    "url": "https://linear.app/webhooks/project/this-is-just-a-sample-project-to-test-the-working-3d89ec1c20d3",
+    "url": "https://linear.app/zulipdhruv/project/project-zulip-a98782de01a9",
     "type": "Project",
-    "organizationId": "7a661544-df08-4cd1-a1e3-5ec611898806",
-    "webhookTimestamp": 1681241176588
+    "organizationId": "498d97b2-c819-42cc-8d65-7bffd494ed23",
+    "webhookTimestamp": 1779781812825,
+    "webhookId": "a9d5653b-3026-4030-9c0e-ac964e3bb507"
 }

@@ -1,0 +1,39 @@
+{
+    "action": "create",
+    "actor": {
+        "id": "e825c109-f691-4716-a85f-b68a2626531c",
+        "name": "Dhruv Shetty",
+        "email": "dhruvshetty2203@gmail.com",
+        "url": "https://linear.app/zulipdhruv/profiles/dhruvshetty2203",
+        "type": "user"
+    },
+    "createdAt": "2026-06-01T18:23:31.644Z",
+    "data": {
+        "id": "bd310e45-6cf9-4452-9fa0-6b73d2b3d9b9",
+        "createdAt": "2026-06-01T18:23:31.644Z",
+        "updatedAt": "2026-06-01T18:23:31.644Z",
+        "body": "This is a project status update\n**Imported User**[7:03 AM](<http://localhost:9991/#narrow/channel/10-design/topic/.E2.9C.94.20NEW.20router.20wasn.27t.20de-duping.20slowly/near/88>)\n\nExisting robust and atomic methodologies use suffix trees to evaluate trainable theory. The basic tenet of this approach is the development of checksums. Despite the fact that conventional wisdom states that this obstacle is regularly overcame by the deployment of the World Wide Web, we believe that a different approach is necessary.",
+        "reactionData": [],
+        "bodyData": "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"This is a project status update\"},{\"type\":\"hard_break\"},{\"type\":\"text\",\"marks\":[{\"type\":\"strong\"}],\"text\":\"Imported User\"},{\"type\":\"text\",\"marks\":[{\"type\":\"link\",\"attrs\":{\"href\":\"http://localhost:9991/#narrow/channel/10-design/topic/.E2.9C.94.20NEW.20router.20wasn.27t.20de-duping.20slowly/near/88\"}}],\"text\":\"7:03 AM\"}]},{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Existing robust and atomic methodologies use suffix trees to evaluate trainable theory. The basic tenet of this approach is the development of checksums. Despite the fact that conventional wisdom states that this obstacle is regularly overcame by the deployment of the World Wide Web, we believe that a different approach is necessary.\"}]}]}",
+        "slugId": "bd310e45",
+        "projectId": "a2ad5ab3-4d3a-4381-b587-99f83b886b8e",
+        "health": "atRisk",
+        "userId": "e825c109-f691-4716-a85f-b68a2626531c",
+        "project": {
+            "id": "a2ad5ab3-4d3a-4381-b587-99f83b886b8e",
+            "name": "Zulip-terminal",
+            "url": "https://linear.app/zulipdhruv/project/zulip-terminal-5bfd1327f54b"
+        },
+        "user": {
+            "id": "e825c109-f691-4716-a85f-b68a2626531c",
+            "name": "Dhruv Shetty",
+            "email": "dhruvshetty2203@gmail.com",
+            "url": "https://linear.app/zulipdhruv/profiles/dhruvshetty2203"
+        }
+    },
+    "url": "https://linear.app/zulipdhruv/project/zulip-terminal-5bfd1327f54b/activity#project-update-bd310e45",
+    "type": "ProjectUpdate",
+    "organizationId": "498d97b2-c819-42cc-8d65-7bffd494ed23",
+    "webhookTimestamp": 1780338211948,
+    "webhookId": "a9d5653b-3026-4030-9c0e-ac964e3bb507"
+}
