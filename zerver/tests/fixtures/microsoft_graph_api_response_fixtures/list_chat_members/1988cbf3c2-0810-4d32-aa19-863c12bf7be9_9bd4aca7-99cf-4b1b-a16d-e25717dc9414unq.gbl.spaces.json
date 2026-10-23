@@ -1,0 +1,18 @@
+{
+    "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#chats('19%3A88cbf3c2-0810-4d32-aa19-863c12bf7be9_9bd4aca7-99cf-4b1b-a16d-e25717dc9414%40unq.gbl.spaces')/members",
+    "@odata.count": 1,
+    "value": [
+        {
+            "@odata.type": "#microsoft.graph.aadUserConversationMember",
+            "id": "MCMjMCMjYWY0YWNhYjYtNjQ3Ni00YzJmLWJlZjItZmY2NDc5ZGQzOTQwIyMxOTo4OGNiZjNjMi0wODEwLTRkMzItYWExOS04NjNjMTJiZjdiZTlfOWJkNGFjYTctOTljZi00YjFiLWExNmQtZTI1NzE3ZGM5NDE0QHVucS5nYmwuc3BhY2VzIyM4OGNiZjNjMi0wODEwLTRkMzItYWExOS04NjNjMTJiZjdiZTk=",
+            "roles": [
+                "owner"
+            ],
+            "displayName": "Pieter K",
+            "visibleHistoryStartDateTime": "0001-01-01T00:00:00Z",
+            "userId": "88cbf3c2-0810-4d32-aa19-863c12bf7be9",
+            "email": "pieterk@ZulipChat.onmicrosoft.com",
+            "tenantId": "af4acab6-6476-4c2f-bef2-ff6479dd3940"
+        }
+    ]
+}
