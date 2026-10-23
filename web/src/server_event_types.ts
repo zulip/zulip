@@ -2,23 +2,36 @@ import * as z from "zod/mini";
 
 import {group_setting_value_schema, topic_link_schema} from "./types.ts";
 
-// Event types the web app requests from /register via fetch_event_types.
-// Excludes "stream" — the web app doesn't use state["streams"]; it
-// relies on "subscription" data instead.
-// Keep in sync with want() calls in zerver/lib/events.py.
+// Event types the web app passes to /register as fetch_event_types.
+//
+// The server uses this list for two things: which pieces of the initial
+// state to compute, and which of the events that arrive while it computes
+// them get applied to the result. An event type missing here is dropped
+// rather than delivered later, so the list needs both the names of the
+// state pieces we want (e.g. "realm_user_groups") and the names of the
+// events that update them (e.g. "user_group").
+//
+// "stream" is omitted deliberately: the web app works from "subscription"
+// data instead, and requesting it would make the server compute metadata
+// for every channel in the organization.
+// Keep in sync with want() and apply_event() in zerver/lib/events.py.
 export const FETCH_EVENT_TYPES: string[] = [
     "alert_words",
+    "channel_folder",
     "channel_folders",
     "custom_profile_fields",
     "default_stream_groups",
     "default_streams",
+    "delete_message",
     "device",
     "drafts",
     "giphy",
+    "has_webex_token",
+    "has_zoom_token",
     "klipy",
     "message",
-    "muted_topics",
     "muted_users",
+    "navigation_view",
     "navigation_views",
     "onboarding_steps",
     "presence",
@@ -43,7 +56,9 @@ export const FETCH_EVENT_TYPES: string[] = [
     "stop_words",
     "subscription",
     "tenor",
+    "update_message",
     "update_message_flags",
+    "user_group",
     "user_settings",
     "user_status",
     "user_topic",
