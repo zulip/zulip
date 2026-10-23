@@ -406,6 +406,8 @@ test("basic_notifications", () => {
 
     // Notifications API stub
     class StubNotification {
+        static permission = "granted";
+
         constructor(_title, {icon, body, tag}) {
             this.icon = icon;
             this.body = body;
@@ -501,7 +503,7 @@ test("basic_notifications", () => {
     };
 
     // Send notification.
-    message_notifications.process_notification({message: stream_message_1, desktop_notify: true});
+    message_notifications.process_notification(stream_message_1);
     n = desktop_notifications.get_notifications();
     assert.equal(n.has("channel:1:10:whatever"), true);
     assert.equal(n.size, 1);
@@ -516,7 +518,7 @@ test("basic_notifications", () => {
 
     // Send notification.
     stream_message_1.id = 1001;
-    message_notifications.process_notification({message: stream_message_1, desktop_notify: true});
+    message_notifications.process_notification(stream_message_1);
     n = desktop_notifications.get_notifications();
     assert.equal(n.has("channel:1:10:whatever"), true);
     assert.equal(n.size, 1);
@@ -524,14 +526,14 @@ test("basic_notifications", () => {
 
     // Process same message again. Notification count shouldn't increase.
     stream_message_1.id = 1002;
-    message_notifications.process_notification({message: stream_message_1, desktop_notify: true});
+    message_notifications.process_notification(stream_message_1);
     n = desktop_notifications.get_notifications();
     assert.equal(n.has("channel:1:10:whatever"), true);
     assert.equal(n.size, 1);
     assert.equal(last_shown_message_id, stream_message_1.id.toString());
 
     // Send another message. Notification count should increase.
-    message_notifications.process_notification({message: stream_message_2, desktop_notify: true});
+    message_notifications.process_notification(stream_message_2);
     n = desktop_notifications.get_notifications();
     assert.equal(n.has("channel:2:10:lunch"), true);
     assert.equal(n.has("channel:1:10:whatever"), true);
@@ -546,18 +548,21 @@ test("basic_notifications", () => {
     assert.equal(n.size, 0);
     assert.equal(last_closed_message_id, stream_message_2.id.toString());
 
-    message_notifications.process_notification({message: direct_message, desktop_notify: true});
+    message_notifications.process_notification(direct_message);
     n = desktop_notifications.get_notifications();
     assert.equal(n.has("dm:2,3"), true);
     assert.equal(n.size, 1);
     desktop_notifications.close_notification(direct_message.id);
 
-    message_notifications.process_notification({
-        message: test_notification_message,
-        desktop_notify: true,
-    });
+    message_notifications.process_notification(test_notification_message);
     n = desktop_notifications.get_notifications();
     assert.equal(n.has("test:Notification Bot"), true);
     assert.equal(n.size, 1);
     desktop_notifications.close_notification(test_notification_message.id);
+
+    // Without the browser's permission, no notification is shown.
+    StubNotification.permission = "denied";
+    message_notifications.process_notification(stream_message_1);
+    n = desktop_notifications.get_notifications();
+    assert.equal(n.size, 0);
 });
