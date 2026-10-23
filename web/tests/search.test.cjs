@@ -31,8 +31,12 @@ function stub_pills() {
     $pill_input[0].before = noop;
 }
 
+let caret_moved_to_end = false;
 set_global("getSelection", () => ({
-    modify: noop,
+    modify(alter, direction, granularity) {
+        assert.deepEqual([alter, direction, granularity], ["move", "forward", "line"]);
+        caret_moved_to_end = true;
+    },
 }));
 
 let typeahead_forced_open = false;
@@ -89,6 +93,10 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
 
         search_typeahead = {
             shown: false,
+            active_item: false,
+            has_active_item() {
+                return this.shown && this.active_item;
+            },
             lookup() {
                 typeahead_forced_open = true;
             },
@@ -99,9 +107,30 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
         return search_typeahead;
     });
 
+    let narrow_collapses_search_bar = false;
+    let narrowed_terms;
     search.initialize({
-        on_narrow_search() {},
+        on_narrow_search(search_terms) {
+            narrowed_terms = search_terms;
+            if (narrow_collapses_search_bar) {
+                // Like a common narrow, which closes the search bar.
+                $.set_results(".navbar-search.expanded", []);
+                $search_query_box.trigger("blur");
+            }
+        },
     });
+
+    // Removing a search pill with its "x" triggers a "change" event on
+    // the search box. When the typeahead is closed, that shouldn't open
+    // it; an already-open typeahead is refreshed instead.
+    typeahead_forced_open = false;
+    search_typeahead.shown = false;
+    $search_query_box.trigger("change");
+    assert.ok(!typeahead_forced_open);
+    search_typeahead.shown = true;
+    $search_query_box.trigger("change");
+    assert.ok(typeahead_forced_open);
+    search_typeahead.shown = false;
 
     {
         {
@@ -325,8 +354,70 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     $searchbox_form.trigger(ev);
     // No change on first Enter keyup event
     assert.ok($search_query_box.is(":focus"));
+
+    let search_bar_reopened = false;
+    override_rewire(search, "open_search_bar_and_close_narrow_description", () => {
+        search_bar_reopened = true;
+    });
+
+    // Like selecting a typeahead item, narrowing on Enter leaves the
+    // search box focused with the cursor at the end. When the search
+    // bar stays open after narrowing, it isn't reopened.
+    caret_moved_to_end = false;
     $searchbox_form.trigger(ev);
-    assert.ok(!$search_query_box.is(":focus"));
+    assert.ok($search_query_box.is(":focus"));
+    assert.ok(caret_moved_to_end);
+    assert.ok(!search_bar_reopened);
+
+    // When narrowing closes the search bar, it's reopened with the
+    // search box focused.
+    $.reset_selector(".navbar-search.expanded");
+    narrow_collapses_search_bar = true;
+    caret_moved_to_end = false;
+    $searchbox_form.trigger(ev);
+    assert.ok($search_query_box.is(":focus"));
+    assert.ok(caret_moved_to_end);
+    assert.ok(search_bar_reopened);
+    narrow_collapses_search_bar = false;
+    $.reset_selector(".navbar-search.expanded");
+
+    // With the typeahead open, Enter narrows to the current search
+    // terms unless a typeahead item is highlighted. In that case, Enter
+    // selects the item, and the typeahead's updater narrows if needed.
+    terms = [
+        {
+            negated: false,
+            operator: "search",
+            operand: "ver",
+        },
+    ];
+    expected_pill_display_value = "ver";
+    _setup(terms);
+    $search_query_box.trigger("focus");
+    search_typeahead.shown = true;
+
+    function search_enter() {
+        ev.type = "keydown";
+        keydown(ev);
+
+        ev.type = "keyup";
+        $searchbox_form.trigger(ev);
+    }
+
+    ev = {type: "keydown", key: "Enter", preventDefault: noop};
+
+    // An item is highlighted, so the keyup handler does not narrow.
+    search_typeahead.active_item = true;
+    narrowed_terms = null;
+    search_enter();
+    assert.equal(narrowed_terms, null);
+
+    // Nothing highlighted: Enter narrows even though the typeahead is open.
+    search_typeahead.active_item = false;
+    narrowed_terms = null;
+    search_enter();
+    assert.deepEqual(narrowed_terms, terms);
+    search_typeahead.shown = false;
 });
 
 run_test("initiate_search", ({override_rewire}) => {
