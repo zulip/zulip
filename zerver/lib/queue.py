@@ -350,6 +350,7 @@ class TornadoQueueClient(QueueClient[Channel]):
 
     def _on_channel_open(self, channel: Channel) -> None:
         self.channel = channel
+        self.channel.basic_qos(prefetch_count=self.prefetch)
         for callback in self._on_open_cbs:
             callback(channel)
         self._reconnect_consumer_callbacks()
@@ -362,13 +363,9 @@ class TornadoQueueClient(QueueClient[Channel]):
 
     @override
     def ensure_queue(self, queue_name: str, callback: Callable[[Channel], object]) -> None:
-        def set_qos(frame: Any) -> None:
-            assert self.channel is not None
-            self.queues.add(queue_name)
-            self.channel.basic_qos(prefetch_count=self.prefetch, callback=finish)
-
         def finish(frame: Any) -> None:
             assert self.channel is not None
+            self.queues.add(queue_name)
             callback(self.channel)
 
         if queue_name not in self.queues:
@@ -379,7 +376,7 @@ class TornadoQueueClient(QueueClient[Channel]):
                 return
 
             assert self.channel is not None
-            self.channel.queue_declare(queue=queue_name, durable=True, callback=set_qos)
+            self.channel.queue_declare(queue=queue_name, durable=True, callback=finish)
         else:
             assert self.channel is not None
             callback(self.channel)

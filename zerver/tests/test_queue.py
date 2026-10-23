@@ -17,6 +17,27 @@ from zerver.lib.test_classes import ZulipTestCase
 
 class TestTornadoQueueClient(ZulipTestCase):
     @mock.patch("zerver.lib.queue.ExceptionFreeTornadoConnection", autospec=True)
+    def test_register_consumer(self, mock_cxn: mock.MagicMock) -> None:
+        connection = TornadoQueueClient()
+        connection.start_json_consumer("test_suite", lambda events: None)
+
+        channel = mock.MagicMock()
+        channel.queue_declare.side_effect = lambda queue, durable, callback: callback(None)
+        with self.assertLogs("zulip.queue", "INFO") as m:
+            connection._on_channel_open(channel)
+        self.assert_length(m.output, 2)
+        self.assertTrue(m.output[0].endswith(" to queue test_suite"))
+        self.assertEqual(m.output[1], "INFO:zulip.queue:TornadoQueueClient connected")
+        self.assertEqual(
+            channel.mock_calls,
+            [
+                mock.call.basic_qos(prefetch_count=100),
+                mock.call.queue_declare(queue="test_suite", durable=True, callback=mock.ANY),
+                mock.call.basic_consume("test_suite", mock.ANY, consumer_tag=mock.ANY),
+            ],
+        )
+
+    @mock.patch("zerver.lib.queue.ExceptionFreeTornadoConnection", autospec=True)
     def test_on_open_closed(self, mock_cxn: mock.MagicMock) -> None:
         with self.assertLogs("zulip.queue", "WARNING") as m:
             mock_cxn().channel.side_effect = ConnectionClosed(500, "test")
