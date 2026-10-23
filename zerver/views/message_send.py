@@ -21,6 +21,7 @@ from zerver.lib.typed_endpoint import (
     DOCUMENTATION_PENDING,
     ApiParamConfig,
     OptionalTopic,
+    TimestampInDatetimeRange,
     typed_endpoint,
 )
 from zerver.lib.zcommand import process_zcommands
@@ -53,7 +54,8 @@ def send_message_backend(
     req_to: Annotated[str | None, ApiParamConfig("to")] = None,
     req_type: Annotated[Literal["direct", "private", "stream", "channel"], ApiParamConfig("type")],
     time: Annotated[
-        Json[float] | None, ApiParamConfig("time", documentation_status=DOCUMENTATION_PENDING)
+        Json[TimestampInDatetimeRange[float]] | None,
+        ApiParamConfig("time", documentation_status=DOCUMENTATION_PENDING),
     ] = None,
     topic_name: OptionalTopic = None,
     widget_content: Annotated[

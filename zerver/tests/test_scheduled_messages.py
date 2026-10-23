@@ -459,6 +459,21 @@ class ScheduledMessageTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Scheduled delivery time must be in the future.")
 
+    def test_scheduling_with_out_of_range_timestamp(self) -> None:
+        verona_stream_id = self.get_stream_id("Verona")
+        timestamp_in_milliseconds = int(time.time() * 1000)
+
+        for scheduled_delivery_timestamp, expected_error in [
+            (timestamp_in_milliseconds, "scheduled_delivery_timestamp is too large"),
+            (2**63, "scheduled_delivery_timestamp is too large"),
+            (-(10**11), "scheduled_delivery_timestamp is too small"),
+        ]:
+            result = self.do_schedule_message(
+                "channel", verona_stream_id, "Test message", scheduled_delivery_timestamp
+            )
+            self.assert_json_error(result, expected_error)
+        self.assertFalse(ScheduledMessage.objects.exists())
+
     def test_edit_schedule_message(self) -> None:
         content = "Original test message"
         scheduled_delivery_timestamp = int(time.time() + 86400)
@@ -566,6 +581,13 @@ class ScheduledMessageTest(ZulipTestCase):
         }
         result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
         self.assert_json_error(result, "Scheduled delivery time must be in the future.")
+
+        # Trying to edit with an out-of-range timestamp returns an error
+        payload = {
+            "scheduled_delivery_timestamp": int(time.time() * 1000),
+        }
+        result = self.client_patch(f"/json/scheduled_messages/{scheduled_message_id}", payload)
+        self.assert_json_error(result, "scheduled_delivery_timestamp is too large")
 
         # Edit content and time of scheduled message succeeds
         edited_content = "Edited test message"

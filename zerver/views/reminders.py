@@ -8,7 +8,7 @@ from zerver.lib.reminders import access_reminder
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.typed_endpoint import PathOnly, typed_endpoint
+from zerver.lib.typed_endpoint import PathOnly, TimestampInDatetimeRange, typed_endpoint
 from zerver.models import UserProfile
 
 
@@ -18,7 +18,7 @@ def create_reminders_message_backend(
     user_profile: UserProfile,
     *,
     message_id: Json[int],
-    scheduled_delivery_timestamp: Json[int],
+    scheduled_delivery_timestamp: Json[TimestampInDatetimeRange[int]],
     note: str | None = None,
 ) -> HttpResponse:
     deliver_at = timestamp_to_datetime(scheduled_delivery_timestamp)
