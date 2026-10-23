@@ -174,6 +174,7 @@ class FakeElement extends RejectMissing {
         super();
         fake_element_state.set(this, new FakeElementState());
     }
+    animate() {}
     append() {}
     closest(selector) {
         const state = fake_element_state.get(this);

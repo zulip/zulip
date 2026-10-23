@@ -416,6 +416,34 @@ export function rewire_find_reaction(value: typeof find_reaction): void {
     find_reaction = value;
 }
 
+export let animate_reaction_arrival = (event: ReactionEvent): void => {
+    // Draws the eye to a reaction that has just landed on a message the user
+    // is looking at. Only the current message list is on screen; other
+    // rendered lists, which may hold the same message, are hidden.
+    const $row = message_lists.current?.get_row(event.message_id) ?? $();
+    const reaction = find_reaction_in_rows($row, get_local_reaction_id(event))[0];
+    if (!reaction || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        return;
+    }
+
+    const reaction_arrival_pop_keyframes: Keyframe[] = [
+        {offset: 0, transform: "scale(1)"},
+        {offset: 0.3, transform: "translateY(-1px) scale(1.25)"},
+        {offset: 0.6, transform: "scale(0.98)"},
+        {offset: 0.8, transform: "scale(1.007)"},
+        {offset: 1, transform: "scale(1)"},
+    ];
+
+    reaction.animate(reaction_arrival_pop_keyframes, {
+        duration: 800,
+        easing: "cubic-bezier(0.34, 1.2, 0.64, 1)",
+    });
+};
+
+export function rewire_animate_reaction_arrival(value: typeof animate_reaction_arrival): void {
+    animate_reaction_arrival = value;
+}
+
 export function get_add_reaction_button(message_id: number): JQuery {
     const $reaction_section = get_reaction_sections(message_id);
     const $add_button = $reaction_section.find(".reaction_button");

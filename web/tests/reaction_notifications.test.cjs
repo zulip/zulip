@@ -548,7 +548,8 @@ test("a removal dismisses its notification even when notifications are off", ({o
     assert.deepEqual(notices.closed_tags, [message.id.toString()]);
 });
 
-test("reactions notify unless the message is on screen", ({override}) => {
+test("reactions notify unless the message is on screen", ({override, override_rewire}) => {
+    override_rewire(reactions, "animate_reaction_arrival", noop);
     const message_id = 3700;
     cache_message(message_id);
 
@@ -1318,7 +1319,11 @@ test("muting or deleting takes a counted reaction out of the count", ({override}
     assert.equal(reactions.get_count(), 0);
 });
 
-test("only a reaction the user has no other way to find is counted", ({override}) => {
+test("only a reaction the user has no other way to find is counted", ({
+    override,
+    override_rewire,
+}) => {
+    override_rewire(reactions, "animate_reaction_arrival", noop);
     serve_fetched_messages(override);
     const message_id = 4700;
     cache_message(message_id);
@@ -1367,6 +1372,43 @@ test("only a reaction the user has no other way to find is counted", ({override}
     override(message_viewport, "viewport_is_visible_and_focused", () => false);
     received_reaction(reaction_event(message_id, alice.user_id, thumbs_up));
     assert.equal(reactions.get_count(), 3);
+});
+
+test("a reaction on screen animates in place of notifying", ({override, override_rewire}) => {
+    const message_id = 4650;
+    cache_message(message_id);
+    const message = message_store.get(message_id);
+
+    const animated = [];
+    override_rewire(reactions, "animate_reaction_arrival", (event) => {
+        animated.push(event);
+    });
+
+    override(message_viewport, "viewport_is_visible_and_focused", () => true);
+    override(message_lists, "current", {
+        get: (id) => (id === message_id ? message : undefined),
+    });
+    override(message_viewport, "is_message_visible", viewport_showing(message_id));
+
+    const from_alice = reaction_event(message_id, alice.user_id);
+    received_reaction(from_alice);
+    assert.deepEqual(animated, [added(from_alice)]);
+    assert.equal(notices.shown_count, 0);
+
+    // Only reactions by others to the user's own messages are animated.
+    received_reaction({
+        ...reaction_event(message_id, alice.user_id, thumbs_up),
+        message_sender_id: bob.user_id,
+    });
+    received_reaction(reaction_event(message_id, current_user.user_id, thumbs_up));
+    assert.deepEqual(animated, [added(from_alice)]);
+
+    // Scrolled out of sight, a reaction gets a notification instead; there is
+    // nothing on screen for an animation to draw the eye to.
+    override(message_viewport, "is_message_visible", viewport_showing());
+    received_reaction(reaction_event(message_id, bob.user_id));
+    assert.deepEqual(animated, [added(from_alice)]);
+    assert.equal(notices.shown_count, 1);
 });
 
 test("the left sidebar row is updated once per batch of reactions", ({override}) => {

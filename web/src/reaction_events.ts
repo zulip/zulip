@@ -91,8 +91,12 @@ function is_reaction_event_meaningful(event: ReactionEvent): boolean {
 }
 
 function show_reaction_in_app(message: Message, event: ReactionEvent): void {
-    // A count on the left sidebar's Reactions row, for a reaction the user
-    // has no other way to find.
+    // An animation if the user is looking at the message, or else a count
+    // on the left sidebar's Reactions row.
+    if (message_viewport.is_message_on_screen(message)) {
+        reactions.animate_reaction_arrival(event);
+        return;
+    }
 
     // Muted channels and topics are excluded from the count, as they are
     // from notifications.
@@ -104,8 +108,8 @@ function show_reaction_in_app(message: Message, event: ReactionEvent): void {
         message_viewport.viewport_is_visible_and_focused() &&
         message_lists.current?.get(message.id) !== undefined
     ) {
-        // On screen, or scrolled out of sight in the list the user is
-        // reading, so the count has nothing to point them to.
+        // Scrolled out of sight in the list the user is reading, so the
+        // count has nothing to point them to.
         return;
     }
 
@@ -265,8 +269,9 @@ function fetch_messages_for_reactions(
 
 export function received_reactions(events: ServerReactionEvent[]): void {
     // Apply every reaction to its message first, so that the rest of this
-    // batch sees the message as it now is. Reactions to a message being
-    // fetched are held instead, and applied when the fetch settles.
+    // batch sees the message as it now is; the animation looks for the
+    // reaction there. Reactions to a message being fetched are held
+    // instead, and applied when the fetch settles.
     for (const event of events) {
         // A failure to apply one reaction should not keep the rest of
         // the batch from being applied.
