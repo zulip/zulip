@@ -221,7 +221,7 @@ def gogs_webhook_main(
         topic_name = TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=repo,
             type="PR",
-            id=payload["pull_request"]["id"].tame(check_int),
+            id=payload["pull_request"]["number"].tame(check_int),
             title=payload["pull_request"]["title"].tame(check_string),
         )
     elif event == "issues":
