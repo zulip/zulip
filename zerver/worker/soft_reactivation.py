@@ -4,7 +4,7 @@ from typing import Any
 
 from typing_extensions import override
 
-from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
+from zerver.lib.soft_deactivation import reactivate_user_for_queued_job
 from zerver.models.users import get_user_profile_by_id
 from zerver.worker.base import QueueProcessingWorker, assign_queue
 
@@ -14,15 +14,16 @@ logger = logging.getLogger(__name__)
 @assign_queue("soft_reactivation")
 class SoftReactivationWorker(QueueProcessingWorker):
     """Backfills the UserMessage rows skipped while a long-term-idle user was
-    soft-deactivated, in response to a signal that the user is likely about to
-    return (a notification or password-reset email).
+    soft-deactivated, for a client waiting on it to load the user's account,
+    or in response to a signal that the user is likely about to return (a
+    notification or password-reset email).
 
     It's undesirable for these jobs to share the deferred_work queue with jobs
     such as realm exports, which can take many minutes: a prolonged delay in
     processing a soft reactivation gives the returning user a bad experience,
-    and can race with the synchronous reactivation that runs when the user
-    loads the app. A server can opt into this dedicated queue via the
-    DEDICATED_SOFT_REACTIVATION_QUEUE setting.
+    and can race with the synchronous reactivation that runs when a client
+    registers without deferring it. A server can opt into this dedicated
+    queue via the DEDICATED_SOFT_REACTIVATION_QUEUE setting.
     """
 
     # Soft reactivation has always run without a per-event timeout, as part of
@@ -38,4 +39,6 @@ class SoftReactivationWorker(QueueProcessingWorker):
             event["user_profile_id"],
         )
         user_profile = get_user_profile_by_id(event["user_profile_id"])
-        reactivate_user_if_soft_deactivated(user_profile)
+        reactivate_user_for_queued_job(
+            user_profile, notify_client=event.get("notify_client", False)
+        )
