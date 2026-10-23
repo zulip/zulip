@@ -6110,6 +6110,41 @@ class PushNotificationsEnabledStatus:
 MAX_USERS_WITHOUT_PLAN = 10
 
 
+def remote_realm_on_discounted_plan(remote_realm: RemoteRealm) -> bool:
+    customer = get_customer_by_remote_realm(remote_realm)
+    if customer is None:
+        return False
+
+    return customer.monthly_discounted_price > 0 or customer.annual_discounted_price > 0
+
+
+def remote_realm_eligible_for_non_workplace_pricing(remote_realm: RemoteRealm) -> bool:
+    if remote_realm.plan_type in (
+        RemoteRealm.PLAN_TYPE_COMMUNITY,
+        RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY,
+    ):
+        # Sponsored and complimentary access plans are completely free, so it
+        # would be distracting to offer menu options for discounted pricing.
+        return False
+
+    customer = get_customer_by_remote_realm(remote_realm)
+    if customer is None:
+        # Pricing for users outside a realm's workplace_users_group is
+        # configured per realm, so a realm billed under a plan for the whole
+        # server cannot use it.
+        return False
+
+    plan = get_current_plan_by_customer(customer)
+    if plan is None:
+        # Support staff have manually set a paid plan type for this realm,
+        # and we want them to be able to correctly configure their billing.
+        return True
+
+    # Discounted pricing for non-workplace users is currently incompatible
+    # with a fixed-price plan.
+    return plan.fixed_price is None
+
+
 def get_push_status_for_remote_request(
     remote_server: RemoteZulipServer, remote_realm: RemoteRealm | None
 ) -> PushNotificationsEnabledStatus:
