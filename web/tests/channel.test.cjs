@@ -320,6 +320,43 @@ test("xhr_error_message", () => {
 
     msg = "";
     assert.equal(channel.xhr_error_message(msg, xhr), "file not found");
+
+    xhr = {
+        status: "400",
+        responseJSON: {msg: "You are not allowed to mention user group 'hamletcharacters'."},
+    };
+    msg = "Error editing message";
+    assert.equal(
+        channel.xhr_error_message(msg, xhr),
+        "Error editing message: You are not allowed to mention user group 'hamletcharacters'.",
+    );
+});
+
+test("xhr_error_message_html", () => {
+    let xhr = {
+        status: "200",
+        responseJSON: undefined,
+        responseText: "does not matter",
+    };
+    let msg_html = "<b>data</b> added";
+    assert.equal(channel.xhr_error_message_html(msg_html, xhr), "<b>data</b> added");
+
+    xhr = {
+        status: "400",
+        responseJSON: {msg: "You are not allowed to mention user group 'hamletcharacters'."},
+    };
+
+    msg_html = "Error editing message";
+    assert.equal(
+        channel.xhr_error_message_html(msg_html, xhr),
+        "Error editing message: You are not allowed to mention user group &#39;hamletcharacters&#39;.",
+    );
+
+    msg_html = "";
+    assert.equal(
+        channel.xhr_error_message_html(msg_html, xhr),
+        "You are not allowed to mention user group &#39;hamletcharacters&#39;.",
+    );
 });
 
 test("while_reloading", () => {
