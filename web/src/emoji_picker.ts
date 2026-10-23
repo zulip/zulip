@@ -130,12 +130,13 @@ class UserStatusSession {
     */
 
     update_the_status_emoji_for_our_user(emoji_name: string, include_emoji_details = false): void {
-        // THIS IS THE MAIN POINT OF THE EXERCISE!
+        // When plain text emojiset is selected, we do not fetch emoji details
+        // as status emojis are hidden/suppressed in accordance with accessibility/plain-text design.
         let emoji_info = {
             emoji_name,
             emoji_alt_code: user_settings.emojiset === "text",
         };
-        if (include_emoji_details || !emoji_info.emoji_alt_code) {
+        if (!emoji_info.emoji_alt_code && include_emoji_details) {
             emoji_info = {...emoji_info, ...emoji.get_emoji_details_by_name(emoji_name)};
         }
         user_status_ui.set_selected_emoji_info(emoji_info);
