@@ -16206,6 +16206,17 @@ paths:
                     this behavior was not configurable.
                   type: boolean
                   example: true
+                web_left_sidebar_dm_collapse_policy:
+                  description: |
+                    Whether to pin direct messages section in the left sidebar.
+
+                    - 1 - When scrolling down (default)
+                    - 2 - Never
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                  example: 1
             encoding:
               starred_message_counts:
                 contentType: application/json
@@ -16314,6 +16325,8 @@ paths:
               email_address_visibility:
                 contentType: application/json
               web_navigate_to_sent_message:
+                contentType: application/json
+              web_left_sidebar_dm_collapse_policy:
                 contentType: application/json
       responses:
         "200":
@@ -20062,6 +20075,15 @@ paths:
                               - 3 - No channels
 
                               **Changes**: New in Zulip 8.0 (feature level 210).
+                          web_left_sidebar_dm_collapse_policy:
+                            type: integer
+                            description: |
+                              Whether to pin direct messages section in the left sidebar.
+
+                              - 1 - When scrolling down (default)
+                              - 2 - Never
+
+                              **Changes**: New in Zulip 13.0 (feature level ZF-189dd6).
                           hide_ai_features:
                             type: boolean
                             description: |
@@ -22471,6 +22493,15 @@ paths:
                               - 3 - No channels
 
                               **Changes**: New in Zulip 8.0 (feature level 210).
+                          web_left_sidebar_dm_collapse_policy:
+                            type: integer
+                            description: |
+                              Whether to pin direct messages section in the left sidebar.
+
+                              - 1 - When scrolling down (default)
+                              - 2 - Never
+
+                              **Changes**: New in Zulip 13.0 (feature level ZF-189dd6).
                           hide_ai_features:
                             type: boolean
                             description: |
@@ -24245,6 +24276,19 @@ paths:
                     this behavior was not configurable.
                   type: boolean
                   example: true
+                web_left_sidebar_dm_collapse_policy:
+                  description: |
+                    Whether to pin direct messages section in the left sidebar.
+
+                    - 1 - When scrolling down (default)
+                    - 2 - Never
+
+                    **Changes**: New in Zulip 13.0 (feature level ZF-189dd6).
+                  type: integer
+                  enum:
+                    - 1
+                    - 2
+                  example: 1
             encoding:
               target_users:
                 contentType: application/json
@@ -24361,6 +24405,8 @@ paths:
               email_address_visibility:
                 contentType: application/json
               web_navigate_to_sent_message:
+                contentType: application/json
+              web_left_sidebar_dm_collapse_policy:
                 contentType: application/json
       responses:
         "200":
