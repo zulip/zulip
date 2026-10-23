@@ -1,0 +1,35 @@
+{
+    "id": "uev_00000000000000000000000003",
+    "type": "deployment.error",
+    "createdAt": 1740000003000,
+    "region": "sfo1",
+    "payload": {
+        "team": {
+            "id": "team_00000000000000000000000000"
+        },
+        "user": {
+            "id": "user_0000000000000000000000"
+        },
+        "project": {
+            "id": "prj_00000000000000000000000000"
+        },
+        "target": "production",
+        "plan": "pro",
+        "regions": [
+            "sfo1"
+        ],
+        "deployment": {
+            "id": "dpl_00000000000000000000000003",
+            "name": "my-app",
+            "url": "my-app-000003.vercel.app",
+            "meta": {
+                "githubCommitRef": "main",
+                "githubCommitMessage": "Refactor the build pipeline"
+            }
+        },
+        "links": {
+            "deployment": "https://vercel.com/acme/my-app/dpl_00000000000000000000000003",
+            "project": "https://vercel.com/acme/my-app"
+        }
+    }
+}
