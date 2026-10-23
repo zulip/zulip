@@ -5232,7 +5232,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream_announcements_stream = get_stream(self.streams[0], self.test_realm)
         self.test_realm.new_stream_announcements_stream_id = new_stream_announcements_stream.id
         self.test_realm.save()
-        with self.assert_database_query_count(57):
+        with self.assert_database_query_count(53):
             self.subscribe_via_post(
                 self.test_user,
                 [new_streams[2]],
@@ -5426,7 +5426,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # the bot should send DMs to all the newly subscribed users, but
         # no announcement message.
         now = timezone_now()
-        with self.assert_database_query_count(90):
+        with self.assert_database_query_count(70):
             response = self.subscribe_via_post(
                 desdemona,
                 [test_channel.name],
@@ -5456,7 +5456,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # we expect an announcement message and new channel message,
         # but no DM notifications.
         now = timezone_now()
-        with self.assert_database_query_count(57):
+        with self.assert_database_query_count(53):
             response = self.subscribe_via_post(
                 desdemona,
                 ["test B"],
@@ -5545,7 +5545,7 @@ class SubscriptionAPITest(ZulipTestCase):
         now = timezone_now()
         with (
             self.settings(MAX_BULK_NEW_SUBSCRIPTION_MESSAGES=5),
-            self.assert_database_query_count(57),
+            self.assert_database_query_count(53),
         ):
             response = self.subscribe_via_post(
                 desdemona,

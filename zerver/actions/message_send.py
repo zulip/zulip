@@ -956,7 +956,7 @@ def create_user_messages(
 
 
 def filter_presence_idle_user_ids(user_ids: set[int]) -> list[int]:
-    # Given a set of user IDs (the recipients of a message), accesses
+    # Given a set of user IDs (the recipients of messages), accesses
     # the UserPresence table to determine which of these users are
     # currently idle and should potentially get email notifications
     # (and push notifications with
@@ -975,32 +975,77 @@ def filter_presence_idle_user_ids(user_ids: set[int]) -> list[int]:
     return sorted(idle_user_ids)
 
 
-def get_active_presence_idle_user_ids(
+def get_notifiable_if_idle_user_ids(
     realm: Realm,
     sender_id: int,
     user_notifications_data_list: list[UserMessageNotificationsData],
-) -> list[int]:
+) -> set[int]:
     """
-    Given a list of active_user_ids, we build up a subset
-    of those users who fit these criteria:
-
-        * They are likely to receive push or email notifications.
-        * They are no longer "present" according to the
-          UserPresence table.
+    Returns the users who would get a push or email notification for
+    the message if they were idle.
     """
 
     if realm.presence_disabled:  # nocoverage
-        return []
+        return set()
 
     user_ids = set()
     for user_notifications_data in user_notifications_data_list:
         # We only need to know the presence idle state for a user if this message would be notifiable
-        # for them if they were indeed idle. Only including those users in the calculation below is a
+        # for them if they were indeed idle. Only including those users in the presence query is a
         # very important optimization for open communities with many inactive users.
         if user_notifications_data.is_notifiable(sender_id, idle=True):
             user_ids.add(user_notifications_data.user_id)
 
-    return filter_presence_idle_user_ids(user_ids)
+    return user_ids
+
+
+def get_presence_idle_user_ids_by_message_id(
+    send_message_requests: list[SendMessageRequest],
+    user_message_flags: dict[int, dict[int, list[str]]],
+) -> dict[int, list[int]]:
+    notifiable_if_idle_user_ids_by_message_id: dict[int, set[int]] = {}
+    for send_request in send_message_requests:
+        user_flags = user_message_flags.get(send_request.message.id, {})
+        user_notifications_data_list = [
+            UserMessageNotificationsData.from_user_id_sets(
+                user_id=user_id,
+                flags=user_flags.get(user_id, []),
+                private_message=not send_request.message.is_channel_message,
+                disable_external_notifications=send_request.disable_external_notifications,
+                online_push_user_ids=send_request.online_push_user_ids,
+                dm_mention_push_disabled_user_ids=send_request.dm_mention_push_disabled_user_ids,
+                dm_mention_email_disabled_user_ids=send_request.dm_mention_email_disabled_user_ids,
+                stream_push_user_ids=send_request.stream_push_user_ids,
+                stream_email_user_ids=send_request.stream_email_user_ids,
+                topic_wildcard_mention_user_ids=send_request.topic_wildcard_mention_user_ids,
+                stream_wildcard_mention_user_ids=send_request.stream_wildcard_mention_user_ids,
+                followed_topic_push_user_ids=send_request.followed_topic_push_user_ids,
+                followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
+                topic_wildcard_mention_in_followed_topic_user_ids=send_request.topic_wildcard_mention_in_followed_topic_user_ids,
+                stream_wildcard_mention_in_followed_topic_user_ids=send_request.stream_wildcard_mention_in_followed_topic_user_ids,
+                muted_sender_user_ids=send_request.muted_sender_user_ids,
+                all_bot_user_ids=send_request.all_bot_user_ids,
+                push_device_registered_user_ids=send_request.push_device_registered_user_ids,
+            )
+            for user_id in send_request.active_user_ids
+        ]
+        notifiable_if_idle_user_ids_by_message_id[send_request.message.id] = (
+            get_notifiable_if_idle_user_ids(
+                realm=send_request.realm,
+                sender_id=send_request.message.sender_id,
+                user_notifications_data_list=user_notifications_data_list,
+            )
+        )
+
+    idle_user_ids = set(
+        filter_presence_idle_user_ids(
+            set().union(*notifiable_if_idle_user_ids_by_message_id.values())
+        )
+    )
+    return {
+        message_id: sorted(user_ids & idle_user_ids)
+        for message_id, user_ids in notifiable_if_idle_user_ids_by_message_id.items()
+    }
 
 
 def get_message_url_and_link(
@@ -1037,6 +1082,26 @@ def get_message_url_and_link(
     )
     link = f"[{label}]({url})"
     return url, link
+
+
+def get_wide_message_dicts(
+    send_message_requests: list[SendMessageRequest],
+) -> dict[int, dict[str, Any]]:
+    messages_by_realm_id: dict[int, list[Message]] = defaultdict(list)
+    for send_request in send_message_requests:
+        messages_by_realm_id[send_request.message.realm_id].append(send_request.message)
+
+    recipient_dm_user_ids = {
+        send_request.message.recipient_id: send_request.dm_involved_user_ids
+        for send_request in send_message_requests
+        if send_request.dm_involved_user_ids is not None
+    }
+    wide_message_dicts: dict[int, dict[str, Any]] = {}
+    for realm_id, messages in messages_by_realm_id.items():
+        wide_message_dicts.update(
+            MessageDict.wide_dicts_for_new_messages(messages, realm_id, recipient_dm_user_ids)
+        )
+    return wide_message_dicts
 
 
 @transaction.atomic(savepoint=False)
@@ -1136,6 +1201,11 @@ def do_send_messages(
     for send_request in send_message_requests:
         do_widget_post_save_actions(send_request)
 
+    wide_message_dicts = get_wide_message_dicts(send_message_requests)
+    presence_idle_user_ids_by_message_id = get_presence_idle_user_ids_by_message_id(
+        send_message_requests, user_message_flags
+    )
+
     # This next loop is responsible for notifying other parts of the
     # Zulip system about the messages we just committed to the database:
     # * Sender automatically follows or unmutes the topic depending on 'automatically_follow_topics_policy'
@@ -1230,11 +1300,7 @@ def do_send_messages(
 
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
-        wide_message_dict = MessageDict.wide_dict(
-            send_request.message,
-            realm_id,
-            dm_involved_user_ids=send_request.dm_involved_user_ids,
-        )
+        wide_message_dict = wide_message_dicts[send_request.message.id]
 
         send_request.message_url, send_request.message_link = get_message_url_and_link(
             send_request, wide_message_dict
@@ -1289,38 +1355,6 @@ def do_send_messages(
 
             users.append(user_data)
 
-        sender = send_request.message.sender
-        recipient_type = wide_message_dict["type"]
-        user_notifications_data_list = [
-            UserMessageNotificationsData.from_user_id_sets(
-                user_id=user_id,
-                flags=user_flags.get(user_id, []),
-                private_message=recipient_type == "private",
-                disable_external_notifications=send_request.disable_external_notifications,
-                online_push_user_ids=send_request.online_push_user_ids,
-                dm_mention_push_disabled_user_ids=send_request.dm_mention_push_disabled_user_ids,
-                dm_mention_email_disabled_user_ids=send_request.dm_mention_email_disabled_user_ids,
-                stream_push_user_ids=send_request.stream_push_user_ids,
-                stream_email_user_ids=send_request.stream_email_user_ids,
-                topic_wildcard_mention_user_ids=send_request.topic_wildcard_mention_user_ids,
-                stream_wildcard_mention_user_ids=send_request.stream_wildcard_mention_user_ids,
-                followed_topic_push_user_ids=send_request.followed_topic_push_user_ids,
-                followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
-                topic_wildcard_mention_in_followed_topic_user_ids=send_request.topic_wildcard_mention_in_followed_topic_user_ids,
-                stream_wildcard_mention_in_followed_topic_user_ids=send_request.stream_wildcard_mention_in_followed_topic_user_ids,
-                muted_sender_user_ids=send_request.muted_sender_user_ids,
-                all_bot_user_ids=send_request.all_bot_user_ids,
-                push_device_registered_user_ids=send_request.push_device_registered_user_ids,
-            )
-            for user_id in send_request.active_user_ids
-        ]
-
-        presence_idle_user_ids = get_active_presence_idle_user_ids(
-            realm=send_request.realm,
-            sender_id=sender.id,
-            user_notifications_data_list=user_notifications_data_list,
-        )
-
         if send_request.recipients_for_user_creation_events is not None:
             from zerver.actions.create_user import notify_created_user
 
@@ -1333,7 +1367,7 @@ def do_send_messages(
         event = InternalMessageEvent(
             message=send_request.message.id,
             message_dict=wide_message_dict,
-            presence_idle_user_ids=presence_idle_user_ids,
+            presence_idle_user_ids=presence_idle_user_ids_by_message_id[send_request.message.id],
             online_push_user_ids=list(send_request.online_push_user_ids),
             dm_mention_push_disabled_user_ids=list(send_request.dm_mention_push_disabled_user_ids),
             dm_mention_email_disabled_user_ids=list(
