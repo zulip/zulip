@@ -22,11 +22,46 @@ class PatreonHookTests(WebhookTestCase):
         )
 
     def test_patreon_members_update(self) -> None:
+        # Fixture has an entitled amount, so we treat this as a pledge notice
+        # (Patreon often delivers pledges as members:update).
+        expected_message = (
+            "Kopi has pledged $1.00 per month. :tada:\nTotal number of patrons: 0"
+        )
+        self.check_webhook(
+            "members_update",
+            EXPECTED_TOPIC,
+            expected_message,
+        )
+
+    def test_patreon_members_update_without_pledge_amount(self) -> None:
+        payload = orjson.loads(self.get_body("members_update"))
+        payload["data"]["attributes"]["currently_entitled_amount_cents"] = 0
         expected_message = "Kopi's membership has been updated to active patron."
         self.check_webhook(
             "members_update",
             EXPECTED_TOPIC,
             expected_message,
+            custom_payload=payload,
+        )
+
+    def test_patreon_members_update_paid_pledge_change(self) -> None:
+        payload = orjson.loads(self.get_body("members_pledge_update"))
+        expected_message = "Kopi has updated their pledge to $10.00 per month. :gear:"
+        self.check_webhook(
+            "members_update",
+            EXPECTED_TOPIC,
+            expected_message,
+            custom_payload=payload,
+        )
+
+    def test_patreon_members_create_with_pledge(self) -> None:
+        payload = orjson.loads(self.get_body("members_pledge_create"))
+        expected_message = "Kopi has pledged $5.00 per month. :tada:\nTotal number of patrons: 5"
+        self.check_webhook(
+            "members_create",
+            EXPECTED_TOPIC,
+            expected_message,
+            custom_payload=payload,
         )
 
     def test_patreon_members_delete(self) -> None:
