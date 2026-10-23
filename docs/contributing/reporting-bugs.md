@@ -41,6 +41,14 @@ Filing a GitHub issue works best when:
   This is important for developers to be able to fix the bug, and test that
   their fix worked.
 
+::: warning
+
+Do not file issues found by LLMs where the reproducer is not something a user
+would reasonably do, and the impact is of little consequence. These reports are a
+distraction from work that truly helps Zulip's users.
+
+:::
+
 If all of the above accurately describe your situation, please file an issue!
 Otherwise, we recommend [starting a
 conversation](#starting-a-conversation-about-a-possible-bug) in the Zulip
