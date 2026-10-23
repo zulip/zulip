@@ -3,7 +3,13 @@ from unittest import mock
 
 import orjson
 from django.test import override_settings
-from pika.exceptions import AMQPConnectionError, ConnectionClosed
+from pika.exceptions import (
+    AMQPConnectionError,
+    ChannelClosedByBroker,
+    ChannelClosedByClient,
+    ConnectionClosed,
+    StreamLostError,
+)
 from typing_extensions import override
 
 from zerver.lib.queue import (
@@ -31,11 +37,37 @@ class TestTornadoQueueClient(ZulipTestCase):
         self.assertEqual(
             channel.mock_calls,
             [
+                mock.call.add_on_close_callback(connection._on_channel_closed),
                 mock.call.basic_qos(prefetch_count=100),
                 mock.call.queue_declare(queue="test_suite", durable=True, callback=mock.ANY),
                 mock.call.basic_consume("test_suite", mock.ANY, consumer_tag=mock.ANY),
             ],
         )
+
+    @mock.patch("zerver.lib.queue.ExceptionFreeTornadoConnection", autospec=True)
+    def test_channel_closed_by_broker(self, mock_cxn: mock.MagicMock) -> None:
+        connection = TornadoQueueClient()
+        channel = mock.MagicMock()
+        with self.assertLogs("zulip.queue", "INFO"):
+            connection._on_channel_open(channel)
+
+        # Closes from our side, or from losing the connection, are
+        # handled by _on_connection_closed.
+        connection._on_channel_closed(channel, ChannelClosedByClient(200, "Normal shutdown"))
+        connection._on_channel_closed(channel, StreamLostError("Transport indicated EOF"))
+        mock_cxn.return_value.close.assert_not_called()
+
+        with self.assertLogs("zulip.queue", "ERROR") as m:
+            connection._on_channel_closed(
+                channel, ChannelClosedByBroker(406, "PRECONDITION_FAILED")
+            )
+        self.assertEqual(
+            m.output,
+            [
+                "ERROR:zulip.queue:TornadoQueueClient's channel was closed by RabbitMQ: (406, 'PRECONDITION_FAILED')"
+            ],
+        )
+        mock_cxn.return_value.close.assert_called_once_with()
 
     @mock.patch("zerver.lib.queue.ExceptionFreeTornadoConnection", autospec=True)
     def test_on_open_closed(self, mock_cxn: mock.MagicMock) -> None:
