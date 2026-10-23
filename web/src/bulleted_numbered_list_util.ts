@@ -17,3 +17,12 @@ export const is_list_item = (line: string): boolean => {
     const trimmed = line.trimStart();
     return is_bulleted(trimmed) || is_numbered(trimmed);
 };
+
+// Returns the indentation and list marker, including the spaces after
+// the marker, at the start of the line (e.g., "  - " or "1. ").
+export const get_prefix = (line: string): string => {
+    const indent = get_indent(line);
+    const rest = line.slice(indent.length);
+    const marker = is_list_item(rest) ? /^\S+\s+/.exec(rest)![0] : "";
+    return indent + marker;
+};
