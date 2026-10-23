@@ -15,6 +15,7 @@ export type ActionButton = {
     icon?: string;
     id?: string;
     custom_classes?: string;
+    "aria-describedby"?: string;
 };
 
 let loading_indicator_count = 0;
