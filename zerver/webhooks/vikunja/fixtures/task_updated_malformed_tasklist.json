@@ -1,0 +1,50 @@
+{
+  "event_name": "task.updated",
+  "time": "2026-01-19T15:13:04.476828104Z",
+  "data": {
+    "doer": {
+      "id": 1,
+      "name": "John Doe",
+      "username": "jdoe",
+      "created": "2026-01-16T13:18:58+01:00",
+      "updated": "2026-01-16T13:58:06+01:00"
+    },
+    "project": {
+      "id": 26,
+      "title": "Meeting",
+      "parent_project_id": 21,
+      "is_archived": false,
+      "created": "2026-01-16T13:37:36+01:00",
+      "updated": "2026-01-19T16:13:04+01:00"
+    },
+    "task": {
+      "id": 542,
+      "title": "Task with malformed checklist",
+      "description": "<p>Here is a malformed task list:</p><ul data-type=\"taskList\"></ul>",
+      "done": false,
+      "done_at": "0001-01-01T00:00:00Z",
+      "due_date": "0001-01-01T00:00:00Z",
+      "project_id": 26,
+      "priority": 0,
+      "start_date": "0001-01-01T00:00:00Z",
+      "end_date": "0001-01-01T00:00:00Z",
+      "labels": [],
+      "hex_color": "",
+      "percent_done": 0,
+      "identifier": "#15",
+      "index": 15,
+      "buckets": [
+        {
+          "id": 198,
+          "title": "To Do",
+          "project_view_id": 104,
+          "position": 300,
+          "created": "2026-01-16T13:37:36+01:00",
+          "updated": "2026-01-16T13:37:36+01:00"
+        }
+      ],
+      "created": "2026-01-16T13:37:37+01:00",
+      "updated": "2026-01-19T16:13:10+01:00"
+    }
+  }
+}

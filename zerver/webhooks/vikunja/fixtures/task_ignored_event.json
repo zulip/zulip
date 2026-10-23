@@ -1,0 +1,33 @@
+{
+  "event_name": "ignored.task.event.placeholder",
+  "time": "2026-01-19T15:13:04.476828104Z",
+  "data": {
+    "doer": {
+      "id": 1,
+      "name": "John Doe",
+      "username": "jdoe",
+      "created": "2026-01-16T13:18:58+01:00",
+      "updated": "2026-01-16T13:58:06+01:00"
+    },
+    "project": {
+      "id": 26,
+      "title": "Meeting",
+      "parent_project_id": 21,
+      "is_archived": false,
+      "created": "2026-01-16T13:37:36+01:00",
+      "updated": "2026-01-19T16:13:04+01:00"
+    },
+    "task": {
+      "id": 543,
+      "title": "Some task",
+      "description": "",
+      "done": false,
+      "project_id": 26,
+      "priority": 0,
+      "labels": [],
+      "hex_color": "",
+      "created": "2026-01-16T13:37:37+01:00",
+      "updated": "2026-01-19T16:13:11+01:00"
+    }
+  }
+}
