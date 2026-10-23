@@ -25,7 +25,11 @@ else:
 
 
 class Command(ZulipBaseCommand):
-    help = """Register a remote Zulip server for push notifications."""
+    help = """\
+Register a remote Zulip server for Zulip services:
+
+* Mobile Push Notification Service
+* Zulip communities directory"""
 
     @override
     def add_arguments(self, parser: ArgumentParser) -> None:
@@ -53,8 +57,16 @@ that registration and saving the updated secret in
         action.add_argument(
             "--deactivate",
             action="store_true",
-            help="Deregister the server; this will stop mobile push notifications",
+            help="Deregister the server; this will stop all Zulip services for it",
         )
+
+    def enabled_services_description(self) -> str:
+        enabled_services = []
+        if settings.ZULIP_SERVICE_PUSH_NOTIFICATIONS:
+            enabled_services.append("Mobile Push Notification Service")
+        if settings.ZULIP_SERVICE_ADVERTISE_REALMS:
+            enabled_services.append("Zulip communities directory")
+        return " and ".join(enabled_services)
 
     @override
     def handle(self, *args: Any, **options: Any) -> None:
@@ -70,14 +82,17 @@ that registration and saving the updated secret in
             raise CommandError(
                 "ZULIP_SERVICES_URL is not set; was the default incorrectly overridden in /etc/zulip/settings.py?"
             )
-        if not settings.ZULIP_SERVICE_PUSH_NOTIFICATIONS:
+        if not (
+            settings.ZULIP_SERVICE_PUSH_NOTIFICATIONS or settings.ZULIP_SERVICE_ADVERTISE_REALMS
+        ):
             raise CommandError(
-                "Please set ZULIP_SERVICE_PUSH_NOTIFICATIONS to True in /etc/zulip/settings.py"
+                "Please set ZULIP_SERVICE_PUSH_NOTIFICATIONS or ZULIP_SERVICE_ADVERTISE_REALMS"
+                " to True in /etc/zulip/settings.py"
             )
 
         if options["deactivate"]:
             send_json_to_push_bouncer("POST", "server/deactivate", {})
-            print("Mobile Push Notification Service registration successfully deactivated!")
+            print(f"{self.enabled_services_description()} registration successfully deactivated!")
             return
 
         hostname = settings.EXTERNAL_HOST
@@ -93,13 +108,13 @@ that registration and saving the updated secret in
             request["new_org_key"] = get_random_string(64)
 
         print(
-            "This command registers your server for the Mobile Push Notifications Service.\n"
-            "Doing so will share basic metadata with the service's maintainers:\n\n"
+            f"This command registers your server for the {self.enabled_services_description()}.\n"
+            "Doing so will share basic metadata with the service maintainers:\n\n"
             f"* This server's configured hostname: {request['hostname']}\n"
             f"* This server's configured contact email address: {request['contact_email']}\n"
             "* Metadata about each organization hosted by the server; see:\n\n"
             "    <https://zulip.com/doc-permalinks/basic-metadata>\n\n"
-            "Use of this service is governed by the Zulip Terms of Service:\n\n"
+            "Use of Zulip services is governed by the Zulip Terms of Service:\n\n"
             "    <https://zulip.com/policies/terms>\n"
         )
 
@@ -135,7 +150,7 @@ that registration and saving the updated secret in
 
         if response.json()["created"]:
             print(
-                "Your server is now registered for the Mobile Push Notification Service!\n"
+                f"Your server is now registered for the {self.enabled_services_description()}!\n"
                 "Return to the documentation for next steps."
             )
         else:
@@ -154,7 +169,7 @@ that registration and saving the updated secret in
                         new_org_key,
                     ]
                 )
-            print("Mobile Push Notification Service registration successfully updated!")
+            print(f"{self.enabled_services_description()} registration successfully updated!")
 
         if options["registration_transfer"]:
             print()
@@ -207,7 +222,7 @@ that registration and saving the updated secret in
                 org_key,
             ]
         )
-        print("Mobile Push Notification Service registration successfully transferred.")
+        print(f"{self.enabled_services_description()} registration successfully transferred.")
         return org_id, org_key
 
     def _request_push_notification_bouncer_url(self, url: str, params: dict[str, Any]) -> Response:
@@ -218,8 +233,7 @@ that registration and saving the updated secret in
             response = session.post(request_url, data=params)
         except requests.RequestException:
             raise CommandError(
-                "Network error connecting to push notifications service "
-                f"({settings.ZULIP_SERVICES_URL})",
+                f"Network error connecting to Zulip services ({settings.ZULIP_SERVICES_URL})",
             )
         try:
             response.raise_for_status()
@@ -248,8 +262,6 @@ that registration and saving the updated secret in
                 raise CommandError
 
             error_message = content_dict["msg"]
-            raise CommandError(
-                f'Error received from the push notification service: "{error_message}"'
-            )
+            raise CommandError(f'Error received from Zulip services: "{error_message}"')
 
         return response
