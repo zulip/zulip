@@ -1,9 +1,11 @@
 from collections.abc import Sequence
 from datetime import datetime, timedelta, timezone
+from unittest.mock import patch
 
 import time_machine
 from django.conf import settings
 from django.core import mail
+from django.http import HttpRequest
 from django.test import override_settings
 from typing_extensions import override
 
@@ -18,7 +20,12 @@ from zerver.models.realms import get_realm
 from zerver.models.recipients import get_direct_message_group_user_ids
 from zerver.models.streams import StreamTopicsPolicyEnum, get_stream
 from zerver.models.users import get_system_bot
-from zerver.signals import JUST_CREATED_THRESHOLD, get_device_browser, get_device_os
+from zerver.signals import (
+    JUST_CREATED_THRESHOLD,
+    email_on_new_login,
+    get_device_browser,
+    get_device_os,
+)
 
 
 class SendLoginEmailTest(ZulipTestCase):
@@ -63,6 +70,12 @@ class SendLoginEmailTest(ZulipTestCase):
             self.assertEqual(mail.outbox[0].subject, subject)
             # local time is correct and in email's body
             self.assertRegex(str(mail.outbox[0].body), r"Sun, Dec 31, 2017, 4:00[ \u202f]PM PST")
+            # password auth is enabled for this realm, so the email
+            # offers a password reset link
+            body = str(mail.outbox[0].body)
+            self.assertIn("reset your password", body)
+            self.assertIn(f"{user.realm.url}/accounts/password/reset/", body)
+            self.assertIn("contact us immediately", body)
 
             # Try again with the 24h time format setting enabled for this user
             self.logout()  # We just logged in, we'd be redirected without this
@@ -122,6 +135,39 @@ class SendLoginEmailTest(ZulipTestCase):
         with time_machine.travel(mock_time, tick=False):
             self.login_user(user)
         self.assert_length(mail.outbox, 1)
+
+    @override_settings(SEND_LOGIN_EMAILS=True)
+    def test_login_email_omits_password_reset_when_password_auth_disabled(self) -> None:
+        """
+        Realms that only allow SSO-based authentication (e.g. SAML-only
+        realms) have no usable password to reset, so the login
+        notification email should not suggest resetting one. See
+        https://github.com/zulip/zulip/issues/30248.
+        """
+        user = self.example_user("hamlet")
+        mock_time = datetime(year=2018, month=1, day=1, tzinfo=timezone.utc)
+        user.date_joined = mock_time - timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
+        user.save()
+
+        # self.login_user() and friends authenticate via a password,
+        # which is disabled for this test by the password_auth_enabled
+        # mock below, so we call the signal handler directly instead,
+        # the same way zerver.views.auth.finish_mobile_flow does for
+        # SSO logins.
+        request = HttpRequest()
+        request.META["HTTP_USER_AGENT"] = "Mozilla/5.0"
+        request.META["REMOTE_ADDR"] = "127.0.0.1"
+        with (
+            patch("zproject.backends.password_auth_enabled", return_value=False),
+            time_machine.travel(mock_time, tick=False),
+        ):
+            email_on_new_login(sender=type(user), request=request, user=user)
+
+        self.assert_length(mail.outbox, 1)
+        body = str(mail.outbox[0].body)
+        self.assertNotIn("reset your password", body)
+        self.assertNotIn("/accounts/password/reset/", body)
+        self.assertIn("contact us immediately", body)
 
 
 class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
