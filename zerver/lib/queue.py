@@ -274,7 +274,7 @@ class TornadoQueueClient(QueueClient[Channel]):
             # the server, rather than an unbounded number.
             prefetch=100,
         )
-        self._on_open_cbs: list[Callable[[Channel], None]] = []
+        self._pending_publishes: dict[str, list[bytes]] = defaultdict(list)
         self._connection_failure_count = 0
 
     @override
@@ -330,6 +330,8 @@ class TornadoQueueClient(QueueClient[Channel]):
     ) -> None:
         if self.connection is None:
             return
+        self.channel = None
+        self.queues = set()
         self._connection_failure_count = 1
         retry_secs = self.CONNECTION_RETRY_SECS
         self.log.warning(
@@ -337,6 +339,15 @@ class TornadoQueueClient(QueueClient[Channel]):
             retry_secs,
         )
         ioloop.IOLoop.current().call_later(retry_secs, self._reconnect)
+
+    def _on_channel_closed(self, channel: Channel, reason: Exception) -> None:
+        # The channel is also closed when we close the connection or
+        # lose it; _on_connection_closed handles those.
+        if not isinstance(reason, pika.exceptions.ChannelClosedByBroker):
+            return
+        self.log.error("TornadoQueueClient's channel was closed by RabbitMQ: %s", reason)
+        assert self.connection is not None
+        self.connection.close()
 
     def _on_open(self, connection: pika.connection.Connection) -> None:
         assert self.connection is not None
@@ -350,8 +361,10 @@ class TornadoQueueClient(QueueClient[Channel]):
 
     def _on_channel_open(self, channel: Channel) -> None:
         self.channel = channel
-        for callback in self._on_open_cbs:
-            callback(channel)
+        self.channel.add_on_close_callback(self._on_channel_closed)
+        self.channel.basic_qos(prefetch_count=self.prefetch)
+        for queue_name in list(self._pending_publishes):
+            self._declare_queue_for_pending_publishes(queue_name)
         self._reconnect_consumer_callbacks()
         self.log.info("TornadoQueueClient connected")
 
@@ -362,27 +375,42 @@ class TornadoQueueClient(QueueClient[Channel]):
 
     @override
     def ensure_queue(self, queue_name: str, callback: Callable[[Channel], object]) -> None:
-        def set_qos(frame: Any) -> None:
-            assert self.channel is not None
-            self.queues.add(queue_name)
-            self.channel.basic_qos(prefetch_count=self.prefetch, callback=finish)
-
         def finish(frame: Any) -> None:
             assert self.channel is not None
+            self.queues.add(queue_name)
             callback(self.channel)
 
+        assert self.channel is not None
         if queue_name not in self.queues:
-            # If we're not connected yet, send this message
-            # once we have created the channel
-            if not self.ready():
-                self._on_open_cbs.append(lambda channel: self.ensure_queue(queue_name, callback))
-                return
-
-            assert self.channel is not None
-            self.channel.queue_declare(queue=queue_name, durable=True, callback=set_qos)
+            self.channel.queue_declare(queue=queue_name, durable=True, callback=finish)
         else:
-            assert self.channel is not None
             callback(self.channel)
+
+    @override
+    def publish(self, queue_name: str, body: bytes) -> None:
+        if queue_name in self.queues:
+            super().publish(queue_name, body)
+            return
+
+        # Hold the message until the queue has been declared on the
+        # current channel, which may be waiting for a reconnect.
+        pending = self._pending_publishes[queue_name]
+        pending.append(body)
+        if len(pending) == 1 and self.ready():
+            self._declare_queue_for_pending_publishes(queue_name)
+
+    def _declare_queue_for_pending_publishes(self, queue_name: str) -> None:
+        assert self.channel is not None
+        self.channel.queue_declare(
+            queue=queue_name,
+            durable=True,
+            callback=lambda frame: self._send_pending_publishes(queue_name),
+        )
+
+    def _send_pending_publishes(self, queue_name: str) -> None:
+        self.queues.add(queue_name)
+        for body in self._pending_publishes.pop(queue_name):
+            super().publish(queue_name, body)
 
     def start_json_consumer(
         self,
