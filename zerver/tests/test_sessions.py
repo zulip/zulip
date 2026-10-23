@@ -3,6 +3,7 @@ from datetime import timedelta
 from typing import Any
 
 import time_machine
+from django.contrib.auth import SESSION_KEY
 from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
@@ -11,10 +12,12 @@ from zerver.actions.users import change_user_is_active
 from zerver.lib.sessions import (
     delete_all_deactivated_user_sessions,
     delete_all_user_sessions,
+    delete_other_user_sessions,
     delete_realm_user_sessions,
     delete_session,
     delete_user_sessions,
     get_expirable_session_var,
+    session_engine,
     set_expirable_session_var,
     user_sessions,
 )
@@ -25,7 +28,11 @@ from zerver.models.realms import get_realm
 
 class TestSessions(ZulipTestCase):
     def do_test_session(
-        self, user: UserProfile, action: Callable[[], Any], realm: Realm, expected_result: bool
+        self,
+        user: UserProfile,
+        action: Callable[[], Any],
+        realm: Realm,
+        expected_result: bool,
     ) -> None:
         self.login_user(user)
         self.assertIn("_auth_user_id", self.client.session)
@@ -50,7 +57,10 @@ class TestSessions(ZulipTestCase):
     def test_delete_user_sessions(self) -> None:
         user_profile = self.example_user("hamlet")
         self.do_test_session(
-            user_profile, lambda: delete_user_sessions(user_profile), get_realm("zulip"), True
+            user_profile,
+            lambda: delete_user_sessions(user_profile),
+            get_realm("zulip"),
+            True,
         )
         self.do_test_session(
             self.example_user("othello"),
@@ -97,7 +107,7 @@ class TestSessions(ZulipTestCase):
         )
 
     def test_delete_all_deactivated_user_sessions(self) -> None:
-        # Test that no exception is thrown with a logged-out session
+        # Test that no exception is thrown with a logged-out session.
         self.login("othello")
         self.assertIn("_auth_user_id", self.client.session)
         self.client_post("/accounts/logout/")
@@ -106,13 +116,13 @@ class TestSessions(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         self.assertTrue('is_spectator":true' in str(result.content))
 
-        # Test nothing happens to an active user's session
+        # Test nothing happens to an active user's session.
         self.login("othello")
         self.assertIn("_auth_user_id", self.client.session)
         delete_all_deactivated_user_sessions()
         self.assertIn("_auth_user_id", self.client.session)
 
-        # Test that a deactivated session gets logged out
+        # Test that a deactivated session gets logged out.
         user_profile_3 = self.example_user("cordelia")
         self.login_user(user_profile_3)
         self.assertIn("_auth_user_id", self.client.session)
@@ -126,6 +136,39 @@ class TestSessions(ZulipTestCase):
         result = self.client_get("/")
         self.assertEqual(result.status_code, 200)
         self.assertTrue('is_spectator":true' in str(result.content))
+
+    def test_delete_other_user_sessions(self) -> None:
+        user = self.example_user("hamlet")
+        other_user = self.example_user("othello")
+
+        self.login_user(user)
+        current_session_key = self.client.session.session_key
+        assert current_session_key is not None
+
+        # Create a separate session for the same user.
+        other_session = session_engine.SessionStore()
+        other_session[SESSION_KEY] = str(user.id)
+        other_session.create()
+        other_session_key = other_session.session_key
+        assert other_session_key is not None
+
+        # Create a separate session for a different user.
+        other_user_session = session_engine.SessionStore()
+        other_user_session[SESSION_KEY] = str(other_user.id)
+        other_user_session.create()
+        other_user_session_key = other_user_session.session_key
+        assert other_user_session_key is not None
+
+        delete_other_user_sessions(user, current_session_key)
+
+        remaining_user_session_keys = {session.session_key for session in user_sessions(user)}
+        self.assertIn(current_session_key, remaining_user_session_keys)
+        self.assertNotIn(other_session_key, remaining_user_session_keys)
+
+        remaining_other_user_session_keys = {
+            session.session_key for session in user_sessions(other_user)
+        }
+        self.assertIn(other_user_session_key, remaining_other_user_session_keys)
 
 
 class TestExpirableSessionVars(ZulipTestCase):
@@ -148,12 +191,16 @@ class TestExpirableSessionVars(ZulipTestCase):
 
     def test_set_and_get_with_delete(self) -> None:
         set_expirable_session_var(
-            self.session, "test_set_and_get_with_delete", "some_value", expiry_seconds=10
+            self.session,
+            "test_set_and_get_with_delete",
+            "some_value",
+            expiry_seconds=10,
         )
         value = get_expirable_session_var(self.session, "test_set_and_get_with_delete", delete=True)
         self.assertEqual(value, "some_value")
         self.assertEqual(
-            get_expirable_session_var(self.session, "test_set_and_get_with_delete"), None
+            get_expirable_session_var(self.session, "test_set_and_get_with_delete"),
+            None,
         )
 
     def test_get_var_not_set(self) -> None:
@@ -166,10 +213,13 @@ class TestExpirableSessionVars(ZulipTestCase):
         self.session["test_get_var_is_not_expirable"] = 0
         with self.assertLogs(level="WARNING") as m:
             value = get_expirable_session_var(
-                self.session, "test_get_var_is_not_expirable", default_value="default"
+                self.session,
+                "test_get_var_is_not_expirable",
+                default_value="default",
             )
             self.assertEqual(value, "default")
             self.assertIn(
-                "WARNING:root:get_expirable_session_var: error getting test_get_var_is_not_expirable",
+                "WARNING:root:get_expirable_session_var: error getting "
+                "test_get_var_is_not_expirable",
                 m.output[0],
             )

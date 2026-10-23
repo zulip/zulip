@@ -644,6 +644,48 @@ export function set_up(): void {
         clear_password_change();
     }
 
+    $("#logout_other_sessions").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        dialog_widget.launch({
+            modal_title_html: $t_html({
+                defaultMessage: "Log out other sessions?",
+            }),
+            modal_content_html: $t_html({
+                defaultMessage:
+                    "This will sign out your account on other devices. Your current session will remain active.",
+            }),
+            modal_submit_button_text: $t({defaultMessage: "Log out"}),
+            loading_spinner: true,
+            on_click() {
+                channel.post({
+                    url: "/json/users/me/sessions/logout_others",
+                    success() {
+                        dialog_widget.hide_dialog_spinner();
+                        dialog_widget.close();
+                        ui_report.success(
+                            $t_html({
+                                defaultMessage: "Successfully logged out other sessions.",
+                            }),
+                            $("#account-settings-status").expectOne(),
+                        );
+                    },
+                    error(xhr) {
+                        ui_report.error(
+                            $t_html({
+                                defaultMessage: "Failed to log out other sessions.",
+                            }),
+                            xhr,
+                            $("#dialog_error"),
+                        );
+                        dialog_widget.hide_dialog_spinner();
+                    },
+                });
+            },
+        });
+    });
+
     $("#full_name").on("change", (e) => {
         e.preventDefault();
         e.stopPropagation();
