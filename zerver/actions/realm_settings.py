@@ -1005,6 +1005,17 @@ def do_change_realm_plan_type(
         },
     )
 
+    if settings.BILLING_ENABLED:
+        # Both of these depend on the plan. Realms billed by another server
+        # are told the answers by it instead.
+        from zerver.lib.workplace_users import (
+            update_realm_non_workplace_pricing_eligibility,
+            update_realm_on_discounted_plan,
+        )
+
+        update_realm_non_workplace_pricing_eligibility(realm, acting_user=acting_user)
+        update_realm_on_discounted_plan(realm, acting_user=acting_user)
+
     realm.max_invites = get_default_max_invites_for_realm_plan_type(plan_type)
     if plan_type == Realm.PLAN_TYPE_LIMITED:
         realm.message_visibility_limit = Realm.MESSAGE_VISIBILITY_LIMITED

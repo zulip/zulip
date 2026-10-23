@@ -1495,7 +1495,14 @@ class BillingSession(ABC):
             },
         )
 
+        self.update_realm_discounted_plan_state()
+
         return f"Monthly price for {self.billing_entity_display_name} changed to {customer.monthly_discounted_price} from {old_monthly_discounted_price}. Annual price changed to {customer.annual_discounted_price} from {old_annual_discounted_price}."
+
+    def update_realm_discounted_plan_state(self) -> None:
+        # Overridden for realms billed by this server, which store whether
+        # their plan has a negotiated discount.
+        return
 
     def update_customer_minimum_licenses(self, new_minimum_license_count: int) -> str:
         previous_minimum_license_count = None
@@ -4377,6 +4384,12 @@ class RealmBillingSession(BillingSession):
     def get_email(self) -> str:
         assert self.user is not None
         return self.user.delivery_email
+
+    @override
+    def update_realm_discounted_plan_state(self) -> None:
+        from zerver.lib.workplace_users import update_realm_on_discounted_plan
+
+        update_realm_on_discounted_plan(self.realm, acting_user=self.user)
 
     @override
     def current_counts_for_billed_users(

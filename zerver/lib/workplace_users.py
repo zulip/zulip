@@ -9,7 +9,7 @@ from zerver.lib.user_groups import (
     get_role_based_system_groups_dict,
     get_user_group_by_id_in_realm,
 )
-from zerver.models import NamedUserGroup, Realm
+from zerver.models import NamedUserGroup, Realm, UserProfile
 
 
 def validate_workplace_users_group(
@@ -51,7 +51,10 @@ def validate_workplace_users_group(
         )
 
 
-def realm_eligible_for_non_workplace_pricing(realm: Realm) -> bool:
+def compute_realm_eligible_for_non_workplace_pricing(realm: Realm) -> bool:
+    """Only for realms billed by this server. A self-hosted realm is told
+    whether it is eligible by the push notification service, which is where
+    its plan lives."""
     if realm.plan_type == Realm.PLAN_TYPE_SELF_HOSTED:
         # Non-workplace plan pricing is not yet implemented
         # for self-hosted plans.
@@ -86,12 +89,29 @@ def realm_eligible_for_non_workplace_pricing(realm: Realm) -> bool:
     return True
 
 
-def realm_on_discounted_plan(realm: Realm) -> bool:
-    if realm.plan_type == Realm.PLAN_TYPE_SELF_HOSTED:
-        return False
+def update_realm_non_workplace_pricing_eligibility(
+    realm: Realm, *, acting_user: UserProfile | None
+) -> None:
+    from zerver.actions.realm_settings import do_set_realm_billing_state
 
-    if realm.plan_type in {Realm.PLAN_TYPE_LIMITED, Realm.PLAN_TYPE_STANDARD_FREE}:
-        # Realm is on free plan or is fully sponsored.
+    do_set_realm_billing_state(
+        realm,
+        "non_workplace_pricing_eligible",
+        compute_realm_eligible_for_non_workplace_pricing(realm),
+        acting_user=acting_user,
+    )
+
+
+def compute_realm_on_discounted_plan(realm: Realm) -> bool:
+    """Only for realms billed by this server. A self-hosted realm is told
+    whether it has a negotiated discount by the push notification service,
+    which is where its plan lives."""
+    if realm.plan_type in {
+        Realm.PLAN_TYPE_SELF_HOSTED,
+        Realm.PLAN_TYPE_LIMITED,
+        Realm.PLAN_TYPE_STANDARD_FREE,
+    }:
+        # Realm is self-hosted, on the free plan, or fully sponsored.
         return False
 
     from corporate.models.customers import get_customer_by_realm
@@ -104,6 +124,17 @@ def realm_on_discounted_plan(realm: Realm) -> bool:
         return False
 
     return customer.monthly_discounted_price > 0 or customer.annual_discounted_price > 0
+
+
+def update_realm_on_discounted_plan(realm: Realm, *, acting_user: UserProfile | None) -> None:
+    from zerver.actions.realm_settings import do_set_realm_billing_state
+
+    do_set_realm_billing_state(
+        realm,
+        "on_discounted_plan",
+        compute_realm_on_discounted_plan(realm),
+        acting_user=acting_user,
+    )
 
 
 def check_any_group_used_for_workplace_users_group(

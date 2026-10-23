@@ -57,11 +57,7 @@ from zerver.lib.user_groups import (
     validate_group_setting_value_change,
 )
 from zerver.lib.validator import check_capped_url, check_string
-from zerver.lib.workplace_users import (
-    realm_eligible_for_non_workplace_pricing,
-    realm_on_discounted_plan,
-    validate_workplace_users_group,
-)
+from zerver.lib.workplace_users import validate_workplace_users_group
 from zerver.models import Realm, RealmReactivationStatus, RealmUserDefault, UserProfile
 from zerver.models.groups import SystemGroups
 from zerver.models.realms import (
@@ -396,12 +392,12 @@ def update_realm(
         # Remove this when the feature is ready for production.
         assert settings.DEVELOPMENT
 
-        if not realm_eligible_for_non_workplace_pricing(realm):
+        if not realm.non_workplace_pricing_eligible:
             raise JsonableError(
                 _("Organization is not eligible for discounted pricing for non workplace users.")
             )
 
-        if realm_on_discounted_plan(realm):
+        if realm.on_discounted_plan:
             raise JsonableError(
                 _(
                     "Discounted pricing for workplace users cannot be enabled with current discounted plan."
