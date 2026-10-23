@@ -1,0 +1,101 @@
+name: Triage bot
+
+# Posts a triage card for each new issue and PR to a private
+# chat.zulip.org channel.  The bot is read-only on GitHub, and never
+# checks out or runs PR code.  See tools/triage_bot/triage_bot.py.
+
+# The pull_request_target and workflow_run triggers have secrets
+# access.  That's safe here: only the PR's target branch, or main, is
+# checked out and run, and untrusted text from the PR only goes to the
+# model and to a private channel.
+on: # zizmor: ignore[dangerous-triggers] no PR code is checked out or run
+  issues:
+    types: [opened]
+  # PR cards wait for the first Zulip CI run, so they can include the
+  # CI result.  Every Zulip CI run starts a run, which stops early once
+  # the PR has a card.  Edits, labels and comments don't.
+  pull_request_target:
+    types: [ready_for_review]
+  workflow_run:
+    workflows: ["Zulip CI"]
+    types: [completed]
+  # Re-run the bot for one item by hand.  It still won't post a second card.
+  workflow_dispatch:
+    inputs:
+      item:
+        description: Issue or PR number
+        required: true
+        type: number
+
+permissions:
+  actions: read
+  checks: read
+  contents: read
+  issues: read
+  pull-requests: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  resolve:
+    name: Find the item
+    if: >-
+      github.repository == 'zulip/zulip' &&
+      (github.event_name != 'workflow_run' ||
+       (github.event.workflow_run.event == 'pull_request' &&
+        github.event.workflow_run.conclusion != 'cancelled'))
+    runs-on: ubuntu-latest
+    outputs:
+      number: ${{ steps.resolve.outputs.number }}
+    steps:
+      - name: Check out the triage bot
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: tools/triage_bot
+
+      - name: Decide whether the event needs a card
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ZULIP_TRIAGE_BOT_EMAIL: ${{ vars.ZULIP_TRIAGE_BOT_EMAIL }}
+          ZULIP_TRIAGE_BOT_API_KEY: ${{ secrets.ZULIP_TRIAGE_BOT_API_KEY }}
+          ZULIP_TRIAGE_CHANNEL: ${{ vars.ZULIP_TRIAGE_CHANNEL }}
+        run: python3 tools/triage_bot/triage_bot.py --resolve-event
+
+  post:
+    name: Post the card
+    needs: resolve
+    if: needs.resolve.outputs.number != ''
+    runs-on: ubuntu-latest
+    # The workflow_run payload has no PR number for PRs from forks, so
+    # the per-item lock is on this job, after the resolve job found it.
+    # Runs for the same item wait for each other, so the check for an
+    # existing card and the post can't race.  GitHub keeps only the newest
+    # waiting run per group, which is enough, since an item gets one card.
+    concurrency:
+      group: triage-bot-${{ needs.resolve.outputs.number }}
+      cancel-in-progress: false
+    steps:
+      - name: Check out the triage bot
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          # Reviewer suggestions read two years of git log.  A blobless
+          # clone has the full history without old file contents, which
+          # is much smaller than a full clone.
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: tools/triage_bot
+
+      - name: Post the card
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ITEM_NUMBER: ${{ needs.resolve.outputs.number }}
+          ZULIP_TRIAGE_BOT_EMAIL: ${{ vars.ZULIP_TRIAGE_BOT_EMAIL }}
+          ZULIP_TRIAGE_BOT_API_KEY: ${{ secrets.ZULIP_TRIAGE_BOT_API_KEY }}
+          ZULIP_TRIAGE_CHANNEL: ${{ vars.ZULIP_TRIAGE_CHANNEL }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python3 tools/triage_bot/triage_bot.py --item "$ITEM_NUMBER"

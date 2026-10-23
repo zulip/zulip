@@ -110,6 +110,9 @@ def parse_narrow_url(
 
     The key difference from the web app implementation is that this
     does not validate the referenced objects (users and channels).
+
+    tools/triage_bot/gather.py has a copy of this, for a script that runs
+    without Django; keep the two in sync.
     """
     split_result = urlsplit(narrow_url)
     fragment = split_result.fragment

@@ -1,0 +1,86 @@
+# The issues and PRs used as eval cases. See README.md.
+#
+# How they were chosen:
+#
+# - 11 cases are items from October 2026 that a maintainer gave
+#   written feedback on, after reading the bot's cards for them.
+# - 50 cases are past items, 25 PRs and 25 issues, opened between
+#   2026-02-15 and 2026-08-15. Each got a substantive answer from a
+#   maintainer, who was not the author, within 7 days.
+# - The past items were sorted into kinds by fixed rules on what
+#   happened to them. For PRs, the kinds are merged, closed as a
+#   duplicate, not help wanted, untested AI work, and opened by a
+#   maintainer. For issues, they are duplicate, likely written by an
+#   LLM, user bug report, feature request, and opened by a
+#   maintainer.
+# - 5 cases of each kind were picked in a seeded random order, with
+#   no model involved. Kinds with fewer than 5 items were filled from
+#   the extra items of the other kinds of the same type.
+# - Items by the maintainers listed in ../gather.py were then left
+#   out, because the bot writes their card without the model. This
+#   left 9 items with feedback, 23 past PRs, and 22 past issues.
+#
+# The kinds are not listed here, so that a model reading this file
+# can't learn the answers from it.
+#
+# Format: <number> # <title>
+
+# Items with maintainer feedback
+40302 # Message fails to send if the attached file is deleted just before sending
+40338 # Channels without topics option in default settings
+40393 # [ai] compose: Fix edit textarea jumping while adding new lines.
+40396 # Fix/timestamp range 500
+40398 # registration: Handle realm creation subdomain races.
+40401 # [ai] help: Update muting docs to match the current UI.
+40405 # Zulip Installation: Pick a system UID, not a user one.
+40406 # left sidebar: Fix Alert words view review issues
+40407 # patreon: Prefer pledge notices for members:update events.
+
+# Past PRs
+38261 # Allow channel-specific wildcard_mentions_notify to override channel muting
+38334 # reactions: Replace dict[str, Any] with TypedDict.
+38385 # compose: Clear preview area in clear_compose_box instead of do_post_send_tasks.
+38392 # search: Increased gap between pills in search box.
+38469 # [ai] buddy_list: Use ::before for idle status circle in avatar mode.
+38667 # left_sidebar: Add is:followed topic filter to the top filter bar.
+38763 # data_import: Route import_util downloads via OutgoingSession
+38801 # support OIDC in SOCIAL_AUTH_SYNC_ATTRS_DICT syncing
+39220 # templates: Add expand/collapse icons to show more/less buttons
+39324 # mobile: Scroll compose box into view when keyboard appears
+39389 # Remove remaining form element selectors from bootstrap.app.css
+39588 # [ai] search_results: Rank deactivated users below active users in suggestions.
+39603 # scroll_to_bottom: Add next unread topic/DM navigation.
+39689 # migrations: Fix invalid deleted user "email" field values.
+39712 # nginx: Allow configuring an explicit server_name.
+39741 # Apply bidi direction per paragraph, not once for the whole message
+39764 # upload: Don't hold a read open on S3 objects during self-copy.
+39788 # [ai] upload: Don't hold a read open on S3 objects during self-copy.
+39799 # events: Filter deactivated-group update events for all properties.
+39801 # video-calls: Webex integration follow-ups
+39828 # puppet: handle empty YAML data safely
+39840 # Prevent sidebars from closing on repeated resize events.
+39904 # redmine: use journal author for issue update notifications
+
+# Past issues
+38017 # Extremely space-wasting chat interface obscuring messages
+38274 # Increase the number of popular emojis
+38349 # Cleanup `buggy_documentation_endpoints`
+38351 # Feature Request: Add a floating "Scroll to Top/Bottom" button in the web app
+38436 # Nested bulleted lists not working with tabs
+38526 # Adding an endpoint to `buggy_documentation_endpoints` causes tests to fail due to error logs.
+38548 # Compose box unexpectedly closes when clicking a link in the message feed
+38877 # Custom Deeplink URL support for notes://
+39020 # Copying a message copies plain text instead of markdown
+39082 # List of group members cuts off
+39401 # Eternal cycles of "Error sending invitation_reminder email" brings down server and gets us banned on SMTP
+39437 # Wheel events prevented in large parts of the UI when using WebKitGTK based browsers
+39441 # Fine-grained access to Linkifier creation
+39446 # Slow mode
+39497 # Enhancement: Add AI-powered meeting summaries and notes
+39581 # left side bar: filter does not find topic by name
+39625 # Favorite users feature for quick access
+39626 # Option to use a different background color for own messages
+39772 # Admin-triggered site-wide banner for operational announcements (maintenance, outages)
+39847 # bug: Custom language names with uppercase letters in Code Playground are never matched
+39920 # git updater - dependencies are not checked correctly - Could not find Sharp
+39928 # ShareLock while importing converted mattermost export
