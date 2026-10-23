@@ -285,6 +285,10 @@ AUTH_LDAP_USER_ATTR_MAP = {
     # "org_membership": "department",
 }
 
+## Set this if the attribute configured as unique_account_id has binary
+## values, such as Active Directory's objectSid.
+# LDAP_UNIQUE_ACCOUNT_ID_IS_BINARY = True
+
 ## Whether to automatically deactivate users not found in LDAP. If LDAP
 ## is the only authentication method, then this setting defaults to
 ## True.  If other authentication methods are enabled, it defaults to
