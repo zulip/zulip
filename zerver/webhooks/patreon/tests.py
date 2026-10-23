@@ -21,6 +21,18 @@ class PatreonHookTests(WebhookTestCase):
             expected_message,
         )
 
+    def test_patreon_members_create_with_pledge(self) -> None:
+        # Patreon sends members:create with an active pledge when a new paid
+        # patron signs up directly into a paid tier.
+        payload = orjson.loads(self.get_body("members_pledge_create"))
+        expected_message = "Kopi has pledged $5.00 per month. :tada:\nTotal number of patrons: 5"
+        self.check_webhook(
+            "members_create",
+            EXPECTED_TOPIC,
+            expected_message,
+            custom_payload=payload,
+        )
+
     def test_patreon_members_update(self) -> None:
         expected_message = "Kopi's membership has been updated to active patron."
         self.check_webhook(
