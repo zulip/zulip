@@ -29,6 +29,4 @@ You are going to derail from goal **gainweight** in **5.6 hours**. You need **+2
 * Pledge: **$5** :worried:
 """.strip()
 
-        self.check_webhook(
-            "derail_worried", expected_topic_name, expected_message, content_type="application/json"
-        )
+        self.check_webhook("derail_worried", expected_topic_name, expected_message)
