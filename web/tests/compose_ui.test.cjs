@@ -821,6 +821,160 @@ run_test("format_text - bold and italic", ({override, override_rewire}) => {
     init_textarea_state("before <***abc***> after");
     compose_ui.format_text($textarea, "italic");
     assert.equal(get_textarea_state(), "before <**abc**> after");
+
+    // Bold multiple lines
+    init_textarea_state("<a\nb>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<**a**\n**b**>");
+
+    // Undo bold multiple lines
+    init_textarea_state("<**a**\n**b**>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<a\nb>");
+
+    // Bold multiple lines, blank line in between is left alone
+    init_textarea_state("<a\n\nb>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<**a**\n\n**b**>");
+
+    // Bold multiple lines, trailing spaces stay outside the syntax
+    init_textarea_state("<a  \nb>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<**a**  \n**b**>");
+
+    // Bold multiple lines, some already bold
+    init_textarea_state("<**a**\nb>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<**a**\n**b**>");
+
+    // Bold multiple lines, text is italic
+    init_textarea_state("<*a*\n*b*>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<***a***\n***b***>");
+
+    // Undo bold multiple lines, text is both italic and bold
+    init_textarea_state("<***a***\n***b***>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<*a*\n*b*>");
+
+    // Undo bold multiple lines, syntax not selected
+    init_textarea_state("**<a\nb>**");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<a\nb>");
+
+    // Bold multiple lines, selection ends with a new line
+    init_textarea_state("<a\nb\n>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<**a**\n**b**>\n");
+
+    // Bold multiple lines, selection starts in the middle of a line
+    init_textarea_state("x<a\nb>y");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "x<**a**\n**b**>y");
+
+    // Bold a numbered list
+    init_textarea_state("<1. a\n2. b>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<1. **a**\n2. **b**>");
+
+    // Undo bold a numbered list
+    init_textarea_state("<1. **a**\n2. **b**>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<1. a\n2. b>");
+
+    // Bold a bulleted list
+    for (const marker of ["-", "*", "+"]) {
+        init_textarea_state(`<${marker} a\n${marker} b>`);
+        compose_ui.format_text($textarea, "bold");
+        assert.equal(get_textarea_state(), `<${marker} **a**\n${marker} **b**>`);
+    }
+
+    // Bold a bulleted list, extra spaces after the marker
+    init_textarea_state("<-   a\n-   b>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<-   **a**\n-   **b**>");
+
+    // Bold a bulleted list, empty item is left alone
+    init_textarea_state("<- a\n- \n- b>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<- **a**\n- \n- **b**>");
+
+    // Bold a nested list
+    init_textarea_state("<- a\n  - b>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "<- **a**\n  - **b**>");
+
+    // Bold an indented list, the selection starts at the indentation
+    init_textarea_state("<  - a\n  - b>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "  <- **a**\n  - **b**>");
+
+    // A list marker in the middle of a line is not a list marker
+    init_textarea_state("x <- a\n- b>");
+    compose_ui.format_text($textarea, "bold");
+    assert.equal(get_textarea_state(), "x <**- a**\n- **b**>");
+
+    // Italic multiple lines
+    init_textarea_state("<a\nb>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<*a*\n*b*>");
+
+    // Undo italic multiple lines
+    init_textarea_state("<*a*\n*b*>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<a\nb>");
+
+    // Undo italic multiple lines, syntax not selected
+    init_textarea_state("*<a\nb>*");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<a\nb>");
+
+    // Italic multiple lines, blank line in between is left alone
+    init_textarea_state("<a\n\nb>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<*a*\n\n*b*>");
+
+    // Italic multiple lines, some already italic
+    init_textarea_state("<*a*\nb>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<*a*\n*b*>");
+
+    // Italic multiple lines, text is bold
+    init_textarea_state("<**a**\n**b**>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<***a***\n***b***>");
+
+    // Italic multiple lines, some lines bold and some italic
+    init_textarea_state("<**a**\n*b*>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<***a***\n*b*>");
+
+    // Undo italic multiple lines, text is both italic and bold
+    init_textarea_state("<***a***\n***b***>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<**a**\n**b**>");
+
+    // Italic a numbered list
+    init_textarea_state("<1. a\n2. b>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<1. *a*\n2. *b*>");
+
+    // Italic a bulleted list
+    for (const marker of ["-", "*", "+"]) {
+        init_textarea_state(`<${marker} a\n${marker} b>`);
+        compose_ui.format_text($textarea, "italic");
+        assert.equal(get_textarea_state(), `<${marker} *a*\n${marker} *b*>`);
+    }
+
+    // Undo italic a bulleted list
+    init_textarea_state("<* *a*\n* *b*>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<* a\n* b>");
+
+    // Italic a nested list
+    init_textarea_state("<- a\n  - b>");
+    compose_ui.format_text($textarea, "italic");
+    assert.equal(get_textarea_state(), "<- *a*\n  - *b*>");
 });
 
 run_test("format_text - bulleted and numbered lists", ({override_rewire}) => {
@@ -978,6 +1132,41 @@ run_test("format_text - strikethrough", ({override, override_rewire}) => {
     init_textarea_state("before <~~abc~~> after");
     compose_ui.format_text($textarea, "strikethrough");
     assert.equal(get_textarea_state(), "before <abc> after");
+
+    // Strikethrough multiple lines
+    init_textarea_state("<a\nb>");
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(get_textarea_state(), "<~~a~~\n~~b~~>");
+
+    // Undo strikethrough multiple lines
+    init_textarea_state("<~~a~~\n~~b~~>");
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(get_textarea_state(), "<a\nb>");
+
+    // Strikethrough multiple lines, some already struck through
+    init_textarea_state("<~~a~~\nb>");
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(get_textarea_state(), "<~~a~~\n~~b~~>");
+
+    // Strikethrough multiple lines, a single tilde is not syntax
+    init_textarea_state("<~a~\nb>");
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(get_textarea_state(), "<~~~a~~~\n~~b~~>");
+
+    // Strikethrough a bulleted list
+    init_textarea_state("<- a\n- b>");
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(get_textarea_state(), "<- ~~a~~\n- ~~b~~>");
+
+    // Undo strikethrough a bulleted list
+    init_textarea_state("<- ~~a~~\n- ~~b~~>");
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(get_textarea_state(), "<- a\n- b>");
+
+    // Strikethrough a numbered list
+    init_textarea_state("<1. a\n2. b>");
+    compose_ui.format_text($textarea, "strikethrough");
+    assert.equal(get_textarea_state(), "<1. ~~a~~\n2. ~~b~~>");
 });
 
 run_test("format_text - latex", ({override, override_rewire}) => {

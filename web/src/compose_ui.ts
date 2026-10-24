@@ -865,6 +865,78 @@ export function reverse_linkify_text(text: string): string | null {
     return changed ? segments.join("") : null;
 }
 
+// Matches text wrapped in one to three asterisks: italic, bold, or both.
+const asterisk_wrapped_pattern = /^(\*{1,3})([^*].*[^*]|[^*])\1$/;
+
+const parse_asterisks = (
+    content: string,
+): {is_bold: boolean; is_italic: boolean; inner_text: string} => {
+    const match = asterisk_wrapped_pattern.exec(content);
+    const asterisk_count = match ? match[1]!.length : 0;
+    return {
+        is_bold: asterisk_count >= 2,
+        is_italic: asterisk_count === 1 || asterisk_count === 3,
+        inner_text: match ? match[2]! : content,
+    };
+};
+
+const has_inline_syntax = (content: string, syntax: string): boolean => {
+    if (syntax.startsWith("~")) {
+        return (
+            content.length > syntax.length * 2 &&
+            content.startsWith(syntax) &&
+            content.endsWith(syntax)
+        );
+    }
+    const {is_bold, is_italic} = parse_asterisks(content);
+    return syntax === "**" ? is_bold : is_italic;
+};
+
+const toggle_inline_syntax = (content: string, syntax: string, add: boolean): string => {
+    if (syntax.startsWith("~")) {
+        return add ? syntax + content + syntax : content.slice(syntax.length, -syntax.length);
+    }
+    // Bold and italic share asterisks: `*` is italic, `**` is bold, and
+    // `***` is both, so toggling one has to keep the other.
+    const {is_bold, is_italic, inner_text} = parse_asterisks(content);
+    const new_is_bold = syntax === "**" ? add : is_bold;
+    const new_is_italic = syntax === "**" ? is_italic : add;
+    const asterisks = "*".repeat((new_is_bold ? 2 : 0) + (new_is_italic ? 1 : 0));
+    return asterisks + inner_text + asterisks;
+};
+
+// Markdown does not apply inline syntax across line breaks, so we format
+// each line of a multiline selection separately. The syntax is removed
+// only if every non-blank line has it; otherwise it is added to the
+// lines that lack it.
+const format_lines = (
+    selected_text: string,
+    syntax: string,
+    starts_at_line_start: boolean,
+): string => {
+    const lines = selected_text.split("\n").map((line, i) => {
+        const prefix =
+            i === 0 && !starts_at_line_start ? "" : bulleted_numbered_list_util.get_prefix(line);
+        const rest = line.slice(prefix.length);
+        const content = rest.trimEnd();
+        return {
+            line,
+            prefix,
+            content,
+            trailing: rest.slice(content.length),
+            has_syntax: content !== "" && has_inline_syntax(content, syntax),
+        };
+    });
+    const add = lines.some(({content, has_syntax}) => content !== "" && !has_syntax);
+    return lines
+        .map(({line, prefix, content, trailing, has_syntax}) =>
+            content === "" || (add && has_syntax)
+                ? line
+                : prefix + toggle_inline_syntax(content, syntax, add) + trailing,
+        )
+        .join("\n");
+};
+
 export let format_text = (
     $textarea: JQuery<HTMLTextAreaElement>,
     type: string,
@@ -873,6 +945,9 @@ export let format_text = (
     const italic_syntax = "*";
     const bold_syntax = "**";
     const bold_and_italic_syntax = "***";
+    const strikethrough_syntax = "~~";
+    // Syntaxes that are applied to each line of a multiline selection.
+    const per_line_syntaxes = new Set([italic_syntax, bold_syntax, strikethrough_syntax]);
     let is_selected_text_italic = false;
     let is_inner_text_italic = false;
     const field = $textarea.get(0)!;
@@ -1070,6 +1145,21 @@ export let format_text = (
                 range.end - syntax_start.length,
             );
             return false;
+        }
+        if (
+            selected_text.includes("\n") &&
+            syntax_start === syntax_end &&
+            per_line_syntaxes.has(syntax_start)
+        ) {
+            // A list marker is only part of the selection's first line
+            // if the selection starts at the beginning of that line.
+            const line_start = text.lastIndexOf("\n", range.start - 1) + 1;
+            const starts_at_line_start = text.slice(line_start, range.start).trim() === "";
+            const formatted_text = format_lines(selected_text, syntax_start, starts_at_line_start);
+            text = text.slice(0, range.start) + formatted_text + text.slice(range.end);
+            insert_and_scroll_into_view(text, $textarea, true);
+            field.setSelectionRange(range.start, range.start + formatted_text.length);
+            return true;
         }
         if (is_inner_text_formatted(syntax_start, syntax_end)) {
             // Remove syntax inside the selection, if present.
@@ -1363,6 +1453,11 @@ export let format_text = (
             format(bold_syntax);
             break;
         case "italic":
+            if (selected_text.includes("\n")) {
+                // Each line of a multiline selection is formatted separately.
+                format(italic_syntax);
+                break;
+            }
             // Ctrl + I: Toggle italic syntax on selection. This is
             // much more complex than toggling bold syntax, because of
             // the following subtle detail: If our selection is
@@ -1453,11 +1548,9 @@ export let format_text = (
         case "numbered":
             format_list(type);
             break;
-        case "strikethrough": {
-            const strikethrough_syntax = "~~";
+        case "strikethrough":
             format(strikethrough_syntax);
             break;
-        }
         case "code": {
             // Ctrl + Shift + C: Toggle code syntax on selection.
             const inline_code_syntax = "`";
