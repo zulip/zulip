@@ -292,6 +292,8 @@ export function initialize_kitchen_sink_stuff() {
     });
 
     $(window).on("resize", _.throttle(resize_handler.handler, 50));
+    window.visualViewport?.addEventListener("resize", resize_handler.update_keyboard_height);
+    window.visualViewport?.addEventListener("scroll", resize_handler.update_keyboard_height);
 
     // Scrolling in overlays. input boxes, and other elements that
     // explicitly scroll should not scroll the main view.  Stop
