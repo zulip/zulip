@@ -199,12 +199,12 @@
     <label class="top-menu-tab-label-unselect nav-menu-label" for="top-menu-tab-close" tabindex="0"></label>
 </nav>
 <!-- We have separate copies of the navbar list for web and mobile. Please update both the versions when making changes. -->
-<details class="top-menu-mobile">
+<details data-menu-id="menu" class="top-menu-mobile">
     <summary class="top-menu-mobile-summary">
         <a class="top-menu-logo nav-zulip-logo" href="https://zulip.com"></a>
     </summary>
     <div class="top-menu-mobile-items-group-1">
-        <details>
+        <details data-menu-id="product">
             <summary class="top-menu-mobile-item-summary">Product</summary>
             <div class="top-menu-mobile-submenu">
                 <span class="top-menu-mobile-submenu-section">OVERVIEW</span>
@@ -229,7 +229,7 @@
                 </ul>
             </div>
         </details>
-        <details>
+        <details data-menu-id="solutions">
             <summary class="top-menu-mobile-item-summary">Solutions</summary>
             <div class="top-menu-mobile-submenu">
                 <span class="top-menu-mobile-submenu-section">USE CASES</span>
@@ -249,7 +249,7 @@
                 </ul>
             </div>
         </details>
-        <details>
+        <details data-menu-id="case-studies">
             <summary class="top-menu-mobile-item-summary">Case studies</summary>
             <div class="top-menu-mobile-submenu">
                 <span class="top-menu-mobile-submenu-section">BUSINESS</span>
@@ -302,7 +302,7 @@
                 </ul>
             </div>
         </details>
-        <details>
+        <details data-menu-id="resources">
             <summary class="top-menu-mobile-item-summary">Resources</summary>
             <div class="top-menu-mobile-submenu">
                 <span class="top-menu-mobile-submenu-section">FOR USERS</span>
@@ -327,7 +327,7 @@
     <div class="top-menu-mobile-items-group-2">
         <div class='top-menu-mobile-item'><a href="/new/">New organization</a></div>
         {% if user_is_authenticated %}
-        <details>
+        <details data-menu-id="user">
             <summary class="top-menu-mobile-item-summary">
                 <img class="top-menu-mobile-user-img"
                   src="{{ realm_icon }}" />
