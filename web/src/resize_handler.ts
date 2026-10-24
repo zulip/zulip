@@ -12,6 +12,33 @@ import * as util from "./util.ts";
 
 export let _old_width = $(window).width();
 
+// iOS Safari ignores interactive-widget=resizes-content (see
+// index.html), so the on-screen keyboard covers the bottom of the page
+// instead of resizing it. Track how much of the page it covers, so
+// that the compose box can stay above it.
+let keyboard_height = 0;
+
+export function update_keyboard_height(): void {
+    const visual_viewport = window.visualViewport;
+    if (visual_viewport === null) {
+        return;
+    }
+    // Pinch-zooming also shrinks the visual viewport, but that isn't the
+    // keyboard, so keep the compose box at the bottom while zoomed in.
+    let new_keyboard_height = 0;
+    if (visual_viewport.scale <= 1) {
+        new_keyboard_height = Math.max(
+            0,
+            window.innerHeight - visual_viewport.height - visual_viewport.offsetTop,
+        );
+    }
+    if (new_keyboard_height === keyboard_height) {
+        return;
+    }
+    keyboard_height = new_keyboard_height;
+    document.documentElement.style.setProperty("--keyboard-height", `${keyboard_height}px`);
+}
+
 let was_left_sidebar_overlay = false;
 
 export function handler(): void {
