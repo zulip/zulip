@@ -1,4 +1,5 @@
 import {$} from "jquery";
+import type * as tippy from "tippy.js";
 
 import * as compose_ui from "./compose_ui.ts";
 import * as condense from "./condense.ts";
@@ -37,6 +38,11 @@ export function update_keyboard_height(): void {
     }
     keyboard_height = new_keyboard_height;
     document.documentElement.style.setProperty("--keyboard-height", `${keyboard_height}px`);
+    // Move the channel picker, if it's open, along with the compose box.
+    const select_recipient_widget: tippy.ReferenceElement | undefined = $(
+        "#compose_select_recipient_widget",
+    )[0];
+    void select_recipient_widget?._tippy?.popperInstance?.update();
 }
 
 let was_left_sidebar_overlay = false;
