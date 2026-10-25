@@ -41,7 +41,7 @@ from zerver.actions.user_activity import do_update_user_activity_interval
 from zerver.actions.user_settings import do_change_user_delivery_email, do_change_user_setting
 from zerver.actions.user_status import do_update_user_status
 from zerver.actions.user_topics import do_set_user_topic_visibility_policy
-from zerver.actions.users import do_deactivate_user
+from zerver.actions.users import do_deactivate_user, do_delete_user_preserving_messages
 from zerver.lib import import_realm, upload
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.bot_config import set_bot_config
@@ -774,6 +774,11 @@ class RealmImportExportTest(ExportFile):
         non_consented_user.is_mirror_dummy = True
         non_consented_user.save(update_fields=["is_mirror_dummy"])
         self.assertIn(non_consented_user.id, get_consented_user_ids(realm))
+
+        # Deleted users aren't considered consented.
+        deleted_user = self.example_user("othello")
+        do_delete_user_preserving_messages(deleted_user, acting_user=None)
+        self.assertNotIn(deleted_user.id, get_consented_user_ids(realm))
 
     def test_client_objects_export(self) -> None:
         """
