@@ -235,6 +235,9 @@ importers:
       '@uppy/tus':
         specifier: ^6.0.0
         version: 6.0.0(@uppy/core@6.3.0)
+      '@zootools/email-spell-checker':
+        specifier: ^1.12.0
+        version: 1.12.0
       '@zxcvbn-ts/core':
         specifier: ^4.1.2
         version: 4.2.0
@@ -3706,6 +3709,10 @@ packages:
 
   '@xtuc/long@4.2.2':
     resolution: {integrity: sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==}
+
+  '@zootools/email-spell-checker@1.12.0':
+    resolution: {integrity: sha512-yM0lH4yjg+jZG5QubtvpHE+ahSnsHbw9ilnQgKgOF3fk6OBVQLRsEq4NR+/nRvrwG8Vo+29bzKwhXk5y1b/FwA==}
+    engines: {node: '>=12.0'}
 
   '@zxcvbn-ts/core@4.2.0':
     resolution: {integrity: sha512-tuwzwOcYVca9MufHuUvzKGRyL04iP52OjCNoRDuGXjzzrtPiPcl8r5QtOotbx0AyTR/CMcDTU9qLkN16b9fXiw==}
@@ -13481,6 +13488,8 @@ snapshots:
   '@xtuc/ieee754@1.2.0': {}
 
   '@xtuc/long@4.2.2': {}
+
+  '@zootools/email-spell-checker@1.12.0': {}
 
   '@zxcvbn-ts/core@4.2.0':
     dependencies:
