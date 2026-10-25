@@ -5,6 +5,7 @@ import * as z from "zod/mini";
 
 import {page_params as base_page_params} from "../base_page_params.ts";
 import * as common from "../common.ts";
+import {get_email_suggestion} from "../email_suggestion.ts";
 import * as emojisets from "../emojisets.ts";
 import {$t} from "../i18n.ts";
 import {password_quality, password_warning} from "../password_quality.ts";
@@ -192,6 +193,44 @@ $(() => {
             }
         },
     );
+
+    // Suggest a correction on /register/ when the email looks mistyped.
+    const email_input = document.querySelector<HTMLInputElement>("#send_confirm input#email");
+    const suggestion_button = document.querySelector<HTMLButtonElement>(
+        "#send_confirm .email-suggestion-button",
+    );
+    if (email_input !== null && suggestion_button !== null) {
+        let suggested_email: string | undefined;
+
+        const show_suggestion = (suggestion: string | undefined): void => {
+            suggested_email = suggestion;
+            suggestion_button.hidden = suggestion === undefined;
+            suggestion_button.textContent =
+                suggestion === undefined
+                    ? ""
+                    : $t({defaultMessage: "Did you mean {email}?"}, {email: suggestion});
+        };
+
+        const update_suggestion = _.debounce(() => {
+            show_suggestion(get_email_suggestion(email_input.value));
+        }, 600);
+
+        email_input.addEventListener("focusout", () => {
+            update_suggestion.cancel();
+            show_suggestion(get_email_suggestion(email_input.value));
+        });
+        email_input.addEventListener("input", () => {
+            show_suggestion(undefined);
+            update_suggestion();
+        });
+        suggestion_button.addEventListener("click", () => {
+            if (suggested_email !== undefined) {
+                email_input.value = suggested_email;
+                email_input.focus();
+            }
+            show_suggestion(undefined);
+        });
+    }
 
     const show_subdomain_section = function (bool: boolean): void {
         const action = bool ? "hide" : "show";
