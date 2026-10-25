@@ -1,9 +1,7 @@
 from collections.abc import Iterable
 from typing import Annotated
 
-from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
-from django.db import connection, transaction
 from django.db.models import F, Func, TextField
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -25,6 +23,7 @@ from zerver.lib.narrow import (
     is_spectator_compatible,
     is_web_public_narrow,
     parse_anchor_value,
+    read_only_repeatable_read_transaction,
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
@@ -206,31 +205,16 @@ def get_messages_backend(
         assert log_data is not None
         log_data["extra"] = "[{}]".format(",".join(verbose_operators))
 
-    with transaction.atomic(durable=True):
-        # We're about to perform a search, and then get results from
-        # it; this is done across multiple queries.  To prevent race
-        # conditions, we want the messages returned to be consistent
-        # with the version of the messages that was searched, to
-        # prevent changes which happened between them from leaking to
-        # clients who should not be able to see the new values, and
-        # when messages are deleted in between.  We set up
-        # repeatable-read isolation for this transaction, so that we
-        # prevent both phantom reads and non-repeatable reads.
-        #
-        # In a read-only repeatable-read transaction, it is not
-        # possible to encounter deadlocks or need retries due to
-        # serialization errors.
-        #
-        # You can only set the isolation level before any queries in
-        # the transaction, meaning it must be the top-most
-        # transaction, which durable=True establishes.  Except in
-        # tests, where durable=True is a lie, because there is an
-        # outer transaction for each test.  We thus skip this command
-        # in tests, since it would fail.
-        if not settings.TEST_SUITE:  # nocoverage
-            cursor = connection.cursor()
-            cursor.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
-
+    # We're about to perform a search, and then get results from
+    # it; this is done across multiple queries.  To prevent race
+    # conditions, we want the messages returned to be consistent
+    # with the version of the messages that was searched, to
+    # prevent changes which happened between them from leaking to
+    # clients who should not be able to see the new values, and
+    # when messages are deleted in between.  We set up
+    # repeatable-read isolation for this transaction, so that we
+    # prevent both phantom reads and non-repeatable reads.
+    with read_only_repeatable_read_transaction():
         query_info = fetch_messages(
             narrow=narrow,
             user_profile=user_profile,

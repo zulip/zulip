@@ -1,5 +1,6 @@
 import re
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Generic, Literal, TypeAlias, TypedDict, TypeVar
@@ -7,7 +8,7 @@ from typing import Any, Generic, Literal, TypeAlias, TypedDict, TypeVar
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
-from django.db import connection
+from django.db import connection, transaction
 from django.db.models import Exists, F, Func, OuterRef, Q, QuerySet, TextField
 from django.db.models.expressions import RawSQL
 from django.utils.translation import gettext as _
@@ -1429,6 +1430,25 @@ class FetchedMessages(LimitedMessages[tuple[Any, ...]]):
 
 def capture_message_fetch_query_for_testing(query: QuerySet[Any]) -> None:
     pass
+
+
+@contextmanager
+def read_only_repeatable_read_transaction() -> Iterator[None]:
+    with transaction.atomic(durable=True):
+        # In a read-only repeatable-read transaction, it is not
+        # possible to encounter deadlocks or need retries due to
+        # serialization errors.
+        #
+        # You can only set the isolation level before any queries in
+        # the transaction, meaning it must be the top-most
+        # transaction, which durable=True establishes.  Except in
+        # tests, where durable=True is a lie, because there is an
+        # outer transaction for each test.  We thus skip this command
+        # in tests, since it would fail.
+        if not settings.TEST_SUITE:  # nocoverage
+            cursor = connection.cursor()
+            cursor.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+        yield
 
 
 def fetch_messages(
