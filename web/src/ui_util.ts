@@ -100,7 +100,7 @@ export function is_user_said_paragraph($element: JQuery): boolean {
     }
     const $message_link = $element.find("a[href]").filter((_index, element) => {
         const href = $(element).attr("href")!;
-        return href ? hash_parser.is_same_server_message_link(href) : false;
+        return href !== "" && hash_parser.is_same_server_message_link(href);
     });
     if ($message_link.length !== 1) {
         return false;

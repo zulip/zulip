@@ -692,7 +692,8 @@ export function initialize(): void {
                 user_settings.user_list_style ===
                 settings_config.user_list_style_values.compact.code;
             const status_el = is_compact_mode ? null : util.the($elem.find(".status-text"));
-            const is_truncated = status_el ? status_el.scrollWidth > status_el.clientWidth : false;
+            const is_truncated =
+                status_el !== null && status_el.scrollWidth > status_el.clientWidth;
             const should_show_status = is_compact_mode || is_truncated;
 
             const user_id_string = $elem.attr("data-user-id")!;
