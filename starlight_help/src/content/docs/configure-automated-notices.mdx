@@ -43,13 +43,17 @@ announced.
 
 ### Channel events
 
-You can configure whether Zulip will send an automated message when a channel's
-settings are updated. If enabled, Notification Bot will send messages about
-updates to settings such as the channel [name](/help/rename-a-channel),
+You can configure whether Zulip will send automated messages about channel
+events. If enabled, Notification Bot will send messages about updates to
+settings such as the channel [name](/help/rename-a-channel),
 [description](/help/change-the-channel-description),
 [privacy](/help/change-the-privacy-of-a-channel) and [posting
-policy](/help/channel-posting-policy). Messages will be sent to the “channel
-events” topic in the modified channel.
+policy](/help/channel-posting-policy). In private channels, it will also send a
+message when members are subscribed or unsubscribed.
+
+Messages will be sent to the “channel events” topic in the channel, or to the
+“*general chat*” topic in [“*general chat*”
+channels](/help/general-chat-channels).
 
 <FlattenedSteps>
   <NavigationSteps target="settings/organization-settings" />
