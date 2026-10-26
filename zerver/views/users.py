@@ -480,7 +480,7 @@ def patch_bot_backend(
     default_sending_stream: str | None = None,
     full_name: str | None = None,
     role: Json[RoleParamType] | None = None,
-    service_interface: Json[int] = 1,
+    service_interface: Json[int] | None = None,
     service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
     short_name: str | None = None,
 ) -> HttpResponse:
@@ -557,14 +557,14 @@ def patch_bot_backend(
             bot, default_all_public_streams, acting_user=user_profile
         )
 
-    if service_payload_url is not None or config_data is not None:
+    if service_interface is not None or service_payload_url is not None or config_data is not None:
         check_valid_bot_service_and_config_update(
             bot.bot_type,
             service_payload_url=service_payload_url,
             config_data=config_data,
             service_interface=service_interface,
         )
-        if service_payload_url is not None:
+        if service_interface is not None or service_payload_url is not None:
             do_update_outgoing_webhook_service(
                 bot,
                 interface=service_interface,
