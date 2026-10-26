@@ -26,7 +26,7 @@
     "altcha": "^2.0.3",
     "autosize": "^5.0.2",
     "babel-loader": "^10.0.0",
-    "babel-plugin-formatjs": "^13.0.1",
+    "babel-plugin-formatjs": "^13.0.7",
     "babel-plugin-polyfill-corejs3": "^1.0.0",
     "blueimp-md5": "^2.10.0",
     "browserslist-useragent-regexp": "^4.1.3",

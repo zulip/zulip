@@ -7,7 +7,7 @@ import _ from "lodash";
 /** @type {Parameters<typeof import("babel-plugin-formatjs").default>[1]} */
 const formatJsOptions = {
     additionalFunctionNames: ["$t", "$t_html"],
-    overrideIdFn: (_id, defaultMessage = "") => defaultMessage,
+    idInterpolationPattern: "[content]",
 };
 
 /** @type {import("@babel/preset-env").Options} */
