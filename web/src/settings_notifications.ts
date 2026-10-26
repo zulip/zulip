@@ -234,6 +234,10 @@ function stream_notification_setting_changed(target: HTMLInputElement, stream_id
 
     const $status_element = $(target).closest(".subsection-parent").find(".alert-notification");
     const setting = z.keyof(stream_specific_notification_settings_schema).parse(target.name);
+    if (setting === "email_notifications" && sub.mandatory_email_notifications) {
+        target.checked = stream_data.receives_notifications(stream_id, "email_notifications");
+        return;
+    }
     sub[setting] ??= user_settings[settings_config.generalize_stream_notification_setting[setting]];
     stream_settings_api.set_stream_property(
         sub,
@@ -261,6 +265,13 @@ function change_state_of_customize_stream_notifications_widget(
     if (!realm.realm_push_notifications_enabled) {
         $customizable_stream_notifications_table
             .find("input.push_notifications")
+            .prop("disabled", true);
+    }
+
+    const sub = sub_store.get(stream_id);
+    if (sub?.mandatory_email_notifications) {
+        $customizable_stream_notifications_table
+            .find("input.email_notifications")
             .prop("disabled", true);
     }
 

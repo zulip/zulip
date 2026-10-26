@@ -70,6 +70,7 @@ exports.test_streams = {
         folder_id: null,
         is_recently_active: true,
         default_push_notifications: false,
+        mandatory_email_notifications: false,
         subscriber_count: 10,
     },
     test: {
@@ -102,6 +103,7 @@ exports.test_streams = {
         folder_id: null,
         is_recently_active: true,
         default_push_notifications: false,
+        mandatory_email_notifications: false,
         subscriber_count: 2,
     },
 };

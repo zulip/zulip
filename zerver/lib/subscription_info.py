@@ -100,6 +100,7 @@ def get_web_public_subs(
         creator_id = stream.creator_id
         date_created = datetime_to_timestamp(stream.date_created)
         default_push_notifications = stream.default_push_notifications
+        mandatory_email_notifications = stream.mandatory_email_notifications
         description = stream.description
         first_message_id = stream.first_message_id
         folder_id = stream.folder_id
@@ -152,6 +153,7 @@ def get_web_public_subs(
             creator_id=creator_id,
             date_created=date_created,
             default_push_notifications=default_push_notifications,
+            mandatory_email_notifications=mandatory_email_notifications,
             description=description,
             desktop_notifications=desktop_notifications,
             email_notifications=email_notifications,
@@ -261,6 +263,7 @@ def build_stream_api_dict(
         creator_id=raw_stream_dict["creator_id"],
         date_created=datetime_to_timestamp(raw_stream_dict["date_created"]),
         default_push_notifications=raw_stream_dict["default_push_notifications"],
+        mandatory_email_notifications=raw_stream_dict["mandatory_email_notifications"],
         description=raw_stream_dict["description"],
         first_message_id=raw_stream_dict["first_message_id"],
         folder_id=raw_stream_dict["folder_id"],
@@ -301,6 +304,7 @@ def build_stream_dict_for_sub(
     creator_id = stream_dict["creator_id"]
     date_created = stream_dict["date_created"]
     default_push_notifications = stream_dict["default_push_notifications"]
+    mandatory_email_notifications = stream_dict["mandatory_email_notifications"]
     description = stream_dict["description"]
     first_message_id = stream_dict["first_message_id"]
     folder_id = stream_dict["folder_id"]
@@ -351,6 +355,7 @@ def build_stream_dict_for_sub(
         creator_id=creator_id,
         date_created=date_created,
         default_push_notifications=default_push_notifications,
+        mandatory_email_notifications=mandatory_email_notifications,
         description=description,
         desktop_notifications=desktop_notifications,
         email_notifications=email_notifications,
@@ -386,6 +391,7 @@ def build_stream_dict_for_never_sub(
     creator_id = raw_stream_dict["creator_id"]
     date_created = datetime_to_timestamp(raw_stream_dict["date_created"])
     default_push_notifications = raw_stream_dict["default_push_notifications"]
+    mandatory_email_notifications = raw_stream_dict["mandatory_email_notifications"]
     description = raw_stream_dict["description"]
     first_message_id = raw_stream_dict["first_message_id"]
     folder_id = raw_stream_dict["folder_id"]
@@ -462,6 +468,7 @@ def build_stream_dict_for_never_sub(
         creator_id=creator_id,
         date_created=date_created,
         default_push_notifications=default_push_notifications,
+        mandatory_email_notifications=mandatory_email_notifications,
         description=description,
         first_message_id=first_message_id,
         folder_id=folder_id,
