@@ -86,7 +86,7 @@ def realm_eligible_for_non_workplace_pricing(realm: Realm) -> bool:
     return True
 
 
-def realm_on_discounted_cloud_plan(realm: Realm) -> bool:
+def realm_on_discounted_plan(realm: Realm) -> bool:
     if realm.plan_type == Realm.PLAN_TYPE_SELF_HOSTED:
         return False
 
