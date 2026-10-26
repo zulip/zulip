@@ -475,7 +475,8 @@ export let update_draft = (opts: UpdateDraftOptions = {}): string | undefined =>
     if (opts.is_sending_saving !== undefined) {
         draft.is_sending_saving = opts.is_sending_saving;
     } else {
-        draft.is_sending_saving = old_draft ? old_draft.is_sending_saving : false;
+        draft.is_sending_saving =
+            old_draft !== undefined && old_draft !== false && old_draft.is_sending_saving;
     }
 
     // Now that it's been updated, we consider it to be the most recent version.
