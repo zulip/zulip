@@ -20,7 +20,12 @@ from zerver.lib.soft_deactivation import (
 )
 from zerver.lib.stream_subscription import get_subscriptions_for_send_message
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_subscription, get_user_messages, make_client
+from zerver.lib.test_helpers import (
+    get_subscription,
+    get_user_messages,
+    make_client,
+    queries_captured,
+)
 from zerver.models import (
     AlertWord,
     Client,
@@ -854,3 +859,121 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         # Sanity check after removing the alert word for Hamlet.
         AlertWord.objects.filter(user_profile=long_term_idle_user).delete()
         assert_stream_message_not_sent_to_idle_user("no alert words")
+
+    def send_test_message(
+        self,
+        content: str,
+        sender_name: str = "iago",
+        stream_name: str = "Denmark",
+        topic_name: str = "foo",
+    ) -> int:
+        sender = self.example_user(sender_name)
+        return self.send_stream_message(sender, stream_name, content=content, topic_name=topic_name)
+
+    def soft_activate_and_get_unread_count(self) -> int:
+        result = self.register_via_api()
+        return result["unread_msgs"]["count"]
+
+    def test_unread_count_user_soft_deactivation(self) -> None:
+        # In this test we make sure if a soft deactivated user had unread
+        # messages before deactivation they remain same way after activation.
+        long_term_idle_user = self.example_user("hamlet")
+        self.login_user(long_term_idle_user)
+        message = "Test message 1"
+        self.send_test_message(message)
+        with queries_captured() as queries:
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 1)
+        query_count = len(queries)
+        user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(user_msg_list[-1].content, message)
+        self.logout()
+
+        with self.assertLogs(logger_string, level="INFO") as info_log:
+            do_soft_deactivate_users([long_term_idle_user])
+        self.assertEqual(
+            info_log.output,
+            [
+                f"INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}",
+                f"INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process",
+            ],
+        )
+
+        self.login_user(long_term_idle_user)
+        message = "Test message 2"
+        self.send_test_message(message)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertNotEqual(idle_user_msg_list[-1].content, message)
+        with queries_captured() as queries:
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 2)
+        # Test here for query count to be at least 5 greater than previous count
+        # This will assure indirectly that add_missing_messages() was called.
+        self.assertGreaterEqual(len(queries) - query_count, 5)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(idle_user_msg_list[-1].content, message)
+
+    def test_multiple_user_soft_deactivations(self) -> None:
+        long_term_idle_user = self.example_user("hamlet")
+        # We are sending this message to ensure that long_term_idle_user has
+        # at least one UserMessage row.
+        self.send_test_message("Testing", sender_name="hamlet")
+        with self.assertLogs(logger_string, level="INFO") as info_log:
+            do_soft_deactivate_users([long_term_idle_user])
+        self.assertEqual(
+            info_log.output,
+            [
+                f"INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}",
+                f"INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process",
+            ],
+        )
+
+        message = "Test message 1"
+        self.send_test_message(message)
+        self.login_user(long_term_idle_user)
+        with queries_captured() as queries:
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 1)
+        query_count = len(queries)
+        long_term_idle_user.refresh_from_db()
+        self.assertFalse(long_term_idle_user.long_term_idle)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(idle_user_msg_list[-1].content, message)
+
+        message = "Test message 2"
+        self.send_test_message(message)
+        with queries_captured() as queries:
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 2)
+        # Test here for query count to be at least 5 less than previous count.
+        # This will assure add_missing_messages() isn't repeatedly called.
+        self.assertGreaterEqual(query_count - len(queries), 5)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(idle_user_msg_list[-1].content, message)
+        self.logout()
+
+        with self.assertLogs(logger_string, level="INFO") as info_log:
+            do_soft_deactivate_users([long_term_idle_user])
+        self.assertEqual(
+            info_log.output,
+            [
+                f"INFO:{logger_string}:Soft deactivated user {long_term_idle_user.id}",
+                f"INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process",
+            ],
+        )
+
+        message = "Test message 3"
+        self.send_test_message(message)
+        self.login_user(long_term_idle_user)
+        with queries_captured() as queries:
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 3)
+        query_count = len(queries)
+        long_term_idle_user.refresh_from_db()
+        self.assertFalse(long_term_idle_user.long_term_idle)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(idle_user_msg_list[-1].content, message)
+
+        message = "Test message 4"
+        self.send_test_message(message)
+        with queries_captured() as queries:
+            self.assertEqual(self.soft_activate_and_get_unread_count(), 4)
+        self.assertGreaterEqual(query_count - len(queries), 5)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        self.assertEqual(idle_user_msg_list[-1].content, message)
+        self.logout()
