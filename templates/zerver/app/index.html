@@ -63,6 +63,20 @@ https://bugzilla.mozilla.org/show_bug.cgi?id=1943053 -->
     #app-loading-unsupported-browser, #app-loading-unsupported-desktop-app {
         margin-top: 25px;
     }
+    #app-loading-long-term-idle {
+    margin: 25px auto 0;
+    width: min(25em, 80vw); /* 350px at 14px/1em */
+    font-size: 0.875em; /* 14px at 16px/1em */
+    line-height: 1.4; /* 19.6px at 14px/1em */
+    text-align: center;
+    }
+    #app-loading-long-term-idle .app-loading-long-term-idle-text {
+    margin: 0;
+    }
+    #app-loading-long-term-idle .app-loading-long-term-idle-lead {
+    margin-bottom: 0.75em; /* 10.5px at 14px/1em */
+    font-weight: 600;
+    }
     #app-loading-bottom-content {
     top: unset;
     bottom: 20px;
@@ -156,6 +170,10 @@ Accessing messages requires an account and Zulip API key.
                 <a href="https://zulip.com/apps/" target="_blank" rel="noopener noreferrer">Download the latest version.</a>
                 {% endtrans %}
             </p>
+        </div>
+        <div id="app-loading-long-term-idle" hidden>
+            <p class="app-loading-long-term-idle-text app-loading-long-term-idle-lead" hidden></p>
+            <p class="app-loading-long-term-idle-text">{% trans %}We'll need a minute to load your account. This page will update once it's loaded.{% endtrans %}</p>
         </div>
     </div>
     <div id="app-loading-bottom-content">

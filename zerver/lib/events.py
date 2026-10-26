@@ -62,7 +62,11 @@ from zerver.lib.scheduled_messages import (
     get_undelivered_reminders,
     get_undelivered_scheduled_messages,
 )
-from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
+from zerver.lib.soft_deactivation import (
+    get_days_since_last_visit,
+    queue_soft_reactivation,
+    reactivate_user_if_soft_deactivated,
+)
 from zerver.lib.sounds import get_available_notification_sounds
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
 from zerver.lib.streams import do_get_streams, get_web_public_streams
@@ -969,6 +973,10 @@ def fetch_initial_state_data(
 
     if want("device"):
         state["devices"] = {} if user_profile is None else get_devices(user_profile)
+
+    if want("long_term_idle") and user_profile is not None and user_profile.long_term_idle:
+        state["long_term_idle"] = True
+        state["long_term_idle_days"] = get_days_since_last_visit(user_profile)
 
     return state
 
@@ -2033,6 +2041,9 @@ def apply_event(
         state["has_zoom_token"] = event["value"]
     elif event["type"] == "has_webex_token":
         state["has_webex_token"] = event["value"]
+    elif event["type"] == "long_term_idle":
+        state.pop("long_term_idle", None)
+        state.pop("long_term_idle_days", None)
     elif event["type"] == "web_reload_client":
         # This is an unlikely race, where the queue was created with a
         # previous Tornado process, which restarted, and subsequently
@@ -2122,6 +2133,7 @@ def do_events_register(
     fetch_event_types: Collection[str] | None = None,
     spectator_requested_language: str | None = None,
     pronouns_field_type_supported: bool = True,
+    defer_long_term_idle_reactivation: bool = False,
 ) -> dict[str, Any]:
     # Technically we don't need to check this here because
     # build_narrow_predicate will check it, but it's nicer from an error
@@ -2184,6 +2196,35 @@ def do_events_register(
             notification_settings_null=False,
             allow_empty_topic_name=empty_topic_name,
         )
+        return ret
+
+    if user_profile.long_term_idle and defer_long_term_idle_reactivation:
+        # The client registers again once the account is ready, so this
+        # queue and response cover only the long_term_idle event type,
+        # ignoring the requested event_types, fetch_event_types and narrow.
+        #
+        # Tornado drops an event sent before its queue exists, so the queue
+        # must be allocated before the backfill that ends with that event.
+        result = request_event_queue(
+            user_profile,
+            user_client,
+            apply_markdown,
+            client_gravatar,
+            slim_presence,
+            idle_queue_timeout,
+            event_types=["long_term_idle"],
+        )
+        if result is None:
+            raise JsonableError(_("Could not allocate event queue"))
+        queue_soft_reactivation(user_profile.id, notify_client=True)
+        ret = fetch_initial_state_data(
+            user_profile,
+            realm=realm,
+            event_types={"long_term_idle"},
+            queue_id=result.queue_id,
+            idle_queue_timeout_secs=result.idle_queue_timeout_secs,
+        )
+        ret["last_event_id"] = -1
         return ret
 
     # Fill up the UserMessage rows if a soft-deactivated user has returned

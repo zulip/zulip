@@ -1,9 +1,11 @@
 from collections.abc import Set as AbstractSet
+from datetime import timedelta
 from unittest import mock
 
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
+from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.actions.alert_words import do_add_alert_words
 from zerver.lib.mention import stream_wildcards
 from zerver.lib.soft_deactivation import (
@@ -13,14 +15,21 @@ from zerver.lib.soft_deactivation import (
     do_soft_activate_users,
     do_soft_deactivate_user,
     do_soft_deactivate_users,
+    get_days_since_last_visit,
     get_soft_deactivated_users_for_catch_up,
     get_users_for_soft_deactivation,
     queue_soft_reactivation,
     reactivate_user_if_soft_deactivated,
+    soft_reactivate_if_personal_notification,
 )
 from zerver.lib.stream_subscription import get_subscriptions_for_send_message
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_subscription, get_user_messages, make_client
+from zerver.lib.test_helpers import (
+    get_subscription,
+    get_user_messages,
+    make_client,
+    stub_event_queue_user_events,
+)
 from zerver.models import (
     AlertWord,
     Client,
@@ -33,7 +42,11 @@ from zerver.models import (
 )
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
+from zerver.models.scheduled_jobs import NotificationTriggers
 from zerver.models.streams import get_stream
+from zerver.tornado.django_api import EventQueueData
+from zerver.worker.deferred_work import DeferredWorker
+from zerver.worker.soft_reactivation import SoftReactivationWorker
 
 logger_string = "zulip.soft_deactivation"
 
@@ -145,7 +158,15 @@ class UserSoftDeactivationTests(ZulipTestCase):
         with mock.patch("zerver.lib.soft_deactivation.queue_event_on_commit") as mock_queue:
             queue_soft_reactivation(user.id)
         mock_queue.assert_called_once_with(
-            "deferred_work", {"type": "soft_reactivate", "user_profile_id": user.id}
+            "deferred_work",
+            {"type": "soft_reactivate", "user_profile_id": user.id, "notify_client": False},
+        )
+
+        with mock.patch("zerver.lib.soft_deactivation.queue_event_on_commit") as mock_queue:
+            queue_soft_reactivation(user.id, notify_client=True)
+        mock_queue.assert_called_once_with(
+            "deferred_work",
+            {"type": "soft_reactivate", "user_profile_id": user.id, "notify_client": True},
         )
 
     @override_settings(DEDICATED_SOFT_REACTIVATION_QUEUE=True)
@@ -156,7 +177,8 @@ class UserSoftDeactivationTests(ZulipTestCase):
         with mock.patch("zerver.lib.soft_deactivation.queue_event_on_commit") as mock_queue:
             queue_soft_reactivation(user.id)
         mock_queue.assert_called_once_with(
-            "soft_reactivation", {"type": "soft_reactivate", "user_profile_id": user.id}
+            "soft_reactivation",
+            {"type": "soft_reactivate", "user_profile_id": user.id, "notify_client": False},
         )
 
         # And the dedicated queue's worker reactivates the user end to end.
@@ -854,3 +876,201 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         # Sanity check after removing the alert word for Hamlet.
         AlertWord.objects.filter(user_profile=long_term_idle_user).delete()
         assert_stream_message_not_sent_to_idle_user("no alert words")
+
+
+class SoftReactivationReturnTests(ZulipTestCase):
+    queue_data = EventQueueData(queue_id="test-queue-id", idle_queue_timeout_secs=600)
+
+    def make_activity(
+        self,
+        user: UserProfile,
+        *,
+        days_ago: int,
+        client_name: str = "website",
+        query: str = "/json/register",
+    ) -> None:
+        UserActivity.objects.create(
+            user_profile=user,
+            client=make_client(client_name),
+            query=query,
+            count=1,
+            last_visit=timezone_now() - timedelta(days=days_ago),
+        )
+
+    def test_get_days_since_last_visit(self) -> None:
+        user = self.example_user("hamlet")
+        UserActivity.objects.filter(user_profile=user).delete()
+        self.assertIsNone(get_days_since_last_visit(user))
+
+        self.make_activity(user, days_ago=30)
+        self.make_activity(user, days_ago=90, client_name="ZulipMobile", query="/api/v1/events")
+        self.assertEqual(get_days_since_last_visit(user), 30)
+
+        self.make_activity(self.example_user("othello"), days_ago=2)
+        self.assertEqual(get_days_since_last_visit(user), 30)
+
+        # The visit that is loading this page does not shorten the away-time.
+        self.make_activity(user, days_ago=0, query="/")
+        self.assertEqual(get_days_since_last_visit(user), 30)
+
+        # A visit from earlier today is not an away-time worth reporting.
+        UserActivity.objects.filter(user_profile=user).update(
+            last_visit=timezone_now() - timedelta(hours=6)
+        )
+        self.assertIsNone(get_days_since_last_visit(user))
+
+    def test_deferring_client_gets_reactivating_response(self) -> None:
+        user = self.example_user("hamlet")
+        self.soft_deactivate_user(user)
+        self.make_activity(user, days_ago=45)
+        self.login_user(user)
+
+        with (
+            mock.patch(
+                "zerver.lib.events.request_event_queue", return_value=self.queue_data
+            ) as mock_request_queue,
+            mock.patch("zerver.lib.events.queue_soft_reactivation") as mock_enqueue,
+        ):
+            result = self.client_post(
+                "/json/register", {"defer_long_term_idle_reactivation": "true"}
+            )
+            # The test client also validates this response against the OpenAPI
+            # documentation.
+            self.assertEqual(
+                self.assert_json_success(result),
+                {
+                    "result": "success",
+                    "msg": "",
+                    "queue_id": "test-queue-id",
+                    "idle_queue_timeout_secs": 600,
+                    "zulip_version": ZULIP_VERSION,
+                    "zulip_feature_level": API_FEATURE_LEVEL,
+                    "zulip_merge_base": ZULIP_MERGE_BASE,
+                    "long_term_idle": True,
+                    "long_term_idle_days": 45,
+                    "last_event_id": -1,
+                },
+            )
+            self.assertEqual(mock_request_queue.call_args.kwargs["event_types"], ["long_term_idle"])
+            mock_enqueue.assert_called_once_with(user.id, notify_client=True)
+            user.refresh_from_db()
+            self.assertTrue(user.long_term_idle)
+
+            # A user whose last visit we cannot date gets a null away-time.
+            UserActivity.objects.filter(user_profile=user).delete()
+            result = self.client_post(
+                "/json/register", {"defer_long_term_idle_reactivation": "true"}
+            )
+            self.assertIsNone(self.assert_json_success(result)["long_term_idle_days"])
+
+    def test_client_not_deferring_reactivates_synchronously(self) -> None:
+        user = self.example_user("hamlet")
+        self.soft_deactivate_user(user)
+        self.login_user(user)
+
+        with (
+            stub_event_queue_user_events(self.queue_data, []),
+            self.assertLogs(logger_string, level="INFO"),
+        ):
+            result = self.client_post("/json/register")
+        response = self.assert_json_success(result)
+        self.assertNotIn("long_term_idle", response)
+        self.assertNotIn("long_term_idle_days", response)
+        user.refresh_from_db()
+        self.assertFalse(user.long_term_idle)
+
+    def test_deferring_client_non_idle_user_gets_normal_response(self) -> None:
+        user = self.example_user("hamlet")
+        self.assertFalse(user.long_term_idle)
+        self.login_user(user)
+
+        with (
+            stub_event_queue_user_events(self.queue_data, []),
+            mock.patch("zerver.lib.events.queue_soft_reactivation") as mock_enqueue,
+        ):
+            result = self.client_post(
+                "/json/register", {"defer_long_term_idle_reactivation": "true"}
+            )
+        response = self.assert_json_success(result)
+        self.assertNotIn("long_term_idle", response)
+        self.assertEqual(response["queue_id"], "test-queue-id")
+        self.assertIn("unread_msgs", response)
+        self.assertIn("subscriptions", response)
+        mock_enqueue.assert_not_called()
+
+    def test_deferring_client_errors_when_queue_allocation_fails(self) -> None:
+        user = self.example_user("hamlet")
+        self.soft_deactivate_user(user)
+        self.login_user(user)
+
+        with (
+            mock.patch("zerver.lib.events.request_event_queue", return_value=None),
+            mock.patch("zerver.lib.events.queue_soft_reactivation") as mock_enqueue,
+        ):
+            result = self.client_post(
+                "/json/register", {"defer_long_term_idle_reactivation": "true"}
+            )
+        self.assert_json_error(result, "Could not allocate event queue")
+        mock_enqueue.assert_not_called()
+
+    def test_workers_send_long_term_idle_event_to_waiting_client(self) -> None:
+        user = self.example_user("hamlet")
+        for worker, worker_logger in [
+            (DeferredWorker(), "zerver.worker.deferred_work"),
+            (SoftReactivationWorker(), "zerver.worker.soft_reactivation"),
+        ]:
+            self.soft_deactivate_user(user)
+            with (
+                self.capture_send_event_calls(expected_num_events=1) as events,
+                self.assertLogs("zulip.soft_deactivation", level="INFO"),
+                self.assertLogs(worker_logger, level="INFO"),
+            ):
+                worker.consume(
+                    {"type": "soft_reactivate", "user_profile_id": user.id, "notify_client": True}
+                )
+            self.assertEqual(events[0]["event"], {"type": "long_term_idle", "value": False})
+            self.assertEqual(events[0]["users"], [user.id])
+            user.refresh_from_db()
+            self.assertFalse(user.long_term_idle)
+
+    def test_long_term_idle_event_sent_even_if_already_reactivated(self) -> None:
+        # Another path can reactivate the user before this job runs.
+        user = self.example_user("hamlet")
+        self.assertFalse(user.long_term_idle)
+
+        with (
+            self.capture_send_event_calls(expected_num_events=1) as events,
+            self.assertLogs("zerver.worker.deferred_work", level="INFO"),
+        ):
+            DeferredWorker().consume(
+                {"type": "soft_reactivate", "user_profile_id": user.id, "notify_client": True}
+            )
+        self.assertEqual(events[0]["event"], {"type": "long_term_idle", "value": False})
+        self.assertEqual(events[0]["users"], [user.id])
+
+    def test_jobs_queued_before_upgrade_send_no_event(self) -> None:
+        # Jobs queued before this server was upgraded lack notify_client.
+        user = self.example_user("hamlet")
+        job = {"type": "soft_reactivate", "user_profile_id": user.id}
+        with (
+            self.capture_send_event_calls(expected_num_events=0),
+            self.assertLogs("zerver.worker.deferred_work", level="INFO"),
+            self.assertLogs("zerver.worker.soft_reactivation", level="INFO"),
+        ):
+            DeferredWorker().consume(job)
+            SoftReactivationWorker().consume(job)
+
+    def test_notification_reactivation_sends_no_event(self) -> None:
+        user = self.example_user("hamlet")
+        self.soft_deactivate_user(user)
+
+        with (
+            self.assertLogs("zulip.soft_deactivation", level="INFO"),
+            self.assertLogs("zerver.worker.deferred_work", level="INFO"),
+            self.capture_send_event_calls(expected_num_events=0),
+        ):
+            soft_reactivate_if_personal_notification(
+                user, {NotificationTriggers.DIRECT_MESSAGE}, None
+            )
+        user.refresh_from_db()
+        self.assertFalse(user.long_term_idle)

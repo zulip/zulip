@@ -194,6 +194,7 @@ from zerver.lib.event_schema import (
     check_heartbeat,
     check_invites_changed,
     check_legacy_presence,
+    check_long_term_idle,
     check_message,
     check_modern_presence,
     check_muted_topics,
@@ -264,6 +265,7 @@ from zerver.lib.events import apply_events, fetch_initial_state_data, post_proce
 from zerver.lib.markdown import render_message_markdown
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.muted_users import get_mute_object
+from zerver.lib.soft_deactivation import reactivate_user_for_queued_job
 from zerver.lib.streams import check_update_all_streams_active_status, user_has_metadata_access
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -4533,6 +4535,12 @@ class NormalActionsTest(BaseAction):
         with self.verify_action() as events:
             do_set_video_call_provider_token(self.user_profile, "webex", None)
         check_has_webex_token("events[0]", events[0], value=False)
+
+    def test_long_term_idle(self) -> None:
+        self.soft_deactivate_user(self.user_profile)
+        with self.verify_action() as events:
+            reactivate_user_for_queued_job(self.user_profile, notify_client=True)
+        check_long_term_idle("events[0]", events[0])
 
     def test_restart_event(self) -> None:
         with self.verify_action(num_events=1, state_change_expected=False):
