@@ -797,7 +797,11 @@ input.settings_text_input {
 
 /* This includes css needed to display messages in an overlay. */
 .overlay-messages-container {
-    position: relative;
+    /* Center the container in the overlay on both axes, including
+       when its max-height is smaller than the available height. */
+    position: absolute;
+    inset: 0;
+    margin: auto;
     height: 95%;
     background-color: var(--color-background-modal);
     border-radius: 4px;
