@@ -86,6 +86,7 @@ from zerver.lib.users import (
     check_can_access_user,
     check_can_create_bot,
     check_full_name,
+    check_valid_bot_service_and_config_update,
     check_valid_bot_type,
     check_valid_embedded_bot_config,
     check_valid_incoming_webhook_bot_config,
@@ -556,19 +557,22 @@ def patch_bot_backend(
             bot, default_all_public_streams, acting_user=user_profile
         )
 
-    if service_payload_url is not None:
-        check_valid_interface_type(service_interface)
-        do_update_outgoing_webhook_service(
-            bot,
-            interface=service_interface,
-            base_url=service_payload_url,
-            acting_user=user_profile,
+    if service_payload_url is not None or config_data is not None:
+        check_valid_bot_service_and_config_update(
+            bot.bot_type,
+            service_payload_url=service_payload_url,
+            config_data=config_data,
+            service_interface=service_interface,
         )
-
-    if config_data is not None:
-        if bot.bot_type != UserProfile.EMBEDDED_BOT:
-            raise JsonableError(_("Only embedded bots have config_data."))
-        do_update_bot_config_data(bot, config_data)
+        if service_payload_url is not None:
+            do_update_outgoing_webhook_service(
+                bot,
+                interface=service_interface,
+                base_url=service_payload_url,
+                acting_user=user_profile,
+            )
+        if config_data is not None:
+            do_update_bot_config_data(bot, config_data)
 
     if len(request.FILES) == 0:
         pass

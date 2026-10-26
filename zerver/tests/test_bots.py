@@ -2118,6 +2118,73 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         service_payload_url = orjson.loads(result.content)["service_payload_url"]
         self.assertEqual(service_payload_url, "http://foo.bar2.com")
 
+    def test_patch_default_bot_rejects_service_and_config_fields(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"service_payload_url": orjson.dumps("http://foo.bar.com").decode()},
+        )
+        self.assert_json_error(result, "Only outgoing-webhook bots have service_payload_url.")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"key": "value"}).decode()},
+        )
+        self.assert_json_error(result, "Only embedded bots have config_data.")
+
+    def test_patch_embedded_bot_rejects_service_fields(self) -> None:
+        self.create_test_bot(
+            short_name="embeddedservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="followup",
+            config_data=orjson.dumps({"key": "value"}).decode(),
+        )
+        bot = self.get_bot_user("embeddedservicebot-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"service_payload_url": orjson.dumps("http://embedded.example.com").decode()},
+        )
+        self.assert_json_error(result, "Only outgoing-webhook bots have service_payload_url.")
+
+    def test_patch_incoming_webhook_bot_rejects_service_fields(self) -> None:
+        self.login("hamlet")
+        self.create_bot(
+            full_name="My Bot",
+            short_name="mybot",
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+        )
+        bot = self.get_bot_user("mybot-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"service_payload_url": orjson.dumps("http://foo.bar.com").decode()},
+        )
+        self.assert_json_error(result, "Only outgoing-webhook bots have service_payload_url.")
+
+    def test_patch_outgoing_webhook_bot_rejects_config_data(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "full_name": "The Bot of Hamlet",
+            "short_name": "hambot",
+            "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
+            "payload_url": orjson.dumps("http://foo.bar.com").decode(),
+            "interface_type": Service.GENERIC,
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"key": "value"}).decode()},
+        )
+        self.assert_json_error(result, "Only embedded bots have config_data.")
+
     @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
     def test_patch_bot_config_data(self, mock_validate_config: MagicMock) -> None:
         self.create_test_bot(
@@ -2135,12 +2202,12 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         config_data = orjson.loads(result.content)["config_data"]
         self.assertEqual(config_data, orjson.loads(bot_info["config_data"]))
 
-    def test_patch_bot_config_data_for_non_embedded_bot(self) -> None:
+    def test_patch_bot_config_data_for_incoming_webhook_bot(self) -> None:
         self.create_test_bot(
             "test",
             self.example_user("hamlet"),
-            full_name="Bot without config data",
-            bot_type=UserProfile.DEFAULT_BOT,
+            full_name="Incoming webhook bot",
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
         )
         bot_info = {"config_data": orjson.dumps({"key": "87654321"}).decode()}
         email = "test-bot@zulip.testserver"
