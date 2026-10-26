@@ -1,0 +1,79 @@
+{
+  "guild": {
+    "id": "1519311536839983195",
+    "name": "zulip-discord server",
+    "iconUrl": "media\\0-eb806f2bcf037a33.png"
+  },
+  "channel": {
+    "id": "1519314256007266425",
+    "type": "GuildTextChat",
+    "categoryId": "1519311538035490956",
+    "category": "Text Channels",
+    "name": "private",
+    "topic": "***__~~Channel topic~~__***"
+  },
+  "dateRange": {
+    "after": null,
+    "before": null
+  },
+  "exportedAt": "2026-06-24T21:07:13.5647887+07:00",
+  "messages": [
+    {
+      "id": "1519314286780878898",
+      "type": "Default",
+      "timestamp": "2026-06-24T19:12:33.463+07:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "Private channel",
+      "author": {
+        "id": "1000000000000000001",
+        "name": "pieter",
+        "discriminator": "0000",
+        "nickname": "pieter",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "media\\5-e9bdbc123bbdd5b5.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": [],
+      "inlineEmojis": []
+    },
+    {
+      "id": "1519314577395814690",
+      "type": "ThreadCreated",
+      "timestamp": "2026-06-24T19:13:42.751+07:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "Started a thread.",
+      "author": {
+        "id": "1000000000000000001",
+        "name": "pieter",
+        "discriminator": "0000",
+        "nickname": "pieter",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "media\\5-e9bdbc123bbdd5b5.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": [],
+      "reference": {
+        "type": "Default",
+        "messageId": null,
+        "channelId": "1519314577395814690",
+        "guildId": "1519311536839983195"
+      },
+      "inlineEmojis": []
+    }
+  ],
+  "messageCount": 2
+}
