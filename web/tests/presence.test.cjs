@@ -114,9 +114,8 @@ test("status_from_raw", () => {
     const status_from_raw = presence.status_from_raw;
 
     const now = 5000;
-    let raw;
 
-    raw = {
+    let raw = {
         server_timestamp: now,
         active_timestamp: now - OFFLINE_THRESHOLD_SECS / 2,
     };
@@ -332,9 +331,7 @@ test("last_active_date", () => {
 });
 
 test("update_info_from_event", () => {
-    let info;
-
-    info = {
+    let info = {
         active_timestamp: 500,
         idle_timestamp: 500,
     };

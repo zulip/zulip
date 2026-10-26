@@ -751,10 +751,8 @@ run_test("paste_handler_converter", () => {
     }
     const meta = '<meta http-equiv="content-type" content="text/html; charset=utf-8">';
 
-    let firefox_input;
-
     // Non-silent user mention
-    firefox_input =
+    let firefox_input =
         meta +
         '<p><span class="user-mention" data-user-id="10">' +
         '<span class="mention-content-wrapper">@King Hamlet</span></span></p>';
@@ -859,10 +857,8 @@ run_test("paste_handler_converter", () => {
         '<span class="mention-content-wrapper">@Unknown</span></span></p>';
     assert.equal(compose_paste.paste_handler_converter(firefox_input), "@**|9999**");
 
-    let chrome_input;
-
     // Non-silent user mention.
-    chrome_input = `<html><body><!--StartFragment--><span class="user-mention" data-user-id="10" style="padding: 0px 3px; border-radius: 3px; white-space: nowrap; font-size: 0.95em; color: rgba(255, 255, 255, 0.8); background-color: rgba(100, 100, 206, 0.25); cursor: pointer; font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><span class="mention-content-wrapper" style="font-size: 1.0526em;">@King Hamlet</span></span><span style="color: rgb(222, 222, 222); font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(31, 40, 40); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">, how are you?</span><!--EndFragment--></body></html>`;
+    let chrome_input = `<html><body><!--StartFragment--><span class="user-mention" data-user-id="10" style="padding: 0px 3px; border-radius: 3px; white-space: nowrap; font-size: 0.95em; color: rgba(255, 255, 255, 0.8); background-color: rgba(100, 100, 206, 0.25); cursor: pointer; font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><span class="mention-content-wrapper" style="font-size: 1.0526em;">@King Hamlet</span></span><span style="color: rgb(222, 222, 222); font-family: &quot;Source Sans 3 VF&quot;, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(31, 40, 40); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">, how are you?</span><!--EndFragment--></body></html>`;
     assert.equal(
         compose_paste.paste_handler_converter(chrome_input),
         "@**King Hamlet|10**, how are you?",
