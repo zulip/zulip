@@ -1,4 +1,5 @@
 import unittest
+from datetime import date
 
 from github import Github
 from github.CheckRun import CheckRun
@@ -12,6 +13,7 @@ from tools.triage_bot.gather import (
     parse_conversation_link,
     zulip_ci_checks,
 )
+from tools.triage_bot.triage_bot import silence_mentions, topic_name
 
 
 class TestCzoLinks(unittest.TestCase):
@@ -126,3 +128,27 @@ class TestZulipCiChecks(unittest.TestCase):
         )
         # With no Zulip CI run, nothing counts.
         self.assertEqual(zulip_ci_checks(checks, []), [])
+
+
+class TestTopicName(unittest.TestCase):
+    def test_week_in_one_month(self) -> None:
+        self.assertEqual(topic_name(date(2026, 10, 8)), "October 5–11, 2026")
+
+    def test_week_across_months(self) -> None:
+        self.assertEqual(topic_name(date(2026, 10, 26)), "October 26–November 1, 2026")
+        self.assertEqual(topic_name(date(2026, 11, 1)), "October 26–November 1, 2026")
+
+    def test_week_across_years(self) -> None:
+        self.assertEqual(topic_name(date(2026, 12, 31)), "December 28, 2026–January 3, 2027")
+
+
+class TestSilenceMentions(unittest.TestCase):
+    def test_mentions(self) -> None:
+        self.assertEqual(
+            silence_mentions("Bug @**all** in compose; cc @**Tim Abbott** and @*support*"),
+            "Bug @_**all** in compose; cc @_**Tim Abbott** and @_*support*",
+        )
+
+    def test_silent_mentions_and_github_logins(self) -> None:
+        text = "@_**Tim Abbott**, @timabbott, could you review this?"
+        self.assertEqual(silence_mentions(text), text)
