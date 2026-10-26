@@ -234,11 +234,13 @@ def check_valid_bot_service_and_config_update(
     *,
     service_payload_url: str | None,
     config_data: Mapping[str, str] | None,
-    service_interface: int,
+    service_interface: int | None,
 ) -> None:
-    if service_payload_url is not None:
+    if service_payload_url is not None and bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
+        raise JsonableError(_("Only outgoing-webhook bots have service_payload_url."))
+    if service_interface is not None:
         if bot_type != UserProfile.OUTGOING_WEBHOOK_BOT:
-            raise JsonableError(_("Only outgoing-webhook bots have service_payload_url."))
+            raise JsonableError(_("Only outgoing-webhook bots have service_interface."))
         check_valid_interface_type(service_interface)
     if config_data is not None and bot_type != UserProfile.EMBEDDED_BOT:
         raise JsonableError(_("Only embedded bots have config_data."))
