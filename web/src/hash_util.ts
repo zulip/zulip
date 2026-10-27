@@ -576,6 +576,11 @@ export function decode_stream_topic_from_url(
         if (terms[2]?.operator !== "near") {
             return null;
         }
+        // Callers parse the message id as a number, so a URL with anything
+        // else there is malformed rather than a link to a message.
+        if (!/^\d+$/.test(terms[2].operand)) {
+            return null;
+        }
         return {stream_id, topic_name: terms[1].operand, message_id: terms[2].operand};
     } catch {
         return null;
