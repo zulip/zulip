@@ -875,6 +875,16 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ##
 # ZULIP_SERVICE_PUSH_NOTIFICATIONS = True
 
+## Organizations hosted by this server can ask to be listed in the
+## Zulip communities directory at https://zulip.com/communities/.
+## Listing an organization requires registering for the Zulip
+## communities directory here, as well as the organization opting in.
+## For complete documentation, see:
+##
+##   https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#zulip-communities-directory
+##
+# ZULIP_SERVICE_ADVERTISE_REALMS = True
+
 ## By default, a Zulip server that has registered for Zulip services
 ## submits both basic metadata (required for billing and for determining
 ## free plan eligibility), as well as aggregate usage statistics. You
