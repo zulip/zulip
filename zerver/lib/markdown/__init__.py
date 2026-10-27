@@ -1857,6 +1857,8 @@ class StreamTopicPattern(StreamTopicMessageProcessor):
             link = f"/#narrow/channel/{stream_url}/topic/{topic_url}/with/{with_operand}"
         else:
             link = f"/#narrow/channel/{stream_url}/topic/{topic_url}"
+        if self.is_in_markdown_link_url(m, data):
+            return link, m.start(), m.end()
 
         el.set("href", link)
 

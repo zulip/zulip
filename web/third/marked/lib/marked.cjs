@@ -551,8 +551,6 @@ inline.zulip = merge({}, inline.breaks, {
   // While the backend supports this, implementing it in the frontend would add
   // significant complexity for an extremely rare case that only affects local
   // echo for a brief moment.
-  // Prettified links inside markdown link URLs (e.g. [text](#**stream**))
-  // are handled by the backend; skipping in local echo avoids complexity.
   stream_topic_message: /^#\*\*([^\*>]+)>([^\*]*)@(\d+)\*\*/,
   stream_topic: /^#\*\*([^\*>]+)>([^\*]*)\*\*/,
   stream: /^#\*\*([^\*]+)\*\*/,
