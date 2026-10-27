@@ -2149,7 +2149,7 @@ _Released 2023-12-15_
   controls. This behavior was removed to simplify hosting multiple
   organizations with different LDAP configuration preferences.
 
-[mobile-push-metadata]: ../production/mobile-push-notifications.md#uploading-usage-statistics
+[mobile-push-metadata]: ../production/zulip-services.md#uploading-usage-statistics
 
 ## Zulip Server 7.x series
 

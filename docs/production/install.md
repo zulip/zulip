@@ -123,9 +123,9 @@ of the failure, you can just rerun the script. For more information, see
 
 - `--no-submit-usage-statistics`: If you enable push notifications, by default
   your server will submit [basic
-  metadata](mobile-push-notifications.md#uploading-basic-metadata) (required for
+  metadata](zulip-services.md#uploading-basic-metadata) (required for
   billing and for determining free plan eligibility), as well as [aggregate
-  usage statistics](mobile-push-notifications.md#uploading-usage-statistics).
+  usage statistics](zulip-services.md#uploading-usage-statistics).
   You can disable submitting usage statistics by passing this flag. If push
   notifications are not enabled, no data will be submitted, so this flag is
   redundant.
