@@ -41,7 +41,12 @@ from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import require_human_non_guest_user, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.avatar import avatar_url, get_avatar_for_inaccessible_user, get_gravatar_url
-from zerver.lib.bot_config import ConfigError, get_merged_bot_config, set_bot_config
+from zerver.lib.bot_config import (
+    ConfigError,
+    get_bot_configs,
+    get_merged_bot_config,
+    set_bot_config,
+)
 from zerver.lib.demo_organizations import check_demo_organization_has_set_email
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import (
@@ -582,14 +587,33 @@ def patch_bot_backend(
                 except ConfigError as e:
                     raise JsonableError(str(e))
         case UserProfile.INCOMING_WEBHOOK_BOT:
-            if (
-                service_interface is not None
-                or service_payload_url is not None
-                or config_data is not None
-            ):
-                raise JsonableError(
-                    _("Incoming-webhook bots have no service or config data to update.")
+            if service_interface is not None or service_payload_url is not None:
+                raise JsonableError(_("Incoming-webhook bots have no service fields to update."))
+            if config_data is not None:
+                existing_config_data = get_bot_configs([bot.id]).get(bot.id, {})
+                existing_integration_id = existing_config_data.get("integration_id")
+                new_integration_id = config_data.get("integration_id")
+                switching_integration = (
+                    new_integration_id is not None and new_integration_id != existing_integration_id
                 )
+                if switching_integration:
+                    # Switching integrations replaces the bot's config
+                    # entirely: config options from the previous
+                    # integration would be stale under the new schema.
+                    proposed_config_data = config_data
+                else:
+                    proposed_config_data = {**existing_config_data, **config_data}
+                if (
+                    proposed_integration_id := proposed_config_data.get("integration_id")
+                ) is not None:
+                    check_valid_incoming_webhook_bot_config(
+                        proposed_integration_id,
+                        proposed_config_data,
+                    )
+                try:
+                    do_update_bot_config_data(bot, config_data, replace=switching_integration)
+                except ConfigError as e:
+                    raise JsonableError(str(e))
         case UserProfile.DEFAULT_BOT:
             if (
                 service_interface is not None
