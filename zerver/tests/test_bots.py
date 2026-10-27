@@ -2148,7 +2148,80 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_error(result, "Outgoing-webhook bots have no config data to update.")
 
     @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
-    def test_patch_bot_config_data(self, mock_validate_config: MagicMock) -> None:
+    def test_patch_embedded_bot_config_data_without_existing_config(
+        self, mock_validate_config: MagicMock
+    ) -> None:
+        self.create_test_bot(
+            short_name="embeddedbot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="giphy",
+        )
+        bot = self.get_bot_user("embeddedbot-bot@zulip.testserver")
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"key": "value"}).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertEqual(get_bot_config(bot)["key"], "value")
+
+    def test_patch_embedded_bot_rejects_config_data_when_handler_has_no_config(
+        self,
+    ) -> None:
+        self.create_test_bot(
+            short_name="embeddedbot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="converter",
+        )
+        bot = self.get_bot_user("embeddedbot-bot@zulip.testserver")
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"key": "value"}).decode()},
+        )
+        self.assert_json_error(result, "This embedded bot doesn't use bot config.")
+        with self.assertRaises(ConfigError):
+            get_bot_config(bot)
+
+    def test_patch_embedded_bot_config_data_without_validate_config(self) -> None:
+        # The followup bot has a .conf template but its handler does
+        # not define validate_config, so the template alone determines
+        # which keys are accepted.
+        self.create_test_bot(
+            short_name="embeddedbot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="followup",
+            config_data=orjson.dumps({"stream": "followup"}).decode(),
+        )
+        bot = self.get_bot_user("embeddedbot-bot@zulip.testserver")
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"stream": "engineering-followup"}).decode()},
+        )
+        self.assert_json_success(result)
+        self.assertEqual(get_bot_config(bot), {"stream": "engineering-followup"})
+
+    def test_patch_embedded_bot_rejects_unknown_config_key_without_validate_config(
+        self,
+    ) -> None:
+        self.create_test_bot(
+            short_name="embeddedbot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="followup",
+            config_data=orjson.dumps({"stream": "followup"}).decode(),
+        )
+        bot = self.get_bot_user("embeddedbot-bot@zulip.testserver")
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"unexpected": "value"}).decode()},
+        )
+        self.assert_json_error(result, "Unexpected configuration parameters: {'unexpected'}")
+        self.assertEqual(get_bot_config(bot), {"stream": "followup"})
+
+    @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
+    def test_patch_embedded_bot_config_data(self, mock_validate_config: MagicMock) -> None:
         self.create_test_bot(
             "test",
             self.example_user("hamlet"),
@@ -2177,6 +2250,27 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_error(
             result, "Incoming-webhook bots have no service or config data to update."
         )
+
+    @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
+    def test_patch_embedded_bot_rejects_unknown_config_key(
+        self, mock_validate_config: MagicMock
+    ) -> None:
+        self.create_test_bot(
+            "test",
+            self.example_user("hamlet"),
+            full_name="Bot with config data",
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="giphy",
+            config_data=orjson.dumps({"key": "12345678"}).decode(),
+        )
+        email = "test-bot@zulip.testserver"
+        bot = self.get_bot_user(email)
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"config_data": orjson.dumps({"unexpected": "value"}).decode()},
+        )
+        self.assert_json_error(result, "Unexpected configuration parameters: {'unexpected'}")
+        self.assertEqual(get_bot_config(bot), {"key": "12345678"})
 
     @override_settings(BOT_CONFIG_SIZE_LIMIT=20)
     @patch("zulip_bots.bots.giphy.giphy.GiphyHandler.validate_config")
