@@ -338,7 +338,7 @@ export function generate_and_insert_audio_or_video_call_link(
                 */
                 const video_muted = is_audio_call ? "true" : "false";
                 video_call_url.hash = `config.startWithVideoMuted=${video_muted}`;
-                const video_call_link = video_call_url.toString();
+                const video_call_link = video_call_url.href;
 
                 if (is_audio_call) {
                     insert_audio_call_url(video_call_link, $target_textarea);
