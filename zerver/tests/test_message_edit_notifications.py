@@ -256,6 +256,35 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
         self.assert_length(info["queue_messages"], 0)
 
+    def test_dm_mention_disabled_user_ids_in_update_message_event(self) -> None:
+        """
+        Like message events, update_message events list the users with DM
+        and mention notifications disabled only if the edited message
+        could notify them.
+        """
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        for user in [cordelia, othello]:
+            do_change_user_setting(
+                user, "enable_offline_email_notifications", False, acting_user=None
+            )
+            do_change_user_setting(
+                user, "enable_offline_push_notifications", False, acting_user=None
+            )
+        self.subscribe(othello, "Scotland")
+        message_id = self._login_and_send_original_stream_message(content="no mention")
+
+        # A group mention can notify only the group's members, and
+        # Othello isn't in hamletcharacters.
+        with self.capture_send_event_calls(expected_num_events=1) as events:
+            result = self.client_patch(
+                f"/json/messages/{message_id}", {"content": "@*hamletcharacters*"}
+            )
+        self.assert_json_success(result)
+        event = events[0]["event"]
+        self.assertEqual(event["dm_mention_email_disabled_user_ids"], [cordelia.id])
+        self.assertEqual(event["dm_mention_push_disabled_user_ids"], [cordelia.id])
+
     def _turn_on_stream_push_for_cordelia(self) -> None:
         """
         conventions:
