@@ -498,7 +498,7 @@ the `PUSH_NOTIFICATION_BOUNCER_URL = 'https://push.zulipchat.com'` line in your
 [restart your Zulip server](settings.md#changing-server-settings). This approach makes it
 easy to start using the service again by uncommenting the same line.
 
-### Legacy protocol
+## Legacy protocol
 
 Zulip Servers running 12.0+ sending notifications to a modern mobile
 app version will always use the E2EE protocol. If either the Zulip
