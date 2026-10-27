@@ -312,14 +312,14 @@ def capture_thread_screenshot(
 ) -> None:
     assert bot.bot_owner is not None
     stream = ensure_stream(bot.realm, channel_name, acting_user=bot.bot_owner)
-    narrow_uri = topic_narrow_url(realm=bot.realm, stream=stream, topic_name=topic)
+    narrow_url = topic_narrow_url(realm=bot.realm, stream=stream, topic_name=topic)
     narrow = f"{channel_name}/{topic}"
     screenshot_script = os.path.join(SCREENSHOTS_DIR, "thread-screenshot.ts")
     subprocess.check_call(
         [
             "node",
             screenshot_script,
-            narrow_uri,
+            narrow_url,
             narrow,
             str(min(message_ids)),
             image_path,
