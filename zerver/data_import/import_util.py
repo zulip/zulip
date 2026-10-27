@@ -714,6 +714,9 @@ data_import_session = OutgoingSession(
         # together.
         backoff_jitter=4,
         status_forcelist=[429, 500, 502, 503, 504],
+        # Once retries run out, return the last response instead of raising
+        # RetryError, so callers can log the service's error message.
+        raise_on_status=False,
     ),
 )
 
