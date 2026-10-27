@@ -285,6 +285,33 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.assertEqual(event["dm_mention_email_disabled_user_ids"], [cordelia.id])
         self.assertEqual(event["dm_mention_push_disabled_user_ids"], [cordelia.id])
 
+    def test_updates_with_stream_mention_of_imported_stub(self) -> None:
+        cordelia = self.example_user("cordelia")
+        hamlet = self.example_user("hamlet")
+        cordelia.is_imported_stub = True
+        cordelia.save(update_fields=["is_imported_stub"])
+        # Imported stubs have no push devices, since the mobile apps
+        # register them, and logging in on an app clears is_imported_stub.
+        Device.objects.filter(user=cordelia).delete()
+
+        original_content = "no mention"
+        updated_content = "now we mention @**Cordelia, Lear's daughter**"
+        notification_message_data = self._send_and_update_message(original_content, updated_content)
+
+        message_id = notification_message_data["message_id"]
+        info = notification_message_data["info"]
+
+        expected_enqueue_kwargs = self.get_maybe_enqueue_notifications_parameters(
+            user_id=cordelia.id,
+            acting_user_id=hamlet.id,
+            message_id=message_id,
+            mention_email_notify=False,
+            already_notified={},
+        )
+
+        self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
+        self.assert_length(info["queue_messages"], 0)
+
     def _turn_on_stream_push_for_cordelia(self) -> None:
         """
         conventions:

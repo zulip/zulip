@@ -692,6 +692,11 @@ def handle_missedmessage_emails(
         # BUG: Investigate why it's possible to get here.
         return  # nocoverage
 
+    if user_profile.is_imported_stub:
+        # We avoid queuing these emails for imported users who haven't
+        # logged in yet, and this stops any that were queued anyway.
+        return
+
     if user_profile.delivery_email == "":
         # The assertions here are to help document the only circumstance under which
         # this condition should be possible.
