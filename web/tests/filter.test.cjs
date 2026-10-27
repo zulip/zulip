@@ -3531,4 +3531,10 @@ run_test("get_stringified_narrow_for_server_query", () => {
         narrow2,
         '[{"operator":"channel","operand":1,"negated":false},{"operator":"topic","operand":"bar","negated":false}]',
     );
+
+    const filter3 = new Filter([{operator: "dm-including", operand: [8, 9]}]);
+    assert.equal(
+        filter3.get_stringified_narrow_for_server_query(),
+        '[{"operator":"dm-including","operand":8,"negated":false},{"operator":"dm-including","operand":9,"negated":false}]',
+    );
 });

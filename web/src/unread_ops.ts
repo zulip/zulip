@@ -197,12 +197,19 @@ function bulk_update_read_flags_for_narrow(
     } = {},
     caller_modal_id?: string,
 ): void {
-    const terms_with_integer_channel_id = narrow.map((term) => {
+    const terms_with_integer_channel_id = narrow.flatMap<{
+        operator: NarrowTerm["operator"];
+        operand: NarrowTerm["operand"];
+        negated?: boolean | undefined;
+    }>((term) => {
         if (term.operator === "channel") {
             return {
                 ...term,
                 operand: Number.parseInt(term.operand, 10),
             };
+        }
+        if (term.operator === "dm-including") {
+            return term.operand.map((operand) => ({...term, operand}));
         }
         return term;
     });
