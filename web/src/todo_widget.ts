@@ -8,7 +8,9 @@ import render_widgets_todo_widget_task from "../templates/widgets/todo_widget_ta
 import render_widgets_todo_widget_task_label from "../templates/widgets/todo_widget_task_label.hbs";
 
 import * as blueslip from "./blueslip.ts";
-import {$t} from "./i18n.ts";
+import * as channel from "./channel.ts";
+import {$t, $t_html} from "./i18n.ts";
+import * as keydown_util from "./keydown_util.ts";
 import * as message_lists from "./message_lists.ts";
 import type {Message} from "./message_store.ts";
 import {page_params} from "./page_params.ts";
@@ -51,7 +53,7 @@ export function render({
     rerender,
 }: {
     $elem: JQuery;
-    callback: (data: TodoWidgetOutboundData) => void;
+    callback: (data: TodoWidgetOutboundData, on_error?: (xhr: JQuery.jqXHR) => void) => void;
     message: Message;
     widget_data: WidgetData;
     rerender: boolean;
@@ -149,6 +151,89 @@ export function render({
         }
     }
 
+    function abort_edit_item($task_list_item: JQuery): void {
+        task_data.remove_editing_item(get_task_key($task_list_item));
+        update_task_edit_controls($task_list_item);
+    }
+
+    function submit_task_list_item($task_list_item: JQuery): void {
+        const key = get_task_key($task_list_item);
+        const $edit_bar = $task_list_item.find(".todo-task-edit-bar");
+        const new_task = $edit_bar.find<HTMLInputElement>("input.add-task").val()?.trim() ?? "";
+        const new_desc = $edit_bar.find<HTMLInputElement>("input.add-desc").val()?.trim() ?? "";
+
+        // The save button is hidden while the task name is blank, so
+        // this only guards against pressing Enter.
+        if (new_task === "") {
+            return;
+        }
+        const old_task_list_item = task_data.get_task_item(key);
+
+        if (!old_task_list_item) {
+            blueslip.warn("Do we have legacy data? unknown key for tasks: " + key);
+            abort_edit_item($task_list_item);
+            return;
+        }
+        if (new_task === old_task_list_item.task && new_desc === old_task_list_item.desc) {
+            abort_edit_item($task_list_item);
+            return;
+        }
+
+        // Reject duplicate names before entering the loading state so that the
+        // spinner never flashes on and immediately off for a no-op validation
+        // failure.
+        const data = task_data.handle.edit_task.outbound(new_task, new_desc, key);
+        if (!data) {
+            task_data.set_edit_error(key, $t_html({defaultMessage: "Task already exists"}));
+            update_task_edit_controls($task_list_item);
+            return;
+        }
+
+        // Record exactly what we're sending, so that we recognize the
+        // server's broadcast of this edit when it comes back to us.
+        $edit_bar.find("input.add-task").val(new_task);
+        $edit_bar.find("input.add-desc").val(new_desc);
+        task_data.set_editing_item(key, {task: new_task, desc: new_desc});
+
+        // Saving disables the edit bar's buttons. If one of them has
+        // focus, move it to the task input, which stays focusable while
+        // read-only, so that focus doesn't fall to the page.
+        if ($edit_bar.find(".todo-task-edit-buttons-wrapper :focus").length > 0) {
+            $edit_bar.find("input.add-task").trigger("focus");
+        }
+
+        task_data.start_submitting_edit(key);
+        update_task_edit_controls($task_list_item);
+
+        // The edit bar closes when the server broadcasts this edit back
+        // to us, in TaskData's edit_task inbound handler, so we only
+        // need to handle the request failing here.
+        callback(data, (xhr) => {
+            // If the edit reached the server even though its response
+            // didn't reach us, its broadcast may have closed the edit
+            // bar already.
+            if (!task_data.is_submitting_edit(key)) {
+                return;
+            }
+            task_data.stop_submitting_edit(
+                key,
+                channel.xhr_error_message($t_html({defaultMessage: "Failed to save task"}), xhr),
+            );
+            rerender_in_current_view();
+        });
+    }
+
+    // Asynchronous callbacks may run after the message has been
+    // rendered into a new element (e.g., after a narrow change), so
+    // they rerender the widget wherever it's currently displayed,
+    // rather than updating the possibly stale $elem.
+    function rerender_in_current_view(): void {
+        const $current_elem = message_lists.current?.get_row(message.id).find(".widget-content");
+        if ($current_elem !== undefined && $current_elem.length > 0) {
+            render({$elem: $current_elem, callback, message, widget_data, rerender: true});
+        }
+    }
+
     function get_task_key($task_list_item: JQuery): string {
         const key = $task_list_item.attr("data-key");
         assert(key !== undefined);
@@ -232,6 +317,71 @@ export function render({
             const data = task_data.handle.strike.outbound(key);
             callback(data);
         });
+
+        $elem
+            .find("ul.todo-widget")
+            .on(
+                "keydown",
+                ".todo-task-edit-bar input.add-task, .todo-task-edit-bar input.add-desc",
+                (e) => {
+                    e.stopPropagation();
+                    const $task_list_item = $(e.target).closest(".todo-task-item");
+                    // While an edit is being saved, its inputs are read-only,
+                    // and it can't be resubmitted or cancelled.
+                    if (task_data.is_submitting_edit(get_task_key($task_list_item))) {
+                        return;
+                    }
+                    if (keydown_util.is_enter_event(e)) {
+                        e.preventDefault();
+                        submit_task_list_item($task_list_item);
+                        return;
+                    }
+                    if (e.key === "Escape") {
+                        abort_edit_item($task_list_item);
+                    }
+                },
+            );
+
+        $elem.find("ul.todo-widget").on("click", ".todo-edit-task-icon", (e) => {
+            e.stopPropagation();
+            const $task_list_item = $(e.target).closest(".todo-task-item");
+            start_editing_item($task_list_item);
+            $task_list_item.find(".todo-task-edit-bar input.add-task").trigger("focus");
+        });
+
+        $elem
+            .find("ul.todo-widget")
+            .on("click", ".todo-task-edit-bar .todo-task-edit-check", (e) => {
+                e.stopPropagation();
+                submit_task_list_item($(e.target).closest(".todo-task-item"));
+            });
+
+        $elem
+            .find("ul.todo-widget")
+            .on("click", ".todo-task-edit-bar .todo-task-edit-cancel", (e) => {
+                e.stopPropagation();
+                abort_edit_item($(e.target).closest(".todo-task-item"));
+            });
+
+        // Persist the in-progress edit so it survives a rerender that
+        // rebuilds the list. We store the raw value and only trim when
+        // submitting, so leading/trailing spaces a user is typing are
+        // not stripped mid-edit.
+        $elem
+            .find("ul.todo-widget")
+            .on(
+                "input",
+                ".todo-task-edit-bar input.add-task, .todo-task-edit-bar input.add-desc",
+                (e) => {
+                    const $task_list_item = $(e.target).closest(".todo-task-item");
+                    const $edit_bar = $task_list_item.find(".todo-task-edit-bar");
+                    task_data.set_editing_item(get_task_key($task_list_item), {
+                        task: $edit_bar.find<HTMLInputElement>("input.add-task").val() ?? "",
+                        desc: $edit_bar.find<HTMLInputElement>("input.add-desc").val() ?? "",
+                    });
+                    update_task_edit_controls($task_list_item);
+                },
+            );
     }
 
     function update_add_task_button(): void {
@@ -259,6 +409,53 @@ export function render({
         }
     }
 
+    // Updates a task's edit button and edit bar to match its edit state.
+    function update_task_edit_controls($task_list_item: JQuery): void {
+        const edit_state = task_data.get_editing_items().get(get_task_key($task_list_item));
+        const input_mode = edit_state !== undefined;
+        const submitting = edit_state?.submitting ?? false;
+        const $edit_bar = $task_list_item.find(".todo-task-edit-bar");
+        const active_element = document.activeElement;
+        const closing_with_focus =
+            !input_mode && active_element !== null && $edit_bar.has(active_element).length > 0;
+
+        $task_list_item.find(".checkbox").toggle(!input_mode);
+        $task_list_item.find(".todo-edit-task-icon").toggle(!input_mode);
+        $edit_bar.toggle(input_mode);
+        if (closing_with_focus) {
+            // Rather than let focus fall to the page from the now-hidden
+            // edit bar, return it to the button that opened the edit bar.
+            $task_list_item.find(".todo-edit-task-icon").trigger("focus");
+        }
+
+        // While saving, show a spinner and lock the edit bar. The inputs
+        // are read-only rather than disabled, so that they keep focus.
+        $edit_bar.find("input.add-task, input.add-desc").prop("readOnly", submitting);
+        $edit_bar.find(".todo-task-edit-cancel").prop("disabled", submitting);
+        $edit_bar.find(".todo-task-edit-check").prop("disabled", submitting);
+        $edit_bar.find(".todo-task-check").toggle(!submitting);
+        $edit_bar.find(".todo-task-spinner").toggle(submitting);
+
+        // Like the task list title's, the save button is hidden while
+        // the task name is blank.
+        $edit_bar.find(".todo-task-edit-check").toggle(edit_state?.task.trim() !== "");
+        const error_html = edit_state?.error_html ?? "";
+        $task_list_item.find(".widget-error").html(error_html);
+    }
+
+    function start_editing_item($task_list_item: JQuery): void {
+        const key = get_task_key($task_list_item);
+        const task_item = task_data.get_task_item(key);
+        if (task_item === undefined) {
+            return;
+        }
+        $task_list_item.find(".todo-task-edit-bar input.add-task").val(task_item.task);
+        $task_list_item.find(".todo-task-edit-bar input.add-desc").val(task_item.desc);
+
+        task_data.set_editing_item(key, {task: task_item.task, desc: task_item.desc});
+        update_task_edit_controls($task_list_item);
+    }
+
     function render_results(): void {
         const $task_list = $elem.find("ul.todo-widget");
         const task_list_items_by_key = new Map<string, JQuery>();
@@ -267,14 +464,25 @@ export function render({
             task_list_items_by_key.set(get_task_key($task_list_item), $task_list_item);
         }
         for (const task of task_data.get_widget_data().all_tasks) {
-            const $task_list_item = task_list_items_by_key.get(task.key);
+            let $task_list_item = task_list_items_by_key.get(task.key);
             if ($task_list_item === undefined) {
-                $task_list.append($(render_widgets_todo_widget_task(task)));
+                $task_list_item = $(render_widgets_todo_widget_task({...task, is_my_task_list}));
+                $task_list.append($task_list_item);
+                // The task may already be being edited, if the message
+                // was rendered somewhere else first.
+                const edit_state = task_data.get_editing_items().get(task.key);
+                if (edit_state !== undefined) {
+                    $task_list_item.find(".todo-task-edit-bar input.add-task").val(edit_state.task);
+                    $task_list_item.find(".todo-task-edit-bar input.add-desc").val(edit_state.desc);
+                }
             } else {
                 $task_list_item.find("input.task").prop("checked", task.completed);
                 $task_list_item
                     .find(".todo-task")
                     .replaceWith($(render_widgets_todo_widget_task_label(task)));
+            }
+            if (is_my_task_list) {
+                update_task_edit_controls($task_list_item);
             }
         }
         $elem.find(".add-task-bar .widget-error").text("");

@@ -1,7 +1,7 @@
 import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
-import {$t} from "./i18n.ts";
+import {$t, $t_html} from "./i18n.ts";
 import * as people from "./people.ts";
 
 // Any single user should send add a finite number of tasks
@@ -17,7 +17,7 @@ export type TodoWidgetExtraData = z.infer<typeof todo_widget_extra_data_schema>;
 
 const todo_widget_inbound_data = z.intersection(
     z.object({
-        type: z.enum(["new_task", "new_task_list_title", "strike"]),
+        type: z.enum(["new_task", "new_task_list_title", "strike", "edit_task"]),
     }),
     z.record(z.string(), z.unknown()),
 );
@@ -34,11 +34,25 @@ const new_task_inbound_data_schema = z.object({
     completed: z.boolean(),
 });
 
+const edit_task_inbound_data_schema = z.object({
+    type: z.literal("edit_task"),
+    key: z.string(),
+    task: z.string(),
+    desc: z.string(),
+});
+
 type NewTaskOutboundData = z.output<typeof new_task_inbound_data_schema>;
 
 type NewTaskTitleOutboundData = {
     type: "new_task_list_title";
     title: string;
+};
+
+type EditTaskOutboundData = {
+    type: "edit_task";
+    task: string;
+    desc: string;
+    key: string;
 };
 
 type TaskStrikeOutboundData = {
@@ -59,8 +73,16 @@ type Task = {
     completed: boolean;
 };
 
+type TodoTaskEditState = TodoTask & {
+    // Whether these values were sent to the server, which
+    // broadcasts them back to us if it applies the edit.
+    sent: boolean;
+    submitting: boolean;
+    error_html: string | undefined;
+};
+
 export type TodoWidgetOutboundData =
-    NewTaskTitleOutboundData | NewTaskOutboundData | TaskStrikeOutboundData;
+    NewTaskTitleOutboundData | NewTaskOutboundData | TaskStrikeOutboundData | EditTaskOutboundData;
 
 export class TaskData {
     message_sender_id: number;
@@ -69,6 +91,7 @@ export class TaskData {
     report_error_function: (msg: string, more_info?: Record<string, unknown>) => void;
     task_list_title: string;
     task_map = new Map<string, Task>();
+    editing_items = new Map<string, TodoTaskEditState>();
     my_idx = 1;
 
     handle = {
@@ -167,6 +190,72 @@ export class TaskData {
             },
         },
 
+        edit_task: {
+            outbound: (
+                task: string,
+                desc: string,
+                key: string,
+            ): EditTaskOutboundData | undefined => {
+                const event = {
+                    type: "edit_task" as const,
+                    key,
+                    task,
+                    desc,
+                };
+                if (this.name_in_use(task, key)) {
+                    return undefined;
+                }
+                return event;
+            },
+
+            inbound: (sender_id: number, raw_data: unknown): void => {
+                const parsed = edit_task_inbound_data_schema.safeParse(raw_data);
+                if (!parsed.success) {
+                    blueslip.warn("todo widget: bad type for inbound task data", {
+                        error: parsed.error,
+                    });
+                    return;
+                }
+                if (sender_id !== this.message_sender_id) {
+                    this.report_error_function(`user ${sender_id} is not allowed to edit tasks`);
+                    return;
+                }
+                const data = parsed.data;
+                const task = data.task;
+                const desc = data.desc;
+
+                const key = data.key;
+                const item = this.task_map.get(key);
+                if (item === undefined) {
+                    blueslip.warn("Do we have legacy data? unknown key for tasks: " + key);
+                    return;
+                }
+
+                const rejected = task !== item.task && this.name_in_use(task, key);
+                if (!rejected) {
+                    item.task = task;
+                    item.desc = desc;
+                }
+
+                // The server broadcasts our own edits back to us, so this
+                // is where an edit we've sent finishes: close its editor,
+                // or explain why the edit couldn't be applied. That includes
+                // an edit whose request seemed to fail, since the server may
+                // have applied it even if its response didn't reach us.
+                const edit_state = this.editing_items.get(key);
+                if (edit_state?.sent && edit_state.task === task && edit_state.desc === desc) {
+                    if (rejected) {
+                        this.stop_submitting_edit(
+                            key,
+                            $t_html({defaultMessage: "Task already exists"}),
+                        );
+                    } else {
+                        this.remove_editing_item(key);
+                    }
+                }
+            },
+        },
+
         strike: {
             outbound(key: string): TaskStrikeOutboundData {
                 const event = {
@@ -241,6 +330,52 @@ export class TaskData {
         return people.is_my_user_id(this.message_sender_id);
     }
 
+    get_editing_items(): Map<string, TodoTaskEditState> {
+        return this.editing_items;
+    }
+
+    // Records new values in a task's edit bar. Since they haven't been
+    // sent yet, any error about earlier values no longer applies.
+    set_editing_item(key: string, state: TodoTask): void {
+        this.editing_items.set(key, {
+            ...state,
+            sent: false,
+            submitting: false,
+            error_html: undefined,
+        });
+    }
+
+    remove_editing_item(key: string): void {
+        this.editing_items.delete(key);
+    }
+
+    start_submitting_edit(key: string): void {
+        const item = this.editing_items.get(key);
+        if (item !== undefined) {
+            item.sent = true;
+            item.submitting = true;
+        }
+    }
+
+    stop_submitting_edit(key: string, error_html: string): void {
+        const item = this.editing_items.get(key);
+        if (item !== undefined) {
+            item.submitting = false;
+            item.error_html = error_html;
+        }
+    }
+
+    is_submitting_edit(key: string): boolean {
+        return this.editing_items.get(key)?.submitting ?? false;
+    }
+
+    set_edit_error(key: string, error_html: string): void {
+        const item = this.editing_items.get(key);
+        if (item !== undefined) {
+            item.error_html = error_html;
+        }
+    }
+
     set_task_list_title(new_title: string): void {
         this.input_mode = false;
         this.task_list_title = new_title;
@@ -256,6 +391,10 @@ export class TaskData {
 
     clear_input_mode(): void {
         this.input_mode = false;
+    }
+
+    get_task_item(key: string): Task | undefined {
+        return this.task_map.get(key);
     }
 
     get_input_mode(): boolean {
@@ -274,9 +413,9 @@ export class TaskData {
         return widget_data;
     }
 
-    name_in_use(name: string): boolean {
+    name_in_use(name: string, current_key?: string): boolean {
         for (const item of this.task_map.values()) {
-            if (item.task === name) {
+            if (item.task === name && item.key !== current_key) {
                 return true;
             }
         }
