@@ -19,6 +19,7 @@ from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_flags import do_update_mobile_push_notification
 from zerver.actions.message_send import (
     filter_presence_idle_user_ids,
+    get_dm_mention_notifiable_user_ids,
     get_recipient_info,
     internal_send_stream_message,
     render_incoming_message,
@@ -588,9 +589,16 @@ def update_message_content(
         possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
     )
 
+    dm_mention_notifiable_user_ids = get_dm_mention_notifiable_user_ids(
+        info, target_message, rendering_result
+    )
     event.online_push_user_ids = list(info.online_push_user_ids)
-    event.dm_mention_push_disabled_user_ids = list(info.dm_mention_push_disabled_user_ids)
-    event.dm_mention_email_disabled_user_ids = list(info.dm_mention_email_disabled_user_ids)
+    event.dm_mention_push_disabled_user_ids = list(
+        info.dm_mention_push_disabled_user_ids & dm_mention_notifiable_user_ids
+    )
+    event.dm_mention_email_disabled_user_ids = list(
+        info.dm_mention_email_disabled_user_ids & dm_mention_notifiable_user_ids
+    )
     event.stream_push_user_ids = list(info.stream_push_user_ids)
     event.stream_email_user_ids = list(info.stream_email_user_ids)
     event.followed_topic_push_user_ids = list(info.followed_topic_push_user_ids)
