@@ -524,26 +524,10 @@ def finish_desktop_flow(
 def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
     # For the mobile OAuth flow, we send the API key and other
     # necessary details in a redirect to a zulip:// URL scheme.
-    api_key = user_profile.api_key
-    response = create_response_for_otp_flow(
+    api_key = process_api_key_fetch_authenticate_result(request, user_profile)
+    return create_response_for_otp_flow(
         api_key, otp, user_profile, encrypted_key_field_name="otp_encrypted_api_key"
     )
-
-    # Since we are returning an API key instead of going through
-    # the Django login() function (which creates a browser
-    # session, etc.), the "new login" signal handler (which
-    # triggers an email notification new logins) will not run
-    # automatically.  So we call it manually here.
-    #
-    # Arguably, sending a fake 'user_logged_in' signal would be a better approach:
-    #   user_logged_in.send(sender=type(user_profile), request=request, user=user_profile)
-    email_on_new_login(sender=type(user_profile), request=request, user=user_profile)
-
-    # Mark this request as having a logged-in user for our server logs.
-    process_client(request, user_profile)
-    RequestNotes.get_notes(request).requester_for_logs = user_profile.format_requester_for_logs()
-
-    return response
 
 
 def create_response_for_otp_flow(
