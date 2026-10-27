@@ -4,7 +4,7 @@ import assert from "minimalistic-assert";
 
 import render_message_hidden_dialog from "../templates/message_hidden_dialog.hbs";
 import render_widgets_todo_widget from "../templates/widgets/todo_widget.hbs";
-import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_tasks.hbs";
+import render_widgets_todo_widget_task from "../templates/widgets/todo_widget_task.hbs";
 
 import * as blueslip from "./blueslip.ts";
 import {$t} from "./i18n.ts";
@@ -235,8 +235,10 @@ export function render({
     }
 
     function render_results(): void {
-        const widget_data = task_data.get_widget_data();
-        const html = render_widgets_todo_widget_tasks(widget_data);
+        const html = task_data
+            .get_widget_data()
+            .all_tasks.map((task) => render_widgets_todo_widget_task(task))
+            .join("");
         $elem.find("ul.todo-widget").html(html);
         $elem.find(".add-task-bar .widget-error").text("");
 
