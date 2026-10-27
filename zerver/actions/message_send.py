@@ -629,6 +629,33 @@ def get_recipient_info(
     )
 
 
+def get_dm_mention_notifiable_user_ids(
+    info: RecipientInfoResult, message: Message, rendering_result: MessageRenderingResult
+) -> AbstractSet[int]:
+    """Returns the users who might get a DM or mention notification
+    about the message. Only these users need to be listed in the sets of
+    users with those notifications disabled, which keeps message events
+    for large channels small.
+    """
+    if not message.is_channel_message:
+        return info.active_user_ids
+
+    user_ids = rendering_result.mentions_user_ids
+    if rendering_result.mentions_stream_wildcard:
+        user_ids = (
+            user_ids
+            | info.stream_wildcard_mention_user_ids
+            | info.stream_wildcard_mention_in_followed_topic_user_ids
+        )
+    if rendering_result.mentions_topic_wildcard:
+        user_ids = (
+            user_ids
+            | info.topic_wildcard_mention_user_ids
+            | info.topic_wildcard_mention_in_followed_topic_user_ids
+        )
+    return user_ids
+
+
 def get_message_triggered_bot_events(
     sender: UserProfile,
     message_triggered_bot_tuples: list[tuple[int, int]],
@@ -799,6 +826,17 @@ def build_message_send_dict(
         topic_wildcard_mention_user_ids = set()
         topic_wildcard_mention_in_followed_topic_user_ids = set()
         topic_participant_user_ids = set()
+
+    dm_mention_notifiable_user_ids = get_dm_mention_notifiable_user_ids(
+        info, message, rendering_result
+    )
+    dm_mention_email_disabled_user_ids = (
+        info.dm_mention_email_disabled_user_ids & dm_mention_notifiable_user_ids
+    )
+    dm_mention_push_disabled_user_ids = (
+        info.dm_mention_push_disabled_user_ids & dm_mention_notifiable_user_ids
+    )
+
     """
     Once we have the actual list of mentioned ids from message
     rendering, we can patch in "default bots" (aka normal bots)
@@ -844,8 +882,8 @@ def build_message_send_dict(
         rendering_result=rendering_result,
         active_user_ids=info.active_user_ids,
         online_push_user_ids=info.online_push_user_ids,
-        dm_mention_email_disabled_user_ids=info.dm_mention_email_disabled_user_ids,
-        dm_mention_push_disabled_user_ids=info.dm_mention_push_disabled_user_ids,
+        dm_mention_email_disabled_user_ids=dm_mention_email_disabled_user_ids,
+        dm_mention_push_disabled_user_ids=dm_mention_push_disabled_user_ids,
         stream_push_user_ids=info.stream_push_user_ids,
         stream_email_user_ids=info.stream_email_user_ids,
         followed_topic_push_user_ids=info.followed_topic_push_user_ids,
