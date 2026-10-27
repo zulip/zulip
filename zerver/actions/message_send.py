@@ -267,6 +267,7 @@ class ActiveUserDict(TypedDict):
     long_term_idle: bool
     is_bot: bool
     bot_type: int | None
+    is_imported_stub: bool
     has_push_device_registered: bool
 
 
@@ -520,6 +521,7 @@ def get_recipient_info(
                     "enable_offline_push_notifications",
                     "is_bot",
                     "bot_type",
+                    "is_imported_stub",
                     "long_term_idle",
                     "has_push_device_registered",
                 ),
@@ -569,6 +571,13 @@ def get_recipient_info(
     dm_mention_push_disabled_user_ids = get_ids_for(
         lambda r: not r["enable_offline_push_notifications"]
     )
+
+    # Imported users who haven't logged in yet may not expect email
+    # from Zulip, so we don't send them message notification emails.
+    imported_stub_user_ids = get_ids_for(lambda r: r["is_imported_stub"])
+    dm_mention_email_disabled_user_ids |= imported_stub_user_ids
+    stream_email_user_ids -= imported_stub_user_ids
+    followed_topic_email_user_ids -= imported_stub_user_ids
 
     um_eligible_user_ids = get_ids_for(lambda r: True)
 
