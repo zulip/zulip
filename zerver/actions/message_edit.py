@@ -401,7 +401,7 @@ def get_mentions_for_message_updates(message: Message) -> set[int]:
     # probably are not relevant for reprocessed alert_words,
     # mentions and similar rendering features.  This may be a
     # decision we change in the future.
-    mentioned_user_ids = (
+    mentioned_user_ids = set(
         UserMessage.objects.filter(
             message=message.id,
             flags=~UserMessage.flags.historical,
@@ -416,12 +416,14 @@ def get_mentions_for_message_updates(message: Message) -> set[int]:
         )
         .values_list("user_profile_id", flat=True)
     )
+    if not mentioned_user_ids:
+        return set()
 
     user_ids_having_message_access = event_recipient_ids_for_action_on_messages(
         [message.id], message.is_channel_message
     )
 
-    return set(mentioned_user_ids) & user_ids_having_message_access
+    return mentioned_user_ids & user_ids_having_message_access
 
 
 def update_user_message_flags(
