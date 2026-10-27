@@ -420,7 +420,7 @@ def get_mentions_for_message_updates(message: Message) -> set[int]:
         return set()
 
     user_ids_having_message_access = event_recipient_ids_for_action_on_messages(
-        [message.id], message.is_channel_message
+        [message.id], message.is_channel_message, exclude_long_term_idle_users=False
     )
 
     return mentioned_user_ids & user_ids_having_message_access

@@ -147,6 +147,10 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             queue_messages=queue_messages,
         )
 
+    def _soft_deactivate_cordelia(self) -> None:
+        cordelia = self.example_user("cordelia")
+        self.soft_deactivate_user(cordelia)
+
     def _send_and_update_message(
         self,
         original_content: str,
@@ -155,6 +159,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         expect_short_circuit: bool = False,
         connected_to_zulip: bool = False,
         present_on_web: bool = False,
+        soft_deactivated: bool = False,
     ) -> dict[str, Any]:
         message_id = self._login_and_send_original_stream_message(
             content=original_content,
@@ -163,6 +168,9 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         if present_on_web:
             self._make_cordelia_present_on_web()
+
+        if soft_deactivated:
+            self._soft_deactivate_cordelia()
 
         if connected_to_zulip:
             with self._cordelia_connected_to_zulip():
@@ -224,6 +232,13 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         original_content = "hello @**Cordelia, Lear's daughter**"
         updated_content = "re-mention @**Cordelia, Lear's daughter**"
         self._send_and_update_message(original_content, updated_content, expect_short_circuit=True)
+
+    def test_second_stream_wildcard_mention_of_soft_deactivated_user_is_ignored(self) -> None:
+        original_content = "hello @**all**"
+        updated_content = "re-mention @**all**"
+        self._send_and_update_message(
+            original_content, updated_content, soft_deactivated=True, expect_short_circuit=True
+        )
 
     def test_no_push_device_registered(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -703,6 +718,28 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         self.assertEqual(get_apns_badge_count(group_mentioned_user), 0)
         self.assertEqual(get_apns_badge_count_future(group_mentioned_user), 0)
+
+    @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
+    def test_clear_notification_when_mention_of_soft_deactivated_user_removed(
+        self, mock_push_notifications: mock.MagicMock
+    ) -> None:
+        cordelia = self.example_user("cordelia")
+        message_id = self._login_and_send_original_stream_message(
+            content="@**Cordelia, Lear's daughter**",
+        )
+
+        self.assertEqual(get_apns_badge_count(cordelia), 0)
+        self.assertEqual(get_apns_badge_count_future(cordelia), 1)
+
+        self._soft_deactivate_cordelia()
+        self._get_queued_data_for_message_update(
+            message_id=message_id,
+            content="Removed mention",
+            expect_short_circuit=True,
+        )
+
+        self.assertEqual(get_apns_badge_count(cordelia), 0)
+        self.assertEqual(get_apns_badge_count_future(cordelia), 0)
 
     @mock.patch("zerver.lib.push_notifications.push_notifications_configured", return_value=True)
     def test_not_clear_notification_when_mention_removed_but_stream_notified(
