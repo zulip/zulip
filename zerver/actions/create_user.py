@@ -692,11 +692,18 @@ def do_activate_mirror_dummy_user(
     with transaction.atomic(savepoint=False):
         change_user_is_active(user_profile, True)
         user_profile.is_mirror_dummy = False
+        user_profile.is_imported_stub = False
         user_profile.set_unusable_password()
         user_profile.date_joined = timezone_now()
         user_profile.tos_version = settings.TERMS_OF_SERVICE_VERSION
         user_profile.save(
-            update_fields=["date_joined", "password", "is_mirror_dummy", "tos_version"]
+            update_fields=[
+                "date_joined",
+                "password",
+                "is_mirror_dummy",
+                "is_imported_stub",
+                "tos_version",
+            ]
         )
 
         event_time = user_profile.date_joined
