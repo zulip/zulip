@@ -135,6 +135,9 @@ def _enqueue_emails_for_realm(realm: Realm, cutoff: datetime) -> None:
             realm=realm,
             is_active=True,
             is_bot=False,
+            # Imported users who haven't logged in yet may not expect
+            # email from Zulip.
+            is_imported_stub=False,
             enable_digest_emails=True,
         )
         .alias(
