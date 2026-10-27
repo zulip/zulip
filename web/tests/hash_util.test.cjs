@@ -75,6 +75,37 @@ run_test("hash_util", () => {
     encode_decode_operand(operator, operand, "testing.20123");
 });
 
+run_test("decode_stream_topic_from_url", () => {
+    const decode = hash_util.decode_stream_topic_from_url;
+    const channel_url = "#narrow/channel/99-Frontend";
+    const topic_url = `${channel_url}/topic/testing`;
+    assert.deepEqual(decode(channel_url), {stream_id: 99});
+    // The channel name after its id is optional.
+    assert.deepEqual(decode("#narrow/channel/99"), {stream_id: 99});
+    assert.deepEqual(decode(topic_url), {stream_id: 99, topic_name: "testing"});
+    assert.deepEqual(decode(`${topic_url}/near/42`), {
+        stream_id: 99,
+        topic_name: "testing",
+        message_id: "42",
+    });
+
+    // Another origin.
+    assert.equal(decode("https://other.example.com/#narrow/channel/99-Frontend"), null);
+    // Not a narrow.
+    assert.equal(decode("#settings"), null);
+    // No channel, or one that isn't identified by id.
+    assert.equal(decode("#narrow/topic/testing"), null);
+    assert.equal(decode("#narrow/channel/abc"), null);
+    // A message with no topic.
+    assert.equal(decode(`${channel_url}/near/42`), null);
+    // Terms other than near after the topic.
+    assert.equal(decode(`${topic_url}/id/42`), null);
+    assert.equal(decode(`${topic_url}/near/42/x/1`), null);
+    // A message id that isn't a number.
+    assert.equal(decode(`${topic_url}/near/abc`), null);
+    assert.equal(decode(`${topic_url}/near/12abc`), null);
+});
+
 run_test("pm_with_url", () => {
     assert.equal(hash_util.pm_with_url("15"), "#narrow/dm/15-Hamlet");
     assert.equal(hash_util.pm_with_url("15,9999"), "#narrow/dm/15,9999-group");
