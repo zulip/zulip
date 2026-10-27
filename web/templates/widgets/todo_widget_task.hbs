@@ -1,7 +1,7 @@
-<li>
+<li class="todo-task-item" data-key="{{ key }}">
     <label class="checkbox">
         <span class="todo-checkbox">
-            <input type="checkbox" class="task" data-key="{{ key }}" {{#if completed}}checked{{/if}}/>
+            <input type="checkbox" class="task" {{#if completed}}checked{{/if}}/>
             <span class="custom-checkbox"></span>
         </span>
         {{> todo_widget_task_label . }}
