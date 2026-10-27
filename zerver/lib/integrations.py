@@ -638,6 +638,11 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
         "errbit", ["monitoring"], [WebhookScreenshotConfig("error_message.json")]
     ),
     IncomingWebhookIntegration(
+        "famulor",
+        ["communication"],
+        [WebhookScreenshotConfig("call_completed.json")],
+    ),
+    IncomingWebhookIntegration(
         "flock", ["communication"], [WebhookScreenshotConfig("messages.json")]
     ),
     IncomingWebhookIntegration(
