@@ -1568,7 +1568,7 @@ class TestDocRedirectView(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(
             result["Location"],
-            "https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#moving-your-registration-to-a-new-server",
+            "https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#moving-your-registration-to-a-new-server",
         )
 
         result = self.client_get("/doc-permalinks/invalid-doc-id")
