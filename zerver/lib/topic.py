@@ -354,10 +354,12 @@ def get_topic_resolution_and_bare_name(stored_name: str) -> tuple[bool, str]:
     return (False, stored_name)
 
 
-def participants_for_topic(realm_id: int, recipient_id: int, topic_name: str) -> set[int]:
+def topic_participant_ids(
+    realm_id: int, recipient_id: int, topic_name: str
+) -> QuerySet[UserProfile, int]:
     """
-    Users who either sent or reacted to the messages in the topic.
-    The function is expensive for large numbers of messages in the topic.
+    Query for the IDs of users who either sent or reacted to messages in
+    the topic. Lazy, so callers can cap it with a slice.
     """
     messages = Message.objects.filter(
         # Uses index: zerver_message_realm_recipient_upper_subject
@@ -366,17 +368,30 @@ def participants_for_topic(realm_id: int, recipient_id: int, topic_name: str) ->
         subject__iexact=topic_name,
         is_channel_message=True,
     )
-    participants = set(
-        UserProfile.objects.filter(
-            Q(id__in=Subquery(messages.values("sender_id")))
-            | Q(
-                id__in=Subquery(
-                    Reaction.objects.filter(message__in=messages).values("user_profile_id")
-                )
-            )
-        ).values_list("id", flat=True)
-    )
-    return participants
+    return UserProfile.objects.filter(
+        Q(id__in=Subquery(messages.values("sender_id")))
+        | Q(
+            id__in=Subquery(Reaction.objects.filter(message__in=messages).values("user_profile_id"))
+        )
+    ).values_list("id", flat=True)
+
+
+def participants_for_topic(realm_id: int, recipient_id: int, topic_name: str) -> set[int]:
+    """
+    Users who either sent or reacted to the messages in the topic.
+    The function is expensive for large numbers of messages in the topic.
+    """
+    return set(topic_participant_ids(realm_id, recipient_id, topic_name))
+
+
+def participants_for_topic_count_capped(
+    realm_id: int, recipient_id: int, topic_name: str, cap: int
+) -> int:
+    """
+    Returns min(actual_distinct_participant_count, cap + 1), using a
+    LIMIT cap + 1 so Postgres stops scanning once the cap is exceeded.
+    """
+    return topic_participant_ids(realm_id, recipient_id, topic_name)[: cap + 1].count()
 
 
 def maybe_rename_general_chat_to_empty_topic(topic_name: str) -> str:
