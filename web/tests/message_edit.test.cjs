@@ -15,6 +15,11 @@ const is_content_editable = message_edit.is_content_editable;
 const compose_ui = mock_esm("../src/compose_ui");
 const stream_data = mock_esm("../src/stream_data");
 
+const channel = mock_esm("../src/channel")
+const confirm_dialog = mock_esm("../src/confirm_dialog")
+const dialog_widget = mock_esm("../src/dialog_widget")
+const ui_report = mock_esm("../src/ui_report");
+
 const realm = make_realm();
 set_realm(realm);
 const current_user = {};
@@ -330,3 +335,137 @@ run_test("update_preview_embeds", ({override}) => {
 
     message_edit.currently_editing_messages.clear();
 });
+
+
+run_test("move_topic_containing_message_to_stream retries partial move", ({override}) => {
+    let requests = [];
+    let confirmation_options;
+
+    override(channel,"patch",(req) => {
+        requests.push(req);
+    });
+
+    override(dialog_widget,"hide_dialog_spinner", () => {});
+
+    override(dialog_widget, "close", (callback) => {
+    callback?.();
+});
+    override(confirm_dialog,"launch",(options)=>{
+        confirmation_options = options;
+    });
+
+    message_edit.move_topic_containing_message_to_stream(
+        100,
+        20,
+        "new topic",
+        true,
+        false,
+        "change_all"
+    )
+
+    requests[0].error({
+        responseJSON: {
+            code: "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED",
+        first_message_id_allowed_to_move: 105,
+        total_messages_allowed_to_move: 3,
+        total_messages_in_topic: 8,
+        }
+    })
+
+    assert.equal(requests[0].url, "/json/messages/100");
+    assert.equal(requests[0].data.stream_id, 20);
+    assert.equal(requests[0].data.topic, "new topic");
+    assert.equal(requests[0].data.propagate_mode, "change_all");
+    assert.ok(confirmation_options);
+    assert.equal(typeof confirmation_options.on_click, "function")
+
+    confirmation_options.on_click()
+
+    assert.equal(requests.length, 2);
+assert.equal(requests[1].url, "/json/messages/105");
+assert.equal(requests[1].data.propagate_mode, "change_later");
+});
+
+run_test("move_topic_containing_message_to_stream does not retry without confirmation", ({override}) => {
+    let requests = [];
+    let confirmation_options;
+
+    override(channel,"patch",(req) => {
+        requests.push(req);
+    });
+
+    override(dialog_widget,"hide_dialog_spinner", () => {});
+
+    override(dialog_widget, "close", (callback) => {
+    callback?.();
+});
+    override(confirm_dialog,"launch",(options)=>{
+        confirmation_options = options;
+    });
+
+    message_edit.move_topic_containing_message_to_stream(
+        100,
+        20,
+        "new topic",
+        true,
+        false,
+        "change_all"
+    )
+
+    requests[0].error({
+        responseJSON: {
+            code: "MOVE_MESSAGES_TIME_LIMIT_EXCEEDED",
+        first_message_id_allowed_to_move: 105,
+        total_messages_allowed_to_move: 3,
+        total_messages_in_topic: 8,
+        }
+    })
+
+    assert.ok(confirmation_options);
+assert.equal(typeof confirmation_options.on_click, "function");
+assert.equal(requests.length, 1);
+})
+
+run_test("move_topic_containing_message_to_stream handles unexpected error code", ({override}) => {
+// An unexpected error code should use the generic error handler.    
+let requests = [];
+    let confirmation_launched = false;
+    let error_called = false;
+
+    override(ui_report,"error", () => {
+        error_called = true;
+    })
+
+    override(channel,"patch",(req) => {
+        requests.push(req);
+    });
+
+    override(dialog_widget,"hide_dialog_spinner", () => {});
+
+    override(
+    confirm_dialog,
+    "launch",
+    () => {
+        confirmation_launched = true;
+    },
+    {unused: false},
+);
+
+    message_edit.move_topic_containing_message_to_stream(
+        100,
+        20,
+        "new topic",
+        true,
+        false,
+        "change_all"
+    )
+
+    requests[0].error({
+    responseJSON: {
+        code: "UNEXPECTED_ERROR_CODE",
+    },
+});
+assert.equal(error_called, true);
+assert.equal(confirmation_launched, false);
+assert.equal(requests.length, 1);
+})
