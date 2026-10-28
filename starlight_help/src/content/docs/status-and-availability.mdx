@@ -9,6 +9,7 @@ import KeyboardTip from "../../components/KeyboardTip.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
 import ClearStatus from "../include/_ClearStatus.mdx";
+import ConfigureUserListStyle from "../include/_ConfigureUserListStyle.mdx";
 import MobileMenu from "../include/_MobileMenu.mdx";
 import PersonalMenu from "../include/_PersonalMenu.mdx";
 import SelfUserCard from "../include/_SelfUserCard.mdx";
@@ -26,9 +27,9 @@ status might be "📅 In a meeting" or "🏠 Working remotely". To make it easy 
 notice, the status emoji is shown next to your name in the sidebars, message
 feed, and compose box.
 
-Your **availability** is a colored dot (like <UserCircleActiveIcon />) that indicates if you're currently active on Zulip, idle,
-or offline. You can also [go invisible](#invisible-mode) to appear offline
-to other users.
+Your **availability** is a colored dot (like <UserCircleActiveIcon />) that
+indicates if you're currently active on Zulip, idle, or offline. You can
+also [go invisible](#invisible-mode) to appear offline to other users.
 
 ## Statuses
 
@@ -146,24 +147,15 @@ in the web and desktop apps.
 
 ### Configure how statuses are displayed
 
-You can choose whether or not status text is displayed in the right sidebar.
+You can choose how users and their statuses are displayed in the right sidebar.
 With the compact option, only status emoji are shown.
 
-<Tabs>
-  <TabItem label="Desktop/Web">
-    <FlattenedSteps>
-      <NavigationSteps target="settings/preferences" />
+<ConfigureUserListStyle />
 
-      1. Under **Information**, select **Compact** or **Show status and text** for the
-         user list style.
-    </FlattenedSteps>
-
-    <ZulipTip>
-      You can always hover over a user's name in the right sidebar to view their
-      status message if they have one set.
-    </ZulipTip>
-  </TabItem>
-</Tabs>
+<ZulipTip>
+  You can always hover over a user's name in the right sidebar to view their
+  status message if they have one set.
+</ZulipTip>
 
 ## Availability
 
