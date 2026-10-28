@@ -43,6 +43,7 @@ const url_options_schema = z.array(url_option_schema);
 const PresetUrlOption = {
     BRANCHES: "branches",
     CHANNEL_MAPPING: "mapping",
+    ENABLE_TOPIC_RENAME: "enable_topic_rename",
 };
 
 export function show_generate_integration_url_modal(api_key: string): void {
@@ -350,7 +351,17 @@ export function show_generate_integration_url_modal(api_key: string): void {
                             params.set(key, branch_names);
                         }
                     } else if (input_type === "checkbox" || input_type === "checkbox_enabled") {
-                        const is_checked = $(`#integration-url-${key}-checkbox`).is(":checked");
+                        const $checkbox = $(`#integration-url-${key}-checkbox`);
+                        if (key === PresetUrlOption.ENABLE_TOPIC_RENAME) {
+                            const disable_topic_rename =
+                                stream_id === direct_messages_option.unique_id ||
+                                $override_topic.is(":checked");
+                            set_input_disabled_state($checkbox, disable_topic_rename);
+                            if (disable_topic_rename) {
+                                $checkbox.prop("checked", false);
+                            }
+                        }
+                        const is_checked = $checkbox.is(":checked");
                         if (is_checked) {
                             params.set(option.key, "true");
                         } else if (input_type === "checkbox_enabled") {

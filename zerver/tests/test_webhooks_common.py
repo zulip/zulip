@@ -1,20 +1,25 @@
 import hashlib
 import hmac
+from datetime import timedelta
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
+import orjson
 import requests
 from django.http import HttpRequest, QueryDict
 from django.http.response import HttpResponse
 from django.test import override_settings
 from django.utils.encoding import force_bytes
+from django.utils.timezone import now as timezone_now
 from typing_extensions import override
 
 from version import ZULIP_VERSION
 from zerver.actions.custom_profile_fields import try_add_realm_custom_profile_field
+from zerver.actions.realm_settings import do_change_realm_permission_group_setting
 from zerver.actions.streams import do_rename_stream
 from zerver.decorator import webhook_view
 from zerver.lib.exceptions import InvalidJSONError, JsonableError
+from zerver.lib.message import truncate_topic
 from zerver.lib.request import RequestNotes
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import WebhookTestCase, ZulipTestCase
@@ -25,13 +30,16 @@ from zerver.lib.webhooks.common import (
     MissingHTTPEventHeaderError,
     call_fixture_to_headers,
     check_send_webhook_message,
+    check_topic_rename,
     get_event_header,
     get_service_api_data,
     guess_zulip_user_from_external_account,
     standardize_headers,
     validate_webhook_signature,
 )
-from zerver.models import Client, CustomProfileField, Message, UserProfile
+from zerver.models import Client, CustomProfileField, Message, NamedUserGroup, UserProfile
+from zerver.models.constants import MAX_TOPIC_NAME_LENGTH
+from zerver.models.groups import SystemGroups
 from zerver.models.realms import get_realm
 from zerver.models.users import get_user
 
@@ -278,6 +286,193 @@ class TestGuessZulipUserFromExternalAccount(ZulipTestCase):
             external_username_case_insensitive=True,
         )
         self.assertEqual(result, self.hamlet)
+
+
+class TopicRenameTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        self.realm = get_realm("zulip")
+        self.user_profile = get_user("webhook-bot@zulip.com", self.realm)
+        self.channel = self.make_stream("webhook-rename-test")
+        self.subscribe(self.user_profile, self.channel.name)
+
+    def send_message_to_topic(self, topic_name: str, content: str = "Test message") -> int:
+        return self.send_stream_message(
+            self.user_profile, self.channel.name, topic_name=topic_name, content=content
+        )
+
+    def test_topic_rename_success(self) -> None:
+        message_id = self.send_message_to_topic("Old Topic")
+
+        self.assertTrue(
+            check_topic_rename(
+                self.user_profile,
+                old_topic_name="Old Topic",
+                new_topic_name="New Topic",
+                channel=self.channel.name,
+            )
+        )
+        self.assertEqual(Message.objects.get(id=message_id).topic_name(), "New Topic")
+
+    def test_topic_rename_that_only_changes_the_case_of_the_topic(self) -> None:
+        message_ids = [
+            self.send_message_to_topic("Old Topic", content="First"),
+            self.send_message_to_topic("Old Topic", content="Second"),
+        ]
+        notification_id = self.send_message_to_topic("OLD TOPIC", content="Renamed")
+
+        self.assertTrue(
+            check_topic_rename(
+                self.user_profile,
+                old_topic_name="Old Topic",
+                new_topic_name="OLD TOPIC",
+                channel=self.channel.name,
+            )
+        )
+        messages = Message.objects.filter(id__in=[*message_ids, notification_id])
+        self.assertTrue(all(message.topic_name() == "OLD TOPIC" for message in messages))
+
+        edit_history = Message.objects.get(id=message_ids[0]).edit_history
+        assert edit_history is not None
+        self.assertEqual(orjson.loads(edit_history)[0]["prev_topic"], "Old Topic")
+        self.assertEqual(orjson.loads(edit_history)[0]["topic"], "OLD TOPIC")
+
+    def test_topic_rename_with_channel_id_in_url(self) -> None:
+        message_id = self.send_message_to_topic("Old Topic")
+
+        self.assertTrue(
+            check_topic_rename(
+                self.user_profile,
+                old_topic_name="Old Topic",
+                new_topic_name="New Topic",
+                channel=str(self.channel.id),
+            )
+        )
+        self.assertEqual(Message.objects.get(id=message_id).topic_name(), "New Topic")
+
+    def test_topic_rename_with_topic_names_that_need_truncating(self) -> None:
+        old_topic_name = "Old Topic " + "x" * MAX_TOPIC_NAME_LENGTH
+        new_topic_name = "New Topic " + "y" * MAX_TOPIC_NAME_LENGTH
+        message_id = self.send_message_to_topic(old_topic_name)
+
+        self.assertTrue(
+            check_topic_rename(
+                self.user_profile,
+                old_topic_name=old_topic_name,
+                new_topic_name=new_topic_name,
+                channel=self.channel.name,
+            )
+        )
+        self.assertEqual(
+            Message.objects.get(id=message_id).topic_name(), truncate_topic(new_topic_name)
+        )
+
+    def test_topic_rename_with_no_history_in_old_topic(self) -> None:
+        message_id = self.send_message_to_topic("Has Messages")
+
+        self.assertFalse(
+            check_topic_rename(
+                self.user_profile,
+                old_topic_name="Ghost Topic",
+                new_topic_name="New Topic",
+                channel=self.channel.name,
+            )
+        )
+        self.assertEqual(Message.objects.get(id=message_id).topic_name(), "Has Messages")
+
+    def test_topic_rename_after_the_channel_was_changed(self) -> None:
+        message_id = self.send_message_to_topic("Old Topic")
+        new_channel = self.make_stream("webhook-rename-test-2")
+        self.subscribe(self.user_profile, new_channel.name)
+
+        self.assertFalse(
+            check_topic_rename(
+                self.user_profile,
+                old_topic_name="Old Topic",
+                new_topic_name="New Topic",
+                channel=new_channel.name,
+            )
+        )
+        message = Message.objects.get(id=message_id)
+        self.assertEqual(message.topic_name(), "Old Topic")
+        self.assertEqual(message.recipient_id, self.channel.recipient_id)
+
+    def test_topic_rename_for_a_channel_that_does_not_exist(self) -> None:
+        # The channel could have been archived between the notification
+        # being sent and the rename being attempted.
+        message_id = self.send_message_to_topic("Old Topic")
+
+        self.assertFalse(
+            check_topic_rename(
+                self.user_profile,
+                old_topic_name="Old Topic",
+                new_topic_name="New Topic",
+                channel="no-such-channel",
+            )
+        )
+        self.assertEqual(Message.objects.get(id=message_id).topic_name(), "Old Topic")
+
+    def test_topic_rename_moves_the_whole_topic(self) -> None:
+        message_ids = [
+            self.send_message_to_topic("Topic To Move", content=f"Msg {i}") for i in range(3)
+        ]
+
+        self.assertTrue(
+            check_topic_rename(
+                self.user_profile,
+                old_topic_name="Topic To Move",
+                new_topic_name="Moved Topic",
+                channel=self.channel.name,
+            )
+        )
+
+        for message in Message.objects.filter(id__in=message_ids):
+            self.assertEqual(message.topic_name(), "Moved Topic")
+
+    def test_topic_rename_past_the_move_time_limit(self) -> None:
+        # Conversations older than the organization's time limit for moving
+        # messages are left alone.
+        message_id = self.send_message_to_topic("Old Topic")
+        move_limit_seconds = self.realm.move_messages_within_stream_limit_seconds
+        assert move_limit_seconds is not None
+        Message.objects.filter(id=message_id).update(
+            date_sent=timezone_now() - timedelta(seconds=move_limit_seconds * 2)
+        )
+
+        self.assertFalse(
+            check_topic_rename(
+                self.user_profile,
+                old_topic_name="Old Topic",
+                new_topic_name="New Topic",
+                channel=self.channel.name,
+            )
+        )
+        self.assertEqual(Message.objects.get(id=message_id).topic_name(), "Old Topic")
+
+    def test_topic_rename_without_permission(self) -> None:
+        message_id = self.send_message_to_topic("Old Topic")
+
+        nobody_group = NamedUserGroup.objects.get(
+            name=SystemGroups.NOBODY, realm_for_sharding=self.realm, is_system_group=True
+        )
+        do_change_realm_permission_group_setting(
+            self.realm,
+            "can_move_messages_between_topics_group",
+            nobody_group,
+            acting_user=None,
+        )
+        user_profile = get_user("webhook-bot@zulip.com", self.realm)
+
+        self.assertFalse(
+            check_topic_rename(
+                user_profile,
+                old_topic_name="Old Topic",
+                new_topic_name="New Topic",
+                channel=self.channel.name,
+            )
+        )
+        self.assertEqual(Message.objects.get(id=message_id).topic_name(), "Old Topic")
 
 
 class WebhookURLConfigurationTestCase(WebhookTestCase):
