@@ -39,6 +39,8 @@ FILES_WITH_LEGACY_SUBJECT = {
     "zerver/tests/test_message_topics.py",
     # This is actually email subjects
     "zerver/lib/email_mirror_server.py",
+    # Mattermost importer tests access subject as JSON dict keys
+    "zerver/tests/test_mattermost_importer.py",
 }
 
 shebang_rules: list["Rule"] = [

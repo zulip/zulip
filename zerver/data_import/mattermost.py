@@ -7,7 +7,9 @@ import logging
 import os
 import re
 import shutil
+from collections import defaultdict
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Any, TypeAlias
 
 import orjson
@@ -40,12 +42,14 @@ from zerver.data_import.import_util import (
     make_user_messages,
 )
 from zerver.data_import.sequencer import NEXT_ID, IdMapper
+from zerver.data_import.slack import ThreadMetadata, get_zulip_thread_topic_name
 from zerver.data_import.user_handler import UserHandler
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.export import do_common_export_processes
 from zerver.lib.import_realm import validate_and_resolve_relative_path
 from zerver.lib.markdown import IMAGE_EXTENSIONS
 from zerver.lib.message import truncate_content
+from zerver.lib.topic_link_util import get_stream_topic_link_syntax
 from zerver.lib.upload import sanitize_name
 from zerver.lib.utils import process_list_in_batches
 from zerver.models import Reaction, RealmEmoji, Recipient, UserProfile
@@ -59,6 +63,31 @@ class ChannelMetadata:
 
 
 AddedChannelsT: TypeAlias = dict[str, ChannelMetadata]
+
+
+MATTERMOST_MAIN_IMPORT_TOPIC = "imported from mattermost"
+
+
+def is_mattermost_thread_parent(post: dict[str, Any]) -> bool:
+    replies = post.get("replies")
+    return replies is not None and len(replies) > 0
+
+
+def get_mattermost_thread_key(post: dict[str, Any], index: int | None = None) -> str:
+    # Use timestamp + user + index to differentiate posts with same timestamp/user
+    base = f"{post['create_at']}:{post['user']}"
+    if index is not None:
+        return f"{base}:{index}"
+    return base
+
+
+def count_mattermost_thread_replies(post_data: list[dict[str, Any]]) -> dict[str, int]:
+    thread_reply_counts: dict[str, int] = defaultdict(int)
+    for idx, post in enumerate(post_data):
+        if is_mattermost_thread_parent(post):
+            thread_key = get_mattermost_thread_key(post, idx)
+            thread_reply_counts[thread_key] = len(post["replies"])
+    return thread_reply_counts
 
 
 def make_realm(realm_id: int, team: dict[str, Any]) -> ZerverFieldsT:
@@ -523,6 +552,8 @@ def process_raw_message_batch(
     uploads_list: list[UploadRecordData],
     zerver_attachment: list[AttachmentRecordData],
     mattermost_data_dir: str,
+    thread_map: dict[str, ThreadMetadata] | None = None,
+    thread_reply_counts: dict[str, int] | None = None,
 ) -> None:
     def fix_mentions(content: str, mention_user_ids: set[int]) -> str:
         for user_id in mention_user_ids:
@@ -601,7 +632,33 @@ def process_raw_message_batch(
                     content += "\n\n"
                 content += attachment_markdown
 
-        topic_name = "imported from mattermost"
+        # Determine topic name based on thread metadata
+        if is_direct_message_type:
+            topic_name = ""
+        elif (
+            thread_map is not None
+            and thread_reply_counts is not None
+            and "thread_key" in raw_message
+        ):
+            thread_key = raw_message["thread_key"]
+            is_thread_parent = raw_message.get("is_thread_parent", False)
+
+            if is_thread_parent:
+                # Thread parent goes to main import topic
+                topic_name = MATTERMOST_MAIN_IMPORT_TOPIC
+                # Add cross-linking notice
+                number_of_replies = thread_reply_counts.get(thread_key, 0)
+                if number_of_replies > 0 and thread_key in thread_map:
+                    reply_string = "replies" if number_of_replies > 1 else "reply"
+                    content += f"\n\n*{number_of_replies} {reply_string} in {thread_map[thread_key].topic_link_syntax}*"
+            elif thread_key in thread_map:
+                # Thread replies go to thread topic
+                topic_name = thread_map[thread_key].topic_name
+            else:
+                # Thread parent not imported (e.g., partial import)
+                topic_name = MATTERMOST_MAIN_IMPORT_TOPIC
+        else:
+            topic_name = MATTERMOST_MAIN_IMPORT_TOPIC
 
         message = build_message(
             content=content,
@@ -676,7 +733,16 @@ def process_posts(
         if post_team == team_name:
             post_data_list.append(post)
 
-    def message_to_dict(post_dict: dict[str, Any]) -> dict[str, Any] | None:
+    # Sort posts by create_at timestamp to ensure chronological order
+    # This is important for thread handling (parent before replies) and
+    # for overall message ordering in the output
+    post_data_list.sort(key=lambda p: p["create_at"])
+
+    def message_to_dict(
+        post_dict: dict[str, Any],
+        thread_key: str | None = None,
+        is_thread_parent: bool = False,
+    ) -> dict[str, Any] | None:
         sender_username = post_dict["user"]
         if user_id_mapper.has(sender_username):
             sender_id = user_id_mapper.get(sender_username)
@@ -717,27 +783,86 @@ def process_posts(
         if post_dict.get("attachments"):
             message_dict["attachments"] = post_dict["attachments"]
 
+        if thread_key is not None:
+            message_dict["thread_key"] = thread_key
+        if is_thread_parent:
+            message_dict["is_thread_parent"] = True
+
         return message_dict
 
+    thread_reply_counts = count_mattermost_thread_replies(post_data_list)
+
+    thread_map: dict[str, ThreadMetadata] = {}
+    thread_counter: dict[str, int] = defaultdict(int)
+
+    for idx, post_dict in enumerate(post_data_list):
+        if is_mattermost_thread_parent(post_dict):
+            thread_key = get_mattermost_thread_key(post_dict, idx)
+            if thread_reply_counts.get(thread_key, 0) > 0:
+                thread_ts_datetime = datetime.fromtimestamp(
+                    post_dict["create_at"] / 1000, tz=timezone.utc
+                )
+                thread_topic_name = get_zulip_thread_topic_name(
+                    post_dict["message"], thread_ts_datetime, thread_counter
+                )
+
+                channel_name = post_dict.get("channel")
+                if channel_name and channel_name in added_channels:
+                    stream_id = added_channels[channel_name].zulip_channel_id
+                    topic_link_syntax = get_stream_topic_link_syntax(
+                        stream_id=stream_id,
+                        stream_name=channel_name,
+                        topic_name=thread_topic_name,
+                    )
+                else:
+                    topic_link_syntax = f"#**{thread_topic_name}**"
+
+                thread_map[thread_key] = ThreadMetadata(
+                    topic_link_syntax=topic_link_syntax,
+                    topic_name=thread_topic_name,
+                )
+
     raw_messages = []
-    for post_dict in post_data_list:
-        message_dict = message_to_dict(post_dict)
-        if message_dict is None:  # nocoverage
-            continue
+    for idx, post_dict in enumerate(post_data_list):
+        if is_mattermost_thread_parent(post_dict):
+            thread_key = get_mattermost_thread_key(post_dict, idx)
+            parent_timestamp = post_dict["create_at"]
+            message_dict = message_to_dict(post_dict, thread_key=thread_key, is_thread_parent=True)
+            if message_dict is None:  # nocoverage
+                continue
+            # Add thread_parent_timestamp for sorting
+            message_dict["thread_parent_timestamp"] = parent_timestamp
+        else:
+            message_dict = message_to_dict(post_dict)
+            if message_dict is None:  # nocoverage
+                continue
         raw_messages.append(message_dict)
         message_replies = post_dict["replies"]
-        # Replies to a message in Mattermost are stored in the main message object.
-        # For now, we just append the replies immediately after the original message.
         if message_replies is not None:
-            for reply in message_replies:
+            thread_key = get_mattermost_thread_key(post_dict, idx)
+            parent_timestamp = post_dict["create_at"]
+            # Sort replies by create_at to maintain chronological order within thread
+            sorted_replies = sorted(message_replies, key=lambda r: r["create_at"])
+            for reply in sorted_replies:
                 if "channel" in post_dict:
                     reply["channel"] = post_dict["channel"]
                 else:  # nocoverage
                     reply["channel_members"] = post_dict["channel_members"]
-                reply_dict = message_to_dict(reply)
+                reply_dict = message_to_dict(reply, thread_key=thread_key, is_thread_parent=False)
                 if reply_dict is None:  # nocoverage
                     continue
+                # Use parent's timestamp for sorting so thread stays together
+                reply_dict["thread_parent_timestamp"] = parent_timestamp
                 raw_messages.append(reply_dict)
+
+    # Sort all messages by thread_parent_timestamp (falling back to date_sent for non-thread messages)
+    # This ensures thread parents come before their replies even if fixture has incorrect timestamps
+    raw_messages.sort(
+        key=lambda m: (
+            m.get("thread_parent_timestamp", m["date_sent"]),
+            0 if m.get("is_thread_parent") else 1,
+        )
+    )
 
     def process_batch(lst: list[dict[str, Any]]) -> None:
         process_raw_message_batch(
@@ -755,6 +880,8 @@ def process_posts(
             uploads_list=uploads_list,
             zerver_attachment=zerver_attachment,
             mattermost_data_dir=mattermost_data_dir,
+            thread_map=thread_map,
+            thread_reply_counts=thread_reply_counts,
         )
 
     chunk_size = 1000

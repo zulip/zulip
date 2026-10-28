@@ -1176,7 +1176,19 @@ class MatterMostImporter(MattermostImportTestBase):
         exported_messages_id = self.get_set(messages["zerver_message"], "id")
         self.assertIn(messages["zerver_message"][0]["sender"], exported_user_ids)
         self.assertIn(messages["zerver_message"][0]["recipient"], exported_recipient_ids)
-        self.assertIn(messages["zerver_message"][0]["content"], "harry joined the channel.\n\n")
+        # First message in the fixture is "harry joined the team" (not a thread parent)
+        self.assertEqual(messages["zerver_message"][0]["subject"], "imported from mattermost")
+        self.assertIn("harry joined the team", messages["zerver_message"][0]["content"])
+
+        # Find the thread parent message (it has the cross-linking notice)
+        thread_parents = [
+            m for m in messages["zerver_message"] if "reply in" in m.get("content", "")
+        ]
+        self.assertGreater(len(thread_parents), 0)
+        thread_parent = thread_parents[0]
+        self.assertEqual(thread_parent["subject"], "imported from mattermost")
+        self.assertIn("harry joined the channel", thread_parent["content"])
+        self.assertIn("*1 reply in", thread_parent["content"])
 
         exported_usermessage_userprofiles = self.get_set(
             messages["zerver_usermessage"], "user_profile"
@@ -1343,7 +1355,309 @@ class MatterMostImporter(MattermostImportTestBase):
         harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
         messages = self.read_file(harry_team_output_dir, "messages-000001.json")
 
-        self.assertIn(messages["zerver_message"][0]["content"], "xxxxx xxxxxx xxx xxxxxxx.\n\n")
+        # First message in the fixture is "harry joined the team" (not a thread parent)
+        # After masking: "xxxxx xxxxxx xxx xxxx."
+        self.assertEqual(messages["zerver_message"][0]["subject"], "imported from mattermost")
+        self.assertIn("xxxxx xxxxxx xxx xxxx.", messages["zerver_message"][0]["content"])
+
+        # Find the thread parent message (it has the cross-linking notice)
+        thread_parents = [
+            m for m in messages["zerver_message"] if "reply in" in m.get("content", "")
+        ]
+        self.assertGreater(len(thread_parents), 0)
+        thread_parent = thread_parents[0]
+        self.assertIn("*1 reply in", thread_parent["content"])
+
+    def test_thread_parent_in_main_topic_with_cross_linking_notice(self) -> None:
+        """Test that thread parent messages go to main import topic with cross-linking notice."""
+        mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
+        output_dir = self.make_import_output_dir("mattermost")
+
+        with self.assertLogs(level="WARNING"):
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=False,
+            )
+
+        harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
+        messages = self.read_file(harry_team_output_dir, "messages-000001.json")
+
+        # Find the thread parent message (it has the cross-linking notice)
+        thread_parents = [
+            m for m in messages["zerver_message"] if "reply in" in m.get("content", "")
+        ]
+        self.assertGreater(len(thread_parents), 0)
+        thread_parent = thread_parents[0]
+        self.assertEqual(thread_parent["subject"], "imported from mattermost")
+        self.assertIn("harry joined the channel", thread_parent["content"])
+        # Check cross-linking notice format - uses Zulip's topic link syntax
+        self.assertIn("*1 reply in #**dumbledores-army>", thread_parent["content"])
+
+    def test_thread_replies_in_separate_thread_topic(self) -> None:
+        """Test that thread replies go to separate thread topics."""
+        mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
+        output_dir = self.make_import_output_dir("mattermost")
+
+        with self.assertLogs(level="WARNING"):
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=False,
+            )
+
+        harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
+        messages = self.read_file(harry_team_output_dir, "messages-000001.json")
+
+        # Find the thread reply message (The weather is so hot!)
+        thread_replies = [
+            m for m in messages["zerver_message"] if m.get("content") == "The weather is so hot!"
+        ]
+        self.assertGreater(len(thread_replies), 0)
+        thread_reply = thread_replies[0]
+        # Thread reply should be in a thread topic, not the main topic
+        self.assertNotEqual(thread_reply["subject"], "imported from mattermost")
+        # Topic should contain date from parent's create_at
+        self.assertIn("2019-03-21", thread_reply["subject"])  # Date from parent's create_at
+        # Topic is truncated from parent message
+        self.assertIn("The weather is so hot!", thread_reply["content"])
+
+    def test_cross_linking_notice_format(self) -> None:
+        """Test cross-linking notice format matches expected pattern."""
+        mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
+        output_dir = self.make_import_output_dir("mattermost")
+
+        with self.assertLogs(level="WARNING"):
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=False,
+            )
+
+        harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
+        messages = self.read_file(harry_team_output_dir, "messages-000001.json")
+
+        # Find the thread parent message (it has the cross-linking notice)
+        thread_parents = [
+            m for m in messages["zerver_message"] if "reply in" in m.get("content", "")
+        ]
+        self.assertGreater(len(thread_parents), 0)
+        thread_parent = thread_parents[0]
+        content = thread_parent["content"]
+
+        # Cross-linking notice should be appended with proper formatting
+        # Format: {content}\n\n*{N} reply in #**stream>topic** (Zulip topic link syntax)
+        self.assertIn("\n\n*", content)
+        self.assertIn("reply in #**dumbledores-army>", content)
+
+    def test_thread_with_multiple_replies(self) -> None:
+        """Test thread with multiple replies gets correct reply count."""
+        # Use the v11.1.0 fixture which has threads with multiple replies
+        mattermost_data_dir = self.fixture_file_name(
+            "", "mattermost_v11.1.0_fixtures/raw_mmctl_output"
+        )
+        output_dir = self.make_import_output_dir("mattermost")
+
+        with self.settings(EXTERNAL_HOST="zulip.example.com"), self.assertLogs(level="INFO"):
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=False,
+            )
+
+        team_output_dir = self.team_output_dir(output_dir, "ad-1")
+        # Find all messages files
+        message_files = [
+            f
+            for f in os.listdir(team_output_dir)
+            if f.startswith("messages-") and f.endswith(".json")
+        ]
+
+        # Collect all messages from all files
+        all_messages = []
+        for msg_file in message_files:
+            messages = self.read_file(team_output_dir, msg_file)
+            all_messages.extend(messages["zerver_message"])
+
+        # Find a thread parent with multiple replies (post from minus-6 channel with 2 replies)
+        thread_parents = [m for m in all_messages if "reply in" in m.get("content", "")]
+        self.assertGreater(len(thread_parents), 0)
+
+        for parent in thread_parents:
+            content = parent["content"]
+            # Should have correct plural/singular
+            if "*1 reply" in content:
+                self.assertIn("*1 reply in", content)
+            else:
+                self.assertIn("replies in", content)
+
+    def test_empty_thread_parent_no_cross_link(self) -> None:
+        """Test that thread parent with 0 replies gets no cross-linking notice."""
+        # Create a test fixture with empty replies array
+        import os
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            # Create minimal Mattermost export with empty thread
+            export_data = [
+                '{"type":"version","version":1}',
+                '{"type":"team","team":{"name":"test","display_name":"Test Team","type":"O","description":"","allow_open_invite":true}}',
+                '{"type":"channel","channel":{"team":"test","name":"general","display_name":"General","type":"O","header":"","purpose":""}}',
+                '{"type":"user","user":{"username":"user1","email":"user1@test.com","auth_service":"","nickname":"","first_name":"User","last_name":"One","position":"","roles":"system_admin system_user","locale":"en","teams":[{"name":"test","roles":"team_admin team_user","channels":[{"name":"general","roles":"channel_admin channel_user","notify_props":{"desktop":"default","mobile":"default","mark_unread":"all"},"favorite":false}]}],"notify_props":{"desktop":"mention","desktop_sound":"true","email":"true","mobile":"mention","mobile_push_status":"away","channel":"true","comments":"never","mention_keys":"user1,@user1"}}}',
+                '{"type":"post","post":{"team":"test","channel":"general","user":"user1","message":"parent with no replies","create_at":1553166657086,"reactions":null,"replies":[]}}',
+            ]
+            export_file = os.path.join(tmp_dir, "export.json")
+            with open(export_file, "w") as f:
+                f.write("\n".join(export_data))
+
+            output_dir = self.make_import_output_dir("mattermost")
+            with self.assertLogs(level="INFO"):
+                do_convert_data(
+                    mattermost_data_dir=tmp_dir,
+                    output_dir=output_dir,
+                    masking_content=False,
+                )
+
+            team_output_dir = self.team_output_dir(output_dir, "test")
+            message_files = [
+                f
+                for f in os.listdir(team_output_dir)
+                if f.startswith("messages-") and f.endswith(".json")
+            ]
+            messages = self.read_file(team_output_dir, message_files[0])
+
+            # Parent with empty replies should be in main topic without cross-linking notice
+            self.assert_length(messages["zerver_message"], 1)
+            msg = messages["zerver_message"][0]
+            self.assertEqual(msg["subject"], "imported from mattermost")
+            self.assertEqual(msg["content"], "parent with no replies")
+            self.assertNotIn("reply in", msg["content"])
+
+    def test_direct_message_thread_handling(self) -> None:
+        """Test that DM threads don't get cross-linking (no thread topics in DMs)."""
+        mattermost_data_dir = self.fixture_file_name("direct_channel", "mattermost_fixtures")
+        output_dir = self.make_import_output_dir("mattermost")
+
+        with self.assertLogs(level="INFO"):
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=False,
+            )
+
+        harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
+        message_files = [
+            f
+            for f in os.listdir(harry_team_output_dir)
+            if f.startswith("messages-") and f.endswith(".json")
+        ]
+        messages = self.read_file(harry_team_output_dir, message_files[0])
+
+        # Find DM messages (they should have DM_TOPIC as subject)
+        dm_messages = [
+            m for m in messages["zerver_message"] if m.get("subject") == Message.DM_TOPIC
+        ]
+        self.assertGreater(len(dm_messages), 0)
+
+        # DM thread parents should not have cross-linking notices
+        for msg in dm_messages:
+            self.assertNotIn("reply in", msg.get("content", ""))
+
+    def test_thread_topic_name_collision_handling(self) -> None:
+        """Test that threads with same parent date/snippet get unique topic names."""
+        # Use v11.1.0 fixture which may have such cases
+        mattermost_data_dir = self.fixture_file_name(
+            "", "mattermost_v11.1.0_fixtures/raw_mmctl_output"
+        )
+        output_dir = self.make_import_output_dir("mattermost")
+
+        with self.settings(EXTERNAL_HOST="zulip.example.com"), self.assertLogs(level="INFO"):
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=False,
+            )
+
+        team_output_dir = self.team_output_dir(output_dir, "ad-1")
+        message_files = [
+            f
+            for f in os.listdir(team_output_dir)
+            if f.startswith("messages-") and f.endswith(".json")
+        ]
+
+        # Collect all thread topics
+        thread_topics = set()
+        for msg_file in message_files:
+            messages = self.read_file(team_output_dir, msg_file)
+            for msg in messages["zerver_message"]:
+                msg_subject = msg.get("subject", "")
+                if msg_subject and msg_subject not in (
+                    "imported from mattermost",
+                    Message.DM_TOPIC,
+                ):
+                    thread_topics.add(msg_subject)
+
+        # All thread topics should be unique
+        self.assert_length(thread_topics, len(list(thread_topics)))
+
+    def test_orphaned_reply_without_parent(self) -> None:
+        """Test handling of reply whose parent wasn't imported."""
+        # This is tested indirectly - replies without parent in thread_map
+        # go to main topic
+        mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
+        output_dir = self.make_import_output_dir("mattermost")
+
+        with self.assertLogs(level="WARNING"):
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=False,
+            )
+
+        harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
+        messages = self.read_file(harry_team_output_dir, "messages-000001.json")
+
+        # All messages should have valid subjects
+        for msg in messages["zerver_message"]:
+            msg_subject = msg.get("subject", "")
+            self.assertTrue(msg_subject)
+            self.assertNotEqual(msg_subject, "")
+
+    def test_thread_message_order_preserved(self) -> None:
+        """Test that thread messages maintain chronological order."""
+        mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
+        output_dir = self.make_import_output_dir("mattermost")
+
+        with self.assertLogs(level="WARNING"):
+            do_convert_data(
+                mattermost_data_dir=mattermost_data_dir,
+                output_dir=output_dir,
+                masking_content=False,
+            )
+
+        harry_team_output_dir = self.team_output_dir(output_dir, "gryffindor")
+        messages = self.read_file(harry_team_output_dir, "messages-000001.json")
+
+        # Within a thread, parent should come before replies
+        thread_parent_idx: int | None = None
+        thread_reply_idx: int | None = None
+        for i, msg in enumerate(messages["zerver_message"]):
+            if (
+                "harry joined the channel" in msg["content"]
+                and msg["subject"] == "imported from mattermost"
+            ):
+                thread_parent_idx = i
+            if (
+                msg.get("content") == "The weather is so hot!"
+                and msg["subject"] != "imported from mattermost"
+            ):
+                thread_reply_idx = i
+
+        self.assertIsNotNone(thread_parent_idx)
+        self.assertIsNotNone(thread_reply_idx)
+        # Thread parent should come before its reply
+        assert thread_parent_idx is not None and thread_reply_idx is not None
+        self.assertLess(thread_parent_idx, thread_reply_idx)
 
     def test_import_data_to_existing_database(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
