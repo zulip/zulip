@@ -68,18 +68,19 @@ class AuditLogEventType(IntEnum):
     REALM_EMOJI_ADDED = 226
     REALM_EMOJI_REMOVED = 227
     REALM_LINKIFIERS_REORDERED = 228
-
     # This event for a realm means that this server processed exported data
     # (either from another Zulip server or a 3rd party app such as Slack),
     # and imported the data as the given realm.
     REALM_IMPORTED = 229
     REALM_EXPORT_DELETED = 230
+    REALM_CUSTOM_PROFILE_FIELD_ADDED = 231
+    REALM_CUSTOM_PROFILE_FIELD_CHANGED = 232
+    REALM_CUSTOM_PROFILE_FIELD_REMOVED = 233
 
     SUBSCRIPTION_CREATED = 301
     SUBSCRIPTION_ACTIVATED = 302
     SUBSCRIPTION_DEACTIVATED = 303
     SUBSCRIPTION_PROPERTY_CHANGED = 304
-
     USER_MUTED = 350
     USER_UNMUTED = 351
 

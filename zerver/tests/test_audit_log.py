@@ -25,6 +25,11 @@ from zerver.actions.create_user import (
     do_create_user,
     do_reactivate_user,
 )
+from zerver.actions.custom_profile_fields import (
+    do_remove_realm_custom_profile_field,
+    try_add_realm_custom_profile_field,
+    try_update_realm_custom_profile_field,
+)
 from zerver.actions.navigation_views import (
     do_add_navigation_view,
     do_remove_navigation_view,
@@ -95,6 +100,7 @@ from zerver.lib.upload import get_emoji_url
 from zerver.lib.user_groups import get_group_setting_value_for_api, get_recursive_group_members
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import (
+    CustomProfileField,
     Message,
     NamedUserGroup,
     RealmAuditLog,
@@ -131,6 +137,131 @@ class TestRealmAuditLog(ZulipTestCase):
             isinstance(role_counts[RealmAuditLog.ROLE_COUNT_HUMANS]["non_workplace_users"], int)
         )
         self.assertTrue(isinstance(role_counts[RealmAuditLog.ROLE_COUNT_BOTS], int))
+
+    def test_custom_profile_field_added(self) -> None:
+        user = self.example_user("iago")
+        realm = user.realm
+        now = timezone_now()
+
+        field = try_add_realm_custom_profile_field(
+            realm,
+            name="Test field",
+            field_type=CustomProfileField.SHORT_TEXT,
+            acting_user=user,
+        )
+
+        expected_extra_data = {
+            "custom_profile_field": {
+                "id": field.id,
+                "name": "Test field",
+                "field_type": field.field_type,
+            },
+        }
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                acting_user=user,
+                event_type=AuditLogEventType.REALM_CUSTOM_PROFILE_FIELD_ADDED,
+                event_time__gte=now,
+                extra_data=expected_extra_data,
+            ).count(),
+            1,
+        )
+
+    def test_custom_profile_field_changed(self) -> None:
+        user = self.example_user("iago")
+        realm = user.realm
+        now = timezone_now()
+
+        field = try_add_realm_custom_profile_field(
+            realm,
+            name="Original name",
+            field_type=CustomProfileField.SHORT_TEXT,
+            acting_user=user,
+        )
+
+        try_update_realm_custom_profile_field(
+            realm,
+            field,
+            name="Updated name",
+            acting_user=user,
+        )
+
+        added_extra_data = {
+            "custom_profile_field": {
+                "id": field.id,
+                "name": "Original name",
+                "field_type": field.field_type,
+            },
+        }
+
+        changed_extra_data = {
+            "custom_profile_field": {
+                "id": field.id,
+                "name": "Updated name",
+                "field_type": field.field_type,
+            },
+        }
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                acting_user=user,
+                event_type=AuditLogEventType.REALM_CUSTOM_PROFILE_FIELD_ADDED,
+                event_time__gte=now,
+                extra_data=added_extra_data,
+            ).count(),
+            1,
+        )
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                acting_user=user,
+                event_type=AuditLogEventType.REALM_CUSTOM_PROFILE_FIELD_CHANGED,
+                event_time__gte=now,
+                extra_data=changed_extra_data,
+            ).count(),
+            1,
+        )
+
+    def test_custom_profile_field_removed(self) -> None:
+        user = self.example_user("iago")
+        realm = user.realm
+
+        field = try_add_realm_custom_profile_field(
+            realm,
+            name="Field to remove",
+            field_type=CustomProfileField.SHORT_TEXT,
+            acting_user=user,
+        )
+
+        expected_extra_data = {
+            "custom_profile_field": {
+                "id": field.id,
+                "name": field.name,
+                "field_type": field.field_type,
+            },
+        }
+
+        now = timezone_now()
+        do_remove_realm_custom_profile_field(
+            realm,
+            field,
+            acting_user=user,
+        )
+
+        self.assertEqual(
+            RealmAuditLog.objects.filter(
+                realm=realm,
+                acting_user=user,
+                event_type=AuditLogEventType.REALM_CUSTOM_PROFILE_FIELD_REMOVED,
+                event_time__gte=now,
+                extra_data=expected_extra_data,
+            ).count(),
+            1,
+        )
 
     def test_user_activation(self) -> None:
         realm = get_realm("zulip")
