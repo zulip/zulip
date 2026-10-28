@@ -19,13 +19,12 @@ here are some of the more important ones to keep in mind.
   effectively.
 
 There are many different standards for accessibility, but the most relevant
-one for Zulip is the W3C's [WCAG](https://www.w3.org/TR/WCAG20/) (Web Content
-Accessibility Guidelines), currently at version 2.0. Whenever practical, we
-should strive for compliance with the AA level of this specification.
-(The W3C itself
-[recommends not trying](https://www.w3.org/TR/UNDERSTANDING-WCAG20/conformance.html#uc-conf-req1-head)
-to comply with the highest AAA level for an entire web site or application,
-as it is not possible for some content.)
+one for Zulip is the W3C's [WCAG][wcag22] (Web Content Accessibility
+Guidelines), currently at version 2.2. Whenever practical, we should strive
+for compliance with the AA level of this specification. (The W3C itself
+[recommends not trying][wcag-understanding-conformance] to comply with the
+highest AAA level for an entire web site or application, as it is not possible
+for some content.)
 
 ## Tools
 
@@ -72,7 +71,7 @@ possible, the following resources may be useful.
 
 - [Font Awesome accessibility guide](https://fontawesome.com/how-to-use/on-the-web/other-topics/accessibility),
   which is especially helpful since Zulip uses Font Awesome for its icons.
-- [Web Content Accessibility Guidelines (WCAG) 2.0](https://www.w3.org/TR/WCAG/)
+- [Web Content Accessibility Guidelines (WCAG) 2.2][wcag22]
 - [WAI-ARIA](https://www.w3.org/WAI/intro/aria) - Web Accessibility Initiative
   Accessible Rich Internet Application Suite
 - [WebAIM](https://webaim.org/) - Web Accessibility in Mind
@@ -82,3 +81,5 @@ possible, the following resources may be useful.
 [chrome-webstore]: https://chrome.google.com/webstore/detail/accessibility-developer-t/fpkknkljclfencbdbgkenhalefipecmb
 [openedx-guidelines]: https://docs.openedx.org/en/latest/developers/concepts/accessibility.html
 [accessibility-issues]: https://github.com/zulip/zulip/issues?q=is%3Aissue+is%3Aopen+label%3Aaccessibility
+[wcag22]: https://www.w3.org/TR/WCAG22/
+[wcag-understanding-conformance]: https://www.w3.org/WAI/WCAG22/Understanding/conformance#conformance-requirements
