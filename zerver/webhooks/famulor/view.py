@@ -10,12 +10,10 @@ from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import (
     WildValue,
     check_bool,
-    check_float,
     check_int,
     check_iso_datetime,
     check_none_or,
     check_string,
-    check_union,
 )
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
@@ -41,7 +39,6 @@ CONVERSATION_TYPE_LABELS = {
     "whatsapp": "WhatsApp",
 }
 MAPPING_LIMIT = 8
-SCALAR_VALIDATOR = check_union([check_bool, check_int, check_float, check_string])
 
 
 def quantity(count: int, singular: str) -> str:
@@ -101,19 +98,14 @@ def optional_object(node: WildValue, key: str) -> WildValue | None:
 
 def format_scalar_value(value: WildValue) -> str | None:
     raw = value.value
-    if raw is None or isinstance(raw, (dict, list)):
-        return None
-    try:
-        tamed = value.tame(SCALAR_VALIDATOR)
-    except ValidationError:
-        return None
-    if isinstance(tamed, bool):
-        return "yes" if tamed else "no"
-    if isinstance(tamed, str):
-        stripped = tamed.strip()
+    # JSON booleans are integers, so they have to be matched first.
+    if isinstance(raw, bool):
+        return "yes" if raw else "no"
+    if isinstance(raw, str):
+        stripped = raw.strip()
         return stripped or None
-    if isinstance(tamed, int | float):
-        return str(tamed)
+    if isinstance(raw, int | float):
+        return str(raw)
     return None
 
 
