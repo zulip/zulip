@@ -520,7 +520,7 @@ else:
 # API/BOT SETTINGS
 ########################################################################
 
-ROOT_DOMAIN_URI = EXTERNAL_URI_SCHEME + EXTERNAL_HOST
+ROOT_DOMAIN_URL = EXTERNAL_URI_SCHEME + EXTERNAL_HOST
 
 S3_KEY = get_secret("s3_key")
 S3_SECRET_KEY = get_secret("s3_secret_key")
@@ -609,7 +609,7 @@ CAMO_KEY = get_secret("camo_key") if CAMO_URI != "" else None
 
 if STATIC_URL is None:
     if PRODUCTION or IS_DEV_DROPLET or os.getenv("EXTERNAL_HOST") is not None:
-        STATIC_URL = urljoin(ROOT_DOMAIN_URI, "/static/")
+        STATIC_URL = urljoin(ROOT_DOMAIN_URL, "/static/")
     else:
         STATIC_URL = "http://localhost:9991/static/"
 
