@@ -1,5 +1,5 @@
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from re import Match
 from typing import Any
 from urllib.parse import urljoin
@@ -10,7 +10,14 @@ from django.conf import settings
 from django.utils.encoding import smart_str
 
 from version import ZULIP_VERSION
-from zerver.lib.cache import cache_with_key, preview_url_cache_key
+from zerver.lib.cache import (
+    cache_delete,
+    cache_get_many,
+    cache_set,
+    cache_with_key,
+    preview_url_cache_key,
+    preview_url_unavailable_cache_key,
+)
 from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.url_preview.oembed import get_oembed_data
@@ -35,6 +42,7 @@ ZULIP_URL_PREVIEW_USER_AGENT = (
 # FIXME: This header and timeout are not used by pyoembed, when trying to autodiscover!
 HEADERS = {"User-Agent": ZULIP_URL_PREVIEW_USER_AGENT}
 TIMEOUT = 15
+PREVIEW_URL_UNAVAILABLE_TIMEOUT_SECONDS = 60
 
 
 class PreviewSession(OutgoingSession):
@@ -113,3 +121,26 @@ def get_link_embed_data(url: str, maxwidth: int = 640, maxheight: int = 480) -> 
     if data.image:
         data.image = urljoin(response.url, data.image)
     return data
+
+
+def get_cached_link_embed_data(urls: Iterable[str]) -> dict[str, UrlEmbedData | None]:
+    url_by_cache_key = {preview_url_cache_key(url): url for url in urls}
+    cached = cache_get_many(list(url_by_cache_key))
+    # cache_with_key stores values in a singleton tuple.
+    return {url_by_cache_key[key]: value[0] for key, value in cached.items()}
+
+
+def get_unavailable_preview_urls(urls: Iterable[str]) -> set[str]:
+    url_by_cache_key = {preview_url_unavailable_cache_key(url): url for url in urls}
+    return {url_by_cache_key[key] for key in cache_get_many(list(url_by_cache_key))}
+
+
+def mark_preview_url_unavailable(url: str) -> None:
+    # Unlike get_link_embed_data's cache, this expires, so that the
+    # message, once sent, fetches the link afresh.
+    cache_delete(preview_url_cache_key(url))
+    cache_set(
+        preview_url_unavailable_cache_key(url),
+        True,
+        timeout=PREVIEW_URL_UNAVAILABLE_TIMEOUT_SECONDS,
+    )

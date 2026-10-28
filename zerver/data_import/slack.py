@@ -617,7 +617,10 @@ def channels_to_zerver_stream(
             recipient_id_count += 1
             logging.info("%s -> created", channel["name"])
 
-            if channel["name"] == SLACK_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME:
+            if (
+                channel["name"] == SLACK_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME
+                and not stream["deactivated"]
+            ):
                 zerver_realm[0]["new_stream_announcements_stream"] = stream["id"]
                 zerver_realm[0]["zulip_update_announcements_stream"] = stream["id"]
                 logging.info(

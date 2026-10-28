@@ -87,15 +87,16 @@ export function render_preview_area(): void {
     const $compose_textarea = $<HTMLTextAreaElement>("textarea#compose-textarea");
     const content = compose_state.message_content();
     const $preview_message_area = $("#compose .preview_message_area");
-    compose_ui.render_and_show_preview(
-        $("#compose"),
-        $("#compose .markdown_preview_spinner"),
-        $("#compose .preview_content"),
-        content,
-    );
+    compose_ui.render_and_show_preview($("#compose"), content);
     const edit_height = $compose_textarea.height();
     $preview_message_area.css({"min-height": edit_height + "px"});
     $preview_message_area.show();
+}
+
+export function update_preview_embeds(content: string, rendered_content: string): void {
+    if (content === compose_state.message_content()) {
+        compose_ui.apply_preview_embeds($("#compose"), content, rendered_content);
+    }
 }
 
 export function clear_compose_box(): void {

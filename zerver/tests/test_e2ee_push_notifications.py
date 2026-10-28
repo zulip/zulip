@@ -8,6 +8,7 @@ from django.test import override_settings
 from django.utils.timezone import now
 from firebase_admin.exceptions import InternalError
 from firebase_admin.messaging import UnregisteredError
+from h2.exceptions import ProtocolError
 
 from analytics.models import RealmCount
 from corporate.lib.stripe import BillingUserCounts
@@ -17,6 +18,7 @@ from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.devices import b64encode_token_id_int
 from zerver.lib.exceptions import MissingRemoteRealmError
 from zerver.lib.push_notifications import (
+    APNsContext,
     PushNotificationsDisallowedByBouncerError,
     handle_push_notification,
     handle_remove_push_notification,
@@ -270,6 +272,54 @@ class SendPushNotificationTest(E2EEPushNotificationTestCase):
             self.assertIsNotNone(registered_device_apple.expired_time)
             self.assertIsNotNone(registered_device_android.expired_time)
             self.assertEqual(Device.objects.filter(push_token_id__isnull=False).count(), 0)
+
+    def test_retry_after_connection_closed_by_apns(self) -> None:
+        aaron = self.example_user("aaron")
+        hamlet = self.example_user("hamlet")
+
+        registered_device_apple, _registered_device_android = (
+            self.register_push_devices_for_notification()
+        )
+
+        message_id = self.send_personal_message(
+            from_user=aaron, to_user=hamlet, skip_capture_on_commit_callbacks=True
+        )
+        missed_message = {
+            "message_id": message_id,
+            "trigger": NotificationTriggers.DIRECT_MESSAGE,
+        }
+
+        with (
+            self.mock_fcm() as mock_fcm_messaging,
+            self.mock_apns() as send_notification,
+            mock.patch.object(APNsContext, "discard_closed_connections") as discard,
+            self.assertLogs("zerver.lib.push_notifications", level="INFO") as zerver_logger,
+            self.assertLogs("zilencer.lib.push_notifications", level="INFO"),
+            mock.patch("time.perf_counter", side_effect=[10.0, 15.0]),
+        ):
+            mock_fcm_messaging.send_each.return_value = self.make_fcm_success_response()
+            send_notification.side_effect = [
+                ProtocolError(
+                    "Invalid input ConnectionInputs.SEND_HEADERS in state ConnectionState.CLOSED"
+                ),
+                send_notification.return_value,
+            ]
+            send_notification.return_value.is_successful = True
+
+            handle_push_notification(hamlet.id, missed_message)
+
+            self.assertEqual(send_notification.await_count, 2)
+            discard.assert_called_once()
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"APNs: Success sending to (realm={hamlet.realm.uuid}, device={registered_device_apple.token})",
+                zerver_logger.output[2],
+            )
+            self.assertEqual(
+                "INFO:zerver.lib.push_notifications:"
+                f"Sent E2EE mobile push notifications for user {hamlet.id}: 1 via FCM, 1 via APNs in 5.000s",
+                zerver_logger.output[3],
+            )
 
     def test_fcm_apns_error(self) -> None:
         hamlet = self.example_user("hamlet")

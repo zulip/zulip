@@ -476,6 +476,22 @@ def preview_url_cache_key(url: str) -> str:
     return f"preview_url:{hashlib.sha1(url.encode()).hexdigest()}"
 
 
+def preview_url_unavailable_cache_key(url: str) -> str:
+    return f"preview_url_unavailable:{hashlib.sha1(url.encode()).hexdigest()}"
+
+
+def preview_draft_content_hash(content: str) -> str:
+    return hashlib.sha1(content.encode()).hexdigest()
+
+
+def pending_preview_draft_cache_key(user_profile_id: int, content_hash: str) -> str:
+    return f"pending_preview_draft:{user_profile_id}:{content_hash}"
+
+
+def latest_preview_draft_cache_key(user_profile_id: int) -> str:
+    return f"latest_preview_draft:{user_profile_id}"
+
+
 def display_recipient_cache_key(recipient_id: int) -> str:
     return f"display_recipient_dict:{recipient_id}"
 
@@ -773,7 +789,7 @@ def to_dict_cache_key_id(message_id: int) -> str:
     return f"message_dict:{message_id}"
 
 
-def to_dict_cache_key(message: "Message", realm_id: int | None = None) -> str:
+def to_dict_cache_key(message: "Message") -> str:
     return to_dict_cache_key_id(message.id)
 
 

@@ -20,10 +20,10 @@ import type {Message} from "./message_store.ts";
 import * as message_store from "./message_store.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as modals from "./modals.ts";
-import * as overlays from "./overlays.ts";
 import * as people from "./people.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import * as recent_view_util from "./recent_view_util.ts";
 import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import type {MessageDetails} from "./server_event_types.ts";
 import type {NarrowTerm} from "./state_data.ts";
@@ -56,19 +56,11 @@ const UNREAD_COUNT_STEP_SIZE = 25;
 // reporting the failure.
 const MAX_UPDATE_READ_FLAGS_RETRIES = 5;
 
-// When you start Zulip, window_focused should be true, but it might not be the
-// case after a server-initiated reload.
-let window_focused = document.hasFocus();
-
 // Since there's a database index on is:unread, it's a fast
 // search query and thus worth including here as an optimization.),
 const all_unread_messages_narrow: NarrowTerm[] = [
     {operator: "is", operand: "unread", negated: false},
 ];
-
-export function is_window_focused(): boolean {
-    return window_focused;
-}
 
 export function confirm_mark_messages_as_read(): void {
     const modal_content_html = render_confirm_mark_messages_as_read();
@@ -401,8 +393,7 @@ function process_newly_read_message(
     for (const msg_list of message_lists.all_rendered_message_lists()) {
         msg_list.view.show_message_as_read(message, options);
     }
-    desktop_notifications.close_notification(message);
-    recent_view_ui.update_topic_unread_count(message);
+    desktop_notifications.close_notification(message.id);
 }
 
 export function mark_as_unread_from_here(message_id: number): void {
@@ -678,17 +669,22 @@ export function process_read_messages_event(message_ids: number[]): void {
         return;
     }
 
+    const conversation_keys = new Set<string>();
     for (const message_id of message_ids) {
+        // The unread data forgets a message's conversation once it is read.
+        const conversation_key = unread.get_unread_message_conversation_key(message_id);
+        if (conversation_key !== undefined) {
+            conversation_keys.add(conversation_key);
+        }
         unread.mark_as_read(message_id);
 
         const message = message_store.get(message_id);
-
-        // TODO: This ends up doing one in-place rerender operation on
-        // recent conversations per message, not a single global
-        // rerender or one per conversation.
         if (message) {
             process_newly_read_message(message, options);
         }
+    }
+    if (conversation_keys.size > 0) {
+        recent_view_ui.bulk_inplace_rerender(conversation_keys);
     }
 
     if (message_lists.current !== undefined && !message_lists.current.has_unread_messages()) {
@@ -797,10 +793,13 @@ export function notify_server_messages_read(
 
     message_flags.send_read(messages);
 
+    const conversation_keys = new Set<string>();
     for (const message of messages) {
         unread.mark_as_read(message.id);
         process_newly_read_message(message, options);
+        conversation_keys.add(recent_view_util.get_key_from_message(message));
     }
+    recent_view_ui.bulk_inplace_rerender(conversation_keys);
 
     unread_ui.update_unread_counts();
 }
@@ -843,7 +842,7 @@ function process_scrolled_to_bottom(): void {
 export function process_visible(): void {
     if (
         message_lists.current !== undefined &&
-        viewport_is_visible_and_focused() &&
+        message_viewport.viewport_is_visible_and_focused() &&
         message_viewport.bottom_rendered_message_visible() &&
         message_lists.current.view.is_fetched_end_rendered()
     ) {
@@ -933,28 +932,10 @@ export function mark_pm_as_read(user_ids_string: string): void {
     message_flags.mark_as_read(unread_msg_ids);
 }
 
-export function viewport_is_visible_and_focused(): boolean {
-    if (
-        overlays.any_active() ||
-        modals.any_active() ||
-        !is_window_focused() ||
-        $("#message_feed_container").css("display") === "none"
-    ) {
-        return false;
-    }
-    return true;
-}
-
 export function initialize(): void {
-    $(window)
-        .on("focus", () => {
-            window_focused = true;
-
-            // Update many places on the DOM to reflect unread
-            // counts.
-            process_visible();
-        })
-        .on("blur", () => {
-            window_focused = false;
-        });
+    $(window).on("focus", () => {
+        // Update many places on the DOM to reflect unread
+        // counts.
+        process_visible();
+    });
 }

@@ -102,6 +102,10 @@ def apply_i18n_trimmed_policy(src: str, env: Environment) -> str:
     return trans_block_re.sub(r"\1 trimmed \2", src)
 
 
+# Matches idInterpolationPattern in babel.config.js
+formatjs_id_pattern = "[content]"
+
+
 class Command(makemessages.Command):
     xgettext_options = makemessages.Command.xgettext_options
     for func, tag in tags:
@@ -197,18 +201,18 @@ class Command(makemessages.Command):
             template.templatize = old_templatize
             template.constant_re = old_constant_re
 
-    def extract_strings(self, data: str) -> list[str]:
-        translation_strings: list[str] = []
+    def extract_strings(self, data: str) -> dict[str, str]:
+        translation_strings: dict[str, str] = {}
         for regex in frontend_compiled_regexes:
             for match in regex.findall(data):
                 match = match.strip()
                 match = " ".join(line.strip() for line in match.splitlines())
-                translation_strings.append(match)
+                translation_strings[match] = match
 
         return translation_strings
 
-    def get_translation_strings(self) -> list[str]:
-        translation_strings: list[str] = []
+    def get_translation_strings(self) -> dict[str, str]:
+        translation_strings: dict[str, str] = {}
         dirname = self.get_template_dir()
 
         for dirpath, dirnames, filenames in os.walk(dirname):
@@ -217,7 +221,9 @@ class Command(makemessages.Command):
                     continue
                 with open(os.path.join(dirpath, filename)) as reader:
                     data = reader.read()
-                    translation_strings.extend(self.extract_strings(data))
+                    for k, v in self.extract_strings(data).items():
+                        assert translation_strings.get(k, v) == v
+                        translation_strings[k] = v
 
         extracted = subprocess.check_output(
             [
@@ -225,14 +231,18 @@ class Command(makemessages.Command):
                 "extract",
                 "--additional-function-names=$t,$t_html",
                 "--format=simple",
+                f"--id-interpolation-pattern={formatjs_id_pattern}",
                 "--ignore=**/*.d.ts",
+                "--throws",
                 "web/src/**/*.js",
                 "web/src/**/*.ts",
             ]
         )
-        translation_strings.extend(orjson.loads(extracted).values())
+        for k, v in orjson.loads(extracted).items():
+            assert translation_strings.get(k, v) == v
+            translation_strings[k] = v
 
-        return list(set(translation_strings))
+        return translation_strings
 
     def get_template_dir(self) -> str:
         return self.frontend_source
@@ -271,23 +281,18 @@ class Command(makemessages.Command):
             yield os.path.join(path, self.get_namespace())
 
     def get_new_strings(
-        self, old_strings: Mapping[str, str], translation_strings: list[str], locale: str
+        self, old_strings: Mapping[str, str], translation_strings: Mapping[str, str], locale: str
     ) -> dict[str, str]:
         """
         Missing strings are removed, new strings are added and already
-        translated strings are not touched.
+        translated non-English strings are not touched.
         """
-        new_strings = {}  # Dict[str, str]
-        for k in translation_strings:
-            if locale == "en":
-                # For English language, translation is equal to the key.
-                new_strings[k] = old_strings.get(k, k)
-            else:
-                new_strings[k] = old_strings.get(k, "")
+        if locale == "en":
+            return dict(translation_strings)
+        else:
+            return {k: old_strings.get(k, "") for k in translation_strings}
 
-        return new_strings
-
-    def write_translation_strings(self, translation_strings: list[str]) -> None:
+    def write_translation_strings(self, translation_strings: Mapping[str, str]) -> None:
         for locale, output_path in zip(self.get_locales(), self.get_output_paths(), strict=False):
             self.stdout.write(f"[frontend] processing locale {locale}")
             try:

@@ -1,8 +1,9 @@
-from django.contrib.postgres.operations import AddIndexConcurrently, RemoveIndexConcurrently
 from django.db import connection, migrations, models
 from django.db.backends.base.schema import BaseDatabaseSchemaEditor
 from django.db.migrations.state import StateApps
 from psycopg2.sql import SQL
+
+from zerver.lib.migrate import add_index, remove_index
 
 
 def clear_old_data_for_unused_usermessage_flags(
@@ -52,7 +53,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        AddIndexConcurrently(
+        add_index(
             model_name="usermessage",
             index=models.Index(
                 "id",
@@ -65,7 +66,7 @@ class Migration(migrations.Migration):
             reverse_code=migrations.RunPython.noop,
             elidable=True,
         ),
-        RemoveIndexConcurrently(
+        remove_index(
             model_name="usermessage",
             name="zerver_usermessage_temp_clear_flags",
         ),

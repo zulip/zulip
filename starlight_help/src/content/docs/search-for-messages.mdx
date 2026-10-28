@@ -7,6 +7,7 @@ import {Steps, TabItem, Tabs} from "@astrojs/starlight/components";
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import KeyboardTip from "../../components/KeyboardTip.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
 import MobileMenu from "../include/_MobileMenu.mdx";
 
@@ -171,14 +172,30 @@ You can use the search bar to navigate to a message by its ID.
 * `id:12345`: Show only message `12345`.
 * `channel:design near:1` Show the oldest messages in the **#design** channel.
 
+### Search by date
+
+Sometimes you know approximately when the message you are looking for was sent.
+You can focus your search so results are scrolled to a specified date.
+
+* `date:2025-01-01`: Show messages sent around January 1, 2025.
+* `channel:design date:2025-01-01`: Show messages in the **#design** channel
+  sent around January 1, 2025.
+* `sender:Elena García date:2025-01-01`: Show messages sent by Elena around
+  January 1, 2025.
+
 ### Exclude filters
 
-All of Zulip's search filters can be negated to **exclude** messages matching
+Most of Zulip's search filters can be negated to **exclude** messages matching
 the specified rule. For example:
 
 * `channel:design -is:resolved -has:image`: Search messages in [unresolved
   topics](/help/resolve-a-topic) in the **#design** channel that don't contain
   images.
+
+<ZulipNote>
+  **Note**: Negating a date or message ID to exclude messages in a search is
+  not possible.
+</ZulipNote>
 
 ## Linking to search results
 
@@ -204,3 +221,4 @@ A summary of the search filters above is available in the Zulip app.
 * [Filter users](/help/user-list#filter-users)
 * [Link to a message or
   conversation](/help/link-to-a-message-or-conversation#link-to-zulip-from-anywhere)
+* [Scroll to date](/help/scroll-to-date)

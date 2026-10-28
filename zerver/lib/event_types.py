@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 
-from zerver.lib.types import UserGroupMembersDict
+from zerver.lib.types import PropagateMode, UserGroupMembersDict
 from zerver.models.realms import RealmExportSlug
 
 
@@ -149,7 +149,7 @@ class DefaultStreamsEvent(BaseEvent):
 
 
 class DeleteMessageCoreEvent(BaseEvent):
-    type: Literal["delete_message"]
+    type: Literal["delete_message"] = "delete_message"
     message_type: Literal["private", "stream"]
 
 
@@ -214,25 +214,25 @@ class DraftFields(DraftFieldsCore):
 
 
 class DraftsAddEvent(BaseEvent):
-    type: Literal["drafts"]
-    op: Literal["add"]
+    type: Literal["drafts"] = "drafts"
+    op: Literal["add"] = "add"
     drafts: list[DraftFields]
 
 
 class DraftsRemoveEvent(BaseEvent):
-    type: Literal["drafts"]
-    op: Literal["remove"]
+    type: Literal["drafts"] = "drafts"
+    op: Literal["remove"] = "remove"
     draft_id: int
 
 
 class DraftsUpdateEvent(BaseEvent):
-    type: Literal["drafts"]
-    op: Literal["update"]
+    type: Literal["drafts"] = "drafts"
+    op: Literal["update"] = "update"
     draft: DraftFields
 
 
-class HasZoomTokenEvent(BaseEvent):
-    type: Literal["has_zoom_token"] = "has_zoom_token"
+class HasGoogleMeetTokenEvent(BaseEvent):
+    type: Literal["has_google_meet_token"] = "has_google_meet_token"
     value: bool
 
 
@@ -241,12 +241,17 @@ class HasWebexTokenEvent(BaseEvent):
     value: bool
 
 
+class HasZoomTokenEvent(BaseEvent):
+    type: Literal["has_zoom_token"] = "has_zoom_token"
+    value: bool
+
+
 class HeartbeatEvent(BaseEvent):
     type: Literal["heartbeat"]
 
 
 class InvitesChangedEvent(BaseEvent):
-    type: Literal["invites_changed"]
+    type: Literal["invites_changed"] = "invites_changed"
 
 
 class MessageFieldForMessageEvent(BaseEventModel):
@@ -458,8 +463,8 @@ class RealmBotUpdateEvent(BaseEvent):
 
 
 class RealmDeactivatedEvent(BaseEvent):
-    type: Literal["realm"]
-    op: Literal["deactivated"]
+    type: Literal["realm"] = "realm"
+    op: Literal["deactivated"] = "deactivated"
     realm_id: int
 
 
@@ -496,8 +501,8 @@ class RealmEmoji(BaseEventModel):
 
 
 class RealmEmojiAddEvent(BaseEvent):
-    type: Literal["realm_emoji"]
-    op: Literal["add"]
+    type: Literal["realm_emoji"] = "realm_emoji"
+    op: Literal["add"] = "add"
     emoji: RealmEmoji
 
 
@@ -506,8 +511,8 @@ class RealmEmojiUpdateData(BaseEventModel):
 
 
 class RealmEmojiUpdateOneEvent(BaseEvent):
-    type: Literal["realm_emoji"]
-    op: Literal["update_one"]
+    type: Literal["realm_emoji"] = "realm_emoji"
+    op: Literal["update_one"] = "update_one"
     emoji_id: str
     data: RealmEmojiUpdateData
 
@@ -519,7 +524,7 @@ class RealmEmojiUpdateEvent(BaseEvent):
 
 
 class RealmExportConsentEvent(BaseEvent):
-    type: Literal["realm_export_consent"]
+    type: Literal["realm_export_consent"] = "realm_export_consent"
     user_id: int
     consented: bool
 
@@ -567,10 +572,6 @@ class RealmPlaygroundsEvent(BaseEvent):
     realm_playgrounds: list[RealmPlayground]
 
 
-class AllowMessageEditingData(BaseEventModel):
-    allow_message_editing: bool
-
-
 class AuthenticationMethodDictCore(BaseEventModel):
     enabled: bool
     available: bool
@@ -581,45 +582,30 @@ class AuthenticationMethodDict(AuthenticationMethodDictCore):
     unavailable_reason: str | None = None
 
 
-class AuthenticationData(BaseEventModel):
-    authentication_methods: dict[str, AuthenticationMethodDict]
-
-
-class IconData(BaseEventModel):
-    icon_url: str
-    icon_source: str
-
-
-class LogoData(BaseEventModel):
-    logo_url: str
-    logo_source: str
-
-
-class MessageContentEditLimitSecondsData(BaseEventModel):
-    message_content_edit_limit_seconds: int | None
-
-
-class RealmTopicsPolicyData(BaseEventModel):
-    topics_policy: str
-    mandatory_topics: bool
-
-
-class RealmDescriptionData(BaseEventModel):
-    description: str
-    rendered_description: str
-
-
-class NightLogoData(BaseEventModel):
-    night_logo_url: str
-    night_logo_source: str
-
-
-class GroupSettingUpdateDataCore(BaseEventModel):
-    pass
-
-
-class GroupSettingUpdateData(GroupSettingUpdateDataCore):
-    # TODO: fix types to avoid optional fields
+class RealmUpdateDictData(BaseEventModel):
+    # Every field is optional: each event sets only the subset of
+    # fields that changed, and unset fields are omitted when the event
+    # is sent.
+    allow_message_editing: bool | None = None
+    message_content_edit_limit_seconds: int | None = None
+    topics_policy: str | None = None
+    mandatory_topics: bool | None = None
+    description: str | None = None
+    rendered_description: str | None = None
+    authentication_methods: dict[str, AuthenticationMethodDict] | None = None
+    plan_type: int | None = None
+    upload_quota_mib: int | None = None
+    max_file_upload_size_mib: int | None = None
+    icon_url: str | None = None
+    icon_source: str | None = None
+    logo_url: str | None = None
+    logo_source: str | None = None
+    night_logo_url: str | None = None
+    night_logo_source: str | None = None
+    moderation_request_channel_id: int | None = None
+    new_stream_announcements_stream_id: int | None = None
+    signup_announcements_stream_id: int | None = None
+    zulip_update_announcements_stream_id: int | None = None
     create_multiuse_invite_group: int | UserGroupMembersDict | None = None
     can_access_all_users_group: int | UserGroupMembersDict | None = None
     can_add_custom_emoji_group: int | UserGroupMembersDict | None = None
@@ -647,33 +633,16 @@ class GroupSettingUpdateData(GroupSettingUpdateDataCore):
     workplace_users_group: int | UserGroupMembersDict | None = None
 
 
-class PlanTypeData(BaseEventModel):
-    plan_type: int
-    upload_quota_mib: int | None
-    max_file_upload_size_mib: int
-
-
 class RealmUpdateDictEvent(BaseEvent):
     type: Literal["realm"] = "realm"
     op: Literal["update_dict"] = "update_dict"
     property: Literal["default", "icon", "logo", "night_logo"]
-    data: (
-        AllowMessageEditingData
-        | AuthenticationData
-        | IconData
-        | LogoData
-        | MessageContentEditLimitSecondsData
-        | NightLogoData
-        | GroupSettingUpdateData
-        | PlanTypeData
-        | RealmTopicsPolicyData
-        | RealmDescriptionData
-    )
+    data: RealmUpdateDictData
 
 
 class RealmUpdateEvent(BaseEvent):
-    type: Literal["realm"]
-    op: Literal["update"]
+    type: Literal["realm"] = "realm"
+    op: Literal["update"] = "update"
     property: str
     value: bool | int | str | None
     rendered_description: str | None = None
@@ -712,8 +681,8 @@ class RealmBotUser(RealmUserCore):
 
 
 class RealmUserAddEvent(BaseEvent):
-    type: Literal["realm_user"]
-    op: Literal["add"]
+    type: Literal["realm_user"] = "realm_user"
+    op: Literal["add"] = "add"
     person: Annotated[RealmHumanUser | RealmBotUser, Field(discriminator="is_bot")]
 
 
@@ -723,14 +692,14 @@ class RemovedUser(BaseEventModel):
 
 
 class RealmUserRemoveEvent(BaseEvent):
-    type: Literal["realm_user"]
-    op: Literal["remove"]
+    type: Literal["realm_user"] = "realm_user"
+    op: Literal["remove"] = "remove"
     person: RemovedUser
 
 
 class RealmUserSettingsDefaultsUpdateEvent(BaseEvent):
-    type: Literal["realm_user_settings_defaults"]
-    op: Literal["update"]
+    type: Literal["realm_user_settings_defaults"] = "realm_user_settings_defaults"
+    op: Literal["update"] = "update"
     property: str
     value: bool | int | str
 
@@ -946,14 +915,14 @@ class BasicStreamFields(BaseEventModel):
 
 
 class StreamCreateEvent(BaseEvent):
-    type: Literal["stream"]
-    op: Literal["create"]
+    type: Literal["stream"] = "stream"
+    op: Literal["create"] = "create"
     streams: list[BasicStreamFields]
 
 
 class StreamDeleteEvent(BaseEvent):
-    type: Literal["stream"]
-    op: Literal["delete"]
+    type: Literal["stream"] = "stream"
+    op: Literal["delete"] = "delete"
     # Streams is a legacy field for backwards-compatibility, and will
     # be removed in the future.
     streams: list[dict[Literal["stream_id"], int]]
@@ -961,8 +930,8 @@ class StreamDeleteEvent(BaseEvent):
 
 
 class StreamUpdateCoreEvent(BaseEvent):
-    type: Literal["stream"]
-    op: Literal["update"]
+    type: Literal["stream"] = "stream"
+    op: Literal["update"] = "update"
     property: str
     value: bool | int | str | UserGroupMembersDict | None
     name: str
@@ -1030,21 +999,21 @@ class SingleSubscription(BaseEventModel):
 
 
 class SubscriptionAddEvent(BaseEvent):
-    type: Literal["subscription"]
-    op: Literal["add"]
+    type: Literal["subscription"] = "subscription"
+    op: Literal["add"] = "add"
     subscriptions: list[SingleSubscription]
 
 
 class SubscriptionPeerAddEvent(BaseEvent):
-    type: Literal["subscription"]
-    op: Literal["peer_add"]
+    type: Literal["subscription"] = "subscription"
+    op: Literal["peer_add"] = "peer_add"
     user_ids: list[int]
     stream_ids: list[int]
 
 
 class SubscriptionPeerRemoveEvent(BaseEvent):
-    type: Literal["subscription"]
-    op: Literal["peer_remove"]
+    type: Literal["subscription"] = "subscription"
+    op: Literal["peer_remove"] = "peer_remove"
     user_ids: list[int]
     stream_ids: list[int]
 
@@ -1055,14 +1024,14 @@ class RemoveSub(BaseEventModel):
 
 
 class SubscriptionRemoveEvent(BaseEvent):
-    type: Literal["subscription"]
-    op: Literal["remove"]
+    type: Literal["subscription"] = "subscription"
+    op: Literal["remove"] = "remove"
     subscriptions: list[RemoveSub]
 
 
 class SubscriptionUpdateEvent(BaseEvent):
-    type: Literal["subscription"]
-    op: Literal["update"]
+    type: Literal["subscription"] = "subscription"
+    op: Literal["update"] = "update"
     property: str
     stream_id: int
     value: bool | int | str
@@ -1138,7 +1107,7 @@ class UpdateMessageCoreEvent(BaseEvent):
     rendering_only: bool
 
 
-class UpdateMessageEvent(UpdateMessageCoreEvent):
+class UpdateMessageOptionalFields(BaseEventModel):
     # TODO: fix types to avoid optional fields
     stream_id: int | None = None
     stream_name: str | None = None
@@ -1150,8 +1119,12 @@ class UpdateMessageEvent(UpdateMessageCoreEvent):
     topic_links: list[TopicLink] | None = None
     subject: str | None = None
     new_stream_id: int | None = None
-    propagate_mode: Literal["change_all", "change_later", "change_one"] | None = None
+    propagate_mode: PropagateMode | None = None
     orig_subject: str | None = None
+
+
+class UpdateMessageEvent(UpdateMessageCoreEvent, UpdateMessageOptionalFields):
+    pass
 
 
 class UpdateMessageFlagsAddEvent(BaseEvent):
@@ -1208,42 +1181,48 @@ class Group(BaseEventModel):
     deactivated: bool
 
 
+class UrlEmbedDataEvent(BaseEvent):
+    type: Literal["url_embed_data"] = "url_embed_data"
+    content: str
+    rendered_content: str
+
+
 class UserGroupAddEvent(BaseEvent):
-    type: Literal["user_group"]
-    op: Literal["add"]
+    type: Literal["user_group"] = "user_group"
+    op: Literal["add"] = "add"
     group: Group
 
 
 class UserGroupAddMembersEvent(BaseEvent):
-    type: Literal["user_group"]
-    op: Literal["add_members"]
+    type: Literal["user_group"] = "user_group"
+    op: Literal["add_members"] = "add_members"
     group_id: int
     user_ids: list[int]
 
 
 class UserGroupAddSubgroupsEvent(BaseEvent):
-    type: Literal["user_group"]
-    op: Literal["add_subgroups"]
+    type: Literal["user_group"] = "user_group"
+    op: Literal["add_subgroups"] = "add_subgroups"
     group_id: int
     direct_subgroup_ids: list[int]
 
 
 class UserGroupRemoveEvent(BaseEvent):
-    type: Literal["user_group"]
-    op: Literal["remove"]
+    type: Literal["user_group"] = "user_group"
+    op: Literal["remove"] = "remove"
     group_id: int
 
 
 class UserGroupRemoveMembersEvent(BaseEvent):
-    type: Literal["user_group"]
-    op: Literal["remove_members"]
+    type: Literal["user_group"] = "user_group"
+    op: Literal["remove_members"] = "remove_members"
     group_id: int
     user_ids: list[int]
 
 
 class UserGroupRemoveSubgroupsEvent(BaseEvent):
-    type: Literal["user_group"]
-    op: Literal["remove_subgroups"]
+    type: Literal["user_group"] = "user_group"
+    op: Literal["remove_subgroups"] = "remove_subgroups"
     group_id: int
     direct_subgroup_ids: list[int]
 
@@ -1266,15 +1245,15 @@ class UserGroupData(UserGroupDataCore):
 
 
 class UserGroupUpdateEvent(BaseEvent):
-    type: Literal["user_group"]
-    op: Literal["update"]
+    type: Literal["user_group"] = "user_group"
+    op: Literal["update"] = "update"
     group_id: int
     data: UserGroupData
 
 
 class UserSettingsUpdateCoreEvent(BaseEvent):
-    type: Literal["user_settings"]
-    op: Literal["update"]
+    type: Literal["user_settings"] = "user_settings"
+    op: Literal["update"] = "update"
     property: str
     value: bool | int | str
 

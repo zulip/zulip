@@ -11,9 +11,10 @@ from zerver.actions.message_send import (
     check_send_message,
     extract_private_recipients,
     extract_stream_indicator,
+    populate_url_embed_data_for_preview,
+    render_unsaved_message,
 )
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.markdown import render_message_markdown
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import (
@@ -23,7 +24,7 @@ from zerver.lib.typed_endpoint import (
     typed_endpoint,
 )
 from zerver.lib.zcommand import process_zcommands
-from zerver.models import Message, UserProfile
+from zerver.models import UserProfile
 from zerver.models.users import get_user_including_cross_realm
 
 
@@ -63,12 +64,12 @@ def send_message_backend(
     if recipient_type_name == "direct":
         # For now, use "private" from Message.API_RECIPIENT_TYPES.
         # TODO: Use "direct" here, as well as in events and
-        # message (created, schdeduled, drafts) objects/dicts.
+        # message (created, scheduled, drafts) objects/dicts.
         recipient_type_name = "private"
     elif recipient_type_name == "channel":
         # For now, use "stream" from Message.API_RECIPIENT_TYPES.
         # TODO: Use "channel" here, as well as in events and
-        # message (created, schdeduled, drafts) objects/dicts.
+        # message (created, scheduled, drafts) objects/dicts.
         recipient_type_name = "stream"
 
     # If to is None, then we default to an
@@ -167,14 +168,19 @@ def render_message_backend(
     user_profile: UserProfile,
     *,
     content: Annotated[str, StringConstraints(max_length=settings.MAX_MESSAGE_LENGTH)],
+    populate_url_embed_data: Json[bool] = False,
 ) -> HttpResponse:
-    message = Message()
-    message.sender = user_profile
-    message.realm = user_profile.realm
-    message.content = content
-    client = RequestNotes.get_notes(request).client
-    assert client is not None
-    message.sending_client = client
+    rendering_result = render_unsaved_message(user_profile, content)
 
-    rendering_result = render_message_markdown(message, content, realm=user_profile.realm)
+    if populate_url_embed_data:
+        url_embed_data = populate_url_embed_data_for_preview(
+            user_profile, content, rendering_result.links_for_preview
+        )
+        # A link cached as "no preview available" (None) renders identically,
+        # so only a real cached embed is worth a second render.
+        if any(embed_data is not None for embed_data in url_embed_data.values()):
+            rendering_result = render_unsaved_message(
+                user_profile, content, url_embed_data=url_embed_data
+            )
+
     return json_success(request, data={"rendered": rendering_result.rendered_content})

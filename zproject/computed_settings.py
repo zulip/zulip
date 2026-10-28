@@ -71,6 +71,7 @@ from .configured_settings import (
     USING_CAPTCHA,
     USING_PGROONGA,
     ZULIP_ADMINISTRATOR,
+    ZULIP_SERVICE_ADVERTISE_REALMS,
     ZULIP_SERVICE_PUSH_NOTIFICATIONS,
     ZULIP_SERVICE_SECURITY_ALERTS,
     ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS,
@@ -108,6 +109,7 @@ if raw_keys is not None:
 
 
 service_name_to_required_upload_level = {
+    "advertise_realms": AnalyticsDataUploadLevel.BASIC,
     "security_alerts": AnalyticsDataUploadLevel.BASIC,
     "mobile_push": AnalyticsDataUploadLevel.BILLING,
     "submit_usage_statistics": AnalyticsDataUploadLevel.ALL,
@@ -135,6 +137,8 @@ if ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS:
     services_append("submit_usage_statistics")
 if ZULIP_SERVICE_SECURITY_ALERTS:
     services_append("security_alerts")
+if ZULIP_SERVICE_ADVERTISE_REALMS:
+    services_append("advertise_realms")
 
 if services is None and PUSH_NOTIFICATION_BOUNCER_URL is not None:
     # ZULIP_SERVICE_* are the new settings that control the services
@@ -156,7 +160,7 @@ if services is None and PUSH_NOTIFICATION_BOUNCER_URL is not None:
         services_append("submit_usage_statistics")
 
 if services is not None and set(services).intersection(
-    {"submit_usage_statistics", "security_alerts", "mobile_push"}
+    {"submit_usage_statistics", "security_alerts", "mobile_push", "advertise_realms"}
 ):
     # None of these make sense enabled without ZULIP_SERVICES_URL.
     assert ZULIP_SERVICES_URL is not None, (
@@ -1292,6 +1296,12 @@ USER_ACTIVITY_SHARDS = int(get_config("application_server", "user_activity_shard
 # long deferred_work jobs such as realm exports.
 DEDICATED_SOFT_REACTIVATION_QUEUE = get_config(
     "application_server", "dedicated_soft_reactivation_queue", False
+)
+
+# For the deferred_work jobs that can take many minutes, such as realm
+# exports and Slack imports.
+DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE = get_config(
+    "application_server", "dedicated_deferred_work_high_latency_queue", False
 )
 
 TWO_FACTOR_PATCH_ADMIN = False

@@ -255,6 +255,11 @@ exports.fixtures = {
         topic: "topic1",
     },
 
+    has_google_meet_token: {
+        type: "has_google_meet_token",
+        value: true,
+    },
+
     has_webex_token: {
         type: "has_webex_token",
         value: true,
@@ -1070,6 +1075,12 @@ exports.fixtures = {
         flag: "starred",
         messages: [exports.test_message.id],
         all: false,
+    },
+
+    url_embed_data: {
+        type: "url_embed_data",
+        content: "http://example.com/",
+        rendered_content: '<p><a href="http://example.com/">http://example.com/</a></p>',
     },
 
     user_group__add: {

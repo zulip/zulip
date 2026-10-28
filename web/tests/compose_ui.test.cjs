@@ -24,6 +24,10 @@ mock_esm("../src/message_lists", {
     current: {},
 });
 
+const rendered_markdown = mock_esm("../src/rendered_markdown");
+const channel = mock_esm("../src/channel");
+const loading = mock_esm("../src/loading");
+
 const compose_ui = zrequire("compose_ui");
 const linkifiers = zrequire("linkifiers");
 const stream_data = zrequire("stream_data");
@@ -35,12 +39,14 @@ const compose_actions = zrequire("compose_actions");
 const message_lists = zrequire("message_lists");
 const text_field_edit = mock_esm("text-field-edit");
 const message_fetch_raw_content = mock_esm("../src/message_fetch_raw_content");
-const {set_realm} = zrequire("state_data");
+const {set_current_user, set_realm} = zrequire("state_data");
 const {initialize_user_settings} = zrequire("user_settings");
 const sub_store = zrequire("sub_store");
 
 const realm = make_realm({realm_topics_policy: "allow_empty_topic"});
 set_realm(realm);
+const current_user = {};
+set_current_user(current_user);
 initialize_user_settings({user_settings: {}});
 
 const alice = make_user({
@@ -1591,4 +1597,183 @@ run_test("maybe_set_compose_textarea_typeahead ignores edit box typeaheads", () 
     };
     compose_ui.maybe_set_compose_textarea_typeahead(edit_typeahead);
     assert.equal(compose_ui.compose_textarea_typeahead, compose_typeahead);
+});
+
+function make_open_preview(selector) {
+    const $container = $(selector);
+    const $spinner = $(`${selector} .markdown_preview_spinner`);
+    const $preview_content = $(`${selector} .preview_content`);
+    $preview_content.set_find_results(
+        ".image-loading-placeholder",
+        $.create(`${selector} no thumbnails`, {elements: []}),
+    );
+    $container.set_find_results(".markdown_preview_spinner", $spinner);
+    $container.set_find_results(".preview_content", $preview_content);
+    $container.set_find_results(".preview_content .emoji", []);
+    $container.addClass("preview_mode");
+    return {$container, $preview_content};
+}
+
+const backend_only_content = "@**topic** draft";
+
+function start_render(override, preview) {
+    let request;
+    override(channel, "post", (payload) => {
+        request = payload;
+    });
+    compose_ui.render_and_show_preview(preview.$container, backend_only_content);
+    return request;
+}
+
+run_test("render response superseded by a newer render is discarded", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+    override(loading, "make_indicator", noop);
+    override(loading, "destroy_indicator", noop);
+    const preview = make_open_preview("#compose");
+
+    const first_request = start_render(override, preview);
+    const second_request = start_render(override, preview);
+    second_request.success({msg: "", result: "success", rendered: "<p>second</p>"});
+    first_request.success({msg: "", result: "success", rendered: "<p>first</p>"});
+    assert.equal(preview.$preview_content.html(), "<p>second</p>");
+});
+
+run_test("failed render superseded by a newer render is discarded", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+    override(loading, "make_indicator", noop);
+    override(loading, "destroy_indicator", noop);
+    const preview = make_open_preview("#compose");
+
+    const first_request = start_render(override, preview);
+    const second_request = start_render(override, preview);
+    second_request.success({msg: "", result: "success", rendered: "<p>second</p>"});
+    first_request.error();
+    assert.equal(preview.$preview_content.html(), "<p>second</p>");
+});
+
+run_test("failed render after leaving preview mode is discarded", ({override}) => {
+    override(loading, "make_indicator", noop);
+    const preview = make_open_preview("#compose");
+
+    const request = start_render(override, preview);
+    preview.$container.removeClass("preview_mode");
+    preview.$preview_content.html("");
+    request.error();
+    assert.equal(preview.$preview_content.html(), "");
+});
+
+run_test("render of one preview leaves another's render alone", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+    override(loading, "make_indicator", noop);
+    override(loading, "destroy_indicator", noop);
+    const compose_preview = make_open_preview("#compose");
+    const edit_preview = make_open_preview(".message_row");
+
+    const compose_request = start_render(override, compose_preview);
+    start_render(override, edit_preview);
+    compose_request.success({msg: "", result: "success", rendered: "<p>compose</p>"});
+    assert.equal(compose_preview.$preview_content.html(), "<p>compose</p>");
+});
+
+run_test("render superseding another removes its spinner", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+    override(loading, "make_indicator", noop);
+    const preview = make_open_preview("#compose");
+
+    start_render(override, preview);
+    let destroy_indicator_called = false;
+    override(loading, "destroy_indicator", () => {
+        destroy_indicator_called = true;
+    });
+    compose_ui.render_and_show_preview(preview.$container, "");
+    assert.ok(destroy_indicator_called);
+});
+
+const with_embed = "<p>draft with an embed</p>";
+const without_embed = "<p>draft without an embed</p>";
+
+run_test("render_and_show_preview requests URL embed data", ({override}) => {
+    override(loading, "make_indicator", noop);
+    const preview = make_open_preview("#compose");
+
+    const request = start_render(override, preview);
+    assert.deepEqual(request.data, {content: backend_only_content, populate_url_embed_data: true});
+});
+
+run_test("apply_preview_embeds", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+    override(loading, "destroy_indicator", noop);
+    const preview = make_open_preview(".message_row");
+
+    preview.$container.removeClass("preview_mode");
+    preview.$preview_content.html(without_embed);
+    compose_ui.apply_preview_embeds(preview.$container, backend_only_content, with_embed);
+    assert.equal(preview.$preview_content.html(), without_embed);
+
+    preview.$container.addClass("preview_mode");
+    compose_ui.apply_preview_embeds(preview.$container, backend_only_content, with_embed);
+    assert.equal(preview.$preview_content.html(), with_embed);
+});
+
+run_test("render response predating an embed update is discarded", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+    override(loading, "make_indicator", noop);
+    override(loading, "destroy_indicator", noop);
+    const preview = make_open_preview("#compose");
+
+    const request = start_render(override, preview);
+    compose_ui.apply_preview_embeds(preview.$container, backend_only_content, with_embed);
+    request.success({msg: "", result: "success", rendered: without_embed});
+    assert.equal(preview.$preview_content.html(), with_embed);
+});
+
+run_test("failed render predating an embed update is discarded", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+    override(loading, "make_indicator", noop);
+    override(loading, "destroy_indicator", noop);
+    const preview = make_open_preview("#compose");
+
+    const request = start_render(override, preview);
+    compose_ui.apply_preview_embeds(preview.$container, backend_only_content, with_embed);
+    request.error();
+    assert.equal(preview.$preview_content.html(), with_embed);
+});
+
+run_test("render requested after an embed update is applied", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+    override(loading, "make_indicator", noop);
+    override(loading, "destroy_indicator", noop);
+    const preview = make_open_preview("#compose");
+
+    compose_ui.apply_preview_embeds(preview.$container, backend_only_content, without_embed);
+    const request = start_render(override, preview);
+    request.success({msg: "", result: "success", rendered: with_embed});
+    assert.equal(preview.$preview_content.html(), with_embed);
+});
+
+run_test("embed update to one preview leaves another's render alone", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+    override(loading, "make_indicator", noop);
+    override(loading, "destroy_indicator", noop);
+    const compose_preview = make_open_preview("#compose");
+    const edit_preview = make_open_preview(".message_row");
+
+    const request = start_render(override, compose_preview);
+    compose_ui.apply_preview_embeds(edit_preview.$container, backend_only_content, with_embed);
+    request.success({msg: "", result: "success", rendered: with_embed});
+    assert.equal(compose_preview.$preview_content.html(), with_embed);
+});
+
+run_test("embed update to a /me message's preview", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+    override(loading, "destroy_indicator", noop);
+    override(current_user, "full_name", "Iago");
+    const preview = make_open_preview("#compose");
+
+    compose_ui.apply_preview_embeds(
+        preview.$container,
+        "/me shares a link",
+        "<p>/me shares a link</p>",
+    );
+    assert.equal(preview.$preview_content.html(), "<p><strong>Iago</strong> shares a link</p>");
 });

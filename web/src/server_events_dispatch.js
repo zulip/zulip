@@ -10,6 +10,7 @@ import * as bot_data from "./bot_data.ts";
 import * as browser_history from "./browser_history.ts";
 import {buddy_list} from "./buddy_list.ts";
 import * as channel_folders from "./channel_folders.ts";
+import * as compose from "./compose.ts";
 import {compose_call_session_manager} from "./compose_call_session.ts";
 import * as compose_call_ui from "./compose_call_ui.ts";
 import * as compose_closed_ui from "./compose_closed_ui.ts";
@@ -223,10 +224,10 @@ export function dispatch_normal_event(event) {
             break;
         }
 
-        case "has_zoom_token":
-            current_user.has_zoom_token = event.value;
+        case "has_google_meet_token":
+            current_user.has_google_meet_token = event.value;
             if (event.value) {
-                compose_call_session_manager.run_and_clear_callbacks_for_provider("zoom");
+                compose_call_session_manager.run_and_clear_callbacks_for_provider("google_meet");
             }
             break;
 
@@ -234,6 +235,13 @@ export function dispatch_normal_event(event) {
             current_user.has_webex_token = event.value;
             if (event.value) {
                 compose_call_session_manager.run_and_clear_callbacks_for_provider("webex");
+            }
+            break;
+
+        case "has_zoom_token":
+            current_user.has_zoom_token = event.value;
+            if (event.value) {
+                compose_call_session_manager.run_and_clear_callbacks_for_provider("zoom");
             }
             break;
 
@@ -806,6 +814,9 @@ export function dispatch_normal_event(event) {
                             );
                         }
                         const message_ids = message_store.get_message_ids_in_stream(stream_id);
+                        // Redraw first: processing the reads rerenders recent view, which
+                        // would report the channel's other rows as hidden without a rerender.
+                        recent_view_ui.complete_rerender();
                         unread_ops.process_read_messages_event(message_ids);
                         message_events.remove_messages(message_ids);
                         stream_topic_history.remove_history_for_stream(stream_id);
@@ -1217,6 +1228,11 @@ export function dispatch_normal_event(event) {
             }
             break;
         }
+
+        case "url_embed_data":
+            compose.update_preview_embeds(event.content, event.rendered_content);
+            message_edit.update_preview_embeds(event.content, event.rendered_content);
+            break;
 
         case "user_group":
             switch (event.op) {

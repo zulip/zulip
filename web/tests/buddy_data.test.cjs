@@ -364,11 +364,9 @@ test("bulk_data_hacks", ({override_rewire}) => {
         set_presence(user_id, "offline");
     }
 
-    let user_ids;
-
     // Even though we have 1000 users, we only get the 400 active
     // users.  This is a consequence of buddy_data.maybe_shrink_list.
-    user_ids = buddy_data.get_filtered_and_sorted_user_ids();
+    let user_ids = buddy_data.get_filtered_and_sorted_user_ids();
     assert.equal(user_ids.length, 400);
 
     user_ids = buddy_data.get_filtered_and_sorted_user_ids("");
@@ -480,6 +478,7 @@ test("get_conversation_participants", () => {
         }),
     );
 
+    activity_ui.set_cursor_and_filter();
     activity_ui.rerender_user_sidebar_participants();
     assert.deepEqual(
         buddy_data.get_conversation_participants_callback()(),

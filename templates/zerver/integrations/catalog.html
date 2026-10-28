@@ -30,15 +30,6 @@
                     </p>
                 </div>
 
-                <div id="integration-search">
-                    <div class="searchbar">
-                        <div class="searchbar-reset">
-                            <i class="zulip-icon zulip-icon-search" aria-hidden="true"></i>
-                            <input type="text" class="search_input" placeholder="Search integrations"/>
-                        </div>
-                    </div>
-                </div>
-
                 {% set dropdown_label = 'Filter by category' %}
                 {% if selected_category_slug != 'all' %}
                 {% set dropdown_label = categories_dict.get(selected_category_slug, dropdown_label) %}
@@ -67,6 +58,19 @@
                         <a href="/api/rest">
                             REST API
                         </a>
+                    </div>
+                </div>
+
+                {% set search_placeholder = 'All integrations' %}
+                {% if selected_category_slug != 'all' %}
+                {% set search_placeholder = categories_dict.get(selected_category_slug, search_placeholder) %}
+                {% endif %}
+                <div id="integration-search">
+                    <div class="searchbar">
+                        <div class="searchbar-reset">
+                            <i class="zulip-icon zulip-icon-search" aria-hidden="true"></i>
+                            <input type="text" class="search_input" placeholder="{{ search_placeholder }}"/>
+                        </div>
                     </div>
                 </div>
 

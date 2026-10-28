@@ -53,6 +53,7 @@ from zerver.lib.export import (
     do_export_realm,
     do_export_user,
     get_consented_user_ids,
+    get_realm_message_ids_gently_from_database,
 )
 from zerver.lib.import_realm import (
     do_import_realm,
@@ -681,6 +682,27 @@ class RealmImportExportTest(ExportFile):
         self.assertIn(pm_b_msg_id, exported_message_ids)
         self.assertIn(pm_c_msg_id, exported_message_ids)
         self.assertIn(pm_d_msg_id, exported_message_ids)
+
+    def test_get_realm_message_ids_gently_from_database(self) -> None:
+        realm = get_realm("zulip")
+        base_query = Message.objects.filter(realm_id=realm.id, sender=self.example_user("hamlet"))
+        expected_message_ids = sorted(base_query.values_list("id", flat=True))
+
+        with self.assertLogs(level="INFO") as mock_log:
+            message_ids = get_realm_message_ids_gently_from_database(
+                realm=realm, base_query=base_query, batch_size=7
+            )
+        self.assertEqual(sorted(message_ids), expected_message_ids)
+        self.assertEqual(
+            mock_log.output,
+            [
+                "INFO:root:Fetched 1 message ids",
+                "INFO:root:Fetched 4 message ids",
+                "INFO:root:Fetched 5 message ids",
+                "INFO:root:Fetched 6 message ids",
+                "INFO:root:Fetched 6 message ids",
+            ],
+        )
 
     def test_get_consented_user_ids(self) -> None:
         realm = get_realm("zulip")
@@ -2503,6 +2525,54 @@ class RealmImportExportTest(ExportFile):
         self.assertEqual(realm_user_default.default_language, "en")
         self.assertEqual(realm_user_default.twenty_four_hour_time, False)
 
+    def test_import_third_party_export_with_archived_announcements_channel(self) -> None:
+        original_realm = Realm.objects.get(string_id="zulip")
+        announcements_channel = get_stream("Verona", original_realm)
+        original_realm.moderation_request_channel = announcements_channel
+        original_realm.new_stream_announcements_stream = announcements_channel
+        original_realm.signup_announcements_stream = announcements_channel
+        original_realm.zulip_update_announcements_stream = announcements_channel
+        original_realm.save()
+        # Archive the channel without do_deactivate_stream, which would
+        # unset the realm settings that point at it.
+        announcements_channel.deactivated = True
+        announcements_channel.save()
+
+        self.export_realm_and_create_auditlog(original_realm)
+
+        # Simulate a third-party export.
+        realm_data = read_json("realm.json")
+        realm_data["import_source"] = "slack"
+        realm_data["zerver_realm"][0]["zulip_update_announcements_level"] = None
+        output_dir = get_output_dir()
+        full_fn = os.path.join(output_dir, "realm.json")
+        with open(full_fn, "wb") as f:
+            f.write(orjson.dumps(realm_data))
+
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+        self.assertTrue(
+            Stream.objects.get(realm=imported_realm, name=announcements_channel.name).deactivated
+        )
+        self.assertIsNone(imported_realm.moderation_request_channel)
+        self.assertIsNone(imported_realm.signup_announcements_stream)
+
+        # The announcements settings fall back to an active channel,
+        # where the initial messages are sent.
+        fallback_channel = imported_realm.zulip_update_announcements_stream
+        assert fallback_channel is not None
+        self.assertFalse(fallback_channel.deactivated)
+        self.assertEqual(imported_realm.new_stream_announcements_stream, fallback_channel)
+        self.assertTrue(
+            Message.objects.filter(
+                realm=imported_realm,
+                recipient=fallback_channel.recipient,
+                sender=get_system_bot(settings.WELCOME_BOT, imported_realm.id),
+            ).exists()
+        )
+
     @activate_push_notification_service()
     def test_import_realm_notify_bouncer(self) -> None:
         original_realm = Realm.objects.get(string_id="zulip")
@@ -2619,6 +2689,35 @@ class RealmImportExportTest(ExportFile):
             self.assertEqual(f.read(), test_image_data)
         self.assertTrue(os.path.isfile(os.path.join(full_upload_path, "night_logo.png")))
         self.assertEqual(imported_realm.night_logo_source, Realm.LOGO_UPLOADED)
+
+    def test_import_message_with_deleted_attachment(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        kept_url = upload_message_attachment("kept.txt", "text/plain", b"zulip!", hamlet)[0]
+        deleted_url = upload_message_attachment("deleted.txt", "text/plain", b"zulip!", hamlet)[0]
+        self.send_stream_message(hamlet, "Denmark", f"[kept.txt]({kept_url})", "kept upload")
+        deleted_message_id = self.send_stream_message(
+            hamlet, "Denmark", f"[deleted.txt]({deleted_url})", "deleted upload"
+        )
+        deleted_attachment = Attachment.objects.get(
+            path_id=deleted_url.removeprefix("/user_uploads/")
+        )
+        result = self.client_delete(f"/json/attachments/{deleted_attachment.id}")
+        self.assert_json_success(result)
+        self.assertTrue(Message.objects.get(id=deleted_message_id).has_attachment)
+
+        self.export_realm_and_create_auditlog(hamlet.realm)
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(get_output_dir(), "test-zulip")
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+
+        imported_messages = Message.objects.filter(
+            realm=imported_realm, **{f"{DB_TOPIC_NAME}__in": ["kept upload", "deleted upload"]}
+        )
+        self.assertEqual(
+            {message.topic_name(): message.has_attachment for message in imported_messages},
+            {"kept upload": True, "deleted upload": False},
+        )
 
     @use_s3_backend
     def test_import_files_from_s3(self) -> None:

@@ -436,7 +436,7 @@ ul {
             hsl(0deg 0% 100% / 50%) 0%,
             hsl(0deg 0% 100% / 75%) 100%
         );
-        color: hsl(233deg 14% 26%);
+        color: var(--color-text-testimonial);
     }
 
     .screen-3 .quote__text {

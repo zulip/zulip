@@ -18,6 +18,7 @@ from attr import dataclass
 from django.conf import settings
 from django.db import IntegrityError
 from django.http import HttpResponse
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 from requests.models import PreparedRequest
 
@@ -70,9 +71,11 @@ from zerver.data_import.slack import (
     thread_parent_map,
     users_to_zerver_userprofile,
 )
-from zerver.lib.exceptions import SlackImportInvalidFileError
+from zerver.lib.exceptions import InvalidEmailsInImportError, SlackImportInvalidFileError
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.mime_types import INLINE_MIME_TYPES
+from zerver.lib.queue import high_latency_queue_name
+from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import find_key_by_email, read_test_image_file
 from zerver.lib.thumbnail import THUMBNAIL_ACCEPT_IMAGE_TYPES, BadImageError
@@ -967,10 +970,11 @@ class SlackImporter(ZulipTestCase):
         # Importer should raise error when user emails are malformed
         bad_email1 = user_data[0]["profile"]["email"] = "jon@gmail,com"
         bad_email2 = user_data[1]["profile"]["email"] = "jane@gmail.m"
-        with self.assertRaises(Exception) as e, self.assertLogs(level="INFO"):
+        with self.assertLogs(level="INFO"), self.assertRaises(InvalidEmailsInImportError) as e:
             users_to_zerver_userprofile(slack_data_dir, user_data, 1, timestamp, "test_domain")
+        self.assertEqual(e.exception.invalid_emails, [bad_email1, bad_email2])
         error_message = str(e.exception)
-        expected_error_message = f"['Invalid email format, please fix the following email(s) and try again: {bad_email1}, {bad_email2}']"
+        expected_error_message = f"Invalid email format, please fix the following email(s) and try again: {bad_email1}, {bad_email2}"
         self.assertEqual(error_message, expected_error_message)
 
         # Test converting unknown user data format that doesn't have
@@ -1054,12 +1058,7 @@ class SlackImporter(ZulipTestCase):
         realm: ZerverFieldsT = {"zerver_userpresence": [], "zerver_realm": [dict()]}
         zerver_realm = realm["zerver_realm"]
 
-        with (
-            self.assertLogs(level="INFO"),
-            mock.patch(
-                "zerver.data_import.slack.SLACK_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME", "random"
-            ),
-        ):
+        with self.assertLogs(level="INFO"):
             (
                 realm,
                 added_channels,
@@ -1142,13 +1141,47 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_stream[0]["realm"], realm_id)
         self.assertEqual(zerver_stream[2]["id"], test_added_channels[zerver_stream[2]["name"]][1])
 
-        self.assertEqual(
-            zerver_realm[0]["zulip_update_announcements_stream"], zerver_stream[0]["id"]
-        )
-        self.assertEqual(zerver_realm[0]["new_stream_announcements_stream"], zerver_stream[0]["id"])
+        general_channel_id = test_added_channels["general"][1]
+        self.assertEqual(zerver_realm[0]["zulip_update_announcements_stream"], general_channel_id)
+        self.assertEqual(zerver_realm[0]["new_stream_announcements_stream"], general_channel_id)
 
         self.assertEqual(self.get_set(realm["zerver_huddle"], "id"), {0, 1, 2, 3, 4, 5, 6})
         self.assertEqual(realm["zerver_userpresence"], [])
+
+    def test_channels_to_zerver_stream_archived_announcements_channel(self) -> None:
+        slack_user_id_to_zulip_user_id = {
+            "U061A1R2R": 1,
+            "U061A3E0G": 8,
+            "U061A5N1G": 7,
+            "U064KUGRJ": 5,
+        }
+        zerver_userprofile = [{"id": 1}, {"id": 8}, {"id": 7}, {"id": 5}]
+        realm: ZerverFieldsT = {"zerver_userpresence": [], "zerver_realm": [dict()]}
+
+        with (
+            self.assertLogs(level="INFO"),
+            mock.patch(
+                "zerver.data_import.slack.SLACK_DEFAULT_ANNOUNCEMENTS_CHANNEL_NAME", "random"
+            ),
+        ):
+            realm, added_channels, _, _, _ = channels_to_zerver_stream(
+                self.fixture_file_name("", "slack_fixtures"),
+                3,
+                realm,
+                slack_user_id_to_zulip_user_id,
+                zerver_userprofile,
+            )
+
+        # The "random" channel is archived in the fixture data, so it
+        # shouldn't be used as the announcements channel.
+        random_channel_id = added_channels["random"][1]
+        [random_channel] = [
+            channel for channel in realm["zerver_stream"] if channel["id"] == random_channel_id
+        ]
+        self.assertTrue(random_channel["deactivated"])
+        zerver_realm = realm["zerver_realm"]
+        self.assertNotIn("zulip_update_announcements_stream", zerver_realm[0])
+        self.assertNotIn("new_stream_announcements_stream", zerver_realm[0])
 
     @mock.patch(
         "zerver.data_import.slack.users_to_zerver_userprofile", return_value=[[], [], {}, [], []]
@@ -2721,13 +2754,16 @@ To Do
         self.assertEqual(prereg_realm.data_import_metadata["import_from"], "slack")
         self.assertEqual(prereg_realm.data_import_metadata["slack_access_token"], access_token)
 
-        # Assume user uploaded a file.
+        # Assume user uploaded a file, after an earlier import attempt failed.
         prereg_realm.data_import_metadata["uploaded_import_file_name"] = "test_slack_importer.zip"
+        prereg_realm.data_import_metadata["invalid_file_error_message"] = (
+            "Uploaded zip file is not a valid Slack export."
+        )
         prereg_realm.save()
 
         # Set by the user performing the import.
         importer_set_email_address_visibility = UserProfile.EMAIL_ADDRESS_VISIBILITY_NOBODY
-        # Check that deferred_work for import is queued.
+        # Check that the import is queued.
         with mock.patch("zerver.views.registration.queue_json_publish_rollback_unsafe") as m:
             result = self.client_post(
                 "/new/import/slack/",
@@ -2740,13 +2776,14 @@ To Do
             self.assert_in_success_response(["Import progress"], result)
             prereg_realm.refresh_from_db()
             self.assertTrue(prereg_realm.data_import_metadata["is_import_work_queued"])
+            self.assertNotIn("invalid_file_error_message", prereg_realm.data_import_metadata)
             self.assertTrue(
                 prereg_realm.data_import_metadata["email_address_visibility"],
                 importer_set_email_address_visibility,
             )
 
         m.assert_called_once_with(
-            "deferred_work",
+            high_latency_queue_name(),
             {
                 "type": "import_slack_data",
                 "preregistration_realm_id": prereg_realm.id,
@@ -2805,7 +2842,7 @@ To Do
             from zerver.lib.queue import queue_json_publish_rollback_unsafe
 
             queue_json_publish_rollback_unsafe(
-                "deferred_work",
+                high_latency_queue_name(),
                 {
                     "type": "import_slack_data",
                     "preregistration_realm_id": prereg_realm.id,
@@ -2912,6 +2949,13 @@ To Do
         self.assertEqual(result["Location"], f"/realm/import/post_process/{confirmation_key}")
         result = self.client_get(f"/realm/import/post_process/{confirmation_key}")
         self.assert_in_success_response(["Select your account"], result)
+
+    @override_settings(DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE=True)
+    def test_end_to_end_slack_import_with_dedicated_queue(self) -> None:
+        """test_end_to_end_slack_import checks that the import is queued on
+        high_latency_queue_name(), and processes it from that queue."""
+        self.assertEqual(high_latency_queue_name(), "deferred_work_high_latency")
+        self.test_end_to_end_slack_import()
 
     @mock.patch("zerver.actions.data_import.do_import_realm")
     @mock.patch("zerver.actions.data_import.do_convert_zipfile")
@@ -3224,6 +3268,163 @@ To Do
             prereg_realm.data_import_metadata["invalid_file_error_message"], "Invalid file"
         )
         self.assertFalse(Realm.objects.filter(string_id="test-realm").exists())
+
+    @mock.patch("zerver.data_import.slack.get_slack_api_data")
+    @mock.patch("zerver.data_import.slack.check_slack_token_access")
+    @mock.patch("zerver.actions.data_import.save_attachment_contents")
+    def test_import_slack_data_invalid_user_emails(
+        self,
+        mock_save_attachment_contents: mock.Mock,
+        mock_check_slack_token_access: mock.Mock,
+        mock_get_slack_api_data: mock.Mock,
+    ) -> None:
+        """
+        An import that fails on invalid Slack user emails lists them
+        on the import page, and the user can start the import again
+        with the same uploaded file after correcting them in Slack.
+        """
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="test-realm",
+            name="Test Realm",
+            email="test@example.com",
+            data_import_metadata={
+                "import_from": "slack",
+                "slack_access_token": "xoxb-valid-token",
+                "uploaded_import_file_name": "slack.zip",
+                "is_import_work_queued": True,
+            },
+        )
+
+        test_slack_zip_file = os.path.join(
+            settings.DEPLOY_ROOT,
+            "zerver",
+            "tests",
+            "fixtures",
+            "slack_fixtures",
+            "test_unicode_slack_importer.zip",
+        )
+        with open(test_slack_zip_file, "rb") as f:
+            zip_contents = f.read()
+        mock_save_attachment_contents.side_effect = lambda path_id, fh: fh.write(zip_contents)
+
+        user_data_fixture = orjson.loads(
+            self.fixture_data("unicode_user_data.json", type="slack_fixtures")
+        )
+        [slack_user] = [user for user in user_data_fixture["members"] if user["name"] == "alexmv"]
+        slack_user["profile"]["email"] = "alexmv@zulip.c"
+        mock_get_slack_api_data.side_effect = [user_data_fixture["members"], {}]
+
+        event = {
+            "preregistration_realm_id": prereg_realm.id,
+            "filename": "import/test/slack.zip",
+            "slack_access_token": "xoxb-valid-token",
+        }
+        with (
+            self.assertLogs("zulip.registration", "INFO") as logs,
+            self.assertLogs(level="INFO"),
+            # The importer makes up email addresses for bots in the
+            # EXTERNAL_HOST domain, which needs to be valid here.
+            self.settings(EXTERNAL_HOST="zulip.example.com"),
+        ):
+            import_slack_data(event)
+        self.assertEqual([record.levelname for record in logs.records], ["INFO"] * 3)
+        self.assertEqual(
+            logs.output[-1],
+            "INFO:zulip.registration:"
+            "(test-realm) Slack import has invalid user emails: alexmv@zulip.c",
+        )
+
+        prereg_realm.refresh_from_db()
+        self.assertIsNone(prereg_realm.created_realm)
+        self.assertFalse(prereg_realm.data_import_metadata["is_import_work_queued"])
+        self.assertEqual(
+            prereg_realm.data_import_metadata["invalid_user_emails"], ["alexmv@zulip.c"]
+        )
+
+        confirmation_key = create_confirmation_link(
+            prereg_realm,
+            Confirmation.NEW_REALM_USER_REGISTRATION,
+            no_associated_realm_object=True,
+        ).split("/")[-1]
+        result = self.client_get(f"/json/realm/import/status/{confirmation_key}")
+        response_dict = self.assert_json_success(result)
+        self.assertEqual(
+            response_dict["status"],
+            "1 Slack user has an invalid email address. Correct it in Slack, "
+            "then start the import again. If you can't correct it, "
+            f"contact {FromAddress.SUPPORT} for help. Invalid address: alexmv@zulip.c",
+        )
+        self.assertEqual(response_dict["redirect"], f"/accounts/do_confirm/{confirmation_key}")
+
+        prereg_realm.data_import_metadata["invalid_user_emails"] = [
+            "alexmv@zulip.c",
+            "jane@yahoo.c",
+        ]
+        prereg_realm.save()
+        result = self.client_get(f"/json/realm/import/status/{confirmation_key}")
+        self.assertEqual(
+            self.assert_json_success(result)["status"],
+            "2 Slack users have invalid email addresses. Correct them in Slack, "
+            "then start the import again. If you can't correct them, "
+            f"contact {FromAddress.SUPPORT} for help. "
+            "Invalid addresses: alexmv@zulip.c, jane@yahoo.c",
+        )
+
+        # The redirect leads back to the upload page, which shows the
+        # error and lets the user start the import again with the
+        # file they already uploaded.
+        result = self.client_get(response_dict["redirect"])
+        self.assert_in_success_response(["new/import/slack"], result)
+        result = self.client_post("/new/import/slack/", {"key": confirmation_key})
+        self.assert_in_success_response(["Invalid addresses: alexmv@zulip.c, jane@yahoo.c"], result)
+        self.assert_not_in_success_response(['class="register-button" disabled>'], result)
+        with mock.patch("zerver.views.registration.queue_json_publish_rollback_unsafe") as m:
+            result = self.client_post(
+                "/new/import/slack/", {"key": confirmation_key, "start_slack_import": "true"}
+            )
+        self.assert_in_success_response(["Import progress"], result)
+        m.assert_called_once()
+        prereg_realm.refresh_from_db()
+        self.assertTrue(prereg_realm.data_import_metadata["is_import_work_queued"])
+        self.assertNotIn("invalid_user_emails", prereg_realm.data_import_metadata)
+
+    def test_slack_import_page_after_invalid_file_error(self) -> None:
+        """
+        Unlike invalid user emails, an invalid export file must be
+        replaced before the import can start again.
+        """
+        prereg_realm = PreregistrationRealm.objects.create(
+            string_id="test-realm",
+            name="Test Realm",
+            email="test@example.com",
+            data_import_metadata={
+                "import_from": "slack",
+                "slack_access_token": "xoxb-valid-token",
+                "uploaded_import_file_name": "slack.zip",
+                "is_import_work_queued": False,
+                "invalid_file_error_message": "Uploaded zip file is not a valid Slack export.",
+            },
+        )
+        confirmation_key = create_confirmation_link(
+            prereg_realm,
+            Confirmation.NEW_REALM_USER_REGISTRATION,
+            no_associated_realm_object=True,
+        ).split("/")[-1]
+
+        result = self.client_get(f"/json/realm/import/status/{confirmation_key}")
+        self.assertEqual(
+            self.assert_json_success(result)["status"],
+            "Uploaded zip file is not a valid Slack export.",
+        )
+
+        result = self.client_post("/new/import/slack/", {"key": confirmation_key})
+        self.assert_in_success_response(
+            [
+                "Uploaded zip file is not a valid Slack export.",
+                'class="register-button" disabled>',
+            ],
+            result,
+        )
 
     @mock.patch("zerver.actions.data_import.do_import_realm")
     @mock.patch("zerver.actions.data_import.do_convert_zipfile")

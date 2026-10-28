@@ -2,13 +2,11 @@
 
 const assert = require("node:assert/strict");
 
-const {clock, mock_esm, set_global, with_overrides, zrequire} = require("./lib/namespace.cjs");
+const {clock, mock_esm, with_overrides, zrequire} = require("./lib/namespace.cjs");
 const {run_test} = require("./lib/test.cjs");
 
 const channel = mock_esm("../src/channel");
 const message_live_update = mock_esm("../src/message_live_update");
-
-set_global("document", {hasFocus: () => true});
 
 mock_esm("../src/starred_messages", {
     add() {},

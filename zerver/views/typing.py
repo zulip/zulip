@@ -39,7 +39,7 @@ def send_notification_backend(
     if recipient_type_name == "channel":
         # For now, use "stream" from Message.API_RECIPIENT_TYPES.
         # TODO: Use "channel" here, as well as in events and
-        # message (created, schdeduled, drafts) objects/dicts.
+        # message (created, scheduled, drafts) objects/dicts.
         recipient_type_name = "stream"
 
     if recipient_type_name == "stream":

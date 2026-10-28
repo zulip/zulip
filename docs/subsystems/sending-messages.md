@@ -247,6 +247,16 @@ users.
   Zulip's message editing feature) in order to avoid needing custom code
   to implement the notification-and-rerender part of this implementation.
 
+- When passed `populate_url_embed_data`, the `/messages/render`
+  endpoint uses the same queue, so that message previews can show URL
+  embeds. It includes any URL embeds that are already cached, and
+  queues the rest; since there is no message to update, the queue
+  processor instead rerenders the draft and sends it only to its
+  author, in a transient `url_embed_data` event. To keep a user who
+  renders repeatedly from tying up the queue, the processor only
+  fetches for the user's most recent draft, and skips links that a
+  preview recently found nothing to show for.
+
 ## Soft deactivation
 
 This section details a somewhat subtle issue: How Zulip uses a

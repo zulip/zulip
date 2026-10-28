@@ -16,6 +16,14 @@ from django.db.utils import IntegrityError
 from django.test import override_settings
 from typing_extensions import override
 
+from zerver.lib.cache import (
+    cache_get,
+    cache_set,
+    latest_preview_draft_cache_key,
+    pending_preview_draft_cache_key,
+    preview_draft_content_hash,
+    preview_url_unavailable_cache_key,
+)
 from zerver.lib.email_mirror_helpers import encode_email_address, get_channel_email_token
 from zerver.lib.queue import MAX_REQUEST_RETRIES
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
@@ -819,6 +827,49 @@ class WorkerTest(ZulipTestCase):
                     "Timed out in timeout_worker after 1 seconds while fetching URLs for message 15: ['first', 'second']",
                 )
 
+    def test_embed_links_url_embed_data_timeout(self) -> None:
+        @base_worker.assign_queue("timeout_worker", is_test_queue=True)
+        class TimeoutWorker(FetchLinksEmbedData):
+            MAX_CONSUME_SECONDS = 1
+
+        def stall(url: str) -> None:
+            # Send SIGALRM to ourselves to simulate a timeout.
+            os.kill(os.getpid(), signal.SIGALRM)
+
+        user = self.example_user("hamlet")
+        url = "http://stalls.example/"
+        content_hash = preview_draft_content_hash(url)
+        cache_set(latest_preview_draft_cache_key(user.id), content_hash)
+        pending_cache_key = pending_preview_draft_cache_key(user.id, content_hash)
+        cache_set(pending_cache_key, True)
+        fake_client = FakeClient()
+        fake_client.enqueue(
+            "timeout_worker",
+            {
+                "type": "url_embed_data",
+                "user_id": user.id,
+                "content": url,
+                "cached_urls": [],
+                "urls": [url],
+            },
+        )
+
+        with (
+            simulated_queue_client(fake_client),
+            patch("zerver.worker.embed_links.url_preview.get_link_embed_data", side_effect=stall),
+        ):
+            worker = TimeoutWorker()
+            worker.setup()
+            with self.assertLogs(level="WARNING") as m:
+                worker.start()
+                self.assertEqual(
+                    m.records[0].message,
+                    f"Timed out in timeout_worker after 1 seconds while fetching URLs for a preview by user {user.id}: ['{url}']",
+                )
+
+        self.assertIsNotNone(cache_get(preview_url_unavailable_cache_key(url)))
+        self.assertIsNone(cache_get(pending_cache_key))
+
     def test_worker_noname(self) -> None:
         class TestWorker(base_worker.QueueProcessingWorker):
             def __init__(self) -> None:
@@ -838,3 +889,11 @@ class WorkerTest(ZulipTestCase):
         self.assertNotIn("soft_reactivation", get_active_worker_queues())
         with override_settings(DEDICATED_SOFT_REACTIVATION_QUEUE=True):
             self.assertIn("soft_reactivation", get_active_worker_queues())
+
+    def test_high_latency_queue_is_opt_in(self) -> None:
+        """Puppet runs this worker only when the setting is enabled, and
+        tools/ci/production-verify checks that the active queues match
+        the running workers."""
+        self.assertNotIn("deferred_work_high_latency", get_active_worker_queues())
+        with override_settings(DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE=True):
+            self.assertIn("deferred_work_high_latency", get_active_worker_queues())

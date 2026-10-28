@@ -12,6 +12,7 @@ import render_topics_not_allowed_error from "../templates/topics_not_allowed_err
 
 import * as compose_state from "./compose_state.ts";
 import * as compose_validate from "./compose_validate.ts";
+import {show_emoji_tooltip} from "./emoji_tooltip.ts";
 import {$t} from "./i18n.ts";
 import * as information_density from "./information_density.ts";
 import * as people from "./people.ts";
@@ -116,6 +117,27 @@ tippy.default.setDefaultProps({
 });
 
 export let typeahead_status_emoji_tooltip: tippy.Instance | undefined;
+
+// Re-rendering can remove a tooltip's reference without a mouseleave
+// event, which would leave a tooltip appended to document.body open.
+const hide_on_reference_removal_plugin: tippy.Plugin = {
+    fn(instance) {
+        let observer: MutationObserver | undefined;
+        return {
+            onMount() {
+                observer = new MutationObserver(() => {
+                    if (!instance.reference.isConnected) {
+                        instance.hide();
+                    }
+                });
+                observer.observe(document.body, {childList: true, subtree: true});
+            },
+            onHidden() {
+                observer?.disconnect();
+            },
+        };
+    },
+};
 
 export const topic_visibility_policy_tooltip_props = {
     delay: LONG_HOVER_DELAY,
@@ -673,7 +695,7 @@ export function initialize(): void {
     tippy.delegate("body", {
         target: ".status-emoji-name:not(.typeahead-item .status-emoji-name)",
         placement: "top",
-        delay: INSTANT_HOVER_DELAY,
+        delay: LONG_HOVER_DELAY,
         appendTo: () => document.body,
 
         /*
@@ -684,6 +706,8 @@ export function initialize(): void {
             those regions.
         */
 
+        plugins: [hide_on_reference_removal_plugin],
+        onShow: show_emoji_tooltip,
         onHidden(instance) {
             instance.destroy();
         },
@@ -706,6 +730,23 @@ export function initialize(): void {
         onHidden(instance) {
             instance.destroy();
             typeahead_status_emoji_tooltip = undefined;
+        },
+    });
+
+    // Enlarged emoji preview in the compose and edit previews,
+    // mirroring the message-content tooltip in message_list_tooltips.ts.
+    tippy.delegate("body", {
+        target: ".preview_content .emoji",
+        delay: LONG_HOVER_DELAY,
+        appendTo: () => document.body,
+        onTrigger(instance) {
+            // Drop the native `title` at hover-start (not in `onShow`, which
+            // waits for the delay) so no native tooltip flashes alongside Tippy.
+            instance.reference.removeAttribute("title");
+        },
+        onShow: show_emoji_tooltip,
+        onHidden(instance) {
+            instance.destroy();
         },
     });
 
@@ -1015,7 +1056,7 @@ export function initialize(): void {
                         "Notification message cannot be sent when subscribing more than {max_users} users.",
                 },
                 {
-                    max_users: realm.max_bulk_new_subscription_messages,
+                    max_users: realm.max_bulk_subscription_messages,
                 },
             );
             instance.setContent(content);

@@ -107,6 +107,15 @@ class Command(ZulipBaseCommand):
             action="store_true",
             help="Whether to upload resulting tarball to s3 or LOCAL_UPLOADS_DIR",
         )
+        parser.add_argument(
+            "--remove-files-while-archiving",
+            action="store_true",
+            help=(
+                "Delete exported files as they are added to the tarball, rather than "
+                "afterwards, to avoid needing disk space for two copies of the export. "
+                "If archiving fails, the exported files are lost"
+            ),
+        )
         self.add_realm_args(parser, required=True)
 
     @override
@@ -187,4 +196,5 @@ class Command(ZulipBaseCommand):
             upload=options["upload"],
             percent_callback=percent_callback,
             export_as_active=True if options["deactivate_realm"] else None,
+            remove_files_while_archiving=options["remove_files_while_archiving"],
         )

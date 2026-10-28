@@ -41,6 +41,7 @@ from zerver.lib.avatar import absolute_avatar_url, get_avatar_for_inaccessible_u
 from zerver.lib.devices import b64decode_token_id_base64, b64encode_token_id_int
 from zerver.lib.display_recipient import get_display_recipient
 from zerver.lib.emoji_utils import hex_codepoint_to_emoji
+from zerver.lib.event_types import DeviceUpdateEvent
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingRemoteRealmError
 from zerver.lib.message import (
     OnlyMessageFields,
@@ -170,6 +171,38 @@ class UserPushIdentityCompat:
 class APNsContext:
     apns: "aioapns.APNs"
     loop: asyncio.AbstractEventLoop
+
+    async def send_notification(self, request: "aioapns.NotificationRequest") -> NotificationResult:
+        # TODO: Remove once aioapns stops using closed connections:
+        # https://github.com/Fatal1ty/aioapns/issues/77
+        from h2.exceptions import ProtocolError
+
+        for _attempt in range(APNS_MAX_RETRIES - 1):
+            try:
+                return await self.apns.send_notification(request)
+            except ProtocolError as exc:
+                # If aioapns tried to use a connection that APNs had already closed,
+                # nothing reached APNs. aioapns keeps closed connections in its pool
+                # until their TLS shutdown completes, so discard them before retrying.
+                if (
+                    str(exc)
+                    != "Invalid input ConnectionInputs.SEND_HEADERS in state ConnectionState.CLOSED"
+                ):
+                    raise
+                self.discard_closed_connections()
+        return await self.apns.send_notification(request)
+
+    def discard_closed_connections(self) -> None:
+        from h2.connection import ConnectionState
+
+        pool = self.apns.pool
+        for connection in list(pool.connections):
+            if connection.conn.state_machine.state is ConnectionState.CLOSED:
+                # The transport still calls connection_lost once its TLS shutdown
+                # completes; that would try to discard the connection a second time,
+                # raising ValueError. Set on_connection_lost to None to prevent that.
+                connection.on_connection_lost = None
+                pool.discard_connection(connection)
 
 
 def has_apns_credentials() -> bool:
@@ -351,7 +384,7 @@ def send_apple_push_notification(
         )
         try:
             results[device] = apns_context.loop.run_until_complete(
-                apns_context.apns.send_notification(request)
+                apns_context.send_notification(request)
             )
         except BaseException as e:
             results[device] = e
@@ -1591,12 +1624,7 @@ def send_push_notifications(
                 user=user_profile, push_token_id__in=delete_token_ids_int
             )
             for push_device in push_devices:
-                event = dict(
-                    type="device",
-                    op="update",
-                    device_id=push_device.id,
-                    push_token_id=None,
-                )
+                event = DeviceUpdateEvent(device_id=push_device.id, push_token_id=None)
                 send_event_on_commit(user_profile.realm, event, [user_profile.id])
             push_devices.update(push_token_id=None)
 

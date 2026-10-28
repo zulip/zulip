@@ -56,6 +56,7 @@ mock_esm("../src/compose_banner", {
     clear_search_view_banner() {},
 });
 const compose_pm_pill = mock_esm("../src/compose_pm_pill");
+const message_viewport = mock_esm("../src/message_viewport");
 const settings_data = mock_esm("../src/settings_data");
 mock_esm("../src/spectators", {
     login_to_access() {},
@@ -1124,7 +1125,7 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
         selected = {id, opts};
     };
     message_lists.current = list;
-    $("#navbar-fixed-container").set_height(50);
+    override(message_viewport, "message_feed_visible_top", () => 50);
     $(".message_header").set_height(30);
     // Date jumps should place the selected message below the sticky
     // message header, increasing the target scroll offset by the
@@ -1246,10 +1247,9 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
 
 run_test("narrow_compute_title", () => {
     // Only tests cases where the narrow title is different from the filter title.
-    let filter;
 
     // Recent conversations & Inbox have `undefined` filter.
-    filter = undefined;
+    let filter;
     recent_view_util.set_visible(true);
     inbox_util.set_visible(false);
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Recent conversations");
@@ -1305,4 +1305,22 @@ run_test("narrow_compute_title", () => {
 
     filter = new Filter([{operator: "dm", operand: [9999]}]);
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Invalid user");
+});
+
+run_test("preserves_topics_kept_unread_by_user", () => {
+    for (const trigger of [
+        "next_topic_unread_hotkey",
+        "next_unread_topic_button",
+        "old_unreads_missing",
+        "retarget message location",
+    ]) {
+        assert.ok(message_view.preserves_topics_kept_unread_by_user(trigger));
+    }
+
+    // `p` and its button move to a direct message conversation.
+    assert.ok(!message_view.preserves_topics_kept_unread_by_user("hotkey"));
+    assert.ok(
+        !message_view.preserves_topics_kept_unread_by_user("next_unread_dm_conversation_button"),
+    );
+    assert.ok(!message_view.preserves_topics_kept_unread_by_user(undefined));
 });

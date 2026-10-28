@@ -7,11 +7,12 @@ You can choose from several convenient options for hosting Zulip:
 - Use Zulip's [Docker image](docker.md)
 - Use a preconfigured
   [DigitalOcean droplet](https://marketplace.digitalocean.com/apps/zulip?refcode=3ee45da8ee26)
-- Use [Zulip Cloud](https://zulip.com/plans/) hosting. Read our [guide to choosing between Zulip Cloud and
-  self-hosting](https://zulip.com/help/zulip-cloud-or-self-hosting).
+- Use [Zulip Cloud](https://zulip.com/plans/) hosting. Read our [guide to choosing between
+  Zulip Cloud and self-hosting](https://zulip.com/help/zulip-cloud-or-self-hosting).
 
-To **import data** from [Slack][slack-import], [Mattermost][mattermost-import], [Rocket.Chat][rocketchat-import], [Zulip Cloud][zulip-cloud-import], or [another Zulip
-server][zulip-server-import], follow the linked instructions.
+To **import data** from [Slack][slack-import], [Mattermost][mattermost-import],
+[Rocket.Chat][rocketchat-import], [Zulip Cloud][zulip-cloud-import], or
+[another Zulip server][zulip-server-import], follow the linked instructions.
 
 You can **try out Zulip** before setting up your own server by [checking
 it out](https://chat.zulip.org/?show_try_zulip_modal) in the Zulip development community,
@@ -135,10 +136,10 @@ of the failure, you can just rerun the script. For more information, see
   This skips the Terms of Service prompt, allowing for running the installer
   with `--push-notifications` in scripts without requiring user input.
 
-- `--self-signed-cert`: With this option, the Zulip installer
-  generates a self-signed SSL certificate for the server. This isn't
-  suitable for production use (unless your server is [behind a reverse
-  proxy][reverse-proxy]), but may be convenient for testing.
+- `--self-signed-cert`: With this option, the Zulip installer generates
+  a [self-signed SSL certificate](ssl-certificates.md#self-signed-certificate)
+  for the server. This isn't suitable for production use (unless your server is
+  [behind a reverse proxy][reverse-proxy]), but may be convenient for testing.
 
 For advanced installer options, see our [deployment options][doc-deployment-options]
 documentation.
@@ -147,7 +148,8 @@ documentation.
 
 If you are importing data, stop here and return to the import instructions for
 [Slack][slack-import], [Mattermost][mattermost-import],
-[Rocket.Chat][rocketchat-import], [Zulip Cloud][zulip-cloud-import], [a server backup][zulip-backups], or [another Zulip server][zulip-server-import].
+[Rocket.Chat][rocketchat-import], [Zulip Cloud][zulip-cloud-import],
+[a server backup][zulip-backups], or [another Zulip server][zulip-server-import].
 
 :::
 

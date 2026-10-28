@@ -1,9 +1,11 @@
 import re
 from collections import OrderedDict
-from typing import Any
+from collections.abc import Mapping
+from typing import Any, TypeAlias
 from unittest import mock
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
+import requests
 import responses
 from django.test import override_settings
 from django.utils.html import escape
@@ -12,14 +14,25 @@ from requests.exceptions import ConnectionError
 from typing_extensions import override
 
 from zerver.actions.message_delete import do_delete_messages
-from zerver.lib.cache import cache_delete, cache_get, preview_url_cache_key
+from zerver.actions.message_send import render_unsaved_message
+from zerver.actions.realm_settings import do_set_realm_property
+from zerver.lib.cache import (
+    cache_delete,
+    cache_get,
+    cache_set,
+    latest_preview_draft_cache_key,
+    pending_preview_draft_cache_key,
+    preview_draft_content_hash,
+    preview_url_cache_key,
+    preview_url_unavailable_cache_key,
+)
 from zerver.lib.camo import get_camo_url
 from zerver.lib.queue import queue_json_publish_rollback_unsafe
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish
 from zerver.lib.url_preview.oembed import get_oembed_data, strip_cdata
 from zerver.lib.url_preview.parsers import GenericParser, OpenGraphParser
-from zerver.lib.url_preview.preview import get_link_embed_data
+from zerver.lib.url_preview.preview import get_link_embed_data, mark_preview_url_unavailable
 from zerver.lib.url_preview.types import UrlEmbedData, UrlOEmbedData
 from zerver.models import Message, Realm, UserMessage, UserProfile
 from zerver.worker.embed_links import FetchLinksEmbedData
@@ -38,6 +51,10 @@ def reconstruct_url(url: str, maxwidth: int = 640, maxheight: int = 480) -> str:
     query_params["maxheight"] = str(maxheight)
     final_url = urlunsplit((scheme, netloc, path, urlencode(query_params, True), fragment))
     return final_url
+
+
+# Queue jobs, like events, are untyped JSON.
+UrlEmbedDataJob: TypeAlias = dict[str, Any]
 
 
 @override_settings(INLINE_URL_EMBED_PREVIEW=True)
@@ -373,6 +390,496 @@ class PreviewTestCase(ZulipTestCase):
         msg = Message.objects.select_related("sender").get(id=msg_id)
         assert msg.rendered_content is not None
         self.assertIn(embedded_link, msg.rendered_content)
+
+    def render_populating_url_embed_data(self, content: str) -> tuple[str, UrlEmbedDataJob | None]:
+        with mock_queue_publish(
+            "zerver.actions.message_send.queue_event_on_commit"
+        ) as mock_queue_event_on_commit:
+            result = self.client_post(
+                "/json/messages/render", {"content": content, "populate_url_embed_data": "true"}
+            )
+        rendered = self.assert_json_success(result)["rendered"]
+        if not mock_queue_event_on_commit.called:
+            return rendered, None
+        mock_queue_event_on_commit.assert_called_once()
+        self.assertEqual(mock_queue_event_on_commit.call_args[0][0], "embed_links")
+        return rendered, mock_queue_event_on_commit.call_args[0][1]
+
+    def consume_url_embed_data_job(
+        self, job: UrlEmbedDataJob, expected_num_events: int
+    ) -> list[Mapping[str, Any]]:
+        with (
+            self.assertLogs(level="INFO") as info_logs,
+            self.capture_send_event_calls(expected_num_events=expected_num_events) as events,
+        ):
+            FetchLinksEmbedData().consume(job)
+        for output in info_logs.output:
+            self.assertTrue(output.startswith("INFO:root:Time spent on get_link_embed_data for "))
+        return events
+
+    def consume_dropped_url_embed_data_job(self, job: UrlEmbedDataJob) -> None:
+        with self.capture_send_event_calls(expected_num_events=0):
+            FetchLinksEmbedData().consume(job)
+        self.assert_length(responses.calls, 0)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_render_without_populate_url_embed_data(self) -> None:
+        self.login("hamlet")
+        url = "http://test.org/"
+        self.create_mock_response(url)
+        get_link_embed_data(url)
+        result = self.client_post("/json/messages/render", {"content": url})
+        rendered = self.assert_json_success(result)["rendered"]
+        self.assertNotIn(f'<a href="{url}" title="The Rock">The Rock</a>', rendered)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_with_website_previews_disabled(self) -> None:
+        user = self.example_user("hamlet")
+        do_set_realm_property(user.realm, "inline_url_embed_preview", False, acting_user=None)
+        self.login_user(user)
+        url = "http://test.org/"
+        self.create_mock_response(url)
+        get_link_embed_data(url)
+        rendered, job = self.render_populating_url_embed_data(f"{url} http://example.com/")
+        self.assertNotIn(f'<a href="{url}" title="The Rock">The Rock</a>', rendered)
+        self.assertIsNone(job)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_for_bot(self) -> None:
+        url = "http://test.org/"
+        self.create_mock_response(url)
+        get_link_embed_data(url)
+        with mock_queue_publish(
+            "zerver.actions.message_send.queue_event_on_commit"
+        ) as mock_queue_event_on_commit:
+            result = self.api_post(
+                self.example_user("default_bot"),
+                "/api/v1/messages/render",
+                {"content": f"{url} http://example.com/", "populate_url_embed_data": "true"},
+            )
+        rendered = self.assert_json_success(result)["rendered"]
+        self.assertNotIn(f'<a href="{url}" title="The Rock">The Rock</a>', rendered)
+        mock_queue_event_on_commit.assert_not_called()
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_bakes_in_cached_embed(self) -> None:
+        self.login("hamlet")
+        url = "http://test.org/"
+        self.create_mock_response(url)
+        get_link_embed_data(url)
+
+        rendered, job = self.render_populating_url_embed_data(url)
+        self.assertIn(f'<a href="{url}" title="The Rock">The Rock</a>', rendered)
+        self.assertIsNone(job)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_skips_second_render_for_link_without_preview(self) -> None:
+        self.login("hamlet")
+        url = "http://test.org/"
+        cache_set(preview_url_cache_key(url), None)
+
+        with mock.patch(
+            "zerver.views.message_send.render_unsaved_message", wraps=render_unsaved_message
+        ) as mock_render:
+            _rendered, job = self.render_populating_url_embed_data(url)
+        self.assertIsNone(job)
+        mock_render.assert_called_once()
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_mixed_cached_and_uncached_links(self) -> None:
+        self.login("hamlet")
+        cached_url = "http://test.org/"
+        uncached_url = "http://example.com/"
+        self.create_mock_response(cached_url)
+        get_link_embed_data(cached_url)
+
+        rendered, job = self.render_populating_url_embed_data(f"{cached_url} {uncached_url}")
+        self.assertIn(f'<a href="{cached_url}" title="The Rock">The Rock</a>', rendered)
+        self.assertNotIn(f'<a href="{uncached_url}" title="The Rock">The Rock</a>', rendered)
+        assert job is not None
+        self.assertEqual(job["cached_urls"], [cached_url])
+        self.assertEqual(job["urls"], [uncached_url])
+
+        self.create_mock_response(uncached_url)
+        events = self.consume_url_embed_data_job(job, expected_num_events=1)
+        rendered_content = events[0]["event"]["rendered_content"]
+        self.assertIn(f'<a href="{cached_url}" title="The Rock">The Rock</a>', rendered_content)
+        self.assertIn(f'<a href="{uncached_url}" title="The Rock">The Rock</a>', rendered_content)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_render_without_populate_url_embed_data_queues_nothing(self) -> None:
+        self.login("hamlet")
+        with mock_queue_publish(
+            "zerver.actions.message_send.queue_event_on_commit"
+        ) as mock_queue_event_on_commit:
+            result = self.client_post("/json/messages/render", {"content": "http://test.org/"})
+        self.assert_json_success(result)
+        mock_queue_event_on_commit.assert_not_called()
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+        embedded_link = f'<a href="{url}" title="The Rock">The Rock</a>'
+
+        rendered, job = self.render_populating_url_embed_data(url)
+        self.assertNotIn(embedded_link, rendered)
+        self.assertEqual(
+            job,
+            {
+                "type": "url_embed_data",
+                "user_id": user.id,
+                "content": url,
+                "cached_urls": [],
+                "urls": [url],
+            },
+        )
+        pending_cache_key = pending_preview_draft_cache_key(
+            user.id, preview_draft_content_hash(url)
+        )
+        self.assertIsNotNone(cache_get(pending_cache_key))
+
+        self.create_mock_response(url)
+        assert job is not None
+        events = self.consume_url_embed_data_job(job, expected_num_events=1)
+        self.assertEqual(events[0]["users"], [user.id])
+        self.assertEqual(events[0]["event"]["type"], "url_embed_data")
+        self.assertEqual(events[0]["event"]["content"], url)
+        self.assertIn(embedded_link, events[0]["event"]["rendered_content"])
+        self.assertIsNone(cache_get(pending_cache_key))
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_queues_one_job_per_draft(self) -> None:
+        self.login("hamlet")
+        url = "http://test.org/"
+        _rendered, job = self.render_populating_url_embed_data(url)
+        self.assertIsNotNone(job)
+
+        _rendered, job = self.render_populating_url_embed_data(url)
+        self.assertIsNone(job)
+
+        # The queued job renders the pre-edit draft, which the client
+        # discards, so the edited draft needs a job of its own.
+        _rendered, job = self.render_populating_url_embed_data(f"{url} edited")
+        assert job is not None
+        self.assertEqual(job["content"], f"{url} edited")
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_queues_job_for_each_user(self) -> None:
+        url = "http://test.org/"
+        self.login("hamlet")
+        _rendered, job = self.render_populating_url_embed_data(url)
+        self.assertIsNotNone(job)
+
+        othello = self.example_user("othello")
+        self.login_user(othello)
+        _rendered, job = self.render_populating_url_embed_data(url)
+        assert job is not None
+        self.assertEqual(job["user_id"], othello.id)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_link_without_preview(self) -> None:
+        """
+        A page that doesn't exist yet has no preview. Previews skip it for a
+        while, but that isn't cached for good, so once the page is published,
+        the sent message still gets its card.
+        """
+        self.login("hamlet")
+        url = "http://test.org/"
+        _rendered, job = self.render_populating_url_embed_data(url)
+        assert job is not None
+
+        self.create_mock_response(url, status=404)
+        self.consume_url_embed_data_job(job, expected_num_events=0)
+
+        self.assertIsNotNone(cache_get(preview_url_unavailable_cache_key(url)))
+        _rendered, job = self.render_populating_url_embed_data(f"{url} edited")
+        self.assertIsNone(job)
+
+        self.assertIsNone(cache_get(preview_url_cache_key(url)))
+        responses.reset()
+        self.create_mock_response(url)
+        with mock_queue_publish(
+            "zerver.actions.message_send.queue_event_on_commit"
+        ) as mock_queue_event_on_commit:
+            msg_id = self.send_stream_message(self.example_user("hamlet"), "Denmark", content=url)
+        with self.assertLogs(level="INFO"):
+            FetchLinksEmbedData().consume(mock_queue_event_on_commit.call_args[0][1])
+        msg = Message.objects.get(id=msg_id)
+        assert msg.rendered_content is not None
+        self.assertIn(f'<a href="{url}" title="The Rock">The Rock</a>', msg.rendered_content)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_link_whose_fetch_fails(self) -> None:
+        self.login("hamlet")
+        failed_url = "http://test.org/"
+        _rendered, job = self.render_populating_url_embed_data(failed_url)
+        assert job is not None
+
+        self.create_mock_response(failed_url, body=ConnectionError())
+        self.consume_url_embed_data_job(job, expected_num_events=0)
+        self.assertIsNone(cache_get(preview_url_cache_key(failed_url)))
+        self.assertIsNotNone(cache_get(preview_url_unavailable_cache_key(failed_url)))
+
+        _rendered, job = self.render_populating_url_embed_data(f"{failed_url} edited")
+        self.assertIsNone(job)
+
+        fresh_url = "http://example.com/"
+        _rendered, job = self.render_populating_url_embed_data(f"{failed_url} {fresh_url}")
+        assert job is not None
+        self.assertEqual(job["cached_urls"], [])
+        self.assertEqual(job["urls"], [fresh_url])
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_link_whose_fetch_raises(self) -> None:
+        """
+        Unlike a network error, an unexpected error aborts the job. The link
+        that raised is then skipped, while the link the job didn't get to is
+        queued again on the next preview.
+        """
+        self.login("hamlet")
+        urls = ["http://test.org/", "http://example.com/"]
+        content = " ".join(urls)
+        _rendered, job = self.render_populating_url_embed_data(content)
+        assert job is not None
+
+        for url in urls:
+            responses.add(responses.GET, url, body=ValueError("unexpected"))
+        with self.assertRaises(ValueError):
+            FetchLinksEmbedData().consume(job)
+        [raised_url] = {call.request.url for call in responses.calls}
+        assert raised_url is not None
+        self.assertIsNotNone(cache_get(preview_url_unavailable_cache_key(raised_url)))
+
+        _rendered, job = self.render_populating_url_embed_data(content)
+        assert job is not None
+        self.assertEqual(job["urls"], [url for url in urls if url != raised_url])
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_skips_link_found_unavailable_while_queued(self) -> None:
+        """
+        Another job, such as another user's, found nothing for the link while
+        this job waited in the queue, so this job doesn't fetch it.
+        """
+        self.login("hamlet")
+        url = "http://test.org/"
+        _rendered, job = self.render_populating_url_embed_data(url)
+        assert job is not None
+        mark_preview_url_unavailable(url)
+        self.consume_dropped_url_embed_data_job(job)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_only_cached_links_have_embeds(self) -> None:
+        self.login("hamlet")
+        cached_url = "http://test.org/"
+        uncached_url = "http://test.org/audio.mp3"
+        self.create_mock_response(cached_url)
+        get_link_embed_data(cached_url)
+
+        _rendered, job = self.render_populating_url_embed_data(f"{cached_url} {uncached_url}")
+        assert job is not None
+        self.create_mock_response(uncached_url, content_type="application/octet-stream")
+        self.consume_url_embed_data_job(job, expected_num_events=0)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_link_without_embed_image(self) -> None:
+        """
+        A page with preview data but no image renders no card, so there is
+        nothing new to send; its data is cached, as for a sent message.
+        """
+        self.login("hamlet")
+        url = "http://test.org/"
+        _rendered, job = self.render_populating_url_embed_data(url)
+        assert job is not None
+        html = "\n".join(
+            line for line in self.open_graph_html.splitlines() if "og:image" not in line
+        )
+        self.create_mock_response(url, body=html)
+        self.consume_url_embed_data_job(job, expected_num_events=0)
+        self.assertIsNotNone(cache_get(preview_url_cache_key(url)))
+        self.assertIsNone(cache_get(preview_url_unavailable_cache_key(url)))
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_refetches_evicted_cached_link(self) -> None:
+        """
+        A cached link evicted before the job ran is fetched again, so that
+        the event doesn't drop the card the preview already shows.
+        """
+        self.login("hamlet")
+        cached_url = "http://test.org/"
+        uncached_url = "http://example.com/"
+        self.create_mock_response(cached_url)
+        get_link_embed_data(cached_url)
+        _rendered, job = self.render_populating_url_embed_data(f"{cached_url} {uncached_url}")
+        assert job is not None
+
+        cache_delete(preview_url_cache_key(cached_url))
+        self.create_mock_response(uncached_url)
+        events = self.consume_url_embed_data_job(job, expected_num_events=1)
+        rendered_content = events[0]["event"]["rendered_content"]
+        self.assertIn(f'<a href="{cached_url}" title="The Rock">The Rock</a>', rendered_content)
+        self.assertIn(f'<a href="{uncached_url}" title="The Rock">The Rock</a>', rendered_content)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_for_draft_replaced_by_one_without_links(self) -> None:
+        self.login("hamlet")
+        _rendered, job = self.render_populating_url_embed_data("http://test.org/")
+        assert job is not None
+        _rendered, no_job = self.render_populating_url_embed_data("no links")
+        self.assertIsNone(no_job)
+        self.consume_dropped_url_embed_data_job(job)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_superseded_job_skips_evicted_cached_link(self) -> None:
+        """
+        A job whose draft has been replaced makes no requests, not even to
+        refetch a cached link that was evicted before the job ran.
+        """
+        self.login("hamlet")
+        cached_url = "http://test.org/"
+        self.create_mock_response(cached_url)
+        get_link_embed_data(cached_url)
+        _rendered, job = self.render_populating_url_embed_data(f"{cached_url} http://example.com/")
+        assert job is not None
+
+        cache_delete(preview_url_cache_key(cached_url))
+        self.render_populating_url_embed_data("edited")
+        responses.reset()
+        self.consume_dropped_url_embed_data_job(job)
+
+    @responses.activate
+    def test_populate_url_embed_data_for_deleted_user(self) -> None:
+        url = "http://test.org/"
+        job = {
+            "type": "url_embed_data",
+            "user_id": 1234567890,
+            "content": url,
+            "cached_urls": [],
+            "urls": [url],
+        }
+        self.consume_dropped_url_embed_data_job(job)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_for_draft_returned_to(self) -> None:
+        # Going back to a draft whose job is still queued makes it current
+        # again, so that job is the one worth fetching for.
+        self.login("hamlet")
+        url = "http://test.org/"
+        _rendered, original_job = self.render_populating_url_embed_data(url)
+        _rendered, edited_job = self.render_populating_url_embed_data(f"{url} edited")
+        assert original_job is not None
+        assert edited_job is not None
+
+        _rendered, job = self.render_populating_url_embed_data(url)
+        self.assertIsNone(job)
+
+        self.consume_dropped_url_embed_data_job(edited_job)
+
+        self.create_mock_response(url)
+        events = self.consume_url_embed_data_job(original_job, expected_num_events=1)
+        self.assertEqual(events[0]["event"]["content"], url)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_requeues_draft_whose_job_was_dropped(self) -> None:
+        # Dropping a job leaves its links uncached, so returning to that draft
+        # has to be able to queue another one.
+        self.login("hamlet")
+        url = "http://test.org/"
+        _rendered, superseded_job = self.render_populating_url_embed_data(url)
+        self.render_populating_url_embed_data(f"{url} edited")
+        assert superseded_job is not None
+        self.consume_dropped_url_embed_data_job(superseded_job)
+
+        _rendered, job = self.render_populating_url_embed_data(url)
+        self.assertIsNotNone(job)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_drops_job_whose_draft_expired(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        _rendered, job = self.render_populating_url_embed_data("http://test.org/")
+        assert job is not None
+        cache_delete(latest_preview_draft_cache_key(user.id))
+        self.consume_dropped_url_embed_data_job(job)
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_for_draft_replaced_during_fetch(self) -> None:
+        """
+        The draft is replaced while the job fetches its only link, so no event
+        is sent, though the fetched data stays cached for the next preview.
+        """
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        url = "http://test.org/"
+        _rendered, job = self.render_populating_url_embed_data(url)
+        assert job is not None
+
+        def replace_draft_and_respond(
+            request: requests.PreparedRequest,
+        ) -> tuple[int, dict[str, str], str]:
+            cache_set(
+                latest_preview_draft_cache_key(user.id),
+                preview_draft_content_hash(f"{url} edited"),
+            )
+            return (200, {"Content-Type": "text/html"}, self.open_graph_html)
+
+        responses.add_callback(responses.GET, url, callback=replace_draft_and_respond)
+        self.consume_url_embed_data_job(job, expected_num_events=0)
+        self.assertIsNotNone(cache_get(preview_url_cache_key(url)))
+
+    @responses.activate
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_populate_url_embed_data_stops_fetching_for_replaced_draft(self) -> None:
+        """
+        The draft is replaced while the job fetches its first link, as if the
+        user edited it meanwhile, so the job stops before fetching the second.
+        """
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        content = "http://test.org/ http://example.com/"
+        _rendered, job = self.render_populating_url_embed_data(content)
+        assert job is not None
+
+        def replace_draft_and_respond(
+            request: requests.PreparedRequest,
+        ) -> tuple[int, dict[str, str], str]:
+            cache_set(
+                latest_preview_draft_cache_key(user.id),
+                preview_draft_content_hash(f"{content} edited"),
+            )
+            return (200, {"Content-Type": "text/html"}, self.open_graph_html)
+
+        for url in job["urls"]:
+            responses.add_callback(responses.GET, url, callback=replace_draft_and_respond)
+        self.consume_url_embed_data_job(job, expected_num_events=0)
+        self.assertEqual(
+            {call.request.url for call in responses.calls},
+            {job["urls"][0]},
+        )
 
     @responses.activate
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)

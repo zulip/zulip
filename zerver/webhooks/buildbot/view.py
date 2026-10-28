@@ -1,6 +1,7 @@
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventTypeError
 from zerver.lib.response import json_success
 from zerver.lib.typed_endpoint import JsonBodyPayload, typed_endpoint
 from zerver.lib.validator import WildValue, check_int, check_string
@@ -29,11 +30,6 @@ def api_buildbot_webhook(
 
 
 def get_message(payload: WildValue) -> str:
-    if "results" in payload:
-        # See http://docs.buildbot.net/latest/developer/results.html
-        results = ("success", "warnings", "failure", "skipped", "exception", "retry", "cancelled")
-        status = results[payload["results"].tame(check_int)]
-
     event = payload["event"].tame(check_string)
     if event == "new":
         body = "Build [#{id}]({url}) for **{name}** started.".format(
@@ -42,11 +38,17 @@ def get_message(payload: WildValue) -> str:
             url=payload["url"].tame(check_string),
         )
     elif event == "finished":
+        # See http://docs.buildbot.net/latest/developer/results.html
+        results = ("success", "warnings", "failure", "skipped", "exception", "retry", "cancelled")
+        result = payload["results"].tame(check_int)
+        status = results[result] if 0 <= result < len(results) else "unknown"
         body = "Build [#{id}]({url}) (result: {status}) for **{name}** finished.".format(
             id=payload["buildid"].tame(check_int),
             name=payload["buildername"].tame(check_string),
             url=payload["url"].tame(check_string),
             status=status,
         )
+    else:
+        raise UnsupportedWebhookEventTypeError(event)
 
     return body

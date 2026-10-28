@@ -21,7 +21,7 @@
                     </th>
                     <th rowspan="2" width="14%">{{t "Email"}}</th>
                     <th rowspan="2" width="14%">@all
-                        <i class="fa fa-question-circle settings-info-icon tippy-zulip-tooltip" data-tippy-content="{{t 'Whether wildcard mentions like @all are treated as mentions for the purpose of notifications.' }}"></i>
+                        <i class="zulip-icon zulip-icon-help settings-info-icon tippy-zulip-tooltip" aria-hidden="true" data-tippy-content="{{t 'Whether wildcard mentions like @all are treated as mentions for the purpose of notifications.' }}"></i>
                     </th>
                 </tr>
                 <tr>
@@ -185,9 +185,7 @@
                         <option value="{{ this }}">{{ this }}</option>
                     {{/each}}
                 </select>
-                <span class="play_notification_sound">
-                    <i class="notification-sound-icon fa fa-play-circle" aria-label="{{t 'Play sound' }}"></i>
-                </span>
+                {{> ../components/icon_button icon="play-circle" intent="neutral" custom_classes="play_notification_sound" aria-label=(t "Play sound") }}
             </div>
         </div>
 

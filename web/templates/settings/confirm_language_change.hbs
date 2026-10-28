@@ -1,0 +1,7 @@
+<div class="alert-notification-content">
+    {{#tr}}
+        Saved. Please <z-link>reload</z-link> for the change to take effect.
+
+        {{#*inline "z-link"}}<a class="reload_link">{{> @partial-block}}</a>{{/inline}}
+    {{/tr}}
+</div>

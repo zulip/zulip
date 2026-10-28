@@ -53,12 +53,20 @@
         "./styles/portico/pricing_plans.css",
         "./styles/portico/comparison_table.css"
     ],
+    "slack-alternative-page": [
+        "./src/bundles/marketing_page_bundle.ts",
+        "./src/portico/legacy_landing_page.ts",
+        "./styles/portico/marketing_page.css",
+        "./styles/portico/svg_icons.css",
+        "./styles/portico/slack_alternative.css"
+    ],
     "landing-page-hello": [
         "./src/bundles/hello.ts",
         "./src/portico/hello.ts",
         "./src/portico/legacy_landing_page.ts",
         "./src/portico/header.ts",
         "./styles/portico/svg_icons.css",
+        "./styles/portico/portico_variables.css",
         "./styles/portico/hello.css",
         "./styles/portico/navbar.css",
         "./styles/portico/footer.css"

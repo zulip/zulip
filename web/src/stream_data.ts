@@ -1038,7 +1038,7 @@ export function user_can_move_messages_within_channel(stream: StreamSubscription
 
 export function is_subscribed(stream_id: number): boolean {
     const sub = sub_store.get(stream_id);
-    return sub ? sub.subscribed : false;
+    return sub?.subscribed ?? false;
 }
 
 export function get_stream_privacy_policy(stream_id: number): string {
@@ -1057,12 +1057,12 @@ export function is_stream_archived_by_id(stream_id: number): boolean {
     // If you've already got a channel object, you can just use
     // `sub.is_archived` directly instead of calling this function.
     const sub = sub_store.get(stream_id);
-    return sub ? sub.is_archived : false;
+    return sub?.is_archived ?? false;
 }
 
 export function is_web_public(stream_id: number): boolean {
     const sub = sub_store.get(stream_id);
-    return sub ? sub.is_web_public : false;
+    return sub?.is_web_public ?? false;
 }
 
 export function is_invite_only_by_stream_id(stream_id: number): boolean {

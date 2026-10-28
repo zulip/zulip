@@ -24,7 +24,6 @@ import * as message_store from "./message_store.ts";
 import * as message_view from "./message_view.ts";
 import * as mouse_drag from "./mouse_drag.ts";
 import * as narrow_state from "./narrow_state.ts";
-import * as navigate from "./navigate.ts";
 import {page_params} from "./page_params.ts";
 import * as pm_list from "./pm_list.ts";
 import * as popover_menus from "./popover_menus.ts";
@@ -325,17 +324,6 @@ export function initialize(): void {
             force_rerender: true,
             trigger: "bookend load updates",
         });
-    });
-
-    $("body").on("click", "#scroll-to-bottom-button-clickable-area", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Since it take a few milliseconds for this button complete disappear transition,
-        // it is possible for user to click it before it hides when switching narrows.
-        if (narrow_state.is_message_feed_visible()) {
-            navigate.to_end();
-        }
     });
 
     $("body").on("click", ".message_row", function () {
@@ -704,7 +692,8 @@ export function initialize(): void {
                 user_settings.user_list_style ===
                 settings_config.user_list_style_values.compact.code;
             const status_el = is_compact_mode ? null : util.the($elem.find(".status-text"));
-            const is_truncated = status_el ? status_el.scrollWidth > status_el.clientWidth : false;
+            const is_truncated =
+                status_el !== null && status_el.scrollWidth > status_el.clientWidth;
             const should_show_status = is_compact_mode || is_truncated;
 
             const user_id_string = $elem.attr("data-user-id")!;
@@ -769,20 +758,18 @@ export function initialize(): void {
 
         const title_data = buddy_data.get_title_data(user_ids_string, is_group, true);
 
-        // Since anything inside `#left_sidebar_scroll_container` can be replaced, it is our target node here.
+        // The zoomed-in list is outside `#left_sidebar_scroll_container`,
+        // so we observe the whole left sidebar.
         function get_target_node(): HTMLElement {
-            return document.querySelector("#left_sidebar_scroll_container")!;
+            return document.querySelector("#left-sidebar")!;
         }
 
-        // Whole list is just replaced, so we need to check for that.
+        // Re-rendering replaces either this row or the whole list.
         function check_reference_removed(
             mutation: MutationRecord,
             instance: tippy.Instance,
         ): boolean {
-            return Array.prototype.includes.call(
-                mutation.removedNodes,
-                $(instance.reference).parents(".dm-list")[0],
-            );
+            return [...mutation.removedNodes].some((node) => node.contains(instance.reference));
         }
 
         const check_subtree = true;
@@ -813,6 +800,7 @@ export function initialize(): void {
                 title_data,
                 get_target_node,
                 check_reference_removed,
+                check_subtree,
             );
         });
     });

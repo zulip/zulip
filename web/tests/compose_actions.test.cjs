@@ -44,7 +44,7 @@ const everyone = make_user_group({
 });
 user_groups.initialize({realm_user_groups: [nobody, everyone]});
 
-set_global("document", {});
+set_global("document", {hasFocus: () => true});
 
 set_global("requestAnimationFrame", (func) => func());
 
@@ -993,6 +993,64 @@ test("focus_in_empty_compose", () => {
 
     $("textarea#compose-textarea").trigger("blur");
     assert.ok(!compose_state.focus_in_empty_compose());
+});
+
+test("focus_at_start_of_unedited_restored_draft", () => {
+    document.activeElement = {id: "compose-textarea"};
+    compose_state.set_message_type("stream");
+    compose_state.set_is_content_unedited_restored_draft(true);
+    const $textarea = $("textarea#compose-textarea");
+    $textarea.val("hello");
+    $textarea.caret(0);
+    assert.ok(compose_state.focus_at_start_of_unedited_restored_draft());
+
+    compose_state.set_message_type(undefined);
+    assert.ok(!compose_state.focus_at_start_of_unedited_restored_draft());
+
+    compose_state.set_message_type("stream");
+    compose_state.set_is_content_unedited_restored_draft(false);
+    assert.ok(!compose_state.focus_at_start_of_unedited_restored_draft());
+
+    compose_state.set_is_content_unedited_restored_draft(true);
+    document.activeElement = {id: "stream_message_recipient_topic"};
+    assert.ok(!compose_state.focus_at_start_of_unedited_restored_draft());
+
+    document.activeElement = {id: "compose-textarea"};
+    $textarea.caret(3);
+    assert.ok(!compose_state.focus_at_start_of_unedited_restored_draft());
+
+    document.activeElement = undefined;
+    compose_state.set_is_content_unedited_restored_draft(false);
+    compose_state.set_message_type(undefined);
+});
+
+test("focus_at_end_of_unedited_restored_draft", () => {
+    document.activeElement = {id: "compose-textarea"};
+    compose_state.set_message_type("stream");
+    compose_state.set_is_content_unedited_restored_draft(true);
+    const $textarea = $("textarea#compose-textarea");
+    $textarea.val("hello");
+    $textarea.caret(5);
+    assert.ok(compose_state.focus_at_end_of_unedited_restored_draft());
+
+    compose_state.set_message_type(undefined);
+    assert.ok(!compose_state.focus_at_end_of_unedited_restored_draft());
+
+    compose_state.set_message_type("stream");
+    compose_state.set_is_content_unedited_restored_draft(false);
+    assert.ok(!compose_state.focus_at_end_of_unedited_restored_draft());
+
+    compose_state.set_is_content_unedited_restored_draft(true);
+    document.activeElement = {id: "stream_message_recipient_topic"};
+    assert.ok(!compose_state.focus_at_end_of_unedited_restored_draft());
+
+    document.activeElement = {id: "compose-textarea"};
+    $textarea.caret(3);
+    assert.ok(!compose_state.focus_at_end_of_unedited_restored_draft());
+
+    document.activeElement = undefined;
+    compose_state.set_is_content_unedited_restored_draft(false);
+    compose_state.set_message_type(undefined);
 });
 
 test("on_narrow", ({override, override_rewire}) => {

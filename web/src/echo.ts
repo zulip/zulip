@@ -384,6 +384,11 @@ export function edit_locally(message: Message, request: LocalEditRequest): void 
         assert(message.type === "stream");
         const new_stream_id = request.new_stream_id;
         const new_topic = request.new_topic;
+        message_store.process_topic_edit({
+            message_ids: [message.id],
+            new_stream_id: new_stream_id ?? message.stream_id,
+            new_topic: new_topic ?? message.topic,
+        });
         stream_topic_history.remove_messages({
             stream_id: message.stream_id,
             topic_name: message.topic,

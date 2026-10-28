@@ -6,6 +6,7 @@ import {TabItem, Tabs} from "@astrojs/starlight/components";
 
 import FlattenedSteps from "../../components/FlattenedSteps.astro";
 import NavigationSteps from "../../components/NavigationSteps.astro";
+import ZulipNote from "../../components/ZulipNote.astro";
 import ZulipTip from "../../components/ZulipTip.astro";
 import AdminOnly from "../include/_AdminOnly.mdx";
 
@@ -86,9 +87,9 @@ configuration file.
 </FlattenedSteps>
 
 <ZulipTip>
-  You can also click the **download** (<DownloadIcon />) icon above the **Bots**
-  table to download a single configuration file for all of your active **outgoing
-  webhook** bots.
+  You can also click the **download** (<DownloadIcon />) icon above the **Your Bots**
+  table to download a single `botserverrc` configuration file for all of your active
+  **outgoing webhook** bots.
 </ZulipTip>
 
 ## Get a bot's API key
@@ -104,8 +105,13 @@ Only a bot's owner has access to its API key.
 
   <ZulipTip>
     To generate a new API key, click the **generate new API key** (<RefreshIcon />)
-    icon.
+    icon, and then click **Generate new key** to confirm.
   </ZulipTip>
+
+  <ZulipNote>
+    Generating a new API key invalidates the bot's current key. Any
+    integrations using the old key will stop working until you update them.
+  </ZulipNote>
 </FlattenedSteps>
 
 ## Related articles

@@ -39,14 +39,14 @@ def fix_attachment_realm(apps: StateApps, schema_editor: BaseDatabaseSchemaEdito
 
                 try:
                     realm_id = int(matches[0])
-                    if not Realm.objects.filter(id=realm_id).exists():
-                        # If the realm doesn't exist (e.g. due to deletion), we can't do anything.
-                        continue
                 except ValueError:
                     # Don't do anything if path_id doesn't start with a sensible realm id.
                     print(
-                        f"Encountered ValueError for realm_id {realm_id} inferred from path_id of attachment {attachment.id}"
+                        f"Encountered ValueError for realm_id {matches[0]} inferred from path_id of attachment {attachment.id}"
                     )
+                    continue
+                if not Realm.objects.filter(id=realm_id).exists():
+                    # If the realm doesn't exist (e.g. due to deletion), we can't do anything.
                     continue
 
             if realm_id == attachment.realm_id:

@@ -16,6 +16,7 @@ const {page_params} = require("./lib/zpage_params.cjs");
 const user_groups = zrequire("user_groups");
 
 set_global("document", {
+    hasFocus: () => true,
     querySelector() {},
 });
 set_global("navigator", {});
@@ -775,7 +776,6 @@ test_ui("on_events", ({override, override_rewire}) => {
                     assert.equal($spinner.selector, fake_compose_box.markdown_spinner_selector());
                     destroy_indicator_called = true;
                 });
-                setup_mock_markdown_contains_backend_only_syntax(current_message, true);
 
                 func(param);
 
@@ -787,6 +787,7 @@ test_ui("on_events", ({override, override_rewire}) => {
         });
 
         // Tests start here
+        override(loading, "destroy_indicator", noop);
         fake_compose_box.set_textarea_val("");
         fake_compose_box.hide_message_preview();
 
@@ -863,6 +864,27 @@ test_ui("on_events", ({override, override_rewire}) => {
 
         fake_compose_box.assert_preview_mode_is_off();
     })();
+});
+
+test_ui("update_preview_embeds", ({override}) => {
+    override(rendered_markdown, "update_elements", noop);
+    override(loading, "destroy_indicator", noop);
+    override(markdown, "is_status_message", () => false);
+    const fake_compose_box = new FakeComposeBox();
+    $("#compose .preview_content").set_find_results(
+        ".image-loading-placeholder",
+        $.create("no-images", {elements: []}),
+    );
+    fake_compose_box.show_message_preview();
+    $("#compose .preview_content").html("");
+
+    fake_compose_box.set_textarea_val("draft edited");
+    compose.update_preview_embeds("draft", "<p>draft</p>");
+    assert.equal(fake_compose_box.preview_content_html(), "");
+
+    fake_compose_box.set_textarea_val("draft");
+    compose.update_preview_embeds("draft", "<p>draft</p>");
+    assert.equal(fake_compose_box.preview_content_html(), "<p>draft</p>");
 });
 
 test_ui("DM policy disabled", ({override}) => {

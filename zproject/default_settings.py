@@ -133,6 +133,12 @@ VIDEO_ZOOM_CLIENT_SECRET = get_secret("video_zoom_client_secret")
 VIDEO_WEBEX_API_URL: str = "https://webexapis.com/v1/"
 VIDEO_WEBEX_CLIENT_ID = get_secret("video_webex_client_id", development_only=True)
 VIDEO_WEBEX_CLIENT_SECRET = get_secret("video_webex_client_secret")
+VIDEO_GOOGLE_MEET_OAUTH_URL: str = "https://accounts.google.com/o/oauth2/v2/auth"
+VIDEO_GOOGLE_MEET_TOKEN_URL: str = "https://oauth2.googleapis.com/token"
+VIDEO_GOOGLE_MEET_API_URL: str = "https://meet.googleapis.com/v2/spaces"
+VIDEO_GOOGLE_MEET_CLIENT_ID = get_secret("video_google_meet_client_id", development_only=True)
+VIDEO_GOOGLE_MEET_CLIENT_SECRET = get_secret("video_google_meet_client_secret")
+VIDEO_GOOGLE_MEET_AUDIENCE_INTERNAL: bool = False
 
 # Email gateway
 EMAIL_GATEWAY_PATTERN = ""
@@ -269,6 +275,7 @@ ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
 # is enabled.
 ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS: bool | None = None
 ZULIP_SERVICE_SECURITY_ALERTS = False
+ZULIP_SERVICE_ADVERTISE_REALMS = False
 
 # Old setting kept around for backwards compatibility. Some old servers
 # may have it in their settings.py.
@@ -728,9 +735,10 @@ MAX_STREAM_SIZE_FOR_TYPING_NOTIFICATIONS = 100
 # be soft-reactivated in the case of user group mention.
 MAX_GROUP_SIZE_FOR_MENTION_REACTIVATION = 11
 
-# The maximum number of newly subscribed users for which the server
-# will consider sending DMs to each new subscriber.
-MAX_BULK_NEW_SUBSCRIPTION_MESSAGES = 100
+# The maximum number of affected users for which the server will consider
+# sending DMs notifications to each user when they are subscribed to, or
+# unsubscribed from, channels in bulk.
+MAX_BULK_SUBSCRIPTION_MESSAGES = 100
 
 # Limiting guest access to other users via the
 # can_access_all_users_group setting makes presence queries much more
@@ -789,3 +797,13 @@ SCIM_CONFIG: dict[str, SCIMConfigDict] = {}
 # Minimum number of subscribers in a channel for us to no longer
 # send full subscriber data to the client.
 MIN_PARTIAL_SUBSCRIBERS_CHANNEL_SIZE = 1000
+
+# Whether we should use CREATE/DROP INDEX CONCURRENTLY
+# during database migrations. Otherwise, regular
+# CREATE/DROP INDEX will be used, allowing relevant migrations
+# to run in atomic transactions. The latter gives simpler
+# behavior of migrations, at the cost of locking db tables,
+# and is the recommended mode for self-hosted deployments
+# which tend to have less data and run migrations with the server
+# down anyway.
+MIGRATIONS_ADD_REMOVE_INDEXES_CONCURRENTLY = False

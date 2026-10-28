@@ -2,7 +2,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import IntEnum
-from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeVar
 
 if TYPE_CHECKING:
     from zerver.models import Stream
@@ -347,24 +347,6 @@ class APIStreamDict(DefaultStreamDict):
     stream_weekly_traffic: int | None
 
 
-class APISubscriptionDict(APIStreamDict):
-    """Similar to StreamClientDict, it should contain all the fields specified in
-    `zerver.models.Subscription.API_FIELDS` and several additional fields.
-    """
-
-    audible_notifications: bool | None
-    color: str
-    desktop_notifications: bool | None
-    email_notifications: bool | None
-    is_muted: bool
-    pin_to_top: bool
-    push_notifications: bool | None
-    wildcard_mentions_notify: bool | None
-    # Computed fields not specified in `Subscription.API_FIELDS`
-    in_home_view: bool
-    subscribers: list[int]
-
-
 @dataclass
 class SubscriptionInfo:
     subscriptions: list[SubscriptionStreamDict]
@@ -429,6 +411,9 @@ class AnalyticsDataUploadLevel(IntEnum):
     ALL = 3
 
 
+PropagateMode = Literal["change_all", "change_later", "change_one"]
+
+
 @dataclass
 class StreamMessageEditRequest:
     is_content_edited: bool
@@ -444,7 +429,7 @@ class StreamMessageEditRequest:
     orig_content: str
     orig_topic_name: str
     orig_stream: "Stream"
-    propagate_mode: str
+    propagate_mode: PropagateMode
 
 
 @dataclass

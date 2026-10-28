@@ -8,14 +8,14 @@ from typing import Any
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Exists, OuterRef, Q, QuerySet
+from django.db.models import Exists, OuterRef, Q
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
 from django_stubs_ext import StrPromise
 
-from zerver.actions.message_delete import DeleteMessagesEvent, do_delete_messages
+from zerver.actions.message_delete import do_delete_messages
 from zerver.actions.message_flags import do_update_mobile_push_notification
 from zerver.actions.message_send import (
     filter_presence_idle_user_ids,
@@ -27,6 +27,7 @@ from zerver.actions.uploads import AttachmentChangeResult, check_attachment_refe
 from zerver.actions.user_topics import bulk_do_set_user_topic_visibility_policy
 from zerver.lib import utils
 from zerver.lib.cache import cache_delete_many, to_dict_cache_key_id
+from zerver.lib.event_types import TopicLink
 from zerver.lib.exceptions import (
     JsonableError,
     MessageMoveError,
@@ -36,6 +37,7 @@ from zerver.lib.exceptions import (
     TopicsNotAllowedError,
     TopicWildcardMentionNotAllowedError,
 )
+from zerver.lib.internal_event_types import InternalDeleteMessageEvent, InternalUpdateMessageEvent
 from zerver.lib.markdown import MessageRenderingResult, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
@@ -70,10 +72,7 @@ from zerver.lib.string_validation import check_stream_topic
 from zerver.lib.thumbnail import manifest_and_get_user_upload_previews, rewrite_thumbnailed_images
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import (
-    ORIG_TOPIC,
     RESOLVED_TOPIC_PREFIX,
-    TOPIC_LINKS,
-    TOPIC_NAME,
     get_topic_display_name,
     maybe_rename_general_chat_to_empty_topic,
     messages_for_topic,
@@ -83,7 +82,12 @@ from zerver.lib.topic import (
     update_messages_for_topic_edit,
 )
 from zerver.lib.topic_link_util import get_stream_topic_link_syntax
-from zerver.lib.types import DirectMessageEditRequest, EditHistoryEvent, StreamMessageEditRequest
+from zerver.lib.types import (
+    DirectMessageEditRequest,
+    EditHistoryEvent,
+    PropagateMode,
+    StreamMessageEditRequest,
+)
 from zerver.lib.url_encoding import stream_message_url
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
@@ -132,7 +136,7 @@ def validate_message_edit_payload(
     message: Message,
     stream_id: int | None,
     topic_name: str | None,
-    propagate_mode: str | None,
+    propagate_mode: PropagateMode | None,
     content: str | None,
     prev_content_sha256: str | None,
 ) -> None:
@@ -484,16 +488,15 @@ def do_update_embedded_data(
     message.save(update_fields=update_fields)
 
     update_message_cache([message])
-    event: dict[str, Any] = {
-        "type": "update_message",
-        "user_id": None,
-        "edit_timestamp": datetime_to_timestamp(timezone_now()),
-        "message_id": message.id,
-        "message_ids": [message.id],
-        "content": message.content,
-        "rendered_content": message.rendered_content,
-        "rendering_only": True,
-    }
+    event = InternalUpdateMessageEvent(
+        user_id=None,
+        edit_timestamp=datetime_to_timestamp(timezone_now()),
+        message_id=message.id,
+        message_ids=[message.id],
+        content=message.content,
+        rendered_content=message.rendered_content,
+        rendering_only=True,
+    )
 
     users_to_notify = event_recipient_ids_for_action_on_messages(
         [message.id], message.is_channel_message
@@ -541,7 +544,7 @@ def update_message_content(
     rendering_result: MessageRenderingResult,
     prior_mention_user_ids: set[int],
     mention_data: MentionData,
-    event: dict[str, Any],
+    event: InternalUpdateMessageEvent,
     edit_history_event: EditHistoryEvent,
     stream_topic: StreamTopicTarget | None,
 ) -> None:
@@ -566,11 +569,11 @@ def update_message_content(
     edit_history_event["prev_rendered_content"] = target_message.rendered_content
     edit_history_event["prev_rendered_content_version"] = target_message.rendered_content_version
 
-    event["orig_content"] = target_message.content
-    event["orig_rendered_content"] = target_message.rendered_content
-    event["content"] = content
-    event["rendered_content"] = rendering_result.rendered_content
-    event["is_me_message"] = Message.is_status_message(content, rendering_result.rendered_content)
+    event.orig_content = target_message.content
+    event.orig_rendered_content = target_message.rendered_content
+    event.content = content
+    event.rendered_content = rendering_result.rendered_content
+    event.is_me_message = Message.is_status_message(content, rendering_result.rendered_content)
 
     target_message.content = content
     target_message.rendered_content = rendering_result.rendered_content
@@ -585,36 +588,36 @@ def update_message_content(
         possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
     )
 
-    event["online_push_user_ids"] = list(info.online_push_user_ids)
-    event["dm_mention_push_disabled_user_ids"] = list(info.dm_mention_push_disabled_user_ids)
-    event["dm_mention_email_disabled_user_ids"] = list(info.dm_mention_email_disabled_user_ids)
-    event["stream_push_user_ids"] = list(info.stream_push_user_ids)
-    event["stream_email_user_ids"] = list(info.stream_email_user_ids)
-    event["followed_topic_push_user_ids"] = list(info.followed_topic_push_user_ids)
-    event["followed_topic_email_user_ids"] = list(info.followed_topic_email_user_ids)
-    event["muted_sender_user_ids"] = list(info.muted_sender_user_ids)
-    event["prior_mention_user_ids"] = list(prior_mention_user_ids)
-    event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info.active_user_ids)
-    event["all_bot_user_ids"] = list(info.all_bot_user_ids)
-    event["push_device_registered_user_ids"] = list(info.push_device_registered_user_ids)
+    event.online_push_user_ids = list(info.online_push_user_ids)
+    event.dm_mention_push_disabled_user_ids = list(info.dm_mention_push_disabled_user_ids)
+    event.dm_mention_email_disabled_user_ids = list(info.dm_mention_email_disabled_user_ids)
+    event.stream_push_user_ids = list(info.stream_push_user_ids)
+    event.stream_email_user_ids = list(info.stream_email_user_ids)
+    event.followed_topic_push_user_ids = list(info.followed_topic_push_user_ids)
+    event.followed_topic_email_user_ids = list(info.followed_topic_email_user_ids)
+    event.muted_sender_user_ids = list(info.muted_sender_user_ids)
+    event.prior_mention_user_ids = list(prior_mention_user_ids)
+    event.presence_idle_user_ids = filter_presence_idle_user_ids(info.active_user_ids)
+    event.all_bot_user_ids = list(info.all_bot_user_ids)
+    event.push_device_registered_user_ids = list(info.push_device_registered_user_ids)
     if rendering_result.mentions_stream_wildcard:
-        event["stream_wildcard_mention_user_ids"] = list(info.stream_wildcard_mention_user_ids)
-        event["stream_wildcard_mention_in_followed_topic_user_ids"] = list(
+        event.stream_wildcard_mention_user_ids = list(info.stream_wildcard_mention_user_ids)
+        event.stream_wildcard_mention_in_followed_topic_user_ids = list(
             info.stream_wildcard_mention_in_followed_topic_user_ids
         )
     else:
-        event["stream_wildcard_mention_user_ids"] = []
-        event["stream_wildcard_mention_in_followed_topic_user_ids"] = []
+        event.stream_wildcard_mention_user_ids = []
+        event.stream_wildcard_mention_in_followed_topic_user_ids = []
 
     if rendering_result.mentions_topic_wildcard:
-        event["topic_wildcard_mention_user_ids"] = list(info.topic_wildcard_mention_user_ids)
-        event["topic_wildcard_mention_in_followed_topic_user_ids"] = list(
+        event.topic_wildcard_mention_user_ids = list(info.topic_wildcard_mention_user_ids)
+        event.topic_wildcard_mention_in_followed_topic_user_ids = list(
             info.topic_wildcard_mention_in_followed_topic_user_ids
         )
         topic_participant_user_ids = info.topic_participant_user_ids
     else:
-        event["topic_wildcard_mention_user_ids"] = []
-        event["topic_wildcard_mention_in_followed_topic_user_ids"] = []
+        event.topic_wildcard_mention_user_ids = []
+        event.topic_wildcard_mention_in_followed_topic_user_ids = []
         topic_participant_user_ids = set()
 
     update_user_message_flags(rendering_result, ums, topic_participant_user_ids)
@@ -939,17 +942,16 @@ def do_update_message(
     timestamp = timezone_now()
     target_message.last_edit_time = timestamp
 
-    event: dict[str, Any] = {
-        "type": "update_message",
-        "user_id": user_profile.id,
-        "edit_timestamp": datetime_to_timestamp(timestamp),
-        "message_id": target_message.id,
-        "rendering_only": False,
-    }
+    event = InternalUpdateMessageEvent(
+        user_id=user_profile.id,
+        edit_timestamp=datetime_to_timestamp(timestamp),
+        message_id=target_message.id,
+        rendering_only=False,
+    )
 
     edit_history_event: EditHistoryEvent = {
         "user_id": user_profile.id,
-        "timestamp": event["edit_timestamp"],
+        "timestamp": event.edit_timestamp,
     }
 
     realm = user_profile.realm
@@ -1004,7 +1006,8 @@ def do_update_message(
             # This does message.save(update_fields=[...])
             save_message_for_edit_use_case(message=target_message)
 
-            event["message_ids"] = sorted(update_message_cache([target_message]))
+            update_message_cache([target_message])
+            event.message_ids = [target_message.id]
             users_to_be_notified = list(map(user_info, ums))
             send_event_on_commit(user_profile.realm, event, users_to_be_notified)
 
@@ -1018,25 +1021,90 @@ def do_update_message(
     stream_being_edited = message_edit_request.orig_stream
     orig_topic_name = message_edit_request.orig_topic_name
 
-    event["stream_name"] = stream_being_edited.name
-    event["stream_id"] = stream_being_edited.id
+    event.stream_name = stream_being_edited.name
+    event.stream_id = stream_being_edited.id
 
     if message_edit_request.is_message_moved:
-        event["propagate_mode"] = message_edit_request.propagate_mode
+        event.propagate_mode = message_edit_request.propagate_mode
 
-    users_losing_access = UserProfile.objects.none()
+    user_ids_losing_access: set[int] = set()
     user_ids_gaining_usermessages: list[int] = []
+
+    # The sets below describe the old and new streams' subscribers.
+    # Which of them are needed depends on the kind of move, so each
+    # branch fetches what its case consumes.
+    old_stream_all_user_ids: set[int] = set()
+    old_stream_current_user_ids: set[int] = set()
+    old_stream_active_user_ids: set[int] = set()
+
+    new_stream_current_user_ids: set[int] = set()
+    new_stream_active_user_ids: set[int] = set()
+
+    guest_user_ids: set[int] = set()
+
+    # In both conditions, we exclude long-term idle users from
+    # new_stream_active_user_ids and old_stream_active_user_ids,
+    # because they have no active clients, so they are never
+    # notified about the move.
     if message_edit_request.is_stream_edited:
         new_stream = message_edit_request.target_stream
+        # A move to another stream needs several overlapping subsets of
+        # both streams' subscribers; fetch their Subscriptions in
+        # a single query and derive every set from it in one pass.
+        subscriptions = Subscription.objects.filter(
+            recipient__type=Recipient.STREAM,
+            recipient__type_id__in=[stream_being_edited.id, new_stream.id],
+        )
+        for (
+            user_id,
+            stream_id,
+            sub_active,
+            is_user_active,
+            user_long_term_idle,
+            user_role,
+        ) in subscriptions.values_list(
+            "user_profile_id",
+            "recipient__type_id",
+            "active",
+            "is_user_active",
+            "user_profile__long_term_idle",
+            "user_profile__role",
+        ):
+            if user_role == UserProfile.ROLE_GUEST:
+                guest_user_ids.add(user_id)
 
+            if stream_id == stream_being_edited.id:
+                old_stream_all_user_ids.add(user_id)
+                if sub_active:
+                    old_stream_current_user_ids.add(user_id)
+
+                if sub_active and is_user_active and not user_long_term_idle:
+                    old_stream_active_user_ids.add(user_id)
+
+            if stream_id == new_stream.id and sub_active:
+                new_stream_current_user_ids.add(user_id)
+                if is_user_active and not user_long_term_idle:
+                    new_stream_active_user_ids.add(user_id)
+
+    elif stream_being_edited.is_history_public_to_subscribers():
+        # A topic-only move only needs new_stream_active_user_ids.
+        new_stream_active_user_ids = set(
+            get_active_subscriptions_for_stream_id(
+                message_edit_request.target_stream.id, include_deactivated_users=False
+            )
+            .exclude(user_profile__long_term_idle=True)
+            .values_list("user_profile_id", flat=True)
+        )
+
+    if message_edit_request.is_stream_edited:
         edit_history_event["prev_stream"] = stream_being_edited.id
         edit_history_event["stream"] = new_stream.id
-        event[ORIG_TOPIC] = orig_topic_name
+        event.orig_subject = orig_topic_name
         assert new_stream.recipient_id is not None
         target_message.recipient_id = new_stream.recipient_id
 
-        event["new_stream_id"] = new_stream.id
-        event["propagate_mode"] = message_edit_request.propagate_mode
+        event.new_stream_id = new_stream.id
+        event.propagate_mode = message_edit_request.propagate_mode
 
         # When messages are moved from one stream to another, some
         # users may lose access to those messages, including guest
@@ -1045,32 +1113,23 @@ def do_update_message(
         # though the messages were deleted, and we should send a
         # delete_message event to them instead.
 
-        # We select _all_ current subscriptions, not just active ones,
-        # for the current stream, since there may be users who were
+        # old_stream_all_user_ids is all users with old stream subscriptions,
+        # not just active ones, since there may be users who were
         # previously subscribed when the message was sent, but are no
         # longer, who should also lose their UserMessage rows.
-        old_stream_all_users = UserProfile.objects.filter(
-            id__in=Subscription.objects.filter(
-                recipient__type=Recipient.STREAM,
-                recipient__type_id=stream_being_edited.id,
-            ).values_list("user_profile_id")
-        ).only("id")
+        not_subscribed_to_new_stream_user_ids = (
+            old_stream_all_user_ids - new_stream_current_user_ids
+        )
+        users_losing_usermessages = UserProfile.objects.filter(
+            id__in=not_subscribed_to_new_stream_user_ids
+        )
 
-        new_stream_current_users = UserProfile.objects.filter(
-            id__in=get_active_subscriptions_for_stream_id(
-                new_stream.id, include_deactivated_users=True
-            ).values_list("user_profile_id")
-        ).only("id")
-
-        users_losing_usermessages = old_stream_all_users.difference(new_stream_current_users)
         if new_stream.is_public():
-            # Only guest users are losing access, if it's moving to a public stream
-            users_losing_access = old_stream_all_users.filter(
-                role=UserProfile.ROLE_GUEST
-            ).difference(new_stream_current_users)
+            # If it's moving to a public stream, only non-subscribed guest users are losing access.
+            user_ids_losing_access = not_subscribed_to_new_stream_user_ids & guest_user_ids
         else:
-            # If it's moving to a private stream, all non-subscribed users are losing access
-            users_losing_access = users_losing_usermessages
+            # If it's moving to a private stream, all non-subscribed users are losing access.
+            user_ids_losing_access = not_subscribed_to_new_stream_user_ids
 
         unmodified_user_messages = ums.exclude(user_profile__in=users_losing_usermessages)
 
@@ -1087,9 +1146,7 @@ def do_update_message(
             # There may be current users of the new stream who already
             # have a usermessage row -- we handle this via `ON
             # CONFLICT DO NOTHING` during insert.
-            user_ids_gaining_usermessages = list(
-                new_stream_current_users.values_list("id", flat=True)
-            )
+            user_ids_gaining_usermessages = list(new_stream_current_user_ids)
     else:
         # If we're not moving the topic to another stream, we don't
         # modify the original set of UserMessage objects queried.
@@ -1100,9 +1157,11 @@ def do_update_message(
         target_message.set_topic_name(topic_name)
 
         # These fields have legacy field names.
-        event[ORIG_TOPIC] = orig_topic_name
-        event[TOPIC_NAME] = topic_name
-        event[TOPIC_LINKS] = topic_links(target_message.realm_id, topic_name)
+        event.orig_subject = orig_topic_name
+        event.subject = topic_name
+        event.topic_links = [
+            TopicLink(**link) for link in topic_links(target_message.realm_id, topic_name)
+        ]
         edit_history_event["prev_topic"] = orig_topic_name
         edit_history_event["topic"] = topic_name
 
@@ -1179,16 +1238,13 @@ def do_update_message(
             .values_list("id", flat=True),
         ).delete()
 
-        delete_event: DeleteMessagesEvent = {
-            "type": "delete_message",
-            "message_ids": changed_message_ids,
-            "message_type": "stream",
-            "stream_id": stream_being_edited.id,
-            "topic": orig_topic_name,
-        }
-        send_event_on_commit(
-            user_profile.realm, delete_event, [user.id for user in users_losing_access]
+        delete_event = InternalDeleteMessageEvent(
+            message_ids=changed_message_ids,
+            message_type="stream",
+            stream_id=stream_being_edited.id,
+            topic=orig_topic_name,
         )
+        send_event_on_commit(user_profile.realm, delete_event, user_ids_losing_access)
 
         # Reset the Attachment.is_*_public caches for all messages
         # moved to another stream with different access permissions.
@@ -1222,7 +1278,7 @@ def do_update_message(
     transaction.on_commit(
         lambda: cache_delete_many(to_dict_cache_key_id(msg_id) for msg_id in changed_message_ids)
     )
-    event["message_ids"] = sorted(changed_message_ids)
+    event.message_ids = sorted(changed_message_ids)
 
     # The following blocks arranges that users who are subscribed to a
     # stream and can see history from before they subscribed get
@@ -1258,45 +1314,8 @@ def do_update_message(
         if um.user_profile_id in message_access_user_ids
     ]
     if stream_being_edited.is_history_public_to_subscribers():
-        subscriptions = get_active_subscriptions_for_stream_id(
-            message_edit_request.target_stream.id, include_deactivated_users=False
-        )
+        subscriber_ids = new_stream_active_user_ids.copy()
 
-        def exclude_duplicates_from_subscription(
-            subs: QuerySet[Subscription],
-        ) -> QuerySet[Subscription]:
-            # We exclude long-term idle users, since they by
-            # definition have no active clients.
-            subs = subs.exclude(user_profile__long_term_idle=True)
-            # Remove duplicates by excluding users already in
-            # users_to_be_notified.  This is the case where a user both
-            # has a UserMessage row and is a current Subscriber.
-            subs = subs.exclude(user_profile_id__in=[user["id"] for user in users_to_be_notified])
-
-            if message_edit_request.is_stream_edited:
-                subs = subs.exclude(user_profile__in=users_losing_access)
-
-            return subs
-
-        old_stream_subs_not_in_new_stream = set()
-        if message_edit_request.is_stream_edited:
-            # We also need to include users who are not subscribed to new stream
-            # but are subscribed to the old stream.
-            old_stream_subscriptions = get_active_subscriptions_for_stream_id(
-                stream_being_edited.id, include_deactivated_users=False
-            )
-            old_stream_subscriptions = exclude_duplicates_from_subscription(
-                old_stream_subscriptions
-            )
-            old_stream_subscriber_ids = set(
-                old_stream_subscriptions.values_list("user_profile_id", flat=True)
-            )
-            new_stream_subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
-            old_stream_subs_not_in_new_stream = old_stream_subscriber_ids.difference(
-                new_stream_subscriber_ids
-            )
-
-        subscriptions = exclude_duplicates_from_subscription(subscriptions)
         if message_edit_request.is_stream_edited:
             # TODO: Guest users don't see the new moved topic
             # unless breadcrumb message for new stream is
@@ -1309,20 +1328,24 @@ def do_update_message(
             # Don't send this event to guest subs who are not
             # subscribers of the old stream but are subscribed to
             # the new stream; clients will be confused.
-            old_stream_current_users = UserProfile.objects.filter(
-                id__in=get_active_subscriptions_for_stream_id(
-                    stream_being_edited.id, include_deactivated_users=True
-                ).values_list("user_profile_id", flat=True)
-            ).only("id")
-            subscriptions = subscriptions.exclude(
-                user_profile__in=new_stream_current_users.filter(
-                    role=UserProfile.ROLE_GUEST
-                ).difference(old_stream_current_users)
-            )
+            new_stream_guest_users_not_in_old_stream = (
+                new_stream_current_user_ids & guest_user_ids
+            ) - old_stream_current_user_ids
+            subscriber_ids -= new_stream_guest_users_not_in_old_stream
 
-        subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
-        notifiable_ids = subscriber_ids.union(old_stream_subs_not_in_new_stream)
-        users_to_be_notified += map(subscriber_info, sorted(notifiable_ids))
+            # Subscribers of the old stream are notified of the move too.
+            subscriber_ids |= old_stream_active_user_ids
+
+            # Exclude users who are losing access;
+            # instead they get a delete_message event.
+            subscriber_ids -= user_ids_losing_access
+
+        # Exclude the id of users already in users_to_be_notified list.
+        # This is the case where a user both has a UserMessage row
+        # and is a current Subscriber
+        unmodified_user_messages_user_ids = {um.user_profile_id for um in unmodified_user_messages}
+        subscriber_ids -= unmodified_user_messages_user_ids
+        users_to_be_notified += map(subscriber_info, sorted(subscriber_ids))
 
     # UserTopic updates and the content of notifications depend on
     # whether we've moved the entire topic, or just part of it. We
@@ -1425,7 +1448,11 @@ def do_update_message(
         ):
             is_target_message_first = True
 
-        if not sender.is_bot and sender not in users_losing_access and is_target_message_first:
+        if (
+            not sender.is_bot
+            and sender.id not in user_ids_losing_access
+            and is_target_message_first
+        ):
             apply_automatic_unmute_follow_topics_policy(sender, target_stream, target_topic)
 
     send_event_on_commit(user_profile.realm, event, users_to_be_notified)
@@ -1634,7 +1661,7 @@ def build_message_edit_request(
     *,
     message: Message,
     user_profile: UserProfile,
-    propagate_mode: str,
+    propagate_mode: PropagateMode,
     stream_id: int | None = None,
     topic_name: str | None = None,
     content: str | None = None,
@@ -1765,7 +1792,7 @@ def check_update_message(
     message_id: int,
     stream_id: int | None = None,
     topic_name: str | None = None,
-    propagate_mode: str = "change_one",
+    propagate_mode: PropagateMode = "change_one",
     send_notification_to_old_thread: bool = True,
     send_notification_to_new_thread: bool = True,
     content: str | None = None,

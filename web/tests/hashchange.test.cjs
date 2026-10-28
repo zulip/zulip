@@ -17,6 +17,7 @@ const history = set_global("history", {state: null});
 
 const admin = mock_esm("../src/admin");
 const drafts_overlay_ui = mock_esm("../src/drafts_overlay_ui");
+const inbox_ui = mock_esm("../src/inbox_ui");
 const info_overlay = mock_esm("../src/info_overlay");
 const message_viewport = mock_esm("../src/message_viewport");
 const overlays = mock_esm("../src/overlays");
@@ -36,6 +37,7 @@ const ui_report = mock_esm("../src/ui_report");
 set_global("favicon", {});
 
 const browser_history = zrequire("browser_history");
+const {UNKNOWN_USER_ID} = zrequire("filter_util");
 const people = zrequire("people");
 const hash_util = zrequire("hash_util");
 const hashchange = zrequire("hashchange");
@@ -273,6 +275,43 @@ run_test("hash_interactions", ({override, override_rewire}) => {
     let terms = helper.get_narrow_terms();
     assert.equal(terms[0].operand, denmark_id.toString());
 
+    let inbox_filter;
+    override(inbox_ui, "show", (filter) => {
+        inbox_filter = filter;
+    });
+    window.location.hash = "#topics/channel/Denmark";
+
+    helper.clear_events();
+    $window_stub.trigger("hashchange");
+    helper.assert_events([
+        [overlays, "close_for_hash_change"],
+        [message_viewport, "stop_auto_scrolling"],
+    ]);
+    assert.equal(inbox_filter.terms()[0].operand, denmark_id.toString());
+
+    // Only a channel has a topics list.
+    for (const hash of [
+        "#topics",
+        "#topics/is/starred",
+        "#topics/channel/Denmark/topic/lunch",
+        "#topics/dm/undefined",
+    ]) {
+        window.location.hash = hash;
+        recent_view_ui_shown = false;
+        inbox_filter = undefined;
+
+        helper.clear_events();
+        $window_stub.trigger("hashchange");
+        helper.assert_events([
+            [overlays, "close_for_hash_change"],
+            [message_viewport, "stop_auto_scrolling"],
+            [ui_report, "error"],
+        ]);
+        // The home view is shown, and not a topics list.
+        assert.equal(recent_view_ui_shown, true);
+        assert.equal(inbox_filter, undefined);
+    }
+
     window.location.hash = "#narrow";
 
     helper.clear_events();
@@ -317,6 +356,19 @@ run_test("hash_interactions", ({override, override_rewire}) => {
         [message_viewport, "stop_auto_scrolling"],
         [ui_report, "error"],
     ]);
+
+    // A DM link with an invalid user slug is not an invalid narrow hash.
+    window.location.hash = "#narrow/dm/undefined";
+
+    helper.clear_events();
+    $window_stub.trigger("hashchange");
+    helper.assert_events([
+        [overlays, "close_for_hash_change"],
+        [message_viewport, "stop_auto_scrolling"],
+        "message_view.show",
+    ]);
+    terms = helper.get_narrow_terms();
+    assert.deepEqual(terms[0].operand, [UNKNOWN_USER_ID]);
 
     window.location.hash = "#channels/subscribed";
 

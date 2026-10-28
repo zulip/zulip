@@ -5,6 +5,9 @@ import {
 } from "./state_data.ts";
 import * as util from "./util.ts";
 
+// Stands in for a user that a narrow URL's slug fails to identify.
+export const UNKNOWN_USER_ID = -1;
+
 export function canonicalize_operator(operator: NarrowTerm["operator"]): NarrowCanonicalOperator {
     if (operator === "pm-with") {
         // "pm-with:" was renamed to "dm:"

@@ -87,7 +87,7 @@ def update_scheduled_message_backend(
     if recipient_type_name is not None and recipient_type_name == "channel":
         # For now, use "stream" from Message.API_RECIPIENT_TYPES.
         # TODO: Use "channel" here, as well as in events and
-        # message (created, schdeduled, drafts) objects/dicts.
+        # message (created, scheduled, drafts) objects/dicts.
         recipient_type_name = "stream"
 
     if recipient_type_name is not None and recipient_type_name == "stream" and topic_name is None:
@@ -154,7 +154,7 @@ def create_scheduled_message_backend(
     elif recipient_type_name == "channel":
         # For now, use "stream" from Message.API_RECIPIENT_TYPES.
         # TODO: Use "channel" here, as well as in events and
-        # message (created, schdeduled, drafts) objects/dicts.
+        # message (created, scheduled, drafts) objects/dicts.
         recipient_type_name = "stream"
 
     deliver_at = timestamp_to_datetime(scheduled_delivery_timestamp)

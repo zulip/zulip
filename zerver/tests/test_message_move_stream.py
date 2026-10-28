@@ -15,6 +15,7 @@ from zerver.actions.streams import (
     do_set_stream_property,
 )
 from zerver.actions.user_groups import check_add_user_group
+from zerver.lib.event_types import StreamUpdateEvent
 from zerver.lib.message import has_message_access
 from zerver.lib.streams import (
     can_access_stream_metadata_user_ids,
@@ -1621,7 +1622,7 @@ class MessageMoveStreamTest(ZulipTestCase):
             "iago", "test move stream", "new stream", "test"
         )
 
-        with self.assert_database_query_count(59), self.assert_memcached_count(19):
+        with self.assert_database_query_count(55), self.assert_memcached_count(17):
             result = self.client_patch(
                 f"/json/messages/{msg_id}",
                 {
@@ -2435,9 +2436,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 m.call_args.args,
                 (
                     new_stream.realm,
-                    dict(
-                        type="stream",
-                        op="update",
+                    StreamUpdateEvent(
                         property="is_recently_active",
                         value=False,
                         stream_id=new_stream.id,
@@ -2489,9 +2488,7 @@ class MessageMoveStreamTest(ZulipTestCase):
                 m.call_args.args,
                 (
                     new_stream.realm,
-                    dict(
-                        type="stream",
-                        op="update",
+                    StreamUpdateEvent(
                         property="is_recently_active",
                         value=False,
                         stream_id=new_stream.id,

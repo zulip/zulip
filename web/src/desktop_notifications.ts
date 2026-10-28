@@ -2,14 +2,14 @@ import {$} from "jquery";
 import assert from "minimalistic-assert";
 
 import {electron_bridge} from "./electron_bridge.ts";
-import type {Message} from "./message_store.ts";
+
+export type NotificationData = {type: "message"; message_id: number; msg_count: number};
 
 type NoticeMemory = Map<
     string,
     {
         obj: Notification | ElectronBridgeNotification;
-        msg_count: number;
-        message_id: number;
+        data: NotificationData;
     }
 >;
 
@@ -64,10 +64,89 @@ export class ElectronBridgeNotification extends EventTarget {
     }
 }
 
+// Most mobile browsers expose the Notification interface, but
+// support only persistent notifications, which are created via
+// ServiceWorkerRegistration.showNotification().
+// The Notification() constructor throws a TypeError there, so until
+// we register a service worker, treat them as having no support.
+// See https://developer.mozilla.org/en-US/docs/Web/API/Notifications_API#persistent_and_non-persistent_notifications
+function maybe_construct_notification(
+    title: string,
+    options: NotificationOptions,
+): ElectronBridgeNotification | Notification | undefined {
+    if (NotificationAPI === undefined) {
+        return undefined;
+    }
+    try {
+        return new NotificationAPI(title, options);
+    } catch (error) {
+        if (!(error instanceof TypeError)) {
+            throw error;
+        }
+        NotificationAPI = undefined;
+        return undefined;
+    }
+}
+
 if (electron_bridge?.new_notification) {
     NotificationAPI = ElectronBridgeNotification;
 } else if (window.Notification) {
     NotificationAPI = window.Notification;
+    if (Notification.permission !== "granted") {
+        // A notification constructed without permission is never
+        // displayed, which lets us check the constructor without
+        // bothering the user. Once permission has been granted we
+        // cannot make this check, so we treat the browser as supported
+        // until a notification first fails to be constructed.
+        maybe_construct_notification("", {})?.close();
+    }
+}
+
+export function create_notification(opts: {
+    notification_options: NotificationOptions;
+    key: string;
+    title: string;
+    data: NotificationData;
+    on_click?: (() => void) | undefined;
+}): void {
+    const {notification_options, key, title, data, on_click} = opts;
+    const existing_notification = notice_memory.get(key);
+    if (existing_notification) {
+        existing_notification.obj.close();
+    }
+
+    if (!granted_desktop_notifications_permission()) {
+        return;
+    }
+
+    const notification_object = maybe_construct_notification(title, notification_options);
+    if (notification_object === undefined) {
+        return;
+    }
+    notice_memory.set(key, {
+        obj: notification_object,
+        data,
+    });
+
+    if (typeof notification_object.addEventListener === "function") {
+        // Sadly, some third-party Electron apps like Franz/Ferdi
+        // misimplement the Notification API not inheriting from
+        // EventTarget.  This results in addEventListener being
+        // unavailable for them.
+        notification_object.addEventListener("click", () => {
+            notification_object.close();
+            on_click?.();
+            window.focus();
+        });
+        notification_object.addEventListener("close", () => {
+            const current_notice_memory = notice_memory.get(key);
+            // This check helps avoid race between close event for current notification
+            // object and the previous notification_object close handler.
+            if (current_notice_memory?.obj === notification_object) {
+                notice_memory.delete(key);
+            }
+        });
+    }
 }
 
 export function get_notifications(): NoticeMemory {
@@ -97,9 +176,9 @@ export function permission_state(): string {
     return "denied";
 }
 
-export function close_notification(message: Message): void {
+export function close_notification(message_id: number): void {
     for (const [key, notice_mem_entry] of notice_memory) {
-        if (notice_mem_entry.message_id === message.id) {
+        if (notice_mem_entry.data.message_id === message_id) {
             notice_mem_entry.obj.close();
             notice_memory.delete(key);
         }

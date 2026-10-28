@@ -4,6 +4,7 @@ import os
 import re
 import subprocess
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 from urllib.request import Request, urlopen
 
@@ -11,10 +12,18 @@ TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 os.chdir(os.path.dirname(TOOLS_DIR))
 sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 
+from tools.lib.api_design_links import find_api_design_links
 from zerver.openapi.merge_api_changelogs import get_feature_level
 
 
-def get_pull_request_number_or_commit_hash() -> str:
+@dataclass
+class PullRequestData:
+    commit_hash: str
+    number: int | None = None
+    body: str | None = None
+
+
+def get_pull_request_data() -> PullRequestData:
     github_token = os.environ["GITHUB_TOKEN"]
     repo = os.environ["GITHUB_REPOSITORY"]
     commit_hash = os.environ["GITHUB_SHA"]
@@ -29,11 +38,15 @@ def get_pull_request_number_or_commit_hash() -> str:
         req = Request(url, headers=headers)
         with urlopen(req) as response:
             pull_requests = json.load(response)
-        if len(pull_requests) > 0:
-            return f"#{pull_requests[0]['number']}"
-        return commit_hash
+        if not pull_requests:
+            return PullRequestData(commit_hash=commit_hash)
+        return PullRequestData(
+            commit_hash=commit_hash,
+            number=pull_requests[0]["number"],
+            body=pull_requests[0]["body"],
+        )
     except Exception:
-        return commit_hash
+        return PullRequestData(commit_hash=commit_hash)
 
 
 def get_changelog_entries() -> str:
@@ -53,7 +66,7 @@ def get_changelog_entries() -> str:
             if current_feature_level_found:
                 changelog_entries += line
 
-    return changelog_entries.replace("\n  ", " ")
+    return changelog_entries.replace("\n  ", " ").rstrip()
 
 
 def get_feature_level_before_commit() -> int:
@@ -80,16 +93,29 @@ def get_feature_level_before_commit() -> int:
 
 
 if __name__ == "__main__":
-    pull_request = get_pull_request_number_or_commit_hash()
-
     feature_level = get_feature_level(update_feature_level=False) - 1
     if feature_level <= get_feature_level_before_commit():
         sys.exit(1)
 
-    changelog_entries = get_changelog_entries()
     topic = f"new feature level: {feature_level}"
 
-    content = f"{pull_request} has updated the API documentation for the following endpoints: \n{changelog_entries}"
+    pull_request = get_pull_request_data()
+    pull_request_label = (
+        f"#{pull_request.number}" if pull_request.number else pull_request.commit_hash
+    )
+    changelog_entries = get_changelog_entries()
+
+    discussion_links: list[str] = []
+    if pull_request.body:
+        discussion_links = find_api_design_links(pull_request.body)
+
+    content = f"{pull_request_label} has updated the API documentation for the following endpoints: \n{changelog_entries}"
+    if len(discussion_links) == 1:
+        content += f"\n\nAPI design discussion: {discussion_links[0]}"
+    elif discussion_links:
+        content += "\n\nAPI design discussions:\n" + "\n".join(
+            f"- {link}" for link in discussion_links
+        )
     github_output = os.environ.get("GITHUB_OUTPUT")
     if github_output:
         with open(github_output, "a") as f:

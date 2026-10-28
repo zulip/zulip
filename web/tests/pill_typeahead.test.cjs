@@ -196,8 +196,7 @@ run_test("set_up_user", ({mock_template, override, override_rewire}) => {
         })();
 
         (function test_matcher() {
-            let result;
-            result = config.matcher(person_query)(me_item);
+            let result = config.matcher(person_query)(me_item);
             assert.ok(result);
             result = config.matcher(person_query)(jill_item);
             assert.ok(!result);
@@ -281,8 +280,7 @@ run_test("set_up_stream", ({mock_template, override, override_rewire}) => {
         })();
 
         (function test_matcher() {
-            let result;
-            result = config.matcher(stream_query)(denmark_item);
+            let result = config.matcher(stream_query)(denmark_item);
             assert.ok(result);
             result = config.matcher(stream_query)(sweden_item);
             assert.ok(!result);
@@ -372,8 +370,7 @@ run_test("set_up_user_group", ({mock_template, override, override_rewire}) => {
         })();
 
         (function test_matcher() {
-            let result;
-            result = config.matcher(group_query)(testers_item);
+            let result = config.matcher(group_query)(testers_item);
             assert.ok(result);
             result = config.matcher(group_query)(admins_item);
             assert.ok(!result);
@@ -781,9 +778,8 @@ run_test("set_up_group_setting_typeahead", ({mock_template, override, override_r
         })();
 
         (function test_matcher() {
-            let result;
             // group query, with correct item.
-            result = config.matcher(group_query)(testers_item);
+            let result = config.matcher(group_query)(testers_item);
             assert.ok(result);
             // group query, with wrong item.
             result = config.matcher(group_query)(admins_item);

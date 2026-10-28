@@ -79,6 +79,7 @@ export type MarkdownHelpers = {
 
     // stream hashes
     get_stream_by_name: (stream_name: string) => {stream_id: number; name: string} | undefined;
+    is_empty_topic_only_channel: (stream_id: number) => boolean;
     stream_hash: (stream_id: number) => string;
     stream_topic_hash: (stream_id: number, topic: string) => string;
 
@@ -602,6 +603,7 @@ function handleStreamTopic({
     stream_name,
     topic,
     get_stream_by_name,
+    is_empty_topic_only_channel,
     stream_topic_hash,
 }: {
     stream_name: string;
@@ -612,10 +614,16 @@ function handleStreamTopic({
               name: string;
           }
         | undefined;
+    is_empty_topic_only_channel: (stream_id: number) => boolean;
     stream_topic_hash: (stream_id: number, topic: string) => string;
 }): string | undefined {
     const stream = get_stream_by_name(stream_name);
     if (stream === undefined) {
+        return undefined;
+    }
+    if (topic !== "" && is_empty_topic_only_channel(stream.stream_id)) {
+        // This channel only allows the empty topic, so a non-empty topic
+        // can never exist in it; don't linkify it.
         return undefined;
     }
     const href = stream_topic_hash(stream.stream_id, topic);
@@ -634,6 +642,7 @@ function handleStreamTopicMessage({
     topic,
     message_id,
     get_stream_by_name,
+    is_empty_topic_only_channel,
     stream_topic_hash,
 }: {
     stream_name: string;
@@ -645,10 +654,16 @@ function handleStreamTopicMessage({
               name: string;
           }
         | undefined;
+    is_empty_topic_only_channel: (stream_id: number) => boolean;
     stream_topic_hash: (stream_id: number, topic: string) => string;
 }): string | undefined {
     const stream = get_stream_by_name(stream_name);
     if (stream === undefined) {
+        return undefined;
+    }
+    if (topic !== "" && is_empty_topic_only_channel(stream.stream_id)) {
+        // This channel only allows the empty topic, so a non-empty topic
+        // can never exist in it; don't linkify it.
         return undefined;
     }
     const href = stream_topic_hash(stream.stream_id, topic) + "/near/" + message_id;
@@ -702,10 +717,13 @@ export function parse({
     // class-specific highlighting.
     renderer.code = (code: string): string => fenced_code.wrap_code(code) + "\n\n";
 
-    // Prohibit empty links for some reason.
     const old_link = renderer.link;
-    renderer.link = (href: string, title: string, text: string): string =>
-        old_link.call(renderer, href, title, text.trim() ? text : href);
+    renderer.link = (href: string, title: string, text: string): string => {
+        // The server percent-encodes spaces in link URLs; see sanitize_url.
+        href = href.replaceAll(" ", "%20");
+        // Prohibit empty links for some reason.
+        return old_link.call(renderer, href, title, text.trim() ? text : href);
+    };
 
     // Put a newline after a <br> in the generated HTML to match Markdown
     renderer.br = function () {
@@ -764,6 +782,7 @@ export function parse({
             stream_name,
             topic,
             get_stream_by_name: helper_config.get_stream_by_name,
+            is_empty_topic_only_channel: helper_config.is_empty_topic_only_channel,
             stream_topic_hash: helper_config.stream_topic_hash,
         });
     }
@@ -778,6 +797,7 @@ export function parse({
             topic,
             message_id,
             get_stream_by_name: helper_config.get_stream_by_name,
+            is_empty_topic_only_channel: helper_config.is_empty_topic_only_channel,
             stream_topic_hash: helper_config.stream_topic_hash,
         });
     }

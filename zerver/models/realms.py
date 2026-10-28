@@ -502,6 +502,13 @@ class Realm(models.Model):
         on_delete=models.SET_NULL,
     )
 
+    MODERATION_OR_ANNOUNCEMENT_CHANNEL_SETTINGS = (
+        "moderation_request_channel",
+        "new_stream_announcements_stream",
+        "signup_announcements_stream",
+        "zulip_update_announcements_stream",
+    )
+
     zulip_update_announcements_level = models.PositiveIntegerField(null=True)
 
     MESSAGE_RETENTION_SPECIAL_VALUES_MAP = {
@@ -679,6 +686,10 @@ class Realm(models.Model):
         "webex": {
             "name": "Webex",
             "id": 8,
+        },
+        "google_meet": {
+            "name": "Google Meet",
+            "id": 9,
         },
     }
 
@@ -1125,6 +1136,11 @@ class Realm(models.Model):
                 continue
             if provider == "webex" and (
                 settings.VIDEO_WEBEX_CLIENT_ID is None or settings.VIDEO_WEBEX_CLIENT_SECRET is None
+            ):
+                continue
+            if provider == "google_meet" and (
+                settings.VIDEO_GOOGLE_MEET_CLIENT_ID is None
+                or settings.VIDEO_GOOGLE_MEET_CLIENT_SECRET is None
             ):
                 continue
             enabled_video_chat_providers[provider] = self.VIDEO_CHAT_PROVIDERS[provider]

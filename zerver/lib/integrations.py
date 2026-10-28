@@ -682,6 +682,11 @@ INCOMING_WEBHOOK_INTEGRATIONS: list[IncomingWebhookIntegration] = [
                 label="Include emoji indicators in the notifications",
                 input_type="checkbox_enabled",
             ),
+            WebhookUrlOption(
+                name="concise_edit_format",
+                label="Use concise edited issue, pull request, and discussion notifications",
+                input_type="checkbox_enabled",
+            ),
         ],
     ),
     IncomingWebhookIntegration(
@@ -1033,6 +1038,7 @@ VIDEO_CALL_INTEGRATIONS: list[Integration] = [
     Integration(
         "constructor-groups", ["video-calling", "communication"], display_name="Constructor Groups"
     ),
+    Integration("google-meet", ["video-calling", "communication"], display_name="Google Meet"),
     Integration("jitsi", ["video-calling", "communication"], display_name="Jitsi Meet"),
     Integration(
         "nextcloud-talk",
@@ -1218,7 +1224,15 @@ INTEGRATIONS_WITHOUT_SCREENSHOTS = (
     # Outgoing integrations
     | {"atolio", "email", "onyx"}
     # Video call integrations
-    | {"big-blue-button", "constructor-groups", "jitsi", "nextcloud-talk", "webex", "zoom"}
+    | {
+        "big-blue-button",
+        "constructor-groups",
+        "google-meet",
+        "jitsi",
+        "nextcloud-talk",
+        "webex",
+        "zoom",
+    }
     | {
         # these integrations do not send messages
         "giphy",

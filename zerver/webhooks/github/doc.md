@@ -21,6 +21,8 @@ Get GitHub notifications in Zulip!
     - Whether to exclude notifications from private repositories.
     - Whether to include the repository name in the notifications.
     - Whether to include emoji indicators in the notifications.
+    - Whether to use a concise message format for edited issue, pull request,
+      and discussion notifications.
 
 
 1. On your repository's web page, go to **Settings**. Select **Webhooks**,

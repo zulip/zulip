@@ -345,6 +345,34 @@ def fix_datetime_fields(data: ImportedTableData, table: TableName) -> None:
                 item[field_name] = datetime.fromtimestamp(item[field_name], tz=timezone.utc)
 
 
+def clear_archived_moderation_or_announcement_channels(data: ImportedTableData) -> None:
+    """
+    Zulip can't send messages to an archived channel, so
+    do_deactivate_stream unsets these settings when archiving a
+    channel. Third-party converters don't go through that path, so we
+    unset them here in case one points them at an archived channel.
+    """
+    archived_channel_ids = {
+        channel["id"] for channel in data["zerver_stream"] if channel["deactivated"]
+    }
+    realm_dict = data["zerver_realm"][0]
+    for field in Realm.MODERATION_OR_ANNOUNCEMENT_CHANNEL_SETTINGS:
+        if realm_dict.get(field) in archived_channel_ids:
+            realm_dict[field] = None
+
+
+def fix_message_has_attachment(data: ImportedTableData) -> None:
+    """
+    A message can be flagged as having an attachment that isn't in the
+    export: third-party converters may flag one whose download failed,
+    and Zulip keeps the flag when a user deletes an uploaded file. Only
+    messages that some imported attachment belongs to have an
+    attachment.
+    """
+    for message in data["zerver_message"]:
+        message["has_attachment"] = message["id"] in message_id_to_attachments["zerver_message"]
+
+
 def fix_upload_links(data: ImportedTableData, message_table: TableName) -> None:
     """
     Because the URLs for uploaded files encode the realm ID of the
@@ -1530,6 +1558,8 @@ def do_import_realm(
         update_id_map(table="user_profile", old_id=item["id"], new_id=new_user_id)
         crossrealm_user_ids.add(new_user_id)
 
+    clear_archived_moderation_or_announcement_channels(data)
+
     # We first do a pass of updating model IDs for the cluster of
     # major models that have foreign keys into each other.
     # TODO: Should we just do this for all tables at the start?
@@ -2452,6 +2482,7 @@ def _process_message_file(
     re_map_foreign_keys(data, "zerver_message", "recipient", related_table="recipient")
     re_map_foreign_keys(data, "zerver_message", "sending_client", related_table="client")
     fix_datetime_fields(data, "zerver_message")
+    fix_message_has_attachment(data)
     fix_upload_links(data, "zerver_message")
 
     # We already create mappings for zerver_message ids

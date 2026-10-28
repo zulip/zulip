@@ -10,6 +10,14 @@
     {{t 'Scroll to bottom' }}
     {{tooltip_hotkey_hints "End"}}
 </template>
+<template id="next-unread-topic-button-tooltip-template">
+    {{t 'Go to next unread topic' }}
+    {{tooltip_hotkey_hints "N"}}
+</template>
+<template id="next-unread-dm-conversation-button-tooltip-template">
+    {{t 'Go to next unread direct message' }}
+    {{tooltip_hotkey_hints "P"}}
+</template>
 <template id="compose_disable_stream_reply_button_tooltip_template">
     {{t 'You do not have permission to post in this channel.' }}
 </template>
@@ -133,7 +141,7 @@
     {{tooltip_hotkey_hints "A"}}
 </template>
 <template id="recent-conversations-tooltip-template">
-    <div class="views-tooltip-container" data-view-code="recent_topics">
+    <div class="views-tooltip-container" data-view-code="recent">
         <div>{{t 'Recent conversations' }}</div>
         <div class="tootlip-inner-content views-message-count italic hidden-for-spectators"></div>
         <div class="tooltip-inner-content views-tooltip-home-view-note italic hide hidden-for-spectators">{{t 'This is your home view.' }}</div>

@@ -1093,8 +1093,7 @@ test("canonicalization", () => {
     assert.equal(filter_util.canonicalize_operator("subject"), "topic");
     assert.equal(filter_util.canonicalize_operator("from"), "sender");
 
-    let term;
-    term = Filter.canonicalize_term({operator: "stream", operand: "Denmark"});
+    let term = Filter.canonicalize_term({operator: "stream", operand: "Denmark"});
     assert.equal(term.operator, "channel");
     assert.equal(term.operand, "Denmark");
 
@@ -1648,10 +1647,9 @@ test("negated_predicates", () => {
 });
 
 test("predicate_edge_cases", () => {
-    let predicate;
     // The code supports undefined as an operator to Filter, which results
     // in a predicate that accepts any message.
-    predicate = new Filter([]).predicate();
+    let predicate = new Filter([]).predicate();
     assert.ok(predicate({}));
 
     // Upstream code should prevent Filter.predicate from being called with
@@ -1852,9 +1850,8 @@ test("parse", () => {
 
 test("unparse", () => {
     let string;
-    let terms;
 
-    terms = [
+    let terms = [
         {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "Bar", negated: true},
         {operator: "search", operand: "yo"},
@@ -2439,6 +2436,16 @@ test("convert_suggestion_to_term", () => {
     );
 });
 
+test("convert_term_to_suggestion", () => {
+    function suggested_operand(operator, operand) {
+        return Filter.convert_term_to_suggestion({operator, operand}).operand;
+    }
+
+    assert.equal(suggested_operand("topic", "-1"), "-1");
+    assert.equal(suggested_operand("dm", [joe.user_id, 9999]), `${joe.user_id},9999`);
+    assert.equal(suggested_operand("dm", [joe.user_id, filter_util.UNKNOWN_USER_ID]), "");
+});
+
 test("try_adjusting_for_moved_with_target", () => {
     const scotland_id = new_stream_id();
     make_sub("Scotland", scotland_id);
@@ -2749,6 +2756,10 @@ test("navbar_helpers", ({override}) => {
         {operator: "dm", operand: [joe.user_id, annie.user_id]},
     ];
     const dm_group_including_missing_person = [{operator: "dm", operand: [9999, joe.user_id]}];
+    const dm_with_unknown_user_id = [{operator: "dm", operand: [filter_util.UNKNOWN_USER_ID]}];
+    const dm_group_including_unknown_user_id = [
+        {operator: "dm", operand: [filter_util.UNKNOWN_USER_ID, joe.user_id]},
+    ];
     // not common narrows, but used for browser title updates
     const is_alerted = [{operator: "is", operand: "alerted"}];
     const is_unread = [{operator: "is", operand: "unread"}];
@@ -2787,7 +2798,7 @@ test("navbar_helpers", ({override}) => {
             is_common_narrow: true,
             icon: undefined,
             title: "translated: Messages sent by unknown user",
-            redirect_url_with_search: "/#narrow/sender/undefined",
+            redirect_url_with_search: "/#narrow/sender/9999",
         },
         {
             terms: is_starred,
@@ -3005,7 +3016,21 @@ test("navbar_helpers", ({override}) => {
             is_common_narrow: true,
             zulip_icon: "user",
             title: "joe and translated: Unknown user (9999)",
-            redirect_url_with_search: "/#narrow/dm/undefined",
+            redirect_url_with_search: "/#narrow/dm/9999," + joe.user_id + "-group",
+        },
+        {
+            terms: dm_with_unknown_user_id,
+            is_common_narrow: true,
+            zulip_icon: "user",
+            title: "translated: Unknown user",
+            redirect_url_with_search: "/#narrow/dm/-1",
+        },
+        {
+            terms: dm_group_including_unknown_user_id,
+            is_common_narrow: true,
+            zulip_icon: "user",
+            title: "joe and translated: Unknown user",
+            redirect_url_with_search: "/#narrow/dm/-1," + joe.user_id + "-group",
         },
         {
             terms: has_reaction_sender_me,

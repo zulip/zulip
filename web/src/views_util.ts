@@ -19,6 +19,7 @@ import * as pm_list from "./pm_list.ts";
 import * as popovers from "./popovers.ts";
 import * as popup_banners from "./popup_banners.ts";
 import * as resize from "./resize.ts";
+import * as scroll_to_bottom_button from "./scroll_to_bottom_button.ts";
 import * as sidebar_ui from "./sidebar_ui.ts";
 import * as stream_list from "./stream_list.ts";
 import * as unread_ui from "./unread_ui.ts";
@@ -110,6 +111,7 @@ export function show(opts: {
     opts.highlight_view_in_left_sidebar();
 
     unread_ui.hide_unread_banner();
+    scroll_to_bottom_button.update();
     opts.update_compose();
     narrow_title.update_narrow_title(narrow_state.filter());
     message_view_header.render_title_area();
@@ -198,18 +200,29 @@ export function find_first_row_index_at_or_below(rows: Element[], y: number): nu
     return index === -1 ? undefined : index;
 }
 
+// We allocate `--max-unmaximized-compose-height` in empty space
+// below the last rendered row in recent view.
+function get_scroll_height_without_bottom_padding(): number {
+    const compose_max_height = $(":root").css("--max-unmaximized-compose-height");
+    assert(typeof compose_max_height === "string");
+    return document.body.scrollHeight - Number.parseInt(compose_max_height, 10);
+}
+
 export function is_scroll_position_for_render(): boolean {
     const scroll_position = window.scrollY;
     const window_height = window.innerHeight;
-    // We allocate `--max-unmaximized-compose-height` in empty space
-    // below the last rendered row in recent view.
-    //
-    // We don't want user to see this empty space until there are no
-    // new rows to render when the user is scrolling to the bottom of
-    // the view. So, we render new rows when user has scrolled 2 / 3
-    // of (the total scrollable height - the empty space).
-    const compose_max_height = $(":root").css("--max-unmaximized-compose-height");
-    assert(typeof compose_max_height === "string");
-    const scroll_max = document.body.scrollHeight - Number.parseInt(compose_max_height, 10);
+    // We don't want user to see the empty space below the last rendered
+    // row until there are no new rows to render when the user is
+    // scrolling to the bottom of the view. So, we render new rows when
+    // user has scrolled 2 / 3 of (the total scrollable height - the
+    // empty space).
+    const scroll_max = get_scroll_height_without_bottom_padding();
     return scroll_position + window_height >= (2 / 3) * scroll_max;
+}
+
+export let is_bottom_padding_in_view = (): boolean =>
+    window.scrollY + window.innerHeight >= get_scroll_height_without_bottom_padding();
+
+export function rewire_is_bottom_padding_in_view(value: typeof is_bottom_padding_in_view): void {
+    is_bottom_padding_in_view = value;
 }

@@ -549,13 +549,35 @@ test("insert_fred_then_alice_then_rename, both as other users", ({override}) => 
     people.add_active_user(fred);
 });
 
-test("insert_unfiltered_user_with_filter", () => {
-    // This test only tests that we do not explode when
-    // try to insert Fred into a list where he does not
-    // match the search filter.
+test("redraw_user_not_matching_filter", ({override}) => {
+    add_sub_and_set_as_current_narrow(rome_sub);
+    peer_data.set_subscribers(rome_sub.stream_id, []);
+
+    let other_users_appended;
+    override(buddy_list.$other_users_list[0], "append", (element) => {
+        other_users_appended = element;
+    });
+    override(padded_widget, "update_padding", noop);
+    override(buddy_list_presence, "update_indicators", noop);
+
+    buddy_list_add_other_user(fred.user_id, $fred_stub);
+    let fred_removed = false;
+    override($fred_stub[0], "remove", () => {
+        fred_removed = true;
+    });
+
     const $user_filter = $("input.user-list-filter");
+    $user_filter.val("fre");
+    activity_ui.redraw_user(fred.user_id);
+    assert.ok(other_users_appended.innerHTML.includes(`data-user-id="${fred.user_id}"`));
+    assert.ok(buddy_list.all_user_ids.includes(fred.user_id));
+
+    other_users_appended = undefined;
     $user_filter.val("do-not-match-filter");
     activity_ui.redraw_user(fred.user_id);
+    assert.ok(fred_removed);
+    assert.equal(other_users_appended, undefined);
+    assert.ok(!buddy_list.all_user_ids.includes(fred.user_id));
 });
 
 test("realm_presence_disabled", ({override}) => {
@@ -565,9 +587,78 @@ test("realm_presence_disabled", ({override}) => {
     activity_ui.build_user_sidebar();
 });
 
-test("redraw_muted_user", () => {
+test("redraw_muted_user", ({override}) => {
+    override(buddy_list_presence, "update_indicators", noop);
+
     muted_users.add_muted_user(mark.user_id);
     activity_ui.redraw_user(mark.user_id);
+    assert.ok(!buddy_list.all_user_ids.includes(mark.user_id));
+});
+
+function insert_mark_then_check_removed_when_ineligible(override, make_mark_ineligible) {
+    add_sub_and_set_as_current_narrow(rome_sub);
+    peer_data.set_subscribers(rome_sub.stream_id, []);
+
+    let other_users_appended;
+    override(buddy_list.$other_users_list[0], "append", (element) => {
+        other_users_appended = element;
+    });
+    override(padded_widget, "update_padding", noop);
+
+    const $mark_stub = $.create("mark stub");
+    buddy_list_add_other_user(mark.user_id, $mark_stub);
+    let mark_removed = false;
+    $mark_stub[0].remove = () => {
+        mark_removed = true;
+    };
+
+    buddy_list.insert_or_move([mark.user_id], "");
+    assert.ok(other_users_appended.innerHTML.includes(`data-user-id="${mark.user_id}"`));
+    assert.ok(buddy_list.all_user_ids.includes(mark.user_id));
+
+    other_users_appended = undefined;
+    make_mark_ineligible();
+    buddy_list.insert_or_move([mark.user_id], "");
+    assert.ok(mark_removed);
+    assert.equal(other_users_appended, undefined);
+    assert.ok(!buddy_list.all_user_ids.includes(mark.user_id));
+}
+
+test("insert_or_move_deactivated_user", ({override}) => {
+    insert_mark_then_check_removed_when_ineligible(override, () => {
+        people.deactivate(mark);
+    });
+    people.add_active_user(mark);
+});
+
+test("insert_or_move_muted_user", ({override}) => {
+    insert_mark_then_check_removed_when_ineligible(override, () => {
+        muted_users.add_muted_user(mark.user_id);
+    });
+});
+
+test("insert_or_move_user_not_matching_filter", () => {
+    add_sub_and_set_as_current_narrow(rome_sub);
+    peer_data.set_subscribers(rome_sub.stream_id, []);
+
+    buddy_list.insert_or_move([mark.user_id], "do-not-match-filter");
+    assert.ok(!buddy_list.all_user_ids.includes(mark.user_id));
+});
+
+test("insert_or_move_bot", () => {
+    add_sub_and_set_as_current_narrow(rome_sub);
+    peer_data.set_subscribers(rome_sub.stream_id, []);
+
+    const bot = make_user({
+        email: "bot@zulip.com",
+        user_id: 8,
+        full_name: "Bot",
+        is_bot: true,
+    });
+    people.add_active_user(bot);
+
+    buddy_list.insert_or_move([bot.user_id], "");
+    assert.ok(!buddy_list.all_user_ids.includes(bot.user_id));
 });
 
 test("update_presence_info", ({override}) => {

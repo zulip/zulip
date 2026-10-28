@@ -37,21 +37,18 @@ export function get_reload_hash(): string {
 }
 
 export function encode_operand(term: NarrowCanonicalTerm): string {
-    let slug: string | undefined;
     switch (term.operator) {
         case "dm-including":
         case "dm":
-            slug = people.user_ids_to_slug(term.operand);
-            break;
+            return people.user_ids_to_slug(term.operand);
         case "sender":
         case "mentions":
-            slug = people.user_ids_to_slug([term.operand]);
-            break;
+            return people.user_ids_to_slug([term.operand]);
         case "channel":
             return encode_stream_id(Number.parseInt(term.operand, 10));
     }
 
-    return slug ?? internal_url.encodeHashComponent(String(term.operand));
+    return internal_url.encodeHashComponent(term.operand);
 }
 
 export function encode_stream_id(stream_id: number): string {
@@ -60,6 +57,20 @@ export function encode_stream_id(stream_id: number): string {
     const slug = stream_data.id_to_slug(stream_id);
 
     return internal_url.encode_slug(stream_id, slug);
+}
+
+function decode_user_ids(slug: string): number[] {
+    // The text from the first hyphen after a digit is only a hint,
+    // as in "15-King-Hamlet". The hyphen of "-1", which is how an
+    // unknown user is written, is not after a digit.
+    const id_list = slug.replace(/(\d)-.*/, "$1");
+    const user_ids = id_list.split(",").map((member) => {
+        const id = Number(member);
+        // A huge number parses to Infinity or an inexact number.
+        const is_user_id = util.is_numeric_string(member) && Number.isSafeInteger(id);
+        return is_user_id ? id : filter_util.UNKNOWN_USER_ID;
+    });
+    return people.sorted_other_user_ids(user_ids);
 }
 
 export function decode_operand(
@@ -71,24 +82,22 @@ export function decode_operand(
             case "sender":
                 return people.my_current_user_id();
             case "dm":
+            case "dm-including":
                 return [people.my_current_user_id()];
         }
     } else if (operator === "dm-including" || operator === "dm") {
-        const user_ids = people.slug_to_user_ids(operand);
-        if (user_ids) {
-            return user_ids;
-        }
+        return decode_user_ids(operand);
     } else if (operator === "sender" || operator === "mentions") {
-        const user_ids = people.slug_to_user_ids(operand);
-        if (user_ids?.length !== 1) {
+        const user_ids = decode_user_ids(operand);
+        if (user_ids.length !== 1) {
             // User mistyped the URL since we don't support
             // group operand for `sender` or `mentions` narrow.
-            // Returning -1 will lead to us showing a proper
+            // Returning UNKNOWN_USER_ID will lead to us showing a proper
             // user doesn't exist message in the UI.
             // Other options is to throw an error which will
             // lead to us showing a "Invalid URL" banner which
             // is not very nice looking.
-            return -1;
+            return filter_util.UNKNOWN_USER_ID;
         }
         return util.the(user_ids);
     }

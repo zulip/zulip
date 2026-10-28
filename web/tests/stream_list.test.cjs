@@ -395,9 +395,7 @@ test_ui("narrowing", ({override_rewire}) => {
     initialize_stream_data();
     assert.ok(!$("<devel-sidebar-row-stub>").hasClass("active-filter"));
 
-    let filter;
-
-    filter = new Filter([{operator: "stream", operand: develSub.stream_id.toString()}]);
+    let filter = new Filter([{operator: "stream", operand: develSub.stream_id.toString()}]);
     stream_list.handle_narrow_activated(filter);
     assert.ok($("<devel-sidebar-row-stub>").hasClass("active-filter"));
 

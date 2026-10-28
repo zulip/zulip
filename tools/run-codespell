@@ -11,6 +11,7 @@ if [ "$#" -eq 0 ]; then
     echo "No argument specified. Checking on the entire repo..."
     FILES_TO_BE_CHECKED="$(
         git ls-files -- \
+            ':!.claude/skills/commit-message/evals/cases.txt' \
             ':!*.asc' \
             ':!*.svg' \
             ':!*/fixtures/*' \

@@ -95,6 +95,7 @@ class HomeTest(ZulipTestCase):
         "full_name",
         "gif_rating_policy_options",
         "giphy_api_key",
+        "has_google_meet_token",
         "has_webex_token",
         "has_zoom_token",
         "idle_queue_timeout_secs",
@@ -106,7 +107,7 @@ class HomeTest(ZulipTestCase):
         "klipy_api_key",
         "last_event_id",
         "max_avatar_file_size_mib",
-        "max_bulk_new_subscription_messages",
+        "max_bulk_subscription_messages",
         "max_channel_folder_description_length",
         "max_channel_folder_name_length",
         "max_file_upload_size_mib",
@@ -251,6 +252,7 @@ class HomeTest(ZulipTestCase):
         "server_can_summarize_topics",
         "server_emoji_data_url",
         "server_generation",
+        "server_google_meet_app_internal",
         "server_inline_image_preview",
         "server_inline_url_embed_preview",
         "server_jitsi_server_url",
@@ -323,6 +325,10 @@ class HomeTest(ZulipTestCase):
         for html_bit in html_bits:
             if html_bit not in html:
                 raise AssertionError(f"{html_bit} not in result")
+
+        # Verify that the reload links work even if no JavaScript runs.
+        self.assertIn('<a class="reload-lnk" href="">', html)
+        self.assertNotIn('<a class="reload-lnk">', html)
 
         page_params = self._get_page_params(result)
 
@@ -1562,7 +1568,7 @@ class TestDocRedirectView(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(
             result["Location"],
-            "https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html#moving-your-registration-to-a-new-server",
+            "https://zulip.readthedocs.io/en/stable/production/mobile-push-notifications.html#moving-your-registration-to-a-new-server",
         )
 
         result = self.client_get("/doc-permalinks/invalid-doc-id")

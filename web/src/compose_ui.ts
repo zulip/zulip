@@ -11,13 +11,13 @@ import {
     setFieldText,
     wrapFieldSelection,
 } from "text-field-edit";
+import type * as tippy from "tippy.js";
 import * as z from "zod/mini";
 
 import type {Typeahead} from "./bootstrap_typeahead.ts";
 import * as bulleted_numbered_list_util from "./bulleted_numbered_list_util.ts";
 import * as channel from "./channel.ts";
 import * as common from "./common.ts";
-import * as compose_state from "./compose_state.ts";
 import type {TypeaheadSuggestion} from "./composebox_typeahead.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as linkifiers from "./linkifiers.ts";
@@ -521,7 +521,6 @@ export function make_compose_box_full_size(): void {
     // Set the `top` property of compose-box.
     set_compose_box_top(true);
 
-    $("#scroll-to-bottom-button-container").removeClass("show");
     $("textarea#compose-textarea").trigger("focus");
 }
 
@@ -685,7 +684,7 @@ export function handle_keydown(
         event.preventDefault();
     }
 
-    if (isCmdOrCtrl && (key === "]" || key === "[")) {
+    if (isCmdOrCtrl && !event.shiftKey && (key === "]" || key === "[")) {
         if (handle_list_indent($textarea, key === "]")) {
             event.preventDefault();
             event.stopPropagation();
@@ -1607,8 +1606,6 @@ async function check_thumbnail_status(path_id: string): Promise<boolean> {
 
 async function poll_thumbnail_status(
     $preview_container: JQuery,
-    $preview_spinner: JQuery,
-    $preview_content_box: JQuery,
     content: string,
     attempt = 1,
 ): Promise<void> {
@@ -1643,26 +1640,14 @@ async function poll_thumbnail_status(
     // while we were waiting for the thumbnail status
     if ($preview_container.hasClass("preview_mode")) {
         if (any_thumbnail_ready) {
-            render_and_show_preview(
-                $preview_container,
-                $preview_spinner,
-                $preview_content_box,
-                content,
-                false,
-            );
+            render_and_show_preview($preview_container, content, false);
             return;
         }
 
         if (pending_thumbnail_paths.size > 0) {
             const retry_delay_secs = get_retry_backoff_seconds(undefined, attempt, true);
             thumbnail_poll_timeout = setTimeout(() => {
-                void poll_thumbnail_status(
-                    $preview_container,
-                    $preview_spinner,
-                    $preview_content_box,
-                    content,
-                    attempt + 1,
-                );
+                void poll_thumbnail_status($preview_container, content, attempt + 1);
             }, retry_delay_secs * 1000);
         }
     }
@@ -1698,6 +1683,16 @@ export function enter_preview_mode($container: JQuery): void {
     $container.find(".undo_markdown_preview").trigger("focus");
 }
 
+// Replacing the preview's content removes its emoji without a
+// mouseleave event, which would leave their tooltips open.
+function destroy_preview_emoji_tooltips($container: JQuery): void {
+    for (const emoji_element of $container.find<tippy.ReferenceElement>(
+        ".preview_content .emoji",
+    )) {
+        emoji_element._tippy?.destroy();
+    }
+}
+
 export function exit_preview_mode($container: JQuery): void {
     $container.find("textarea.message-textarea").trigger("focus");
 
@@ -1708,14 +1703,64 @@ export function exit_preview_mode($container: JQuery): void {
 
     $container.find(".undo_markdown_preview").hide();
     $container.find(".preview_message_area").hide();
+    destroy_preview_emoji_tooltips($container);
     $container.find(".preview_content").empty();
     $container.find(".markdown_preview").show();
 }
 
+function apply_preview_render(
+    $preview_container: JQuery,
+    content: string,
+    rendered_preview_html: string,
+): void {
+    loading.destroy_indicator($preview_container.find(".markdown_preview_spinner"));
+    const $preview_content_box = $preview_container.find(".preview_content");
+    destroy_preview_emoji_tooltips($preview_container);
+    $preview_content_box.html(postprocess_content(rendered_preview_html));
+    rendered_markdown.update_elements($preview_content_box);
+
+    // Check for thumbnail loading placeholders and start polling
+    clear_thumbnail_polling();
+    pending_thumbnail_paths = extract_thumbnail_paths($preview_content_box);
+
+    if (pending_thumbnail_paths.size > 0) {
+        void poll_thumbnail_status($preview_container, content);
+    }
+}
+
+function apply_server_preview_render(
+    $preview_container: JQuery,
+    content: string,
+    rendered_content: string,
+): void {
+    let rendered_preview_html;
+    if (markdown.is_status_message(content)) {
+        // Handle previews of /me messages
+        rendered_preview_html =
+            "<p><strong>" +
+            _.escape(current_user.full_name) +
+            "</strong>" +
+            rendered_content.slice("<p>/me".length);
+    } else {
+        rendered_preview_html = rendered_content;
+    }
+    apply_preview_render($preview_container, content, rendered_preview_html);
+}
+
+const preview_render_counts = new WeakMap<HTMLElement, number>();
+
+function get_preview_render_count($preview_container: JQuery): number {
+    return preview_render_counts.get(util.the($preview_container)) ?? 0;
+}
+
+function increment_preview_render_count($preview_container: JQuery): number {
+    const preview_render_count = get_preview_render_count($preview_container) + 1;
+    preview_render_counts.set(util.the($preview_container), preview_render_count);
+    return preview_render_count;
+}
+
 export function render_and_show_preview(
     $preview_container: JQuery,
-    $preview_spinner: JQuery,
-    $preview_content_box: JQuery,
     content: string,
     show_spinner = true,
 ): void {
@@ -1723,46 +1768,23 @@ export function render_and_show_preview(
         show_spinner = false;
     }
 
-    const preview_render_count = compose_state.get_preview_render_count() + 1;
-    compose_state.set_preview_render_count(preview_render_count);
-
-    function show_preview(rendered_content: string, raw_content?: string): void {
-        // content is passed to check for status messages ("/me ...")
-        // and will be undefined in case of errors
-        let rendered_preview_html;
-        if (raw_content !== undefined && markdown.is_status_message(raw_content)) {
-            // Handle previews of /me messages
-            rendered_preview_html =
-                "<p><strong>" +
-                _.escape(current_user.full_name) +
-                "</strong>" +
-                rendered_content.slice("<p>/me".length);
-        } else {
-            rendered_preview_html = rendered_content;
-        }
-
-        $preview_content_box.html(postprocess_content(rendered_preview_html));
-        rendered_markdown.update_elements($preview_content_box);
-
-        // Check for thumbnail loading placeholders and start polling
-        clear_thumbnail_polling();
-        pending_thumbnail_paths = extract_thumbnail_paths($preview_content_box);
-
-        if (pending_thumbnail_paths.size > 0) {
-            void poll_thumbnail_status(
-                $preview_container,
-                $preview_spinner,
-                $preview_content_box,
-                content,
-            );
-        }
+    const preview_render_count = increment_preview_render_count($preview_container);
+    function response_is_stale(): boolean {
+        return (
+            preview_render_count !== get_preview_render_count($preview_container) ||
+            !$preview_container.hasClass("preview_mode")
+        );
     }
 
     if (content.length === 0) {
-        show_preview($t_html({defaultMessage: "Nothing to preview"}));
+        apply_preview_render(
+            $preview_container,
+            content,
+            $t_html({defaultMessage: "Nothing to preview"}),
+        );
     } else {
         if (markdown.contains_backend_only_syntax(content) && show_spinner) {
-            const $spinner = $preview_spinner.expectOne();
+            const $spinner = $preview_container.find(".markdown_preview_spinner").expectOne();
             loading.make_indicator($spinner);
         } else {
             // For messages that don't appear to contain syntax that
@@ -1774,34 +1796,46 @@ export function render_and_show_preview(
             // echoed frontend rendering before receiving the
             // authoritative backend rendering from the server).
             const rendered_content = markdown.render(content).content;
-            show_preview(rendered_content);
+            apply_preview_render($preview_container, content, rendered_content);
         }
         void channel.post({
             url: "/json/messages/render",
-            data: {content},
+            data: {content, populate_url_embed_data: true},
             success(response_data) {
-                if (
-                    preview_render_count !== compose_state.get_preview_render_count() ||
-                    !$preview_container.hasClass("preview_mode")
-                ) {
-                    // The user is no longer in preview mode or the compose
-                    // input has already been updated with new raw Markdown
-                    // since this rendering request was sent off to the server, so
-                    // there's nothing to do.
+                if (response_is_stale()) {
+                    // The user is no longer in preview mode, the compose
+                    // input has already been updated with new raw Markdown,
+                    // or the preview has been updated with URL embed data
+                    // since this rendering request was sent off to the
+                    // server, so there's nothing to do.
                     return;
                 }
                 const data = message_render_response_schema.parse(response_data);
-                if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator($preview_spinner);
-                }
-                show_preview(data.rendered, content);
+                apply_server_preview_render($preview_container, content, data.rendered);
             },
             error() {
-                if (markdown.contains_backend_only_syntax(content)) {
-                    loading.destroy_indicator($preview_spinner);
+                if (response_is_stale()) {
+                    return;
                 }
-                show_preview($t_html({defaultMessage: "Failed to generate preview"}));
+                apply_preview_render(
+                    $preview_container,
+                    content,
+                    $t_html({defaultMessage: "Failed to generate preview"}),
+                );
             },
         });
     }
+}
+
+export function apply_preview_embeds(
+    $preview_container: JQuery,
+    content: string,
+    rendered_content: string,
+): void {
+    if (!$preview_container.hasClass("preview_mode")) {
+        return;
+    }
+    // Discards the responses to earlier renders, which may lack these embeds.
+    increment_preview_render_count($preview_container);
+    apply_server_preview_render($preview_container, content, rendered_content);
 }

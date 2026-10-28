@@ -356,7 +356,7 @@ print(OKGREEN + f"Zulip {action}ed successfully!" + ENDC)
 
 if change_symlink and "PWD" in os.environ:
     for symlink in [last_symlink, current_symlink]:
-        if os.path.commonprefix([os.environ["PWD"], symlink]) == symlink:
+        if os.path.commonpath([os.environ["PWD"], symlink]) == symlink:
             print(
                 """
 {}Your shell entered its current directory through a symlink:

@@ -8,6 +8,7 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 
 from zerver.lib.devices import b64decode_token_id_base64
+from zerver.lib.event_types import DeviceUpdateEvent
 from zerver.lib.exceptions import (
     InvalidBouncerPublicKeyError,
     InvalidEncryptedPushRegistrationError,
@@ -55,12 +56,7 @@ def handle_registration_to_bouncer_failure(
       the `/register` response.
     """
     Device.objects.filter(id=device_id).update(push_registration_error_code=error_code)
-    event = dict(
-        type="device",
-        op="update",
-        device_id=device_id,
-        push_registration_error_code=error_code,
-    )
+    event = DeviceUpdateEvent(device_id=device_id, push_registration_error_code=error_code)
     send_event_on_commit(user_profile.realm, event, [user_profile.id])
 
     # Report the `REQUEST_EXPIRED_ERROR` to the server admins as it indicates
@@ -192,9 +188,7 @@ def handle_register_push_device_to_bouncer(
     Device.objects.filter(id=device_id).update(
         push_token_id=token_id_int, pending_push_token_id=None
     )
-    event = dict(
-        type="device",
-        op="update",
+    event = DeviceUpdateEvent(
         device_id=device_id,
         push_token_id=token_id_base64,
         pending_push_token_id=None,

@@ -9,14 +9,32 @@ from django.db import transaction
 from typing_extensions import override
 
 from zerver.actions.message_edit import do_update_embedded_data
-from zerver.actions.message_send import render_incoming_message
+from zerver.actions.message_send import (
+    do_send_url_embed_data_event,
+    is_latest_preview_draft,
+    render_incoming_message,
+    render_unsaved_message,
+)
+from zerver.lib.cache import (
+    cache_delete,
+    pending_preview_draft_cache_key,
+    preview_draft_content_hash,
+)
 from zerver.lib.mention import MentionBackend, MentionData
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.url_preview.types import UrlEmbedData
-from zerver.models import Message, Realm
+from zerver.models import Message, Realm, UserProfile
+from zerver.models.users import get_user_profile_by_id
 from zerver.worker.base import InterruptConsumeError, QueueProcessingWorker, assign_queue
 
 logger = logging.getLogger(__name__)
+
+
+def fetch_link_embed_data(url: str) -> UrlEmbedData | None:
+    start_time = time.time()
+    link_embed_data = url_preview.get_link_embed_data(url)
+    logging.info("Time spent on get_link_embed_data for %s: %s", url, time.time() - start_time)
+    return link_embed_data
 
 
 @assign_queue("embed_links")
@@ -27,13 +45,16 @@ class FetchLinksEmbedData(QueueProcessingWorker):
 
     @override
     def consume(self, event: Mapping[str, Any]) -> None:
-        url_embed_data: dict[str, UrlEmbedData | None] = {}
-        for url in event["urls"]:
-            start_time = time.time()
-            url_embed_data[url] = url_preview.get_link_embed_data(url)
-            logging.info(
-                "Time spent on get_link_embed_data for %s: %s", url, time.time() - start_time
+        if event.get("type") == "url_embed_data":
+            self.handle_url_embed_data_request(
+                user_profile_id=event["user_id"],
+                content=event["content"],
+                cached_urls=event["cached_urls"],
+                urls=event["urls"],
             )
+            return
+
+        url_embed_data = {url: fetch_link_embed_data(url) for url in event["urls"]}
 
         # Ideally, we should use `durable=True` here. However, in the
         # `test_message_update_race_condition` test, this function is not called
@@ -72,6 +93,47 @@ class FetchLinksEmbedData(QueueProcessingWorker):
             )
             do_update_embedded_data(message.sender, message, rendering_result, mention_data)
 
+    def handle_url_embed_data_request(
+        self, *, user_profile_id: int, content: str, cached_urls: list[str], urls: list[str]
+    ) -> None:
+        try:
+            sender = get_user_profile_by_id(user_profile_id)
+        except UserProfile.DoesNotExist:
+            # The user may have been deleted.
+            return
+
+        content_hash = preview_draft_content_hash(content)
+        try:
+            fetched_url_embed_data: dict[str, UrlEmbedData | None] = {}
+            unavailable_urls = url_preview.get_unavailable_preview_urls(urls)
+            for url in urls:
+                if url in unavailable_urls:
+                    continue
+                if not is_latest_preview_draft(sender.id, content_hash):
+                    return
+                try:
+                    fetched_url_embed_data[url] = fetch_link_embed_data(url)
+                finally:
+                    if fetched_url_embed_data.get(url) is None:
+                        url_preview.mark_preview_url_unavailable(url)
+
+            if not is_latest_preview_draft(sender.id, content_hash):
+                return
+            previewed_url_embed_data = {url: fetch_link_embed_data(url) for url in cached_urls}
+            rendered_content = render_unsaved_message(
+                sender,
+                content,
+                url_embed_data={**previewed_url_embed_data, **fetched_url_embed_data},
+            ).rendered_content
+            previewed_rendered_content = render_unsaved_message(
+                sender, content, url_embed_data=previewed_url_embed_data
+            ).rendered_content
+            if rendered_content != previewed_rendered_content:
+                do_send_url_embed_data_event(sender, content, rendered_content)
+        finally:
+            # Lets a later render queue a job for any links this one didn't fetch.
+            cache_delete(pending_preview_draft_cache_key(sender.id, content_hash))
+
     @override
     def timer_expired(
         self, limit: int, events: list[dict[str, Any]], signal: int, frame: FrameType | None
@@ -79,11 +141,15 @@ class FetchLinksEmbedData(QueueProcessingWorker):
         assert len(events) == 1
         event = events[0]
 
+        if event.get("type") == "url_embed_data":
+            fetching_for = f"a preview by user {event['user_id']}"
+        else:
+            fetching_for = f"message {event['message_id']}"
         logging.warning(
-            "Timed out in %s after %s seconds while fetching URLs for message %s: %s",
+            "Timed out in %s after %s seconds while fetching URLs for %s: %s",
             self.queue_name,
             limit,
-            event["message_id"],
+            fetching_for,
             event["urls"],
         )
         raise InterruptConsumeError

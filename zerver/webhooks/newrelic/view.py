@@ -168,7 +168,7 @@ def api_newrelic_webhook(
             formatted_missing_fields=formatted_missing_fields,
         )
         topic = "New Relic incident alerts"
-        check_send_webhook_message(request, user_profile, topic, content)
+        check_send_webhook_message(request, user_profile, topic, content, complete_event_type=None)
         return json_success(request)
 
     message_context = parse_payload(payload)

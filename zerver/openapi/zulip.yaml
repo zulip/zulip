@@ -1230,6 +1230,33 @@ paths:
                                 }
                             - type: object
                               description: |
+                                Event sent to a user's clients when the user completes the OAuth flow
+                                for the [Google Meet integration](/help/configure-call-provider).
+                                Clients need to know whether initiating Google Meet OAuth is required
+                                before creating a Google Meet call.
+
+                                **Changes**: New in Zulip 13.0 (feature level 514).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - has_google_meet_token
+                                value:
+                                  type: boolean
+                                  description: |
+                                    A boolean specifying whether the user has a Google Meet access token.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "has_google_meet_token",
+                                  "value": true,
+                                  "id": 0,
+                                }
+                            - type: object
+                              description: |
                                 A simple event sent when the set of invitations changes.
                                 This event is sent to organization administrators and the creator of
                                 the changed invitation; this tells clients they need to refetch
@@ -3520,6 +3547,58 @@ paths:
                                   "message_id": 31,
                                   "recipient":
                                     {"type": "direct", "user_ids": [8, 10]},
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to a user when the server finishes fetching the
+                                [URL embed data](/help/image-video-and-website-previews) for
+                                content they asked it to render via
+                                [`POST /messages/render`](/api/render-message) with
+                                `populate_url_embed_data`, if that changes the rendered
+                                content.
+
+                                Because fetching that data can be slow, the render response
+                                omits what the server did not already have; this event then
+                                delivers the content re-rendered with the fetched data, so the
+                                client can live-update what it is displaying. The event is sent
+                                to all of the user's clients.
+
+                                Clients should apply `rendered_content` only if `content` still
+                                matches what they are displaying, since the user may have
+                                edited it while the data was being fetched.
+
+                                The server tracks only the user's most recent render with
+                                `populate_url_embed_data`, across all of their clients.
+                                Requesting another, from any client, drops an earlier one
+                                that is still queued or still being fetched, as does leaving
+                                it queued for several minutes. Clients should therefore not
+                                expect this event for every render they request.
+
+                                **Changes**: New in Zulip 13.0 (feature level 513).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - url_embed_data
+                                content:
+                                  type: string
+                                  description: |
+                                    The raw Markdown content that was re-rendered.
+                                rendered_content:
+                                  type: string
+                                  description: |
+                                    That content re-rendered as HTML, with the fetched URL
+                                    embed data included.
+                              example:
+                                {
+                                  "type": "url_embed_data",
+                                  "content": "https://example.com/",
+                                  "rendered_content": '<p><a href="https://example.com/">https://example.com/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="https://example.com/" style="background-image: url(&quot;https://example.com/image.png&quot;)"></a><div class="data-container"><div class="message_embed_title"><a href="https://example.com/" title="Example Domain">Example Domain</a></div><div class="message_embed_description">This domain is for use in documentation examples.</div></div></div>',
                                   "id": 0,
                                 }
                             - type: object
@@ -6004,11 +6083,15 @@ paths:
                                         - 6 = Constructor Groups
                                         - 7 = Nextcloud Talk
                                         - 8 = Webex (User OAuth integration)
+                                        - 9 = Google Meet (User OAuth integration)
 
                                         Note that only one of the [Zoom integrations][zoom-video-calls] can
                                         be configured on a Zulip server.
 
-                                        **Changes**: In Zulip 12.0 (feature level 493),
+                                        **Changes**: In Zulip 13.0 (feature level 514),
+                                        added the Google Meet option.
+
+                                        In Zulip 12.0 (feature level 493),
                                         added the Webex OAuth option.
 
                                         In Zulip 12.0 (feature level 465), added the
@@ -9992,8 +10075,32 @@ paths:
               properties:
                 content:
                   $ref: "#/components/schemas/RequiredContent"
+                populate_url_embed_data:
+                  type: boolean
+                  default: false
+                  example: true
+                  description: |
+                    Whether the server should populate
+                    [URL embed data](/help/image-video-and-website-previews)
+                    for the links in `content`: data the server already has is
+                    included in `rendered`, and the rest is fetched
+                    asynchronously. If that changes the rendered content, it is
+                    delivered to the requesting user via a
+                    [`url_embed_data` event](/api/get-events#url_embed_data), so
+                    that a client displaying the rendered content can live-update
+                    it. See the event's documentation for when it is not sent.
+
+                    Only links that would get URL embeds if `content` were sent
+                    as a message are populated. For example, links to websites
+                    are not populated for bots, or if the organization has
+                    disabled website previews.
+
+                    **Changes**: New in Zulip 13.0 (feature level 513).
               required:
                 - content
+            encoding:
+              populate_url_embed_data:
+                contentType: application/json
       responses:
         "200":
           description: Success.
@@ -13485,8 +13592,18 @@ paths:
           by the [`can_remove_subscribers_group`][can-remove-parameter]
           for the channel.
 
-        **Changes**: Before Zulip 10.0 (feature level 362),
-        subscriptions in archived channels could not be modified.
+        When other users are removed from a channel, they may receive
+        a direct message notifying them that they were unsubscribed by
+        the current user; see
+        [`send_messages_to_removed_subscribers`][send-notifications-param]
+        below.
+
+        **Changes**: Prior to Zulip 13.0 (feature level 515), the
+        server never sent direct messages to users who were unsubscribed
+        from one or more channels by the current user.
+
+        Before Zulip 10.0 (feature level 362), subscriptions in archived
+        channels could not be modified.
 
         Before Zulip 8.0 (feature level 208), if a user specified by
         the [`principals`][principals-param] parameter was a
@@ -13509,6 +13626,7 @@ paths:
 
         [principals-param]: /api/unsubscribe#parameter-principals
         [can-remove-parameter]: /api/subscribe#parameter-can_remove_subscribers_group
+        [send-notifications-param]: /api/unsubscribe#parameter-send_messages_to_removed_subscribers
       x-curl-examples-parameters:
         oneOf:
           - type: include
@@ -13541,12 +13659,29 @@ paths:
                   example: ["Verona", "Denmark"]
                 principals:
                   $ref: "#/components/schemas/Principals"
+                send_messages_to_removed_subscribers:
+                  description: |
+                    Whether other users unsubscribed via this request should be sent a
+                    direct message, from Notification Bot, notifying them that they
+                    were unsubscribed and by whom.
+
+                    The server will never send direct messages when the total number of
+                    users who were unsubscribed from channels in this request was more
+                    than the value of `max_bulk_subscription_messages`, which is
+                    available in the [`POST /register`](/api/register-queue) response.
+
+                    **Changes**: New in Zulip 13.0 (feature level 515).
+                  type: boolean
+                  default: true
+                  example: true
               required:
                 - subscriptions
             encoding:
               subscriptions:
                 contentType: application/json
               principals:
+                contentType: application/json
+              send_messages_to_removed_subscribers:
                 contentType: application/json
       responses:
         "200":
@@ -13575,8 +13710,22 @@ paths:
                         description: |
                           A list of the names of channels which were unsubscribed from as a result
                           of the query.
+                      messages_sent_to_removed_subscribers:
+                        type: boolean
+                        description: |
+                          Only present if the parameter `send_messages_to_removed_subscribers`
+                          in the request was `true`.
+
+                          Whether Notification Bot DMs were in fact sent to the removed
+                          subscribers as requested by the
+                          `send_messages_to_removed_subscribers` parameter. Clients may
+                          find this value useful to communicate with users about the
+                          effect of this request.
+
+                          **Changes**: New in Zulip 13.0 (feature level 515).
                     example:
                       {
+                        "messages_sent_to_removed_subscribers": true,
                         "msg": "",
                         "not_removed": [],
                         "removed": ["testing-help"],
@@ -20355,6 +20504,17 @@ paths:
                           Webex call.
 
                           **Changes**: New in Zulip 12.0 (feature level 493).
+                      has_google_meet_token:
+                        type: boolean
+                        description: |
+                          Present if `video_calls` is present in `fetch_event_types`.
+
+                          A boolean that denotes whether the user has completed the OAuth flow for
+                          the [Google Meet integration](/help/configure-call-provider). Clients need
+                          to know whether initiating Google Meet OAuth flow is required before
+                          creating a Google Meet call.
+
+                          **Changes**: New in Zulip 13.0 (feature level 514).
                       giphy_api_key:
                         type: string
                         description: |
@@ -21184,11 +21344,15 @@ paths:
                           - 6 = Constructor Groups
                           - 7 = Nextcloud Talk
                           - 8 = Webex (User OAuth integration)
+                          - 9 = Google Meet (User OAuth integration)
 
                           Note that only one of the [Zoom integrations][zoom-video-calls] can
                           be configured on a Zulip server.
 
-                          **Changes**: In Zulip 12.0 (feature level 493), added the
+                          **Changes**: In Zulip 13.0 (feature level 514), added the
+                          Google Meet option.
+
+                          In Zulip 12.0 (feature level 493), added the
                           Webex OAuth option.
 
                           In Zulip 12.0 (feature level 465), added the
@@ -22035,6 +22199,19 @@ paths:
                           since the last request.
 
                           **Changes**: New in Zulip 6.0 (feature level 140).
+                      server_google_meet_app_internal:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether a configured Google Meet video call integration should be
+                          considered to have an internal, workspace-restricted audience.
+
+                          Clients should use this to warn users that the video call feature
+                          is restricted to a particular Google Workspace before starting the
+                          Google OAuth flow for the Google Meet video call integration.
+
+                          **Changes**: New in Zulip 13.0 (feature level 514).
                       server_jitsi_server_url:
                         type: string
                         nullable: true
@@ -22994,13 +23171,21 @@ paths:
                               Configuration for group level group permission settings.
                             additionalProperties:
                               $ref: "#/components/schemas/GroupPermissionSetting"
-                      max_bulk_new_subscription_messages:
+                      max_bulk_subscription_messages:
                         description: |
-                          Maximum number of new subscribers for which the server will
-                          respect the `send_new_subscription_messages` parameter when
-                          [adding subscribers to a channel](/api/subscribe#parameter-send_new_subscription_messages).
+                          The maximum number of affected users for which the server will respect the
+                          [`send_new_subscription_messages` parameter][new-subs], when subscribing
+                          users to a channel, and the [`send_messages_to_removed_subscribers`
+                          parameter][removed-subs], when unsubscribing users from a channel.
 
-                          **Changes**: New in Zulip 11.0 (feature level 397).
+                          **Changes**: Prior to Zulip 13.0 (feature level 515), this field
+                          was named `max_bulk_new_subscription_messages` as it only applied when
+                          subscribing users to a channel.
+
+                          New in Zulip 11.0 (feature level 397).
+
+                          [new-subs]: /api/subscribe#parameter-send_new_subscription_messages
+                          [removed-subs]: /api/unsubscribe#parameter-send_messages_to_removed_subscribers
                         type: number
                         example: 100
                     example:
@@ -25590,7 +25775,7 @@ paths:
             The target message's ID.
           schema:
             type: integer
-          example: 47
+          example: 48
           required: true
       requestBody:
         required: true
@@ -27553,6 +27738,48 @@ paths:
                         "msg": "",
                         "result": "success",
                         "url": "https://xxkk-7xpz.webex.com/xxkk-7xpz/j.php?MTID=mebb3ba1f366f683bcaec9d32773ce034",
+                      }
+  /calls/google_meet/create:
+    post:
+      tags: ["channels"]
+      operationId: create-google-meet-video-call
+      summary: Create Google Meet video call
+      description: |
+        Create a video call URL for a Google Meet video call.
+
+        Requires the [Google Meet integration](/integrations/google-meet) to be
+        configured on the Zulip server.
+
+        Clients should confirm that the user has completed the OAuth process
+        with Google and has a Google Meet token before attempting to create a
+        video call URL. See the `has_google_meet_token` field in the [`POST
+        /register` response](/api/register-queue), as well as the
+        [`has_google_meet_token` event type](/api/get-events#has_google_meet_token).
+
+        **Changes**: New in Zulip 13.0 (feature level 514).
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      ignored_parameters_unsupported: {}
+                      url:
+                        description: |
+                          The URL for the Google Meet video call.
+                        type: string
+                        example: "https://meet.google.com/abc-mnop-xyz"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "url": "https://meet.google.com/abc-mnop-xyz",
                       }
   /calls/constructorgroups/create:
     post:
@@ -31216,7 +31443,7 @@ components:
 
         The server will never send direct messages when the total number of users
         who were subscribed to channels in this request was more than the value
-        of `max_bulk_new_subscription_messages`, which is available in the [`POST
+        of `max_bulk_subscription_messages`, which is available in the [`POST
         /register`](/api/register-queue) response.
 
         **Changes**: Before Zulip 11.0 (feature level 397), new subscribers

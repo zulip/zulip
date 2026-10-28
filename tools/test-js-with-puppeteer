@@ -102,19 +102,18 @@ def run_tests(files: Iterable[str], external_host: str, loop: int = 1) -> None:
         # Important: do this next call inside the `with` block, when Django
         #            will be pointing at the test database.
         subprocess.check_call("tools/setup/generate-test-credentials")
+        ret = 0
+        current_test_num = 0
         if options.interactive:
             response = input('Press Enter to run tests, "q" to quit: ')
-            ret = 1
-            failed_test_num = 0
             while response != "q":
-                ret, failed_test_num = run_tests(failed_test_num)
+                ret, current_test_num = run_tests(current_test_num)
                 if ret == 0:
-                    failed_test_num = 0
+                    current_test_num = 0
                     response = input('Tests succeeded. Press Enter to re-run tests, "q" to quit: ')
                 else:
                     response = input('Tests failed. Press Enter to re-run tests, "q" to quit: ')
         else:
-            ret = 1
             for loop_num in range(1, loop + 1):
                 print(f"\n\nRunning tests in loop ({loop_num}/{loop})\n")
                 ret, current_test_num = run_tests()

@@ -5,6 +5,8 @@ import * as blueslip from "./blueslip.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_scroll_state from "./message_scroll_state.ts";
 import type {Message} from "./message_store.ts";
+import * as modals from "./modals.ts";
+import * as overlays from "./overlays.ts";
 import * as rows from "./rows.ts";
 import * as util from "./util.ts";
 
@@ -15,6 +17,14 @@ export type MessageViewportInfo = {
 };
 
 export const $scroll_container = $(":root");
+
+// When you start Zulip, window_focused should be true, but it might not be the
+// case after a server-initiated reload.
+let window_focused = document.hasFocus();
+
+function is_window_focused(): boolean {
+    return window_focused;
+}
 
 let window_resize_handler: () => void;
 
@@ -41,6 +51,10 @@ export function at_rendered_top(): boolean {
     return scrollTop() <= 0;
 }
 
+export function message_feed_visible_top(): number {
+    return util.the($("#navbar-fixed-container")).getBoundingClientRect().bottom;
+}
+
 export function message_viewport_info(): MessageViewportInfo {
     // Return a structure that tells us details of the viewport
     // accounting for fixed elements like the top navbar.
@@ -49,14 +63,13 @@ export function message_viewport_info(): MessageViewportInfo {
     // message pane, which should make sense for callers, who will
     // generally be concerned about whether actual message content is
     // visible.
-    const $element_just_above_us = $("#navbar-fixed-container");
     const $element_just_below_us = $("#compose");
 
-    let visible_top = $element_just_above_us.outerHeight() ?? 0;
+    let visible_top = message_feed_visible_top();
 
     const $sticky_header = $(".sticky_header");
     if ($sticky_header.length > 0) {
-        visible_top += $sticky_header.outerHeight() ?? 0;
+        visible_top += util.the($sticky_header).getBoundingClientRect().height;
     }
 
     const visible_bottom = $element_just_below_us.position().top;
@@ -68,6 +81,18 @@ export function message_viewport_info(): MessageViewportInfo {
         visible_bottom,
         visible_height,
     };
+}
+
+export function viewport_is_visible_and_focused(): boolean {
+    if (
+        overlays.any_active() ||
+        modals.any_active() ||
+        !is_window_focused() ||
+        $("#message_feed_container").css("display") === "none"
+    ) {
+        return false;
+    }
+    return true;
 }
 
 // Important note: These functions just look at the state of the
@@ -258,12 +283,11 @@ function add_to_visible<T>(
 
 const top_of_feed = new util.CachedValue({
     compute_value() {
-        const $header = $("#navbar-fixed-container");
-        let visible_top = $header.outerHeight() ?? 0;
+        let visible_top = message_feed_visible_top();
 
         const $sticky_header = $(".sticky_header");
         if ($sticky_header.length > 0) {
-            visible_top += $sticky_header.outerHeight() ?? 0;
+            visible_top += util.the($sticky_header).getBoundingClientRect().height;
         }
         return visible_top;
     },
@@ -414,6 +438,14 @@ export function stop_auto_scrolling(): void {
     if (in_stoppable_autoscroll) {
         $scroll_container.stop();
     }
+}
+
+export function is_animating_scroll(): boolean {
+    return $scroll_container.promise().state() === "pending";
+}
+
+export function after_animated_scroll(callback: () => void): void {
+    void $scroll_container.promise().done(callback);
 }
 
 export function system_initiated_animate_scroll(
@@ -605,6 +637,16 @@ export function can_scroll(): boolean {
 }
 
 export function initialize(): void {
+    // These handlers must be placed before all focus handlers in our
+    // application that check is_window_focused.
+    $(window)
+        .on("focus", () => {
+            window_focused = true;
+        })
+        .on("blur", () => {
+            window_focused = false;
+        });
+
     // This handler must be placed before all resize handlers in our application
     $(window).on("resize", () => {
         cached_width.reset();

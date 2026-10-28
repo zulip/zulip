@@ -89,6 +89,33 @@ directory=/home/zulip/deployments/current/
     term = "shard"
   elsif @worker_counts.has_key?(queue)
     numprocs = @worker_counts[queue]
+  end
+
+  # The thumbnail worker's RSS grows for a long time after start,
+  # roughly in proportion to the number of cores, without anything
+  # actually leaking: it is memory that libvips has freed but glibc's
+  # malloc retains.  Two glibc behaviors combine to cause this:
+  #
+  # - libvips runs one worker thread per core, and glibc gives each
+  #   concurrently-allocating thread its own arena.  Each arena
+  #   accumulates its own fragmented free space, so the retained
+  #   total scales with the core count.  Capping the arena count
+  #   makes all threads share, at the cost of some allocator lock
+  #   contention, which is fine for a worker that is not on the
+  #   request path.
+  #
+  # - glibc serves allocations above the mmap threshold with a
+  #   dedicated mmap that is unmapped on free, but every free of
+  #   such a chunk raises the threshold to that chunk's size (up to
+  #   32MB).  libvips's image buffers are exactly in that range, so
+  #   after the first few images they are carved out of the heap
+  #   arenas instead, and never returned.  Setting the threshold
+  #   explicitly pins it, which also disables the dynamic adjustment.
+  #
+  # See https://github.com/libvips/libvips/discussions/4184
+  extra_env = ""
+  if queue == "thumbnail"
+    extra_env = ",MALLOC_ARENA_MAX=2,MALLOC_MMAP_THRESHOLD_=131072"
   end -%>
 <%- if numprocs > 1 -%>
 process_name=zulip_events_<%= queue %>_<%= term %>%(process_num)s
@@ -100,7 +127,7 @@ numprocs_start=1
 command=nice -n10 /home/zulip/deployments/current/manage.py process_queue --queue_name=<%= queue %> --skip-checks
 stdout_logfile=/var/log/zulip/events_<%= queue %>.log         ; stdout log path, NONE for none; default AUTO
 <%end -%>
-environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"<%= @ca_bundle %>
+environment=HTTP_proxy="<%= @proxy %>",HTTPS_proxy="<%= @proxy %>"<%= @ca_bundle %><%= extra_env %>
 priority=300                   ; the relative start priority (default 999)
 autostart=true                 ; start at supervisord start (default: true)
 autorestart=true               ; whether/when to restart (default: unexpected)

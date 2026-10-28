@@ -362,6 +362,22 @@ test("update_topic_name_case", () => {
     assert.deepEqual(stream_topic_history.get_recent_topic_names(stream_id), ["Known Topic"]);
 });
 
+test("get_known_topic_name", () => {
+    const stream_id = 91;
+    assert.equal(stream_topic_history.get_known_topic_name(stream_id, "known topic"), undefined);
+
+    stream_topic_history.add_message({
+        stream_id,
+        message_id: 910,
+        topic_name: "Known Topic",
+    });
+    assert.equal(
+        stream_topic_history.get_known_topic_name(stream_id, "KNOWN topic"),
+        "Known Topic",
+    );
+    assert.equal(stream_topic_history.get_known_topic_name(stream_id, "other topic"), undefined);
+});
+
 test("server_history_end_to_end", () => {
     stream_topic_history.reset();
 

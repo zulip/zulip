@@ -52,6 +52,11 @@ import * as util from "./util.ts";
 /* Maximum channel name length + link syntax (#**>**) + some topic characters */
 const MAX_LOOKBACK_FOR_TYPEAHEAD_COMPLETION = 60 + 6 + 20;
 
+function starts_with_terminating_punctuation(link_tokens: RegExpExecArray | null): boolean {
+    const query = link_tokens?.at(-1) ?? "";
+    return /^\p{P}/u.test(query);
+}
+
 // **********************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS
 // **********************************
@@ -1142,6 +1147,8 @@ export function get_candidates(
         // completion. The query must start immediately after the link —
         // leading whitespace is rejected so an older link on the line
         // can't match across message text and suppress other typeaheads.
+        // A query that starts with punctuation is not a topic, see
+        // starts_with_terminating_punctuation.
         // It excludes `>` to stay non-overlapping with topic_jump above.
         const complete_stream_regex = /#\*\*([^*>]+)\*\*((?!\s)[^*>\n]*)$/;
         // Matches the '[#channel](url)' fallback link for special characters.
@@ -1156,12 +1163,18 @@ export function get_candidates(
         // after picking a channel), not when the cursor lands after an
         // existing link.
         const typeahead_already_shown = compose_ui.compose_textarea_typeahead?.shown ?? false;
-        const complete_channel_link_tokens = typeahead_already_shown
+        let complete_channel_link_tokens = typeahead_already_shown
             ? complete_stream_regex.exec(split[0])
             : null;
-        const complete_fallback_link_tokens = typeahead_already_shown
+        let complete_fallback_link_tokens = typeahead_already_shown
             ? complete_fallback_stream_regex.exec(split[0])
             : null;
+        if (starts_with_terminating_punctuation(complete_channel_link_tokens)) {
+            complete_channel_link_tokens = null;
+        }
+        if (starts_with_terminating_punctuation(complete_fallback_link_tokens)) {
+            complete_fallback_link_tokens = null;
+        }
         const tokens =
             partial_stream_topic_tokens ?? // #**channel>topic
             topic_shortcut_tokens ?? // #>topic
@@ -1210,14 +1223,31 @@ export function get_candidates(
             }
             // If we aren't composing to a channel, `sub` would be undefined.
             if (sub !== undefined) {
-                if (
-                    is_complete_channel_link &&
-                    stream_data.is_empty_topic_only_channel(sub.stream_id)
-                ) {
-                    // This channel only allows the empty topic, so the
-                    // complete channel link is the final form; don't offer
-                    // topic completion.
-                    return [];
+                if (stream_data.is_empty_topic_only_channel(sub.stream_id)) {
+                    if (is_complete_channel_link) {
+                        // The complete channel link is the final form, so
+                        // don't open topic completion by default; the user
+                        // must press ">" to reach the empty topic.
+                        return [];
+                    }
+                    // The user asked for a topic with ">", but this channel
+                    // only allows the empty topic, so offer just that single
+                    // topic rather than offering or creating named ones.
+                    const empty_topic_suggestion: TopicSuggestion = {
+                        topic: "",
+                        topic_display_name: util.get_final_topic_display_name(""),
+                        is_empty_string_topic: true,
+                        type: "topic_list",
+                        is_channel_link: false,
+                        used_syntax_prefix,
+                        stream_data: {
+                            ...sub,
+                            type: "stream",
+                            rendered_description: "",
+                        },
+                        is_new_topic: false,
+                    };
+                    return [empty_topic_suggestion];
                 }
                 // We always show topic suggestions after the user types a stream, and let them
                 // pick between just showing the stream (the first option, when nothing follows ">")

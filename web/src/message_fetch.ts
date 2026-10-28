@@ -16,8 +16,8 @@ import type {MessageList} from "./message_list.ts";
 import type {MessageListData} from "./message_list_data.ts";
 import * as message_list_data_cache from "./message_list_data_cache.ts";
 import * as message_lists from "./message_lists.ts";
+import type {Message} from "./message_store.ts";
 import {raw_message_schema} from "./message_store.ts";
-import * as message_util from "./message_util.ts";
 import * as message_viewport from "./message_viewport.ts";
 import * as narrow_banner from "./narrow_banner.ts";
 import * as navbar_alerts from "./navbar_alerts.ts";
@@ -25,12 +25,16 @@ import {page_params} from "./page_params.ts";
 import * as popup_banners from "./popup_banners.ts";
 import {recent_view_messages_data} from "./recent_view_messages_data.ts";
 import * as recent_view_ui from "./recent_view_ui.ts";
+import * as recent_view_util from "./recent_view_util.ts";
 import {get_retry_backoff_seconds} from "./retry_backoff.ts";
+import * as scroll_to_bottom_button from "./scroll_to_bottom_button.ts";
 import {narrow_operator_schema} from "./state_data.ts";
 import type {NarrowTerm} from "./state_data.ts";
 import * as stream_data from "./stream_data.ts";
 import * as stream_list from "./stream_list.ts";
+import * as unread from "./unread.ts";
 import * as unread_ops from "./unread_ops.ts";
+import * as unread_ui from "./unread_ui.ts";
 
 export const message_ids_response_schema = z.object({
     found_newest: z.boolean(),
@@ -137,7 +141,12 @@ export function fetch_more_if_required_for_current_msg_list(
     if (has_found_oldest && has_found_newest && message_lists.current.visibly_empty()) {
         // Even after loading more messages, we have
         // no messages to display in this narrow.
-        narrow_banner.show_empty_narrow_message(message_lists.current.data.filter);
+        const msg_list = message_lists.current;
+        message_feed_loading.run_when_top_of_feed_indicator_hidden(() => {
+            if (msg_list === message_lists.current && msg_list.visibly_empty()) {
+                narrow_banner.show_empty_narrow_message(msg_list.data.filter);
+            }
+        });
         message_lists.current.update_trailing_bookend();
         compose_closed_ui.maybe_update_buttons_for_dm_recipient();
         compose_validate.validate_and_update_send_button_status();
@@ -154,6 +163,25 @@ export function fetch_more_if_required_for_current_msg_list(
     }
 }
 
+export function do_unread_count_updates(messages: Message[], expect_no_new_unreads = false): void {
+    const untracked_unread_messages = unread.process_loaded_messages(
+        messages,
+        expect_no_new_unreads,
+    );
+
+    if (untracked_unread_messages.length > 0) {
+        // The following operations are expensive, and thus should
+        // only happen if we found any unread messages justifying it.
+        unread_ui.update_unread_counts();
+        const conversation_keys = new Set(
+            untracked_unread_messages.map((message) =>
+                recent_view_util.get_key_from_message(message),
+            ),
+        );
+        recent_view_ui.bulk_inplace_rerender(conversation_keys);
+    }
+}
+
 function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): void {
     const raw_messages = data.messages;
 
@@ -165,7 +193,7 @@ function process_result(data: MessageFetchResponse, opts: MessageFetchOptions): 
 
     // In some rare situations, we expect to discover new unread
     // messages not tracked in unread.ts during this fetching process.
-    message_util.do_unread_count_updates(messages, true);
+    do_unread_count_updates(messages, true);
 
     if (messages.length > 0) {
         const is_contiguous_history = true;
@@ -276,6 +304,10 @@ function get_messages_success(data: MessageFetchResponse, opts: MessageFetchOpti
         // change, or new-message event) would leave messages unread
         // even though the user is looking at the bottom of the view.
         unread_ops.process_visible();
+    }
+
+    if (opts.msg_list?.is_current_message_list()) {
+        scroll_to_bottom_button.update();
     }
 }
 
@@ -472,6 +504,9 @@ export function load_messages(opts: MessageFetchOptions, attempt = 1): void {
                 // for many common errors, and those have nicer HTML formatting,
                 // we certainly don't for every possible 400 error.
                 message_feed_loading.hide_indicators();
+                if (opts.msg_list?.is_current_message_list()) {
+                    scroll_to_bottom_button.hide_after_failed_fetch();
+                }
 
                 if (
                     message_lists.current !== undefined &&

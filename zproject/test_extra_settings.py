@@ -204,6 +204,9 @@ VIDEO_ZOOM_CLIENT_SECRET = "client_secret"
 VIDEO_WEBEX_CLIENT_ID = "client_id"
 VIDEO_WEBEX_CLIENT_SECRET = "client_secret"
 
+VIDEO_GOOGLE_MEET_CLIENT_ID = "client_id"
+VIDEO_GOOGLE_MEET_CLIENT_SECRET = "client_secret"
+
 BIG_BLUE_BUTTON_SECRET = "123"
 BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 
@@ -228,6 +231,7 @@ ZULIP_SERVICES_URL = f"http://push.{EXTERNAL_HOST}"
 ZULIP_SERVICE_PUSH_NOTIFICATIONS = False
 ZULIP_SERVICE_SUBMIT_USAGE_STATISTICS = False
 ZULIP_SERVICE_SECURITY_ALERTS = False
+ZULIP_SERVICE_ADVERTISE_REALMS = False
 
 # Hack: This should be computed in computed_settings, but the transmission
 # of test settings overrides is wonky. See test_settings for more details.

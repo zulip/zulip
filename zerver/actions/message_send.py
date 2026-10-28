@@ -24,6 +24,14 @@ from zerver.actions.user_topics import (
 )
 from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import get_alert_word_automaton
+from zerver.lib.cache import (
+    cache_get,
+    cache_set,
+    latest_preview_draft_cache_key,
+    pending_preview_draft_cache_key,
+    preview_draft_content_hash,
+)
+from zerver.lib.event_types import UrlEmbedDataEvent
 from zerver.lib.exceptions import (
     DirectMessageInitiationError,
     DirectMessagePermissionError,
@@ -36,6 +44,7 @@ from zerver.lib.exceptions import (
     TopicsNotAllowedError,
     TopicWildcardMentionNotAllowedError,
 )
+from zerver.lib.internal_event_types import InternalMessageEvent
 from zerver.lib.markdown import MessageRenderingResult, render_message_markdown
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.mention import MentionBackend, MentionData, silent_mention_syntax_for_user
@@ -84,6 +93,7 @@ from zerver.lib.topic import get_topic_display_name, participants_for_topic
 from zerver.lib.topic_link_util import get_message_link_label, get_stream_link_syntax
 from zerver.lib.types import UserProfileChangeDict
 from zerver.lib.url_encoding import message_link_url, stream_message_url
+from zerver.lib.url_preview.preview import get_cached_link_embed_data, get_unavailable_preview_urls
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import (
     UserGroupMembershipDetails,
@@ -157,6 +167,71 @@ def render_incoming_message(
     except MarkdownRenderingError:
         raise JsonableError(_("Unable to render message"))
     return rendering_result
+
+
+def render_unsaved_message(
+    sender: UserProfile,
+    content: str,
+    *,
+    url_embed_data: dict[str, UrlEmbedData | None] | None = None,
+) -> MessageRenderingResult:
+    message = Message()
+    message.sender = sender
+    message.realm = sender.realm
+    message.content = content
+    return render_message_markdown(
+        message, content, realm=sender.realm, url_embed_data=url_embed_data
+    )
+
+
+# A job still queued after this long is for a preview the user has most
+# likely moved on from.
+URL_EMBED_DATA_JOB_TIMEOUT_SECONDS = 60 * 10
+
+
+def populate_url_embed_data_for_preview(
+    sender: UserProfile,
+    content: str,
+    links_for_preview: set[str],
+) -> dict[str, UrlEmbedData | None]:
+    content_hash = preview_draft_content_hash(content)
+    cache_set(
+        latest_preview_draft_cache_key(sender.id),
+        content_hash,
+        timeout=URL_EMBED_DATA_JOB_TIMEOUT_SECONDS,
+    )
+    if not links_for_preview:
+        return {}
+
+    url_embed_data = get_cached_link_embed_data(links_for_preview)
+    uncached_urls = [url for url in links_for_preview if url not in url_embed_data]
+    unavailable_urls = get_unavailable_preview_urls(uncached_urls)
+    urls_to_fetch = [url for url in uncached_urls if url not in unavailable_urls]
+    pending_cache_key = pending_preview_draft_cache_key(sender.id, content_hash)
+    if urls_to_fetch and cache_get(pending_cache_key) is None:
+        cache_set(pending_cache_key, True, timeout=URL_EMBED_DATA_JOB_TIMEOUT_SECONDS)
+        queue_event_on_commit(
+            "embed_links",
+            {
+                "type": "url_embed_data",
+                "user_id": sender.id,
+                "content": content,
+                # Needed to render the full draft.
+                "cached_urls": list(url_embed_data),
+                "urls": urls_to_fetch,
+            },
+        )
+    return url_embed_data
+
+
+def is_latest_preview_draft(user_profile_id: int, content_hash: str) -> bool:
+    latest_content_hash = cache_get(latest_preview_draft_cache_key(user_profile_id))
+    return latest_content_hash is not None and latest_content_hash[0] == content_hash
+
+
+def do_send_url_embed_data_event(sender: UserProfile, content: str, rendered_content: str) -> None:
+    event = UrlEmbedDataEvent(content=content, rendered_content=rendered_content)
+    send_event_on_commit(sender.realm, event, [sender.id])
 
 
 @dataclass
@@ -881,7 +956,7 @@ def create_user_messages(
 
 
 def filter_presence_idle_user_ids(user_ids: set[int]) -> list[int]:
-    # Given a set of user IDs (the recipients of a message), accesses
+    # Given a set of user IDs (the recipients of messages), accesses
     # the UserPresence table to determine which of these users are
     # currently idle and should potentially get email notifications
     # (and push notifications with
@@ -900,32 +975,77 @@ def filter_presence_idle_user_ids(user_ids: set[int]) -> list[int]:
     return sorted(idle_user_ids)
 
 
-def get_active_presence_idle_user_ids(
+def get_notifiable_if_idle_user_ids(
     realm: Realm,
     sender_id: int,
     user_notifications_data_list: list[UserMessageNotificationsData],
-) -> list[int]:
+) -> set[int]:
     """
-    Given a list of active_user_ids, we build up a subset
-    of those users who fit these criteria:
-
-        * They are likely to receive push or email notifications.
-        * They are no longer "present" according to the
-          UserPresence table.
+    Returns the users who would get a push or email notification for
+    the message if they were idle.
     """
 
     if realm.presence_disabled:  # nocoverage
-        return []
+        return set()
 
     user_ids = set()
     for user_notifications_data in user_notifications_data_list:
         # We only need to know the presence idle state for a user if this message would be notifiable
-        # for them if they were indeed idle. Only including those users in the calculation below is a
+        # for them if they were indeed idle. Only including those users in the presence query is a
         # very important optimization for open communities with many inactive users.
         if user_notifications_data.is_notifiable(sender_id, idle=True):
             user_ids.add(user_notifications_data.user_id)
 
-    return filter_presence_idle_user_ids(user_ids)
+    return user_ids
+
+
+def get_presence_idle_user_ids_by_message_id(
+    send_message_requests: list[SendMessageRequest],
+    user_message_flags: dict[int, dict[int, list[str]]],
+) -> dict[int, list[int]]:
+    notifiable_if_idle_user_ids_by_message_id: dict[int, set[int]] = {}
+    for send_request in send_message_requests:
+        user_flags = user_message_flags.get(send_request.message.id, {})
+        user_notifications_data_list = [
+            UserMessageNotificationsData.from_user_id_sets(
+                user_id=user_id,
+                flags=user_flags.get(user_id, []),
+                private_message=not send_request.message.is_channel_message,
+                disable_external_notifications=send_request.disable_external_notifications,
+                online_push_user_ids=send_request.online_push_user_ids,
+                dm_mention_push_disabled_user_ids=send_request.dm_mention_push_disabled_user_ids,
+                dm_mention_email_disabled_user_ids=send_request.dm_mention_email_disabled_user_ids,
+                stream_push_user_ids=send_request.stream_push_user_ids,
+                stream_email_user_ids=send_request.stream_email_user_ids,
+                topic_wildcard_mention_user_ids=send_request.topic_wildcard_mention_user_ids,
+                stream_wildcard_mention_user_ids=send_request.stream_wildcard_mention_user_ids,
+                followed_topic_push_user_ids=send_request.followed_topic_push_user_ids,
+                followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
+                topic_wildcard_mention_in_followed_topic_user_ids=send_request.topic_wildcard_mention_in_followed_topic_user_ids,
+                stream_wildcard_mention_in_followed_topic_user_ids=send_request.stream_wildcard_mention_in_followed_topic_user_ids,
+                muted_sender_user_ids=send_request.muted_sender_user_ids,
+                all_bot_user_ids=send_request.all_bot_user_ids,
+                push_device_registered_user_ids=send_request.push_device_registered_user_ids,
+            )
+            for user_id in send_request.active_user_ids
+        ]
+        notifiable_if_idle_user_ids_by_message_id[send_request.message.id] = (
+            get_notifiable_if_idle_user_ids(
+                realm=send_request.realm,
+                sender_id=send_request.message.sender_id,
+                user_notifications_data_list=user_notifications_data_list,
+            )
+        )
+
+    idle_user_ids = set(
+        filter_presence_idle_user_ids(
+            set().union(*notifiable_if_idle_user_ids_by_message_id.values())
+        )
+    )
+    return {
+        message_id: sorted(user_ids & idle_user_ids)
+        for message_id, user_ids in notifiable_if_idle_user_ids_by_message_id.items()
+    }
 
 
 def get_message_url_and_link(
@@ -962,6 +1082,26 @@ def get_message_url_and_link(
     )
     link = f"[{label}]({url})"
     return url, link
+
+
+def get_wide_message_dicts(
+    send_message_requests: list[SendMessageRequest],
+) -> dict[int, dict[str, Any]]:
+    messages_by_realm_id: dict[int, list[Message]] = defaultdict(list)
+    for send_request in send_message_requests:
+        messages_by_realm_id[send_request.message.realm_id].append(send_request.message)
+
+    recipient_dm_user_ids = {
+        send_request.message.recipient_id: send_request.dm_involved_user_ids
+        for send_request in send_message_requests
+        if send_request.dm_involved_user_ids is not None
+    }
+    wide_message_dicts: dict[int, dict[str, Any]] = {}
+    for realm_id, messages in messages_by_realm_id.items():
+        wide_message_dicts.update(
+            MessageDict.wide_dicts_for_new_messages(messages, realm_id, recipient_dm_user_ids)
+        )
+    return wide_message_dicts
 
 
 @transaction.atomic(savepoint=False)
@@ -1061,6 +1201,11 @@ def do_send_messages(
     for send_request in send_message_requests:
         do_widget_post_save_actions(send_request)
 
+    wide_message_dicts = get_wide_message_dicts(send_message_requests)
+    presence_idle_user_ids_by_message_id = get_presence_idle_user_ids_by_message_id(
+        send_message_requests, user_message_flags
+    )
+
     # This next loop is responsible for notifying other parts of the
     # Zulip system about the messages we just committed to the database:
     # * Sender automatically follows or unmutes the topic depending on 'automatically_follow_topics_policy'
@@ -1155,11 +1300,7 @@ def do_send_messages(
 
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
-        wide_message_dict = MessageDict.wide_dict(
-            send_request.message,
-            realm_id,
-            dm_involved_user_ids=send_request.dm_involved_user_ids,
-        )
+        wide_message_dict = wide_message_dicts[send_request.message.id]
 
         send_request.message_url, send_request.message_link = get_message_url_and_link(
             send_request, wide_message_dict
@@ -1214,38 +1355,6 @@ def do_send_messages(
 
             users.append(user_data)
 
-        sender = send_request.message.sender
-        recipient_type = wide_message_dict["type"]
-        user_notifications_data_list = [
-            UserMessageNotificationsData.from_user_id_sets(
-                user_id=user_id,
-                flags=user_flags.get(user_id, []),
-                private_message=recipient_type == "private",
-                disable_external_notifications=send_request.disable_external_notifications,
-                online_push_user_ids=send_request.online_push_user_ids,
-                dm_mention_push_disabled_user_ids=send_request.dm_mention_push_disabled_user_ids,
-                dm_mention_email_disabled_user_ids=send_request.dm_mention_email_disabled_user_ids,
-                stream_push_user_ids=send_request.stream_push_user_ids,
-                stream_email_user_ids=send_request.stream_email_user_ids,
-                topic_wildcard_mention_user_ids=send_request.topic_wildcard_mention_user_ids,
-                stream_wildcard_mention_user_ids=send_request.stream_wildcard_mention_user_ids,
-                followed_topic_push_user_ids=send_request.followed_topic_push_user_ids,
-                followed_topic_email_user_ids=send_request.followed_topic_email_user_ids,
-                topic_wildcard_mention_in_followed_topic_user_ids=send_request.topic_wildcard_mention_in_followed_topic_user_ids,
-                stream_wildcard_mention_in_followed_topic_user_ids=send_request.stream_wildcard_mention_in_followed_topic_user_ids,
-                muted_sender_user_ids=send_request.muted_sender_user_ids,
-                all_bot_user_ids=send_request.all_bot_user_ids,
-                push_device_registered_user_ids=send_request.push_device_registered_user_ids,
-            )
-            for user_id in send_request.active_user_ids
-        ]
-
-        presence_idle_user_ids = get_active_presence_idle_user_ids(
-            realm=send_request.realm,
-            sender_id=sender.id,
-            user_notifications_data_list=user_notifications_data_list,
-        )
-
         if send_request.recipients_for_user_creation_events is not None:
             from zerver.actions.create_user import notify_created_user
 
@@ -1255,11 +1364,10 @@ def do_send_messages(
             ) in send_request.recipients_for_user_creation_events.items():
                 notify_created_user(new_accessible_user, list(notify_user_ids))
 
-        event = dict(
-            type="message",
+        event = InternalMessageEvent(
             message=send_request.message.id,
             message_dict=wide_message_dict,
-            presence_idle_user_ids=presence_idle_user_ids,
+            presence_idle_user_ids=presence_idle_user_ids_by_message_id[send_request.message.id],
             online_push_user_ids=list(send_request.online_push_user_ids),
             dm_mention_push_disabled_user_ids=list(send_request.dm_mention_push_disabled_user_ids),
             dm_mention_email_disabled_user_ids=list(
@@ -1295,18 +1403,18 @@ def do_send_messages(
             assert send_request.stream is not None
             stream_update_fields = []
             if send_request.stream.is_public():
-                event["realm_id"] = send_request.stream.realm_id
-                event["stream_name"] = send_request.stream.name
+                event.realm_id = send_request.stream.realm_id
+                event.stream_name = send_request.stream.name
                 # Tornado uses these to exclude guest users' clients
                 # registered for all public channels from receiving the
                 # events for unsubscribed non web-public channel
                 # messages, since guests can only access such channels
                 # when subscribed.
-                event["realm_guest_user_ids"] = active_guest_user_ids(send_request.stream.realm_id)
+                event.realm_guest_user_ids = active_guest_user_ids(send_request.stream.realm_id)
             if send_request.stream.invite_only:
-                event["invite_only"] = True
+                event.invite_only = True
             if send_request.stream.is_web_public:
-                event["is_web_public"] = True
+                event.is_web_public = True
             if send_request.stream.first_message_id is None:
                 send_request.stream.first_message_id = send_request.message.id
                 stream_update_fields.append("first_message_id")
@@ -1338,12 +1446,12 @@ def do_send_messages(
                 user_ids_without_access_to_sender = user_ids_receiving_event - set(
                     user_ids_who_can_access_sender
                 )
-                event["user_ids_without_access_to_sender"] = list(user_ids_without_access_to_sender)
+                event.user_ids_without_access_to_sender = list(user_ids_without_access_to_sender)
 
         if send_request.local_id is not None:
-            event["local_id"] = send_request.local_id
+            event.local_id = send_request.local_id
         if send_request.sender_queue_id is not None:
-            event["sender_queue_id"] = send_request.sender_queue_id
+            event.sender_queue_id = send_request.sender_queue_id
         send_event_on_commit(send_request.realm, event, users)
 
         if send_request.links_for_embed:
@@ -1369,13 +1477,13 @@ def do_send_messages(
 
         assert send_request.message_triggered_bot_queue_events is not None
         for queue_name, events in send_request.message_triggered_bot_queue_events.items():
-            for event in events:
+            for bot_queue_event in events:
                 queue_event_on_commit(
                     queue_name,
                     {
                         "message": wide_message_dict,
-                        "trigger": event["trigger"],
-                        "user_profile_id": event["user_profile_id"],
+                        "trigger": bot_queue_event["trigger"],
+                        "user_profile_id": bot_queue_event["user_profile_id"],
                     },
                 )
 

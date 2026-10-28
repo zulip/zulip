@@ -666,7 +666,7 @@ class StripeTestCase(ZulipTestCase):
         stripe_setup_intent = stripe.SetupIntent.create(
             payment_method=payment_method.id,
             confirm=True,
-            payment_method_types=checkout_setup_intent.payment_method_types,
+            allowed_payment_method_types=checkout_setup_intent.payment_method_types,
             customer=checkout_setup_intent.customer,
             metadata=checkout_setup_intent.metadata,
             usage=usage,

@@ -127,10 +127,6 @@
                 }
             }
 
-            .fa-lock {
-                margin-right: 3px;
-            }
-
             .stream-privacy.filter-icon {
                 /* 0 5px at 16px/1em */
                 padding: 0 0.3125em;

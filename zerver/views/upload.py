@@ -395,7 +395,7 @@ def get_file_path_id_from_token(token: str) -> str | None:
         path_id = signer.unsign(
             signed_data, max_age=timedelta(seconds=settings.SIGNED_ACCESS_TOKEN_VALIDITY_IN_SECONDS)
         )
-    except (BadSignature, binascii.Error):
+    except (BadSignature, UnicodeDecodeError, binascii.Error):
         return None
 
     return path_id

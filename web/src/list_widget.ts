@@ -72,7 +72,8 @@ type BaseListWidget = {
 export type ListWidget<Key, Item = Key> = BaseListWidget & {
     get_current_list: () => Item[];
     get_rendered_list: () => Item[];
-    filter_and_sort: () => void;
+    get_rendered_count: () => number;
+    filter_and_sort: () => Item[];
     retain_selected_items: () => void;
     all_rendered: () => boolean;
     render: (how_many?: number) => void;
@@ -82,9 +83,6 @@ export type ListWidget<Key, Item = Key> = BaseListWidget & {
     set_reverse_mode: (reverse_mode: boolean) => void;
     set_sorting_function: (sorting_function: string | string[] | SortingFunction<Item>) => void;
     set_up_event_handlers: () => void;
-    increase_rendered_offset: () => void;
-    reduce_rendered_offset: () => void;
-    remove_rendered_row: (row: JQuery) => void;
     clean_redraw: () => void;
     hard_redraw: () => void;
     insert_rendered_row: (
@@ -95,7 +93,8 @@ export type ListWidget<Key, Item = Key> = BaseListWidget & {
     replace_list_data: (list: Key[], should_redraw?: boolean) => void;
 };
 
-const DEFAULTS = {
+// Exported for tests
+export const DEFAULTS = {
     INITIAL_RENDER_COUNT: 80,
     LOAD_COUNT: 20,
     instances: new Map<string, BaseListWidget>(),
@@ -313,6 +312,80 @@ export function create<Key, Item = Key>(
         meta.sort_by_filter_value = opts.sort_by_filter_value;
     }
 
+    function compute_filtered_list(): void {
+        meta.filtered_list = get_filtered_items(meta.filter_value, meta.list, opts);
+
+        if (meta.sort_by_filter_value) {
+            assert(meta.sorting_function === null);
+            meta.filtered_list = meta.sort_by_filter_value(meta.filtered_list, meta.filter_value);
+            return;
+        }
+
+        if (meta.sorting_function) {
+            // If the sorting function is already applied, remove it to avoid duplicate sorting.
+            const existing_sorting_function_index = meta.applied_sorting_functions.findIndex(
+                ([sorting_function, _]) => sorting_function === meta.sorting_function,
+            );
+            if (existing_sorting_function_index !== -1) {
+                meta.applied_sorting_functions.splice(existing_sorting_function_index, 1);
+            }
+
+            meta.applied_sorting_functions.push([meta.sorting_function, meta.reverse_mode]);
+            meta.filtered_list.sort((a, b) => {
+                for (let i = meta.applied_sorting_functions.length - 1; i >= 0; i -= 1) {
+                    const sorting_function = meta.applied_sorting_functions[i]![0];
+                    const is_reverse = meta.applied_sorting_functions[i]![1];
+                    const result = sorting_function(a, b);
+                    if (result !== 0) {
+                        return is_reverse ? -result : result;
+                    }
+                }
+                return 0;
+            });
+        }
+    }
+
+    function increase_rendered_offset(): void {
+        meta.offset = Math.min(meta.offset + 1, meta.filtered_list.length);
+    }
+
+    function reduce_rendered_offset(): void {
+        meta.offset = Math.max(meta.offset - 1, 0);
+    }
+
+    function remove_row($row: JQuery): void {
+        $row.remove();
+        reduce_rendered_offset();
+    }
+
+    // Callers update rows in list order, so the rows before this one are
+    // in place, which the next item's row may not be.
+    function insert_row_at_index($row: JQuery, index: number): boolean {
+        assert(opts.html_selector !== undefined);
+        if (meta.offset === 0) {
+            // The container may hold the empty-list message.
+            return false;
+        }
+        if (index === 0) {
+            $container.prepend($row);
+            return true;
+        }
+        const $predecessor_row = opts.html_selector(meta.filtered_list[index - 1]!);
+        if ($predecessor_row.length === 0) {
+            return false;
+        }
+        $predecessor_row.after($row);
+        return true;
+    }
+
+    function is_row_at_index($row: JQuery, index: number): boolean {
+        assert(opts.html_selector !== undefined);
+        if (index === 0) {
+            return $row.prev().length === 0;
+        }
+        return $row.prev().is(opts.html_selector(meta.filtered_list[index - 1]!));
+    }
+
     const widget: ListWidget<Key, Item> = {
         get_current_list() {
             return meta.filtered_list;
@@ -322,40 +395,42 @@ export function create<Key, Item = Key>(
             return meta.filtered_list.slice(0, meta.offset);
         },
 
+        get_rendered_count() {
+            return Math.min(meta.offset, meta.filtered_list.length);
+        },
+
+        // Recomputes the filtered list and removes the rendered rows of
+        // items it no longer includes, returning those items. A row left
+        // behind would not be counted by meta.offset, so a later render()
+        // would append rows that are already on screen. The removed rows
+        // are expected to belong to items the caller is updating;
+        // returning them lets the caller report any other item, hidden by
+        // a change it was not told about.
         filter_and_sort() {
-            meta.filtered_list = get_filtered_items(meta.filter_value, meta.list, opts);
-
-            if (meta.sort_by_filter_value) {
-                assert(meta.sorting_function === null);
-                meta.filtered_list = meta.sort_by_filter_value(
-                    meta.filtered_list,
-                    meta.filter_value,
-                );
-                return;
+            const previously_rendered_items = widget.get_rendered_list();
+            compute_filtered_list();
+            if (!opts.html_selector || previously_rendered_items.length === 0) {
+                return [];
             }
 
-            if (meta.sorting_function) {
-                // If the sorting function is already applied, remove it to avoid duplicate sorting.
-                const existing_sorting_function_index = meta.applied_sorting_functions.findIndex(
-                    ([sorting_function, _]) => sorting_function === meta.sorting_function,
-                );
-                if (existing_sorting_function_index !== -1) {
-                    meta.applied_sorting_functions.splice(existing_sorting_function_index, 1);
+            const listed_items = new Set(meta.filtered_list);
+            const removed_items: Item[] = [];
+            for (const item of previously_rendered_items) {
+                if (listed_items.has(item)) {
+                    continue;
                 }
-
-                meta.applied_sorting_functions.push([meta.sorting_function, meta.reverse_mode]);
-                meta.filtered_list.sort((a, b) => {
-                    for (let i = meta.applied_sorting_functions.length - 1; i >= 0; i -= 1) {
-                        const sorting_function = meta.applied_sorting_functions[i]![0];
-                        const is_reverse = meta.applied_sorting_functions[i]![1];
-                        const result = sorting_function(a, b);
-                        if (result !== 0) {
-                            return is_reverse ? -result : result;
-                        }
-                    }
-                    return 0;
-                });
+                const $row = opts.html_selector(item);
+                if ($row.length === 0) {
+                    continue;
+                }
+                remove_row($row);
+                removed_items.push(item);
             }
+            if (removed_items.length > 0 && widget.all_rendered()) {
+                // render() shows the empty-list message once the last row is gone.
+                widget.render();
+            }
+            return removed_items;
         },
 
         // Used in case of Multiselect DropdownListWidget to retain
@@ -430,7 +505,7 @@ export function create<Key, Item = Key>(
             }
 
             $container.append($(html));
-            meta.offset += load_count;
+            meta.offset += slice.length;
 
             if (opts.multiselect) {
                 widget.retain_selected_items();
@@ -453,15 +528,33 @@ export function create<Key, Item = Key>(
                 return;
             }
 
+            // An item moved past the rendered range no longer belongs on screen:
+            // its row would not be counted by meta.offset, and a later render()
+            // would append the item again. filtered_list holds what get_item
+            // returned, so the item is not found when get_item builds a fresh
+            // object each time, as for the bots tables; those rows are updated
+            // in place.
+            const index = meta.filtered_list.indexOf(item);
+            if (index !== -1 && index >= meta.offset) {
+                remove_row($html_item);
+                return;
+            }
+
             const html = opts.modifier_html(item, meta.filter_value);
             if (typeof html !== "string") {
                 blueslip.error("List item is not a string", {item: html});
                 return;
             }
+            const $row = $(html);
 
-            // At this point, we have asserted we have all the information to replace
-            // the html now.
-            $html_item.replaceWith($(html));
+            if (index === -1 || is_row_at_index($html_item, index)) {
+                $html_item.replaceWith($row);
+            } else {
+                $html_item.remove();
+                if (!insert_row_at_index($row, index)) {
+                    widget.clean_redraw();
+                }
+            }
         },
 
         clear() {
@@ -551,27 +644,8 @@ export function create<Key, Item = Key>(
             opts.filter?.$element?.off("input.list_widget_filter");
         },
 
-        increase_rendered_offset() {
-            meta.offset = Math.min(meta.offset + 1, meta.filtered_list.length);
-        },
-
-        reduce_rendered_offset() {
-            meta.offset = Math.max(meta.offset - 1, 0);
-        },
-
-        remove_rendered_row(rendered_row) {
-            rendered_row.remove();
-            // We removed a rendered row, so we need to reduce one offset.
-            widget.reduce_rendered_offset();
-            // If the container is now empty, render() will display
-            // the empty-list message.
-            if (this.all_rendered()) {
-                this.render();
-            }
-        },
-
         clean_redraw() {
-            widget.filter_and_sort();
+            compute_filtered_list();
             widget.clear();
             widget.render(DEFAULTS.INITIAL_RENDER_COUNT);
         },
@@ -612,31 +686,14 @@ export function create<Key, Item = Key>(
                     blueslip.error(
                         "Please specify modifier and html_selector when creating the widget.",
                     );
+                    return;
                 }
-                const rendered_row = opts.modifier_html(item, meta.filter_value);
-                if (insert_index === meta.filtered_list.length - 1) {
-                    const $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]!);
-                    $target_row.after($(rendered_row));
+                const $row = $(opts.modifier_html(item, meta.filter_value));
+                if (insert_row_at_index($row, insert_index)) {
+                    increase_rendered_offset();
                 } else {
-                    let $target_row = opts.html_selector!(meta.filtered_list[insert_index + 1]!);
-                    if ($target_row.length > 0) {
-                        $target_row.before($(rendered_row));
-                    } else if (insert_index > 0) {
-                        // We don't have a row rendered after row we are trying to insert at.
-                        // So, try looking for the row before current row.
-                        $target_row = opts.html_selector!(meta.filtered_list[insert_index - 1]!);
-                        if ($target_row.length > 0) {
-                            $target_row.after($(rendered_row));
-                        }
-                    }
-
-                    // If we failed at inserting the row due rows around the row
-                    // not being rendered yet, just do a clean redraw.
-                    if ($target_row.length === 0) {
-                        widget.clean_redraw();
-                    }
+                    widget.clean_redraw();
                 }
-                widget.increase_rendered_offset();
             }
         },
 

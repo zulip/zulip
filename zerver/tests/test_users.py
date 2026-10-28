@@ -1155,7 +1155,7 @@ class QueryCountTest(ZulipTestCase):
 
         with (
             self.assert_database_query_count(95),
-            self.assert_memcached_count(24),
+            self.assert_memcached_count(22),
             self.capture_send_event_calls(expected_num_events=11) as events,
         ):
             fred = do_create_user(
@@ -3812,6 +3812,7 @@ class GetProfileTest(ZulipTestCase):
         shiva = self.example_user("shiva")
         hamlet = self.example_user("hamlet")
         prospero = self.example_user("prospero")
+        aaron = self.example_user("aaron")
 
         inaccessible_user_ids = get_inaccessible_user_ids(
             [bot.id, hamlet.id, othello.id, shiva.id, prospero.id], polonius
@@ -3835,6 +3836,18 @@ class GetProfileTest(ZulipTestCase):
         )
         self.assertEqual(inaccessible_user_ids, {othello.id})
 
+        # A deactivated user remains accessible through a shared direct
+        # message group (prospero, a 1:1 DM partner and aaron, a group DM
+        # partner), but a deactivated user only sharing a stream (hamlet)
+        # becomes inaccessible.
+        do_deactivate_user(prospero, acting_user=None)
+        do_deactivate_user(hamlet, acting_user=None)
+        do_deactivate_user(aaron, acting_user=None)
+        inaccessible_user_ids = get_inaccessible_user_ids(
+            [hamlet.id, prospero.id, aaron.id], polonius
+        )
+        self.assertEqual(inaccessible_user_ids, {hamlet.id})
+
     def test_get_inaccessible_user_ids_with_null_recipient(self) -> None:
         polonius = self.example_user("polonius")
 
@@ -3857,12 +3870,27 @@ class GetProfileTest(ZulipTestCase):
         polonius = self.example_user("polonius")
         prospero = self.example_user("prospero")
         desdemona = self.example_user("desdemona")
+        aaron = self.example_user("aaron")
+        hamlet = self.example_user("hamlet")
 
         # prospero and polonius had personal messages history
         self.assertTrue(check_can_access_user(prospero, polonius))
 
+        # polonius and aaron shared a group direct message
+        self.assertTrue(check_can_access_user(aaron, polonius))
+
         # no personal messages history between desdemona and polonius
         self.assertFalse(check_can_access_user(desdemona, polonius))
+
+        # A guest keeps access to a deactivated user they share a direct
+        # message group with (prospero and aaron), but loses access to a
+        # deactivated user they only shared a stream with (hamlet).
+        do_deactivate_user(prospero, acting_user=None)
+        do_deactivate_user(hamlet, acting_user=None)
+        do_deactivate_user(aaron, acting_user=None)
+        self.assertTrue(check_can_access_user(prospero, polonius))
+        self.assertTrue(check_can_access_user(aaron, polonius))
+        self.assertFalse(check_can_access_user(hamlet, polonius))
 
     def test_check_can_access_user_for_a_guest_with_themself(self) -> None:
         """

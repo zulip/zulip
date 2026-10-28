@@ -1780,8 +1780,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                     return typeahead_helper.query_matches_person(query, person);
                 }
 
-                let query;
-                query = "el"; // Matches both "othELlo" and "cordELia"
+                let query = "el"; // Matches both "othELlo" and "cordELia"
                 assert.equal(matcher(query, othello_item), true);
                 assert.equal(matcher(query, cordelia_item), true);
 
@@ -2986,6 +2985,47 @@ test("begins_typeahead", ({override, override_rewire}) => {
         "#**Sweden**totally new topic",
         typed_topics("Sweden", ["totally new topic"], is_new_topic),
     );
+    // Punctuation right after the complete link ends the sentence rather
+    // than starting a topic.
+    for (const punctuation of [
+        ",",
+        ".",
+        ":",
+        ";",
+        "?",
+        "!",
+        "-",
+        "(",
+        ")",
+        "[",
+        "]",
+        '"',
+        "'",
+        "@",
+        // Chinese and Japanese full stop.
+        "。",
+        // Chinese comma.
+        "，",
+        "¿",
+        "—",
+    ]) {
+        assert_typeahead_equals(`#**Sweden**${punctuation}`, []);
+    }
+    // Symbols are not punctuation, so they still start a topic.
+    assert_typeahead_equals("#**Sweden**~", typed_topics("Sweden", ["~"], is_new_topic));
+    assert_typeahead_equals("#**Sweden**. Now see", []);
+    assert.deepEqual(
+        get_values("#**Sweden**. Now see #den", "").map((item) => item.name),
+        ["Denmark", "Sweden"],
+    );
+    // The same applies to the markdown fallback link form.
+    assert.deepEqual(
+        get_values("[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm)", "").map(
+            (item) => item.topic,
+        ),
+        ["A* Algorithm"],
+    );
+    assert_typeahead_equals("[#A&#42; Algorithm](#narrow/channel/6-A.2A-Algorithm).", []);
     // A space immediately after the complete link means the user has
     // moved on to the message body: the complete-link pattern doesn't
     // match, and with no other token present there are no suggestions.
@@ -3006,6 +3046,27 @@ test("begins_typeahead", ({override, override_rewire}) => {
     // A channel that only allows the empty topic gets a complete channel
     // link with no topic completion offered.
     assert_typeahead_equals("#**Announce**", []);
+    // Once the user presses ">", completion is offered to just that
+    // single (empty) topic, and never to named ones.
+    const announce_empty_topic_suggestion = [
+        {
+            topic: "",
+            topic_display_name: get_final_topic_display_name(""),
+            is_empty_string_topic: true,
+            type: "topic_list",
+            is_channel_link: false,
+            used_syntax_prefix: "#**",
+            stream_data: {
+                ...stream_data.get_sub_by_name("Announce"),
+                rendered_description: "",
+            },
+            is_new_topic: false,
+        },
+    ];
+    assert_typeahead_equals("#**Announce>", announce_empty_topic_suggestion);
+    // Text typed after ">" cannot create a named topic; only the empty
+    // topic is still offered.
+    assert_typeahead_equals("#**Announce>random", announce_empty_topic_suggestion);
     compose_ui.compose_textarea_typeahead = undefined;
 
     // time_jump

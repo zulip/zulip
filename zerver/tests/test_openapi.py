@@ -317,19 +317,9 @@ do not match the types declared in the implementation of {function.__name__}.\n"
             "parameter", "OpenAPI type", "function declaration type"
         )
         msg += "=" * 65 + "\n"
-        opvtype = None
-        fdvtype = None
-        for element in diff:
-            vname = element[0]
-            for element in openapi_params:
-                if element[0] == vname:
-                    opvtype = element[1]
-                    break
-            for element in function_params:
-                if element[0] == vname:
-                    fdvtype = element[1]
-                    break
-        msg += f"{vname:<10}{opvtype!s:^30}{fdvtype!s:>10}\n"
+        for vname, opvtype in diff:
+            fdvtype = next((t for name, t in function_params if name == vname), None)
+            msg += f"{vname:<10}{opvtype!s:^30}{fdvtype!s:>10}\n"
         raise AssertionError(msg)
 
     def validate_json_schema(

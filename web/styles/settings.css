@@ -2,18 +2,6 @@ label {
     margin: 0;
 }
 
-label,
-.settings-subsection-title,
-.settings-table-title,
-/* We need settings-section-title here because some legacy settings
-   widgets use a <div> with this class for their heading. */
-.settings-section-title {
-    .fa-info-circle {
-        top: 1px;
-        position: relative;
-    }
-}
-
 /* Shared font for the subsection and table/list-panel headings across the
    settings, channel, and group settings overlays. */
 .settings-subsection-title,
@@ -37,9 +25,13 @@ label,
 
 /* TODO: This should ideally be added to help_link_widget.hbs,
    allowing us to deduplicate at least the opacity CSS with the
-   fa-question-circle-o logic above. */
-.settings-info-icon {
-    padding-left: 3px;
+   zulip-icon-help logic above. */
+/* 'i' matches 'i.zulip-icon' specificity, which sets font-size. */
+i.settings-info-icon {
+    /* Eyeballed to sit on the baseline of the label or heading. */
+    font-size: 0.91em;
+    vertical-align: -0.19em;
+    padding-left: 2px;
     opacity: 0.7;
 
     &:hover {
@@ -52,9 +44,10 @@ a.help_link_widget {
     color: inherit;
     margin-left: 3px;
 
-    .fa-question-circle-o {
-        position: relative;
-        top: 1px;
+    .zulip-icon-help {
+        /* Eyeballed to sit on the text baseline. */
+        font-size: 0.88em;
+        vertical-align: -0.16em;
     }
 
     &:hover {
@@ -203,15 +196,10 @@ a.help_link_widget {
 }
 
 .play_notification_sound {
-    .notification-sound-icon {
-        font-size: 1.5714em; /* 22px at 14px / em */
-        /* Visually center with chevron in select
-        by setting the line-height equal to the height
-        of select which is equal to - 1.4em + 8px (4px
-        each for top and bottom paddings) + 2px (1px each
-        for top and bottom borders). */
-        line-height: calc(1.4 * var(--base-font-size-px) + 10px);
-        cursor: pointer;
+    padding: 0;
+
+    .zulip-icon {
+        font-size: 1.4857em; /* 20.8px at 14px / em */
     }
 }
 
@@ -491,6 +479,11 @@ select.settings_select {
 
     .modal_text_input {
         margin-bottom: 0;
+    }
+
+    .bot-api-key-regenerate-banner:has(.banner) {
+        /* Only space the banner off the API key row when it's present. */
+        margin-top: 0.625em; /* 10px at 16px/1em */
     }
 }
 
@@ -792,6 +785,12 @@ input[type="checkbox"] {
         vertical-align: top;
     }
 
+    .alert-notification-content {
+        /* Push back against inherited value, which
+           is not relevant in this DOM element. */
+        white-space: normal;
+    }
+
     & img {
         margin-right: 6px;
     }
@@ -1017,15 +1016,15 @@ input[type="checkbox"] {
 .admin_channel_folders_table {
     .movable-row {
         .move-handle {
+            vertical-align: middle;
             cursor: move;
             user-select: none;
             margin-right: 5px;
         }
 
-        .fa-ellipsis-v {
+        .zulip-icon-grip-vertical {
             color: hsl(0deg 0% 75%);
-            position: relative;
-            top: 1px;
+            vertical-align: -0.1em;
         }
     }
 }

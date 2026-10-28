@@ -1394,7 +1394,7 @@ class BillingSession(ABC):
             customer=customer.stripe_customer_id,
             metadata=metadata,
             mode="setup",
-            payment_method_types=["card"],
+            allowed_payment_method_types=["card"],
             success_url=f"{self.billing_session_url}/billing/event_status/?stripe_session_id={{CHECKOUT_SESSION_ID}}",
             billing_address_collection="required",
             customer_update={"address": "auto", "name": "auto"},
@@ -1420,7 +1420,7 @@ class BillingSession(ABC):
             customer=customer.stripe_customer_id,
             metadata=metadata,
             mode="setup",
-            payment_method_types=["card"],
+            allowed_payment_method_types=["card"],
             success_url=f"{self.billing_session_url}/billing/event_status/?stripe_session_id={{CHECKOUT_SESSION_ID}}",
             billing_address_collection="required",
         )

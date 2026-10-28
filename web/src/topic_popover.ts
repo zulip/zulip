@@ -78,9 +78,11 @@ function get_cross_conversation_link_render_context(link: message_store.TopicLin
     is_empty_string_topic: boolean;
     is_message_link: boolean;
 } {
+    const topic_name =
+        stream_topic_history.get_known_topic_name(link.stream_id, link.topic) ?? link.topic;
     const {url} = topic_link_util.get_topic_link_content_with_stream_id({
         stream_id: link.stream_id,
-        topic_name: link.topic,
+        topic_name,
         message_id: link.message_id?.toString(),
     });
     const stream = stream_data.get_sub_by_id(link.stream_id);
@@ -89,8 +91,8 @@ function get_cross_conversation_link_render_context(link: message_store.TopicLin
         stream,
         channel_id: link.stream_id,
         channel_name: stream?.name ?? "",
-        topic_display_name_html: _.escape(util.get_final_topic_display_name(link.topic)),
-        is_empty_string_topic: link.topic === "",
+        topic_display_name_html: _.escape(util.get_final_topic_display_name(topic_name)),
+        is_empty_string_topic: topic_name === "",
         is_message_link: link.message_id !== undefined,
     };
 }

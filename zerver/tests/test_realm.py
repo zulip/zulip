@@ -1407,6 +1407,24 @@ class RealmTest(ZulipTestCase):
             webex_provider_id,
         )
 
+        google_meet_provider_id = Realm.VIDEO_CHAT_PROVIDERS["google_meet"]["id"]
+        req = {"video_chat_provider": f"{google_meet_provider_id}"}
+
+        with self.settings(VIDEO_GOOGLE_MEET_CLIENT_ID=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(result, f"Invalid video_chat_provider {google_meet_provider_id}")
+
+        with self.settings(VIDEO_GOOGLE_MEET_CLIENT_SECRET=None):
+            result = self.client_patch("/json/realm", req)
+            self.assert_json_error(result, f"Invalid video_chat_provider {google_meet_provider_id}")
+
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+        self.assertEqual(
+            get_realm("zulip").video_chat_provider,
+            google_meet_provider_id,
+        )
+
     def test_data_deletion_schedule_when_deactivating_realm(self) -> None:
         self.login("desdemona")
 
@@ -1479,6 +1497,7 @@ class RealmTest(ZulipTestCase):
         with (
             mock.patch("zerver.actions.realm_settings.do_scrub_realm") as mock_scrub_realm,
             self.assertLogs(level="INFO"),
+            self.assertLogs("zerver.worker.deferred_work", level="INFO") as worker_logs,
         ):
             do_deactivate_realm(
                 lear,
@@ -1489,6 +1508,12 @@ class RealmTest(ZulipTestCase):
             )
             self.assertTrue(lear.deactivated)
             mock_scrub_realm.assert_called_once_with(lear, acting_user=None)
+        self.assertTrue(
+            worker_logs.output[0].startswith(
+                "INFO:zerver.worker.deferred_work:"
+                "deferred_work processed scrub_deactivated_realm event"
+            )
+        )
 
         do_reactivate_realm(lear)
 
@@ -1499,6 +1524,32 @@ class RealmTest(ZulipTestCase):
         ):
             clean_deactivated_realm_data()
             mock_scrub_realm.assert_called_once_with(zephyr, acting_user=None)
+
+    @override_settings(DEDICATED_DEFERRED_WORK_HIGH_LATENCY_QUEUE=True)
+    def test_scrub_uses_dedicated_queue_when_enabled(self) -> None:
+        lear = get_realm("lear")
+        with (
+            mock.patch("zerver.actions.realm_settings.do_scrub_realm") as mock_scrub_realm,
+            self.assertLogs(level="INFO") as root_logs,
+            self.assertLogs(
+                "zerver.worker.deferred_work_high_latency", level="INFO"
+            ) as worker_logs,
+        ):
+            do_deactivate_realm(
+                lear,
+                acting_user=None,
+                deletion_delay_days=0,
+                deactivation_reason="owner_request",
+                email_owners=False,
+            )
+        mock_scrub_realm.assert_called_once_with(lear, acting_user=None)
+        self.assertEqual(root_logs.output, [f"INFO:root:Scrubbed realm {lear.id}"])
+        self.assertTrue(
+            worker_logs.output[0].startswith(
+                "INFO:zerver.worker.deferred_work_high_latency:"
+                "deferred_work_high_latency processed scrub_deactivated_realm event"
+            )
+        )
 
     def test_delete_expired_demo_organizations(self) -> None:
         demo_organization_owner = self.create_demo_organization_owner()

@@ -13,6 +13,13 @@ class ShortcutWebhookTest(WebhookTestCase):
             self.url = self.build_webhook_url(legacy_name=legacy_name)
             self.check_webhook("story_create", "Add cool feature!", expected_message)
 
+    def test_missing_primary_action(self) -> None:
+        payload = self.get_body("story_create").replace('"primary_id":11', '"primary_id":12')
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assert_json_error(
+            result, "Unable to parse request: Did Clubhouse generate this event?"
+        )
+
     def test_story_create(self) -> None:
         expected_message = "New story [Add cool feature!](https://app.shortcut.com/zulip/story/11) of type **feature** was created."
         self.check_webhook("story_create", "Add cool feature!", expected_message)

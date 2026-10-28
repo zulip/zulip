@@ -271,7 +271,8 @@ export function build_page(): void {
         desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,
         enable_sound_select:
             realm_user_settings_defaults.enable_sounds ||
-            realm_user_settings_defaults.enable_stream_audible_notifications,
+            realm_user_settings_defaults.enable_stream_audible_notifications ||
+            realm_user_settings_defaults.enable_followed_topic_audible_notifications,
         email_notifications_batching_period_values:
             settings_config.email_notifications_batching_period_values,
         realm_name_in_email_notifications_policy_values:
@@ -283,7 +284,6 @@ export function build_page(): void {
         realm_org_type_values: settings_org.get_org_type_dropdown_options(),
         realm_want_advertise_in_communities_directory:
             realm.realm_want_advertise_in_communities_directory,
-        disable_want_advertise_in_communities_directory: !realm.realm_push_notifications_enabled,
         is_business_type_org:
             realm.realm_org_type === settings_config.all_org_type_values.business.code,
         realm_enable_read_receipts: realm.realm_enable_read_receipts,

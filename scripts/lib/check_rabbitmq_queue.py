@@ -28,10 +28,15 @@ normal_queues = [
     "user_activity_interval",
 ]
 
-# Soft reactivations share the deferred_work queue unless a server opts
-# into a dedicated queue; only then is there a consumer to monitor.
+# These queues exist only when a server opts into them; until then their
+# events stay in deferred_work, and there is no consumer to monitor.
 if get_config(get_config_file(), "application_server", "dedicated_soft_reactivation_queue", False):
     normal_queues.append("soft_reactivation")
+
+if get_config(
+    get_config_file(), "application_server", "dedicated_deferred_work_high_latency_queue", False
+):
+    normal_queues.append("deferred_work_high_latency")
 
 mobile_notification_shards = int(
     get_config(get_config_file(), "application_server", "mobile_notification_shards", "1")
@@ -59,6 +64,9 @@ MAX_SECONDS_TO_CLEAR: defaultdict[str, int] = defaultdict(
     # own queue; keep deferred_work's generous clear-time budget so the slow
     # backfills that motivated the split don't trip false alerts.
     soft_reactivation=600,
+    # Every job in this queue can take many minutes, so even a single job
+    # in flight makes the estimated time to clear the backlog that long.
+    deferred_work_high_latency=3 * 60 * 60,
     digest_emails=1200,
     missedmessage_mobile_notifications=120,
     embed_links=60,
@@ -69,6 +77,7 @@ CRITICAL_SECONDS_TO_CLEAR: defaultdict[str, int] = defaultdict(
     lambda: 60,
     deferred_work=900,
     soft_reactivation=900,
+    deferred_work_high_latency=6 * 60 * 60,
     missedmessage_mobile_notifications=180,
     digest_emails=1800,
     embed_links=90,

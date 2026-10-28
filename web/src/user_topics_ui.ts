@@ -17,6 +17,8 @@ import * as unread_ui from "./unread_ui.ts";
 import * as user_topics from "./user_topics.ts";
 import type {ServerUserTopic} from "./user_topics.ts";
 
+export const MUTED_TOPIC_UPDATE_DELAY_MS = 500;
+
 function should_add_topic_update_delay(visibility_policy: number): boolean {
     // If topic visibility related popovers are active, add a delay to all methods that
     // hide the topic on mute. This allows the switching animations to complete before the
@@ -46,37 +48,38 @@ export function handle_topic_updates(
     // Update the UI after changes in topic visibility policies.
     user_topics.set_user_topic(user_topic_event);
 
-    setTimeout(
-        () => {
-            stream_list.update_streams_sidebar();
-            unread_ui.update_unread_counts();
-            recent_view_ui.update_topic_visibility_policy(
-                user_topic_event.stream_id,
-                user_topic_event.topic_name,
-            );
-
-            if (!refreshed_current_narrow) {
-                if (message_lists.current?.data.filter.is_in_home()) {
-                    const is_topic_visible_in_home = user_topics.is_topic_visible_in_home(
-                        user_topic_event.stream_id,
-                        user_topic_event.topic_name,
-                    );
-                    if (
-                        rerender_combined_feed_callback &&
-                        !was_topic_visible_in_home &&
-                        is_topic_visible_in_home
-                    ) {
-                        rerender_combined_feed_callback(message_lists.current);
-                    } else {
-                        message_lists.current.update_muting_and_rerender();
-                    }
-                } else {
-                    message_lists.current?.update_muting_and_rerender();
-                }
-            }
-        },
-        should_add_topic_update_delay(user_topic_event.visibility_policy) ? 500 : 0,
+    const update_delay_ms = should_add_topic_update_delay(user_topic_event.visibility_policy)
+        ? MUTED_TOPIC_UPDATE_DELAY_MS
+        : 0;
+    recent_view_ui.schedule_topic_visibility_update(
+        user_topic_event.stream_id,
+        user_topic_event.topic_name,
+        update_delay_ms,
     );
+    setTimeout(() => {
+        stream_list.update_streams_sidebar();
+        unread_ui.update_unread_counts();
+
+        if (!refreshed_current_narrow) {
+            if (message_lists.current?.data.filter.is_in_home()) {
+                const is_topic_visible_in_home = user_topics.is_topic_visible_in_home(
+                    user_topic_event.stream_id,
+                    user_topic_event.topic_name,
+                );
+                if (
+                    rerender_combined_feed_callback &&
+                    !was_topic_visible_in_home &&
+                    is_topic_visible_in_home
+                ) {
+                    rerender_combined_feed_callback(message_lists.current);
+                } else {
+                    message_lists.current.update_muting_and_rerender();
+                }
+            } else {
+                message_lists.current?.update_muting_and_rerender();
+            }
+        }
+    }, update_delay_ms);
 
     if (overlays.settings_open() && settings_user_topics.loaded) {
         const stream_id = user_topic_event.stream_id;

@@ -3,7 +3,14 @@ from unittest import mock
 
 import orjson
 from django.test import override_settings
-from pika.exceptions import AMQPConnectionError, ConnectionClosed
+from pika.exceptions import (
+    AMQPConnectionError,
+    ChannelClosedByBroker,
+    ChannelClosedByClient,
+    ChannelWrongStateError,
+    ConnectionClosed,
+    StreamLostError,
+)
 from typing_extensions import override
 
 from zerver.lib.queue import (
@@ -17,6 +24,53 @@ from zerver.lib.test_classes import ZulipTestCase
 
 class TestTornadoQueueClient(ZulipTestCase):
     @mock.patch("zerver.lib.queue.ExceptionFreeTornadoConnection", autospec=True)
+    def test_register_consumer(self, mock_cxn: mock.MagicMock) -> None:
+        connection = TornadoQueueClient()
+        connection.start_json_consumer("test_suite", lambda events: None)
+
+        channel = mock.MagicMock()
+        channel.queue_declare.side_effect = lambda queue, durable, callback: callback(None)
+        with self.assertLogs("zulip.queue", "INFO") as m:
+            connection._on_channel_open(channel)
+        self.assert_length(m.output, 2)
+        self.assertTrue(m.output[0].endswith(" to queue test_suite"))
+        self.assertEqual(m.output[1], "INFO:zulip.queue:TornadoQueueClient connected")
+        self.assertEqual(
+            channel.mock_calls,
+            [
+                mock.call.add_on_close_callback(connection._on_channel_closed),
+                mock.call.basic_qos(prefetch_count=100),
+                mock.call.queue_declare(queue="test_suite", durable=True, callback=mock.ANY),
+                mock.call.basic_consume("test_suite", mock.ANY, consumer_tag=mock.ANY),
+            ],
+        )
+
+    @mock.patch("zerver.lib.queue.ExceptionFreeTornadoConnection", autospec=True)
+    def test_channel_closed_by_broker(self, mock_cxn: mock.MagicMock) -> None:
+        connection = TornadoQueueClient()
+        channel = mock.MagicMock()
+        with self.assertLogs("zulip.queue", "INFO"):
+            connection._on_channel_open(channel)
+
+        # Closes from our side, or from losing the connection, are
+        # handled by _on_connection_closed.
+        connection._on_channel_closed(channel, ChannelClosedByClient(200, "Normal shutdown"))
+        connection._on_channel_closed(channel, StreamLostError("Transport indicated EOF"))
+        mock_cxn.return_value.close.assert_not_called()
+
+        with self.assertLogs("zulip.queue", "ERROR") as m:
+            connection._on_channel_closed(
+                channel, ChannelClosedByBroker(406, "PRECONDITION_FAILED")
+            )
+        self.assertEqual(
+            m.output,
+            [
+                "ERROR:zulip.queue:TornadoQueueClient's channel was closed by RabbitMQ: (406, 'PRECONDITION_FAILED')"
+            ],
+        )
+        mock_cxn.return_value.close.assert_called_once_with()
+
+    @mock.patch("zerver.lib.queue.ExceptionFreeTornadoConnection", autospec=True)
     def test_on_open_closed(self, mock_cxn: mock.MagicMock) -> None:
         with self.assertLogs("zulip.queue", "WARNING") as m:
             mock_cxn().channel.side_effect = ConnectionClosed(500, "test")
@@ -28,6 +82,94 @@ class TestTornadoQueueClient(ZulipTestCase):
                     "WARNING:zulip.queue:TornadoQueueClient couldn't open channel: connection already closed"
                 ],
             )
+
+    @mock.patch("zerver.lib.queue.ioloop.IOLoop.current")
+    @mock.patch("zerver.lib.queue.ExceptionFreeTornadoConnection", autospec=True)
+    def test_publish_while_disconnected(
+        self, mock_cxn: mock.MagicMock, mock_ioloop: mock.MagicMock
+    ) -> None:
+        def open_channel(connection: TornadoQueueClient) -> mock.MagicMock:
+            channel = mock.MagicMock()
+            connection._on_channel_open(channel)
+            return channel
+
+        def declares(channel: mock.MagicMock) -> list[str]:
+            return [call.kwargs["queue"] for call in channel.queue_declare.call_args_list]
+
+        def declare_ok(channel: mock.MagicMock, queue_name: str) -> None:
+            [declare_callback] = [
+                call.kwargs["callback"]
+                for call in channel.queue_declare.call_args_list
+                if call.kwargs["queue"] == queue_name
+            ]
+            declare_callback(None)
+
+        def published(channel: mock.MagicMock) -> list[tuple[str, dict[str, str]]]:
+            return [
+                (call.kwargs["routing_key"], orjson.loads(call.kwargs["body"]))
+                for call in channel.basic_publish.call_args_list
+            ]
+
+        def reconnect(connection: TornadoQueueClient) -> mock.MagicMock:
+            connection._on_connection_closed(mock.MagicMock(), ConnectionClosed(320, "test"))
+            connection._reconnect()
+            return open_channel(connection)
+
+        with self.assertLogs("zulip.queue", "WARNING") as m:
+            connection = TornadoQueueClient()
+            connection.json_publish("test_suite", {"event": "first"})
+            connection.json_publish("test_suite", {"event": "second"})
+
+            # The connection is lost before the queue is declared, so
+            # nothing is published on this channel.
+            channel = open_channel(connection)
+            self.assertEqual(declares(channel), ["test_suite"])
+            channel = reconnect(connection)
+            self.assertEqual(declares(channel), ["test_suite"])
+
+            # Publishing to a new queue while connected declares it
+            # once, even if more publishes arrive before that completes.
+            connection.json_publish("other_queue", {"event": "other"})
+            connection.json_publish("other_queue", {"event": "another"})
+            self.assertEqual(declares(channel), ["test_suite", "other_queue"])
+            channel.basic_publish.assert_not_called()
+
+            declare_ok(channel, "test_suite")
+            declare_ok(channel, "other_queue")
+            connection.json_publish("test_suite", {"event": "third"})
+            self.assertEqual(declares(channel), ["test_suite", "other_queue"])
+            self.assertEqual(
+                published(channel),
+                [
+                    ("test_suite", {"event": "first"}),
+                    ("test_suite", {"event": "second"}),
+                    ("other_queue", {"event": "other"}),
+                    ("other_queue", {"event": "another"}),
+                    ("test_suite", {"event": "third"}),
+                ],
+            )
+
+            # Publishes between losing the connection and reconnecting
+            # wait for the new channel, rather than using the closed one.
+            channel.basic_publish.side_effect = ChannelWrongStateError("Channel is closed.")
+            connection._on_connection_closed(mock.MagicMock(), ConnectionClosed(320, "test"))
+            connection.json_publish("test_suite", {"event": "fourth"})
+            connection._reconnect()
+            channel = open_channel(connection)
+            declare_ok(channel, "test_suite")
+            self.assertEqual(published(channel), [("test_suite", {"event": "fourth"})])
+
+            channel = reconnect(connection)
+            channel.queue_declare.assert_not_called()
+            channel.basic_publish.assert_not_called()
+        self.assertEqual(
+            m.output,
+            [
+                "WARNING:zulip.queue:TornadoQueueClient lost connection to RabbitMQ, reconnecting in 2 secs...",
+                "WARNING:zulip.queue:TornadoQueueClient attempting to reconnect to RabbitMQ",
+            ]
+            * 3,
+        )
 
 
 class TestQueueImplementation(ZulipTestCase):

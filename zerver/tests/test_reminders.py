@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from unittest import mock
 
 import time_machine
+from typing_extensions import override
 
 from zerver.actions.realm_settings import do_deactivate_realm
 from zerver.actions.scheduled_messages import (
@@ -25,6 +26,13 @@ if TYPE_CHECKING:
 
 
 class RemindersTest(ZulipTestCase):
+    @override
+    def setUp(self) -> None:
+        super().setUp()
+        # populate_db schedules messages for a year after the test
+        # database was built, which may already be due.
+        ScheduledMessage.objects.all().delete()
+
     def do_schedule_reminder(
         self,
         message_id: int,

@@ -415,6 +415,27 @@ For Active Directory installations, the immutable Security Identifier
 [`objectSid`](https://ldapwiki.com/wiki/Wiki.jsp?page=Security%20Identifier)
 is recommended.
 
+:::{note}
+
+If a Zulip account is already linked to a different
+`unique_account_id` than the one in LDAP for the same email address,
+Zulip will refuse the login and log a warning, since the email address
+may have been reassigned to a different person. This can happen when
+a user's LDAP account is deleted and recreated, if `unique_account_id`
+is an attribute like `objectSid` that is assigned anew to each
+account.
+
+`manage.py sync_ldap_user_data`, as an explicit tool for syncing
+Zulip with LDAP, handles this case differently. When it finds a Zulip
+account linked to a different `unique_account_id` than the LDAP
+account with the same email address, it logs a warning and relinks
+the Zulip account to the new LDAP account. Running it is thus how to
+let such a user log in again. If you run it in a [regular cron
+job](#synchronizing-data), as recommended, this happens automatically
+on its next run.
+
+:::
+
 #### Manually handling LDAP email changes
 
 If you don't have `unique_account_id` enabled, when a user's email
@@ -838,6 +859,13 @@ user logs in. If another Zulip user already has the new email address,
 the email will not be updated, a warning will be logged and the
 administrator should resolve the conflict manually.
 
+If a Zulip account is already linked to a different permanent ID
+than the one the IdP sends for the same email address (for example,
+because the user's account at the IdP was deleted and recreated),
+Zulip will refuse the login and log a warning, since the email
+address may have been reassigned to a different person. The
+administrator should resolve the conflict manually.
+
 :::
 
 ### SCIM
@@ -1174,6 +1202,38 @@ in; see [Synchronizing data during
 login](#synchronizing-data-during-login) for details. To synchronize
 user data continuously rather than only at login, consider [SCIM
 provisioning](./scim.md) instead, if your provider offers it.
+
+### Synchronizing email addresses with OIDC
+
+Zulip 13.0+ supports automatically handling changes in email address
+for OIDC-authenticated users. To enable this, set
+`"enable_external_auth_id_auth": True` in your IdP configuration dict
+in `SOCIAL_AUTH_OIDC_ENABLED_IDPS`. When this is enabled, users are
+identified by the standard OIDC `sub` claim (a permanent, unique
+identifier) together with the `iss` (issuer) rather than by email
+address, and Zulip will update user email upon login if the email
+changes.
+
+:::{note}
+
+The first time a user logs in with OIDC, the `sub` claim is linked to
+their Zulip account. After a change in their email address at the IdP,
+Zulip will update the linked account's email address the next time the
+user logs in. If another Zulip user already has the new email address,
+the email will not be updated, a warning will be logged and the
+administrator should resolve the conflict manually.
+
+If a Zulip account is already linked to a different `sub` than the
+one the IdP sends for the same email address, Zulip will refuse the
+login and log a warning, since the email address may have been
+reassigned to a different person. The administrator should resolve
+the conflict manually. This can happen when the user's account at the
+IdP was deleted and recreated. With Microsoft Entra ID, it can also
+happen for all users if the Zulip application is registered again with
+a new client ID, since Entra ID issues a different `sub` for each
+application.
+
+:::
 
 ### Microsoft Entra ID (OIDC)
 

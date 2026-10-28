@@ -18,6 +18,7 @@ import * as navbar_alerts from "./navbar_alerts.ts";
 import * as people from "./people.ts";
 import * as pm_list from "./pm_list.ts";
 import * as reactions from "./reactions.ts";
+import * as recent_view_ui from "./recent_view_ui.ts";
 import * as settings from "./settings.ts";
 import * as settings_account from "./settings_account.ts";
 import * as settings_bots from "./settings_bots.ts";
@@ -207,8 +208,18 @@ export const update_person = function update(event: UserUpdate): void {
         }
 
         message_live_update.update_avatar(user.user_id, event.avatar_url);
-        buddy_list.insert_or_move([event.user_id]);
+        buddy_list.insert_or_move([event.user_id], activity_ui.get_filter_text());
         user_profile.update_profile_modal_ui(user, event);
+    }
+
+    if (
+        "full_name" in event ||
+        "new_email" in event ||
+        "delivery_email" in event ||
+        "role" in event ||
+        "avatar_url" in event
+    ) {
+        recent_view_ui.rerender_conversations_with_user(event.user_id);
     }
 
     if ("custom_profile_field" in event) {
@@ -279,7 +290,7 @@ export const update_person = function update(event: UserUpdate): void {
             user_group_edit.remove_deactivated_user_from_all_groups(event.user_id);
             settings_users.update_view_on_deactivate(event.user_id, is_bot_user);
         }
-        buddy_list.insert_or_move([event.user_id]);
+        buddy_list.insert_or_move([event.user_id], activity_ui.get_filter_text());
         // Update UI elements to reflect the user's deactivated/reactivated status
         pm_list.update_private_messages();
         compose_pm_pill.update_user_pill_active_status(user, event.is_active);

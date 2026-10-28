@@ -68,6 +68,7 @@ from zerver.actions.message_edit import (
     do_update_message,
 )
 from zerver.actions.message_flags import do_update_message_flags
+from zerver.actions.message_send import do_send_url_embed_data_event
 from zerver.actions.muted_users import do_mute_user, do_unmute_user
 from zerver.actions.navigation_views import (
     do_add_navigation_view,
@@ -163,6 +164,7 @@ from zerver.actions.user_topics import do_set_user_topic_visibility_policy
 from zerver.actions.users import (
     do_change_is_imported_stub,
     do_deactivate_user,
+    do_update_bot_config_data,
     do_update_outgoing_webhook_service,
 )
 from zerver.actions.video_calls import do_set_video_call_provider_token
@@ -187,6 +189,7 @@ from zerver.lib.event_schema import (
     check_draft_add,
     check_draft_remove,
     check_draft_update,
+    check_has_google_meet_token,
     check_has_webex_token,
     check_has_zoom_token,
     check_heartbeat,
@@ -246,6 +249,7 @@ from zerver.lib.event_schema import (
     check_update_message,
     check_update_message_flags_add,
     check_update_message_flags_remove,
+    check_url_embed_data,
     check_user_group_add,
     check_user_group_add_members,
     check_user_group_add_subgroups,
@@ -276,6 +280,7 @@ from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.types import (
     Invitee,
     ProfileDataElementUpdateDict,
+    PropagateMode,
     UserGroupMembersData,
     UserGroupMembersDict,
 )
@@ -1043,7 +1048,7 @@ class NormalActionsTest(BaseAction):
 
         # Verify stream message editing - topic only
         topic_name = "new_topic"
-        propagate_mode = "change_all"
+        propagate_mode: PropagateMode = "change_all"
 
         message_edit_request = build_message_edit_request(
             message=message,
@@ -1638,6 +1643,13 @@ class NormalActionsTest(BaseAction):
             )
 
         check_invites_changed("events[6]", events[5])
+
+    def test_url_embed_data_events(self) -> None:
+        with self.verify_action(state_change_expected=False) as events:
+            do_send_url_embed_data_event(
+                self.user_profile, "http://example.com/", "<p>rendered</p>"
+            )
+        check_url_embed_data("events[0]", events[0])
 
     def test_typing_events(self) -> None:
         with self.verify_action(state_change_expected=False) as events:
@@ -2701,9 +2713,9 @@ class NormalActionsTest(BaseAction):
             do_change_full_name(cordelia, "Cordelia", self.user_profile, notify=False)
 
     def test_change_date_joined(self) -> None:
-        now = timezone_now()
+        new_date_joined = self.user_profile.date_joined - timedelta(days=1)
         with self.verify_action() as events:
-            do_change_user_date_joined(self.user_profile, now)
+            do_change_user_date_joined(self.user_profile, new_date_joined)
         check_realm_user_update("events[0]", events[0], "date_joined")
 
     def test_change_user_delivery_email_email_address_visibility_admins(self) -> None:
@@ -3687,6 +3699,23 @@ class NormalActionsTest(BaseAction):
                 acting_user=self.user_profile,
             )
 
+    def test_do_update_bot_config_data(self) -> None:
+        bot = self.create_bot(
+            "test_embedded",
+            full_name="Embedded Bot",
+            service_name="helloworld",
+            config_data=orjson.dumps({"foo": "bar"}).decode(),
+            bot_type=UserProfile.EMBEDDED_BOT,
+        )
+        with self.verify_action() as events:
+            do_update_bot_config_data(bot, {"foo": "baz"})
+
+        check_realm_bot_update("events[0]", events[0], "services")
+        self.assertEqual(
+            events[0]["bot"]["services"],
+            [{"service_name": "helloworld", "config_data": {"foo": "baz"}}],
+        )
+
     def test_do_deactivate_bot(self) -> None:
         bot = self.create_bot("test")
         with self.verify_action(num_events=1) as events:
@@ -4201,6 +4230,10 @@ class NormalActionsTest(BaseAction):
         self.subscribe(hamlet, "test_stream1")
         stream = get_stream("test_stream1", self.user_profile.realm)
 
+        # Make all other streams recently active, regardless of when
+        # the test database was built.
+        Message.objects.update(date_sent=timezone_now())
+
         # Delete all messages in the stream so that it becomes inactive.
         Message.objects.filter(recipient__type_id=stream.id, realm=stream.realm).delete()
 
@@ -4321,11 +4354,15 @@ class NormalActionsTest(BaseAction):
         ):
             with (
                 stdout_suppressed(),
-                self.assertLogs(level="INFO") as info_logs,
+                self.assertLogs("zerver.worker.deferred_work", level="INFO") as info_logs,
                 self.verify_action(state_change_expected=True, num_events=3) as events,
             ):
                 self.client_post("/json/export/realm")
-            self.assertTrue("INFO:root:Completed data export for zulip in" in info_logs.output[0])
+            self.assertTrue(
+                info_logs.output[1].startswith(
+                    "INFO:zerver.worker.deferred_work:Completed data export for zulip in "
+                )
+            )
 
         # We get two realm_export events for this action, where the first
         # is missing the export_url (because it's pending).
@@ -4457,10 +4494,11 @@ class NormalActionsTest(BaseAction):
             ):
                 self.client_post("/json/export/realm")
 
-            # Log is of following format: "ERROR:root:Data export for zulip failed after 0.004499673843383789"
-            # Where last floating number is time and will vary in each test hence the following assertion is
-            # independent of time bit by not matching exact log but only part of it.
-            self.assertTrue("ERROR:root:Data export for zulip failed after" in error_log.output[0])
+            self.assertTrue(
+                error_log.output[0].startswith(
+                    "ERROR:zerver.worker.deferred_work:Data export for zulip failed after "
+                )
+            )
             self.assertTrue("Some failure" in error_log.output[0])
 
         # We get two events for the export.
@@ -4496,6 +4534,17 @@ class NormalActionsTest(BaseAction):
         with self.verify_action() as events:
             do_set_video_call_provider_token(self.user_profile, "webex", None)
         check_has_webex_token("events[0]", events[0], value=False)
+
+    def test_has_google_meet_token(self) -> None:
+        with self.verify_action() as events:
+            do_set_video_call_provider_token(
+                self.user_profile, "google_meet", {"access_token": "token"}
+            )
+        check_has_google_meet_token("events[0]", events[0], value=True)
+
+        with self.verify_action() as events:
+            do_set_video_call_provider_token(self.user_profile, "google_meet", None)
+        check_has_google_meet_token("events[0]", events[0], value=False)
 
     def test_restart_event(self) -> None:
         with self.verify_action(num_events=1, state_change_expected=False):

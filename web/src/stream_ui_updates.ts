@@ -66,7 +66,13 @@ export function update_history_public_to_subscribers_state(
     sub?: StreamSubscription,
 ): void {
     const is_stream_creation = $container.attr("id") === "stream-creation";
-    if (!is_stream_creation && sub !== undefined && !hash_parser.is_editing_stream(sub.stream_id)) {
+    if (sub !== undefined && !hash_parser.is_editing_stream(sub.stream_id)) {
+        return;
+    }
+
+    if (sub !== undefined && !stream_data.can_change_permissions_requiring_metadata_access(sub)) {
+        // The checkbox stays disabled for users who cannot change the
+        // channel's permissions.
         return;
     }
 
@@ -98,10 +104,9 @@ export function update_history_public_to_subscribers_state(
     $history_public_to_subscribers_container
         .find("input")
         .prop("disabled", !is_invite_only || !everyone_can_create_topics);
-    $history_public_to_subscribers_container.toggleClass(
-        "control-label-disabled",
-        !is_invite_only || !everyone_can_create_topics,
-    );
+    $history_public_to_subscribers_container
+        .find(".input-group")
+        .toggleClass("control-label-disabled", !is_invite_only || !everyone_can_create_topics);
 
     // Tooltip is shown only if the checkbox is disabled due to topic creation permission
     // and not when it is disabled because channel privacy is not set to private.
@@ -150,7 +155,9 @@ export function update_history_public_to_subscribers_on_can_create_topic_group_c
 
     if (!everyone_can_create_topics) {
         $history_public_to_subscribers_container.find("input").prop("disabled", true);
-        $history_public_to_subscribers_container.addClass("control-label-disabled");
+        $history_public_to_subscribers_container
+            .find(".input-group")
+            .addClass("control-label-disabled");
         $history_public_to_subscribers_container.addClass(
             "protected_history_with_new_topics_permission_tooltip",
         );
@@ -159,7 +166,9 @@ export function update_history_public_to_subscribers_on_can_create_topic_group_c
 
     if (sub.can_create_topic_group === everyone_group.id) {
         $history_public_to_subscribers_container.find("input").prop("disabled", false);
-        $history_public_to_subscribers_container.removeClass("control-label-disabled");
+        $history_public_to_subscribers_container
+            .find(".input-group")
+            .removeClass("control-label-disabled");
         $history_public_to_subscribers_container.removeClass(
             "protected_history_with_new_topics_permission_tooltip",
         );
@@ -282,7 +291,7 @@ export function update_default_stream_option_state($container: JQuery): void {
             $default_stream.hide();
         } else {
             $default_stream.find("input").prop("disabled", true);
-            $default_stream.addClass("control-label-disabled");
+            $default_stream.find(".input-group").addClass("control-label-disabled");
         }
         return;
     }
@@ -299,10 +308,8 @@ export function update_default_stream_option_state($container: JQuery): void {
 
     // If a private stream option is selected, the default stream option is disabled.
     $default_stream.find("input").prop("disabled", is_invite_only);
-    $default_stream.toggleClass(
-        "control-label-disabled default_stream_private_tooltip",
-        is_invite_only,
-    );
+    $default_stream.find(".input-group").toggleClass("control-label-disabled", is_invite_only);
+    $default_stream.toggleClass("default_stream_private_tooltip", is_invite_only);
     if (is_invite_only) {
         // Private streams cannot be set as default streams so uncheck the checkbox.
         $default_stream.find("input").prop("checked", false);
@@ -344,6 +351,14 @@ export function enable_or_disable_permission_settings_in_edit_panel(
     $permissions_container
         .find("input, select")
         .prop("disabled", !sub.can_change_stream_permissions_requiring_metadata_access);
+
+    $permissions_container
+        .find("input[type='checkbox']")
+        .closest(".input-group")
+        .toggleClass(
+            "control-label-disabled",
+            !sub.can_change_stream_permissions_requiring_metadata_access,
+        );
 
     $("#channel_privacy_widget_container")
         .find("button")
