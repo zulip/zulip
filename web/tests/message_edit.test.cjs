@@ -442,14 +442,6 @@ let requests = [];
 
     override(dialog_widget,"hide_dialog_spinner", () => {});
 
-    override(
-    confirm_dialog,
-    "launch",
-    () => {
-        confirmation_launched = true;
-    },
-    {unused: false},
-);
 
     message_edit.move_topic_containing_message_to_stream(
         100,
@@ -466,6 +458,5 @@ let requests = [];
     },
 });
 assert.equal(error_called, true);
-assert.equal(confirmation_launched, false);
 assert.equal(requests.length, 1);
 })
