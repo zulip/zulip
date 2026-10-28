@@ -7,6 +7,7 @@ import _ from "lodash";
 /** @type {Parameters<typeof import("babel-plugin-formatjs").default>[1]} */
 const formatJsOptions = {
     additionalFunctionNames: ["$t", "$t_html"],
+    // Matches formatjs_id_pattern in makemessages.py
     idInterpolationPattern: "[content]",
 };
 
