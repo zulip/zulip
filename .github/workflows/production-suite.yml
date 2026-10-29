@@ -213,11 +213,9 @@ jobs:
         run: sudo /tmp/production-verify ${{ matrix.extra-args }}
 
       - name: Install pgroonga
-        if: ${{ matrix.os == 'jammy' }}
         run: sudo /tmp/production-pgroonga
 
       - name: Verify install after installing pgroonga
-        if: ${{ matrix.os == 'jammy' }}
         run: sudo /tmp/production-verify ${{ matrix.extra-args }}
 
       - name: Upgrade postgresql

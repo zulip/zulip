@@ -4,6 +4,22 @@ set -e
 set -x
 
 crudini --set /etc/zulip/zulip.conf machine pgroonga enabled
+
+if [ "$(facter --custom-dir /home/zulip/deployments/current/puppet/zulip/lib/facter groonga_apt_source_installed)" != true ]; then
+    # PGroonga is not available on this platform, so Puppet should
+    # refuse to enable it with a clear error.
+    if /home/zulip/deployments/current/scripts/zulip-puppet-apply -f >/tmp/pgroonga-puppet.log 2>&1; then
+        cat /tmp/pgroonga-puppet.log
+        echo 'Puppet enabled PGroonga even though it is not available!'
+        exit 1
+    fi
+    cat /tmp/pgroonga-puppet.log
+    grep -q 'PGroonga is enabled in /etc/zulip/zulip.conf, but is not available' /tmp/pgroonga-puppet.log
+    crudini --del /etc/zulip/zulip.conf machine pgroonga
+    echo 'PGroonga is not available on this platform, as expected.'
+    exit 0
+fi
+
 /home/zulip/deployments/current/scripts/zulip-puppet-apply -f
 echo 'USING_PGROONGA = True' >>/etc/zulip/settings.py
 su zulip -c '/home/zulip/deployments/current/manage.py migrate pgroonga'
