@@ -38,6 +38,13 @@ to always use PGroonga.
 
 ### Enabling PGroonga
 
+:::{note}
+
+PGroonga is not yet available on Ubuntu 26.04, because there are
+no PGroonga packages for it.
+
+:::
+
 All steps in this section should be run as the `root` user; on most installs, this can be done by running `sudo -i`.
 
 1. Alter the deployment setting:

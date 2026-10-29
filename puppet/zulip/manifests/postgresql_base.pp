@@ -48,6 +48,10 @@ class zulip::postgresql_base {
 
   $pgroonga = zulipconf('machine', 'pgroonga', false)
   if $pgroonga {
+    if $facts['os']['family'] == 'Debian' and !$facts['groonga_apt_source_installed'] {
+      $os = "${facts['os']['name']} ${facts['os']['release']['full']}"
+      fail("PGroonga is enabled in /etc/zulip/zulip.conf, but is not available for ${os}")
+    }
     # Needed for optional our full text search system
     package{"${postgresql}-pgdg-pgroonga":
       ensure  => latest,
