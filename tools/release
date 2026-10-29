@@ -21,7 +21,7 @@ version="$1"
 
 # Check we're on `main` or `\d+\.x`
 branch=$(git rev-parse --abbrev-ref HEAD)
-[ "$branch" == "main" ] || [[ "$branch" =~ ^[0-9]+\.x$ ]] || [ "$branch" == "${version}-branch" ] \
+[ "$branch" == "main" ] || [[ "$branch" =~ ^[0-9]+\.x$ ]] \
     || fail "Current branch '$branch' is not 'main' or a release branch"
 
 is_prerelease=
