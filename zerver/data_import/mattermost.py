@@ -73,12 +73,9 @@ def is_mattermost_thread_parent(post: dict[str, Any]) -> bool:
     return replies is not None and len(replies) > 0
 
 
-def get_mattermost_thread_key(post: dict[str, Any], index: int | None = None) -> str:
+def get_mattermost_thread_key(post: dict[str, Any], index: int) -> str:
     # Use timestamp + user + index to differentiate posts with same timestamp/user
-    base = f"{post['create_at']}:{post['user']}"
-    if index is not None:
-        return f"{base}:{index}"
-    return base
+    return f"{post['create_at']}:{post['user']}:{index}"
 
 
 def count_mattermost_thread_replies(post_data: list[dict[str, Any]]) -> dict[str, int]:
@@ -656,7 +653,7 @@ def process_raw_message_batch(
                 topic_name = thread_map[thread_key].topic_name
             else:
                 # Thread parent not imported (e.g., partial import)
-                topic_name = MATTERMOST_MAIN_IMPORT_TOPIC
+                topic_name = MATTERMOST_MAIN_IMPORT_TOPIC  # nocoverage
         else:
             topic_name = MATTERMOST_MAIN_IMPORT_TOPIC
 

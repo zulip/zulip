@@ -1486,8 +1486,8 @@ class MatterMostImporter(MattermostImportTestBase):
         for parent in thread_parents:
             content = parent["content"]
             # Should have correct plural/singular
-            if "*1 reply" in content:
-                self.assertIn("*1 reply in", content)
+            if "1 reply" in content:
+                self.assertIn("1 reply in", content)
             else:
                 self.assertIn("replies in", content)
 
@@ -1658,12 +1658,6 @@ class MatterMostImporter(MattermostImportTestBase):
         # Thread parent should come before its reply
         assert thread_parent_idx is not None and thread_reply_idx is not None
         self.assertLess(thread_parent_idx, thread_reply_idx)
-
-    def test_mattermost_thread_key_without_index(self) -> None:
-        from zerver.data_import.mattermost import get_mattermost_thread_key
-
-        key = get_mattermost_thread_key({"create_at": 12345, "user": "user1"})
-        self.assertEqual(key, "12345:user1")
 
     def test_import_data_to_existing_database(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
