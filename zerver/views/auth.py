@@ -37,6 +37,7 @@ from confirmation.models import (
     render_confirmation_key_error,
 )
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
+from zerver.actions.user_settings import do_set_date_joined_on_first_login
 from zerver.context_processors import get_realm_from_request, login_context, zulip_default_context
 from zerver.decorator import do_login, log_view_func, process_client, require_post
 from zerver.forms import (
@@ -1080,6 +1081,10 @@ def process_api_key_fetch_authenticate_result(
     # in the session. If the signal receiver assumes that we do then that
     # would cause problems.
     email_on_new_login(sender=type(user_profile), request=request, user=user_profile)
+
+    # Users who log in only through a mobile app or the API never see
+    # the terms of service page, which handles first logins on the web.
+    do_set_date_joined_on_first_login(user_profile)
 
     # Mark this request as having a logged-in user for our server logs.
     assert isinstance(user_profile, UserProfile)
