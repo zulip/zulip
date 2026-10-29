@@ -2230,12 +2230,13 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assertEqual(bot_owner_user_ids(new_bot), set())
 
     @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
-    def test_create_incoming_webhook_bot_with_service_name_and_with_keys(self) -> None:
+    def test_create_incoming_webhook_bot_with_integration_id_and_with_keys(self) -> None:
         self.login("hamlet")
         result = self.create_bot(
             bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
-            service_name="stripe",
-            config_data=orjson.dumps({"stripe_api_key": "sample-api-key"}).decode(),
+            config_data=orjson.dumps(
+                {"integration_id": "stripe", "stripe_api_key": "sample-api-key"}
+            ).decode(),
         )
         config_data = get_bot_config(UserProfile.objects.get(id=result["user_id"]))
         self.assertEqual(
@@ -2243,15 +2244,16 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         )
 
     @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
-    def test_create_incoming_webhook_bot_with_service_name_and_no_config_options(self) -> None:
+    def test_create_incoming_webhook_bot_with_integration_id_and_no_config_options(self) -> None:
         self.login("hamlet")
         result = self.create_bot(
-            bot_type=UserProfile.INCOMING_WEBHOOK_BOT, service_name="helloworld"
+            bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+            config_data=orjson.dumps({"integration_id": "helloworld"}).decode(),
         )
         config_data = get_bot_config(UserProfile.objects.get(id=result["user_id"]))
         self.assertEqual(config_data, {"integration_id": "helloworld"})
 
-    def test_create_incoming_webhook_bot_without_service_name(self) -> None:
+    def test_create_incoming_webhook_bot_without_integration_id(self) -> None:
         self.login("hamlet")
         result = self.create_bot(bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
         new_bot = UserProfile.objects.get(id=result["user_id"])
@@ -2259,22 +2261,23 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             get_bot_config(new_bot)
 
     @patch("zerver.lib.integrations.INCOMING_WEBHOOK_INTEGRATIONS", test_sample_config_options)
-    def test_create_incoming_webhook_bot_with_invalid_service(self) -> None:
+    def test_create_incoming_webhook_bot_with_invalid_config(self) -> None:
         self.login("hamlet")
-        for service_config, expected_error_message in [
+        for config_data, expected_error_message in [
             (
-                {
-                    "service_name": "stripe",
-                    "config_data": orjson.dumps({"stripe_api_key": "_invalid_key"}).decode(),
-                },
+                {"integration_id": "stripe", "stripe_api_key": "_invalid_key"},
                 'Invalid stripe_api_key value _invalid_key (stripe_api_key starts with a "_" and is hence invalid.)',
             ),
-            ({"service_name": "stripe"}, "Missing configuration parameters: {'stripe_api_key'}"),
-            ({"service_name": "stripes"}, "Invalid integration 'stripes'."),
+            (
+                {"integration_id": "stripe"},
+                "Missing configuration parameters: {'stripe_api_key'}",
+            ),
+            ({"integration_id": "stripes"}, "Invalid integration 'stripes'."),
         ]:
             with self.subTest(expected_error_message):
                 bot_info = self.bot_creation_info(
-                    bot_type=UserProfile.INCOMING_WEBHOOK_BOT, **service_config
+                    bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+                    config_data=orjson.dumps(config_data).decode(),
                 )
                 result = self.client_post("/json/bots", bot_info)
                 self.assert_json_error(result, expected_error_message)
