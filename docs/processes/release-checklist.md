@@ -57,8 +57,8 @@ preparing a new release.
 
 ### Executing the release
 
-- Create the release commit, on `main` (for major releases) or on the
-  release branch (for minor releases):
+- Create the release commit, on `main` or the release branch (for
+  major releases) or on the release branch (for minor releases):
   - Copy the Markdown release notes for the release into
     `docs/overview/changelog.md`.
   - Verify the changelog passes lint, and has the right release date.
@@ -98,7 +98,8 @@ preparing a new release.
   once it is built, and how to test it. Verify it, then publish it to
   DigitalOcean marketplace.
 - _Major releases only:_
-  - Create a release branch (e.g., `4.x`).
+  - Create a release branch (e.g., `4.x`), if the release was made
+    from `main`.
   - On the release branch, update `ZULIP_VERSION` in `version.py` to
     the present release with a `+git` suffix, e.g., `4.0+git`.
   - On `main`, update `ZULIP_VERSION` to the future major release with
@@ -131,9 +132,10 @@ preparing a new release.
 - _Prereleases only (e.g., 7.0-beta3):_
   - Atop the prerelease commit (e.g., `7.0-beta3`), make a commit
     updating `ZULIP_VERSION` to the prerelease version with a `+git`
-    suffix, e.g., `7.0-beta3+git`. Push this to `main`. (If `main` has
-    already diverged from the prerelease, a merge commit will be
-    needed here.)
+    suffix, e.g., `7.0-beta3+git`. Push this to the branch the
+    prerelease was made from (`main` or the release branch). (If that
+    branch has already diverged from the prerelease, a merge commit
+    will be needed here.)
 
 ### Important permissions for executing the release
 
