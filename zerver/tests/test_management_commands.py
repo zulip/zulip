@@ -27,7 +27,7 @@ from zerver.models import Realm, RealmAuditLog, Recipient, UserMessage, UserProf
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
-from zerver.models.users import get_user_profile_by_email
+from zerver.models.users import ExternalAuthID, get_user_profile_by_email
 
 
 class TestWarnNoEmail(ZulipTestCase):
@@ -927,3 +927,45 @@ class TestUserChangeNotifications(ZulipTestCase):
         # Verify bot did NOT receive a notification
         bot_messages_after = UserMessage.objects.filter(user_profile=bot).count()
         self.assertEqual(bot_messages_before, bot_messages_after)
+
+
+class TestDeleteExternalAuthIDs(ZulipTestCase):
+    def test_delete_external_auth_ids(self) -> None:
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
+        mit_user = self.mit_user("sipbtest")
+        for user, auth_method, external_auth_id in [
+            (hamlet, "ldap", "hamlet-id"),
+            (othello, "ldap", "othello-id"),
+            (hamlet, "saml:okta", "hamlet-okta-id"),
+            (mit_user, "ldap", "sipbtest-id"),
+        ]:
+            ExternalAuthID.objects.create(
+                user=user,
+                realm=user.realm,
+                external_auth_method_name=auth_method,
+                external_auth_id=external_auth_id,
+            )
+
+        with self.assertRaises(CommandError) as e:
+            call_command("delete_external_auth_ids", "--auth-method=saml:okt", "--realm=zulip")
+        self.assertEqual(
+            str(e.exception),
+            "No ExternalAuthIDs for 'saml:okt'. Present:\n  ldap (2)\n  saml:okta (1)",
+        )
+
+        with patch("builtins.print") as mock_print:
+            call_command("delete_external_auth_ids", "--auth-method=ldap", "--realm=zulip")
+        mock_print.assert_called_once_with("Deleted 2 ExternalAuthIDs for ldap.")
+        self.assertEqual(
+            set(ExternalAuthID.objects.values_list("user_id", "external_auth_method_name")),
+            {(hamlet.id, "saml:okta"), (mit_user.id, "ldap")},
+        )
+
+        with patch("builtins.print") as mock_print:
+            call_command("delete_external_auth_ids", "--auth-method=ldap", "--all-realms")
+        mock_print.assert_called_once_with("Deleted 1 ExternalAuthIDs for ldap.")
+        self.assertEqual(
+            set(ExternalAuthID.objects.values_list("user_id", "external_auth_method_name")),
+            {(hamlet.id, "saml:okta")},
+        )
