@@ -136,6 +136,21 @@ export function by_stream_topic_url(stream_id: number, topic: string): string {
     return internal_url.by_stream_topic_url(stream_id, topic, sub_store.maybe_get_stream_name);
 }
 
+// A topic permalink, anchored on a message in the topic so that the
+// link follows the topic if it's moved or renamed.
+export function by_stream_topic_permalink(
+    stream_id: number,
+    topic: string,
+    message_id: number,
+): string {
+    return internal_url.by_stream_topic_url(
+        stream_id,
+        topic,
+        sub_store.maybe_get_stream_name,
+        message_id,
+    );
+}
+
 // Encodes a term list into the
 // corresponding hash: the # component
 // of the narrow URL
@@ -533,9 +548,15 @@ export function decode_dm_recipient_user_ids_from_narrow_url(narrow_url: string)
     }
 }
 
-export function decode_stream_topic_from_url(
-    url_str: string,
-): {stream_id: number; topic_name?: string; message_id?: string} | null {
+// Parses a channel, topic, or message narrow URL. For a topic permalink,
+// with_message_id is the message the link is anchored on, which the
+// link follows if the topic is moved or renamed.
+export function decode_stream_topic_from_url(url_str: string): {
+    stream_id: number;
+    topic_name?: string;
+    message_id?: string;
+    with_message_id?: string;
+} | null {
     try {
         const url = new URL(url_str, window.location.origin);
         if (url.origin !== window.location.origin || !url.hash.startsWith("#narrow")) {
@@ -568,18 +589,16 @@ export function decode_stream_topic_from_url(
         if (terms.length === 2) {
             return {stream_id, topic_name: terms[1].operand};
         }
-        if (terms[2]?.operator === "with") {
-            // For with operators, we currently discard the message ID unless
-            // otherwise specified.
-            return {stream_id, topic_name: terms[1].operand};
-        }
-        if (terms[2]?.operator !== "near") {
+        if (terms[2]?.operator !== "near" && terms[2]?.operator !== "with") {
             return null;
         }
         // Callers parse the message id as a number, so a URL with anything
         // else there is malformed rather than a link to a message.
         if (!/^\d+$/.test(terms[2].operand)) {
             return null;
+        }
+        if (terms[2].operator === "with") {
+            return {stream_id, topic_name: terms[1].operand, with_message_id: terms[2].operand};
         }
         return {stream_id, topic_name: terms[1].operand, message_id: terms[2].operand};
     } catch {
