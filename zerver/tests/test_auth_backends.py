@@ -112,6 +112,7 @@ from zerver.models import (
     NamedUserGroup,
     PreregistrationUser,
     Realm,
+    RealmAuditLog,
     RealmDomain,
     Stream,
     UserActivity,
@@ -119,6 +120,7 @@ from zerver.models import (
 )
 from zerver.models.clients import get_client
 from zerver.models.groups import SystemGroups, UserGroupMembership
+from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.realms import clear_supported_auth_backends_cache, get_realm
 from zerver.models.users import ExternalAuthID, PasswordTooWeakError, get_user_by_delivery_email
 from zerver.signals import JUST_CREATED_THRESHOLD
@@ -6787,6 +6789,39 @@ class FetchAPIKeyTest(ZulipTestCase):
         json_response = self.assert_json_success(result)
         self.assertEqual(json_response["user_id"], self.user_profile.id)
 
+    def test_success_clears_is_imported_stub(self) -> None:
+        imported_user = self.example_user("imported_user")
+        email = imported_user.delivery_email
+
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            result = self.client_post(
+                "/api/v1/fetch_api_key", dict(username=email, password=initial_password(email))
+            )
+        self.assert_json_success(result)
+        imported_user.refresh_from_db()
+        self.assertFalse(imported_user.is_imported_stub)
+        self.assertEqual(imported_user.date_joined, now)
+
+        # Logging in again doesn't record another change.
+        with time_machine.travel(now + timedelta(days=1), tick=False):
+            result = self.client_post(
+                "/api/v1/fetch_api_key", dict(username=email, password=initial_password(email))
+            )
+        self.assert_json_success(result)
+        imported_user.refresh_from_db()
+        self.assertEqual(imported_user.date_joined, now)
+        for event_type in [
+            AuditLogEventType.USER_IS_IMPORTED_STUB_CHANGED,
+            AuditLogEventType.USER_DATE_JOINED_CHANGED,
+        ]:
+            self.assertEqual(
+                RealmAuditLog.objects.filter(
+                    modified_user=imported_user, event_type=event_type
+                ).count(),
+                1,
+            )
+
     def test_success_sets_date_joined_on_first_login(self) -> None:
         # Like a user created via the API who hasn't logged in yet.
         self.user_profile.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
@@ -7833,6 +7868,29 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         )
         self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
+
+    @override_settings(
+        AUTHENTICATION_BACKENDS=(
+            "zproject.backends.ZulipRemoteUserBackend",
+            "zproject.backends.ZulipDummyBackend",
+        )
+    )
+    def test_login_mobile_flow_otp_clears_is_imported_stub(self) -> None:
+        imported_user = self.example_user("imported_user")
+
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            result = self.client_get(
+                "/accounts/login/sso/",
+                dict(mobile_flow_otp="1234abcd" * 8),
+                REMOTE_USER=imported_user.delivery_email,
+                HTTP_USER_AGENT="ZulipAndroid",
+            )
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(urlsplit(result["Location"]).scheme, "zulip")
+        imported_user.refresh_from_db()
+        self.assertFalse(imported_user.is_imported_stub)
+        self.assertEqual(imported_user.date_joined, now)
 
     @override_settings(SEND_LOGIN_EMAILS=True)
     @override_settings(
