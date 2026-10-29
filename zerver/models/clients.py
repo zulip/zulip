@@ -48,6 +48,11 @@ class Client(models.Model):
         )
 
 
+# process_client records requests to browser views, like the web app
+# and the terms of service page, as "website", unless the user agent
+# is a Zulip app's, like the desktop app's "ZulipElectron".
+WEB_APP_CLIENT_NAMES = frozenset({"website", "ZulipElectron"})
+
 get_client_cache: dict[str, Client] = {}
 
 
