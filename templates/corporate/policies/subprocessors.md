@@ -28,9 +28,9 @@ our Services:
   for cloud infrastructure.
 * [DigitalOcean, LLC](https://www.digitalocean.com/security/gdpr/)
   for cloud infrastructure.
-* [FrontApp, Inc.](https://community.frontapp.com/t/x1p4mw/is-front-compliant-with-gdpr)
+* [FrontApp, Inc.](https://front.com/legal/privacy-notice)
   for customer support.
-* [Functional Software, Inc. d/b/a Sentry](https://blog.sentry.io/2018/03/14/gdpr-sentry-and-you)
+* [Functional Software, Inc. d/b/a Sentry](https://sentry.io/legal/dpa/)
   for error tracking.
 * [Google LLC](https://privacy.google.com/businesses/compliance/) for
   cloud infrastructure and services.
