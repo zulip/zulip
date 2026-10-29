@@ -21,6 +21,11 @@ from zerver.lib.integrations import INTEGRATIONS
 from zerver.lib.storage import static_path
 from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE
 
+# zerver.lib.thumbnail blocks the SVG loader, since it is unsafe for
+# user uploads; the integration logos we read here are trusted.
+pyvips.block_untrusted_set(False)
+pyvips.operation_block_set("VipsForeignLoadSvg", False)
+
 
 def create_integration_bot_avatar(logo_path: str, bot_avatar_path: str) -> None:
     os.makedirs(os.path.dirname(bot_avatar_path), exist_ok=True)
