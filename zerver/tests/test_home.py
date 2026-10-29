@@ -30,6 +30,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.users import max_message_id_for_user
 from zerver.models import DefaultStream, Draft, Realm, UserActivity, UserProfile
+from zerver.models.clients import get_client
 from zerver.models.realms import get_realm
 from zerver.models.streams import get_stream
 from zerver.models.users import get_system_bot, get_user
@@ -840,6 +841,59 @@ class HomeTest(ZulipTestCase):
         # Check that date_joined is updated to the time when user accepts ToS
         # when logging in for the first time.
         self.assertEqual(user.date_joined, now)
+
+    def test_accept_terms_of_service_after_web_activity(self) -> None:
+        """
+        Viewing the terms of service page records web or desktop app
+        activity, which doesn't count as having used Zulip before.
+        """
+        user = self.example_user("hamlet")
+        user.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
+        user.save()
+        for client_name in ["website", "ZulipElectron"]:
+            UserActivity.objects.create(
+                user_profile=user,
+                client=get_client(client_name),
+                query="accounts_accept_terms",
+                count=1,
+                last_visit=timezone_now(),
+            )
+
+        self.login_user(user)
+        now = timezone_now()
+        with time_machine.travel(now, tick=False):
+            result = self.client_post("/accounts/accept_terms/", {"terms": True})
+        self.assertEqual(result.status_code, 302)
+        user.refresh_from_db()
+        self.assertEqual(user.date_joined, now)
+
+    def test_accept_terms_of_service_after_earlier_activity(self) -> None:
+        """
+        Accepting the terms of service keeps date_joined for users who
+        used Zulip before, e.g., through a mobile app, or through the web
+        app on the server their organization was imported from, which
+        records event queue registrations as internal activity.
+        """
+        for user, client_name, query in [
+            (self.example_user("hamlet"), "ZulipMobile", "/api/v1/register"),
+            (self.example_user("cordelia"), "internal", "/api/v1/events/internal"),
+        ]:
+            user.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
+            user.save()
+            date_joined = user.date_joined
+            UserActivity.objects.create(
+                user_profile=user,
+                client=get_client(client_name),
+                query=query,
+                count=1,
+                last_visit=timezone_now(),
+            )
+
+            self.login_user(user)
+            result = self.client_post("/accounts/accept_terms/", {"terms": True})
+            self.assertEqual(result.status_code, 302)
+            user.refresh_from_db()
+            self.assertEqual(user.date_joined, date_joined)
 
     def test_set_email_address_visibility_without_terms_of_service(self) -> None:
         self.login("hamlet")
