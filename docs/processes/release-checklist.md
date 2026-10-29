@@ -134,8 +134,6 @@ preparing a new release.
     suffix, e.g., `7.0-beta3+git`. Push this to `main`. (If `main` has
     already diverged from the prerelease, a merge commit will be
     needed here.)
-  - Delete the prerelease branch (e.g., `7.0-beta3-branch`); it's now
-    an ancestor of `main` and thus unnecessary.
 
 ### Important permissions for executing the release
 
