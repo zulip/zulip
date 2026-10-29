@@ -1659,6 +1659,12 @@ class MatterMostImporter(MattermostImportTestBase):
         assert thread_parent_idx is not None and thread_reply_idx is not None
         self.assertLess(thread_parent_idx, thread_reply_idx)
 
+    def test_mattermost_thread_key_without_index(self) -> None:
+        from zerver.data_import.mattermost import get_mattermost_thread_key
+
+        key = get_mattermost_thread_key({"create_at": 12345, "user": "user1"})
+        self.assertEqual(key, "12345:user1")
+
     def test_import_data_to_existing_database(self) -> None:
         mattermost_data_dir = self.fixture_file_name("", "mattermost_fixtures")
         output_dir = self.make_import_output_dir("mattermost")
