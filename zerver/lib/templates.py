@@ -1,3 +1,4 @@
+import functools
 import time
 from pathlib import Path
 from typing import Any
@@ -13,6 +14,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.template import Library, engines
 from django.template.backends.jinja2 import Jinja2
 from django.utils.safestring import mark_safe
+from jinja2 import TemplateNotFound
 from markupsafe import Markup
 
 import zerver.lib.markdown.api_arguments_table_generator
@@ -194,6 +196,18 @@ def render_markdown_path(
         return mark_safe(html)  # noqa: S308
 
     return mark_safe(jinja.from_string(html).render(context))  # noqa: S308
+
+
+@functools.cache
+def markdown_path_exists(markdown_file_path: str) -> bool:
+    jinja = engines["Jinja2"]
+    assert isinstance(jinja, Jinja2)
+    assert jinja.env.loader is not None
+    try:
+        jinja.env.loader.get_source(jinja.env, markdown_file_path)
+    except TemplateNotFound:
+        return False
+    return True
 
 
 def webpack_entry(entrypoint: str) -> list[str]:
