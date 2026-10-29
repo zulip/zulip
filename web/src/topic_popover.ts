@@ -9,6 +9,7 @@ import render_left_sidebar_topic_links_popover from "../templates/popovers/left_
 
 import * as clipboard_handler from "./clipboard_handler.ts";
 import * as confirm_dialog from "./confirm_dialog.ts";
+import * as hash_util from "./hash_util.ts";
 import {$t, $t_html} from "./i18n.ts";
 import * as message_delete from "./message_delete.ts";
 import * as message_edit from "./message_edit.ts";
@@ -80,11 +81,18 @@ function get_cross_conversation_link_render_context(link: message_store.TopicLin
 } {
     const topic_name =
         stream_topic_history.get_known_topic_name(link.stream_id, link.topic) ?? link.topic;
-    const {url} = topic_link_util.get_topic_link_content_with_stream_id({
-        stream_id: link.stream_id,
-        topic_name,
-        message_id: link.message_id?.toString(),
-    });
+    let url: string;
+    if (link.kind === "message") {
+        ({url} = topic_link_util.get_topic_link_content_with_stream_id({
+            stream_id: link.stream_id,
+            topic_name,
+            message_id: link.message_id.toString(),
+        }));
+    } else if (link.message_id !== undefined) {
+        url = hash_util.by_stream_topic_permalink(link.stream_id, topic_name, link.message_id);
+    } else {
+        url = hash_util.by_stream_topic_url(link.stream_id, topic_name);
+    }
     const stream = stream_data.get_sub_by_id(link.stream_id);
     return {
         url,

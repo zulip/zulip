@@ -462,17 +462,34 @@ export function reify_message_id({old_id, new_id}: {old_id: number; new_id: numb
 // A cross-conversation link found in a message, to a stream>topic or to
 // a specific message in a stream>topic. Links to a whole channel (with
 // no topic) aren't tracked.
+//
+// message_id is the linked message for a message link. A topic link
+// can have one too: a topic permalink names a message in the topic
+// (the `with` operator in its URL), and the link goes wherever that
+// message is now, so it keeps working after the topic is moved or
+// renamed. kind tells the two apart.
 type TopicLinkMessage =
-    {kind: "message"; message_id: number} | {kind: "topic"; message_id: undefined};
+    {kind: "message"; message_id: number} | {kind: "topic"; message_id: number | undefined};
 export type TopicLink = {stream_id: number; topic: string} & TopicLinkMessage;
 
 // The message a link is tracked by: the linked message for a message
-// link, and none for a topic link.
-function linked_message_from_url({message_id}: {message_id?: string}): TopicLinkMessage {
+// link, or for a topic permalink, the message it's anchored on, which
+// the link follows if the topic is moved.
+function linked_message_from_url({
+    message_id,
+    with_message_id,
+}: {
+    message_id?: string;
+    with_message_id?: string;
+}): TopicLinkMessage {
     if (message_id !== undefined) {
         return {kind: "message", message_id: Number.parseInt(message_id, 10)};
     }
-    return {kind: "topic", message_id: undefined};
+    return {
+        kind: "topic",
+        message_id:
+            with_message_id === undefined ? undefined : Number.parseInt(with_message_id, 10),
+    };
 }
 
 const NO_MESSAGE_ID = 0;
@@ -525,7 +542,7 @@ export function topic_links_incoming_for_testing(): Map<
     return topic_links_incoming;
 }
 
-// to_message_id -> from_message_id[], for message links whose target
+// to_message_id -> from_message_id[], for links to a message that
 // isn't in the store yet. Such links are saved with the narrow data
 // in their URL until the target arrives, at which point we can ensure
 // up-to-date narrow data for the message.
@@ -625,62 +642,100 @@ function remove_links_from_message_to(
 
 // Links to a message that wasn't yet in the store are stored with
 // narrow data that might become stale. This function updates the
-// narrow data for link(s) to `to_message_id`, or drops the link(s)
-// if to_narrow is undefined.
+// narrow data for link(s) to `to_message_id`. Message links are
+// dropped if message_link_narrow is undefined, while topic links
+// anchored on the message lose their anchor and stay where they are
+// if topic_link_narrow is undefined.
 function refile_pending_link_from_message(
     from_message_id: number,
     to_message_id: number,
-    to_narrow: util.StreamTopic | undefined,
+    message_link_narrow: util.StreamTopic | undefined,
+    topic_link_narrow: util.StreamTopic | undefined,
 ): void {
     const removed_links = remove_links_from_message_to(from_message_id, to_message_id);
     if (removed_links === undefined) {
         return;
     }
-    // Pushing onto updated_links updates the array that's already stored
+    // Adding to updated_links updates the array that's already stored
     // in topic_links_outgoing.
-    const {updated_links} = removed_links;
+    const {stale_links, updated_links} = removed_links;
 
-    // If there's a new narrow, add the link back to the two maps with the
-    // correct narrow. There might have been multiple stale links between
-    // these messages, if they had different outdated data, but now that
-    // we know the up-to-date narrow we only store one link.
-    if (to_narrow !== undefined) {
-        add_incoming_record(to_narrow, to_message_id, from_message_id);
-        updated_links.push({
-            stream_id: to_narrow.stream_id,
-            topic: to_narrow.topic,
+    // Add the links back to the two maps with the correct narrow. The
+    // message might have had several stale message links or topic
+    // links to the target, with different outdated narrows, but now
+    // that the up-to-date narrow is known, at most one of each is kept.
+    if (message_link_narrow !== undefined && stale_links.some((link) => link.kind === "message")) {
+        add_link_from_message(from_message_id, updated_links, {
+            stream_id: message_link_narrow.stream_id,
+            topic: message_link_narrow.topic,
             message_id: to_message_id,
             kind: "message",
         });
     }
+    const stale_topic_links = stale_links.filter((link) => link.kind === "topic");
+    for (const link of stale_topic_links) {
+        if (topic_link_narrow !== undefined) {
+            add_link_from_message(from_message_id, updated_links, {
+                stream_id: topic_link_narrow.stream_id,
+                topic: topic_link_narrow.topic,
+                message_id: to_message_id,
+                kind: "topic",
+            });
+        } else {
+            add_link_from_message(from_message_id, updated_links, {
+                stream_id: link.stream_id,
+                topic: link.topic,
+                message_id: undefined,
+                kind: "topic",
+            });
+        }
+    }
 }
 
 // Moves the links to a message that isn't in the store to the given
-// narrow data, or removes them if to_narrow is undefined.
+// narrow data, or, when a narrow is undefined, stops the links of that
+// kind from following the message.
 function refile_pending_links_to_message(
     to_message_id: number,
-    to_narrow: util.StreamTopic | undefined,
+    message_link_narrow: util.StreamTopic | undefined,
+    topic_link_narrow: util.StreamTopic | undefined,
 ): void {
     const linking_message_ids = pending_message_link_targets.get(to_message_id);
     if (linking_message_ids === undefined) {
         return;
     }
     for (const linking_message_id of linking_message_ids) {
-        refile_pending_link_from_message(linking_message_id, to_message_id, to_narrow);
+        refile_pending_link_from_message(
+            linking_message_id,
+            to_message_id,
+            message_link_narrow,
+            topic_link_narrow,
+        );
     }
 }
 
 // Files the links to a message that just arrived in the store under
-// its current narrow data, or drops them if it turns out to be from a
-// muted user or not a channel message.
+// its current narrow data.
 function resolve_pending_links_to_message(message: Message): void {
-    if (message.type === "stream" && !muted_users.is_user_muted(message.sender_id)) {
-        refile_pending_links_to_message(message.id, {
-            stream_id: message.stream_id,
-            topic: message.topic,
-        });
+    if (message.type !== "stream") {
+        // Links to a message id that isn't in a channel are buggy, so
+        // they're dropped. refile_pending_links_to_message with undefined
+        // narrows wouldn't do that, since it keeps topic links (only
+        // removing the message id) and here we want to fully remove the
+        // link.
+        const linking_message_ids = pending_message_link_targets.get(message.id) ?? [];
+        for (const linking_message_id of linking_message_ids) {
+            remove_links_from_message_to(linking_message_id, message.id);
+        }
     } else {
-        refile_pending_links_to_message(message.id, undefined);
+        const narrow = {stream_id: message.stream_id, topic: message.topic};
+        // Links to a muted user's message are hidden, but a topic link
+        // anchored on one still follows it, like navigating the link does.
+        refile_pending_links_to_message(
+            message.id,
+            muted_users.is_user_muted(message.sender_id) ? undefined : narrow,
+            narrow,
+        );
     }
     pending_message_link_targets.delete(message.id);
 }
@@ -717,11 +772,12 @@ export function topic_links_from_narrow(stream_id: number, topic: string): Topic
 
     for (const message_id of messages_with_links) {
         for (const link of narrow_map.get(message_id)!) {
-            // A message link points to the linked message's current
-            // location, which may differ from where it was when the link
-            // was created (e.g. if its topic was resolved since). Until
-            // the linked message is in the store, the channel/topic in
-            // the link's URL is the best we know.
+            // A message link, or a topic link anchored on a message,
+            // points to that message's current location, which may
+            // differ from where it was when the link was created (e.g.
+            // if its topic was resolved since). Until the message is in
+            // the store, the channel/topic in the link's URL is the best
+            // we know.
             let target = link;
             if (link.message_id !== undefined) {
                 const message = get(link.message_id);
@@ -746,7 +802,14 @@ export function topic_links_from_narrow(stream_id: number, topic: string): Topic
             if (target.stream_id === stream_id && util.lower_same(target.topic, topic)) {
                 continue;
             }
-            const link_string = JSON.stringify({...target, topic: target.topic.toLowerCase()});
+            // Two message links are the same target only if they're to the
+            // same message, while two topic links to the same topic are still
+            // the same even if they use different anchor messages.
+            const link_string = JSON.stringify({
+                stream_id: target.stream_id,
+                topic: target.topic.toLowerCase(),
+                message_id: target.kind === "message" ? target.message_id : undefined,
+            });
             if (added_links.has(link_string)) {
                 continue;
             }
@@ -852,12 +915,26 @@ function update_or_remove_links_to_message(
                     }
                 }
             } else {
-                // An undefined new_message_id means we're deleting the old message id
-                // from the links.
+                // An undefined new_message_id means the message was deleted,
+                // so message links to it are removed.
                 const filtered_links = links.filter(
                     (topic_link) => topic_link.message_id !== old_message_id,
                 );
                 links_from_narrow.set(message_id, filtered_links);
+                // Topic links anchored on it become plain links to the topic
+                // it was last in, the best narrow we have for them.
+                if (
+                    links.some(
+                        (link) => link.message_id === old_message_id && link.kind === "topic",
+                    )
+                ) {
+                    add_link_from_message(message_id, filtered_links, {
+                        stream_id,
+                        topic,
+                        message_id: undefined,
+                        kind: "topic",
+                    });
+                }
             }
         }
     }
@@ -977,10 +1054,16 @@ export function save_topic_links(message: Message): void {
         }
 
         // Ignore links to messages from muted users, to channels we don't
-        // have access to, and buggy ones to a message id that isn't in a channel.
+        // have access to, and buggy ones to a message id that isn't in a
+        // channel. A topic link anchored on a muted user's message is
+        // kept, following it like navigating does.
         const to_message = to_message_id === undefined ? undefined : get(to_message_id);
         if (to_message !== undefined) {
-            if (muted_users.is_user_muted(to_message.sender_id) || to_message.type !== "stream") {
+            if (
+                to_message.type !== "stream" ||
+                (linked_message.kind === "message" &&
+                    muted_users.is_user_muted(to_message.sender_id))
+            ) {
                 continue;
             }
             to_stream_id = to_message.stream_id;
@@ -1008,8 +1091,8 @@ export function save_topic_links(message: Message): void {
             message.topic,
         );
         const topic_links_from_message = topic_links_from_message_narrow.get(message.id) ?? [];
-        // Note: This is O(# of links for message_id), and for topic links
-        // O(# of links to the target narrow).
+        // Note: This is O(# of links for message_id), and for unanchored
+        // topic links O(# of links to the target narrow).
         add_link_from_message(message.id, topic_links_from_message, {
             stream_id: to_stream_id,
             topic: to_topic,
@@ -1034,10 +1117,8 @@ export function process_topic_edit(opts: {
     // so they're re-filed before any of those entries move below.
     for (const message_id of message_ids) {
         if (get(message_id) === undefined) {
-            refile_pending_links_to_message(message_id, {
-                stream_id: new_stream_id,
-                topic: new_topic,
-            });
+            const new_narrow = {stream_id: new_stream_id, topic: new_topic};
+            refile_pending_links_to_message(message_id, new_narrow, new_narrow);
         }
     }
 
@@ -1121,7 +1202,7 @@ export function remove(message_ids: number[]): void {
         } else if (message === undefined) {
             // A deleted message we haven't fetched can still have links
             // saved to it.
-            refile_pending_links_to_message(message_id, undefined);
+            refile_pending_links_to_message(message_id, undefined, undefined);
             pending_message_link_targets.delete(message_id);
         }
         stored_messages.delete(message_id);

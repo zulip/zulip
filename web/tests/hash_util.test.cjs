@@ -88,6 +88,12 @@ run_test("decode_stream_topic_from_url", () => {
         topic_name: "testing",
         message_id: "42",
     });
+    // A topic permalink, anchored on a message in the topic.
+    assert.deepEqual(decode(`${topic_url}/with/42`), {
+        stream_id: 99,
+        topic_name: "testing",
+        with_message_id: "42",
+    });
 
     // Another origin.
     assert.equal(decode("https://other.example.com/#narrow/channel/99-Frontend"), null);
@@ -98,12 +104,13 @@ run_test("decode_stream_topic_from_url", () => {
     assert.equal(decode("#narrow/channel/abc"), null);
     // A message with no topic.
     assert.equal(decode(`${channel_url}/near/42`), null);
-    // Terms other than near after the topic.
+    // Terms other than near or with after the topic.
     assert.equal(decode(`${topic_url}/id/42`), null);
     assert.equal(decode(`${topic_url}/near/42/x/1`), null);
     // A message id that isn't a number.
     assert.equal(decode(`${topic_url}/near/abc`), null);
     assert.equal(decode(`${topic_url}/near/12abc`), null);
+    assert.equal(decode(`${topic_url}/with/abc`), null);
 });
 
 run_test("pm_with_url", () => {

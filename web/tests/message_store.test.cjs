@@ -590,8 +590,9 @@ function message_link(stream_id, topic, message_id) {
     return {stream_id, topic, message_id, kind: "message"};
 }
 
-function topic_link(stream_id, topic) {
-    return {stream_id, topic, message_id: undefined, kind: "topic"};
+// A topic link is anchored on a message if it was a topic permalink.
+function topic_link(stream_id, topic, anchor_message_id = undefined) {
+    return {stream_id, topic, message_id: anchor_message_id, kind: "topic"};
 }
 
 test("save_topic_links", () => {
@@ -1817,6 +1818,247 @@ test("links to a message that isn't in the store yet are dropped when it is dele
             [0, [linking_message.id]],
         ]),
     );
+});
+
+test("topic links follow the message their permalink is anchored on", () => {
+    message_store.clear_topic_links_for_testing();
+    const design = {name: "design", subscribed: true, stream_id: 10};
+    stream_data.add_sub_for_tests(design);
+    const sales = {name: "sales", subscribed: true, stream_id: 12};
+    stream_data.add_sub_for_tests(sales);
+    function add_message(message) {
+        message_store.update_message_cache({type: "server_message", message});
+        return message;
+    }
+
+    // A topic permalink is tracked by the message it's anchored on,
+    // like a message link, but is still a topic link.
+    const anchor_message = add_message({
+        id: 801,
+        sender_id: alice.user_id,
+        type: "stream",
+        stream_id: design.stream_id,
+        topic: "Logo",
+        content: "<ignore>",
+    });
+    const linking_message = add_message({
+        id: 802,
+        sender_id: bob.user_id,
+        type: "stream",
+        stream_id: sales.stream_id,
+        topic: "Renewals",
+        content: `<a href="/#narrow/channel/10-design/topic/Logo/with/${anchor_message.id}">link</a>`,
+    });
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Renewals"), [
+        topic_link(design.stream_id, "Logo", anchor_message.id),
+    ]);
+    assert.deepEqual(
+        message_store.topic_links_incoming_for_testing().get(design.stream_id).get("logo"),
+        new Map([[anchor_message.id, [linking_message.id]]]),
+    );
+
+    // A plain link to the same topic is the same link, while a message
+    // link to the anchor message is a different one.
+    const other_linking_message = add_message({
+        id: 803,
+        sender_id: bob.user_id,
+        type: "stream",
+        stream_id: sales.stream_id,
+        topic: "Renewals",
+        content: `<a href="/#narrow/channel/10-design/topic/Logo">topic</a><a href="/#narrow/channel/10-design/topic/Logo/near/${anchor_message.id}">message</a>`,
+    });
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Renewals"), [
+        topic_link(design.stream_id, "Logo", anchor_message.id),
+        message_link(design.stream_id, "Logo", anchor_message.id),
+    ]);
+
+    // Moving the anchor message moves the topic link with it, like
+    // navigating the link does, while the plain topic link stays.
+    message_store.process_topic_edit({
+        message_ids: [anchor_message.id],
+        new_stream_id: design.stream_id,
+        new_topic: "Branding",
+    });
+    anchor_message.topic = "Branding";
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Renewals"), [
+        topic_link(design.stream_id, "Branding", anchor_message.id),
+        topic_link(design.stream_id, "Logo"),
+        message_link(design.stream_id, "Branding", anchor_message.id),
+    ]);
+    assert.deepEqual(message_store.topic_links_to_narrow(design.stream_id, "Branding"), [
+        message_link(sales.stream_id, "Renewals", linking_message.id),
+    ]);
+    assert.deepEqual(message_store.topic_links_to_narrow(design.stream_id, "Logo"), [
+        message_link(sales.stream_id, "Renewals", other_linking_message.id),
+    ]);
+
+    // Deleting the anchor message leaves the topic link as a plain link
+    // to the topic the message was last in, while the message link to
+    // it is dropped.
+    message_store.remove([anchor_message.id]);
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Renewals"), [
+        topic_link(design.stream_id, "Branding"),
+        topic_link(design.stream_id, "Logo"),
+    ]);
+    assert.deepEqual(
+        message_store.topic_links_incoming_for_testing().get(design.stream_id).get("branding"),
+        new Map([[0, [linking_message.id]]]),
+    );
+
+    // A permalink anchored on a message that isn't in the store yet is
+    // filed under the topic in its URL until the message arrives.
+    const pending_anchor_id = 810;
+    const pending_linking_message = add_message({
+        id: 811,
+        sender_id: bob.user_id,
+        type: "stream",
+        stream_id: sales.stream_id,
+        topic: "Hiring",
+        content: `<a href="/#narrow/channel/10-design/topic/Logo/with/${pending_anchor_id}">topic</a><a href="/#narrow/channel/10-design/topic/Logo/near/${pending_anchor_id}">message</a>`,
+    });
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Hiring"), [
+        topic_link(design.stream_id, "Logo", pending_anchor_id),
+        message_link(design.stream_id, "Logo", pending_anchor_id),
+    ]);
+    assert.deepEqual(
+        message_store.pending_message_link_targets_for_testing(),
+        new Map([[pending_anchor_id, new Set([pending_linking_message.id])]]),
+    );
+    // When it arrives in another topic, from a muted user, the topic link
+    // still follows it there, while the message link to it is hidden.
+    muted_users.set_muted_users([{id: cindy.user_id}]);
+    add_message({
+        id: pending_anchor_id,
+        sender_id: cindy.user_id,
+        type: "stream",
+        stream_id: design.stream_id,
+        topic: "Branding",
+        content: "<ignore>",
+    });
+    muted_users.set_muted_users([]);
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Hiring"), [
+        topic_link(design.stream_id, "Branding", pending_anchor_id),
+    ]);
+    assert.deepEqual(message_store.topic_links_to_narrow(design.stream_id, "Branding"), [
+        message_link(sales.stream_id, "Renewals", linking_message.id),
+        message_link(sales.stream_id, "Hiring", pending_linking_message.id),
+    ]);
+    assert.deepEqual(message_store.pending_message_link_targets_for_testing(), new Map());
+    // The same goes for a muted user's message that's already in the
+    // store when the links to it are saved.
+    muted_users.set_muted_users([{id: cindy.user_id}]);
+    const muted_anchor_linking_message = add_message({
+        id: 812,
+        sender_id: bob.user_id,
+        type: "stream",
+        stream_id: sales.stream_id,
+        topic: "Pricing",
+        content: `<a href="/#narrow/channel/10-design/topic/Branding/with/${pending_anchor_id}">topic</a><a href="/#narrow/channel/10-design/topic/Branding/near/${pending_anchor_id}">message</a>`,
+    });
+    muted_users.set_muted_users([]);
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Pricing"), [
+        topic_link(design.stream_id, "Branding", pending_anchor_id),
+    ]);
+    assert.deepEqual(message_store.topic_links_to_narrow(design.stream_id, "Branding"), [
+        message_link(sales.stream_id, "Renewals", linking_message.id),
+        message_link(sales.stream_id, "Hiring", pending_linking_message.id),
+        message_link(sales.stream_id, "Pricing", muted_anchor_linking_message.id),
+    ]);
+
+    // An anchor message deleted before it arrives leaves a plain link to
+    // the topic in the URL.
+    const deleted_anchor_id = 820;
+    const deleted_anchor_linking_message = add_message({
+        id: 821,
+        sender_id: bob.user_id,
+        type: "stream",
+        stream_id: sales.stream_id,
+        topic: "Hiring",
+        content: `<a href="/#narrow/channel/10-design/topic/Logo/with/${deleted_anchor_id}">link</a>`,
+    });
+    message_store.remove([deleted_anchor_id]);
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Hiring"), [
+        topic_link(design.stream_id, "Branding", pending_anchor_id),
+        topic_link(design.stream_id, "Logo"),
+    ]);
+    assert.deepEqual(message_store.topic_links_to_narrow(design.stream_id, "Logo"), [
+        message_link(sales.stream_id, "Renewals", other_linking_message.id),
+        message_link(sales.stream_id, "Hiring", deleted_anchor_linking_message.id),
+    ]);
+    assert.deepEqual(message_store.pending_message_link_targets_for_testing(), new Map());
+
+    // An anchor message moved before it arrives takes the permalink
+    // with it.
+    const moved_anchor_id = 840;
+    const moved_anchor_linking_message = add_message({
+        id: 841,
+        sender_id: bob.user_id,
+        type: "stream",
+        stream_id: sales.stream_id,
+        topic: "Legal",
+        content: `<a href="/#narrow/channel/10-design/topic/Logo/with/${moved_anchor_id}">link</a>`,
+    });
+    message_store.process_topic_edit({
+        message_ids: [moved_anchor_id],
+        new_stream_id: design.stream_id,
+        new_topic: "Branding",
+    });
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Legal"), [
+        topic_link(design.stream_id, "Branding", moved_anchor_id),
+    ]);
+    assert.deepEqual(
+        message_store
+            .topic_links_incoming_for_testing()
+            .get(design.stream_id)
+            .get("branding")
+            .get(moved_anchor_id),
+        [moved_anchor_linking_message.id],
+    );
+    assert.deepEqual(
+        message_store.pending_message_link_targets_for_testing(),
+        new Map([[moved_anchor_id, new Set([moved_anchor_linking_message.id])]]),
+    );
+    add_message({
+        id: moved_anchor_id,
+        sender_id: alice.user_id,
+        type: "stream",
+        stream_id: design.stream_id,
+        topic: "Branding",
+        content: "<ignore>",
+    });
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Legal"), [
+        topic_link(design.stream_id, "Branding", moved_anchor_id),
+    ]);
+    assert.deepEqual(message_store.pending_message_link_targets_for_testing(), new Map());
+
+    // A link anchored on a message that turns out not to be in a channel
+    // is dropped, since navigating it goes to that message's conversation.
+    const dm_anchor_id = 830;
+    add_message({
+        id: 831,
+        sender_id: bob.user_id,
+        type: "stream",
+        stream_id: sales.stream_id,
+        topic: "Onboarding",
+        content: `<a href="/#narrow/channel/10-design/topic/Logo/with/${dm_anchor_id}">link</a>`,
+    });
+    add_message({id: dm_anchor_id, sender_id: alice.user_id, type: "private", content: "<ignore>"});
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Onboarding"), []);
+    assert.deepEqual(message_store.topic_links_to_narrow(design.stream_id, "Logo"), [
+        message_link(sales.stream_id, "Renewals", other_linking_message.id),
+        message_link(sales.stream_id, "Hiring", deleted_anchor_linking_message.id),
+    ]);
+    // So is one anchored on such a message that's already in the store.
+    add_message({
+        id: 832,
+        sender_id: bob.user_id,
+        type: "stream",
+        stream_id: sales.stream_id,
+        topic: "Onboarding",
+        content: `<a href="/#narrow/channel/10-design/topic/Branding/with/${dm_anchor_id}">link</a>`,
+    });
+    assert.deepEqual(message_store.topic_links_from_narrow(sales.stream_id, "Onboarding"), []);
+    assert.deepEqual(message_store.pending_message_link_targets_for_testing(), new Map());
 });
 
 test("reify_message_id handles a message that links to itself", () => {
