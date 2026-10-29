@@ -567,6 +567,16 @@ function add_incoming_record(
     links_to_narrow.set(to_message_id, links_to_message);
 }
 
+// Saves a link from a message in both maps, under the link's narrow.
+function add_link_from_message(
+    from_message_id: number,
+    links_from_message: TopicLink[],
+    link: TopicLink,
+): void {
+    util.unique_array_insert(links_from_message, link);
+    add_incoming_record(link, link.message_id ?? NO_MESSAGE_ID, from_message_id);
+}
+
 // Links to a message that wasn't yet in the store are stored with
 // narrow data that might become stale. This function updates the
 // narrow data for link(s) to `to_message_id`, or drops the link(s)
@@ -965,32 +975,20 @@ export function save_topic_links(message: Message): void {
             linking_message_ids.add(message.id);
         }
 
-        // (1) Save link in topic_links_outgoing
         const topic_links_from_message_narrow = get_or_create_link_map_for_narrow(
             topic_links_outgoing,
             message.stream_id,
             message.topic,
         );
         const topic_links_from_message = topic_links_from_message_narrow.get(message.id) ?? [];
-        // Note: This is O(# of links for message_id)
-        util.unique_array_insert(topic_links_from_message, {
+        // Note: This is O(# of links for message_id), and for topic links
+        // O(# of links to the target narrow).
+        add_link_from_message(message.id, topic_links_from_message, {
             stream_id: to_stream_id,
             topic: to_topic,
             message_id: to_message_id,
         });
         topic_links_from_message_narrow.set(message.id, topic_links_from_message);
-
-        // (2) Save link in topic_links_incoming
-        const topic_links_to_message_narrow = get_or_create_link_map_for_narrow(
-            topic_links_incoming,
-            to_stream_id,
-            to_topic,
-        );
-        const topic_links_to_message =
-            topic_links_to_message_narrow.get(to_message_id ?? NO_MESSAGE_ID) ?? [];
-        // Note: This is O(# of links for message_id, which could be a lot for NO_MESSAGE_ID)
-        util.unique_array_insert(topic_links_to_message, message.id);
-        topic_links_to_message_narrow.set(to_message_id ?? NO_MESSAGE_ID, topic_links_to_message);
     }
 }
 
