@@ -1400,7 +1400,7 @@ textarea.new_message_textarea {
             background-color: var(--color-background-dropdown-widget-button);
             border-color: var(--color-compose-recipient-box-border-color);
 
-            .channel-privacy-type-icon {
+            .channel-privacy-type-icon .zulip-icon {
                 color: var(--privacy-icon-color-original);
             }
 
