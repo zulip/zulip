@@ -462,11 +462,18 @@ export function reify_message_id({old_id, new_id}: {old_id: number; new_id: numb
 // A cross-conversation link found in a message, to a stream>topic or to
 // a specific message in a stream>topic. Links to a whole channel (with
 // no topic) aren't tracked.
-export type TopicLink = {
-    stream_id: number;
-    topic: string;
-    message_id: number | undefined;
-};
+type TopicLinkMessage =
+    {kind: "message"; message_id: number} | {kind: "topic"; message_id: undefined};
+export type TopicLink = {stream_id: number; topic: string} & TopicLinkMessage;
+
+// The message a link is tracked by: the linked message for a message
+// link, and none for a topic link.
+function linked_message_from_url({message_id}: {message_id?: string}): TopicLinkMessage {
+    if (message_id !== undefined) {
+        return {kind: "message", message_id: Number.parseInt(message_id, 10)};
+    }
+    return {kind: "topic", message_id: undefined};
+}
 
 const NO_MESSAGE_ID = 0;
 
@@ -643,6 +650,7 @@ function refile_pending_link_from_message(
             stream_id: to_narrow.stream_id,
             topic: to_narrow.topic,
             message_id: to_message_id,
+            kind: "message",
         });
     }
 }
@@ -723,6 +731,7 @@ export function topic_links_from_narrow(stream_id: number, topic: string): Topic
                         stream_id: message.stream_id,
                         topic: message.topic,
                         message_id: message.id,
+                        kind: link.kind,
                     };
                 }
             }
@@ -794,6 +803,7 @@ export function topic_links_to_narrow(stream_id: number, topic: string): TopicLi
             stream_id: message.stream_id,
             topic: message.topic,
             message_id: message.id,
+            kind: "message",
         });
     }
     return topic_links_content;
@@ -957,9 +967,8 @@ export function save_topic_links(message: Message): void {
 
         let to_stream_id = link_data.stream_id;
         let to_topic = link_data.topic_name;
-        const to_message_id = link_data.message_id
-            ? Number.parseInt(link_data.message_id, 10)
-            : undefined;
+        const linked_message = linked_message_from_url(link_data);
+        const to_message_id = linked_message.message_id;
 
         // A link to just a channel (no topic) isn't information-rich
         // enough to be worth tracking as a cross-conversation link.
@@ -1004,7 +1013,7 @@ export function save_topic_links(message: Message): void {
         add_link_from_message(message.id, topic_links_from_message, {
             stream_id: to_stream_id,
             topic: to_topic,
-            message_id: to_message_id,
+            ...linked_message,
         });
         topic_links_from_message_narrow.set(message.id, topic_links_from_message);
     }

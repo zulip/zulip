@@ -587,11 +587,11 @@ test("maybe_update_raw_content", () => {
 
 // Expected cross-conversation links, as message_store returns them.
 function message_link(stream_id, topic, message_id) {
-    return {stream_id, topic, message_id};
+    return {stream_id, topic, message_id, kind: "message"};
 }
 
 function topic_link(stream_id, topic) {
-    return {stream_id, topic, message_id: undefined};
+    return {stream_id, topic, message_id: undefined, kind: "topic"};
 }
 
 test("save_topic_links", () => {

@@ -93,7 +93,7 @@ function get_cross_conversation_link_render_context(link: message_store.TopicLin
         channel_name: stream?.name ?? "",
         topic_display_name_html: _.escape(util.get_final_topic_display_name(topic_name)),
         is_empty_string_topic: topic_name === "",
-        is_message_link: link.message_id !== undefined,
+        is_message_link: link.kind === "message",
     };
 }
 
