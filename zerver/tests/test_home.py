@@ -20,6 +20,7 @@ from zerver.actions.users import change_user_is_active
 from zerver.lib.compatibility import LAST_SERVER_UPGRADE_TIME, is_outdated_server
 from zerver.lib.events import has_pending_sponsorship_request
 from zerver.lib.home import get_furthest_read_time, promote_sponsoring_zulip_in_realm
+from zerver.lib.initial_password import initial_password
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -828,8 +829,10 @@ class HomeTest(ZulipTestCase):
 
         # Test date_joined is set to the current time when user logs in for the
         # first time.
+        user = self.example_user("cordelia")
         user.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
         user.save()
+        self.login_user(user)
 
         now = timezone_now()
         with time_machine.travel(now, tick=False):
@@ -837,10 +840,35 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/")
 
-        user = self.example_user("hamlet")
+        user = self.example_user("cordelia")
         # Check that date_joined is updated to the time when user accepts ToS
         # when logging in for the first time.
         self.assertEqual(user.date_joined, now)
+
+    def test_accept_terms_of_service_after_api_login(self) -> None:
+        """
+        A first login through the API sets date_joined, so accepting the
+        terms of service on the web later doesn't move it.
+        """
+        # Like a user created via the API who hasn't logged in yet.
+        hamlet = self.example_user("hamlet")
+        hamlet.tos_version = UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN
+        hamlet.save()
+
+        api_login_time = timezone_now() - timedelta(days=1)
+        for user in [hamlet, self.example_user("imported_user")]:
+            email = user.delivery_email
+            with time_machine.travel(api_login_time, tick=False):
+                result = self.client_post(
+                    "/api/v1/fetch_api_key", dict(username=email, password=initial_password(email))
+                )
+            self.assert_json_success(result)
+
+            self.login_user(user)
+            result = self.client_post("/accounts/accept_terms/", {"terms": True})
+            self.assertEqual(result.status_code, 302)
+            user.refresh_from_db()
+            self.assertEqual(user.date_joined, api_login_time)
 
     def test_accept_terms_of_service_after_web_activity(self) -> None:
         """
