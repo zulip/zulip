@@ -28,12 +28,20 @@ export type Context = {
 };
 
 export function row_with_focus(context: Context): JQuery {
-    const $focused_item = $(`.${CSS.escape(context.box_item_selector)}:focus`);
-    return $focused_item.parent(`.${CSS.escape(context.row_item_selector)}`);
+    if (document.activeElement instanceof HTMLElement) {
+        const $focused_box = $(document.activeElement).closest(
+            `.${CSS.escape(context.box_item_selector)}`,
+        );
+        if ($focused_box.length > 0) {
+            return $focused_box.parent(`.${CSS.escape(context.row_item_selector)}`);
+        }
+    }
+    const $active_box = $(`.${CSS.escape(context.box_item_selector)}.active`);
+    return $active_box.parent(`.${CSS.escape(context.row_item_selector)}`);
 }
 
 export function activate_element(elem: HTMLElement, context: Context): void {
-    $(`.${CSS.escape(context.box_item_selector)}`).removeClass("active");
+    $(`.${CSS.escape(context.box_item_selector)}.active`).removeClass("active");
     elem.classList.add("active");
     elem.focus({preventScroll: true});
 }
@@ -162,7 +170,10 @@ function initialize_focus(event_name: string, context: Context): void {
     // if up_arrow is clicked or the first item if down_arrow is clicked.
     if (
         (event_name !== "up_arrow" && event_name !== "down_arrow") ||
-        $(`.${CSS.escape(context.box_item_selector)}:focus`).length > 0
+        $(`.${CSS.escape(context.box_item_selector)}:focus`).length > 0 ||
+        (document.activeElement instanceof HTMLElement &&
+            $(document.activeElement).closest(`.${CSS.escape(context.box_item_selector)}`).length >
+                0)
     ) {
         return;
     }
