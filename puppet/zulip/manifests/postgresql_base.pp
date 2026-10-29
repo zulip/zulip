@@ -57,6 +57,16 @@ class zulip::postgresql_base {
       ],
       tag     => ['postgresql_upgrade'],
     }
+    if $facts['os']['name'] == 'Debian' and $facts['os']['release']['major'] == '13' {
+      # libarrow2600 from packages.groonga.org links against
+      # opentelemetry-cpp without depending on it; see
+      # https://github.com/apache/arrow/issues/55112
+      package { 'opentelemetry-cpp':
+        ensure => installed,
+        before => Exec['pgroonga-config'],
+        tag    => ['postgresql_upgrade'],
+      }
+    }
     exec { 'pgroonga-config':
       require => Package["${postgresql}-pgdg-pgroonga"],
       unless  => @("EOT"/$),
