@@ -740,8 +740,8 @@ def do_set_date_joined_on_first_login(user_profile: UserProfile) -> None:
     Users created via the API or a data import start with tos_version
     set to TOS_VERSION_BEFORE_FIRST_LOGIN, and their date_joined should
     be the time of their first login rather than their account creation
-    time. This is called when a user accepts the terms of service on
-    the web.
+    time. This is called both when a user accepts the terms of service
+    on the web and when Zulip hands them an API key.
 
     A user may have logged in before without changing tos_version,
     e.g., through a mobile app, or on the server their organization was
@@ -750,6 +750,16 @@ def do_set_date_joined_on_first_login(user_profile: UserProfile) -> None:
     of full members.
     """
     if user_profile.tos_version != UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN:
+        return
+
+    # An earlier login through the API may already have set
+    # date_joined, and the user_activity queue worker may not have
+    # recorded that login's activity yet.
+    if RealmAuditLog.objects.filter(
+        realm_id=user_profile.realm_id,
+        modified_user=user_profile,
+        event_type=AuditLogEventType.USER_DATE_JOINED_CHANGED,
+    ).exists():
         return
 
     # Viewing the terms of service page records web and desktop app
