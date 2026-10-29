@@ -29,17 +29,18 @@ if [[ "$version" =~ -[0-9a-z]+$ ]]; then
     is_prerelease=1
 fi
 
+release_branch="$(echo "$version" | perl -ple 's/\..*/.x/')"
+
 is_major_release=
 if [[ "$version" =~ ^[0-9]+\.0(-[0-9a-z]+)?$ ]]; then
-    [ "$branch" == "main" ] \
-        || fail "Did not expect $version to be released from $branch, expected main"
+    [ "$branch" == "main" ] || [ "$branch" == "$release_branch" ] \
+        || fail "Did not expect $version to be released from $branch, expected main or $release_branch"
     if [ -z "$is_prerelease" ]; then
         is_major_release=1
     fi
 else
-    expected_branch="$(echo "$version" | perl -ple 's/\..*/.x/')"
-    [ "$branch" == "$expected_branch" ] \
-        || fail "Did not expect $version to be released from $branch, expected $expected_branch"
+    [ "$branch" == "$release_branch" ] \
+        || fail "Did not expect $version to be released from $branch, expected $release_branch"
 fi
 
 # shellcheck source=lib/git-tools.bash
