@@ -268,7 +268,12 @@ run_test(
 
         const old_topic = "weekend plans";
         const new_topic = "Weekend plans";
-        const link = {stream_id: denmark.stream_id, topic: "dinner", message_id: undefined};
+        const link = {
+            stream_id: denmark.stream_id,
+            topic: "dinner",
+            message_id: undefined,
+            kind: "topic",
+        };
         const raw_message = {
             id: 333,
             display_recipient: denmark.name,
@@ -290,7 +295,12 @@ run_test(
             link,
         ]);
         assert.deepEqual(message_store.topic_links_to_narrow(denmark.stream_id, "dinner"), [
-            {stream_id: denmark.stream_id, topic: old_topic, message_id: message.id},
+            {
+                stream_id: denmark.stream_id,
+                topic: old_topic,
+                message_id: message.id,
+                kind: "message",
+            },
         ]);
 
         const events = [
@@ -319,7 +329,12 @@ run_test(
             link,
         ]);
         assert.deepEqual(message_store.topic_links_to_narrow(denmark.stream_id, "dinner"), [
-            {stream_id: denmark.stream_id, topic: new_topic, message_id: message.id},
+            {
+                stream_id: denmark.stream_id,
+                topic: new_topic,
+                message_id: message.id,
+                kind: "message",
+            },
         ]);
 
         // Deleting the message finds its links and removes them.
