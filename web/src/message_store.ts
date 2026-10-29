@@ -531,7 +531,7 @@ export function pending_message_link_targets_for_testing(): Map<number, Set<numb
 // links from from_message_id to to_message_id (since to_message_id
 // might have moved).
 function remove_incoming_record(
-    stale_narrow: {stream_id: number; topic: string},
+    stale_narrow: util.StreamTopic,
     to_message_id: number,
     from_message_id: number,
 ): void {
@@ -553,7 +553,7 @@ function remove_incoming_record(
 // specified narrow (since the message might not yet be in the store,
 // which is where its narrow data is stored).
 function add_incoming_record(
-    to_narrow: {stream_id: number; topic: string},
+    to_narrow: util.StreamTopic,
     to_message_id: number,
     from_message_id: number,
 ): void {
@@ -574,7 +574,7 @@ function add_incoming_record(
 function refile_link_from_message(
     from_message_id: number,
     to_message_id: number,
-    to_narrow: {stream_id: number; topic: string} | undefined,
+    to_narrow: util.StreamTopic | undefined,
 ): void {
     const from_message = get(from_message_id);
     if (from_message === undefined) {
@@ -623,7 +623,7 @@ function refile_link_from_message(
 // narrow data, or removes them if to_narrow is undefined.
 function refile_links_to_message(
     to_message_id: number,
-    to_narrow: {stream_id: number; topic: string} | undefined,
+    to_narrow: util.StreamTopic | undefined,
 ): void {
     const linking_message_ids = pending_message_link_targets.get(to_message_id);
     if (linking_message_ids === undefined) {
