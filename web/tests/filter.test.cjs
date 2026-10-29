@@ -1093,8 +1093,7 @@ test("canonicalization", () => {
     assert.equal(filter_util.canonicalize_operator("subject"), "topic");
     assert.equal(filter_util.canonicalize_operator("from"), "sender");
 
-    let term;
-    term = Filter.canonicalize_term({operator: "stream", operand: "Denmark"});
+    let term = Filter.canonicalize_term({operator: "stream", operand: "Denmark"});
     assert.equal(term.operator, "channel");
     assert.equal(term.operand, "Denmark");
 
@@ -1648,10 +1647,9 @@ test("negated_predicates", () => {
 });
 
 test("predicate_edge_cases", () => {
-    let predicate;
     // The code supports undefined as an operator to Filter, which results
     // in a predicate that accepts any message.
-    predicate = new Filter([]).predicate();
+    let predicate = new Filter([]).predicate();
     assert.ok(predicate({}));
 
     // Upstream code should prevent Filter.predicate from being called with
@@ -1852,9 +1850,8 @@ test("parse", () => {
 
 test("unparse", () => {
     let string;
-    let terms;
 
-    terms = [
+    let terms = [
         {operator: "channel", operand: foo_stream_id.toString()},
         {operator: "topic", operand: "Bar", negated: true},
         {operator: "search", operand: "yo"},

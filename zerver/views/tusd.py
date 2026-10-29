@@ -304,6 +304,9 @@ def handle_preregistration_pre_finish_hook(
     # the database so that is available even after a refresh.
     filename = data.meta_data["filename"]
     preregistration_realm.data_import_metadata["uploaded_import_file_name"] = filename
+    # The next import attempt will report its own errors.
+    preregistration_realm.data_import_metadata.pop("invalid_file_error_message", None)
+    preregistration_realm.data_import_metadata.pop("invalid_user_emails", None)
     preregistration_realm.save(update_fields=["data_import_metadata"])
     return tusd_json_response({})
 

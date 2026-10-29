@@ -35,6 +35,7 @@ from zerver.lib.event_types import (
     DraftsAddEvent,
     DraftsRemoveEvent,
     DraftsUpdateEvent,
+    HasGoogleMeetTokenEvent,
     HasWebexTokenEvent,
     HasZoomTokenEvent,
     HeartbeatEvent,
@@ -248,8 +249,9 @@ check_web_reload_client_event = make_checker(WebReloadClientEvent)
 
 _check_channel_folder_update = make_checker(ChannelFolderUpdateEvent)
 _check_delete_message = make_checker(DeleteMessageEvent)
-_check_has_zoom_token = make_checker(HasZoomTokenEvent)
+_check_has_google_meet_token = make_checker(HasGoogleMeetTokenEvent)
 _check_has_webex_token = make_checker(HasWebexTokenEvent)
+_check_has_zoom_token = make_checker(HasZoomTokenEvent)
 _check_legacy_presence = make_checker(LegacyPresenceEvent)
 _check_modern_presence = make_checker(ModernPresenceEvent)
 _check_muted_topics = make_checker(MutedTopicsEvent)
@@ -321,12 +323,12 @@ def check_delete_message(
     assert set(event.keys()) == keys
 
 
-def check_has_zoom_token(
+def check_has_google_meet_token(
     var_name: str,
     event: dict[str, object],
     value: bool,
 ) -> None:
-    _check_has_zoom_token(var_name, event)
+    _check_has_google_meet_token(var_name, event)
     assert event["value"] == value
 
 
@@ -336,6 +338,15 @@ def check_has_webex_token(
     value: bool,
 ) -> None:
     _check_has_webex_token(var_name, event)
+    assert event["value"] == value
+
+
+def check_has_zoom_token(
+    var_name: str,
+    event: dict[str, object],
+    value: bool,
+) -> None:
+    _check_has_zoom_token(var_name, event)
     assert event["value"] == value
 
 

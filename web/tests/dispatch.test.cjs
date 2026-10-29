@@ -1665,9 +1665,7 @@ run_test("delete_message", ({override}) => {
 
     dispatch(event);
 
-    let args;
-
-    args = message_events_stub.get_args("message_ids");
+    let args = message_events_stub.get_args("message_ids");
     assert_same(args.message_ids, [1337]);
 
     args = unread_ops_stub.get_args("message_ids");

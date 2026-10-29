@@ -221,7 +221,7 @@ class RocketChatImporter(ZulipTestCase):
                 user_id_mapper=user_id_mapper,
             )
         error_message = str(e.exception)
-        expected_error_message = f"['Invalid email format, please fix the following email(s) and try again: {bad_email1}, {bad_email2}']"
+        expected_error_message = f"Invalid email format, please fix the following email(s) and try again: {bad_email1}, {bad_email2}"
         self.assertEqual(error_message, expected_error_message)
 
     def test_categorize_channels_and_map_with_id(self) -> None:

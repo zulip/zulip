@@ -1,6 +1,6 @@
 <div {{#if process}}data-process="{{process}}"{{/if}} class="{{#if custom_classes}}{{custom_classes}} {{/if}}banner banner-{{intent}}">
     <span class="banner-content">
-        <span class="banner-label">
+        <span class="banner-label" {{#if label_id}}id="{{label_id}}"{{/if}}>
             {{#if label}}
                 {{label}}
             {{else}}

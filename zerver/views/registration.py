@@ -20,7 +20,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.template.response import TemplateResponse
 from django.urls import reverse
-from django.utils.translation import get_language, gettext_lazy
+from django.utils.translation import get_language, gettext_lazy, ngettext
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 from django.views.decorators.cache import never_cache
@@ -274,6 +274,26 @@ def accounts_register(*args: Any, **kwargs: Any) -> HttpResponse:
     return registration_helper(*args, **kwargs)
 
 
+def get_slack_import_data_error_message(prereg_realm: PreregistrationRealm) -> str:
+    metadata = prereg_realm.data_import_metadata
+    invalid_user_emails = metadata.get("invalid_user_emails")
+    if invalid_user_emails:
+        return ngettext(
+            "{count} Slack user has an invalid email address. Correct it in Slack, "
+            "then start the import again. If you can't correct it, "
+            "contact {support_email} for help. Invalid address: {emails}",
+            "{count} Slack users have invalid email addresses. Correct them in Slack, "
+            "then start the import again. If you can't correct them, "
+            "contact {support_email} for help. Invalid addresses: {emails}",
+            len(invalid_user_emails),
+        ).format(
+            count=len(invalid_user_emails),
+            support_email=FromAddress.SUPPORT,
+            emails=", ".join(invalid_user_emails),
+        )
+    return metadata.get("invalid_file_error_message", "")
+
+
 def render_slack_import_page(
     request: HttpRequest,
     prereg_realm: PreregistrationRealm,
@@ -300,7 +320,8 @@ def render_slack_import_page(
         ),
         "slack_access_token": metadata.get("slack_access_token"),
         "uploaded_import_file_name": metadata.get("uploaded_import_file_name"),
-        "invalid_file_error_message": metadata.get("invalid_file_error_message", ""),
+        "import_data_error_message": get_slack_import_data_error_message(prereg_realm),
+        "needs_new_upload": "invalid_file_error_message" in metadata,
         "slack_access_token_validation_error": slack_access_token_validation_error,
         "slack_import_error": slack_import_error,
     }
@@ -441,6 +462,8 @@ def registration_helper(
                 return render_slack_import_page(request, prereg_realm, key)
 
             prereg_realm.data_import_metadata["email_address_visibility"] = email_address_visibility
+            prereg_realm.data_import_metadata.pop("invalid_file_error_message", None)
+            prereg_realm.data_import_metadata.pop("invalid_user_emails", None)
             prereg_realm.save(update_fields=["data_import_metadata"])
 
             logger.info("(%s) Enqueueing Slack import", prereg_realm.string_id)
@@ -1240,12 +1263,13 @@ def realm_import_status(
             # clear it and report this import's own failure below.
             del metadata["subdomain_unavailable"]
             preregistration_realm.save(update_fields=["data_import_metadata"])
-        if metadata.get("invalid_file_error_message"):
+        data_error_message = get_slack_import_data_error_message(preregistration_realm)
+        if data_error_message:
             # Redirect user the file upload page if we have an error message to display.
             return json_success(
                 request,
                 {
-                    "status": metadata.get("invalid_file_error_message"),
+                    "status": data_error_message,
                     "redirect": reverse(
                         "get_prereg_key_and_redirect", kwargs={"confirmation_key": confirmation_key}
                     ),

@@ -187,7 +187,7 @@ A useful tool that we'll highlight throughout this tutorial is
 `git grep`. If you're unfamiliar with using `git grep`, then check out
 [this blog post](https://laurynmm.github.io/2021/12/22/git-grep.html)
 for an introduction to it, as well as the [official `git grep`
-documentation](https://git-scm.com/docs/git-grep.)
+documentation](https://git-scm.com/docs/git-grep).
 
 :::
 

@@ -1780,8 +1780,7 @@ test("initialize", ({override, override_rewire, mock_template}) => {
                     return typeahead_helper.query_matches_person(query, person);
                 }
 
-                let query;
-                query = "el"; // Matches both "othELlo" and "cordELia"
+                let query = "el"; // Matches both "othELlo" and "cordELia"
                 assert.equal(matcher(query, othello_item), true);
                 assert.equal(matcher(query, cordelia_item), true);
 

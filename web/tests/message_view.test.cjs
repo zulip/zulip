@@ -1247,10 +1247,9 @@ run_test("fast_track_current_msg_list_to_anchor date", ({override}) => {
 
 run_test("narrow_compute_title", () => {
     // Only tests cases where the narrow title is different from the filter title.
-    let filter;
 
     // Recent conversations & Inbox have `undefined` filter.
-    filter = undefined;
+    let filter;
     recent_view_util.set_visible(true);
     inbox_util.set_visible(false);
     assert.equal(narrow_title.compute_narrow_title(filter), "translated: Recent conversations");

@@ -107,16 +107,15 @@ export function create_notification(opts: {
     key: string;
     title: string;
     data: NotificationData;
-    desktop_notify: boolean;
     on_click?: (() => void) | undefined;
 }): void {
-    const {notification_options, key, title, data, desktop_notify, on_click} = opts;
+    const {notification_options, key, title, data, on_click} = opts;
     const existing_notification = notice_memory.get(key);
     if (existing_notification) {
         existing_notification.obj.close();
     }
 
-    if (!desktop_notify || NotificationAPI === undefined) {
+    if (!granted_desktop_notifications_permission()) {
         return;
     }
 

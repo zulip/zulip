@@ -333,7 +333,10 @@
        This is very useful for areas in the CSS codebase
        that rely on this value, but not necessarily as
        applied to `width:` or `max-width:`. */
-    --left-sidebar-width: min(33.3333vw, var(--left-sidebar-max-width));
+    --left-sidebar-width: min(
+        calc((100vw - var(--disabled-scrollbar-width)) / 3),
+        var(--left-sidebar-max-width)
+    );
     --right-sidebar-left-spacing: 5px;
     /* 50px per icon * 4 icons + 3px space (legacy) = 203px at 20px/1em */
     --right-column-collapsed-sidebar-width: 10.15em;
@@ -341,7 +344,10 @@
     --right-sidebar-max-width: 20.57em;
     /* We open the right sidebar at xl_min at a size of 240px,
        here expressed as precisely 20% of the viewport. */
-    --right-sidebar-width: min(20vw, var(--right-sidebar-max-width));
+    --right-sidebar-width: min(
+        calc((100vw - var(--disabled-scrollbar-width)) * 0.2),
+        var(--right-sidebar-max-width)
+    );
     /* 25px at 16px/1em */
     --right-sidebar-vdots-width: 1.5625em;
     /* The width of the icon is reduced by 2px, to account for 2px
@@ -636,6 +642,9 @@
     Width to be reserved for document scrollbar when scrolling is disabled.
     Using `scrollbar-gutter` would be more appropriate but doesn't has wide
     support and doesn't work for `fixed` elements.
+
+    Since `html` has `overflow-y: scroll`, `100vw` excludes the scrollbar
+    until scrolling is disabled, so `vw`-based widths subtract this too.
     */
     --disabled-scrollbar-width: 0px;
 
