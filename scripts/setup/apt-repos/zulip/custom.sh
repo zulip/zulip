@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-os_info="$(. /etc/os-release && printf '%s\n' "$ID" "$VERSION_ID" "$VERSION_CODENAME")"
+os_info="$(. /etc/os-release && printf '%s\n' "$ID" "$VERSION_CODENAME")"
 {
     read -r os_id
-    read -r os_version_id
     read -r os_version_codename
 } <<<"$os_info"
 
-if [ ! -e /usr/share/doc/groonga-apt-source/copyright ] && [ "$os_id $os_version_id" != "ubuntu 26.04" ]; then
+if [ ! -e /usr/share/doc/groonga-apt-source/copyright ]; then
     pgroonga_apt_sign_key=$(readlink -f "$LIST_PATH/pgroonga-packages.groonga.org.asc")
 
     remove_pgroonga_apt_tmp_dir() {
