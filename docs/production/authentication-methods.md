@@ -428,6 +428,27 @@ AUTH_LDAP_USER_ATTR_MAP = {
 LDAP_UNIQUE_ACCOUNT_ID_IS_BINARY = True
 ```
 
+:::{warning}
+
+Changing which attribute `unique_account_id` refers to, or changing
+`LDAP_UNIQUE_ACCOUNT_ID_IS_BINARY`, is unsafe once any Zulip accounts
+are linked to LDAP accounts, which happens when users log in and when
+`manage.py sync_ldap_user_data` runs: a user whose new value matches
+another user's previous one would be logged into that other user's
+Zulip account. To make such a change safely, stop the Zulip server,
+update the configuration, and delete the existing links between Zulip
+accounts and LDAP accounts before starting the server again:
+
+```bash
+/home/zulip/deployments/current/manage.py delete_external_auth_ids --auth-method ldap --all-realms
+```
+
+Users are linked again via their email address the next time they log
+in or `manage.py sync_ldap_user_data` runs, just as when
+`unique_account_id` was first configured.
+
+:::
+
 :::{note}
 
 If a Zulip account is already linked to a different
@@ -863,6 +884,26 @@ attribute — for example, an opaque user ID or UUID. If
 (or left unset), email synchronization will not be active, and email
 changes at the IdP will result in duplicate accounts.
 
+:::{warning}
+
+Changing which attribute `attr_user_permanent_id` refers to is unsafe
+once any Zulip accounts are linked to the IdP, which happens when
+users log in: a user whose new permanent ID matches another user's
+previous one would be logged into that other user's Zulip account. To
+make such a change safely, stop the Zulip server, update the
+configuration, and delete the existing links between Zulip accounts
+and the IdP (replacing `YOUR_IDP_NAME` with its name in
+`SOCIAL_AUTH_SAML_ENABLED_IDPS`) before starting the server again:
+
+```bash
+/home/zulip/deployments/current/manage.py delete_external_auth_ids --auth-method saml:YOUR_IDP_NAME --all-realms
+```
+
+Users are linked again via their email address the next time they log
+in, just as when `attr_user_permanent_id` was first configured.
+
+:::
+
 :::{note}
 
 The first time a user logs in with SAML, the permanent ID is linked to
@@ -1241,10 +1282,30 @@ one the IdP sends for the same email address, Zulip will refuse the
 login and log a warning, since the email address may have been
 reassigned to a different person. The administrator should resolve
 the conflict manually. This can happen when the user's account at the
-IdP was deleted and recreated. With Microsoft Entra ID, it can also
-happen for all users if the Zulip application is registered again with
-a new client ID, since Entra ID issues a different `sub` for each
-application.
+IdP was deleted and recreated.
+
+:::
+
+:::{warning}
+
+If the IdP issues a different `sub` for each application, as Microsoft
+Entra ID does, switching Zulip to a new application registration
+changes every user's `sub`, which makes Zulip refuse all of their
+logins. To avoid that, stop the Zulip server, update `client_id` and
+the secret, and delete the existing links between Zulip accounts and
+the IdP (replacing `YOUR_IDP_NAME` with its name in
+`SOCIAL_AUTH_OIDC_ENABLED_IDPS`, and `ISSUER` with the `iss` it sends,
+which normally matches its `oidc_url`) before starting the server
+again:
+
+```bash
+/home/zulip/deployments/current/manage.py delete_external_auth_ids --auth-method 'oidc:<YOUR_IDP_NAME>:<ISSUER>' --all-realms
+```
+
+The quotes are required, since the name contains `<` and `>`. To find
+the exact name, run the command with `--auth-method oidc`, which lists
+the names in use. Users are linked again via their email address the
+next time they log in.
 
 :::
 
