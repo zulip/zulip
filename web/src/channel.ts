@@ -36,6 +36,14 @@ export function set_password_change_in_progress(value: boolean): void {
     }
 }
 
+let rate_limited_handler: ((retry_after_secs: number | undefined) => void) | undefined;
+
+export function set_rate_limited_handler(
+    handler: (retry_after_secs: number | undefined) => void,
+): void {
+    rate_limited_handler = handler;
+}
+
 function call(args: AjaxRequestHandlerOptions): JQuery.jqXHR<unknown> | undefined {
     if (reload_state.is_in_progress() && !args.ignore_reload) {
         // If we're in the process of reloading, most HTTP requests
@@ -98,48 +106,70 @@ function call_in_span(
             return;
         }
 
-        if (xhr.status === 401) {
-            if (password_change_in_progress || orig_password_changes !== password_changes) {
-                // The backend for handling password change API requests
-                // will replace the user's session; this results in a
-                // brief race where any API request will fail with a 401
-                // error after the old session is deactivated but before
-                // the new one has been propagated to the browser.  So we
-                // skip our normal HTTP 401 error handling if we're in the
-                // process of executing a password change.
-                return;
-            }
+        switch (xhr.status) {
+            case 401: {
+                if (password_change_in_progress || orig_password_changes !== password_changes) {
+                    // The backend for handling password change API requests
+                    // will replace the user's session; this results in a
+                    // brief race where any API request will fail with a 401
+                    // error after the old session is deactivated but before
+                    // the new one has been propagated to the browser.  So we
+                    // skip our normal HTTP 401 error handling if we're in the
+                    // process of executing a password change.
+                    return;
+                }
 
-            if (page_params.page_type === "home" && page_params.is_spectator) {
-                // In theory, the spectator implementation should be
-                // designed to prevent accessing widgets that would
-                // make network requests not available to spectators.
-                //
-                // In the case that we have a bug in that logic, we
-                // prefer the user experience of offering the
-                // login_to_access widget over reloading the page.
-                spectators.login_to_access();
-            } else if (page_params.page_type === "home") {
-                // We got logged out somehow, perhaps from another window
-                // changing the user's password, or a session timeout.  We
-                // could display an error message, but jumping right to
-                // the login page conveys the same information with a
-                // smoother relogin experience.
-                window.location.replace(page_params.login_page);
-                return;
+                if (page_params.page_type === "home" && page_params.is_spectator) {
+                    // In theory, the spectator implementation should be
+                    // designed to prevent accessing widgets that would
+                    // make network requests not available to spectators.
+                    //
+                    // In the case that we have a bug in that logic, we
+                    // prefer the user experience of offering the
+                    // login_to_access widget over reloading the page.
+                    spectators.login_to_access();
+                } else if (page_params.page_type === "home") {
+                    // We got logged out somehow, perhaps from another window
+                    // changing the user's password, or a session timeout.  We
+                    // could display an error message, but jumping right to
+                    // the login page conveys the same information with a
+                    // smoother relogin experience.
+                    window.location.replace(page_params.login_page);
+                    return;
+                }
+
+                break;
             }
-        } else if (xhr.status === 403) {
-            if (xhr.responseJSON === undefined) {
-                blueslip.error("Unexpected 403 response from server", {
-                    xhr: xhr.responseText,
-                    args,
-                });
-            } else if (
-                z.object({code: z.literal("CSRF_FAILED")}).safeParse(xhr.responseJSON).success &&
-                reload_state.csrf_failed_handler !== undefined
-            ) {
-                reload_state.csrf_failed_handler();
+            case 403: {
+                if (xhr.responseJSON === undefined) {
+                    blueslip.error("Unexpected 403 response from server", {
+                        xhr: xhr.responseText,
+                        args,
+                    });
+                } else if (
+                    z.object({code: z.literal("CSRF_FAILED")}).safeParse(xhr.responseJSON)
+                        .success &&
+                    reload_state.csrf_failed_handler !== undefined
+                ) {
+                    reload_state.csrf_failed_handler();
+                }
+
+                break;
             }
+            case 429: {
+                const parsed = z
+                    .object({
+                        code: z.literal("RATE_LIMIT_HIT"),
+                        "retry-after": z.optional(z.nullable(z.number())),
+                    })
+                    .safeParse(xhr.responseJSON);
+                if (parsed.success) {
+                    rate_limited_handler?.(parsed.data["retry-after"] ?? undefined);
+                }
+
+                break;
+            }
+            // No default
         }
         orig_error(xhr, error_type, xhn);
     };
