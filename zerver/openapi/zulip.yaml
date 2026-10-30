@@ -12098,13 +12098,25 @@ paths:
                           The time when the user joined. For users imported from other
                           applications and users created via the API, this is set to the
                           account creation time until the user logs in for the first time,
-                          after which it is updated to that login time.
+                          after which it is updated to that login time. Users imported from
+                          another Zulip server keep the value from that server if they had
+                          used Zulip there, as recorded in the export; otherwise, it is
+                          updated when they first log in to this server.
 
-                          For imported users, clients can use the `is_imported_stub` flag
-                          to determine how to display this field: when `is_imported_stub`
-                          is `true`, the user has not yet logged in and this value is the
-                          account creation time during import; when `is_imported_stub` is
-                          `false`, this value reflects when the user first logged in.
+                          Before Zulip 12.0 (feature level 475), logging in didn't update this
+                          field, and before Zulip 13.0, only logging in to the web app did. So
+                          if one of these users first logged in before this server was
+                          upgraded to Zulip 13.0, this is the time of their first web app
+                          login if that happened between the upgrades to Zulip 12.0 and 13.0,
+                          and otherwise the value from before their first login.
+
+                          For users imported from other applications, clients can use the
+                          `is_imported_stub` flag to determine how to display this field:
+                          when `is_imported_stub` is `true`, the user has not yet logged in
+                          and this value is the account creation time during import; when
+                          `is_imported_stub` is `false`, this value reflects when the user
+                          first logged in, except for the users described above and users
+                          imported before Zulip 12.0 (feature level 433).
 
                           **Changes**: Starting with Zulip 12.0 (feature level 475),
                           this field is updated when an imported stub user or a user created
@@ -12144,6 +12156,11 @@ paths:
                           for imported messages. Stub accounts can be converted to regular Zulip
                           accounts when the user starts using Zulip, preserving that imported
                           user's message history.
+
+                          Users imported from another Zulip server keep the value of this
+                          field from that server. Users imported before Zulip 12.0
+                          (feature level 433) always have this field set to `false`, so it
+                          doesn't indicate whether they have logged in.
 
                           **Changes**: New in Zulip 12.0 (feature level 433).
                         example: false
@@ -30458,13 +30475,25 @@ components:
             The time when the user joined. For users imported from other
             applications and users created via the API, this is set to the
             account creation time until the user logs in for the first time,
-            after which it is updated to that login time.
+            after which it is updated to that login time. Users imported from
+            another Zulip server keep the value from that server if they had
+            used Zulip there, as recorded in the export; otherwise, it is
+            updated when they first log in to this server.
 
-            For imported users, clients can use the `is_imported_stub` flag
-            to determine how to display this field: when `is_imported_stub`
-            is `true`, the user has not yet logged in and this value is the
-            account creation time during import; when `is_imported_stub` is
-            `false`, this value reflects when the user first logged in.
+            Before Zulip 12.0 (feature level 475), logging in didn't update this
+            field, and before Zulip 13.0, only logging in to the web app did. So
+            if one of these users first logged in before this server was
+            upgraded to Zulip 13.0, this is the time of their first web app
+            login if that happened between the upgrades to Zulip 12.0 and 13.0,
+            and otherwise the value from before their first login.
+
+            For users imported from other applications, clients can use the
+            `is_imported_stub` flag to determine how to display this field:
+            when `is_imported_stub` is `true`, the user has not yet logged in
+            and this value is the account creation time during import; when
+            `is_imported_stub` is `false`, this value reflects when the user
+            first logged in, except for the users described above and users
+            imported before Zulip 12.0 (feature level 433).
 
             **Changes**: Starting with Zulip 12.0 (feature level 475),
             this field is updated when an imported stub user or a user created
@@ -30571,6 +30600,11 @@ components:
             for imported messages. Stub accounts can be converted to regular Zulip
             accounts when the user starts using Zulip, preserving that imported
             user's message history.
+
+            Users imported from another Zulip server keep the value of this
+            field from that server. Users imported before Zulip 12.0
+            (feature level 433) always have this field set to `false`, so it
+            doesn't indicate whether they have logged in.
 
             **Changes**: New in Zulip 12.0 (feature level 433).
           example: false
