@@ -150,15 +150,16 @@ run_test("paste to input", ({mock_template}) => {
     mock_template("input_pill.hbs", true, (_data, html) => html);
 
     const info = set_up();
-    const config = info.config;
+    const config = {...info.config, show_outline_on_invalid_input: true};
     const $container = info.$container;
+    const $pill_input = info.$pill_input;
     const items = info.items;
 
     const widget = input_pill.create(config);
 
     const paste_handler = $container.get_on_handler("paste", ".input");
 
-    const paste_text = "blue,yellow";
+    let paste_text = "blue,yellow";
 
     const originalEvent = new ClipboardEvent();
     originalEvent.clipboardData = {
@@ -181,6 +182,16 @@ run_test("paste to input", ({mock_template}) => {
 
     assert.deepEqual(widget.items(), [items.blue, items.yellow]);
 
+    // Pasted text that doesn't form a valid pill stays in the input,
+    // without the shake animation or the invalid outline.
+    paste_text = "red,purple";
+    paste_handler(e);
+
+    assert.deepEqual(widget.items(), [items.blue, items.yellow, items.red]);
+    assert.equal($pill_input.text(), "purple");
+    assert.ok(!$pill_input.hasClass("input-validation-shake"));
+    assert.ok(!$container.hasClass("invalid"));
+
     let entered = false;
     widget.createPillonPaste(() => {
         entered = true;
@@ -188,6 +199,44 @@ run_test("paste to input", ({mock_template}) => {
 
     paste_handler(e);
     assert.ok(entered);
+});
+
+run_test("paste invalid text with shake_on_invalid_paste", ({mock_template}) => {
+    mock_template("input_pill.hbs", true, (_data, html) => html);
+
+    const info = set_up();
+    const config = {
+        ...info.config,
+        show_outline_on_invalid_input: true,
+        shake_on_invalid_paste: true,
+    };
+    const $container = info.$container;
+    const $pill_input = info.$pill_input;
+    const items = info.items;
+
+    const widget = input_pill.create(config);
+
+    const paste_handler = $container.get_on_handler("paste", ".input");
+
+    const originalEvent = new ClipboardEvent();
+    originalEvent.clipboardData = {
+        getData: () => "red,purple",
+    };
+    const e = {
+        originalEvent,
+        preventDefault: noop,
+    };
+
+    document.execCommand = (_cmd, _, text) => {
+        $container.find(".input").text(text);
+    };
+
+    paste_handler(e);
+
+    assert.deepEqual(widget.items(), [items.red]);
+    assert.equal($pill_input.text(), "purple");
+    assert.ok($pill_input.hasClass("input-validation-shake"));
+    assert.ok($container.hasClass("invalid"));
 });
 
 run_test("arrows on pills", ({mock_template}) => {
@@ -278,6 +327,7 @@ run_test("comma", ({mock_template}) => {
     });
 
     assert.deepEqual(widget.items(), [items.blue, items.red]);
+    assert.ok($pill_input.hasClass("input-validation-shake"));
 
     $pill_input.text(" yellow");
 
