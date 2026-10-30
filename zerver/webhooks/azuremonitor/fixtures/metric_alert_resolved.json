@@ -1,0 +1,50 @@
+{
+    "schemaId": "azureMonitorCommonAlertSchema",
+    "data": {
+        "essentials": {
+            "alertId": "/subscriptions/<subscription ID>/providers/Microsoft.AlertsManagement/alerts/aaaa0a0a-bb1b-cc2c-dd3d-eeeeee4e4e4e",
+            "alertRule": "WCUS-R2-Gen2",
+            "severity": "Sev3",
+            "signalType": "Metric",
+            "monitorCondition": "Resolved",
+            "monitoringService": "Platform",
+            "alertTargetIDs": [
+                "/subscriptions/<subscription ID>/resourcegroups/pipelinealertrg/providers/microsoft.compute/virtualmachines/wcus-r2-gen2"
+            ],
+            "configurationItems": [
+                "wcus-r2-gen2"
+            ],
+            "originAlertId": "3f2d4487-b0fc-4125-8bd5-7ad17384221e_PipeLineAlertRG_microsoft.insights_metricAlerts_WCUS-R2-Gen2_-117781227",
+            "firedDateTime": "2019-03-22T13:58:24.3713213Z",
+            "resolvedDateTime": "2019-03-22T14:03:16.2246313Z",
+            "description": "",
+            "essentialsVersion": "1.0",
+            "alertContextVersion": "1.0"
+        },
+        "alertContext": {
+            "properties": null,
+            "conditionType": "SingleResourceMultipleMetricCriteria",
+            "condition": {
+                "windowSize": "PT5M",
+                "allOf": [
+                    {
+                        "metricName": "Percentage CPU",
+                        "metricNamespace": "Microsoft.Compute/virtualMachines",
+                        "operator": "GreaterThan",
+                        "threshold": "25",
+                        "timeAggregation": "Average",
+                        "dimensions": [
+                            {
+                                "name": "ResourceId",
+                                "value": "b1b1b1b1-cccc-dddd-eeee-f2f2f2f2f2f2"
+                            }
+                        ],
+                        "metricValue": 7.727
+                    }
+                ],
+                "windowStartTime": "2019-03-22T13:40:03.064Z",
+                "windowEndTime": "2019-03-22T13:45:03.064Z"
+            }
+        }
+    }
+}
