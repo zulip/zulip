@@ -129,6 +129,8 @@
 ## Invitations
 
 * [Get all invitations](/api/get-invites)
+* [Get email invitation details](/api/get-email-invite-details)
+* [Get reusable invitation link details](/api/get-multiuse-invite-details)
 * [Send invitations](/api/send-invites)
 * [Create a reusable invitation link](/api/create-invite-link)
 * [Resend an email invitation](/api/resend-email-invite)

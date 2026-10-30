@@ -38,6 +38,7 @@ from zerver.actions.invites import (
     do_invite_users,
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
+    get_multiuse_invite_details_dict,
     too_many_recent_realm_invites,
 )
 from zerver.actions.realm_settings import (
@@ -2668,6 +2669,268 @@ class InvitationsTestCase(InviteUserBase):
         prereg_user.refresh_from_db()
         self.assertEqual(prereg_user.status, confirmation_settings.STATUS_REVOKED)
         self.assertTrue(Confirmation.objects.filter(id=confirmation.id).exists())
+
+    def test_get_email_invite_details(self) -> None:
+        """
+        GET /json/invites/{invite_id} returns invite details including
+        stream_ids and group_ids for the invitation.
+        """
+        self.login("iago")
+        zulip_realm = get_realm("zulip")
+        invitee_email = "test-invite-details@zulip.com"
+
+        # Invite with default realm subscriptions.
+        self.assert_json_success(
+            self.invite(
+                invitee_email, [], realm=zulip_realm, include_realm_default_subscriptions=True
+            )
+        )
+        prereg_user = PreregistrationUser.objects.get(email=invitee_email)
+
+        result = self.client_get(f"/json/invites/{prereg_user.id}")
+        self.assert_json_success(result)
+        invite = result.json()["invite"]
+        self.assertEqual(invite["email"], invitee_email)
+        self.assertFalse(invite["is_multiuse"])
+        self.assert_length(
+            invite["stream_ids"],
+            len(get_slim_realm_default_streams(zulip_realm.id)),
+        )
+        self.assertEqual(invite["group_ids"], [])
+
+        # Non-existent invite ID returns an error.
+        result = self.client_get(f"/json/invites/{prereg_user.id + 9999}")
+        self.assert_json_error(result, "No such invitation")
+
+        # A revoked invite is not accessible.
+        do_revoke_user_invite(prereg_user, acting_user=self.example_user("iago"))
+        result = self.client_get(f"/json/invites/{prereg_user.id}")
+        self.assert_json_error(result, "Invitation already used or deactivated.")
+
+        # Invite from a different realm is not accessible.
+        mit_realm = get_realm("zephyr")
+        other_realm_prereg = PreregistrationUser.objects.create(
+            referred_by=self.mit_user("sipbtest"), realm=mit_realm
+        )
+        result = self.client_get(f"/json/invites/{other_realm_prereg.id}")
+        self.assert_json_error(result, "No such invitation")
+
+    def test_get_email_invite_details_with_streams(self) -> None:
+        """
+        GET /json/invites/{invite_id} returns only the explicitly specified
+        stream_ids when not using realm default subscriptions.
+        """
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        invitee_email = "test-invite-streams@zulip.com"
+        zulip_realm = get_realm("zulip")
+
+        self.assert_json_success(self.invite(invitee_email, ["Denmark"], realm=zulip_realm))
+        prereg_user = PreregistrationUser.objects.get(email=invitee_email, referred_by=user_profile)
+
+        # The creator can access their own invitation.
+        result = self.api_get(user_profile, f"/api/v1/invites/{prereg_user.id}")
+        self.assert_json_success(result)
+        invite = result.json()["invite"]
+        self.assert_length(invite["stream_ids"], 1)
+
+        # Another non-admin member cannot access someone else's invitation.
+        result = self.api_get(self.example_user("othello"), f"/api/v1/invites/{prereg_user.id}")
+        self.assert_json_error(result, "Must be an organization administrator")
+
+    def test_get_email_invite_details_excludes_inaccessible_private_streams(self) -> None:
+        """
+        GET /json/invites/{invite_id} omits private channel IDs that the
+        requesting user no longer has metadata access to, even if the
+        channel was included when the invite was created.
+        """
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        private_stream_name = "Secret invite stream"
+        self.make_stream(private_stream_name, invite_only=True)
+        self.subscribe(user_profile, private_stream_name)
+
+        invitee_email = "test-invite-hidden-stream@zulip.com"
+        self.assert_json_success(self.invite(invitee_email, [private_stream_name, "Denmark"]))
+        prereg_user = PreregistrationUser.objects.get(email=invitee_email, referred_by=user_profile)
+
+        # While still subscribed, the referrer can see both channels.
+        result = self.api_get(user_profile, f"/api/v1/invites/{prereg_user.id}")
+        self.assert_json_success(result)
+        self.assert_length(result.json()["invite"]["stream_ids"], 2)
+
+        # After leaving the private channel, its ID is no longer exposed.
+        self.unsubscribe(user_profile, private_stream_name)
+        result = self.api_get(user_profile, f"/api/v1/invites/{prereg_user.id}")
+        self.assert_json_success(result)
+        self.assertEqual(result.json()["invite"]["stream_ids"], [self.get_stream_id("Denmark")])
+
+    def test_get_email_invite_details_owner_permission(self) -> None:
+        """
+        GET /json/invites/{invite_id} requires owner permission when the
+        invite is for an owner role.
+        """
+        self.login("desdemona")
+        owner = self.example_user("desdemona")
+        zulip_realm = get_realm("zulip")
+        invitee_email = "test-owner-invite@zulip.com"
+        self.assert_json_success(
+            self.invite(
+                invitee_email,
+                [],
+                invite_as=PreregistrationUser.INVITE_AS["REALM_OWNER"],
+                realm=zulip_realm,
+                include_realm_default_subscriptions=True,
+            )
+        )
+        prereg_user = PreregistrationUser.objects.get(email=invitee_email)
+
+        # Admin (non-owner) cannot access owner invitation.
+        result = self.api_get(self.example_user("iago"), f"/api/v1/invites/{prereg_user.id}")
+        self.assert_json_error(result, "Must be an organization owner")
+
+        # Owner can access their own owner invitation.
+        result = self.api_get(owner, f"/api/v1/invites/{prereg_user.id}")
+        self.assert_json_success(result)
+        self.assert_length(
+            result.json()["invite"]["stream_ids"],
+            len(get_slim_realm_default_streams(zulip_realm.id)),
+        )
+
+    def test_get_multiuse_invite_details(self) -> None:
+        """
+        GET /json/invites/multiuse/{invite_id} returns invite details
+        including stream_ids and group_ids.
+        """
+        self.login("iago")
+        zulip_realm = get_realm("zulip")
+
+        # Multiuse invite with explicit streams.
+        streams = [get_stream("Denmark", zulip_realm), get_stream("Scotland", zulip_realm)]
+        invite_expires_in_minutes = 2 * 24 * 60
+        do_create_multiuse_invite_link(
+            self.example_user("iago"),
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            invite_expires_in_minutes,
+            include_realm_default_subscriptions=False,
+            streams=streams,
+        )
+        invite_id = do_get_invites_controlled_by_user(self.example_user("iago"))[0]["id"]
+        multiuse_invite = MultiuseInvite.objects.get(id=invite_id)
+
+        result = self.client_get(f"/json/invites/multiuse/{multiuse_invite.id}")
+        self.assert_json_success(result)
+        invite = result.json()["invite"]
+        self.assertTrue(invite["is_multiuse"])
+        self.assert_length(invite["stream_ids"], 2)
+        self.assertEqual(invite["group_ids"], [])
+        self.assertIn("link_url", invite)
+
+        # Invite with realm default subscriptions uses default stream IDs.
+        do_create_multiuse_invite_link(
+            self.example_user("iago"),
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            invite_expires_in_minutes,
+            include_realm_default_subscriptions=True,
+            streams=[],
+        )
+        all_invites = do_get_invites_controlled_by_user(self.example_user("iago"))
+        default_streams_invite_id = next(inv["id"] for inv in all_invites if inv["id"] != invite_id)
+        default_streams_invite = MultiuseInvite.objects.get(id=default_streams_invite_id)
+
+        result = self.client_get(f"/json/invites/multiuse/{default_streams_invite.id}")
+        self.assert_json_success(result)
+        self.assert_length(
+            result.json()["invite"]["stream_ids"],
+            len(get_slim_realm_default_streams(zulip_realm.id)),
+        )
+
+        # Non-existent ID returns error.
+        non_existent_id = MultiuseInvite.objects.count() + 9999
+        result = self.client_get(f"/json/invites/multiuse/{non_existent_id}")
+        self.assert_json_error(result, "No such invitation")
+
+        # Invite from another realm is inaccessible.
+        mit_realm = get_realm("zephyr")
+        other_realm_invite = MultiuseInvite.objects.create(
+            referred_by=self.mit_user("sipbtest"), realm=mit_realm
+        )
+        create_confirmation_link(
+            other_realm_invite,
+            Confirmation.MULTIUSE_INVITE,
+            validity_in_minutes=invite_expires_in_minutes,
+        )
+        result = self.client_get(f"/json/invites/multiuse/{other_realm_invite.id}")
+        self.assert_json_error(result, "No such invitation")
+
+    def test_get_multiuse_invite_details_revoked(self) -> None:
+        """
+        GET /json/invites/multiuse/{invite_id} returns an error for
+        already-revoked invitation links.
+        """
+        self.login("desdemona")
+        zulip_realm = get_realm("zulip")
+        multiuse_invite = MultiuseInvite.objects.create(
+            referred_by=self.example_user("desdemona"),
+            realm=zulip_realm,
+            invited_as=PreregistrationUser.INVITE_AS["REALM_OWNER"],
+        )
+        create_confirmation_link(
+            multiuse_invite, Confirmation.MULTIUSE_INVITE, validity_in_minutes=2 * 24 * 60
+        )
+
+        # Admin cannot see owner-level invite.
+        self.login("iago")
+        result = self.client_get(f"/json/invites/multiuse/{multiuse_invite.id}")
+        self.assert_json_error(result, "Must be an organization owner")
+
+        # Owner can see it, then revoke it, then it's no longer accessible.
+        self.login("desdemona")
+        result = self.client_get(f"/json/invites/multiuse/{multiuse_invite.id}")
+        self.assert_json_success(result)
+
+        do_revoke_multi_use_invite(multiuse_invite)
+        result = self.client_get(f"/json/invites/multiuse/{multiuse_invite.id}")
+        self.assert_json_error(result, "Invitation has already been revoked")
+
+    def test_get_multiuse_invite_details_dict(self) -> None:
+        """
+        get_multiuse_invite_details_dict returns the correct stream_ids for
+        invites with explicit streams and for invites using realm defaults.
+        """
+        user_profile = self.example_user("iago")
+        zulip_realm = user_profile.realm
+        streams = [get_stream(name, zulip_realm) for name in ["Denmark", "Scotland"]]
+        invite_expires_in_minutes = 2 * 24 * 60
+
+        do_create_multiuse_invite_link(
+            user_profile,
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            invite_expires_in_minutes,
+            include_realm_default_subscriptions=False,
+            streams=streams,
+        )
+        do_create_multiuse_invite_link(
+            user_profile,
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            invite_expires_in_minutes,
+            include_realm_default_subscriptions=True,
+            streams=[],
+        )
+
+        all_invites = do_get_invites_controlled_by_user(user_profile)
+        invite_one_id = all_invites[0]["id"]
+        invite_two_id = all_invites[1]["id"]
+
+        stream_ids_one = get_multiuse_invite_details_dict(
+            MultiuseInvite.objects.get(id=invite_one_id), user_profile
+        )["stream_ids"]
+        stream_ids_two = get_multiuse_invite_details_dict(
+            MultiuseInvite.objects.get(id=invite_two_id), user_profile
+        )["stream_ids"]
+
+        self.assert_length(stream_ids_one, 2)
+        self.assert_length(stream_ids_two, len(get_slim_realm_default_streams(zulip_realm.id)))
 
     def test_delete_multiuse_invite(self) -> None:
         """
