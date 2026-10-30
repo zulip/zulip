@@ -1791,7 +1791,7 @@ export function build_page(): void {
     $("#id_realm_org_join_restrictions").on("click", (e) => {
         // This prevents the disappearance of modal when there are
         // no allowed domains otherwise it gets closed due to
-        // the click event handler attached to `#settings_overlay_container`
+        // the overlay-closing click handler in `overlays.initialize`.
         e.stopPropagation();
     });
 
