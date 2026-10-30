@@ -113,7 +113,10 @@ def main() -> None:
     # /srv/zulip-emoji-cache/*/static gets symlinked to ZULIP_PATH/static/generated/emoji
     TARGET_STATIC_EMOJI = os.path.join(ZULIP_PATH, "static", "generated", "emoji")
     if os.path.lexists(TARGET_STATIC_EMOJI):
-        os.remove(TARGET_STATIC_EMOJI)
+        if os.path.isdir(TARGET_STATIC_EMOJI) and not os.path.islink(TARGET_STATIC_EMOJI):
+            shutil.rmtree(TARGET_STATIC_EMOJI)
+        else:
+            os.remove(TARGET_STATIC_EMOJI)
     os.symlink(os.path.join(emoji_cache_path, "static"), TARGET_STATIC_EMOJI)
 
     # /srv/zulip-emoji-cache/*/web gets copied to ZULIP_PATH/web/generated
