@@ -4,6 +4,22 @@
             {{> left_sidebar_view_popover_item .}}
         {{/each}}
         {{#unless is_home_view_active}}
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" id="expand_views_section" class="popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-expand" aria-hidden="true"></i>
+                <span class="popover-menu-label">
+                    {{t "Always keep views section expanded"}}
+                </span>
+            </a>
+        </li>
+        <li role="none" class="link-item popover-menu-list-item">
+            <a role="menuitem" id="collapse_views_section"  class="popover-menu-link" tabindex="0">
+                <i class="popover-menu-icon zulip-icon zulip-icon-collapse" aria-hidden="true"></i>
+                <span class="popover-menu-label">
+                    {{t "Collapse views section when scrolled down"}}
+                </span>
+            </a>
+        </li>
         <li role="separator" class="popover-menu-separator"></li>
         {{#if unread_messages_present}}
         <li role="none" class="link-item popover-menu-list-item">
