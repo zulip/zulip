@@ -542,7 +542,7 @@ export function get_full_datetime_clarification(
     time: Date,
     time_format: TimeFormat = "time_sec",
 ): string {
-    const date_string = time.toLocaleDateString(user_settings.default_language, {
+    const date_string = time.toLocaleDateString(undefined, {
         timeZone: display_time_zone,
     });
     let time_string = get_localized_date_or_time_for_format(time, time_format);
