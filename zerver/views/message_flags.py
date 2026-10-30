@@ -15,6 +15,7 @@ from zerver.lib.narrow import (
     clean_narrow_for_message_fetch,
     fetch_messages,
     parse_anchor_value,
+    read_only_repeatable_read_transaction,
 )
 from zerver.lib.request import RequestNotes
 from zerver.lib.response import json_success
@@ -101,16 +102,19 @@ def update_message_flags_for_narrow(
 
     narrow = clean_narrow_for_message_fetch(narrow, user_profile.realm, user_profile)
 
-    query_info = fetch_messages(
-        narrow=narrow,
-        user_profile=user_profile,
-        realm=user_profile.realm,
-        is_web_public_query=False,
-        anchor_info=anchor_info,
-        include_anchor=include_anchor,
-        num_before=num_before,
-        num_after=num_after,
-    )
+    # A search checks fts_update_log for messages that haven't been
+    # indexed yet, so all of its queries should see the same snapshot.
+    with read_only_repeatable_read_transaction():
+        query_info = fetch_messages(
+            narrow=narrow,
+            user_profile=user_profile,
+            realm=user_profile.realm,
+            is_web_public_query=False,
+            anchor_info=anchor_info,
+            include_anchor=include_anchor,
+            num_before=num_before,
+            num_after=num_after,
+        )
 
     messages = [row[0] for row in query_info.rows]
     (updated_count, ignored_because_not_subscribed_channels) = do_update_message_flags(
