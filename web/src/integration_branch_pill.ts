@@ -30,6 +30,8 @@ export function create_pills(
         create_item_from_text: create_item_from_branch_name,
         get_text_from_item: get_branch_name_from_item,
         get_display_value_from_item: get_branch_name_from_item,
+        // This input has no typeahead, so we flag invalid paste.
+        shake_on_invalid_paste: true,
     });
     return pill_container;
 }
