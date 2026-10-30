@@ -577,20 +577,20 @@ function add_link_from_message(
     add_incoming_record(link, link.message_id ?? NO_MESSAGE_ID, from_message_id);
 }
 
-// Links to a message that wasn't yet in the store are stored with
-// narrow data that might become stale. This function updates the
-// narrow data for link(s) to `to_message_id`, or drops the link(s)
-// if to_narrow is undefined.
-function refile_pending_link_from_message(
+// Removes the link(s) from a message to `to_message_id` from both maps.
+// Returns the removed links and the message's remaining links, or
+// undefined if there was nothing to remove. The remaining links are
+// the array stored in topic_links_outgoing, so links pushed onto it
+// are saved directly into that map.
+function remove_links_from_message_to(
     from_message_id: number,
     to_message_id: number,
-    to_narrow: util.StreamTopic | undefined,
-): void {
+): {stale_links: TopicLink[]; updated_links: TopicLink[]} | undefined {
     const from_message = get(from_message_id);
     if (from_message === undefined) {
         // The message was removed from the store, which removed its
         // links too. Nothing to do here.
-        return;
+        return undefined;
     }
 
     assert(from_message.type === "stream");
@@ -603,7 +603,7 @@ function refile_pending_link_from_message(
     const stale_links = links_from_message.filter((link) => link.message_id === to_message_id);
     if (stale_links.length === 0) {
         // The link was edited out of the message.
-        return;
+        return undefined;
     }
 
     // Remove the stale link(s) from topic_links_incoming.
@@ -613,6 +613,25 @@ function refile_pending_link_from_message(
     // Remove the stale link(s) from topic_links_outgoing.
     const updated_links = links_from_message.filter((link) => link.message_id !== to_message_id);
     links_from_narrow!.set(from_message_id, updated_links);
+    return {stale_links, updated_links};
+}
+
+// Links to a message that wasn't yet in the store are stored with
+// narrow data that might become stale. This function updates the
+// narrow data for link(s) to `to_message_id`, or drops the link(s)
+// if to_narrow is undefined.
+function refile_pending_link_from_message(
+    from_message_id: number,
+    to_message_id: number,
+    to_narrow: util.StreamTopic | undefined,
+): void {
+    const removed_links = remove_links_from_message_to(from_message_id, to_message_id);
+    if (removed_links === undefined) {
+        return;
+    }
+    // Pushing onto updated_links updates the array that's already stored
+    // in topic_links_outgoing.
+    const {updated_links} = removed_links;
 
     // If there's a new narrow, add the link back to the two maps with the
     // correct narrow. There might have been multiple stale links between
@@ -625,7 +644,6 @@ function refile_pending_link_from_message(
             topic: to_narrow.topic,
             message_id: to_message_id,
         });
-        links_from_narrow!.set(from_message_id, updated_links);
     }
 }
 
