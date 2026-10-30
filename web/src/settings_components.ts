@@ -1104,6 +1104,7 @@ function get_request_data_for_org_join_restrictions(selected_val: string): {
 export function populate_data_for_realm_settings_request(
     $subsection_elem: JQuery,
 ): Record<string, string | boolean | number> {
+    finalize_group_setting_pill_edits();
     let data: Record<string, string | boolean | number> = {};
     const properties_elements = get_subsection_property_elements($subsection_elem);
     for (const input_elem of properties_elements) {
@@ -1186,6 +1187,7 @@ export function populate_data_for_stream_settings_request(
     $subsection_elem: JQuery,
     sub: StreamSubscription,
 ): Record<string, string | boolean | number> {
+    finalize_group_setting_pill_edits();
     let data: Record<string, string | boolean | number> = {};
     const properties_elements = get_subsection_property_elements($subsection_elem);
     for (const input_elem of properties_elements) {
@@ -1238,6 +1240,7 @@ export function populate_data_for_group_request(
     $subsection_elem: JQuery,
     group: UserGroup,
 ): Record<string, string | boolean | number> {
+    finalize_group_setting_pill_edits();
     const data: Record<string, string | boolean | number> = {};
     const properties_elements = get_subsection_property_elements($subsection_elem);
     for (const input_elem of properties_elements) {
@@ -1701,6 +1704,14 @@ export function get_group_setting_widget(setting_name: string): GroupSettingPill
     }
 
     return pill_widget;
+}
+
+export function finalize_group_setting_pill_edits(): void {
+    // Commit any in-flight group-setting pill edit before a save reads the
+    // pill values. At most one pill is ever mid-edit; the rest are no-ops.
+    for (const pill_widget of group_setting_widget_map.values()) {
+        pill_widget?.finalize_pending_edit();
+    }
 }
 
 export function set_group_setting_widget_value(
