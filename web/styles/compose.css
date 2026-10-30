@@ -1296,7 +1296,9 @@ textarea.new_message_textarea {
             transition-property: background-color, border-color;
         }
 
-        #compose_select_recipient_widget .channel-privacy-type-icon {
+        #compose_select_recipient_widget
+            .channel-privacy-type-icon
+            .zulip-icon {
             transition: var(--compose-recipient-row-transition);
             transition-delay: var(--compose-recipient-row-transition-delay);
             transition-property: color;
@@ -1386,11 +1388,11 @@ textarea.new_message_textarea {
     }
 
     #compose_select_recipient_widget {
-        .channel-privacy-type-icon.zulip-icon {
+        .channel-privacy-type-icon .zulip-icon {
             color: var(--privacy-icon-color-modified);
         }
 
-        &:hover .channel-privacy-type-icon.zulip-icon {
+        &:hover .channel-privacy-type-icon .zulip-icon {
             color: var(--privacy-icon-color-original);
         }
 
@@ -1398,7 +1400,7 @@ textarea.new_message_textarea {
             background-color: var(--color-background-dropdown-widget-button);
             border-color: var(--color-compose-recipient-box-border-color);
 
-            .channel-privacy-type-icon {
+            .channel-privacy-type-icon .zulip-icon {
                 color: var(--privacy-icon-color-original);
             }
 
@@ -1809,9 +1811,15 @@ textarea.new_message_textarea {
                DM picker, which does not participate in
                the subgrid above used for channel icons. */
             align-self: center;
+            /* Zero out line-height so that `align-self`
+               is respected without a `top` adjustment
+               (zeroed out below). */
+            line-height: 0;
 
             .zulip-icon {
                 color: var(--privacy-icon-color-original);
+                /* Let `align-self: center` do its thing. */
+                top: 0;
             }
         }
 
