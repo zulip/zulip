@@ -200,7 +200,7 @@ class RedirectURLTest(ZulipTestCase):
         for redirect in LANDING_PAGE_REDIRECTS:
             if redirect.old_url != "/try-zulip/":
                 result = self.client_get(redirect.old_url, follow=True)
-                self.assert_in_success_response(["Download"], result)
+                self.assert_in_success_response(["New organization"], result)
 
             result = self.client_get(redirect.old_url)
             self.assertEqual(result.status_code, 301)
