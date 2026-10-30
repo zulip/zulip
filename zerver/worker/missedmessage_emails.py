@@ -275,6 +275,14 @@ class MissedMessageWorker(QueueProcessingWorker):
             ScheduledMessageNotificationEmail.objects.filter(id__in=seen_events).delete()
 
     @override
+    def stop_after_current_events(self) -> None:
+        if settings.STAGING:
+            # On staging servers, start() just waits to be stopped.
+            self.stop()
+            return
+        super().stop_after_current_events()
+
+    @override
     def stop(self) -> None:
         with self.cv:
             self.stopping = True

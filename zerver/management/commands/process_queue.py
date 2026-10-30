@@ -96,10 +96,16 @@ class Command(ZulipBaseCommand):
             queue_name = options["queue_name"]
             worker_num = options["worker_num"]
 
-            def signal_handler(signal: int, frame: FrameType | None) -> None:
+            def disconnect() -> None:
                 logger.info("Worker %d disconnecting from queue %s", worker_num, queue_name)
                 worker.stop()
+
+            def signal_handler(signal: int, frame: FrameType | None) -> None:
+                disconnect()
                 sys.exit(0)
+
+            def stop_after_current_events_handler(signal: int, frame: FrameType | None) -> None:
+                worker.stop_after_current_events()
 
             logger.info("Worker %d connecting to queue %s", worker_num, queue_name)
             with log_and_exit_if_exception(logger, queue_name, threaded=False):
@@ -109,10 +115,16 @@ class Command(ZulipBaseCommand):
                     scope.set_tag("worker_num", worker_num)
 
                     worker.setup()
-                    signal.signal(signal.SIGTERM, signal_handler)
-                    signal.signal(signal.SIGINT, signal_handler)
+                    # SIGTERM and SIGINT are requests to stop, so we let
+                    # the worker finish the events it is in the middle
+                    # of.  SIGUSR1 is sent by check_and_send_restart_signal
+                    # when consuming failed, so we exit immediately, and
+                    # RabbitMQ redelivers those events after the restart.
+                    signal.signal(signal.SIGTERM, stop_after_current_events_handler)
+                    signal.signal(signal.SIGINT, stop_after_current_events_handler)
                     signal.signal(signal.SIGUSR1, signal_handler)
                     worker.start()
+                    disconnect()
 
 
 class ThreadedWorker(threading.Thread):
