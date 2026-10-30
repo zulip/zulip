@@ -130,6 +130,35 @@ test("basics", () => {
     });
 });
 
+test("get_recent_topic_names_unsorted", () => {
+    const stream_id = 56;
+
+    for (const [message_id, topic_name] of [
+        [101, "topic1"],
+        [103, "topic2"],
+        [102, "topic3"],
+    ]) {
+        stream_topic_history.add_message({stream_id, message_id, topic_name});
+    }
+
+    // Same set of topics as the sorted getter, but not in recency order.
+    assert.deepEqual(stream_topic_history.get_recent_topic_names_unsorted(stream_id).toSorted(), [
+        "topic1",
+        "topic2",
+        "topic3",
+    ]);
+    assert.deepEqual(stream_topic_history.get_recent_topic_names(stream_id), [
+        "topic2",
+        "topic3",
+        "topic1",
+    ]);
+
+    // A channel we have no history for returns nothing, and asking does
+    // not create a cached history for it.
+    assert.deepEqual(stream_topic_history.get_recent_topic_names_unsorted(9999), []);
+    assert.ok(!stream_topic_history.stream_has_topics(9999));
+});
+
 test("server_history", () => {
     const sub = make_stream({
         name: "devel",
