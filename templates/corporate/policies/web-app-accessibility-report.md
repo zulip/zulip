@@ -1,20 +1,48 @@
-# [Company] Accessibility Conformance Report
+# Zulip Accessibility Conformance Report (ACR)
 
-WCAG Edition
+**WCAG 2.2 Edition**
 
 (Based on VPAT® Version 2.5Rev)
 
-Name of Product/Version:
+**Name of Product/Version:** [Zulip](https://zulip.com), v. 13.0
 
-Report Date:
+**Report Date:** November 2026
 
-Product Description:
+**Product Description:** [Zulip](https://zulip.com) is an open-source organized team chat app with
+unique [topic-based threading](https://zulip.com/why-zulip/) that combines the best of email and
+chat to make remote work productive and delightful. Fortune 500 companies,
+[leading open source projects](https://zulip.com/case-studies/rust/), and thousands of other
+organizations use Zulip every day. Zulip is the only
+[modern team chat app](https://zulip.com/features/) that is designed for both live and asynchronous
+conversations.
 
-Contact Information:
+**Contact Information:** [support@zulip.com](mailto:support@zulip.com)
 
-Notes:
+**Notes:**
 
-Evaluation Methods Used:
+As an organized team chat app, Zulip provides users the means to upload media content (image, audio,
+and video) as well as the tools to make their content accessible (e.g., providing accessible text
+on an image via [the Markdown syntax for images](https://spec.commonmark.org/0.31.2/#images)). Our
+report, of course, cannot anticipate ways in which user-contributed content negatively impacts
+conformance with WCAG success criteria. See WCAG 2.2 for more details on products that include
+[user-contributed content](https://www.w3.org/TR/WCAG22/#conformance-partial).
+
+**Evaluation Methods Used:**
+
+We relied on the following evaluation methods:
+
+* Engineer-led review of the product and its codebase
+* Automated accessibility reports from browsers
+  (e.g., [Firefox's Accessibility Inspector](https://firefox-source-docs.mozilla.org/devtools-user/accessibility_inspector/))
+* A review of
+  [open issues with the 'accessibility' label](https://github.com/zulip/zulip/issues?q=is%3Aissue+state%3Aopen+label%3Aaccessibility)
+  in our issue tracker. Those issues are mentioned in the associated "Remarks and Explanations"
+  column in the Success Criteria table below
+
+Additionally, we have opted to self-evaluate in the harshest light possible. Therefore we have many
+more cells below that indicate *Partially Supports* than a more generous self-evaluation might
+yield. At Zulip, we consider accessibility a high priority, and we intend to frequently revisit this
+report to reflect the advancements we make towards making Zulip more accessible to all users.
 
 ## Applicable Standards/Guidelines
 
@@ -22,9 +50,9 @@ This report covers the degree of conformance for the following accessibility sta
 
 | Standard/Guideline | Included In Report |
 | --- | --- |
-| [Web Content Accessibility Guidelines 2.0](http://www.w3.org/TR/2008/REC-WCAG20-20081211) | Level A (Yes / No)<br>Level AA (Yes / No)<br>Level AAA (Yes / No) |
-| [Web Content Accessibility Guidelines 2.1](https://www.w3.org/TR/WCAG21) | Level A (Yes / No)<br>Level AA (Yes / No)<br>Level AAA (Yes / No) |
-| [Web Content Accessibility Guidelines 2.2](https://www.w3.org/TR/WCAG22/) | Level A (Yes / No)<br>Level AA (Yes / No)<br>Level AAA (Yes / No) |
+| [Web Content Accessibility Guidelines 2.0](https://www.w3.org/TR/WCAG20/) | **Level A (Yes)**<br>Level AA (No)<br>Level AAA (No) |
+| [Web Content Accessibility Guidelines 2.1](https://www.w3.org/TR/WCAG21/) | **Level A (Yes)**<br>Level AA (No)<br>Level AAA (No) |
+| [Web Content Accessibility Guidelines 2.2](https://www.w3.org/TR/WCAG22/) | **Level A (Yes)**<br>Level AA (No)<br>Level AAA (No) |
 
 ## Terms
 
@@ -40,9 +68,11 @@ Not Applicable: The criterion is not relevant to the product.
 
 Not Evaluated: The product has not been evaluated against the criterion. This can only be used in WCAG Level AAA criteria.
 
-## WCAG 2.x Report
+## WCAG 2.2 Report
 
-Note: When reporting on conformance with the WCAG 2.x Success Criteria, they are scoped for full pages, complete processes, and accessibility-supported ways of using technology as documented in the [WCAG 2.0 Conformance Requirements](https://www.w3.org/TR/WCAG20/).
+Note: When reporting on conformance with the WCAG 2.2 Success Criteria, they are scoped for full
+pages, complete processes, and accessibility-supported ways of using technology as documented in the
+[WCAG 2.2 Conformance Requirements](https://www.w3.org/TR/WCAG22/#conformance).
 
 ### Table 1: Success Criteria, Level A
 
@@ -152,6 +182,6 @@ Notes:
 | [3.3.6 Error Prevention (All)](http://www.w3.org/TR/WCAG20/) (Level AAA) |  |  |
 | [3.3.9 Accessible Authentication (Enhanced)](https://www.w3.org/TR/WCAG22/) (Level AAA 2.2 only) |  |  |
 
-## Legal Disclaimer (Company)
+## Legal Disclaimer (Zulip)
 
-Include your company legal disclaimer here, if needed.
+[Zulip Terms of Service](https://zulip.com/policies/terms)
