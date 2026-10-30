@@ -1,11 +1,12 @@
 {% extends "zerver/portico_error_pages/portico_error_page.html" %}
+{% from "zerver/portico_error_pages/macros.html" import error_page_art %}
 
 {% block title %}
 <title>{{ _("Confirmation link expired or deactivated") }} | Zulip</title>
 {% endblock %}
 
 {% block error_page_content %}
-<img class="hourglass-img" src="{{ static('images/errors/timeout_hourglass.png') }}" alt=""/>
+{{ error_page_art("expired") }}
 <div class="errorbox">
     <div class="errorcontent">
         <h1 class="lead">{{ _("Whoops. The confirmation link has expired or been deactivated.") }}</h1>

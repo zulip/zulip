@@ -1,11 +1,12 @@
 {% extends "zerver/portico_error_pages/portico_error_page.html" %}
+{% from "zerver/portico_error_pages/macros.html" import error_page_art %}
 
 {% block title %}
 <title>{{ _("Authentication subdomain error") }} | Zulip</title>
 {% endblock %}
 
 {% block error_page_content %}
-<img src="{{ static('images/errors/500art.svg') }}" alt=""/>
+{{ error_page_art("no-access") }}
 <div class="errorbox">
     <div class="errorcontent">
         <h1 class="lead">{{ _("Authentication subdomain") }}</h1>
