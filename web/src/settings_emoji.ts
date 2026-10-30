@@ -174,11 +174,22 @@ export function add_custom_emoji_post_render(): void {
     const $input_error = $("#emoji_file_input_error");
     const $clear_button = $("#emoji_image_clear_button");
     const $upload_button = $("#emoji_upload_button");
+    const $resize_by_crop_button = $("#resize-by-crop-button");
+    const $resize_by_pad_button = $("#resize-by-pad-button");
     const $preview_text = $("#emoji_preview_text");
     const $preview_image = $("#emoji_preview_image");
     const $placeholder_icon = $("#emoji_placeholder_icon");
+    const $resize_method_input = $("#emoji_resize_method");
 
     $preview_image.hide();
+
+    function reset_file_preview(): void {
+        $resize_by_crop_button.hide();
+        $resize_by_pad_button.hide();
+        $resize_method_input.val("fit");
+        $placeholder_icon.show();
+        $preview_image.removeClass("crop").addClass("pad").hide();
+    }
 
     upload_widget.build_widget(
         get_file_input,
@@ -190,9 +201,22 @@ export function add_custom_emoji_post_render(): void {
         $preview_image,
     );
 
-    get_file_input().on("input", () => {
+    get_file_input().on("change", (e: JQuery.TriggeredEvent) => {
+        assert(e.target instanceof HTMLInputElement);
+        const input = e.target;
+
+        if (!input.files?.length || get_file_input().val() === "") {
+            reset_file_preview();
+            return;
+        }
+
         $placeholder_icon.hide();
+        $preview_image.addClass("pad");
         $preview_image.show();
+
+        if (input.files?.length && input.files[0]!.type !== "image/gif") {
+            $resize_by_crop_button.show();
+        }
     });
 
     $preview_text.show();
@@ -202,9 +226,24 @@ export function add_custom_emoji_post_render(): void {
 
         $("#add-custom-emoji-modal .dialog_submit_button").prop("disabled", true);
 
-        $preview_image.hide();
-        $placeholder_icon.show();
+        reset_file_preview();
         $preview_text.show();
+    });
+
+    $resize_by_crop_button.on("click", (e) => {
+        e.preventDefault();
+        $resize_by_crop_button.hide();
+        $resize_by_pad_button.show();
+        $preview_image.removeClass("pad").addClass("crop");
+        $resize_method_input.val("crop");
+    });
+
+    $resize_by_pad_button.on("click", (e) => {
+        e.preventDefault();
+        $resize_by_crop_button.show();
+        $resize_by_pad_button.hide();
+        $preview_image.removeClass("crop").addClass("pad");
+        $resize_method_input.val("fit");
     });
 }
 
@@ -267,6 +306,8 @@ function show_modal(): void {
         for (const [i, file] of [...files].entries()) {
             formData.append("file-" + i, file);
         }
+        const resize_method = $<HTMLInputElement>("#emoji_resize_method").val()!;
+        formData.append("resize_method", resize_method);
 
         if (is_default_emoji(emoji["name"])) {
             if (!current_user.is_admin) {
