@@ -468,6 +468,7 @@ def get_stream_name(stream: Stream | None) -> str | None:
 
 @require_human_non_guest_user
 @typed_endpoint
+@transaction.atomic(durable=True)
 def patch_bot_backend(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -573,6 +574,8 @@ def patch_bot_backend(
     if config_data is not None:
         do_update_bot_config_data(bot, config_data)
 
+    # Uploading the avatar image can't be rolled back with the rest of
+    # this transaction, so it must stay after every update that can fail.
     if len(request.FILES) == 0:
         pass
     elif len(request.FILES) == 1:
