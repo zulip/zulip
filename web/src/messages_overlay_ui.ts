@@ -66,7 +66,25 @@ export function focus_on_sibling_element(context: Context): void {
     }
 }
 
-export function modals_handle_events(event_key: string, context: Context): void {
+export function modals_handle_events(
+    event_key: string,
+    context: Context,
+    event_target?: EventTarget | null,
+): void {
+    if (
+        (event_key === "up_arrow" || event_key === "down_arrow") &&
+        event_target instanceof HTMLElement
+    ) {
+        const focused_row = event_target.closest<HTMLElement>(
+            `.${CSS.escape(context.box_item_selector)}`,
+        );
+        if (focused_row !== null && event_target !== focused_row) {
+            // An action control has focus, so use its row as the starting
+            // point before moving to the adjacent row.
+            activate_element(focused_row, context);
+        }
+    }
+
     initialize_focus(event_key, context);
 
     // This detects up arrow key presses when the overlay
