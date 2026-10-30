@@ -13,9 +13,15 @@
 
 {{ _("If this was you, great! There's nothing else you need to do.") }}
 
-{% trans reset_link=realm_url + "/accounts/password/reset/" %}
+{% if password_reset_link %}
+{% trans reset_link=password_reset_link %}
 If you do not recognize this login, or think your account may have been compromised, please reset your password at {{ reset_link }} or contact us immediately at {{ support_email }}.
 {%- endtrans %}
+{% else %}
+{% trans %}
+If you do not recognize this login, or think your account may have been compromised, please contact us immediately at {{ support_email }}.
+{%- endtrans %}
+{% endif %}
 
 
 {{ _("Thanks,") }}
