@@ -1479,8 +1479,12 @@ class MatterMostImporter(MattermostImportTestBase):
             messages = self.read_file(team_output_dir, msg_file)
             all_messages.extend(messages["zerver_message"])
 
-        # Find a thread parent with multiple replies (post from minus-6 channel with 2 replies)
-        thread_parents = [m for m in all_messages if "reply in" in m.get("content", "")]
+        # Find thread parents (both 1 reply and multiple replies)
+        thread_parents = [
+            m
+            for m in all_messages
+            if "reply in" in m.get("content", "") or "replies in" in m.get("content", "")
+        ]
         self.assertGreater(len(thread_parents), 0)
 
         for parent in thread_parents:
