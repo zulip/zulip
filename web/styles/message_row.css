@@ -330,6 +330,13 @@
         font-family: inherit;
         font-size: inherit;
 
+        .zulip-icon {
+            vertical-align: middle;
+            margin-right: 4px;
+            position: relative;
+            top: 1px;
+        }
+
         &:hover {
             background-color: var(
                 --color-show-more-less-button-background-hover
