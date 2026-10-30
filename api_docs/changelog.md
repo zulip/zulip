@@ -1871,6 +1871,14 @@ No changes; feature level used for Zulip 10.0 release.
   data (such as an API key) for that incoming webhook integration, but this
   functionality has not been implemented for any existing integrations.
 
+* [`GET /avatar/{user_id}`](/api/get-user-avatar),
+  [`GET /avatar/{user_id}/medium`](/api/get-user-medium-avatar): Split the
+  `GET /avatar/{email_or_id}` endpoints, which accepted either a user ID or
+  an email address, into separate user ID and email address endpoints at
+  the same URLs. Requesting the avatar of a user ID that doesn't exist now
+  redirects to the placeholder avatar for unknown users, rather than to a
+  Gravatar URL generated from the user ID.
+
 **Feature level 317**
 
 * [`POST /user_groups/create`](/api/create-user-group):
