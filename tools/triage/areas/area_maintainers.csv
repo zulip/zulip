@@ -1,0 +1,765 @@
+area,github_login,total_points,direct_points,meta_only_points,meta_breakdown,in_maintainers_list
+activity,laurynmm,4,4,0,,yes
+activity,andersk,1,1,0,,yes
+admin,apoorvapendse,2,2,0,,yes
+admin,sahil839,1,1,0,,yes
+alert words,asteriskkkk,2,2,0,,no
+alert words,amanagr,1,1,0,,yes
+alerts,karlstolley,2,2,0,,yes
+all messages data,amanagr,2,2,0,,yes
+analytics,laurynmm,2,2,0,,yes
+api,laurynmm,45,0,45,"api docs:44,openapi:2",yes
+api,alexmv,14,3,11,"openapi:6,api docs:6",yes
+api,timabbott,14,1,13,"api docs:8,openapi:6",yes
+api docs,laurynmm,44,44,0,,yes
+api docs,prakhar1144,10,10,0,,yes
+api docs,timabbott,8,8,0,,yes
+app,karlstolley,2,2,0,,yes
+app,pratik-pc,1,1,0,,yes
+attachments,alexmv,3,3,0,,yes
+attachments,6829nkhpas,2,2,0,,no
+attachments,mateuszmandera,2,2,0,,yes
+attachments,shubham-padia,2,2,0,,yes
+auth,mateuszmandera,3,3,0,,yes
+auth,alexmv,2,2,0,,yes
+auth,amanagr,2,2,0,,yes
+avatar,prakhar1144,2,2,0,,yes
+babel,andersk,2,2,0,,yes
+backends,alexmv,2,2,0,,yes
+backends,mateuszmandera,2,2,0,,yes
+backport all prs,alexmv,2,2,0,,yes
+backup,alexmv,2,2,0,,yes
+banner,sayamsamal,2,2,0,,no
+banner,apoorvapendse,1,1,0,,yes
+banners,sayamsamal,6,6,0,,no
+banners,karlstolley,2,2,0,,yes
+banners,pratik-pc,2,2,0,,yes
+banners,sahil839,2,2,0,,yes
+banners,shubham-padia,2,2,0,,yes
+banners,shuklamaneesh23,2,2,0,,no
+base page params,andersk,3,3,0,,yes
+billing,amanagr,20,3,17,stripe:17,yes
+billing,laurynmm,10,1,9,stripe:9,yes
+billing,andersk,5,0,5,stripe:5,yes
+bootstrap typeahead,pratik-pc,3,3,0,,yes
+bootstrap typeahead,amanagr,1,1,0,,yes
+bots,sahil839,9,8,1,settings bots:1,yes
+bots,amanagr,2,1,1,settings bots:1,yes
+bots,niloth-p,2,1,1,settings bots:1,yes
+bots,sathwikshetty33,2,2,0,,no
+buddy data,evykassirer,2,2,0,,yes
+buddy data,sahil839,2,2,0,,yes
+buddy list,evykassirer,7,7,0,,yes
+buddy list,showell,4,4,0,,no
+buddy list,karlstolley,3,3,0,,yes
+bug,vector73,2,2,0,,no
+bug,sahil839,1,1,0,,yes
+build emoji,andersk,2,2,0,,yes
+build pgroonga,andersk,2,2,0,,yes
+buttons,sahil839,5,5,0,,yes
+buttons,shuklamaneesh23,5,5,0,,no
+buttons,sayamsamal,3,3,0,,no
+cache,alexmv,3,3,0,,yes
+cache,sahil839,1,1,0,,yes
+channel create,sahil839,4,4,0,,yes
+channel create,timabbott,3,3,0,,yes
+channel create,laurynmm,2,2,0,,yes
+channel data,evykassirer,2,2,0,,yes
+channel data,prakhar1144,1,1,0,,yes
+channel events,amanagr,3,3,0,,yes
+channel events,aadithya-j,2,2,0,,no
+channel events,evykassirer,2,2,0,,yes
+channel folders,sahil839,15,15,0,,yes
+channel folders,evykassirer,6,6,0,,yes
+channel folders,pratik-pc,5,5,0,,yes
+channel list,evykassirer,27,24,3,channel list sort:4,yes
+channel list,amanagr,19,16,3,channel list sort:3,yes
+channel list,karlstolley,4,4,0,,yes
+channel list,sahil839,4,4,0,,yes
+channel list sort,evykassirer,4,4,0,,yes
+channel list sort,amanagr,3,3,0,,yes
+channel list sort,kuv2707,2,2,0,,no
+channel list sort,laurynmm,2,2,0,,yes
+channel list sort,shuklamaneesh23,2,2,0,,no
+channel popover,amanagr,3,3,0,,yes
+channel popover,sahil839,3,3,0,,yes
+channel popover,vector73,3,3,0,,no
+channel settings,sahil839,42,42,0,,yes
+channel settings,vector73,7,7,0,,no
+channel settings,pieterck,4,4,0,,yes
+channels,sahil839,28,28,0,,yes
+channels,timabbott,7,7,0,,yes
+channels,alexmv,6,6,0,,yes
+checks,alexmv,7,7,0,,yes
+checks,mateuszmandera,1,1,0,,yes
+ci,alexmv,2,2,0,,yes
+click,apoorvapendse,2,2,0,,yes
+click,amanagr,1,1,0,,yes
+common,amanagr,2,2,0,,yes
+components,evykassirer,2,2,0,,yes
+components,sahil839,1,1,0,,yes
+compose,amanagr,36,18,18,"compose ui:4,compose typeahead:4,compose validate:4,compose reply:4,compose recipient:3,compose send menu popover:2,compose notifications:2,compose paste:2,compose setup:2,compose banner:2,compose actions:1,compose state:1",yes
+compose,karlstolley,25,22,3,"compose typeahead:1,compose paste:1,compose reply:1,compose ui:1",yes
+compose,evykassirer,21,10,11,"compose actions:3,compose recipient:3,compose typeahead:2,compose ui:2,compose state:2,compose validate:1,compose setup:1,compose send menu popover:1",yes
+compose actions,evykassirer,3,3,0,,yes
+compose actions,amanagr,1,1,0,,yes
+compose banner,sahil839,3,3,0,,yes
+compose banner,amanagr,2,2,0,,yes
+compose call,laurynmm,2,2,0,,yes
+compose call,apoorvapendse,1,1,0,,yes
+compose notifications,amanagr,2,2,0,,yes
+compose paste,apoorvapendse,6,6,0,,yes
+compose paste,kuv2707,3,3,0,,no
+compose paste,amanagr,2,2,0,,yes
+compose recipient,amanagr,3,3,0,,yes
+compose recipient,evykassirer,3,3,0,,yes
+compose recipient,sahil839,3,3,0,,yes
+compose reply,amanagr,4,4,0,,yes
+compose reply,pieterck,2,2,0,,yes
+compose send menu popover,amanagr,2,2,0,,yes
+compose send menu popover,andersk,2,2,0,,yes
+compose setup,amanagr,2,2,0,,yes
+compose setup,evykassirer,1,1,0,,yes
+compose state,evykassirer,2,2,0,,yes
+compose state,amanagr,1,1,0,,yes
+compose typeahead,pratik-pc,6,6,0,,yes
+compose typeahead,amanagr,4,4,0,,yes
+compose typeahead,apoorvapendse,2,2,0,,yes
+compose typeahead,evykassirer,2,2,0,,yes
+compose typeahead,kuv2707,2,2,0,,no
+compose ui,amanagr,4,4,0,,yes
+compose ui,evykassirer,2,2,0,,yes
+compose validate,sahil839,5,5,0,,yes
+compose validate,amanagr,4,4,0,,yes
+compose validate,vector73,2,2,0,,no
+condenser,pieterck,2,2,0,,yes
+condenser,amanagr,1,1,0,,yes
+config error,alexmv,2,2,0,,yes
+contributor docs,alya,21,21,0,,yes
+contributor docs,gnprice,3,3,0,,yes
+copy messages,apoorvapendse,5,5,0,,yes
+copy messages,amanagr,2,2,0,,yes
+copy messages,whilstsomebody,2,2,0,,no
+copy paste,karlstolley,2,2,0,,yes
+copy paste,amanagr,1,1,0,,yes
+corporate,laurynmm,13,13,0,,yes
+corporate,amanagr,4,4,0,,yes
+creator details,andersk,2,2,0,,yes
+creator details,sahil839,1,1,0,,yes
+css,karlstolley,16,16,0,,yes
+css,pratik-pc,15,15,0,,yes
+css,sahil839,13,13,0,,yes
+custom emails,alexmv,2,2,0,,yes
+custom profile fields,sahil839,10,10,0,,yes
+custom profile fields,yo-whats-up2,4,4,0,,no
+dark theme,sayamsamal,6,6,0,,no
+dark theme,karlstolley,2,2,0,,yes
+delete in topic,mateuszmandera,2,2,0,,yes
+demo orgs,laurynmm,27,27,0,,yes
+dependencies,andersk,42,16,26,requirements:26,yes
+dependencies,alexmv,17,3,14,requirements:14,yes
+desktop notification,prakhar1144,2,2,0,,yes
+desktop notification,pratik-pc,1,1,0,,yes
+devices,prakhar1144,2,2,0,,yes
+dialog widget,sahil839,4,4,0,,yes
+dialog widget,apoorvapendse,1,1,0,,yes
+digest,prakhar1144,3,3,0,,yes
+digest,sahil839,1,1,0,,yes
+direct messages,amanagr,6,0,6,dm list:6,yes
+direct messages,mreza-kiani,5,5,0,,no
+direct messages,alexmv,4,4,0,,yes
+dm list,amanagr,6,6,0,,yes
+dm list,evykassirer,3,3,0,,yes
+dm list,karlstolley,2,2,0,,yes
+dm list,shubham-padia,2,2,0,,yes
+docs,laurynmm,73,25,48,"api docs:44,integration docs:5",yes
+docs,alexmv,37,30,7,"api docs:6,contributor docs:1",yes
+docs,alya,32,9,23,"contributor docs:21,api docs:2",yes
+drafts,amanagr,5,5,0,,yes
+drafts,evykassirer,4,4,0,,yes
+drafts,pritesh-30,3,3,0,,no
+drafts,sahil839,3,3,0,,yes
+dropdown,sahil839,5,5,0,,yes
+dropdown,shubham-padia,4,4,0,,yes
+dropdown,amanagr,3,3,0,,yes
+dropdown,karlstolley,3,3,0,,yes
+echo,evykassirer,3,3,0,,yes
+echo,amanagr,2,2,0,,yes
+email,alexmv,23,2,21,"email mirror:13,send email:9,email backends:1",yes
+email,prakhar1144,8,3,5,"email notifications:3,email mirror:2",yes
+email,timabbott,4,0,4,"send email:2,email mirror:2,email notifications:1",yes
+email mirror,alexmv,13,13,0,,yes
+email mirror,prakhar1144,2,2,0,,yes
+email mirror,rotempasharel1,2,2,0,,no
+email notifications,prakhar1144,3,3,0,,yes
+email notifications,amanagr,1,1,0,,yes
+email senders,alexmv,2,2,0,,yes
+emoji,alexmv,8,4,4,"realm emoji:4,emoji frequency:1",yes
+emoji,apoorvapendse,6,1,5,"emoji frequency:5,realm emoji:1",yes
+emoji,amanagr,5,5,0,,yes
+emoji frequency,apoorvapendse,5,5,0,,yes
+emoji frequency,alexmv,1,1,0,,yes
+empty feed notice,apoorvapendse,2,2,0,,yes
+empty feed notice,whilstsomebody,2,2,0,,no
+env wal g,alexmv,2,2,0,,yes
+env wal g,andersk,1,1,0,,yes
+eslint,andersk,12,12,0,,yes
+event queue,prakhar1144,3,3,0,,yes
+event queue,alexmv,1,1,0,,yes
+event types,andersk,4,4,0,,yes
+events,evykassirer,8,3,5,"server events:3,message events:2,channel events:2,server events dispatch:2",yes
+events,sahil839,8,4,4,"user events:2,server events dispatch:1,channel events:1",yes
+events,amanagr,7,2,5,"channel events:3,user events:1,message events:1",yes
+events,andersk,7,1,6,"event types:4,server events:1,server events dispatch:1",yes
+export,alexmv,12,12,0,,yes
+export,mateuszmandera,6,6,0,,yes
+export,pieterck,4,4,0,,yes
+export search,alexmv,2,2,0,,yes
+export search,mateuszmandera,1,1,0,,yes
+external accounts,niloth-p,2,2,0,,yes
+external accounts,sahil839,1,1,0,,yes
+filter,amanagr,16,16,0,,yes
+filter,evykassirer,8,8,0,,yes
+filter,pratik-pc,7,7,0,,yes
+find account,alexmv,2,2,0,,yes
+find account,amanagr,1,1,0,,yes
+fix,shash-hq,2,2,0,,no
+folders,sahil839,3,3,0,,yes
+forms,laurynmm,4,4,0,,yes
+forms,alexmv,2,2,0,,yes
+forms,andersk,2,2,0,,yes
+generate integration docs screenshot,niloth-p,3,3,0,,yes
+gifs,apoorvapendse,9,9,0,,yes
+gifs,alexmv,2,2,0,,yes
+gifs,amanagr,2,2,0,,yes
+giphy,apoorvapendse,3,3,0,,yes
+github,alexmv,4,4,0,,yes
+github,alya,3,3,0,,yes
+github action,vector73,3,3,0,,no
+github actions,vector73,2,2,0,,no
+github actions,alexmv,1,1,0,,yes
+group settings,sahil839,12,12,0,,yes
+groups ui,sahil839,8,8,0,,yes
+groups ui,evykassirer,1,1,0,,yes
+hash parser,amanagr,2,2,0,,yes
+hash parser,evykassirer,1,1,0,,yes
+hash util,amanagr,7,7,0,,yes
+hash util,evykassirer,4,4,0,,yes
+help,alya,94,94,0,,yes
+help,laurynmm,89,89,0,,yes
+help,shubham-padia,39,39,0,,yes
+home,amanagr,2,2,0,,yes
+home,alexmv,1,1,0,,yes
+hotkey,amanagr,12,12,0,,yes
+hotkey,prakhar1144,4,4,0,,yes
+i18n,alexmv,21,21,0,,yes
+i18n,timabbott,6,6,0,,yes
+i18n,andersk,2,2,0,,yes
+i18n,sahil839,2,2,0,,yes
+icons,aadyot1,4,4,0,,no
+icons,karlstolley,3,3,0,,yes
+icons,shubham-padia,3,3,0,,yes
+import,pieterck,34,8,26,"slack:18,mattermost:8,microsoft teams:7,rocketchat:2",yes
+import,mateuszmandera,30,13,17,"slack:13,microsoft teams:6,mattermost:4,rocketchat:1",yes
+import,alexmv,24,16,8,"slack:9,rocketchat:6,mattermost:4",yes
+inbox,amanagr,43,31,12,inbox ui:15,yes
+inbox,karlstolley,15,15,0,,yes
+inbox ui,amanagr,15,15,0,,yes
+info overlay,pratik-pc,2,2,0,,yes
+info overlay,amanagr,1,1,0,,yes
+input pill,evykassirer,2,2,0,,yes
+input pill,karlstolley,1,1,0,,yes
+inputs,karlstolley,3,3,0,,yes
+inputs,sayamsamal,3,3,0,,no
+install,andersk,35,35,0,,yes
+install,alexmv,9,9,0,,yes
+integration docs,niloth-p,11,11,0,,yes
+integration docs,laurynmm,5,5,0,,yes
+integration url modal,niloth-p,4,4,0,,yes
+integration url modal,pieterck,4,4,0,,yes
+integration url modal,laurynmm,2,2,0,,yes
+integration url modal,sahil839,2,2,0,,yes
+integrations,niloth-p,87,40,47,"webhooks:13,integration docs:11,webhooks/github:11,integration url modal:4,webhooks/intercom:4,webhooks/sentry:3,webhooks/gitlab:3,webhooks/jira:3,webhooks/taiga:2,webhooks/notion:2,webhooks/gitea:1,webhooks/pagerduty:1",yes
+integrations,laurynmm,33,25,8,"integration docs:5,integration url modal:2,webhooks/sentry:2,webhooks:1,webhooks/github:1,webhooks/gitlab:1,webhooks/jira:1",yes
+integrations,sathwikshetty33,15,4,11,"webhooks/intercom:5,integration docs:2,webhooks/notion:2,webhooks/pagerduty:2,webhooks:1",no
+invites,alexmv,3,3,0,,yes
+invites,mateuszmandera,3,3,0,,yes
+invites,sahil839,2,2,0,,yes
+invites,sayamsamal,2,2,0,,no
+jira,0xthedance,2,2,0,,no
+jira,niloth-p,1,1,0,,yes
+kandra,alexmv,10,10,0,,yes
+keyboard,amanagr,2,2,0,,yes
+keyboard,pritesh-30,2,2,0,,no
+ldap,mateuszmandera,7,7,0,,yes
+ldap,alexmv,2,2,0,,yes
+left sidebar,evykassirer,58,38,20,"channel list:24,dm list:3",yes
+left sidebar,karlstolley,36,34,2,"channel list:4,dm list:2",yes
+left sidebar,amanagr,35,17,18,"channel list:16,dm list:6",yes
+letsencrypt,alexmv,3,3,0,,yes
+lightbox,karlstolley,4,4,0,,yes
+lightbox,roanster007,3,3,0,,no
+lightbox,alexmv,2,2,0,,yes
+lightbox,amanagr,2,2,0,,yes
+lightbox,mreza-kiani,2,2,0,,no
+lightbox,prakhar1144,2,2,0,,yes
+lightbox,sahil839,2,2,0,,yes
+linkifiers,shubham-padia,6,6,0,,yes
+links,apoorvapendse,3,3,0,,yes
+links,whilstsomebody,2,2,0,,no
+list widget,amanagr,2,2,0,,yes
+llms txt,hanyucrocks,2,2,0,,no
+llms txt,alexmv,1,1,0,,yes
+locale,alexmv,2,2,0,,yes
+log search,alexmv,3,3,0,,yes
+makemessages,andersk,2,2,0,,yes
+management,alexmv,2,2,0,,yes
+management,pieterck,1,1,0,,yes
+markdown,karlstolley,13,13,0,,yes
+markdown,alexmv,10,9,1,url encoding:1,yes
+markdown,nithyarajmudhaliyar,7,7,0,,no
+marketing page,karlstolley,7,7,0,,yes
+mattermost,pieterck,8,8,0,,yes
+mattermost,alexmv,4,4,0,,yes
+mattermost,mateuszmandera,4,4,0,,yes
+me messages,karlstolley,2,2,0,,yes
+message,amanagr,26,0,26,"message view:8,message edit:5,message edit history:5,message fetch:4,message send:2,messages:1,message feed:1,message events:1,scheduled messages:1",yes
+message,alexmv,16,1,15,"message edit:4,message send:3,message cache:2,message view:2,message fetch:2,messages:1,scheduled messages:1",yes
+message,timabbott,10,1,9,"message view:3,message edit:3,scheduled messages:1,message send:1,message events:1",yes
+message cache,alexmv,2,2,0,,yes
+message delete,vector73,2,2,0,,no
+message delete,sahil839,1,1,0,,yes
+message edit,amanagr,10,5,5,message edit history:5,yes
+message edit,alexmv,4,4,0,,yes
+message edit,sahil839,4,4,0,,yes
+message edit history,amanagr,5,5,0,,yes
+message edit history,apoorvapendse,1,1,0,,yes
+message events,evykassirer,2,2,0,,yes
+message events,amanagr,1,1,0,,yes
+message fetch,amanagr,4,4,0,,yes
+message fetch,alexmv,2,2,0,,yes
+message flags,alexmv,2,2,0,,yes
+message flags,amanagr,2,2,0,,yes
+message header,apoorvapendse,6,6,0,,yes
+message header,amanagr,3,3,0,,yes
+message header,karlstolley,2,2,0,,yes
+message list,amanagr,3,3,0,,yes
+message list,karlstolley,1,1,0,,yes
+message list data,amanagr,2,2,0,,yes
+message list data,apoorvapendse,1,1,0,,yes
+message list view,amanagr,3,3,0,,yes
+message list view,laurynmm,2,2,0,,yes
+message list view,pratik-pc,2,2,0,,yes
+message live update,shubham-padia,2,2,0,,yes
+message live update,prakhar1144,1,1,0,,yes
+message report,pieterck,5,5,0,,yes
+message report,amanagr,1,1,0,,yes
+message row,karlstolley,5,5,0,,yes
+message row,apoorvapendse,3,3,0,,yes
+message row,amanagr,2,2,0,,yes
+message scroll,sayamsamal,2,2,0,,no
+message send,alexmv,3,3,0,,yes
+message send,amanagr,2,2,0,,yes
+message store,amanagr,3,3,0,,yes
+message store,andersk,3,3,0,,yes
+message store,apoorvapendse,3,3,0,,yes
+message store,evykassirer,3,3,0,,yes
+message util,amanagr,3,3,0,,yes
+message util,karlstolley,1,1,0,,yes
+message view,amanagr,8,8,0,,yes
+message view,timabbott,3,3,0,,yes
+message view,alexmv,2,2,0,,yes
+message view,karlstolley,2,2,0,,yes
+message view,shubham-padia,2,2,0,,yes
+messages,mreza-kiani,2,2,0,,no
+messages,shubham-padia,2,2,0,,yes
+microsoft teams,pieterck,7,7,0,,yes
+microsoft teams,mateuszmandera,6,6,0,,yes
+middleware,alexmv,2,2,0,,yes
+middleware,shubham-padia,1,1,0,,yes
+migrations,alexmv,19,19,0,,yes
+migrations,mateuszmandera,3,3,0,,yes
+migrations,mreza-kiani,2,2,0,,no
+migrations,pratik-pc,2,2,0,,yes
+mime types,alexmv,3,3,0,,yes
+missedmessage email,prakhar1144,2,2,0,,yes
+missedmessage email,pieterck,1,1,0,,yes
+modals,sahil839,7,7,0,,yes
+modals,sayamsamal,6,6,0,,no
+modals,karlstolley,5,5,0,,yes
+models,alexmv,4,4,0,,yes
+models,mateuszmandera,1,1,0,,yes
+mouse drag,amanagr,2,2,0,,yes
+mouse drag,shubham-padia,1,1,0,,yes
+muted users,apoorvapendse,3,3,0,,yes
+muted users,amanagr,2,2,0,,yes
+mypy,andersk,10,10,0,,yes
+narrow,amanagr,8,4,4,"narrow banner:3,narrow state:2,narrow title:1",yes
+narrow,alexmv,5,5,0,,yes
+narrow,evykassirer,5,1,4,"narrow banner:3,narrow state:3,narrow title:2",yes
+narrow banner,amanagr,3,3,0,,yes
+narrow banner,evykassirer,3,3,0,,yes
+narrow banner,laurynmm,2,2,0,,yes
+narrow state,evykassirer,3,3,0,,yes
+narrow state,amanagr,2,2,0,,yes
+narrow title,evykassirer,2,2,0,,yes
+narrow title,amanagr,1,1,0,,yes
+navbar,karlstolley,6,6,0,,yes
+navbar,amanagr,4,4,0,,yes
+navbar,andersk,3,3,0,,yes
+navbar,apoorvapendse,3,3,0,,yes
+navbar,sahil839,3,3,0,,yes
+navigate,amanagr,2,2,0,,yes
+navigation view,aditya8840,2,2,0,,no
+navigation views,sbansal1999,2,2,0,,no
+nginx,alexmv,11,11,0,,yes
+nginx,andersk,1,1,0,,yes
+notifications,prakhar1144,34,3,31,"push notifications:28,email notifications:3",yes
+notifications,alexmv,9,2,7,push notifications:7,yes
+notifications,gnprice,7,1,6,push notifications:6,yes
+oidc,mateuszmandera,2,2,0,,yes
+onboarding,prakhar1144,4,4,0,,yes
+onboarding,karlstolley,1,1,0,,yes
+onboarding steps,prakhar1144,2,2,0,,yes
+onboarding steps,andersk,1,1,0,,yes
+openapi,alexmv,6,6,0,,yes
+openapi,timabbott,6,6,0,,yes
+openapi,sahil839,5,5,0,,yes
+organization settings,kuv2707,2,2,0,,no
+organization settings,karlstolley,1,1,0,,yes
+outgoing http,alexmv,2,2,0,,yes
+overlays,karlstolley,4,3,1,"settings overlay:2,info overlay:1",yes
+overlays,pratik-pc,4,3,1,"info overlay:2,settings overlay:1",yes
+overlays,amanagr,3,2,1,info overlay:1,yes
+overlays,sahil839,3,3,0,"info overlay:1,settings overlay:1",yes
+peer data,evykassirer,9,9,0,,yes
+peer data,amanagr,3,3,0,,yes
+people,amanagr,20,20,0,,yes
+people,evykassirer,4,4,0,,yes
+personal recipients,mreza-kiani,3,3,0,,no
+pill container,vector73,3,3,0,,no
+pill typeahead,sahil839,2,2,0,,yes
+pill typeahead,evykassirer,1,1,0,,yes
+polls,amanagr,2,2,0,,yes
+polls,showell,2,2,0,,no
+popover menus,amanagr,4,4,0,,yes
+popover menus,andersk,3,3,0,,yes
+popovers,amanagr,18,7,11,"popover menus:4,user card popover:3,channel popover:3,compose send menu popover:2,topic popover:2",yes
+popovers,andersk,6,0,6,"popover menus:3,compose send menu popover:2,user card popover:1,channel popover:1",yes
+popovers,evykassirer,6,4,2,"compose send menu popover:1,topic popover:1",yes
+populate db,alexmv,3,3,0,,yes
+populate db,laurynmm,2,2,0,,yes
+populate db,sahil839,2,2,0,,yes
+portico,alya,31,31,0,,yes
+portico,karlstolley,15,9,6,marketing page:7,yes
+portico,amanagr,7,7,0,,yes
+postcss,andersk,2,2,0,,yes
+postgresql,alexmv,2,2,0,,yes
+postprocess,karlstolley,3,3,0,,yes
+postprocess content,karlstolley,2,2,0,,yes
+presence,alexmv,2,2,0,,yes
+presence,mateuszmandera,2,2,0,,yes
+production,alexmv,70,0,70,"puppet:36,nginx:11,kandra:10,restart server:5,setup certbot:4,letsencrypt:3,setup upgrade postgresql:2,sharding:2,backup:2,provision:2,restore backup:2,tornado:2,setup docs:1",yes
+production,andersk,9,0,9,"provision:3,tornado:3,puppet:2,nginx:1",yes
+production,timabbott,4,0,4,"puppet:3,tornado:1",yes
+provision,andersk,3,3,0,,yes
+provision,alexmv,2,2,0,,yes
+provision,amanagr,2,2,0,,yes
+puppet,alexmv,36,36,0,,yes
+puppet,timabbott,3,3,0,,yes
+puppet,andersk,2,2,0,,yes
+puppeteer tests,amanagr,3,3,0,,yes
+puppeteer tests,apoorvapendse,1,1,0,,yes
+push notifications,prakhar1144,33,28,5,push registration:6,yes
+push notifications,gnprice,10,6,4,push registration:5,yes
+push notifications,alexmv,7,7,0,,yes
+push registration,prakhar1144,6,6,0,,yes
+push registration,gnprice,5,5,0,,yes
+python,andersk,4,4,0,,yes
+python,alexmv,1,1,0,,yes
+quote,apoorvapendse,4,4,0,,yes
+quote,amanagr,3,3,0,,yes
+realm emoji,alexmv,4,4,0,,yes
+realm emoji,apoorvapendse,1,1,0,,yes
+realm export,sahil839,3,3,0,,yes
+realm export,shubham-padia,1,1,0,,yes
+realm redirect,amanagr,2,2,0,,yes
+recent senders,apoorvapendse,2,2,0,,yes
+recent senders,amanagr,1,1,0,,yes
+recent topics,amanagr,2,2,0,,yes
+recent view,amanagr,25,20,5,"recent view ui:4,recent topics:2,recent senders:1",yes
+recent view,karlstolley,8,8,0,,yes
+recent view tests,apoorvapendse,2,2,0,,yes
+recent view ui,amanagr,4,4,0,,yes
+recent view ui,apoorvapendse,1,1,0,,yes
+recipient row,amanagr,3,3,0,,yes
+recipient row,shubham-padia,2,2,0,,yes
+refactor,shash-hq,3,3,0,,no
+refactor,amanagr,1,1,0,,yes
+register,sahil839,3,3,0,,yes
+register,amanagr,2,2,0,,yes
+register,andersk,2,2,0,,yes
+register,prakhar1144,2,2,0,,yes
+register push device,prakhar1144,2,2,0,,yes
+register queue,prakhar1144,2,2,0,,yes
+registration,amanagr,4,4,0,,yes
+registration,laurynmm,1,1,0,,yes
+reload,amanagr,3,3,0,,yes
+reload,andersk,2,2,0,,yes
+reload,evykassirer,2,2,0,,yes
+reload setup,evykassirer,2,2,0,,yes
+reload setup,andersk,1,1,0,,yes
+remark,andersk,3,3,0,,yes
+reminders,amanagr,7,7,0,,yes
+reminders,alexmv,3,3,0,,yes
+reminders,karlstolley,3,3,0,,yes
+remote billing,mateuszmandera,2,2,0,,yes
+remote billing,laurynmm,1,1,0,,yes
+requirements,andersk,26,26,0,,yes
+requirements,alexmv,14,14,0,,yes
+resize,amanagr,2,2,0,,yes
+resize,karlstolley,2,2,0,,yes
+resize,sahil839,2,2,0,,yes
+restart server,alexmv,5,5,0,,yes
+restore backup,alexmv,2,2,0,,yes
+retention,alexmv,5,5,0,,yes
+retention,mateuszmandera,2,2,0,,yes
+right sidebar,evykassirer,8,1,7,buddy list:7,yes
+right sidebar,karlstolley,6,3,3,buddy list:3,yes
+right sidebar,showell,4,0,4,buddy list:4,no
+rocketchat,alexmv,6,6,0,,yes
+rocketchat,pieterck,2,2,0,,yes
+ruff,alexmv,4,4,0,,yes
+ruff,andersk,4,4,0,,yes
+run dev,alexmv,4,4,0,,yes
+run dev,andersk,2,2,0,,yes
+run hooks,alexmv,3,3,0,,yes
+saml,mateuszmandera,8,8,0,,yes
+saml,alexmv,3,3,0,,yes
+saml,timabbott,3,3,0,,yes
+saved snippets,shubham-padia,2,2,0,,yes
+saved snippets,amanagr,1,1,0,,yes
+scheduled messages,andersk,2,2,0,,yes
+scheduled messages,mreza-kiani,2,2,0,,no
+scheduled messages,roanster007,2,2,0,,no
+scim,mateuszmandera,2,2,0,,yes
+screenshots,niloth-p,2,2,0,,yes
+screenshots,andersk,1,1,0,,yes
+scrub realm,alexmv,2,2,0,,yes
+scrub realm,mateuszmandera,1,1,0,,yes
+search,evykassirer,27,12,15,"search suggestion:13,search pill:6,search results:2",yes
+search,pratik-pc,10,5,5,search suggestion:6,yes
+search,apoorvapendse,9,6,3,"search suggestion:2,search pill:1",yes
+search pill,evykassirer,6,6,0,,yes
+search pill,amanagr,3,3,0,,yes
+search pill,karlstolley,2,2,0,,yes
+search results,evykassirer,2,2,0,,yes
+search suggestion,evykassirer,13,13,0,,yes
+search suggestion,pratik-pc,6,6,0,,yes
+search suggestion,amanagr,5,5,0,,yes
+semgrep,alexmv,2,2,0,,yes
+semgrep,andersk,1,1,0,,yes
+send email,alexmv,9,9,0,,yes
+send email,amanagr,1,1,0,,yes
+sentry,alexmv,4,4,0,,yes
+sentry,andersk,2,2,0,,yes
+server events,evykassirer,3,3,0,server events dispatch:2,yes
+server events,andersk,2,1,1,server events dispatch:1,yes
+server events dispatch,evykassirer,2,2,0,,yes
+server events dispatch,andersk,1,1,0,,yes
+settings css,pieterck,2,2,0,,yes
+settings css,sahil839,2,2,0,,yes
+settings emoji,shubham-padia,2,2,0,,yes
+settings export,pieterck,2,2,0,,yes
+settings export,alexmv,1,1,0,,yes
+settings overlay,karlstolley,2,2,0,,yes
+settings overlay,andersk,1,1,0,,yes
+settings profile,niloth-p,2,2,0,,yes
+settings profile,sahil839,2,2,0,,yes
+settings ui,sahil839,3,3,0,,yes
+setup certbot,alexmv,4,4,0,,yes
+setup docs,apoorvapendse,2,2,0,,yes
+setup docs,alexmv,1,1,0,,yes
+setup upgrade postgresql,alexmv,2,2,0,,yes
+sharding,alexmv,2,2,0,,yes
+shared,shubham-padia,3,3,0,,yes
+shared,andersk,1,1,0,,yes
+showroom,karlstolley,2,2,0,,yes
+showroom,sayamsamal,2,2,0,,no
+sidebar ui,amanagr,9,9,0,,yes
+sidebar ui,karlstolley,5,5,0,,yes
+sidebar ui,evykassirer,4,4,0,,yes
+signup,mateuszmandera,2,2,0,,yes
+signup,amanagr,1,1,0,,yes
+slack,pieterck,18,18,0,,yes
+slack,mateuszmandera,13,13,0,,yes
+slack,amanagr,10,10,0,,yes
+soft deactivation,alexmv,2,2,0,,yes
+starlight,shubham-padia,58,58,0,,yes
+starlight,andersk,11,11,0,,yes
+starlight,laurynmm,10,10,0,,yes
+stripe,amanagr,17,17,0,,yes
+stripe,laurynmm,9,9,0,,yes
+stripe,andersk,5,5,0,,yes
+style,shash-hq,5,5,0,,no
+stylelint,andersk,2,2,0,,yes
+styles,shuklamaneesh23,2,2,0,,no
+styles,amanagr,1,1,0,,yes
+submessage,amanagr,2,2,0,,yes
+submessage,andersk,1,1,0,,yes
+subscriptions,sahil839,4,4,0,,yes
+subscriptions,shubham-padia,3,3,0,,yes
+support,laurynmm,11,11,0,,yes
+sync translations,alexmv,5,5,0,,yes
+template parser,andersk,2,2,0,,yes
+template parser,alexmv,1,1,0,,yes
+templates,laurynmm,9,9,0,,yes
+templates,andersk,7,7,0,,yes
+templates,karlstolley,3,3,0,,yes
+templates,sahil839,3,3,0,,yes
+tenor,apoorvapendse,2,2,0,,yes
+test auth backends,andersk,4,4,0,,yes
+test auth backends,alexmv,3,3,0,,yes
+test message report,pieterck,2,2,0,,yes
+thumbnail,alexmv,6,6,0,,yes
+thumbnail,karlstolley,4,4,0,,yes
+thumbnail,timabbott,3,3,0,,yes
+todo widget,amanagr,2,2,0,,yes
+todo widget,andersk,1,1,0,,yes
+tools,andersk,30,3,27,"eslint:12,mypy:10,ruff:4,stylelint:2,run dev:2,populate db:1,lint:1",yes
+tools,alexmv,15,3,12,"run dev:4,ruff:4,populate db:3,mypy:3",yes
+tools,vector73,5,5,0,,no
+tooltips,pratik-pc,9,9,0,,yes
+tooltips,karlstolley,6,6,0,,yes
+tooltips,amanagr,5,5,0,,yes
+topic box,apoorvapendse,2,2,0,,yes
+topic box,amanagr,1,1,0,,yes
+topic generator,amanagr,2,2,0,,yes
+topic link util,kuv2707,3,3,0,,no
+topic link util,evykassirer,2,2,0,,yes
+topic list,amanagr,10,10,0,,yes
+topic list,evykassirer,7,7,0,,yes
+topic list,laurynmm,4,4,0,,yes
+topic list,sayamsamal,4,4,0,,no
+topic popover,alexmv,2,2,0,,yes
+topic popover,amanagr,2,2,0,,yes
+topic popover,sayamsamal,2,2,0,,no
+topics,roanster007,4,4,0,,no
+topics,amanagr,3,1,2,topic popover:2,yes
+topics,alexmv,2,0,2,topic popover:2,yes
+topics,sayamsamal,2,0,2,topic popover:2,no
+topics,shubham-padia,2,2,0,,yes
+tornado,andersk,3,3,0,,yes
+tornado,alexmv,2,2,0,,yes
+tsconfig,andersk,2,2,0,,yes
+typeahead,evykassirer,10,6,4,"compose typeahead:2,typeahead helper:2,pill typeahead:1",yes
+typeahead,amanagr,9,4,5,"compose typeahead:4,bootstrap typeahead:1",yes
+typeahead,pratik-pc,9,1,8,"compose typeahead:6,bootstrap typeahead:3",yes
+typeahead helper,evykassirer,2,2,0,,yes
+typeahead helper,sahil839,1,1,0,,yes
+typed endpoint,sahil839,2,2,0,,yes
+types,andersk,4,4,0,,yes
+typing,amanagr,2,2,0,,yes
+typing,laurynmm,1,1,0,,yes
+ui init,alexmv,2,2,0,,yes
+ui init,amanagr,2,2,0,,yes
+ui init,andersk,2,2,0,,yes
+ui init,prakhar1144,2,2,0,,yes
+unread ops,amanagr,3,3,0,,yes
+unread ops,andersk,2,2,0,,yes
+unread ops,evykassirer,2,2,0,,yes
+unread ops,pratik-pc,2,2,0,,yes
+update subscriber counts,alexmv,5,5,0,,yes
+update subscriber counts,andersk,2,2,0,,yes
+updates,alya,11,11,0,,yes
+updates,shubham-padia,1,1,0,,yes
+upload,alexmv,22,16,6,"thumbnail:6,upload widget:1",yes
+upload,andersk,7,4,3,"thumbnail:2,upload widget:1",yes
+upload,karlstolley,5,0,5,"thumbnail:4,upload widget:1",yes
+upload,sahil839,5,0,5,upload widget:5,yes
+upload,timabbott,5,2,3,thumbnail:3,yes
+upload widget,sahil839,5,5,0,,yes
+upload widget,alexmv,1,1,0,,yes
+url encoding,pieterck,3,3,0,,yes
+url encoding,alexmv,1,1,0,,yes
+user card popover,amanagr,3,3,0,,yes
+user card popover,andersk,1,1,0,,yes
+user events,sahil839,2,2,0,,yes
+user events,shubham-padia,2,2,0,,yes
+user group settings,pieterck,4,4,0,,yes
+user group settings,sahil839,2,2,0,,yes
+user groups,sahil839,25,17,8,"groups ui:8,user group settings:2",yes
+user groups,timabbott,5,5,0,,yes
+user groups,alexmv,4,4,0,,yes
+user groups,andersk,4,4,0,,yes
+user groups,pieterck,4,0,4,user group settings:4,yes
+user groups,shubham-padia,4,4,0,,yes
+user profile,sahil839,22,15,7,"custom profile fields:10,settings profile:2",yes
+user profile,pratik-pc,9,9,0,,yes
+user profile,amanagr,4,2,2,user card popover:3,yes
+user profile,yo-whats-up2,4,1,3,custom profile fields:4,no
+user settings,sahil839,3,3,0,,yes
+user settings,alexmv,2,2,0,,yes
+user status,andersk,2,2,0,,yes
+user status,asteriskkkk,2,2,0,,no
+user status,sahil839,2,2,0,,yes
+user status,sayamsamal,2,2,0,,no
+users,sahil839,9,9,0,,yes
+users,amanagr,3,3,0,,yes
+users,pieterck,3,3,0,,yes
+util,amanagr,2,2,0,,yes
+util,alexmv,1,1,0,,yes
+uv.lock,andersk,2,2,0,,yes
+validator,shubham-padia,2,2,0,,yes
+validator,andersk,1,1,0,,yes
+version,alexmv,2,2,0,,yes
+version,andersk,1,1,0,,yes
+video calls,laurynmm,6,5,1,compose call:2,yes
+video calls,niloth-p,6,6,0,compose call:1,yes
+video calls,timabbott,3,3,0,compose call:1,yes
+views,amanagr,3,3,0,,yes
+views,alexmv,2,2,0,,yes
+views util,amanagr,2,2,0,,yes
+views util,andersk,1,1,0,,yes
+web,aadyot1,2,2,0,,no
+web,amanagr,2,2,0,,yes
+web,andersk,2,2,0,,yes
+web,rxkshit04,2,2,0,,no
+web,sahil839,2,2,0,,yes
+web,shubham-padia,2,2,0,,yes
+webhooks,niloth-p,40,13,27,"webhooks/github:11,webhooks/intercom:4,webhooks/sentry:3,webhooks/gitlab:3,webhooks/jira:3,webhooks/taiga:2,webhooks/notion:2,webhooks/gitea:1,webhooks/pagerduty:1",yes
+webhooks,pritesh-30,10,3,7,"webhooks/github:7,webhooks/gitlab:2",no
+webhooks,sathwikshetty33,10,1,9,"webhooks/intercom:5,webhooks/notion:2,webhooks/pagerduty:2",no
+webhooks/gitea,aneesh-hegde,2,2,0,,no
+webhooks/gitea,niloth-p,1,1,0,,yes
+webhooks/github,niloth-p,11,11,0,,yes
+webhooks/github,pritesh-30,7,7,0,,no
+webhooks/gitlab,niloth-p,3,3,0,,yes
+webhooks/gitlab,pritesh-30,2,2,0,,no
+webhooks/intercom,sathwikshetty33,5,5,0,,no
+webhooks/intercom,niloth-p,4,4,0,,yes
+webhooks/jira,niloth-p,3,3,0,,yes
+webhooks/jira,0xthedance,2,2,0,,no
+webhooks/notion,niloth-p,2,2,0,,yes
+webhooks/notion,sathwikshetty33,2,2,0,,no
+webhooks/pagerduty,hydrallharsh,2,2,0,,no
+webhooks/pagerduty,sathwikshetty33,2,2,0,,no
+webhooks/sentry,niloth-p,3,3,0,,yes
+webhooks/sentry,laurynmm,2,2,0,,yes
+webhooks/taiga,niloth-p,2,2,0,,yes
+webpack,andersk,3,3,0,,yes
+webpack,amanagr,1,1,0,,yes
+widgets,aryan98795,2,2,0,,no
+widgets,karlstolley,2,2,0,,yes
+widgets,showell,2,2,0,,no
+workflows,andersk,6,6,0,,yes
+workflows,alexmv,4,4,0,,yes
+zerver,alexmv,24,1,23,"migrations:19,models:4",yes
+zerver,shash-hq,5,5,0,,no
+zerver,mateuszmandera,4,0,4,"migrations:3,models:1",yes
+zform,pratik-pc,3,3,0,,yes
+zform,amanagr,1,1,0,,yes
+zilencer,alexmv,3,3,0,,yes
+zilencer,prakhar1144,2,2,0,,yes
+zproject,alexmv,4,4,0,,yes
+zproject,amanagr,1,1,0,,yes
