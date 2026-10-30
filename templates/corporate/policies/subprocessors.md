@@ -26,13 +26,18 @@ our Services:
 
 * [Amazon Web Services, Inc.](https://aws.amazon.com/compliance/gdpr-center/)
   for cloud infrastructure.
+* [Apple, Inc.](https://www.apple.com/legal/transparency/push-token.html)
+  for push notifications.
 * [DigitalOcean, LLC](https://www.digitalocean.com/security/gdpr/)
   for cloud infrastructure.
-* [FrontApp, Inc.](https://community.frontapp.com/t/x1p4mw/is-front-compliant-with-gdpr)
+* [FrontApp, Inc.](https://front.com/legal/privacy-notice)
   for customer support.
-* [Functional Software, Inc. d/b/a Sentry](https://blog.sentry.io/2018/03/14/gdpr-sentry-and-you)
+* [Automattic, Inc. d/b/a Gravatar](https://support.gravatar.com/privacy-and-security/data-privacy/)
+  for users without an uploaded avatar or Zulip default avatar.
+* [Functional Software, Inc. d/b/a Sentry](https://sentry.io/legal/dpa/)
   for error tracking.
 * [Google LLC](https://privacy.google.com/businesses/compliance/) for
   cloud infrastructure and services.
 * [Mailgun Technologies, Inc.](https://www.mailgun.com/gdpr) for email processing.
+* [PagerDuty, Inc.](https://www.pagerduty.com/data-processing-addendum/) for cloud operations.
 * [Stripe, Inc.](https://stripe.com/guides/general-data-protection-regulation) for payment processing.
