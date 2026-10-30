@@ -9,6 +9,7 @@ import * as confirm_dialog from "./confirm_dialog.ts";
 import * as dialog_widget from "./dialog_widget.ts";
 import {$t_html} from "./i18n.ts";
 import * as ListWidget from "./list_widget.ts";
+import * as pygments_data from "./pygments_data.ts";
 import * as realm_playground from "./realm_playground.ts";
 import type {RealmPlayground} from "./realm_playground.ts";
 import * as scroll_util from "./scroll_util.ts";
@@ -118,22 +119,40 @@ function build_page(): void {
             $playground_status.hide();
             const data = {
                 name: $("#playground_name").val(),
-                pygments_language: $("#playground_pygments_language").val(),
+                pygments_language: (() => {
+                    const raw_lang = String(
+                        $("#playground_pygments_language").val() ?? "",
+                    ).toLowerCase();
+                    return pygments_data.langs[raw_lang]?.pretty_name ?? raw_lang;
+                })(),
                 url_template: $("#playground_url_template").val(),
             };
             void channel.post({
                 url: "/json/realm/playgrounds",
                 data,
                 success() {
+                    const raw_lang = String(
+                        $("#playground_pygments_language").val() ?? "",
+                    ).toLowerCase();
+                    const normalized = pygments_data.langs[raw_lang]?.pretty_name;
+                    const success_msg =
+                        normalized !== undefined
+                            ? $t_html(
+                                  {
+                                      defaultMessage:
+                                          "Custom playground added! Language recognized as {language}.",
+                                  },
+                                  {language: normalized},
+                              )
+                            : $t_html({
+                                  defaultMessage:
+                                      "Custom playground added! Language names are stored in lowercase.",
+                              });
                     $("#playground_pygments_language").val("");
                     $("#playground_name").val("");
                     $("#playground_url_template").val("");
                     $add_playground_button.prop("disabled", false);
-                    ui_report.success(
-                        $t_html({defaultMessage: "Custom playground added!"}),
-                        $playground_status,
-                        3000,
-                    );
+                    ui_report.success(success_msg, $playground_status, 3000);
                     // FIXME: One thing to note here is that the "view code in playground"
                     // option for an already rendered code block (tagged with this newly added
                     // language) would not be visible without a re-render. To fix this, we should
