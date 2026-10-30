@@ -451,14 +451,28 @@ function filter_topics_left_sidebar(topic_names: string[], stream_id: number): s
     // This runs both for the zoomed-in topic list and the inline
     // topic lists under streams, so we read the search term from
     // whichever input is in use.
-    const search_term = zoomed
-        ? get_zoomed_topic_search_term()
-        : (ui_util.get_left_sidebar_topic_search_term() ?? ui_util.get_left_sidebar_search_term());
+
+    if (zoomed) {
+        return topic_list_data.filter_topics_by_search_term(
+            stream_id,
+            topic_names,
+            get_zoomed_topic_search_term(),
+            get_typeahead_search_pills_syntax(),
+        );
+    }
+
+    const topic_search_term = ui_util.get_left_sidebar_topic_search_term();
+    const raw_search_term = ui_util.get_left_sidebar_search_term();
+    const topics_filter_state =
+        topic_search_term === undefined
+            ? topic_filter_pill.parse_topics_filter_state(raw_search_term)
+            : "";
+    const search_term = topic_search_term ?? (topics_filter_state ? "" : raw_search_term);
     return topic_list_data.filter_topics_by_search_term(
         stream_id,
         topic_names,
         search_term,
-        get_typeahead_search_pills_syntax(),
+        topics_filter_state,
     );
 }
 

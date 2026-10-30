@@ -602,3 +602,18 @@ test("initialize", ({override}) => {
 
     assert.ok(!stream_list_sort.is_filtering_inactives());
 });
+
+test("topics_state_filter", () => {
+    stream_data.clear_subscriptions();
+    const stream_id = 1;
+    const verona = make_stream({name: "verona", stream_id});
+    stream_data.add_sub_for_tests(verona);
+
+    message_lists.set_current(
+        make_message_list([{operator: "stream", operand: stream_id.toString()}]),
+    );
+
+    const result = stream_list_sort.sort_groups([stream_id], "", "is:followed");
+
+    assert.ok(result.sections.length > 0);
+});
