@@ -970,7 +970,7 @@ export function show_edit_bot_info_modal(user_id: number, $container: JQuery): v
             },
             error(xhr) {
                 const error_message = channel.xhr_error_message(
-                    $t_html({defaultMessage: "Failed"}),
+                    $t({defaultMessage: "Failed"}),
                     xhr,
                 );
                 banners.open(
@@ -1385,7 +1385,7 @@ export function show_edit_user_info_modal(user_id: number, $container: JQuery): 
             },
             error(xhr) {
                 const error_message = channel.xhr_error_message(
-                    $t_html({defaultMessage: "Failed"}),
+                    $t({defaultMessage: "Failed"}),
                     xhr,
                 );
                 banners.open(
