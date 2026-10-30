@@ -80,7 +80,7 @@ def send_bot_owner_change_notification(
     internal_send_private_message(notification_bot, bot_owner, message)
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic(savepoint=True)
 def do_change_bot_owner(
     user_profile: UserProfile, bot_owner: UserProfile, acting_user: UserProfile | None
 ) -> None:
@@ -104,7 +104,7 @@ def do_change_bot_owner(
     send_bot_owner_change_notification(user_profile, bot_owner, previous_owner, acting_user)
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic(savepoint=False)
 def do_change_default_sending_stream(
     user_profile: UserProfile, stream: Stream | None, *, acting_user: UserProfile | None
 ) -> None:
@@ -140,7 +140,7 @@ def do_change_default_sending_stream(
         )
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic(savepoint=False)
 def do_change_default_events_register_stream(
     user_profile: UserProfile, stream: Stream | None, *, acting_user: UserProfile | None
 ) -> None:
@@ -179,7 +179,7 @@ def do_change_default_events_register_stream(
         )
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic(savepoint=False)
 def do_change_default_all_public_streams(
     user_profile: UserProfile, value: bool, *, acting_user: UserProfile | None
 ) -> None:
