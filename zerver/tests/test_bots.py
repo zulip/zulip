@@ -2044,6 +2044,27 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         config_data = orjson.loads(result.content)["config_data"]
         self.assertEqual(config_data, orjson.loads(bot_info["config_data"]))
 
+    def test_patch_bot_with_failing_update_changes_nothing(self) -> None:
+        self.login("hamlet")
+        self.create_bot()
+        bot = self.get_bot_user("hambot-bot@zulip.testserver")
+
+        result = self.client_patch(
+            f"/json/bots/{bot.id}",
+            {"full_name": "New name", "default_sending_stream": "nonexistent"},
+        )
+        self.assert_json_error(result, "Invalid channel name 'nonexistent'")
+        bot.refresh_from_db()
+        self.assertEqual(bot.full_name, "The Bot of Hamlet")
+
+        with get_test_image_file("img.png") as fp1, get_test_image_file("img.gif") as fp2:
+            result = self.client_patch_multipart(
+                f"/json/bots/{bot.id}", dict(full_name="New name", file1=fp1, file2=fp2)
+            )
+        self.assert_json_error(result, "You may only upload one file at a time")
+        bot.refresh_from_db()
+        self.assertEqual(bot.full_name, "The Bot of Hamlet")
+
     def test_patch_bot_config_data_for_non_embedded_bot(self) -> None:
         self.create_test_bot(
             "test",

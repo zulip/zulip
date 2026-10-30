@@ -801,7 +801,7 @@ def do_change_can_change_user_emails(user_profile: UserProfile, value: bool) -> 
     )
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic(savepoint=False)
 def do_update_outgoing_webhook_service(
     bot_profile: UserProfile,
     *,
@@ -846,7 +846,7 @@ def do_update_outgoing_webhook_service(
     )
 
 
-@transaction.atomic(durable=True)
+@transaction.atomic(savepoint=False)
 def do_update_bot_config_data(bot_profile: UserProfile, config_data: dict[str, str]) -> None:
     for key, value in config_data.items():
         set_bot_config(bot_profile, key, value)
