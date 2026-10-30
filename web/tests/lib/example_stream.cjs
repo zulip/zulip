@@ -39,6 +39,7 @@ exports.make_stream = (opts = {}) => {
         name,
         newly_subscribed: false,
         pin_to_top: false,
+        demote_resolved_topics: false,
         previously_subscribed: false,
         push_notifications: false,
         rendered_description: `<p>Description of ${name}</p>`,
