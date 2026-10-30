@@ -205,12 +205,22 @@
                         <select name="realm_jitsi_server_url" id="id_realm_jitsi_server_url" class="setting-widget prop-element settings_select bootstrap-focus-style" data-setting-widget-type="jitsi-server-url-setting">
                             {{#if server_jitsi_server_url}}
                                 <option value="server_default">
-                                    {{#tr}}{server_jitsi_server_url} (default){{/tr}}
+                                    {{#if server_jitsi_jwt_configured}}
+                                        {{#tr}}{server_jitsi_server_url} (default, JWT auth enabled){{/tr}}
+                                    {{else}}
+                                        {{#tr}}{server_jitsi_server_url} (default){{/tr}}
+                                    {{/if}}
                                 </option>
                             {{else}}
                                 <option value="server_default">{{t 'Disabled' }}</option>
                             {{/if}}
-                            <option value="custom">{{t 'Custom URL' }}</option>
+                            <option value="custom">
+                                {{#if server_jitsi_jwt_configured}}
+                                    {{t 'Custom URL (JWT auth disabled)' }}
+                                {{else}}
+                                    {{t 'Custom URL' }}
+                                {{/if}}
+                            </option>
                         </select>
                     </div>
 
