@@ -43,3 +43,4 @@ in order to use this integration.
 - [Google Meet integration](/integrations/google-meet)
 - [Nextcloud Talk integration](/integrations/nextcloud-talk)
 - [Webex integration](/integrations/webex)
+- [Galène integration](/integrations/galene)
