@@ -24,6 +24,7 @@ export let display_time_zone = browser_time_zone();
 export let display_tz = tz(display_time_zone);
 
 const formatter_map = new Map<string, Intl.DateTimeFormat>();
+const relative_formatter_map = new Map<string, Intl.RelativeTimeFormat>();
 
 export function browser_time_zone(): string {
     return new Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -156,6 +157,19 @@ export function get_localized_date_or_time_for_format(
         );
     }
     return formatter_map.get(format_key)!.format(date);
+}
+
+// Formats a signed amount of time relative to now (e.g. "3 minutes
+// ago" or "yesterday") in the user's configured locale. Unlike a
+// translated template with the number substituted in, this picks the
+// right plural form in languages that have several of them.
+function get_relative_time_formatter(): Intl.RelativeTimeFormat {
+    const locale = user_settings.default_language;
+
+    if (!relative_formatter_map.has(locale)) {
+        relative_formatter_map.set(locale, new Intl.RelativeTimeFormat(locale, {numeric: "auto"}));
+    }
+    return relative_formatter_map.get(locale)!;
 }
 
 // Returns the UTC offset of the given time zone at the given time,
@@ -291,9 +305,13 @@ export function relative_time_string_from_date(date: Date, use_minutes_short_for
 // Current date is passed as an argument for unit testing
 export function last_seen_status_from_date(last_active_date: Date): string {
     const current_date = new Date();
+    const relative_time_formatter = get_relative_time_formatter();
     const minutes = differenceInMinutes(current_date, last_active_date);
     if (minutes < 60) {
-        return $t({defaultMessage: "Active {minutes} minutes ago"}, {minutes});
+        return $t(
+            {defaultMessage: "Active {relative_time}"},
+            {relative_time: relative_time_formatter.format(-minutes, "minute")},
+        );
     }
 
     const days_old = differenceInCalendarDays(current_date, last_active_date, {
@@ -302,18 +320,18 @@ export function last_seen_status_from_date(last_active_date: Date): string {
     const hours = Math.floor(minutes / 60);
 
     if (hours < 24) {
-        if (hours === 1) {
-            return $t({defaultMessage: "Active an hour ago"});
-        }
-        return $t({defaultMessage: "Active {hours} hours ago"}, {hours});
+        return $t(
+            {defaultMessage: "Active {relative_time}"},
+            {relative_time: relative_time_formatter.format(-hours, "hour")},
+        );
     }
 
-    if (days_old === 1) {
-        return $t({defaultMessage: "Active yesterday"});
-    }
-
+    // With numeric: "auto", one day ago is rendered as "yesterday".
     if (days_old < 90) {
-        return $t({defaultMessage: "Active {days_old} days ago"}, {days_old});
+        return $t(
+            {defaultMessage: "Active {relative_time}"},
+            {relative_time: relative_time_formatter.format(-days_old, "day")},
+        );
     }
     if (
         days_old > 90 &&
