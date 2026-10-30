@@ -1,0 +1,82 @@
+{
+  "action": "created",
+  "issue": {
+    "id": 630,
+    "number": 2,
+    "user": {
+      "id": 127008,
+      "username": "thedance",
+      "login": "thedance",
+      "full_name": "",
+      "email": "thedance@example.com",
+      "avatar_url": "https://secure.gravatar.com/avatar/3ea4cd3a8c0de560c5cd6850f274be10?d=identicon"
+    },
+    "title": "test",
+    "body": "this is a PR comment",
+    "labels": [],
+    "milestone": null,
+    "assignee": null,
+    "state": "open",
+    "comments": 0,
+    "created_at": "2026-10-09T09:18:45Z",
+    "updated_at": "2026-10-09T09:18:45Z",
+    "pull_request": {
+      "merged": false,
+      "merged_at": null
+    }
+  },
+  "comment": {
+    "id": 341,
+    "html_url": "https://try.gogs.io/thedance/test/pulls/2#issuecomment-341",
+    "user": {
+      "id": 127008,
+      "username": "thedance",
+      "login": "thedance",
+      "full_name": "",
+      "email": "thedance@example.com",
+      "avatar_url": "https://secure.gravatar.com/avatar/3ea4cd3a8c0de560c5cd6850f274be10?d=identicon"
+    },
+    "body": "this is a PR comment",
+    "created_at": "0001-01-01T00:00:00Z",
+    "updated_at": "0001-01-01T00:00:00Z"
+  },
+  "repository": {
+    "id": 99611,
+    "owner": {
+      "id": 127008,
+      "username": "thedance",
+      "login": "thedance",
+      "full_name": "",
+      "email": "thedance@example.com",
+      "avatar_url": "https://secure.gravatar.com/avatar/3ea4cd3a8c0de560c5cd6850f274be10?d=identicon"
+    },
+    "name": "test",
+    "full_name": "thedance/test",
+    "description": "",
+    "private": false,
+    "fork": false,
+    "parent": null,
+    "empty": false,
+    "mirror": false,
+    "size": 6144,
+    "html_url": "https://try.gogs.io/thedance/test",
+    "ssh_url": "git@ssh.try.gogs.io:thedance/test.git",
+    "clone_url": "https://try.gogs.io/thedance/test.git",
+    "website": "",
+    "stars_count": 0,
+    "forks_count": 0,
+    "watchers_count": 1,
+    "open_issues_count": 1,
+    "default_branch": "main",
+    "created_at": "2026-10-09T09:11:59Z",
+    "updated_at": "2026-10-09T09:18:21Z"
+  },
+  "sender": {
+    "id": 127008,
+    "username": "thedance",
+    "login": "thedance",
+    "full_name": "",
+    "email": "thedance@example.com",
+    "avatar_url": "https://secure.gravatar.com/avatar/3ea4cd3a8c0de560c5cd6850f274be10?d=identicon"
+  }
+}
