@@ -88,6 +88,7 @@ export const stream_group_setting_name_schema = z.enum([
     "can_create_topic_group",
     "can_delete_any_message_group",
     "can_delete_own_message_group",
+    "can_mention_many_users_group",
     "can_move_messages_out_of_channel_group",
     "can_move_messages_within_channel_group",
     "can_remove_subscribers_group",
