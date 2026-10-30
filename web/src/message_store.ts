@@ -571,7 +571,7 @@ function add_incoming_record(
 // narrow data that might become stale. This function updates the
 // narrow data for link(s) to `to_message_id`, or drops the link(s)
 // if to_narrow is undefined.
-function refile_link_from_message(
+function refile_pending_link_from_message(
     from_message_id: number,
     to_message_id: number,
     to_narrow: util.StreamTopic | undefined,
@@ -621,7 +621,7 @@ function refile_link_from_message(
 
 // Moves the links to a message that isn't in the store to the given
 // narrow data, or removes them if to_narrow is undefined.
-function refile_links_to_message(
+function refile_pending_links_to_message(
     to_message_id: number,
     to_narrow: util.StreamTopic | undefined,
 ): void {
@@ -630,7 +630,7 @@ function refile_links_to_message(
         return;
     }
     for (const linking_message_id of linking_message_ids) {
-        refile_link_from_message(linking_message_id, to_message_id, to_narrow);
+        refile_pending_link_from_message(linking_message_id, to_message_id, to_narrow);
     }
 }
 
@@ -639,9 +639,12 @@ function refile_links_to_message(
 // muted user or not a channel message.
 function resolve_pending_links_to_message(message: Message): void {
     if (message.type === "stream" && !muted_users.is_user_muted(message.sender_id)) {
-        refile_links_to_message(message.id, {stream_id: message.stream_id, topic: message.topic});
+        refile_pending_links_to_message(message.id, {
+            stream_id: message.stream_id,
+            topic: message.topic,
+        });
     } else {
-        refile_links_to_message(message.id, undefined);
+        refile_pending_links_to_message(message.id, undefined);
     }
     pending_message_link_targets.delete(message.id);
 }
@@ -1006,7 +1009,10 @@ export function process_topic_edit(opts: {
     // so they're re-filed before any of those entries move below.
     for (const message_id of message_ids) {
         if (get(message_id) === undefined) {
-            refile_links_to_message(message_id, {stream_id: new_stream_id, topic: new_topic});
+            refile_pending_links_to_message(message_id, {
+                stream_id: new_stream_id,
+                topic: new_topic,
+            });
         }
     }
 
@@ -1090,7 +1096,7 @@ export function remove(message_ids: number[]): void {
         } else if (message === undefined) {
             // A deleted message we haven't fetched can still have links
             // saved to it.
-            refile_links_to_message(message_id, undefined);
+            refile_pending_links_to_message(message_id, undefined);
             pending_message_link_targets.delete(message_id);
         }
         stored_messages.delete(message_id);
