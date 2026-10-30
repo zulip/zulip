@@ -217,8 +217,13 @@ export type BuddyUserInfo = {
         WITH_STATUS: boolean;
         WITH_AVATAR: boolean;
     };
+    display_offline_users: {
+        AUTOMATIC: boolean;
+        NEVER: boolean;
+    };
     should_add_guest_user_indicator: boolean;
     faded?: boolean;
+    active_status?: boolean;
 };
 
 export function info_for(user_id: number, direct_message_recipients: Set<number>): BuddyUserInfo {
@@ -236,6 +241,14 @@ export function info_for(user_id: number, direct_message_recipients: Set<number>
         WITH_AVATAR: user_list_style_value === 3,
     };
 
+    const user_list_show_offline_users_value = user_settings.display_offline_users;
+    const display_offline_users = {
+        AUTOMATIC: user_list_show_offline_users_value === 1,
+        NEVER: user_list_show_offline_users_value === 2,
+    };
+
+    const active_status = presence.get_status(user_id) === "active";
+
     return {
         href: hash_util.pm_with_url(user_id.toString()),
         name: people.get_full_name(user_id),
@@ -248,7 +261,9 @@ export function info_for(user_id: number, direct_message_recipients: Set<number>
         status_text,
         has_status_text: Boolean(status_text),
         user_list_style,
+        display_offline_users,
         should_add_guest_user_indicator: people.should_add_guest_user_indicator(user_id),
+        active_status,
     };
 }
 
