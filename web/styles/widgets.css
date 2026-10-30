@@ -25,13 +25,52 @@
 }
 
 .todo-widget {
-    .todo-task-list-title-bar {
+    .todo-task-list-title-bar,
+    .todo-task-edit-bar {
         flex: 1 1 auto;
         display: flex;
         /* Ensure controls remain visible on narrower screens. */
         flex-flow: row wrap;
-        gap: 5px;
+        /* The row gap spaces the rows when the buttons wrapper wraps
+           below.  The buttons wrapper reserves 2px of inline margin
+           for its focus outline, so the 3px column gap preserves the
+           5px of space between the inputs and buttons wrappers. */
+        gap: 5px 3px;
+    }
+
+    .todo-task-list-title-bar {
         margin-bottom: var(--markdown-interelement-space-px);
+    }
+
+    .todo-task-edit-bar {
+        /* Offset the list item's inline-start padding from
+           rendered_markdown.css, so the edit bar lines up with
+           the add-task bar and the list title bar. */
+        margin-inline-start: -0.7em;
+    }
+
+    .todo-task-list-title-inputs-wrapper,
+    .todo-task-edit-inputs-wrapper {
+        display: flex;
+        /* Mirror the bar's own wrapping and spacing, so the inputs lay
+           out just as they did as direct children of it. */
+        flex: 1 1 auto;
+        flex-flow: row wrap;
+        gap: 5px;
+    }
+
+    .todo-task-list-title-buttons-wrapper,
+    .todo-task-edit-buttons-wrapper {
+        display: flex;
+        /* Keep each bar's pair of buttons on one line; the bar wraps
+           them as a single unit instead. */
+        flex: 0 0 auto;
+        gap: 5px;
+        /* Prevent the buttons' focus outline from being clipped by
+           the `overflow: hidden` message content.  Applied on both
+           sides because this element can wrap to its own line at
+           narrow widths. */
+        margin-inline: 2px;
     }
 
     .add-task-bar {
@@ -278,32 +317,76 @@ input {
     font-size: 0.8571em; /* 12px at 14px/em */
     display: flex;
     align-items: center;
+
+    &:empty {
+        display: none;
+    }
 }
 
 .poll-question-check,
 .poll-question-remove,
+.todo-task-edit-check,
+.todo-task-edit-cancel,
 .todo-task-list-title-check,
 .todo-task-list-title-remove {
     display: flex;
     align-items: center;
     justify-content: center;
     align-self: stretch;
-    /* TODO: Re-express the 30.5px value here
+    /* Size with min-width rather than flex-basis, which Firefox
+       leaves out of the buttons wrappers' intrinsic width.
+       TODO: Re-express the 30.5px values here
        as part of information density work. */
-    flex: 0 0 30.5px;
+    flex: 0 0 auto;
+    min-width: 30.5px;
     min-height: 30.5px;
     border-radius: 3px;
     border: 1px solid var(--color-border-zulip-button);
     background-color: var(--color-background-zulip-button);
     font-size: inherit;
 
-    &:hover {
+    &:hover:not(:disabled) {
         border-color: var(--color-border-zulip-button-interactive);
         background-color: var(--color-background-zulip-button-hover);
     }
+
+    &:disabled {
+        cursor: not-allowed;
+    }
+}
+
+.todo-edit-task-icon {
+    opacity: 0;
+    transition: opacity 0.15s ease-out;
+    /* Prevent the focus outline from being clipped by the
+       `overflow: hidden` message content when a long task
+       pushes this button to the edge of the row. */
+    margin-inline-end: 2px;
+
+    /* Always display edit icon for touch based devices */
+    @media (hover: none) {
+        opacity: 1;
+        transition: none;
+    }
+
+    &:focus-visible {
+        opacity: 1;
+    }
+
+    .zulip-icon {
+        /* Smaller than the list title's pencil, to suit the task
+           text; this also centers it on the task's first line. */
+        font-size: 0.8em; /* 12.8px at 16px/em */
+    }
+}
+
+.todo-task-item:hover .todo-edit-task-icon {
+    opacity: 1;
+    transition: opacity 0.1s ease-in;
 }
 
 .poll-edit-question,
+.todo-edit-task-icon,
 .todo-edit-task-list-title {
     padding: 0;
     border: none;

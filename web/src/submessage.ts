@@ -2,12 +2,12 @@ import * as z from "zod/mini";
 
 import * as blueslip from "./blueslip.ts";
 import * as channel from "./channel.ts";
+import type {PostToServerFunction} from "./generic_widget.ts";
 import type {MessageList} from "./message_list.ts";
 import * as message_lists from "./message_lists.ts";
 import * as message_store from "./message_store.ts";
 import type {Message} from "./message_store.ts";
 import {any_widget_data_schema} from "./widget_schema.ts";
-import type {WidgetOutboundData} from "./widget_schema.ts";
 import * as widgetize from "./widgetize.ts";
 
 export type Submessage = z.infer<typeof message_store.submessage_schema>;
@@ -252,10 +252,8 @@ export function handle_event(submsg: Submessage): void {
     }
 }
 
-export function make_server_callback(
-    message_id: number,
-): (opts: {msg_type: string; data: WidgetOutboundData}) => void {
-    return function (opts: {msg_type: string; data: WidgetOutboundData}) {
+export function make_server_callback(message_id: number): PostToServerFunction {
+    return function (opts) {
         const url = "/json/submessage";
 
         void channel.post({
@@ -264,6 +262,9 @@ export function make_server_callback(
                 message_id,
                 msg_type: opts.msg_type,
                 content: JSON.stringify(opts.data),
+            },
+            error(xhr) {
+                opts.on_error?.(xhr);
             },
         });
     };

@@ -1,0 +1,7 @@
+<span class="todo-task">
+    {{#if completed}}
+    <s><strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}</s>
+    {{else}}
+    <strong>{{ task }}</strong>{{#if desc }}: {{ desc }}{{/if}}
+    {{/if}}
+</span>
