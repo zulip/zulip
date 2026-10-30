@@ -12,7 +12,8 @@ const emoji_codes = zrequire("../../static/generated/emoji/emoji_codes.json");
 const emoji = zrequire("emoji");
 const {initialize_user_settings} = zrequire("user_settings");
 
-initialize_user_settings({user_settings: {}});
+const user_settings = {};
+initialize_user_settings({user_settings});
 
 const emoji_params = {
     realm_emoji: {
@@ -187,4 +188,20 @@ run_test("defensive checks", () => {
             message: "Cannot find realm emoji for code 'fake_code'.",
         },
     );
+});
+
+run_test("suppress status emoji when emojiset is text", ({override}) => {
+    initialize();
+
+    // With default/image settings, emoji is returned
+    override(user_settings, "emojiset", "google-blob");
+    assert.deepEqual(user_status.get_status_emoji(4), {
+        emoji_name: "smiley",
+        emoji_code: "1f603",
+        reaction_type: "unicode_emoji",
+    });
+
+    // When emojiset is 'text', status emoji is suppressed (returns undefined)
+    override(user_settings, "emojiset", "text");
+    assert.equal(user_status.get_status_emoji(4), undefined);
 });
