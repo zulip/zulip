@@ -922,3 +922,16 @@ class PushServiceNotConfiguredError(JsonableError):
     @override
     def msg_format() -> str:
         return _("Server is not configured to use push notification service.")
+
+
+class BadNarrowOperatorError(JsonableError):
+    code = ErrorCode.BAD_NARROW
+    data_fields = ["desc"]
+
+    def __init__(self, desc: str) -> None:
+        self.desc: str = desc
+
+    @staticmethod
+    @override
+    def msg_format() -> str:
+        return _("Invalid narrow operator: {desc}")
