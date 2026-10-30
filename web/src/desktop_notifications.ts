@@ -98,7 +98,7 @@ if (electron_bridge?.new_notification) {
         // bothering the user. Once permission has been granted we
         // cannot make this check, so we treat the browser as supported
         // until a notification first fails to be constructed.
-        maybe_construct_notification("", {})?.close();
+        maybe_construct_notification("", {});
     }
 }
 
