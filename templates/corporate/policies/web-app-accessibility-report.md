@@ -1,24 +1,34 @@
-# [Company] Accessibility Conformance Report
+# Zulip Accessibility Conformance Report (ACR)
 
-WCAG Edition
+**WCAG 2.2 Edition**
 
 (Based on VPAT® Version 2.5Rev)
 
-Name of Product/Version:
+**Name of Product/Version:** [Zulip](https://zulip.com), v. 13.0
 
-Report Date:
+**Report Date:** 2026-11-XX
 
-Product Description:
+**Product Description:** [Zulip](https://zulip.com) is an open-source organized team chat app with
+unique [topic-based threading](https://zulip.com/why-zulip/) that combines the best of email and
+chat to make remote work productive and delightful. Fortune 500 companies,
+[leading open source projects](https://zulip.com/case-studies/rust/), and thousands of other
+organizations use Zulip every day. Zulip is the only
+[modern team chat app](https://zulip.com/features/) that is designed for both live and asynchronous
+conversations.
 
-Contact Information:
+ZCONTENT: *Need some copy about our approach to accessibility. The copy above is from our README.md*
 
-Notes:
+**Contact Information:** support@zulip.com
 
-Evaluation Methods Used:
+**Notes:** ZCONTENT
+
+**Evaluation Methods Used:** ZCONTENT
 
 ## Applicable Standards/Guidelines
 
 This report covers the degree of conformance for the following accessibility standard/guidelines:
+
+ZCONTENT: *While we should audit for all levels, we need to update this for what we ultimately cover.*
 
 | Standard/Guideline | Included In Report |
 | --- | --- |
