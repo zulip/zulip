@@ -728,10 +728,10 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()): 
     }
 
     const widgets = new Map<number, JQuery>();
-
     const stream_ids = [];
+    const $rows = $("#channels_overlay_container .stream-row");
 
-    for (const row of $("#channels_overlay_container .stream-row")) {
+    for (const row of $rows) {
         const stream_id = stream_id_for_row(row);
         stream_ids.push(stream_id);
     }
@@ -742,7 +742,7 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()): 
     // all this hidden/notdisplayed logic.
     const hidden_ids = new Set(buckets.other);
 
-    for (const row of $("#channels_overlay_container .stream-row")) {
+    for (const row of $rows) {
         const stream_id = stream_id_for_row(row);
 
         // Below code goes away if we don't do sort-DOM-in-place.
@@ -758,13 +758,14 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()): 
     scroll_util.reset_scrollbar($("#subscription_overlay .streams-list"));
 
     const all_stream_ids = [...buckets.name, ...buckets.desc, ...buckets.other];
+    const $streams_list_content = scroll_util.get_content_element(
+        $("#channels_overlay_container .streams-list"),
+    );
 
     for (const stream_id of all_stream_ids) {
         const $widget = widgets.get(stream_id);
         assert($widget !== undefined);
-        scroll_util
-            .get_content_element($("#channels_overlay_container .streams-list"))
-            .append($widget);
+        $streams_list_content.append($widget);
     }
     update_empty_left_panel_message();
 
