@@ -53,6 +53,7 @@ def copy_default_settings(
             UserProfile.AVATAR_FROM_USER,
             skip_notify=True,
             acting_user=target_profile,
+            notify_user=False,
         )
 
     copy_onboarding_steps(settings_source, target_profile)

@@ -529,7 +529,9 @@ class GetEventsTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
 
-        do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
+        do_change_avatar_fields(
+            user_profile, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None, notify_user=False
+        )
         self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
         def get_message(apply_markdown: bool, client_gravatar: bool) -> dict[str, Any]:
@@ -963,8 +965,12 @@ class FetchInitialStateDataTest(ZulipTestCase):
             self.example_user("othello"),
         ]
 
-        do_change_avatar_fields(hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None)
-        do_change_avatar_fields(aaron, UserProfile.AVATAR_FROM_JDENTICON, acting_user=None)
+        do_change_avatar_fields(
+            hamlet, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=None, notify_user=False
+        )
+        do_change_avatar_fields(
+            aaron, UserProfile.AVATAR_FROM_JDENTICON, acting_user=None, notify_user=False
+        )
 
         for user in users:
             user.long_term_idle = True
