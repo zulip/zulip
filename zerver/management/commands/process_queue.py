@@ -16,6 +16,7 @@ from django.utils import autoreload
 from typing_extensions import override
 
 from zerver.lib.management import ZulipBaseCommand
+from zerver.worker.base import QueueProcessingWorker
 from zerver.worker.queue_processors import get_active_worker_queues, get_worker
 
 
@@ -60,8 +61,9 @@ class Command(ZulipBaseCommand):
 
         def exit_with_three(signal: int, frame: FrameType | None) -> None:
             """
-            This process is watched by Django's autoreload, so exiting
-            with status code 3 will cause this process to restart.
+            With --all, this process is watched by Django's autoreload,
+            so exiting with status code 3 will cause this process to
+            restart.  With --multi_threaded, supervisor restarts it.
             """
             logger.warning("SIGUSR1 received. Restarting this queue processor.")
             sys.exit(3)
@@ -74,24 +76,39 @@ class Command(ZulipBaseCommand):
                 logger.error("Cannot run a queue processor when USING_RABBITMQ is False!")
             raise CommandError
 
-        def run_threaded_workers(queues: list[str], logger: logging.Logger) -> None:
-            cnt = 0
-            for queue_name in queues:
+        def run_threaded_workers(threads: list[ThreadedWorker], logger: logging.Logger) -> None:
+            for td in threads:
                 if not settings.DEVELOPMENT:
-                    logger.info("launching queue worker thread %s", queue_name)
-                cnt += 1
-                td = ThreadedWorker(queue_name, logger)
+                    logger.info("launching queue worker thread %s", td.queue_name)
                 td.start()
-            assert len(queues) == cnt
-            logger.info("%d queue worker threads were launched", cnt)
+            logger.info("%d queue worker threads were launched", len(threads))
 
         if options["all"]:
             signal.signal(signal.SIGUSR1, exit_with_three)
-            autoreload.run_with_reloader(run_threaded_workers, get_active_worker_queues(), logger)
+            threads = [
+                ThreadedWorker(queue_name, logger) for queue_name in get_active_worker_queues()
+            ]
+            autoreload.run_with_reloader(run_threaded_workers, threads, logger)
         elif options["multi_threaded"]:
+            # Unlike with --all, which is used in development, we do
+            # not run under Django's autoreload: its SIGTERM handling
+            # kills the worker threads immediately, interrupting the
+            # events they are processing.
+            threads = [
+                ThreadedWorker(queue_name, logger) for queue_name in options["multi_threaded"]
+            ]
+
+            def stop_threads(signal: int, frame: FrameType | None) -> None:
+                logger.info("Stopping queue worker threads")
+                for td in threads:
+                    td.stop_after_current_events()
+
+            signal.signal(signal.SIGTERM, stop_threads)
+            signal.signal(signal.SIGINT, stop_threads)
             signal.signal(signal.SIGUSR1, exit_with_three)
-            queues = options["multi_threaded"]
-            autoreload.run_with_reloader(run_threaded_workers, queues, logger)
+            run_threaded_workers(threads, logger)
+            for td in threads:
+                td.join()
         else:
             queue_name = options["queue_name"]
             worker_num = options["worker_num"]
@@ -129,9 +146,18 @@ class Command(ZulipBaseCommand):
 
 class ThreadedWorker(threading.Thread):
     def __init__(self, queue_name: str, logger: logging.Logger) -> None:
-        threading.Thread.__init__(self)
+        # Daemon threads, so that exiting the main thread on SIGUSR1
+        # does not wait for them to finish.
+        threading.Thread.__init__(self, daemon=True)
         self.logger = logger
         self.queue_name = queue_name
+        self.worker: QueueProcessingWorker | None = None
+        self.stop_requested = False
+
+    def stop_after_current_events(self) -> None:
+        self.stop_requested = True
+        if self.worker is not None:
+            self.worker.stop_after_current_events()
 
     @override
     def run(self) -> None:
@@ -142,5 +168,13 @@ class ThreadedWorker(threading.Thread):
             scope.set_tag("queue_worker", self.queue_name)
             worker = get_worker(self.queue_name, threaded=True)
             worker.setup()
+            # stop_after_current_events is called from the main thread,
+            # so it may have run before self.worker was set; it sets
+            # stop_requested before checking self.worker, and we check
+            # stop_requested after setting it.
+            self.worker = worker
+            if self.stop_requested:
+                return
             logging.debug("starting consuming %s", self.queue_name)
             worker.start()
+            worker.stop()
