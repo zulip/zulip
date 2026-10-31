@@ -479,7 +479,7 @@ def patch_bot_backend(
     default_sending_stream: str | None = None,
     full_name: str | None = None,
     role: Json[RoleParamType] | None = None,
-    service_interface: Json[int] = 1,
+    service_interface: Json[int] | None = None,
     service_payload_url: Json[Annotated[str, AfterValidator(check_url)]] | None = None,
     short_name: str | None = None,
 ) -> HttpResponse:
@@ -553,19 +553,42 @@ def patch_bot_backend(
             bot, default_all_public_streams, acting_user=user_profile
         )
 
-    if service_payload_url is not None:
-        check_valid_interface_type(service_interface)
-        do_update_outgoing_webhook_service(
-            bot,
-            interface=service_interface,
-            base_url=service_payload_url,
-            acting_user=user_profile,
-        )
-
-    if config_data is not None:
-        if bot.bot_type != UserProfile.EMBEDDED_BOT:
-            raise JsonableError(_("Only embedded bots have config_data."))
-        do_update_bot_config_data(bot, config_data)
+    match bot.bot_type:
+        case UserProfile.OUTGOING_WEBHOOK_BOT:
+            if config_data is not None:
+                raise JsonableError(_("Outgoing-webhook bots have no config data to update."))
+            if service_interface is not None:
+                check_valid_interface_type(service_interface)
+            if service_interface is not None or service_payload_url is not None:
+                do_update_outgoing_webhook_service(
+                    bot,
+                    interface=service_interface,
+                    base_url=service_payload_url,
+                    acting_user=user_profile,
+                )
+        case UserProfile.EMBEDDED_BOT:
+            if service_interface is not None or service_payload_url is not None:
+                raise JsonableError(_("Service fields cannot be updated on embedded bots."))
+            if config_data is not None:
+                do_update_bot_config_data(bot, config_data)
+        case UserProfile.INCOMING_WEBHOOK_BOT:
+            if (
+                service_interface is not None
+                or service_payload_url is not None
+                or config_data is not None
+            ):
+                raise JsonableError(
+                    _("Incoming-webhook bots have no service or config data to update.")
+                )
+        case UserProfile.DEFAULT_BOT:
+            if (
+                service_interface is not None
+                or service_payload_url is not None
+                or config_data is not None
+            ):
+                raise JsonableError(_("Generic bots have no service or config data to update."))
+        case _:  # nocoverage
+            raise JsonableError(_("Unexpected bot type."))
 
     if len(request.FILES) == 0:
         pass
@@ -580,23 +603,7 @@ def patch_bot_backend(
     else:
         raise JsonableError(_("You may only upload one file at a time"))
 
-    json_result = dict(
-        full_name=bot.full_name,
-        avatar_url=avatar_url(bot),
-        service_interface=service_interface,
-        service_payload_url=service_payload_url,
-        config_data=config_data,
-        default_sending_stream=get_stream_name(bot.default_sending_stream),
-        default_events_register_stream=get_stream_name(bot.default_events_register_stream),
-        default_all_public_streams=bot.default_all_public_streams,
-    )
-
-    # Don't include the bot owner in case it is not set.
-    # Default bots have no owner.
-    if bot.bot_owner is not None:
-        json_result["bot_owner"] = bot.bot_owner.email
-
-    return json_success(request, data=json_result)
+    return json_success(request)
 
 
 @require_human_non_guest_user
