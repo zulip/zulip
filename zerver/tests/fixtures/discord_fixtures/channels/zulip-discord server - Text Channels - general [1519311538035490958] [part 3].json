@@ -1,0 +1,48 @@
+{
+  "guild": {
+    "id": "1519311536839983195",
+    "name": "zulip-discord server",
+    "iconUrl": "media\\0-eb806f2bcf037a33.png"
+  },
+  "channel": {
+    "id": "1519311538035490958",
+    "type": "GuildTextChat",
+    "categoryId": "1519311538035490956",
+    "category": "Text Channels",
+    "name": "general",
+    "topic": null
+  },
+  "dateRange": {
+    "after": null,
+    "before": null
+  },
+  "exportedAt": "2026-06-24T21:07:33.1052387+07:00",
+  "messages": [
+    {
+      "id": "1519337717564051496",
+      "type": "Default",
+      "timestamp": "2026-06-24T20:45:39.797+07:00",
+      "timestampEdited": null,
+      "callEndedTimestamp": null,
+      "isPinned": false,
+      "content": "random link: chat.zulip.org",
+      "author": {
+        "id": "1000000000000000002",
+        "name": "hamlet",
+        "discriminator": "0000",
+        "nickname": "hamlet",
+        "color": null,
+        "isBot": false,
+        "roles": [],
+        "avatarUrl": "media\\8c4e1e62ddcf9f302b96ee34ace7a857-316b13b517b81a03.png"
+      },
+      "attachments": [],
+      "embeds": [],
+      "stickers": [],
+      "reactions": [],
+      "mentions": [],
+      "inlineEmojis": []
+    }
+  ],
+  "messageCount": 1
+}
