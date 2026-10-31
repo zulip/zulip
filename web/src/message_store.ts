@@ -157,7 +157,6 @@ export type MessageWithBooleans = RawMessageWithBooleans | LocalMessageWithBoole
 export type MessageCleanReaction = {
     class: string;
     count: number;
-    emoji_alt_code: boolean;
     emoji_code: string;
     emoji_name: string;
     is_realm_emoji: boolean;

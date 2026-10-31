@@ -48,6 +48,7 @@ import type {TopicLink} from "./types.ts";
 import * as typing_data from "./typing_data.ts";
 import * as typing_events from "./typing_events.ts";
 import * as ui_util from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
 import * as user_status from "./user_status.ts";
 import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as user_topics from "./user_topics.ts";
@@ -57,6 +58,7 @@ import * as util from "./util.ts";
 export type MessageContainer = {
     background_color?: string;
     date_divider_html: string | undefined;
+    emoji_alt_code: boolean;
     year_changed: boolean;
     include_recipient: boolean;
     include_sender: boolean;
@@ -601,6 +603,7 @@ export class MessageListView {
         sender_is_deactivated: boolean;
         should_add_guest_indicator_for_sender: boolean;
         status_emoji_info: UserStatusEmojiInfo | undefined;
+        emoji_alt_code: boolean;
         is_hidden: boolean;
         mention_classname: string | undefined;
         include_sender: boolean;
@@ -686,6 +689,7 @@ export class MessageListView {
             message.sender_id,
         );
         const status_emoji_info = user_status.get_status_emoji(message.sender_id);
+        const emoji_alt_code = user_settings.emojiset === "text";
 
         const small_avatar_url = is_hidden
             ? people.get_muted_user_avatar_url()
@@ -705,6 +709,7 @@ export class MessageListView {
             sender_is_deactivated,
             should_add_guest_indicator_for_sender,
             status_emoji_info,
+            emoji_alt_code,
             is_hidden,
             mention_classname,
             include_sender,

@@ -444,6 +444,7 @@ export let insert_new_reaction = (
         emoji_details.reaction_type === "zulip_extra_emoji";
     const reaction_class =
         user_id === current_user.user_id ? "message_reaction reacted" : "message_reaction";
+    const emoji_alt_code = user_settings.emojiset === "text";
 
     const context = {
         message_id: message.id,
@@ -451,7 +452,6 @@ export let insert_new_reaction = (
         count: 1,
         label: new_label,
         local_id: get_local_reaction_id(clean_reaction_object),
-        emoji_alt_code: user_settings.emojiset === "text",
         is_realm_emoji,
         vote_list: [], // Updated below
         class: reaction_class,
@@ -463,6 +463,7 @@ export let insert_new_reaction = (
     if (message.clean_reactions.size === 1) {
         const $rows = message_lists.all_rendered_row_for_message_id(message.id);
         const reaction_section_context = {
+            emoji_alt_code,
             msg: {
                 message_reactions: [context],
             },
@@ -470,7 +471,7 @@ export let insert_new_reaction = (
         const $msg_reaction_section = $(render_message_reactions(reaction_section_context));
         $rows.find(".messagebox-content").append($msg_reaction_section);
     } else {
-        const $new_reaction = $(render_message_reaction(context));
+        const $new_reaction = $(render_message_reaction({...context, emoji_alt_code}));
         const $reaction_button_element = get_add_reaction_button(message.id);
         $new_reaction.insertBefore($reaction_button_element);
     }
@@ -696,7 +697,6 @@ function make_clean_reaction({
         emoji_code,
         reaction_type,
     });
-    const emoji_alt_code = user_settings.emojiset === "text";
     const is_realm_emoji =
         emoji_details.reaction_type === "realm_emoji" ||
         emoji_details.reaction_type === "zulip_extra_emoji";
@@ -705,7 +705,6 @@ function make_clean_reaction({
         local_id,
         user_ids,
         ...emoji_details,
-        emoji_alt_code,
         is_realm_emoji,
         ...build_reaction_data(user_ids, emoji_name, should_display_reactors),
     };
