@@ -1535,6 +1535,125 @@ class EventQueueTest(ZulipTestCase):
         )
         self.verify_to_dict_end_to_end(client)
 
+    def test_collapsing_does_not_reorder_conflicting_flag_updates(self) -> None:
+        """
+        Regression test for a bug where compressing repeated
+        update_message_flags events into a single "virtual event"
+        could reorder events relative to each other.
+
+        Concretely: if message 101 is marked read, then marked
+        unread, and then a *different* message 202 is marked read,
+        the "mark 202 as read" event would get merged with the
+        earlier "mark 101 as read" event (since both are
+        flags/add/read events). That merged event's position is
+        the position of its most recent contributor (202's), which
+        is *after* the real, non-collapsible "mark 101 as unread"
+        event. This incorrectly told clients that 101 was marked
+        read *after* it was marked unread, when the reverse was
+        true, causing 101 to be shown as read when it should be
+        unread.
+
+        The fix: whenever an update_message_flags event arrives,
+        we first strip its message ids out of any pending virtual
+        event for the *opposite* operation on the same flag, since
+        that pending event is now stale for those specific messages.
+        """
+        client = self.get_client_descriptor()
+        queue = client.event_queue
+
+        def umfe(operation: str, messages: list[int]) -> dict[str, Any]:
+            return dict(
+                type="update_message_flags",
+                operation=operation,
+                flag="read",
+                all=False,
+                timestamp="1",
+                messages=messages,
+            )
+
+        # 101 marked read, then unread, then a different message
+        # (202) marked read.
+        queue.push(umfe(operation="add", messages=[101]))
+        self.verify_to_dict_end_to_end(client)
+        queue.push(umfe(operation="remove", messages=[101]))
+        self.verify_to_dict_end_to_end(client)
+        queue.push(umfe(operation="add", messages=[202]))
+        self.verify_to_dict_end_to_end(client)
+
+        self.assertEqual(
+            queue.contents(),
+            [
+                dict(
+                    id=1,
+                    type="update_message_flags",
+                    operation="remove",
+                    flag="read",
+                    all=False,
+                    timestamp="1",
+                    messages=[101],
+                ),
+                dict(
+                    id=2,
+                    type="update_message_flags",
+                    operation="add",
+                    flag="read",
+                    all=False,
+                    timestamp="1",
+                    messages=[202],
+                ),
+            ],
+        )
+
+    def test_collapsing_handles_repeated_flag_flips(self) -> None:
+        """
+        Extension of the above: a message that flips back and forth
+        (read, unread, read, unread) should never have a stale
+        "read" virtual event survive to delivery -- each new event
+        should prune the previous pending event for the opposite
+        operation.
+        """
+        client = self.get_client_descriptor()
+        queue = client.event_queue
+
+        def umfe(operation: str) -> dict[str, Any]:
+            return dict(
+                type="update_message_flags",
+                operation=operation,
+                flag="read",
+                all=False,
+                timestamp="1",
+                messages=[601],
+            )
+
+        queue.push(umfe(operation="add"))
+        queue.push(umfe(operation="remove"))
+        queue.push(umfe(operation="add"))
+        queue.push(umfe(operation="remove"))
+
+        self.assertEqual(
+            queue.contents(),
+            [
+                dict(
+                    id=1,
+                    type="update_message_flags",
+                    operation="remove",
+                    flag="read",
+                    all=False,
+                    timestamp="1",
+                    messages=[601],
+                ),
+                dict(
+                    id=3,
+                    type="update_message_flags",
+                    operation="remove",
+                    flag="read",
+                    all=False,
+                    timestamp="1",
+                    messages=[601],
+                ),
+            ],
+        )
+
     def test_collapse_event(self) -> None:
         """
         This mostly focuses on the internals of
