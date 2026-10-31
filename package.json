@@ -20,6 +20,7 @@
     "@uppy/dashboard": "^6.0.0",
     "@uppy/image-editor": "^5.0.0",
     "@uppy/tus": "^6.0.0",
+    "@zootools/email-spell-checker": "^1.12.0",
     "@zxcvbn-ts/core": "^4.1.2",
     "@zxcvbn-ts/language-common": "^4.1.3",
     "@zxcvbn-ts/language-en": "^4.1.1",

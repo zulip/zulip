@@ -520,6 +520,41 @@ html {
         }
     }
 
+    .email-suggestion {
+        /* Wrap a long address inside the form instead of widening it. */
+        width: 0;
+        min-width: 100%;
+        text-align: left;
+
+        & button {
+            width: auto;
+            max-width: 100%;
+            height: auto;
+            overflow-wrap: anywhere;
+            margin: 0 0 5px;
+            padding: 4px 0;
+
+            font-size: 1.15rem;
+            font-weight: 600;
+            line-height: 1.2;
+            text-align: left;
+
+            border: none;
+            box-shadow: none;
+            background: none;
+            color: var(--color-action-button);
+            cursor: pointer;
+
+            &[hidden] {
+                display: none;
+            }
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+
     .form-inline {
         margin: 0;
     }

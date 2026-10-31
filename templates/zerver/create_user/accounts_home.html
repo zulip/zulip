@@ -62,6 +62,9 @@ page can be easily identified in it's respective JavaScript file -->
                                     <input type="email" id="email" class="email" name="email" value="" autofocus required />
                                     <label for="email">{{ _('Email') }}</label>
                                     <div class="alert alert-error email-frontend-error"></div>
+                                    <div class="email-suggestion" aria-live="polite">
+                                        <button type="button" class="email-suggestion-button" hidden></button>
+                                    </div>
                                     {% if form.email.errors %}
                                         {% for error in form.email.errors %}
                                         <div class="email-backend-error alert alert-error">{{ error }}</div>
