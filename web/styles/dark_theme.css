@@ -200,11 +200,11 @@
         filter: invert(100%);
     }
 
-    & a:not(:active):focus,
+    & a:not(:active, .header-button, .left-sidebar-toggle-button):focus,
     button:not(.action-button, .icon-button):focus-visible,
     i.fa:focus,
     i.zulip-icon:focus,
-    [role="button"]:focus {
+    [role="button"]:not(.header-button, .left-sidebar-toggle-button):focus {
         outline-color: hsl(0deg 0% 67%);
     }
 
