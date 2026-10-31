@@ -35,6 +35,7 @@ from corporate.lib.stripe import (
     invoice_plans_as_needed,
     is_realm_on_free_trial,
     next_month,
+    remote_realm_eligible_for_non_workplace_pricing,
 )
 from corporate.lib.test_stripe_class import StripeTestCase, mock_stripe
 from corporate.models.customers import Customer, get_customer_by_realm
@@ -50,7 +51,10 @@ from zerver.actions.create_user import (
     do_create_user,
     do_reactivate_user,
 )
-from zerver.actions.realm_settings import do_change_realm_permission_group_setting
+from zerver.actions.realm_settings import (
+    do_change_realm_permission_group_setting,
+    do_change_realm_plan_type,
+)
 from zerver.actions.user_groups import (
     add_subgroups_to_user_group,
     bulk_add_members_to_user_groups,
@@ -278,6 +282,58 @@ class BillingHelpersTest(ZulipTestCase):
             get_price_per_license(
                 CustomerPlan.TIER_CLOUD_ENTERPRISE, CustomerPlan.BILLING_SCHEDULE_ANNUAL
             )
+
+    def test_remote_realm_eligible_for_non_workplace_pricing(self) -> None:
+        remote_server = RemoteZulipServer.objects.create(
+            uuid=str(uuid.uuid4()),
+            api_key="magic_secret_api_key",
+            hostname="demo.example.com",
+            contact_email="email@example.com",
+        )
+        remote_realm = RemoteRealm.objects.create(
+            server=remote_server,
+            uuid=str(uuid.uuid4()),
+            uuid_owner_secret="dummy-owner-secret",
+            host="dummy-hostname",
+            realm_date_created=timezone_now(),
+        )
+
+        # A realm billed under a plan for the whole server has no customer of
+        # its own, and the pricing is configured per realm.
+        self.assertFalse(remote_realm_eligible_for_non_workplace_pricing(remote_realm))
+
+        # Support staff can configure a plan for the realm by hand.
+        customer = Customer.objects.create(remote_realm=remote_realm)
+        self.assertTrue(remote_realm_eligible_for_non_workplace_pricing(remote_realm))
+
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            tier=CustomerPlan.TIER_SELF_HOSTED_BASIC,
+            billing_schedule=CustomerPlan.BILLING_SCHEDULE_ANNUAL,
+            billing_cycle_anchor=timezone_now(),
+            price_per_license=4200,
+        )
+        self.assertTrue(remote_realm_eligible_for_non_workplace_pricing(remote_realm))
+
+        # A negotiated total leaves nothing to discount.
+        plan.price_per_license = None
+        plan.fixed_price = 100000
+        plan.save(update_fields=["price_per_license", "fixed_price"])
+        self.assertFalse(remote_realm_eligible_for_non_workplace_pricing(remote_realm))
+
+        plan.fixed_price = None
+        plan.price_per_license = 4200
+        plan.save(update_fields=["fixed_price", "price_per_license"])
+        self.assertTrue(remote_realm_eligible_for_non_workplace_pricing(remote_realm))
+
+        # Plans that are free of charge are decided by the plan type.
+        for free_plan_type in [
+            RemoteRealm.PLAN_TYPE_COMMUNITY,
+            RemoteRealm.PLAN_TYPE_SELF_MANAGED_LEGACY,
+        ]:
+            remote_realm.plan_type = free_plan_type
+            remote_realm.save(update_fields=["plan_type"])
+            self.assertFalse(remote_realm_eligible_for_non_workplace_pricing(remote_realm))
 
     def test_get_plan_renewal_or_end_date(self) -> None:
         realm = get_realm("zulip")
@@ -1717,6 +1773,51 @@ class TestSupportBillingHelpers(StripeTestCase):
             "Customer on plan Zulip Cloud Standard. Please end current plan before approving sponsorship!",
         ):
             billing_session.approve_sponsorship()
+
+    def test_realm_billing_state_updated_by_billing_actions(self) -> None:
+        support_admin = self.example_user("iago")
+        realm = get_realm("zulip")
+        # This plan type means the realm has no plan on this server to
+        # price, so both answers are False. A realm on a self-hosted
+        # installation can be eligible for non-workplace pricing, but it
+        # is told so by the push notification service, which is where its
+        # plan lives, rather than computed here.
+        self.assertEqual(realm.plan_type, Realm.PLAN_TYPE_SELF_HOSTED)
+        self.assertFalse(realm.non_workplace_pricing_eligible)
+        self.assertFalse(realm.on_discounted_plan)
+
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD, acting_user=support_admin)
+        realm.refresh_from_db()
+        self.assertTrue(realm.non_workplace_pricing_eligible)
+        self.assertFalse(realm.on_discounted_plan)
+
+        billing_session = RealmBillingSession(support_admin, realm=realm, support_session=True)
+        billing_session.update_or_create_customer()
+        billing_session.set_required_plan_tier(CustomerPlan.TIER_CLOUD_STANDARD)
+        billing_session.attach_discount_to_customer(
+            monthly_discounted_price=600,
+            annual_discounted_price=6000,
+        )
+        realm.refresh_from_db()
+        self.assertTrue(realm.on_discounted_plan)
+
+        billing_session.attach_discount_to_customer(
+            monthly_discounted_price=0,
+            annual_discounted_price=0,
+        )
+        realm.refresh_from_db()
+        self.assertFalse(realm.on_discounted_plan)
+
+        # A fully sponsored realm pays nothing, so it has neither a
+        # negotiated discount nor a reason to configure its pricing.
+        billing_session.attach_discount_to_customer(
+            monthly_discounted_price=600,
+            annual_discounted_price=6000,
+        )
+        do_change_realm_plan_type(realm, Realm.PLAN_TYPE_STANDARD_FREE, acting_user=support_admin)
+        realm.refresh_from_db()
+        self.assertFalse(realm.non_workplace_pricing_eligible)
+        self.assertFalse(realm.on_discounted_plan)
 
     @mock_stripe()
     def test_add_minimum_licenses(self, *mocks: Mock) -> None:

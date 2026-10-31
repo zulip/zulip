@@ -88,7 +88,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
             self.assertLogs("zulip.analytics", level="WARNING") as mock_warning,
         ):
             resp.add(responses.GET, ANALYTICS_STATUS_URL, body=ConnectionError())
-            Realm.objects.all().update(push_notifications_enabled=True)
+            Realm.objects.all().update(
+                push_notifications_enabled=True, non_workplace_pricing_eligible=True
+            )
             send_server_data_to_push_bouncer()
             self.assertEqual(
                 "WARNING:zulip.analytics:ConnectionError while trying to connect to push notification bouncer",
@@ -96,6 +98,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
             )
             self.assertTrue(resp.assert_call_count(ANALYTICS_STATUS_URL, 1))
             self.assertPushNotificationsAre(False)
+            # The service is what tells a realm whether it is eligible, so we
+            # stop claiming it is once we can no longer reach the service.
+            self.assertFalse(Realm.objects.filter(non_workplace_pricing_eligible=True).exists())
 
         # Simulate ConnectionError again, but this time with a redis record indicating
         # that push notifications have recently worked fine.
@@ -1046,6 +1051,22 @@ class AnalyticsBouncerTest(BouncerTestCase):
                 skip_audit_log_check=True,
             )
         self.assertIn("Malformed audit log data", m.output[0])
+
+    @activate_push_notification_service()
+    @responses.activate
+    def test_non_workplace_pricing_eligible_after_send_analytics(self) -> None:
+        self.add_mock_response()
+
+        for reported_value in [True, False]:
+            with mock.patch(
+                "corporate.lib.stripe.remote_realm_eligible_for_non_workplace_pricing",
+                return_value=reported_value,
+            ) as m:
+                send_server_data_to_push_bouncer(consider_usage_statistics=False)
+                m.assert_called()
+
+            for realm in Realm.objects.all().iterator():
+                self.assertEqual(realm.non_workplace_pricing_eligible, reported_value)
 
     @activate_push_notification_service()
     @responses.activate
