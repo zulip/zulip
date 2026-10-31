@@ -58,6 +58,7 @@ from zerver.lib.rate_limiter import (
 )
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
+from zerver.lib.sessions import delete_other_user_sessions
 from zerver.lib.sounds import get_available_notification_sounds
 from zerver.lib.typed_endpoint import typed_endpoint, typed_endpoint_without_parameters
 from zerver.lib.typed_endpoint_validators import (
@@ -586,6 +587,20 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
         avatar_url=default_avatar_url,
     )
     return json_success(request, data=json_result)
+
+
+@require_post
+@typed_endpoint_without_parameters
+def logout_other_sessions(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    current_session_key = request.session.session_key
+
+    # API-key authentication does not have a browser session to preserve.
+    # In that case, leave existing browser sessions untouched.
+    if current_session_key is None:
+        return json_success(request)
+
+    delete_other_user_sessions(user_profile, current_session_key)
+    return json_success(request)
 
 
 # We don't use @human_users_only here, because there are use cases for
