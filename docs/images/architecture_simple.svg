@@ -607,37 +607,6 @@
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <text
-       xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#808080;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="1872.1224"
-       y="-1652.8113"
-       id="text18835"
-       sodipodi:linespacing="125%"><tspan
-         sodipodi:role="line"
-         x="1872.1224"
-         y="-1652.8113"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35px;font-family:Roboto;-inkscape-font-specification:Roboto;text-align:start;text-anchor:start;fill:#999999"
-         id="tspan18837">Web app</tspan><tspan
-         sodipodi:role="line"
-         x="1872.1224"
-         y="-1609.0613"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35px;font-family:Roboto;-inkscape-font-specification:Roboto;text-align:start;text-anchor:start;fill:#999999"
-         id="tspan6674">Desktop <tspan
-   style="fill:#cccccc"
-   id="tspan6680">(Electron/Qt)</tspan></tspan><tspan
-         sodipodi:role="line"
-         x="1872.1224"
-         y="-1565.3113"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35px;font-family:Roboto;-inkscape-font-specification:Roboto;text-align:start;text-anchor:start;fill:#999999"
-         id="tspan6676">iOS <tspan
-   style="fill:#cccccc"
-   id="tspan6682">(React native)</tspan></tspan><tspan
-         sodipodi:role="line"
-         x="1872.1224"
-         y="-1521.5613"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:35px;font-family:Roboto;-inkscape-font-specification:Roboto;text-align:start;text-anchor:start;fill:#999999"
-         id="tspan6678">Android</tspan></text>
-    <text
        sodipodi:linespacing="125%"
        id="text18857"
        y="-1332.3333"
