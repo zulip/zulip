@@ -507,6 +507,26 @@ run_test("paste_handler_converter", () => {
         "[Contributing guide](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)",
     );
 
+    // Quoting or pasting a single spaced URL wrapped in a <p> tag preserves markdown link syntax (#40138).
+    input =
+        '<p><a href="https://example.com/docs/my%20file.pdf">https://example.com/docs/my file.pdf</a></p>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input),
+        "[https://example.com/docs/my file.pdf](https://example.com/docs/my%20file.pdf)",
+    );
+
+    // Single bare link wrapped in a <p> tag stays bare.
+    input = '<p><a href="https://google.com">https://google.com</a></p>';
+    assert.equal(compose_paste.paste_handler_converter(input), "https://google.com");
+
+    // Single custom labeled link wrapped in a <p> tag retains markdown link syntax.
+    input =
+        '<p><a href="https://zulip.readthedocs.io/en/latest/contributing/contributing.html">Contributing guide</a></p>';
+    assert.equal(
+        compose_paste.paste_handler_converter(input),
+        "[Contributing guide](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)",
+    );
+
     // Only numbered list (list style retained)
     input =
         '<meta http-equiv="content-type" content="text/html; charset=utf-8"><ol><li>text</li></ol>';
