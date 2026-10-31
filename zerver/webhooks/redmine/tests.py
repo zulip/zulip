@@ -30,3 +30,13 @@ I'm having a problem with this.
 I've started working on this issue. The problem seems to be in the authentication module.
 ~~~"""
         self.check_webhook("issue_updated", self.TOPIC_NAME, expected_message)
+
+    def test_issue_opened_without_description(self) -> None:
+        expected_message = (
+            "**test user** opened [#191 Found a bug](https://example.com) for **test user**."
+        )
+        self.check_webhook("issue_opened_without_description", self.TOPIC_NAME, expected_message)
+
+    def test_issue_updated_without_notes(self) -> None:
+        expected_message = "**test2 user2** updated [#191 Found a bug](https://example.com)."
+        self.check_webhook("issue_updated_without_notes", self.TOPIC_NAME, expected_message)
