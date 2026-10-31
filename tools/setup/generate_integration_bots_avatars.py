@@ -19,16 +19,19 @@ import pyvips
 
 from zerver.lib.integrations import INTEGRATIONS
 from zerver.lib.storage import static_path
-from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE
+from zerver.lib.thumbnail import DEFAULT_AVATAR_SIZE, MEDIUM_AVATAR_SIZE
+
+# zerver.lib.thumbnail blocks the SVG loader, since it is unsafe for
+# user uploads; the integration logos we read here are trusted.
+pyvips.block_untrusted_set(False)
+pyvips.operation_block_set("VipsForeignLoadSvg", False)
 
 
-def create_integration_bot_avatar(logo_path: str, bot_avatar_path: str) -> None:
+def create_integration_bot_avatar(logo_path: str, bot_avatar_path: str, size: int) -> None:
     os.makedirs(os.path.dirname(bot_avatar_path), exist_ok=True)
-    avatar = pyvips.Image.thumbnail(logo_path, DEFAULT_AVATAR_SIZE, height=DEFAULT_AVATAR_SIZE)
+    avatar = pyvips.Image.thumbnail(logo_path, size, height=size)
     if avatar.height != avatar.width:
-        avatar = avatar.gravity(
-            pyvips.CompassDirection.CENTRE, DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE
-        )
+        avatar = avatar.gravity(pyvips.CompassDirection.CENTRE, size, size)
     avatar.write_to_file(bot_avatar_path)
 
 
@@ -37,13 +40,16 @@ def generate_integration_bots_avatars(check_missing: bool = False) -> None:
     for integration in INTEGRATIONS.values():
         if not integration.is_enabled_in_catalog():
             continue
-        bot_avatar_path = integration.get_bot_avatar_path()
-        bot_avatar_path = os.path.join(ZULIP_PATH, "static", bot_avatar_path)
-        if check_missing:
-            if not os.path.isfile(bot_avatar_path):
-                missing.add(integration.name)
-        else:
-            create_integration_bot_avatar(static_path(integration.logo_path), bot_avatar_path)
+        for medium, size in [(False, DEFAULT_AVATAR_SIZE), (True, MEDIUM_AVATAR_SIZE)]:
+            bot_avatar_path = integration.get_bot_avatar_path(medium=medium)
+            bot_avatar_path = os.path.join(ZULIP_PATH, "static", bot_avatar_path)
+            if check_missing:
+                if not os.path.isfile(bot_avatar_path):
+                    missing.add(integration.name)
+            else:
+                create_integration_bot_avatar(
+                    static_path(integration.logo_path), bot_avatar_path, size
+                )
 
     if missing:
         print(
