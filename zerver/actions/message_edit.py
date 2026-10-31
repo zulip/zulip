@@ -401,7 +401,7 @@ def get_mentions_for_message_updates(message: Message) -> set[int]:
     # probably are not relevant for reprocessed alert_words,
     # mentions and similar rendering features.  This may be a
     # decision we change in the future.
-    mentioned_user_ids = (
+    mentioned_user_ids = set(
         UserMessage.objects.filter(
             message=message.id,
             flags=~UserMessage.flags.historical,
@@ -416,12 +416,14 @@ def get_mentions_for_message_updates(message: Message) -> set[int]:
         )
         .values_list("user_profile_id", flat=True)
     )
+    if not mentioned_user_ids:
+        return set()
 
     user_ids_having_message_access = event_recipient_ids_for_action_on_messages(
-        [message.id], message.is_channel_message
+        [message.id], message.is_channel_message, exclude_long_term_idle_users=False
     )
 
-    return set(mentioned_user_ids) & user_ids_having_message_access
+    return mentioned_user_ids & user_ids_having_message_access
 
 
 def update_user_message_flags(
@@ -550,7 +552,7 @@ def update_message_content(
 ) -> None:
     realm = user_profile.realm
 
-    ums = UserMessage.objects.filter(message=target_message.id)
+    ums = list(UserMessage.objects.filter(message=target_message.id))
 
     # add data from group mentions to mentions_user_ids.
     for group_id in rendering_result.mentions_user_group_ids:
@@ -579,11 +581,17 @@ def update_message_content(
     target_message.rendered_content = rendering_result.rendered_content
     target_message.rendered_content_version = markdown_version
 
+    # Only users with a UserMessage row get mention flags from an edit,
+    # and a group mention can name many users without one.
+    mentioned_user_ids_with_usermessage = rendering_result.mentions_user_ids & {
+        um.user_profile_id for um in ums
+    }
     info = get_recipient_info(
         realm_id=realm.id,
         recipient=target_message.recipient,
         sender_id=target_message.sender_id,
         stream_topic=stream_topic,
+        possibly_mentioned_user_ids=mentioned_user_ids_with_usermessage,
         possible_topic_wildcard_mention=mention_data.message_has_topic_wildcards(),
         possible_stream_wildcard_mention=mention_data.message_has_stream_wildcards(),
     )
