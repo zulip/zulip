@@ -2234,6 +2234,17 @@ test("initialize", ({override, override_rewire, mock_template}) => {
     event.altKey = false;
     event.metaKey = true;
     $("form#send_message_form").trigger(event);
+
+    // Test inside code block (Cmd+Enter / Ctrl+Enter inserts newline)
+    let newline_inserted_in_code_block = false;
+    override(compose_ui, "cursor_inside_code_block", () => true);
+    override(compose_ui, "insert_and_scroll_into_view", (content, _textarea) => {
+        assert.equal(content, "\n");
+        newline_inserted_in_code_block = true;
+    });
+    $("form#send_message_form").trigger(event);
+    assert.ok(newline_inserted_in_code_block);
+
     $stub_target.attr("id", "private_message_recipient");
     $("form#send_message_form").trigger(event);
 
