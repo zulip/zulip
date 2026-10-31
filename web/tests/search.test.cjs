@@ -104,6 +104,47 @@ run_test("initialize", ({override, override_rewire, mock_template}) => {
     });
 
     {
+        const $searchbox_input_container = $("#searchbox-input-container");
+        $searchbox_input_container
+            .attr("aria-label", "Search")
+            .attr("role", "search")
+            .attr("tabindex", "0");
+        $search_query_box.attr("data-placeholder-text", "Search");
+        $.set_results("#searchbox .navbar-search.expanded", []);
+
+        $searchbox_input_container.trigger("focus");
+        for (const event_name of ["keydown", "keyup"]) {
+            let default_prevented = false;
+            let propagation_stopped = false;
+            const handler = $searchbox_input_container.get_on_handler(event_name);
+            handler({
+                key: "Enter",
+                preventDefault() {
+                    default_prevented = true;
+                },
+                stopPropagation() {
+                    propagation_stopped = true;
+                },
+            });
+            assert.ok(default_prevented);
+            assert.ok(propagation_stopped);
+        }
+
+        assert.ok($search_query_box.is(":focus"));
+        assert.equal($searchbox_input_container.attr("aria-label"), undefined);
+        assert.equal($searchbox_input_container.attr("role"), undefined);
+        assert.equal($searchbox_input_container.attr("tabindex"), undefined);
+        assert.equal($search_query_box.attr("contenteditable"), "true");
+
+        search.close_search_bar_and_open_narrow_description();
+        assert.ok(!$search_query_box.is(":focus"));
+        assert.equal($searchbox_input_container.attr("aria-label"), "Search");
+        assert.equal($searchbox_input_container.attr("role"), "search");
+        assert.equal($searchbox_input_container.attr("tabindex"), "0");
+        assert.equal($search_query_box.attr("contenteditable"), "false");
+    }
+
+    {
         {
             const search_suggestions = ["dm", "dm:"];
 
@@ -345,6 +386,7 @@ run_test("initiate_search", ({override_rewire}) => {
 run_test("close_search", () => {
     search_typeahead.shown = true;
     $(".navbar-search").addClass("expanded");
+    $("#search_query").attr("data-placeholder-text", "Search");
 
     search.close_search();
 
