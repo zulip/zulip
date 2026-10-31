@@ -48,6 +48,8 @@ import type {TopicLink} from "./types.ts";
 import * as typing_data from "./typing_data.ts";
 import * as typing_events from "./typing_events.ts";
 import * as ui_util from "./ui_util.ts";
+import * as user_status from "./user_status.ts";
+import type {UserStatusEmojiInfo} from "./user_status.ts";
 import * as user_topics from "./user_topics.ts";
 import type {AllVisibilityPolicies} from "./user_topics.ts";
 import * as util from "./util.ts";
@@ -75,6 +77,7 @@ export type MessageContainer = {
     sender_is_deactivated: boolean;
     should_add_guest_indicator_for_sender: boolean;
     small_avatar_url: string;
+    status_emoji_info: UserStatusEmojiInfo | undefined;
     status_message: string | false;
     stream_url?: string;
     pm_with_url?: string;
@@ -597,6 +600,7 @@ export class MessageListView {
         sender_is_guest: boolean;
         sender_is_deactivated: boolean;
         should_add_guest_indicator_for_sender: boolean;
+        status_emoji_info: UserStatusEmojiInfo | undefined;
         is_hidden: boolean;
         mention_classname: string | undefined;
         include_sender: boolean;
@@ -681,6 +685,7 @@ export class MessageListView {
         const should_add_guest_indicator_for_sender = people.should_add_guest_user_indicator(
             message.sender_id,
         );
+        const status_emoji_info = user_status.get_status_emoji(message.sender_id);
 
         const small_avatar_url = is_hidden
             ? people.get_muted_user_avatar_url()
@@ -699,6 +704,7 @@ export class MessageListView {
             sender_is_guest,
             sender_is_deactivated,
             should_add_guest_indicator_for_sender,
+            status_emoji_info,
             is_hidden,
             mention_classname,
             include_sender,
