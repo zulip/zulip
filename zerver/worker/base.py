@@ -298,6 +298,13 @@ class QueueProcessingWorker(ABC):
             lambda events: self.consume_single_event(events[0]),
         )
 
+    def stop_after_current_events(self) -> None:
+        """Makes start() return, once the events being processed (if
+        any) have been acknowledged.  Unlike stop(), this is safe to
+        call from a signal handler or another thread."""
+        assert self.q is not None
+        self.q.stop_after_current_events()
+
     def stop(self) -> None:  # nocoverage
         assert self.q is not None
         self.q.stop_consuming()

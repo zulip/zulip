@@ -222,6 +222,50 @@ class TestQueueImplementation(ZulipTestCase):
         self.assertEqual(output[0]["event"], "my_event")
 
     @override_settings(USING_RABBITMQ=True)
+    def test_stop_after_current_events(self) -> None:
+        queue_client = SimpleQueueClient()
+        output = []
+
+        def collect(events: list[dict[str, Any]]) -> None:
+            # Simulate a signal handler running partway through the batch.
+            queue_client.stop_after_current_events()
+            output.extend(events)
+
+        queue_json_publish_rollback_unsafe("test_suite", {"event": "first"})
+        queue_json_publish_rollback_unsafe("test_suite", {"event": "second"})
+        queue_json_publish_rollback_unsafe("test_suite", {"event": "third"})
+
+        queue_client.start_json_consumer("test_suite", collect, batch_size=2, timeout=1)
+        self.assertEqual(output, [{"event": "first"}, {"event": "second"}])
+        queue_client.stop_consuming()
+
+        # The processed batch was acknowledged, and the unprocessed
+        # event was returned to the queue.
+        assert queue_client.channel
+        method, _header, message = queue_client.channel.basic_get("test_suite")
+        assert method is not None
+        assert method.delivery_tag is not None
+        assert message is not None
+        queue_client.channel.basic_ack(method.delivery_tag)
+        self.assertEqual(orjson.loads(message), {"event": "third"})
+
+        _method, _header, message = queue_client.channel.basic_get("test_suite")
+        assert message is None
+
+    @override_settings(USING_RABBITMQ=True)
+    def test_stop_after_current_events_while_idle(self) -> None:
+        queue_client = SimpleQueueClient()
+
+        def collect(events: list[dict[str, Any]]) -> None:
+            raise AssertionError("No events should be consumed")
+
+        queue_client.stop_after_current_events()
+        # This returns once the consumer wakes up, despite having no
+        # events and no batch timeout.
+        queue_client.start_json_consumer("test_suite", collect)
+        queue_client.stop_consuming()
+
+    @override_settings(USING_RABBITMQ=True)
     def test_queue_error_json(self) -> None:
         queue_client = get_queue_client()
         assert isinstance(queue_client, SimpleQueueClient)

@@ -46,6 +46,7 @@ class QueueClient(ABC, Generic[ChannelT]):
         self.consumers: dict[str, set[Consumer[ChannelT]]] = defaultdict(set)
         self.rabbitmq_heartbeat = rabbitmq_heartbeat
         self.is_consuming = False
+        self.stop_requested = False
         self._connect()
 
     @abstractmethod
@@ -206,7 +207,13 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
             # enough events are present, it will sleep for at most
             # timeout seconds before calling the callback with the
             # batch of events it has.
-            for method, properties, body in channel.consume(queue_name, inactivity_timeout=timeout):
+            #
+            # We wake up at least once a second even when idle, to
+            # check whether stop_after_current_events was called.
+            inactivity_timeout = 1 if timeout is None else min(timeout, 1)
+            for method, properties, body in channel.consume(
+                queue_name, inactivity_timeout=inactivity_timeout
+            ):
                 if body is not None:
                     assert method is not None
                     events.append(orjson.loads(body))
@@ -224,7 +231,7 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
                             raise
                         events = []
                     last_process = now
-                if not self.is_consuming:
+                if not self.is_consuming or self.stop_requested:
                     break
 
         self.ensure_queue(queue_name, do_consume)
@@ -234,6 +241,16 @@ class SimpleQueueClient(QueueClient[BlockingChannel]):
         return self.channel.get_waiting_message_count() + len(
             self.channel._pending_events  # type: ignore[attr-defined] # private member missing from stubs
         )
+
+    def stop_after_current_events(self) -> None:
+        """Makes start_json_consumer return, once the events it is
+        processing (if any) have been acknowledged.  Unlike
+        stop_consuming, this is safe to call from a signal handler or
+        another thread, since it only sets a flag.  Interrupting the
+        callback partway through a batch would cause RabbitMQ to
+        redeliver the whole batch, including the events that had
+        already been processed."""
+        self.stop_requested = True
 
     def stop_consuming(self) -> None:
         assert self.channel is not None
