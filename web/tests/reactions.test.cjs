@@ -68,7 +68,7 @@ const {initialize_user_settings} = zrequire("user_settings");
 const current_user = {};
 set_current_user(current_user);
 set_realm(make_realm());
-const user_settings = {emojiset: "google"};
+const user_settings = {emojiset: "google", web_animate_image_previews: "on_hover"};
 initialize_user_settings({user_settings});
 
 const emoji_params = {
@@ -155,6 +155,7 @@ test("basics", () => {
             user_ids: [7],
             label: "translated: Cali reacted with :frown:",
             emoji_alt_code: false,
+            emoji_animation_setting: "on_hover",
             class: "message_reaction",
             is_realm_emoji: false,
         },
@@ -168,6 +169,7 @@ test("basics", () => {
             user_ids: [5],
             label: "translated: You (click to remove) reacted with :inactive_realm_emoji:",
             emoji_alt_code: false,
+            emoji_animation_setting: "on_hover",
             is_realm_emoji: true,
             url: "/url/for/992",
             still_url: "/still/url/for/992",
@@ -183,6 +185,7 @@ test("basics", () => {
             user_ids: [5, 6],
             label: "translated: You (click to remove) and Bob van Roberts reacted with :smile:",
             emoji_alt_code: false,
+            emoji_animation_setting: "on_hover",
             class: "message_reaction reacted",
             is_realm_emoji: false,
         },
@@ -196,6 +199,7 @@ test("basics", () => {
             user_ids: [7, 8],
             label: "translated: Cali and Alexus reacted with :tada:",
             emoji_alt_code: false,
+            emoji_animation_setting: "on_hover",
             class: "message_reaction",
             is_realm_emoji: false,
         },
@@ -209,6 +213,7 @@ test("basics", () => {
             user_ids: [5, 6, 7],
             label: "translated: You (click to remove), Bob van Roberts and Cali reacted with :rocket:",
             emoji_alt_code: false,
+            emoji_animation_setting: "on_hover",
             class: "message_reaction reacted",
             is_realm_emoji: false,
         },
@@ -222,6 +227,7 @@ test("basics", () => {
             user_ids: [6, 7, 8],
             label: "translated: Bob van Roberts, Cali and Alexus reacted with :wave:",
             emoji_alt_code: false,
+            emoji_animation_setting: "on_hover",
             class: "message_reaction",
             is_realm_emoji: false,
         },
@@ -229,23 +235,45 @@ test("basics", () => {
     assert.deepEqual(result, expected_result);
 });
 
-test("emoji_alt_code follows the current emojiset", ({override}) => {
-    // message_reaction.hbs renders `:name:` text in place of the emoji
-    // under the `text` emojiset, which it decides from emoji_alt_code;
-    // this has to track the emojiset setting both at page load and
-    // after it changes.
+test("emoji display settings follow the current settings", ({override}) => {
+    // message_reaction.hbs decides whether to show `:name:` text and
+    // which image to show from these, so they have to track the
+    // emojiset and web_animate_image_previews settings both at page
+    // load and after they change.
     settings_data.user_can_access_all_other_users = () => true;
     const message = sample_message_with_clean_reactions();
 
     for (const reaction of reactions.get_message_reactions(message)) {
+        assert.equal(reaction.emoji_animation_setting, "on_hover");
         assert.equal(reaction.emoji_alt_code, false);
     }
 
+    override(user_settings, "web_animate_image_previews", "always");
     override(user_settings, "emojiset", "text");
 
     for (const reaction of reactions.get_message_reactions(message)) {
+        assert.equal(reaction.emoji_animation_setting, "always");
         assert.equal(reaction.emoji_alt_code, true);
     }
+});
+
+test("reaction hover area", () => {
+    const render_message_reaction = require("../templates/message_reaction.hbs");
+    const is_hover_area = (reaction) =>
+        render_message_reaction({
+            class: "message_reaction",
+            emoji_animation_setting: "on_hover",
+            label: "reaction label",
+            local_id: "reaction_local_id",
+            vote_text: "1",
+            ...reaction,
+        }).includes("emoji-animation-hover-area");
+
+    // Only an emoji with a still frame can animate, so only hovering
+    // its reaction needs to do anything.
+    assert.ok(is_hover_area({is_realm_emoji: true, url: "/animated.gif", still_url: "/still.png"}));
+    assert.ok(!is_hover_area({is_realm_emoji: true, url: "/static.png", still_url: null}));
+    assert.ok(!is_hover_area({is_realm_emoji: false, emoji_code: "1f600"}));
 });
 
 test("reactions from unknown users", () => {
@@ -278,6 +306,7 @@ test("reactions from unknown users", () => {
             user_ids: [9],
             label: "translated: translated: Unknown user reacted with :frown:",
             emoji_alt_code: false,
+            emoji_animation_setting: "on_hover",
             class: "message_reaction",
             is_realm_emoji: false,
         },
@@ -291,6 +320,7 @@ test("reactions from unknown users", () => {
             user_ids: [5, 9],
             label: "translated: You (click to remove) and translated: Unknown user reacted with :smile:",
             emoji_alt_code: false,
+            emoji_animation_setting: "on_hover",
             class: "message_reaction reacted",
             is_realm_emoji: false,
         },
@@ -304,6 +334,7 @@ test("reactions from unknown users", () => {
             user_ids: [6, 10],
             label: "translated: Bob van Roberts and translated: Unknown user reacted with :tada:",
             emoji_alt_code: false,
+            emoji_animation_setting: "on_hover",
             class: "message_reaction",
             is_realm_emoji: false,
         },
@@ -1038,6 +1069,7 @@ test("insert_new_reaction (first reaction)", ({mock_template, override_rewire}) 
                     {
                         count: 1,
                         emoji_alt_code: false,
+                        emoji_animation_setting: "on_hover",
                         emoji_name: "8ball",
                         emoji_code: "1f3b1",
                         local_id: "unicode_emoji,1f3b1",
@@ -1117,6 +1149,7 @@ test("insert_new_reaction (me w/unicode emoji)", ({mock_template}) => {
         assert.deepEqual(data, {
             count: 1,
             emoji_alt_code: false,
+            emoji_animation_setting: "on_hover",
             emoji_name: "8ball",
             emoji_code: "1f3b1",
             local_id: "unicode_emoji,1f3b1",
@@ -1194,6 +1227,7 @@ test("insert_new_reaction (them w/zulip emoji)", ({mock_template}) => {
             url: "/static/generated/emoji/images/emoji/unicode/zulip.png",
             is_realm_emoji: true,
             emoji_alt_code: false,
+            emoji_animation_setting: "on_hover",
             emoji_name: "zulip",
             emoji_code: "zulip",
             local_id: "realm_emoji,zulip",

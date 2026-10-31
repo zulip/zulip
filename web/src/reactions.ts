@@ -24,7 +24,8 @@ import * as people from "./people.ts";
 import {get_retry_backoff_seconds} from "./retry_backoff.ts";
 import * as spectators from "./spectators.ts";
 import {current_user} from "./state_data.ts";
-import {user_settings} from "./user_settings.ts";
+import {type EmojiAnimationSetting, user_settings} from "./user_settings.ts";
+import * as util from "./util.ts";
 
 const waiting_for_server_request_ids = new Set<string>();
 
@@ -710,12 +711,16 @@ function make_clean_reaction({
     };
 }
 
-function build_emoji_display_settings(): {emoji_alt_code: boolean} {
+function build_emoji_display_settings(): {
+    emoji_alt_code: boolean;
+    emoji_animation_setting: EmojiAnimationSetting;
+} {
     // These depend on user settings rather than on the reaction itself,
     // so they're added when rendering instead of being stored in
     // clean_reactions, where they would go stale when a setting changes.
     return {
         emoji_alt_code: user_settings.emojiset === "text",
+        emoji_animation_setting: util.effective_web_animate_image_previews(),
     };
 }
 
