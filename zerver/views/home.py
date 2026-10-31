@@ -182,7 +182,7 @@ def home(request: HttpRequest) -> HttpResponse:
         return hello_view(request)
 
     if subdomain == settings.SOCIAL_AUTH_SUBDOMAIN:
-        return redirect(settings.ROOT_DOMAIN_URI)
+        return redirect(settings.ROOT_DOMAIN_URL)
     elif subdomain == settings.SELF_HOSTING_MANAGEMENT_SUBDOMAIN:
         return redirect(reverse("remote_billing_legacy_server_login"))
     realm = get_realm_from_request(request)
