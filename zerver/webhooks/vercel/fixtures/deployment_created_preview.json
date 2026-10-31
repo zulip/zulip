@@ -1,0 +1,67 @@
+{
+  "id": "CdYKPToaj8YXOuMruw49d",
+  "payload": {
+    "user": {
+      "id": "uqmLjBW7sOHJ4YTPXIjAeAjG"
+    },
+    "team": {
+      "id": "team_OKnuirTQpn5ygJUItEWBLwto"
+    },
+    "project": {
+      "id": "prj_fNFIzN3ea9hnfAj4F4F8HAKbx2Al"
+    },
+    "installationIds": [
+      "icfg_6U3JQ3dSFiK6zEwi1M7Gifin"
+    ],
+    "integrations": [
+      {
+        "installationId": "icfg_6U3JQ3dSFiK6zEwi1M7Gifin"
+      }
+    ],
+    "alias": [
+      "portfolio-site-git-update-blog-post-ki3anis-projects.vercel.app"
+    ],
+    "deployment": {
+      "id": "dpl_374SqY9sTvPBUcqKCSaV4WWmf9Yn",
+      "customEnvironmentId": null,
+      "meta": {
+        "githubCommitAuthorName": "ki3ani",
+        "githubCommitAuthorEmail": "ki3ani@users.noreply.github.com",
+        "githubCommitMessage": "Reword homepage tagline",
+        "githubCommitOrg": "ki3ani",
+        "githubCommitRef": "update-blog-post",
+        "githubCommitRepo": "portfolio-site",
+        "githubCommitSha": "0ead78914f61475c13d6a005f8b719e2e1cd0ef8",
+        "githubDeployment": "1",
+        "githubOrg": "ki3ani",
+        "githubRepo": "portfolio-site",
+        "githubRepoOwnerType": "User",
+        "githubCommitRepoId": "1435527271",
+        "githubRepoId": "1435527271",
+        "githubRepoVisibility": "private",
+        "githubHost": "github.com",
+        "githubCommitAuthorLogin": "ki3ani",
+        "githubCommitVerification": "unverified",
+        "repoPushedAt": "1793127604000",
+        "branchAlias": "portfolio-site-git-update-blog-post-ki3anis-projects.vercel.app"
+      },
+      "name": "portfolio-site",
+      "url": "portfolio-site-m8f0xoyjk-ki3anis-projects.vercel.app",
+      "inspectorUrl": "https://vercel.com/ki3anis-projects/portfolio-site/374SqY9sTvPBUcqKCSaV4WWmf9Yn"
+    },
+    "links": {
+      "deployment": "https://vercel.com/ki3anis-projects/portfolio-site/374SqY9sTvPBUcqKCSaV4WWmf9Yn",
+      "project": "https://vercel.com/ki3anis-projects/portfolio-site"
+    },
+    "name": "portfolio-site",
+    "plan": "hobby",
+    "regions": [
+      "iad1"
+    ],
+    "target": null,
+    "type": "LAMBDAS",
+    "url": "portfolio-site-m8f0xoyjk-ki3anis-projects.vercel.app"
+  },
+  "createdAt": 1793127607286,
+  "type": "deployment.created"
+}
