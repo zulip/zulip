@@ -1,80 +1,106 @@
-# Zulip overview
+# Zulip
 
-[Zulip](https://zulip.com) is an open-source organized team chat app with unique
-[topic-based threading][why-zulip] that combines the best of email and chat to
-make remote work productive and delightful. Fortune 500 companies, [leading open
-source projects][rust-case-study], and thousands of other organizations use
-Zulip every day. Zulip is the only [modern team chat app][features] that is
-designed for both live and asynchronous conversations.
+Zulip is an open-source team chat application built around topic-based
+conversations. It supports both live chat and asynchronous communication. This
+repository contains the Zulip server, web application, development tools, and
+documentation.
 
-Zulip is built by a distributed community of developers from all around the
-world, with 99+ people who have each contributed 100+ commits. With
-over 1,500 contributors merging over 500 commits a month, Zulip is the
-largest and fastest growing open source team chat project.
+Zulip is licensed under the Apache License 2.0; see [LICENSE](LICENSE).
 
-Come find us on the [development community chat](https://zulip.com/development-community/)!
+## What is in this repository?
 
-[![GitHub Actions build status](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml/badge.svg)](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml?query=branch%3Amain)
-[![coverage status](https://img.shields.io/codecov/c/github/zulip/zulip/main.svg)](https://codecov.io/gh/zulip/zulip)
-[![Mypy coverage](https://img.shields.io/badge/mypy-100%25-green.svg)][mypy-coverage]
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
-[![GitHub release](https://img.shields.io/github/release/zulip/zulip.svg)](https://github.com/zulip/zulip/releases/latest)
-[![docs](https://readthedocs.org/projects/zulip/badge/?version=latest)](https://zulip.readthedocs.io/en/latest/)
-[![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
-[![Bluesky](https://img.shields.io/badge/bluesky-@zulip.bsky.social-blue.svg?style=flat)](https://bsky.app/profile/zulip.bsky.social)
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/zulip)](https://github.com/sponsors/zulip)
+Zulip is a full-stack application. Its main server is written in Python with
+Django, and its browser application is built with JavaScript and TypeScript.
+The web client communicates with the server over HTTP APIs and a real-time
+event system.
 
-[mypy-coverage]: https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/
-[why-zulip]: https://zulip.com/why-zulip/
-[rust-case-study]: https://zulip.com/case-studies/rust/
-[features]: https://zulip.com/features/
+### Main directories
 
-## Getting started
+| Path | Purpose |
+| --- | --- |
+| `zerver/` | Main Django application: data models, views, business logic, workers, integrations, and backend tests. |
+| `zproject/` | Django project configuration, URL routing, authentication, and settings. |
+| `web/src/` | Browser application JavaScript and TypeScript source. |
+| `web/styles/` | Web application CSS and stylesheets. |
+| `web/templates/` | Handlebars templates used by the frontend. |
+| `templates/` | Server-rendered Jinja templates, including pages and emails. |
+| `static/` | Static assets served directly, including images. |
+| `web/images/`, `web/icons/` | Frontend image and icon source assets. |
+| `analytics/`, `confirmation/`, `zilencer/` | Additional Django applications for analytics, email confirmation, and server administration/development functionality. |
+| `api_docs/` | REST API documentation and API reference source. |
+| `docs/` | Developer, architecture, setup, and testing documentation. |
+| `starlight_help/` | User-facing Zulip Help Center content. |
+| `tools/` | Development, provisioning, linting, and test scripts. |
+| `scripts/` | Operational and deployment scripts. |
+| `puppet/` | Puppet configuration used for production deployment. |
+| `locale/` | Translation files for backend and frontend. |
 
-- **Contributing code**. Check out our [guide for new
-  contributors](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)
-  to get started. We have invested in making Zulip’s code highly
-  readable, thoughtfully tested, and easy to modify. Beyond that, we
-  have written an extraordinary 185K words of documentation for Zulip
-  contributors.
+For a fuller map, see the [directory structure guide](docs/subsystems/directory-structure.md).
 
-- **Contributing non-code**. [Report an
-  issue](https://zulip.readthedocs.io/en/latest/contributing/reporting-bugs.html),
-  [translate](https://zulip.readthedocs.io/en/latest/translating/translating.html)
-  Zulip into your language, or [give us
-  feedback](https://zulip.readthedocs.io/en/latest/contributing/suggesting-features.html).
-  We'd love to hear from you, whether you've been using Zulip for years, or are just
-  trying it out for the first time.
+### Technology and services
 
-- **Checking Zulip out**. The best way to see Zulip in action is to [drop
-  by](https://chat.zulip.org/?show_try_zulip_modal) the Zulip development
-  community (no account required). We also recommend reading about Zulip's
-  [unique approach](https://zulip.com/why-zulip/) to organizing conversations.
+- **Backend:** Python and Django, with Tornado for real-time event delivery.
+- **Frontend:** JavaScript and TypeScript, Handlebars templates, and CSS. Frontend dependencies and scripts are managed with pnpm (see `package.json` and `pnpm-lock.yaml`).
+- **Primary database:** PostgreSQL. Zulip uses PostgreSQL for application data and its built-in full-text search; the PGroonga extension supports additional search functionality.
+- **Supporting services:** Redis is used for caching and related coordination, RabbitMQ handles internal asynchronous queues, and nginx is used in deployed environments. The development environment provisions the services required to run Zulip.
 
-- **Running a Zulip server**. Self-host Zulip directly on Ubuntu or Debian
-  Linux, in [Docker](https://github.com/zulip/docker-zulip), or with prebuilt
-  images for [Digital Ocean](https://marketplace.digitalocean.com/apps/zulip) and
-  [Render](https://render.com/docs/deploy-zulip).
-  Learn more about [self-hosting Zulip](https://zulip.com/self-hosting/).
+See the [architecture overview](docs/overview/architecture-overview.md),
+[dependency guide](docs/subsystems/dependencies.md), and
+[database architecture](docs/overview/architecture-overview.md) for details.
 
-- **Using Zulip without setting up a server**. Learn about [Zulip
-  Cloud](https://zulip.com/zulip-cloud/) hosting options. Zulip sponsors free [Zulip
-  Cloud Standard](https://zulip.com/plans/) for hundreds of worthy
-  organizations, including [fellow open-source
-  projects](https://zulip.com/for/open-source/).
+## Getting started as a contributor
 
-- **Participating in [outreach
-  programs](https://zulip.readthedocs.io/en/latest/contributing/contributing.html#outreach-programs)**
-  like [Google Summer of Code](https://developers.google.com/open-source/gsoc/).
+Start with the [guide for new contributors](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)
+and the [development setup tutorial](docs/development/setup-recommended.md).
+Zulip's recommended development setup uses WSL 2 on Windows and Vagrant with
+Docker on macOS and Linux. The setup tutorial walks through prerequisites,
+getting the code, provisioning services, and starting the development server.
 
-- **Supporting Zulip**. Learn about all the ways you can [support
-  Zulip](https://zulip.com/help/support-zulip-project), including contributing
-  financially, and helping others discover it.
+Once your development environment is ready, common commands include:
 
-You may also be interested in reading our [blog](https://blog.zulip.org/), and
-following us on [LinkedIn](https://www.linkedin.com/company/zulip-project/),
-[Mastodon](https://fosstodon.org/@zulip), and [X](https://x.com/zulip).
+```bash
+./tools/run-dev
+./tools/lint path/to/changed/files
+./tools/test-backend zerver.tests.test_module
+./tools/test-js-with-node
+```
 
-Zulip is distributed under the
-[Apache 2.0](https://github.com/zulip/zulip/blob/main/LICENSE) license.
+Run development commands in the provisioned Zulip environment. Consult the
+[development setup guide](docs/development/setup-recommended.md) and
+[testing documentation](docs/testing/testing.md) for current instructions,
+options, and test selection guidance.
+
+## Finding your way around the code
+
+- Backend request routing starts in `zproject/urls.py`; most application
+  endpoints and behavior live under `zerver/`.
+- Django models in `zerver/models/` define application data. Database schema
+  changes are managed with Django migrations.
+- Frontend source is primarily under `web/src/`; templates and styles are in
+  `web/templates/` and `web/styles/`.
+- Backend tests are in `zerver/tests/`; frontend unit tests are in
+  `web/tests/`, and browser integration tests are in `web/e2e-tests/`.
+- REST API documentation is in `api_docs/` and the OpenAPI specification is
+  maintained under `zerver/openapi/`.
+
+The [directory structure guide](docs/subsystems/directory-structure.md) and
+[new feature tutorial](docs/tutorials/new-feature-tutorial.md) provide more
+context on how a change flows through the codebase.
+
+## Contributing
+
+Before opening a pull request, read [CONTRIBUTING.md](CONTRIBUTING.md),
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and the relevant development
+documentation. Zulip expects contributions to include appropriate tests and to
+follow the project's code style and review process.
+
+You can also ask questions or discuss contributing in the
+[Zulip development community](https://zulip.com/development-community/).
+
+## More information
+
+- [Zulip website](https://zulip.com/)
+- [Contributor documentation](https://zulip.readthedocs.io/en/latest/contributing/contributing.html)
+- [Self-hosting information](https://zulip.com/self-hosting/)
+- [Security policy](SECURITY.md)
+- [License](LICENSE)
