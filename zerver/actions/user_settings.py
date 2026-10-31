@@ -53,10 +53,11 @@ from zerver.models import (
     RealmAuditLog,
     ScheduledEmail,
     ScheduledMessageNotificationEmail,
+    UserActivity,
     UserPresence,
     UserProfile,
 )
-from zerver.models.clients import get_client
+from zerver.models.clients import WEB_APP_CLIENT_NAMES, get_client
 from zerver.models.realm_audit_logs import AuditLogEventType
 from zerver.models.users import get_user_profile_by_id
 from zerver.tornado.django_api import send_event_on_commit
@@ -731,3 +732,45 @@ def do_change_user_date_joined(user_profile: UserProfile, date_joined: datetime)
         RealmUserUpdateEvent(person=payload),
         get_user_ids_who_can_access_user(user_profile),
     )
+
+
+def do_set_date_joined_on_first_login(user_profile: UserProfile) -> None:
+    """Sets date_joined to now if this is the user's first login.
+
+    Users created via the API or a data import start with tos_version
+    set to TOS_VERSION_BEFORE_FIRST_LOGIN, and their date_joined should
+    be the time of their first login rather than their account creation
+    time. This is called both when a user accepts the terms of service
+    on the web and when Zulip hands them an API key.
+
+    A user may have logged in before without changing tos_version,
+    e.g., through a mobile app, or on the server their organization was
+    imported from. We keep date_joined in that case rather than moving
+    it later than when the user joined, which could, e.g., take them out
+    of full members.
+    """
+    if user_profile.tos_version != UserProfile.TOS_VERSION_BEFORE_FIRST_LOGIN:
+        return
+
+    # An earlier login through the API may already have set
+    # date_joined, and the user_activity queue worker may not have
+    # recorded that login's activity yet.
+    if RealmAuditLog.objects.filter(
+        realm_id=user_profile.realm_id,
+        modified_user=user_profile,
+        event_type=AuditLogEventType.USER_DATE_JOINED_CHANGED,
+    ).exists():
+        return
+
+    # Viewing the terms of service page records web and desktop app
+    # activity, so only other activity shows an earlier login.
+    # Registering an event queue records internal activity, but the web
+    # app does that only after the user accepts the terms of service.
+    if (
+        UserActivity.objects.filter(user_profile=user_profile)
+        .exclude(client__name__in=WEB_APP_CLIENT_NAMES)
+        .exists()
+    ):
+        return
+
+    do_change_user_date_joined(user_profile, timezone_now())

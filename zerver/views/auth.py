@@ -37,6 +37,8 @@ from confirmation.models import (
     render_confirmation_key_error,
 )
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
+from zerver.actions.user_settings import do_set_date_joined_on_first_login
+from zerver.actions.users import do_change_is_imported_stub
 from zerver.context_processors import get_realm_from_request, login_context, zulip_default_context
 from zerver.decorator import do_login, log_view_func, process_client, require_post
 from zerver.forms import (
@@ -524,26 +526,10 @@ def finish_desktop_flow(
 def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
     # For the mobile OAuth flow, we send the API key and other
     # necessary details in a redirect to a zulip:// URL scheme.
-    api_key = user_profile.api_key
-    response = create_response_for_otp_flow(
+    api_key = process_api_key_fetch_authenticate_result(request, user_profile)
+    return create_response_for_otp_flow(
         api_key, otp, user_profile, encrypted_key_field_name="otp_encrypted_api_key"
     )
-
-    # Since we are returning an API key instead of going through
-    # the Django login() function (which creates a browser
-    # session, etc.), the "new login" signal handler (which
-    # triggers an email notification new logins) will not run
-    # automatically.  So we call it manually here.
-    #
-    # Arguably, sending a fake 'user_logged_in' signal would be a better approach:
-    #   user_logged_in.send(sender=type(user_profile), request=request, user=user_profile)
-    email_on_new_login(sender=type(user_profile), request=request, user=user_profile)
-
-    # Mark this request as having a logged-in user for our server logs.
-    process_client(request, user_profile)
-    RequestNotes.get_notes(request).requester_for_logs = user_profile.format_requester_for_logs()
-
-    return response
 
 
 def create_response_for_otp_flow(
@@ -1096,6 +1082,12 @@ def process_api_key_fetch_authenticate_result(
     # in the session. If the signal receiver assumes that we do then that
     # would cause problems.
     email_on_new_login(sender=type(user_profile), request=request, user=user_profile)
+
+    # Users who log in only through a mobile app or the API never see
+    # the terms of service page, which handles first logins on the web.
+    do_set_date_joined_on_first_login(user_profile)
+    if user_profile.is_imported_stub:
+        do_change_is_imported_stub(user_profile)
 
     # Mark this request as having a logged-in user for our server logs.
     assert isinstance(user_profile, UserProfile)

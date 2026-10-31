@@ -31,6 +31,7 @@ from zerver.lib.email_notifications import (
 from zerver.lib.emoji import get_emoji_file_name
 from zerver.lib.send_email import FromAddress
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import mock_queue_publish
 from zerver.models import Message, UserMessage, UserProfile, UserTopic
 from zerver.models.realm_emoji import get_name_keyed_dict_for_active_realm_emoji
 from zerver.models.realms import get_realm
@@ -92,6 +93,46 @@ class TestMessageNotificationEmails(ZulipTestCase):
                 {message.id: MissedMessageData(trigger=NotificationTriggers.DIRECT_MESSAGE)},
             )
         m.assert_not_called()
+
+    def test_no_email_for_imported_stub_mentioned_by_edit(self) -> None:
+        """
+        The Slack importer soft-deactivates users who weren't active in
+        Slack. Mentioning such a user in an edit must not send them an
+        email or soft-reactivate them.
+        """
+        hamlet = self.example_user("hamlet")
+        imported_user = self.example_user("imported_user")
+        message_id = self.send_stream_message(hamlet, "Denmark", "hello")
+        self.soft_deactivate_user(imported_user)
+
+        self.login_user(hamlet)
+        with (
+            mock_queue_publish(
+                "zerver.tornado.event_queue.queue_json_publish_rollback_unsafe"
+            ) as m,
+            self.captureOnCommitCallbacks(execute=True),
+        ):
+            result = self.client_patch(
+                f"/json/messages/{message_id}", {"content": "hello @**Imported User**"}
+            )
+        self.assert_json_success(result)
+        email_notices = [
+            call.args[1] for call in m.call_args_list if call.args[0] == "missedmessage_emails"
+        ]
+
+        def handle_email_notices() -> None:
+            for email_notice in email_notices:
+                self.handle_missedmessage_emails(
+                    email_notice["user_profile_id"],
+                    {
+                        email_notice["message_id"]: MissedMessageData(
+                            trigger=email_notice["trigger"]
+                        )
+                    },
+                )
+
+        self.expect_to_stay_long_term_idle(imported_user, handle_email_notices)
+        self.assert_length(mail.outbox, 0)
 
     def test_demo_organization_owner_email_not_set(self) -> None:
         demo_organization_owner = self.create_demo_organization_owner()

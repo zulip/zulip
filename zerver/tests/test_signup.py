@@ -3440,6 +3440,40 @@ class UserSignUpTest(ZulipTestCase):
         mirror_dummy.refresh_from_db()
         self.assertEqual(mirror_dummy.role, UserProfile.ROLE_GUEST)
 
+    def test_registration_of_imported_mirror_dummy_user(self) -> None:
+        """
+        Importers create deactivated mirror dummy accounts for some users.
+        Signing up sets their terms of service version, so they never see
+        the terms of service page that clears is_imported_stub after a
+        first login.
+        """
+        admin = self.example_user("iago")
+        mirror_dummy = self.example_user("imported_user")
+        self.assertTrue(mirror_dummy.is_imported_stub)
+        do_deactivate_user(mirror_dummy, acting_user=admin)
+        mirror_dummy.is_mirror_dummy = True
+        mirror_dummy.save()
+
+        with self.captureOnCommitCallbacks(execute=True):
+            do_invite_users(
+                admin,
+                [Invitee(email=mirror_dummy.delivery_email)],
+                [],
+                invite_expires_in_minutes=None,
+                include_realm_default_subscriptions=True,
+            )
+
+        result = self.submit_reg_form_for_user(
+            mirror_dummy.delivery_email, "testpassword", full_name="Imported User"
+        )
+
+        self.assertEqual(result.status_code, 302)
+        self.assert_logged_in_user_id(mirror_dummy.id)
+        mirror_dummy.refresh_from_db()
+        self.assertTrue(mirror_dummy.is_active)
+        self.assertFalse(mirror_dummy.is_mirror_dummy)
+        self.assertFalse(mirror_dummy.is_imported_stub)
+
     def test_registration_of_mirror_dummy_user(self) -> None:
         password = "test"
         subdomain = "zephyr"
