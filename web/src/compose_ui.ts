@@ -143,11 +143,14 @@ export let insert_and_scroll_into_view = (
     } else {
         insertTextIntoField(util.the($textarea), content);
     }
+    // Update autosize before blurring/focusing so that the textarea has
+    // expanded to its new height, avoiding a jump when Chromium scrolls
+    // the cursor into view.
+    autosize_textarea($textarea);
     // Blurring and refocusing ensures the cursor / selection is in view
     // in chromium browsers.
     $textarea.trigger("blur");
     $textarea.trigger("focus");
-    autosize_textarea($textarea);
 };
 
 export function rewire_insert_and_scroll_into_view(

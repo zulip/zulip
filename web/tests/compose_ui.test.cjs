@@ -116,6 +116,50 @@ run_test("autosize_textarea", ({override}) => {
     assert.ok(textarea_autosized.autosized);
 });
 
+run_test("insert_and_scroll_into_view", ({override, override_rewire}) => {
+    const events = [];
+    const $stub_textarea = {
+        0: "stub-textarea-element",
+        length: 1,
+        trigger(event) {
+            events.push(event);
+        },
+        val(text) {
+            if (text !== undefined) {
+                events.push(`val:${text}`);
+            }
+            return "stub";
+        },
+    };
+
+    override(text_field_edit, "insertTextIntoField", (elt, content) => {
+        assert.equal(elt, "stub-textarea-element");
+        events.push(`insert:${content}`);
+    });
+    override(text_field_edit, "setFieldText", (elt, content) => {
+        assert.equal(elt, "stub-textarea-element");
+        events.push(`set:${content}`);
+    });
+    override_rewire(compose_ui, "autosize_textarea", ($textarea) => {
+        assert.equal($textarea, $stub_textarea);
+        events.push("autosize");
+    });
+
+    // Default insert: text_field_edit.insertTextIntoField, then autosize before blur and focus
+    compose_ui.insert_and_scroll_into_view("\n", $stub_textarea);
+    assert.deepEqual(events, ["insert:\n", "autosize", "blur", "focus"]);
+
+    // replace_all = true
+    events.length = 0;
+    compose_ui.insert_and_scroll_into_view("new content", $stub_textarea, true);
+    assert.deepEqual(events, ["set:new content", "autosize", "blur", "focus"]);
+
+    // replace_all_without_undo_support = true
+    events.length = 0;
+    compose_ui.insert_and_scroll_into_view("fast content", $stub_textarea, false, true);
+    assert.deepEqual(events, ["val:fast content", "autosize", "blur", "focus"]);
+});
+
 run_test("insert_syntax_and_focus", ({override}) => {
     $("textarea#compose-textarea").val("xyz ");
     $("textarea#compose-textarea").caret(4);
