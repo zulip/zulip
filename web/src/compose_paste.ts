@@ -298,7 +298,11 @@ export function paste_handler_converter(
         // A mention anywhere in the selection (even wrapped in a <p> or
         // nested inside .mention-content-wrapper) must reach the Turndown
         // mention rule, so never take the plain-text fast path for it.
-        copied_html_fragment.querySelector(MENTION_SELECTOR) === null
+        copied_html_fragment.querySelector(MENTION_SELECTOR) === null &&
+        // An anchor element anywhere in the selection (even wrapped in a <p>)
+        // must reach the Turndown links rule, so never take the plain-text
+        // fast path for it.
+        copied_html_fragment.querySelector("a") === null
     ) {
         // This will always return some text as it is already ensured
         // that such a text node exists in `has_single_textful_child_node`.
