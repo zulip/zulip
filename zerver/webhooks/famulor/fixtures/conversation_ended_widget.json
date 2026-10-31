@@ -1,0 +1,49 @@
+{
+    "id": 1042,
+    "conversation_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "assistant_id": "f9e8d7c6-b5a4-3210-fedc-ba9876543210",
+    "type": "widget",
+    "message_count": 8,
+    "status": "ended",
+    "extracted_variables": {
+        "status": true,
+        "summary": "Customer asked about pricing plans and was interested in the Pro plan"
+    },
+    "input_variables": {
+        "name": "John Doe",
+        "email": "john@example.com"
+    },
+    "transcript": [
+        {
+            "role": "assistant",
+            "content": "Hi! How can I help you today?",
+            "timestamp": "2026-02-23T09:30:00+01:00",
+            "timestamp_unix": 1740299400
+        },
+        {
+            "role": "user",
+            "content": "I have a question about your service.",
+            "timestamp": "2026-02-23T09:31:12+01:00",
+            "timestamp_unix": 1740299472
+        },
+        {
+            "role": "assistant",
+            "content": "Of course! I'd be happy to help. What would you like to know?",
+            "timestamp": "2026-02-23T09:31:18+01:00",
+            "timestamp_unix": 1740299478
+        },
+        {
+            "role": "user",
+            "content": "What are your pricing plans?",
+            "timestamp": "2026-02-23T09:32:05+01:00",
+            "timestamp_unix": 1740299525
+        }
+    ],
+    "formatted_transcript": "AI: Hi! How can I help you today?\nCustomer: I have a question about your service.\nAI: Of course! I'd be happy to help. What would you like to know?\nCustomer: What are your pricing plans?",
+    "attachments": [],
+    "customer_phone": null,
+    "customer_name": "John Doe",
+    "sender": null,
+    "created_at": "2026-02-23T09:30:00+01:00",
+    "ended_at": "2026-02-23T10:00:00+01:00"
+}
