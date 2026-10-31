@@ -489,7 +489,7 @@ export function check_time_input(input_value: string, keep_number_as_float = fal
         return Number.parseFloat(Number.parseFloat(input_value).toFixed(1));
     }
 
-    return Number.parseInt(input_value, 10);
+   return Math.trunc(Number(input_value));
 }
 
 export function validate_custom_time_input(time_input: number, can_be_zero = true): boolean {
