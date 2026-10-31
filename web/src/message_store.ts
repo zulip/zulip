@@ -157,7 +157,6 @@ export type MessageWithBooleans = RawMessageWithBooleans | LocalMessageWithBoole
 export type MessageCleanReaction = {
     class: string;
     count: number;
-    emoji_alt_code: boolean;
     emoji_code: string;
     emoji_name: string;
     is_realm_emoji: boolean;
@@ -166,6 +165,10 @@ export type MessageCleanReaction = {
     reaction_type: "zulip_extra_emoji" | "realm_emoji" | "unicode_emoji";
     user_ids: number[];
     vote_text: string;
+};
+
+export type MessageCleanReactionWithDisplaySettings = MessageCleanReaction & {
+    emoji_alt_code: boolean;
 };
 
 export type Message = (
@@ -193,7 +196,7 @@ export type Message = (
     // These properties are set and used in `message_list_view.ts`.
     // TODO: It would be nice if we could not store these on the message
     // object and only reference them within `message_list_view`.
-    message_reactions?: MessageCleanReaction[];
+    message_reactions?: MessageCleanReactionWithDisplaySettings[];
     url?: string;
 
     // Used in `markdown.js`, `server_events.js`, and
