@@ -93,6 +93,11 @@ class CustomerPlan(AbstractCustomerPlan):
     # can't be set via the self-serve billing system.
     price_per_license = models.IntegerField(null=True)
 
+    # Price in cents for a license billed at the discounted rate for users
+    # outside the realm's workplace_users_group. Null for plans that do not
+    # bill an external tier, where every user is billed at price_per_license.
+    price_per_external_license = models.IntegerField(null=True)
+
     # Discount for current `billing_schedule`. For display purposes only.
     # Explicitly set to be TextField to avoid being used in calculations.
     # NOTE: This discount can be different for annual and monthly schedules.

@@ -61,6 +61,7 @@ from zerver.actions.user_groups import (
 from zerver.actions.users import change_user_is_active, do_change_user_role, do_deactivate_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.user_counts import realm_user_count
 from zerver.lib.utils import assert_is_not_none
 from zerver.models import Message, NamedUserGroup, Realm, RealmAuditLog, Recipient, UserProfile
 from zerver.models.groups import SystemGroups
@@ -1030,6 +1031,40 @@ class LicenseLedgerTest(StripeTestCase):
         )
 
         self.assertFalse(LicenseLedger.objects.exists())
+
+    def test_billed_user_counts_for_plan_with_external_license_price(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+        self.local_upgrade(self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False)
+        plan = get_current_plan_by_realm(realm)
+        assert plan is not None
+
+        workplace_group = check_add_user_group(
+            realm, "workplace users", [hamlet], acting_user=hamlet
+        )
+        do_change_realm_permission_group_setting(
+            realm, "workplace_users_group", workplace_group, acting_user=hamlet
+        )
+        realm.refresh_from_db()
+
+        billing_session = RealmBillingSession(user=None, realm=realm)
+
+        # The plan does not bill an external tier, so the counts are unchanged
+        # even though most users are outside workplace_users_group.
+        counts = billing_session.current_counts_for_billed_users()
+        self.assertEqual(counts.workplace_users, self.seat_count)
+        self.assertEqual(counts.non_workplace_users, 0)
+        self.assertEqual(billing_session.get_current_billed_license_count(), self.seat_count)
+
+        plan.price_per_external_license = 1600
+        plan.save(update_fields=["price_per_external_license"])
+
+        # hamlet is the only member of workplace_users_group, and guests are
+        # counted as external users rather than at the guest discount.
+        counts = billing_session.current_counts_for_billed_users()
+        self.assertEqual(counts.workplace_users, 1)
+        self.assertEqual(counts.non_workplace_users, realm_user_count(realm) - 1)
+        self.assertEqual(billing_session.get_current_billed_license_count(), 1)
 
     def test_user_changes(self) -> None:
         self.local_upgrade(self.seat_count, True, CustomerPlan.BILLING_SCHEDULE_ANNUAL, True, False)
