@@ -1027,6 +1027,18 @@ class RealmImportExportTest(ExportFile):
         self.subscribe(self.example_user("hamlet"), "Private D")
         self.send_stream_message(self.example_user("prospero"), "Private D", "Hello again stream D")
 
+        create_stream_if_needed(
+            realm, "Private E", invite_only=True, history_public_to_subscribers=True
+        )
+        self.subscribe(self.example_user("prospero"), "Private E")
+        self.subscribe(self.example_user("hamlet"), "Private E")
+        # Hamlet loses access to the channel when he unsubscribes, so his consent is
+        # not sufficient to export its messages.
+        self.unsubscribe(self.example_user("hamlet"), "Private E")
+        stream_e_message_id = self.send_stream_message(
+            self.example_user("prospero"), "Private E", "Hello stream E"
+        )
+
         # Create direct message groups
         self.send_group_direct_message(
             self.example_user("iago"), [self.example_user("cordelia"), self.example_user("AARON")]
@@ -1200,6 +1212,7 @@ class RealmImportExportTest(ExportFile):
                 "Private B",
                 "Private C",
                 "Private D",
+                "Private E",
             },
         )
 
@@ -1283,6 +1296,7 @@ class RealmImportExportTest(ExportFile):
         self.assertNotIn(stream_b_first_message_id, exported_msg_ids)
 
         self.assertNotIn(stream_c_message_id, exported_msg_ids)
+        self.assertNotIn(stream_e_message_id, exported_msg_ids)
         self.assertNotIn(direct_message_group_c_message_id, exported_msg_ids)
 
         self.assertNotIn(pm_a_msg_id, exported_msg_ids)
