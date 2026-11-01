@@ -1903,7 +1903,7 @@ def export_partial_message_files(
         ).values_list("recipient_id", flat=True)
 
         consented_recipient_ids = Subscription.objects.filter(
-            user_profile_id__in=consented_user_ids
+            user_profile_id__in=consented_user_ids, active=True
         ).values_list("recipient_id", flat=True)
 
         recipient_ids_set = (set(public_stream_recipient_ids) | set(consented_recipient_ids)) - set(
