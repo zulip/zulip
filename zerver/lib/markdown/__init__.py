@@ -1542,7 +1542,7 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
     directly after a line of text, and inserts a newline between
     to satisfy Markdown"""
 
-    LI_RE = re.compile(r"^[ ]*([*+-]|\d\.)[ ]+(.*)", re.MULTILINE)
+    LI_RE = re.compile(r"^(?P<indent>[ ]*)(?P<marker>[*+-]|\d+\.)[ ]+(.*)", re.MULTILINE)
 
     @override
     def run(self, lines: list[str]) -> list[str]:
@@ -1576,13 +1576,17 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
             # a newline.
             li1 = self.LI_RE.match(lines[i])
             li2 = self.LI_RE.match(lines[i + 1])
+            is_diff_type_at_same_indent = False
+            if li1 and li2:
+                is_unordered_1 = li1.group("marker") in ("*", "+", "-")
+                is_unordered_2 = li2.group("marker") in ("*", "+", "-")
+                same_indent = len(li1.group("indent")) == len(li2.group("indent"))
+                is_diff_type_at_same_indent = same_indent and (is_unordered_1 != is_unordered_2)
+
             if (
                 not in_code_fence
                 and lines[i]
-                and (
-                    (li2 and not li1)
-                    or (li1 and li2 and (len(li1.group(1)) == 1) != (len(li2.group(1)) == 1))
-                )
+                and ((li2 and not li1) or is_diff_type_at_same_indent)
             ):
                 copy.insert(i + inserts + 1, "")
                 inserts += 1

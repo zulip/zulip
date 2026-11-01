@@ -604,6 +604,23 @@ Outside. Should convert:<>
         original, expected = self.split_message(msg)
         self.assertEqual(preprocessor.run(original), expected)
 
+    def test_different_list_types_same_indent(self) -> None:
+        preprocessor = MarkdownListPreprocessor()
+        original, expected = self.split_message("* One\n* Two\n<>1. Three\n2. Four")
+        self.assertEqual(preprocessor.run(original), expected)
+
+    def test_nested_list_different_type(self) -> None:
+        preprocessor = MarkdownListPreprocessor()
+        # Nested list item of a different type should not have a blank line inserted before it.
+        msg = "1. Parent item\n  * nested bullet\n2. Next parent item"
+        lines = msg.split("\n")
+        self.assertEqual(preprocessor.run(lines), lines)
+
+    def test_multi_digit_ordered_list(self) -> None:
+        preprocessor = MarkdownListPreprocessor()
+        original, expected = self.split_message("Paragraph\n<>10. Ten\n11. Eleven")
+        self.assertEqual(preprocessor.run(original), expected)
+
 
 class MarkdownFixtureTest(ZulipTestCase):
     def load_markdown_tests(self) -> tuple[dict[str, Any], list[list[str]]]:
