@@ -71,4 +71,29 @@ class kandra::profile::postgresql inherits kandra::profile::base {
     mode    => '0640',
     source  => 'puppet:///modules/kandra/postgresql/pg_hba.conf',
   }
+
+  # The analytics_reader role, for business analytics, can only read
+  # the analytics tables and some non-sensitive columns of other
+  # tables. Users connect as it via a Teleport role, which limits
+  # them to the replicas.
+  file { '/etc/postgresql/analytics_reader.sql':
+    ensure  => file,
+    require => Package["postgresql-${zulip::postgresql_common::version}"],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    source  => 'puppet:///modules/kandra/postgresql/analytics_reader.sql',
+  }
+  if false {
+    # This is left disabled, since it only makes sense to run on
+    # the primary, which is hard to determine from puppet.
+    # This should instead be run by hand on the primary after
+    # any changes to the SQL script. These changes then automatically
+    # propagate to the replicas.
+    exec { 'apply analytics_reader privileges':
+      require => File['/etc/postgresql/analytics_reader.sql'],
+      command => '/usr/bin/psql -v ON_ERROR_STOP=1 -e -d zulip -f /etc/postgresql/analytics_reader.sql',
+      user    => 'postgres',
+    }
+  }
 }
