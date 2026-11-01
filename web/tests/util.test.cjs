@@ -491,6 +491,18 @@ run_test("check_and_validate_custom_time_input", () => {
     assert.equal(checked_input, NaN);
     assert.equal(util.validate_custom_time_input(checked_input), false);
 
+    const input_is_scientific = "1e2";
+    checked_input = util.check_time_input(input_is_scientific);
+    assert.equal(checked_input, NaN);
+    assert.equal(util.check_time_input(input_is_scientific, true), NaN);
+    assert.equal(util.validate_custom_time_input(checked_input), false);
+
+    const input_is_hex = "0x10";
+    checked_input = util.check_time_input(input_is_hex);
+    assert.equal(checked_input, NaN);
+    assert.equal(util.check_time_input(input_is_hex, true), NaN);
+    assert.equal(util.validate_custom_time_input(checked_input), false);
+
     const input_is_negative = "-24";
     checked_input = util.check_time_input(input_is_negative);
     assert.equal(checked_input, -24);

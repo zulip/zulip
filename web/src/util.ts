@@ -476,20 +476,25 @@ export function get_custom_time_in_minutes(time_unit: string, time_input: number
     return time_input;
 }
 
-export function check_time_input(input_value: string, keep_number_as_float = false): number {
-    // This check is important to make sure that inputs like "24a" are
-    // considered invalid and this function returns NaN for such inputs.
+export function check_time_input(
+    input_value: string | number,
+    keep_number_as_float = false,
+): number {
+    const raw_string = String(input_value).trim();
+    // Validate that the input is a valid decimal number.
     // Number.parseInt and Number.parseFloat will convert strings like
-    // "24a" to 24.
-    if (Number.isNaN(Number(input_value))) {
+    // "24a" to 24, while Number() accepts scientific notation like "1e2"
+    // and hexadecimal strings like "0x10". We reject strings containing
+    // scientific notation, hexadecimal notation, or non-decimal characters.
+    if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(raw_string)) {
         return NaN;
     }
 
     if (keep_number_as_float) {
-        return Number.parseFloat(Number.parseFloat(input_value).toFixed(1));
+        return Number.parseFloat(Number.parseFloat(raw_string).toFixed(1));
     }
 
-    return Number.parseInt(input_value, 10);
+    return Number.parseInt(raw_string, 10);
 }
 
 export function validate_custom_time_input(time_input: number, can_be_zero = true): boolean {
