@@ -310,6 +310,26 @@ redirect_stderr=true
 environment=EXTERNAL_HOST="$SETTING_EXTERNAL_HOST",ZULIP_ADMINISTRATOR="$SETTING_ZULIP_ADMINISTRATOR"
 EOF
 }
+setupMetricsServer() {
+    # Zulip's uWSGI workers and Tornado processes write Prometheus
+    # samples to this directory (see zerver/lib/metrics.py); they
+    # inherit the variable from supervisord, and zulip-metrics-server
+    # serves the aggregate on port 9200, inside the pod only.  Samples
+    # left by a previous run would be counted again, so it starts empty.
+    export PROMETHEUS_MULTIPROC_DIR=/var/lib/zulip/prometheus
+    rm -rf "$PROMETHEUS_MULTIPROC_DIR"
+    install -d -o zulip -g zulip "$PROMETHEUS_MULTIPROC_DIR"
+    cat >/etc/supervisor/conf.d/zulip-metrics-server.conf <<EOF
+[program:zulip-metrics-server]
+command=/home/zulip/deployments/current/scripts/zulip-metrics-server --port 9200
+user=zulip
+autostart=true
+autorestart=true
+stdout_logfile=/dev/fd/1
+stdout_logfile_maxbytes=0
+redirect_stderr=true
+EOF
+}
 configureCerts() {
     # Stale supervisor drop-in from a prior CERTIFICATES=certbot
     # boot must not survive a switch to another mode.
@@ -645,6 +665,7 @@ initialConfiguration() {
 # BEGIN app functions
 appRun() {
     initialConfiguration
+    setupMetricsServer
     echo "=== Begin Run Phase ==="
     echo "Starting Zulip using supervisor with \"/etc/supervisor/supervisord.conf\" config ..."
     echo ""

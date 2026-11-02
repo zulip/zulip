@@ -9,6 +9,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
+from prometheus_client import REGISTRY
 from typing_extensions import override
 
 from zerver.actions.channel_folders import check_add_channel_folder
@@ -1330,6 +1331,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                 self.client_type_name = "whatever"
                 self.events: list[dict[str, Any]] = []
                 self.empty_topic_name = True
+                self.current_handler_id: int | None = None
 
             def accepts_messages(self) -> bool:
                 return True
@@ -1415,10 +1417,30 @@ class ClientDescriptorsTest(ZulipTestCase):
         # and we are interested in how messages are put on event queue.
         users: list[dict[str, Any]] = []
 
+        # Only client1 is waiting on GET /events, so only its delivery
+        # is a delivery latency sample.
+        client1.current_handler_id = 1
+        latency_labels = {"event_type": "message"}
+        count_before = REGISTRY.get_sample_value(
+            "zulip_event_delivery_latency_seconds_count", latency_labels
+        )
+        sum_before = REGISTRY.get_sample_value(
+            "zulip_event_delivery_latency_seconds_sum", latency_labels
+        )
+
         with mock.patch(
             "zerver.tornado.event_queue.get_client_info_for_message_event", return_value=client_info
         ):
-            process_message_event(message_event, users)
+            process_message_event(message_event, users, sent_at=time.time() - 0.3)
+
+        count_after = REGISTRY.get_sample_value(
+            "zulip_event_delivery_latency_seconds_count", latency_labels
+        )
+        sum_after = REGISTRY.get_sample_value(
+            "zulip_event_delivery_latency_seconds_sum", latency_labels
+        )
+        self.assertEqual((count_after or 0) - (count_before or 0), 1)
+        self.assertGreaterEqual((sum_after or 0) - (sum_before or 0), 0.3)
 
         # We are not closely examining avatar_url at this point, so
         # just sanity check them and then delete the keys so that

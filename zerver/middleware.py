@@ -32,6 +32,7 @@ from zerver.lib.db_connections import reset_queries
 from zerver.lib.debug import maybe_tracemalloc_listen
 from zerver.lib.exceptions import ErrorCode, JsonableError, MissingAuthenticationError, WebhookError
 from zerver.lib.markdown import get_markdown_requests, get_markdown_time
+from zerver.lib.metrics import endpoint_label, http_requests
 from zerver.lib.per_request_cache import flush_per_request_caches
 from zerver.lib.push_notifications import FailedToConnectBouncerError, InternalBouncerServerError
 from zerver.lib.rate_limiter import RateLimitResult
@@ -373,6 +374,11 @@ class LogRequests(MiddlewareMixin):
             status_code=response.status_code,
             error_content=content,
         )
+        http_requests.labels(
+            endpoint=endpoint_label(request_notes.query),
+            method=request.method,
+            status=str(response.status_code),
+        ).inc()
         return response
 
 
