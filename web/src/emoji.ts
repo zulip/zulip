@@ -37,10 +37,10 @@ export type EmojiDict = {
     display_name: string;
     aliases: string[];
     has_reacted: boolean;
-    url?: string;
 } & (
     | {
           is_realm_emoji: true;
+          url: string;
           emoji_code?: undefined;
       }
     | {
