@@ -2,6 +2,8 @@ name: Docker image CI/CD
 
 # La infraestructura tiene su propio pipeline (terraform.yml); la
 # imagen se reconstruye con cualquier otro cambio del repositorio.
+# En los PR solo corren el lint y el escaneo del Dockerfile; la
+# imagen se construye, escanea y publica al hacer merge a main.
 on:
   push:
     branches:
@@ -41,9 +43,40 @@ jobs:
       - name: Validation del docker-compose.yml
         run: docker compose -f docker-compose.yml config --quiet
 
+  scan-config:
+    name: Scan Dockerfile for misconfigurations (Trivy)
+    needs: lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Scan with Trivy
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
+        with:
+          scan-type: fs
+          scan-ref: docker
+          scanners: misconfig,secret
+          format: sarif
+          output: trivy-dockerfile-results.sarif
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+          limit-severities-for-sarif: 'true'
+      - name: Upload Trivy results to Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd
+        with:
+          sarif_file: trivy-dockerfile-results.sarif
+          category: trivy-dockerfile
+
   build:
     name: Build container image
-    needs: lint
+    needs: [lint, scan-config]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
