@@ -121,6 +121,9 @@ prod = [
   # Needed for processing payments (in corporate)
   "stripe",
 
+  # CA certificates for verifying Stripe's API (in corporate)
+  "certifi",
+
   # For checking whether email of the user is from a disposable email provider.
   "disposable-email-domains",
 

@@ -8,6 +8,7 @@ from typing import cast
 from unittest import mock
 from unittest.mock import Mock, patch
 
+import certifi
 import stripe
 import time_machine
 from django.conf import settings
@@ -78,6 +79,9 @@ from zilencer.models import (
 
 
 class BillingHelpersTest(ZulipTestCase):
+    def test_stripe_ca_bundle_path(self) -> None:
+        self.assertEqual(stripe.ca_bundle_path, certifi.where())
+
     def test_next_month(self) -> None:
         anchor = datetime(2019, 12, 31, 1, 2, 3, tzinfo=timezone.utc)
         period_boundaries = [
