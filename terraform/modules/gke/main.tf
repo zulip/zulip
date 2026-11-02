@@ -66,6 +66,16 @@ resource "google_container_cluster" "this" {
     }
   }
 
+  # Endpoint DNS de la API: se autoriza por IAM
+  # (container.clusters.connect) en lugar de por IP, así GitHub
+  # Actions puede aplicar Terraform sin IPs fijas. Los
+  # authorized_networks siguen limitando el endpoint por IP.
+  control_plane_endpoints_config {
+    dns_endpoint_config {
+      allow_external_traffic = true
+    }
+  }
+
   master_auth {
     client_certificate_config {
       issue_client_certificate = false
