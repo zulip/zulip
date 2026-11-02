@@ -1,0 +1,56 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: zulip-slo-availability
+    folder: Zulip
+    interval: 5m
+    rules:
+      - uid: zulip-availability-burn-rate
+        title: ZulipSendMessageBurnRateHigh
+        # Escenario de disponibilidad (caida de RabbitMQ -> POST /messages falla).
+        # SLO de disponibilidad: 99% de exito en POST /messages
+        # (exito = status <500 y distinto de 401/403/429; los 400 de
+        # negocio ya cuentan como exito en la metrica).
+        # Burn rate = (tasa de error observada en 1h) / (margen del
+        # SLO, 1%). Umbral: 5x -> agotaria el presupuesto de 30 dias
+        # en 6 dias si se sostiene.
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 3600
+              to: 0
+            datasourceUid: managed-prometheus
+            model:
+              editorMode: code
+              expr: >-
+                (sum(rate(zulip_http_requests_total{endpoint="send_message", status=~"5..|401|403|429"}[1h]))
+                / sum(rate(zulip_http_requests_total{endpoint="send_message"}[1h]))) / 0.01
+              instant: true
+              range: false
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params:
+                      - 5
+              refId: C
+        for: 5m
+        noDataState: NoData
+        execErrState: Error
+        labels:
+          severity: page
+          slo: availability
+        annotations:
+          summary: "Burn rate de disponibilidad > 5x en ventana de 1h (POST /messages)"
+          description: >-
+            La tasa de error de POST /messages (status 5xx, 401, 403 o 429) supera
+            5 veces el margen de error del SLO de disponibilidad (99%) sostenido
+            durante 1 hora. A este ritmo el presupuesto de error mensual se
+            agotaria en aproximadamente 6 dias si no se corrige.

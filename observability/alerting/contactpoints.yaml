@@ -1,0 +1,11 @@
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: zulip-sre-email
+    receivers:
+      - uid: zulip-sre-email-receiver
+        type: email
+        settings:
+          addresses: ksolanoc@unal.edu.co
+          singleEmail: true

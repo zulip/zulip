@@ -1,0 +1,57 @@
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: zulip-slo-latency
+    folder: Zulip
+    interval: 5m
+    rules:
+      - uid: zulip-latency-burn-rate
+        title: ZulipEventDeliveryLatencyBurnRateHigh
+        # Escenario de latencia (degradacion de RabbitMQ -> entrega de
+        # eventos lenta, sin caerse del todo).
+        # SLO de latencia: p95 <= 2.5s en la entrega de eventos de
+        # mensaje (equivalente a 95% de entregas con latencia <2.5s;
+        # margen del SLO = 5%).
+        # Burn rate = (proporcion de entregas lentas observada en 1h)
+        # / (margen del SLO, 5%). Umbral: 5x -> agotaria el
+        # presupuesto de 30 dias en 6 dias si se sostiene.
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 3600
+              to: 0
+            datasourceUid: managed-prometheus
+            model:
+              editorMode: code
+              expr: >-
+                (1 - (sum(rate(zulip_event_delivery_latency_seconds_bucket{event_type="message", le="2.5"}[1h]))
+                / sum(rate(zulip_event_delivery_latency_seconds_count{event_type="message"}[1h])))) / 0.05
+              instant: true
+              range: false
+              refId: A
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params:
+                      - 5
+              refId: C
+        for: 5m
+        noDataState: NoData
+        execErrState: Error
+        labels:
+          severity: page
+          slo: latency
+        annotations:
+          summary: "Burn rate de latencia > 5x en ventana de 1h (entrega de eventos de mensaje)"
+          description: >-
+            La proporcion de entregas de mensaje con latencia >= 2.5s supera 5
+            veces el margen de error del SLO de latencia (p95 <= 2.5s, margen 5%)
+            sostenido durante 1 hora. A este ritmo el presupuesto de error
+            mensual se agotaria en aproximadamente 6 dias si no se corrige.

@@ -6,12 +6,14 @@ on:
       - main
     paths:
       - "terraform/**"
+      - "observability/**"
       - ".github/workflows/terraform.yml"
   pull_request:
     branches:
       - main
     paths:
       - "terraform/**"
+      - "observability/**"
       - ".github/workflows/terraform.yml"
 
 concurrency:
