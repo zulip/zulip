@@ -56,6 +56,7 @@ from zerver.lib.rate_limiter import (
     rate_limit_spectator_attachment_access_by_file,
     should_rate_limit,
 )
+from zerver.lib.request import RequestVariableMissingError
 from zerver.lib.response import json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.stream_subscription import get_user_subscribed_streams
@@ -693,6 +694,9 @@ def add_bot_backend(
     check_can_create_bot(user_profile, bot_type)
     check_valid_bot_type(user_profile, bot_type)
     check_valid_interface_type(interface_type)
+
+    if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT and not payload_url:
+        raise RequestVariableMissingError("payload_url")
 
     avatar_source = None
     if len(request.FILES) == 1:
