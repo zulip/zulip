@@ -128,7 +128,7 @@ variable "images" {
     rabbitmq  = string
   })
   default = {
-    zulip     = "ghcr.io/facaslo/zulip-server-unal:sha-6779e9f"
+    zulip     = "ghcr.io/facaslo/zulip-server-unal:sha-093f38e"
     postgres  = "zulip/zulip-postgresql:14@sha256:e71ba8616fa42cdc1b248f51263d9290c29681cb8c1992eb9b498af0bb656b29"
     redis     = "redis:8.10.3-alpine"
     memcached = "memcached:1.6.45-alpine"
