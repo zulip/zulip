@@ -44,6 +44,7 @@ variable "authorized_networks" {
     cidr_block   = string
     display_name = string
   }))
+  sensitive = true
 }
 
 variable "machine_type" {

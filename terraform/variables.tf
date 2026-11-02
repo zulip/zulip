@@ -69,11 +69,12 @@ variable "master_cidr" {
 }
 
 variable "authorized_networks" {
-  description = "CIDRs que pueden acceder a la API de Kubernetes (p. ej. la IP pública de quien ejecuta Terraform)."
+  description = "CIDRs que pueden acceder a la API de Kubernetes (p. ej. la IP pública de quien ejecuta Terraform). En CI se pasa con TF_VAR_authorized_networks para no exponer las IPs en los logs públicos."
   type = list(object({
     cidr_block   = string
     display_name = string
   }))
+  sensitive = true
 
   validation {
     condition     = alltrue([for network in var.authorized_networks : network.cidr_block != "0.0.0.0/0"])
@@ -156,8 +157,9 @@ variable "external_host" {
 }
 
 variable "zulip_administrator" {
-  description = "Correo del administrador de Zulip."
+  description = "Correo del administrador de Zulip. En CI se pasa con TF_VAR_zulip_administrator para no exponerlo en los logs públicos."
   type        = string
+  sensitive   = true
 
   validation {
     condition     = can(regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", var.zulip_administrator))
@@ -165,8 +167,27 @@ variable "zulip_administrator" {
   }
 }
 
+variable "zulip_email_host" {
+  description = "Servidor SMTP para el correo saliente de Zulip."
+  type        = string
+  default     = "smtp.gmail.com"
+}
+
+variable "zulip_email_port" {
+  description = "Puerto SMTP con STARTTLS."
+  type        = number
+  default     = 587
+}
+
+variable "zulip_email_host_user" {
+  description = "Usuario SMTP (p. ej. la cuenta de Gmail); también es el remitente. Vacío = Zulip sin correo saliente. En CI se pasa con TF_VAR_zulip_email_host_user."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
 variable "zulip_email_password" {
-  description = "Contraseña SMTP de Zulip. Pasarla con TF_VAR_zulip_email_password, nunca en un .tfvars versionado."
+  description = "Contraseña SMTP de Zulip (con Gmail, una contraseña de aplicación). Pasarla con TF_VAR_zulip_email_password, nunca en un .tfvars versionado."
   type        = string
   default     = ""
   sensitive   = true

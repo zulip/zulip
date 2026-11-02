@@ -24,8 +24,12 @@ permissions: {}
 #   vars.GCP_WORKLOAD_IDENTITY_PROVIDER  salida workload_identity_provider de terraform/bootstrap
 #   vars.GCP_DEPLOYER_SERVICE_ACCOUNT    salida deployer_service_account de terraform/bootstrap
 #   vars.TF_STATE_BUCKET                 salida state_bucket de terraform/bootstrap
-#   vars.TERRAFORM_TFVARS                contenido de terraform.tfvars (sin secretos)
-#   secrets.ZULIP_EMAIL_PASSWORD         contraseña SMTP de Zulip
+#   vars.TERRAFORM_TFVARS                contenido de terraform.tfvars, sin zulip_administrator
+#                                        ni authorized_networks
+#   secrets.ZULIP_ADMINISTRATOR          correo del administrador de Zulip
+#   secrets.AUTHORIZED_NETWORKS          lista authorized_networks en sintaxis HCL
+#   secrets.ZULIP_EMAIL_HOST_USER        usuario SMTP (cuenta de Gmail)
+#   secrets.ZULIP_EMAIL_PASSWORD         contraseña SMTP (contraseña de aplicación de Gmail)
 # Y un Environment "production" con revisores requeridos para el apply.
 
 jobs:
@@ -106,6 +110,9 @@ jobs:
       id-token: write
     env:
       TF_VAR_zulip_email_password: ${{ secrets.ZULIP_EMAIL_PASSWORD }}
+      TF_VAR_zulip_administrator: ${{ secrets.ZULIP_ADMINISTRATOR }}
+      TF_VAR_authorized_networks: ${{ secrets.AUTHORIZED_NETWORKS }}
+      TF_VAR_zulip_email_host_user: ${{ secrets.ZULIP_EMAIL_HOST_USER }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -153,6 +160,9 @@ jobs:
       id-token: write
     env:
       TF_VAR_zulip_email_password: ${{ secrets.ZULIP_EMAIL_PASSWORD }}
+      TF_VAR_zulip_administrator: ${{ secrets.ZULIP_ADMINISTRATOR }}
+      TF_VAR_authorized_networks: ${{ secrets.AUTHORIZED_NETWORKS }}
+      TF_VAR_zulip_email_host_user: ${{ secrets.ZULIP_EMAIL_HOST_USER }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1

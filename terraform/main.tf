@@ -7,6 +7,10 @@ locals {
 
   # Sin dominio propio se usa la IP estática del LoadBalancer.
   external_host = var.external_host != "" ? var.external_host : module.network.ingress_ip
+
+  # Solo se revela si hay usuario SMTP, no cuál es; así el resto de
+  # las variables de entorno de Zulip sigue visible en el plan.
+  email_enabled = nonsensitive(var.zulip_email_host_user != "")
 }
 
 resource "google_project_service" "this" {
@@ -238,27 +242,45 @@ module "zulip" {
   # Reemplaza al servicio zulip-init de deploy/app.
   init_args = ["app:init"]
 
-  env = {
+  env = merge({
     SETTING_REMOTE_POSTGRES_HOST = module.postgres.host
     SETTING_MEMCACHED_LOCATION   = "${module.memcached.host}:${module.memcached.port}"
     SETTING_RABBITMQ_HOST        = module.rabbitmq.host
     SETTING_REDIS_HOST           = module.redis.host
 
-    SETTING_EXTERNAL_HOST       = local.external_host
-    SETTING_ZULIP_ADMINISTRATOR = var.zulip_administrator
+    SETTING_EXTERNAL_HOST = local.external_host
 
     CERTIFICATES = "self-signed"
 
     CONFIG_application_server__queue_workers_multiprocess = "false"
-  }
-  secret_env = {
+    }, var.external_host != "" ? {} : {
+    # Zulip arma correos de bots y usuarios ficticios con el dominio
+    # de EXTERNAL_HOST; una IP no es un dominio válido y la creación
+    # de usuarios falla.
+    SETTING_FAKE_EMAIL_DOMAIN = "fake-domain.example.com"
+    }, local.email_enabled ? {
+    SETTING_EMAIL_HOST    = var.zulip_email_host
+    SETTING_EMAIL_PORT    = tostring(var.zulip_email_port)
+    SETTING_EMAIL_USE_TLS = "True"
+    # Gmail reescribe el remitente a la cuenta autenticada; las
+    # direcciones noreply con token no sobrevivirían.
+    SETTING_ADD_TOKENS_TO_NOREPLY_ADDRESS = "False"
+  } : {})
+  secret_env = merge({
     SECRETS_postgres_password  = module.secrets.values["postgres_password"]
     SECRETS_rabbitmq_password  = module.secrets.values["rabbitmq_password"]
     SECRETS_redis_password     = module.secrets.values["redis_password"]
     SECRETS_memcached_password = module.secrets.values["memcached_password"]
     SECRETS_secret_key         = module.secrets.values["zulip_secret_key"]
     SECRETS_email_password     = var.zulip_email_password
-  }
+
+    # Va en el Secret y no en env para que el correo no aparezca en
+    # el plan; el contenedor lo recibe igual como variable de entorno.
+    SETTING_ZULIP_ADMINISTRATOR = var.zulip_administrator
+    }, local.email_enabled ? {
+    SETTING_EMAIL_HOST_USER       = var.zulip_email_host_user
+    SETTING_NOREPLY_EMAIL_ADDRESS = var.zulip_email_host_user
+  } : {})
 
   volume = {
     size       = var.storage_sizes.zulip
