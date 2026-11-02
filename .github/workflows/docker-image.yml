@@ -171,3 +171,49 @@ jobs:
             [ -n "$tag" ] && docker push "$tag"
           done <<< "$IMAGE_TAGS"
 
+
+  # Las imágenes van fijadas en Terraform: en vez de desplegar aquí,
+  # se abre un PR que cambia images.zulip al tag recién publicado.
+  # Al hacer merge, terraform.yml lo aplica tras aprobar "production".
+  deploy-pr:
+    name: Open PR to deploy the new image
+    needs: [build, push]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        # Necesita credenciales para subir la rama del PR.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # zizmor: ignore[artipacked]
+      - name: Point images.zulip at the new tag
+        id: bump
+        env:
+          IMAGE_TAGS: ${{ needs.build.outputs.image_tags }}
+        run: |
+          image=$(grep ':sha-' <<< "$IMAGE_TAGS" | head -n 1)
+          tag=${image##*:}
+          sed -E -i "s#(zulip +=) \"ghcr\.io/[^\"]+\"#\1 \"$image\"#" terraform/variables.tf
+          if git diff --quiet; then
+            echo "terraform/variables.tf already uses $image"
+            exit 0
+          fi
+          echo "image=$image" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+      - name: Open pull request
+        if: steps.bump.outputs.image != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IMAGE: ${{ steps.bump.outputs.image }}
+          TAG: ${{ steps.bump.outputs.tag }}
+        run: |
+          branch="deploy/zulip-$TAG"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git commit -am "deploy: Zulip $TAG"
+          git push origin "$branch"
+          gh pr create --base main --head "$branch" \
+            --title "deploy: Zulip $TAG" \
+            --body "Actualiza \`images.zulip\` a \`$IMAGE\`, publicada por Docker image CI/CD. Al hacer merge, Terraform CI/CD la despliega tras aprobar el Environment \`production\`; Zulip se reinicia una vez."
