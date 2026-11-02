@@ -70,6 +70,9 @@ export const active_realm_emojis = new Map<
     string,
     Omit<RealmEmoji, "deactivated"> | typeof zulip_emoji
 >();
+// Unlike `all_realm_emojis`, this has no entry for the Zulip emoji,
+// which is not an uploaded image and so is never animated.
+export const all_realm_emojis_by_url = new Map<string, RealmEmoji>();
 
 let default_emoji_aliases = new Map<string, string[]>();
 
@@ -251,15 +254,18 @@ function rebuild_emoji_data(): void {
     // don't persist in active_realm_emojis.
     all_realm_emojis.clear();
     active_realm_emojis.clear();
+    all_realm_emojis_by_url.clear();
 
     for (const data of Object.values(server_realm_emoji_data)) {
-        all_realm_emojis.set(data.id, {
+        const emoji = {
             id: data.id,
             emoji_name: data.name,
             emoji_url: data.source_url,
             still_url: data.still_url,
             deactivated: data.deactivated,
-        });
+        };
+        all_realm_emojis.set(data.id, emoji);
+        all_realm_emojis_by_url.set(data.source_url, emoji);
         if (!data.deactivated) {
             active_realm_emojis.set(data.name, {
                 id: data.id,
