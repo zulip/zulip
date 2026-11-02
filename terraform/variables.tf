@@ -118,7 +118,7 @@ variable "namespace" {
 }
 
 variable "images" {
-  description = "Imagen de cada componente. Fijar zulip a un tag sha-… publicado por el pipeline."
+  description = "Imagen de cada componente, fijada a una versión exacta. zulip usa un tag sha-… publicado por docker-image.yml; zulip-postgresql solo publica el tag 14, así que se fija por digest."
   type = object({
     zulip     = string
     postgres  = string
@@ -127,11 +127,11 @@ variable "images" {
     rabbitmq  = string
   })
   default = {
-    zulip     = "ghcr.io/facaslo/zulip-server-unal:latest"
-    postgres  = "zulip/zulip-postgresql:14"
-    redis     = "redis:alpine"
-    memcached = "memcached:alpine"
-    rabbitmq  = "rabbitmq:4.2"
+    zulip     = "ghcr.io/facaslo/zulip-server-unal:sha-6709225"
+    postgres  = "zulip/zulip-postgresql:14@sha256:e71ba8616fa42cdc1b248f51263d9290c29681cb8c1992eb9b498af0bb656b29"
+    redis     = "redis:8.10.3-alpine"
+    memcached = "memcached:1.6.45-alpine"
+    rabbitmq  = "rabbitmq:4.2.9"
   }
 }
 
