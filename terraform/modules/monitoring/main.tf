@@ -230,6 +230,44 @@ resource "kubernetes_config_map_v1" "grafana_datasources" {
   }
 }
 
+# Dashboards como código: el Pod de Grafana no tiene disco, así que
+# lo creado en la interfaz se pierde al reiniciar. Para cambiar un
+# dashboard, se edita su JSON en dashboards/.
+resource "kubernetes_config_map_v1" "grafana_dashboard_provider" {
+  metadata {
+    name      = "grafana-dashboard-provider"
+    namespace = kubernetes_namespace_v1.this.metadata[0].name
+    labels    = local.labels
+  }
+
+  data = {
+    "dashboards.yaml" = yamlencode({
+      apiVersion = 1
+      providers = [{
+        name                  = "zulip"
+        folder                = "Zulip"
+        type                  = "file"
+        disableDeletion       = true
+        allowUiUpdates        = false
+        updateIntervalSeconds = 60
+        options               = { path = "/var/lib/grafana/dashboards" }
+      }]
+    })
+  }
+}
+
+resource "kubernetes_config_map_v1" "grafana_dashboards" {
+  metadata {
+    name      = "grafana-dashboards"
+    namespace = kubernetes_namespace_v1.this.metadata[0].name
+    labels    = local.labels
+  }
+
+  data = {
+    "zulip-slo.json" = file("${path.module}/dashboards/zulip-slo.json")
+  }
+}
+
 resource "kubernetes_deployment_v1" "grafana" {
   metadata {
     name      = "grafana"
@@ -248,8 +286,13 @@ resource "kubernetes_deployment_v1" "grafana" {
       metadata {
         labels = merge(local.labels, { app = "grafana" })
         annotations = {
-          # Fuerza un rollout cuando cambian el datasource o la contraseña.
-          "checksum/config" = sha256(jsonencode(kubernetes_config_map_v1.grafana_datasources.data))
+          # Fuerza un rollout cuando cambian el datasource, los
+          # dashboards o la contraseña.
+          "checksum/config" = sha256(jsonencode([
+            kubernetes_config_map_v1.grafana_datasources.data,
+            kubernetes_config_map_v1.grafana_dashboard_provider.data,
+            kubernetes_config_map_v1.grafana_dashboards.data,
+          ]))
           "checksum/secret" = sha256(var.grafana_admin_password)
         }
       }
@@ -306,6 +349,18 @@ resource "kubernetes_deployment_v1" "grafana" {
             read_only  = true
           }
 
+          volume_mount {
+            name       = "dashboard-provider"
+            mount_path = "/etc/grafana/provisioning/dashboards"
+            read_only  = true
+          }
+
+          volume_mount {
+            name       = "dashboards"
+            mount_path = "/var/lib/grafana/dashboards"
+            read_only  = true
+          }
+
           readiness_probe {
             http_get {
               path = "/api/health"
@@ -319,6 +374,20 @@ resource "kubernetes_deployment_v1" "grafana" {
           name = "datasources"
           config_map {
             name = kubernetes_config_map_v1.grafana_datasources.metadata[0].name
+          }
+        }
+
+        volume {
+          name = "dashboard-provider"
+          config_map {
+            name = kubernetes_config_map_v1.grafana_dashboard_provider.metadata[0].name
+          }
+        }
+
+        volume {
+          name = "dashboards"
+          config_map {
+            name = kubernetes_config_map_v1.grafana_dashboards.metadata[0].name
           }
         }
       }
