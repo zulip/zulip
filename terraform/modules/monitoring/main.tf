@@ -264,7 +264,7 @@ resource "kubernetes_config_map_v1" "grafana_dashboards" {
   }
 
   data = {
-    "zulip-slo.json" = file("${path.module}/dashboards/zulip-slo.json")
+    "zulip-slo.json" = file("${path.module}/../../../observability/dashboards/zulip-slo.json")
   }
 }
 
