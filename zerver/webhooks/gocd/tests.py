@@ -42,3 +42,13 @@ class GocdHookTests(WebhookTestCase):
 - **Failed**: `check-backend-lints`, `test-frontend-js`
 - **Passed**: `check-backend-tests`, `zulip-ci-debian-12`"""
         self.check_webhook("pipeline_with_mixed_job_result", expected_topic, expected_message)
+
+    def test_event_filtering(self) -> None:
+        self.url = f'{self.build_webhook_url()}&only_events=["failed"]'
+        self.test_completed_pipeline_fail()
+
+        self.url = f'{self.build_webhook_url()}&only_events=["passed"]'
+        self.check_webhook("pipeline_failed", expect_noop=True)
+
+        self.url = f'{self.build_webhook_url()}&exclude_events=["failed"]'
+        self.check_webhook("pipeline_failed", expect_noop=True)
