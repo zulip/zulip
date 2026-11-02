@@ -28,6 +28,8 @@ Get notifications about Codeship build statuses in Zulip.
 
 ![](/static/images/integrations/codeship/001.png)
 
+{!event-filtering-additional-feature.md!}
+
 ### Related documentation
 
 {!webhooks-url-specification.md!}
