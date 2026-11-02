@@ -10,9 +10,11 @@
                         <div class="user-name-section inline-block">
                             <label for="full_name" class="settings-field-label inline-block {{#unless user_can_change_name}}cursor-text{{/unless}}">{{t "Name" }}</label>
                             <div class="alert-notification full-name-status"></div>
-                            <div class="settings-profile-user-field-hint">{{t "How your account is displayed in Zulip." }}</div>
+
                             <div id="full_name_input_container" {{#unless user_can_change_name}}class="disabled_setting_tooltip"{{/unless}}>
                                 <input id="full_name" name="full_name" class="settings_text_input" type="text" value="{{ current_user.full_name }}" {{#unless user_can_change_name}}disabled="disabled"{{/unless}} maxlength="{{max_user_name_length}}" />
+                                     <p class="settings-profile-user-field-hint">{{t "How your account is displayed in Zulip." }}</p>
+
                             </div>
                         </div>
                     </div>
