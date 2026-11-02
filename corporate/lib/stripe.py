@@ -12,6 +12,7 @@ from functools import wraps
 from typing import Any, Literal, TypedDict, TypeVar
 from urllib.parse import urlencode, urljoin
 
+import certifi
 import stripe
 from django import forms
 from django.conf import settings
@@ -74,6 +75,9 @@ from zilencer.models import (
 from zproject.config import get_secret
 
 stripe.api_key = get_secret("stripe_secret_key")
+# Stripe's bundled CA file lags behind root store changes, such as
+# removals of compromised CAs; certifi is updated more promptly.
+stripe.ca_bundle_path = certifi.where()
 
 BILLING_LOG_PATH = os.path.join(
     "/var/log/zulip" if not settings.DEVELOPMENT else settings.DEVELOPMENT_LOG_DIRECTORY,
