@@ -268,6 +268,27 @@ resource "kubernetes_config_map_v1" "grafana_dashboards" {
   }
 }
 
+# Reglas de alerta (Burn Rate Alerting) y enrutamiento de
+# notificaciones, como código en /observability/alerting. Mismo
+# patrón que el dashboard: el Pod no tiene disco, así que Terraform
+# solo inyecta los YAML sin interpretarlos; Grafana los lee al
+# arrancar (provisioning nativo). Un solo ConfigMap: Grafana espera
+# todos los archivos de alerting juntos en un mismo directorio plano.
+resource "kubernetes_config_map_v1" "grafana_alerting" {
+  metadata {
+    name      = "grafana-alerting"
+    namespace = kubernetes_namespace_v1.this.metadata[0].name
+    labels    = local.labels
+  }
+
+  data = {
+    "availability-burn-rate.yaml" = file("${path.module}/../../../observability/alerting/rules/availability-burn-rate.yaml")
+    "latency-burn-rate.yaml"      = file("${path.module}/../../../observability/alerting/rules/latency-burn-rate.yaml")
+    "contactpoints.yaml"          = file("${path.module}/../../../observability/alerting/contactpoints.yaml")
+    "notification-policies.yaml"  = file("${path.module}/../../../observability/alerting/notification-policies.yaml")
+  }
+}
+
 resource "kubernetes_deployment_v1" "grafana" {
   metadata {
     name      = "grafana"
@@ -292,6 +313,7 @@ resource "kubernetes_deployment_v1" "grafana" {
             kubernetes_config_map_v1.grafana_datasources.data,
             kubernetes_config_map_v1.grafana_dashboard_provider.data,
             kubernetes_config_map_v1.grafana_dashboards.data,
+            kubernetes_config_map_v1.grafana_alerting.data,
           ]))
           "checksum/secret" = sha256(var.grafana_admin_password)
         }
@@ -364,6 +386,12 @@ resource "kubernetes_deployment_v1" "grafana" {
             read_only  = true
           }
 
+          volume_mount {
+            name       = "alerting"
+            mount_path = "/etc/grafana/provisioning/alerting"
+            read_only  = true
+          }
+
           readiness_probe {
             http_get {
               path = "/api/health"
@@ -391,6 +419,13 @@ resource "kubernetes_deployment_v1" "grafana" {
           name = "dashboards"
           config_map {
             name = kubernetes_config_map_v1.grafana_dashboards.metadata[0].name
+          }
+        }
+
+        volume {
+          name = "alerting"
+          config_map {
+            name = kubernetes_config_map_v1.grafana_alerting.metadata[0].name
           }
         }
       }
