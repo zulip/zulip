@@ -82,6 +82,14 @@ module "monitoring" {
       app       = "redis-exporter"
       port      = module.redis_exporter.port
     }
+    # zulip-metrics-server (docker/entrypoint.sh): métricas de los SLI
+    # de envío y entrega de mensajes. Solo se expone dentro del Pod;
+    # el Service público sigue publicando únicamente el puerto 443.
+    zulip = {
+      namespace = kubernetes_namespace_v1.zulip.metadata[0].name
+      app       = "zulip"
+      port      = 9200
+    }
   }
 
   # El CRD PodMonitoring lo instala GKE al habilitar Managed Prometheus.
