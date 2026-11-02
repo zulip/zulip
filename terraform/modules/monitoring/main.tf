@@ -267,13 +267,14 @@ resource "kubernetes_config_map_v1" "grafana_dashboards" {
     "zulip-slo.json" = file("${path.module}/../../../observability/dashboards/zulip-slo.json")
   }
 }
-
+# ------------------------------------------------------------
 # Reglas de alerta (Burn Rate Alerting) y enrutamiento de
 # notificaciones, como código en /observability/alerting. Mismo
 # patrón que el dashboard: el Pod no tiene disco, así que Terraform
 # solo inyecta los YAML sin interpretarlos; Grafana los lee al
 # arrancar (provisioning nativo). Un solo ConfigMap: Grafana espera
 # todos los archivos de alerting juntos en un mismo directorio plano.
+# ------------------------------------------------------------
 resource "kubernetes_config_map_v1" "grafana_alerting" {
   metadata {
     name      = "grafana-alerting"

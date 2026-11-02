@@ -1,0 +1,11 @@
+apiVersion: 1
+
+policies:
+  - orgId: 1
+    receiver: zulip-sre-email
+    group_by:
+      - slo
+    matchers: []
+    group_wait: 30s
+    group_interval: 5m
+    repeat_interval: 4h
