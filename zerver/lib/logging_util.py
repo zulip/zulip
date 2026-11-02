@@ -7,6 +7,7 @@ from collections.abc import Iterable
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
 from logging import Logger
+from logging.handlers import WatchedFileHandler
 
 import orjson
 from django.conf import settings
@@ -270,6 +271,6 @@ def log_to_file(
 ) -> None:
     """Note: `filename` should be declared in zproject/computed_settings.py with zulip_path."""
     formatter = logging.Formatter(log_format)
-    handler = logging.FileHandler(filename)
+    handler = WatchedFileHandler(filename)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
