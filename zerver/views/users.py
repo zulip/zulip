@@ -650,8 +650,6 @@ def add_bot_backend(
     if user_profile.realm.demo_organization_scheduled_deletion_date is not None:
         check_demo_organization_has_set_email(user_profile.realm)
 
-    if config_data is None:
-        config_data = {}
     try:
         short_name, email = validate_short_name_and_construct_bot_email(
             short_name_raw, user_profile.realm
@@ -663,8 +661,6 @@ def add_bot_backend(
                 "Please contact your server administrator."
             )
         )
-    if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
-        service_name = service_name or short_name
     full_name = check_full_name(
         full_name_raw=full_name_raw, user_profile=None, realm=user_profile.realm
     )
@@ -692,7 +688,35 @@ def add_bot_backend(
 
     check_can_create_bot(user_profile, bot_type)
     check_valid_bot_type(user_profile, bot_type)
-    check_valid_interface_type(interface_type)
+
+    match bot_type:
+        case UserProfile.DEFAULT_BOT:
+            if payload_url:
+                raise JsonableError(_("Generic bots have no payload_url to set."))
+            if config_data is not None:
+                raise JsonableError(_("Generic bots have no config_data to set."))
+            if service_name is not None:
+                raise JsonableError(_("Generic bots have no service_name to set."))
+        case UserProfile.INCOMING_WEBHOOK_BOT:
+            if payload_url:
+                raise JsonableError(_("Incoming-webhook bots have no payload_url to set."))
+            if service_name is not None:
+                check_valid_incoming_webhook_bot_config(service_name, config_data or {})
+        case UserProfile.EMBEDDED_BOT:
+            if payload_url:
+                raise JsonableError(_("Embedded bots have no payload_url to set."))
+            service_name = service_name or short_name
+            check_valid_interface_type(interface_type)
+            check_valid_embedded_bot_config(service_name, config_data or {})
+        case UserProfile.OUTGOING_WEBHOOK_BOT:
+            if config_data is not None:
+                raise JsonableError(_("Outgoing-webhook bots have no config_data to set."))
+            if not payload_url:
+                raise JsonableError(_("Outgoing-webhook bots require a payload_url."))
+            check_valid_interface_type(interface_type)
+            service_name = service_name or short_name
+        case _:  # nocoverage
+            raise AssertionError(f"Unexpected bot_type: {bot_type}")
 
     avatar_source = None
     if len(request.FILES) == 1:
@@ -711,11 +735,6 @@ def add_bot_backend(
         (default_events_register_stream, _sub) = access_stream_by_name(
             user_profile, default_events_register_stream_name
         )
-
-    if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:
-        check_valid_incoming_webhook_bot_config(service_name, config_data)
-    elif bot_type == UserProfile.EMBEDDED_BOT and service_name:
-        check_valid_embedded_bot_config(service_name, config_data)
 
     bot_profile = do_create_user(
         email=email,
@@ -751,7 +770,7 @@ def add_bot_backend(
         set_bot_config(bot_profile, "integration_id", service_name)
 
     if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
-        for key, value in config_data.items():
+        for key, value in (config_data or {}).items():
             set_bot_config(bot_profile, key, value)
 
     notify_created_bot(bot_profile)

@@ -2098,6 +2098,88 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Invalid payload_url: Value error, Not a URL")
 
+    def test_add_default_bot_rejects_service_and_config_fields(self) -> None:
+        self.login("hamlet")
+
+        result = self.client_post(
+            "/json/bots",
+            self.bot_creation_info(
+                payload_url=orjson.dumps("http://foo.bar.com").decode(),
+            ),
+        )
+        self.assert_json_error(result, "Generic bots have no payload_url to set.")
+        self.assert_num_bots_equal(0)
+
+        result = self.client_post(
+            "/json/bots",
+            self.bot_creation_info(
+                config_data=orjson.dumps({"key": "value"}).decode(),
+            ),
+        )
+        self.assert_json_error(result, "Generic bots have no config_data to set.")
+        self.assert_num_bots_equal(0)
+
+        result = self.client_post(
+            "/json/bots",
+            self.bot_creation_info(service_name="followup"),
+        )
+        self.assert_json_error(result, "Generic bots have no service_name to set.")
+        self.assert_num_bots_equal(0)
+
+    def test_add_incoming_webhook_bot_rejects_payload_url(self) -> None:
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/bots",
+            self.bot_creation_info(
+                bot_type=UserProfile.INCOMING_WEBHOOK_BOT,
+                payload_url=orjson.dumps("http://foo.bar.com").decode(),
+            ),
+        )
+        self.assert_json_error(result, "Incoming-webhook bots have no payload_url to set.")
+        self.assert_num_bots_equal(0)
+
+    def test_add_embedded_bot_rejects_payload_url(self) -> None:
+        self.fail_to_create_test_bot(
+            short_name="embeddedservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="followup",
+            payload_url=orjson.dumps("http://embedded.example.com").decode(),
+            assert_json_error_msg="Embedded bots have no payload_url to set.",
+        )
+
+    def test_add_embedded_bot_rejects_invalid_interface_type(self) -> None:
+        self.fail_to_create_test_bot(
+            short_name="embeddedservicebot",
+            user_profile=self.example_user("hamlet"),
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="followup",
+            interface_type=-1,
+            assert_json_error_msg="Invalid interface type",
+        )
+
+    def test_add_outgoing_webhook_bot_rejects_config_data(self) -> None:
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/bots",
+            self.bot_creation_info(
+                bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+                payload_url=orjson.dumps("http://foo.bar.com").decode(),
+                config_data=orjson.dumps({"key": "value"}).decode(),
+            ),
+        )
+        self.assert_json_error(result, "Outgoing-webhook bots have no config_data to set.")
+        self.assert_num_bots_equal(0)
+
+    def test_add_outgoing_webhook_bot_requires_payload_url(self) -> None:
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/bots",
+            self.bot_creation_info(bot_type=UserProfile.OUTGOING_WEBHOOK_BOT),
+        )
+        self.assert_json_error(result, "Outgoing-webhook bots require a payload_url.")
+        self.assert_num_bots_equal(0)
+
     def test_get_bot_handler(self) -> None:
         # Test for valid service.
         test_service_name = "converter"
