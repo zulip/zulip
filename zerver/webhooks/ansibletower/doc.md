@@ -29,6 +29,8 @@ Get Ansible Tower notifications in Zulip!
 
  ![](/static/images/integrations/ansibletower/001.png)
 
+{!event-filtering-additional-feature.md!}
+
 ### Related documentation
 
 {!webhooks-url-specification.md!}

@@ -19,8 +19,12 @@ ANSIBLETOWER_JOB_MESSAGE_TEMPLATE = """
 
 ANSIBLETOWER_JOB_HOST_ROW_TEMPLATE = "* {hostname}: {status}\n"
 
+# The message reduces every non-successful status to "failed", and so does
+# the event type.
+ALL_EVENT_TYPES = ["successful", "failed"]
 
-@webhook_view("AnsibleTower")
+
+@webhook_view("AnsibleTower", all_event_types=ALL_EVENT_TYPES)
 @typed_endpoint
 def api_ansibletower_webhook(
     request: HttpRequest,
@@ -30,9 +34,16 @@ def api_ansibletower_webhook(
 ) -> HttpResponse:
     body = get_body(payload)
     topic_name = payload["name"].tame(check_string)
+    event = get_event_type(payload)
 
-    check_send_webhook_message(request, user_profile, topic_name, body)
+    check_send_webhook_message(request, user_profile, topic_name, body, event)
     return json_success(request)
+
+
+def get_event_type(payload: WildValue) -> str:
+    if payload["status"].tame(check_string) == "successful":
+        return "successful"
+    return "failed"
 
 
 def extract_friendly_name(payload: WildValue) -> str:
