@@ -331,9 +331,12 @@ resource "kubernetes_deployment_v1" "grafana" {
             }
           }
 
+          # Grafana 13 corre cada plugin de datasource incluido como un
+          # proceso aparte; con 512Mi el kernel lo mataba (OOMKilled) al
+          # cargar el dashboard de SLO.
           resources {
-            requests = { cpu = "100m", memory = "256Mi" }
-            limits   = { memory = "512Mi" }
+            requests = { cpu = "100m", memory = "512Mi" }
+            limits   = { memory = "1Gi" }
           }
 
           security_context {
