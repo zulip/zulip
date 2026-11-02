@@ -69,11 +69,12 @@ variable "master_cidr" {
 }
 
 variable "authorized_networks" {
-  description = "CIDRs que pueden acceder a la API de Kubernetes (p. ej. la IP pública de quien ejecuta Terraform)."
+  description = "CIDRs que pueden acceder a la API de Kubernetes (p. ej. la IP pública de quien ejecuta Terraform). En CI se pasa con TF_VAR_authorized_networks para no exponer las IPs en los logs públicos."
   type = list(object({
     cidr_block   = string
     display_name = string
   }))
+  sensitive = true
 
   validation {
     condition     = alltrue([for network in var.authorized_networks : network.cidr_block != "0.0.0.0/0"])
@@ -118,7 +119,7 @@ variable "namespace" {
 }
 
 variable "images" {
-  description = "Imagen de cada componente. Fijar zulip a un tag sha-… publicado por el pipeline."
+  description = "Imagen de cada componente, fijada a una versión exacta. zulip usa un tag sha-… publicado por docker-image.yml; zulip-postgresql solo publica el tag 14, así que se fija por digest."
   type = object({
     zulip     = string
     postgres  = string
@@ -127,11 +128,11 @@ variable "images" {
     rabbitmq  = string
   })
   default = {
-    zulip     = "ghcr.io/facaslo/zulip-server-unal:latest"
-    postgres  = "zulip/zulip-postgresql:14"
-    redis     = "redis:alpine"
-    memcached = "memcached:alpine"
-    rabbitmq  = "rabbitmq:4.2"
+    zulip     = "ghcr.io/facaslo/zulip-server-unal:sha-6709225"
+    postgres  = "zulip/zulip-postgresql:14@sha256:e71ba8616fa42cdc1b248f51263d9290c29681cb8c1992eb9b498af0bb656b29"
+    redis     = "redis:8.10.3-alpine"
+    memcached = "memcached:1.6.45-alpine"
+    rabbitmq  = "rabbitmq:4.2.9"
   }
 }
 
@@ -156,8 +157,9 @@ variable "external_host" {
 }
 
 variable "zulip_administrator" {
-  description = "Correo del administrador de Zulip."
+  description = "Correo del administrador de Zulip. En CI se pasa con TF_VAR_zulip_administrator para no exponerlo en los logs públicos."
   type        = string
+  sensitive   = true
 
   validation {
     condition     = can(regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$", var.zulip_administrator))
@@ -165,9 +167,44 @@ variable "zulip_administrator" {
   }
 }
 
-variable "zulip_email_password" {
-  description = "Contraseña SMTP de Zulip. Pasarla con TF_VAR_zulip_email_password, nunca en un .tfvars versionado."
+variable "zulip_email_host" {
+  description = "Servidor SMTP para el correo saliente de Zulip."
+  type        = string
+  default     = "smtp.gmail.com"
+}
+
+variable "zulip_email_port" {
+  description = "Puerto SMTP con STARTTLS."
+  type        = number
+  default     = 587
+}
+
+variable "zulip_email_host_user" {
+  description = "Usuario SMTP (p. ej. la cuenta de Gmail); también es el remitente. Vacío = Zulip sin correo saliente. En CI se pasa con TF_VAR_zulip_email_host_user."
   type        = string
   default     = ""
   sensitive   = true
+}
+
+variable "zulip_email_password" {
+  description = "Contraseña SMTP de Zulip (con Gmail, una contraseña de aplicación). Pasarla con TF_VAR_zulip_email_password, nunca en un .tfvars versionado."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "monitoring_images" {
+  description = "Imágenes del stack de monitoreo (exporters, Grafana y frontend de Managed Prometheus)."
+  type = object({
+    postgres_exporter = string
+    redis_exporter    = string
+    grafana           = string
+    gmp_frontend      = string
+  })
+  default = {
+    postgres_exporter = "quay.io/prometheuscommunity/postgres-exporter:v0.20.1"
+    redis_exporter    = "oliver006/redis_exporter:v1.94.0"
+    grafana           = "grafana/grafana:13.2.5"
+    gmp_frontend      = "gke.gcr.io/prometheus-engine/frontend:v0.19.4-gke.0"
+  }
 }

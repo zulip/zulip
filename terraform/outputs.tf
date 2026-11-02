@@ -35,3 +35,8 @@ output "secret_manager_ids" {
   description = "Secretos en Secret Manager con las credenciales generadas."
   value       = module.secrets.secret_ids
 }
+
+output "grafana_port_forward_command" {
+  description = "Abre Grafana en http://localhost:3000 (usuario admin; contraseña en Secret Manager: grafana_admin_password)."
+  value       = "kubectl -n ${module.monitoring.namespace} port-forward svc/${module.monitoring.grafana_service} 3000:3000"
+}

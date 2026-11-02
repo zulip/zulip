@@ -66,6 +66,16 @@ resource "google_container_cluster" "this" {
     }
   }
 
+  # Endpoint DNS de la API: se autoriza por IAM
+  # (container.clusters.connect) en lugar de por IP, así GitHub
+  # Actions puede aplicar Terraform sin IPs fijas. Los
+  # authorized_networks siguen limitando el endpoint por IP.
+  control_plane_endpoints_config {
+    dns_endpoint_config {
+      allow_external_traffic = true
+    }
+  }
+
   master_auth {
     client_certificate_config {
       issue_client_certificate = false
@@ -92,6 +102,14 @@ resource "google_container_cluster" "this" {
 
   logging_service    = "logging.googleapis.com/kubernetes"
   monitoring_service = "monitoring.googleapis.com/kubernetes"
+
+  # Managed Service for Prometheus: GKE instala los collectors
+  # (gmp-system) y el CRD PodMonitoring; se cobra por muestra.
+  monitoring_config {
+    managed_prometheus {
+      enabled = true
+    }
+  }
 }
 
 resource "google_container_node_pool" "primary" {

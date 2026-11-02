@@ -18,3 +18,8 @@ output "node_service_account" {
   description = "Correo de la cuenta de servicio de los nodos."
   value       = google_service_account.nodes.email
 }
+
+output "dns_endpoint" {
+  description = "Endpoint DNS de la API de Kubernetes (autorizado por IAM)."
+  value       = google_container_cluster.this.control_plane_endpoints_config[0].dns_endpoint_config[0].endpoint
+}

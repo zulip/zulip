@@ -1,0 +1,192 @@
+name: Terraform CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform.yml"
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.run_id }}"
+  cancel-in-progress: true
+
+permissions: {}
+
+# Configuración en GitHub (Settings → Secrets and variables → Actions):
+#   vars.GCP_WORKLOAD_IDENTITY_PROVIDER  salida workload_identity_provider de terraform/bootstrap
+#   vars.GCP_DEPLOYER_SERVICE_ACCOUNT    salida deployer_service_account de terraform/bootstrap
+#   vars.TF_STATE_BUCKET                 salida state_bucket de terraform/bootstrap
+#   vars.TERRAFORM_TFVARS                contenido de terraform.tfvars, sin zulip_administrator
+#                                        ni authorized_networks
+#   secrets.ZULIP_ADMINISTRATOR          correo del administrador de Zulip
+#   secrets.AUTHORIZED_NETWORKS          lista authorized_networks en sintaxis HCL
+#   secrets.ZULIP_EMAIL_HOST_USER        usuario SMTP (cuenta de Gmail)
+#   secrets.ZULIP_EMAIL_PASSWORD         contraseña SMTP (contraseña de aplicación de Gmail)
+# Y un Environment "production" con revisores requeridos para el apply.
+
+jobs:
+  validate:
+    name: Validate Terraform syntax & best practices
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e
+        with:
+          terraform_wrapper: false
+      - name: Terraform fmt check
+        working-directory: terraform
+        run: terraform fmt -check -recursive
+      - name: Terraform init (without backend)
+        working-directory: terraform
+        run: terraform init -backend=false
+      - name: Terraform validate
+        working-directory: terraform
+        run: terraform validate
+      - name: Set up TFLint
+        uses: terraform-linters/setup-tflint@6ffdbaa3be476b3431f7275c26966ef32ff60337
+      - name: TFLint init (download plugins)
+        working-directory: terraform
+        run: tflint --init
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run TFLint
+        working-directory: terraform
+        run: tflint --recursive
+
+  scan:
+    name: Scan Terraform for security misconfigurations (Trivy)
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Scan with Trivy
+        uses: aquasecurity/trivy-action@a9c7b0f06e461e9d4b4d1711f154ee024b8d7ab8
+        env:
+          TRIVY_SEVERITY: CRITICAL,HIGH
+        with:
+          scan-type: fs
+          scan-ref: terraform
+          scanners: misconfig,secret
+          format: sarif
+          output: trivy-terraform-results.sarif
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+          limit-severities-for-sarif: 'true'
+      - name: Upload Trivy results to Security tab
+        if: always()
+        uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd
+        with:
+          sarif_file: trivy-terraform-results.sarif
+
+  # El plan corre en cada PR para revisar los cambios antes del merge.
+  # Los PR desde forks no reciben token OIDC, así que se omiten.
+  plan:
+    name: Terraform plan
+    needs: scan
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TF_VAR_zulip_email_password: ${{ secrets.ZULIP_EMAIL_PASSWORD }}
+      TF_VAR_zulip_administrator: ${{ secrets.ZULIP_ADMINISTRATOR }}
+      TF_VAR_authorized_networks: ${{ secrets.AUTHORIZED_NETWORKS }}
+      TF_VAR_zulip_email_host_user: ${{ secrets.ZULIP_EMAIL_HOST_USER }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Authenticate to Google Cloud (Workload Identity Federation)
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOYER_SERVICE_ACCOUNT }}
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e
+        with:
+          terraform_wrapper: false
+      - name: Write terraform.tfvars
+        working-directory: terraform
+        env:
+          TERRAFORM_TFVARS: ${{ vars.TERRAFORM_TFVARS }}
+        run: printf '%s\n' "$TERRAFORM_TFVARS" > terraform.tfvars
+      - name: Terraform init
+        working-directory: terraform
+        env:
+          TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+        run: terraform init -input=false -backend-config="bucket=$TF_STATE_BUCKET"
+      - name: Terraform plan
+        working-directory: terraform
+        run: terraform plan -input=false -lock-timeout=5m
+
+  # El apply vuelve a planificar sobre el estado actual y aplica tras
+  # la aprobación del Environment. No se sube el plan como artefacto
+  # porque incluye las contraseñas generadas en texto plano.
+  apply:
+    name: Terraform apply
+    needs: plan
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    # Un apply cancelado a medias deja el estado bloqueado; los apply
+    # se encolan en lugar de cancelarse.
+    concurrency:
+      group: terraform-apply
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      TF_VAR_zulip_email_password: ${{ secrets.ZULIP_EMAIL_PASSWORD }}
+      TF_VAR_zulip_administrator: ${{ secrets.ZULIP_ADMINISTRATOR }}
+      TF_VAR_authorized_networks: ${{ secrets.AUTHORIZED_NETWORKS }}
+      TF_VAR_zulip_email_host_user: ${{ secrets.ZULIP_EMAIL_HOST_USER }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Authenticate to Google Cloud (Workload Identity Federation)
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOYER_SERVICE_ACCOUNT }}
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e
+        with:
+          terraform_wrapper: false
+      - name: Write terraform.tfvars
+        working-directory: terraform
+        env:
+          TERRAFORM_TFVARS: ${{ vars.TERRAFORM_TFVARS }}
+        run: printf '%s\n' "$TERRAFORM_TFVARS" > terraform.tfvars
+      - name: Terraform init
+        working-directory: terraform
+        env:
+          TF_STATE_BUCKET: ${{ vars.TF_STATE_BUCKET }}
+        run: terraform init -input=false -backend-config="bucket=$TF_STATE_BUCKET"
+      - name: Terraform apply
+        working-directory: terraform
+        run: terraform apply -input=false -lock-timeout=5m -auto-approve
