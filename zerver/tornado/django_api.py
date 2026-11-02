@@ -1,3 +1,4 @@
+import time
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
@@ -267,7 +268,9 @@ def send_event_rollback_unsafe(
     for port, port_users in port_user_map.items():
         queue_json_publish_rollback_unsafe(
             notify_tornado_queue_name(port),
-            dict(event=event, users=port_users),
+            # sent_at lets Tornado measure how long the event took to
+            # reach waiting clients, for the delivery latency SLI.
+            dict(event=event, users=port_users, sent_at=time.time()),
             partial(send_notification_http, port),
         )
 

@@ -24,6 +24,7 @@ from typing_extensions import override
 from version import API_FEATURE_LEVEL, ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message_cache import MessageDict
+from zerver.lib.metrics import event_delivery_latency_seconds
 from zerver.lib.narrow_helpers import narrow_dataclasses_from_tuples
 from zerver.lib.narrow_predicate import build_narrow_predicate
 from zerver.lib.notification_data import UserMessageNotificationsData
@@ -1137,7 +1138,9 @@ def get_client_info_for_message_event(
 
 
 def process_message_event(
-    event_template: Mapping[str, Any], users: Collection[Mapping[str, Any]]
+    event_template: Mapping[str, Any],
+    users: Collection[Mapping[str, Any]],
+    sent_at: float | None = None,
 ) -> None:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1351,7 +1354,15 @@ def process_message_event(
         if "mirror" in sending_client and sending_client.lower() == client.client_type_name.lower():
             continue
 
+        # Only a client already waiting on GET /events receives the
+        # event now; for the others, the wait for them to reconnect is
+        # not delivery latency.
+        client_was_waiting = client.current_handler_id is not None
         client.add_event(user_event)
+        if client_was_waiting and sent_at is not None:
+            event_delivery_latency_seconds.labels(event_type="message").observe(
+                time.time() - sent_at
+            )
 
 
 def process_presence_event(event: Mapping[str, Any], users: Iterable[int]) -> None:
@@ -1793,7 +1804,9 @@ def process_notification(notice: Mapping[str, Any]) -> None:
     start_time = time.perf_counter()
 
     if event["type"] == "message":
-        process_message_event(event, cast(list[Mapping[str, Any]], users))
+        process_message_event(
+            event, cast(list[Mapping[str, Any]], users), sent_at=notice.get("sent_at")
+        )
     elif event["type"] == "update_message":
         process_message_update_event(event, cast(list[Mapping[str, Any]], users))
     elif event["type"] == "delete_message":

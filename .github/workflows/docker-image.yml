@@ -102,6 +102,10 @@ jobs:
         with:
           context: ./docker
           push: false
+          # Sin esto el Dockerfile clona el tag 12.3 de Zulip y la imagen
+          # no incluye los cambios de este repositorio.
+          build-args: |
+            ZULIP_GIT_REF=${{ github.sha }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=docker,dest=/tmp/image.tar

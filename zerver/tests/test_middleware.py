@@ -3,6 +3,7 @@ from unittest.mock import patch
 
 from bs4 import BeautifulSoup
 from django.http import HttpResponse
+from prometheus_client import REGISTRY
 
 from zerver.actions.realm_settings import do_set_realm_property
 from zerver.lib.realm_icon import get_realm_icon_url
@@ -212,3 +213,18 @@ class LogRequestsTest(ZulipTestCase):
         with self.assertLogs("zulip.requests", level="INFO") as m:
             LogRequests(lambda _: HttpResponse())(request)
             self.assertIn(expected_requester, m.output[0])
+
+    def test_http_requests_metric(self) -> None:
+        hamlet = self.example_user("hamlet")
+        request = HostRequestMock(user_profile=hamlet, meta_data=self.meta_data)
+        request.method = "POST"
+        request_notes = RequestNotes.get_notes(request)
+        request_notes.log_data = None
+        request_notes.query = "send_message_backend"
+
+        labels = {"endpoint": "send_message", "method": "POST", "status": "400"}
+        before = REGISTRY.get_sample_value("zulip_http_requests_total", labels) or 0
+        with self.assertLogs("zulip.requests", level="INFO"):
+            LogRequests(lambda _: HttpResponse(status=400))(request)
+        after = REGISTRY.get_sample_value("zulip_http_requests_total", labels) or 0
+        self.assertEqual(after - before, 1)

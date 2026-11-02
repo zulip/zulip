@@ -1,0 +1,26 @@
+#!/usr/bin/env python3
+"""Serve, on an internal port, the Prometheus metrics that Zulip's
+uWSGI workers and Tornado processes write to PROMETHEUS_MULTIPROC_DIR
+(see zerver/lib/metrics.py), aggregated across processes."""
+
+import argparse
+import os
+import sys
+import threading
+
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from scripts.lib.setup_path import setup_path
+
+setup_path()
+
+from prometheus_client import CollectorRegistry, start_http_server
+from prometheus_client.multiprocess import MultiProcessCollector
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--port", type=int, default=9200)
+args = parser.parse_args()
+
+registry = CollectorRegistry()
+MultiProcessCollector(registry, path=os.environ["PROMETHEUS_MULTIPROC_DIR"])
+start_http_server(args.port, registry=registry)
+threading.Event().wait()
