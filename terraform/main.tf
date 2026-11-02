@@ -64,11 +64,12 @@ module "secrets" {
   labels     = local.labels
 
   secret_lengths = {
-    postgres_password  = 32
-    rabbitmq_password  = 32
-    redis_password     = 32
-    memcached_password = 32
-    zulip_secret_key   = 64
+    postgres_password      = 32
+    rabbitmq_password      = 32
+    redis_password         = 32
+    memcached_password     = 32
+    zulip_secret_key       = 64
+    grafana_admin_password = 32
   }
 
   depends_on = [google_project_service.this]
@@ -121,7 +122,7 @@ module "postgres" {
     limits   = { memory = "2Gi" }
   }
 
-  allowed_clients = ["zulip"]
+  allowed_clients = ["zulip", "postgres-exporter"]
   labels          = local.labels
 }
 
@@ -148,7 +149,7 @@ module "redis" {
     limits   = { memory = "512Mi" }
   }
 
-  allowed_clients = ["zulip"]
+  allowed_clients = ["zulip", "redis-exporter"]
   labels          = local.labels
 }
 

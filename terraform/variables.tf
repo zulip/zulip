@@ -171,3 +171,19 @@ variable "zulip_email_password" {
   default     = ""
   sensitive   = true
 }
+
+variable "monitoring_images" {
+  description = "Imágenes del stack de monitoreo (exporters, Grafana y frontend de Managed Prometheus)."
+  type = object({
+    postgres_exporter = string
+    redis_exporter    = string
+    grafana           = string
+    gmp_frontend      = string
+  })
+  default = {
+    postgres_exporter = "quay.io/prometheuscommunity/postgres-exporter:v0.20.1"
+    redis_exporter    = "oliver006/redis_exporter:v1.94.0"
+    grafana           = "grafana/grafana:13.2.5"
+    gmp_frontend      = "gke.gcr.io/prometheus-engine/frontend:v0.19.4-gke.0"
+  }
+}

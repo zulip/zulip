@@ -92,6 +92,14 @@ resource "google_container_cluster" "this" {
 
   logging_service    = "logging.googleapis.com/kubernetes"
   monitoring_service = "monitoring.googleapis.com/kubernetes"
+
+  # Managed Service for Prometheus: GKE instala los collectors
+  # (gmp-system) y el CRD PodMonitoring; se cobra por muestra.
+  monitoring_config {
+    managed_prometheus {
+      enabled = true
+    }
+  }
 }
 
 resource "google_container_node_pool" "primary" {
