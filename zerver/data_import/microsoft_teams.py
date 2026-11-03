@@ -577,21 +577,6 @@ def process_messages(
         if is_microsoft_teams_event_message(message):
             continue
 
-        message_content_type = message["Body"]["ContentType"]
-        if message_content_type == "html":
-            try:
-                content = convert_microsoft_teams_html_to_markdown(message["Body"]["Content"])
-            except Exception:  # nocoverage
-                logging.warning(
-                    "Error converting HTML to text for message: '%s'; continuing",
-                    message["Body"]["Content"],
-                )
-                logging.warning(str(message))
-                continue
-        else:  # nocoverage
-            logging.warning("Unable to convert this message content type: %s", message_content_type)
-            continue
-
         # Determine message type, private or channel.
         if message["ChannelIdentity"] is not None:
             if channel_metadata is None:
@@ -609,6 +594,21 @@ def process_messages(
             # subscription list and recipient map of direct message conversations
             # are not listed, we have to manually build them as we iterate over
             # the user messages.
+            continue
+
+        message_content_type = message["Body"]["ContentType"]
+        if message_content_type == "html":
+            try:
+                content = convert_microsoft_teams_html_to_markdown(message["Body"]["Content"])
+            except Exception:  # nocoverage
+                logging.warning(
+                    "Error converting HTML to text for message: '%s'; continuing",
+                    message["Body"]["Content"],
+                )
+                logging.warning(str(message))
+                continue
+        else:  # nocoverage
+            logging.warning("Unable to convert this message content type: %s", message_content_type)
             continue
 
         microsoft_teams_sender_id: str = get_microsoft_teams_sender_id_from_message(message)
