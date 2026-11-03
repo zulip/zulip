@@ -894,3 +894,47 @@ test("server_rendering_for_backend_only_syntax", ({override, mock_template}) => 
     // the plain text draft did not.
     assert.equal(post_calls, 1);
 });
+
+test("launch saves the open compose draft", ({override, mock_template}) => {
+    override(settings_data, "using_dark_theme", () => false);
+
+    const draft_model = drafts.draft_model;
+    const ls = localstorage();
+    const saved_draft = {
+        topic: "topic",
+        type: "stream",
+        content: "Some stream message",
+        stream_id: stream_1.stream_id,
+        updatedAt: Date.now(),
+        is_sending_saving: false,
+        drafts_version: 1,
+    };
+    ls.set("drafts", {id1: saved_draft});
+
+    // The user restored the draft into the compose box, and has typed
+    // more since it was last saved.
+    compose_state.set_message_type("stream");
+    compose_state.set_stream_id(stream_1.stream_id);
+    compose_state.topic("topic");
+    compose_state.message_content("Some stream message, with more typed since");
+    drafts.set_compose_draft_id("id1");
+
+    mock_template("draft_table_body.hbs", false, (data) => {
+        const all_drafts = [...data.context.narrow_drafts, ...data.context.other_drafts];
+        assert.equal(all_drafts.length, 1);
+        assert.equal(all_drafts[0].raw_content, "Some stream message, with more typed since");
+        return "<draft table stub>";
+    });
+    override(messages_overlay_ui, "set_initial_element", noop);
+    override(messages_overlay_ui, "get_and_clear_pending_restore_element_id", () => undefined);
+
+    $.set_results(".drafts-list", []);
+    $.set_results(".drafts-tab-pane .overlay-message-row", []);
+    $.set_results(".draft-selection-checkbox", []);
+
+    drafts_overlay_ui.launch();
+
+    // The up-to-date compose content was saved to the existing draft,
+    // so restoring it cannot lose the newer content.
+    assert.equal(draft_model.getDraft("id1").content, "Some stream message, with more typed since");
+});
