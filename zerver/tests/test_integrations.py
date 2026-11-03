@@ -1,4 +1,5 @@
 import os
+import tempfile
 
 from zerver.lib.integrations import (
     BOT_INTEGRATIONS,
@@ -206,3 +207,20 @@ class IntegrationsTestCase(ZulipTestCase):
                 embedded_bot.is_enabled_in_catalog(),
                 f"Embedded bot '{embedded_bot.name}' should be disabled from the catalog.",
             )
+
+    def test_generate_zulip_bots_static_files(self) -> None:
+        from tools.setup.generate_bots_integrations_static_files import (
+            REQUIRED_BOT_NAMES,
+            generate_zulip_bots_static_files,
+        )
+
+        expected_bot_names = {integration.name for integration in BOT_INTEGRATIONS}
+        self.assertEqual(set(REQUIRED_BOT_NAMES), expected_bot_names)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            generate_zulip_bots_static_files(bots_dir=temp_dir)
+            self.assertEqual(set(os.listdir(temp_dir)), expected_bot_names)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            generate_zulip_bots_static_files(bot_names=["xkcd"], bots_dir=temp_dir)
+            self.assertEqual(set(os.listdir(temp_dir)), {"xkcd"})
