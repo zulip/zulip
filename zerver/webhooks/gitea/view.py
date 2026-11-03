@@ -1,5 +1,3 @@
-# vim:fenc=utf-8
-
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import webhook_view

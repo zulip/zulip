@@ -1,4 +1,3 @@
-# vim:fenc=utf-8
 from typing import Protocol
 
 from django.http import HttpRequest, HttpResponse
@@ -112,7 +111,7 @@ def format_issues_event(payload: WildValue, include_title: bool = False) -> str:
     action = payload["action"].tame(check_string)
     return get_issue_event_message(
         user_name=payload["sender"]["login"].tame(check_string),
-        action=payload["action"].tame(check_string),
+        action=action,
         url=get_issue_url(payload["repository"]["html_url"].tame(check_string), issue_nr),
         number=issue_nr,
         message=payload["issue"]["body"].tame(check_string),
