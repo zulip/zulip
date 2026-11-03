@@ -16,7 +16,10 @@ import * as message_lists from "./message_lists.ts";
 import * as popover_menus from "./popover_menus.ts";
 import * as reactions from "./reactions.ts";
 import * as rows from "./rows.ts";
-import {message_edit_history_visibility_policy_values} from "./settings_config.ts";
+import {
+    message_edit_history_visibility_policy_values,
+    web_channel_default_view_values,
+} from "./settings_config.ts";
 import {realm} from "./state_data.ts";
 import * as timerender from "./timerender.ts";
 import {
@@ -25,6 +28,7 @@ import {
     topic_visibility_policy_tooltip_props,
 } from "./tippyjs.ts";
 import {parse_html} from "./ui_util.ts";
+import {user_settings} from "./user_settings.ts";
 
 type Config = {
     attributes: boolean;
@@ -170,8 +174,35 @@ function get_time_string(timestamp: number): string {
 export function initialize(): void {
     message_list_tooltip(".tippy-narrow-tooltip", {
         delay: LONG_HOVER_DELAY,
+        onShow(instance) {
+            assert(message_lists.current !== undefined);
+            const current_filter = message_lists.current.data.filter;
+            // Don't show "Go to conversation" narrow tooltip in the recipient
+            // row if we're currently narrowed to that conversation.
+            if (
+                current_filter.is_conversation_view() &&
+                (instance.reference.matches(".narrows_by_topic") ||
+                    instance.reference.matches(
+                        ".message_header_private_message .narrows_by_recipient",
+                    ))
+            ) {
+                return false;
+            }
+            // Don't show "Go to channel" narrow tooltip in the recipient
+            // row if we're currently narrowed to that channel and the
+            // user's web_channel_default_view isn't the list of topics.
+            if (
+                current_filter.is_channel_view() &&
+                instance.reference.matches(".narrows_by_recipient") &&
+                user_settings.web_channel_default_view !==
+                    web_channel_default_view_values.list_of_topics.code
+            ) {
+                return false;
+            }
+            return undefined;
+        },
         onCreate(instance) {
-            // We sniff the href, rather than looking up the user's settings
+            // We sniff the href, rather than looking at the user's settings
             // so that the tooltip always matches the link.
             if (
                 instance.reference.hasAttribute("href") &&
