@@ -284,6 +284,9 @@ export let send_message = (): void => {
             // (Restoring this state is handled by clear_compose_box
             // for locally echoed messages.)
             compose_ui.hide_compose_spinner();
+
+            assert(draft_id !== undefined);
+            drafts.clear_is_sending_saving(draft_id);
             return;
         }
 
