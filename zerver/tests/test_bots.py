@@ -1096,11 +1096,28 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         do_deactivate_user(self.example_user("hamlet"), acting_user=None)
 
         self.login("iago")
-        result = self.client_post(f"/json/users/{bot_id}/reactivate")
+        with self.capture_send_event_calls(expected_num_events=7) as events:
+            result = self.client_post(f"/json/users/{bot_id}/reactivate")
         self.assert_json_success(result)
         test_bot = UserProfile.objects.get(id=bot_id, is_bot=True)
         assert test_bot.bot_owner is not None
         self.assertEqual(test_bot.bot_owner.id, self.example_user("iago").id)
+
+        # There is no realm_bot delete event, since the previous
+        # owner is deactivated.
+        self.assertEqual(events[0]["event"]["type"], "realm_user")
+        self.assertEqual(events[0]["event"]["person"], {"user_id": bot_id, "is_active": True})
+        self.assertEqual(events[1]["event"]["type"], "realm_user")
+        self.assertEqual(
+            events[1]["event"]["person"],
+            {"user_id": bot_id, "bot_owner_id": self.example_user("iago").id},
+        )
+        for event in events[2:5]:
+            self.assertEqual(event["event"]["type"], "subscription")
+            self.assertEqual(event["event"]["op"], "peer_add")
+        for event in events[5:]:
+            self.assertEqual(event["event"]["type"], "user_group")
+            self.assertEqual(event["event"]["op"], "add_members")
 
         self.assertTrue(
             Subscription.objects.filter(

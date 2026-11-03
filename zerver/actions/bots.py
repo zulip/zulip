@@ -27,7 +27,7 @@ def send_bot_owner_update_events(
     send_event_on_commit(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
     # Delete the bot from previous owner's bot data.
-    if previous_owner and not previous_owner.is_realm_admin:
+    if previous_owner and previous_owner.is_active and not previous_owner.is_realm_admin:
         delete_event = RealmBotDeleteEvent(bot=BotTypeForDelete(user_id=user_profile.id))
         previous_owner_id = previous_owner.id
         send_event_on_commit(
