@@ -419,6 +419,13 @@ test_ui("send_message", ({disallow, override, override_rewire, mock_template}) =
 
         override(sent_messages, "get_new_local_id", () => "loc-55");
 
+        override(drafts.draft_model, "getDraft", () => ({is_sending_saving: true}));
+        let edited_draft;
+        override(drafts.draft_model, "editDraft", (draft_id, draft) => {
+            assert.equal(draft_id, 100);
+            edited_draft = draft;
+        });
+
         compose.send_message();
 
         const state = {
@@ -429,6 +436,7 @@ test_ui("send_message", ({disallow, override, override_rewire, mock_template}) =
         assert.deepEqual(stub_state, state);
         assert.ok(!echo_error_msg_checked);
         assert.ok(banner_rendered);
+        assert.deepEqual(edited_draft, {is_sending_saving: false});
         assert.equal(fake_compose_box.textarea_val(), "default message");
         assert.ok(fake_compose_box.is_textarea_focused());
         assert.ok(!fake_compose_box.is_submit_button_spinner_visible());
