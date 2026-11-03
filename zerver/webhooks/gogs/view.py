@@ -86,11 +86,8 @@ def format_pull_request_event(payload: WildValue, include_title: bool = False) -
         target_branch = payload["pull_request"]["head_branch"].tame(check_string)
         base_branch = payload["pull_request"]["base_branch"].tame(check_string)
     title = payload["pull_request"]["title"].tame(check_string) if include_title else None
-    stringified_assignee = (
-        payload["pull_request"]["assignee"]["login"].tame(check_string)
-        if payload["action"] and payload["pull_request"]["assignee"]
-        else None
-    )
+    assignee = payload["pull_request"]["assignee"]
+    stringified_assignee = assignee["login"].tame(check_string) if assignee else None
 
     return get_pull_request_event_message(
         user_name=user_name,
