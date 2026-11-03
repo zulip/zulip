@@ -485,7 +485,6 @@ def download_and_export_microsoft_teams_upload_file(
 def process_hosted_content_attachments(
     content: str,
     do_download_and_export_upload_file: Callable[[ExportMessageAttachmentParameter], None],
-    is_direct_message_type: bool,
     microsoft_graph_api_token: str,
     realm_id: int,
     teams_message_id: str,
@@ -546,21 +545,16 @@ def process_hosted_content_attachments(
         # content image's alt tag.
         return get_markdown_image_for_url(file_name, attachment_data.url)
 
-    if is_direct_message_type:
-        # TODO: hosted content URL for private chats have a different format, we
-        # can process it once we support converting direct messages.
-        return AttachmentConversionResult(updated_content=content, upload_records=upload_records)
-    else:
-        updated_content = regex.sub(
-            HOSTED_CONTENT_MARKDOWN_IMAGE_SYNTAX_REGEX,
-            export_file_and_get_zulip_url,
-            content,
-            flags=re.VERBOSE,
-        )
-        return AttachmentConversionResult(
-            updated_content=updated_content,
-            upload_records=upload_records,
-        )
+    updated_content = regex.sub(
+        HOSTED_CONTENT_MARKDOWN_IMAGE_SYNTAX_REGEX,
+        export_file_and_get_zulip_url,
+        content,
+        flags=re.VERBOSE,
+    )
+    return AttachmentConversionResult(
+        updated_content=updated_content,
+        upload_records=upload_records,
+    )
 
 
 def process_messages(
@@ -633,7 +627,6 @@ def process_messages(
         attachment_result = process_hosted_content_attachments(
             content=content,
             do_download_and_export_upload_file=do_download_and_export_upload_file,
-            is_direct_message_type=is_direct_message_type,
             microsoft_graph_api_token=microsoft_graph_api_token,
             realm_id=realm_id,
             teams_message_id=message["Id"],
