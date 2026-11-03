@@ -865,6 +865,8 @@ def do_convert_directory(
         teams_data_dir=teams_data_dir,
     )
 
+    realm["sort_by_date"] = True
+
     create_converted_data_files(realm, output_dir, "/realm.json")
     create_converted_data_files(upload_records, output_dir, "/uploads/records.json")
     attachment: dict[str, list[Any]] = {"zerver_attachment": attachment_records}
