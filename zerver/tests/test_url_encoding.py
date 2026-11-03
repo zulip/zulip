@@ -9,6 +9,7 @@ from zerver.lib.url_encoding import (
     encode_user_full_name_and_id,
     encode_user_ids,
     message_link_url,
+    pm_message_url,
     stream_message_url,
 )
 from zerver.models.messages import Message
@@ -74,6 +75,27 @@ class URLEncodeTest(ZulipTestCase):
             sender=self.example_user("hamlet"), stream_name=channel.name, topic_name=topic
         )
         channel_message = Message.objects.get(id=channel_message_id, realm=realm)
+        expected_channel_message_url = f"{realm.url}/#narrow/{encode_channel(channel.id, channel.name, True)}/topic/{encode_hash_component(topic)}/near/{channel_message_id}"
+        expected_relative_channel_message_url = f"#narrow/{encode_channel(channel.id, channel.name, True)}/topic/{encode_hash_component(topic)}/near/{channel_message_id}"
+
+        # Test with Message model instance directly
+        channel_message_url = stream_message_url(
+            realm,
+            channel_message,
+        )
+        self.assertEqual(channel_message_url, expected_channel_message_url)
+
+        relative_channel_message_url = stream_message_url(None, channel_message)
+        self.assertEqual(relative_channel_message_url, expected_relative_channel_message_url)
+
+        # Test without channel name (e.g. for write-only bots)
+        expected_no_channel_name_url = f"{realm.url}/#narrow/channel/{channel.id}/topic/{encode_hash_component(topic)}/near/{channel_message_id}"
+        self.assertEqual(
+            stream_message_url(realm, channel_message, include_channel_name=False),
+            expected_no_channel_name_url,
+        )
+
+        # Test with legacy message dict
         message_dict = dict(
             id=channel_message_id,
             stream_id=channel.id,
@@ -84,12 +106,58 @@ class URLEncodeTest(ZulipTestCase):
             realm,
             message_dict,
         )
-        expected_channel_message_url = f"{realm.url}/#narrow/{encode_channel(channel.id, channel.name, True)}/topic/{encode_hash_component(topic)}/near/{channel_message_id}"
         self.assertEqual(channel_message_url, expected_channel_message_url)
 
         relative_channel_message_url = stream_message_url(None, message_dict)
-        expected_relative_channel_message_url = f"#narrow/{encode_channel(channel.id, channel.name, True)}/topic/{encode_hash_component(topic)}/near/{channel_message_id}"
         self.assertEqual(relative_channel_message_url, expected_relative_channel_message_url)
+
+    def test_message_link_url_with_message_objects(self) -> None:
+        realm = get_realm("zulip")
+        topic = "test topic"
+        channel = get_stream("Verona", realm)
+        channel_message_id = self.send_stream_message(
+            sender=self.example_user("hamlet"), stream_name=channel.name, topic_name=topic
+        )
+        channel_message = Message.objects.get(id=channel_message_id, realm=realm)
+
+        self.assertEqual(
+            message_link_url(realm, channel_message),
+            f"{realm.url}/#narrow/channel/{channel.id}-Verona/topic/test.20topic/near/{channel_message_id}",
+        )
+        self.assertEqual(
+            message_link_url(None, channel_message),
+            f"#narrow/channel/{channel.id}-Verona/topic/test.20topic/near/{channel_message_id}",
+        )
+        self.assertEqual(
+            message_link_url(realm, channel_message, conversation_link=True),
+            f"{realm.url}/#narrow/channel/{channel.id}-Verona/topic/test.20topic/with/{channel_message_id}",
+        )
+
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        dm_message_id = self.send_personal_message(
+            from_user=hamlet,
+            to_user=cordelia,
+        )
+        dm_message = Message.objects.get(id=dm_message_id, realm=realm)
+        expected_slug = encode_user_ids(sorted([hamlet.id, cordelia.id]))
+
+        self.assertEqual(
+            message_link_url(realm, dm_message),
+            f"{realm.url}/#narrow/dm/{expected_slug}/near/{dm_message_id}",
+        )
+        self.assertEqual(
+            message_link_url(None, dm_message),
+            f"#narrow/dm/{expected_slug}/near/{dm_message_id}",
+        )
+        self.assertEqual(
+            message_link_url(realm, dm_message, conversation_link=True),
+            f"{realm.url}/#narrow/dm/{expected_slug}/with/{dm_message_id}",
+        )
+        self.assertEqual(
+            pm_message_url(realm, dm_message),
+            f"{realm.url}/#narrow/dm/{expected_slug}/near/{dm_message_id}",
+        )
 
     def test_message_link_url_without_a_realm(self) -> None:
         realm = get_realm("zulip")
