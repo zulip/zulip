@@ -70,7 +70,7 @@ class GogsHookTests(WebhookTestCase):
 
     def test_pull_request_closed(self) -> None:
         expected_topic_name = "try-git / PR #1 Title Text for Pull Request"
-        expected_message = """john closed [PR #1](http://localhost:3000/john/try-git/pulls/1) from `feature` to `master`."""
+        expected_message = """benjamin closed [PR #1](http://localhost:3000/john/try-git/pulls/1) from `feature` to `master`."""
         self.check_webhook("pull_request__closed", expected_topic_name, expected_message)
 
     def test_pull_request_merged(self) -> None:
