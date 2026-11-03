@@ -7021,6 +7021,7 @@ class DevFetchAPIKeyTest(ZulipTestCase):
         self.assertEqual(data["email"], self.email)
         self.assertEqual(data["user_id"], self.user_profile.id)
         self.assertEqual(data["api_key"], self.user_profile.api_key)
+        self.assert_logged_in_user_id(None)
 
     def test_invalid_email(self) -> None:
         email = "hamlet"

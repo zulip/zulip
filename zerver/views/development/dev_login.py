@@ -21,7 +21,7 @@ from zerver.lib.typed_endpoint import typed_endpoint
 from zerver.lib.validator import validate_login_email
 from zerver.models import Realm, UserProfile
 from zerver.models.realms import get_realm
-from zerver.views.auth import get_safe_redirect_to
+from zerver.views.auth import get_safe_redirect_to, process_api_key_fetch_authenticate_result
 from zerver.views.errors import config_error
 from zproject.backends import dev_auth_enabled
 
@@ -135,8 +135,7 @@ def api_dev_fetch_api_key(request: HttpRequest, *, username: str) -> HttpRespons
         raise AuthenticationFailedError
     assert isinstance(user_profile, UserProfile)
 
-    do_login(request, user_profile)
-    api_key = user_profile.api_key
+    api_key = process_api_key_fetch_authenticate_result(request, user_profile)
     return json_success(
         request,
         data={"api_key": api_key, "email": user_profile.delivery_email, "user_id": user_profile.id},
