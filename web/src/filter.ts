@@ -2122,15 +2122,24 @@ export class Filter {
     }
 
     get_stringified_narrow_for_server_query(): string {
-        const terms = this.terms_for_server_query().map((term) => {
+        const terms = [];
+        for (const term of this.terms_for_server_query()) {
             if (term.operator === "channel") {
-                return {
+                terms.push({
                     ...term,
                     operand: Number.parseInt(term.operand, 10),
-                };
+                });
+            } else if (term.operator === "dm-including") {
+                for (const operand of term.operand) {
+                    terms.push({
+                        ...term,
+                        operand,
+                    });
+                }
+            } else {
+                terms.push(term);
             }
-            return term;
-        });
+        }
 
         return JSON.stringify(terms);
     }
