@@ -216,7 +216,7 @@ maintain them.
 
 Zulip uses the [iamcal emoji data package][iamcal] for its emoji data
 and sprite sheets. We download this dependency using `npm`, and then
-have a tool, `tools/setup/build_emoji`, which reformats the emoji data
+have a tool, `tools/setup/emoji/build_emoji`, which reformats the emoji data
 into the files under `static/generated/emoji`. Those files are in
 turn used by our [Markdown processor](markdown.md) and
 `tools/update-prod-static` to make Zulip's emoji work in the various
