@@ -333,12 +333,11 @@ def upload_message_attachment(
 
 
 def claim_attachment(
-    path_id: str,
+    attachment: Attachment,
     message: Message | ScheduledMessage,
     is_message_realm_public: bool,
     is_message_web_public: bool = False,
 ) -> Attachment:
-    attachment = Attachment.objects.get(path_id=path_id)
     if isinstance(message, ScheduledMessage):
         attachment.scheduled_messages.add(message)
         # Setting the is_web_public and is_realm_public flags would be incorrect
@@ -350,7 +349,7 @@ def claim_attachment(
     attachment.messages.add(message)
     attachment.is_web_public = attachment.is_web_public or is_message_web_public
     attachment.is_realm_public = attachment.is_realm_public or is_message_realm_public
-    attachment.save()
+    attachment.save(update_fields=["is_web_public", "is_realm_public"])
     return attachment
 
 

@@ -205,7 +205,7 @@ class ExportFile(ZulipTestCase):
         url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
         attachment_path_id = url.replace("/user_uploads/", "")
         claim_attachment(
-            path_id=attachment_path_id,
+            attachment=Attachment.objects.get(path_id=attachment_path_id),
             message=message,
             is_message_realm_public=True,
         )
@@ -484,7 +484,7 @@ class RealmImportExportTest(ExportFile):
         url = upload_message_attachment("dummy.txt", "text/plain", b"zulip!", user_profile)[0]
         attachment_path_id = url.replace("/user_uploads/", "")
         attachment = claim_attachment(
-            path_id=attachment_path_id,
+            attachment=Attachment.objects.get(path_id=attachment_path_id),
             message=Message.objects.get(id=personal_message_id),
             is_message_realm_public=True,
         )
