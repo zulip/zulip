@@ -753,7 +753,7 @@ def add_bot_backend(
     if bot_type == UserProfile.INCOMING_WEBHOOK_BOT and service_name:
         set_bot_config(bot_profile, "integration_id", service_name)
 
-    if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT):
+    if bot_type in (UserProfile.INCOMING_WEBHOOK_BOT, UserProfile.EMBEDDED_BOT) and config_data:
         for key, value in config_data.items():
             set_bot_config(bot_profile, key, value)
 
